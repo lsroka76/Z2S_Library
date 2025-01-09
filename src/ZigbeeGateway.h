@@ -71,19 +71,34 @@ public:
     _new_device_joined = false;
   }
 
-void zbPrintDeviceDiscovery (zb_device_params_t * device);
+  void zbPrintDeviceDiscovery (zb_device_params_t * device);
 
-static void bindDeviceCluster(zb_device_params_t *,int16_t cluster_id );
+  static void bindDeviceCluster(zb_device_params_t *,int16_t cluster_id );
 
-void setIASZReporting(uint16_t short_addr, uint16_t endpoint, uint16_t min_interval, uint16_t max_interval);
+  void setIASZReporting(uint16_t short_addr, uint16_t endpoint, uint16_t min_interval, uint16_t max_interval);
 
-  void onStatusNotification(void (*callback)(int, uint8_t *)) {
-    _on_status_notification = callback;
+  void setOnOffCluster(esp_zb_ieee_addr_t ieee_addr, bool value);
+
+  void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, int)) {
+
+    _on_IAS_zone_status_change_notification = callback;
   }
-  void onConfigRecieve(void (*callback)(float, float, float)) {
-    _on_config_recieve = callback;
-  }
+  
+  void onTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, float)) {
 
+    _on_temperature_receive = callback; 
+  }
+  
+  void onHumidityReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, float)) {
+
+    _on_humidity_receive = callback;
+  }
+  
+  void on_OnOffReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, bool)) {
+
+    _on_on_off_receive = callback;
+  }
+  
 private:
   // save instance of the class in order to use it in static functions
   static ZigbeeGateway *_instance;
@@ -96,9 +111,13 @@ private:
   static uint16_t _clusters_2_discover;
   static uint16_t _attributes_2_discover; 
 
-  void (*_on_status_notification)(int, uint8_t *);
-  void (*_on_config_recieve)(float, float, float);
- 
+  void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, int);
+  void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, float);
+  void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, float);
+  void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, bool);
+
+  //void (*_on_temperature_receive)(esp_zb_zcl_addr_t src_address, float);
+
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);
 
   static void bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);

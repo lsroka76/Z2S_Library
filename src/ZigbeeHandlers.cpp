@@ -139,9 +139,10 @@ static esp_err_t zb_cmd_default_resp_handler(const esp_zb_zcl_cmd_default_resp_m
     log_e("Received message: error status(%d)", message->info.status);
   }
   log_v(
-    "Received default response: from address(0x%x), src_endpoint(%d) to dst_endpoint(%d), cluster(0x%x) with status 0x%x",
-    message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, message->status_code
+    "Received default response: from address(0x%x), src_endpoint(%d) to dst_endpoint(%d), cluster(0x%x) for command (%d) with status 0x%x",
+    message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, message->resp_to_cmd, message->status_code
   );
+  log_v("command id (%d), direction (%d), is common (%d)", message->info.command.id, message->info.command.direction, message->info.command.is_common);  
   return ESP_OK;
 }
 
