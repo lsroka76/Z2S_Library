@@ -34,13 +34,14 @@ break;
 }
 
 static esp_err_t zb_attribute_set_handler(const esp_zb_zcl_set_attr_value_message_t *message) {
-  if (!message) {
+   if (!message) {
     log_e("Empty message");
+    return ESP_FAIL;
   }
   if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
     log_e("Received message: error status(%d)", message->info.status);
+    return ESP_ERR_INVALID_ARG;
   }
-
   log_v(
     "Received message: endpoint(%d), cluster(0x%x), attribute(0x%x), data size(%d)", message->info.dst_endpoint, message->info.cluster, message->attribute.id,
     message->attribute.data.size
@@ -60,11 +61,13 @@ static esp_err_t zb_attribute_set_handler(const esp_zb_zcl_set_attr_value_messag
 }
 
 static esp_err_t zb_attribute_reporting_handler(const esp_zb_zcl_report_attr_message_t *message) {
-  if (!message) {
+   if (!message) {
     log_e("Empty message");
+    return ESP_FAIL;
   }
   if (message->status != ESP_ZB_ZCL_STATUS_SUCCESS) {
     log_e("Received message: error status(%d)", message->status);
+    return ESP_ERR_INVALID_ARG;
   }
   log_v(
     "Received report from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x)", message->src_address.u.short_addr, message->src_endpoint,
@@ -80,11 +83,13 @@ static esp_err_t zb_attribute_reporting_handler(const esp_zb_zcl_report_attr_mes
 }
 
 static esp_err_t zb_cmd_read_attr_resp_handler(const esp_zb_zcl_cmd_read_attr_resp_message_t *message) {
-  if (!message) {
+   if (!message) {
     log_e("Empty message");
+    return ESP_FAIL;
   }
   if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
     log_e("Received message: error status(%d)", message->info.status);
+    return ESP_ERR_INVALID_ARG;
   }
   log_v(
     "Read attribute response: from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x)", message->info.src_address.u.short_addr,
@@ -114,11 +119,13 @@ static esp_err_t zb_cmd_read_attr_resp_handler(const esp_zb_zcl_cmd_read_attr_re
 }
 
 static esp_err_t zb_configure_report_resp_handler(const esp_zb_zcl_cmd_config_report_resp_message_t *message) {
-  if (!message) {
+   if (!message) {
     log_e("Empty message");
+    return ESP_FAIL;
   }
   if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
     log_e("Received message: error status(%d)", message->info.status);
+    return ESP_ERR_INVALID_ARG;
   }
   esp_zb_zcl_config_report_resp_variable_t *variable = message->variables;
   while (variable) {
@@ -134,9 +141,11 @@ static esp_err_t zb_configure_report_resp_handler(const esp_zb_zcl_cmd_config_re
 static esp_err_t zb_cmd_default_resp_handler(const esp_zb_zcl_cmd_default_resp_message_t *message) {
   if (!message) {
     log_e("Empty message");
+    return ESP_FAIL;
   }
   if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
     log_e("Received message: error status(%d)", message->info.status);
+    return ESP_ERR_INVALID_ARG;
   }
   log_v(
     "Received default response: from address(0x%x), src_endpoint(%d) to dst_endpoint(%d), cluster(0x%x) for command (%d) with status 0x%x",
@@ -147,11 +156,13 @@ static esp_err_t zb_cmd_default_resp_handler(const esp_zb_zcl_cmd_default_resp_m
 }
 
 static esp_err_t zb_cmd_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {
-  if (!message) {
+   if (!message) {
     log_e("Empty message");
+    return ESP_FAIL;
   }
   if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
     log_e("Received message: error status(%d)", message->info.status);
+    return ESP_ERR_INVALID_ARG;
   }
   log_v(
     "IAS Zone Status Notification: from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x)", message->info.src_address.u.short_addr,
@@ -169,11 +180,13 @@ static esp_err_t zb_cmd_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone
 }
 
 static esp_err_t zb_core_cmd_disc_attr_resp_handler(esp_zb_zcl_cmd_discover_attributes_resp_message_t *message) {
-  if (!message) {
+   if (!message) {
     log_e("Empty message");
+    return ESP_FAIL;
   }
   if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
     log_e("Received message: error status(%d)", message->info.status);
+    return ESP_ERR_INVALID_ARG;
   }
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (message->info.dst_endpoint == (*it)->getEndpoint()) {

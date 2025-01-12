@@ -67,13 +67,18 @@ public:
     return _new_device_joined;
   }
 
-  static void clearNewDeviceJoined(){
+  static void clearNewDeviceJoined() {
     _new_device_joined = false;
   }
 
+  static void setClusters2Bind(uint16_t clusters_count) {
+    _clusters_2_bind = clusters_count;
+  }
+
+
   void zbPrintDeviceDiscovery (zb_device_params_t * device);
 
-  static void bindDeviceCluster(zb_device_params_t *,int16_t cluster_id );
+  static void bindDeviceCluster(zb_device_params_t *,int16_t cluster_id);
 
   void setIASZReporting(uint16_t short_addr, uint16_t endpoint, uint16_t min_interval, uint16_t max_interval);
 
@@ -84,21 +89,31 @@ public:
     _on_IAS_zone_status_change_notification = callback;
   }
   
-  void onTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, float)) {
+  void onTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float)) {
 
     _on_temperature_receive = callback; 
   }
   
-  void onHumidityReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, float)) {
+  void onHumidityReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float)) {
 
     _on_humidity_receive = callback;
   }
   
-  void on_OnOffReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, bool)) {
+  void onOnOffReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool)) {
 
     _on_on_off_receive = callback;
   }
+
+  void onBoundDevice(void (*callback)(zb_device_params_t *, bool)) {
+
+    _on_bound_device = callback;
+  }
   
+  void onBTCBoundDevice(void (*callback)(zb_device_params_t *)) {
+
+    _on_btc_bound_device = callback;
+  }
+
 private:
   // save instance of the class in order to use it in static functions
   static ZigbeeGateway *_instance;
@@ -110,12 +125,15 @@ private:
 
   static uint16_t _clusters_2_discover;
   static uint16_t _attributes_2_discover; 
+  static uint16_t _clusters_2_bind;
 
   void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, int);
-  void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, float);
-  void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, float);
-  void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, bool);
+  void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
+  void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
+  void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool);
 
+  void (*_on_bound_device)(zb_device_params_t *, bool);
+  void (*_on_btc_bound_device)(zb_device_params_t *);
   //void (*_on_temperature_receive)(esp_zb_zcl_addr_t src_address, float);
 
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);
@@ -132,9 +150,12 @@ private:
                             const esp_zb_zcl_disc_attr_variable_t *variable) override;
   
   void addBoundDevice(zb_device_params_t *device) override;
+  bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
+
 protected:
 
   static SemaphoreHandle_t gt_lock;
+
   std::list<zb_device_params_t *> _joined_devices;
   std::list<zb_device_params_t *> _gateway_devices;
 };
