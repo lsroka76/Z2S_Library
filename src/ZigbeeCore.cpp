@@ -156,6 +156,17 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
   if (erase_nvs) {
     esp_zb_nvram_erase_at_start(true);
   }
+  /*esp_zb_ieee_addr_t extended_pan_id;
+  extended_pan_id[0] = 0x10;
+  extended_pan_id[1] = 0x15;
+  extended_pan_id[2] = 0x35;
+  extended_pan_id[3] = 0xA0;
+  extended_pan_id[4] = 0xB1;
+  extended_pan_id[5] = 0x1C;
+  extended_pan_id[6] = 0x07;
+  extended_pan_id[7] = 0x14;
+
+  esp_zb_set_extended_pan_id(extended_pan_id);*/
 
   // Create Zigbee task and start Zigbee stack
   xTaskCreate(esp_zb_task, "Zigbee_main", 4096, NULL, 5, NULL);
@@ -340,6 +351,9 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
         Zigbee.factoryReset();
       }
       break;
+     case ESP_ZB_NLME_STATUS_INDICATION: {
+        printf("%s, status: 0x%x\n", esp_zb_zdo_signal_to_string(sig_type), *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
+    } break;
     default: log_v("ZDO signal: %s (0x%x), status: %s", esp_zb_zdo_signal_to_string(sig_type), sig_type, esp_err_to_name(err_status)); break;
   }
 }
@@ -355,7 +369,7 @@ void ZigbeeCore::scanCompleteCallback(esp_zb_zdp_status_t zdo_status, uint8_t co
     log_v("Found %d networks", count);
     //print Zigbee networks
     for (int i = 0; i < count; i++) {
-      log_v(
+        log_v(
         "Network %d: PAN ID: 0x%04hx, Permit Joining: %s, Extended PAN ID: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x, Channel: %d, Router Capacity: %s, End "
         "Device Capacity: %s",
         i, nwk_descriptor[i].short_pan_id, nwk_descriptor[i].permit_joining ? "Yes" : "No", nwk_descriptor[i].extended_pan_id[7],
@@ -433,7 +447,7 @@ void ZigbeeCore::bindingTableCb(const esp_zb_zdo_binding_table_info_t *table_inf
         memcpy(device->ieee_addr, record->dst_address.addr_long, sizeof(esp_zb_ieee_addr_t));
       }
       device->cluster_id = record->cluster_id;
-      
+
       // Add to list of bound devices of proper endpoint
       for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
         if ((*it)->getEndpoint() == record->src_endp) {
