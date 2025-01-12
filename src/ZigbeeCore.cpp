@@ -432,7 +432,8 @@ void ZigbeeCore::bindingTableCb(const esp_zb_zdo_binding_table_info_t *table_inf
       } else {  //ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT
         memcpy(device->ieee_addr, record->dst_address.addr_long, sizeof(esp_zb_ieee_addr_t));
       }
-
+      device->cluster_id = record->cluster_id;
+      
       // Add to list of bound devices of proper endpoint
       for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
         if ((*it)->getEndpoint() == record->src_endp) {

@@ -67,6 +67,7 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   esp_zb_cluster_list_add_basic_cluster(_cluster_list, esp_zb_basic_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_identify_cluster(_cluster_list, esp_zb_identify_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   esp_zb_cluster_list_add_identify_cluster(_cluster_list, esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_power_config_cluster(_cluster_list, esp_zb_power_config_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_ias_zone_cluster(_cluster_list, esp_zb_ias_zone_cluster_create(&zone_cfg), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_temperature_meas_cluster(_cluster_list, esp_zb_temperature_meas_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
@@ -398,6 +399,40 @@ void ZigbeeGateway::setIASZReporting(uint16_t short_addr, uint16_t endpoint, uin
       .direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, //0x00, //ESP_ZB_ZCL_REPORT_DIRECTION_SEND,
       .attributeID = 0,
       .attrType = ESP_ZB_ZCL_ATTR_TYPE_S16,
+      .min_interval = min_interval,
+      .max_interval = max_interval,
+      .reportable_change = &report_change,
+    },
+  };
+  report_cmd.record_number = ZB_ARRAY_LENTH(records);
+  report_cmd.record_field = records;
+
+  
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zcl_config_report_cmd_req(&report_cmd);
+  esp_zb_lock_release();
+}
+
+void ZigbeeGateway::setClusterReporting(uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
+                                        uint16_t min_interval, uint16_t max_interval, uint16_t delta) {
+  
+  esp_zb_zcl_config_report_cmd_t report_cmd;
+  
+  report_cmd.zcl_basic_cmd.dst_endpoint = endpoint;
+  report_cmd.zcl_basic_cmd.dst_addr_u.addr_short = short_addr;
+  //report_cmd.zcl_basic_cmd.src_endpoint = 1;
+  report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+      
+  //report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_DST_ADDR_ENDP_NOT_PRESENT;
+  report_cmd.zcl_basic_cmd.src_endpoint = _instance->getEndpoint();
+  report_cmd.clusterID = cluster_id;
+
+  int16_t report_change = delta;
+  esp_zb_zcl_config_report_record_t records[] = {
+    {
+      .direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, //0x00, //ESP_ZB_ZCL_REPORT_DIRECTION_SEND,
+      .attributeID = attribute_id,
+      .attrType = attribute_type, //ESP_ZB_ZCL_ATTR_TYPE_S16,
       .min_interval = min_interval,
       .max_interval = max_interval,
       .reportable_change = &report_change,

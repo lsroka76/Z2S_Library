@@ -181,7 +181,7 @@ bool Z2S_saveDevicesTable() {
 
 int16_t Z2S_findChannelNumber(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster) {
 
-  log_i("Z2S_findChannelNumber %d:%d:%d:%d:%d:%d:%d:%d, endopint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
+  log_i("Z2S_findChannelNumber %d:%d:%d:%d:%d:%d:%d:%d, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
   for (uint8_t devices_counter = 0; devices_counter < SUPLA_CHANNELMAXCOUNT; devices_counter++) {
       if (z2s_devices_table[devices_counter].valid_record)
@@ -222,7 +222,7 @@ void Z2S_initSuplaChannels(){
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature) {
 
-  log_i("onTemperatureReceive %d:%d:%d:%d:%d:%d:%d:%d, endopint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
+  log_i("onTemperatureReceive %d:%d:%d:%d:%d:%d:%d:%d, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster);
   if (channel_number_slot < 0)
@@ -264,6 +264,17 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
 void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
 
+  log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+  if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT) {
+    log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+    zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
+                                  ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID, ESP_ZB_ZCL_ATTR_TYPE_S16, 30, 120, 10);
+  } else
+  if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT) {
+    log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+    zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
+                                  ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 30, 120, 10);
+  }
   Z2S_onBoundDevice(device, true);
 }
 
@@ -455,7 +466,8 @@ void loop() {
       if (strcmp(zbd_model_name,"TS0201") == 0) {
           esp_zb_lock_acquire(portMAX_DELAY);
           joined_device->model_id = 0x1000; // Tuya TS0201 temperature&humidity sensor
-          zbGateway.setClusters2Bind(2);
+          zbGateway.setClusters2Bind(3);
+          zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT);
           esp_zb_lock_release();
