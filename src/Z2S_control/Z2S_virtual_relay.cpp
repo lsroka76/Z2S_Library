@@ -13,7 +13,7 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#ifdef Z2S_GATEWAY
+//#ifdef Z2S_GATEWAY
 
 #include "Z2S_virtual_relay.h"
 
@@ -97,4 +97,4 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   Supla::Storage::ScheduleSave(5000);
 }
 
-#endif
+//#endif
