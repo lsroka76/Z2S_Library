@@ -14,7 +14,7 @@
 #include <LittleFS.h>
 #include <supla/storage/littlefs_config.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
-#include <supla/control/virtual_relay.h>
+#include <Z2S_virtual_relay.h>
 #include <supla/device/supla_ca_cert.h>
 
 extern "C" {
@@ -208,7 +208,7 @@ void Z2S_initSuplaChannels(){
             break;
           }
           case SUPLA_CHANNELTYPE_RELAY: {
-            auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
+            auto Supla_Z2S_Virtual_Relay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,z2s_devices_table[devices_counter].ieee_addr );
             break;
           }
           default: {
@@ -262,6 +262,28 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
   }
 }
 
+void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state) {
+
+  log_i("onOnOffReceive %d:%d:%d:%d:%d:%d:%d:%d, endopint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
+   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster);
+  if (channel_number_slot < 0)
+    log_i("No channel found for address %s", ieee_addr);
+  else
+  {
+    //auto channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+    //channel->setNewValue(temperature, channel->getValueDoubleSecond());
+
+    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
+
+        auto VirtualOnOff = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
+        VirtualOnOff->Z2S_setOnOff(state); 
+    }
+  }
+}
+
+
 void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
 
   log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
@@ -274,11 +296,17 @@ void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
     log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
     zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
                                   ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 30, 120, 10);
+  } else
+  if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG) {
+    log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+    zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
+                                  0x0021, ESP_ZB_ZCL_ATTR_TYPE_U8, 30, 120, 10);
   }
   Z2S_onBoundDevice(device, true);
 }
 
 void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
+  
   
   Z2S_printDevicesTableSlots();
 
@@ -310,6 +338,19 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
           Z2S_printDevicesTableSlots();
           break;
       }
+      case 0x4000: {
+          auto Supla_Z2S_Virtual_Relay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
+          z2s_devices_table[first_free_slot].valid_record = true;
+          memcpy(z2s_devices_table[first_free_slot].ieee_addr,device->ieee_addr,8);
+          z2s_devices_table[first_free_slot].model_id = device->model_id;
+          z2s_devices_table[first_free_slot].endpoint = device->endpoint;
+          z2s_devices_table[first_free_slot].cluster_id = device->cluster_id;
+          z2s_devices_table[first_free_slot].Supla_channel = Supla_Z2S_Virtual_Relay->getChannelNumber();
+          z2s_devices_table[first_free_slot].Supla_channel_type = SUPLA_CHANNELTYPE_RELAY; 
+          Z2S_saveDevicesTable();
+          Z2S_printDevicesTableSlots();
+          break;
+      }
     }
   }
   else
@@ -321,6 +362,13 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
           if (!Supla_channel) {
             auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
             Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+          }
+      } break;
+    case 0x4000: {
+          auto Supla_channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+          if (!Supla_channel) {
+            auto Supla_Z2S_Virtual_Relay = new Supla::Control::Z2S_VirtualRelay(&zbGateway, z2s_devices_table[channel_number_slot].ieee_addr);
+            Supla_Z2S_Virtual_Relay->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
           break;
       }
     }
@@ -364,6 +412,8 @@ void setup() {
 
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
+  zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
+
   zbGateway.onBoundDevice(Z2S_onBoundDevice);
   zbGateway.onBTCBoundDevice(Z2S_onBTCBoundDevice);
 
@@ -466,7 +516,8 @@ void loop() {
       if (strcmp(zbd_model_name,"TS0201") == 0) {
           esp_zb_lock_acquire(portMAX_DELAY);
           joined_device->model_id = 0x1000; // Tuya TS0201 temperature&humidity sensor
-          zbGateway.setClusters2Bind(3);
+          zbGateway.setClusters2Bind(4);
+          zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT);
@@ -475,6 +526,8 @@ void loop() {
       if ((strcmp(zbd_model_name,"TS0203") == 0)||
           (strcmp(zbd_model_name,"TS0202") == 0)) {
           esp_zb_lock_acquire(portMAX_DELAY);
+          joined_device->model_id = 0x2000; // Tuya IAS sensor
+          zbGateway.setClusters2Bind(2);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF);
           esp_zb_lock_release();
@@ -487,6 +540,8 @@ void loop() {
       } else
           if (strcmp(zbd_model_name,"TS011F") == 0) {
           esp_zb_lock_acquire(portMAX_DELAY);
+          joined_device->model_id = 0x4000; // Tuya wall socket
+          zbGateway.setClusters2Bind(3);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT);    
