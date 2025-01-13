@@ -309,10 +309,21 @@ void ZigbeeGateway::zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_
       } else log_i("zbAttributeRead on/off cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT) {
-    if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) 
-    {
+    if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
       uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
       log_i("zbAttributeRead electrical measurement RMS voltage %d",value);
+      //if (_on_on_off_receive)
+        //_on_on_off_receive(src_address.u.ieee_addr, value);
+      } else
+      if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+      uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+      log_i("zbAttributeRead electrical measurement RMS current %d",value);
+      //if (_on_on_off_receive)
+        //_on_on_off_receive(src_address.u.ieee_addr, value);
+      } else
+      if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+      uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+      log_i("zbAttributeRead electrical measurement RMS active power %d",value);
       //if (_on_on_off_receive)
         //_on_on_off_receive(src_address.u.ieee_addr, value);
       } else log_i("zbAttributeRead electrical measurement cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
@@ -335,7 +346,7 @@ void ZigbeeGateway::zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_
   esp_zb_ieee_address_by_short(info.src_address.u.short_addr, info.src_address.u.ieee_addr);
   
   if (_on_IAS_zone_status_change_notification)
-    _on_IAS_zone_status_change_notification(info.src_address.u.ieee_addr, info.src_endpoint, info.cluster, message->zone_status);  
+    _on_IAS_zone_status_change_notification(info.src_address.u.ieee_addr, info.src_endpoint, message->info.cluster, message->zone_status);  
 
 }
 
