@@ -12,7 +12,7 @@
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
-#include <Z2S_virtual_relay.h>
+#include <Z2S_control/Z2S_virtual_relay.h>
 #include <supla/device/supla_ca_cert.h>
 
 #define GATEWAY_ENDPOINT_NUMBER 1

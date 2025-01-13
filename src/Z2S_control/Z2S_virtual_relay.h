@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#ifndef ZB_DEVICE_SCANNER
+
 #ifndef SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_
 #define SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_
 
@@ -45,3 +47,4 @@ class Z2S_VirtualRelay : public Relay {
 };  // namespace Supla
 
 #endif  // SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_
+#endif  // #ifndef ZB_DEVICE_SCANNER

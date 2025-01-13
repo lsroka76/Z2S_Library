@@ -331,11 +331,11 @@ void ZigbeeGateway::zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_
 
 void ZigbeeGateway::zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {
 
-
-  esp_zb_ieee_address_by_short(message->info.src_address.u.short_addr, message->info.src_address.u.ieee_addr);
+  esp_zb_zcl_cmd_info_t info = message->info;
+  esp_zb_ieee_address_by_short(info.src_address.u.short_addr, info.src_address.u.ieee_addr);
   
   if (_on_IAS_zone_status_change_notification)
-    _on_IAS_zone_status_change_notification(message->info.src_address.u.ieee_addr, message->info.src_endpoint, message->info.cluster, message->zone_status);  
+    _on_IAS_zone_status_change_notification(info.src_address.u.ieee_addr, info.src_endpoint, info.cluster, message->zone_status);  
 
 }
 
