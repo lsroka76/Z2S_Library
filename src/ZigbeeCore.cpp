@@ -17,7 +17,7 @@ ZigbeeCore::ZigbeeCore() {
   _host_config.host_connection_mode = ZB_HOST_CONNECTION_MODE_NONE;  // Disable host connection
   _zb_ep_list = esp_zb_ep_list_create();
   _primary_channel_mask = ESP_ZB_TRANSCEIVER_ALL_CHANNELS_MASK;
-  _open_network = 0;
+  _open_network = 0xFF;
   _scan_status = ZB_SCAN_FAILED;
   _started = false;
   _connected = false;
@@ -91,6 +91,20 @@ void ZigbeeCore::addEndpoint(ZigbeeEP *ep) {
 
   esp_zb_ep_list_add_ep(_zb_ep_list, ep->_cluster_list, ep->_ep_config);
 }
+
+void ZigbeeCore::addGatewayEndpoint(ZigbeeEP *ep) {
+  ep_objects.push_back(ep);
+
+  log_d("Endpoint: %d, Device ID: 0x%04x", ep->_endpoint, ep->_device_id);
+  //Register clusters and ep_list to the ZigbeeCore class's ep_list
+  if (ep->_ep_config.endpoint == 0 || ep->_cluster_list == nullptr) {
+    log_e("Endpoint config or Cluster list is not initialized, EP not added to ZigbeeCore's EP list");
+    return;
+  }
+
+  esp_zb_ep_list_add_gateway_ep(_zb_ep_list, ep->_cluster_list, ep->_ep_config);
+}
+
 
 static void esp_zb_task(void *pvParameters) {
   esp_zb_bdb_set_scan_duration(Zigbee.getScanDuration());

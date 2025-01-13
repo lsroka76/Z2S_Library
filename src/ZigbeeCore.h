@@ -106,6 +106,7 @@ public:
   }
 
   void addEndpoint(ZigbeeEP *ep);
+  void addGatewayEndpoint(ZigbeeEP *ep);
   //void removeEndpoint(ZigbeeEP *ep);
 
   void setRadioConfig(esp_zb_radio_config_t config);

@@ -20,22 +20,25 @@
 #define SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_
 
 #include <supla/control/relay.h>
+#include "ZigbeeGateway.h"
 
 namespace Supla {
 namespace Control {
 class Z2S_VirtualRelay : public Relay {
  public:
-  Z2S_VirtualRelay(uint16_t short_addr, _supla_int_t functions =
+  Z2S_VirtualRelay(ZigbeeGateway *Gateway, esp_zb_ieee_addr_t ieee_addr, _supla_int_t functions =
                    (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER));
 
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;
   void turnOff(_supla_int_t duration = 0) override;
+  void Z2S_setOnOff(bool on_off_state);
   bool isOn() override;
 
  protected:
   bool state = false;
-  uint16_t short_addr = 0x0000;
+  ZigbeeGateway *Gateway = nullptr;
+  esp_zb_ieee_addr_t relay_ieee_addr;
 };
 
 };  // namespace Control
