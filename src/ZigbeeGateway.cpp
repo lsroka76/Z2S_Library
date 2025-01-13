@@ -332,23 +332,10 @@ void ZigbeeGateway::zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_
 void ZigbeeGateway::zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {
 
 
-  esp_zb_zcl_cmd_info_t info = message->info;
-  esp_zb_zcl_addr_t src_address = info.src_address;
-  esp_zb_ieee_address_by_short(info.src_address.u.short_addr,info.src_address.u.ieee_addr);
-  //log_i("short address %d, src id %d ", src_address.u.short_addr, src_address.u.src_id);
-
-  //char ieee_addr[9];
-  //uint8_t ieee_addr_64[8];
-
-  //ieee_addr[8] = '\0';
-
-  //esp_zb_ieee_address_by_short(src_address.u.short_addr, ieee_addr_64);
-
-  //log_i("ieee addr %d:%d:%d:%d:%d:%d:%d:%d ",ieee_addr_64[7],ieee_addr_64[6],ieee_addr_64[5],ieee_addr_64[4],
-  //  ieee_addr_64[3],ieee_addr_64[2],ieee_addr_64[1],ieee_addr_64[0]);
-  //log_i("zone status %d ", message->zone_status);
+  esp_zb_ieee_address_by_short(message->info.src_address.u.short_addr, message->info.src_address.u.ieee_addr);
+  
   if (_on_IAS_zone_status_change_notification)
-    _on_IAS_zone_status_change_notification(info.src_address.u.ieee_addr, info.src_endpoint, info.cluster, message->zone_status);  
+    _on_IAS_zone_status_change_notification(message->info.src_address.u.ieee_addr, message->info.src_endpoint, message->info.cluster, message->zone_status);  
 
 }
 
@@ -358,7 +345,7 @@ void ZigbeeGateway::zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_
   if (variable) {
   log_i("Attribute Discovery Message - device address (0x%x), source endpoint (0x%x), source cluster (0x%x), attribute id (0x%x), data type (0x%x)", 
         src_address.u.short_addr, src_endpoint, cluster_id, variable->attr_id, variable->data_type);
-  } //else xSemaphoreGive(gt_lock);
+  }
 }
 
 void ZigbeeGateway::addBoundDevice(zb_device_params_t *device){
@@ -381,25 +368,23 @@ bool ZigbeeGateway::isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
 		
 }
 
-void ZigbeeGateway::setIASZReporting(uint16_t short_addr, uint16_t endpoint, uint16_t min_interval, uint16_t max_interval) {
+void ZigbeeGateway::setIASzoneReporting(uint16_t short_addr, uint16_t endpoint, uint16_t min_interval, uint16_t max_interval) {
   
   esp_zb_zcl_config_report_cmd_t report_cmd;
   
   report_cmd.zcl_basic_cmd.dst_endpoint = endpoint;
   report_cmd.zcl_basic_cmd.dst_addr_u.addr_short = short_addr;
-  //report_cmd.zcl_basic_cmd.src_endpoint = 1;
   report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
       
-  //report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_DST_ADDR_ENDP_NOT_PRESENT;
-  report_cmd.zcl_basic_cmd.src_endpoint = _instance->getEndpoint();
+  report_cmd.zcl_basic_cmd.src_endpoint = _endpoint; //_instance->getEndpoint();
   report_cmd.clusterID = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE;
 
   int16_t report_change = 1;
   esp_zb_zcl_config_report_record_t records[] = {
     {
       .direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, //0x00, //ESP_ZB_ZCL_REPORT_DIRECTION_SEND,
-      .attributeID = 0,
-      .attrType = ESP_ZB_ZCL_ATTR_TYPE_S16,
+      .attributeID =  ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID,
+      .attrType = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
       .min_interval = min_interval,
       .max_interval = max_interval,
       .reportable_change = &report_change,
@@ -407,7 +392,6 @@ void ZigbeeGateway::setIASZReporting(uint16_t short_addr, uint16_t endpoint, uin
   };
   report_cmd.record_number = ZB_ARRAY_LENTH(records);
   report_cmd.record_field = records;
-
   
   esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_zcl_config_report_cmd_req(&report_cmd);
@@ -421,11 +405,8 @@ void ZigbeeGateway::setClusterReporting(uint16_t short_addr, uint16_t endpoint, 
   
   report_cmd.zcl_basic_cmd.dst_endpoint = endpoint;
   report_cmd.zcl_basic_cmd.dst_addr_u.addr_short = short_addr;
-  //report_cmd.zcl_basic_cmd.src_endpoint = 1;
   report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
-      
-  //report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_DST_ADDR_ENDP_NOT_PRESENT;
-  report_cmd.zcl_basic_cmd.src_endpoint = _instance->getEndpoint();
+  report_cmd.zcl_basic_cmd.src_endpoint = _endpoint; // _instance->getEndpoint();
   report_cmd.clusterID = cluster_id;
 
   int16_t report_change = delta;
