@@ -201,14 +201,17 @@ void Z2S_initSuplaChannels(){
         switch (z2s_devices_table[devices_counter].Supla_channel_type) {
           case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
             auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
+            Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
             break;
           }
           case SUPLA_CHANNELTYPE_BINARYSENSOR: {
             auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
+            Supla_VirtualBinary->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
             break;
           }
           case SUPLA_CHANNELTYPE_RELAY: {
             auto Supla_Z2S_Virtual_Relay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,z2s_devices_table[devices_counter].ieee_addr );
+            Supla_Z2S_Virtual_Relay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
             break;
           }
           default: {
@@ -229,9 +232,6 @@ void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
     log_i("No channel found for address %s", ieee_addr);
   else
   {
-    //auto channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    //channel->setNewValue(temperature, channel->getValueDoubleSecond());
-
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
 
@@ -250,9 +250,6 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     log_i("No channel found for address %s", ieee_addr);
   else
   {
-    //auto channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    //channel->setNewValue(temperature, channel->getValueDoubleSecond());
-
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
 
@@ -271,14 +268,28 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
     log_i("No channel found for address %s", ieee_addr);
   else
   {
-    //auto channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    //channel->setNewValue(temperature, channel->getValueDoubleSecond());
-
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
 
         auto VirtualOnOff = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
         VirtualOnOff->Z2S_setOnOff(state); 
+    }
+  }
+}
+
+void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status) {
+  
+int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster);
+  if (channel_number_slot < 0)
+    log_i("No channel found for address %s", ieee_addr);
+  else
+  {
+    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+
+        auto Supla_VirtualBinary = reinterpret_cast<Supla::Sensor::VirtualBinary *>(element);
+        if (iaszone_status == 0) Supla_VirtualBinary->set();
+        else Supla_VirtualBinary->clear();
     }
   }
 }
@@ -336,8 +347,19 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
           z2s_devices_table[first_free_slot].Supla_channel_type = SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR; 
           Z2S_saveDevicesTable();
           Z2S_printDevicesTableSlots();
-          break;
-      }
+      } break;
+      case 0x2000: {
+          auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
+          z2s_devices_table[first_free_slot].valid_record = true;
+          memcpy(z2s_devices_table[first_free_slot].ieee_addr,device->ieee_addr,8);
+          z2s_devices_table[first_free_slot].model_id = device->model_id;
+          z2s_devices_table[first_free_slot].endpoint = device->endpoint;
+          z2s_devices_table[first_free_slot].cluster_id = device->cluster_id;
+          z2s_devices_table[first_free_slot].Supla_channel = Supla_VirtualBinary->getChannelNumber();
+          z2s_devices_table[first_free_slot].Supla_channel_type = SUPLA_CHANNELTYPE_BINARYSENSOR; 
+          Z2S_saveDevicesTable();
+          Z2S_printDevicesTableSlots();
+      } break;
       case 0x4000: {
           auto Supla_Z2S_Virtual_Relay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
           z2s_devices_table[first_free_slot].valid_record = true;
@@ -362,6 +384,13 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
           if (!Supla_channel) {
             auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
             Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+          }
+      } break;
+    case 0x2000: {
+          auto Supla_channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+          if (!Supla_channel) {
+            auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
+            Supla_VirtualBinary->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
           }
       } break;
     case 0x4000: {
@@ -413,6 +442,7 @@ void setup() {
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
+  zbGateway.onIASzoneStatusChangeNotification(Z2S_onIASzoneStatusChangeNotification);
 
   zbGateway.onBoundDevice(Z2S_onBoundDevice);
   zbGateway.onBTCBoundDevice(Z2S_onBTCBoundDevice);
@@ -524,14 +554,15 @@ void loop() {
           esp_zb_lock_release();
       } else 
       if ((strcmp(zbd_model_name,"TS0203") == 0)||
-          (strcmp(zbd_model_name,"TS0202") == 0)) {
+          (strcmp(zbd_model_name,"TS0202") == 0)||
+          (strcmp(zbd_model_name,"TS0205") == 0)) {
           esp_zb_lock_acquire(portMAX_DELAY);
           joined_device->model_id = 0x2000; // Tuya IAS sensor
           zbGateway.setClusters2Bind(2);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE);
           zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF);
           esp_zb_lock_release();
-          zbGateway.setIASZReporting(joined_device->short_addr, joined_device->endpoint, 10, 20);
+          //zbGateway.setIASZReporting(joined_device->short_addr, joined_device->endpoint, 10, 20);
       } else 
           if (strcmp(zbd_model_name,"TS0044") == 0) {
           esp_zb_lock_acquire(portMAX_DELAY);

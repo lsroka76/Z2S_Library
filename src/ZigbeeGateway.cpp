@@ -334,6 +334,7 @@ void ZigbeeGateway::zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_
 
   esp_zb_zcl_cmd_info_t info = message->info;
   esp_zb_zcl_addr_t src_address = info.src_address;
+  esp_zb_ieee_address_by_short(info.src_address.u.short_addr,info.src_address.u.ieee_addr);
   //log_i("short address %d, src id %d ", src_address.u.short_addr, src_address.u.src_id);
 
   //char ieee_addr[9];
@@ -347,7 +348,7 @@ void ZigbeeGateway::zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_
   //  ieee_addr_64[3],ieee_addr_64[2],ieee_addr_64[1],ieee_addr_64[0]);
   //log_i("zone status %d ", message->zone_status);
   if (_on_IAS_zone_status_change_notification)
-    _on_IAS_zone_status_change_notification(info.src_address.u.ieee_addr, message->zone_status);  
+    _on_IAS_zone_status_change_notification(info.src_address.u.ieee_addr, info.src_endpoint, info.cluster, message->zone_status);  
 
 }
 

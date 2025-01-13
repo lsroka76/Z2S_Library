@@ -87,7 +87,7 @@ public:
 
   void setOnOffCluster(esp_zb_ieee_addr_t ieee_addr, bool value);
 
-  void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, int)) {
+  void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int)) {
 
     _on_IAS_zone_status_change_notification = callback;
   }
@@ -130,14 +130,14 @@ private:
   static uint16_t _attributes_2_discover; 
   static uint16_t _clusters_2_bind;
 
-  void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, int);
+  void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int);
   void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
   void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
   void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool);
 
   void (*_on_bound_device)(zb_device_params_t *, bool);
   void (*_on_btc_bound_device)(zb_device_params_t *);
-  //void (*_on_temperature_receive)(esp_zb_zcl_addr_t src_address, float);
+
 
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);
 
