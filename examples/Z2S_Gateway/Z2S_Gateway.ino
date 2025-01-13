@@ -10,16 +10,10 @@
 #include <supla/sensor/virtual_binary.h>
 #include <supla/network/esp_wifi.h>
 #include <supla/storage/eeprom.h>
-#include "FS.h"
-#include <LittleFS.h>
 #include <supla/storage/littlefs_config.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 #include <Z2S_virtual_relay.h>
 #include <supla/device/supla_ca_cert.h>
-
-extern "C" {
-#include "esp_littlefs.h"
-}
 
 #define GATEWAY_ENDPOINT_NUMBER 1
 
@@ -46,31 +40,14 @@ Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi(SUPLA_WIFI_SSID, SUPLA_WIFI_SSID);
 Supla::LittleFsConfig     configSupla;
 
-void sz_ias_zone_notification(int status, uint8_t *ieee_addr_64)
-{
-    Serial.println("in sz_ias_zone_nitification");
-    Serial.println(status);
-    Serial.println(ieee_addr_64[0]);
-}
-
 uint32_t startTime = 0;
 uint32_t printTime = 0;
 uint32_t zbInit_delay = 0;
 
 bool zbInit = true;
 
-const static char   Z2S_DEVICES_COUNT []  PROGMEM = "Z2S_devs_cnt";
-const static char   Z2S_OBJECT_NAME [] PROGMEM = "Z2S_object_%d";
 const static char   Z2S_DEVICES_TABLE []  PROGMEM = "Z2S_devs_table";
 const static char   Z2S_DEVICES_TABLE_SIZE []  PROGMEM = "Z2S_devs_ts";
-
-uint8_t Z2S_getDevicesCount() {
-  uint8_t _Z2S_devices_count;
-  if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_DEVICES_COUNT, &_Z2S_devices_count))
-    return _Z2S_devices_count;
-  else
-    return 0;
-}
 
 uint32_t Z2S_getDevicesTableSize() {
   uint32_t _z2s_devices_table_size;
@@ -119,6 +96,20 @@ int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
 
   }  
   return -1;
+}
+
+void Z2S_fillDevicesTableSlot(zb_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type) {
+
+  z2s_devices_table[slot].valid_record = true;
+  memcpy(z2s_devices_table[slot].ieee_addr,device->ieee_addr,8);
+  z2s_devices_table[slot].model_id = device->model_id;
+  z2s_devices_table[slot].endpoint = device->endpoint;
+  z2s_devices_table[slot].cluster_id = device->cluster_id;
+  z2s_devices_table[slot].Supla_channel = channel;
+  z2s_devices_table[slot].Supla_channel_type = channel_type; 
+  
+  Z2S_saveDevicesTable();
+  Z2S_printDevicesTableSlots();
 }
 
 bool Z2S_loadDevicesTable() {
@@ -179,21 +170,6 @@ bool Z2S_saveDevicesTable() {
   Supla::Storage::ConfigInstance()->commit();
 }
 
-int16_t Z2S_findChannelNumber(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster) {
-
-  log_i("Z2S_findChannelNumber %d:%d:%d:%d:%d:%d:%d:%d, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  for (uint8_t devices_counter = 0; devices_counter < SUPLA_CHANNELMAXCOUNT; devices_counter++) {
-      if (z2s_devices_table[devices_counter].valid_record)
-        if ((memcmp(z2s_devices_table[devices_counter].ieee_addr, ieee_addr,8) == 0) && (z2s_devices_table[devices_counter].endpoint == endpoint)) {
-        //&& (z2s_devices_table[devices_counter].cluster_id = cluster)) {
-            return devices_counter;
-        }
-
-  }  
-  return -1;
-}
-
 void Z2S_initSuplaChannels(){
 
   for (uint8_t devices_counter = 0; devices_counter < SUPLA_CHANNELMAXCOUNT; devices_counter++) {
@@ -235,8 +211,8 @@ void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
 
-        auto VirtualTHM = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
-        VirtualTHM->setTemp(temperature);
+        auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
+        Supla_VirtualThermHygroMeter->setTemp(temperature);
     }
   }
 }
@@ -253,8 +229,8 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
 
-        auto VirtualTHM = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
-        VirtualTHM->setHumi(humidity);
+        auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
+        Supla_VirtualThermHygroMeter->setHumi(humidity);
     }
   }
 }
@@ -271,8 +247,8 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
 
-        auto VirtualOnOff = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
-        VirtualOnOff->Z2S_setOnOff(state); 
+        auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
+        Supla_Z2S_VirtualRelay->Z2S_setOnOff(state); 
     }
   }
 }
@@ -316,6 +292,7 @@ void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
   Z2S_onBoundDevice(device, true);
 }
 
+
 void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
   
   
@@ -323,11 +300,11 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id);
   
-
   if (channel_number_slot < 0) {
     log_i("No channel found for address %s, adding new one", device->ieee_addr);
     
     uint8_t first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+    
     if (first_free_slot == 0xFF) {
         log_i("Devices table full");
         return;
@@ -338,39 +315,15 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
       case 0x0000: break;
       case 0x1000: {
           auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
-          z2s_devices_table[first_free_slot].valid_record = true;
-          memcpy(z2s_devices_table[first_free_slot].ieee_addr,device->ieee_addr,8);
-          z2s_devices_table[first_free_slot].model_id = device->model_id;
-          z2s_devices_table[first_free_slot].endpoint = device->endpoint;
-          z2s_devices_table[first_free_slot].cluster_id = device->cluster_id;
-          z2s_devices_table[first_free_slot].Supla_channel = Supla_VirtualThermHygroMeter->getChannelNumber();
-          z2s_devices_table[first_free_slot].Supla_channel_type = SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR; 
-          Z2S_saveDevicesTable();
-          Z2S_printDevicesTableSlots();
+          Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
       } break;
       case 0x2000: {
           auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
-          z2s_devices_table[first_free_slot].valid_record = true;
-          memcpy(z2s_devices_table[first_free_slot].ieee_addr,device->ieee_addr,8);
-          z2s_devices_table[first_free_slot].model_id = device->model_id;
-          z2s_devices_table[first_free_slot].endpoint = device->endpoint;
-          z2s_devices_table[first_free_slot].cluster_id = device->cluster_id;
-          z2s_devices_table[first_free_slot].Supla_channel = Supla_VirtualBinary->getChannelNumber();
-          z2s_devices_table[first_free_slot].Supla_channel_type = SUPLA_CHANNELTYPE_BINARYSENSOR; 
-          Z2S_saveDevicesTable();
-          Z2S_printDevicesTableSlots();
+          Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR); 
       } break;
       case 0x4000: {
           auto Supla_Z2S_Virtual_Relay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
-          z2s_devices_table[first_free_slot].valid_record = true;
-          memcpy(z2s_devices_table[first_free_slot].ieee_addr,device->ieee_addr,8);
-          z2s_devices_table[first_free_slot].model_id = device->model_id;
-          z2s_devices_table[first_free_slot].endpoint = device->endpoint;
-          z2s_devices_table[first_free_slot].cluster_id = device->cluster_id;
-          z2s_devices_table[first_free_slot].Supla_channel = Supla_Z2S_Virtual_Relay->getChannelNumber();
-          z2s_devices_table[first_free_slot].Supla_channel_type = SUPLA_CHANNELTYPE_RELAY; 
-          Z2S_saveDevicesTable();
-          Z2S_printDevicesTableSlots();
+          Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_Virtual_Relay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY); 
           break;
       }
     }
@@ -399,26 +352,18 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
             auto Supla_Z2S_Virtual_Relay = new Supla::Control::Z2S_VirtualRelay(&zbGateway, z2s_devices_table[channel_number_slot].ieee_addr);
             Supla_Z2S_Virtual_Relay->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
           break;
-      }
+          }
+     }
     }
   }
-}
-
-  //Z2S_findChannelNumber
-
-  
 }
 
 void setup() {
 
   
-  
-  
   pinMode(BUTTON_PIN, INPUT);
 
   eeprom.setStateSavePeriod(5000);
-
-  LittleFS.end();
 
   Supla::Storage::Init();
 
@@ -437,7 +382,7 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
-  //  Zigbee
+  //  Zigbee Gateway notifications
 
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
@@ -457,18 +402,16 @@ void setup() {
 
   //Supla
   
-  //SuplaDevice.setStatusFuncImpl(&status_func);
-
   SuplaDevice.setSuplaCACert(suplaCACert);
   SuplaDevice.setSupla3rdPartyCACert(supla3rdCACert);
   
   SuplaDevice.setName("Zigbee to Supla");
   //wifi.enableSSL(true);
 
-  SuplaDevice.begin(GUID,              // Global Unique Identifier 
-                    SUPLA_SVR,  // SUPLA server address
-                    SUPLA_EMAIL,   // Email address used to login to Supla Cloud
-                    AUTHKEY);          // Authorization key
+  SuplaDevice.begin(GUID,             // Global Unique Identifier 
+                    SUPLA_SVR,        // SUPLA server address
+                    SUPLA_EMAIL,      // Email address used to login to Supla Cloud
+                    AUTHKEY);         // Authorization key
   
   startTime = millis();
   printTime = millis();
@@ -480,26 +423,17 @@ zb_device_params_t *joined_device;
 
 char zbd_model_name[64];
 
-uint16_t gateway_devices_list_size = 0;
-size_t total, used;
-esp_err_t esp_error;
 
 void loop() {
   
   SuplaDevice.iterate();
 
-  if (millis() - printTime) {
+  if (millis() - printTime > 10000) {
 
     printTime = millis();
-    //log_i("Little FS total %d, used %d",LittleFS.totalBytes(), LittleFS.usedBytes());
-    
-    esp_error = esp_littlefs_info("spiffs", &total, &used);
-
-    //log_i("ESP Little FS total %d, used %d, error code %d",total, used, esp_error);
   }
-  if (zbInit && wifi.isReady())
-  //if (zbInit)
-  {
+
+  if (zbInit && wifi.isReady()) {
     Serial.println("zbInit");
     
     esp_coex_wifi_i154_enable();
@@ -581,11 +515,7 @@ void loop() {
         else
           if (strcmp(zbd_model_name,"TS0601") == 0) {
           esp_zb_lock_acquire(portMAX_DELAY);
-          zbGateway.bindDeviceCluster(joined_device, 61184);
-          //zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT);
-          //zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT);
-          //zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING);
-          //zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT);    
+          zbGateway.bindDeviceCluster(joined_device, 61184);  
           esp_zb_lock_release();
           }
       else
