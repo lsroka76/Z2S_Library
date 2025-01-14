@@ -107,6 +107,23 @@ public:
     _on_on_off_receive = callback;
   }
 
+  void onRMSVoltageReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
+
+    _on_rms_voltage_receive = callback;
+  }
+
+  
+  void onRMSCurrentReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
+
+    _on_rms_current_receive = callback;
+  }
+
+  
+  void onRMSActivePowerReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
+
+    _on_rms_active_power_receive = callback;
+  }
+
   void onBoundDevice(void (*callback)(zb_device_params_t *, bool)) {
 
     _on_bound_device = callback;
@@ -134,6 +151,9 @@ private:
   void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
   void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
   void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool);
+  void (*_on_rms_voltage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t );
+  void (*_on_rms_current_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
+  void (*_on_rms_active_power_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
 
   void (*_on_bound_device)(zb_device_params_t *, bool);
   void (*_on_btc_bound_device)(zb_device_params_t *);

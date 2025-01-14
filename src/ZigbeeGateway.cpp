@@ -312,20 +312,20 @@ void ZigbeeGateway::zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_
     if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
       uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
       log_i("zbAttributeRead electrical measurement RMS voltage %d",value);
-      //if (_on_on_off_receive)
-        //_on_on_off_receive(src_address.u.ieee_addr, value);
+      if (_on_rms_voltage_receive)
+        _on_rms_voltage_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
       } else
       if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
       uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
       log_i("zbAttributeRead electrical measurement RMS current %d",value);
-      //if (_on_on_off_receive)
-        //_on_on_off_receive(src_address.u.ieee_addr, value);
+      if (_on_rms_current_receive)
+        _on_rms_current_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
       } else
       if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
       uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
       log_i("zbAttributeRead electrical measurement RMS active power %d",value);
-      //if (_on_on_off_receive)
-        //_on_on_off_receive(src_address.u.ieee_addr, value);
+      if (_on_rms_active_power_receive)
+        _on_rms_active_power_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
       } else log_i("zbAttributeRead electrical measurement cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_METERING) {
