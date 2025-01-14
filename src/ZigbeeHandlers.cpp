@@ -148,7 +148,7 @@ static esp_err_t zb_cmd_default_resp_handler(const esp_zb_zcl_cmd_default_resp_m
     return ESP_ERR_INVALID_ARG;
   }
   log_v(
-    "Received default response: from address(0x%x), src_endpoint(%d) to dst_endpoint(%d), cluster(0x%x) for command (%d) with status 0x%x",
+    "Received default response: from address(0x%x), src_endpoint(%d) to dst_endpoint(%d), cluster(0x%x) for command (0x%x) with status 0x%x",
     message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, message->resp_to_cmd, message->status_code
   );
   log_v("command id (%d), direction (%d), is common (%d)", message->info.command.id, message->info.command.direction, message->info.command.is_common);  
@@ -165,8 +165,9 @@ static esp_err_t zb_cmd_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone
     return ESP_ERR_INVALID_ARG;
   }
   log_v(
-    "IAS Zone Status Notification: from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x)", message->info.src_address.u.short_addr,
-    message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster
+    "IAS Zone Status Notification: from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x), zone status (0x%x), extended status (0x%x), zone id (0x%x), delay (0x%x)", 
+    message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, message->zone_status, message->extended_status,
+    message->zone_id, message->delay);  
   );
 
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
@@ -194,7 +195,7 @@ static esp_err_t zb_core_cmd_disc_attr_resp_handler(esp_zb_zcl_cmd_discover_attr
     esp_zb_zcl_disc_attr_variable_t *variable = message->variables;
     
     while (variable) {
-     log_i("Attribute Discovery Message - device address %d, source endpoint %d, source cluster %d, attribute id %d, data type %d", message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.cluster, variable->attr_id, variable->data_type);
+     //log_i("Attribute Discovery Message - device address %d, source endpoint %d, source cluster %d, attribute id %d, data type %d", message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.cluster, variable->attr_id, variable->data_type);
      (*it)->zbCmdDiscAttrResponse(message->info.src_address, message->info.src_endpoint, message->info.cluster, variable);
      variable = variable->next;  
      }
