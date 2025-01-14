@@ -167,8 +167,7 @@ static esp_err_t zb_cmd_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone
   log_v(
     "IAS Zone Status Notification: from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x), zone status (0x%x), extended status (0x%x), zone id (0x%x), delay (0x%x)", 
     message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, message->zone_status, message->extended_status,
-    message->zone_id, message->delay);  
-  );
+    message->zone_id, message->delay); 
 
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (message->info.dst_endpoint == (*it)->getEndpoint()) {
