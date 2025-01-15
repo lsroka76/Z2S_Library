@@ -49,10 +49,12 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
 
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
   {.manufacturer_name = "_TZ3000_akqdg6g7", .model_name = "TS0201", .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR},
+  {.manufacturer_name = "Xiaomi", .model_name = "LYWSD03MMC-z", .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR},
   {.manufacturer_name = "TEST1", .model_name = "TS0202", .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR},
   {.manufacturer_name = "_TZ3000_26fmupbb", .model_name = "TS0203",.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR},
   {.manufacturer_name = "_TZ3000_rcuyhwe3", .model_name = "TS0203",.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR},
   {.manufacturer_name = "TEST1", .model_name = "TS0205", .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR},
+  {.manufacturer_name = "_TZ3000_lf56vpxj", .model_name = "TS0202", .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR}, 
   {.manufacturer_name = "_TZ3000_cehuw1lw", .model_name = "TS011F", .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER}
 };
 
