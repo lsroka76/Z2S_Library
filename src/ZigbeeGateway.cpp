@@ -440,6 +440,26 @@ void ZigbeeGateway::setClusterReporting(uint16_t short_addr, uint16_t endpoint, 
   esp_zb_lock_release();
 }
 
+  void ZigbeeGateway::sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id) {
+
+    esp_zb_zcl_read_attr_cmd_t read_req;
+
+    read_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+    read_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+    read_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+    read_req.zcl_basic_cmd.src_endpoint = _endpoint;
+    read_req.clusterID = cluster_id;
+
+    uint16_t attributes = attribute_id;
+    read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);
+    read_req.attr_field = &attributes;
+
+    log_i("Sending 'read attribute' command");
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_zb_zcl_read_attr_cmd_req(&read_req);
+    esp_zb_lock_release();
+  }
+
 void ZigbeeGateway::setOnOffCluster(esp_zb_ieee_addr_t ieee_addr, bool value) {
 
     esp_zb_zcl_on_off_cmd_t cmd_req;

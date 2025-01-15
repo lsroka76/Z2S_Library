@@ -85,6 +85,8 @@ public:
   void setClusterReporting(uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type, 
                           uint16_t min_interval, uint16_t max_interval, uint16_t delta);  
 
+  void sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id);
+  
   void setOnOffCluster(esp_zb_ieee_addr_t ieee_addr, bool value);
 
   void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int)) {
