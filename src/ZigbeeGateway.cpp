@@ -286,9 +286,9 @@ void ZigbeeGateway::zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_
   if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT) {
     if (attribute->id == ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_S16) {
       int16_t value = attribute->data.value ? *(int16_t *)attribute->data.value : 0;
-      log_i("zbAttributeRead temperature measurement %f",((float)value)/100);
-      log_i("zbAttributeRead %d:%d:%d:%d:%d:%d:%d:%d, endpoint 0x%x", src_address.u.ieee_addr[7], src_address.u.ieee_addr[6], src_address.u.ieee_addr[5], 
-      src_address.u.ieee_addr[4], src_address.u.ieee_addr[3],src_address.u.ieee_addr[2], src_address.u.ieee_addr[1], src_address.u.ieee_addr[0], src_endpoint);
+      //log_i("zbAttributeRead temperature measurement %f",((float)value)/100);
+      //log_i("zbAttributeRead %d:%d:%d:%d:%d:%d:%d:%d, endpoint 0x%x", src_address.u.ieee_addr[7], src_address.u.ieee_addr[6], src_address.u.ieee_addr[5], 
+      //src_address.u.ieee_addr[4], src_address.u.ieee_addr[3],src_address.u.ieee_addr[2], src_address.u.ieee_addr[1], src_address.u.ieee_addr[0], src_endpoint);
       if (_on_temperature_receive)
         _on_temperature_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, ((float)value)/100);
       } else log_i("zbAttributeRead temperature cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
@@ -338,7 +338,16 @@ void ZigbeeGateway::zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_
       log_i("zbAttributeRead electrical measurement RMS voltage %d",value);
       //if (_on_on_off_receive)
         //_on_on_off_receive(src_address.u.ieee_addr, value);
-      } else log_i("zbAttributeRead electrical measurement cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      } else log_i("zbAttributeRead metering cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+    } else
+    if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG) {
+    if (attribute->id == 0x0021 /*ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID*/ && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) 
+    {
+      uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+      log_i("zbAttributeRead power config battery percentage remaining %d",value);
+      //if (_on_on_off_receive)
+        //_on_on_off_receive(src_address.u.ieee_addr, value);
+      } else log_i("zbAttributeRead power config cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
     } else log_i("zbAttributeRead from (0x%x), endpoint (%d), cluster (0x%x), attribute id (0x%x), attribute data type (0x%x) ", 
         src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, attribute->data.type);
 }
@@ -449,6 +458,7 @@ void ZigbeeGateway::setClusterReporting(uint16_t short_addr, uint16_t endpoint, 
 
     read_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
     read_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+    memcpy(read_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
     read_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
     read_req.zcl_basic_cmd.src_endpoint = _endpoint;
     read_req.clusterID = cluster_id;

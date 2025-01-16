@@ -140,6 +140,8 @@ private:
   // save instance of the class in order to use it in static functions
   static ZigbeeGateway *_instance;
 
+  static bool GatewayReady;
+
   static findcb_userdata_t findcb_userdata;
   static bool _last_bind_success;
   static bool _in_binding;
