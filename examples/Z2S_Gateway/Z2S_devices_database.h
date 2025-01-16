@@ -26,7 +26,7 @@ uint16_t z2s_device_clusters[MAX_BOUND_CLUSTERS];
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR             0x2000
 #define Z2S_DEVICE_DESC_RELAY                       0x4000
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER     0x4100
-#define Z2S_DEVICE_DESC_ON_FF                       0x8000
+#define Z2S_DEVICE_DESC_ON_OFF                      0x8000
 
 static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
   
@@ -55,8 +55,10 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
       ESP_ZB_ZCL_CLUSTER_ID_METERING,
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_clusters_count = 4, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
+      ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }}
 };
         
@@ -102,8 +104,30 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1}
 
   { .manufacturer_name = "_TZ3000_wkai4ga5", .model_name = "TS0044", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 4, {1, 2, 3, 4 }}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 4, {1, 2, 3, 4 }},
+
+  { .manufacturer_name = "_TZ3000_yj6k7vfo", .model_name = "TS0041", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 4, {1, 2, 3, 4 }},
+
+  { .manufacturer_name = "_TZ3000_4fjiwweb", .model_name = "TS004F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_uri7ongn", .model_name = "TS004F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
+  
+  { .manufacturer_name = "_TZ3000_ixla93vd", .model_name = "TS004F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_qja6nq5z", .model_name = "TS004F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_abrsvsou", .model_name = "TS004F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1}
 };
 
 //_TZ3000_wkai4ga5
 #endif
+
+
+
+
