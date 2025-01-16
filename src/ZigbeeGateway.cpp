@@ -452,7 +452,7 @@ void ZigbeeGateway::setClusterReporting(uint16_t short_addr, uint16_t endpoint, 
   esp_zb_lock_release();
 }
 
-  void ZigbeeGateway::sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id) {
+void ZigbeeGateway::sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id) {
 
     esp_zb_zcl_read_attr_cmd_t read_req;
 
@@ -471,7 +471,54 @@ void ZigbeeGateway::setClusterReporting(uint16_t short_addr, uint16_t endpoint, 
     esp_zb_lock_acquire(portMAX_DELAY);
     esp_zb_zcl_read_attr_cmd_req(&read_req);
     esp_zb_lock_release();
-  }
+}
+
+void ZigbeeGateway::sendAttributeWrite( zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
+                                        esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value) {
+
+    esp_zb_zcl_write_attr_cmd_t write_req;
+    esp_zb_zcl_attribute_t attribute_field;
+    esp_zb_zcl_attribute_data_t attribute_data;
+
+    write_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+    write_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+    memcpy(write_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+    write_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+    write_req.zcl_basic_cmd.src_endpoint = _endpoint;
+    write_req.clusterID = cluster_id;
+    write_req.attr_number = 1;
+    write_req.attr_field = &attribute_field;
+
+    attribute_field.id = attribute_id;
+    attribute_field.data.type = attribute_type;
+    attribute_field.data.size = attribute_size;
+    attribute_field.data.value = attribute_value;
+
+    log_i("Sending 'write attribute' command");
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_zb_zcl_write_attr_cmd_req(&write_req);
+    esp_zb_lock_release();
+}
+
+void ZigbeeGateway::sendIASzoneEnrollResponseCmd(zb_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id){
+
+  esp_zb_zcl_ias_zone_enroll_response_cmd_t enroll_resp_req;
+
+  enroll_resp_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+  enroll_resp_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+  memcpy(enroll_resp_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  enroll_resp_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+  enroll_resp_req.zcl_basic_cmd.src_endpoint = _endpoint;
+
+  enroll_resp_req.enroll_rsp_code = enroll_rsp_code; //ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS;
+  enroll_resp_req.zone_id = zone_id;
+
+  log_i("Sending 'ias zone enroll resp' command");
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zcl_ias_zone_enroll_cmd_resp(&enroll_resp_req);
+  esp_zb_lock_release();  
+}
+
 
 void ZigbeeGateway::setOnOffCluster(esp_zb_ieee_addr_t ieee_addr, bool value) {
 

@@ -307,6 +307,16 @@ int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, clu
 void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
 
   log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+  if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
+    log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+    zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
+                                  ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 0, 10, 1);
+  } else
+  if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) {
+    log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+    zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
+                                  ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 10, 1);
+  } else
   if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT) {
     log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
     zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
