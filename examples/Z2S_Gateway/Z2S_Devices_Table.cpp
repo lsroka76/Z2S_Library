@@ -306,10 +306,23 @@ int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, clu
 
 void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
 
+  
   log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
   if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
+    
+    esp_zb_ieee_addr_t addr;
+    memset(addr,0,sizeof(esp_zb_ieee_addr_t));
+    //zbGateway.sendAttributeWrite(device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+    //                   ESP_ZB_ZCL_ATTR_TYPE_U64,sizeof(esp_zb_ieee_addr_t),addr);
+    
+    esp_zb_get_long_address(addr);
+    //zbGateway.sendAttributeWrite(device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+    //                   ESP_ZB_ZCL_ATTR_TYPE_U64,sizeof(esp_zb_ieee_addr_t),addr);
+    //zbGateway.sendIASzoneEnrollResponseCmd(device, ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS, 120);
+  
+    
     log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
-    zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
+    zbGateway.setClusterReporting(device->ieee_addr, device->endpoint, device->cluster_id, 
                                   ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 0, 10, 1);
   } else
   if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) {

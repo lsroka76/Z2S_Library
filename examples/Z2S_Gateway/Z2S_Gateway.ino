@@ -113,11 +113,13 @@ void loop() {
     if (zbGateway.getGatewayDevices().size() > 0 ) {
       if (esp_zb_is_started() && esp_zb_lock_acquire(portMAX_DELAY)) {
         zb_device_params_t *gt_device = zbGateway.getGatewayDevices().front();
-	      gt_device->short_addr = esp_zb_address_short_by_ieee(gt_device->ieee_addr);
+	      log_i("short address before 0x%x",gt_device->short_addr);
+        gt_device->short_addr = esp_zb_address_short_by_ieee(gt_device->ieee_addr);
+        log_i("short address after 0x%x",gt_device->short_addr);
         //zbGateway.sendAttributeWrite(gt_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
           //                          ESP_ZB_ZCL_ATTR_TYPE_U64,8, gt_device->ieee_addr);
         //zbGateway.sendIASzoneEnrollResponseCmd(gt_device, ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS, 120);
-        zbGateway.sendAttributeRead(gt_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID);
+        //zbGateway.sendAttributeRead(gt_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID);
       }
    esp_zb_lock_release();
     printTime = millis();

@@ -37,11 +37,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
       ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
       ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT }},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_clusters_count = 4, .z2s_device_clusters =
-    { ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY, 
-      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
-      ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
-      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY, 
