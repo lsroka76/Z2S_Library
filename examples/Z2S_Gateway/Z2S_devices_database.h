@@ -62,7 +62,6 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }}
 };
         
-
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
   { .manufacturer_name = "_TZ3000_akqdg6g7", .model_name = "TS0201", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count1 = 1},
@@ -101,13 +100,13 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_5f43h46b", .model_name = "TS011F", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_wkai4ga5", .model_name = "TS0044", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 4, {1, 2, 3, 4 }},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 4, .z2s_device_endpoints = {1, 2, 3, 4 }},
 
   { .manufacturer_name = "_TZ3000_yj6k7vfo", .model_name = "TS0041", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 4, {1, 2, 3, 4 }},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 4, .z2s_device_endpoints = {1, 2, 3, 4 }},
 
   { .manufacturer_name = "_TZ3000_4fjiwweb", .model_name = "TS004F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
