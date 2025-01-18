@@ -149,8 +149,9 @@ void Z2S_initSuplaChannels(){
             device.short_addr = esp_zb_address_short_by_ieee(device.ieee_addr);
             log_i("device short_addr 0x%x", device.short_addr);*/
             
-            log_i("auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,&device);");
-            auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,&device);
+            //log_i("auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,&device);");
+            //auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,&device);
+            auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
             Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
             break;
           }
@@ -190,7 +191,7 @@ void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
 
-        auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+        auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
         Supla_VirtualThermHygroMeter->setTemp(temperature);
     }
   }
@@ -208,7 +209,7 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
 
-        auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+        auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
         Supla_VirtualThermHygroMeter->setHumi(humidity);
     }
   }
@@ -307,8 +308,8 @@ int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, clu
 void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
 
   
-  log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
-  if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
+  /*log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+  /if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
     
     esp_zb_ieee_addr_t addr;
     memset(addr,0,sizeof(esp_zb_ieee_addr_t));
@@ -364,7 +365,7 @@ void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
     log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
     zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
                                   ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 5, 1);
-  }
+  }*/
   Z2S_onBoundDevice(device, true);
 }
 
@@ -391,7 +392,8 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
       case 0x0000: break;
       
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR: {
-        auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,device);
+        //auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,device);
+        auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
       } break;
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: {
@@ -425,7 +427,8 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR: {
         auto Supla_channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
         if (!Supla_channel) {
-          auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway, device);
+          //auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway, device);
+          auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
           Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
         }
       } break;
