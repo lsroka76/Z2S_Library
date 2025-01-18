@@ -11,7 +11,7 @@ bool ZigbeeGateway::_in_binding = false;
 bool ZigbeeGateway::_new_device_joined = false;
 uint16_t ZigbeeGateway::_clusters_2_discover = 0;
 uint16_t ZigbeeGateway::_attributes_2_discover = 0;
-
+uint16_t ZigbeeGateway::_endpoints_2_bind = 0;
 uint16_t ZigbeeGateway::_clusters_2_bind = 0;
 //
 
@@ -55,11 +55,11 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   esp_zb_on_off_switch_cfg_t switch_cfg = ESP_ZB_DEFAULT_ON_OFF_SWITCH_CONFIG();
 
   
-  /*esp_zb_attribute_list_t Tuya_custom;
+  esp_zb_attribute_list_t poll_cluster;
   
-  Tuya_custom.attribute = 0x00;
-  Tuya_custom.cluster_id = 0xEF00;
-  Tuya_custom.next = NULL;*/
+  poll_cluster.attribute = 0x00;
+  poll_cluster.cluster_id = 0x0020;
+  poll_cluster.next = NULL;
   
   esp_zb_on_off_cluster_cfg_t on_off_cluster;
   on_off_cluster.on_off = ESP_ZB_ZCL_ON_OFF_ON_OFF_DEFAULT_VALUE;
@@ -85,7 +85,7 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   esp_zb_cluster_list_add_illuminance_meas_cluster(_cluster_list, esp_zb_illuminance_meas_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_thermostat_cluster(_cluster_list, esp_zb_thermostat_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   
-  //esp_zb_cluster_list_add_custom_cluster(_cluster_list, &Tuya_custom,ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, &poll_cluster,ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   //esp_zb_cluster_list_add_custom_cluster(_cluster_list, &Tuya_custom,ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   
   _ep_config = {.endpoint = _endpoint, .app_profile_id = ESP_ZB_AF_HA_PROFILE_ID, .app_device_id = ESP_ZB_HA_REMOTE_CONTROL_DEVICE_ID, .app_device_version = 0};
@@ -106,7 +106,7 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
       if (_instance->_clusters_2_bind == 0 && _instance->_on_bound_device)
           _instance->_on_bound_device (sensor, true);
 
-      log_v("Binding success (ZC side)");
+      log_v("Binding success (ZC side) endpoint 0x%x cluster 0x%x", sensor->endpoint, sensor->cluster_id);
     } else
       log_v("Binding success (ED side");
     
@@ -324,7 +324,7 @@ void ZigbeeGateway::zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT) {
     if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
-      uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+      uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value :  0;
       log_i("zbAttributeRead electrical measurement RMS voltage %d",value);
       if (_on_rms_voltage_receive)
         _on_rms_voltage_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
