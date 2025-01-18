@@ -57,7 +57,7 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   
   esp_zb_attribute_list_t poll_cluster;
   
-  poll_cluster.attribute = 0x00;
+  poll_cluster.attribute.id = 0x00;
   poll_cluster.cluster_id = 0x0020;
   poll_cluster.next = NULL;
   
