@@ -67,4 +67,6 @@ void Z2S_onBTCBoundDevice(zb_device_params_t *device);
 
 void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster);
 
+void Z2S_addZ2SDevice(zb_device_params_t *device);
+
 #endif

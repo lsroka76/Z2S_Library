@@ -40,6 +40,7 @@ typedef struct zbstring_s {
 
 typedef struct zb_device_params_s {
   uint32_t model_id;
+  bool ZC_binding;
   esp_zb_ieee_addr_t ieee_addr;
   uint8_t endpoint;
   uint16_t cluster_id;

@@ -153,28 +153,22 @@ void Z2S_initSuplaChannels(){
             //auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,&device);
             auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
             Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
-            break;
-          }
+          } break;
           case SUPLA_CHANNELTYPE_BINARYSENSOR: {
             auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
             Supla_VirtualBinary->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
-            break;
-          }
+          } break;
           case SUPLA_CHANNELTYPE_RELAY: {
             auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,z2s_devices_table[devices_counter].ieee_addr );
             Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
-            break;
-          }
+          } break;
           case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
             auto Supla_Z2S_OnePhaseElectricityMeter = new Supla::Sensor::OnePhaseElectricityMeter();
             Supla_Z2S_OnePhaseElectricityMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
-            break;
-          }
+          } break;
           default: {
             log_i("Can't create channel for %d channel type", z2s_devices_table[devices_counter].Supla_channel_type);
-            break;
-          }
-          
+          } break;
         }
   }  
 }
@@ -366,7 +360,7 @@ void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
     zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 
                                   ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 5, 1);
   }*/
-  Z2S_onBoundDevice(device, true);
+  //Z2S_onBoundDevice(device, true);
 }
 
 
@@ -452,7 +446,13 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
           Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
         }
       } break;
-      
+      case Z2S_DEVICE_DESC_ON_OFF: {
+        auto Supla_channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+        if (!Supla_channel) {
+          auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway, z2s_devices_table[channel_number_slot].ieee_addr);
+          Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+        }
+      } break;
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER: {
         channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, SUPLA_CHANNELTYPE_RELAY);
         auto Supla_channel = Supla::Channel::GetByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
@@ -469,4 +469,63 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
       } break;
     }
   }
+}
+
+void Z2S_addZ2SDevice(zb_device_params_t *device) {
+  
+  
+  Z2S_printDevicesTableSlots();
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, -1);
+  
+  if (channel_number_slot < 0) {
+    log_i("No channel found for address %s, adding new one", device->ieee_addr);
+    
+    uint8_t first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+    
+    if (first_free_slot == 0xFF) {
+        log_i("Devices table full");
+        return;
+    }
+    log_i("model id %d, first free slot %d", device->model_id, first_free_slot);
+    
+    switch (device->model_id) {
+      case 0x0000: break;
+      
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR: {
+        //auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,device);
+        auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
+      } break;
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: {
+        auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR); 
+      } break;
+      case Z2S_DEVICE_DESC_RELAY: {
+        auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY); 
+      } break;
+      case Z2S_DEVICE_DESC_ON_OFF: {
+        auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY); 
+      } break;
+      case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER: {
+        auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY); 
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("Devices table full");
+          return;
+        }
+        auto Supla_Z2S_OnePhaseElectricityMeter = new Supla::Sensor::OnePhaseElectricityMeter();
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_OnePhaseElectricityMeter->getChannelNumber(), 
+                                SUPLA_CHANNELTYPE_ELECTRICITY_METER);
+
+      } break;
+      default : {
+        log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);
+      } break;
+    }
+  } else
+    log_i("Device (0x%x), endpoint (0x%x) already in z2s_devices_table (index 0x%x)", device->short_addr, device->endpoint, channel_number_slot);   
 }

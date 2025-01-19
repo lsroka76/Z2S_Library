@@ -16,6 +16,23 @@
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
 
+#undef USE_WEB_INTERFACE
+#define USE_WEB_INTERFACE
+
+#ifdef USE_WEB_INTERFACE
+
+#include <supla/network/esp_web_server.h>
+#include <supla/network/html/device_info.h>
+#include <supla/network/html/protocol_parameters.h>
+#include <supla/network/html/wifi_parameters.h>
+
+Supla::EspWebServer                       suplaServer;
+
+Supla::Html::DeviceInfo                   htmlDeviceInfo(&SuplaDevice);
+Supla::Html::WifiParameters               htmlWifi;
+Supla::Html::ProtocolParameters           htmlProto;
+
+#endif
 
 
 #define GATEWAY_ENDPOINT_NUMBER 1
@@ -27,7 +44,7 @@
 ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
-Supla::ESPWifi            wifi(SUPLA_WIFI_SSID, SUPLA_WIFI_SSID);
+Supla::ESPWifi            wifi; //(SUPLA_WIFI_SSID, SUPLA_WIFI_SSID);
 Supla::LittleFsConfig     configSupla;
 
 uint32_t startTime = 0;
@@ -38,6 +55,8 @@ bool zbInit = true;
 
 void setup() {
   
+  log_i("setup start");
+
   pinMode(BUTTON_PIN, INPUT);
 
   eeprom.setStateSavePeriod(5000);
@@ -48,12 +67,17 @@ void setup() {
 
   cfg->commit();
 
+#ifndef USE_WEB_INTERFACE
+
+  log_i("undef webinterface");
   cfg->setGUID(GUID);
   cfg->setAuthKey(AUTHKEY);
   cfg->setWiFiSSID(SUPLA_WIFI_SSID);
   cfg->setWiFiPassword(SUPLA_WIFI_PASS);
   cfg->setSuplaServer(SUPLA_SVR);
   cfg->setEmail(SUPLA_EMAIL);
+
+#endif
 
   Z2S_loadDevicesTable();
 
@@ -89,10 +113,8 @@ void setup() {
   SuplaDevice.setName("Zigbee to Supla");
   //wifi.enableSSL(true);
 
-  SuplaDevice.begin(GUID,             // Global Unique Identifier 
-                    SUPLA_SVR,        // SUPLA server address
-                    SUPLA_EMAIL,      // Email address used to login to Supla Cloud
-                    AUTHKEY);         // Authorization key
+  log_i("before SuplaDevice begin");
+  SuplaDevice.begin();      
   
   startTime = millis();
   printTime = millis();
@@ -109,7 +131,7 @@ void loop() {
   
   SuplaDevice.iterate();
 
-  if (millis() - printTime > 10000) {
+  /*if (millis() - printTime > 10000) {
     if (zbGateway.getGatewayDevices().size() > 0 ) {
       if (esp_zb_is_started() && esp_zb_lock_acquire(portMAX_DELAY)) {
         zb_device_params_t *gt_device = zbGateway.getGatewayDevices().front();
@@ -124,8 +146,10 @@ void loop() {
    esp_zb_lock_release();
     printTime = millis();
     }
-  }
-  if (zbInit && wifi.isReady()) {
+  }*/
+  //if (zbInit && wifi.isReady()) {
+    if (zbInit && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+  
     Serial.println("zbInit");
     
     esp_coex_wifi_i154_enable();
@@ -210,7 +234,9 @@ void loop() {
                         esp_zb_lock_acquire(portMAX_DELAY);
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[k].z2s_device_desc_id;
-                        zbGateway.setClusters2Bind(Z2S_DEVICES_LIST[i].z2s_device_endpoints_count * Z2S_DEVICES_DESC[k].z2s_device_clusters_count);
+                        //zbGateway.setClusters2Bind(Z2S_DEVICES_LIST[i].z2s_device_endpoints_count * Z2S_DEVICES_DESC[k].z2s_device_clusters_count);
+                        Z2S_addZ2SDevice(joined_device);
+                        //zbGateway.setClusters2Bind(Z2S_DEVICES_DESC[k].z2s_device_clusters_count);
                         for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
                         esp_zb_lock_release();
@@ -222,7 +248,7 @@ void loop() {
                         Z2S_DEVICES_DESC[k].z2s_device_clusters[0],
                         Z2S_DEVICES_DESC[k].z2s_device_clusters[1],
                         Z2S_DEVICES_DESC[k].z2s_device_clusters[2],
-                        Z2S_DEVICES_DESC[k].z2s_device_clusters[3],
+                        Z2S_DEVICES_DESC[k].z2s_device_clusters[3], 
                         Z2S_DEVICES_DESC[k].z2s_device_clusters[4],
                         Z2S_DEVICES_DESC[k].z2s_device_clusters[5],
                         Z2S_DEVICES_DESC[k].z2s_device_clusters[6],
