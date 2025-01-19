@@ -115,7 +115,7 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
       _last_bind_success = false;
   }
   _in_binding = false;
-  
+  free(device);
   /*if (_instance->_clusters_2_bind > 0) --_instance->_clusters_2_bind;
   if (_instance->_clusters_2_bind == 0)
     {
@@ -249,10 +249,10 @@ void ZigbeeGateway::bindDeviceCluster(zb_device_params_t * device,int16_t cluste
 
     log_d("Requesting ZED (0x%x), endpoint (0x%x), cluster_id (0x%x) to bind ZC", device->short_addr, device->endpoint, device->cluster_id);
 
-    zb_device_params_t bind_device;
-    memcpy(&bind_device, device, sizeof(zb_device_params_t));
+    zb_device_params_t *bind_device =(zb_device_params_t *)malloc(sizeof(zb_device_params_t));
+    memcpy(bind_device, device, sizeof(zb_device_params_t));
 
-    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)&bind_device);
+    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)bind_device);
 
     bind_req.req_dst_addr = esp_zb_get_short_address();
 
@@ -267,11 +267,12 @@ void ZigbeeGateway::bindDeviceCluster(zb_device_params_t * device,int16_t cluste
     device->ZC_binding = true;
     device->cluster_id = cluster_id;
 
-    memcpy(&bind_device, device, sizeof(zb_device_params_t));
+    bind_device =(zb_device_params_t *)malloc(sizeof(zb_device_params_t));
+    memcpy(bind_device, device, sizeof(zb_device_params_t));
 
     log_d("Requesting ZC to bind ZED (0x%x), endpoint (0x%x), cluster_id (0x%x)", device->short_addr, device->endpoint, device->cluster_id);
 
-    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)&bind_device);
+    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)bind_device);
   }
 }
 
