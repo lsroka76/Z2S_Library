@@ -492,7 +492,8 @@ void Z2S_addZ2SDevice(zb_device_params_t *device) {
     switch (device->model_id) {
       case 0x0000: break;
       
-      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR: {
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {
         //auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,device);
         auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
