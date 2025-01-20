@@ -117,10 +117,11 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
       _last_bind_success = true;
   } else {
       log_e("Binding failed (0x%x)! Device (0x%x), endpoint (0x%x), cluster (0x%x)", zdo_status, device->short_addr, device->endpoint, device->cluster_id);
-      _last_bind_success = false;
+      if (zdo_status == 0x8c) _last_bind_success = false;
+      else _last_bind_success = true;
   }
   _in_binding = false;
-  free(device);
+  //free(device);
   log_i("Semaphore give in binding");
   xSemaphoreGive(gt_lock);
   /*if (_instance->_clusters_2_bind > 0) --_instance->_clusters_2_bind;
@@ -230,13 +231,13 @@ void ZigbeeGateway::zbPrintDeviceDiscovery (zb_device_params_t * device) {
 
 void ZigbeeGateway::bindDeviceCluster(zb_device_params_t * device,int16_t cluster_id) {
 
-  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
+  /*if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
     esp_zb_ieee_addr_t addr;
     esp_zb_get_long_address(addr);
     _instance->sendAttributeWrite(device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
                        ESP_ZB_ZCL_ATTR_TYPE_U64,sizeof(esp_zb_ieee_addr_t),addr);
     _instance->sendIASzoneEnrollResponseCmd(device, ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS, 120);
-  }
+  }*/
   {
     esp_zb_zdo_bind_req_param_t bind_req;
     
@@ -259,13 +260,18 @@ void ZigbeeGateway::bindDeviceCluster(zb_device_params_t * device,int16_t cluste
     zb_device_params_t *bind_device =(zb_device_params_t *)malloc(sizeof(zb_device_params_t));
     memcpy(bind_device, device, sizeof(zb_device_params_t));
 
-    esp_zb_lock_acquire(portMAX_DELAY);
-    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)bind_device);
-    esp_zb_lock_release();
+    _last_bind_success = false;
+    while (!_last_bind_success){
+
+      esp_zb_lock_acquire(portMAX_DELAY);
+      esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)bind_device);
+      esp_zb_lock_release();
     
-    if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
-    log_e("Semaphore error while binding");
-  }
+      if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
+      log_e("Semaphore error while binding");
+      }
+    }
+    free(bind_device);
 
     bind_req.req_dst_addr = esp_zb_get_short_address();
 
@@ -285,13 +291,18 @@ void ZigbeeGateway::bindDeviceCluster(zb_device_params_t * device,int16_t cluste
 
     log_d("Requesting ZC to bind ZED (0x%x), endpoint (0x%x), cluster_id (0x%x)", device->short_addr, device->endpoint, device->cluster_id);
 
-    esp_zb_lock_acquire(portMAX_DELAY);
-    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)bind_device);
-    esp_zb_lock_release();
+    _last_bind_success = false;
+    while (!_last_bind_success) {
+
+      esp_zb_lock_acquire(portMAX_DELAY);
+      esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)bind_device);
+      esp_zb_lock_release();
     
-    if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
-    log_e("Semaphore error while binding");
-  }
+      if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
+      log_e("Semaphore error while binding");
+      }
+    }
+    free(bind_device);
   }
 }
 
