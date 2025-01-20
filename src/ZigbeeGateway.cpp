@@ -97,6 +97,7 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   //esp_zb_cluster_list_add_custom_cluster(_cluster_list, &poll_cluster,ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_2),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   
   _ep_config = {.endpoint = _endpoint, .app_profile_id = ESP_ZB_AF_HA_PROFILE_ID, .app_device_id = ESP_ZB_HA_REMOTE_CONTROL_DEVICE_ID, .app_device_version = 0};
 }

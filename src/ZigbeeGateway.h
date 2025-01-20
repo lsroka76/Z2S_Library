@@ -26,7 +26,7 @@
 
 #define TUYA_PRIVATE_CLUSTER_0 0xE000
 #define TUYA_PRIVATE_CLUSTER_1 0xE001
-
+#define TUYA_PRIVATE_CLUSTER_2 0xEF00
 
 typedef struct findcb_userdata_s {
   uint8_t   _endpoint;
