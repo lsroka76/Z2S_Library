@@ -115,7 +115,7 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
       _is_bound = true;
       _last_bind_success = true;
   } else {
-      log_e("Binding failed! Device (0x%x), endpoint (0x%x), cluster (0x%x)", device->short_addr, device->endpoint, device->cluster_id);
+      log_e("Binding failed (0x%x)! Device (0x%x), endpoint (0x%x), cluster (0x%x)", zdo_status, device->short_addr, device->endpoint, device->cluster_id);
       _last_bind_success = false;
   }
   _in_binding = false;
