@@ -231,15 +231,14 @@ void loop() {
 
                         device_recognized = true;
 
-                        esp_zb_lock_acquire(portMAX_DELAY);
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[k].z2s_device_desc_id;
-                        //zbGateway.setClusters2Bind(Z2S_DEVICES_LIST[i].z2s_device_endpoints_count * Z2S_DEVICES_DESC[k].z2s_device_clusters_count);
+                        
                         Z2S_addZ2SDevice(joined_device);
-                        //zbGateway.setClusters2Bind(Z2S_DEVICES_DESC[k].z2s_device_clusters_count);
+                        
                         for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
-                        esp_zb_lock_release();
+                        
                   }  
                   else 
                   log_i("DESC checking 0x%x, %d, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, endpoint %d ",

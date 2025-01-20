@@ -53,11 +53,13 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
       ESP_ZB_ZCL_CLUSTER_ID_METERING,
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_clusters_count = 4, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_clusters_count = 6, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
       ESP_ZB_ZCL_CLUSTER_ID_SCENES,
       ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
-      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }}
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      TUYA_PRIVATE_CLUSTER_0,
+      TUYA_PRIVATE_CLUSTER_1 }}
 };
         
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
