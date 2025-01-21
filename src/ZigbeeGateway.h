@@ -164,6 +164,8 @@ private:
   static bool _in_binding;
   static bool _new_device_joined;
 
+  static uint8_t _binding_error_retries;
+
   static uint16_t _clusters_2_discover;
   static uint16_t _attributes_2_discover;
 

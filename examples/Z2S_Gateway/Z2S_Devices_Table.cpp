@@ -367,6 +367,8 @@ void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
 void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
   
   
+  /* marked for removal
+
   Z2S_printDevicesTableSlots();
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, -1);
@@ -468,7 +470,7 @@ void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
         }
       } break;
     }
-  }
+  }*/
 }
 
 void Z2S_addZ2SDevice(zb_device_params_t *device) {
@@ -506,7 +508,8 @@ void Z2S_addZ2SDevice(zb_device_params_t *device) {
         auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY); 
       } break;
-      case Z2S_DEVICE_DESC_ON_OFF: {
+      case Z2S_DEVICE_DESC_ON_OFF:
+      case Z2S_DEVICE_DESC_ON_OFF_1: {
         auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY); 
       } break;

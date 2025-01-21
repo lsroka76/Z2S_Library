@@ -13,6 +13,7 @@ uint16_t ZigbeeGateway::_clusters_2_discover = 0;
 uint16_t ZigbeeGateway::_attributes_2_discover = 0;
 uint16_t ZigbeeGateway::_endpoints_2_bind = 0;
 uint16_t ZigbeeGateway::_clusters_2_bind = 0;
+uint8_t ZigbeeGateway::_binding_error_retries = 0;
 //
 
 #define ZB_CMD_TIMEOUT 10000
@@ -117,7 +118,11 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
       _last_bind_success = true;
   } else {
       log_e("Binding failed (0x%x)! Device (0x%x), endpoint (0x%x), cluster (0x%x)", zdo_status, device->short_addr, device->endpoint, device->cluster_id);
-      if (zdo_status == 0x8c) _last_bind_success = false;
+      //if (zdo_status == 0x8c) 
+      if(_binding_error_retries > 0) {
+        _last_bind_success = false;
+        --_binding_error_retries;
+      }
       else _last_bind_success = true;
   }
   _in_binding = false;
@@ -261,6 +266,8 @@ void ZigbeeGateway::bindDeviceCluster(zb_device_params_t * device,int16_t cluste
     memcpy(bind_device, device, sizeof(zb_device_params_t));
 
     _last_bind_success = false;
+    _binding_error_retries = 5;
+
     while (!_last_bind_success){
 
       esp_zb_lock_acquire(portMAX_DELAY);
@@ -292,6 +299,8 @@ void ZigbeeGateway::bindDeviceCluster(zb_device_params_t * device,int16_t cluste
     log_d("Requesting ZC to bind ZED (0x%x), endpoint (0x%x), cluster_id (0x%x)", device->short_addr, device->endpoint, device->cluster_id);
 
     _last_bind_success = false;
+    _binding_error_retries = 5;
+    
     while (!_last_bind_success) {
 
       esp_zb_lock_acquire(portMAX_DELAY);
