@@ -153,10 +153,12 @@ void Z2S_initSuplaChannels(){
             //auto Supla_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(&zbGateway,&device);
             auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
             Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
+            Supla_VirtualThermHygroMeter->getChannel()->setBatteryPowered(true);
           } break;
           case SUPLA_CHANNELTYPE_BINARYSENSOR: {
             auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
             Supla_VirtualBinary->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
+            Supla_VirtualBinary->getChannel()->setBatteryPowered(true);
           } break;
           case SUPLA_CHANNELTYPE_RELAY: {
             auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,z2s_devices_table[devices_counter].ieee_addr );
@@ -281,6 +283,23 @@ void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
   }
 }
 
+void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t battery_remaining) {
+
+  log_i("onBatteryPercentageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
+   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, -1);
+  if (channel_number_slot < 0)
+    log_i("No channel found for address %s", ieee_addr);
+  else
+  {
+    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+    if (element != nullptr && element->getChannel()->isBatteryPowered()) {
+
+        element->getChannel()->setBatteryLevel(battery_remaining);
+    }
+  }
+}
+
 void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status) {
   
 int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR);
@@ -302,24 +321,25 @@ int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, clu
 void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
 
   
-  /*log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
-  /if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
+  log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+  if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
     
-    esp_zb_ieee_addr_t addr;
-    memset(addr,0,sizeof(esp_zb_ieee_addr_t));
+    //esp_zb_ieee_addr_t addr;
+    //memset(addr,0,sizeof(esp_zb_ieee_addr_t));
     //zbGateway.sendAttributeWrite(device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
     //                   ESP_ZB_ZCL_ATTR_TYPE_U64,sizeof(esp_zb_ieee_addr_t),addr);
     
-    esp_zb_get_long_address(addr);
+    //esp_zb_get_long_address(addr);
     //zbGateway.sendAttributeWrite(device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
     //                   ESP_ZB_ZCL_ATTR_TYPE_U64,sizeof(esp_zb_ieee_addr_t),addr);
     //zbGateway.sendIASzoneEnrollResponseCmd(device, ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS, 120);
   
     
-    log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
-    zbGateway.setClusterReporting(device->ieee_addr, device->endpoint, device->cluster_id, 
-                                  ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 0, 10, 1);
-  } else
+    //log_i("Trying to read device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+    //zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID);
+    //zbGateway.setClusterReporting(device->ieee_addr, device->endpoint, device->cluster_id, 
+      //                            ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 0, 10, 1);
+  } /*else
   if (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) {
     log_i("Trying to wake up device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
     zbGateway.setClusterReporting(device->short_addr, device->endpoint, device->cluster_id, 

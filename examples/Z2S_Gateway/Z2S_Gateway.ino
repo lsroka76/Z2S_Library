@@ -91,6 +91,7 @@ void setup() {
   zbGateway.onRMSVoltageReceive(Z2S_onRMSVoltageReceive);
   zbGateway.onRMSCurrentReceive(Z2S_onRMSCurrentReceive);
   zbGateway.onRMSActivePowerReceive(Z2S_onRMSActivePowerReceive);
+  zbGateway.onBatteryPercentageReceive(Z2S_onBatteryPercentageReceive);
 
   zbGateway.onIASzoneStatusChangeNotification(Z2S_onIASzoneStatusChangeNotification);
 

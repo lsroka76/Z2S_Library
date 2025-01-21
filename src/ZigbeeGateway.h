@@ -130,18 +130,21 @@ public:
 
     _on_rms_voltage_receive = callback;
   }
-
   
   void onRMSCurrentReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
 
     _on_rms_current_receive = callback;
   }
-
   
   void onRMSActivePowerReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
 
     _on_rms_active_power_receive = callback;
   }
+
+   void onBatteryPercentageReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
+
+    _on_battery_percentage_receive = callback;
+   }
 
   void onBoundDevice(void (*callback)(zb_device_params_t *, bool)) {
 
@@ -179,6 +182,7 @@ private:
   void (*_on_rms_voltage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t );
   void (*_on_rms_current_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_rms_active_power_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
+  void (*_on_battery_percentage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
 
   void (*_on_bound_device)(zb_device_params_t *, bool);
   void (*_on_btc_bound_device)(zb_device_params_t *);

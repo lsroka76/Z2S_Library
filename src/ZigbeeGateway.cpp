@@ -300,7 +300,7 @@ void ZigbeeGateway::bindDeviceCluster(zb_device_params_t * device,int16_t cluste
 
     _last_bind_success = false;
     _binding_error_retries = 5;
-    
+
     while (!_last_bind_success) {
 
       esp_zb_lock_acquire(portMAX_DELAY);
@@ -413,8 +413,8 @@ void ZigbeeGateway::zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_
     {
       uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
       log_i("zbAttributeRead power config battery percentage remaining %d",value);
-      //if (_on_on_off_receive)
-        //_on_on_off_receive(src_address.u.ieee_addr, value);
+      if (_on_battery_percentage_receive)
+        _on_battery_percentage_receive(src_address.u.ieee_addr, src_endpoint,cluster_id, value /2);
       } else log_i("zbAttributeRead power config cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
     }
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
