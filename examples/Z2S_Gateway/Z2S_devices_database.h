@@ -39,10 +39,8 @@ typedef struct z2s_device_entity_s {
 
 static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
   
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_clusters_count = 5, .z2s_device_clusters =
-    { ESP_ZB_ZCL_CLUSTER_ID_BASIC,
-      ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY, 
-      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
       ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
       ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT }},
 
