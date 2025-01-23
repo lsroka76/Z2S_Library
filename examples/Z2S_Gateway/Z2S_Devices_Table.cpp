@@ -348,8 +348,11 @@ int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, clu
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
 
         auto Supla_VirtualBinary = reinterpret_cast<Supla::Sensor::VirtualBinary *>(element);
-        if (iaszone_status == 0) Supla_VirtualBinary->set();
-        else Supla_VirtualBinary->clear();
+        if (iaszone_status & 1) Supla_VirtualBinary->clear();
+        else Supla_VirtualBinary->set();
+        if (iaszone_status & 2) log_i("Alarm2 on channel 0x%x", channel_number_slot);
+        if (iaszone_status & 4) log_i("Tamper alarm on channel 0x%x", channel_number_slot);
+
     }
   }
 }
