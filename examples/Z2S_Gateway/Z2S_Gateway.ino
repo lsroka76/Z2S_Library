@@ -17,7 +17,7 @@
 #include <supla/storage/littlefs_config.h>
 
 #undef USE_WEB_INTERFACE
-#define USE_WEB_INTERFACE
+//#define USE_WEB_INTERFACE
 
 #ifdef USE_WEB_INTERFACE
 
@@ -70,8 +70,8 @@ void setup() {
 #ifndef USE_WEB_INTERFACE
 
   log_i("undef webinterface");
-  cfg->setGUID(GUID);
-  cfg->setAuthKey(AUTHKEY);
+  //cfg->setGUID(GUID);
+  //cfg->setAuthKey(AUTHKEY);
   cfg->setWiFiSSID(SUPLA_WIFI_SSID);
   cfg->setWiFiPassword(SUPLA_WIFI_PASS);
   cfg->setSuplaServer(SUPLA_SVR);
@@ -92,6 +92,8 @@ void setup() {
   zbGateway.onRMSCurrentReceive(Z2S_onRMSCurrentReceive);
   zbGateway.onRMSActivePowerReceive(Z2S_onRMSActivePowerReceive);
   zbGateway.onBatteryPercentageReceive(Z2S_onBatteryPercentageReceive);
+
+  zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);
 
   zbGateway.onIASzoneStatusChangeNotification(Z2S_onIASzoneStatusChangeNotification);
 
@@ -128,26 +130,89 @@ zb_device_params_t *joined_device;
 char zbd_model_name[32];
 char zbd_manuf_name[32];
 
+uint8_t counter = 0;
+uint8_t tuya_dp_data[10];
+
 void loop() {
   
   SuplaDevice.iterate();
 
-  /*if (millis() - printTime > 10000) {
+  if (millis() - printTime > 10000) {
     if (zbGateway.getGatewayDevices().size() > 0 ) {
       if (esp_zb_is_started() && esp_zb_lock_acquire(portMAX_DELAY)) {
         zb_device_params_t *gt_device = zbGateway.getGatewayDevices().front();
-	      log_i("short address before 0x%x",gt_device->short_addr);
+	      //log_i("short address before 0x%x",gt_device->short_addr);
         gt_device->short_addr = esp_zb_address_short_by_ieee(gt_device->ieee_addr);
-        log_i("short address after 0x%x",gt_device->short_addr);
+        //log_i("short address after 0x%x",gt_device->short_addr);
+        if (counter == 0) {          
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x03;
+          tuya_dp_data[2] = 0x65;
+          tuya_dp_data[3] = 0x01;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x01;
+          
+          //zbGateway.sendCustomClusterCmd(gt_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 7, tuya_dp_data);
+        }
+        //if (counter == 1) {          
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x03;
+          tuya_dp_data[2] = 0x66;
+          tuya_dp_data[3] = 0x02;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x04;
+          tuya_dp_data[6] = 0x00;
+          tuya_dp_data[7] = 0x00;
+          tuya_dp_data[8] = 0x00;
+          tuya_dp_data[9] = 0x00;
+          //zbGateway.sendCustomClusterCmd(gt_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 10, tuya_dp_data);
+        //}
+        if (counter == 2) {          
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x03;
+          tuya_dp_data[2] = 0x65;
+          tuya_dp_data[3] = 0x01;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x00;
+          
+          //zbGateway.sendCustomClusterCmd(gt_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 7, tuya_dp_data);
+        }
+        if (counter == 3) {          
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x03;
+          tuya_dp_data[2] = 0x6C;
+          tuya_dp_data[3] = 0x01;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x01;
+          
+          //zbGateway.sendCustomClusterCmd(gt_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 7, tuya_dp_data);
+        }
+        if (counter == 4) {          
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x03;
+          tuya_dp_data[2] = 0x6C;
+          tuya_dp_data[3] = 0x01;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x02;
+          
+          //zbGateway.sendCustomClusterCmd(gt_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 7, tuya_dp_data);
+        }
+        counter++; if(counter > 4) counter = 0;
         //zbGateway.sendAttributeWrite(gt_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
           //                          ESP_ZB_ZCL_ATTR_TYPE_U64,8, gt_device->ieee_addr);
         //zbGateway.sendIASzoneEnrollResponseCmd(gt_device, ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS, 120);
         //zbGateway.sendAttributeRead(gt_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID);
+        //zbGateway.setClusterReporting(gt_device->ieee_addr, gt_device->endpoint, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+          //                          ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 0, 10, 1);
       }
    esp_zb_lock_release();
     printTime = millis();
     }
-  }*/
+  }
   //if (zbInit && wifi.isReady()) {
     if (zbInit && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
   
@@ -259,7 +324,21 @@ void loop() {
                         Z2S_DEVICES_DESC[k].z2s_device_clusters[7],
                         endpoint_id);        
                   }
-              }  
+              }
+              //here we can configure reporting and restart ESP32
+              switch (joined_device->model_id) {
+                case 0x0000: break;
+      
+                case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
+                case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {
+                } break;
+                case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: {
+                  //log_i("Trying to configure cluster reporting on device (0x%x), endpoint (0x%x)", joined_device->short_addr, joined_device->endpoint);
+                  //zbGateway.setClusterReporting(joined_device->short_addr, joined_device->endpoint, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+                  //ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 30, 300, 1);
+                } break;
+              }
+              SuplaDevice.scheduleSoftRestart(5000);
             }   
             else log_i("LIST checking %s::%s, entry # %d",Z2S_DEVICES_LIST[i].manufacturer_name, Z2S_DEVICES_LIST[i].model_name, i);
           }

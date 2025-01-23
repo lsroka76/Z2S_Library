@@ -110,6 +110,8 @@ public:
   virtual void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {};
   virtual void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
                                      const esp_zb_zcl_disc_attr_variable_t *variable) {};
+  virtual void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t command_id, uint16_t payload_size, uint8_t *payload) {};
+  virtual void zbCmdDefaultResponse( esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) {};
 
   virtual void addBoundDevice(zb_device_params_t *device) {
     _bound_devices.push_back(device);

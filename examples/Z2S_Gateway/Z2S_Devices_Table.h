@@ -8,8 +8,13 @@
 #include <supla/sensor/virtual_binary.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 #include <supla/sensor/one_phase_electricity_meter.h>
+//#include <supla/control/hvac_base.h>
+#include <supla/control/internal_pin_output.h>
+#include <supla/sensor/virtual_thermometer.h>
 
+#include <Z2S_control/hvac_base_ee.h>
 #include <Z2S_control/Z2S_virtual_relay.h>
+#include <Z2S_control/Z2S_Tuya_thermostat.h>
 #include <Z2S_sensor/Z2S_OnePhaseElectricityMeter.h>
 #include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>
 
@@ -62,6 +67,9 @@ void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t active_power);
 
 void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t battery_remaining);
+
+void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
+                                    uint16_t payload_size, uint8_t *payload);
 
 void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status);
 

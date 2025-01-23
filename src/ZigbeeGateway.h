@@ -24,9 +24,9 @@
       }                                                                                        \
   }
 
-#define TUYA_PRIVATE_CLUSTER_0 0xE000
-#define TUYA_PRIVATE_CLUSTER_1 0xE001
-#define TUYA_PRIVATE_CLUSTER_2 0xEF00
+#define TUYA_PRIVATE_CLUSTER_0    0xE000
+#define TUYA_PRIVATE_CLUSTER_1    0xE001
+#define TUYA_PRIVATE_CLUSTER_EF00 0xEF00
 
 typedef struct findcb_userdata_s {
   uint8_t   _endpoint;
@@ -106,6 +106,12 @@ public:
   
   void setOnOffCluster(esp_zb_ieee_addr_t ieee_addr, bool value);
 
+  void zbCmdDefaultResponse( esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code);
+
+  void sendCustomClusterCmd(zb_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, uint16_t custom_data_size, uint8_t *custom_data );
+
+  void sendCustomClusterCmdAck(zb_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, uint16_t custom_data_size, uint8_t *custom_data );
+
   void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int)) {
 
     _on_IAS_zone_status_change_notification = callback;
@@ -146,6 +152,11 @@ public:
     _on_battery_percentage_receive = callback;
    }
 
+   void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *)) {
+
+    _on_cmd_custom_cluster_receive = callback;
+   }
+
   void onBoundDevice(void (*callback)(zb_device_params_t *, bool)) {
 
     _on_bound_device = callback;
@@ -184,6 +195,8 @@ private:
   void (*_on_rms_active_power_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_battery_percentage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
 
+  void (*_on_cmd_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *);
+
   void (*_on_bound_device)(zb_device_params_t *, bool);
   void (*_on_btc_bound_device)(zb_device_params_t *);
 
@@ -200,6 +213,7 @@ private:
   void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) override;
   void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
                             const esp_zb_zcl_disc_attr_variable_t *variable) override;
+  void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,uint8_t command_id, uint16_t payload_size, uint8_t *payload) override;
   
   void addBoundDevice(zb_device_params_t *device) override;
   bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;

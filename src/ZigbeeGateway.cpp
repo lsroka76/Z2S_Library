@@ -98,7 +98,7 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   //esp_zb_cluster_list_add_custom_cluster(_cluster_list, &poll_cluster,ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_2),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   
   _ep_config = {.endpoint = _endpoint, .app_profile_id = ESP_ZB_AF_HA_PROFILE_ID, .app_device_id = ESP_ZB_HA_REMOTE_CONTROL_DEVICE_ID, .app_device_version = 0};
 }
@@ -648,4 +648,65 @@ void ZigbeeGateway::setOnOffCluster(esp_zb_ieee_addr_t ieee_addr, bool value) {
     esp_zb_lock_release();
 }
 
+void ZigbeeGateway::zbCmdDefaultResponse( esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) {
+  if ((cluster_id == TUYA_PRIVATE_CLUSTER_EF00) && (resp_to_cmd = 0x00))
+    xSemaphoreGive(gt_lock);
+}
+
+void ZigbeeGateway::sendCustomClusterCmd(zb_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, uint16_t custom_data_size, uint8_t *custom_data ) {
+  
+  esp_zb_zcl_custom_cluster_cmd_req_t req;
+
+  req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+  req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+  req.zcl_basic_cmd.src_endpoint = _endpoint;
+  req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+  req.cluster_id = custom_cluster_id;
+  req.profile_id = ESP_ZB_AF_HA_PROFILE_ID;
+  req.direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
+  //req.manuf_specific = 1;
+  req.dis_defalut_resp = 0;
+  req.custom_cmd_id = custom_command_id;
+  req.data.type = ESP_ZB_ZCL_ATTR_TYPE_SET;
+  req.data.size = custom_data_size;
+  req.data.value = custom_data;
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zcl_custom_cluster_cmd_req(&req);
+  esp_zb_lock_release();
+}
+
+void ZigbeeGateway::sendCustomClusterCmdAck(zb_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, uint16_t custom_data_size, uint8_t *custom_data ) {
+  
+  esp_zb_zcl_custom_cluster_cmd_req_t req;
+
+  req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+  req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+  req.zcl_basic_cmd.src_endpoint = _endpoint;
+  req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+  req.cluster_id = custom_cluster_id;
+  req.profile_id = ESP_ZB_AF_HA_PROFILE_ID;
+  req.direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
+  //req.manuf_specific = 1;
+  req.dis_defalut_resp = 0;
+  req.custom_cmd_id = custom_command_id;
+  req.data.type = ESP_ZB_ZCL_ATTR_TYPE_SET;
+  req.data.size = custom_data_size;
+  req.data.value = custom_data;
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zcl_custom_cluster_cmd_req(&req);
+  esp_zb_lock_release();
+  if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
+      log_e("Semaphore error while custom command acknowledge");
+      }
+}
+
+void ZigbeeGateway::zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,uint8_t command_id, uint16_t payload_size, uint8_t *payload) {
+
+  esp_zb_zcl_cmd_info_t info;
+  esp_zb_ieee_address_by_short(src_address.u.short_addr, info.src_address.u.ieee_addr);
+
+
+if (_on_cmd_custom_cluster_receive)
+  _on_cmd_custom_cluster_receive(info.src_address.u.ieee_addr, src_endpoint, cluster_id, command_id, payload_size, payload);
+}
 #endif  //SOC_IEEE802154_SUPPORTED && CONFIG_ZB_ENABLED
