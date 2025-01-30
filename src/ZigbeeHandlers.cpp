@@ -6,6 +6,7 @@ extern "C" {
 #include <zboss_api_buf.h>
 #include <zboss_api_af.h>
 #include <zcl/zb_zcl_common.h>
+#include <zboss_api_zcl.h>
 }
 
 #include "ZigbeeCore.h"

@@ -19,7 +19,9 @@ typedef struct z2s_device_params_s {
   int8_t              sub_id;
 } z2s_device_params_t;
 
-#define Z2S_CHANNELMAXCOUNT 128
+#define Z2S_CHANNELMAXCOUNT       128
+
+#define ALL_SUPLA_CHANNEL_TYPES   -1
 
 extern z2s_device_params_t z2s_devices_table[Z2S_CHANNELMAXCOUNT];
 
@@ -34,6 +36,9 @@ uint8_t Z2S_findFirstFreeDevicesTableSlot();
 void Z2S_printDevicesTableSlots();
 
 int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int32_t channel_type, int8_t sub_id);
+
+int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+                                      int32_t channel_type, int8_t sub_id);
 
 void Z2S_fillDevicesTableSlot(zb_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                               char *name = nullptr, uint32_t func = 0);

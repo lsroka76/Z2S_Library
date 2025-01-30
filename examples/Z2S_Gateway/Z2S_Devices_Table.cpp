@@ -68,6 +68,26 @@ int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   return -1;
 }
 
+int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+                                      int32_t channel_type, int8_t sub_id) {
+
+  log_i("Z2S_findChannelNumberNextSlot 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, channel type 0x%x", 
+        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], 
+        endpoint, channel_type);
+  
+  for (uint8_t devices_counter = prev_slot + 1; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) {
+      if (z2s_devices_table[devices_counter].valid_record)
+        if ((memcmp(z2s_devices_table[devices_counter].ieee_addr, ieee_addr,8) == 0) && 
+        (z2s_devices_table[devices_counter].endpoint == endpoint) &&
+        ((channel_type < 0) || (z2s_devices_table[devices_counter].Supla_channel_type == channel_type)) &&
+        ((sub_id < 0) || (z2s_devices_table[devices_counter].sub_id == sub_id))) { 
+        //&& (z2s_devices_table[devices_counter].cluster_id = cluster)) {
+            return devices_counter;
+        }
+  }  
+  return -1;
+}
+
 void Z2S_fillDevicesTableSlot(zb_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                               char *name, uint32_t func) {
 
@@ -200,7 +220,7 @@ void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 
   log_i("onTemperatureReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, -1);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -218,7 +238,7 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
   log_i("onHumidityReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, -1);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -236,7 +256,7 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
 
   log_i("onOnOffReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, -1);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -254,7 +274,7 @@ void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
   log_i("onRMSVoltageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, -1);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -272,7 +292,7 @@ void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
   log_i("onRMSCurrentReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, -1);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -290,7 +310,7 @@ void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
 
   log_i("onRMSVoltageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, -1);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -308,22 +328,21 @@ void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
 
   log_i("onBatteryPercentageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, -1, -1);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
+  while (channel_number_slot >= 0)
   {
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    if (true) { //element != nullptr && element->getChannel()->isBatteryPowered()) {
-
-        element->getChannel()->setBatteryLevel(battery_remaining);
-    }
+    if (element) element->getChannel()->setBatteryLevel(battery_remaining);
+    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, ieee_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   }
 }
 
 void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status) {
   
-int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, -1);
+int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -333,7 +352,7 @@ int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, clu
 void Z2S_onOnOffCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, uint8_t command_data) {
   
   log_i("Z2S_onOnOffCustomCmdReceive command id 0x%x, command data 0x%x", command_id, command_data);
-  if ((command_id == 0xFD) || (command_id == 0xFC)) {
+  if ((command_id == ON_OFF_CUSTOM_CMD_BUTTON_PRESS) || (command_id == ON_OFF_CUSTOM_CMD_BUTTON_ROTATE)) {
 
     int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                                                             SUPLA_CHANNELTYPE_ACTIONTRIGGER, command_data);
@@ -353,11 +372,10 @@ void Z2S_onOnOffCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   }
 }
 
-
 void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
                                     uint16_t payload_size, uint8_t *payload) {
   
-int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, -1);
+int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -381,7 +399,7 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
   
   Z2S_printDevicesTableSlots();
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, -1, sub_id);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, sub_id);
   
   if (channel_number_slot < 0) {
     log_i("No channel found for address %s, adding new one", device->ieee_addr);
@@ -426,6 +444,22 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
         button_name_function, SUPLA_CHANNELFNC_POWERSWITCH); 
       } break;
+      case Z2S_DEVICE_DESC_SMART_BUTTON_2F:
+      case Z2S_DEVICE_DESC_SMART_BUTTON_3F:
+      case Z2S_DEVICE_DESC_SMART_BUTTON_5F: {
+        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
+        char button_name_function[30];
+        char button_function_press[][15] = {"pressed", "double pressed","held"};
+        char button_function_rotate[][15] = {"rotated right", "rotated left"};
+        if (sub_id < ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_ID)
+          sprintf(button_name_function, "button %s", button_function_press[sub_id]);
+        else
+          sprintf(button_name_function, "button %s", button_function_rotate[sub_id - ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_ID]);
+        
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
+        button_name_function, SUPLA_CHANNELFNC_POWERSWITCH); 
+      } break;
+
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER: {
         auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1); 

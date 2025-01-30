@@ -13,7 +13,10 @@
 
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER     0x4100
 
-#define Z2S_DEVICE_DESC_SMART_BUTTON                0x5000
+#define Z2S_DEVICE_DESC_SMART_BUTTON_5F             0x5000
+#define Z2S_DEVICE_DESC_SMART_BUTTON_3F             0x5001
+#define Z2S_DEVICE_DESC_SMART_BUTTON_2F             0x5002
+
 #define Z2S_DEVICE_DESC_SWITCH_4X3                  0x5100
 
 #define Z2S_DEVICE_TUYA_HVAC                        0x6000
@@ -87,16 +90,14 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
       ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
       TUYA_PRIVATE_CLUSTER_EF00 }},
 
-    { .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON, .z2s_device_clusters_count = 7, .z2s_device_clusters =
-    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-      ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY, 
-      ESP_ZB_ZCL_CLUSTER_ID_SCENES,
-      ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
-      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
-      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
-      //ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
-      //TUYA_PRIVATE_CLUSTER_EF00 }}
+    { .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON_2F, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+    { .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON_3F, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+    { .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON_5F, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
     { .z2s_device_desc_id = Z2S_DEVICE_DESC_SWITCH_4X3, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF}}
@@ -125,6 +126,12 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "SNZB-02D", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+  
+  { .manufacturer_name = "_TZ3000_bjawzodf", .model_name = "TY0201", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_a8sdabtg", .model_name = "TS0601", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_0hkmcrza", .model_name = "TS0203", 
@@ -172,6 +179,24 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_3towulqd", .model_name = "TS0601", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3000_1bwpjvlz", .model_name = "TS0203", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "eWeLink", .model_name = "SNZB-04", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_au1rjicn", .model_name = "TS0203", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "eWeLink", .model_name = "SNZB-03", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "eWeLink", .model_name = "DS01", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_prits6g4", .model_name = "TS0001", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_cehuw1lw", .model_name = "TS011F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
@@ -208,7 +233,14 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_abrsvsou", .model_name = "TS004F", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON_5F, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_ja5osu5g", .model_name = "TS004F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON_2F, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_mrpevh8p", .model_name = "TS0041", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
+
 
   { .manufacturer_name = "IKEA of Sweden", .model_name = "Remote Control N2", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},

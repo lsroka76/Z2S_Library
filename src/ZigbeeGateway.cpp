@@ -852,26 +852,25 @@ bool ZigbeeGateway::zbRawCmdHandler( esp_zb_zcl_addr_t source, uint8_t src_endpo
                                 bool is_common_command, bool disable_default_response, bool is_manuf_specific, uint16_t manuf_specific,
                                 uint8_t buffer_size, uint8_t *buffer) {
   
-  if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (cmd_id == 0xFD)) {
+  if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (cmd_id == ON_OFF_CUSTOM_CMD_BUTTON_PRESS)) {
       char button_states[][15]={"pushed", "double tapped", "held"};
       
       log_i("Button nr %d was: %s", src_endpoint, button_states[*buffer]); 
       if (_on_on_off_custom_cmd_receive)
-      _on_on_off_custom_cmd_receive(source.u.ieee_addr, src_endpoint, cmd_id, (*buffer));
-    
+        _on_on_off_custom_cmd_receive(source.u.ieee_addr, src_endpoint, cmd_id, (*buffer));
+  
       return true;
     }
-    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (cmd_id == 0xFC)) {
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (cmd_id == ON_OFF_CUSTOM_CMD_BUTTON_ROTATE)) {
       char button_states[][15]={"rotated right", "rotated left"};
       
       log_i("Button nr %d was: %s", src_endpoint, button_states[*buffer]); 
       if (_on_on_off_custom_cmd_receive)
-      _on_on_off_custom_cmd_receive(source.u.ieee_addr, src_endpoint, cmd_id, (*buffer));
+        _on_on_off_custom_cmd_receive(source.u.ieee_addr, src_endpoint, cmd_id, ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_ID + (*buffer));
     
       return true;
     }
     return false;
 }
-
 
 #endif  //SOC_IEEE802154_SUPPORTED && CONFIG_ZB_ENABLED

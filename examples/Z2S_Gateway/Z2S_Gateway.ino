@@ -18,7 +18,7 @@
 #include <supla/clock/clock.h>
 
 #undef USE_WEB_INTERFACE
-//#define USE_WEB_INTERFACE
+#define USE_WEB_INTERFACE
 
 #ifdef USE_WEB_INTERFACE
 
@@ -306,15 +306,31 @@ void loop() {
 
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[k].z2s_device_desc_id;
-                        
-                        if(joined_device->model_id == Z2S_DEVICE_DESC_SWITCH_4X3)
-                           {
-                            Z2S_addZ2SDevice(joined_device,0);
-                            Z2S_addZ2SDevice(joined_device,1);
-                            Z2S_addZ2SDevice(joined_device,2);
-                           }
-                        else Z2S_addZ2SDevice(joined_device,-1);
 
+                        switch (joined_device->model_id) {
+                          case Z2S_DEVICE_DESC_SWITCH_4X3: {
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_PRESSED_SID);
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
+                            Z2S_addZ2SDevice(joined_device,ON_OFF_CUSTOM_CMD_BUTTON_HELD_SID);
+                           } break; 
+                          case Z2S_DEVICE_DESC_SMART_BUTTON_5F: {
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_PRESSED_SID);
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
+                            Z2S_addZ2SDevice(joined_device,ON_OFF_CUSTOM_CMD_BUTTON_HELD_SID);
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_ID);
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_LEFT_ID);
+                          } break;
+                          case Z2S_DEVICE_DESC_SMART_BUTTON_3F: {
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_PRESSED_SID);
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
+                            Z2S_addZ2SDevice(joined_device,ON_OFF_CUSTOM_CMD_BUTTON_HELD_SID);
+                          } break;
+                          case Z2S_DEVICE_DESC_SMART_BUTTON_2F: {
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_PRESSED_SID);
+                            Z2S_addZ2SDevice(joined_device, ON_OFF_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
+                          } break;
+                          default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID); 
+                        }
 
                         //case Z2S_DEVICE_DESC_ON_OFF: {
                             //zbGateway.sendAttributeRead(joined_device, 0x0006,0x8001, true);
