@@ -16,7 +16,7 @@ ZigbeeCore::ZigbeeCore() {
   _radio_config.radio_mode = ZB_RADIO_MODE_NATIVE;                   // Use the native 15.4 radio
   _host_config.host_connection_mode = ZB_HOST_CONNECTION_MODE_NONE;  // Disable host connection
   _zb_ep_list = esp_zb_ep_list_create();
-  _primary_channel_mask = ESP_ZB_TRANSCEIVER_ALL_CHANNELS_MASK;
+  _primary_channel_mask = 0x800; //ESP_ZB_TRANSCEIVER_ALL_CHANNELS_MASK; //0x800
   _open_network = 0xFF;
   _scan_status = ZB_SCAN_FAILED;
   _started = false;
@@ -159,6 +159,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     }
   }
   // Register Zigbee action handler
+  esp_zb_raw_command_handler_register(zb_raw_cmd_handler);
   esp_zb_core_action_handler_register(zb_action_handler);
   err = esp_zb_set_primary_network_channel_set(_primary_channel_mask);
   if (err != ESP_OK) {
@@ -343,7 +344,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
 	
 		if ((*it)->isDeviceBound(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr))
 			log_d("Device already bound to endpoint %d", (*it)->getEndpoint());
-		else (*it)->findEndpoint(&cmd_req);
+		else (*it)->zbDeviceAnnce(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr);//findEndpoint(&cmd_req);
           }
         }
       }

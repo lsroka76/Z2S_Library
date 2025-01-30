@@ -40,6 +40,7 @@ typedef struct zbstring_s {
 
 typedef struct zb_device_params_s {
   uint32_t model_id;
+  bool rejoined;
   bool ZC_binding;
   esp_zb_ieee_addr_t ieee_addr;
   uint8_t endpoint;
@@ -102,10 +103,16 @@ public:
   virtual void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req) {};
 
   //list of all handlers function calls, to be override by EPs implementation
+  virtual bool zbRawCmdHandler( esp_zb_zcl_addr_t source, uint8_t src_endpoint, uint8_t dst_endpoint, uint16_t cluster_id, uint8_t cmd_id, 
+                                bool is_common_command, bool disable_default_response, bool is_manuf_specific, uint16_t manuf_specific,
+                                uint8_t buffer_size, uint8_t *buffer) {}
   virtual void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) {};
-  virtual void zbAttributeRead(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) {};
+  virtual void zbAttrReadResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) {};
+  virtual void zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) {};
   virtual void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute);  //already implemented
   virtual void zbIdentify(const esp_zb_zcl_set_attr_value_message_t *message);
+  virtual void zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
+                                      uint16_t attribute_id) {};
 
   virtual void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {};
   virtual void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
@@ -117,6 +124,8 @@ public:
     _bound_devices.push_back(device);
     _is_bound = true;
    }
+
+virtual void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
 
 virtual bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 

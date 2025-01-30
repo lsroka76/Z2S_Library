@@ -1,4 +1,13 @@
 /* Zigbee Common Functions */
+
+extern "C" { 
+#include <zboss_api.h>
+#include <zboss_api_nwk.h>
+#include <zboss_api_buf.h>
+#include <zboss_api_af.h>
+#include <zcl/zb_zcl_common.h>
+}
+
 #include "ZigbeeCore.h"
 #include "Arduino.h"
 
@@ -35,6 +44,44 @@ switch (callback_id) {
   return ret;
 }
 
+static bool zb_raw_cmd_handler(uint8_t bufid) {
+    
+    uint8_t buf[zb_buf_len(bufid)];
+    zb_zcl_parsed_hdr_t *cmd_info = ZB_BUF_GET_PARAM(bufid, zb_zcl_parsed_hdr_t);
+    log_i("cluster id: 0x%x, command id: %d", cmd_info->cluster_id, cmd_info->cmd_id);
+    log_i("src endpoint (0x%x, dst endpoint 0x%x", cmd_info->addr_data.common_data.src_endpoint, cmd_info->addr_data.common_data.dst_endpoint);
+    log_i("is common comand %d, disable_default_response %d, is_manuf_specific %d", cmd_info->is_common_command, cmd_info->disable_default_response, cmd_info->is_manuf_specific);
+    log_i("manuf_specific 0x%x", cmd_info->manuf_specific);
+    memcpy(buf, zb_buf_begin(bufid), sizeof(buf));
+    log_i("RAW bufid: %d size: %d", bufid, sizeof(buf));
+    for (int i = 0; i < sizeof(buf); ++i) {
+        log_i("0x%02X ", buf[i]);
+    }
+    esp_zb_zcl_addr_t esp_zb_zcl_address;
+    esp_zb_zcl_address.u.short_addr = cmd_info->addr_data.common_data.source.u.short_addr;
+    memcpy(esp_zb_zcl_address.u.ieee_addr, cmd_info->addr_data.common_data.source.u.ieee_addr, sizeof(esp_zb_ieee_addr_t));
+    log_i("ZigbeeHandlers rawCMD 0x%x, 0x%x, 0x%x, 0x%x",esp_zb_zcl_address.u.short_addr,cmd_info->addr_data.common_data.source.u.short_addr,
+    esp_zb_zcl_address.u.ieee_addr[4], cmd_info->addr_data.common_data.source.u.ieee_addr[4]);
+    esp_zb_ieee_address_by_short(esp_zb_zcl_address.u.short_addr, esp_zb_zcl_address.u.ieee_addr);
+    // List through all Zigbee EPs and call the callback function, with the message
+    for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+    if (cmd_info->addr_data.common_data.dst_endpoint == (*it)->getEndpoint()) {
+      if ((*it)->zbRawCmdHandler(esp_zb_zcl_address, cmd_info->addr_data.common_data.src_endpoint, cmd_info->addr_data.common_data.dst_endpoint, 
+                                cmd_info->cluster_id, cmd_info->cmd_id, cmd_info->is_common_command,cmd_info->disable_default_response, cmd_info->is_manuf_specific,
+                                  cmd_info->manuf_specific, sizeof(buf), &buf[0])) {
+        zb_zcl_send_default_handler(bufid, cmd_info, ZB_ZCL_STATUS_SUCCESS);
+        log_i("----------------------------raw command proccessed---------------------------------------------------------------");
+        return true;
+      } 
+      else {
+        log_i("----------------------------raw command not processed---------------------------------------------------------------");
+        return false;
+      }
+    }
+    }
+}
+
+
 static esp_err_t zb_attribute_set_handler(const esp_zb_zcl_set_attr_value_message_t *message) {
    if (!message) {
     log_e("Empty message");
@@ -45,7 +92,7 @@ static esp_err_t zb_attribute_set_handler(const esp_zb_zcl_set_attr_value_messag
     return ESP_ERR_INVALID_ARG;
   }
   log_v(
-    "Received message: endpoint(%d), cluster(0x%x), attribute(0x%x), data size(%d)", message->info.dst_endpoint, message->info.cluster, message->attribute.id,
+    "Received attribute set message: endpoint(%d), cluster(0x%x), attribute(0x%x), data size(%d)", message->info.dst_endpoint, message->info.cluster, message->attribute.id,
     message->attribute.data.size
   );
 
@@ -78,7 +125,7 @@ static esp_err_t zb_attribute_reporting_handler(const esp_zb_zcl_report_attr_mes
   // List through all Zigbee EPs and call the callback function, with the message
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (message->dst_endpoint == (*it)->getEndpoint()) {
-      (*it)->zbAttributeRead(message->src_address, message->src_endpoint, message->cluster, &message->attribute);  //method zbAttributeRead must be implemented in specific EP class
+      (*it)->zbAttributeReporting(message->src_address, message->src_endpoint, message->cluster, &message->attribute);  //method zbAttributeRead must be implemented in specific EP class
     }
   }
   return ESP_OK;
@@ -110,7 +157,7 @@ static esp_err_t zb_cmd_read_attr_resp_handler(const esp_zb_zcl_cmd_read_attr_re
           if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_BASIC) {
             (*it)->zbReadBasicCluster(&variable->attribute);  //method zbReadBasicCluster implemented in the common EP class
           } else {
-            (*it)->zbAttributeRead(message->info.src_address, message->info.src_endpoint, message->info.cluster, &variable->attribute);  //method zbAttributeRead must be implemented in specific EP class
+            (*it)->zbAttrReadResponse(message->info.src_address, message->info.src_endpoint, message->info.cluster, &variable->attribute);  //method zbAttributeRead must be implemented in specific EP class
           }
         }
         variable = variable->next;
@@ -129,14 +176,19 @@ static esp_err_t zb_configure_report_resp_handler(const esp_zb_zcl_cmd_config_re
     log_e("Received message: error status(%d)", message->info.status);
     return ESP_ERR_INVALID_ARG;
   }
-  esp_zb_zcl_config_report_resp_variable_t *variable = message->variables;
-  while (variable) {
-    log_v(
-      "Configure report response: status(%d), cluster(0x%x), direction(0x%x), attribute(0x%x)", variable->status, message->info.cluster, variable->direction,
-      variable->attribute_id
-    );
-    variable = variable->next;
-  }
+  for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+    if (message->info.dst_endpoint == (*it)->getEndpoint()) {
+    
+    esp_zb_zcl_config_report_resp_variable_t *variable = message->variables;
+    
+    while (variable) {
+         log_v("Configure report response: status(%d), cluster(0x%x), direction(0x%x), attribute(0x%x)", variable->status, message->info.cluster, variable->direction,
+                variable->attribute_id);
+     (*it)->zbConfigReportResponse(message->info.src_address, message->info.src_endpoint, message->info.cluster, variable->status, variable->direction, variable->attribute_id);
+     variable = variable->next;  
+     }
+    }
+   }
   return ESP_OK;
 }
 
@@ -221,11 +273,11 @@ static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_com
     log_e("Received message: error status(%d)", message->info.status);
     return ESP_ERR_INVALID_ARG;
   }
-  //log_i("Receive custom command: %d from address 0x%04hx", message->info.command.id, message->info.src_address.u.short_addr);
+  log_i("Receive custom command: %d from address 0x%04hx", message->info.command.id, message->info.src_address.u.short_addr);
   //log_i("Attribute 0x%x", message->data.type);
-  //log_i("Payload size: %d", message->data.size);
-  //for (uint8_t i = 0; i < message->data.size; i++)
-  //  log_i("Payload [0x%x] = 0x%x", i, *(((uint8_t *)(message->data.value)) + i));
+  log_i("Payload size: %d", message->data.size);
+  for (uint8_t i = 0; i < message->data.size; i++)
+     log_i("Payload [0x%x] = 0x%x", i, *(((uint8_t *)(message->data.value)) + i));
   
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (message->info.dst_endpoint == (*it)->getEndpoint()) {
