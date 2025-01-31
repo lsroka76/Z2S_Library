@@ -96,6 +96,10 @@ public:
   static query_basic_cluster_data_t * getQueryBasicClusterData() {
     return &_last_device_query;
   }
+    static esp_zb_zcl_attribute_t * getReadAttrLastResult() {
+    return &_read_attr_last_result;
+  }
+
   void zbPrintDeviceDiscovery (zb_device_params_t * device);
   static void bindDeviceCluster(zb_device_params_t *,int16_t cluster_id);
 
@@ -105,7 +109,7 @@ public:
                                         uint16_t min_interval, uint16_t max_interval, uint16_t delta, bool ack);
   void readClusterReportCmd(zb_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
   
-  void sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false);
+  bool sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false);
   void sendAttributeWrite( zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value);
   void sendIASzoneEnrollResponseCmd(zb_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
@@ -171,6 +175,9 @@ private:
 
   static query_basic_cluster_data_t _last_device_query;
 
+  static uint8_t _read_attr_last_tsn;
+  static esp_zb_zcl_attribute_t _read_attr_last_result;
+
   void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int);
   void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
   void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
@@ -201,7 +208,7 @@ private:
   static void Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, void *user_ctx);
 
   void zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) override;
-  void zbAttrReadResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) override;
+  void zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) override;
   void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) override;
   void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
                             const esp_zb_zcl_disc_attr_variable_t *variable) override;

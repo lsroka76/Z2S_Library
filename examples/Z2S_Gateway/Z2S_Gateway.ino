@@ -344,24 +344,6 @@ void loop() {
 
                         for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
-                        
-                        switch (joined_device->model_id) {
-                          case 0x0000: break;
-                          case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
-                          case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {
-                          } break;
-                          case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: {
-                            //log_i("Trying to configure cluster reporting on device (0x%x), endpoint (0x%x)", joined_device->short_addr, joined_device->endpoint);
-                            //zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, true);      
-                            //zbGateway.readClusterReportCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, true);
-                            //zbGateway.readClusterReportCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 0x0021, true);
-                            //zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
-                                                        //  ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 0, 60, 1, true);
-                            //zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
-                                                        //  0x0021, //ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID, 
-                                 //                         ESP_ZB_ZCL_ATTR_TYPE_U8, 0, 4*60*60, 1, true);
-                          } break;
-                        }
                   }  
                   else 
                   log_i("DESC checking 0x%x, %d, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, endpoint %d ",
@@ -386,6 +368,9 @@ void loop() {
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {
                 } break;
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: {
+                  if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, true))
+                      log_i("IAS_ZONE attribute has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    
                   /*log_i("Trying to configure cluster reporting on device (0x%x), endpoint (0x%x)", joined_device->short_addr, joined_device->endpoint);
                   zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, true);      
                   zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 0x0021, true);
@@ -404,9 +389,19 @@ void loop() {
                   //zbGateway.sendIASzoneEnrollResponseCmd(joined_device, ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS, 120);
                   //delay(200);
                   //zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, true);
-                  
-                  
                 } break;
+                 case Z2S_DEVICE_DESC_SMART_BUTTON_5F:
+                 case Z2S_DEVICE_DESC_SMART_BUTTON_3F:
+                 case Z2S_DEVICE_DESC_SMART_BUTTON_2F: {
+                    if (zbGateway.sendAttributeRead(joined_device, 0x0006,0x8004, true))
+                      log_i("ON_OFF attribute has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    write_mask = 0x01;
+                    zbGateway.sendAttributeWrite(joined_device, 0x0006, 0x8004, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
+                    if (zbGateway.sendAttributeRead(joined_device, 0x0006,0x8004, true))
+                      log_i("ON_OFF attribute has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    
+                    //zbGateway.sendAttributeRead(joined_device, 0x0006,0x8004, true);
+                 } break;
               }
               //zbGateway.setClusterReporting( joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
                 //                        ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 30, 300, 1);

@@ -15,6 +15,8 @@ uint16_t ZigbeeGateway::_endpoints_2_bind = 0;
 uint16_t ZigbeeGateway::_clusters_2_bind = 0;
 uint8_t ZigbeeGateway::_binding_error_retries = 0;
 query_basic_cluster_data_t ZigbeeGateway::_last_device_query;
+uint8_t ZigbeeGateway::_read_attr_last_tsn = 0;
+esp_zb_zcl_attribute_t ZigbeeGateway::_read_attr_last_result;
 //
 
 #define ZB_CMD_TIMEOUT 10000
@@ -569,11 +571,18 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, attribute->data.type);
 }
 
-void ZigbeeGateway::zbAttrReadResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) {
+void ZigbeeGateway::zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) {
   
   //esp_zb_ieee_address_by_short(src_address.u.short_addr,src_address.u.ieee_addr);
-  xSemaphoreGive(gt_lock);
-  zbAttributeReporting(src_address, src_endpoint, cluster_id, attribute);
+  if (tsn == _read_attr_last_tsn)
+  {
+    log_i("zbReadAttrResponse tsn matched");
+    memcpy(&_read_attr_last_result, attribute, sizeof(const esp_zb_zcl_attribute_t));
+    log_i("check 0x%x vs 0x%x", _read_attr_last_result.id, attribute->id);
+    xSemaphoreGive(gt_lock);  
+  }
+  
+  //zbAttributeReporting(src_address, src_endpoint, cluster_id, attribute);
   
 }
 
@@ -694,7 +703,7 @@ void ZigbeeGateway::zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16
 }
 
 
-void ZigbeeGateway::sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack) {
+bool ZigbeeGateway::sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack) {
 
     esp_zb_zcl_read_attr_cmd_t read_req;
 
@@ -722,12 +731,13 @@ void ZigbeeGateway::sendAttributeRead(zb_device_params_t * device, int16_t clust
 
     log_i("Sending 'read attribute' command");
     esp_zb_lock_acquire(portMAX_DELAY);
-    esp_zb_zcl_read_attr_cmd_req(&read_req);
+    _read_attr_last_tsn = esp_zb_zcl_read_attr_cmd_req(&read_req);
     esp_zb_lock_release();
 
     if (ack && xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
       log_e("Semaphore timeout reading attribute 0x%x - device 0x%x, endpoint 0x%x, cluster 0x%x", attribute_id, device->short_addr, device->endpoint, cluster_id);
-    }
+      return false;
+    } else return true;
 }
 
 void ZigbeeGateway::sendAttributeWrite( zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
@@ -755,6 +765,11 @@ void ZigbeeGateway::sendAttributeWrite( zb_device_params_t * device, int16_t clu
     attribute_field[0].data.type = attribute_type;
     attribute_field[0].data.size = attribute_size;
     attribute_field[0].data.value = attribute_value;
+
+    write_req.manuf_specific = 0;
+    write_req.dis_defalut_resp = 0;
+    write_req.direction = 0;
+    write_req.manuf_code = 0;
 
     log_i("Sending 'write attribute' command - id (0x%x), type (0x%x), size (0x%x), value (0x%x)",
     (*((esp_zb_zcl_attribute_t*)write_req.attr_field)).id, (*((esp_zb_zcl_attribute_t*)write_req.attr_field)).data.type,
