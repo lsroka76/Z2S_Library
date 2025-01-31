@@ -214,11 +214,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 4, Z2S_DEVICE_DESC_SWITCH_4X3 }}},
 
   { .manufacturer_name = "_TZ3000_yj6k7vfo", .model_name = "TS0041", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 4, 
-    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_ON_OFF },
-                              { 2, Z2S_DEVICE_DESC_ON_OFF },
-                              { 3, Z2S_DEVICE_DESC_ON_OFF },
-                              { 4, Z2S_DEVICE_DESC_ON_OFF }}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_4fjiwweb", .model_name = "TS004F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},

@@ -7,13 +7,13 @@
 
 void initZ2SDeviceIASzone(uint8_t Supla_channel) {
   
-  auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
+  auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(true);
   Supla_VirtualBinary->getChannel()->setChannelNumber(Supla_channel);
 }
 
 void addZ2SDeviceIASzone(zb_device_params_t *device, uint8_t free_slot) {
   
-  auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
+  auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(true);
   Z2S_fillDevicesTableSlot(device, free_slot, Supla_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR,-1);
 }
 
