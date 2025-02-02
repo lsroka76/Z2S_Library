@@ -105,7 +105,7 @@ public:
   //list of all handlers function calls, to be override by EPs implementation
   virtual bool zbRawCmdHandler( esp_zb_zcl_addr_t source, uint8_t src_endpoint, uint8_t dst_endpoint, uint16_t cluster_id, uint8_t cmd_id, 
                                 bool is_common_command, bool disable_default_response, bool is_manuf_specific, uint16_t manuf_specific,
-                                uint8_t buffer_size, uint8_t *buffer) {return false;}
+                                uint8_t buffer_size, uint8_t *buffer) {return false;};
   virtual void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) {};
   virtual void zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) {};
   virtual void zbWriteAttrResponse(esp_zb_zcl_status_t status, uint16_t attribute_id) {};

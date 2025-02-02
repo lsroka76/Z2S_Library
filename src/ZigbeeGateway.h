@@ -108,7 +108,8 @@ public:
   void setClusterReporting(zb_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
                                         uint16_t min_interval, uint16_t max_interval, uint16_t delta, bool ack);
   void readClusterReportCmd(zb_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
-  
+  void readClusterReportCfgCmd(zb_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
+
   bool sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false);
   void sendAttributeWrite( zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value);
@@ -137,6 +138,9 @@ public:
   }
   void onRMSActivePowerReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
     _on_rms_active_power_receive = callback;
+  }
+  void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t)) {
+    _on_current_summation_receive = callback;
   }
   void onBatteryPercentageReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
     _on_battery_percentage_receive = callback;
@@ -185,6 +189,7 @@ private:
   void (*_on_rms_voltage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t );
   void (*_on_rms_current_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_rms_active_power_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
+  void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t);
   void (*_on_battery_percentage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
 
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t);
