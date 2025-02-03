@@ -11,8 +11,7 @@ void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zb_device_params_t *de
   auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway,device->ieee_addr);
   Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1);
   auto Supla_Z2S_OnePhaseElectricityMeter = new Supla::Sensor::Z2S_OnePhaseElectricityMeter(gateway, device);
-        Z2S_fillDevicesTableSlot(device, next_free_slot, Supla_Z2S_OnePhaseElectricityMeter->getChannelNumber(), 
-                                SUPLA_CHANNELTYPE_ELECTRICITY_METER, -1);
+  Z2S_fillDevicesTableSlot(device, next_free_slot, Supla_Z2S_OnePhaseElectricityMeter->getChannelNumber(), SUPLA_CHANNELTYPE_ELECTRICITY_METER, -1);
 
 }
 

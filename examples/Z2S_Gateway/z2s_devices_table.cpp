@@ -25,9 +25,9 @@ uint32_t Z2S_getDevicesTableSize() {
     return 0;
 }
 
-uint8_t Z2S_findFirstFreeDevicesTableSlot() {
+uint8_t Z2S_findFirstFreeDevicesTableSlot(uint8_t start_slot = 0) {
 
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
+  for (uint8_t devices_counter = start_slot; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
       if (!z2s_devices_table[devices_counter].valid_record)
         return devices_counter;
   return 0xFF;
@@ -456,7 +456,7 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2: {
       
-        uint8_t next_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        uint8_t next_free_slot = Z2S_findFirstFreeDevicesTableSlot(first_free_slot + 1);
         if (next_free_slot == 0xFF) {
           log_i("ERROR! Devices table full!");
           return;
