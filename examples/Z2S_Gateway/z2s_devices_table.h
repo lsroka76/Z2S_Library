@@ -31,7 +31,7 @@ const static char   Z2S_DEVICES_TABLE_SIZE []  PROGMEM = "Z2S_devs_ts";
 
 uint32_t Z2S_getDevicesTableSize();
 
-uint8_t Z2S_findFirstFreeDevicesTableSlot();
+uint8_t Z2S_findFirstFreeDevicesTableSlot(uint8_t start_slot = 0);
 
 void Z2S_printDevicesTableSlots();
 
