@@ -2,6 +2,7 @@
 
 #include "z2s_devices_table.h"
 #include "z2s_device_iaszone.h"
+#include "z2s_device_virtual_relay.h"
 #include "z2s_device_electricity_meter.h"
 #include "z2s_device_tuya_hvac.h"
 
@@ -11,6 +12,7 @@
 #include <supla/control/virtual_relay.h>
 
 #include <Z2S_control/Z2S_virtual_relay.h>
+#include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
 
 
 extern ZigbeeGateway zbGateway;
@@ -186,19 +188,13 @@ void Z2S_initSuplaChannels(){
             auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
             Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
           } break;
-          case SUPLA_CHANNELTYPE_BINARYSENSOR: {
-            
-            initZ2SDeviceIASzone(z2s_devices_table[devices_counter].Supla_channel); 
-            
-          } break;
-          case SUPLA_CHANNELTYPE_RELAY: {
-            auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway, z2s_devices_table[devices_counter].ieee_addr );
-            Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
-          } break;
+          case SUPLA_CHANNELTYPE_BINARYSENSOR: initZ2SDeviceIASzone(z2s_devices_table[devices_counter].Supla_channel); break;
+          case SUPLA_CHANNELTYPE_RELAY: initZ2SDeviceVirtualRelay(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
-            auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
+            //auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
+            auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(z2s_devices_table[devices_counter].Supla_channel_func, 1000);
             Supla_VirtualRelay->setInitialCaption(z2s_devices_table[devices_counter].Supla_channel_name);
-            Supla_VirtualRelay->setDefaultFunction(z2s_devices_table[devices_counter].Supla_channel_func);
+            //Supla_VirtualRelay->setDefaultFunction(z2s_devices_table[devices_counter].Supla_channel_func);
             Supla_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
           } break;
           case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
@@ -207,10 +203,7 @@ void Z2S_initSuplaChannels(){
             else
               initZ2SDeviceElectricityMeter(&zbGateway, device, false, z2s_devices_table[devices_counter].Supla_channel);
           } break;
-          case SUPLA_CHANNELTYPE_HVAC: {
-
-            initZ2SDeviceTyuaHvac(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel);
-          } break;
+          case SUPLA_CHANNELTYPE_HVAC: initZ2SDeviceTyuaHvac(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           default: {
             log_i("Can't create channel for %d channel type", z2s_devices_table[devices_counter].Supla_channel_type);
           } break;
@@ -264,14 +257,7 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-  {
-    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
-
-        auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
-        Supla_Z2S_VirtualRelay->Z2S_setOnOff(state); 
-    }
-  }
+    msgZ2SDeviceVirtualRelay(z2s_devices_table[channel_number_slot].Supla_channel, state);
 }
 
 void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t voltage) {
@@ -359,8 +345,8 @@ void Z2S_onOnOffCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
       else log_i("element not found");
       if (element) { //(element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
         log_i("trying to toggle");
-      auto Supla_VirtualRelay = reinterpret_cast<Supla::Control::VirtualRelay *>(element);
-      Supla_VirtualRelay->turnOn(1000); //toggle();
+      auto Supla_VirtualRelay = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
+      Supla_VirtualRelay->toggle();
       }
     }
   }
@@ -377,15 +363,12 @@ int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, clu
 }
 
 void Z2S_onBTCBoundDevice(zb_device_params_t *device) {
-
-  
-  log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
+    log_i("BTC bound device 0x%x on endpoint 0x%x cluster id 0x%x", device->short_addr, device->endpoint, device->cluster_id );
   //zbGateway.zbQueryDeviceBasicCluster(device);
 }
 
 
 void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster) {
-  
 }
 
 void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
@@ -414,25 +397,20 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
         auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, -1);
       } break;
-      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: {
-        addZ2SDeviceIASzone(device, first_free_slot);
-      } break;
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: addZ2SDeviceIASzone(device, first_free_slot); break;
       case Z2S_DEVICE_DESC_RELAY:
-      case Z2S_DEVICE_DESC_RELAY_1: {
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
-        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1); 
-      } break;
+      case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot); break;
       case Z2S_DEVICE_DESC_ON_OFF:
       case Z2S_DEVICE_DESC_ON_OFF_1: {
         auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id); 
       } break;
       case Z2S_DEVICE_DESC_SWITCH_4X3: {
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
+        //auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
+        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(SUPLA_CHANNELFNC_POWERSWITCH, 1000);
         char button_name_function[30];
         char button_function[][15] = {"pressed", "double pressed","held"};
         sprintf(button_name_function, "button #%d %s", device->endpoint, button_function[sub_id]);
-        
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
         button_name_function, SUPLA_CHANNELFNC_POWERSWITCH); 
       } break;
@@ -447,7 +425,6 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
           sprintf(button_name_function, "button %s", button_function_press[sub_id]);
         else
           sprintf(button_name_function, "button %s", button_function_rotate[sub_id - ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_ID]);
-        
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
         button_name_function, SUPLA_CHANNELFNC_POWERSWITCH); 
       } break;
@@ -456,18 +433,16 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2: {
       
-        uint8_t next_free_slot = Z2S_findFirstFreeDevicesTableSlot(first_free_slot + 1);
-        if (next_free_slot == 0xFF) {
+        addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot);
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
           log_i("ERROR! Devices table full!");
           return;
         }
-        if (device->model_id == Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2) addZ2SDeviceElectricityMeter(&zbGateway, device, true, first_free_slot, next_free_slot);
-        else addZ2SDeviceElectricityMeter(&zbGateway, device, false, first_free_slot, next_free_slot);
-        
+        if (device->model_id == Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2) addZ2SDeviceElectricityMeter(&zbGateway, device, true, first_free_slot);
+        else addZ2SDeviceElectricityMeter(&zbGateway, device, false, first_free_slot);
       } break;
-      case Z2S_DEVICE_TUYA_HVAC: {
-        addZ2SDeviceTyuaHvac(&zbGateway, device, first_free_slot);
-      } break;
+      case Z2S_DEVICE_TUYA_HVAC: addZ2SDeviceTyuaHvac(&zbGateway, device, first_free_slot); break;
       default : {
         log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);
       } break;

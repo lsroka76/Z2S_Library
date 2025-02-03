@@ -28,7 +28,7 @@ namespace Supla {
 namespace Control {
 class Z2S_VirtualRelay : public Relay {
  public:
-  Z2S_VirtualRelay(ZigbeeGateway *Gateway, esp_zb_ieee_addr_t ieee_addr, _supla_int_t functions =
+  Z2S_VirtualRelay(ZigbeeGateway *gateway, zb_device_params_t *device, _supla_int_t functions =
                    (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER));
 
   void onInit() override;
@@ -39,8 +39,9 @@ class Z2S_VirtualRelay : public Relay {
 
  protected:
   bool state = false;
-  ZigbeeGateway *Gateway = nullptr;
-  esp_zb_ieee_addr_t relay_ieee_addr;
+  ZigbeeGateway *_gateway = nullptr;
+  zb_device_params_t 	_device;
+ 
 };
 
 };  // namespace Control

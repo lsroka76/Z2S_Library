@@ -21,9 +21,9 @@
 
 #include <supla/time.h>
 
-Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *Gateway, esp_zb_ieee_addr_t ieee_addr, _supla_int_t functions)
-    : Relay(-1, true, functions), Gateway(Gateway){
-      memcpy(relay_ieee_addr, ieee_addr,8);
+Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zb_device_params_t *device, _supla_int_t functions)
+    : Relay(-1, true, functions), _gateway(gateway){
+    memcpy(&_device, device, sizeof(zb_device_params_t));     
 }
 
 void Supla::Control::Z2S_VirtualRelay::onInit() {
@@ -51,10 +51,9 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
     durationTimestamp = 0;
   }
 
-  state = true;
-  if (esp_zb_is_started() && esp_zb_lock_acquire(portMAX_DELAY)) {
-    Gateway->setOnOffCluster(relay_ieee_addr, state);
-    esp_zb_lock_release();
+  if (_gateway && Zigbee.started()) {   
+    state = true;
+    _gateway->setOnOffCluster(&_device, state);
     channel.setNewValue(state);
   }
   // Schedule save in 5 s after state change
@@ -72,11 +71,9 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
   } else {
     durationTimestamp = 0;
   }
-  state = false;
-
-  if (esp_zb_is_started() && esp_zb_lock_acquire(portMAX_DELAY)) {
-    Gateway->setOnOffCluster(relay_ieee_addr, state);
-    esp_zb_lock_release();
+  if (_gateway && Zigbee.started()) {   
+    state = false;
+    _gateway->setOnOffCluster(&_device, state);
     channel.setNewValue(state);
   }
   

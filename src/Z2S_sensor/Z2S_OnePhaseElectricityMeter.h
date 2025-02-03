@@ -14,6 +14,7 @@ class Z2S_OnePhaseElectricityMeter : public OnePhaseElectricityMeter {
   Z2S_OnePhaseElectricityMeter(ZigbeeGateway *gateway, zb_device_params_t *device, bool active_query = false) : _gateway(gateway) {
 	memcpy(&_device, device, sizeof(zb_device_params_t));
 	_active_query = active_query;
+	if (_active_query) refreshRateSec = 30;
 
   }
 
@@ -34,23 +35,7 @@ class Z2S_OnePhaseElectricityMeter : public OnePhaseElectricityMeter {
        
 	if (_active_query && _gateway->sendAttributeRead(&_device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, true)) {
          esp_zb_uint48_t *value = (esp_zb_uint48_t *)_gateway->getReadAttrLastResult()->data.value;
-         //esp_zb_uint24_t *multiplier;
-         //esp_zb_uint24_t *divisor;
-
-         //if (Gateway->sendAttributeRead(&Device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID, true))
-         //  multiplier = (esp_zb_uint24_t *)Gateway->getReadAttrLastResult()->data.value;
-	//if (Gateway->sendAttributeRead(&Device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID, true))
-        //   divisor = (esp_zb_uint24_t *)Gateway->getReadAttrLastResult()->data.value;
-
-	 //log_i("value high 0x%x and low 0x%x, multiplier high 0x%x low 0x%x, divisor high 0x%x low 0x%x", value->high, value->low,
-           //    multiplier->high, multiplier->low, divisor->high, divisor->low);
-
-          _supla_int64_t energy = ((_supla_int64_t)value->high << 32) + value->low;
-	//	log_i("energy after shit 0x%x", energy);
-         //_supla_int64_t multiplier64 = ((_supla_int64_t)multiplier->high << 16) + multiplier->low;
-	//_supla_int64_t divisor64 = ((_supla_int64_t)divisor->high << 16) + divisor->low;
-	//if (multiplier64 !=0) energy = energy * multiplier64;
-	//if (divisor64 != 0) energy = energy / divisor64;
+         _supla_int64_t energy = ((_supla_int64_t)value->high << 32) + value->low;
 	 setFwdActEnergy(0, energy);
        }
     }
