@@ -1,4 +1,4 @@
-/* thanks to rafalekkalwak@wp.pl */
+/* credits @rafalekkalwak@wp.pl */
 
 #ifndef SRC_SUPLA_CONTROL_VIRTUAL_RELAY_SCENE_SWITCH_H_
 #define SRC_SUPLA_CONTROL_VIRTUAL_RELAY_SCENE_SWITCH_H_
