@@ -1,7 +1,7 @@
 #ifndef Z2S_DEVICE_TYUA_HVAC_H_
 #define Z2S_DEVICE_TYUA_HVAC_H_
 
-#include "Z2S_Devices_Table.h"
+#include "z2s_devices_table.h"
 //#include <SuplaDevice.h>
 //#include <supla/control/hvac_base.h>
 

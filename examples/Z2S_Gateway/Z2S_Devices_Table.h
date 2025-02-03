@@ -2,7 +2,7 @@
 #define Z2S_DEVICES_TABLE_H_
 
 #include <ZigbeeGateway.h>
-#include "Z2S_Devices_Database.h"
+#include "z2s_devices_database.h"
 
 typedef struct z2s_device_params_s {
 

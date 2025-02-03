@@ -12,6 +12,8 @@
 #define Z2S_DEVICE_DESC_RELAY_1                     0x4001
 
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER     0x4100
+#define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1   0x4101
+#define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2   0x4102
 
 #define Z2S_DEVICE_DESC_SMART_BUTTON_5F             0x5000
 #define Z2S_DEVICE_DESC_SMART_BUTTON_3F             0x5001
@@ -75,6 +77,17 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_METERING,
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
+{ .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,

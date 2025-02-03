@@ -2,15 +2,16 @@
 
 #include "z2s_devices_table.h"
 #include "z2s_device_iaszone.h"
+#include "z2s_device_electricity_meter.h"
 #include "z2s_device_tuya_hvac.h"
 
 #include <SuplaDevice.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
-#include <supla/sensor/one_phase_electricity_meter.h>
+
 #include <supla/control/virtual_relay.h>
 
 #include <Z2S_control/Z2S_virtual_relay.h>
-#include <Z2S_sensor/Z2S_OnePhaseElectricityMeter.h>
+
 
 extern ZigbeeGateway zbGateway;
 
@@ -201,8 +202,10 @@ void Z2S_initSuplaChannels(){
             Supla_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
           } break;
           case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
-            auto Supla_Z2S_OnePhaseElectricityMeter = new Supla::Sensor::Z2S_OnePhaseElectricityMeter(&zbGateway, device);
-            Supla_Z2S_OnePhaseElectricityMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
+            if (z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2)
+              initZ2SDeviceElectricityMeter(&zbGateway, device, true, z2s_devices_table[devices_counter].Supla_channel);
+            else
+              initZ2SDeviceElectricityMeter(&zbGateway, device, false, z2s_devices_table[devices_counter].Supla_channel);
           } break;
           case SUPLA_CHANNELTYPE_HVAC: {
 
@@ -279,14 +282,7 @@ void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-  {
-    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-
-        auto Supla_OnePhaseElectricityMeter = reinterpret_cast<Supla::Sensor::OnePhaseElectricityMeter *>(element);
-        Supla_OnePhaseElectricityMeter->setVoltage(0, voltage * 100);
-    }
-  }
+    msgZ2SDeviceElectricityMeter(z2s_devices_table[channel_number_slot].Supla_channel, Z2S_EM_VOLTAGE_SEL, voltage);
 }
 
 void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t current) {
@@ -297,14 +293,7 @@ void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-  {
-    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-
-        auto Supla_OnePhaseElectricityMeter = reinterpret_cast<Supla::Sensor::OnePhaseElectricityMeter *>(element);
-        Supla_OnePhaseElectricityMeter->setCurrent(0, current * 1);
-    }
-  }
+    msgZ2SDeviceElectricityMeter(z2s_devices_table[channel_number_slot].Supla_channel, Z2S_EM_CURRENT_SEL, current);
 }
 
 void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t active_power) {
@@ -315,14 +304,7 @@ void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-  {
-    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-
-        auto Supla_OnePhaseElectricityMeter = reinterpret_cast<Supla::Sensor::OnePhaseElectricityMeter *>(element);
-        Supla_OnePhaseElectricityMeter->setPowerActive(0, active_power * 100000);
-    }
-  }
+    msgZ2SDeviceElectricityMeter(z2s_devices_table[channel_number_slot].Supla_channel, Z2S_EM_ACTIVE_POWER_SEL, active_power);
 }
 
 void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint64_t active_fwd_energy) {
@@ -333,14 +315,7 @@ void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-  {
-    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-
-        auto Supla_OnePhaseElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_OnePhaseElectricityMeter *>(element);
-        Supla_OnePhaseElectricityMeter->setFwdActEnergy(0, active_fwd_energy * 1000);
-    }
-  }
+    msgZ2SDeviceElectricityMeter(z2s_devices_table[channel_number_slot].Supla_channel, Z2S_ACT_FWD_ENERGY_SEL, active_fwd_energy);
 }
 
 void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t battery_remaining) {
@@ -441,8 +416,6 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
       } break;
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: {
         addZ2SDeviceIASzone(device, first_free_slot);
-        //auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary();
-        //Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR); 
       } break;
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: {
@@ -479,18 +452,18 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
         button_name_function, SUPLA_CHANNELFNC_POWERSWITCH); 
       } break;
 
-      case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER: {
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(&zbGateway,device->ieee_addr);
-        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1); 
-        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
-        if (first_free_slot == 0xFF) {
-          log_i("Devices table full");
+      case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
+      case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
+      case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2: {
+      
+        uint8_t next_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (next_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
           return;
         }
-        auto Supla_Z2S_OnePhaseElectricityMeter = new Supla::Sensor::Z2S_OnePhaseElectricityMeter(&zbGateway, device);
-        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_OnePhaseElectricityMeter->getChannelNumber(), 
-                                SUPLA_CHANNELTYPE_ELECTRICITY_METER, -1);
-
+        if (device->model_id == Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2) addZ2SDeviceElectricityMeter(&zbGateway, device, true, first_free_slot, next_free_slot);
+        else addZ2SDeviceElectricityMeter(&zbGateway, device, false, first_free_slot, next_free_slot);
+        
       } break;
       case Z2S_DEVICE_TUYA_HVAC: {
         addZ2SDeviceTyuaHvac(&zbGateway, device, first_free_slot);

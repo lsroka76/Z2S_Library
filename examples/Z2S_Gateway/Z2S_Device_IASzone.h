@@ -1,7 +1,7 @@
 #ifndef Z2S_DEVICE_IASZONE_H_
 #define Z2S_DEVICE_IASZONE_H_
 
-#include "Z2S_Devices_Table.h"
+#include "z2s_devices_table.h"
 #include <supla/sensor/virtual_binary.h>
 
 void initZ2SDeviceIASzone(uint8_t Supla_channel);
