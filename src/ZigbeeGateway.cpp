@@ -263,7 +263,7 @@ void ZigbeeGateway::zbPrintDeviceDiscovery (zb_device_params_t * device) {
   esp_zb_lock_release();
 }
 
-void ZigbeeGateway::zbQueryDeviceBasicCluster(zb_device_params_t * device) {
+bool ZigbeeGateway::zbQueryDeviceBasicCluster(zb_device_params_t * device) {
   
   esp_zb_zcl_read_attr_cmd_t read_req;
 
@@ -296,8 +296,10 @@ void ZigbeeGateway::zbQueryDeviceBasicCluster(zb_device_params_t * device) {
     //Wait for response or timeout
     if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
       log_e("Error while querying basic cluster attribute 0x%x", attributes[attribute_number]);
+      if (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) return false;
     }
-  } 
+  }
+  return true; 
 }
 
 void ZigbeeGateway::zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) {
@@ -868,6 +870,31 @@ void ZigbeeGateway::setOnOffCluster(zb_device_params_t *device, bool value) {
     esp_zb_zcl_on_off_cmd_req(&cmd_req);
     esp_zb_lock_release();
 }
+
+void ZigbeeGateway::sendDeviceFactoryReset(zb_device_params_t *device) {
+
+    esp_zb_zcl_basic_fact_reset_cmd_t cmd_req;
+    
+    if (device->short_addr != 0) {
+      cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+      cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+    } else {
+      cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
+      memcpy(cmd_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+    }
+    cmd_req.zcl_basic_cmd.src_endpoint = _endpoint;
+    cmd_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+
+    //cmd_req.on_off_cmd_id = value ? ESP_ZB_ZCL_CMD_ON_OFF_ON_ID : ESP_ZB_ZCL_CMD_ON_OFF_OFF_ID;
+    //log_v(
+    //  "Sending ON/OFF command to ieee address %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", ieee_addr[7], ieee_addr[6], ieee_addr[5],
+    //  ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]
+    //); candidate for removal
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_zb_zcl_basic_factory_reset_cmd_req(&cmd_req);
+    esp_zb_lock_release();
+}
+
 
 void ZigbeeGateway::zbCmdDefaultResponse( esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) {
   if ((cluster_id == TUYA_PRIVATE_CLUSTER_EF00) && (resp_to_cmd = 0x00))

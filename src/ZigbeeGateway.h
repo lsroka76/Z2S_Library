@@ -103,7 +103,7 @@ public:
   void zbPrintDeviceDiscovery (zb_device_params_t * device);
   static void bindDeviceCluster(zb_device_params_t *,int16_t cluster_id);
 
-  void zbQueryDeviceBasicCluster(zb_device_params_t * device);
+  bool zbQueryDeviceBasicCluster(zb_device_params_t * device);
   void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) override;
   void setClusterReporting(zb_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
                                         uint16_t min_interval, uint16_t max_interval, uint16_t delta, bool ack);
@@ -115,6 +115,7 @@ public:
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value);
   void sendIASzoneEnrollResponseCmd(zb_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
   void setOnOffCluster(zb_device_params_t *device, bool value);
+  void sendDeviceFactoryReset(zb_device_params_t *device);
   void sendCustomClusterCmd(zb_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, uint16_t custom_data_size, uint8_t *custom_data, bool ack = false);
 
   

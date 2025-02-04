@@ -261,7 +261,12 @@ void loop() {
     while (!zbGateway.getJoinedDevices().empty())
     {
       joined_device = zbGateway.getLastJoinedDevice();
-      zbGateway.zbQueryDeviceBasicCluster(joined_device);
+      //zbGateway.sendDeviceFactoryReset(joined_device);
+      if (!zbGateway.zbQueryDeviceBasicCluster(joined_device))
+      {
+        log_i("Error while pairing - cann't read manufacturer id. Gateway will restart, try to pair device once again!");
+        SuplaDevice.scheduleSoftRestart(0);
+      }
       
       uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
          uint16_t devices_desc_table_size = sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
@@ -353,6 +358,7 @@ void loop() {
                   }
               }
               //here we can configure reporting and restart ESP32
+              zbGateway.sendDeviceFactoryReset(joined_device);
               switch (joined_device->model_id) {
                 case 0x0000: break;      
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
@@ -360,13 +366,13 @@ void loop() {
                 } break;
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1: {
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 360, 5, true);
+                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 300, 5, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 360, 10, true);
+                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 300, 10, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 360, 5, true);
+                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 300, 5, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING,  
-                                                ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48, 0, 30, 1, true);
+                                                ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48, 0, 300, 1, true);
                   
                   //zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, true);
                   //zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, true);
