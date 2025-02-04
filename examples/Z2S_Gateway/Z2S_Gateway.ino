@@ -76,6 +76,7 @@ void setup() {
   log_i("undef webinterface");
   //cfg->setGUID(GUID);
   //cfg->setAuthKey(AUTHKEY);
+  cfg->generateGuidAndAuthkey();
   cfg->setWiFiSSID(SUPLA_WIFI_SSID);
   cfg->setWiFiPassword(SUPLA_WIFI_PASS);
   cfg->setSuplaServer(SUPLA_SVR);

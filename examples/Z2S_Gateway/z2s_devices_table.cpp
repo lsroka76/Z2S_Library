@@ -192,9 +192,9 @@ void Z2S_initSuplaChannels(){
           case SUPLA_CHANNELTYPE_RELAY: initZ2SDeviceVirtualRelay(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
             //auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
-            auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(z2s_devices_table[devices_counter].Supla_channel_func, 1000);
+            auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, 1000);
             Supla_VirtualRelay->setInitialCaption(z2s_devices_table[devices_counter].Supla_channel_name);
-            //Supla_VirtualRelay->setDefaultFunction(z2s_devices_table[devices_counter].Supla_channel_func);
+            Supla_VirtualRelay->setDefaultFunction(z2s_devices_table[devices_counter].Supla_channel_func);
             Supla_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
           } break;
           case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
@@ -407,7 +407,7 @@ void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id) {
       } break;
       case Z2S_DEVICE_DESC_SWITCH_4X3: {
         //auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(SUPLA_CHANNELFNC_POWERSWITCH, 1000);
+        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, 1000);
         char button_name_function[30];
         char button_function[][15] = {"pressed", "double pressed","held"};
         sprintf(button_name_function, "button #%d %s", device->endpoint, button_function[sub_id]);
