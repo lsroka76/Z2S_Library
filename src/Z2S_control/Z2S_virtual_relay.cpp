@@ -27,13 +27,13 @@ Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zb_de
 }
 
 void Supla::Control::Z2S_VirtualRelay::onInit() {
-  uint32_t duration = durationMs;
+  /*uint32_t duration = durationMs;
   if (stateOnInit == STATE_ON_INIT_ON ||
       stateOnInit == STATE_ON_INIT_RESTORED_ON) {
     turnOn(duration);
   } else {
     turnOff(duration);
-  }
+  }*/
 }
 
 void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
@@ -82,7 +82,12 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 }
 
 bool Supla::Control::Z2S_VirtualRelay::isOn() {
-  return state;
+  
+  if (_gateway && Zigbee.started()) {   
+     if (_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true))
+         state = *((bool *)_gateway->getReadAttrLastResult()->data.value);
+  }
+   return state;
 }
 
 void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
