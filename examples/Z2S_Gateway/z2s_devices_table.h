@@ -23,6 +23,12 @@ typedef struct z2s_device_params_s {
 
 #define ALL_SUPLA_CHANNEL_TYPES   -1
 
+#define ADD_Z2S_DEVICE_STATUS_OK      0x00 //device added 100%
+#define ADD_Z2S_DEVICE_STATUS_DUN     0x01
+#define ADD_Z2S_DEVICE_STATUS_DT_FULL 0x02 //device table full = device not added
+#define ADD_Z2S_DEVICE_STATUS_DT_FWA  0x03  //device table full while adding = device added partialy
+#define ADD_Z2S_DEVICE_STATUS_DAP     0x04 //device already present
+
 extern z2s_device_params_t z2s_devices_table[Z2S_CHANNELMAXCOUNT];
 
 const static char   Z2S_DEVICES_TABLE []  PROGMEM = "Z2S_devs_table";
@@ -54,6 +60,7 @@ void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
 void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint64_t active_fwd_energy);  
 void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t battery_remaining);
 void Z2S_onOnOffCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, uint8_t command_data);
+bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, uint8_t buffer_size, uint8_t *buffer);
 void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
                                     uint16_t payload_size, uint8_t *payload);
 void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status);
@@ -61,6 +68,6 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
 void Z2S_onBTCBoundDevice(zb_device_params_t *device); 
 void Z2S_onBoundDevice(zb_device_params_t *device, bool last_cluster);
 
-void Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id = -1);
+uint8_t Z2S_addZ2SDevice(zb_device_params_t *device, int8_t sub_id = -1);
 
 #endif

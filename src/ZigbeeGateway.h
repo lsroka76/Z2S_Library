@@ -28,19 +28,6 @@
 #define TUYA_PRIVATE_CLUSTER_1    0xE001
 #define TUYA_PRIVATE_CLUSTER_EF00 0xEF00
 
-
-
-#define ON_OFF_CUSTOM_CMD_BUTTON_PRESS                0xFD
-#define ON_OFF_CUSTOM_CMD_BUTTON_ROTATE               0xFC
-
-#define NO_CUSTOM_CMD_SID                            -0x01
-
-#define ON_OFF_CUSTOM_CMD_BUTTON_PRESSED_SID          0x00
-#define ON_OFF_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID   0x01
-#define ON_OFF_CUSTOM_CMD_BUTTON_HELD_SID             0x02
-#define ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_ID      0x0A
-#define ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_LEFT_ID       0x0B
-
 #define READ_ATTR_TSN_UNKNOWN 0x00
 #define READ_ATTR_TSN_SYNC    0x01
 #define READ_ATTR_TSN_ASYNC   0x02
@@ -154,6 +141,9 @@ public:
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t)) {
     _on_on_off_custom_cmd_receive = callback;
    }
+   void onCustomCmdReceive(bool (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *)) {
+    _on_custom_cmd_receive = callback;
+   }
    void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *)) {
     _on_cmd_custom_cluster_receive = callback;
    }
@@ -201,6 +191,7 @@ private:
   void (*_on_battery_percentage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
 
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t);
+  bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
 
   void (*_on_cmd_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *);
 

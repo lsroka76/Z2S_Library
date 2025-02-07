@@ -41,10 +41,28 @@ class Z2S_OnePhaseElectricityMeter : public OnePhaseElectricityMeter {
     }
   }
 
+void resetStorage() {
+    if (_gateway && Zigbee.started()) {
+
+      _gateway->sendDeviceFactoryReset(&_device);
+//_write_mask.low = 0; _write_mask.high = 0;
+  //                  _gateway->sendAttributeWrite(&_device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
+//ESP_ZB_ZCL_ATTR_TYPE_U48, 6, &_write_mask);
+
+    if (_gateway->sendAttributeRead(&_device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, true)) {
+         esp_zb_uint48_t *value = (esp_zb_uint48_t *)_gateway->getReadAttrLastResult()->data.value;
+         _supla_int64_t energy = ((_supla_int64_t)value->high << 32) + value->low;
+	 setFwdActEnergy(0, energy);
+       }
+     }
+  }
+
  protected:
    ZigbeeGateway 	*_gateway = nullptr;
    zb_device_params_t 	_device;  
    bool                 _active_query = false;
+   esp_zb_uint48_t      _write_mask;
+
 };
 
 };  // namespace Sensor
