@@ -25,6 +25,6 @@ jobs:
 #          python-version: '3.11'
       - uses: arduino/compile-sketches@v1.1.2
         with:
-          fqbn: "esp32:esp32:esp32c6"
+          fqbn: "esp32:esp32:esp32c6:ZigbeeMode=zczr"
           libraries: |
             - name: SuplaDevice
