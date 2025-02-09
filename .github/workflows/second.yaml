@@ -15,7 +15,7 @@ jobs:
           arduino-cli core install esp32:esp32
       - name: Compile Sketch
         working-directory: ./examples/Z2S_Gateway/
-        run: arduino-cli compile -b esp32:esp32::esp32c6 -e --build-property="compiler.cpp.extra_flags=\"\""
+        run: arduino-cli compile -b esp32:esp32:esp32c6 -e --build-property="compiler.cpp.extra_flags=\"\""
 #      - name: Upload bin
 #        uses: actions/upload-artifact@v2
 #        with:
