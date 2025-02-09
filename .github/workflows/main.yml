@@ -20,9 +20,9 @@ jobs:
           path: |
             ~/.cache/pip
           key: ${{ runner.os }}-arduino
-#      - uses: actions/setup-python@v5
-#        with:
-#          python-version: '3.11'
+      - name: Move partitions file
+        run: |
+          cp ./partitions/custom_zigbee_zczr.csv ./examples/Z2S_Gateway/partitions.csv
       - uses: arduino/compile-sketches@v1.1.2
         with:
           fqbn: "esp32:esp32:esp32c6:ZigbeeMode=zczr"
