@@ -14,8 +14,8 @@ jobs:
         run: |
           arduino-cli core install esp32:esp32
       - name: Compile Sketch
-        working-directory: ./microcontroller
-        run: ARDUINO_DIRECTORIES_USER=$GITHUB_WORKSPACE/microcontroller arduino-cli compile -b esp32:esp32::esp32c6 -e --build-property="compiler.cpp.extra_flags=\"\""
+        working-directory: .
+        run: arduino-cli compile -b esp32:esp32::esp32c6 -e --build-property="compiler.cpp.extra_flags=\"\""
 #      - name: Upload bin
 #        uses: actions/upload-artifact@v2
 #        with:
