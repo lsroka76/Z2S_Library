@@ -106,9 +106,19 @@ public:
   void sendAttributeWrite( zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value);
   void sendIASzoneEnrollResponseCmd(zb_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
-  void setOnOffCluster(zb_device_params_t *device, bool value);
-  void sendDeviceFactoryReset(zb_device_params_t *device);
-  void sendCustomClusterCmd(zb_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, uint16_t custom_data_size, uint8_t *custom_data, bool ack = false);
+
+  void sendOnOffCmd(zb_device_params_t *device, bool value); 
+  void sendLevelMoveToLevelCmd(zb_device_params_t *device, uint8_t level, uint16_t transition_time);
+  void sendColorMoveToHueCmd(zb_device_params_t *device, uint8_t hue, uint8_t directon, uint16_t transition_time);
+  void sendColorMoveToSaturationCmd(zb_device_params_t *device, uint8_t saturation, uint16_t transition_time);
+  void sendColorMoveToHueAndSaturationCmd(zb_device_params_t *device, uint8_t hue, uint8_t saturation, uint16_t transition_time);
+  void sendColorEnhancedMoveToHueAndSaturationCmd(zb_device_params_t *device, uint16_t enhanced_hue, uint8_t saturation, uint16_t transition_time);
+  void sendColorMoveToColorCmd(zb_device_params_t *device, uint16_t color_x, uint16_t color_y, uint16_t transition_time);
+  void sendColorMoveToColorTemperatureCmd(zb_device_params_t *device, uint16_t color_temperature, uint16_t transition_time);
+
+  void sendDeviceFactoryReset(zb_device_params_t *device, bool isTuya = false);
+  void sendCustomClusterCmd(zb_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
+                            uint16_t custom_data_size, uint8_t *custom_data, bool ack = false);
 
   
   void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int)) {
@@ -137,6 +147,15 @@ public:
   }
   void onBatteryPercentageReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
     _on_battery_percentage_receive = callback;
+   }
+   void onCurrentLevelReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
+    _on_current_level_receive = callback;
+   }
+   void onColorHueReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
+    _on_color_hue_receive = callback;
+   }
+   void onColorSaturationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
+    _on_color_saturation_receive = callback;
    }
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t)) {
     _on_on_off_custom_cmd_receive = callback;
@@ -189,6 +208,9 @@ private:
   void (*_on_rms_active_power_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t);
   void (*_on_battery_percentage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
+  void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
+  void (*_on_color_hue_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
+  void (*_on_color_saturation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
 
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t);
   bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);

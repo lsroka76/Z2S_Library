@@ -3,29 +3,37 @@
 
 // Z2S_DEVICE_DESC_ID - used for selection of clusters to bind and matching Supla channels
 
-#define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR         0x1000
-#define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1       0x1001
+#define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             0x1000
+#define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1           0x1001
 
-#define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR             0x2000
+#define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 0x2000
 
-#define Z2S_DEVICE_DESC_RELAY                       0x4000
-#define Z2S_DEVICE_DESC_RELAY_1                     0x4001
+#define Z2S_DEVICE_DESC_LIGHT_SOURCE                    0x3000
+#define Z2S_DEVICE_DESC_RGBW_LIGHT_SOURCE               0x3100
 
-#define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER     0x4100
-#define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1   0x4101
-#define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2   0x4102
+#define Z2S_DEVICE_DESC_RELAY                           0x4000
+#define Z2S_DEVICE_DESC_RELAY_1                         0x4001
 
-#define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F         0x5000
-#define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F         0x5001
-#define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F         0x5002
+#define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER         0x4100
+#define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1       0x4101
+#define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2       0x4102
 
-#define Z2S_DEVICE_DESC_TUYA_SWITCH_4X3             0x5100
-#define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON           0x5200
+#define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER    0x4500
+#define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1  0x4501
+#define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2  0x4502
 
-#define Z2S_DEVICE_TUYA_HVAC                        0x6000
 
-#define Z2S_DEVICE_DESC_ON_OFF                      0x8000
-#define Z2S_DEVICE_DESC_ON_OFF_1                    0x8001
+#define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F            0x5000
+#define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F            0x5001
+#define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F            0x5002
+
+#define Z2S_DEVICE_DESC_TUYA_SWITCH_4X3               0x5100
+#define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON             0x5200
+
+#define Z2S_DEVICE_TUYA_HVAC                          0x6000
+
+#define Z2S_DEVICE_DESC_ON_OFF                        0x8000
+#define Z2S_DEVICE_DESC_ON_OFF_1                      0x8001
 
 
 #define MAX_BOUND_ENDPOINTS 8
@@ -108,11 +116,25 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
       ESP_ZB_ZCL_CLUSTER_ID_METERING,
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
-{ .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_METERING,
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
@@ -137,7 +159,12 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
     { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF}}
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+    { .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_LIGHT_SOURCE, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }}
 };
         
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
@@ -178,6 +205,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "eWeLink", .model_name = "TH01", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.weather", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_0hkmcrza", .model_name = "TS0203", 
@@ -260,6 +290,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZ3000_6zvw8ham", .model_name = "TS0203", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+  
+  { .manufacturer_name = "_TZ3040_bb6xaihh", .model_name = "TS0202", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_prits6g4", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
@@ -268,16 +301,19 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_cehuw1lw", .model_name = "TS011F", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+  
+    { .manufacturer_name = "_TZ3000_okaz9tjs", .model_name = "TS011F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_5f43h46b", .model_name = "TS011F", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_w0qqde0g", .model_name = "TS011F", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_ww6drja5", .model_name = "TS011F", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_wkai4ga5", .model_name = "TS0044", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3, .z2s_device_endpoints_count = 4, 
@@ -314,6 +350,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "IKEA of Sweden", .model_name = "Remote Control N2", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI on/off switch", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_gjrubzje", .model_name = "TS0001",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
 
@@ -324,13 +363,18 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_0dvm9mva", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_TUYA_HVAC, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_TUYA_HVAC, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_keabpigv", .model_name = "TS0505A",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_LIGHT_SOURCE, .z2s_device_endpoints_count = 1}
+    
 };
 
 #endif
 
-//_TZE200_0dvm9mva TS0601
+//TS0505A
 
 
 
 
+//_TZ3000_keabpigv TS0505A

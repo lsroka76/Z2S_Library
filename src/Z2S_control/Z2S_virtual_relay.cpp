@@ -53,7 +53,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
   if (_gateway && Zigbee.started()) {   
     state = true;
-    _gateway->setOnOffCluster(&_device, state);
+    _gateway->sendOnOffCmd(&_device, state);
     channel.setNewValue(state);
   }
   // Schedule save in 5 s after state change
@@ -73,7 +73,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
   }
   if (_gateway && Zigbee.started()) {   
     state = false;
-    _gateway->setOnOffCluster(&_device, state);
+    _gateway->sendOnOffCmd(&_device, state);
     channel.setNewValue(state);
   }
   
