@@ -45,7 +45,7 @@ virtual void readValuesFromDevice() {
     if (_active_query && _gateway->sendAttributeRead(&_device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, true)) {
       esp_zb_uint48_t *value = (esp_zb_uint48_t *)_gateway->getReadAttrLastResult()->data.value;
       _supla_int64_t energy = ((_supla_int64_t)value->high << 32) + value->low;
-      setFwdActEnergy(0, energy);
+      setFwdActEnergy(0, energy * 1000);
     }
   }
 }
