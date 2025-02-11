@@ -22,7 +22,7 @@ jobs:
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr -e --library=. --libraries=SuplaDevice 
       - name: Upload bin
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4.6.0
         with:
           name: Z2S_Gateway.Webinteface.bin
           path: ./build/Z2S_Gateway.ino.bin
