@@ -14,6 +14,9 @@ jobs:
         run: |
           arduino-cli core install esp32:esp32
           arduino-cli lib install SuplaDevice
+      - name: list path
+        run: |
+          which arduino-cli
       - name: Copy boards.txt with C6 config
         run: cp ./partitions/boards.txt ~/.arduino15/packages/esp32/hardware/esp32/3.1.1/
       - name: Compile Sketch
