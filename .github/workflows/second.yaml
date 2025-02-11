@@ -13,9 +13,13 @@ jobs:
       - name: Install platform
         run: |
           arduino-cli core install esp32:esp32
+          arduino-cli lib install SuplaDevice
+      - name: Copy boards.txt with C6 config
+        run: cp ./partitions/boards.txt ~/.arduino15/packages/esp32/hardware/esp32/3.1.1/
       - name: Compile Sketch
-        working-directory: ./examples/Z2S_Gateway/
-        run: arduino-cli compile -b esp32:esp32:esp32c6 -e --build-property="compiler.cpp.extra_flags=\"\""
+        working-directory: .
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=CustomZB,ZigbeeMode=zczr -e --library=. --libraries=SuplaDevice 
+
 #      - name: Upload bin
 #        uses: actions/upload-artifact@v2
 #        with:
