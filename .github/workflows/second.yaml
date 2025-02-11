@@ -18,7 +18,7 @@ jobs:
         run: |
           find –iname “boards”
       - name: Copy boards.txt with C6 config
-        run: cp ./partitions/boards.txt ~/.arduino15/packages/esp32/hardware/esp32/3.1.1/
+        run: cp ./partitions/boards.txt ~/.arduino15/packages/esp32/hardware/esp32/3.1.1/boards.txt
       - name: Compile Sketch
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=CustomZB,ZigbeeMode=zczr -e --library=. --libraries=SuplaDevice 
