@@ -11,8 +11,8 @@ namespace Sensor {
 
 class Z2S_OnePhaseElectricityMeter : public OnePhaseElectricityMeter {
  public:
-  Z2S_OnePhaseElectricityMeter(ZigbeeGateway *gateway, zb_device_params_t *device, bool isTuya, bool active_query = false) : _gateway(gateway) {
-	memcpy(&_device, device, sizeof(zb_device_params_t));
+  Z2S_OnePhaseElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, bool active_query = false) : _gateway(gateway) {
+	memcpy(&_device, device, sizeof(zbg_device_params_t));
 	_active_query = active_query;
         _isTuya = isTuya;
 	if (_active_query) refreshRateSec = 30;
@@ -60,7 +60,7 @@ void resetStorage() {
 
  protected:
    ZigbeeGateway 	*_gateway = nullptr;
-   zb_device_params_t 	_device;  
+   zbg_device_params_t 	_device;  
    bool                 _active_query = false;
    esp_zb_uint48_t      _write_mask;
    bool                 _isTuya = false;

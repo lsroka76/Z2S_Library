@@ -40,9 +40,9 @@ float _hue, _red, _green, _blue, _cmax, _cmin, _delta;
 
 }*/
 
-Supla::Control::Z2S_RGBWLightSource::Z2S_RGBWLightSource(ZigbeeGateway *gateway, zb_device_params_t *device)
+Supla::Control::Z2S_RGBWLightSource::Z2S_RGBWLightSource(ZigbeeGateway *gateway, zbg_device_params_t *device)
     : _gateway(gateway){
-    memcpy(&_device, device, sizeof(zb_device_params_t));     
+    memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
 
 void Supla::Control::Z2S_RGBWLightSource::onInit() {

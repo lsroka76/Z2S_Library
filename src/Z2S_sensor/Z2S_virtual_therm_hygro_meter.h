@@ -26,8 +26,8 @@ namespace Supla {
 namespace Sensor {
 class Z2S_VirtualThermHygroMeter : public Supla::Sensor::ThermHygroMeter {
  public:
-    Z2S_VirtualThermHygroMeter(ZigbeeGateway *Gateway, zb_device_params_t *Device) : Gateway(Gateway) {
-      memcpy(&Device, Device, sizeof(zb_device_params_t));
+    Z2S_VirtualThermHygroMeter(ZigbeeGateway *Gateway, zbg_device_params_t *Device) : Gateway(Gateway) {
+      memcpy(&Device, Device, sizeof(zbg_device_params_t));
   }
 
 
@@ -62,7 +62,7 @@ class Z2S_VirtualThermHygroMeter : public Supla::Sensor::ThermHygroMeter {
   double humidity = HUMIDITY_NOT_AVAILABLE;
 
   ZigbeeGateway 	*Gateway = nullptr;
-  zb_device_params_t 	Device;
+  zbg_device_params_t 	Device;
 
 };
 };  // namespace Sensor

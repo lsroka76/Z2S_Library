@@ -45,9 +45,9 @@ log_i("Z2S_TuyaThermostat::handleAction 0x%x 0x%x", event, action);
   }
 }
 
-void Supla::Control::Z2S_TuyaThermostat::setZigbeeDevice(ZigbeeGateway *Gateway, zb_device_params_t *thermostat_device, uint8_t commands_set) {
+void Supla::Control::Z2S_TuyaThermostat::setZigbeeDevice(ZigbeeGateway *Gateway, zbg_device_params_t *thermostat_device, uint8_t commands_set) {
   this->Gateway = Gateway;
-  memcpy(&this->thermostat_device, thermostat_device, sizeof(zb_device_params_t));
+  memcpy(&this->thermostat_device, thermostat_device, sizeof(zbg_device_params_t));
   this->commands_set = commands_set;
 }
 

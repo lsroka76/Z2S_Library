@@ -47,7 +47,7 @@ class Z2S_TuyaThermostat : public ActionHandler, public OutputInterface, public 
   void setOutputValue(int value) override {log_i("setOutputValue 0x%x", value);}
   bool isOnOffOnly() const override {return true;}
     
-  void setZigbeeDevice(ZigbeeGateway *Gateway, zb_device_params_t *thermostat_device, uint8_t commands_set);
+  void setZigbeeDevice(ZigbeeGateway *Gateway, zbg_device_params_t *thermostat_device, uint8_t commands_set);
   void setHvac(HvacBase *Hvac) {this->Hvac = Hvac;}
   void setTemperatureSetpoint(uint16_t setpoint);
   void setOnOff(bool on_off);
@@ -59,7 +59,7 @@ class Z2S_TuyaThermostat : public ActionHandler, public OutputInterface, public 
   ZigbeeGateway *Gateway = nullptr;
   HvacBase *Hvac;
   //esp_zb_ieee_addr_t thermostat_ieee_addr;
-  zb_device_params_t thermostat_device;
+  zbg_device_params_t thermostat_device;
   uint8_t commands_set = 0x00;  
   uint8_t payload_buffer[10];
 };

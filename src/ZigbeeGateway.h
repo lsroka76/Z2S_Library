@@ -48,23 +48,33 @@ typedef struct query_basic_cluster_data_s {
   char zcl_model_name[32];
 } query_basic_cluster_data_t;
 
+typedef struct zbg_device_params_s {
+  uint32_t model_id;
+  bool rejoined;
+  bool ZC_binding;
+  esp_zb_ieee_addr_t ieee_addr;
+  uint8_t endpoint;
+  uint16_t cluster_id;
+  uint16_t short_addr;
+  uint32_t user_data;
+} zbg_device_params_t;
 
 class ZigbeeGateway : public ZigbeeEP {
 public:
   ZigbeeGateway(uint8_t endpoint);
   ~ZigbeeGateway();
 
-  std::list<zb_device_params_t *> getGatewayDevices() const {
+  std::list<zbg_device_params_t *> getGatewayDevices() const {
     return _gateway_devices;
   }
-  void addGatewayDevice(zb_device_params_t * device){ 
+  void addGatewayDevice(zbg_device_params_t * device){ 
     if (device) _gateway_devices.push_back(device);
   }
-  std::list<zb_device_params_t *> getJoinedDevices() const {
+  std::list<zbg_device_params_t *> getJoinedDevices() const {
     return _joined_devices;
   }
-  zb_device_params_t * getLastJoinedDevice() { 
-    zb_device_params_t *last_joined_device = NULL;
+  zbg_device_params_t * getLastJoinedDevice() { 
+    zbg_device_params_t *last_joined_device = NULL;
     if (!_joined_devices.empty()) {
       last_joined_device = _joined_devices.back();
       _joined_devices.pop_back(); 
@@ -92,32 +102,32 @@ public:
     return &_read_attr_last_result;
   }
 
-  void zbPrintDeviceDiscovery (zb_device_params_t * device);
-  static void bindDeviceCluster(zb_device_params_t *,int16_t cluster_id);
+  void zbPrintDeviceDiscovery (zbg_device_params_t * device);
+  static void bindDeviceCluster(zbg_device_params_t *,int16_t cluster_id);
 
-  bool zbQueryDeviceBasicCluster(zb_device_params_t * device);
+  bool zbQueryDeviceBasicCluster(zbg_device_params_t * device);
   void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) override;
-  void setClusterReporting(zb_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
+  void setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
                                         uint16_t min_interval, uint16_t max_interval, uint16_t delta, bool ack);
-  void readClusterReportCmd(zb_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
-  void readClusterReportCfgCmd(zb_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
+  void readClusterReportCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
+  void readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
 
-  bool sendAttributeRead(zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false);
-  void sendAttributeWrite( zb_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
+  bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false);
+  void sendAttributeWrite( zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value);
-  void sendIASzoneEnrollResponseCmd(zb_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
+  void sendIASzoneEnrollResponseCmd(zbg_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
 
-  void sendOnOffCmd(zb_device_params_t *device, bool value); 
-  void sendLevelMoveToLevelCmd(zb_device_params_t *device, uint8_t level, uint16_t transition_time);
-  void sendColorMoveToHueCmd(zb_device_params_t *device, uint8_t hue, uint8_t directon, uint16_t transition_time);
-  void sendColorMoveToSaturationCmd(zb_device_params_t *device, uint8_t saturation, uint16_t transition_time);
-  void sendColorMoveToHueAndSaturationCmd(zb_device_params_t *device, uint8_t hue, uint8_t saturation, uint16_t transition_time);
-  void sendColorEnhancedMoveToHueAndSaturationCmd(zb_device_params_t *device, uint16_t enhanced_hue, uint8_t saturation, uint16_t transition_time);
-  void sendColorMoveToColorCmd(zb_device_params_t *device, uint16_t color_x, uint16_t color_y, uint16_t transition_time);
-  void sendColorMoveToColorTemperatureCmd(zb_device_params_t *device, uint16_t color_temperature, uint16_t transition_time);
+  void sendOnOffCmd(zbg_device_params_t *device, bool value); 
+  void sendLevelMoveToLevelCmd(zbg_device_params_t *device, uint8_t level, uint16_t transition_time);
+  void sendColorMoveToHueCmd(zbg_device_params_t *device, uint8_t hue, uint8_t directon, uint16_t transition_time);
+  void sendColorMoveToSaturationCmd(zbg_device_params_t *device, uint8_t saturation, uint16_t transition_time);
+  void sendColorMoveToHueAndSaturationCmd(zbg_device_params_t *device, uint8_t hue, uint8_t saturation, uint16_t transition_time);
+  void sendColorEnhancedMoveToHueAndSaturationCmd(zbg_device_params_t *device, uint16_t enhanced_hue, uint8_t saturation, uint16_t transition_time);
+  void sendColorMoveToColorCmd(zbg_device_params_t *device, uint16_t color_x, uint16_t color_y, uint16_t transition_time);
+  void sendColorMoveToColorTemperatureCmd(zbg_device_params_t *device, uint16_t color_temperature, uint16_t transition_time);
 
-  void sendDeviceFactoryReset(zb_device_params_t *device, bool isTuya = false);
-  void sendCustomClusterCmd(zb_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
+  void sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya = false);
+  void sendCustomClusterCmd(zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
                             uint16_t custom_data_size, uint8_t *custom_data, bool ack = false);
 
   
@@ -166,10 +176,10 @@ public:
    void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *)) {
     _on_cmd_custom_cluster_receive = callback;
    }
-  void onBoundDevice(void (*callback)(zb_device_params_t *, bool)) {
+  void onBoundDevice(void (*callback)(zbg_device_params_t *, bool)) {
     _on_bound_device = callback;
   }
-  void onBTCBoundDevice(void (*callback)(zb_device_params_t *)) {
+  void onBTCBoundDevice(void (*callback)(zbg_device_params_t *)) {
     _on_btc_bound_device = callback;
   }
 
@@ -217,8 +227,8 @@ private:
 
   void (*_on_cmd_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *);
 
-  void (*_on_bound_device)(zb_device_params_t *, bool);
-  void (*_on_btc_bound_device)(zb_device_params_t *);
+  void (*_on_bound_device)(zbg_device_params_t *, bool);
+  void (*_on_btc_bound_device)(zbg_device_params_t *);
 
 
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);
@@ -245,15 +255,15 @@ private:
 
   void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
 
-  void addBoundDevice(zb_device_params_t *device) override;
+  void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id) override;
   bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
 
 protected:
 
   static SemaphoreHandle_t gt_lock;
 
-  std::list<zb_device_params_t *> _joined_devices;
-  std::list<zb_device_params_t *> _gateway_devices;
+  std::list<zbg_device_params_t *> _joined_devices;
+  std::list<zbg_device_params_t *> _gateway_devices;
 };
 
 #endif  //SOC_IEEE802154_SUPPORTED && CONFIG_ZB_ENABLED

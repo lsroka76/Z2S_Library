@@ -28,7 +28,7 @@ namespace Supla {
 namespace Control {
 class Z2S_RGBWLightSource : public RGBWBase {
  public:
-  Z2S_RGBWLightSource(ZigbeeGateway *gateway, zb_device_params_t *device);
+  Z2S_RGBWLightSource(ZigbeeGateway *gateway, zbg_device_params_t *device);
 
   void onInit() override;
   void turnOn() override;
@@ -54,7 +54,7 @@ class Z2S_RGBWLightSource : public RGBWBase {
 
  protected:
   ZigbeeGateway *_gateway = nullptr;
-  zb_device_params_t 	_device;
+  zbg_device_params_t 	_device;
   bool _state;
   uint8_t _write_mask;
   uint8_t _Tuya_mode = 0;
