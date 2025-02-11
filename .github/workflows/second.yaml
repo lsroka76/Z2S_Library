@@ -21,9 +21,8 @@ jobs:
       - name: Compile Sketch
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr -e --library=. --libraries=SuplaDevice 
-
-#      - name: Upload bin
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: ${{ matrix.core_a}}_${{ matrix.core_b }}_${{ matrix.board }}_${{ matrix.apn }}
-#          path: ./microcontroller/build/${{ matrix.core_a}}.${{ matrix.core_b }}.${{ matrix.board }}/microcontroller.ino.bin
+      - name: Upload bin
+        uses: actions/upload-artifact@v2
+        with:
+          name: Z2S_Gateway.Webinteface.bin
+          path: ./build/Z2S_Gateway.ino.bin
