@@ -51,6 +51,13 @@ class Z2S_RGBWLightSource : public RGBWBase {
                             uint32_t colorBrightness,
                             uint32_t brightness) override;
   
+  void setRGBWValueOnServer(uint32_t red,
+                           uint32_t green,
+                           uint32_t blue,
+                           uint32_t colorBrightness,
+                           uint32_t brightness);
+
+  
 
  protected:
   ZigbeeGateway *_gateway = nullptr;

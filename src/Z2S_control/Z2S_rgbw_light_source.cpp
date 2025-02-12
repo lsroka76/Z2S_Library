@@ -48,6 +48,16 @@ Supla::Control::Z2S_RGBWLightSource::Z2S_RGBWLightSource(ZigbeeGateway *gateway,
 void Supla::Control::Z2S_RGBWLightSource::onInit() {
 }
 
+void Supla::Control::Z2S_RGBWLightSource::setRGBWValueOnServer(uint32_t red,
+                     		         uint32_t green,
+                                         uint32_t blue,
+                                         uint32_t colorBrightness,
+                                         uint32_t brightness) {
+   channel.setNewValue(
+       red, green, blue, colorBrightness, brightness);
+}
+
+
 void Supla::Control::Z2S_RGBWLightSource::turnOn() {
 
 

@@ -184,7 +184,7 @@ void ZigbeeGateway::find_Cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8
     log_d("Sensor found: short address(0x%x), endpoint(%d)", sensor->short_addr, sensor->endpoint);
 
     _new_device_joined = true;
-    _instance->_joined_devices.push_back(sensor);
+    _instance->_joined_devices.push_back(sensor); 
   }
 }
 
