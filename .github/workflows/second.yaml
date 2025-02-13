@@ -21,8 +21,16 @@ jobs:
       - name: Compile Sketch
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr -e --library=. --libraries=SuplaDevice 
-      - name: Upload bin
-        uses: actions/upload-artifact@v4.6.0
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
         with:
-          name: Z2S_Gateway.Webinteface.bin
-          path: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fetch_all_tags: true
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+          artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin
