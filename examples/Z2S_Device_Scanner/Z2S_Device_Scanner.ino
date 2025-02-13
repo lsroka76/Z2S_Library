@@ -11,6 +11,7 @@ extern "C" {
 }
 
 #include <ZigbeeGateway.h>
+#include <SuplaDevice.h>`
 
 #define GATEWAY_ENDPOINT_NUMBER 1
 
@@ -132,17 +133,20 @@ void loop() {
     while (!zbGateway.getJoinedDevices().empty())
     {
       joined_device = zbGateway.getLastJoinedDevice();
-      
-      //zbGateway.zbQueryDeviceBasicCluster(joined_device);
-      //log_i("manufacturer %s ", zbGateway.readManufacturer(joined_device->endpoint, joined_device->short_addr, joined_device->ieee_addr));
-      //log_i("model %s ", zbGateway.readModel(joined_device->endpoint, joined_device->short_addr, joined_device->ieee_addr));
-      
+      zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
+      if (!zbGateway.zbQueryDeviceBasicCluster(joined_device))
+      {
+        log_i("Error while pairing - cann't read manufacturer id. Gateway will restart, try to pair device once again!");
+        SuplaDevice.scheduleSoftRestart(0);
+      }
 #ifdef EP_CLUSTERS_ATTRIBUTES_SCANNER        
     
+  static uint8_t write_mask = 0x13;
+  zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask );
   //zbGateway.sendCustomClusterCmd(joined_device, 0xEF00, 0x03, 0, NULL);
   //zbGateway.sendCustomClusterCmd(joined_device, 0xE001, 0x03, 0, NULL);
 
-    //zbGateway.zbPrintDeviceDiscovery(joined_device);
+    zbGateway.zbPrintDeviceDiscovery(joined_device);
     
     //zbGateway.sendAttributeRead(joined_device, 0xE001,0xD010, true);
     //zbGateway.sendAttributeRead(joined_device, 0xE001,0xD020, true);
@@ -150,19 +154,19 @@ void loop() {
 
     //zbGateway.sendAttributeRead(joined_device, 0x0006,0x0, true);
     //zbGateway.sendAttributeRead(joined_device, 0x0006,0x8004, true);
-    static uint8_t write_mask = 0x01;
+    //static uint8_t write_mask = 0x01;
     //zbGateway.sendAttributeWrite(joined_device, 0x0006, 0x8004, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask );
     //delay(200);
     //zbGateway.sendAttributeRead(joined_device, 0x0006,0x8004, true);
     //zbGateway.sendAttributeRead(joined_device, 0xE001,0xD011, true);
 
-    for (int i=1; i < 2; i++)
-      {
-        joined_device->endpoint = i;
-        zbGateway.bindDeviceCluster(joined_device,0x0006);
+    //for (int i=1; i < 2; i++)
+     // {
+       // joined_device->endpoint = i;
+       // zbGateway.bindDeviceCluster(joined_device,0x0006);
         //zbGateway.bindDeviceCluster(joined_device,0x0005);
         //zbGateway.bindDeviceCluster(joined_device,0x0008);
-      }
+      //}
       
 #endif //EP_CLUSTERS_ATTRIBUTES_SCANNER
     }

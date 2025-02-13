@@ -57,7 +57,7 @@ ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi; //(SUPLA_WIFI_SSID, SUPLA_WIFI_SSID);
-Supla::LittleFsConfig     configSupla;
+Supla::LittleFsConfig     configSupla (2048);
 
 uint32_t startTime = 0;
 uint32_t printTime = 0;
@@ -65,8 +65,10 @@ uint32_t zbInit_delay = 0;
 
 bool zbInit = true;
 uint8_t write_mask;
+uint16_t write_mask_16;
 
 const static char PARAM_CMD1[] = "zigbeestack";
+const static char PARAM_CMD2[] = "Z2S devices";
 
 void supla_callback_bridge(int event, int action) {
   log_i("supla_callback_bridge - event(0x%x), action(0x%x)", event, action);
@@ -77,6 +79,13 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_CLICK_5: Zigbee.factoryReset(); break;
     case Supla::ON_EVENT_3: 
     case Supla::ON_HOLD: Z2S_clearDevicesTable(); break;
+  }
+  if (event >= Supla::ON_EVENT_4) {
+    z2s_devices_table[event - Supla::ON_EVENT_4].valid_record = false;
+    if (Z2S_saveDevicesTable()) {
+      log_i("Device on channel %d removed. Restarting...", z2s_devices_table[event - Supla::ON_EVENT_4].Supla_channel);
+      SuplaDevice.scheduleSoftRestart(1000);
+    }
   }
 }
 
@@ -135,6 +144,18 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
+  auto selectCmd2 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD2, "Z2S Devices");
+  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
+    if (z2s_devices_table[devices_counter].valid_record) {
+      char device_removal_cmd[128];
+      sprintf(device_removal_cmd, "Remove Z2SDevice [%x:%x:%x:%x:%x:%x:%x:%x] channel # %d",
+      z2s_devices_table[devices_counter].ieee_addr[7], z2s_devices_table[devices_counter].ieee_addr[6], z2s_devices_table[devices_counter].ieee_addr[5],
+      z2s_devices_table[devices_counter].ieee_addr[4], z2s_devices_table[devices_counter].ieee_addr[3], z2s_devices_table[devices_counter].ieee_addr[2],
+      z2s_devices_table[devices_counter].ieee_addr[1], z2s_devices_table[devices_counter].ieee_addr[0], z2s_devices_table[devices_counter].Supla_channel);
+      log_i("cmd %s, len %d", device_removal_cmd, strlen(device_removal_cmd));
+      selectCmd2->registerCmd(device_removal_cmd, Supla::ON_EVENT_4 + devices_counter);
+      selectCmd2->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_4 + devices_counter, true);
+    }
   //  Zigbee Gateway notifications
 
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
@@ -144,6 +165,7 @@ void setup() {
   zbGateway.onRMSCurrentReceive(Z2S_onRMSCurrentReceive);
   zbGateway.onRMSActivePowerReceive(Z2S_onRMSActivePowerReceive);
   zbGateway.onCurrentSummationReceive(Z2S_onCurrentSummationReceive);
+  zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
   zbGateway.onBatteryPercentageReceive(Z2S_onBatteryPercentageReceive);
   zbGateway.onOnOffCustomCmdReceive(Z2S_onOnOffCustomCmdReceive);
   zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
@@ -297,13 +319,15 @@ void loop() {
       joined_device = zbGateway.getLastJoinedDevice();
       //zbGateway.sendDeviceFactoryReset(joined_device);
       //zbGateway.bindDeviceCluster(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC);
-      zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03,0, NULL);
+      zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
       if (!zbGateway.zbQueryDeviceBasicCluster(joined_device))
       {
         log_i("Error while pairing - cann't read manufacturer id. Gateway will restart, try to pair device once again!");
         SuplaDevice.scheduleSoftRestart(0);
       }
-      
+      write_mask = 0x13;
+      zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask);
+
       uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
       uint16_t devices_desc_table_size = sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
       bool device_recognized = false;
@@ -408,6 +432,18 @@ void loop() {
                 case 0x0000: break;      
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {
+                } break;
+                case Z2S_DEVICE_DESC_RGBW_LIGHT_SOURCE: {
+                  /*if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+                      0xF000/*ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_CAPABILITIES_ID, true))*/
+                   // log_i("F0 0x%x, type 0x%x", *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);*/
+                    //write_mask_16 = 0x01;
+                    //zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF000, ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &write_mask_16);
+                    write_mask = 1;
+                    zbGateway.sendCustomClusterCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, true);                    
+                    if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_CAPABILITIES_ID, true))
+                    log_i("F0 0x%x, type 0x%x", *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
+                    
                 } break;
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1: {
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 

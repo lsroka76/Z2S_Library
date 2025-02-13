@@ -6,10 +6,10 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zb_device_params_t *devic
   Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(Supla_channel);
 }
 
-void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zb_device_params_t *device, uint8_t free_slot) {
+void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zb_device_params_t *device, uint8_t free_slot, char *name, uint32_t func) {
   
   auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway,device);
-  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1);
+  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1, name, func);
 }
 
 void msgZ2SDeviceVirtualRelay(uint8_t Supla_channel, bool state) {

@@ -39,12 +39,8 @@ typedef struct zbstring_s {
 } ESP_ZB_PACKED_STRUCT zbstring_t;
 
 typedef struct zb_device_params_s {
-  uint32_t model_id;
-  bool rejoined;
-  bool ZC_binding;
   esp_zb_ieee_addr_t ieee_addr;
   uint8_t endpoint;
-  uint16_t cluster_id;
   uint16_t short_addr;
 } zb_device_params_t;
 
@@ -126,11 +122,13 @@ public:
     _is_bound = true;
    }
 
-virtual void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
+  virtual void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id) {};
 
-virtual bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
+  virtual void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
 
-	for (std::list<zb_device_params_t *>::iterator bound_device = _bound_devices.begin(); bound_device != _bound_devices.end(); ++bound_device) {
+  virtual bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
+
+	  for (std::list<zb_device_params_t *>::iterator bound_device = _bound_devices.begin(); bound_device != _bound_devices.end(); ++bound_device) {
               if (((*bound_device)->short_addr == short_addr) || (memcmp((*bound_device)->ieee_addr, ieee_addr, 8) == 0)) return true;
 	}
 	return false;

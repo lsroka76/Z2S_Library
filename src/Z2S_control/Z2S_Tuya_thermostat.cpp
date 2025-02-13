@@ -45,9 +45,9 @@ log_i("Z2S_TuyaThermostat::handleAction 0x%x 0x%x", event, action);
   }
 }
 
-void Supla::Control::Z2S_TuyaThermostat::setZigbeeDevice(ZigbeeGateway *Gateway, zb_device_params_t *thermostat_device, uint8_t commands_set) {
+void Supla::Control::Z2S_TuyaThermostat::setZigbeeDevice(ZigbeeGateway *Gateway, zbg_device_params_t *thermostat_device, uint8_t commands_set) {
   this->Gateway = Gateway;
-  memcpy(&this->thermostat_device, thermostat_device, sizeof(zb_device_params_t));
+  memcpy(&this->thermostat_device, thermostat_device, sizeof(zbg_device_params_t));
   this->commands_set = commands_set;
 }
 
@@ -70,7 +70,7 @@ void Supla::Control::Z2S_TuyaThermostat::setTemperatureSetpoint(uint16_t setpoin
 	log_i("payload_buffer[8] 0x%x, payload_buffer[9] 0x%x", payload_buffer[8], payload_buffer[9]);
 	
 	tsn++;    
-     Gateway->sendCustomClusterCmd(&thermostat_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 10, payload_buffer, true);
+     Gateway->sendCustomClusterCmd(&thermostat_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, payload_buffer, true);
   }
 }
 
@@ -87,7 +87,7 @@ if (Gateway && Zigbee.started())
 	if (on_off) payload_buffer[6] = 0x01;
 	else payload_buffer[6] = 0x00;
 	tsn++;
-	Gateway->sendCustomClusterCmd(&thermostat_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 7, payload_buffer, true);
+	Gateway->sendCustomClusterCmd(&thermostat_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, payload_buffer, true);
   }
 }
 
@@ -96,7 +96,7 @@ void Supla::Control::Z2S_TuyaThermostat::setChildlock(bool childlock) {}
 void Supla::Control::Z2S_TuyaThermostat::queryData() {
 
 if (Gateway && Zigbee.started())
-    Gateway->sendCustomClusterCmd(&thermostat_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, 0, payload_buffer);
+    Gateway->sendCustomClusterCmd(&thermostat_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, payload_buffer);
 }
 
 //#endif

@@ -21,9 +21,9 @@
 
 #include <supla/time.h>
 
-Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zb_device_params_t *device, _supla_int_t functions)
+Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions)
     : Relay(-1, true, functions), _gateway(gateway){
-    memcpy(&_device, device, sizeof(zb_device_params_t));     
+    memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
 
 void Supla::Control::Z2S_VirtualRelay::onInit() {
@@ -53,7 +53,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
   if (_gateway && Zigbee.started()) {   
     state = true;
-    _gateway->setOnOffCluster(&_device, state);
+    _gateway->sendOnOffCmd(&_device, state);
     channel.setNewValue(state);
   }
   // Schedule save in 5 s after state change
@@ -73,7 +73,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
   }
   if (_gateway && Zigbee.started()) {   
     state = false;
-    _gateway->setOnOffCluster(&_device, state);
+    _gateway->sendOnOffCmd(&_device, state);
     channel.setNewValue(state);
   }
   
