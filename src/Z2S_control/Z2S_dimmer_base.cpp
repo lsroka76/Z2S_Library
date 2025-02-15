@@ -52,14 +52,28 @@ int32_t Supla::Control::Z2S_DimmerBase::handleNewValueFromServer(TSD_SuplaChanne
   if (colorBrightness > 100) {
     colorBrightness = 100;
   }
-  sendValueToDevice(brightness);
+  //sendValueToDevice(brightness);
+  if (brightness == 0) turnOff();
+  else {
+    if (toggleOnOff) turnOn(); 
+    channel.setNewValue(0, 0, 0, 0, brightness);
+    sendValueToDevice(brightness);
+  }
   return -1;
 }
 
 void Supla::Control::Z2S_DimmerBase::setValueOnServer(uint32_t brightness) {
 
-  channel.setNewValue(-1, -1, -1, -1, brightness);
+  uint8_t _brightness = map(brightness, 1, 254, 0, 100);
+  channel.setNewValue(0, 0, 0, 0, _brightness);
 }
 
+void Supla::Control::Z2S_DimmerBase::setStateOnServer(bool state) {
+  channel.setNewValue(state);
+}
+
+void Supla::Control::Z2S_DimmerBase::handleAction(int event, int action) {
+  SUPLA_LOG_DEBUG("Z2S_DimmerBase handleAction event=%d, action=%d", event, action);
+}
 
 
