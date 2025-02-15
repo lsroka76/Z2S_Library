@@ -42,6 +42,9 @@ public:
 
   virtual void sendValueToDevice(uint32_t brightness) = 0;
   virtual void setValueOnServer(uint32_t brightness);
+  virtual void setStateOnServer(bool state);
+  virtual void handleAction(int event, int action) override;
+
 }; //Z2S_DimmerBase
 
 } //Control

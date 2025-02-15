@@ -31,10 +31,10 @@ public:
 
   Z2S_TuyaDimmerSwitch(ZigbeeGateway *gateway, zbg_device_params_t *device);
 
-  void turnOn() override {};
-  void turnOff() override {};
-  void toggle() override {};
-  bool isOn() override {};
+  void turnOn() override;
+  void turnOff() override;
+  void toggle() override;
+  bool isOn() override;
   
   //void onInit() override;
 

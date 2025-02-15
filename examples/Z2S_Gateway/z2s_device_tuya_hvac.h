@@ -1,5 +1,5 @@
-#ifndef Z2S_DEVICE_TYUA_HVAC_H_
-#define Z2S_DEVICE_TYUA_HVAC_H_
+#ifndef Z2S_DEVICE_TUYA_HVAC_H_
+#define Z2S_DEVICE_TUYA_HVAC_H_
 
 #include "z2s_devices_table.h"
 //#include <SuplaDevice.h>
@@ -9,7 +9,7 @@
 #include <Z2S_control/Z2S_Tuya_thermostat.h>
 
 
-void initZ2SDeviceTyuaHvac(ZigbeeGateway *gateway, zb_device_params_t *device, uint8_t Supla_channel) {
+void initZ2SDeviceTuyaHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t Supla_channel) {
   
   auto Tuya_Hvac = new Supla::Control::Z2S_TuyaThermostat();
   Tuya_Hvac->setZigbeeDevice(gateway, device, TUYA_TRV_CS_001);
@@ -34,7 +34,7 @@ void initZ2SDeviceTyuaHvac(ZigbeeGateway *gateway, zb_device_params_t *device, u
 
 }
 
-void addZ2SDeviceTyuaHvac(ZigbeeGateway * gateway, zb_device_params_t *device, uint8_t free_slot) {
+void addZ2SDeviceTuyaHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint8_t free_slot) {
   auto Tuya_Hvac = new Supla::Control::Z2S_TuyaThermostat();
   Tuya_Hvac->setZigbeeDevice(gateway, device, TUYA_TRV_CS_001);
         
@@ -45,7 +45,7 @@ void addZ2SDeviceTyuaHvac(ZigbeeGateway * gateway, zb_device_params_t *device, u
   Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_HvacBase->getChannel()->getChannelNumber(), SUPLA_CHANNELTYPE_HVAC, -1); 
 }
 
-void msgZ2SDeviceTyuaHvac(uint8_t Supla_channel, uint16_t cluster, uint8_t command_id,
+void msgZ2SDeviceTuyaHvac(uint8_t Supla_channel, uint16_t cluster, uint8_t command_id,
                                     uint16_t payload_size, uint8_t *payload) {
                                       
   auto element = Supla::Element::getElementByChannelNumber(Supla_channel);

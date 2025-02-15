@@ -26,6 +26,17 @@ Supla::Control::Z2S_TuyaDimmerSwitch::Z2S_TuyaDimmerSwitch(ZigbeeGateway *gatewa
     memcpy(&_device, device, sizeof(zbg_device_params_t)); 
 }
 
-void Supla::Control::Z2S_TuyaDimmerSwitch::sendValueToDevice(uint32_t brightness) {
+void Supla::Control::Z2S_TuyaDimmerSwitch::turnOn() {
+}
 
+void Supla::Control::Z2S_TuyaDimmerSwitch::turnOff() {
+}
+
+void Supla::Control::Z2S_TuyaDimmerSwitch::toggle() {
+}
+
+bool Supla::Control::Z2S_TuyaDimmerSwitch::isOn() {
+}
+
+void Supla::Control::Z2S_TuyaDimmerSwitch::sendValueToDevice(uint32_t brightness) {
 }

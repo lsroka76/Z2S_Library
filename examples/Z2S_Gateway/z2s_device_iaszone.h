@@ -6,7 +6,7 @@
 
 void initZ2SDeviceIASzone(uint8_t Supla_channel);
 
-void addZ2SDeviceIASzone(zb_device_params_t *device, uint8_t free_slot);
+void addZ2SDeviceIASzone(zbg_device_params_t *device, uint8_t free_slot);
 
 void msgZ2SDeviceIASzone(uint8_t Supla_channel, int zone_status); 
 

@@ -330,7 +330,7 @@ void ZigbeeGateway::zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) 
     zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
     memcpy(_last_device_query.zcl_model_name, zbstr->data, zbstr->len);
     _last_device_query.zcl_model_name[zbstr->len] = '\0';
-    log_i("Peer Manufacturer is \"%s\"", _last_device_query.zcl_model_name);
+    log_i("Peer Model is \"%s\"", _last_device_query.zcl_model_name);
     xSemaphoreGive(gt_lock);
   }
   if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
@@ -934,8 +934,8 @@ void ZigbeeGateway::sendLevelMoveToLevelCmd(zbg_device_params_t *device, uint8_t
       esp_zb_zcl_level_step_cmd_t cmd_req;*/
 
     esp_zb_lock_acquire(portMAX_DELAY);
-    esp_zb_zcl_level_move_to_level_with_onoff_cmd_req(&cmd_req);
-    //esp_zb_zcl_level_move_to_level_cmd_req(&cmd_req);
+    //esp_zb_zcl_level_move_to_level_with_onoff_cmd_req(&cmd_req);
+    esp_zb_zcl_level_move_to_level_cmd_req(&cmd_req);
     esp_zb_lock_release();
     delay(200);
 

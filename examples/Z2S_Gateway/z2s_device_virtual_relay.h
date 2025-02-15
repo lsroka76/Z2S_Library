@@ -6,9 +6,9 @@
 #include <Z2S_control/Z2S_virtual_relay.h>
 
 
-void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zb_device_params_t *device, uint8_t Supla_channel);
+void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t Supla_channel);
 
-void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zb_device_params_t *device, uint8_t free_slot, char *name = nullptr, uint32_t func = 0);
+void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name = nullptr, uint32_t func = 0);
 
 void msgZ2SDeviceVirtualRelay(uint8_t Supla_channel, bool state);
 
