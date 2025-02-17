@@ -201,7 +201,9 @@ void Z2S_initSuplaChannels(){
             Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
           } break;
           case SUPLA_CHANNELTYPE_BINARYSENSOR: initZ2SDeviceIASzone(z2s_devices_table[devices_counter].Supla_channel); break;
-          case SUPLA_CHANNELTYPE_RELAY: initZ2SDeviceVirtualRelay(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
+          case SUPLA_CHANNELTYPE_RELAY: initZ2SDeviceVirtualRelay(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel,
+                                                                  z2s_devices_table[devices_counter].Supla_channel_name,
+                                                                  z2s_devices_table[devices_counter].Supla_channel_func); break;
           case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
             //auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
             auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, 1000);
@@ -219,7 +221,8 @@ void Z2S_initSuplaChannels(){
           } break;
           case SUPLA_CHANNELTYPE_HVAC: initZ2SDeviceTuyaHvac(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           //case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: initZ2SDeviceDimmer(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
-          case SUPLA_CHANNELTYPE_DIMMER: initZ2SDeviceDimmer(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
+          case SUPLA_CHANNELTYPE_DIMMER: initZ2SDeviceDimmer(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel,
+                                                             z2s_devices_table[devices_counter].sub_id); break;
           case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: initZ2SDeviceRGB(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: initZ2SDeviceRGBW(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           default: {
@@ -548,15 +551,54 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
                                      uint16_t payload_size, uint8_t *payload) {
   
-int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-  if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
-  else 
-    switch (z2s_devices_table[channel_number_slot].Supla_channel) {
-      case SUPLA_CHANNELTYPE_HVAC: msgZ2SDeviceTuyaHvac(z2s_devices_table[channel_number_slot].Supla_channel, cluster, command_id, payload_size, payload); break;
-      case SUPLA_CHANNELTYPE_DIMMER: msgZ2SDeviceDimmer(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 
-                                                        cluster, command_id, payload_size, payload); break;
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, NO_CUSTOM_CMD_SID);
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceTuyaHvac(z2s_devices_table[channel_number_slot].Supla_channel, cluster, command_id, payload_size, payload);
+    return;
+  }
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, NO_CUSTOM_CMD_SID);
+  if (channel_number_slot >= 0) {
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
+        int8_t sub_id = ((*(payload + 2)) < 7) ? 1 : 2; 
+        channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                        SUPLA_CHANNELTYPE_DIMMER, sub_id);
+        if (channel_number_slot < 0)
+          log_i("No Tuya double dimmer device channel found for address %s", ieee_addr);
+       else msgZ2SDeviceDimmer(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 
+                           cluster, command_id, payload_size, payload); 
+      } break;
+      default: 
+        msgZ2SDeviceDimmer(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 
+                           cluster, command_id, payload_size, payload); break;
     }
+    return;
+  }
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
+  if (channel_number_slot >= 0) {
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: {
+        if ((command_id == 2) && (payload_size == 0x17)) {
+          auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+          if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
+            auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
+            //if ((*(payload + 2)) == 5) {
+            float soil_temperature = ((*(payload + 0x11)) + 0xFF * (*(payload + 0x10))) / 10;
+            Supla_VirtualThermHygroMeter->setTemp(soil_temperature);
+            //}
+            //if ((*(payload + 2)) == 3) {
+            float soil_humidity = ((*(payload + 0x9)) + 0xFF * (*(payload + 0x8)));
+            Supla_VirtualThermHygroMeter->setHumi(soil_humidity);
+            //}
+          }
+        }          
+      } break;
+    }
+    return;
+  }
+  log_i("No channel found for address %s", ieee_addr);
+  //log_i("sending custom command  %d, model id %0x%, Supla channel %d", command_id, z2s_devices_table[channel_number_slot].model_id,
+  //         z2s_devices_table[channel_number_slot].Supla_channel_type)
 }
 
 void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
@@ -597,13 +639,16 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case 0x0000: break;
       
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
-      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1:
+      case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: {
         auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, -1);
       } break;
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: addZ2SDeviceIASzone(device, first_free_slot); break;
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot, "POWER SWITCH", SUPLA_CHANNELFNC_POWERSWITCH); break;
+      case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1:
+      case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_2: addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot, "2GANG SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH); break;
       case Z2S_DEVICE_DESC_ON_OFF:
       case Z2S_DEVICE_DESC_ON_OFF_1: {
         auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
@@ -659,15 +704,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
               addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot);
       } break;
       case Z2S_DEVICE_TUYA_HVAC: addZ2SDeviceTuyaHvac(&zbGateway, device, first_free_slot); break;
-      default : {
-        log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);
-        return ADD_Z2S_DEVICE_STATUS_DUN;
-      } break;
       case Z2S_DEVICE_DESC_TUYA_DIMMER_BULB: {
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, "DIMMER BULB", SUPLA_CHANNELFNC_DIMMER); break;
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, "DIMMER BULB", SUPLA_CHANNELFNC_DIMMER); 
       } break; 
       case Z2S_DEVICE_DESC_TUYA_RGB_BULB: {
-        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB BULB", SUPLA_CHANNELFNC_RGBLIGHTING); break;
+        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB BULB", SUPLA_CHANNELFNC_RGBLIGHTING);
       } break;
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: {
         addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, "DIMMER", SUPLA_CHANNELFNC_DIMMER);
@@ -677,6 +718,19 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
         addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB", SUPLA_CHANNELFNC_RGBLIGHTING); 
+      } break; 
+      case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, sub_id, "DIMMER SWITCH", SUPLA_CHANNELFNC_DIMMER);
+        /*first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, "DIMMER SWITCH #2", SUPLA_CHANNELFNC_DIMMER);*/
+      } break;
+      default : {
+        log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);
+        return ADD_Z2S_DEVICE_STATUS_DUN;
       } break;
     }
     return ADD_Z2S_DEVICE_STATUS_OK;

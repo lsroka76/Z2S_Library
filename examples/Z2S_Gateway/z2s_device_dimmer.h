@@ -5,10 +5,11 @@
 #include <Z2S_control/Z2S_Tuya_dimmer_bulb.h>
 #include <Z2S_control/Z2S_Tuya_dimmer_switch.h>
 
-void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t Supla_channel);
+void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t Supla_channel, int8_t sub_id = -1);
+
+void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name = nullptr, uint32_t func = 0);
 
 void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name = nullptr, uint32_t func = 0);
-
 
 void msgZ2SDeviceTuyaDimmerLightSource(uint8_t Supla_channel, uint16_t cluster, uint8_t command_id,
                                        uint16_t payload_size, uint8_t *payload);

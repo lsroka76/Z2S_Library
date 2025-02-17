@@ -53,6 +53,8 @@ Supla::Html::ProtocolParameters           htmlProto;
 
 #define BUTTON_PIN                  9  //Boot button for C6/H2
 #define CFG_BUTTON_PIN              9  //Boot button for C6/H2
+#define WIFI_ENABLE                 3
+#define WIFI_ANT_CONFIG             14
 
 #define REFRESH_PERIOD              60 * 1000 //miliseconds
 
@@ -101,6 +103,12 @@ void setup() {
 
   pinMode(BUTTON_PIN, INPUT);
 
+  pinMode(WIFI_ENABLE, OUTPUT); // pinMode(3, OUTPUT); (credits @Zibi_007)
+  digitalWrite(WIFI_ENABLE, LOW); // digitalWrite(3, LOW); // Activate RF switch control
+  delay(100);
+  pinMode(WIFI_ANT_CONFIG, OUTPUT); // pinMode(14, OUTPUT);
+  digitalWrite(WIFI_ANT_CONFIG, HIGH);
+ 
   eeprom.setStateSavePeriod(5000);
 
   new Supla::Clock;
@@ -328,6 +336,16 @@ void loop() {
 
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[k].z2s_device_desc_id;
+                        
+                        if ((joined_device->model_id == Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1) && (endpoint_id == 1)) {
+                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, false);
+                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, false);
+                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, false);
+                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, false);
+                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, false);
+                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0xFFFE, false);
+                        }
+
                         for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
 
@@ -362,6 +380,10 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_3_HELD_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_4_PRESSED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID);
+                          } break;
+                          case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
+                            Z2S_addZ2SDevice(joined_device, 1);
+                            Z2S_addZ2SDevice(joined_device, 2);
                           } break;
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID); 
                         }
@@ -469,6 +491,10 @@ void loop() {
                     if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,0x8004, true))
                       log_i("Tuya custom attribute has 0x8004 been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
                  } break;
+                 case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
+                 case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
+                  zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL); break;
+
               }
               SuplaDevice.scheduleSoftRestart(5000);
             }   
