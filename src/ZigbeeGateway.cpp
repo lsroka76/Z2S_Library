@@ -282,15 +282,15 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device) {
   read_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
   read_req.clusterID = ESP_ZB_ZCL_CLUSTER_ID_BASIC;
 
-  /*uint16_t attributes[7] = {  ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
-                              ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
-                              0xFFFE};*/
-  
-  uint16_t attributes[6] = {  ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
+  uint16_t attributes[7] = {  ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
                               ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
                               0xFFFE};
   
-  for (int attribute_number = 0; attribute_number <5; attribute_number++) {
+  /*uint16_t attributes[6] = {  ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
+                              ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
+                              0xFFFE};*/
+  
+  for (int attribute_number = 0; attribute_number < 6; attribute_number++) {
     
     read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);
     read_req.attr_field = &attributes[attribute_number];
@@ -310,7 +310,7 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device) {
     }
   }
   read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);
-  read_req.attr_field = &attributes[5]; //6];
+  read_req.attr_field = &attributes[6];
 
   log_i("Query basic cluster attribute 0x%x", *read_req.attr_field);
 
