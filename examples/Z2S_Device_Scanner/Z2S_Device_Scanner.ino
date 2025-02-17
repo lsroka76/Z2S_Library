@@ -11,7 +11,7 @@ extern "C" {
 }
 
 #include <ZigbeeGateway.h>
-#include <SuplaDevice.h>`
+#include <SuplaDevice.h>
 
 #define GATEWAY_ENDPOINT_NUMBER 1
 
@@ -100,7 +100,7 @@ void setup() {
 }
 
 zb_device_params_t *gateway_device;
-zb_device_params_t *joined_device;
+zbg_device_params_t *joined_device;
 
 char zbd_model_name[64];
 
