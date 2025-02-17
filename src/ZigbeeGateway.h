@@ -128,7 +128,7 @@ public:
 
   void sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya = false);
   void sendCustomClusterCmd(zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
-                            uint16_t custom_data_size, uint8_t *custom_data, bool ack = false);
+                            uint16_t custom_data_size, uint8_t *custom_data, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV);
 
   
   void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int)) {
