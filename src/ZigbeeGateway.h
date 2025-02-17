@@ -106,7 +106,8 @@ public:
   static void bindDeviceCluster(zbg_device_params_t *,int16_t cluster_id);
 
   bool zbQueryDeviceBasicCluster(zbg_device_params_t * device);
-  void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) override;
+  //void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) override;
+  void zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) override;
   void setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
                                         uint16_t min_interval, uint16_t max_interval, uint16_t delta, bool ack);
   void readClusterReportCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);

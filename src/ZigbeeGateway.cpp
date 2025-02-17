@@ -321,7 +321,8 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device) {
   return true; 
 }
 
-void ZigbeeGateway::zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) {
+//void ZigbeeGateway::zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) {
+void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) {
   /* Basic cluster attributes */
   if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING && attribute->data.value) {
     zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
@@ -360,6 +361,12 @@ void ZigbeeGateway::zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) 
     //_last_device_query.zcl_power_source_id = *((uint8_t*)attribute->data.value);
     //log_i("ZCL power source id is \"%d\"", _last_device_query.zcl_power_source_id;
     xSemaphoreGive(gt_lock);
+  }
+  if (attribute->id == 0xFFE2 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
+    uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+    log_i("Tuya 0xFFE2 battery percentage remaining %d",value);
+    if (_on_battery_percentage_receive)
+      _on_battery_percentage_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value / 2);
   }
 }
 
