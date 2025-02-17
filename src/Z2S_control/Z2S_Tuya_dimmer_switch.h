@@ -29,7 +29,7 @@ class Z2S_TuyaDimmerSwitch: public Z2S_DimmerBase {
 
 public:
 
-  Z2S_TuyaDimmerSwitch(ZigbeeGateway *gateway, zbg_device_params_t *device);
+  Z2S_TuyaDimmerSwitch(ZigbeeGateway *gateway, zbg_device_params_t *device, int8_t dimmer_number);
 
   void turnOn() override;
   void turnOff() override;
@@ -39,9 +39,14 @@ public:
   //void onInit() override;
 
   void sendValueToDevice(uint32_t brightness) override;
+   
+  void setValueOnServer(uint32_t brightness) override;
+  void setStateOnServer(bool state) override;
 
 protected:
   bool _state = false;
+  uint8_t _Tuya_dp_data[10];
+  int8_t _dimmer_number = 1;
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
 

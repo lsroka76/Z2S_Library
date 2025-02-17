@@ -912,7 +912,7 @@ void ZigbeeGateway::sendOnOffCmd(zbg_device_params_t *device, bool value) {
 }
 
 void ZigbeeGateway::sendLevelMoveToLevelCmd(zbg_device_params_t *device, uint8_t level, uint16_t transition_time) {
-
+  
     esp_zb_zcl_move_to_level_cmd_t cmd_req;
 
     if (device->short_addr != 0) {
@@ -1156,7 +1156,7 @@ void ZigbeeGateway::zbCmdDefaultResponse( esp_zb_zcl_addr_t src_address, uint16_
 }
 
 void ZigbeeGateway::sendCustomClusterCmd( zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
-                                          uint16_t custom_data_size, uint8_t *custom_data, bool ack ) {
+                                          uint16_t custom_data_size, uint8_t *custom_data, bool ack, uint8_t direction ) {
   
   esp_zb_zcl_custom_cluster_cmd_req_t req;
 
@@ -1171,7 +1171,7 @@ void ZigbeeGateway::sendCustomClusterCmd( zbg_device_params_t * device, int16_t 
   req.zcl_basic_cmd.src_endpoint = _endpoint;
   req.cluster_id = custom_cluster_id;
   req.profile_id = ESP_ZB_AF_HA_PROFILE_ID;
-  req.direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
+  req.direction = direction;
   req.manuf_specific = 0;
   req.dis_defalut_resp = 0;
   req.manuf_code = 0;
