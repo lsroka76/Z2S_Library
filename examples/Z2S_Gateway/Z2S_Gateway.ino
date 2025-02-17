@@ -20,6 +20,7 @@
 #include <supla/actions.h>
 #include <supla/control/button.h>
 #include <action_handler_with_callbacks.h>
+#include <supla/network/html/select_cmd_input_parameter.h>
 
 #undef USE_WEB_INTERFACE
 #define USE_WEB_INTERFACE
@@ -34,7 +35,7 @@
 #include <supla/network/html/custom_parameter.h>
 #include <supla/network/html/custom_text_parameter.h>
 #include <supla/network/html/text_cmd_input_parameter.h>
-#include <supla/network/html/select_cmd_input_parameter.h>
+
 
 #include <HTTPUpdateServer.h>
 
@@ -199,7 +200,7 @@ void setup() {
   Zigbee.addEndpoint(&zbGateway);
 
   //Open network for 180 seconds after boot
-  Zigbee.setRebootOpenNetwork(180);
+  Zigbee.setRebootOpenNetwork(ZG_OPEN_NETWORK);
 
   //Supla
   

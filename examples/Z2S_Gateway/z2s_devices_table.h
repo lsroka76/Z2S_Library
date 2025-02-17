@@ -3,6 +3,7 @@
 
 #include <ZigbeeGateway.h>
 #include "z2s_devices_database.h"
+#include "priv_auth_data.h"
 
 typedef struct z2s_device_params_s {
 
