@@ -210,6 +210,13 @@ void Z2S_initSuplaChannels(){
             if ((z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR) ||
                 (z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_ILLUZONE_SENSOR))
               Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
+            if ((z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) ||
+                (z2s_devices_table[devices_counter].sub_id = 0x6A))
+              Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
+            if ((z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) ||
+                (z2s_devices_table[devices_counter].sub_id = 0x65))
+              Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("[0..5]");
+            
           } break;
           case SUPLA_CHANNELTYPE_BINARYSENSOR: initZ2SDeviceIASzone(z2s_devices_table[devices_counter].Supla_channel); break;
           case SUPLA_CHANNELTYPE_RELAY: initZ2SDeviceVirtualRelay(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel,
@@ -713,6 +720,20 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
           }   
         }          
       } break;
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
+        if (command_id == 2) {
+          auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+          if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+            
+            auto Supla_VirtualBinary = reinterpret_cast<Supla::Sensor::VirtualBinary *>(element);
+            Tuya_read_dp_result_t Tuya_read_dp_result;
+            
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x01/*presence*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success)
+              Tuya_read_dp_result.dp_value == 1 ? Supla_VirtualBinary->set() : Supla_VirtualBinary->clear();
+          }   
+        }          
+      } break; 
     }
     //return;
   }
@@ -737,12 +758,42 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
               log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
               Supla_GeneralPurposeMeasurement->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value);
             }
-            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E/*battery state*/, payload_size, payload);
+            /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E, payload_size, payload); //battery_state
             if (Tuya_read_dp_result.is_success) {
               log_i("Battery state 0x0E is %d, level %d", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value * 50);
               Supla_GeneralPurposeMeasurement->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50);
-            }
+            } */
           } 
+        }          
+      } break;
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
+        if (command_id == 2) {
+          channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 0x65);
+          if (channel_number_slot >= 0) {
+            auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+            if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) {
+            
+              auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
+              Tuya_read_dp_result_t Tuya_read_dp_result;
+            
+              Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x65/*motion state*/, payload_size, payload);
+              if (Tuya_read_dp_result.is_success)
+                Supla_GeneralPurposeMeasurement->setValue(Tuya_read_dp_result.dp_value);
+            } 
+          }
+          channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 0x6A);
+          if (channel_number_slot >= 0) {
+            auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+            if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) {
+            
+              auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
+              Tuya_read_dp_result_t Tuya_read_dp_result;
+            
+              Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x6A/*illuminance*/, payload_size, payload);
+              if (Tuya_read_dp_result.is_success)
+                Supla_GeneralPurposeMeasurement->setValue(Tuya_read_dp_result.dp_value);
+            } 
+          }
         }          
       } break;
     }
@@ -930,6 +981,25 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
                                   SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, -1, "LIGHT ILLU", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
         Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
+      } break;
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
+        if (sub_id == 1) { //presence
+          auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(true);
+          Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR, sub_id,
+                                  "PRESENCE", SUPLA_CHANNELTYPE_BINARYSENSOR);
+        } else
+        if (sub_id == 0x65) { //motion_state
+          auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
+          Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
+                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id, "MOTION STATE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+          Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("[0..5]");
+        } else
+        if (sub_id == 0x6A) { //illuminance
+          auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
+          Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
+                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id, "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+          Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
+        }
       } break;
       default : {
         log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);

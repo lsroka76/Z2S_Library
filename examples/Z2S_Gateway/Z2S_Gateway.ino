@@ -379,6 +379,11 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, 1);
                             Z2S_addZ2SDevice(joined_device, 2);
                           } break;
+                          case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
+                            Z2S_addZ2SDevice(joined_device, 0x01);
+                            Z2S_addZ2SDevice(joined_device, 0x65);
+                            Z2S_addZ2SDevice(joined_device, 0x6A);
+                          } break;
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID); 
                         }
                   }  
