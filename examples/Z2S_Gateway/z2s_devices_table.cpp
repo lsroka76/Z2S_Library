@@ -10,6 +10,7 @@
 #include "z2s_device_rgbw.h"
 #include <SuplaDevice.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
+#include <supla/sensor/general_purpose_measurement.h>
 
 #include <supla/control/virtual_relay.h>
 
@@ -196,9 +197,19 @@ void Z2S_initSuplaChannels(){
 
         switch (z2s_devices_table[devices_counter].Supla_channel_type) {
           case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
-            
             auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
             Supla_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
+          } break;
+          case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT: {
+            auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
+            Supla_GeneralPurposeMeasurement->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
+            Supla_GeneralPurposeMeasurement->setInitialCaption(z2s_devices_table[devices_counter].Supla_channel_name);
+            Supla_GeneralPurposeMeasurement->setDefaultFunction(z2s_devices_table[devices_counter].Supla_channel_func);
+            if (z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR)
+              Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("ppm");
+            if ((z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR) ||
+                (z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_ILLUZONE_SENSOR))
+              Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
           } break;
           case SUPLA_CHANNELTYPE_BINARYSENSOR: initZ2SDeviceIASzone(z2s_devices_table[devices_counter].Supla_channel); break;
           case SUPLA_CHANNELTYPE_RELAY: initZ2SDeviceVirtualRelay(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel,
@@ -206,7 +217,7 @@ void Z2S_initSuplaChannels(){
                                                                   z2s_devices_table[devices_counter].Supla_channel_func); break;
           case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
             //auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
-            auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, ZG_SCENE_SWITCH_DEBOUNCE_TIME_MS);
+            auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, 1000);
             Supla_VirtualRelay->setInitialCaption(z2s_devices_table[devices_counter].Supla_channel_name);
             Supla_VirtualRelay->setDefaultFunction(z2s_devices_table[devices_counter].Supla_channel_func);
             Supla_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
@@ -267,6 +278,24 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
         auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
         Supla_VirtualThermHygroMeter->setHumi(humidity);
+    }
+  }
+}
+
+void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance) {
+
+  log_i("onIlluminanceReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
+   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
+  if (channel_number_slot < 0)
+    log_i("No channel found for address %s", ieee_addr);
+  else
+  {
+    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) {
+
+        auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
+        Supla_GeneralPurposeMeasurement->setValue(illuminance);
     }
   }
 }
@@ -546,14 +575,65 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   }
   return false;
 }
+typedef struct Tuya_read_dp_result_s {
+  bool is_success;
+  uint8_t dp_id;
+  uint8_t dp_type;
+  uint16_t dp_size;
+  uint32_t dp_value;
+} Tuya_read_dp_result_t;
 
+Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_size, uint8_t *payload) {
+  
+  uint16_t payload_counter = 2;
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result.is_success = false;
+  Tuya_read_dp_result.dp_value = 0;
+
+  while ((payload_size >= 7) && (payload_counter < payload_size)) {
+    if ((*(payload + payload_counter)) == Tuya_dp_id) {
+      Tuya_read_dp_result.dp_id   = (*(payload + payload_counter));
+      Tuya_read_dp_result.dp_type = (*(payload + payload_counter + 1));
+      Tuya_read_dp_result.dp_size = ((uint16_t)(*(payload + payload_counter + 2))) * 0xFF + (*(payload + payload_counter + 3));
+      switch (Tuya_read_dp_result.dp_size) {
+        case 1: Tuya_read_dp_result.dp_value = (*(payload + payload_counter + 4)); break;
+        case 2: Tuya_read_dp_result.dp_value = ((uint32_t)(*(payload + payload_counter + 4))) * 0x000000FF +
+                                          ((uint32_t)(*(payload + payload_counter + 5))); break;
+        case 4:  Tuya_read_dp_result.dp_value =  ((uint32_t)(*(payload + payload_counter + 4))) * 0x00FF0000 +
+                                            ((uint32_t)(*(payload + payload_counter + 5))) * 0x0000FF00 +
+                                            ((uint32_t)(*(payload + payload_counter + 6))) * 0x000000FF +
+                                            ((uint32_t)(*(payload + payload_counter + 7))); break;
+        default: {
+          log_e("unrecognized Tuya DP size 0x%x", Tuya_read_dp_result.dp_size); 
+          return Tuya_read_dp_result;
+        }
+      }
+      Tuya_read_dp_result.is_success = true;
+      return Tuya_read_dp_result;
+    }
+    else Tuya_read_dp_result.dp_size = ((uint16_t)(*(payload + payload_counter + 2))) * 0xFF + (*(payload + payload_counter + 3));
+    payload_counter += 1 /*DP ID*/ + 1 /*DP TYPE*/ + 2/*DP DATA SIZE*/ + Tuya_read_dp_result.dp_size;
+  }
+  return Tuya_read_dp_result;
+}
 
 void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
                                      uint16_t payload_size, uint8_t *payload) {
   
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, NO_CUSTOM_CMD_SID);
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceTuyaHvac(z2s_devices_table[channel_number_slot].Supla_channel, cluster, command_id, payload_size, payload);
+    Tuya_read_dp_result_t Tuya_read_dp_result;
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x67/*temperature setpoint*/, payload_size, payload);
+    if (Tuya_read_dp_result.is_success)
+      log_i("Tuya thermostat setpoint value %d",Tuya_read_dp_result.dp_value);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x66/*current temperature*/, payload_size, payload);
+    if (Tuya_read_dp_result.is_success)
+      log_i("Tuya thermostat actual temperature value %d",Tuya_read_dp_result.dp_value);
+      Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x65/*on/off*/, payload_size, payload);
+    if (Tuya_read_dp_result.is_success)
+      log_i("Tuya thermostat is %d",Tuya_read_dp_result.dp_value);
+    //msgZ2SDeviceTuyaHvac(z2s_devices_table[channel_number_slot].Supla_channel, cluster, command_id, payload_size, payload);
     return;
   }
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, NO_CUSTOM_CMD_SID);
@@ -578,24 +658,97 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
   if (channel_number_slot >= 0) {
     switch (z2s_devices_table[channel_number_slot].model_id) {
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: {
-        if ((command_id == 2) && (payload_size == 0x17)) {
+        if (command_id == 2) { 
           auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
           if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
             auto Supla_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::VirtualThermHygroMeter *>(element);
-            //if ((*(payload + 2)) == 5) {
-            float soil_temperature = ((*(payload + 0x11)) + 0xFF * (*(payload + 0x10))) / 10;
-            Supla_VirtualThermHygroMeter->setTemp(soil_temperature);
-            //}
-            //if ((*(payload + 2)) == 3) {
-            float soil_humidity = ((*(payload + 0x9)) + 0xFF * (*(payload + 0x8)));
-            Supla_VirtualThermHygroMeter->setHumi(soil_humidity);
-            //}
+            Tuya_read_dp_result_t Tuya_read_dp_result;
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x05/*temperature*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success)
+              Supla_VirtualThermHygroMeter->setTemp(Tuya_read_dp_result.dp_value/10);  
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x03/*soil moisture*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success)
+              Supla_VirtualThermHygroMeter->setHumi(Tuya_read_dp_result.dp_value);
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0F/*battery level*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success) { 
+              log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
+              Supla_VirtualThermHygroMeter->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value);
+            }
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E/*battery state*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success) {
+              log_i("Battery state 0x0E is %d, level %d", Tuya_read_dp_result.dp_value * 50);
+              Supla_VirtualThermHygroMeter->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50);
+            }
           }
         }          
       } break;
     }
     return;
   }
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+  if (channel_number_slot >= 0) {
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: {
+        if (command_id == 2) {
+          auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+          if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+            
+            auto Supla_VirtualBinary = reinterpret_cast<Supla::Sensor::VirtualBinary *>(element);
+            Tuya_read_dp_result_t Tuya_read_dp_result;
+            
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x01/*smoke detected*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success)
+              Tuya_read_dp_result.dp_value == 1 ? Supla_VirtualBinary->set() : Supla_VirtualBinary->clear();
+
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0F/*battery level*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success) { 
+              log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
+              Supla_VirtualBinary->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value);
+            }
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E/*battery state*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success) {
+              log_i("Battery state 0x0E is %d, level %d", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value * 50);
+              Supla_VirtualBinary->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50);
+            }
+          }   
+        }          
+      } break;
+    }
+    //return;
+  }
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
+  if (channel_number_slot >= 0) {
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: {
+        if (command_id == 2) {
+          
+          auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+          if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) {
+            
+            auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
+            Tuya_read_dp_result_t Tuya_read_dp_result;
+            
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x02/*smoke concentration*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success)
+              Supla_GeneralPurposeMeasurement->setValue(Tuya_read_dp_result.dp_value);
+           
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0F/*battery level*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success) { 
+              log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
+              Supla_GeneralPurposeMeasurement->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value);
+            }
+            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E/*battery state*/, payload_size, payload);
+            if (Tuya_read_dp_result.is_success) {
+              log_i("Battery state 0x0E is %d, level %d", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value * 50);
+              Supla_GeneralPurposeMeasurement->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50);
+            }
+          } 
+        }          
+      } break;
+    }
+    return;
+  }
+  //if (channel_number_slot < 0) 
   log_i("No channel found for address %s", ieee_addr);
   //log_i("sending custom command  %d, model id %0x%, Supla channel %d", command_id, z2s_devices_table[channel_number_slot].model_id,
   //         z2s_devices_table[channel_number_slot].Supla_channel_type)
@@ -644,7 +797,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, -1);
       } break;
-      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: addZ2SDeviceIASzone(device, first_free_slot); break;
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: 
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1: addZ2SDeviceIASzone(device, first_free_slot); break;
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot, "POWER SWITCH", SUPLA_CHANNELFNC_POWERSWITCH); break;
       case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1:
@@ -656,7 +810,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       } break;
       case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3: {
         //auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, ZG_SCENE_SWITCH_DEBOUNCE_TIME_MS);
+        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, 1000);
         char button_name_function[30];
         char button_function[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
         sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]);
@@ -727,6 +881,55 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
         addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, "DIMMER SWITCH #2", SUPLA_CHANNELFNC_DIMMER);*/
+      } break;
+      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: {
+        auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(true);
+        Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR,-1,
+                                  "SMOKE DETECT", SUPLA_CHANNELTYPE_BINARYSENSOR);
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
+        Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
+                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, -1, "SMOKE CONC.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+        Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("ppm");
+      } break;
+      case Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR: {
+        auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(true);
+        Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR,-1,
+                                  "LS ZONE", SUPLA_CHANNELTYPE_BINARYSENSOR);
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
+        Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
+                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, -1, "LIGHT ILLU", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+        Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        auto Supla_VirtualThermHygroMeter = new Supla::Sensor::VirtualThermHygroMeter();
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, -1);
+      } break;
+      case Z2S_DEVICE_DESC_ILLUZONE_SENSOR: {
+        auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(true);
+        Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR,-1,
+                                  "LS ZONE", SUPLA_CHANNELTYPE_BINARYSENSOR);
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
+        Z2S_fillDevicesTableSlot( device, first_free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
+                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, -1, "LIGHT ILLU", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+        Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
       } break;
       default : {
         log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);

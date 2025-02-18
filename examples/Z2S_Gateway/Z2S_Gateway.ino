@@ -20,7 +20,6 @@
 #include <supla/actions.h>
 #include <supla/control/button.h>
 #include <action_handler_with_callbacks.h>
-#include <supla/network/html/select_cmd_input_parameter.h>
 
 #undef USE_WEB_INTERFACE
 #define USE_WEB_INTERFACE
@@ -35,7 +34,7 @@
 #include <supla/network/html/custom_parameter.h>
 #include <supla/network/html/custom_text_parameter.h>
 #include <supla/network/html/text_cmd_input_parameter.h>
-
+#include <supla/network/html/select_cmd_input_parameter.h>
 
 #include <HTTPUpdateServer.h>
 
@@ -175,6 +174,7 @@ void setup() {
 
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
+  zbGateway.onIlluminanceReceive(Z2S_onIlluminanceReceive);
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
   zbGateway.onRMSVoltageReceive(Z2S_onRMSVoltageReceive);
   zbGateway.onRMSCurrentReceive(Z2S_onRMSCurrentReceive);
@@ -200,7 +200,7 @@ void setup() {
   Zigbee.addEndpoint(&zbGateway);
 
   //Open network for 180 seconds after boot
-  Zigbee.setRebootOpenNetwork(ZG_OPEN_NETWORK);
+  Zigbee.setRebootOpenNetwork(180);
 
   //Supla
   
@@ -494,6 +494,7 @@ void loop() {
                  } break;
                  case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
                  case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
+                 case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
                   zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL); break;
 
               }

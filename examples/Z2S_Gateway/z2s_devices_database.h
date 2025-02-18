@@ -8,9 +8,15 @@
 
 #define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR   0x1100
 
+#define Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR         0x1200
+#define Z2S_DEVICE_DESC_ILLUZONE_SENSOR                 0x1205
+
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 0x2000
+#define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1               0x2001
 
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
+
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR            0x2300
 
 #define Z2S_DEVICE_DESC_LIGHT_SOURCE                    0x3000
 #define Z2S_DEVICE_DESC_LIGHT_BULB                      0x3010
@@ -112,9 +118,25 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
       ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
       ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR, .z2s_device_clusters_count = 5, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUZONE_SENSOR, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
       ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY, 
@@ -218,7 +240,12 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { TUYA_PRIVATE_CLUSTER_EF00 }}
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
+      TUYA_PRIVATE_CLUSTER_EF00 }} 
+    
 };
         
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
@@ -316,7 +343,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_3towulqd", .model_name = "TS0601", 
-   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_1bwpjvlz", .model_name = "TS0203", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
@@ -355,7 +382,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
   
   { .manufacturer_name = "LUMI", .model_name = "lumi.magnet.agl02", 
-   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_tgvtvdoc", .model_name = "TS0207", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
@@ -469,9 +496,16 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_rccxox8p", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_2aaelwxk", .model_name = "TS0225",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_9kbbfeho", .model_name = "TS0222",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR, .z2s_device_endpoints_count = 1}
+
 };
 
 #endif
 
-// 
+//  
