@@ -364,9 +364,9 @@ void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t s
   }
   if (attribute->id == 0xFFE2 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
     uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
-    log_i("Tuya 0xFFE2 battery percentage remaining %d",value);
-    if (_on_battery_percentage_receive)
-      _on_battery_percentage_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value / 2);
+    log_i("Tuya 0xFFE2 attribute report value",value);
+    //if (_on_battery_percentage_receive)
+    //  _on_battery_percentage_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value / 2);
   }
 }
 
