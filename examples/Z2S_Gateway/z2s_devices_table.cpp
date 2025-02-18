@@ -674,11 +674,11 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
               log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
               Supla_VirtualThermHygroMeter->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value);
             }
-            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E/*battery state*/, payload_size, payload);
+            /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E, payload_size, payload); //battery_state
             if (Tuya_read_dp_result.is_success) {
               log_i("Battery state 0x0E is %d, level %d", Tuya_read_dp_result.dp_value * 50);
               Supla_VirtualThermHygroMeter->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50);
-            }
+            }*/
           }
         }          
       } break;
@@ -705,11 +705,11 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
               log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
               Supla_VirtualBinary->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value);
             }
-            Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E/*battery state*/, payload_size, payload);
+            /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E, payload_size, payload); //battery_state
             if (Tuya_read_dp_result.is_success) {
               log_i("Battery state 0x0E is %d, level %d", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value * 50);
-              Supla_VirtualBinary->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50);
-            }
+              Supla_VirtualBinary->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50); 
+            }*/
           }   
         }          
       } break;

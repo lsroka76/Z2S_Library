@@ -21,11 +21,6 @@
 #include <supla/control/button.h>
 #include <action_handler_with_callbacks.h>
 
-#undef USE_WEB_INTERFACE
-#define USE_WEB_INTERFACE
-
-#ifdef USE_WEB_INTERFACE
-
 #include <supla/network/esp_web_server.h>
 #include <supla/network/html/device_info.h>
 #include "z2s_version_info.h"
@@ -46,9 +41,6 @@ Supla::Html::CustomDevInfo                htmlCustomDevInfo;
 Supla::Html::WifiParameters               htmlWifi;
 Supla::Html::ProtocolParameters           htmlProto;
 
-#endif
-
-
 #define GATEWAY_ENDPOINT_NUMBER 1
 
 #define BUTTON_PIN                  9  //Boot button for C6/H2
@@ -58,6 +50,7 @@ Supla::Html::ProtocolParameters           htmlProto;
 
 #define REFRESH_PERIOD              60 * 1000 //miliseconds
 
+#define USE_WEB_CONFIG_ON_STARTUP
 
 ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
@@ -119,9 +112,9 @@ void setup() {
 
   cfg->commit();
 
-#ifndef USE_WEB_INTERFACE
+#ifndef USE_WEB_CONFIG_ON_STARTUP
 
-  log_i("undef webinterface");
+  log_i("no web config on startup - using hardcoded data");
   //cfg->setGUID(GUID);
   //cfg->setAuthKey(AUTHKEY);
   //cfg->generateGuidAndAuthkey();
