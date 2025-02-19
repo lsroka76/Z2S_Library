@@ -16,6 +16,6 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
 void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, bool active_query, uint8_t free_slot);
 
-void msgZ2SDeviceElectricityMeter(uint8_t Supla_channel, uint8_t selector, uint64_t value);
+void msgZ2SDeviceElectricityMeter(uint8_t Supla_channel, uint8_t selector, uint64_t value, signed char rssi);
 
 #endif

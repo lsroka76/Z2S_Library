@@ -9,6 +9,6 @@ void initZ2SDeviceRGBWLightSource(ZigbeeGateway *gateway, zbg_device_params_t *d
 
 void addZ2SDeviceRGBWLightSource(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name = nullptr, uint32_t func = 0);
 
-void msgZ2SDeviceRGBWLightSource(uint8_t Supla_channel, uint8_t id, uint8_t value, bool state = true);
+void msgZ2SDeviceRGBWLightSource(uint8_t Supla_channel, uint8_t id, uint8_t value, bool state = true, signed char rssi = 0);
 
 #endif

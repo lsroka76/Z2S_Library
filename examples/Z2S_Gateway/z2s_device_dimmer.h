@@ -15,9 +15,9 @@ void msgZ2SDeviceTuyaDimmerLightSource(uint8_t Supla_channel, uint16_t cluster, 
                                        uint16_t payload_size, uint8_t *payload);
 
 void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, uint16_t cluster, uint8_t command_id,
-                                  uint16_t payload_size, uint8_t *payload);
+                                  uint16_t payload_size, uint8_t *payload, signed char rssi);
 
-void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, int16_t level, bool state);
+void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, int16_t level, bool state, signed char rssi);
 
 
 #endif

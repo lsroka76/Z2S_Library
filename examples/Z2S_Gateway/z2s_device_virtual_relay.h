@@ -10,6 +10,6 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
 
 void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name = nullptr, uint32_t func = 0);
 
-void msgZ2SDeviceVirtualRelay(uint8_t Supla_channel, bool state);
+void msgZ2SDeviceVirtualRelay(uint8_t Supla_channel, bool state, signed char rssi);
 
 #endif
