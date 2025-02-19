@@ -20,12 +20,13 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
   Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1, name, func);
 }
 
-void msgZ2SDeviceVirtualRelay(uint8_t Supla_channel, bool state) {
+void msgZ2SDeviceVirtualRelay(uint8_t Supla_channel, bool state, signed char rssi) {
 
   auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
     auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
     Supla_Z2S_VirtualRelay->getChannel()->setOnline();
     Supla_Z2S_VirtualRelay->Z2S_setOnOff(state);     
-  }
+    Supla_Z2S_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
+}
 }

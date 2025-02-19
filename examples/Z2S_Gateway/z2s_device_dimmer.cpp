@@ -34,7 +34,7 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uin
 }
 
 void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, uint16_t cluster, uint8_t command_id,
-                                       uint16_t payload_size, uint8_t *payload) {
+                                       uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
   log_i("msgZ2SDeviceDimmer custom command %d for model %d", command_id, model_id);
   auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
@@ -51,11 +51,15 @@ void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, uint16_t clust
           case 0x01:
           case 0x07: 
             if ((*(payload + 6)) == 0x01) Supla_Z2S_TuyaDimmerSwitch->setStateOnServer(true);
-            else Supla_Z2S_TuyaDimmerSwitch->setStateOnServer(false); break;
+            else 
+              Supla_Z2S_TuyaDimmerSwitch->setStateOnServer(false);
+              Supla_Z2S_TuyaDimmerSwitch->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+             break;
           case 0x02:
           case 0x08: {
             //uint8_t _brightness = map(*(payload + 9), 0, 254, 0, 100); 
             Supla_Z2S_TuyaDimmerSwitch->setValueOnServer(*(payload + 9));
+            Supla_Z2S_TuyaDimmerSwitch->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
           } break;
         }
       } break;
@@ -63,7 +67,7 @@ void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, uint16_t clust
   }
 }
 
-void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, int16_t level, bool state) {
+void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, int16_t level, bool state, signed char rssi) {
 
   auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
 
@@ -72,6 +76,7 @@ void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, int16_t level,
       //case Z2S_DEVICE_DESC_DIMMER_LIGHT_SOURCE : break; 
       case Z2S_DEVICE_DESC_TUYA_DIMMER_BULB: {
         auto Supla_Z2S_TuyaDimmerBulb = reinterpret_cast<Supla::Control::Z2S_TuyaDimmerBulb *>(element);
+        Supla_Z2S_TuyaDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         if (level == -1)
           Supla_Z2S_TuyaDimmerBulb->setStateOnServer(state);
         else
@@ -79,6 +84,7 @@ void msgZ2SDeviceDimmer(uint32_t model_id, uint8_t Supla_channel, int16_t level,
       } break;
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: {
         auto Supla_Z2S_TuyaDimmerBulb = reinterpret_cast<Supla::Control::Z2S_TuyaDimmerBulb *>(element);
+        Supla_Z2S_TuyaDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         if (level == -1)
           Supla_Z2S_TuyaDimmerBulb->setStateOnServer(state);
         else

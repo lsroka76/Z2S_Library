@@ -28,7 +28,7 @@ void addZ2SDeviceRGBW(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8
     //Z2S_fillDevicesTableSlot(device, free_slot, channel_element->getChannelNumber(), SUPLA_CHANNELTYPE_DIMMERANDRGBLED, -1, name, func);
 }
 
-void msgZ2SDeviceRGBW(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, int16_t level, bool state) {
+void msgZ2SDeviceRGBW(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, int16_t level, bool state, signed char rssi) {
 
   auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
 
@@ -39,6 +39,7 @@ void msgZ2SDeviceRGBW(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uin
         auto Supla_Z2S_TuyaHueDimmerBulb = reinterpret_cast<Supla::Control::Z2S_TuyaHueDimmerBulb *>(element);
         //auto Supla_Z2S_TuyaRGBWBulb = reinterpret_cast<Supla::Control::Z2S_TuyaRGBWBulb *>(element);
         Supla_Z2S_TuyaHueDimmerBulb->getChannel()->setOnline();
+        Supla_Z2S_TuyaHueDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         /*if ((hue == 0xFF) && (saturation == 0xFF) && (level == -1))
           ;//Supla_Z2S_TuyaRGBWBulb->setStateOnServer(state);
         else

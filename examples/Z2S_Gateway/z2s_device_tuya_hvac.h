@@ -46,7 +46,7 @@ void addZ2SDeviceTuyaHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, 
 }
 
 void msgZ2SDeviceTuyaHvac(uint8_t Supla_channel, uint16_t cluster, uint8_t command_id,
-                                    uint16_t payload_size, uint8_t *payload) {
+                                    uint16_t payload_size, uint8_t *payload, signed char rssi) {
                                       
   auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
   
@@ -54,7 +54,7 @@ void msgZ2SDeviceTuyaHvac(uint8_t Supla_channel, uint16_t cluster, uint8_t comma
     if ((cluster == TUYA_PRIVATE_CLUSTER_EF00)&&(command_id == 0x02))
       {
         auto Supla_HvacBase = reinterpret_cast<Supla::Control::HvacBaseEE *>(element);
-
+        Supla_HvacBase->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         switch (*(payload+2)) {
           case 0x67: {
             float setpoint = (*(payload+8))*256 + (*(payload+9));
