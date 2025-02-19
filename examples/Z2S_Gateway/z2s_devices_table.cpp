@@ -14,8 +14,8 @@
 
 #include <supla/control/virtual_relay.h>
 
-#include <Z2S_control/Z2S_virtual_relay.h>
-#include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
+#include <Z2S_control/z2s_virtual_relay.h>
+#include <Z2S_control/z2s_virtual_relay_scene_switch.h>
 
 
 extern ZigbeeGateway zbGateway;
@@ -291,7 +291,7 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 }
 }
 
-void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance) {
+void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance, signed char rssi) {
 
   log_i("onIlluminanceReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
    ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
@@ -305,6 +305,7 @@ void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 
         auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
         Supla_GeneralPurposeMeasurement->setValue(illuminance);
+        Supla_GeneralPurposeMeasurement->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
     }
   }
 }
