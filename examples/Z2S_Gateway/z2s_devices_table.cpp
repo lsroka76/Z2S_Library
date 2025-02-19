@@ -636,16 +636,35 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
   
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, NO_CUSTOM_CMD_SID);
   if (channel_number_slot >= 0) {
-    Tuya_read_dp_result_t Tuya_read_dp_result;
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x67/*temperature setpoint*/, payload_size, payload);
-    if (Tuya_read_dp_result.is_success)
-      log_i("Tuya thermostat setpoint value %d",Tuya_read_dp_result.dp_value);
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x66/*current temperature*/, payload_size, payload);
-    if (Tuya_read_dp_result.is_success)
-      log_i("Tuya thermostat actual temperature value %d",Tuya_read_dp_result.dp_value);
-      Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x65/*on/off*/, payload_size, payload);
-    if (Tuya_read_dp_result.is_success)
-      log_i("Tuya thermostat is %d",Tuya_read_dp_result.dp_value);
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: {
+        Tuya_read_dp_result_t Tuya_read_dp_result;
+        Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_6567C_CURRENT_HEATING_SETPOINT_DP, payload_size, payload);
+        if (Tuya_read_dp_result.is_success)
+          log_i("TUYA_6567C_CURRENT_HEATING_SETPOINT_DP value = %d",Tuya_read_dp_result.dp_value);
+        Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_6567C_LOCAL_TEMPERATURE_DP, payload_size, payload);
+        if (Tuya_read_dp_result.is_success)
+          log_i("TUYA_6567C_LOCAL_TEMPERATURE_DP value = %d",Tuya_read_dp_result.dp_value);
+        Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_6567C_SYSTEM_MODE_DP, payload_size, payload);
+        if (Tuya_read_dp_result.is_success)
+          log_i("TUYA_6567C_SYSTEM_MODE_DP value = %d",Tuya_read_dp_result.dp_value);
+        Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_6567C_RUNNING_STATE_DP, payload_size, payload);
+        if (Tuya_read_dp_result.is_success)
+          log_i("TUYA_6567C_RUNNING_STATE_DP value = %d",Tuya_read_dp_result.dp_value);
+        Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_6567C_CHILD_LOCK_DP, payload_size, payload);
+        if (Tuya_read_dp_result.is_success)
+          log_i("TUYA_6567C_CHILD_LOCK_DP value = %d",Tuya_read_dp_result.dp_value);
+        Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_6567C_AWAY_MODE_DP, payload_size, payload);
+        if (Tuya_read_dp_result.is_success)
+          log_i("TUYA_6567C_AWAY_MODE_DP value = %d",Tuya_read_dp_result.dp_value);
+        Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_6567C_SCHEDULE_ENABLE_DP, payload_size, payload);
+        if (Tuya_read_dp_result.is_success)
+          log_i("TUYA_6567C_SCHEDULE_ENABLE_DP value = %d",Tuya_read_dp_result.dp_value);
+        Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_6567C_SCHEDULE_SET_DP, payload_size, payload);
+        if (Tuya_read_dp_result.is_success)
+          log_i("TUYA_6567C_SCHEDULE_SET_DP value = %d",Tuya_read_dp_result.dp_value);
+      }
+    }
     //msgZ2SDeviceTuyaHvac(z2s_devices_table[channel_number_slot].Supla_channel, cluster, command_id, payload_size, payload, rssi);
     return;
   }
@@ -915,7 +934,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
             else
               addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot);
       } break;
-      case Z2S_DEVICE_TUYA_HVAC: addZ2SDeviceTuyaHvac(&zbGateway, device, first_free_slot); break;
+      case Z2S_DEVICE_DESC_TUYA_HVAC:
+      case Z2S_DEVICE_DESC_TUYA_HVAC_6567C:
+      case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
+      case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: addZ2SDeviceTuyaHvac(&zbGateway, device, first_free_slot); break;
       case Z2S_DEVICE_DESC_TUYA_DIMMER_BULB: {
         addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, "DIMMER BULB", SUPLA_CHANNELFNC_DIMMER); 
       } break; 

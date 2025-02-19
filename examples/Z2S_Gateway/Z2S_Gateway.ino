@@ -244,6 +244,46 @@ void loop() {
       const auto &device : zbGateway.getGatewayDevices()) {       
       log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), rejoined(%s)", device->endpoint, device->short_addr, device->model_id,
             device->rejoined ? "YES" : "NO");
+
+      if ((device->model_id == Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1)) { //} && (device->endpoint == 1)) {
+        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, false);
+        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, false);
+        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, false);
+        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, false);
+        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, false);
+        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0xFFFE, false);
+      }   
+      if ((device->rejoined) && (device->model_id == Z2S_DEVICE_DESC_TUYA_HVAC_6567C)) {
+        zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x03;
+          tuya_dp_data[2] = 0x65;
+          tuya_dp_data[3] = 0x01;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x01;
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x04;
+          tuya_dp_data[2] = 0x6C;
+          tuya_dp_data[3] = 0x01;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x00;
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
+           tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x04;
+          tuya_dp_data[2] = 0x67;
+          tuya_dp_data[3] = 0x02;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x04;
+          tuya_dp_data[6] = 0x00;
+          tuya_dp_data[7] = 0x00;
+          tuya_dp_data[8] = 0x00;
+          tuya_dp_data[9] = random(15, 24) * 10;
+          
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, tuya_dp_data);
+      }
       if ((device->model_id >= Z2S_DEVICE_DESC_RELAY) && (device->model_id < Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F)) {//TODO change it to some kind of function
         bool is_online = zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true); 
         int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
@@ -332,7 +372,7 @@ void loop() {
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[k].z2s_device_desc_id;
                         
-                        if ((joined_device->model_id == Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1) && (endpoint_id == 1)) {
+                        if ((joined_device->model_id == Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1)) { //&& (endpoint_id == 1)) {
                           zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, false);
                           zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, false);
                           zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, false);

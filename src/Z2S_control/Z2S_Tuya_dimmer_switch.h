@@ -46,9 +46,9 @@ public:
 protected:
   bool _state = false;
   uint8_t _Tuya_dp_data[10];
-  int8_t _dimmer_number = 1;
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
+  int8_t _dimmer_number = 1;
 
 };
 
