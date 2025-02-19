@@ -69,7 +69,7 @@ int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
         (z2s_devices_table[devices_counter].endpoint == endpoint) &&
         ((channel_type < 0) || (z2s_devices_table[devices_counter].Supla_channel_type == channel_type)) &&
         ((sub_id < 0) || (z2s_devices_table[devices_counter].sub_id == sub_id))) { 
-        //&& (z2s_devices_table[devices_counter].cluster_id = cluster)) {
+        //&& (z2s_devices_table[devices_counter].cluster_id == cluster)) {
             return devices_counter;
         }
 
@@ -90,7 +90,7 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee
         (z2s_devices_table[devices_counter].endpoint == endpoint) &&
         ((channel_type < 0) || (z2s_devices_table[devices_counter].Supla_channel_type == channel_type)) &&
         ((sub_id < 0) || (z2s_devices_table[devices_counter].sub_id == sub_id))) { 
-        //&& (z2s_devices_table[devices_counter].cluster_id = cluster)) {
+        //&& (z2s_devices_table[devices_counter].cluster_id == cluster)) {
             return devices_counter;
         }
   }  
@@ -211,10 +211,10 @@ void Z2S_initSuplaChannels(){
                 (z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_ILLUZONE_SENSOR))
               Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
             if ((z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) ||
-                (z2s_devices_table[devices_counter].sub_id = 0x6A))
+                (z2s_devices_table[devices_counter].sub_id == 0x6A))
               Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx");
             if ((z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) ||
-                (z2s_devices_table[devices_counter].sub_id = 0x65))
+                (z2s_devices_table[devices_counter].sub_id == 0x65))
               Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("[0..5]");
             
           } break;
@@ -525,12 +525,12 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
         sub_id = IKEA_CUSTOM_CMD_BUTTON_3_HELD_SID;
       else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x08) && (*(buffer) == 0x00))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID;
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x07))
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x07)) {
         if ((*(int32_t *)buffer) == 0x000D0101)
           sub_id = IKEA_CUSTOM_CMD_BUTTON_3_PRESSED_SID;
         else if ((*(int32_t *)buffer) == 0x000D0100)
           sub_id = IKEA_CUSTOM_CMD_BUTTON_4_PRESSED_SID;
-
+      }  
       if (sub_id == 0xFF) return false;
 
       channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
@@ -557,7 +557,7 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
       log_i("TUYA command: cluster(0x%x), command id(0x%x)" ,  cluster_id, command_id);   
       //process Tuya command
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) &&
-        (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID) || (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID)) {
+        ((command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID) || (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID))) {
 
         int8_t sub_id = (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID) ? TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID + (*buffer) : (*buffer);
         channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 

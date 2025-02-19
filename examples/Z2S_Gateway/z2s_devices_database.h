@@ -84,6 +84,7 @@
 #define IKEA_CUSTOM_CMD_BUTTON_4_PRESSED_SID        0x06
 #define IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID           0x07
 
+[[maybe_unused]]
 static char IKEA_STYRBAR_BUTTONS[][16] PROGMEM = {"ON PRESSED", "ON HELD", "OFF PRESSED", "OFF HELD", "LEFT PRESSED", "LEFT HELD", "RIGHT PRESSED", "RIGHT HELD"};
 
 
@@ -106,7 +107,8 @@ typedef struct z2s_device_entity_s {
   z2s_device_endpoint_t z2s_device_endpoints[MAX_BOUND_ENDPOINTS];
 } z2s_device_entity_t;
 
-static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM = {
+
+static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 

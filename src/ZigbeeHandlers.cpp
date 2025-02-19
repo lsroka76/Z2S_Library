@@ -29,7 +29,7 @@ static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_com
 static bool zb_raw_cmd_handler(uint8_t bufid); 
 
 // Zigbee action handlers
-[[maybe_unused]]
+  [[maybe_unused]]
 static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id, const void *message) {
   esp_err_t ret = ESP_OK;
 log_i("Receive Zigbee action(0x%x) callback", callback_id);

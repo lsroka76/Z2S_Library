@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 
 #define Z2S_GATEWAY
 
@@ -252,12 +252,13 @@ void loop() {
         else
         while (channel_number_slot >= 0) {
           auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-          if (element) 
+          if (element) { 
             if (is_online) {
               zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
               element->getChannel()->setOnline();
             }
             else element->getChannel()->setOffline();
+          }
           channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
         }  
       }
@@ -426,7 +427,7 @@ void loop() {
                                                 ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48, 0, 300, 1, true);
                   
                   
-                } //break;
+                } [[fallthrough]];//break;
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2:
                 case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER:
