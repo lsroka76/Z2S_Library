@@ -79,7 +79,7 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_EVENT_2:
     case Supla::ON_CLICK_5: Zigbee.factoryReset(); break;
     case Supla::ON_EVENT_3: 
-    case Supla::ON_HOLD: Z2S_clearDevicesTable(); break;
+    case Supla::ON_CLICK_10: Z2S_clearDevicesTable(); break;
   }
   if (event >= Supla::ON_EVENT_4) {
     z2s_devices_table[event - Supla::ON_EVENT_4].valid_record = false;
@@ -143,9 +143,12 @@ void setup() {
   buttonCfg->setHoldTime(2000);
   buttonCfg->setMulticlickTime(500);
 
+  buttonCfg->configureAsConfigButton(&SuplaDevice);
+
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_1);
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_5);
-  buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_HOLD);
+  buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_10);
+
   
   Z2S_loadDevicesTable();
 
@@ -257,32 +260,95 @@ void loop() {
         zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
           tuya_dp_data[0] = 0x00;
           tuya_dp_data[1] = 0x03;
-          tuya_dp_data[2] = 0x65;
+          tuya_dp_data[2] = 0x65; 
           tuya_dp_data[3] = 0x01;
           tuya_dp_data[4] = 0x00;
           tuya_dp_data[5] = 0x01;
-          tuya_dp_data[6] = 0x01;
+          tuya_dp_data[6] = 0X01;
           zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
+          delay(3000);
           tuya_dp_data[0] = 0x00;
           tuya_dp_data[1] = 0x04;
           tuya_dp_data[2] = 0x6C;
           tuya_dp_data[3] = 0x01;
           tuya_dp_data[4] = 0x00;
           tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x00; 
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data); 
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x05;
+          tuya_dp_data[2] = 0x28; 
+          tuya_dp_data[3] = 0x01;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
           tuya_dp_data[6] = 0x00;
           zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
-           tuya_dp_data[0] = 0x00;
-          tuya_dp_data[1] = 0x04;
-          tuya_dp_data[2] = 0x67;
+         /* tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x06;
+          tuya_dp_data[2] = 0x14; //TUYA_6567C_SCHEDULE_SET_DP;
+          tuya_dp_data[3] = 0x01;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x01;
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
+
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x07;
+          tuya_dp_data[2] = 0x2C; //TUYA_6567C_LOCAL_TEMPERATURE_DP;//TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
           tuya_dp_data[3] = 0x02;
           tuya_dp_data[4] = 0x00;
           tuya_dp_data[5] = 0x04;
           tuya_dp_data[6] = 0x00;
           tuya_dp_data[7] = 0x00;
           tuya_dp_data[8] = 0x00;
-          tuya_dp_data[9] = random(15, 24) * 10;
+          tuya_dp_data[9] = 0x00; //random(15, 24) * 10;
           
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, tuya_dp_data);*/
+          
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x05;
+          tuya_dp_data[2] = 0x1B; //TUYA_6567C_LOCAL_TEMPERATURE_DP;//TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
+          tuya_dp_data[3] = 0x02;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x04;
+          tuya_dp_data[6] = 0x00;
+          tuya_dp_data[7] = 0x00;
+          tuya_dp_data[8] = 0x00;
+          tuya_dp_data[9] = 0x00;
           zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, tuya_dp_data);
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x08;
+          tuya_dp_data[2] = 0x6D; //TUYA_6567C_LOCAL_TEMPERATURE_DP;//TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
+          tuya_dp_data[3] = 0x04;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x00;
+          tuya_dp_data[7] = 0x00;
+          tuya_dp_data[8] = 0x00;
+          tuya_dp_data[9] = 0x00;
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x09;
+          tuya_dp_data[2] = 0x6D; //TUYA_6567C_LOCAL_TEMPERATURE_DP;//TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
+          tuya_dp_data[3] = 0x04;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x01;
+          tuya_dp_data[7] = 0x00;
+          tuya_dp_data[8] = 0x00;
+          tuya_dp_data[9] = 50;
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
+          tuya_dp_data[0] = 0x00;
+          tuya_dp_data[1] = 0x0A;
+          tuya_dp_data[2] = 0x6D; //TUYA_6567C_LOCAL_TEMPERATURE_DP;//TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
+          tuya_dp_data[3] = 0x04;
+          tuya_dp_data[4] = 0x00;
+          tuya_dp_data[5] = 0x01;
+          tuya_dp_data[6] = 0x02;
+          tuya_dp_data[7] = 0x00;
+          tuya_dp_data[8] = 0x00;
+          tuya_dp_data[9] = 100;
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
       }
       if ((device->model_id >= Z2S_DEVICE_DESC_RELAY) && (device->model_id < Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F)) {//TODO change it to some kind of function
         bool is_online = zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true); 
@@ -325,6 +391,8 @@ void loop() {
       }
       write_mask = 0x13;
       zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask); //Tuya black magic continues
+      write_mask = 0x1;
+      zbGateway.sendAttributeWrite(joined_device, 0xfcc0, 0x0009, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, 1, 0x115f);
 
       uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
       uint16_t devices_desc_table_size = sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
