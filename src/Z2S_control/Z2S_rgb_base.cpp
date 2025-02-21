@@ -57,17 +57,19 @@ int32_t Supla::Control::Z2S_RGBBase::handleNewValueFromServer(TSD_SuplaChannelNe
     log_i("Supla::Control::Z2S_RGBBase::handleNewValueFromServer - turnOff");
     turnOff();
   }
-  else {
-    if (toggleOnOff == 1) {
+  if ((toggleOnOff == 1) && (colorBrightness == 100)) {
       log_i("Supla::Control::Z2S_RGBBase::handleNewValueFromServer - turnOn");
+      colorBrightness = _last_svr_colorBrightness;
       turnOn(); 
-    }
+   }
+   else 
+     if (colorBrightness > 0) _last_svr_colorBrightness = colorBrightness;
     log_i("Supla::Control::Z2S_RGBBase::handleNewValueFromServer -> sendValueToDevice");
     
     _last_svr_red = red;
     _last_svr_green = green;
     _last_svr_blue = blue;
-    _last_svr_colorBrightness = colorBrightness;
+    
     _last_svr_brightness = brightness;
 
     channel.setNewValue(red, green, blue, colorBrightness,0);
