@@ -703,7 +703,7 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
             Tuya_read_dp_result_t Tuya_read_dp_result;
             Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x05/*temperature*/, payload_size, payload);
             if (Tuya_read_dp_result.is_success)
-              Supla_VirtualThermHygroMeter->setTemp(Tuya_read_dp_result.dp_value/10);  
+              Supla_VirtualThermHygroMeter->setTemp((float)Tuya_read_dp_result.dp_value/10);  
             Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x03/*soil moisture*/, payload_size, payload);
             if (Tuya_read_dp_result.is_success)
               Supla_VirtualThermHygroMeter->setHumi(Tuya_read_dp_result.dp_value);
@@ -729,7 +729,7 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
             Tuya_read_dp_result_t Tuya_read_dp_result;
             Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x01/*temperature*/, payload_size, payload);
             if (Tuya_read_dp_result.is_success)
-              Supla_VirtualThermHygroMeter->setTemp(Tuya_read_dp_result.dp_value/10);  
+              Supla_VirtualThermHygroMeter->setTemp((float)Tuya_read_dp_result.dp_value/10);  
             Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x02/*humidity*/, payload_size, payload);
             if (Tuya_read_dp_result.is_success)
               Supla_VirtualThermHygroMeter->setHumi(Tuya_read_dp_result.dp_value);
