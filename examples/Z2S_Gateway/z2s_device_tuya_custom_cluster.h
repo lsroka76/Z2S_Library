@@ -2,8 +2,6 @@
 #define Z2S_DEVICE_TUYA_CUSTON_CLUSTER_H_
 
 #include "z2s_devices_table.h"
-//#include <SuplaDevice.h>
-//#include <supla/control/hvac_base.h>
 
 #include <Z2S_control/hvac_base_ee.h>
 #include <Z2S_control/Z2S_Tuya_thermostat.h>
@@ -55,6 +53,29 @@
 #define TUYA_LEGACY_AWAY_MODE_DP                0x6A
 #define TUYA_LEGACY_SCHEDULE_ENABLE_DP          0x6B
 #define TUYA_LEGACY_SCHEDULE_SET_DP             0x6C
+
+#define TUYA_DOUBLE_DIMMER_SWITCH_1_STATE_DP      0x01
+#define TUYA_DOUBLE_DIMMER_SWITCH_2_STATE_DP      0x07
+#define TUYA_DOUBLE_DIMMER_SWITCH_1_BRIGHTNESS_DP 0x02
+#define TUYA_DOUBLE_DIMMER_SWITCH_2_BRIGHTNESS_DP 0x08
+
+#define TUYA_SOIL_SENSOR_TEMPERATURE_DP   0x05
+#define TUYA_SOIL_SENSOR_MOISTURE_DP      0x03
+#define TUYA_SOIL_SENSOR_BATTERY_LEVEL_DP 0x0F
+
+#define TUYA_TH_SENSOR_TEMPERATURE_DP   0x01
+#define TUYA_TH_SENSOR_HUMIDITY_DP      0x02
+#define TUYA_TH_SENSOR_BATTERY_STATE_DP 0x03
+#define TUYA_TH_SENSOR_BATTERY_LEVEL_DP 0x04
+
+#define TUYA_SMOKE_DETECTOR_SMOKE_DP          0x01
+#define TUYA_SMOKE_DETECTOR_PPM_DP            0x02
+#define TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP  0x0F
+
+#define TUYA_PRESENCE_SENSOR_PRESENCE_DP     0x01
+#define TUYA_PRESENCE_SENSOR_MOTION_STATE_DP 0x65
+#define TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP  0x6A
+
 
 typedef struct Tuya_read_dp_result_s {
   bool is_success;

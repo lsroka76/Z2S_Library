@@ -5,6 +5,8 @@
 #include <Z2S_control/Z2S_Tuya_dimmer_bulb.h>
 #include <Z2S_control/Z2S_Tuya_dimmer_switch.h>
 
+#define DIMMER_NO_LEVEL_DATA -1
+
 void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
 
 void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name = nullptr, uint32_t func = 0);

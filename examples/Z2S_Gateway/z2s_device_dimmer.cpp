@@ -60,7 +60,7 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, 
       case Z2S_DEVICE_DESC_TUYA_DIMMER_BULB: {
         auto Supla_Z2S_TuyaDimmerBulb = reinterpret_cast<Supla::Control::Z2S_TuyaDimmerBulb *>(element);
         Supla_Z2S_TuyaDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-        if (level == -1)
+        if (level == DIMMER_NO_LEVEL_DATA)
           Supla_Z2S_TuyaDimmerBulb->setStateOnServer(state);
         else
           Supla_Z2S_TuyaDimmerBulb->setValueOnServer(level);
@@ -68,7 +68,7 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: {
         auto Supla_Z2S_TuyaDimmerBulb = reinterpret_cast<Supla::Control::Z2S_TuyaDimmerBulb *>(element);
         Supla_Z2S_TuyaDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-        if (level == -1)
+        if (level == DIMMER_NO_LEVEL_DATA)
           Supla_Z2S_TuyaDimmerBulb->setStateOnServer(state);
         else
           Supla_Z2S_TuyaDimmerBulb->setValueOnServer(level);
@@ -76,7 +76,7 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, 
       case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
         auto Supla_Z2S_TuyaDimmerSwitch = reinterpret_cast<Supla::Control::Z2S_TuyaDimmerSwitch *>(element);
         Supla_Z2S_TuyaDimmerSwitch->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-        if (level == -1)
+        if (level == DIMMER_NO_LEVEL_DATA)
           Supla_Z2S_TuyaDimmerSwitch->setStateOnServer(state);
         else
           Supla_Z2S_TuyaDimmerSwitch->setValueOnServer(level);

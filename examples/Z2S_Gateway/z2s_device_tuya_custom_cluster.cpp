@@ -55,17 +55,19 @@ void processTuyaDoubleDimmerSwitchDataReport(int16_t channel_number_slot, uint16
   
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x01/*dimmer_1_state*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_DOUBLE_DIMMER_SWITCH_1_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceDimmer(channel_number_slot_sub_id, -1, Tuya_read_dp_result.dp_value, rssi); 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x07/*dimmer_2_state*/, payload_size, payload);
+    msgZ2SDeviceDimmer(channel_number_slot_sub_id, DIMMER_NO_LEVEL_DATA, Tuya_read_dp_result.dp_value, rssi); 
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_DOUBLE_DIMMER_SWITCH_2_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceDimmer(channel_number_slot_sub_id, -1, Tuya_read_dp_result.dp_value, rssi); 
+    msgZ2SDeviceDimmer(channel_number_slot_sub_id, DIMMER_NO_LEVEL_DATA, Tuya_read_dp_result.dp_value, rssi); 
        
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x02/*dimmer_1_brightness*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_DOUBLE_DIMMER_SWITCH_1_BRIGHTNESS_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceDimmer(channel_number_slot_sub_id, Tuya_read_dp_result.dp_value, false, rssi); 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x08/*dimmer_2_brightness*/, payload_size, payload);
+    msgZ2SDeviceDimmer(channel_number_slot_sub_id, Tuya_read_dp_result.dp_value, false, rssi);
+     
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_DOUBLE_DIMMER_SWITCH_2_BRIGHTNESS_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceDimmer(channel_number_slot_sub_id, Tuya_read_dp_result.dp_value, false, rssi); 
 }
@@ -74,18 +76,18 @@ void processTuyaSoilTempHumiditySensorReport(int16_t channel_number_slot, uint16
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x05/*temperature*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_TEMPERATURE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/10, rssi);  
             
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x03/*soil moisture*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_MOISTURE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceTempHumidityHumi(channel_number_slot, (float)Tuya_read_dp_result.dp_value, rssi);  
             
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0F/*battery level*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
-    msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot,(float)Tuya_read_dp_result.dp_value, rssi);  
+    msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value, rssi);  
   }
     /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E, payload_size, payload); //battery_state
     if (Tuya_read_dp_result.is_success) {
@@ -99,18 +101,18 @@ void processTuyaTempHumiditySensorDataReport(int16_t channel_number_slot, uint16
 
     Tuya_read_dp_result_t Tuya_read_dp_result;
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x01/*temperature*/, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_TEMPERATURE_DP, payload_size, payload);
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/10, rssi);
             
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x02/*humidity*/, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceTempHumidityHumi(channel_number_slot, (float)Tuya_read_dp_result.dp_value, rssi);  
             
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x04/*battery level*/, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
     if (Tuya_read_dp_result.is_success) { 
-      log_i("Battery level 0x04 is %d", Tuya_read_dp_result.dp_value);
-      msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot,(float)Tuya_read_dp_result.dp_value, rssi);  
+      log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
+      msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value * 50, rssi);  
     }
 }
 
@@ -145,15 +147,15 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
     channel_number_slot_2 = channel_number_slot;
   }
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x01/*smoke detected*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_SMOKE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1), rssi);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x02/*smoke concentration*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_PPM_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0F/*battery level*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
     updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
@@ -179,22 +181,22 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t p
   channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                     z2s_devices_table[channel_number_slot].endpoint, 
                                                     z2s_devices_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 0x65);
+                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_PRESENCE_SENSOR_MOTION_STATE_DP);
 
   channel_number_slot_3 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                   z2s_devices_table[channel_number_slot].endpoint, 
                                                   z2s_devices_table[channel_number_slot].cluster_id, 
-                                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 0x6A);
+                                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x01/*presence*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_PRESENCE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1), rssi);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x65/*motion state*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_MOTION_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x6A/*illuminance*/, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
 }
