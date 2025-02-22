@@ -8,7 +8,7 @@
 
 #include <SuplaDevice.h>
 
-#include <priv_auth_data.h>
+#include "priv_auth_data.h"
 #include "z2s_devices_database.h"
 #include "z2s_devices_table.h"
 

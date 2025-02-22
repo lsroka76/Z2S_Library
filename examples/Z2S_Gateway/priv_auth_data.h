@@ -1,0 +1,6 @@
+#define SUPLA_WIFI_SSID "WIFI SSID"
+#define SUPLA_WIFI_PASS "WIFI PASS"
+
+
+#define SUPLA_SVR       "svrXXX.supla.org"
+#define SUPLA_EMAIL     "e-mail@"
