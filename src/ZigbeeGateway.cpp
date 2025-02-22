@@ -469,10 +469,40 @@ void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
   _instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, false);
   _instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, false);
   _instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0xFFFE, false);
+
+
 */
+
+  esp_zb_zcl_read_attr_cmd_t read_req;
+
+  if (device->short_addr != 0) {
+    read_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+    read_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+  } else {
+    read_req.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
+    memcpy(read_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  }
+
+  read_req.zcl_basic_cmd.src_endpoint = _endpoint;
+  read_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+  read_req.clusterID = ESP_ZB_ZCL_CLUSTER_ID_BASIC;
+
+  uint16_t attributes[6] = {  ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
+                              ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
+                              0xFFFE};
+    
+    read_req.attr_number = 6; //ZB_ARRAY_LENTH(attributes);
+    read_req.attr_field = &attributes[0];
+
+    log_i("Tuya magic last hope");
+
+    esp_zb_lock_acquire(portMAX_DELAY);
+    uint8_t basic_tsn = esp_zb_zcl_read_attr_cmd_req(&read_req);
+    esp_zb_lock_release();
+    delay(200);
+
   _new_device_joined = true;
   _instance->_joined_devices.push_back(device);
-
 }
 
 void ZigbeeGateway::findEndpoint(esp_zb_zdo_match_desc_req_param_t *param) {

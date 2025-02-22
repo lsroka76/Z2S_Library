@@ -248,14 +248,6 @@ void loop() {
       log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), rejoined(%s)", device->endpoint, device->short_addr, device->model_id,
             device->rejoined ? "YES" : "NO");
 
-      if ((device->model_id == Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1)) { //} && (device->endpoint == 1)) {
-        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, false);
-        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, false);
-        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, false);
-        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, false);
-        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, false);
-        zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0xFFFE, false);
-      }   
       if ((device->rejoined) && (device->model_id == Z2S_DEVICE_DESC_TUYA_HVAC_6567C)) {
         zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
           tuya_dp_data[0] = 0x00;
@@ -440,15 +432,6 @@ void loop() {
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[k].z2s_device_desc_id;
                         
-                        if ((joined_device->model_id == Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1)) { //&& (endpoint_id == 1)) {
-                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, false);
-                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, false);
-                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, false);
-                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, false);
-                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, false);
-                          zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0xFFFE, false);
-                        }
-
                         for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
 
@@ -592,12 +575,31 @@ void loop() {
                  case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F:
                  case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
                  case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F: {
+                    joined_device->endpoint = 0x01;
                     if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,0x8004, true))
                       log_i("Tuya custom attribute 0x8004 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
                     write_mask = 0x01;
                     zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 0x8004, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
                     if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,0x8004, true))
                       log_i("Tuya custom attribute has 0x8004 been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                 } break;
+                 case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1:
+                 {
+                    /*joined_device->endpoint = 0x01;
+                    if (zbGateway.sendAttributeRead(joined_device, 0xE001,0xD020, true))
+                      log_i("Tuya custom attribute 0xD020 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    write_mask = 0x01;
+                    zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD020, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
+                    if (zbGateway.sendAttributeRead(joined_device, 0xE001,0xD020, true))
+                      log_i("Tuya custom attribute has 0xD020 been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    joined_device->endpoint = 0x02;
+                    if (zbGateway.sendAttributeRead(joined_device, 0xE001,0xD020, true))
+                      log_i("Tuya custom attribute 0xD020 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    write_mask = 0x01;
+                    zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD020, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
+                    if (zbGateway.sendAttributeRead(joined_device, 0xE001,0xD020, true))
+                      log_i("Tuya custom attribute has 0xD020 been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    */
                  } break;
                  case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
                  case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
