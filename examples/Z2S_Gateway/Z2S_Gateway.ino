@@ -350,7 +350,7 @@ void loop() {
           tuya_dp_data[9] = 100;
           zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
       }
-      if ((device->model_id >= Z2S_DEVICE_DESC_RELAY) && (device->model_id < Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F)) {//TODO change it to some kind of function
+      if ((device->model_id >= Z2S_DEVICE_DESC_LIGHT_SOURCE) && (device->model_id < Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F)) {//TODO change it to some kind of function
         bool is_online = zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true); 
         int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
         if (channel_number_slot < 0)
@@ -392,7 +392,7 @@ void loop() {
       write_mask = 0x13;
       zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask); //Tuya black magic continues
       write_mask = 0x1;
-      zbGateway.sendAttributeWrite(joined_device, 0xfcc0, 0x0009, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, 1, 0x115f);
+      zbGateway.sendAttributeWrite(joined_device, 0xfcc0, 0x0009, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, 1, 0x115f); //Lumi magic
 
       uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
       uint16_t devices_desc_table_size = sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);

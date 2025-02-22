@@ -12,10 +12,10 @@
 #define Z2S_ACT_FWD_ENERGY_SEL    0x0003
 
 
-void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, bool active_query, uint8_t Supla_channel);
+void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
 
 void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, bool active_query, uint8_t free_slot);
 
-void msgZ2SDeviceElectricityMeter(uint8_t Supla_channel, uint8_t selector, uint64_t value, signed char rssi);
+void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector, uint64_t value, signed char rssi);
 
 #endif

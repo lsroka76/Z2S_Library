@@ -385,7 +385,7 @@ void Supla::Control::Z2S_TuyaRGBWBulb::iterateAlways() {
          log_i("Zigbee device(0x%x) offline...", _device.short_addr);
        else {
          channel.setOnline();
-         channel.setNewValue((_last_red, _last_green, _last_blue, _Tuya_bulb_state == 0x81) ? 100 : 0, (_Tuya_bulb_state == 0x80) ? 100 : 0);
+         channel.setNewValue(_last_red, _last_green, _last_blue, (_Tuya_bulb_state == 0x81) ? 100 : 0, (_Tuya_bulb_state == 0x80) ? 100 : 0);
        }
     } else channel.setNewValue(_last_red, _last_green, _last_blue, _last_colorBrightness, _last_brightness);
   } //time loop

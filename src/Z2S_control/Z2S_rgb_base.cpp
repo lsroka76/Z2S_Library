@@ -74,7 +74,7 @@ int32_t Supla::Control::Z2S_RGBBase::handleNewValueFromServer(TSD_SuplaChannelNe
 
     channel.setNewValue(red, green, blue, colorBrightness,0);
     sendValueToDevice(red, green, blue, colorBrightness);
-  }
+  
   return -1;
 }
 

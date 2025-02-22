@@ -4,10 +4,10 @@
 #include "z2s_devices_table.h"
 #include <supla/sensor/virtual_binary.h>
 
-void initZ2SDeviceIASzone(uint8_t Supla_channel);
+void initZ2SDeviceIASzone(int16_t channel_number_slot);
 
-void addZ2SDeviceIASzone(zbg_device_params_t *device, uint8_t free_slot);
+void addZ2SDeviceIASzone(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id = -1, char *name = nullptr, uint32_t func = 0);
 
-void msgZ2SDeviceIASzone(uint8_t Supla_channel, int zone_status, signed char rssi); 
+void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, signed char rssi); 
 
 #endif
