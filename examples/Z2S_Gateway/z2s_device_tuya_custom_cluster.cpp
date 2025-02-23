@@ -46,7 +46,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
 void processTuyaDoubleDimmerSwitchDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
 
-  int8_t sub_id = ((*(payload + 2)) < 7) ? 1 : 2; 
+  int8_t sub_id = ((*(payload + 2)) < 7) ? TUYA_DOUBLE_DIMMER_SWITCH_1_SID : TUYA_DOUBLE_DIMMER_SWITCH_2_SID; 
   
   int16_t channel_number_slot_sub_id = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                                  z2s_devices_table[channel_number_slot].endpoint, 
@@ -66,7 +66,7 @@ void processTuyaDoubleDimmerSwitchDataReport(int16_t channel_number_slot, uint16
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_DOUBLE_DIMMER_SWITCH_1_BRIGHTNESS_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceDimmer(channel_number_slot_sub_id, Tuya_read_dp_result.dp_value, false, rssi);
-     
+
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_DOUBLE_DIMMER_SWITCH_2_BRIGHTNESS_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceDimmer(channel_number_slot_sub_id, Tuya_read_dp_result.dp_value, false, rssi); 
@@ -176,17 +176,17 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t p
   channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                     z2s_devices_table[channel_number_slot].endpoint, 
                                                     z2s_devices_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
 
   channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                     z2s_devices_table[channel_number_slot].endpoint, 
                                                     z2s_devices_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_PRESENCE_SENSOR_MOTION_STATE_DP);
+                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID);
 
   channel_number_slot_3 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                   z2s_devices_table[channel_number_slot].endpoint, 
                                                   z2s_devices_table[channel_number_slot].cluster_id, 
-                                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP);
+                                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_PRESENCE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)

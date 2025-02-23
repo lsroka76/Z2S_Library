@@ -129,15 +129,10 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC80),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC80),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_attribute_list_t *tyua_on_off_cluster = esp_zb_cluster_list_get_cluster(_cluster_list, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  static uint8_t ext_attribute = 0x01;
-  esp_zb_on_off_cluster_add_attr(tyua_on_off_cluster, 0x8004, &ext_attribute);
-  esp_zb_on_off_cluster_add_attr(tyua_on_off_cluster, 0x8001, &ext_attribute);
-  esp_zb_on_off_cluster_add_attr(tyua_on_off_cluster, 0x8002, &ext_attribute);
-  esp_zb_on_off_cluster_add_attr(tyua_on_off_cluster, 0x5000, &ext_attribute);
-  //esp_zb_basic_cluster_add_attr(tyua_on_off_cluster, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, (void *)zb_model);
   
   _ep_config = {.endpoint = _endpoint, .app_profile_id = ESP_ZB_AF_HA_PROFILE_ID, .app_device_id = ESP_ZB_HA_REMOTE_CONTROL_DEVICE_ID, .app_device_version = 0};
 }

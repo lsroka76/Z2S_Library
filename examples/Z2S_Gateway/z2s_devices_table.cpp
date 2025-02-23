@@ -213,8 +213,12 @@ void Z2S_initSuplaChannels(){
             initZ2SDeviceVirtualRelay(&zbGateway, device, devices_counter); break;
           
           case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
-            //auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
-            auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, 1000);
+            uint16_t debounce_time = 100;
+            if (z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_TUYA_SWITCH_4X3)
+              debounce_time = 1000;
+             //auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
+              auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, debounce_time);
+            
             Supla_VirtualRelay->setInitialCaption(z2s_devices_table[devices_counter].Supla_channel_name);
             Supla_VirtualRelay->setDefaultFunction(z2s_devices_table[devices_counter].Supla_channel_func);
             Supla_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
@@ -462,11 +466,89 @@ void Z2S_onOnOffCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
 }
 }
 
+bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
+  
+  char byte_str[3];
+  byte_str[2] = '\0';
+
+  for (int i = 0; i < buffer_size; i++) {
+      memcpy(byte_str, lookup_str + (i * 2), 2);
+      if (strtoul(byte_str, nullptr, 16) != *((uint8_t*)(buffer + i)))
+        return false;
+  }
+  return true;
+}
+
+bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, 
+                                  uint8_t buffer_size, uint8_t *buffer, signed char  rssi) {
+
+  log_i("IKEA SYMFONISK command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
+  
+  uint8_t sub_id = 0xFF;
+      
+  if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x02))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID;
+  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x05) && compareBuffer(buffer, buffer_size, "00FF"))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_UP_SID;
+  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x05)&& compareBuffer(buffer, buffer_size, "01FF"))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_DOWN_SID;
+  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x02) && compareBuffer(buffer, buffer_size, "000100000000"))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_NEXT_TRACK_SID;
+  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x02) && compareBuffer(buffer, buffer_size, "010100000000")) 
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_PREV_TRACK_SID;
+  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && compareBuffer(buffer, buffer_size, "00FF0000")) 
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_UP_SID;
+  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && compareBuffer(buffer, buffer_size, "01FF0000")) 
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_DOWN_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x01))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x02))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_HELD_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x03))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x04))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_LONG_RELEASED_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x06))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x01))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x02))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_HELD_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x03))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x04))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID;
+  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x06))
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID;
+  
+  if (sub_id == 0xFF) return false;
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, 
+                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+  if (channel_number_slot < 0)
+    log_i("No IKEA SYMFONISK channel found for address %s", ieee_addr);
+  else {
+    log_i("IKEA SYMFONISK custom command Supla channel 0x%x", z2s_devices_table[channel_number_slot].Supla_channel);
+    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+    
+    if (element) log_i("element->getChannel()->getChannelType() 0x%x", element->getChannel()->getChannelType());
+    else log_i("element not found");
+    
+    if (element) { //(element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
+      log_i("trying to toggle");
+      auto Supla_VirtualRelay = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
+      Supla_VirtualRelay->toggle();
+      Supla_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+    }
+  }
+  return true;
+}
+
 bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, uint8_t buffer_size, uint8_t *buffer, signed char  rssi){
   log_i("Z2S_onCustomCmdReceive cluster 0x%x, command id 0x%x, rssi: %d", cluster_id, command_id, rssi);
   //if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_BASIC) return true;
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, NO_CUSTOM_CMD_SID);
+                                                            ALL_SUPLA_CHANNEL_TYPES/*SUPLA_CHANNELTYPE_ACTIONTRIGGER*/, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0) {
     log_i("No channel found for address %s", ieee_addr);
     return false;
@@ -474,7 +556,8 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   log_i("z2s_devices_table[channel_number_slot].Supla_channel 0x%x", z2s_devices_table[channel_number_slot].Supla_channel);
 
   switch (z2s_devices_table[channel_number_slot].model_id) {
-    case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON: {
+    case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
+    case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F: {
       log_i("IKEA command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
       uint8_t sub_id = 0xFF;
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x01)) {
@@ -525,6 +608,18 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
       }
       return true;
     } break;
+
+    case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2:
+    case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:  
+      return processIkeaSymfoniskCommands( ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer, rssi); break;
+
+    case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1: {
+      if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x00))
+        msgZ2SDeviceIASzone(channel_number_slot, true, rssi);
+      if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x01))
+        msgZ2SDeviceIASzone(channel_number_slot, false, rssi);
+      return true;
+    } break;
     case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3:
     case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F:
     case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
@@ -562,7 +657,14 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
                                      uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
-  processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi);
+  switch (cluster) {
+    case 0xEF00: processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi); break;
+    case 0xFC80: {
+      log_i("IKEA custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", cluster, endpoint, command_id);
+      processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster, command_id, payload_size, payload, rssi);
+     } break;
+    default: log_i("Unknown custom cluster(0x%x) command(0x%x)", cluster, command_id); break;
+  }
 }
 
 void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
@@ -609,7 +711,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         addZ2SDeviceTempHumidity(device, first_free_slot); break;
 
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: 
-      case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR: addZ2SDeviceIASzone(device, first_free_slot); break;
+      case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR: 
+      case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
+        addZ2SDeviceIASzone(device, first_free_slot); break;
+
 
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "POWER SWITCH", 
@@ -650,10 +755,22 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         button_name_function, SUPLA_CHANNELFNC_POWERSWITCH); 
       } break;
 
-      case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON: {
+      case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
+      case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F: {
         auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
         char button_name_function[30];
         sprintf(button_name_function, IKEA_STYRBAR_BUTTONS[sub_id]);
+        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
+        button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+      case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2:
+      case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:
+      case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2:
+      case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: {
+        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
+        char button_name_function[30];
+        sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
         Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
         button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
@@ -754,14 +871,14 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
         
         switch (sub_id) {
-          case 0x01 : //presence
+          case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARM); break;
 
-          case 0x65:  //motion_state
+          case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "MOTION STATE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..5]");
             break;
       
-          case 0x6A:  //illuminance
+          case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID:  //illuminance
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
         }
       } break;

@@ -1,3 +1,4 @@
+
 #ifndef Z2S_DEVICES_DATABASE_H_
 #define Z2S_DEVICES_DATABASE_H_
 
@@ -14,6 +15,10 @@
 #define Z2S_DEVICE_DESC_ILLUZONE_SENSOR                 0x1205
 
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 0x2000
+
+#define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1          0x2005
+#define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2          0x2006
+
 #define Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR              0x2010
 
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
@@ -54,7 +59,13 @@
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F            0x5002
 
 #define Z2S_DEVICE_DESC_TUYA_SWITCH_4X3                 0x5100
+
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON               0x5200
+#define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F            0x5201
+#define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2            0x5202
+#define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1          0x5203
+#define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2          0x5204
+#define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3          0x5205
 
 #define Z2S_DEVICE_DESC_TUYA_HVAC                       0x6000
 #define Z2S_DEVICE_DESC_TUYA_HVAC_23457                 0x6001
@@ -69,16 +80,23 @@
 #define MAX_BOUND_CLUSTERS 16
 
 
-#define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID        0xFD
-#define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID       0xFC
+#define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID       0xFD
+#define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID      0xFC
 
-#define NO_CUSTOM_CMD_SID                            -0x01
+#define NO_CUSTOM_CMD_SID                           -0x01
 
 #define TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID          0x00
 #define TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID   0x01
 #define TUYA_CUSTOM_CMD_BUTTON_HELD_SID             0x02
 #define TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID     0x0A
 #define TUYA_CUSTOM_CMD_BUTTON_ROTATE_LEFT_SID      0x0B
+
+#define TUYA_DOUBLE_DIMMER_SWITCH_1_SID             0x01
+#define TUYA_DOUBLE_DIMMER_SWITCH_2_SID             0x02
+
+#define TUYA_PRESENCE_SENSOR_PRESENCE_SID           0x01
+#define TUYA_PRESENCE_SENSOR_MOTION_STATE_SID       0x02
+#define TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID        0x03
 
 #define IKEA_CUSTOM_CMD_BUTTON_1_PRESSED_SID        0x00
 #define IKEA_CUSTOM_CMD_BUTTON_1_HELD_SID           0x01
@@ -89,8 +107,32 @@
 #define IKEA_CUSTOM_CMD_BUTTON_4_PRESSED_SID        0x06
 #define IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID           0x07
 
+#define IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID                0x00
+#define IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_UP_SID           0x01
+#define IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_DOWN_SID         0x02
+#define IKEA_CUSTOM_CMD_SYMFONISK_NEXT_TRACK_SID          0x03
+#define IKEA_CUSTOM_CMD_SYMFONISK_PREV_TRACK_SID          0x04
+
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID         0x05
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID  0x06
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOT_HELD_SID            0x07
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOT_LONG_RELEASED_SID   0x08
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID  0x09
+
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID         0x0A
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID  0x0B
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_HELD_SID            0x0C
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID   0x0D
+#define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID  0x0E
+
+
 [[maybe_unused]]
 static char IKEA_STYRBAR_BUTTONS[][16] PROGMEM = {"ON PRESSED", "ON HELD", "OFF PRESSED", "OFF HELD", "LEFT PRESSED", "LEFT HELD", "RIGHT PRESSED", "RIGHT HELD"};
+
+[[maybe_unused]]
+static char IKEA_SYMFONISK_BUTTONS[][20] PROGMEM = {"PLAY", "VOLUME UP", "VOLUME DOWN", "NEXT TRACK ", "PREV TRACK", 
+                                                    "DOT PRESSED", "DOT SHORT RELEASE", "DOT HELD", "DOT LONG RELEASED", "DOT DOUBLE PRESSED",
+                                                    "DOTS PRESSED", "DOTS SHORT RELEASE", "DOTS HELD", "DOTS LONG RELEASED", "DOTS DOUBLE PRESSED"};
 
 
 typedef struct z2s_device_desc_s {
@@ -141,6 +183,14 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
       ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
@@ -188,6 +238,22 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+      
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { 0xFC80 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { 0xFC80 }},
+      
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
@@ -895,10 +961,16 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_decxrtwa", .model_name = "TS0203", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1}, 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 2}, 
 
   { .manufacturer_name = "_TZ3000_yxqnffam", .model_name = "TS0203",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+  
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "PARASOLL Door/Window Sensor",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1},
+                              { 2, Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2 }}},
+
 
   { .manufacturer_name = "_TZE200_3towulqd", .model_name = "TS0601", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUZONE_SENSOR, .z2s_device_endpoints_count = 1},
@@ -1022,8 +1094,18 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "IKEA of Sweden", .model_name = "Remote Control N2", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "SYMFONISK sound remote gen2", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2, .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1 },
+                              { 2, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2 },
+                              { 3, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3 }}},
+
+
   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI on/off switch", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F, .z2s_device_endpoints_count = 1},
+    
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "RODRET Dimmer", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_gjrubzje", .model_name = "TS0001",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
@@ -1064,7 +1146,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1, .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
                               { 2, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1 }}},
-                              
+
   { .manufacturer_name = "_TZ3000_ltgngnqz", .model_name = "TS0002",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1, .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
