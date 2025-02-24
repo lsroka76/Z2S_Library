@@ -5,8 +5,10 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
   auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
 
   Supla_GeneralPurposeMeasurement->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-  Supla_GeneralPurposeMeasurement->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);
-  Supla_GeneralPurposeMeasurement->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
+  if (z2s_devices_table[channel_number_slot].Supla_channel_name)
+    Supla_GeneralPurposeMeasurement->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);
+  if (z2s_devices_table[channel_number_slot].Supla_channel_func != 0)
+    Supla_GeneralPurposeMeasurement->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
 
   switch (z2s_devices_table[channel_number_slot].model_id) {
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
@@ -16,9 +18,9 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
       Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); break;
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
       switch (z2s_devices_table[channel_number_slot].sub_id) {
-        case 0x6A:
+        case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID:
           Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); break;
-        case 0x65:
+        case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID:
           Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("[0..5]"); break;
         default: break;
       }
@@ -26,12 +28,12 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
   }
 } 
 
-void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, uint8_t free_slot, char *name, uint32_t func, char *unit) {
+void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name, uint32_t func, char *unit) {
   
   auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
   
   Z2S_fillDevicesTableSlot(device, free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
-                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, -1, name, func);
+                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id, name, func);
   
   Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
 }

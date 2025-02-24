@@ -826,7 +826,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
 
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: {
 
-        addZ2SDeviceIASzone(device, first_free_slot, -1, "SMOKE DETECT", SUPLA_CHANNELFNC_ALARM); break;
+        addZ2SDeviceIASzone(device, first_free_slot, -1, "SMOKE DETECT", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -838,7 +838,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
 
       case Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR: {
         
-        addZ2SDeviceIASzone(device, first_free_slot, -1, "LS ZONE", SUPLA_CHANNELFNC_ALARM); break;
+        addZ2SDeviceIASzone(device, first_free_slot, -1, "LS ZONE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -857,14 +857,13 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
 
       case Z2S_DEVICE_DESC_ILLUZONE_SENSOR: {
         
-        addZ2SDeviceIASzone(device, first_free_slot, -1, "LS ZONE", SUPLA_CHANNELFNC_ALARM); break;
+        addZ2SDeviceIASzone(device, first_free_slot, -1, "LS ZONE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
           log_i("ERROR! Devices table full!");
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-
         addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
       } break;
 
@@ -872,14 +871,16 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         
         switch (sub_id) {
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
-            addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARM); break;
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
           case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "MOTION STATE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..5]");
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID,
+                                                  "MOTION STATE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..5]");
             break;
       
-          case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID:  //illuminance
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+          case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "ILLUMINANCE", TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID,
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
         }
       } break;
       

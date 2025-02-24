@@ -6,7 +6,7 @@
 
 void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot);
 
-void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, uint8_t free_slot, 
+void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id = -1,
                                           char *name = nullptr, uint32_t func = 0, char *unit = nullptr);
 
 void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, double value, signed char rssi); 
