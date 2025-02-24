@@ -833,7 +833,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
           log_i("ERROR! Devices table full!");
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "SMOKE CONC.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "SMOKE CONC.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
       } break;
 
       case Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR: {
@@ -845,7 +845,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
           log_i("ERROR! Devices table full!");
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
         
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -864,7 +864,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
           log_i("ERROR! Devices table full!");
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
@@ -874,12 +874,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
           case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID,
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
                                                   "MOTION STATE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..5]");
             break;
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, "ILLUMINANCE", TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID,
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
         }
       } break;
