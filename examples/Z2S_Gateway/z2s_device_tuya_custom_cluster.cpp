@@ -153,7 +153,8 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_PPM_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM, 
+                                          Tuya_read_dp_result.dp_value, rssi);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
@@ -195,11 +196,13 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t p
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_MOTION_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
   { log_i("MOTION STATE CHECK int %d, float %f", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value);
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);}
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_MOTION_STATE,
+                                          Tuya_read_dp_result.dp_value, rssi);}
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE,
+                                          Tuya_read_dp_result.dp_value, rssi);
 }
 
 void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t payload_size, uint8_t *payload, signed char rssi) {

@@ -267,17 +267,10 @@ void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
   
-  if (channel_number_slot >= 0) {
-    switch (z2s_devices_table[channel_number_slot].model_id) {
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
-        channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                        TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
-        if (channel_number_slot >= 0)
-          msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, illuminance, rssi);
-      } break;
-      default: msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, illuminance, rssi); break;
-    }
-  } else log_i("No channel found for address %s", ieee_addr);
+  if (channel_number_slot < 0)
+    log_i("No channel found for address %s", ieee_addr);
+  else
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, illuminance, rssi); 
 }
 
 void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy, signed char rssi) {
@@ -790,24 +783,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "SMOKE CONC.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
       } break;
 
-      case Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR: {
-        
-        addZ2SDeviceIASzone(device, first_free_slot, -1, "LS ZONE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-
-        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
-        if (first_free_slot == 0xFF) {
-          log_i("ERROR! Devices table full!");
-          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
-        }
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
-        
-        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
-        if (first_free_slot == 0xFF) {
-          log_i("ERROR! Devices table full!");
-          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
-        }
-        addZ2SDeviceTempHumidity(device, first_free_slot);
-      } break;
+      case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
 
       case Z2S_DEVICE_DESC_ILLUZONE_SENSOR: {
         

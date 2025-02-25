@@ -12,18 +12,25 @@ namespace Supla
         class VirtualRelaySceneSwitch : public VirtualRelay
         {
         public:
-            /// @brief Creates Virtual Relay channel with deboucing capabilities.
+            /// @brief Creates Virtual Relay channel with deboucing capabilities
             /// @param functions Supla channel functions.
             /// @param debounceTimeMs Debounce time in milliseconds.
             VirtualRelaySceneSwitch(_supla_int_t functions =
                                         (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER),
                                     u_int16_t debounceTimeMs=100);
 
-            void turnOn(_supla_int_t duration = 0) override;
+            
+            bool getValue();
+
+	    void onLoadState() override;
+	    void onSaveState() override;
+
+            void onInit() override;
+
+	    void turnOn(_supla_int_t duration = 0) override;
             void turnOff(_supla_int_t duration = 0) override;
 
         protected:
-            bool state = false;
             unsigned long _lastChangeTime = 0;
             u_int16_t _debounceTime = 0;
         };
@@ -31,4 +38,4 @@ namespace Supla
     }; // namespace Control
 }; // namespace Supla
 
-#endif // SRC_SUPLA_CONTROL_VIRTUAL_RELAY_H_
+#endif //SRC_SUPLA_CONTROL_VIRTUAL_RELAY_SCENE_SWITCH_H_

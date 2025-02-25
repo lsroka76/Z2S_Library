@@ -16,6 +16,8 @@ void initZ2SDeviceActionTrigger(int16_t channel_number_slot) {
   
   if (z2s_devices_table[channel_number_slot].Supla_channel_func !=0) 
     Supla_Z2S_ActionTrigger->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
+
+  Supla_Z2S_ActionTrigger->setDefaultStateRestore();
 }
 
                                       

@@ -11,7 +11,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR   0x1100
 
-#define Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR         0x1200
+#define Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR         0x1200
 #define Z2S_DEVICE_DESC_ILLUZONE_SENSOR                 0x1205
 
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 0x2000
@@ -172,12 +172,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
       ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT }},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR, .z2s_device_clusters_count = 5, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-      ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
-      ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
-      ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
-      ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+      ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUZONE_SENSOR, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -1174,6 +1171,13 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1, .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
                               { 2, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1 }}},
+
+  { .manufacturer_name = "_TZ3000_sueu2ppq", .model_name = "TS0003",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1, .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
+                              { 2, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
+                              { 3, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1 }}},
+  
                               
   { .manufacturer_name = "_TZ3000_h1ipgkwn", .model_name = "TS0002",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 2,
@@ -1190,10 +1194,10 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_9kbbfeho", .model_name = "TS0222",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR, .z2s_device_endpoints_count = 1}
 
 };
 
 #endif
 
-//  
+//  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR

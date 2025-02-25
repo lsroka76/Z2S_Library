@@ -9,6 +9,39 @@ Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(_supla_int_t fu
     _debounceTime = debounceTimeMs;
 }
 
+
+bool Supla::Control::VirtualRelaySceneSwitch::getValue() {
+  return state;
+}
+
+void Supla::Control::VirtualRelaySceneSwitch::onInit() {
+  uint32_t duration = durationMs;
+	
+  switch (stateOnInit) {
+    case STATE_ON_INIT_ON:
+    case STATE_ON_INIT_RESTORED_ON:
+      turnOn(duration); break;
+    case STATE_ON_INIT_RESTORE:
+      channel.setNewValue(getValue()); break;
+    default: 
+      turnOff(duration); break;
+  }
+}
+
+void Supla::Control::VirtualRelaySceneSwitch::onSaveState() {
+  
+  Supla::Storage::WriteState((unsigned char *)&state, sizeof(state));
+}
+
+void Supla::Control::VirtualRelaySceneSwitch::onLoadState() {
+  
+  bool value = false;
+  
+  if (Supla::Storage::ReadState((unsigned char *)&value, sizeof(value)))
+    state = value;
+}
+
+
 void Supla::Control::VirtualRelaySceneSwitch::turnOn(_supla_int_t duration)
 {
     unsigned long time = millis() - _lastChangeTime;
@@ -37,4 +70,3 @@ void Supla::Control::VirtualRelaySceneSwitch::turnOff(_supla_int_t duration)
       time);
     }
 }
-

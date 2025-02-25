@@ -14,7 +14,7 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
       Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("ppm"); break;
 
-    case Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
     case Z2S_DEVICE_DESC_ILLUZONE_SENSOR:
       Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); break;
 
@@ -43,12 +43,34 @@ void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, uint8_t 
   Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
 }
 
-void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, double value, signed char rssi) {
+void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t function, double value, signed char rssi) {
 
   if (channel_number_slot < 0) {
     
     log_e("msgZ2SDeviceGeneralPurposeMeasurement - invalid channel number slot");
     return;
+  }
+  switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
+        int8_t sub_id = -1;
+        switch (function) {
+          case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE: sub_id = TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID; break;
+          case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_MOTION_STATE: sub_id = TUYA_PRESENCE_SENSOR_MOTION_STATE_SID; break;
+        }
+      
+        int16_t func_channel_number_slot = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                                      z2s_devices_table[channel_number_slot].endpoint, 
+                                                                      z2s_devices_table[channel_number_slot].cluster_id, 
+                                                                      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                                      sub_id); 
+        if (func_channel_number_slot < 0) {
+          log_e("msgZ2SDeviceGeneralPurposeMeasurement - no channel numer slot for device model id 0x%x, function 0x%x",
+                z2s_devices_table[channel_number_slot].model_id, function);
+          return;
+        }
+        channel_number_slot = func_channel_number_slot;
+      } break; 
+      default: break;
   }
 
   auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
