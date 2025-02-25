@@ -24,7 +24,7 @@ jobs:
           cp ./partitions/custom_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.1.1/tools/partitions/custom_zigbee_zczr.csv
       - name: Compile Gateway
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr -e --library=. --libraries=SuplaDevice 
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,DebugLevel=Verbose -e --library=. --libraries=SuplaDevice 
       - name: Compile Scanner
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Device_Scanner -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr -e --library=. 
