@@ -19,6 +19,10 @@
 #define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1          0x2005
 #define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2          0x2006
 
+#define Z2S_DEVICE_DESC_IKEA_VALLHORN_1                 0x2007
+#define Z2S_DEVICE_DESC_IKEA_VALLHORN_2                 0x2008
+#define Z2S_DEVICE_DESC_IKEA_VALLHORN_3                 0x2009
+
 #define Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR              0x2010
 
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
@@ -62,6 +66,7 @@
 
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON               0x5200
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F            0x5201
+
 #define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2            0x5202
 #define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1          0x5203
 #define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2          0x5204
@@ -186,10 +191,22 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
       ESP_ZB_ZCL_CLUSTER_ID_SCENES,
-      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, }},
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
+      ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_3, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
+
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
@@ -1106,6 +1123,12 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     
   { .manufacturer_name = "IKEA of Sweden", .model_name = "RODRET Dimmer", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "VALLHORN Wireless Motion Sensor", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_1, .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_IKEA_VALLHORN_1 },
+                              { 2, Z2S_DEVICE_DESC_IKEA_VALLHORN_2 },
+                              { 3, Z2S_DEVICE_DESC_IKEA_VALLHORN_3 }}},
 
   { .manufacturer_name = "_TZ3000_gjrubzje", .model_name = "TS0001",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},

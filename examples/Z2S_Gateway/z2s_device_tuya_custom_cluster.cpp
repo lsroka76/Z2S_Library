@@ -194,7 +194,8 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t p
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_MOTION_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+  { log_i("MOTION STATE CHECK int %d, float %f", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);}
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 

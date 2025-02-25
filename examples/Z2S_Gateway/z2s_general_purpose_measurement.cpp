@@ -13,9 +13,14 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
   switch (z2s_devices_table[channel_number_slot].model_id) {
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
       Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("ppm"); break;
+
     case Z2S_DEVICE_DESC_ILLUTEMPHUMIZONE_SENSOR:
     case Z2S_DEVICE_DESC_ILLUZONE_SENSOR:
       Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); break;
+
+    case Z2S_DEVICE_DESC_IKEA_VALLHORN_3:
+      Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); break;
+
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
       switch (z2s_devices_table[channel_number_slot].sub_id) {
         case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID:

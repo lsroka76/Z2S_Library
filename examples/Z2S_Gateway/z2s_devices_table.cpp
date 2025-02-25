@@ -11,6 +11,7 @@
 #include "z2s_device_temphumidity.h"
 #include "z2s_device_tuya_custom_cluster.h"
 #include "z2s_device_general_purpose_measurement.h"
+#include "z2s_device_action_trigger.h"
 
 #include <SuplaDevice.h>
 
@@ -212,17 +213,9 @@ void Z2S_initSuplaChannels(){
           case SUPLA_CHANNELTYPE_RELAY: 
             initZ2SDeviceVirtualRelay(&zbGateway, device, devices_counter); break;
           
-          case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
-            uint16_t debounce_time = 100;
-            if (z2s_devices_table[devices_counter].model_id == Z2S_DEVICE_DESC_TUYA_SWITCH_4X3)
-              debounce_time = 1000;
-             //auto Supla_VirtualRelay = new Supla::Control::VirtualRelay();
-              auto Supla_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, debounce_time);
-            
-            Supla_VirtualRelay->setInitialCaption(z2s_devices_table[devices_counter].Supla_channel_name);
-            Supla_VirtualRelay->setDefaultFunction(z2s_devices_table[devices_counter].Supla_channel_func);
-            Supla_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[devices_counter].Supla_channel);
-          } break;
+          case SUPLA_CHANNELTYPE_ACTIONTRIGGER: 
+            initZ2SDeviceActionTrigger(devices_counter); break;
+
           case SUPLA_CHANNELTYPE_ELECTRICITY_METER: 
             initZ2SDeviceElectricityMeter(&zbGateway, device, devices_counter); break;
           
@@ -269,14 +262,35 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
 void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance, signed char rssi) {
 
-  log_i("onIlluminanceReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onIlluminanceReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, illuminance 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
+   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, illuminance);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
+  
+  if (channel_number_slot >= 0) {
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
+        channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                        TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+        if (channel_number_slot >= 0)
+          msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, illuminance, rssi);
+      } break;
+      default: msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, illuminance, rssi); break;
+    }
+  } else log_i("No channel found for address %s", ieee_addr);
+}
+
+void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy, signed char rssi) {
+
+  log_i("onOccupancyReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, occupancy 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
+   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, occupancy);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-  msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, illuminance, rssi);
+    msgZ2SDeviceIASzone(channel_number_slot, (occupancy == 0), rssi);
 }
+
 
 void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state, signed char rssi) {
 
@@ -442,30 +456,6 @@ int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, clu
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status == 0), rssi);
 }
 
-void Z2S_onOnOffCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, uint8_t command_data, signed char rssi) {
-  
-  log_i("Z2S_onOnOffCustomCmdReceive command id 0x%x, command data 0x%x", command_id, command_data);
-  if ((command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID) || (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID)) {
-
-    int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, command_data);
-    if (channel_number_slot < 0)
-      log_i("No channel found for address %s", ieee_addr);
-    else {
-      log_i("z2s_devices_table[channel_number_slot].Supla_channel 0x%x", z2s_devices_table[channel_number_slot].Supla_channel);
-      auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-      if (element) log_i("element->getChannel()->getChannelType() 0x%x", element->getChannel()->getChannelType());
-      else log_i("element not found");
-      if (element) { //(element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-        log_i("trying to toggle");
-      auto Supla_VirtualRelay = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
-      Supla_VirtualRelay->toggle();
-      Supla_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-    }
-  }
-}
-}
-
 bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
   
   char byte_str[3];
@@ -484,7 +474,7 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
 
   log_i("IKEA SYMFONISK command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
   
-  uint8_t sub_id = 0xFF;
+  uint8_t sub_id = 0x7F;
       
   if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x02))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID;
@@ -521,32 +511,20 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x06))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID;
   
-  if (sub_id == 0xFF) return false;
+  if (sub_id == 0x7F) return false;
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, 
-                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+
   if (channel_number_slot < 0)
     log_i("No IKEA SYMFONISK channel found for address %s", ieee_addr);
-  else {
-    log_i("IKEA SYMFONISK custom command Supla channel 0x%x", z2s_devices_table[channel_number_slot].Supla_channel);
-    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    
-    if (element) log_i("element->getChannel()->getChannelType() 0x%x", element->getChannel()->getChannelType());
-    else log_i("element not found");
-    
-    if (element) { //(element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-      log_i("trying to toggle");
-      auto Supla_VirtualRelay = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
-      Supla_VirtualRelay->toggle();
-      Supla_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-    }
-  }
+  else 
+    msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
   return true;
 }
 
 bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, uint8_t buffer_size, uint8_t *buffer, signed char  rssi){
   log_i("Z2S_onCustomCmdReceive cluster 0x%x, command id 0x%x, rssi: %d", cluster_id, command_id, rssi);
-  //if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_BASIC) return true;
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                                                             ALL_SUPLA_CHANNEL_TYPES/*SUPLA_CHANNELTYPE_ACTIONTRIGGER*/, NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0) {
@@ -557,10 +535,14 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
   switch (z2s_devices_table[channel_number_slot].model_id) {
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
-    case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F: {
+    case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F:
+    case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: {
       log_i("IKEA command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
-      uint8_t sub_id = 0xFF;
-      if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x01)) {
+      int8_t sub_id = 0x7F;
+
+      if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x42))
+        sub_id = -1;
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x01)) {
         if ((Styrbar_ignore_button_1) && (millis() - Styrbar_timer < 1500)) return true;
         else {
           sub_id = IKEA_CUSTOM_CMD_BUTTON_1_PRESSED_SID;
@@ -588,24 +570,14 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
         else if ((*(int32_t *)buffer) == 0x000D0100)
           sub_id = IKEA_CUSTOM_CMD_BUTTON_4_PRESSED_SID;
       }  
-      if (sub_id == 0xFF) return false;
+      if (sub_id == 0x7F) return false;
 
       channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                                                             SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
       if (channel_number_slot < 0)
         log_i("No IKEA device channel found for address %s", ieee_addr);
-      else {
-        log_i("IKEA device custom command Supla channel 0x%x", z2s_devices_table[channel_number_slot].Supla_channel);
-        auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-        if (element) log_i("element->getChannel()->getChannelType() 0x%x", element->getChannel()->getChannelType());
-        else log_i("element not found");
-        if (element) { //(element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-          log_i("trying to toggle");
-          auto Supla_VirtualRelay = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
-          Supla_VirtualRelay->toggle();
-          Supla_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-        }
-      }
+      else 
+        msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
       return true;
     } break;
 
@@ -634,22 +606,12 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
                                                             SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
         if (channel_number_slot < 0)
           log_i("No Tuya device channel found for address %s", ieee_addr);
-        else {
-        log_i("Tuya device custom command Supla channel 0x%x", z2s_devices_table[channel_number_slot].Supla_channel);
-        auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-        if (element) log_i("element->getChannel()->getChannelType() 0x%x", element->getChannel()->getChannelType());
-        else log_i("element not found");
-        if (element) { //(element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-          log_i("trying to toggle");
-          auto Supla_VirtualRelay = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
-          Supla_VirtualRelay->toggle();
-          Supla_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-        }
-      }
+        else 
+          msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
       return true;
     }
   } break;
-      return false; //true;
+      return false; 
   }
   return false;
 }
@@ -731,19 +693,15 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3: {
-        //auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, 1000);
         char button_name_function[30];
         char button_function[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
-        sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]);
-        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
-        button_name_function, SUPLA_CHANNELFNC_POWERSWITCH); 
+        sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F:
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F: {
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
         char button_name_function[30];
         char button_function_press[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
         char button_function_rotate[][15] = {"ROTATED RIGHT", "ROTATED LEFT"};
@@ -751,28 +709,24 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
           sprintf(button_name_function, "BUTTON %s", button_function_press[sub_id]);
         else
           sprintf(button_name_function, "BUTTON %s", button_function_rotate[sub_id - TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID]);
-        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
-        button_name_function, SUPLA_CHANNELFNC_POWERSWITCH); 
+
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
       case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F: {
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
         char button_name_function[30];
         sprintf(button_name_function, IKEA_STYRBAR_BUTTONS[sub_id]);
-        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
-        button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: {
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
         char button_name_function[30];
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
-        Z2S_fillDevicesTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id,
-        button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
@@ -866,6 +820,16 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         }
         addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
       } break;
+
+      case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: 
+        addZ2SDeviceActionTrigger(device, first_free_slot, -1, "OCCUPANCY EXEC", SUPLA_CHANNELFNC_STAIRCASETIMER); break;
+
+      case Z2S_DEVICE_DESC_IKEA_VALLHORN_2:  
+        addZ2SDeviceIASzone(device, first_free_slot, -1, "OCCUPANCY_DETECTED", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+
+      case Z2S_DEVICE_DESC_IKEA_VALLHORN_3: 
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
+                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
 
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
         

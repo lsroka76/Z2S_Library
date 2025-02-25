@@ -171,6 +171,7 @@ void setup() {
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
   zbGateway.onIlluminanceReceive(Z2S_onIlluminanceReceive);
+  zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
   zbGateway.onRMSVoltageReceive(Z2S_onRMSVoltageReceive);
   zbGateway.onRMSCurrentReceive(Z2S_onRMSCurrentReceive);
@@ -180,7 +181,6 @@ void setup() {
   zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
   zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
   zbGateway.onBatteryPercentageReceive(Z2S_onBatteryPercentageReceive);
-  zbGateway.onOnOffCustomCmdReceive(Z2S_onOnOffCustomCmdReceive);
   zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
 
   zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);
@@ -265,7 +265,7 @@ void loop() {
           tuya_dp_data[3] = 0x01;
           tuya_dp_data[4] = 0x00;
           tuya_dp_data[5] = 0x01;
-          tuya_dp_data[6] = 0x00; 
+          tuya_dp_data[6] = 0x02; 
           zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data); 
           tuya_dp_data[0] = 0x00;
           tuya_dp_data[1] = 0x05;
@@ -283,19 +283,19 @@ void loop() {
           tuya_dp_data[5] = 0x01;
           tuya_dp_data[6] = 0x01;
           zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, tuya_dp_data);
-
+*/
           tuya_dp_data[0] = 0x00;
           tuya_dp_data[1] = 0x07;
-          tuya_dp_data[2] = 0x2C; //TUYA_6567C_LOCAL_TEMPERATURE_DP;//TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
+          tuya_dp_data[2] = 0x67; //TUYA_6567C_LOCAL_TEMPERATURE_DP;//TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
           tuya_dp_data[3] = 0x02;
           tuya_dp_data[4] = 0x00;
           tuya_dp_data[5] = 0x04;
           tuya_dp_data[6] = 0x00;
           tuya_dp_data[7] = 0x00;
-          tuya_dp_data[8] = 0x00;
-          tuya_dp_data[9] = 0x00; //random(15, 24) * 10;
+          tuya_dp_data[8] = 0x01;
+          tuya_dp_data[9] = 0x2C; //random(15, 24) * 10;
           
-          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, tuya_dp_data);*/
+          zbGateway.sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, tuya_dp_data);
           
           tuya_dp_data[0] = 0x00;
           tuya_dp_data[1] = 0x05;
