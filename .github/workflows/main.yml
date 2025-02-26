@@ -22,9 +22,16 @@ jobs:
         run: | 
           cp ./partitions/boards.txt ~/.arduino15/packages/esp32/hardware/esp32/3.1.1/boards.txt
           cp ./partitions/custom_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.1.1/tools/partitions/custom_zigbee_zczr.csv
+      - name: Compile Gateway (logs)
+        working-directory: .
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,DebugLevel=verbose -e --library=. --libraries=SuplaDevice
+      - name: Copy Gateway bins
+        run: |
+          cp ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.logs.bin
+ 	  cp ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.logs.bin
       - name: Compile Gateway
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,DebugLevel=verbose -e --library=. --libraries=SuplaDevice 
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr -e --library=. --libraries=SuplaDevice 
       - name: Compile Scanner
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Device_Scanner -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,DebugLevel=verbose -e --library=. 
@@ -40,4 +47,6 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
-          artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin, ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin, ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.bin 
+          artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin, ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin, ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.bin, ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.logs.bin,./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.logs.bin
+
+
