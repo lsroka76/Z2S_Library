@@ -16,6 +16,7 @@ jobs:
         uses: arduino/setup-arduino-cli@v2
       - name: Install platform
         run: |
+          arduino-cli core update-index
           arduino-cli core install esp32:esp32
           arduino-cli lib install SuplaDevice
       - name: Copy boards.txt with C6 config
