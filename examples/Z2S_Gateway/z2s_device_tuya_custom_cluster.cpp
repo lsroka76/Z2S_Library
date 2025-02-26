@@ -3,6 +3,7 @@
 #include "z2s_device_iaszone.h"
 #include "z2s_device_temphumidity.h"
 #include "z2s_device_general_purpose_measurement.h"
+#include "z2s_device_action_trigger.h"
 
 
 Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_size, uint8_t *payload) {
@@ -99,21 +100,50 @@ void processTuyaSoilTempHumiditySensorReport(int16_t channel_number_slot, uint16
 
 void processTuyaTempHumiditySensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi){
 
-    Tuya_read_dp_result_t Tuya_read_dp_result;
+  Tuya_read_dp_result_t Tuya_read_dp_result;
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_TEMPERATURE_DP, payload_size, payload);
-    if (Tuya_read_dp_result.is_success)
-      msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/10, rssi);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_TEMPERATURE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/10, rssi);
             
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
-    if (Tuya_read_dp_result.is_success)
-      msgZ2SDeviceTempHumidityHumi(channel_number_slot, (float)Tuya_read_dp_result.dp_value, rssi);  
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceTempHumidityHumi(channel_number_slot, (float)Tuya_read_dp_result.dp_value, rssi);  
             
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
-    if (Tuya_read_dp_result.is_success) { 
-      log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
-      msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value * 50, rssi);  
-    }
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value * 50, rssi);  
+  }
+}
+
+void processTuyaEF00Switch2x3(int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, signed char rssi) {
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_EF00_SWITCH_2X3_BUTTON_1_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                              z2s_devices_table[channel_number_slot].endpoint, 
+                                                              z2s_devices_table[channel_number_slot].cluster_id, 
+                                                              SUPLA_CHANNELTYPE_ACTIONTRIGGER, Tuya_read_dp_result.dp_value);
+
+    msgZ2SDeviceActionTrigger(channel_number_slot_1, rssi);
+  }
+            
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_EF00_SWITCH_2X3_BUTTON_2_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                              z2s_devices_table[channel_number_slot].endpoint, 
+                                                              z2s_devices_table[channel_number_slot].cluster_id, 
+                                                              SUPLA_CHANNELTYPE_ACTIONTRIGGER, 3 + Tuya_read_dp_result.dp_value);
+
+    msgZ2SDeviceActionTrigger(channel_number_slot_1, rssi);
+  }          
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_EF00_SWITCH_2X3_BATTERY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value * 50, rssi);  
+  }
 }
 
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi) {
@@ -226,6 +256,8 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
       processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, rssi); break;
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
       processTuyaPresenceSensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
+    case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
+      processTuyaEF00Switch2x3(channel_number_slot, payload_size, payload, rssi); break;
     default: 
       log_i("Unknown device model id 0x%x", z2s_devices_table[channel_number_slot].model_id); break;
   }
@@ -234,7 +266,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, uint16_t payload_size, uint8_t *payload, signed char rssi) {
   log_i("processing Tuya custom cluster 0xEF00, command id 0x%x", command_id);
   switch (command_id) {
-    case TUYA_DATA_REPORT_CMD: processTuyaDataReport(ieee_addr, endpoint, payload_size, payload, rssi); break;
+    case TUYA_DATA_REPORT_CMD:
+    case 0x06:
+       processTuyaDataReport(ieee_addr, endpoint, payload_size, payload, rssi); break;
     default: log_i("Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", command_id); break;
   }
 }

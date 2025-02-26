@@ -20,9 +20,6 @@ void initZ2SDeviceActionTrigger(int16_t channel_number_slot) {
   Supla_Z2S_ActionTrigger->setDefaultStateRestore();
 }
 
-                                      
-                                      
-
 void addZ2SDeviceActionTrigger(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name, uint32_t func) {
   
   auto Supla_Z2S_ActionTrigger = new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER);
@@ -51,6 +48,24 @@ void msgZ2SDeviceActionTrigger(int16_t channel_number_slot, signed char rssi) {
     auto Supla_Z2S_ActionTrigger = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
     
     Supla_Z2S_ActionTrigger->toggle();
+    Supla_Z2S_ActionTrigger->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
+  }
+}
+
+void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi) {
+
+  if (channel_number_slot < 0) {
+    log_e("msgZ2SDeviceActionTriggerBatteryLevel - invalid channel number slot");
+    return;
+  }
+  
+  auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+
+  if (element != nullptr) { // && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
+    
+    auto Supla_Z2S_ActionTrigger = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
+    
+    Supla_Z2S_ActionTrigger->getChannel()->setBatteryLevel(battery_level);
     Supla_Z2S_ActionTrigger->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
   }
 }

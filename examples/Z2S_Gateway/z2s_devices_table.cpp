@@ -692,6 +692,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
+      case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3: {
+        char button_name_function[][30] =  {"BUTTON #1 PRESSED", "BUTTON #1 DOUBLE PRESSED","BUTTON #1 HELD",
+                                            "BUTTON #2 PRESSED", "BUTTON #2 DOUBLE PRESSED","BUTTON #2 HELD"};
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function[sub_id], SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F:
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F: {

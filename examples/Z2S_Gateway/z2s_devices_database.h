@@ -64,6 +64,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_SWITCH_4X3                 0x5100
 
+#define Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3            0x5105
+
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON               0x5200
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F            0x5201
 
@@ -95,6 +97,13 @@
 #define TUYA_CUSTOM_CMD_BUTTON_HELD_SID             0x02
 #define TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID     0x0A
 #define TUYA_CUSTOM_CMD_BUTTON_ROTATE_LEFT_SID      0x0B
+
+#define TUYA_CUSTOM_CMD_BUTTON_1_PRESSED_SID          0x00
+#define TUYA_CUSTOM_CMD_BUTTON_1_DOUBLE_PRESSED_SID   0x01
+#define TUYA_CUSTOM_CMD_BUTTON_1_HELD_SID             0x02
+#define TUYA_CUSTOM_CMD_BUTTON_2_PRESSED_SID          0x03
+#define TUYA_CUSTOM_CMD_BUTTON_2_DOUBLE_PRESSED_SID   0x04
+#define TUYA_CUSTOM_CMD_BUTTON_2_HELD_SID             0x05
 
 #define TUYA_DOUBLE_DIMMER_SWITCH_1_SID             0x01
 #define TUYA_DOUBLE_DIMMER_SWITCH_2_SID             0x02
@@ -882,8 +891,10 @@ const dataPoints = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
-      TUYA_PRIVATE_CLUSTER_EF00 }} 
-    
+      TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }},    
 };
         
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
@@ -1196,10 +1207,13 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_9kbbfeho", .model_name = "TS0222",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_3ulg9kpo", .model_name = "TS0021",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3, .z2s_device_endpoints_count = 1}
 
 };
 
 #endif
 
-//  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR
+//  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR 

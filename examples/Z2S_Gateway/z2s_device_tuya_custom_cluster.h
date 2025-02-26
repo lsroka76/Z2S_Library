@@ -76,6 +76,10 @@
 #define TUYA_PRESENCE_SENSOR_MOTION_STATE_DP 0x65
 #define TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP  0x6A
 
+#define TUYA_EF00_SWITCH_2X3_BUTTON_1_DP     0x01
+#define TUYA_EF00_SWITCH_2X3_BUTTON_2_DP     0x02
+#define TUYA_EF00_SWITCH_2X3_BATTERY_DP      0x0A
+
 
 typedef struct Tuya_read_dp_result_s {
   bool is_success;
