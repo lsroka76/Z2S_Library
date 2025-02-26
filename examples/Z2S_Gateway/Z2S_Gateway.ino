@@ -486,7 +486,7 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_2_PRESSED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_2_HELD_SID);
                           } break;
-                          case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2:
+                          case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
                           case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1: {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_UP_SID);

@@ -69,7 +69,7 @@
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON               0x5200
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F            0x5201
 
-#define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2            0x5202
+#define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1            0x5202
 #define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1          0x5203
 #define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2          0x5204
 #define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3          0x5205
@@ -265,7 +265,13 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
-      
+
+   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
+ 
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -1120,13 +1126,13 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "IKEA of Sweden", .model_name = "SYMFONISK sound remote gen2", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2, .z2s_device_endpoints_count = 3,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1, .z2s_device_endpoints_count = 3,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1 },
                               { 2, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2 },
                               { 3, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3 }}},
 
   { .manufacturer_name = "IKEA of Sweden", .model_name = "SYMFONISK Sound Controller", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1, .z2s_device_endpoints_count = 1},
   
   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI on/off switch", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F, .z2s_device_endpoints_count = 1},

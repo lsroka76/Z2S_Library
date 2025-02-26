@@ -529,7 +529,8 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   switch (z2s_devices_table[channel_number_slot].model_id) {
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F:
-    case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: {
+    case Z2S_DEVICE_DESC_IKEA_VALLHORN_1:
+    case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1: {
       log_i("IKEA command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
       int8_t sub_id = 0x7F;
 
@@ -574,7 +575,6 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
       return true;
     } break;
 
-    case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2:
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:  
       return processIkeaSymfoniskCommands( ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer, rssi); break;
 
@@ -719,7 +719,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
-      case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2:
+      case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: {
