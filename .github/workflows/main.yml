@@ -77,10 +77,10 @@ jobs:
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.no_logs.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.logs.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.no_logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.merged.4MB.no_OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.merged.4MB.no_OTA.no_logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.merged.8MB.OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.merged.8MB.OTA.no_logs.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.logs.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.no_logs.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.logs.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.no_logs.bin,
                     ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.bin
 
 
