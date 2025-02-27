@@ -1,5 +1,5 @@
-name: Build
-on: [workflow_dispatch]
+name: Fast Build
+on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     name: Build and create release
@@ -34,14 +34,6 @@ jobs:
         run: |
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.logs.bin
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.logs.bin
-      - name: Compile Gateway_4MB_no_logs
-        working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=. --libraries=SuplaDevice 
-      - name: Rename binaries 4MB_no_logs
-        working-directory: .
-        run: |
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.no_logs.bin
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.no_logs.bin
       - name: Compile Gateway_8MB_logs
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc,DebugLevel=verbose -e --library=. --libraries=SuplaDevice
@@ -50,17 +42,6 @@ jobs:
         run: |
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.logs.bin
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.logs.bin
-      - name: Compile Gateway_8MB_no_logs
-        working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc -e --library=. --libraries=SuplaDevice
-      - name: Rename binaries 8MB_no_logs
-        working-directory: .
-        run: |
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.no_logs.bin
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.no_logs.bin
-      - name: Compile Scanner
-        working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Device_Scanner -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,DebugLevel=verbose,CDCOnBoot=cdc -e --library=. 
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
@@ -74,14 +55,8 @@ jobs:
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
           artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.no_logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.no_logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.no_logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.no_logs.bin,
-                    ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.bin,
-                     ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.merged.bin
+                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.logs.bin,
+                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.logs.bin,
+                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.logs.bin
 
 
