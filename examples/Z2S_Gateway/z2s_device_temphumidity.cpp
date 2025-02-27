@@ -34,7 +34,7 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp, sign
   if (Supla_VirtualThermHygroMeter) {
     
     Supla_VirtualThermHygroMeter->setTemp(temp);
-    Supla_VirtualThermHygroMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+    //Supla_VirtualThermHygroMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
   }
 }
 
@@ -50,7 +50,7 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi, sign
   if (Supla_VirtualThermHygroMeter) {
     
     Supla_VirtualThermHygroMeter->setHumi(humi);
-    Supla_VirtualThermHygroMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+    //Supla_VirtualThermHygroMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
   }
 }
 
@@ -66,6 +66,6 @@ void msgZ2SDeviceTempHumidityBatteryLevel(int16_t channel_number_slot, uint8_t b
   if (Supla_VirtualThermHygroMeter) {
     
     Supla_VirtualThermHygroMeter->getChannel()->setBatteryLevel(battery_level);
-    Supla_VirtualThermHygroMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+    //Supla_VirtualThermHygroMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
   }
 }

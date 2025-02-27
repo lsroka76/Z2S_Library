@@ -39,7 +39,7 @@ void msgZ2SDeviceRGBW(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uin
         auto Supla_Z2S_TuyaHueDimmerBulb = reinterpret_cast<Supla::Control::Z2S_TuyaHueDimmerBulb *>(element);
         //auto Supla_Z2S_TuyaRGBWBulb = reinterpret_cast<Supla::Control::Z2S_TuyaRGBWBulb *>(element);
         Supla_Z2S_TuyaHueDimmerBulb->getChannel()->setOnline();
-        Supla_Z2S_TuyaHueDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+        //Supla_Z2S_TuyaHueDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         /*if ((hue == 0xFF) && (saturation == 0xFF) && (level == -1))
           ;//Supla_Z2S_TuyaRGBWBulb->setStateOnServer(state);
         else

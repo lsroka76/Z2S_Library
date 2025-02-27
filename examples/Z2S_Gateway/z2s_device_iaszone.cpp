@@ -38,7 +38,7 @@ void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, signed char rs
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
 
         auto Supla_VirtualBinary = reinterpret_cast<Supla::Sensor::VirtualBinary *>(element);
-        Supla_VirtualBinary->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+        //Supla_VirtualBinary->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         if (state) Supla_VirtualBinary->set();
         else Supla_VirtualBinary->clear();
     }

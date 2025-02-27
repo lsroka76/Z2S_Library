@@ -79,7 +79,7 @@ void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t 
 
     auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
     Supla_GeneralPurposeMeasurement->setValue(value);
-    Supla_GeneralPurposeMeasurement->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+    //Supla_GeneralPurposeMeasurement->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
   }  
 }
 

@@ -60,7 +60,7 @@ void Z2S_printDevicesTableSlots() {
 }
 
 
-int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int32_t channel_type, int8_t sub_id) {
+int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, int32_t channel_type, int8_t sub_id) {
 
   log_i("Z2S_findChannelNumberSlot 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, channel type 0x%x", 
         ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], 
@@ -69,7 +69,7 @@ int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) {
       if (z2s_devices_table[devices_counter].valid_record)
         if ((memcmp(z2s_devices_table[devices_counter].ieee_addr, ieee_addr,8) == 0) && 
-        (z2s_devices_table[devices_counter].endpoint == endpoint) &&
+        ((endpoint < 0) || (z2s_devices_table[devices_counter].endpoint == endpoint)) &&
         ((channel_type < 0) || (z2s_devices_table[devices_counter].Supla_channel_type == channel_type)) &&
         ((sub_id < 0) || (z2s_devices_table[devices_counter].sub_id == sub_id))) { 
         //&& (z2s_devices_table[devices_counter].cluster_id == cluster)) {
@@ -80,7 +80,7 @@ int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   return -1;
 }
 
-int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
                                       int32_t channel_type, int8_t sub_id) {
 
   log_i("Z2S_findChannelNumberNextSlot 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, channel type 0x%x", 
@@ -90,7 +90,7 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee
   for (uint8_t devices_counter = prev_slot + 1; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) {
       if (z2s_devices_table[devices_counter].valid_record)
         if ((memcmp(z2s_devices_table[devices_counter].ieee_addr, ieee_addr,8) == 0) && 
-        (z2s_devices_table[devices_counter].endpoint == endpoint) &&
+        ((endpoint < 0) || (z2s_devices_table[devices_counter].endpoint == endpoint)) &&
         ((channel_type < 0) || (z2s_devices_table[devices_counter].Supla_channel_type == channel_type)) &&
         ((sub_id < 0) || (z2s_devices_table[devices_counter].sub_id == sub_id))) { 
         //&& (z2s_devices_table[devices_counter].cluster_id == cluster)) {

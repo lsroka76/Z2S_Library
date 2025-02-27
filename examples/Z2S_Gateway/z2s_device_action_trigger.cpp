@@ -48,7 +48,7 @@ void msgZ2SDeviceActionTrigger(int16_t channel_number_slot, signed char rssi) {
     auto Supla_Z2S_ActionTrigger = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
     
     Supla_Z2S_ActionTrigger->toggle();
-    Supla_Z2S_ActionTrigger->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
+    //Supla_Z2S_ActionTrigger->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
   }
 }
 
@@ -66,6 +66,6 @@ void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t 
     auto Supla_Z2S_ActionTrigger = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
     
     Supla_Z2S_ActionTrigger->getChannel()->setBatteryLevel(battery_level);
-    Supla_Z2S_ActionTrigger->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
+    //Supla_Z2S_ActionTrigger->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
   }
 }

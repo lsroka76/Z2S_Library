@@ -23,6 +23,6 @@ void msgZ2SDeviceRGBWLightSource(uint8_t Supla_channel, uint8_t id, uint8_t valu
     uint8_t map_value = map(value, 1, 254, 0, 100);
     if (id == 10) Supla_Z2S_RGBWLightSource->setStateOnOff(state);
     Supla_Z2S_RGBWLightSource->setRGBWValueOnServer(-1 /*red*/, -1 /*green*/, -1 /*blue*/, -1/*color brightness*/, map_value);     
-    Supla_Z2S_RGBWLightSource->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+    //Supla_Z2S_RGBWLightSource->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
   }
 }

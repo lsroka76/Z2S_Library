@@ -1002,7 +1002,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1},
                               { 2, Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2 }}},
-
+  
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "BADRING Water Leakage Sensor",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_3towulqd", .model_name = "TS0601", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUZONE_SENSOR, .z2s_device_endpoints_count = 1},

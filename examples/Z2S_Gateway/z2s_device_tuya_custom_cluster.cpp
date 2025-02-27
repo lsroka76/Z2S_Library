@@ -142,7 +142,7 @@ void processTuyaEF00Switch2x3(int16_t channel_number_slot, uint16_t payload_size
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_EF00_SWITCH_2X3_BATTERY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
-    msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value * 50, rssi);  
+    msgZ2SDeviceActionTriggerBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value, rssi);  
   }
 }
 
@@ -152,7 +152,7 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed
     
   if (element != nullptr) {
     element->getChannel()->setBatteryLevel(value);
-    element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+    //element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
   }
 }
 

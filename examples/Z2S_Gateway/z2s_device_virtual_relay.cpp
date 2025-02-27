@@ -45,6 +45,6 @@ void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, bool state, signed ch
     
     Supla_Z2S_VirtualRelay->getChannel()->setOnline();
     Supla_Z2S_VirtualRelay->Z2S_setOnOff(state);     
-    Supla_Z2S_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
+    //Supla_Z2S_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
 }
 }
