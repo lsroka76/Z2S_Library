@@ -1,5 +1,5 @@
 name: Fast Build
-on: [push, pull_request, workflow_dispatch]
+on: [workflow_dispatch]
 jobs:
   build:
     name: Build and create release
