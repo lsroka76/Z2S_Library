@@ -185,7 +185,7 @@ void Z2S_clearDevicesTable() {
   Z2S_saveDevicesTable();
 }
 
-void Z2S_initSuplaChannels(){
+void Z2S_initSuplaChannels() {
 
   log_i ("initSuplaChannels starting");
   zbg_device_params_t *device = (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
@@ -220,7 +220,6 @@ void Z2S_initSuplaChannels(){
             initZ2SDeviceElectricityMeter(&zbGateway, device, devices_counter); break;
           
           case SUPLA_CHANNELTYPE_HVAC: initZ2SDeviceTuyaHvac(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
-          //case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: initZ2SDeviceDimmer(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           
           case SUPLA_CHANNELTYPE_DIMMER: initZ2SDeviceDimmer(&zbGateway, device, devices_counter); break;
           
@@ -228,10 +227,8 @@ void Z2S_initSuplaChannels(){
           
           case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: initZ2SDeviceRGBW(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           
-          default: {
-            log_i("Can't create channel for %d channel type", z2s_devices_table[devices_counter].Supla_channel_type);
-          } break;
-          //case 
+          default: 
+            log_i("Can't create channel for %d channel type", z2s_devices_table[devices_counter].Supla_channel_type); break; 
         }
       }
   }
@@ -240,9 +237,11 @@ void Z2S_initSuplaChannels(){
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature, signed char rssi) {
 
-  log_i("onTemperatureReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onTemperatureReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -251,9 +250,11 @@ void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 
 void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float humidity, signed char rssi) {
 
-  log_i("onHumidityReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onHumidityReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -262,8 +263,8 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
 void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance, signed char rssi) {
 
-  log_i("onIlluminanceReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, illuminance 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, illuminance);
+  log_i("onIlluminanceReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, illuminance 0x%x", ieee_addr[7], ieee_addr[6], 
+        ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, illuminance);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
   
@@ -275,9 +276,11 @@ void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 
 void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy, signed char rssi) {
 
-  log_i("onOccupancyReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, occupancy 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, occupancy);
+  log_i("onOccupancyReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, occupancy 0x%x", ieee_addr[7], ieee_addr[6], 
+        ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, occupancy);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -287,12 +290,13 @@ void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uin
 
 void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state, signed char rssi) {
 
-  log_i("onOnOffReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onOnOffReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceVirtualRelay(channel_number_slot, state, rssi);
+    msgZ2SDeviceVirtualRelay(channel_number_slot, state, rssi); //default On/Off channel
     return;
   }
 
@@ -324,9 +328,11 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
 
 void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t voltage, signed char rssi) {
 
-  log_i("onRMSVoltageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onRMSVoltageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -336,8 +342,10 @@ void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t current, signed char rssi) {
 
   log_i("onRMSCurrentReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+        ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -346,9 +354,11 @@ void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
 void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t active_power, signed char rssi) {
 
-  log_i("onRMSVoltageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onRMSVoltageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else {
@@ -358,9 +368,11 @@ void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
 
 void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint64_t active_fwd_energy, signed char rssi) {
 
-  log_i("onCurrentSummationReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onCurrentSummationReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], 
+        ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -369,66 +381,54 @@ void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
 
 void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t level, signed char rssi) {
 
-  log_i("onCurrentLevelReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onCurrentLevelReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(channel_number_slot, level, true, rssi);
     return;
   }
-
-  /*channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, NO_CUSTOM_CMD_SID);
-  if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGBW(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 0xFF, 0xFF, level, true);
-    return;
-  }*/
   log_i("No channel found for address %s", ieee_addr);
 }
 
 void Z2S_onColorHueReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t hue, signed char rssi) {
 
-  log_i("onColorHueReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-        ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onColorHueReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot >= 0) {
     msgZ2SDeviceRGB(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, hue, 0xFF, true, rssi);
     return;
   }
-
-  /*channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, NO_CUSTOM_CMD_SID);
-  if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGBW(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, hue, 0xFF, 0xFFFF, true);
-    return;
-  }*/
   log_i("No channel found for address %s", ieee_addr);
 }
 
 void Z2S_onColorSaturationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t saturation, signed char rssi) {
 
-  log_i("onColorHueReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-        ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onColorHueReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
   
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGB(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 0xFF, saturation,true, rssi);
+    msgZ2SDeviceRGB(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 0xFF, 
+                    saturation,true, rssi);
     return;
   }
-  
-  /*channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, NO_CUSTOM_CMD_SID);
-  if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGBW(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 0xFF, saturation, 0xFFFF, true);
-    return;
-  }*/
   log_i("No channel found for address %s", ieee_addr);
 }
 
 void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t battery_remaining) {
 
-  log_i("onBatteryPercentageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-   ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  log_i("onBatteryPercentageReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], 
+        ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+  
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -442,7 +442,8 @@ void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
 
 void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status, signed char rssi) {
   
-int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
@@ -479,9 +480,11 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_NEXT_TRACK_SID;
   else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x02) && compareBuffer(buffer, buffer_size, "010100000000")) 
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_PREV_TRACK_SID;
-  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && compareBuffer(buffer, buffer_size, "00FF0000")) 
+  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && 
+           (compareBuffer(buffer, buffer_size, "00FF0000") || compareBuffer(buffer, buffer_size, "00C30000"))) 
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_UP_SID;
-  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && compareBuffer(buffer, buffer_size, "01FF0000")) 
+  else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && 
+           (compareBuffer(buffer, buffer_size, "01FF0000") || compareBuffer(buffer, buffer_size, "01C30000")))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_DOWN_SID;
   else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x01))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID;
@@ -524,13 +527,13 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
     log_i("No channel found for address %s", ieee_addr);
     return false;
   }
+  
   log_i("z2s_devices_table[channel_number_slot].Supla_channel 0x%x", z2s_devices_table[channel_number_slot].Supla_channel);
 
   switch (z2s_devices_table[channel_number_slot].model_id) {
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F:
-    case Z2S_DEVICE_DESC_IKEA_VALLHORN_1:
-    case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1: {
+    case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: {
       log_i("IKEA command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
       int8_t sub_id = 0x7F;
 
@@ -547,21 +550,21 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
         sub_id = IKEA_CUSTOM_CMD_BUTTON_2_PRESSED_SID;
       else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x05))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_1_HELD_SID;
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && ((*(int32_t *)buffer) == 0x00005301))
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && compareBuffer(buffer, buffer_size, "01530000"))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_2_HELD_SID;
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x09) && ((*(int16_t *)buffer) == 0x0000)) {
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x09) && compareBuffer(buffer, buffer_size, "0000")) {
         Styrbar_ignore_button_1 = true;
         Styrbar_timer = millis();
         return true; //
       }
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x08) && (*(buffer) == 0x01))
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x08) && compareBuffer(buffer, 1/*buffer_size*/, "01"))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_3_HELD_SID;
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x08) && (*(buffer) == 0x00))
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x08) && compareBuffer(buffer, 1/* buffer_size*/, "00"))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID;
       else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x07)) {
-        if ((*(int32_t *)buffer) == 0x000D0101)
+        if (compareBuffer(buffer, buffer_size, "01010D00"))
           sub_id = IKEA_CUSTOM_CMD_BUTTON_3_PRESSED_SID;
-        else if ((*(int32_t *)buffer) == 0x000D0100)
+        else if (compareBuffer(buffer, buffer_size, "00010D00"))
           sub_id = IKEA_CUSTOM_CMD_BUTTON_4_PRESSED_SID;
       }  
       if (sub_id == 0x7F) return false;
@@ -575,6 +578,7 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
       return true;
     } break;
 
+    case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:  
       return processIkeaSymfoniskCommands( ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer, rssi); break;
 

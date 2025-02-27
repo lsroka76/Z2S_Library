@@ -214,8 +214,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
 
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY, .z2s_device_clusters_count = 3, .z2s_device_clusters =
@@ -1150,6 +1151,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "ZBMINIL2",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SONOFF", .model_name = "01MINIZB",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_fdxihpp7", .model_name = "TS0001",
