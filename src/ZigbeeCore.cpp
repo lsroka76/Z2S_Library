@@ -134,6 +134,34 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     return false;
   }
 
+  err = esp_zb_overall_network_size_set(64);
+  if (err != ESP_OK) {
+    log_e("Failed to set overall network size");
+    return false;
+  }
+  err = esp_zb_io_buffer_size_set(240);
+  if (err != ESP_OK) {
+    log_e("Failed to set IO buffer size");
+    return false;
+  }
+  err = esp_zb_scheduler_queue_size_set(240);
+  if (err != ESP_OK) {
+    log_e("Failed to set scheduler queue size");
+    return false;
+  }
+
+  err = esp_zb_aps_src_binding_table_size_set(128);
+  if (err != ESP_OK) {
+    log_e("Failed to set APS source binding table size");
+    return false;
+  }
+
+  err = esp_zb_aps_dst_binding_table_size_set(128);
+  if (err != ESP_OK) {
+    log_e("Failed to set APS destination binding table size");
+    return false;
+  }
+
   // Initialize Zigbee stack
   log_d("Initialize Zigbee stack");
   esp_zb_init(zb_cfg);

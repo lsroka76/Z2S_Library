@@ -1148,7 +1148,7 @@ void ZigbeeGateway::sendColorMoveToColorTemperatureCmd(zbg_device_params_t *devi
 
 void ZigbeeGateway::sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya) {
 
-    if (isTuya) {
+    /*if (isTuya) {
       uint8_t tuya_dp_data[15];
       memset(tuya_dp_data, 0, sizeof(tuya_dp_data));
       sendCustomClusterCmd(device, TUYA_PRIVATE_CLUSTER_1, 0xE1, ESP_ZB_ZCL_ATTR_TYPE_U32, 4,  tuya_dp_data);
@@ -1191,24 +1191,23 @@ void ZigbeeGateway::sendDeviceFactoryReset(zbg_device_params_t *device, bool isT
     
     }
     else {
-      sendCustomClusterCmd(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
-      /*esp_zb_zcl_basic_fact_reset_cmd_t cmd_req;
+      sendCustomClusterCmd(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);*/
+  esp_zb_zcl_basic_fact_reset_cmd_t cmd_req;
     
-      if (device->short_addr != 0) {
-        cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
-        cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
-      } else {
-        cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
-        memcpy(cmd_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
-      }
-      cmd_req.zcl_basic_cmd.src_endpoint = _endpoint;
-      cmd_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+  if (device->short_addr != 0) {
+    cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+    cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+  } else {
+    cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
+    memcpy(cmd_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  }
+  cmd_req.zcl_basic_cmd.src_endpoint = _endpoint;
+  cmd_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
 
-      esp_zb_lock_acquire(portMAX_DELAY);
-      esp_zb_zcl_basic_factory_reset_cmd_req(&cmd_req);
-      esp_zb_lock_release();
-      delay(500); */
-    }
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zcl_basic_factory_reset_cmd_req(&cmd_req);
+  esp_zb_lock_release();
+  delay(500); 
 }
 
 

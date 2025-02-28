@@ -56,7 +56,7 @@ typedef enum {
     .esp_zb_role = ESP_ZB_DEVICE_TYPE_COORDINATOR, .install_code_policy = false, .nwk_cfg = { \
       .zczr_cfg =                                                                             \
         {                                                                                     \
-          .max_children = 10,                                                                 \
+          .max_children = 32,                                                                 \
         },                                                                                    \
     }                                                                                         \
   }
