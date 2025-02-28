@@ -307,9 +307,9 @@ void loop() {
           if (element) { 
             if (is_online) {
               zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
-              element->getChannel()->setOnline();
+              element->getChannel()->setStateOnline();
             }
-            else element->getChannel()->setOffline();
+            else element->getChannel()->setStateOffline();
           }
           channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
         }  

@@ -33,7 +33,7 @@ void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector,
   auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
         auto Supla_OnePhaseElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_OnePhaseElectricityMeter *>(element);
-        Supla_OnePhaseElectricityMeter->getChannel()->setOnline();
+        Supla_OnePhaseElectricityMeter->getChannel()->setStateOnline();
         //Supla_OnePhaseElectricityMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         switch (selector) {
           case Z2S_EM_VOLTAGE_SEL: Supla_OnePhaseElectricityMeter->setVoltage(0, value * 100); break;

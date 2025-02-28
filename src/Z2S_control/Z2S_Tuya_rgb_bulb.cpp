@@ -90,7 +90,7 @@ bool Supla::Control::Z2S_TuyaRGBBulb::isOn() {
 void Supla::Control::Z2S_TuyaRGBBulb::onInit() {
   
   _last_iterate_ms = 0;
-  channel.setOffline();
+  channel.setStateOffline();
 }
 
 void Supla::Control::Z2S_TuyaRGBBulb::setValueOnServer(uint8_t hue, uint8_t saturation) {
@@ -181,11 +181,11 @@ void Supla::Control::Z2S_TuyaRGBBulb::iterateAlways() {
     
     _last_iterate_ms = millis();
 
-    if (!channel.isOnline()) {  
+    if (!channel.isStateOnline()) {  
        if (!ping())
          log_i("Zigbee device(0x%x) offline...", _device.short_addr);
        else {
-         channel.setOnline();
+         channel.setStateOnline();
          if (getTuyaMode()) 
            channel.setNewValue((_Tuya_bulb_mode == 1));
        }
@@ -193,7 +193,7 @@ void Supla::Control::Z2S_TuyaRGBBulb::iterateAlways() {
         if (!ping()) {
           log_i("Zigbee device(0x%x) offline...", _device.short_addr);
           channel.setNewValue(false);
-          channel.setOffline(); 
+          channel.setStateOffline(); 
         }
 //else channel.setNewValue(_last_red, _last_green, _last_blue, _last_colorBrightness, _last_brightness);
   } //time loop

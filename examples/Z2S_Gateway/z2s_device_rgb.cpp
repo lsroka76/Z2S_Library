@@ -37,7 +37,7 @@ void msgZ2SDeviceRGB(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint
       //case Z2S_DEVICE_DESC_DIMMER_LIGHT_SOURCE : break; 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: {
         auto Supla_Z2S_TuyaRGBBulb = reinterpret_cast<Supla::Control::Z2S_TuyaRGBBulb *>(element);
-        Supla_Z2S_TuyaRGBBulb->getChannel()->setOnline();
+        Supla_Z2S_TuyaRGBBulb->getChannel()->setStateOnline();
         if ((hue == 0xFF) && (saturation == 0xFF))
         {
           Supla_Z2S_TuyaRGBBulb->setStateOnServer(state);

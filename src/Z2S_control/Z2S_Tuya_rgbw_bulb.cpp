@@ -195,7 +195,7 @@ int32_t Supla::Control::Z2S_TuyaRGBWBulb::handleNewValueFromServer(TSD_SuplaChan
     
     if (_Tuya_bulb_state == 0xFF) {
       //toggle_offline = true; 
-      channel.setOffline();
+      channel.setStateOffline();
       return -1;
     }
     else
@@ -211,7 +211,7 @@ int32_t Supla::Control::Z2S_TuyaRGBWBulb::handleNewValueFromServer(TSD_SuplaChan
     
   if (_Tuya_bulb_state == 0xFF) {
       //toggle_offline = true; 
-    channel.setOffline();
+    channel.setStateOffline();
     return -1;
   }
 
@@ -364,7 +364,7 @@ void Supla::Control::Z2S_TuyaRGBWBulb::onInit(){
   _last_brightness = 0;  
   _lastMsgReceivedMs = 1;
   _zed_offline = true;
-  channel.setOffline();
+  channel.setStateOffline();
 }
 
 void Supla::Control::Z2S_TuyaRGBWBulb::iterateAlways() {
@@ -376,15 +376,15 @@ void Supla::Control::Z2S_TuyaRGBWBulb::iterateAlways() {
     _lastMsgReceivedMs = millis();
 
     //if (_toggle_offline) {
-     // channel.setOffline();
+     // channel.setStateOffline();
      // return;
     //}
-    if (!channel.isOnline()) {
+    if (!channel.isStateOnline()) {
        _Tuya_bulb_state = getTuyaBulbState();    
        if (_Tuya_bulb_state == 0xFF)
          log_i("Zigbee device(0x%x) offline...", _device.short_addr);
        else {
-         channel.setOnline();
+         channel.setStateOnline();
          channel.setNewValue(_last_red, _last_green, _last_blue, (_Tuya_bulb_state == 0x81) ? 100 : 0, (_Tuya_bulb_state == 0x80) ? 100 : 0);
        }
     } else channel.setNewValue(_last_red, _last_green, _last_blue, _last_colorBrightness, _last_brightness);
