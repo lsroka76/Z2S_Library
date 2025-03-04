@@ -35,7 +35,7 @@ int32_t Supla::Control::Z2S_DimmerBase::handleNewValueFromServer(TSD_SuplaChanne
   uint8_t brightness = static_cast<uint8_t>(newValue->value[0]);
 
   SUPLA_LOG_DEBUG(
-      "Z2S_DimmerBase[%d]: red=%d, green=%d, blue=%d, colorBrightness=%d, "
+      "Z2S_DimmerBase hNVFS[%d]: red=%d, green=%d, blue=%d, colorBrightness=%d, "
       "brightness=%d, command=%d, toggleOnOff=%d",
       getChannelNumber(),
       red,
@@ -46,19 +46,27 @@ int32_t Supla::Control::Z2S_DimmerBase::handleNewValueFromServer(TSD_SuplaChanne
       command,
       toggleOnOff);
 
+  if (toggleOnOff > 0) {
+    _last_channel_update_ms = 1;
+  } else {
+     _last_channel_update_ms = millis();
+  }
+
+
   if (brightness > 100) {
     brightness = 100;
   }
-  if (colorBrightness > 100) {
-    colorBrightness = 100;
-  }
-  //sendValueToDevice(brightness);
-  if (brightness == 0) turnOff();
-  else {
-    if (toggleOnOff) turnOn(); 
-    channel.setNewValue(0, 0, 0, 0, brightness);
-    sendValueToDevice(brightness);
-  }
+ 
+  if ((toggleOnOff > 0) && (brightness == 100)) {
+    brightness = _last_brightness;
+  } else if (brightness > 0) {
+        _last_brightness = brightness;
+    }
+
+  _current_brightness = brightness;
+
+  sendValueToDevice(brightness);
+
   return -1;
 }
 
@@ -69,11 +77,38 @@ void Supla::Control::Z2S_DimmerBase::setValueOnServer(uint32_t brightness) {
 }
 
 void Supla::Control::Z2S_DimmerBase::setStateOnServer(bool state) {
-  channel.setNewValue(state);
+  channel.setNewValue(0, 0, 0, 0, (state ? _last_brightness : 0));
 }
 
 void Supla::Control::Z2S_DimmerBase::handleAction(int event, int action) {
-  SUPLA_LOG_DEBUG("Z2S_DimmerBase handleAction event=%d, action=%d", event, action);
+  SUPLA_LOG_DEBUG("Z2S_DimmerBase hA event=%d, action=%d", event, action);
 }
 
+void Supla::Control::Z2S_DimmerBase::iterateAlways() {
 
+  if ((_last_channel_update_ms !=0) && (millis() - _last_channel_update_ms >= 400)) {
+    
+    _last_channel_update_ms = 0;
+    channel.setNewValue(0, 0, 0, 0, _current_brightness);
+  }
+
+  if (millis() - _last_ping_ms >= 10000) {
+    
+    _last_ping_ms = millis();
+  
+    if (!channel.isStateOnline()) {  
+       if (!ping())
+         log_i("Zigbee device offline"); //(0x%x) offline...", _device.short_addr);
+       else {
+         channel.setStateOnline();
+         channel.setNewValue(0, 0, 0, 0, (isOn() ? _last_brightness : 0));
+       }
+    } else {
+        if (!ping()) {
+          log_i("Zigbee device offline"); //(0x%x) offline...", _device.short_addr);
+          channel.setNewValue(0, 0, 0, 0, 0);
+          channel.setStateOffline(); 
+        }
+    }
+  } 
+} 

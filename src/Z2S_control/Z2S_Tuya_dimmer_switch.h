@@ -38,6 +38,8 @@ public:
   
   //void onInit() override;
 
+  bool ping() override;
+
   void sendValueToDevice(uint32_t brightness) override;
    
   void setValueOnServer(uint32_t brightness) override;

@@ -384,7 +384,7 @@ void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, 
   log_i("onCurrentLevelReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
         ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, TUYA_BRIGHTNESS_CONTROL);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(channel_number_slot, level, true, rssi);
@@ -421,6 +421,21 @@ void Z2S_onColorSaturationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   }
   log_i("No channel found for address %s", ieee_addr);
 }
+
+void Z2S_onColorTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t color_temperature, signed char rssi) {
+
+  log_i("onColorTemperatureReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, TUYA_COLOR_TEMPERATURE_CONTROL);
+  
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceDimmer(z2s_devices_table[channel_number_slot].Supla_channel, color_temperature, true, rssi);
+    return;
+  }
+  log_i("No channel found for address %s", ieee_addr);
+}
+
 
 void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t battery_remaining) {
 
@@ -766,10 +781,18 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
         addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB BULB", SUPLA_CHANNELFNC_RGBLIGHTING);
       } break;
 
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: {
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: {
+        
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, TUYA_BRIGHTNESS_CONTROL, "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
 
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, "DIMMER", SUPLA_CHANNELFNC_DIMMER);
-
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, TUYA_COLOR_TEMPERATURE_CONTROL, "COLOR TEMPERATURE", SUPLA_CHANNELFNC_DIMMER);
+        
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
           log_i("ERROR! Devices table full!");

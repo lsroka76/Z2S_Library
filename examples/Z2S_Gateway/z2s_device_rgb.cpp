@@ -10,7 +10,9 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8
 
   switch (device->model_id) {
     //case Z2S_DEVICE_DESC_DIMMER_LIGHT_SOURCE : break; 
-    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: channel_element = new Supla::Control::Z2S_TuyaRGBBulb(gateway, device); break;
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
+    channel_element = new Supla::Control::Z2S_TuyaRGBBulb(gateway, device); break;
   }
   if (channel_element)
     channel_element->getChannel()->setChannelNumber(Supla_channel);
@@ -22,7 +24,9 @@ void addZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_
 
   switch (device->model_id) {
     //case Z2S_DEVICE_DESC_DIMMER_LIGHT_SOURCE : break; 
-    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: channel_element = new Supla::Control::Z2S_TuyaRGBBulb(gateway, device); break;
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
+     channel_element = new Supla::Control::Z2S_TuyaRGBBulb(gateway, device); break;
   }
   if (channel_element)
     Z2S_fillDevicesTableSlot(device, free_slot, channel_element->getChannelNumber(), SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, -1, name, func);
@@ -35,7 +39,8 @@ void msgZ2SDeviceRGB(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
     switch (model_id) {
       //case Z2S_DEVICE_DESC_DIMMER_LIGHT_SOURCE : break; 
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: {
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: {
         auto Supla_Z2S_TuyaRGBBulb = reinterpret_cast<Supla::Control::Z2S_TuyaRGBBulb *>(element);
         Supla_Z2S_TuyaRGBBulb->getChannel()->setStateOnline();
         if ((hue == 0xFF) && (saturation == 0xFF))

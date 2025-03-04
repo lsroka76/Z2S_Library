@@ -22,6 +22,11 @@
 #include "Z2S_dimmer_base.h"
 #include "ZigbeeGateway.h"
 
+#define TUYA_MODEL_A 0x00
+#define TUYA_MODEL_B 0x01
+
+#define TUYA_BRIGHTNESS_CONTROL 0x00
+#define TUYA_COLOR_TEMPERATURE_CONTROL 0x01
 
 namespace Supla {
 namespace Control {
@@ -29,7 +34,8 @@ class Z2S_TuyaDimmerBulb: public Z2S_DimmerBase {
 
 public:
 
-  Z2S_TuyaDimmerBulb(ZigbeeGateway *gateway, zbg_device_params_t *device);
+  Z2S_TuyaDimmerBulb(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t Tuya_model = TUYA_MODEL_A, 
+		     uint8_t Tuya_control_type = TUYA_BRIGHTNESS_CONTROL);
 
   void turnOn() override;
   void turnOff() override;
@@ -37,17 +43,23 @@ public:
   bool isOn() override;
   
   void onInit() override;
-  void iterateAlways() override;
+  //void iterateAlways() override;
 
-  void setStateOnServer(bool state) override;
+  //void setStateOnServer(bool state) override;
+  void setValueOnServer(uint32_t brightness) override;
   void sendValueToDevice(uint32_t brightness) override;
 
   bool ping();
 
 protected:
 
+  uint8_t _Tuya_model = TUYA_MODEL_A;
+  uint8_t _Tuya_control_type= TUYA_BRIGHTNESS_CONTROL;
+
   uint8_t _Tuya_bulb_mode = 0;
+  
   bool _state = false;
+  
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
   uint32_t _last_iterate_ms = 0;

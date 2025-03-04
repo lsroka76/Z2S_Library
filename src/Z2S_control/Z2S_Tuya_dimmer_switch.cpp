@@ -105,6 +105,11 @@ bool Supla::Control::Z2S_TuyaDimmerSwitch::isOn() {
 return true;
 }
 
+bool Supla::Control::Z2S_TuyaDimmerSwitch::ping() {
+return true;
+}
+
+
 void Supla::Control::Z2S_TuyaDimmerSwitch::sendValueToDevice(uint32_t brightness) {
 
   if (_gateway && Zigbee.started()) {

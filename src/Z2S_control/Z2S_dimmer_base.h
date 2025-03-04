@@ -37,13 +37,24 @@ public:
   virtual void turnOff() = 0;;
   virtual void toggle() = 0;
   virtual bool isOn() = 0;
+
+  virtual bool ping() = 0;
   
   //void onInit() override;
+  void iterateAlways() override;
 
   virtual void sendValueToDevice(uint32_t brightness) = 0;
   virtual void setValueOnServer(uint32_t brightness);
   virtual void setStateOnServer(bool state);
   virtual void handleAction(int event, int action) override;
+
+protected:
+
+  uint8_t _current_brightness = 0;            // 0 - 100
+  uint8_t _last_brightness = 100;
+
+  uint32_t _last_channel_update_ms = 0;
+  uint32_t _last_ping_ms = 0;
 
 }; //Z2S_DimmerBase
 

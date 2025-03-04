@@ -12,8 +12,14 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, in
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
       channel_element = new Supla::Control::Z2S_TuyaDimmerSwitch(gateway, device, z2s_devices_table[channel_number_slot].sub_id); break;
     
-    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: 
-      channel_element = new Supla::Control::Z2S_TuyaDimmerBulb(gateway, device); break;
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
+      channel_element = new Supla::Control::Z2S_TuyaDimmerBulb(gateway, device, TUYA_MODEL_A, 
+                                                               z2s_devices_table[channel_number_slot].sub_id); break;
+
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
+      channel_element = new Supla::Control::Z2S_TuyaDimmerBulb(gateway, device, TUYA_MODEL_B, 
+                                                               z2s_devices_table[channel_number_slot].sub_id); break;
+      
   }
   if (channel_element)
     channel_element->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
@@ -31,8 +37,11 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uin
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
       channel_element = new Supla::Control::Z2S_TuyaDimmerSwitch(gateway, device, sub_id); break;
 
-    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: 
-      channel_element = new Supla::Control::Z2S_TuyaDimmerBulb(gateway, device); break;
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
+      channel_element = new Supla::Control::Z2S_TuyaDimmerBulb(gateway, device, TUYA_MODEL_A, sub_id); break;
+
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
+      channel_element = new Supla::Control::Z2S_TuyaDimmerBulb(gateway, device, TUYA_MODEL_B, sub_id); break;
   }
   if (channel_element)
     Z2S_fillDevicesTableSlot(device, free_slot, channel_element->getChannelNumber(), SUPLA_CHANNELTYPE_DIMMER, sub_id, name, func);
@@ -65,7 +74,8 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, 
         else
           Supla_Z2S_TuyaDimmerBulb->setValueOnServer(level);
       } break;
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB: {
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: {
         auto Supla_Z2S_TuyaDimmerBulb = reinterpret_cast<Supla::Control::Z2S_TuyaDimmerBulb *>(element);
         //Supla_Z2S_TuyaDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         if (level == DIMMER_NO_LEVEL_DATA)

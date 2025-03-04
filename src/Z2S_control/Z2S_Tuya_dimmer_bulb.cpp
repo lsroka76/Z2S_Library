@@ -21,8 +21,9 @@
 #include <supla/log_wrapper.h>
 
 
-Supla::Control::Z2S_TuyaDimmerBulb::Z2S_TuyaDimmerBulb(ZigbeeGateway *gateway, zbg_device_params_t *device)
-    : _gateway(gateway){
+Supla::Control::Z2S_TuyaDimmerBulb::Z2S_TuyaDimmerBulb(ZigbeeGateway *gateway, zbg_device_params_t *device, 
+                                                       uint8_t Tuya_model, uint8_t Tuya_control_type)
+    : _gateway(gateway), _Tuya_model(Tuya_model), _Tuya_control_type (Tuya_control_type) {
     memcpy(&_device, device, sizeof(zbg_device_params_t)); 
 }
 
@@ -77,7 +78,15 @@ void Supla::Control::Z2S_TuyaDimmerBulb::toggle() {
 }
 
 bool Supla::Control::Z2S_TuyaDimmerBulb::isOn() {
-  return _state;
+
+  if (_gateway && Zigbee.started()) {
+     
+    if (getTuyaMode() && (_Tuya_bulb_mode == 0x00))
+      return (_current_brightness > 0) ? true : false;
+  }
+  return false;
+
+  //return _state;
 }
 
 void Supla::Control::Z2S_TuyaDimmerBulb::onInit() {
@@ -89,20 +98,29 @@ void Supla::Control::Z2S_TuyaDimmerBulb::onInit() {
 void Supla::Control::Z2S_TuyaDimmerBulb::sendValueToDevice(uint32_t brightness) {
 
   if (_gateway && Zigbee.started()) {
-    uint8_t _brightness = map(brightness, 0, 100, 1, 254); 
+     
     if (getTuyaMode()) {
       if (_Tuya_bulb_mode != 0x00)
         setTuyaMode(0x00);
-      _gateway->sendLevelMoveToLevelCmd(&_device, _brightness, 1);
+      switch (_Tuya_control_type) {
+        case TUYA_BRIGHTNESS_CONTROL: {
+          uint16_t _brightness = map(brightness, 0, 100, 1, 254);
+      	  _gateway->sendLevelMoveToLevelCmd(&_device, _brightness, 1); 
+        } break;
+	case TUYA_COLOR_TEMPERATURE_CONTROL: {
+          uint16_t _brightness = map(brightness, 0, 100, 153, 500);
+	  _gateway->sendColorMoveToColorTemperatureCmd(&_device, _brightness, 1); 
+        } break;
+      }
     }
   }
 }
 
-void Supla::Control::Z2S_TuyaDimmerBulb::setStateOnServer(bool state) {
+/*void Supla::Control::Z2S_TuyaDimmerBulb::setStateOnServer(bool state) {
   
   if (getTuyaMode())
     channel.setNewValue((_Tuya_bulb_mode == 0x00));
-}
+}*/
 
 bool Supla::Control::Z2S_TuyaDimmerBulb::ping() {
   
@@ -113,7 +131,7 @@ bool Supla::Control::Z2S_TuyaDimmerBulb::ping() {
   } else return false;
 
 }
-void Supla::Control::Z2S_TuyaDimmerBulb::iterateAlways() {
+/*void Supla::Control::Z2S_TuyaDimmerBulb::iterateAlways() {
 
   if (millis() - _last_iterate_ms >= 10000) {
     
@@ -135,5 +153,11 @@ void Supla::Control::Z2S_TuyaDimmerBulb::iterateAlways() {
         }
 //else channel.setNewValue(_last_red, _last_green, _last_blue, _last_colorBrightness, _last_brightness);
   } //time loop
-} //iterateAlways()
+} //iterateAlways()*/
 
+
+void Supla::Control::Z2S_TuyaDimmerBulb::setValueOnServer(uint32_t brightness) {
+
+  _current_brightness = map(brightness, 1, 254, 0, 100);
+  //channel.setNewValue(0, 0, 0, 0, _brightness);
+}

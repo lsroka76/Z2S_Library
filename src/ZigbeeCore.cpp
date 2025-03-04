@@ -134,17 +134,17 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     return false;
   }
 
-  err = esp_zb_overall_network_size_set(64);
+  err = esp_zb_overall_network_size_set(128);
   if (err != ESP_OK) {
     log_e("Failed to set overall network size");
     return false;
   }
-  err = esp_zb_io_buffer_size_set(240);
+  err = esp_zb_io_buffer_size_set(254);
   if (err != ESP_OK) {
     log_e("Failed to set IO buffer size");
     return false;
   }
-  err = esp_zb_scheduler_queue_size_set(240);
+  err = esp_zb_scheduler_queue_size_set(254);
   if (err != ESP_OK) {
     log_e("Failed to set scheduler queue size");
     return false;

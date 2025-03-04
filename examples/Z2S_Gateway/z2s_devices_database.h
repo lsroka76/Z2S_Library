@@ -36,7 +36,8 @@
 #define Z2S_DEVICE_DESC_TUYA_RGB_BULB                   0x3060
 
 #define Z2S_DEVICE_DESC_RGBW_BULB                       0x3100
-#define Z2S_DEVICE_DESC_TUYA_RGBW_BULB                  0x3110
+#define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A          0x3110
+#define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B          0x3111
 
 #define Z2S_DEVICE_DESC_DIMMER_BULB                     0x3200
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_BULB                0x3210
@@ -866,11 +867,16 @@ const dataPoints = {
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
       
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_BULB, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
@@ -997,6 +1003,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZ3000_yxqnffam", .model_name = "TS0203",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_hzkeh3nv", .model_name = "TS0201",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
   
   { .manufacturer_name = "IKEA of Sweden", .model_name = "PARASOLL Door/Window Sensor",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 2,
@@ -1005,7 +1014,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   
   { .manufacturer_name = "IKEA of Sweden", .model_name = "BADRING Water Leakage Sensor",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
-
+ 
   { .manufacturer_name = "_TZE200_3towulqd", .model_name = "TS0601", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1174,16 +1183,16 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_keabpigv", .model_name = "TS0505A",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "zbeacon", .model_name = "TS0505",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_bfwvfyx1", .model_name = "TS0505B",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "_TZ3210_31btuxgp", .model_name = "TS0505B",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB, .z2s_device_endpoints_count = 1},
+  { .manufacturer_name = "_TZ3210_3lbtuxgp", .model_name = "TS0505B",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
     
   { .manufacturer_name = "_TZ3000_c7xsiexw", .model_name = "TS0002",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1, .z2s_device_endpoints_count = 2,
@@ -1230,5 +1239,5 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 };
 
 #endif
-
+//_TZ3210_3lbtuxgp TS0505B
 //  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR 

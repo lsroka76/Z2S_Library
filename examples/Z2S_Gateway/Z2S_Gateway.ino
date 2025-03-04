@@ -155,7 +155,7 @@ void setup() {
 
   cfg->commit();
 
-#ifndef USE_WEB_CONFIG_ON_STARTUP
+#ifdef USE_WEB_CONFIG_ON_STARTUP
 
   log_i("no web config on startup - using hardcoded data");
   //cfg->setGUID(GUID);
@@ -267,6 +267,10 @@ zbg_device_params_t *joined_device;
 uint8_t counter = 0;
 uint8_t tuya_dp_data[10];
 
+zbg_device_params_t test_device = {.model_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
+.rejoined = true, .ZC_binding = true, .ieee_addr = {0,0,0,0,0,0,0,0}, .endpoint = 1, .cluster_id = 0, 
+  .short_addr = 0, .user_data = 0};
+
 void loop() {
   
   SuplaDevice.iterate();
@@ -284,6 +288,9 @@ void loop() {
     refresh_time = 0;
 
     SuplaDevice.handleAction(0, Supla::START_LOCAL_WEB_SERVER); //don't start local web server until Zigbee is ready
+   // auto element = Supla::Element::getElementByChannelNumber(0);
+   // if (element == nullptr)
+   //   auto dimmer_object = new Supla::Control::Z2S_TuyaDimmerBulb(zbGateway, test_device); 
   }
   
   //checking status of AC powered devices
@@ -292,7 +299,6 @@ void loop() {
       const auto &device : zbGateway.getGatewayDevices()) {       
       log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), rejoined(%s)", device->endpoint, device->short_addr, device->model_id,
             device->rejoined ? "YES" : "NO");
-
       if ((device->model_id >= Z2S_DEVICE_DESC_LIGHT_SOURCE) && (device->model_id < Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F)) {//TODO change it to some kind of function
         
         bool is_online = zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true); 
@@ -314,8 +320,9 @@ void loop() {
           channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
         }  
       }
+      refresh_time = millis();
     }
-    refresh_time = millis();
+    
   }
 
   if (zbGateway.isNewDeviceJoined()) {
@@ -496,27 +503,34 @@ void loop() {
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {
                 } break;
-                /*case Z2S_DEVICE_DESC_RGBW_LIGHT_SOURCE: {
+
+                case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
+                case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: {
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_CAPABILITIES_ID, true))
                     log_i("Color control caps 0x%x, type 0x%x", *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
+                  if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE100, true)) {
+                    esp_zb_uint48_t *value = (esp_zb_uint48_t *)zbGateway.getReadAttrLastResult()->data.value;
+                    log_i("Color full data 0x%x::0x%x, type 0x%x", value->low, value->high, zbGateway.getReadAttrLastResult()->data.type);
+                  }
                     
-                } break;*/
+                } break;
+
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
-                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1: {
+                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1: 
+                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER: {
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 300, 5, true);
+                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 3600, 5, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 300, 10, true);
+                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 3600, 50, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 300, 5, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING,  
-                                                ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48, 0, 300, 1, true);
+                                                ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48, 5, 3600, 2, true);
                   
                   
                 } [[fallthrough]];//break;
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2:
-                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER:
                 case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
                   zbGateway.readClusterReportCfgCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, false);
                   zbGateway.readClusterReportCfgCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, false);
