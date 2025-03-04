@@ -143,6 +143,9 @@ public:
   void onHumidityReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi)) {
     _on_humidity_receive = callback;
   }
+  void onPressureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi)) {
+    _on_pressure_receive = callback;
+  }
   void onIlluminanceReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
     _on_illuminance_receive = callback;
   }
@@ -226,6 +229,7 @@ private:
   void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int, signed char rssi);
   void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
   void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
+  void (*_on_pressure_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
   void (*_on_illuminance_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_occupancy_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool, signed char rssi);

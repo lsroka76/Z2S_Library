@@ -155,7 +155,7 @@ void setup() {
 
   cfg->commit();
 
-#ifdef USE_WEB_CONFIG_ON_STARTUP
+#ifndef USE_WEB_CONFIG_ON_STARTUP
 
   log_i("no web config on startup - using hardcoded data");
   //cfg->setGUID(GUID);
