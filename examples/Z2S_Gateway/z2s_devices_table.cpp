@@ -49,14 +49,26 @@ void Z2S_printDevicesTableSlots() {
 
   for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
     if (z2s_devices_table[devices_counter].valid_record)
-      log_i("valid %d, ieee addr %s, model_id 0x%x, endpoint 0x%x, cluster 0x%x, channel %d, channel type %d",
+      log_i("valid %d, ieee addr 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x,\nmodel_id 0x%x, endpoint 0x%x, cluster 0x%x,\
+            channel %d, secondary channel %d, channel type %d,\n\
+            channel name %s, channel func %d, sub id %d,\n\
+            user data 1 %d, user data 2 %d",
         z2s_devices_table[devices_counter].valid_record,
-        z2s_devices_table[devices_counter].ieee_addr,
+        z2s_devices_table[devices_counter].ieee_addr[7], z2s_devices_table[devices_counter].ieee_addr[6], 
+        z2s_devices_table[devices_counter].ieee_addr[5], z2s_devices_table[devices_counter].ieee_addr[4], 
+        z2s_devices_table[devices_counter].ieee_addr[3], z2s_devices_table[devices_counter].ieee_addr[2], 
+        z2s_devices_table[devices_counter].ieee_addr[1], z2s_devices_table[devices_counter].ieee_addr[0],
         z2s_devices_table[devices_counter].model_id,
         z2s_devices_table[devices_counter].endpoint,
         z2s_devices_table[devices_counter].cluster_id,
         z2s_devices_table[devices_counter].Supla_channel,
-        z2s_devices_table[devices_counter].Supla_channel_type);  
+        z2s_devices_table[devices_counter].Supla_secondary_channel,
+        z2s_devices_table[devices_counter].Supla_channel_type,
+        z2s_devices_table[devices_counter].Supla_channel_name,
+        z2s_devices_table[devices_counter].Supla_channel_func,
+        z2s_devices_table[devices_counter].sub_id,
+        z2s_devices_table[devices_counter].user_data_1,
+        z2s_devices_table[devices_counter].user_data_2);  
 }
 
 
@@ -120,8 +132,10 @@ void Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t
 
 bool Z2S_loadDevicesTable() {
 
-  log_i("before get devices table");
-  uint32_t z2s_devices_table_size =  Z2S_getDevicesTableSize(); //3584
+  
+  uint32_t z2s_devices_table_size =  Z2S_getDevicesTableSize(); 
+  log_i("Z2S_getDevicesTableSize %d, sizeof(z2s_devices_table) %d, sizeof(z2s_device_params_t) %d, sizeof(bool)%d",
+  z2s_devices_table_size, sizeof(z2s_devices_table), sizeof(z2s_device_params_t), sizeof(bool));
 
   if (z2s_devices_table_size == 0) {
 
@@ -146,9 +160,49 @@ bool Z2S_loadDevicesTable() {
   } else
   {
     if (z2s_devices_table_size != sizeof(z2s_devices_table)) {
-      
-      log_i("Devices table size mismatch %d <> %d", z2s_devices_table_size, sizeof(z2s_devices_table));
-      return false;
+
+      if (z2s_devices_table_size == 0x2200) { //legacy 0.4.2
+        log_i("Previous version of devices table detected with size 0x%x, trying to upgrade", z2s_devices_table_size);
+        z2s_legacy_device_params_t *z2s_devices_legacy_table = (z2s_legacy_device_params_t *)malloc(z2s_devices_table_size);
+        if (z2s_devices_legacy_table == nullptr) {
+          log_e("Error while allocating memory for legace table copying");
+          return false;
+        }
+        else {
+          if (!Supla::Storage::ConfigInstance()->getBlob(Z2S_DEVICES_TABLE, (char *)z2s_devices_legacy_table, z2s_devices_table_size)) {
+            log_i ("Legacy devices table load failed!");
+            return false;
+          }
+          for (uint8_t table_index = 0; table_index < Z2S_CHANNELMAXCOUNT; table_index++) {
+
+              z2s_devices_table[table_index].valid_record = (z2s_devices_legacy_table + table_index)->valid_record;
+              z2s_devices_table[table_index].model_id = (z2s_devices_legacy_table + table_index)->model_id;
+              memcpy(z2s_devices_table[table_index].ieee_addr, (z2s_devices_legacy_table + table_index)->ieee_addr,
+                     sizeof(esp_zb_ieee_addr_t));
+              z2s_devices_table[table_index].endpoint = (z2s_devices_legacy_table + table_index)->endpoint;
+              z2s_devices_table[table_index].cluster_id = (z2s_devices_legacy_table + table_index)->cluster_id;
+              z2s_devices_table[table_index].short_addr = (z2s_devices_legacy_table + table_index)->short_addr;
+              z2s_devices_table[table_index].Supla_channel = (z2s_devices_legacy_table + table_index)->Supla_channel;
+              z2s_devices_table[table_index].Supla_secondary_channel = 0xFF;
+              z2s_devices_table[table_index].Supla_channel_type = (z2s_devices_legacy_table + table_index)->Supla_channel_type;
+              memcpy(z2s_devices_table[table_index].Supla_channel_name, (z2s_devices_legacy_table + table_index)->Supla_channel_name, 
+                     sizeof(z2s_devices_table[table_index].Supla_channel_name));
+              z2s_devices_table[table_index].Supla_channel_func = (z2s_devices_legacy_table + table_index)->Supla_channel_func;
+              z2s_devices_table[table_index].sub_id = (z2s_devices_legacy_table + table_index)->sub_id;
+              z2s_devices_table[table_index].user_data_1 = 0;
+              z2s_devices_table[table_index].user_data_2 = 0;
+            }
+          log_i("Devices table upgrade completed - saving new table");
+          Z2S_saveDevicesTable();
+          Z2S_printDevicesTableSlots();
+          free(z2s_devices_legacy_table);
+          return true;
+        }
+      }
+      else {
+        log_i("Devices table size mismatch %d <> %d, no upgrade is possible", z2s_devices_table_size, sizeof(z2s_devices_table));
+        return false;
+      }
     }
     else {
         if (!Supla::Storage::ConfigInstance()->getBlob(Z2S_DEVICES_TABLE, (char *)z2s_devices_table, sizeof(z2s_devices_table))) {
@@ -259,6 +313,19 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     log_i("No channel found for address %s", ieee_addr);
   else
     msgZ2SDeviceTempHumidityHumi(channel_number_slot, humidity, rssi);
+}
+
+void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float pressure, signed char rssi) {
+
+  log_i("onPressureReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_PRESSURESENSOR, NO_CUSTOM_CMD_SID);
+  
+  if (channel_number_slot < 0)
+    log_i("No channel found for address %s", ieee_addr);
+  else
+    ; //msgZ2SDevicePressure(channel_number_slot, pressure, rssi);
 }
 
 void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance, signed char rssi) {

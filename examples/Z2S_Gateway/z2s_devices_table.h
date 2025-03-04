@@ -6,7 +6,7 @@
 #include "priv_auth_data.h"
 #include <supla/tools.h>
 
-typedef struct z2s_device_params_s {
+typedef struct z2s_legacy_device_params_s {
 
   bool valid_record;
   uint32_t            model_id;
@@ -19,6 +19,40 @@ typedef struct z2s_device_params_s {
   char                Supla_channel_name[30];
   uint32_t            Supla_channel_func;
   int8_t              sub_id;
+} z2s_legacy_device_params_t;
+
+/*typedef struct z2s_device_params_s {
+
+  bool                valid_record;
+  uint32_t            model_id;
+  esp_zb_ieee_addr_t  ieee_addr;
+  uint8_t             endpoint;
+  uint16_t            cluster_id;
+  uint16_t            short_addr;
+  uint8_t             Supla_channel;
+  int32_t             Supla_channel_type;
+  char                Supla_channel_name[30];
+  uint32_t            Supla_channel_func;
+  int8_t              sub_id;
+} z2s_device_params_t;
+*/
+
+typedef struct z2s_device_params_s {
+
+  bool valid_record;
+  uint32_t            model_id;
+  esp_zb_ieee_addr_t  ieee_addr;
+  uint8_t             endpoint;
+  uint16_t            cluster_id;
+  uint16_t            short_addr;
+  uint8_t             Supla_channel;
+  uint8_t             Supla_secondary_channel;
+  int32_t             Supla_channel_type;
+  char                Supla_channel_name[30];
+  uint32_t            Supla_channel_func;
+  int8_t              sub_id;
+  uint32_t            user_data_1;
+  uint32_t            user_data_2;
 } z2s_device_params_t;
 
 #define Z2S_CHANNELMAXCOUNT       128
@@ -55,6 +89,7 @@ void Z2S_initSuplaChannels();
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature, signed char rssi); 
 void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float humidity, signed char rssi); 
+void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float pressure, signed char rssi); 
 void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance, signed char rssi);
 void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy, signed char rssi);
 void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state, signed char rssi); 
