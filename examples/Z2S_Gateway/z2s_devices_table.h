@@ -83,7 +83,7 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee
                                       int32_t channel_type, int8_t sub_id);
 //int32_t Z2S_findChannelType(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster);
 void Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
-                              char *name = nullptr, uint32_t func = 0);
+                              char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
 
 void Z2S_initSuplaChannels(); 
 

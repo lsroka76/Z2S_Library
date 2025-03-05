@@ -215,6 +215,7 @@ void setup() {
 
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
+  zbGateway.onPressureReceive(Z2S_onPressureReceive);
   zbGateway.onIlluminanceReceive(Z2S_onIlluminanceReceive);
   zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
@@ -337,11 +338,14 @@ void loop() {
       //do some Tuya vodoo - just in case Tuya device is paired
       
       zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
-      if (!zbGateway.zbQueryDeviceBasicCluster(joined_device))
-      {
-        log_i("Error while pairing - cann't read manufacturer id. Gateway will restart, try to pair device once again!");
-        SuplaDevice.scheduleSoftRestart(0);
-      }
+      
+      if ((strlen(zbGateway.getQueryBasicClusterData()->zcl_model_name) == 0) ||
+          (strlen(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name) == 0))
+        if (!zbGateway.zbQueryDeviceBasicCluster(joined_device)) {
+        
+          log_i("Error while pairing - cann't read manufacturer id. Gateway will restart, try to pair device once again!");
+          SuplaDevice.scheduleSoftRestart(0);
+        }
       write_mask = 0x13;
       zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask); //Tuya black magic continues
       write_mask = 0x1;

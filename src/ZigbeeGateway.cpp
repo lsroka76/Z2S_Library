@@ -39,6 +39,7 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
 
   memset(_read_attr_tsn_list, 0, sizeof(_read_attr_tsn_list));
   memset(_custom_cmd_tsn_list, 0, sizeof(_custom_cmd_tsn_list));
+  memset(&_last_device_query, 0, sizeof(query_basic_cluster_data_t));
   
   _joined_devices.clear();
   _gateway_devices.clear();
@@ -289,15 +290,18 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device) {
   read_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
   read_req.clusterID = ESP_ZB_ZCL_CLUSTER_ID_BASIC;
 
-  uint16_t attributes[7] = {  ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
+  /*uint16_t attributes[7] = {  ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
                               ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
-                              0xFFFE};
+                              0xFFFE};*/
+
+  uint16_t attributes[2] = {  ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID };
+  
   
   /*uint16_t attributes[6] = {  ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
                               ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
                               0xFFFE};*/
   
-  for (int attribute_number = 0; attribute_number < 6; attribute_number++) {
+  for (int attribute_number = 0; attribute_number < 2; attribute_number++) {
     
     read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);
     read_req.attr_field = &attributes[attribute_number];
@@ -316,7 +320,7 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device) {
       if (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) return false;
     }
   }
-  read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);
+  /*read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);
   read_req.attr_field = &attributes[6];
 
   log_i("Query basic cluster attribute 0x%x", *read_req.attr_field);
@@ -324,7 +328,7 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device) {
   esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_zcl_read_attr_cmd_req(&read_req);
   esp_zb_lock_release();
-  delay(500);
+  delay(500);*/
   return true; 
 }
 
@@ -568,9 +572,9 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
     if (attribute->id == ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_S16) 
     {
       int16_t value = attribute->data.value ? *(int16_t *)attribute->data.value : 0;
-      log_i("zbAttributeReporting pressure measurement %f",((float)value)/10);
+      log_i("zbAttributeReporting pressure measurement %f",((float)value));
       if (_on_pressure_receive)
-        _on_pressure_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, ((float)value)/10, rssi);
+        _on_pressure_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, ((float)value), rssi);
       } else log_i("zbAttributeReporting humidity cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
   } else 
   if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT) {

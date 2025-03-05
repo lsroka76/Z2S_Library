@@ -9,6 +9,7 @@
 #include "z2s_device_rgb.h"
 #include "z2s_device_rgbw.h"
 #include "z2s_device_temphumidity.h"
+#include "z2s_device_pressure.h"
 #include "z2s_device_tuya_custom_cluster.h"
 #include "z2s_device_general_purpose_measurement.h"
 #include "z2s_device_action_trigger.h"
@@ -113,7 +114,7 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee
 }
 
 void Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
-                              char *name, uint32_t func) {
+                              char *name, uint32_t func, uint8_t secondary_channel) {
 
   z2s_devices_table[slot].valid_record = true;
   memcpy(z2s_devices_table[slot].ieee_addr,device->ieee_addr,8);
@@ -121,6 +122,7 @@ void Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t
   z2s_devices_table[slot].endpoint = device->endpoint;
   z2s_devices_table[slot].cluster_id = device->cluster_id;
   z2s_devices_table[slot].Supla_channel = channel;
+  z2s_devices_table[slot].Supla_secondary_channel = secondary_channel;
   z2s_devices_table[slot].Supla_channel_type = channel_type;
   z2s_devices_table[slot].sub_id = sub_id; 
   if (name) strcpy(z2s_devices_table[slot].Supla_channel_name, name);
@@ -210,6 +212,7 @@ bool Z2S_loadDevicesTable() {
           return false;
         } else {
           log_i ("Devices table load success!");
+          Z2S_printDevicesTableSlots();
           return true;
         }
     }
@@ -255,8 +258,11 @@ void Z2S_initSuplaChannels() {
 
         switch (z2s_devices_table[devices_counter].Supla_channel_type) {
 
-          case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: 
+          case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
             initZ2SDeviceTempHumidity(devices_counter); break;
+
+          case SUPLA_CHANNELTYPE_PRESSURESENSOR:
+            initZ2SDevicePressure(devices_counter); break;
 
           case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
             initZ2SDeviceGeneralPurposeMeasurement(devices_counter); break; 
@@ -325,7 +331,7 @@ void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-    ; //msgZ2SDevicePressure(channel_number_slot, pressure, rssi);
+    msgZ2SDevicePressure(channel_number_slot, pressure, rssi);
 }
 
 void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance, signed char rssi) {
@@ -551,7 +557,11 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   log_i("IKEA SYMFONISK command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
   
   uint8_t sub_id = 0x7F;
-      
+  bool is_IKEA_custom_cluster = false;
+  
+  if ((cluster_id == 0xFC80) || (cluster_id == 0xFC7F))
+    is_IKEA_custom_cluster = true;
+
   if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x02))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID;
   else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x05) && compareBuffer(buffer, buffer_size, "00FF"))
@@ -568,25 +578,25 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && 
            (compareBuffer(buffer, buffer_size, "01FF0000") || compareBuffer(buffer, buffer_size, "01C30000")))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_DOWN_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x01))
+  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x01))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x02))
+  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x02))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_HELD_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x03))
+  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x03))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x04))
+  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x04))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_LONG_RELEASED_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 2) && (command_id == 0x06))
+  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x06))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x01))
+  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x01))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x02))
+  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x02))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_HELD_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x03))
+  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x03))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x04))
+  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x04))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID;
-  else if ((cluster_id == 0xFC80) && (endpoint == 3) && (command_id == 0x06))
+  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x06))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID;
   
   if (sub_id == 0x7F) return false;
@@ -700,6 +710,7 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
 
   switch (cluster) {
     case 0xEF00: processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi); break;
+    case 0xFC7F:
     case 0xFC80: {
       log_i("IKEA custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", cluster, endpoint, command_id);
       processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster, command_id, payload_size, payload, rssi);
@@ -750,6 +761,17 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
         addZ2SDeviceTempHumidity(device, first_free_slot); break;
+
+      case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: {
+        addZ2SDeviceTempHumidity(device, first_free_slot);
+        
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDevicePressure(device, first_free_slot);
+      } break;
 
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: 
       case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR: 
