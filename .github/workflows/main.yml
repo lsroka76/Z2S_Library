@@ -21,7 +21,7 @@ jobs:
           arduino-cli config set library.enable_unsafe_install true
           arduino-cli core update-index
           arduino-cli core install esp32:esp32@3.1.3
-          arduino-cli lib install SuplaDevice
+          arduino-cli lib install --git-url https://github.com/SUPLA/supla-device.git
       - name: Copy boards.txt with C6 config
         run: | 
           cp ./partitions/boards313.txt ~/.arduino15/packages/esp32/hardware/esp32/3.1.3/boards.txt
