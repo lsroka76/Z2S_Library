@@ -613,9 +613,9 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         if (_on_rms_current_receive)
           _on_rms_current_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
       } else
-      if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+      if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID) { //&& attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
         uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
-        log_i("zbAttributeReporting electrical measurement RMS active power %d",value);
+        log_i("zbAttributeReporting electrical measurement RMS active power %d, data type 0x%x",value, attribute->data.type);
         if (_on_rms_active_power_receive)
           _on_rms_active_power_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
       } else log_i("zbAttributeReporting electrical measurement cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);

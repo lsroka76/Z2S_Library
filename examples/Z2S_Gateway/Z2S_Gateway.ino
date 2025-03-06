@@ -617,6 +617,7 @@ void loop() {
                       log_i("Tuya custom attribute has 0x8004 been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
                  } break;
 
+                 case Z2S_DEVICE_DESC_RELAY_1:
                  case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1:
                  case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_2: {
                     
