@@ -6,7 +6,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
   switch (z2s_devices_table[channel_number_slot].model_id) {
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
-      _isTuya = true; _active_query = true;
+      _isTuya = true; _active_query = false; //true;
     } break;
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER: {
       _isTuya = true; _active_query = false;

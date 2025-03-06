@@ -922,6 +922,41 @@ bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t clus
     } else return true;
 }
 
+void ZigbeeGateway::sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, uint16_t *attribute_ids) {
+  
+  esp_zb_zcl_read_attr_cmd_t read_req;
+
+  if (device->short_addr != 0) {
+    read_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+    //else read_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_GROUP_ENDP_NOT_PRESENT;
+    read_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+  } else {
+    read_req.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
+    memcpy(read_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  }
+
+  read_req.zcl_basic_cmd.src_endpoint = _endpoint;
+  read_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+
+  read_req.clusterID = cluster_id;
+
+  read_req.attr_number = attr_number; //1; //ZB_ARRAY_LENTH(attributes);
+  read_req.attr_field = attribute_ids;
+
+  read_req.direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
+  read_req.manuf_specific = 0;
+  read_req.dis_defalut_resp = 1;
+
+  log_i("Sending 'read attribute' command");
+  esp_zb_lock_acquire(portMAX_DELAY);
+    _read_attr_last_tsn = esp_zb_zcl_read_attr_cmd_req(&read_req);
+  esp_zb_lock_release();
+  
+  _read_attr_tsn_list[_read_attr_last_tsn] = ZCL_CMD_TSN_ASYNC;
+    
+  delay(200);
+}
+
 void ZigbeeGateway::sendAttributeWrite( zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value, uint8_t manuf_specific, uint16_t manuf_code) {
 

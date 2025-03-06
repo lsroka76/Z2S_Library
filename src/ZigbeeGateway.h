@@ -116,6 +116,7 @@ public:
   void readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
 
   bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false);
+  void sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, uint16_t *attribute_ids);
   void sendAttributeWrite( zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
   void sendIASzoneEnrollResponseCmd(zbg_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);

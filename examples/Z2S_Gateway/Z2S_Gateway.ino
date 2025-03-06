@@ -48,7 +48,7 @@ Supla::Html::ProtocolParameters           htmlProto;
 #define WIFI_ENABLE                 3
 #define WIFI_ANT_CONFIG             14
 
-#define REFRESH_PERIOD              60 * 1000 //miliseconds
+#define REFRESH_PERIOD              10 * 1000 //miliseconds
 
 #define USE_WEB_CONFIG_ON_STARTUP
 
@@ -63,6 +63,7 @@ uint32_t printTime = 0;
 uint32_t zbInit_delay = 0;
 
 uint32_t refresh_time = 0;
+uint8_t refresh_cycle = 0;
 
 bool zbInit = true;
 uint8_t write_mask;
@@ -296,11 +297,15 @@ void loop() {
   
   //checking status of AC powered devices
   if (millis() - refresh_time > REFRESH_PERIOD) {
-    for ([[maybe_unused]]
-      const auto &device : zbGateway.getGatewayDevices()) {       
-      log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), rejoined(%s)", device->endpoint, device->short_addr, device->model_id,
-            device->rejoined ? "YES" : "NO");
-      if ((device->model_id >= Z2S_DEVICE_DESC_LIGHT_SOURCE) && (device->model_id < Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F)) {//TODO change it to some kind of function
+
+    for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
+
+      if (refresh_cycle % 12 == 0) //print every 120 seconds - only for debug purposes
+        log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
+              device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
+
+      if ((refresh_cycle % 6 == 0) && (device->model_id >= Z2S_DEVICE_DESC_LIGHT_SOURCE) && (device->model_id < Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F) &&
+          (device->endpoint == 1) && (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF)) {//TODO change it to some kind of function
         
         bool is_online = zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true); 
         
@@ -321,7 +326,16 @@ void loop() {
           channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
         }  
       }
+      if ((refresh_cycle % 1 == 0) && (device->model_id == Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2) &&
+          (device->endpoint == 1) && (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT)) {
+        
+        uint16_t attributes[3] = {ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
+                                  ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID};
+
+          zbGateway.sendAttributesRead(device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 3, &attributes[0]);  
+      }
       refresh_time = millis();
+      refresh_cycle = (refresh_cycle + 1) % 12;
     }
     
   }
@@ -503,7 +517,9 @@ void loop() {
               //here we can configure reporting and restart ESP32
               //zbGateway.sendDeviceFactoryReset(joined_device);
               switch (joined_device->model_id) {
+
                 case 0x0000: break;      
+                
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {
                 } break;
@@ -577,6 +593,7 @@ void loop() {
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 0x8002, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); //Tuya special
                     
                 }; break;
+                
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: {
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, true))
                       log_i("IAS_ZONE attribute has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, 
@@ -585,21 +602,30 @@ void loop() {
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
                                                 ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 0, 900, 1, false);
                 } break;
+
                  case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F:
                  case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
                  case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F: {
+
                     joined_device->endpoint = 0x01;
                     if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,0x8004, true))
                       log_i("Tuya custom attribute 0x8004 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
-                    write_mask = 0x01;
+                    write_mask = 0x01; //Tuya switch mode, 0x00 - scenes
                     zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 0x8004, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
                     if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,0x8004, true))
                       log_i("Tuya custom attribute has 0x8004 been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
                  } break;
+
                  case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1:
-                 {
-                    /*joined_device->endpoint = 0x01;
-                    if (zbGateway.sendAttributeRead(joined_device, 0xE001,0xD020, true))
+                 case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_2: {
+                    
+                    joined_device->endpoint = 0x01;
+                    write_mask = 0xFF;
+                    zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 0x4003, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
+                    write_mask = 0x02;
+                    zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 0x8002, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); //Tuya special
+
+                    /*if (zbGateway.sendAttributeRead(joined_device, 0xE001,0xD020, true))
                       log_i("Tuya custom attribute 0xD020 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
                     write_mask = 0x01;
                     zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD020, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
@@ -614,6 +640,7 @@ void loop() {
                       log_i("Tuya custom attribute has 0xD020 been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
                     */
                  } break;
+                 
                  case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
                  case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
                  case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
