@@ -309,7 +309,7 @@ void loop() {
         
         bool is_online = zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true); 
         
-        int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+        int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, -1/*device->endpoint*/, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
         
         if (channel_number_slot < 0)
           log_i("No channel found for address %s", device->ieee_addr);
@@ -323,7 +323,7 @@ void loop() {
             }
             else element->getChannel()->setStateOffline();
           }
-          channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+          channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, -1 /*device->endpoint*/, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
         }  
       }
       if ((refresh_cycle % 1 == 0) && (device->model_id == Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2) &&
