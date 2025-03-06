@@ -334,10 +334,11 @@ void loop() {
 
           zbGateway.sendAttributesRead(device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 3, &attributes[0]);  
       }
+    }
+    if (!zbGateway.getGatewayDevices().empty()) {
       refresh_time = millis();
       refresh_cycle = (refresh_cycle + 1) % 12;
     }
-    
   }
 
   if (zbGateway.isNewDeviceJoined()) {

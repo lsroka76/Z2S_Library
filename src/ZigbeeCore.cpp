@@ -370,9 +370,10 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
         for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
           if (!(*it)->bound() || (*it)->epAllowMultipleBinding()) {
 	
-		if ((*it)->isDeviceBound(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr))
-			log_d("Device already bound to endpoint %d", (*it)->getEndpoint());
-		else (*it)->zbDeviceAnnce(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr);//findEndpoint(&cmd_req);
+		//if ((*it)->isDeviceBound(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr))
+			//log_d("Device already bound to endpoint %d", (*it)->getEndpoint());
+		//else 
+      (*it)->zbDeviceAnnce(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr);//findEndpoint(&cmd_req);
           }
         }
       }
