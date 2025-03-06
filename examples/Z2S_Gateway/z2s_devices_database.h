@@ -1223,6 +1223,12 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 2, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
                               { 3, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1 }}},
   
+  { .manufacturer_name = "_TZ3000_imaccztn", .model_name = "TS0004",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1, .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
+                              { 2, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
+                              { 3, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1},
+                              { 4, Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1}}},
                               
   { .manufacturer_name = "_TZ3000_h1ipgkwn", .model_name = "TS0002",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 2,
