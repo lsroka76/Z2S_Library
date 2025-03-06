@@ -54,6 +54,7 @@ typedef struct zbg_device_params_s {
   uint32_t model_id;
   bool rejoined;
   bool ZC_binding;
+  bool rejoin_after_leave;
   esp_zb_ieee_addr_t ieee_addr;
   uint8_t endpoint;
   uint16_t cluster_id;
@@ -275,6 +276,7 @@ private:
   void zbCmdDefaultResponse( uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) override;
 
   void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
+  void zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) override;
 
   void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id) override;
   bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;

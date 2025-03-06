@@ -127,6 +127,8 @@ public:
 
   virtual void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
 
+  virtual void zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {};
+
   virtual bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
 	  for (std::list<zb_device_params_t *>::iterator bound_device = _bound_devices.begin(); bound_device != _bound_devices.end(); ++bound_device) {

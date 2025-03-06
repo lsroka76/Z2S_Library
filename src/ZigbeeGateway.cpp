@@ -474,16 +474,6 @@ void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
   log_d("zbDeviceAnnce joined device short address (0x%x), ieee_addr (0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x)", device->short_addr,
         device->ieee_addr[7], device->ieee_addr[6], device->ieee_addr[5], device->ieee_addr[4], device->ieee_addr[3], device->ieee_addr[2], device->ieee_addr[1], device->ieee_addr[0]);
 
-  /*_instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, false);
-  _instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, false);
-  _instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, false);
-  _instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, false);
-  _instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, false);
-  _instance->sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0xFFFE, false);
-
-
-*/
-
   esp_zb_zcl_read_attr_cmd_t read_req;
 
   if (device->short_addr != 0) {
@@ -514,6 +504,14 @@ void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
 
   _new_device_joined = true;
   _instance->_joined_devices.push_back(device);
+}
+
+void ZigbeeGateway::zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {
+  for (std::list<zbg_device_params_t *>::iterator bound_device = _gateway_devices.begin(); bound_device != _gateway_devices.end(); ++bound_device) {
+    if (((*bound_device)->short_addr == short_addr) || (memcmp((*bound_device)->ieee_addr, ieee_addr, 8) == 0)) {
+      (*bound_device)->rejoin_after_leave = true;
+    }
+	}
 }
 
 void ZigbeeGateway::findEndpoint(esp_zb_zdo_match_desc_req_param_t *param) {
@@ -735,6 +733,7 @@ void ZigbeeGateway::addBoundDevice(zb_device_params_t *device, uint16_t cluster_
     
     zbg_device->model_id = 0x0000;
     zbg_device->rejoined = false;
+    zbg_device->rejoin_after_leave = false;
     
     if (_on_btc_bound_device)
       _on_btc_bound_device (zbg_device);
@@ -747,6 +746,9 @@ bool ZigbeeGateway::isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
 	for (std::list<zbg_device_params_t *>::iterator bound_device = _gateway_devices.begin(); bound_device != _gateway_devices.end(); ++bound_device) {
               if (((*bound_device)->short_addr == short_addr) || (memcmp((*bound_device)->ieee_addr, ieee_addr, 8) == 0)) {
                 (*bound_device)->rejoined = true;
+                if ((*bound_device)->rejoin_after_leave)
+                  return false;
+                else
                 return true;
               }
 	}
