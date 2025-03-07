@@ -248,7 +248,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
       processTuyaHvacDataReport(channel_number_slot, payload_size, payload, rssi); break;
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
       processTuyaDoubleDimmerSwitchDataReport(channel_number_slot, payload_size, payload, rssi); break;
-    case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
+    case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
+      processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, rssi); break;
+    case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
       processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, rssi); break;
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
       processTuyaTempHumiditySensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
