@@ -12,6 +12,8 @@
 #define Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR         0x1050
 
 #define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR   0x1100
+#define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1 0x1101
+
 
 #define Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR         0x1200
 #define Z2S_DEVICE_DESC_ILLUZONE_SENSOR                 0x1205
@@ -970,8 +972,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_myd45weu", .model_name = "TS0601", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
-
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_0hkmcrza", .model_name = "TS0203", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
