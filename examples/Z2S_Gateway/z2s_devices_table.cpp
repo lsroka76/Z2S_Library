@@ -759,6 +759,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1:
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
+      case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
         addZ2SDeviceTempHumidity(device, first_free_slot); break;
 
