@@ -1104,10 +1104,17 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_cmcjbqup", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3000_mmkbptmx", .model_name = "TS0004", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER },
+                              { 2, Z2S_DEVICE_DESC_RELAY_1 },
+                              { 3, Z2S_DEVICE_DESC_RELAY_1 },
+                              { 4, Z2S_DEVICE_DESC_RELAY_1 }}},
+
   { .manufacturer_name = "_TZ3000_cehuw1lw", .model_name = "TS011F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
   
-    { .manufacturer_name = "_TZ3000_okaz9tjs", .model_name = "TS011F", 
+  { .manufacturer_name = "_TZ3000_okaz9tjs", .model_name = "TS011F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_5f43h46b", .model_name = "TS011F", 
