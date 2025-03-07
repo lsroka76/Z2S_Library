@@ -73,13 +73,13 @@ void processTuyaDoubleDimmerSwitchDataReport(int16_t channel_number_slot, uint16
     msgZ2SDeviceDimmer(channel_number_slot_sub_id, Tuya_read_dp_result.dp_value, false, rssi); 
 }
 
-void processTuyaSoilTempHumiditySensorReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
+void processTuyaSoilTempHumiditySensorReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, float divider) {
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_TEMPERATURE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/10, rssi);  
+    msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/divider, rssi);  
             
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_MOISTURE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
@@ -249,9 +249,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
       processTuyaDoubleDimmerSwitchDataReport(channel_number_slot, payload_size, payload, rssi); break;
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
-      processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, rssi); break;
+      processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, rssi, 10); break;
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
-      processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, rssi); break;
+      processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, rssi, 1); break;
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
       processTuyaTempHumiditySensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
