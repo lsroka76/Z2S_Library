@@ -557,10 +557,18 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   log_i("IKEA SYMFONISK command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
   
   uint8_t sub_id = 0x7F;
-  bool is_IKEA_custom_cluster = false;
-  
-  if ((cluster_id == 0xFC80) || (cluster_id == 0xFC7F))
-    is_IKEA_custom_cluster = true;
+
+  bool is_IKEA_FC80_EP_2 = false;
+  bool is_IKEA_FC80_EP_3 = false;
+  bool is_IKEA_FC7F_C_1 = false;
+
+  if ((cluster_id == 0xFC80) && (endpoint == 2))
+    is_IKEA_FC80_EP_2 = true;
+  if ((cluster_id == 0xFC80) && (endpoint == 3))
+    is_IKEA_FC80_EP_3 = true;
+  if ((cluster_id == 0xFC7F) && (command_id == 1))
+    is_IKEA_FC7F_C_1 = true;
+
 
   if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x02))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID;
@@ -578,27 +586,54 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && 
            (compareBuffer(buffer, buffer_size, "01FF0000") || compareBuffer(buffer, buffer_size, "01C30000")))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_VOLUME_DOWN_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x01))
+  else if (is_IKEA_FC80_EP_2 && (command_id == 0x01))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x02))
+  else if (is_IKEA_FC80_EP_2 && (command_id == 0x02))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_HELD_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x03))
+  else if (is_IKEA_FC80_EP_2 && (command_id == 0x03))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x04))
+  else if (is_IKEA_FC80_EP_2 && (command_id == 0x04))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_LONG_RELEASED_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 2) && (command_id == 0x06))
+  else if (is_IKEA_FC80_EP_2 && (command_id == 0x06))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x01))
+  else if (is_IKEA_FC80_EP_3 && (command_id == 0x01))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x02))
+  else if (is_IKEA_FC80_EP_3 && (command_id == 0x02))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_HELD_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x03))
+  else if (is_IKEA_FC80_EP_3 && (command_id == 0x03))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x04))
+  else if (is_IKEA_FC80_EP_3 && (command_id == 0x04))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID;
-  else if (is_IKEA_custom_cluster && (endpoint == 3) && (command_id == 0x06))
+  else if (is_IKEA_FC80_EP_3 && (command_id == 0x06))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID;
   
+  //Symfonsik gen 2 legacy
+
+  if (is_IKEA_FC7F_C_1 && compareBuffer(buffer, buffer_size, "0101")) {
+    endpoint = 2;
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID;
+  } else
+  if (is_IKEA_FC7F_C_1 && compareBuffer(buffer, buffer_size, "0102")) {
+    endpoint = 2;
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID;
+  } else
+  if (is_IKEA_FC7F_C_1 && compareBuffer(buffer, buffer_size, "0201")) {
+    endpoint = 3;
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID;
+  } else
+  if (is_IKEA_FC7F_C_1 && compareBuffer(buffer, buffer_size, "0202")) {
+    endpoint = 3;
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID;
+  } else
+  if (is_IKEA_FC7F_C_1 && compareBuffer(buffer, buffer_size, "0103")) {
+    endpoint = 2;
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID;
+  }
+  if (is_IKEA_FC7F_C_1 && compareBuffer(buffer, buffer_size, "0203")) {
+    endpoint = 3;
+    sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID;
+  }
+
   if (sub_id == 0x7F) return false;
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
