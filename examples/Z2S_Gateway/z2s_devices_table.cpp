@@ -784,9 +784,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "POWER SWITCH", 
                                                               SUPLA_CHANNELFNC_POWERSWITCH); break;
 
-      case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_1:
-      case Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH_2: addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "2GANG SWITCH", 
-                                                                          SUPLA_CHANNELFNC_LIGHTSWITCH); break;
+      case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1:
+      case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2: {
+        char gang_name[30];
+        sprintf(gang_name, "GANG #%d", device->endpoint);
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, gang_name, SUPLA_CHANNELFNC_LIGHTSWITCH); 
+      } break;
 
       case Z2S_DEVICE_DESC_ON_OFF:
       case Z2S_DEVICE_DESC_ON_OFF_1: {
