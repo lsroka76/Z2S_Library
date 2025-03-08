@@ -2,7 +2,7 @@
 #define Z2S_DEVICE_IASZONE_H_
 
 #include "z2s_devices_table.h"
-#include <supla/sensor/virtual_binary.h>
+#include <Z2S_sensor/Z2S_virtual_binary.h>
 
 void initZ2SDeviceIASzone(int16_t channel_number_slot);
 

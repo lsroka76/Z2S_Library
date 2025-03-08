@@ -998,3 +998,26 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
     return ADD_Z2S_DEVICE_STATUS_DAP; 
   }
 }
+
+void updateTimeout(uint8_t device_id, uint8_t timeout) {
+  
+  z2s_devices_table[device_id].user_data_1 |= USER_DATA_FLAG_SED_TIMEOUT;
+  z2s_devices_table[device_id].user_data_2 = timeout;
+  
+  if (Z2S_saveDevicesTable()) {
+    log_i("Device(channel %d) timeout updated. Table saved successfully.", z2s_devices_table[device_id].Supla_channel);
+      
+    auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[device_id].Supla_channel);
+      
+    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+
+      auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
+      Supla_Z2S_VirtualBinary->setTimeout(timeout);
+    } else
+    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
+
+      auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+      Supla_Z2S_VirtualThermHygroMeter->setTimeout(timeout);
+    }
+  }
+}

@@ -2,7 +2,7 @@
 #define Z2S_DEVICE_TEMPHUMIDITY_H_
 
 #include "z2s_devices_table.h"
-#include <supla/sensor/virtual_therm_hygro_meter.h>
+#include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>
 
 void initZ2SDeviceTempHumidity(int16_t channel_number_slot);
 

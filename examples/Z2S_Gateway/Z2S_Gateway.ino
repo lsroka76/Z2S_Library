@@ -70,7 +70,9 @@ uint8_t write_mask;
 uint16_t write_mask_16;
 
 const static char PARAM_CMD1[] = "zigbeestack";
-const static char PARAM_CMD2[] = "Z2S devices";
+const static char PARAM_CMD2[] = "RMZ2Sdevices";
+const static char PARAM_CMD3[] = "UPZ2Sdevices";
+const static char PARAM_TXT1[] = "SEDtimeout";
 
 void supla_callback_bridge(int event, int action) {
   log_i("supla_callback_bridge - event(0x%x), action(0x%x)", event, action);
@@ -83,12 +85,18 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_CLICK_10: Z2S_clearDevicesTable(); break;
     case Supla::ON_EVENT_4: Z2S_nwk_scan_neighbourhood(); break;
   }
-  if (event >= Supla::ON_EVENT_5) {
+  if ((event >= Supla::ON_EVENT_5) && (event < Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT)) {
     z2s_devices_table[event - Supla::ON_EVENT_5].valid_record = false;
     if (Z2S_saveDevicesTable()) {
       log_i("Device on channel %d removed. Restarting...", z2s_devices_table[event - Supla::ON_EVENT_5].Supla_channel);
       SuplaDevice.scheduleSoftRestart(1000);
     }
+  }
+  if ((event >= Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT) && (event < Supla::ON_EVENT_5 + 2*Z2S_CHANNELMAXCOUNT)) {
+    int32_t timeout = 0;
+    Supla::Storage::ConfigInstance()->getInt32(PARAM_TXT1, &timeout);
+    log_i("Timeout is %d", timeout);   
+    updateTimeout(event - (Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT), timeout);
   }
 }
 
@@ -200,7 +208,9 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
-  auto selectCmd2 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD2, "Z2S Devices");
+  new Supla::Html::CustomParameter(PARAM_TXT1,"SED Timeout (h)", 0);
+  
+  auto selectCmd2 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD2, "Remove Z2S Device");
   for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
     if (z2s_devices_table[devices_counter].valid_record) {
       char device_removal_cmd[128];
@@ -211,6 +221,19 @@ void setup() {
       log_i("cmd %s, len %d", device_removal_cmd, strlen(device_removal_cmd));
       selectCmd2->registerCmd(device_removal_cmd, Supla::ON_EVENT_5 + devices_counter);
       selectCmd2->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_5 + devices_counter, true);
+    }
+
+  auto selectCmd3 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD3, "Update Z2S Device timeout (h)");
+  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
+    if (z2s_devices_table[devices_counter].valid_record) {
+      char device_removal_cmd[128];
+      sprintf(device_removal_cmd, "Update Z2SDevice [%x:%x:%x:%x:%x:%x:%x:%x] channel # %d",
+      z2s_devices_table[devices_counter].ieee_addr[7], z2s_devices_table[devices_counter].ieee_addr[6], z2s_devices_table[devices_counter].ieee_addr[5],
+      z2s_devices_table[devices_counter].ieee_addr[4], z2s_devices_table[devices_counter].ieee_addr[3], z2s_devices_table[devices_counter].ieee_addr[2],
+      z2s_devices_table[devices_counter].ieee_addr[1], z2s_devices_table[devices_counter].ieee_addr[0], z2s_devices_table[devices_counter].Supla_channel);
+      log_i("cmd %s, len %d", device_removal_cmd, strlen(device_removal_cmd));
+      selectCmd3->registerCmd(device_removal_cmd, Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT + devices_counter);
+      selectCmd3->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT + devices_counter, true);
     }
   //  Zigbee Gateway notifications
 

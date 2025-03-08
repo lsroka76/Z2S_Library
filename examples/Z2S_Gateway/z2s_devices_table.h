@@ -65,6 +65,9 @@ typedef struct z2s_device_params_s {
 #define ADD_Z2S_DEVICE_STATUS_DT_FWA  0x03  //device table full while adding = device added partialy
 #define ADD_Z2S_DEVICE_STATUS_DAP     0x04 //device already present
 
+#define USER_DATA_FLAG_SED_TIMEOUT    0x01
+//#define USER_DATA_FLA
+
 extern z2s_device_params_t z2s_devices_table[Z2S_CHANNELMAXCOUNT];
 
 const static char   Z2S_DEVICES_TABLE []  PROGMEM = "Z2S_devs_table";
@@ -110,5 +113,7 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device);
 void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster);
 
 uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id = -1);
+
+void updateTimeout(uint8_t device_id, uint8_t timeout);
 
 #endif
