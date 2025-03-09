@@ -1140,6 +1140,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_ww6drja5", .model_name = "TS011F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "LUMI", .model_name = "lumi.plug.mmeu01", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+ 
   { .manufacturer_name = "_TZ3000_wkai4ga5", .model_name = "TS0044", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3, .z2s_device_endpoints_count = 4, 
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
