@@ -46,22 +46,27 @@ uint8_t Z2S_findFirstFreeDevicesTableSlot(uint8_t start_slot) {
   
 }
 
-void Z2S_printDevicesTableSlots() {
+void Z2S_printDevicesTableSlots(bool toTelnet) {
 
+  
   for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
-    if (z2s_devices_table[devices_counter].valid_record)
-      log_i("valid %d, ieee addr 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x,\nmodel_id 0x%x, endpoint 0x%x, cluster 0x%x,\
-            channel %d, secondary channel %d, channel type %d,\n\
-            channel name %s, channel func %d, sub id %d,\n\
-            user data 1 %d, user data 2 %d",
-        z2s_devices_table[devices_counter].valid_record,
+    if (z2s_devices_table[devices_counter].valid_record) {
+      char log_line[1024];
+
+      sprintf(log_line,"ENTRY\t\t\t%u\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%X\n\rENDPOINT\t\t0x%X\n\rCLUSTER\t\t\t0x%X\n\r"
+            "MODEL\t\t\t%lu\n\r"
+            "SUPLA CHANNEL\t\t%u\n\rSUPLA SECONDARY CHANNEL\t%u\n\rSUPLA CHANNEL TYPE\t%ld\n\r"
+            "SUPLA CHANNEL NAME\t%s\n\rSUPLA CHANNEL FUNCTION\t%lu\n\r"
+            "SUB ID\t\t\t%d\n\rUSER FLAGS\t\t%lu\n\rUSER DATA\t\t%lu\n\r",
+        devices_counter,
         z2s_devices_table[devices_counter].ieee_addr[7], z2s_devices_table[devices_counter].ieee_addr[6], 
         z2s_devices_table[devices_counter].ieee_addr[5], z2s_devices_table[devices_counter].ieee_addr[4], 
         z2s_devices_table[devices_counter].ieee_addr[3], z2s_devices_table[devices_counter].ieee_addr[2], 
         z2s_devices_table[devices_counter].ieee_addr[1], z2s_devices_table[devices_counter].ieee_addr[0],
-        z2s_devices_table[devices_counter].model_id,
+        z2s_devices_table[devices_counter].short_addr,
         z2s_devices_table[devices_counter].endpoint,
         z2s_devices_table[devices_counter].cluster_id,
+        z2s_devices_table[devices_counter].model_id,
         z2s_devices_table[devices_counter].Supla_channel,
         z2s_devices_table[devices_counter].Supla_secondary_channel,
         z2s_devices_table[devices_counter].Supla_channel_type,
@@ -70,6 +75,8 @@ void Z2S_printDevicesTableSlots() {
         z2s_devices_table[devices_counter].sub_id,
         z2s_devices_table[devices_counter].user_data_1,
         z2s_devices_table[devices_counter].user_data_2);  
+      log_i_telnet(log_line, toTelnet);
+    }
 }
 
 
@@ -113,11 +120,21 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee
   return -1;
 }
 
+int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id) {
+  
+  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) {
+      if ((z2s_devices_table[devices_counter].valid_record) && (z2s_devices_table[devices_counter].Supla_channel == channel_id))
+        return devices_counter;
+  }
+  return -1;
+}
+
 void Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                               char *name, uint32_t func, uint8_t secondary_channel) {
 
   z2s_devices_table[slot].valid_record = true;
   memcpy(z2s_devices_table[slot].ieee_addr,device->ieee_addr,8);
+  z2s_devices_table[slot].short_addr = device->short_addr;
   z2s_devices_table[slot].model_id = device->model_id;
   z2s_devices_table[slot].endpoint = device->endpoint;
   z2s_devices_table[slot].cluster_id = device->cluster_id;
@@ -995,6 +1012,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
     return ADD_Z2S_DEVICE_STATUS_OK;
   } else {
     log_i("Device (0x%x), endpoint (0x%x) already in z2s_devices_table (index 0x%x)", device->short_addr, device->endpoint, channel_number_slot);
+    if (z2s_devices_table[channel_number_slot].short_addr != device->short_addr) {
+      z2s_devices_table[channel_number_slot].short_addr = device->short_addr;
+      Z2S_saveDevicesTable();
+      log_i("Device short address updated");
+    }
     return ADD_Z2S_DEVICE_STATUS_DAP; 
   }
 }

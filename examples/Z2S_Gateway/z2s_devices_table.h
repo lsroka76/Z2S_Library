@@ -4,6 +4,8 @@
 #include <ZigbeeGateway.h>
 #include "z2s_devices_database.h"
 #include "priv_auth_data.h"
+#include "z2s_telnet_server.h"
+
 #include <supla/tools.h>
 
 typedef struct z2s_legacy_device_params_s {
@@ -76,7 +78,7 @@ const static char   Z2S_DEVICES_TABLE_SIZE []  PROGMEM = "Z2S_devs_ts";
 
 uint32_t Z2S_getDevicesTableSize();
 uint8_t Z2S_findFirstFreeDevicesTableSlot(uint8_t start_slot = 0);
-void Z2S_printDevicesTableSlots();
+void Z2S_printDevicesTableSlots(bool toTelnet = false);
 bool Z2S_loadDevicesTable();
 bool Z2S_saveDevicesTable();
 void Z2S_clearDevicesTable();
@@ -87,6 +89,8 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee
 //int32_t Z2S_findChannelType(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster);
 void Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                               char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
+
+int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 
 void Z2S_initSuplaChannels(); 
 

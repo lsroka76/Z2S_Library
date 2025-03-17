@@ -965,6 +965,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_a8sdabtg", .model_name = "TS0601", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE200_vs0skpuc", .model_name = "TS0601", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_fllyghyj", .model_name = "SNZB-02", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -975,6 +978,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_bguser20", .model_name = "TS0201", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_yujem9ee", .model_name = "TS0201", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
 { .manufacturer_name = "LUMI", .model_name = "lumi.sens", 
@@ -1145,6 +1151,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "LUMI", .model_name = "lumi.plug.mmeu01", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_2putqrmw", .model_name = "TS011F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
  
   { .manufacturer_name = "_TZ3000_wkai4ga5", .model_name = "TS0044", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3, .z2s_device_endpoints_count = 4, 
@@ -1159,6 +1168,12 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 4, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
+  { .manufacturer_name = "_TZ3000_famkxci2", .model_name = "TS0043", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3, .z2s_device_endpoints_count = 3, 
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
   { .manufacturer_name = "_TZ3000_yj6k7vfo", .model_name = "TS0041", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
@@ -1178,12 +1193,18 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_abrsvsou", .model_name = "TS004F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3000_402vrq2i", .model_name = "TS004F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_ja5osu5g", .model_name = "TS004F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_mrpevh8p", .model_name = "TS0041", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "eWeLink", .model_name = "SNZB-01P", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
+    
   { .manufacturer_name = "IKEA of Sweden", .model_name = "Remote Control N2", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON, .z2s_device_endpoints_count = 1},
 
@@ -1249,12 +1270,22 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
                               { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
-   { .manufacturer_name = "_TZ3000_p8alo7qa", .model_name = "TS0012",
+  { .manufacturer_name = "_TZ3000_p8alo7qa", .model_name = "TS0012",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  { .manufacturer_name = "_TZ3000_jl7qyupf", .model_name = "TS0012",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH, .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
                               { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
  { .manufacturer_name = "_TZ3000_ljhbw1c9", .model_name = "TS0012",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  { .manufacturer_name = "_TZ3000_xk5udnd6", .model_name = "TS0012",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH, .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
                               { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
@@ -1265,6 +1296,12 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
   { .manufacturer_name = "_TZ3000_sueu2ppq", .model_name = "TS0003",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH, .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 3, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  { .manufacturer_name = "_TZ3000_mw1pqqqt", .model_name = "TS0003",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH, .z2s_device_endpoints_count = 3,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
                               { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},

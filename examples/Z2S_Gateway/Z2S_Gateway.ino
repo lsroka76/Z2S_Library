@@ -30,6 +30,7 @@
 #include <supla/network/html/custom_text_parameter.h>
 #include <supla/network/html/text_cmd_input_parameter.h>
 #include <supla/network/html/select_cmd_input_parameter.h>
+#include <supla/network/html/select_input_parameter.h>
 
 #include <HTTPUpdateServer.h>
 
@@ -68,11 +69,66 @@ uint8_t refresh_cycle = 0;
 bool zbInit = true;
 uint8_t write_mask;
 uint16_t write_mask_16;
+uint32_t write_mask_32;
+
+uint8_t custom_cmd_payload[10]; //TODO - include RAW/STRING
+
 
 const static char PARAM_CMD1[] = "zigbeestack";
 const static char PARAM_CMD2[] = "RMZ2Sdevices";
 const static char PARAM_CMD3[] = "UPZ2Sdevices";
 const static char PARAM_TXT1[] = "SEDtimeout";
+
+void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
+
+  esp_zb_nwk_neighbor_info_t nwk_neighbour;
+  esp_zb_nwk_info_iterator_t nwk_iterator = 0;
+  esp_err_t scan_result;
+  //esp_zb_lock_acquire(portMAX_DELAY);
+  scan_result = esp_zb_nwk_get_next_neighbor(&nwk_iterator, &nwk_neighbour);
+  //esp_zb_lock_release();
+  char log_line[384];
+  
+  if (scan_result == ESP_ERR_NOT_FOUND)
+    log_i_telnet("\033[1mZ2S_nwk_scan_neighbourhood scan empty :-(  \033[22m");
+
+  while (scan_result == ESP_OK) {
+    sprintf(log_line, "Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n"
+                      "\rDEPTH\t\t\t0x%x\n\rRX_ON_WHEN_IDLE\t\t0x%x\n\rRELATIONSHIP\t\t0x%x\n\rLQI\t\t\t%d\n\rRSSI\t\t\t%d\n\rOUTGOING COST\t\t0x%x\n"
+                      "\rAGE\t\t\t0x%x\n\rDEVICE TIMEOUT\t\t%lu\n\rTIMEOUT COUNTER\t\t%lu", 
+        nwk_iterator, 
+        nwk_neighbour.ieee_addr[7], nwk_neighbour.ieee_addr[6], nwk_neighbour.ieee_addr[5], nwk_neighbour.ieee_addr[4], 
+        nwk_neighbour.ieee_addr[3], nwk_neighbour.ieee_addr[2], nwk_neighbour.ieee_addr[1], nwk_neighbour.ieee_addr[0],
+        nwk_neighbour.short_addr, nwk_neighbour.depth, nwk_neighbour.rx_on_when_idle, nwk_neighbour.relationship,
+        nwk_neighbour.lqi, nwk_neighbour.rssi, nwk_neighbour.outgoing_cost, nwk_neighbour.age, nwk_neighbour.device_timeout,
+        nwk_neighbour.timeout_counter);
+    log_i_telnet(log_line, toTelnet);
+    
+    int16_t channel_number_slot = Z2S_findChannelNumberSlot(nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+    
+    if (channel_number_slot < 0) {
+      sprintf(log_line, "Z2S_nwk_scan_neighbourhood - no channel found for address 0x%x", nwk_neighbour.short_addr);
+      log_i_telnet(log_line, toTelnet);
+    }
+    else {
+      while (channel_number_slot >= 0) {
+      auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+      if (element) 
+        element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(nwk_neighbour.rssi));
+        channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+      }
+    }  
+    //esp_zb_lock_acquire(portMAX_DELAY);      
+    scan_result = esp_zb_nwk_get_next_neighbor(&nwk_iterator, &nwk_neighbour);
+    //esp_zb_lock_release();
+  }
+  if (scan_result == ESP_ERR_INVALID_ARG)
+    log_i_telnet("Z2S_nwk_scan_neighbourhood error ESP_ERR_INVALID_ARG", toTelnet);
+
+  if (scan_result == ESP_ERR_NOT_FOUND)
+    log_i_telnet("Z2S_nwk_scan_neighbourhood scan completed", toTelnet);
+}
+
 
 void supla_callback_bridge(int event, int action) {
   log_i("supla_callback_bridge - event(0x%x), action(0x%x)", event, action);
@@ -83,7 +139,7 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_CLICK_5: Zigbee.factoryReset(); break;
     case Supla::ON_EVENT_3: 
     case Supla::ON_CLICK_10: Z2S_clearDevicesTable(); break;
-    case Supla::ON_EVENT_4: Z2S_nwk_scan_neighbourhood(); break;
+    case Supla::ON_EVENT_4: Z2S_nwk_scan_neighbourhood(false); break;
   }
   if ((event >= Supla::ON_EVENT_5) && (event < Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT)) {
     z2s_devices_table[event - Supla::ON_EVENT_5].valid_record = false;
@@ -100,46 +156,315 @@ void supla_callback_bridge(int event, int action) {
   }
 }
 
-void Z2S_nwk_scan_neighbourhood() {
+bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
 
-  esp_zb_nwk_neighbor_info_t nwk_neighbour;
-  esp_zb_nwk_info_iterator_t nwk_iterator = 0;
-  esp_err_t scan_result;
-  //esp_zb_lock_acquire(portMAX_DELAY);
-  scan_result = esp_zb_nwk_get_next_neighbor(&nwk_iterator, &nwk_neighbour);
-  //esp_zb_lock_release();
+  int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+  
+  if (channel_number_slot >= 0) {
 
-  if (scan_result == ESP_ERR_NOT_FOUND)
-    log_i("Z2S_nwk_scan_neighbourhood scan empty :-(  ");
-  while (scan_result == ESP_OK) {
-    log_i("Scan neighbour record(0x%x), IEEE address(0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x), short address(0x%x), depth(0x%x),\
-          RX_ON_WHEN_IDLE(0x%x), relationship(0x%x), lqi(%d), rssi(%d), outgoing cost(0x%x), age(0x%x), device timeout(%d),\
-          timeout counter(%d)", 
-        nwk_iterator, 
-        nwk_neighbour.ieee_addr[7], nwk_neighbour.ieee_addr[6], nwk_neighbour.ieee_addr[5], nwk_neighbour.ieee_addr[4], 
-        nwk_neighbour.ieee_addr[3], nwk_neighbour.ieee_addr[2], nwk_neighbour.ieee_addr[1], nwk_neighbour.ieee_addr[0],
-        nwk_neighbour.short_addr, nwk_neighbour.depth, nwk_neighbour.rx_on_when_idle, nwk_neighbour.relationship,
-        nwk_neighbour.lqi, nwk_neighbour.rssi, nwk_neighbour.outgoing_cost, nwk_neighbour.age, nwk_neighbour.device_timeout,
-        nwk_neighbour.timeout_counter);
-        
-        int16_t channel_number_slot = Z2S_findChannelNumberSlot(nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-        if (channel_number_slot < 0)
-          log_i("Z2S_nwk_scan_neighbourhood - no channel found for address 0x%x", nwk_neighbour.short_addr);
-        else
-          while (channel_number_slot >= 0) {
-            auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-            if (element) 
-              element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(nwk_neighbour.rssi));
-            channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-          }
-    //esp_zb_lock_acquire(portMAX_DELAY);      
-    scan_result = esp_zb_nwk_get_next_neighbor(&nwk_iterator, &nwk_neighbour);
-    //esp_zb_lock_release();
+    device->endpoint = z2s_devices_table[channel_number_slot].endpoint;
+    device->cluster_id = z2s_devices_table[channel_number_slot].cluster_id;
+    memcpy(device->ieee_addr, z2s_devices_table[channel_number_slot].ieee_addr,8);
+    device->short_addr = z2s_devices_table[channel_number_slot].short_addr;
+    device->model_id = z2s_devices_table[channel_number_slot].model_id;
+    telnet.printf(">Device %u\n\r>", device->short_addr);
+    return true;
+  } else {
+    telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    return false;
   }
-  if (scan_result == ESP_ERR_INVALID_ARG)
-    log_i("Z2S_nwk_scan_neighbourhood error ESP_ERR_INVALID_ARG");
-  if (scan_result == ESP_ERR_NOT_FOUND)
-    log_i("Z2S_nwk_scan_neighbourhood scan completed");
+}
+
+uint8_t parseAttributeTypeStr(char *attribute_type) {
+  
+  if (strcmp(attribute_type, "BOOL") == 0)
+    return 0x10;
+  else
+  if (strcmp(attribute_type, "8BITMAP") == 0)
+    return 0x18;
+  else
+  if (strcmp(attribute_type, "16BITMAP") == 0)
+    return 0x19;
+  else
+  if (strcmp(attribute_type, "U8") == 0)
+    return 0x20;
+  else
+  if (strcmp(attribute_type, "U16") == 0)
+    return 0x21;
+  else
+  if (strcmp(attribute_type, "S8") == 0)
+    return 0x28;
+  else
+  if (strcmp(attribute_type, "S16") == 0)
+    return 0x29;
+  else
+  if (strcmp(attribute_type, "ENUM8") == 0)
+    return 0x30;
+  else
+  if (strcmp(attribute_type, "ENUM16") == 0)
+    return 0x31;
+  else
+  if (strcmp(attribute_type, "ARRAY") == 0)
+    return 0x48;
+  else
+  if (strcmp(attribute_type, "SET") == 0)
+    return 0x50;
+  else
+    return strtoul(attribute_type,nullptr,16);
+}
+
+uint16_t parseClusterIdStr(char *cluster_id) {
+  
+  if (strcmp(cluster_id, "ONOFF") == 0)
+    return 0x06;
+  else
+  if (strcmp(cluster_id, "EM") == 0)
+    return 0xB04;
+  else
+  if (strcmp(cluster_id, "SM") == 0)
+    return 0x702;
+  else
+  if (strcmp(cluster_id, "TEMP") == 0)
+    return 0x402;
+  else
+  if (strcmp(cluster_id, "HUMI") == 0)
+    return 0x405;
+  else
+  if (strcmp(cluster_id, "IAS") == 0)
+    return 0x500;
+  else
+  if (strcmp(cluster_id, "LEVEL") == 0)
+    return 0x08;
+  else
+  if (strcmp(cluster_id, "POWER") == 0)
+    return 0x01;
+  else
+  if (strcmp(cluster_id, "COLOR") == 0)
+    return 0x300;
+  else
+  if (strcmp(cluster_id, "PRESSURE") == 0)
+    return 0x403;
+  else
+  if (strcmp(cluster_id, "POLL") == 0)
+    return 0x20;
+  else
+    return strtoul(cluster_id,nullptr,16);
+}
+
+void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
+  
+  zbg_device_params_t device;
+
+  log_i("cmd: %s, param %s, param %s", cmd, *param != NULL ? *param : "-",*(param+1) != NULL ? *(param+1) : "-" );
+  
+  if (strcmp(cmd, "OPEN-NETWORK") == 0) {
+
+    uint8_t time = 180;
+    if (*(param))
+      time = strtoul(*param, nullptr, 10);
+    Zigbee.openNetwork(time);
+    return;
+  } else
+  if (strcmp(cmd, "LIST-DEVICES") == 0) {
+    Z2S_printDevicesTableSlots(true);
+    return;
+  } else
+  if (strcmp(cmd,"LIST-CHANNEL") == 0) {
+    
+    return;
+  } else 
+  if (strcmp(cmd,"REMOVE-CHANNEL") == 0) {
+
+    if (params_number < 1)  {
+      telnet.println(">remove-channel channel");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+      z2s_devices_table[channel_number_slot].valid_record = false;
+      if (Z2S_saveDevicesTable()) {
+        log_i("Device on channel %d removed. Restarting...", channel_id);
+      SuplaDevice.scheduleSoftRestart(1000);
+      }
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
+  if (strcmp(cmd,"UPDATE-TIMEOUT") == 0) {
+
+    if (params_number < 2)  {
+      telnet.println(">update-timeout channel timeout(h)");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    uint8_t timeout = strtoul(*(param + 1), nullptr, 16);
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+        updateTimeout(channel_number_slot, timeout);
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
+  if (strcmp(cmd, "RESET-ZIGBEE-STACK") == 0) {
+
+    Zigbee.factoryReset();
+    return;
+  } else
+  if (strcmp(cmd,"NWK-SCAN")== 0) {
+  
+    Z2S_nwk_scan_neighbourhood(true);
+    return;
+  } else
+  if (strcmp(cmd,"READ-ATTRIBUTE")== 0) {
+    if (params_number < 3)  {
+      telnet.println(">read-attribute channel cluster attribute");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    uint16_t cluster_id = parseClusterIdStr(*(param + 1));
+    uint16_t attribute_id = strtoul(*(param + 2),nullptr,16);
+    bool sync = (params_number > 3) ? (strcmp(*(param + 3),"ASYNC") == 0 ? false : true) : true;
+    
+    if (getDeviceByChannelNumber(&device, channel_id)) {
+
+      telnet.printf(">read-attribute %u %u %u\n\r>", channel_id, cluster_id, attribute_id);
+      if (sync) {
+        bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true); 
+        if (result)
+          telnet.printf(">Reading attribute successful - data value is 0x%x, data type is 0x%x\n\r>", 
+                        *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
+        else
+          telnet.printf(">Reading attribute failed\n\r>");
+      } else {
+        zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, false);
+        telnet.println("readAttribute async request sent");
+      }
+    }
+    return;
+  } else
+  if (strcmp(cmd,"CONFIGURE-REPORTING")== 0) {
+    if (params_number < 7)  {
+      telnet.println("configure-reporting channel cluster attribute attribute_type min_interval max_interval delta");
+      return;
+    }
+    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    uint16_t cluster_id = parseClusterIdStr(*(param +1));
+    uint16_t attribute_id = strtoul(*(param + 2),nullptr,16);
+    uint8_t attribute_type = parseAttributeTypeStr(*(param + 3));
+    uint16_t min_interval = strtoul(*(param + 4),nullptr,16);
+    uint16_t max_interval = strtoul(*(param + 5),nullptr,16);
+    uint16_t delta = strtoul(*(param + 6),nullptr,16);
+    bool sync = (params_number > 7) ? (strcmp(*(param+7),"ASYNC") == 0 ? false : true) : true;
+    
+    if (getDeviceByChannelNumber(&device, channel_id)) {
+
+      telnet.printf(">configure-reporting %u 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X\n\r>", channel_id, cluster_id, attribute_id, attribute_type,
+                    min_interval, max_interval, delta);
+      if (sync) {
+        zbGateway.setClusterReporting(&device, cluster_id, attribute_id, attribute_type, min_interval, max_interval, delta, true); 
+        telnet.printf(">Configure reporting sync request sent\n\r");
+      } else {
+        zbGateway.setClusterReporting(&device, cluster_id, attribute_id, attribute_type, min_interval, max_interval, delta, false); 
+        telnet.println("Configure reporting async request sent");
+      }
+    }
+    return;
+  } else
+  if (strcmp(cmd,"DEVICE-DISCOVERY")== 0) {
+    if (params_number < 1)  {
+      telnet.println("device-discovery channel");
+      return;
+    }
+    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    
+    if (getDeviceByChannelNumber(&device, channel_id)) {
+
+      telnet.printf(">device-discovery %u 0x%X\n\r>", channel_id, device.short_addr);
+      zbGateway.zbPrintDeviceDiscovery(&device); 
+    }
+    return;
+  } else
+  if (strcmp(cmd,"WRITE-ATTRIBUTE")== 0) {
+  
+    if (params_number < 6)  {
+      telnet.println("write-attribute channel cluster attribute attribute_type attribute_size value");
+      return;
+    }
+    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    uint16_t cluster_id = parseClusterIdStr(*(param +1));
+    uint16_t attribute_id = strtoul(*(param + 2),nullptr,16);
+    esp_zb_zcl_attr_type_t attribute_type = (esp_zb_zcl_attr_type_t)parseAttributeTypeStr(*(param + 3));
+    uint16_t attribute_size = strtoul(*(param + 4),nullptr,16);
+    //uint32_t value = strtoul(*(param + 5),nullptr,16);
+    
+    if (getDeviceByChannelNumber(&device, channel_id)) {
+
+      telnet.printf(">write-attribute %u 0x%X 0x%X 0x%X 0x%X\n\r>", channel_id, cluster_id, attribute_id, attribute_type,
+                    attribute_size);
+      
+      void *value;
+      
+      switch (attribute_size) {
+        case 1: {
+          write_mask = strtoul(*(param + 5),nullptr,16);
+          value = &write_mask; 
+        } break;
+        case 2: {
+          write_mask_16 = strtoul(*(param + 5),nullptr,16);
+          value = &write_mask_16; 
+        }break;
+        case 4: {
+          write_mask_32 = strtoul(*(param + 5),nullptr,16);
+          value = &write_mask_32; 
+        } break;
+      }
+      zbGateway.sendAttributeWrite(&device, cluster_id, attribute_id, attribute_type, attribute_size, value); 
+      telnet.println("Write attribute async request sent");
+    }
+    return;
+  } else
+  if (strcmp(cmd,"CUSTOM-CMD")== 0) {
+  
+    if (params_number < 6)  {
+      telnet.println("custom-cmd channel cluster command data_type data_size value");
+      return;
+    }
+    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    uint16_t cluster_id = parseClusterIdStr(*(param +1));
+    uint16_t command_id = strtoul(*(param + 2),nullptr,16);
+    esp_zb_zcl_attr_type_t data_type = (esp_zb_zcl_attr_type_t)parseAttributeTypeStr(*(param + 3));
+    uint16_t data_size = strtoul(*(param + 4),nullptr,16);
+    //uint32_t value = strtoul(*(param + 5),nullptr,16);
+    
+    if (getDeviceByChannelNumber(&device, channel_id)) {
+
+      telnet.printf(">custom-cmd %u 0x%X 0x%X 0x%X 0x%X\n\r>", channel_id, cluster_id, command_id, data_type,
+                    data_size);
+      
+      char byte_str[3];
+      byte_str[2] = '\0';
+
+      memset(custom_cmd_payload, 0, sizeof(custom_cmd_payload));
+
+      for (int i = 0; i < data_size/*strlen(*(param + 5))) / 2*/; i++) {
+        memcpy(byte_str,(*(param + 5))  + (i * 2), 2);
+        custom_cmd_payload[i] = strtoul(byte_str, nullptr,16);
+        telnet.printf("%X:", custom_cmd_payload[i]);
+      }
+      zbGateway.sendCustomClusterCmd(&device, cluster_id, command_id, data_type, data_size, custom_cmd_payload); 
+      telnet.println("Custom command async request sent");
+    }
+    return;
+  }
 }
 
 void setup() {
@@ -300,6 +625,8 @@ void loop() {
   
   SuplaDevice.iterate();
 
+  if (is_Telnet_server) telnet.loop();
+  
   if ((!Zigbee.started()) && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
   
     log_i("Starting Zigbee subsystem");
@@ -313,9 +640,8 @@ void loop() {
     refresh_time = 0;
 
     SuplaDevice.handleAction(0, Supla::START_LOCAL_WEB_SERVER); //don't start local web server until Zigbee is ready
-   // auto element = Supla::Element::getElementByChannelNumber(0);
-   // if (element == nullptr)
-   //   auto dimmer_object = new Supla::Control::Z2S_TuyaDimmerBulb(zbGateway, test_device); 
+    setupTelnet();
+    onTelnetCmd(Z2S_onTelnetCmd); 
   }
   
   //checking status of AC powered devices
