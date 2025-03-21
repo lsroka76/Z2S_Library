@@ -276,7 +276,7 @@ static esp_err_t zb_cmd_default_resp_handler(const esp_zb_zcl_cmd_default_resp_m
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (message->info.dst_endpoint == (*it)->getEndpoint()) {
         
-	      (*it)->zbCmdDefaultResponse( message->info.header.tsn, message->info.src_address, message->info.src_endpoint, message->info.cluster, message->resp_to_cmd, message->status_code);
+	      (*it)->zbCmdDefaultResponse( message->info.header.tsn, message->info.header.rssi, message->info.src_address, message->info.src_endpoint, message->info.cluster, message->resp_to_cmd, message->status_code);
     }
   }
   return ESP_OK;

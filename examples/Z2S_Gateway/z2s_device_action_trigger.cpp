@@ -41,6 +41,8 @@ void msgZ2SDeviceActionTrigger(int16_t channel_number_slot, signed char rssi) {
     return;
   }
 
+  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  
   auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
   if (element != nullptr) { // && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {

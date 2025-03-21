@@ -2,10 +2,9 @@
 
 void initZ2SDeviceIASzone(int16_t channel_number_slot) {
   
-  uint8_t timeout = 0;
-
-  if (z2s_devices_table[channel_number_slot].user_data_1 & USER_DATA_FLAG_SED_TIMEOUT == USER_DATA_FLAG_SED_TIMEOUT)
-    timeout = z2s_devices_table[channel_number_slot].user_data_2;
+  uint8_t timeout = z2s_devices_table[channel_number_slot].timeout_secs / 3600;
+  //if (z2s_devices_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_SED_TIMEOUT == USER_DATA_FLAG_SED_TIMEOUT)
+  //  timeout = z2s_devices_table[channel_number_slot].user_data_1;
   
   auto Supla_Z2S_VirtualBinary = new Supla::Sensor::Z2S_VirtualBinary(true, timeout);
   
@@ -38,6 +37,8 @@ void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, signed char rs
     log_e("msgZ2SDeviceIASzone - invalid channel number slot");
     return;
   }
+
+  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
 
   auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {

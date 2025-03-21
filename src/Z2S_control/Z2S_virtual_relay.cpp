@@ -34,6 +34,7 @@ void Supla::Control::Z2S_VirtualRelay::onInit() {
   } else {
     turnOff(duration);
   }*/
+  channel.setStateOffline();
 }
 
 void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
@@ -81,6 +82,45 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
   Supla::Storage::ScheduleSave(5000);
 }
 
+void Supla::Control::Z2S_VirtualRelay::ping() {
+
+  if (_gateway && Zigbee.started()) {
+    _fresh_start = false;
+    _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+  }
+}
+
+void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
+
+  Supla::Control::Relay::iterateAlways();
+
+  //uint32_t current_millis = millis();
+
+  if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
+    ping();
+
+  if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+    if (_gateway) {
+      
+      _last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+      if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      	ping();
+        _last_ping_ms = millis();
+      } else {
+        _last_ping_ms = _last_seen_ms;
+        if (!channel.isStateOnline()) 
+	  channel.setStateOnline();
+      }
+    }
+  }
+  if (_timeout_enabled && channel.isStateOnline() && ((millis() - _last_seen_ms) > _timeout_ms)) {
+	log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
+    channel.setStateOffline();
+   // _last_ping_ms = current_millis;
+  }
+
+}
+
 bool Supla::Control::Z2S_VirtualRelay::isOn() {
   
   if (_gateway && Zigbee.started()) {   
@@ -94,9 +134,45 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   
   state = on_off_state;
 
+  _last_ping_ms = millis();
+  _last_seen_ms = _last_ping_ms;
+  
+  if (!channel.isStateOnline()) 
+	  channel.setStateOnline();
+
   channel.setNewValue(state);
   // Schedule save in 5 s after state change
   Supla::Storage::ScheduleSave(5000);
+}
+
+void Supla::Control::Z2S_VirtualRelay::setKeepAliveSecs(uint32_t keep_alive_secs) {
+
+  _keep_alive_ms = keep_alive_secs * 1000;
+  if (_keep_alive_ms == 0)
+    _keep_alive_enabled = false;
+  else 
+    _keep_alive_enabled = true;
+}
+
+void Supla::Control::Z2S_VirtualRelay::setTimeoutSecs(uint32_t timeout_secs) {
+
+  _timeout_ms = timeout_secs * 1000;
+  if (_timeout_ms == 0) {
+    _timeout_enabled = false;
+    channel.setStateOnline();
+  }
+  else
+   _timeout_enabled = true;
+}
+
+uint32_t Supla::Control::Z2S_VirtualRelay::getKeepAliveSecs() {
+
+  return _keep_alive_ms * 1000;
+}
+
+uint32_t Supla::Control::Z2S_VirtualRelay::getTimeoutSecs() {
+
+  return _timeout_ms * 1000;
 }
 
 //#endif

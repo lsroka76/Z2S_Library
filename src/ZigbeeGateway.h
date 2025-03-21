@@ -24,6 +24,8 @@
       }                                                                                        \
   }
 
+#define ZBG_MAX_DEVICES 0x20 //32
+
 #define TUYA_PRIVATE_CLUSTER_0    0xE000
 #define TUYA_PRIVATE_CLUSTER_1    0xE001
 #define TUYA_PRIVATE_CLUSTER_EF00 0xEF00
@@ -61,6 +63,16 @@ typedef struct zbg_device_params_s {
   uint16_t short_addr;
   uint32_t user_data;
 } zbg_device_params_t;
+
+typedef struct zbg_device_unit_s {
+  uint8_t record_id;
+  esp_zb_ieee_addr_t ieee_addr;
+  uint16_t short_addr;
+  uint32_t model_id;
+  uint32_t last_seen_ms;
+  uint32_t keep_alive_ms;
+  uint32_t timeout_ms;
+} zbg_device_unit_t;
 
 class ZigbeeGateway : public ZigbeeEP {
 public:
@@ -108,6 +120,8 @@ public:
   void zbPrintDeviceDiscovery (zbg_device_params_t * device);
   static void bindDeviceCluster(zbg_device_params_t *,int16_t cluster_id);
 
+  static uint32_t getZbgDeviceUnitLastSeenMs(uint16_t short_addr);
+
   bool zbQueryDeviceBasicCluster(zbg_device_params_t * device);
   //void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) override;
   void zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) override;
@@ -135,7 +149,11 @@ public:
   void sendCustomClusterCmd(zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
                             uint16_t custom_data_size, uint8_t *custom_data, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV);
 
-  
+  void requestDataSave(uint8_t selector) {
+    if (_on_data_save_request)
+      _on_data_save_request(selector);
+  }
+
   void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int, signed char rssi)) {
     _on_IAS_zone_status_change_notification = callback;
   }
@@ -199,6 +217,9 @@ public:
   void onBTCBoundDevice(void (*callback)(zbg_device_params_t *)) {
     _on_btc_bound_device = callback;
   }
+  void onDataSaveRequest(void (*callback)(uint8_t)) {
+    _on_data_save_request = callback;
+  }
 
 private:
   // save instance of the class in order to use it in static functions
@@ -228,6 +249,8 @@ private:
   //static bool _read_attr_async;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
 
+  static   zbg_device_unit_t zbg_device_units[ZBG_MAX_DEVICES];
+
   void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int, signed char rssi);
   void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
   void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
@@ -252,6 +275,7 @@ private:
   void (*_on_bound_device)(zbg_device_params_t *, bool);
   void (*_on_btc_bound_device)(zbg_device_params_t *);
 
+  void (*_on_data_save_request)(uint8_t);
 
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);
 
@@ -273,13 +297,15 @@ private:
   void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,uint8_t command_id, uint16_t payload_size, uint8_t *payload) override;
   void zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
                              uint16_t attribute_id) override;
-  void zbCmdDefaultResponse( uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) override;
+  void zbCmdDefaultResponse( uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) override;
 
   void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
   void zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) override;
 
   void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id) override;
   bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
+
+  static void updateZbgDeviceUnitLastSeenMs(uint16_t short_addr);
 
 protected:
 

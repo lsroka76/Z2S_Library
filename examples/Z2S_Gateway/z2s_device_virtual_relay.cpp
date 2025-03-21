@@ -11,6 +11,12 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
   
   if (z2s_devices_table[channel_number_slot].Supla_channel_func !=0) 
     Supla_Z2S_VirtualRelay->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
+
+  //if (z2s_devices_table[channel_number_slot].keep_alive_secs > 0) 0 == disable
+    Supla_Z2S_VirtualRelay->setKeepAliveSecs(z2s_devices_table[channel_number_slot].keep_alive_secs);
+
+  //if (z2s_devices_table[channel_number_slot].timeout_secs > 0) 0 == disable
+    Supla_Z2S_VirtualRelay->setTimeoutSecs(z2s_devices_table[channel_number_slot].timeout_secs);
 }
 
                                       
@@ -37,13 +43,15 @@ void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, bool state, signed ch
     return;
   }
 
+  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+
   auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
     
     auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
     
-    Supla_Z2S_VirtualRelay->getChannel()->setStateOnline();
+    //Supla_Z2S_VirtualRelay->getChannel()->setStateOnline();
     Supla_Z2S_VirtualRelay->Z2S_setOnOff(state);     
     //Supla_Z2S_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
 }

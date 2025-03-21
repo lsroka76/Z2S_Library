@@ -148,6 +148,8 @@ void processTuyaEF00Switch2x3(int16_t channel_number_slot, uint16_t payload_size
 
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi) {
 
+  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  
   auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     
   if (element != nullptr) {

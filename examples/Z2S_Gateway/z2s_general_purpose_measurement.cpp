@@ -50,6 +50,9 @@ void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t 
     log_e("msgZ2SDeviceGeneralPurposeMeasurement - invalid channel number slot");
     return;
   }
+
+  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+
   switch (z2s_devices_table[channel_number_slot].model_id) {
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
         int8_t sub_id = -1;

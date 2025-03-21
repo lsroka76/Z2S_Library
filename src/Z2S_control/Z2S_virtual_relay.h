@@ -34,13 +34,33 @@ class Z2S_VirtualRelay : public Relay {
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;
   void turnOff(_supla_int_t duration = 0) override;
+  void iterateAlways() override;
+
   void Z2S_setOnOff(bool on_off_state);
   bool isOn() override;
+
+  void ping();
+
+  void setKeepAliveSecs(uint32_t keep_alive_secs);
+  void setTimeoutSecs(uint32_t timeout_secs);
+
+  uint32_t getKeepAliveSecs();
+  uint32_t getTimeoutSecs();
 
  protected:
   bool state = false;
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
+
+  bool _fresh_start = true;
+
+  bool _keep_alive_enabled = true;
+  bool _timeout_enabled    = true;
+
+  uint32_t _keep_alive_ms = 45000;
+  uint32_t _timeout_ms    = 60000;
+  uint32_t _last_ping_ms  = 0;
+  uint32_t _last_seen_ms  = 0;
  
 };
 

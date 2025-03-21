@@ -210,7 +210,7 @@ uint8_t parseAttributeTypeStr(char *attribute_type) {
   if (strcmp(attribute_type, "SET") == 0)
     return 0x50;
   else
-    return strtoul(attribute_type,nullptr,16);
+    return strtoul(attribute_type,nullptr, 0);
 }
 
 uint16_t parseClusterIdStr(char *cluster_id) {
@@ -248,7 +248,21 @@ uint16_t parseClusterIdStr(char *cluster_id) {
   if (strcmp(cluster_id, "POLL") == 0)
     return 0x20;
   else
-    return strtoul(cluster_id,nullptr,16);
+    return strtoul(cluster_id,nullptr, 0);
+}
+
+uint8_t parseTimingsStr(char *cluster_id) {
+  
+  if (strcmp(cluster_id, "KEEPALIVE") == 0)
+    return 0x01;
+  else
+  if (strcmp(cluster_id, "TIMEOUT") == 0)
+    return 0x02;
+  else
+  if (strcmp(cluster_id, "REFRESH") == 0)
+    return 0x04;
+  else
+    return 0x00;
 }
 
 void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
@@ -261,7 +275,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     uint8_t time = 180;
     if (*(param))
-      time = strtoul(*param, nullptr, 10);
+      time = strtoul(*param, nullptr, 0);
     Zigbee.openNetwork(time);
     return;
   } else
@@ -269,7 +283,11 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     Z2S_printDevicesTableSlots(true);
     return;
   } else
-  if (strcmp(cmd,"LIST-CHANNEL") == 0) {
+  if (strcmp(cmd, "LIST-ZB-DEVICES") == 0) {
+    Z2S_printZBDevicesTableSlots(true);
+    return;
+  } else
+  if (strcmp(cmd,"LIST-CHANNELs") == 0) {
     
     return;
   } else 
@@ -280,7 +298,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       return;
     }
 
-    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
     
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
@@ -295,19 +313,60 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }  
     return;
   } else
-  if (strcmp(cmd,"UPDATE-TIMEOUT") == 0) {
+  if (strcmp(cmd,"UPDATE-SED-TIMEOUT") == 0) {
 
     if (params_number < 2)  {
-      telnet.println(">update-timeout channel timeout(h)");
+      telnet.println(">update-sed-timeout channel timeout(h)");
       return;
     }
 
-    uint8_t channel_id = strtoul(*(param), nullptr, 16);
-    uint8_t timeout = strtoul(*(param + 1), nullptr, 16);
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint8_t timeout = strtoul(*(param + 1), nullptr, 0);
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
         updateTimeout(channel_number_slot, timeout);
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
+  if (strcmp(cmd,"UPDATE-DEVICE-TIMINGS") == 0) {
+
+    if (params_number < 3)  {
+      telnet.println(">update-device-timings channel \"keepalive\"/\"timeout\"/\"refresh\" time(seconds)");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint8_t selector = parseTimingsStr(*(param + 1));
+    uint32_t timings_secs = strtoul(*(param + 2), nullptr, 0);
+
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+        updateTimeout(channel_number_slot, 0, selector, timings_secs);
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
+  if (strcmp(cmd,"UPDATE-DEVICE-DESC") == 0) {
+
+    if (params_number < 2)  {
+      telnet.println(">update-device-desc channel device_desc_id");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint32_t device_desc_id = strtoul(*(param + 1), nullptr, 0);
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+        z2s_devices_table[channel_number_slot].model_id = device_desc_id;
+      if (Z2S_saveDevicesTable()) {
+        log_i("Device(channel %d) description id changed successfully.", channel_id);
+      }
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
     }  
@@ -329,9 +388,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       return;
     }
 
-    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
     uint16_t cluster_id = parseClusterIdStr(*(param + 1));
-    uint16_t attribute_id = strtoul(*(param + 2),nullptr,16);
+    uint16_t attribute_id = strtoul(*(param + 2),nullptr, 0);
     bool sync = (params_number > 3) ? (strcmp(*(param + 3),"ASYNC") == 0 ? false : true) : true;
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
@@ -356,13 +415,13 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       telnet.println("configure-reporting channel cluster attribute attribute_type min_interval max_interval delta");
       return;
     }
-    uint8_t channel_id = strtoul(*(param), nullptr, 16);
-    uint16_t cluster_id = parseClusterIdStr(*(param +1));
-    uint16_t attribute_id = strtoul(*(param + 2),nullptr,16);
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint16_t cluster_id = parseClusterIdStr(*(param + 1));
+    uint16_t attribute_id = strtoul(*(param + 2),nullptr, 0);
     uint8_t attribute_type = parseAttributeTypeStr(*(param + 3));
-    uint16_t min_interval = strtoul(*(param + 4),nullptr,16);
-    uint16_t max_interval = strtoul(*(param + 5),nullptr,16);
-    uint16_t delta = strtoul(*(param + 6),nullptr,16);
+    uint16_t min_interval = strtoul(*(param + 4),nullptr, 0);
+    uint16_t max_interval = strtoul(*(param + 5),nullptr, 0);
+    uint16_t delta = strtoul(*(param + 6),nullptr, 0);
     bool sync = (params_number > 7) ? (strcmp(*(param+7),"ASYNC") == 0 ? false : true) : true;
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
@@ -384,7 +443,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       telnet.println("device-discovery channel");
       return;
     }
-    uint8_t channel_id = strtoul(*(param), nullptr, 16);
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
@@ -399,11 +458,11 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       telnet.println("write-attribute channel cluster attribute attribute_type attribute_size value");
       return;
     }
-    uint8_t channel_id = strtoul(*(param), nullptr, 16);
-    uint16_t cluster_id = parseClusterIdStr(*(param +1));
-    uint16_t attribute_id = strtoul(*(param + 2),nullptr,16);
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint16_t cluster_id = parseClusterIdStr(*(param + 1));
+    uint16_t attribute_id = strtoul(*(param + 2),nullptr, 0);
     esp_zb_zcl_attr_type_t attribute_type = (esp_zb_zcl_attr_type_t)parseAttributeTypeStr(*(param + 3));
-    uint16_t attribute_size = strtoul(*(param + 4),nullptr,16);
+    uint16_t attribute_size = strtoul(*(param + 4),nullptr, 0);
     //uint32_t value = strtoul(*(param + 5),nullptr,16);
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
@@ -415,15 +474,15 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       
       switch (attribute_size) {
         case 1: {
-          write_mask = strtoul(*(param + 5),nullptr,16);
+          write_mask = strtoul(*(param + 5),nullptr, 0);
           value = &write_mask; 
         } break;
         case 2: {
-          write_mask_16 = strtoul(*(param + 5),nullptr,16);
+          write_mask_16 = strtoul(*(param + 5),nullptr, 0);
           value = &write_mask_16; 
         }break;
         case 4: {
-          write_mask_32 = strtoul(*(param + 5),nullptr,16);
+          write_mask_32 = strtoul(*(param + 5),nullptr, 0);
           value = &write_mask_32; 
         } break;
       }
@@ -438,11 +497,11 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       telnet.println("custom-cmd channel cluster command data_type data_size value");
       return;
     }
-    uint8_t channel_id = strtoul(*(param), nullptr, 16);
-    uint16_t cluster_id = parseClusterIdStr(*(param +1));
-    uint16_t command_id = strtoul(*(param + 2),nullptr,16);
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint16_t cluster_id = parseClusterIdStr(*(param + 1));
+    uint16_t command_id = strtoul(*(param + 2),nullptr, 0);
     esp_zb_zcl_attr_type_t data_type = (esp_zb_zcl_attr_type_t)parseAttributeTypeStr(*(param + 3));
-    uint16_t data_size = strtoul(*(param + 4),nullptr,16);
+    uint16_t data_size = strtoul(*(param + 4),nullptr, 0);
     //uint32_t value = strtoul(*(param + 5),nullptr,16);
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
@@ -457,7 +516,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
       for (int i = 0; i < data_size/*strlen(*(param + 5))) / 2*/; i++) {
         memcpy(byte_str,(*(param + 5))  + (i * 2), 2);
-        custom_cmd_payload[i] = strtoul(byte_str, nullptr,16);
+        custom_cmd_payload[i] = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
         telnet.printf("%X:", custom_cmd_payload[i]);
       }
       zbGateway.sendCustomClusterCmd(&device, cluster_id, command_id, data_type, data_size, custom_cmd_payload); 
@@ -528,8 +587,11 @@ void setup() {
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_5);
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_10);
 
-  
+  Z2S_loadZBDevicesTable();
+
   Z2S_loadDevicesTable();
+
+  Z2S_initZBDevices(millis());
 
   Z2S_initSuplaChannels();
 
@@ -584,6 +646,8 @@ void setup() {
 
   zbGateway.onBoundDevice(Z2S_onBoundDevice);
   zbGateway.onBTCBoundDevice(Z2S_onBTCBoundDevice);
+
+  zbGateway.onDataSaveRequest(Z2S_onDataSaveRequest);
 
   zbGateway.setManufacturerAndModel("Supla", "Z2SGateway");
   zbGateway.allowMultipleBinding(true);
@@ -652,37 +716,9 @@ void loop() {
       if (refresh_cycle % 12 == 0) //print every 120 seconds - only for debug purposes
         log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
+      if (refresh_cycle % 3 == 0)
+        log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis()); 
 
-      if ((refresh_cycle % 6 == 0) && (device->model_id >= Z2S_DEVICE_DESC_LIGHT_SOURCE) && (device->model_id < Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F) &&
-          (device->endpoint == 1) && (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF)) {//TODO change it to some kind of function
-        
-        bool is_online = zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true); 
-        
-        int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, -1/*device->endpoint*/, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-        
-        if (channel_number_slot < 0)
-          log_i("No channel found for address %s", device->ieee_addr);
-        else
-        while (channel_number_slot >= 0) {
-          auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-          if (element) { 
-            if (is_online) {
-              zbGateway.sendAttributeRead(device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
-              element->getChannel()->setStateOnline();
-            }
-            else element->getChannel()->setStateOffline();
-          }
-          channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, -1 /*device->endpoint*/, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-        }  
-      }
-      if ((refresh_cycle % 1 == 0) && (device->model_id == Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2) &&
-          (device->endpoint == 1) && (device->cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT)) {
-        
-        uint16_t attributes[3] = {ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
-                                  ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID};
-
-          zbGateway.sendAttributesRead(device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 3, &attributes[0]);  
-      }
     }
     if (!zbGateway.getGatewayDevices().empty()) {
       refresh_time = millis();
@@ -763,6 +799,14 @@ void loop() {
                         
                         for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
+                        if (endpoint_id == 1)
+                          Z2S_addZBDeviceTableSlot(joined_device->ieee_addr,
+                                                   joined_device->short_addr,
+                                                   zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+                                                   zbGateway.getQueryBasicClusterData()->zcl_model_name,
+                                                   Z2S_DEVICES_LIST[i].z2s_device_endpoints_count,
+                                                   Z2S_DEVICES_LIST[i].z2s_device_desc_id,
+                                                   zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
 
                         switch (joined_device->model_id) {
                           case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3: {
@@ -888,7 +932,7 @@ void loop() {
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
                 case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1: 
                 case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER: {
-                  zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+                  /*zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 3600, 5, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 3600, 50, true);
@@ -896,7 +940,7 @@ void loop() {
                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 300, 5, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING,  
                                                 ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48, 5, 3600, 2, true);
-                  
+                  */
                   
                 } [[fallthrough]];//break;
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
