@@ -396,6 +396,11 @@ bool Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr
     }
   } else
     log_i("ZB device already in ZB devices table");
+    if (z2s_zb_devices_table[zb_device_slot].short_addr != short_addr) {
+      z2s_zb_devices_table[zb_device_slot].short_addr = short_addr;
+      if (Z2S_saveZBDevicesTable())
+        log_i("ZB device short adress updated!");
+    }
     return true;
 }
 
@@ -1321,6 +1326,30 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+        }
+      } break;
+      case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
+        
+        switch (sub_id) {
+          case TUYA_RAIN_SENSOR_RAIN_SID:
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, "RAIN", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+
+          case TUYA_RAIN_SENSOR_ILLUMINANCE_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
+                                                  "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+            break;
+
+          case TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE AVG 20",
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+
+          case TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE MAX TODAY",
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+
+          case TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "RAIN INTENSITY",
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
         }
       } break;
