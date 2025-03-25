@@ -878,21 +878,37 @@ bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
 bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, 
                                   uint8_t buffer_size, uint8_t *buffer, signed char  rssi) {
 
-  log_i("IKEA SYMFONISK command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
+  log_i("IKEA SYMFONISK/SOMRIG command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
   
   uint8_t sub_id = 0x7F;
 
   bool is_IKEA_FC80_EP_2 = false;
   bool is_IKEA_FC80_EP_3 = false;
   bool is_IKEA_FC7F_C_1 = false;
+  bool isSomrig = false;
 
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, NO_CUSTOM_CMD_SID);
+
+  if ((z2s_devices_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1) ||
+      (z2s_devices_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2))
+    isSomrig = true;
+
+  if (isSomrig) {
+    if ((cluster_id == 0xFC80) && (endpoint == 1))
+      is_IKEA_FC80_EP_2 = true;
+  else
   if ((cluster_id == 0xFC80) && (endpoint == 2))
-    is_IKEA_FC80_EP_2 = true;
-  if ((cluster_id == 0xFC80) && (endpoint == 3))
-    is_IKEA_FC80_EP_3 = true;
-  if ((cluster_id == 0xFC7F) && (command_id == 1))
-    is_IKEA_FC7F_C_1 = true;
-
+      is_IKEA_FC80_EP_3 = true;  
+  } else {
+    if ((cluster_id == 0xFC80) && (endpoint == 2))
+      is_IKEA_FC80_EP_2 = true;
+    else
+    if ((cluster_id == 0xFC80) && (endpoint == 3))
+      is_IKEA_FC80_EP_3 = true;
+    else
+    if ((cluster_id == 0xFC7F) && (command_id == 1))
+      is_IKEA_FC7F_C_1 = true;
+  }
 
   if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x02))
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID;
@@ -960,10 +976,10 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
 
   if (sub_id == 0x7F) return false;
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
 
   if (channel_number_slot < 0)
-    log_i("No IKEA SYMFONISK channel found for address %s", ieee_addr);
+    log_i("No IKEA SYMFONISK/SOMRIG channel found for address %s", ieee_addr);
   else 
     msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
   return true;
@@ -1031,7 +1047,10 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:  
-      return processIkeaSymfoniskCommands( ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer, rssi); break;
+      return processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer, rssi); break;
+
+    case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON:  //this will never happen
+      return processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer, rssi); break;
 
     case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1: {
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x00))
@@ -1214,6 +1233,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: {
+        char button_name_function[30];
+        sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+      case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1:
+      case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2: {
         char button_name_function[30];
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);

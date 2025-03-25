@@ -867,14 +867,16 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_NEXT_TRACK_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_PREV_TRACK_SID);
                           } break;
-                          case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2: {
+                          case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2:
+                          case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1: {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_HELD_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_LONG_RELEASED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID);
                           } break;
-                          case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: {
+                          case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: 
+                          case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2: {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_HELD_SID);

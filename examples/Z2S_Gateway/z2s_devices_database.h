@@ -87,6 +87,10 @@
 #define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2          0x5204
 #define Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3          0x5205
 
+#define Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON              0x5210
+#define Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1            0x5211
+#define Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2            0x5212
+
 #define Z2S_DEVICE_DESC_TUYA_HVAC                       0x6000
 #define Z2S_DEVICE_DESC_TUYA_HVAC_23457                 0x6001
 #define Z2S_DEVICE_DESC_TUYA_HVAC_6567C                 0x6002
@@ -310,7 +314,13 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     {0xFC80,
-     0xFC7F}},
+     0xFC7F}}, 
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    {0xFC80}},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    {0xFC80}},
       
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
@@ -1005,12 +1015,6 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_hzkeh3nv", .model_name = "TS0201",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "_TZ3000_fllyghyj", .model_name = "TS0201",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
-
-  { .manufacturer_name = "_TZ3000_v1w2k9dd", .model_name = "TS0201",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
-
   { .manufacturer_name = "_TZE284_aao3yzhs", .model_name = "TS0601", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1243,7 +1247,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "IKEA of Sweden", .model_name = "SYMFONISK sound remote gen2", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1, .z2s_device_endpoints_count = 3,
-    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1 },
+    .z2s_device_endpoints =  {{ 1, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1 },
                               { 2, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2 },
                               { 3, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3 }}},
 
@@ -1255,6 +1259,12 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     
   { .manufacturer_name = "IKEA of Sweden", .model_name = "RODRET Dimmer", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "SOMRIG shortcut button", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints =  {{ 1, Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1 },
+                              { 2, Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2 }}},
+    
 
   { .manufacturer_name = "IKEA of Sweden", .model_name = "VALLHORN Wireless Motion Sensor", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_1, .z2s_device_endpoints_count = 3,
