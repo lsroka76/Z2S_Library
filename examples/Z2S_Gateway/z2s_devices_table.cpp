@@ -1076,7 +1076,9 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
         else 
           msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
       return true;
-    } else
+    } 
+  } break;
+  case Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F: {
     if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && ((command_id >= 0) && (command_id <=2))) {
 
         int8_t sub_id;
@@ -1210,7 +1212,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
 
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F:
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
-      case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F: {
+      case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F:
+      case Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F: {
         char button_name_function[30];
         char button_function_press[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
         char button_function_rotate[][15] = {"ROTATED RIGHT", "ROTATED LEFT"};
