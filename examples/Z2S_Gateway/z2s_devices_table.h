@@ -83,7 +83,7 @@ typedef struct z2s_device_params_s {
   uint8_t             ZB_device_id;
 } z2s_device_params_t;
 
-typedef struct z2s_zb_device_params_s {
+typedef struct z2s_legacy_zb_device_params_s {
   
   uint8_t             record_id;
   char                manufacturer_name[32];
@@ -104,6 +104,33 @@ typedef struct z2s_zb_device_params_s {
   uint32_t            user_data_flags;
   uint32_t            user_data_1;
   uint32_t            user_data_2;
+  uint8_t             Supla_channels[MAX_ZB_DEVICE_SUPLA_CHANNELS];
+} z2s_legacy_zb_device_params_t;
+
+
+typedef struct z2s_zb_device_params_s {
+  
+  uint8_t             record_id;
+  char                manufacturer_name[33];
+  char                model_name[33];
+  esp_zb_ieee_addr_t  ieee_addr;
+  uint16_t            short_addr;
+  uint8_t             endpoints_count;
+  uint32_t            desc_id;
+  uint32_t            device_status;
+  uint8_t             power_source;
+  int8_t              rssi;
+  uint8_t             battery_percentage;
+  int8_t              last_rssi;
+  uint8_t             last_battery_percentage;
+  uint32_t            last_seen_ms;
+  uint32_t            keep_alive_ms;
+  uint32_t            timeout_ms;
+  uint32_t            user_data_flags;
+  uint32_t            user_data_1;
+  uint32_t            user_data_2;
+  uint64_t            user_data_3;
+  uint64_t            user_data_4;
   uint8_t             Supla_channels[MAX_ZB_DEVICE_SUPLA_CHANNELS];
 } z2s_zb_device_params_t;
 
@@ -144,7 +171,7 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee
                                       int32_t channel_type, int8_t sub_id);
 //int32_t Z2S_findChannelType(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster);
 void    Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
-                              char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
+                                 char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
 
 int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 
@@ -180,5 +207,6 @@ uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, esp_zb_iee
 
 
 void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector = 0, uint32_t timings_secs = 0);
+void updateRGBMode(uint8_t device_id, uint8_t rgb_mode);
 
 #endif

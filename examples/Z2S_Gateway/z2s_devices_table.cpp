@@ -7,7 +7,7 @@
 #include "z2s_device_tuya_hvac.h"
 #include "z2s_device_dimmer.h"
 #include "z2s_device_rgb.h"
-#include "z2s_device_rgbw.h"
+//#include "z2s_device_rgbw.h"
 #include "z2s_device_temphumidity.h"
 #include "z2s_device_pressure.h"
 #include "z2s_device_tuya_custom_cluster.h"
@@ -196,7 +196,7 @@ bool Z2S_loadDevicesTable() {
         log_i("Previous version of devices table detected with size 0x%x, trying to upgrade", z2s_devices_table_size);
         z2s_legacy_device_params_t *z2s_devices_legacy_table = (z2s_legacy_device_params_t *)malloc(z2s_devices_table_size);
         if (z2s_devices_legacy_table == nullptr) {
-          log_e("Error while allocating memory for legace table copying");
+          log_e("Error while allocating memory for legacy table copying");
           return false;
         }
         else {
@@ -505,9 +505,52 @@ bool Z2S_loadZBDevicesTable() {
       }
   } else {
     if (z2s_zb_devices_table_size != sizeof(z2s_zb_devices_table)) {
-      
-      log_i("Zigbee devices table size mismatch %d <> %d, no upgrade is possible", z2s_zb_devices_table_size, sizeof(z2s_zb_devices_table));
-      return false;
+      if (z2s_zb_devices_table_size == 0x1100) { //legacy 0.7.10
+        log_i("Previous version of Zigbee devices table detected with size 0x%x, trying to upgrade", z2s_zb_devices_table_size);
+        z2s_legacy_zb_device_params_t *z2s_zb_devices_legacy_table = (z2s_legacy_zb_device_params_t *)malloc(z2s_zb_devices_table_size);
+        if (z2s_zb_devices_legacy_table == nullptr) {
+          log_e("Error while allocating memory for Zigbee devices legacy table copying");
+          return false;
+        } else {
+          if (!Supla::Storage::ConfigInstance()->getBlob(Z2S_ZB_DEVICES_TABLE, (char *)z2s_zb_devices_legacy_table, z2s_zb_devices_table_size)) {
+            log_i ("Zigbee devices legacy table load failed!");
+            return false;
+          }
+          for (uint8_t table_index = 0; table_index < Z2S_ZBDEVICESMAXCOUNT; table_index++) {
+
+              z2s_zb_devices_table[table_index].record_id = (z2s_zb_devices_legacy_table + table_index)->record_id;
+              memcpy(z2s_zb_devices_table[table_index].manufacturer_name, (z2s_zb_devices_legacy_table + table_index)->manufacturer_name, 32);
+              memcpy(z2s_zb_devices_table[table_index].model_name, (z2s_zb_devices_legacy_table + table_index)->model_name, 32);
+              z2s_zb_devices_table[table_index].desc_id = (z2s_zb_devices_legacy_table + table_index)->desc_id;
+              memcpy(z2s_zb_devices_table[table_index].ieee_addr, (z2s_zb_devices_legacy_table + table_index)->ieee_addr,
+                     sizeof(esp_zb_ieee_addr_t));
+              z2s_zb_devices_table[table_index].endpoints_count = (z2s_zb_devices_legacy_table + table_index)->endpoints_count;
+              z2s_zb_devices_table[table_index].device_status = (z2s_zb_devices_legacy_table + table_index)->device_status;
+              z2s_zb_devices_table[table_index].short_addr = (z2s_zb_devices_legacy_table + table_index)->short_addr;
+              z2s_zb_devices_table[table_index].power_source = (z2s_zb_devices_legacy_table + table_index)->power_source;
+              z2s_zb_devices_table[table_index].battery_percentage = (z2s_zb_devices_legacy_table + table_index)->battery_percentage;
+              z2s_zb_devices_table[table_index].last_rssi = (z2s_zb_devices_legacy_table + table_index)->last_rssi;
+              z2s_zb_devices_table[table_index].last_battery_percentage = (z2s_zb_devices_legacy_table + table_index)->last_battery_percentage;
+              z2s_zb_devices_table[table_index].last_seen_ms = (z2s_zb_devices_legacy_table + table_index)->last_seen_ms;
+              z2s_zb_devices_table[table_index].keep_alive_ms = (z2s_zb_devices_legacy_table + table_index)->keep_alive_ms;
+              z2s_zb_devices_table[table_index].timeout_ms = (z2s_zb_devices_legacy_table + table_index)->timeout_ms;
+              z2s_zb_devices_table[table_index].user_data_flags = (z2s_zb_devices_legacy_table + table_index)->user_data_flags;
+              z2s_zb_devices_table[table_index].user_data_1 = (z2s_zb_devices_legacy_table + table_index)->user_data_1;
+              z2s_zb_devices_table[table_index].user_data_2 = (z2s_zb_devices_legacy_table + table_index)->user_data_2;
+              z2s_zb_devices_table[table_index].user_data_3 = 0;
+              z2s_zb_devices_table[table_index].user_data_4 = 0;
+              memcpy(z2s_zb_devices_table[table_index].Supla_channels, (z2s_zb_devices_legacy_table + table_index)->Supla_channels, 16);
+            }
+          log_i("Zigbee devices table upgrade completed - saving new table");
+          Z2S_saveZBDevicesTable();
+          Z2S_printZBDevicesTableSlots();
+          free(z2s_zb_devices_legacy_table);
+          return true;
+        }
+      } else {
+        log_i("Zigbee devices table size mismatch %d <> %d, no upgrade is possible", z2s_zb_devices_table_size, sizeof(z2s_zb_devices_table));
+        return false;
+      }
     }
     else {
         if (!Supla::Storage::ConfigInstance()->getBlob(Z2S_ZB_DEVICES_TABLE, (char *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
@@ -602,9 +645,9 @@ void Z2S_initSuplaChannels() {
           
           case SUPLA_CHANNELTYPE_DIMMER: initZ2SDeviceDimmer(&zbGateway, device, devices_counter); break;
           
-          case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: initZ2SDeviceRGB(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
+          case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: initZ2SDeviceRGB(&zbGateway, device, devices_counter); break;
           
-          case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: initZ2SDeviceRGBW(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
+          //case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: initZ2SDeviceRGBW(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           
           default: 
             log_i("Can't create channel for %d channel type", z2s_devices_table[devices_counter].Supla_channel_type); break; 
@@ -712,7 +755,7 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
   
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, NO_CUSTOM_CMD_SID);
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGBW(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 0xFF, 0xFF, 0xFFFF, state, rssi);
+    //msgZ2SDeviceRGBW(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 0xFF, 0xFF, 0xFFFF, state, rssi);
     return;
   }
   log_i("No channel found for address %s", ieee_addr);
@@ -776,7 +819,7 @@ void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, 
   log_i("onCurrentLevelReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
         ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, TUYA_BRIGHTNESS_CONTROL);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, DIMMER_FUNC_BRIGHTNESS_SID);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(channel_number_slot, level, true, rssi);
@@ -819,7 +862,7 @@ void Z2S_onColorTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
   log_i("onColorTemperatureReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
         ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
   
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, TUYA_COLOR_TEMPERATURE_CONTROL);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, DIMMER_FUNC_COLOR_TEMPERATURE_SID);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(z2s_devices_table[channel_number_slot].Supla_channel, color_temperature, true, rssi);
@@ -1282,17 +1325,37 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: {
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
+      case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: {
         
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, TUYA_BRIGHTNESS_CONTROL, "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "RGBW SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
           log_i("ERROR! Devices table full!");
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, TUYA_COLOR_TEMPERATURE_CONTROL, "COLOR TEMPERATURE", SUPLA_CHANNELFNC_DIMMER);
-        
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
+
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE", SUPLA_CHANNELFNC_DIMMER);
+
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB", SUPLA_CHANNELFNC_RGBLIGHTING); 
+      } break; 
+
+      case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY: {
+      
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "RGB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
           log_i("ERROR! Devices table full!");
@@ -1449,6 +1512,43 @@ void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector, uint32_
         Supla_Z2S_OnePhaseElectricityMeter->setTimeoutSecs(timings_secs);
       if (selector & 4)
         Supla_Z2S_OnePhaseElectricityMeter->setRefreshSecs(timings_secs);
+    } else
+    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_DIMMER) {
+
+      auto Supla_Z2S_DimmerInterface = reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
+      if (selector & 1)
+        Supla_Z2S_DimmerInterface->setKeepAliveSecs(timings_secs);
+      if (selector & 2)
+        Supla_Z2S_DimmerInterface->setTimeoutSecs(timings_secs);
+    }  else
+    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
+
+      auto Supla_Z2S_RGBInterface = reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
+      if (selector & 1)
+        Supla_Z2S_RGBInterface->setKeepAliveSecs(timings_secs);
+      if (selector & 2)
+        Supla_Z2S_RGBInterface->setTimeoutSecs(timings_secs);
     }
   }
+}
+void updateRGBMode(uint8_t device_id, uint8_t rgb_mode) {
+
+  if (z2s_devices_table[device_id].Supla_channel_type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
+
+    z2s_devices_table[device_id].user_data_1 = rgb_mode;
+
+    if (Z2S_saveDevicesTable()) {
+      log_i("Device(channel %d) RGB mode updated. Table saved successfully.", z2s_devices_table[device_id].Supla_channel);
+      
+      auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[device_id].Supla_channel);
+
+      if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
+
+        auto Supla_Z2S_RGBInterface = reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
+        Supla_Z2S_RGBInterface->setRGBMode(rgb_mode);
+      }
+    }
+  }
+  else
+    log_i("RGB mode update only allowed for SUPLA_CHANNELTYPE_RGBLEDCONTROLLER");
 }

@@ -22,7 +22,7 @@
 #include <supla/time.h>
 
 Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions)
-    : Relay(-1, true, functions), _gateway(gateway){
+  : Relay(-1, true, functions), _gateway(gateway){
     memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
 
@@ -34,7 +34,8 @@ void Supla::Control::Z2S_VirtualRelay::onInit() {
   } else {
     turnOff(duration);
   }*/
-  channel.setStateOffline();
+  if (_timeout_enabled)
+    channel.setStateOffline();
 }
 
 void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
@@ -114,11 +115,12 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
     }
   }
   if (_timeout_enabled && channel.isStateOnline() && ((millis() - _last_seen_ms) > _timeout_ms)) {
-	log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
-    channel.setStateOffline();
-   // _last_ping_ms = current_millis;
+	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
+    _last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
+    if ((millis() - _last_seen_ms) > _timeout_ms)
+      channel.setStateOffline();
   }
-
 }
 
 bool Supla::Control::Z2S_VirtualRelay::isOn() {

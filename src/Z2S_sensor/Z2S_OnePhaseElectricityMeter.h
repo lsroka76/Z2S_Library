@@ -185,11 +185,12 @@ void iterateAlways() override {
     }
   }
   if (_timeout_enabled && getChannel()->isStateOnline() && ((millis() - _last_seen_ms) > _timeout_ms)) {
-	log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
-    getChannel()->setStateOffline();
-   // _last_ping_ms = current_millis;
+	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
+    _last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
+    if ((millis() - _last_seen_ms) > _timeout_ms)
+      getChannel()->setStateOffline();
   }
-
 }
 
   protected:

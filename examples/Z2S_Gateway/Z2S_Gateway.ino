@@ -265,6 +265,24 @@ uint8_t parseTimingsStr(char *cluster_id) {
     return 0x00;
 }
 
+uint8_t parseRGBModeStr(char *rgb_mode) {
+  
+  if (strcmp(rgb_mode, "HS") == 0)
+    return 0x01;
+  else
+  if (strcmp(rgb_mode, "XY") == 0)
+    return 0x03;
+  else
+  if (strcmp(rgb_mode, "TUYA-HS") == 0)
+    return 0x11;
+  else
+  if (strcmp(rgb_mode, "TUYA-XY") == 0)
+    return 0x13;
+  else
+    return 0x00;
+}
+
+
 void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   
   zbg_device_params_t device;
@@ -350,6 +368,24 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
     }  
     return;
+  }  else
+  if (strcmp(cmd,"UPDATE-DEVICE-RGB-MODE") == 0) {
+
+    if (params_number < 2)  {
+      telnet.println(">update-device-rgb-mode channel \"HS\"/\"XY\"/\"TUYA-HS\"/\"TUYA-XY\"");
+      return;
+    }
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint8_t rgb_mode = parseRGBModeStr(*(param + 1));
+
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+        updateRGBMode(channel_number_slot, rgb_mode);
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
   } else
   if (strcmp(cmd,"UPDATE-DEVICE-DESC") == 0) {
 
@@ -364,6 +400,27 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     
     if (channel_number_slot >= 0) {
         z2s_devices_table[channel_number_slot].model_id = device_desc_id;
+      if (Z2S_saveDevicesTable()) {
+        log_i("Device(channel %d) description id changed successfully.", channel_id);
+      }
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
+  if (strcmp(cmd,"UPDATE-DEVICE-SID") == 0) {
+
+    if (params_number < 2)  {
+      telnet.println(">update-device-sid channel device_sub_id");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    int8_t device_sub_id = strtoul(*(param + 1), nullptr, 0);
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+        z2s_devices_table[channel_number_slot].sub_id = device_sub_id;
       if (Z2S_saveDevicesTable()) {
         log_i("Device(channel %d) description id changed successfully.", channel_id);
       }
@@ -548,7 +605,7 @@ void setup() {
 
   cfg->commit();
 
-#ifndef USE_WEB_CONFIG_ON_STARTUP
+#ifdef USE_WEB_CONFIG_ON_STARTUP
 
   log_i("no web config on startup - using hardcoded data");
   //cfg->setGUID(GUID);
@@ -934,7 +991,8 @@ void loop() {
                 } break;
 
                 case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
-                case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: {
+                case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
+                case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: {
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_CAPABILITIES_ID, true))
                     log_i("Color control caps 0x%x, type 0x%x", *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE100, true)) {

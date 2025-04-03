@@ -6,16 +6,12 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
   
   Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
-  if (z2s_devices_table[channel_number_slot].Supla_channel_func) 
-    Supla_Z2S_VirtualRelay->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);
-  
+  if (strlen(z2s_devices_table[channel_number_slot].Supla_channel_name) > 0) 
+    Supla_Z2S_VirtualRelay->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);  
   if (z2s_devices_table[channel_number_slot].Supla_channel_func !=0) 
     Supla_Z2S_VirtualRelay->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
 
-  //if (z2s_devices_table[channel_number_slot].keep_alive_secs > 0) 0 == disable
     Supla_Z2S_VirtualRelay->setKeepAliveSecs(z2s_devices_table[channel_number_slot].keep_alive_secs);
-
-  //if (z2s_devices_table[channel_number_slot].timeout_secs > 0) 0 == disable
     Supla_Z2S_VirtualRelay->setTimeoutSecs(z2s_devices_table[channel_number_slot].timeout_secs);
 }
 

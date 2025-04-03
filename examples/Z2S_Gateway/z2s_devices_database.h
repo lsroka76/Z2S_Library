@@ -37,7 +37,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR            0x2300
 
-#define Z2S_DEVICE_DESC_LIGHT_SOURCE                    0x3000
+#define Z2S_DEVICE_DESC_LIGHT_SOURCE                    0x3000 
 #define Z2S_DEVICE_DESC_LIGHT_BULB                      0x3010
 
 #define Z2S_DEVICE_DESC_RGB_BULB                        0x3050
@@ -46,12 +46,15 @@
 #define Z2S_DEVICE_DESC_RGBW_BULB                       0x3100
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A          0x3110
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B          0x3111
+#define Z2S_DEVICE_DESC_IKEA_RGBW_BULB                  0x3120
 
 #define Z2S_DEVICE_DESC_DIMMER_BULB                     0x3200
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_BULB                0x3210
 
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_SWITCH              0x3300
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH       0x3305
+
+#define Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY      0x3400
 
 #define Z2S_DEVICE_DESC_RELAY                           0x4000
 #define Z2S_DEVICE_DESC_RELAY_1                         0x4001
@@ -165,6 +168,9 @@
 #define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID   0x0D
 #define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID  0x0E
 
+#define DIMMER_FUNC_BRIGHTNESS_SID          0x00
+#define DIMMER_FUNC_COLOR_TEMPERATURE_SID   0x01
+//#define DIMMER_FUNC_
 
 [[maybe_unused]]
 static char IKEA_STYRBAR_BUTTONS[][16] PROGMEM = {"ON PRESSED", "ON HELD", "OFF PRESSED", "OFF HELD", "LEFT PRESSED", "LEFT HELD", "RIGHT PRESSED", "RIGHT HELD"};
@@ -187,8 +193,8 @@ typedef struct z2s_device_endpoint_s {
 } z2s_device_endpoint_t;
 
 typedef struct z2s_device_entity_s {
-  char manufacturer_name[32];
-  char model_name[32];
+  char manufacturer_name[33];
+  char model_name[33];
   uint32_t z2s_device_desc_id;
   uint8_t z2s_device_endpoints_count;
   z2s_device_endpoint_t z2s_device_endpoints[MAX_BOUND_ENDPOINTS];
@@ -918,6 +924,16 @@ const dataPoints = {
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+      
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+      
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_BULB, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -1139,6 +1155,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_7d8yme6f", .model_name = "TS0203", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "HEIMAN", .model_name = "SmokeSensor-EF-3.0", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_prits6g4", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
@@ -1307,11 +1326,20 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "zbeacon", .model_name = "TS0505",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E27 CWS globe 806lm",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3210_bfwvfyx1", .model_name = "TS0505B",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_3lbtuxgp", .model_name = "TS0505B",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_0zabbfax", .model_name = "TS0503B",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY, .z2s_device_endpoints_count = 1},
     
   { .manufacturer_name = "_TZ3000_c7xsiexw", .model_name = "TS0002",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH, .z2s_device_endpoints_count = 2,
@@ -1393,4 +1421,4 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
 #endif
 //_TZ3210_3lbtuxgp TS0505B
-//  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR 
+//  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR

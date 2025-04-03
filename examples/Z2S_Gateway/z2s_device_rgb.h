@@ -2,9 +2,9 @@
 #define Z2S_DEVICE_RGB_H_
 
 #include "z2s_devices_table.h"
-#include <Z2S_control/Z2S_Tuya_rgb_bulb.h>
+#include <Z2S_control/Z2S_rgb_interface.h>
 
-void initZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t Supla_channel);
+void initZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
 
 void addZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name = nullptr, uint32_t func = 0);
 
