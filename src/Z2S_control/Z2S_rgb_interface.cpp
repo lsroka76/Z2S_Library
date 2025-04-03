@@ -15,7 +15,7 @@
 */
 //#ifdef Z2S_GATEWAY
 
-#include <colorFormat.h>
+#include "colorFormat.h"
 #include "Z2S_rgb_interface.h"
 #include "rgbhsv.h"
 
