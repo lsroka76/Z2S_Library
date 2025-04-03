@@ -10,14 +10,17 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, int16
 
   switch (device->model_id) {
 
-    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
-    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
       Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_TUYA_COLOR_HS_RGB); break;
+
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
+      Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_TUYA_COLOR_XY_RGB); break;
 
     case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_COLOR_HS_RGB); break;
 
     case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY:
+    case Z2S_DEVICE_DESC_RGBW_BULB_XY:
       Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_COLOR_XY_RGB); break;
   }
 

@@ -56,7 +56,7 @@ void Z2S_printDevicesTableSlots(bool toTelnet) {
       char log_line[1024];
 
       sprintf(log_line,"ENTRY\t\t\t%u\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%X\n\rENDPOINT\t\t0x%X\n\rCLUSTER\t\t\t0x%X\n\r"
-            "MODEL\t\t\t%lu\n\r"
+            "MODEL\t\t\t%X\n\r"
             "SUPLA CHANNEL\t\t%u\n\rSUPLA SECONDARY CHANNEL\t%u\n\rSUPLA CHANNEL TYPE\t%ld\n\r"
             "SUPLA CHANNEL NAME\t%s\n\rSUPLA CHANNEL FUNCTION\t%lu\n\r"
             "SUB ID\t\t\t%d\n\rUSER FLAGS\t\t%lu\n\r"
@@ -1326,7 +1326,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
-      case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: {
+      case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
+      case Z2S_DEVICE_DESC_RGBW_BULB_XY: {
         
         addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "RGBW SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 

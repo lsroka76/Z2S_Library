@@ -44,6 +44,9 @@
 #define Z2S_DEVICE_DESC_TUYA_RGB_BULB                   0x3060
 
 #define Z2S_DEVICE_DESC_RGBW_BULB                       0x3100
+#define Z2S_DEVICE_DESC_RGBW_BULB_XY                    0x3101
+#define Z2S_DEVICE_DESC_RGBW_BULB_HS                    0x3102
+
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A          0x3110
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B          0x3111
 #define Z2S_DEVICE_DESC_IKEA_RGBW_BULB                  0x3120
@@ -906,6 +909,11 @@ const dataPoints = {
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB_XY, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_BULB, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
@@ -1340,6 +1348,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZ3210_0zabbfax", .model_name = "TS0503B",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "eWeLink", .model_name = "CK-BL702-AL-01(7009_Z102LG03-1)",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB_XY, .z2s_device_endpoints_count = 1},
     
   { .manufacturer_name = "_TZ3000_c7xsiexw", .model_name = "TS0002",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH, .z2s_device_endpoints_count = 2,
