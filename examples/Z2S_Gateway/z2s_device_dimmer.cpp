@@ -84,7 +84,7 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       case Z2S_DEVICE_DESC_RGBW_BULB_XY:
-      case Z2S_DEVICE_DESC_RGBW_BULB_XY: {
+      case Z2S_DEVICE_DESC_RGBW_BULB_HS: {
         auto Supla_Z2S_DimmerInterface = reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
         //Supla_Z2S_TuyaDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
           Supla_Z2S_DimmerInterface->setValueOnServer(level);
