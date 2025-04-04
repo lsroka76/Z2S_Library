@@ -19,7 +19,9 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, in
     case Z2S_DEVICE_DESC_TUYA_DIMMER_BULB:
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
-    case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: {
+    case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
+    case Z2S_DEVICE_DESC_RGBW_BULB_XY:
+    case Z2S_DEVICE_DESC_RGBW_BULB_HS: {
       auto Supla_Z2S_DimmerInterface = new Supla::Control::Z2S_DimmerInterface(gateway, device, z2s_devices_table[channel_number_slot].sub_id); 
       Supla_Z2S_DimmerInterface->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
