@@ -774,7 +774,7 @@ void loop() {
 
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
-      if (refresh_cycle % 12 == 0) //print every 120 seconds - only for debug purposes {
+      if (refresh_cycle % 12 == 0) {//print every 120 seconds - only for debug purposes 
         log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
         log_i("Gateway version: %s", Z2S_VERSION);
