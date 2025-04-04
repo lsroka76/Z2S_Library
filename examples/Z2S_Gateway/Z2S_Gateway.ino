@@ -297,6 +297,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     Zigbee.openNetwork(time);
     return;
   } else
+  if (strcmp(cmd, "VERSION") == 0) {
+    telnet.println("Gateway version: %s", Z2S_VERSION);
+    return;
+  } else
   if (strcmp(cmd, "LIST-DEVICES") == 0) {
     Z2S_printDevicesTableSlots(true);
     return;
@@ -770,10 +774,12 @@ void loop() {
 
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
-      if (refresh_cycle % 12 == 0) //print every 120 seconds - only for debug purposes
+      if (refresh_cycle % 12 == 0) //print every 120 seconds - only for debug purposes {
         log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
-      if (refresh_cycle % 3 == 0)
+        log_i("Gateway version: ", Z2S_VERSION);
+      }
+      if (refresh_cycle % 6 == 0)
         log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis()); 
 
     }
