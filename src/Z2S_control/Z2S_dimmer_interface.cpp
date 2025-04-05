@@ -177,6 +177,16 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
   }
 }
 
+void Supla::Control::Z2S_DimmerInterface::setDimmerMode(uint8_t dimmer_mode) {
+
+  _dimmer_mode = dimmer_mode;
+}
+uint8_t Supla::Control::Z2S_DimmerInterface::getDimmerMode() {
+  
+  return _dimmer_mode;
+}
+
+
 void Supla::Control::Z2S_DimmerInterface::setKeepAliveSecs(uint32_t keep_alive_secs) {
 
   _keep_alive_ms = keep_alive_secs * 1000;

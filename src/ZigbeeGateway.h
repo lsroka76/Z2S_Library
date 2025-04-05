@@ -77,7 +77,7 @@ typedef struct zbg_device_unit_s {
 class ZigbeeGateway : public ZigbeeEP {
 public:
   ZigbeeGateway(uint8_t endpoint);
-  ~ZigbeeGateway();
+  ~ZigbeeGateway() {};
 
   std::list<zbg_device_params_t *> getGatewayDevices() const {
     return _gateway_devices;

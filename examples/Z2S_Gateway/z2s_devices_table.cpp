@@ -719,7 +719,7 @@ void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uin
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-    msgZ2SDeviceIASzone(channel_number_slot, (occupancy == 0), rssi);
+    msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0), rssi);
 }
 
 
@@ -737,7 +737,7 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceIASzone(channel_number_slot, !state, rssi); //AQARA magnet
+    msgZ2SDeviceIASzone(channel_number_slot, state, rssi); //AQARA magnet
     return;
   }
 
@@ -899,10 +899,32 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
   
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
 
-  if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
-  else
-    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status == 0), rssi);
+  if (channel_number_slot > 0) {
+    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
+    return;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_1_SID);
+
+  if (channel_number_slot > 0) {
+    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
+    return;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_2_SID);
+
+  if (channel_number_slot > 0) {
+    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 2), rssi);
+    return;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_TAMPER_SID);
+
+  if (channel_number_slot > 0) {
+    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 4), rssi);
+    return;
+  }
+  log_i("No channel found for address %s", ieee_addr);
 }
 
 bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
@@ -1097,9 +1119,9 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
     case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1: {
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x00))
-        msgZ2SDeviceIASzone(channel_number_slot, true, rssi);
-      if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x01))
         msgZ2SDeviceIASzone(channel_number_slot, false, rssi);
+      if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x01))
+        msgZ2SDeviceIASzone(channel_number_slot, true, rssi);
       return true;
     } break;
     case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3:
@@ -1222,6 +1244,24 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
         addZ2SDeviceIASzone(device, first_free_slot); break;
 
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
+        
+        addZ2SDeviceIASzone(device, first_free_slot, IAS_ZONE_ALARM_1_SID, "ALARM 1");
+
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceIASzone(device, first_free_slot, IAS_ZONE_ALARM_2_SID, "ALARM 2");
+
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceIASzone(device, first_free_slot, IAS_ZONE_TAMPER_SID, "TAMPER");
+      } break;
 
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "POWER SWITCH", 
@@ -1429,20 +1469,20 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
-                                                  "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+                                                  "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV");
             break;
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE AVG 20",
-                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); break;
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE MAX TODAY",
-                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); break;
 
           case TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "RAIN INTENSITY",
-                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); break;
         }
       } break;
       

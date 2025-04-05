@@ -10,7 +10,7 @@ void initZ2SDeviceIASzone(int16_t channel_number_slot) {
   
   Supla_Z2S_VirtualBinary->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
-  if (z2s_devices_table[channel_number_slot].Supla_channel_name) 
+  if (strlen(z2s_devices_table[channel_number_slot].Supla_channel_name) > 0) 
     Supla_Z2S_VirtualBinary->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);
   
   if (z2s_devices_table[channel_number_slot].Supla_channel_func != 0) 
@@ -44,8 +44,8 @@ void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, signed char rs
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
 
         auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
-        if (state) Supla_Z2S_VirtualBinary->set();
-        else Supla_Z2S_VirtualBinary->clear();
+        if (state) Supla_Z2S_VirtualBinary->clear(); 
+        else Supla_Z2S_VirtualBinary->set();
         Supla_Z2S_VirtualBinary->Refresh();
     }
 }

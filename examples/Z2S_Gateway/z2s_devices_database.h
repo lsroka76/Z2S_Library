@@ -1,4 +1,3 @@
-
 #ifndef Z2S_DEVICES_DATABASE_H_
 #define Z2S_DEVICES_DATABASE_H_
 
@@ -21,6 +20,7 @@
 #define Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR                0x1300
 
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 0x2000
+#define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T           0x2001
 
 #define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR            0x2004
 #define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1          0x2005
@@ -116,6 +116,10 @@
 #define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID      0xFC
 
 #define NO_CUSTOM_CMD_SID                           -0x01
+
+#define IAS_ZONE_ALARM_1_SID                        0x00
+#define IAS_ZONE_ALARM_2_SID                        0x01
+#define IAS_ZONE_TAMPER_SID                         0x02
 
 #define TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID          0x00
 #define TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID   0x01
@@ -232,6 +236,10 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
       ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
@@ -1165,6 +1173,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "HEIMAN", .model_name = "SmokeSensor-EF-3.0", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_lzdjjfss", .model_name = "TS0210", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_prits6g4", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},

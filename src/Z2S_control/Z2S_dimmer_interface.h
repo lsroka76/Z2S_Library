@@ -59,6 +59,9 @@ public:
 
   virtual void ping();
 
+  void setDimmerMode(uint8_t dimmer_mode);
+  uint8_t getDimmerMode();
+
   void setKeepAliveSecs(uint32_t keep_alive_secs);
   void setTimeoutSecs(uint32_t timeout_secs);
 

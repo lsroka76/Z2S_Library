@@ -1,4 +1,5 @@
 //#pragma once
+#pragma warning(disable: -Wmissing-field-initializers)
 
 #define Z2S_GATEWAY
 
@@ -968,6 +969,12 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
                           } break;
+                          /*case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
+                            
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID);
+                          }*/
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID); 
                         }
                   }  
