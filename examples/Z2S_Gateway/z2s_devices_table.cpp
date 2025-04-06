@@ -899,28 +899,28 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
   
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
 
-  if (channel_number_slot > 0) {
+  if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
     return;
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_1_SID);
 
-  if (channel_number_slot > 0) {
+  if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
     return;
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_2_SID);
 
-  if (channel_number_slot > 0) {
+  if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 2), rssi);
     return;
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_TAMPER_SID);
 
-  if (channel_number_slot > 0) {
+  if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 4), rssi);
     return;
   }
