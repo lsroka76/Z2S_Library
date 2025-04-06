@@ -427,7 +427,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if (channel_number_slot >= 0) {
         z2s_devices_table[channel_number_slot].sub_id = device_sub_id;
       if (Z2S_saveDevicesTable()) {
-        log_i("Device(channel %d) description id changed successfully.", channel_id);
+        log_i("Device(channel %d) sub id changed successfully.", channel_id);
       }
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
@@ -457,10 +457,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
         case 4:
           z2s_devices_table[channel_number_slot].user_data_4 = param_value; break;
         default:
-          telnet.printf(">param_id(%u) should be in range 1...4\n\r>", param_id);
-
+          telnet.printf(">param_id(%u) should be in range 1...4\n\r>", param_id); break;
+      }
       if (Z2S_saveDevicesTable()) {
-        log_i("Device(channel %d) description id changed successfully.", channel_id);
+        log_i("Device(channel %d) user data daved successfully.", channel_id);
       }
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
