@@ -1150,6 +1150,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3040_bb6xaihh", .model_name = "TS0202", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
   
+  { .manufacturer_name = "LUMI", .model_name = "lumi.magnet.ac01", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_endpoints_count = 1},
+  
   { .manufacturer_name = "LUMI", .model_name = "lumi.magnet.agl02", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_endpoints_count = 1},
 

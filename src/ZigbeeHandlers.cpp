@@ -23,6 +23,7 @@ static esp_err_t zb_cmd_write_attr_resp_handler(const esp_zb_zcl_cmd_write_attr_
 static esp_err_t zb_configure_report_resp_handler(const esp_zb_zcl_cmd_config_report_resp_message_t *message);
 static esp_err_t zb_cmd_read_report_cfg_resp_handler(const esp_zb_zcl_cmd_read_report_config_resp_message_t *message);
 static esp_err_t zb_cmd_default_resp_handler(const esp_zb_zcl_cmd_default_resp_message_t *message);
+static esp_err_t zb_cmd_ias_zone_enroll_request_handler(const esp_zb_zcl_ias_zone_enroll_request_message_t *message);
 static esp_err_t zb_cmd_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message);
 static esp_err_t zb_core_cmd_disc_attr_resp_handler(esp_zb_zcl_cmd_discover_attributes_resp_message_t *message);
 static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_command_message_t *message);
@@ -42,6 +43,8 @@ switch (callback_id) {
     case ESP_ZB_CORE_CMD_READ_REPORT_CFG_RESP_CB_ID:  ret = zb_cmd_read_report_cfg_resp_handler((esp_zb_zcl_cmd_read_report_config_resp_message_t *)message); break;
     case ESP_ZB_CORE_CMD_DEFAULT_RESP_CB_ID:          ret = zb_cmd_default_resp_handler((esp_zb_zcl_cmd_default_resp_message_t *)message); break;
     case ESP_ZB_CORE_CMD_DISC_ATTR_RESP_CB_ID:	      ret = zb_core_cmd_disc_attr_resp_handler((esp_zb_zcl_cmd_discover_attributes_resp_message_t *)message); break;	
+    case ESP_ZB_CORE_CMD_IAS_ZONE_ZONE_ENROLL_REQUEST_ID:
+                                                      ret = zb_cmd_ias_zone_enroll_request_handler((esp_zb_zcl_ias_zone_enroll_request_message_t *)message); break;
     case ESP_ZB_CORE_CMD_IAS_ZONE_ZONE_STATUS_CHANGE_NOT_ID: 
                                                       ret = zb_cmd_ias_zone_status_change_handler((esp_zb_zcl_ias_zone_status_change_notification_message_t *)message); break;
     case ESP_ZB_CORE_CMD_CUSTOM_CLUSTER_REQ_CB_ID:    ret = zb_cmd_custom_cluster_req_handler((esp_zb_zcl_custom_cluster_command_message_t *)message); break;
@@ -277,6 +280,29 @@ static esp_err_t zb_cmd_default_resp_handler(const esp_zb_zcl_cmd_default_resp_m
     if (message->info.dst_endpoint == (*it)->getEndpoint()) {
         
 	      (*it)->zbCmdDefaultResponse( message->info.header.tsn, message->info.header.rssi, message->info.src_address, message->info.src_endpoint, message->info.cluster, message->resp_to_cmd, message->status_code);
+    }
+  }
+  return ESP_OK;
+}
+
+static esp_err_t zb_cmd_ias_zone_enroll_request_handler(const esp_zb_zcl_ias_zone_enroll_request_message_t *message)  {
+   if (!message) {
+    log_e("Empty message");
+    return ESP_FAIL;
+  }
+  if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
+    log_e("Received message: error status(%d)", message->info.status);
+    return ESP_ERR_INVALID_ARG;
+  }
+  log_v(
+    "IAS Zone Enroll Request: from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x), zone type (0x%x), manufacturer code (0x%x)", 
+    message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, message->zone_type, message->manufacturer_code); 
+
+  for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+    if (message->info.dst_endpoint == (*it)->getEndpoint()) {
+        
+	      (*it)->zbIASZoneEnrollRequest(message);
+	
     }
   }
   return ESP_OK;

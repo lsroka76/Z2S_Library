@@ -732,6 +732,26 @@ void ZigbeeGateway::zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_addres
   
 }
 
+void ZigbeeGateway::zbIASZoneEnrollRequest(const esp_zb_zcl_ias_zone_enroll_request_message_t *message) {
+  
+  esp_zb_zcl_ias_zone_enroll_response_cmd_t enroll_resp_req;
+
+  enroll_resp_req.zcl_basic_cmd.dst_endpoint = message->info.src_endpoint;
+  enroll_resp_req.zcl_basic_cmd.dst_addr_u.addr_short = message->info.src_address.u.short_addr;
+  //memcpy(enroll_resp_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  enroll_resp_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+  enroll_resp_req.zcl_basic_cmd.src_endpoint = _endpoint;
+
+  enroll_resp_req.enroll_rsp_code = ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS;
+  enroll_resp_req.zone_id = 1;
+
+  log_i("Sending 'ias zone enroll resp' command");
+  //esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zcl_ias_zone_enroll_cmd_resp(&enroll_resp_req);
+  //esp_zb_lock_release();
+  //delay(200);
+}
+
 void ZigbeeGateway::zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {
 
   esp_zb_zcl_cmd_info_t info = message->info;
