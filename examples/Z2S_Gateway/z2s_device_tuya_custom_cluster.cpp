@@ -289,9 +289,9 @@ void processTuyaRainSensorDataReport(int16_t channel_number_slot, uint16_t paylo
                                           Tuya_read_dp_result.dp_value, rssi);
     if (z2s_devices_table[channel_number_slot_4].user_data_1 > 0) {
       if (Tuya_read_dp_result.dp_value > z2s_devices_table[channel_number_slot_4].user_data_1)
-        msgZ2SDeviceIASzone(channel_number_slot_5, true, rssi); 
+        msgZ2SDeviceIASzone(channel_number_slot_5, true, rssi, false); 
       else
-        msgZ2SDeviceIASzone(channel_number_slot_5, false, rssi); 
+        msgZ2SDeviceIASzone(channel_number_slot_5, false, rssi, false); 
     }    
   }
 }

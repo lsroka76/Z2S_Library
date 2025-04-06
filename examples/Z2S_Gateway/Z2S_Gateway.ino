@@ -434,6 +434,32 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }  
     return;
   } else
+  if (strcmp(cmd,"UPDATE-DEVICE-FLAGS") == 0) {
+
+    if (params_number < 3)  {
+      telnet.println(">update-device-flags channel \"set\"/\"clear\" flag_bit");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    bool flag_set = (strcmp(*(param + 1), "SET") == 0);
+    bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
+    uint8_t bit_id = strtoul(*(param + 2), nullptr, 0);
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+        if (flag_set)
+          z2s_devices_table[channel_number_slot].user_data_flags |= (1 <<bit_id);
+        if (flag_clear)
+          z2s_devices_table[channel_number_slot].user_data_flags &= ~(1 <<bit_id);
+      if (Z2S_saveDevicesTable()) {
+        log_i("Device(channel %d) sub id changed successfully.", channel_id);
+      }
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
   if (strcmp(cmd,"UPDATE-DEVICE-PARAMS") == 0) {
 
     if (params_number < 3)  {

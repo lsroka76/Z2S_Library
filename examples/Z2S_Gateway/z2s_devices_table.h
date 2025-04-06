@@ -22,6 +22,7 @@
 #define ADD_Z2S_DEVICE_STATUS_DAP     0x04 //device already present
 
 #define USER_DATA_FLAG_SED_TIMEOUT    0x01
+#define USER_DATA_FLAG_MSG_DISABLED   0x02
 //#define USER_DATA_FLA
 
 typedef struct z2s_legacy_device_params_s {
