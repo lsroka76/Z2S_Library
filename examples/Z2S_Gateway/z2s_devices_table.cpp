@@ -222,6 +222,13 @@ bool Z2S_loadDevicesTable() {
               z2s_devices_table[table_index].sub_id = (z2s_devices_legacy_table + table_index)->sub_id;
               z2s_devices_table[table_index].user_data_1 = 0;
               z2s_devices_table[table_index].user_data_2 = 0;
+              z2s_devices_table[table_index].user_data_3 = 0;
+              z2s_devices_table[table_index].user_data_4 = 0;
+              z2s_devices_table[table_index].keep_alive_secs = 0;
+              z2s_devices_table[table_index].timeout_secs = 0;
+              z2s_devices_table[table_index].refresh_secs = 0;
+              z2s_devices_table[table_index].data_counter = 0;
+              z2s_devices_table[table_index].ZB_device_id = 0xFF;
             }
           log_i("Devices table upgrade completed - saving new table");
           Z2S_saveDevicesTable();
@@ -261,6 +268,8 @@ bool Z2S_loadDevicesTable() {
               z2s_devices_table[table_index].user_data_flags = 0; //(z2s_devices_legacy_2_table + table_index)->user_data_1;
               z2s_devices_table[table_index].user_data_1 = 0; //(z2s_devices_legacy_2_table + table_index)->user_data_2;
               z2s_devices_table[table_index].user_data_2 = 0; 
+              z2s_devices_table[table_index].user_data_3 = 0;
+              z2s_devices_table[table_index].user_data_4 = 0;
               z2s_devices_table[table_index].keep_alive_secs = 0;
               z2s_devices_table[table_index].timeout_secs = 0;
               if ((z2s_devices_legacy_2_table + table_index)->user_data_1 & USER_DATA_FLAG_SED_TIMEOUT == USER_DATA_FLAG_SED_TIMEOUT)

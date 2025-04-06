@@ -239,7 +239,7 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t p
 
 void processTuyaRainSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
 
-  int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4;
+  int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4, channel_number_slot_5;
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
   channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
@@ -262,6 +262,11 @@ void processTuyaRainSensorDataReport(int16_t channel_number_slot, uint16_t paylo
                                                   z2s_devices_table[channel_number_slot].cluster_id, 
                                                   SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
 
+  channel_number_slot_5 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                  z2s_devices_table[channel_number_slot].endpoint, 
+                                                  z2s_devices_table[channel_number_slot].cluster_id, 
+                                                  SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_RAIN_SENSOR_ILLUMINANCE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
@@ -279,9 +284,16 @@ void processTuyaRainSensorDataReport(int16_t channel_number_slot, uint16_t paylo
                                           Tuya_read_dp_result.dp_value, rssi);
   
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_RAIN_SENSOR_RAIN_INTENSITY_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) 
+  if (Tuya_read_dp_result.is_success) {
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
                                           Tuya_read_dp_result.dp_value, rssi);
+    if (z2s_devices_table[channel_number_slot_4].user_data_1 > 0) {
+      if (Tuya_read_dp_result.dp_value > z2s_devices_table[channel_number_slot_4].user_data_1)
+        msgZ2SDeviceIASzone(channel_number_slot_5, true, rssi); 
+      else
+        msgZ2SDeviceIASzone(channel_number_slot_5, false, rssi); 
+    }    
+  }
 }
 
 void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t payload_size, uint8_t *payload, signed char rssi) {

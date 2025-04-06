@@ -434,6 +434,39 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }  
     return;
   } else
+  if (strcmp(cmd,"UPDATE-DEVICE-PARAMS") == 0) {
+
+    if (params_number < 3)  {
+      telnet.println(">update-device-params channel param_id param_value");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    int8_t param_id = strtoul(*(param + 1), nullptr, 0);
+    int32_t param_value = strtoul(*(param + 2), nullptr, 0);
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+      switch (param_id) {
+        case 1:
+          z2s_devices_table[channel_number_slot].user_data_1 = param_value; break;
+        case 2:
+          z2s_devices_table[channel_number_slot].user_data_2 = param_value; break;
+        case 3:
+          z2s_devices_table[channel_number_slot].user_data_3 = param_value; break;
+        case 4:
+          z2s_devices_table[channel_number_slot].user_data_4 = param_value; break;
+        default:
+          telnet.printf(">param_id(%u) should be in range 1...4\n\r>", param_id);
+
+      if (Z2S_saveDevicesTable()) {
+        log_i("Device(channel %d) description id changed successfully.", channel_id);
+      }
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
   if (strcmp(cmd, "RESET-ZIGBEE-STACK") == 0) {
 
     Zigbee.factoryReset();
