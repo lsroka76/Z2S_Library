@@ -40,9 +40,25 @@ Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_s
   }
   return Tuya_read_dp_result;
 }
+// HVAC data reporting                         //
 
-void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi){
+void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
 
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+  uint8_t dp_id = 0xFF;
+
+  switch (model_id) {
+    case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
+      dp_id = TUYA_6567C_LOCAL_TEMPERATURE_DP; break;  
+    case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
+      dp_id = TUYA_23457_LOCAL_TEMPERATURE_DP; break;
+    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
+      dp_id = TUYA_LEGACY_LOCAL_TEMPERATURE_DP; break;
+  }
+  if (dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(dp_id, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/10, rssi);
 }
 
 void processTuyaDoubleDimmerSwitchDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
@@ -306,23 +322,34 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
   }
   switch (z2s_devices_table[channel_number_slot].model_id) {
     case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
-      processTuyaHvacDataReport(channel_number_slot, payload_size, payload, rssi); break;
+    case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
+    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
+      processTuyaHvacDataReport(channel_number_slot, payload_size, payload, rssi, z2s_devices_table[channel_number_slot].model_id); break;
+
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
       processTuyaDoubleDimmerSwitchDataReport(channel_number_slot, payload_size, payload, rssi); break;
+
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
       processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, rssi, 10); break;
+
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
       processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, rssi, 1); break;
+
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
       processTuyaTempHumiditySensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
+
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
       processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, rssi); break;
+
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
       processTuyaPresenceSensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
+
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
       processTuyaEF00Switch2x3(channel_number_slot, payload_size, payload, rssi); break;
+
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
       processTuyaRainSensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
+
     default: 
       log_i("Unknown device model id 0x%x", z2s_devices_table[channel_number_slot].model_id); break;
   }

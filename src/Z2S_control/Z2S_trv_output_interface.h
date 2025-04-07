@@ -39,6 +39,7 @@ protected:
 
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t _device;
+  uint8_t _Tuya_dp_data[10];
   uint8_t _trv_mode = 0;
   int _trv_state = 0;
 };

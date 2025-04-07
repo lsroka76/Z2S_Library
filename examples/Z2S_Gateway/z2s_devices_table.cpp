@@ -4,10 +4,9 @@
 #include "z2s_device_iaszone.h"
 #include "z2s_device_virtual_relay.h"
 #include "z2s_device_electricity_meter.h"
-#include "z2s_device_tuya_hvac.h"
+#include "z2s_device_hvac.h"
 #include "z2s_device_dimmer.h"
 #include "z2s_device_rgb.h"
-//#include "z2s_device_rgbw.h"
 #include "z2s_device_temphumidity.h"
 #include "z2s_device_pressure.h"
 #include "z2s_device_tuya_custom_cluster.h"
@@ -650,7 +649,7 @@ void Z2S_initSuplaChannels() {
           case SUPLA_CHANNELTYPE_ELECTRICITY_METER: 
             initZ2SDeviceElectricityMeter(&zbGateway, device, devices_counter); break;
           
-          case SUPLA_CHANNELTYPE_HVAC: initZ2SDeviceTuyaHvac(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
+          case SUPLA_CHANNELTYPE_HVAC: initZ2SDeviceHvac(&zbGateway, device, devices_counter); break;
           
           case SUPLA_CHANNELTYPE_DIMMER: initZ2SDeviceDimmer(&zbGateway, device, devices_counter); break;
           
@@ -1361,7 +1360,18 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_TUYA_HVAC:
       case Z2S_DEVICE_DESC_TUYA_HVAC_6567C:
       case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
-      case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: addZ2SDeviceTuyaHvac(&zbGateway, device, first_free_slot); break;
+      case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: {
+      
+        addZ2SDeviceTempHumidity(device, first_free_slot);
+        uint8_t trv_thermometer_slot = first_free_slot;
+
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceHvac(&zbGateway, device, first_free_slot, trv_thermometer_slot); 
+      } break;
       
       case Z2S_DEVICE_DESC_TUYA_DIMMER_BULB: {
 

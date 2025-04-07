@@ -6,18 +6,11 @@
 #include <Z2S_control/hvac_base_ee.h>
 #include <Z2S_control/Z2S_trv_output_interface.h>
 
-void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t Supla_channel) {
-  
-}
+void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
 
-void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint8_t free_slot) {
-
-}
+void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint8_t free_slot, uint8_t trv_thermometer_slot);
 
 void msgZ2SDeviceHvac(uint8_t Supla_channel, uint16_t cluster, uint8_t command_id,
-                                    uint16_t payload_size, uint8_t *payload, signed char rssi) {
-                                      
-
-}
+                                    uint16_t payload_size, uint8_t *payload, signed char rssi);
 
 #endif

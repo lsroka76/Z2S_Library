@@ -4,7 +4,7 @@
 #include "z2s_devices_table.h"
 
 #include <Z2S_control/hvac_base_ee.h>
-#include <Z2S_control/Z2S_Tuya_thermostat.h>
+
 
 #define TUYA_DATA_REPORT_CMD                   0x02
 
@@ -38,17 +38,17 @@
 #define TUYA_6567C_SCHEDULE_SET_DP             0x6C //7 0x1 0x1 0x1
 #define TUYA_6567C_LOW_BATTERY_DP              0x69 //7 0x5 0x1 0x0
 
-#define TUYA_LEGACY_SYSTEM_MODE_DP              0x65 
+#define TUYA_LEGACY_SYSTEM_MODE_DP              0x01 
 //#define TUYA_6567C_SYSTEM_MODE_AUTO            0x00 //?
 //#define TUYA_6567C_SYSTEM_MODE_HEAT            0x01  //?
 //#define TUYA_6567C_SYSTEM_MODE_OFF             0x02  //?
 
-#define TUYA_LEGACY_RUNNING_STATE_DP            0x03
+//#define TUYA_LEGACY_RUNNING_STATE_DP            0x03
 //#define TUYA_6567C_RUNNING_STATE_HEAT          0x00
 //#define TUYA_6567C_RUNNING_STATE_IDLE          0x01
 
-#define TUYA_LEGACY_CURRENT_HEATING_SETPOINT_DP 0x67 // /10
-#define TUYA_LEGACY_LOCAL_TEMPERATURE_DP        0x66 // /10
+#define TUYA_LEGACY_CURRENT_HEATING_SETPOINT_DP 0x02 // /10
+#define TUYA_LEGACY_LOCAL_TEMPERATURE_DP        0x03 // /10
 #define TUYA_LEGACY_CHILD_LOCK_DP               0x28
 #define TUYA_LEGACY_AWAY_MODE_DP                0x6A
 #define TUYA_LEGACY_SCHEDULE_ENABLE_DP          0x6B
