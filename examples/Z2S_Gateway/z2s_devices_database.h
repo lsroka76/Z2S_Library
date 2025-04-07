@@ -1333,10 +1333,16 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_0dvm9mva", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_6567C, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE284_fqm2sfpe", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_6567C, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZE284_o3x45p96", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_9xfjixap", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_ymldrmzx", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_cpmgn2cf", .model_name = "TS0601",
