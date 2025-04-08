@@ -1157,6 +1157,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "LUMI", .model_name = "lumi.magnet.agl02", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_endpoints_count = 1},
 
+   { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_magnet.aq2", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3210_tgvtvdoc", .model_name = "TS0207", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1323,6 +1326,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "ZBMINIL2",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SONOFF", .model_name = "ZBMINIR2",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "01MINIZB",
