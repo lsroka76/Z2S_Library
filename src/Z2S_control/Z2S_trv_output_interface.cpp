@@ -25,12 +25,10 @@ Supla::Control::Z2S_TRVOutputInterface::Z2S_TRVOutputInterface(ZigbeeGateway *ga
   return _trv_state;
  }
 
-void Supla::Control::Z2S_TRVOutputInterface::setOutputValue(int value) {
-
-  _trv_state = value;
+void Supla::Control::Z2S_TRVOutputInterface::sendOnOff(bool state) {
 
   if (_gateway && Zigbee.started()) {
-    log_i("Z2S_TRVOutputInterface::setOutputValue to %d", value);
+    log_i("Z2S_TRVOutputInterface::sendOnOff to %d", state);
 
     uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -53,7 +51,6 @@ void Supla::Control::Z2S_TRVOutputInterface::setOutputValue(int value) {
     _Tuya_dp_data[4] = 0x00;
     _Tuya_dp_data[5] = 0x01;
     _Tuya_dp_data[6] = 0x01;
-
     _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
 
     delay(200);
@@ -72,18 +69,31 @@ void Supla::Control::Z2S_TRVOutputInterface::setOutputValue(int value) {
     _Tuya_dp_data[5] = 0x04;
     _Tuya_dp_data[6] = 0x00;
     _Tuya_dp_data[7] = 0x00;
-    if (value == 1) {
+    if (state) {
       _Tuya_dp_data[8] = 0x01;
       _Tuya_dp_data[9] = 0x2C;
     } else {
       _Tuya_dp_data[8] = 0x00;
       _Tuya_dp_data[9] = 0x32;
     }
-
     _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
   }
 }
 
+void Supla::Control::Z2S_TRVOutputInterface::setOutputValue(int value) {
+
+  _trv_state = value;
+  sendOnOff((value == 1));
+}
+
 bool Supla::Control::Z2S_TRVOutputInterface::isOnOffOnly() const {
   return true;
+}
+
+void Supla::Control::Z2S_TRVOutputInterface::iterateAlways() {
+
+  if (millis() - _last_refresh_ms > _refresh_ms) {
+    _last_refresh_ms = millis();
+    //sendOnOff((_trv_state == 1));
+  }
 }

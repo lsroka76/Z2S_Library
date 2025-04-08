@@ -19,6 +19,7 @@
 #ifndef SRC_SUPLA_CONTROL_Z2S_TRV_OUTPUT_INTERFACE_H_
 #define SRC_SUPLA_CONTROL_Z2S_TRV_OUTPUT_INTERFACE_H_
 
+#include <supla/element.h>
 #include <supla/control/output_interface.h>
 #include "ZigbeeGateway.h"
 
@@ -26,13 +27,15 @@
 
 namespace Supla {
 namespace Control {
-class Z2S_TRVOutputInterface : public OutputInterface {
+class Z2S_TRVOutputInterface : public OutputInterface, public Element {
  public:
   Z2S_TRVOutputInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_mode);
 
   int getOutputValue() const override;
   void setOutputValue(int value) override;
   bool isOnOffOnly() const override;
+
+  void iterateAlways() override;
 
 
 protected:
@@ -42,6 +45,12 @@ protected:
   uint8_t _Tuya_dp_data[10];
   uint8_t _trv_mode = 0;
   int _trv_state = 0;
+
+  uint32_t _refresh_ms      = 60000;
+  uint32_t _last_refresh_ms = 0;
+
+  void sendOnOff(bool state);
+  //void sendTempPing();
 };
 
 };  // namespace Control
