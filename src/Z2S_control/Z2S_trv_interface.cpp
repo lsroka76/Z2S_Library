@@ -133,20 +133,24 @@ void Supla::Control::Z2S_TRVInterface::sendTRVMode(uint8_t trv_mode) {
       case 1: {
         _Tuya_dp_data[2] = 0x65; 
         _Tuya_dp_data[3] = 0x01;
+        _Tuya_dp_data[6] = trv_mode;
+
       } break;
       case 2: {
         _Tuya_dp_data[2] = 0x02; 
         _Tuya_dp_data[3] = 0x04;
+        _Tuya_dp_data[6] = trv_mode == 0 ? 2 : 1;
+    
       } break;
       case 3: {
         _Tuya_dp_data[2] = 0x01; 
         _Tuya_dp_data[3] = 0x04;
+        _Tuya_dp_data[6] = trv_mode;
       } break;
     }
     _Tuya_dp_data[4] = 0x00;
     _Tuya_dp_data[5] = 0x01;
-    _Tuya_dp_data[6] = trv_mode;
-
+    
     _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
   }
 }
