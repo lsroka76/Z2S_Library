@@ -40,7 +40,8 @@ void setFwdActEnergy2(int phase, unsigned _supla_int64_t energy) {
 void onInit() override {
   //readValuesFromDevice();
   //updateChannelValues();
-  getChannel()->setStateOffline();
+  if (_timeout_enabled)
+    getChannel()->setStateOffline();
 }
 
 virtual void readValuesFromDevice() {

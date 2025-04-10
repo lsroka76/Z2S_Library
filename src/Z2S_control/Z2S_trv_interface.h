@@ -31,7 +31,7 @@ namespace Supla {
 namespace Control {
 class Z2S_TRVInterface : public OutputInterface, public ActionHandler, public Element {
  public:
-  Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set);
+  Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set, uint8_t trv_thermometer_channel_no);
 
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
@@ -59,6 +59,8 @@ protected:
 
   HvacBaseEE *_trv_hvac = nullptr;
 
+  uint8_t _trv_thermometer_channel_no = 0xFF;
+
   int _trv_state = 0;
   bool _output_enabled = false;
 
@@ -71,6 +73,7 @@ protected:
   void sendOnOff(bool state);
   void sendTRVMode(uint8_t trv_mode);
   void sendTRVTemperatureSetpoint(int16_t temperature_setpoint);
+  void sendTRVTemperatureCalibration(int32_t temperature_calibration);
 };
 
 };  // namespace Control
