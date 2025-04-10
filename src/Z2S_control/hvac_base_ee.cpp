@@ -32,3 +32,13 @@ int32_t HvacBaseEE::handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue)
   
   return handleNewValueFromServer_result; 
 }
+
+Supla::Control::OutputInterface *HvacBaseEE::getPrimaryOutputEE() {
+
+  return primaryOutputEE;
+}
+
+void HvacBaseEE::setPrimaryOutputEE(Supla::Control::OutputInterface *output) {
+
+  primaryOutputEE = output;
+}

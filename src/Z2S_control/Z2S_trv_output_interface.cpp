@@ -82,18 +82,52 @@ void Supla::Control::Z2S_TRVOutputInterface::sendOnOff(bool state) {
 
 void Supla::Control::Z2S_TRVOutputInterface::setOutputValue(int value) {
 
-  _trv_state = value;
-  sendOnOff((value == 1));
+  if (_output_enabled) {
+    _trv_state = value;
+    sendOnOff((value == 1));
+  }
+  else
+  {
+    log_i("Z2S_TRVOutputInterface output disabled");
+  }
 }
 
 bool Supla::Control::Z2S_TRVOutputInterface::isOnOffOnly() const {
   return true;
 }
 
+bool Supla::Control::Z2S_TRVOutputInterface::isOutputEnabled() {
+
+  return _output_enabled;
+}
+
+void Supla::Control::Z2S_TRVOutputInterface::setOutputEnabled(bool output_enabled) {
+
+  _output_enabled = output_enabled;
+}
+
+
 void Supla::Control::Z2S_TRVOutputInterface::iterateAlways() {
 
   if (millis() - _last_refresh_ms > _refresh_ms) {
     _last_refresh_ms = millis();
-    //sendOnOff((_trv_state == 1));
+    if (_output_enabled) sendOnOff((_trv_state == 1));
+  }
+}
+
+void Supla::Control::Z2S_TRVOutputInterface::handleAction(int event, int action) {
+
+  (void)(event);
+
+  log_i("Z2S_TRVOutputInterface::handleAction 0x%x 0x%x", event, action);
+  
+  switch (action) {
+    case TURN_ON: {
+      _output_enabled = true;
+	  } break;
+    
+    case TURN_OFF: {
+      
+    } break;   
   }
 }

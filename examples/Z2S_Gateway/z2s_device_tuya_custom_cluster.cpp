@@ -4,7 +4,7 @@
 #include "z2s_device_temphumidity.h"
 #include "z2s_device_general_purpose_measurement.h"
 #include "z2s_device_action_trigger.h"
-
+#include "z2s_device_hvac.h"
 
 Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_size, uint8_t *payload) {
   
@@ -18,14 +18,14 @@ Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_s
     if ((*(payload + payload_counter)) == Tuya_dp_id) {
       Tuya_read_dp_result.dp_id   = (*(payload + payload_counter));
       Tuya_read_dp_result.dp_type = (*(payload + payload_counter + 1));
-      Tuya_read_dp_result.dp_size = ((uint16_t)(*(payload + payload_counter + 2))) * 0xFF + (*(payload + payload_counter + 3));
+      Tuya_read_dp_result.dp_size = ((uint16_t)(*(payload + payload_counter + 2))) * 0x100 + (*(payload + payload_counter + 3));
       switch (Tuya_read_dp_result.dp_size) {
         case 1: Tuya_read_dp_result.dp_value = (*(payload + payload_counter + 4)); break;
-        case 2: Tuya_read_dp_result.dp_value = ((uint32_t)(*(payload + payload_counter + 4))) * 0x000000FF +
+        case 2: Tuya_read_dp_result.dp_value = ((uint32_t)(*(payload + payload_counter + 4))) * 0x00000100 +
                                           ((uint32_t)(*(payload + payload_counter + 5))); break;
-        case 4:  Tuya_read_dp_result.dp_value =  ((uint32_t)(*(payload + payload_counter + 4))) * 0x00FF0000 +
-                                            ((uint32_t)(*(payload + payload_counter + 5))) * 0x0000FF00 +
-                                            ((uint32_t)(*(payload + payload_counter + 6))) * 0x000000FF +
+        case 4:  Tuya_read_dp_result.dp_value =  ((uint32_t)(*(payload + payload_counter + 4))) * 0x01000000 +
+                                            ((uint32_t)(*(payload + payload_counter + 5))) * 0x00010000 +
+                                            ((uint32_t)(*(payload + payload_counter + 6))) * 0x00000100 +
                                             ((uint32_t)(*(payload + payload_counter + 7))); break;
         default: {
           log_e("unrecognized Tuya DP size 0x%x", Tuya_read_dp_result.dp_size); 
@@ -35,7 +35,7 @@ Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_s
       Tuya_read_dp_result.is_success = true;
       return Tuya_read_dp_result;
     }
-    else Tuya_read_dp_result.dp_size = ((uint16_t)(*(payload + payload_counter + 2))) * 0xFF + (*(payload + payload_counter + 3));
+    else Tuya_read_dp_result.dp_size = ((uint16_t)(*(payload + payload_counter + 2))) * 0x100 + (*(payload + payload_counter + 3));
     payload_counter += 1 /*DP ID*/ + 1 /*DP TYPE*/ + 2/*DP DATA SIZE*/ + Tuya_read_dp_result.dp_size;
   }
   return Tuya_read_dp_result;
@@ -46,6 +46,17 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
   uint8_t dp_id = 0xFF;
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                            z2s_devices_table[channel_number_slot].endpoint, 
+                                                            z2s_devices_table[channel_number_slot].cluster_id, 
+                                                            SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
+
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                            z2s_devices_table[channel_number_slot].endpoint, 
+                                                            z2s_devices_table[channel_number_slot].cluster_id, 
+                                                            SUPLA_CHANNELTYPE_HVAC, NO_CUSTOM_CMD_SID);
+
 
   switch (model_id) {
     case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
@@ -58,7 +69,41 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   if (dp_id < 0xFF)
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(dp_id, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/10, rssi);
+    msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, (float)Tuya_read_dp_result.dp_value/10, rssi);
+
+  dp_id = 0xFF;
+
+  switch (model_id) {
+    case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
+      dp_id = TUYA_6567C_CURRENT_HEATING_SETPOINT_DP; break;  
+    case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
+      dp_id = TUYA_23457_CURRENT_HEATING_SETPOINT_DP; break;
+    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
+      dp_id = TUYA_LEGACY_CURRENT_HEATING_SETPOINT_DP; break;
+  }
+  if (dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(dp_id, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    log_i("Tuya_read_dp_result.dp_value 0x%x, payload_size 0x%x, payload[9] 0x%x", Tuya_read_dp_result.dp_value, payload_size, *(payload+9));
+    msgZ2SDeviceHvac(channel_number_slot_2, CURRENT_HEATING_SETPOINT_MSG, Tuya_read_dp_result.dp_value, rssi);
+  }
+
+  dp_id = 0xFF;
+
+  switch (model_id) {
+    case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
+      dp_id = TUYA_6567C_SYSTEM_MODE_DP; break;  
+    case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
+      dp_id = TUYA_23457_SYSTEM_MODE_DP; break;
+    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
+      dp_id = TUYA_LEGACY_SYSTEM_MODE_DP; break;
+  }
+  if (dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(dp_id, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    log_i("Tuya_read_dp_result.dp_value 0x%x, payload_size 0x%x, payload[9] 0x%x", Tuya_read_dp_result.dp_value, payload_size, *(payload+9));
+    msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, Tuya_read_dp_result.dp_value, rssi);
+  }
 }
 
 void processTuyaDoubleDimmerSwitchDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
@@ -359,6 +404,7 @@ void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
   log_i("processing Tuya custom cluster 0xEF00, command id 0x%x", command_id);
   switch (command_id) {
     case TUYA_DATA_REPORT_CMD:
+    case 0x01:
     case 0x06:
        processTuyaDataReport(ieee_addr, endpoint, payload_size, payload, rssi); break;
     default: log_i("Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", command_id); break;

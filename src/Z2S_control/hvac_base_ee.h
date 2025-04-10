@@ -14,6 +14,12 @@ namespace Supla
                     Supla::Control::OutputInterface *secondaryOutput = nullptr);
         int32_t handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue) override;  
         virtual ~HvacBaseEE();
+        
+        Supla::Control::OutputInterface *getPrimaryOutputEE();
+        void setPrimaryOutputEE(Supla::Control::OutputInterface *output);
+      
+      private:
+        Supla::Control::OutputInterface *primaryOutputEE = nullptr;
     };
   }
 }

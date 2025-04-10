@@ -16,26 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef SRC_SUPLA_CONTROL_Z2S_TRV_OUTPUT_INTERFACE_H_
-#define SRC_SUPLA_CONTROL_Z2S_TRV_OUTPUT_INTERFACE_H_
+#ifndef SRC_SUPLA_CONTROL_Z2S_TRV_INTERFACE_H_
+#define SRC_SUPLA_CONTROL_Z2S_TRV_INTERFACE_H_
 
 #include <supla/element.h>
 #include <supla/actions.h>
 #include <supla/action_handler.h>
 #include <supla/control/output_interface.h>
 #include "ZigbeeGateway.h"
-
+#include "hvac_base_ee.h"
 
 
 namespace Supla {
 namespace Control {
-class Z2S_TRVOutputInterface : public OutputInterface, public ActionHandler, public Element {
+class Z2S_TRVInterface : public OutputInterface, public ActionHandler, public Element {
  public:
-  Z2S_TRVOutputInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_mode);
+  Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set);
+
+  Supla::Control::HvacBaseEE *getTRVHvac();
+  void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
 
   int getOutputValue() const override;
   void setOutputValue(int value) override;
   bool isOnOffOnly() const override;
+  bool isControlledInternally() const override { return false; }
 
   void iterateAlways() override;
   void handleAction(int event, int action) override;
@@ -43,24 +47,34 @@ class Z2S_TRVOutputInterface : public OutputInterface, public ActionHandler, pub
   bool isOutputEnabled();
   void setOutputEnabled(bool output_enabled);
 
+  void setTRVTemperatureSetpoint(int16_t trv_temperature_setpoint);
+  void setTRVMode(uint8_t trv_mode);
+
 protected:
 
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t _device;
   uint8_t _Tuya_dp_data[10];
-  uint8_t _trv_mode = 0;
+  uint8_t _trv_commands_set;
+
+  HvacBaseEE *_trv_hvac = nullptr;
+
   int _trv_state = 0;
   bool _output_enabled = false;
 
-  uint32_t _refresh_ms      = 60000;
+  uint8_t _trv_mode = 0;
+  int16_t _trv_temperature_setpoint = 0;
+
+  uint32_t _refresh_ms      = 5000;
   uint32_t _last_refresh_ms = 0;
 
   void sendOnOff(bool state);
-  //void sendTempPing();
+  void sendTRVMode(uint8_t trv_mode);
+  void sendTRVTemperatureSetpoint(int16_t temperature_setpoint);
 };
 
 };  // namespace Control
 };  // namespace Supla
 
 
-#endif //SRC_SUPLA_CONTROL_Z2S_TRV_OUTPUT_INTERFACE_H_
+#endif //SRC_SUPLA_CONTROL_Z2S_TRV_INTERFACE_H_
