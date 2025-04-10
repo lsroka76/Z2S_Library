@@ -1,6 +1,7 @@
 #include "Z2S_virtual_relay_scene_switch.h"
 
 #include <supla/log_wrapper.h>
+#include <supla/storage/storage.h>
 
 Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(_supla_int_t functions, uint16_t debounceTimeMs)
     : Supla::Control::VirtualRelay(functions)

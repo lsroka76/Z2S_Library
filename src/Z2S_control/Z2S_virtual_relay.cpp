@@ -18,6 +18,7 @@
 #include "Z2S_virtual_relay.h"
 
 #include <supla/log_wrapper.h>
+#include <supla/storage/storage.h>
 
 #include <supla/time.h>
 
