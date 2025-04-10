@@ -2,7 +2,7 @@
 
 #include <supla/log_wrapper.h>
 
-Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(_supla_int_t functions, u_int16_t debounceTimeMs)
+Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(_supla_int_t functions, uint16_t debounceTimeMs)
     : Supla::Control::VirtualRelay(functions)
 {
     _lastChangeTime = millis();
