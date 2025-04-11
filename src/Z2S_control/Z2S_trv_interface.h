@@ -22,29 +22,21 @@
 #include <supla/element.h>
 #include <supla/actions.h>
 #include <supla/action_handler.h>
-#include <supla/control/output_interface.h>
+#include <supla/control/remote_output_interface.h>
 #include "ZigbeeGateway.h"
 #include "hvac_base_ee.h"
 
 namespace Supla {
 namespace Control {
-class Z2S_TRVInterface : public OutputInterface, public ActionHandler, public Element {
+class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, public Element {
  public:
-  Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set, uint8_t trv_thermometer_channel_no);
+  Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set);
 
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
 
-  int getOutputValue() const override;
-  void setOutputValue(int value) override;
-  bool isOnOffOnly() const override;
-  bool isControlledInternally() const override { return false; }
-
   void iterateAlways() override;
   void handleAction(int event, int action) override;
-
-  bool isOutputEnabled();
-  void setOutputEnabled(bool output_enabled);
 
   void setTRVTemperatureSetpoint(int16_t trv_temperature_setpoint);
   void setTRVSystemMode(uint8_t trv_system_mode);
@@ -60,13 +52,8 @@ protected:
 
   HvacBaseEE *_trv_hvac = nullptr;
 
-  uint8_t _trv_thermometer_channel_no = 0xFF;
-
-  int _trv_state = 0;
-  bool _output_enabled = false;
-
   uint8_t _trv_system_mode = 0;
-  uint8_t _trv_running_state = 1;
+  uint8_t _trv_running_state = 0;
   int16_t _trv_temperature_setpoint = 0;
   int16_t _trv_local_temperature = INT16_MIN;
     

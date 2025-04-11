@@ -16,8 +16,8 @@
 
 #include "Z2S_trv_interface.h"
 
-Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set, uint8_t trv_thermometer_channel_no) 
-                                  : _gateway(gateway), _trv_commands_set(trv_commands_set), _trv_thermometer_channel_no(trv_thermometer_channel_no) {
+Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set) 
+  : RemoteOutputInterface(true), _gateway(gateway), _trv_commands_set(trv_commands_set) {
 
     memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
@@ -30,12 +30,6 @@ Supla::Control::HvacBaseEE *Supla::Control::Z2S_TRVInterface::getTRVHvac(){
 void Supla::Control::Z2S_TRVInterface::setTRVHvac(Supla::Control::HvacBaseEE * trv_hvac) {
 
   _trv_hvac = trv_hvac;
-}
-
-
-int Supla::Control::Z2S_TRVInterface::getOutputValue() const {
-
-  return _trv_state;
 }
 
 void Supla::Control::Z2S_TRVInterface::sendOnOff(bool state) {
@@ -202,39 +196,10 @@ void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int16_t trv_local_
   _trv_local_temperature = trv_local_temperature;
 }
 
-void Supla::Control::Z2S_TRVInterface::setOutputValue(int value) {
-
-  if (_output_enabled) {
-    _trv_state = value;
-    sendOnOff((value == 1));
-  }
-  else
-  {
-    log_i("Z2S_TRVInterface output disabled");
-  }
-}
-
-bool Supla::Control::Z2S_TRVInterface::isOnOffOnly() const {
-  return true;
-}
-
-bool Supla::Control::Z2S_TRVInterface::isOutputEnabled() {
-
-  return _output_enabled;
-}
-
-void Supla::Control::Z2S_TRVInterface::setOutputEnabled(bool output_enabled) {
-
-  _output_enabled = output_enabled;
-}
-
-
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   if (millis() - _last_refresh_ms > _refresh_ms) {
     _last_refresh_ms = millis();
-    
-    //auto element = Supla::Element::getElementByChannelNumber(_trv_thermometer_channel_no);
     
     if ((_trv_hvac) && (_trv_hvac->getTemperatureSetpointHeat() != _trv_temperature_setpoint * 10)) {
       log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - setpoint difference detected: hvac=%d, trv=%d", _trv_hvac->getTemperatureSetpointHeat(), _trv_temperature_setpoint);
@@ -272,11 +237,9 @@ void Supla::Control::Z2S_TRVInterface::handleAction(int event, int action) {
   
   switch (action) {
     case TURN_ON: {
-      _output_enabled = true;
 	  } break;
     
     case TURN_OFF: {
-      
     } break;   
   }
 }

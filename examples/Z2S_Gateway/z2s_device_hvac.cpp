@@ -13,8 +13,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: trv_commands_set = 3; break;
   }
   
-  auto Supla_Z2S_TRVInterface = new Supla::Control::Z2S_TRVInterface(gateway, device, trv_commands_set, 
-  z2s_devices_table[channel_number_slot].Supla_secondary_channel);
+  auto Supla_Z2S_TRVInterface = new Supla::Control::Z2S_TRVInterface(gateway, device, trv_commands_set);
 
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
             
@@ -93,19 +92,9 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, uint16_t msg_
 
     case TRV_RUNNING_STATE_MSG: {
       log_i("msgZ2SDeviceHvac - TRV_RUNNING_STATE_MSG: 0x%x", msg_value);
-
-      switch (msg_value) {
-        case 0: {
-          Supla_Z2S_HvacBase->getChannel()->setHvacFlagHeating(false); 
-          Supla_Z2S_HvacBase->getChannel()->setHvacIsOn(false);
-        } break;
-        case 1: {
-          Supla_Z2S_HvacBase->getChannel()->setHvacFlagHeating(true); 
-          Supla_Z2S_HvacBase->getChannel()->setHvacIsOn(true);
-        } break;
-      }
-        Supla_Z2S_TRVInterface->setTRVRunningState(msg_value);
-
+      
+      Supla_Z2S_TRVInterface->setTRVRunningState(msg_value);
+      Supla_Z2S_TRVInterface->setOutputValueFromRemote(msg_value*100);
     } break;
   
     case TRV_LOCAL_TEMPERATURE_MSG: {
