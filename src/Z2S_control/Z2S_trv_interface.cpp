@@ -147,10 +147,10 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t tem
   }
 }
 
-void Supla::Control::Z2S_TRVInterface::sendTRVMode(uint8_t trv_mode) {
+void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode) {
 
   if (_gateway && Zigbee.started()) {
-    log_i("Z2S_TRVInterface::sendTRVMode = %d", trv_mode);
+    log_i("Z2S_TRVInterface::sendTRVMode = %d", trv_system_mode);
 
     uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -160,19 +160,19 @@ void Supla::Control::Z2S_TRVInterface::sendTRVMode(uint8_t trv_mode) {
       case 1: {
         _Tuya_dp_data[2] = 0x65; 
         _Tuya_dp_data[3] = 0x01;
-        _Tuya_dp_data[6] = trv_mode;
+        _Tuya_dp_data[6] = trv_system_mode;
 
       } break;
       case 2: {
         _Tuya_dp_data[2] = 0x02; 
         _Tuya_dp_data[3] = 0x04;
-        _Tuya_dp_data[6] = trv_mode == 0 ? 2 : 1;
+        _Tuya_dp_data[6] = trv_system_mode == 0 ? 2 : 1;
     
       } break;
       case 3: {
         _Tuya_dp_data[2] = 0x01; 
         _Tuya_dp_data[3] = 0x04;
-        _Tuya_dp_data[6] = trv_mode;
+        _Tuya_dp_data[6] = trv_system_mode;
       } break;
     }
     _Tuya_dp_data[4] = 0x00;
@@ -187,11 +187,20 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(int16_t trv_tem
   _trv_temperature_setpoint = trv_temperature_setpoint;
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVMode(uint8_t trv_mode) {
+void Supla::Control::Z2S_TRVInterface::setTRVSystemMode(uint8_t trv_system_mode) {
 
-  _trv_mode = trv_mode;
+  _trv_system_mode = trv_system_mode;
 }
 
+void Supla::Control::Z2S_TRVInterface::setTRVRunningState(uint8_t trv_running_state) {
+
+  _trv_running_state = trv_running_state;
+}
+
+void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int16_t trv_local_temperature) {
+  
+  _trv_local_temperature = trv_local_temperature;
+}
 
 void Supla::Control::Z2S_TRVInterface::setOutputValue(int value) {
 
@@ -225,21 +234,32 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   if (millis() - _last_refresh_ms > _refresh_ms) {
     _last_refresh_ms = millis();
     
-     auto element = Supla::Element::getElementByChannelNumber(_trv_thermometer_channel_no);
-
+    //auto element = Supla::Element::getElementByChannelNumber(_trv_thermometer_channel_no);
+    
     if ((_trv_hvac) && (_trv_hvac->getTemperatureSetpointHeat() != _trv_temperature_setpoint * 10)) {
       log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - setpoint difference detected: hvac=%d, trv=%d", _trv_hvac->getTemperatureSetpointHeat(), _trv_temperature_setpoint);
       sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat()/10);        
     }
     
-    if ((_trv_hvac) && ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1)  != _trv_mode)) {
-      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv mode difference detected: hvac=%d, trv=%d", _trv_hvac->getMode(), _trv_mode);
-      sendTRVMode(_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1);        
+    if ((_trv_hvac) && ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1)  != _trv_system_mode)) {
+      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv mode difference detected: hvac=%d, trv=%d", _trv_hvac->getMode(), _trv_system_mode);
+      sendTRVSystemMode(_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1);        
     }
 
-    if ((_trv_hvac) && (_trv_hvac->getLastTemperature() != element->getChannel()->getLastTemperature()*100)) {
-      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected: hvac=%d, trv=%d", _trv_hvac->getLastTemperature(), element->getChannel()->getLastTemperature()*100);
-      sendTRVTemperatureCalibration(_trv_hvac->getLastTemperature() - (element->getChannel()->getLastTemperature()*100));        
+    int16_t hvacLastTemperature = INT16_MIN;
+
+    if (_trv_hvac)
+      hvacLastTemperature = _trv_hvac->getLastTemperature();
+    if ((_trv_local_temperature != INT16_MIN) && (hvacLastTemperature != INT16_MIN) && (hvacLastTemperature != _trv_local_temperature*10)) {
+      int16_t temperature_calibration_offset = (hvacLastTemperature - _trv_local_temperature*10) / 100; 
+      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected: hvac=%d, trv=%d, offset=%d", 
+            hvacLastTemperature, _trv_local_temperature*10, temperature_calibration_offset);
+      sendTRVTemperatureCalibration(temperature_calibration_offset);        
+    }
+
+    if (_trv_local_temperature == INT16_MIN) {
+      log_i("No TRV temperature data - sending TemperatureCalibration with 0 value");
+      sendTRVTemperatureCalibration(0);
     }
   }
 }

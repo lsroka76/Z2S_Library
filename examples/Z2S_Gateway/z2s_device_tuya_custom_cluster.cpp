@@ -45,7 +45,13 @@ Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_s
 void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
-  uint8_t dp_id = 0xFF;
+  uint8_t local_temperature_dp_id        =  0xFF;
+  uint8_t current_heating_setpoint_dp_id =  0xFF;
+  uint8_t system_mode_dp_id              =  0xFF;
+  uint8_t running_state_dp_id            =  0xFF;
+  uint8_t system_mode_value_on           =  0xFF;
+  uint8_t system_mode_value_off          =  0xFF;
+  uint8_t system_mode_value               =  0xFF;
 
   int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                             z2s_devices_table[channel_number_slot].endpoint, 
@@ -59,50 +65,58 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
 
   switch (model_id) {
-    case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
-      dp_id = TUYA_6567C_LOCAL_TEMPERATURE_DP; break;  
-    case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
-      dp_id = TUYA_23457_LOCAL_TEMPERATURE_DP; break;
-    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
-      dp_id = TUYA_LEGACY_LOCAL_TEMPERATURE_DP; break;
+    case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: {
+      local_temperature_dp_id         = TUYA_6567C_LOCAL_TEMPERATURE_DP; 
+      current_heating_setpoint_dp_id  = TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
+      system_mode_dp_id               = TUYA_6567C_SYSTEM_MODE_DP;
+      running_state_dp_id             = TUYA_6567C_RUNNING_STATE_DP;
+      system_mode_value_on            = 0x01;
+      system_mode_value_off           = 0x00;
+    } break;  
+    case Z2S_DEVICE_DESC_TUYA_HVAC_23457: {
+      local_temperature_dp_id         = TUYA_23457_LOCAL_TEMPERATURE_DP;
+      current_heating_setpoint_dp_id  = TUYA_23457_CURRENT_HEATING_SETPOINT_DP; 
+      system_mode_dp_id               = TUYA_23457_SYSTEM_MODE_DP;
+      running_state_dp_id             = TUYA_23457_RUNNING_STATE_DP;
+      system_mode_value_on            = 0x01;
+      system_mode_value_off           = 0x02;
+    } break;
+    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: {
+      local_temperature_dp_id         = TUYA_LEGACY_LOCAL_TEMPERATURE_DP;
+      current_heating_setpoint_dp_id  = TUYA_LEGACY_CURRENT_HEATING_SETPOINT_DP; 
+      system_mode_dp_id               = TUYA_LEGACY_SYSTEM_MODE_DP;
+      running_state_dp_id             = TUYA_LEGACY_RUNNING_STATE_DP;
+      system_mode_value_on            = 0x02;
+      system_mode_value_off           = 0x03;
+    } break;
   }
-  if (dp_id < 0xFF)
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(dp_id, payload_size, payload);
-  if (Tuya_read_dp_result.is_success)
+  if (local_temperature_dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(local_temperature_dp_id, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
     msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, (float)Tuya_read_dp_result.dp_value/10, rssi);
-
-  dp_id = 0xFF;
-
-  switch (model_id) {
-    case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
-      dp_id = TUYA_6567C_CURRENT_HEATING_SETPOINT_DP; break;  
-    case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
-      dp_id = TUYA_23457_CURRENT_HEATING_SETPOINT_DP; break;
-    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
-      dp_id = TUYA_LEGACY_CURRENT_HEATING_SETPOINT_DP; break;
+    msgZ2SDeviceHvac(channel_number_slot_2, TRV_LOCAL_TEMPERATURE_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
-  if (dp_id < 0xFF)
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(dp_id, payload_size, payload);
+
+  if (current_heating_setpoint_dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(current_heating_setpoint_dp_id, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
     log_i("Tuya_read_dp_result.dp_value 0x%x, payload_size 0x%x, payload[9] 0x%x", Tuya_read_dp_result.dp_value, payload_size, *(payload+9));
-    msgZ2SDeviceHvac(channel_number_slot_2, CURRENT_HEATING_SETPOINT_MSG, Tuya_read_dp_result.dp_value, rssi);
+    msgZ2SDeviceHvac(channel_number_slot_2, TRV_HEATING_SETPOINT_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 
-  dp_id = 0xFF;
-
-  switch (model_id) {
-    case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
-      dp_id = TUYA_6567C_SYSTEM_MODE_DP; break;  
-    case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
-      dp_id = TUYA_23457_SYSTEM_MODE_DP; break;
-    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
-      dp_id = TUYA_LEGACY_SYSTEM_MODE_DP; break;
-  }
-  if (dp_id < 0xFF)
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(dp_id, payload_size, payload);
+  if (system_mode_dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(system_mode_dp_id, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
     log_i("Tuya_read_dp_result.dp_value 0x%x, payload_size 0x%x, payload[9] 0x%x", Tuya_read_dp_result.dp_value, payload_size, *(payload+9));
-    msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, Tuya_read_dp_result.dp_value, rssi);
+    system_mode_value = (Tuya_read_dp_result.dp_value == system_mode_value_off) ? 0 : 1;
+    msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, system_mode_value, rssi);
+  }
+
+  if (running_state_dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(running_state_dp_id, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    log_i("Tuya_read_dp_result.dp_value 0x%x, payload_size 0x%x, payload[9] 0x%x", Tuya_read_dp_result.dp_value, payload_size, *(payload+9));
+    msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 }
 
@@ -178,7 +192,28 @@ void processTuyaTempHumiditySensorDataReport(int16_t channel_number_slot, uint16
   }
 }
 
-void processTuyaEF00Switch2x3(int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, signed char rssi) {
+void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_TEMPERATURE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/10, rssi);
+            
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceTempHumidityHumi(channel_number_slot, (float)Tuya_read_dp_result.dp_value, rssi);  
+            
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value * 50, rssi);  
+  }
+}
+
+
+
+void processTuyaEF00Switch2x3DataReport(int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, signed char rssi) {
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_EF00_SWITCH_2X3_BUTTON_1_DP, payload_size, payload);
@@ -296,6 +331,14 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t p
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE,
                                           Tuya_read_dp_result.dp_value, rssi);
+  
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_BATTERY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    log_i("Battery level  is %d", Tuya_read_dp_result.dp_value);
+    updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
+    updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+    updateSuplaBatteryLevel(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
+  }
 }
 
 void processTuyaRainSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
@@ -390,10 +433,13 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
       processTuyaPresenceSensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
 
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
-      processTuyaEF00Switch2x3(channel_number_slot, payload_size, payload, rssi); break;
+      processTuyaEF00Switch2x3DataReport(channel_number_slot, payload_size, payload, rssi); break;
 
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
       processTuyaRainSensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
+
+    /*case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
+      processTuya3PhasesElectricityMeterDataReport(channel_number_slot, payload_size, payload, rssi); break;*/
 
     default: 
       log_i("Unknown device model id 0x%x", z2s_devices_table[channel_number_slot].model_id); break;

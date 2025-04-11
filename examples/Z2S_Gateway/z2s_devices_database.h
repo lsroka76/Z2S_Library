@@ -70,6 +70,8 @@
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1  0x4501
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2  0x4502
 
+#define Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER  0x4550
+
 #define Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1              0x4600
 #define Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2              0x4601
 
@@ -990,7 +992,10 @@ const dataPoints = {
       TUYA_PRIVATE_CLUSTER_EF00 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { TUYA_PRIVATE_CLUSTER_EF00 }},    
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }}, 
 };
         
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
@@ -1236,6 +1241,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZ3000_2putqrmw", .model_name = "TS011F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "ADEO", .model_name = "LDSENK02F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
  
   { .manufacturer_name = "_TZ3000_wkai4ga5", .model_name = "TS0044", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3, .z2s_device_endpoints_count = 4, 
@@ -1462,14 +1470,19 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_2aaelwxk", .model_name = "TS0225",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE200_kb5noeto", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_9kbbfeho", .model_name = "TS0222",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_3ulg9kpo", .model_name = "TS0021",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3, .z2s_device_endpoints_count = 1},
 
+  //{ .manufacturer_name = "_TZE284_dikb3dp6", .model_name = "TS0601",
+  //  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_endpoints_count = 1}
 };
 
 #endif
 //_TZ3210_3lbtuxgp TS0505B
-//  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR
+//  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR   

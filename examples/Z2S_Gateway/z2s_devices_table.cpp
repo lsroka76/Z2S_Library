@@ -779,7 +779,7 @@ void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_VOLTAGE_SEL, voltage, rssi);
+    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, voltage, rssi);
 }
 
 void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t current, signed char rssi) {
@@ -792,7 +792,7 @@ void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_CURRENT_SEL, current, rssi);
+    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_CURRENT_A_SEL, current, rssi);
 }
 
 void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t active_power, signed char rssi) {
@@ -805,7 +805,7 @@ void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else {
-    msgZ2SDeviceElectricityMeter(z2s_devices_table[channel_number_slot].Supla_channel, Z2S_EM_ACTIVE_POWER_SEL, active_power, rssi);
+    msgZ2SDeviceElectricityMeter(z2s_devices_table[channel_number_slot].Supla_channel, Z2S_EM_ACTIVE_POWER_A_SEL, active_power, rssi);
   }
 }
 
@@ -819,7 +819,7 @@ void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else
-    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_ACT_FWD_ENERGY_SEL, active_fwd_energy, rssi);
+    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, active_fwd_energy, rssi);
 }
 
 void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t level, signed char rssi) {
@@ -1357,6 +1357,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
               addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot);
       } break;
 
+      case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
+        addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, false); break;
+
       case Z2S_DEVICE_DESC_TUYA_HVAC:
       case Z2S_DEVICE_DESC_TUYA_HVAC_6567C:
       case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
@@ -1565,13 +1568,13 @@ void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector, uint32_
     }  else
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
 
-      auto Supla_Z2S_OnePhaseElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_OnePhaseElectricityMeter *>(element);
+      auto Supla_Z2S_ElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);
       if (selector & 1)
-        Supla_Z2S_OnePhaseElectricityMeter->setKeepAliveSecs(timings_secs);
+        Supla_Z2S_ElectricityMeter->setKeepAliveSecs(timings_secs);
       if (selector & 2)
-        Supla_Z2S_OnePhaseElectricityMeter->setTimeoutSecs(timings_secs);
+        Supla_Z2S_ElectricityMeter->setTimeoutSecs(timings_secs);
       if (selector & 4)
-        Supla_Z2S_OnePhaseElectricityMeter->setRefreshSecs(timings_secs);
+        Supla_Z2S_ElectricityMeter->setRefreshSecs(timings_secs);
     } else
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_DIMMER) {
 

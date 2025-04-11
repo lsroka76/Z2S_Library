@@ -26,7 +26,6 @@
 #include "ZigbeeGateway.h"
 #include "hvac_base_ee.h"
 
-
 namespace Supla {
 namespace Control {
 class Z2S_TRVInterface : public OutputInterface, public ActionHandler, public Element {
@@ -48,7 +47,9 @@ class Z2S_TRVInterface : public OutputInterface, public ActionHandler, public El
   void setOutputEnabled(bool output_enabled);
 
   void setTRVTemperatureSetpoint(int16_t trv_temperature_setpoint);
-  void setTRVMode(uint8_t trv_mode);
+  void setTRVSystemMode(uint8_t trv_system_mode);
+  void setTRVRunningState(uint8_t trv_running_state);
+  void setTRVLocalTemperature(int16_t trv_local_temperature);
 
 protected:
 
@@ -64,14 +65,16 @@ protected:
   int _trv_state = 0;
   bool _output_enabled = false;
 
-  uint8_t _trv_mode = 0;
+  uint8_t _trv_system_mode = 0;
+  uint8_t _trv_running_state = 1;
   int16_t _trv_temperature_setpoint = 0;
-
+  int16_t _trv_local_temperature = INT16_MIN;
+    
   uint32_t _refresh_ms      = 5000;
   uint32_t _last_refresh_ms = 0;
 
   void sendOnOff(bool state);
-  void sendTRVMode(uint8_t trv_mode);
+  void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int16_t temperature_setpoint);
   void sendTRVTemperatureCalibration(int32_t temperature_calibration);
 };
