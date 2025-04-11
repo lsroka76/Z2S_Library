@@ -38,6 +38,7 @@
 
 
 #define ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID 0x0021
+#define ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID              0x0020
 
 typedef struct findcb_userdata_s {
   uint8_t   _endpoint;

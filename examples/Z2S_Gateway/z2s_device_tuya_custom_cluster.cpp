@@ -297,10 +297,15 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
   } */
 }
 
-void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
+void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
 
   int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3;
+
   Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  uint8_t presence_dp_id = 0xFF;
+  uint8_t motion_state_dp_id = 0xFF;
+  uint8_t illuminance_dp_id = 0xFF;
 
   channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                     z2s_devices_table[channel_number_slot].endpoint, 
@@ -317,17 +322,34 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t p
                                                   z2s_devices_table[channel_number_slot].cluster_id, 
                                                   SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_PRESENCE_DP, payload_size, payload);
+  switch(model_id) {
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
+      presence_dp_id = TUYA_PRESENCE_SENSOR_PRESENCE_DP;
+      motion_state_dp_id = TUYA_PRESENCE_SENSOR_MOTION_STATE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP;
+    } break;
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5: {
+      presence_dp_id = TUYA_PRESENCE_SENSOR_5_PRESENCE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_5_ILLUMINANCE_DP;
+    } break;
+  }
+  
+  if (presence_dp_id < 0xFF) 
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(presence_dp_id, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1), rssi);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_MOTION_STATE_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) 
-  { log_i("MOTION STATE CHECK int %d, float %f", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value);
+  if (motion_state_dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(motion_state_dp_id, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    log_i("MOTION STATE CHECK int %d, float %f", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value);
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_MOTION_STATE,
-                                          Tuya_read_dp_result.dp_value, rssi);}
+                                          Tuya_read_dp_result.dp_value, rssi);
+  }
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
+  if (illuminance_dp_id < 0xFF)
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(illuminance_dp_id, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE,
                                           Tuya_read_dp_result.dp_value, rssi);
@@ -408,11 +430,13 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     log_i("processTuyaDataReport failed - no Supla channel for that device");
     return;
   }
-  switch (z2s_devices_table[channel_number_slot].model_id) {
+  uint32_t model_id = z2s_devices_table[channel_number_slot].model_id;
+
+  switch (model_id) {
     case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
     case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
     case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
-      processTuyaHvacDataReport(channel_number_slot, payload_size, payload, rssi, z2s_devices_table[channel_number_slot].model_id); break;
+      processTuyaHvacDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
       processTuyaDoubleDimmerSwitchDataReport(channel_number_slot, payload_size, payload, rssi); break;
@@ -430,7 +454,8 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
       processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, rssi); break;
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
-      processTuyaPresenceSensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
+      processTuyaPresenceSensorDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
       processTuyaEF00Switch2x3DataReport(channel_number_slot, payload_size, payload, rssi); break;

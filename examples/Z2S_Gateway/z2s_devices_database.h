@@ -36,6 +36,7 @@
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
 
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR            0x2300
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5          0x2305
 
 #define Z2S_DEVICE_DESC_LIGHT_SOURCE                    0x3000 
 #define Z2S_DEVICE_DESC_LIGHT_BULB                      0x3010
@@ -987,6 +988,9 @@ const dataPoints = {
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
       TUYA_PRIVATE_CLUSTER_EF00 }}, 
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
       TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -1472,6 +1476,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE200_kb5noeto", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_ex3rcdha", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_9kbbfeho", .model_name = "TS0222",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR, .z2s_device_endpoints_count = 1},

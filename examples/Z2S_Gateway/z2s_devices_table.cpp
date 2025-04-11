@@ -709,12 +709,22 @@ void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
   log_i("onIlluminanceReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, illuminance 0x%x", ieee_addr[7], ieee_addr[6], 
         ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, illuminance);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                          TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, illuminance/10, rssi); 
+    return;
+  }
   
-  if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
-  else
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                          NO_CUSTOM_CMD_SID);
+  if (channel_number_slot >= 0) {                         
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, illuminance, rssi); 
+    return;
+  }
+  
+  log_i("onIlluminanceReceive - no channel found for address 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x",
+        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
 }
 
 void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy, signed char rssi) {
@@ -724,10 +734,14 @@ void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uin
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
   
-  if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
-  else
+  if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0), rssi);
+    return;
+  }
+
+  log_i("onOccupancyReceive - no channel found for address 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x",
+        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
 }
 
 
@@ -766,7 +780,9 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
     //msgZ2SDeviceRGBW(z2s_devices_table[channel_number_slot].model_id, z2s_devices_table[channel_number_slot].Supla_channel, 0xFF, 0xFF, 0xFFFF, state, rssi);
     return;
   }
-  log_i("No channel found for address %s", ieee_addr);
+  
+  log_i("onOnOffReceive - no channel found for address 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x",
+        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
 }
 
 void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t voltage, signed char rssi) {
@@ -1483,6 +1499,19 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
         }
       } break;
+
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5: {
+        
+        switch (sub_id) {
+          case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+      
+          case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+        }
+      } break;
+
       case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
         
         switch (sub_id) {

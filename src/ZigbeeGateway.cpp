@@ -697,7 +697,15 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         log_i("zbAttributeReporting power config battery percentage remaining %d",value);
         if (_on_battery_percentage_receive)
           _on_battery_percentage_receive(src_address.u.ieee_addr, src_endpoint,cluster_id, value /2);
-      } else log_i("zbAttributeReporting power config cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      } else
+      if (attribute->id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) 
+      {
+        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting power config battery voltage %d",value);
+        if (_on_battery_percentage_receive)
+          _on_battery_percentage_receive(src_address.u.ieee_addr, src_endpoint,cluster_id, 100 - ((33 - value)*20));
+      }
+      else log_i("zbAttributeReporting power config cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
       if (attribute->id == ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_16BITMAP) {

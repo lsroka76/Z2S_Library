@@ -982,12 +982,14 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_4_PRESSED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID);
                           } break;
+                          
                           case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F: {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_1_PRESSED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_1_HELD_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_2_PRESSED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_2_HELD_SID);
                           } break;
+
                           case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
                           case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1: {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID);
@@ -996,6 +998,7 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_NEXT_TRACK_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_PREV_TRACK_SID);
                           } break;
+
                           case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2:
                           case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1: {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID);
@@ -1004,6 +1007,7 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_LONG_RELEASED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID);
                           } break;
+
                           case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: 
                           case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2: {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID);
@@ -1012,15 +1016,23 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID);
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID);
                           } break;
+
                           case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
                             Z2S_addZ2SDevice(joined_device, TUYA_DOUBLE_DIMMER_SWITCH_1_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_DOUBLE_DIMMER_SWITCH_2_SID);
                           } break;
+                          
                           case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
                             Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
                           } break;
+
+                          case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5: {
+                            Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
+                            Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+                          } break;
+
                           case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
@@ -1028,6 +1040,7 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
                           } break;
+
                           /*case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
                             
                             Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID);
