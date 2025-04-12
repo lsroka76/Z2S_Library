@@ -1,7 +1,7 @@
 #ifndef Z2S_VERSION_INFO_H_
 #define Z2S_VERSION_INFO_H_
 
-#define Z2S_VERSION "0.7.28-12/04/2025"
+#define Z2S_VERSION "0.7.29-12/04/2025"
 
 namespace Supla {
 namespace Html {

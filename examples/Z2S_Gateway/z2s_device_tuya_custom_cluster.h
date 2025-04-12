@@ -43,7 +43,7 @@
 //#define TUYA_6567C_SYSTEM_MODE_HEAT            0x01  //?
 //#define TUYA_6567C_SYSTEM_MODE_OFF             0x02  //?
 
-#define TUYA_LEGACY_RUNNING_STATE_DP            0x03
+#define TUYA_LEGACY_RUNNING_STATE_DP            0x0E
 //#define TUYA_6567C_RUNNING_STATE_HEAT          0x00
 //#define TUYA_6567C_RUNNING_STATE_IDLE          0x01
 
