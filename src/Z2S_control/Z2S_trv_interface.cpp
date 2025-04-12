@@ -219,7 +219,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       int16_t temperature_calibration_offset = (hvacLastTemperature - _trv_local_temperature*10) / 100; 
       log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected: hvac=%d, trv=%d, offset=%d", 
             hvacLastTemperature, _trv_local_temperature*10, temperature_calibration_offset);
-      sendTRVTemperatureCalibration(temperature_calibration_offset);        
+      if (temperature_calibration_offset !=0)
+        sendTRVTemperatureCalibration(temperature_calibration_offset);        
     }
 
     if (_trv_local_temperature == INT16_MIN) {
