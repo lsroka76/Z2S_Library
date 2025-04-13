@@ -8,6 +8,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR        0x1010
 
+#define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10     0x1020
+
 #define Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR         0x1050
 
 #define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR   0x1100
@@ -150,6 +152,12 @@
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID   0x03
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID    0x04
 #define TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID           0x05
+
+#define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID           0x00
+#define TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID  0x01
+#define TUYA_3PHASES_ELECTRICITY_METER_POWER_SID            0x02
+#define TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID     0x03
+#define TUYA_3PHASES_ELECTRICITY_METER_SID                  0x04
 
 
 #define IKEA_CUSTOM_CMD_BUTTON_1_PRESSED_SID          0x00
@@ -988,8 +996,9 @@ const dataPoints = {
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
       TUYA_PRIVATE_CLUSTER_EF00 }}, 
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { TUYA_PRIVATE_CLUSTER_EF00 }},
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
+      TUYA_PRIVATE_CLUSTER_EF00 }}, 
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
@@ -1062,6 +1071,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZ3000_hzkeh3nv", .model_name = "TS0201",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_ncw88jfq", .model_name = "TS0201",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_aao3yzhs", .model_name = "TS0601", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
@@ -1486,10 +1498,8 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3210_3ulg9kpo", .model_name = "TS0021",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3, .z2s_device_endpoints_count = 1},
 
-  //{ .manufacturer_name = "_TZE284_dikb3dp6", .model_name = "TS0601",
-  //  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_endpoints_count = 1}
+  { .manufacturer_name = "_TZE284_dikb3dp6", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_endpoints_count = 1}
 };
 
 #endif
-//_TZ3210_3lbtuxgp TS0505B
-//  Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR   

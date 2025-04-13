@@ -56,6 +56,10 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi, sign
   
   if (Supla_Z2S_VirtualThermHygroMeter) {
     
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10: humi *= 10; break;
+      default: break;
+    }
     Supla_Z2S_VirtualThermHygroMeter->setHumi(humi);
     Supla_Z2S_VirtualThermHygroMeter->Refresh();
   }

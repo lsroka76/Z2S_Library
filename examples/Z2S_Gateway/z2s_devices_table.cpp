@@ -921,17 +921,11 @@ void Z2S_onBatteryPercentageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
 
 void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status, signed char rssi) {
   
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+  
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_1_SID);
 
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
-    return;
-  }
-
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_1_SID);
-
-  if (channel_number_slot >= 0) {
-    log_i("IAS_ZONE_ALARM_1_SID %x", iaszone_status);  
+    log_i("IASZONE - IAS_ZONE_ALARM_1_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
     return;
   }
@@ -939,7 +933,7 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_2_SID);
 
   if (channel_number_slot >= 0) {
-    log_i("IAS_ZONE_ALARM_2_SID %x", iaszone_status);  
+    log_i("IASZONE - IAS_ZONE_ALARM_2_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 2), rssi);
     return;
   }
@@ -947,11 +941,21 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_TAMPER_SID);
 
   if (channel_number_slot >= 0) {
-    log_i("IAS_ZONE_TAMPER_SID %x", iaszone_status);  
+    log_i("IASZONE - IAS_ZONE_TAMPER_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 4), rssi);
     return;
   }
-  log_i("No channel found for address %s", ieee_addr);
+
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot >= 0) {
+    log_i("IASZONE - NO_CUSTOM_CMD_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
+    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
+    return;
+  }
+
+  log_i("onIASzoneStatusChangeNotification - no channel found for address 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x",
+        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
 }
 
 bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
@@ -1230,7 +1234,7 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
 void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster) {
 }
 
-uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
+uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name, uint32_t func, char *unit) {
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, sub_id);
   
@@ -1253,6 +1257,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
         addZ2SDeviceTempHumidity(device, first_free_slot); break;
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: {
@@ -1376,8 +1381,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id) {
               addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot);
       } break;
 
-      case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
-        addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, false); break;
+      case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
+        if (sub_id == TUYA_3PHASES_ELECTRICITY_METER_SID)
+          addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, false); 
+        else
+          addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit);
+      } break;
 
       case Z2S_DEVICE_DESC_TUYA_HVAC:
       case Z2S_DEVICE_DESC_TUYA_HVAC_6567C:

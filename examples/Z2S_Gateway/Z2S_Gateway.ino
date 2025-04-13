@@ -1041,6 +1041,14 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
                           } break;
 
+                          case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID, "ENERGY", 0, "kWh");
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID, "PRODUCED ENERGY", 0, "kWh");
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_SID, "POWER", 0, "W");
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID, "POWER FACTOR");   
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_SID);
+                          } break;
+
                           /*case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
                             
                             Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID);

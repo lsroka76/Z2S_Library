@@ -202,7 +202,7 @@ void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster);
 
 void Z2S_onDataSaveRequest(uint8_t selector);
 
-uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id = -1);
+uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id = -1, char *name = nullptr, uint32_t func = 0, char *unit = nullptr);
 uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, 
                            uint8_t endpoints, uint32_t desc_id);
 

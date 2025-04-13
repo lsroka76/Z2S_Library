@@ -623,7 +623,7 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
       } else log_i("zbAttributeReporting occupancy sensing cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) {
-      if (attribute->id == ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_BOOL) 
+      if (attribute->id == ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID && ((attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_BOOL) || (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8)))
       {
         bool value = attribute->data.value ? *(bool *)attribute->data.value : 0;
         log_i("zbAttributeReporting on/off report %s",value ? "ON" : "OFF");
