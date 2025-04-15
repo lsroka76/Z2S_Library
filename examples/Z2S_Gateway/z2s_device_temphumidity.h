@@ -6,7 +6,7 @@
 
 void initZ2SDeviceTempHumidity(int16_t channel_number_slot);
 
-void addZ2SDeviceTempHumidity(zbg_device_params_t *device, uint8_t free_slot);
+void addZ2SDeviceTempHumidity(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id = -1, char *name = nullptr, uint32_t func = 0);
 
 void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp, signed char rssi); 
 

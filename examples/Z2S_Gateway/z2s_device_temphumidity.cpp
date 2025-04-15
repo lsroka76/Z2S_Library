@@ -8,13 +8,21 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot) {
   auto Supla_Z2S_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(timeout);
 
   Supla_Z2S_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+
+  if (strlen(z2s_devices_table[channel_number_slot].Supla_channel_name) > 0) 
+    Supla_Z2S_VirtualThermHygroMeter->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);
+  
+  if (z2s_devices_table[channel_number_slot].Supla_channel_func != 0) 
+    Supla_Z2S_VirtualThermHygroMeter->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
+  
 }
 
-void addZ2SDeviceTempHumidity(zbg_device_params_t *device, uint8_t free_slot) {
+void addZ2SDeviceTempHumidity(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name, uint32_t func) {
 
   auto Supla_Z2S_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter();
   
-  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, -1);
+  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, sub_id,
+                           name, func);
 }
 
 Supla::Sensor::Z2S_VirtualThermHygroMeter* getZ2SDeviceTempHumidityPtr(uint8_t Supla_channel) {

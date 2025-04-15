@@ -1049,6 +1049,18 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_SID);
                           } break;
 
+                          case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR: {
+                            Z2S_addZ2SDevice(joined_device, ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID, "TH");
+                            Z2S_addZ2SDevice(joined_device, ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 0, "lx");
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, "ALARM_1", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);  
+                          } break;
+
+                          case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: {
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, "CONTACT", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID, "VIBRATION", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                          }
                           /*case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
                             
                             Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID);
@@ -1077,7 +1089,19 @@ void loop() {
               //zbGateway.sendDeviceFactoryReset(joined_device);
               switch (Z2S_DEVICES_LIST[i].z2s_device_desc_id) { //(joined_device->model_id) {
 
-                case 0x0000: break;      
+                case 0x0000: break;     
+
+                case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR:
+                case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: {
+                  esp_zb_ieee_addr_t gateway_ieee_addr;
+                  memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
+                  zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+                                               ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, 8,&gateway_ieee_addr);
+                  esp_zb_get_long_address(gateway_ieee_addr);
+                  zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+                                               ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, 8,&gateway_ieee_addr);
+
+                } break;
                 
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1: {

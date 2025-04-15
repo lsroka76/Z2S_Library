@@ -927,7 +927,6 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
   if (channel_number_slot >= 0) {
     log_i("IASZONE - IAS_ZONE_ALARM_1_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
-    return;
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_2_SID);
@@ -935,7 +934,6 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
   if (channel_number_slot >= 0) {
     log_i("IASZONE - IAS_ZONE_ALARM_2_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 2), rssi);
-    return;
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_TAMPER_SID);
@@ -1239,7 +1237,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, sub_id);
   
   if (channel_number_slot < 0) {
-    log_i("No channel found for address %s, adding new one", device->ieee_addr);
+    log_i("No channel found for address  for 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, adding new one!",
+        device->ieee_addr[7], device->ieee_addr[6], device->ieee_addr[5], device->ieee_addr[4], 
+        device->ieee_addr[3], device->ieee_addr[2], device->ieee_addr[1], device->ieee_addr[0]);
     
     uint8_t first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
     
@@ -1258,10 +1258,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
-        addZ2SDeviceTempHumidity(device, first_free_slot); break;
+        addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: {
-        addZ2SDeviceTempHumidity(device, first_free_slot);
+        addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func);
         
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -1391,7 +1391,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_HVAC:
       case Z2S_DEVICE_DESC_TUYA_HVAC_6567C:
       case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
-      case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: {
+      case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
+      case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:
+      case Z2S_DEVICE_DESC_TS0601_TRV_ME167:
+      case Z2S_DEVICE_DESC_TS0601_TRV_BECA:
+      case Z2S_DEVICE_DESC_TS0601_TRV_MOES: {
       
         addZ2SDeviceTempHumidity(device, first_free_slot);
         uint8_t trv_thermometer_slot = first_free_slot;
@@ -1548,7 +1552,27 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); break;
         }
       } break;
-      
+
+      case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR: {
+        
+        switch (sub_id) {
+          case IAS_ZONE_ALARM_1_SID:
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+
+          case IAS_ZONE_TAMPER_SID:
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+
+          case ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+
+          case ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID: 
+            addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+        }
+      } break;
+
+      case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
+        addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+
       default : {
         
         log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);

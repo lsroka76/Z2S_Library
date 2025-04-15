@@ -26,6 +26,114 @@
 #include "ZigbeeGateway.h"
 #include "hvac_base_ee.h"
 
+#define SASWELL_CS 0x01 
+#define SASWELL_CMD_ON_1  0x65
+#define SASWELL_CMD_ON_2  0x01
+#define SASWELL_CMD_ON_3  0x00
+#define SASWELL_CMD_ON_4  0x01
+#define SASWELL_CMD_ON_5  0x01
+
+#define SASWELL_CMD_OFF_1 0x65
+#define SASWELL_CMD_OFF_2 0x01
+#define SASWELL_CMD_OFF_3 0x00
+#define SASWELL_CMD_OFF_4 0x01
+#define SASWELL_CMD_OFF_5 0x00
+
+#define SASWELL_CMD_SET_TARGET_HEATSETPOINT_1 0x67
+#define SASWELL_CMD_SET_TARGET_HEATSETPOINT_2 0x02
+
+#define SASWELL_CMD_SET_TEMPERATURE_CALIBRATION_1 0x1B
+#define SASWELL_CMD_SET_TEMPERATURE_CALIBRATION_2 0x02
+
+#define SASWELL_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
+#define SASWELL_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
+#define SASWELL_TEMPERATURE_CALIBRATION_FACTOR 0x01 //*1
+
+#define ME167_CS   0x02
+
+#define ME167_CMD_ON_1  0x02
+#define ME167_CMD_ON_2  0x04
+#define ME167_CMD_ON_3  0x00
+#define ME167_CMD_ON_4  0x01
+#define ME167_CMD_ON_5  0x01
+
+#define ME167_CMD_OFF_1 0x02
+#define ME167_CMD_OFF_2 0x04
+#define ME167_CMD_OFF_3 0x00
+#define ME167_CMD_OFF_4 0x01
+#define ME167_CMD_OFF_5 0x02
+
+#define ME167_CMD_SET_TARGET_HEATSETPOINT_1 0x04
+#define ME167_CMD_SET_TARGET_HEATSETPOINT_2 0x02
+
+#define ME167_CMD_SET_TEMPERATURE_CALIBRATION_1 0x2F
+#define ME167_CMD_SET_TEMPERATURE_CALIBRATION_2 0x02
+
+#define ME167_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
+#define ME167_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
+#define ME167_TEMPERATURE_CALIBRATION_FACTOR 0x0A //*10
+
+#define ME167_STATE_1 0x03
+#define ME167_STATE_2 0x04
+
+#define ME167_STATE_IDLE    0x01
+#define ME167_STATE_HEATING 0x00
+
+#define BEKA_CS    0x03
+
+#define BEKA_CMD_ON_1  0x01
+#define BEKA_CMD_ON_2  0x04
+#define BEKA_CMD_ON_3  0x00
+#define BEKA_CMD_ON_4  0x01
+#define BEKA_CMD_ON_5  0x01
+
+#define BEKA_CMD_OFF_1 0x07
+#define BEKA_CMD_OFF_2 0x04
+#define BEKA_CMD_OFF_3 0x00
+#define BEKA_CMD_OFF_4 0x01
+#define BEKA_CMD_OFF_5 0x00
+
+#define BEKA_CMD_SET_TARGET_HEATSETPOINT_1 0x02
+#define BEKA_CMD_SET_TARGET_HEATSETPOINT_2 0x02
+
+#define BEKA_CMD_SET_TEMPERATURE_CALIBRATION_1 0x69
+#define BEKA_CMD_SET_TEMPERATURE_CALIBRATION_2 0x02
+
+#define BEKA_TARGET_HEATSETPOINT_FACTOR     0x01 //*1
+#define BEKA_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
+#define BEKA_TEMPERATURE_CALIBRATION_FACTOR 0x01 //*1
+
+//#define BEKA_STATE_1 0x03
+//#define BEKA_STATE_2 0x04
+
+//#define BEKA_STATE_IDLE    0x01
+//#define BEKA_STATE_HEATING 0x00
+
+#define MOES_CS    0x04
+
+#define MOES_CMD_ON_1  0x6A
+#define MOES_CMD_ON_2  0x04
+#define MOES_CMD_ON_3  0x00
+#define MOES_CMD_ON_4  0x01
+#define MOES_CMD_ON_5  0x00
+
+#define MOES_CMD_OFF_1 0x6A
+#define MOES_CMD_OFF_2 0x04
+#define MOES_CMD_OFF_3 0x00
+#define MOES_CMD_OFF_4 0x01
+#define MOES_CMD_OFF_5 0x02
+
+#define MOES_CMD_SET_TARGET_HEATSETPOINT_1 0x02
+#define MOES_CMD_SET_TARGET_HEATSETPOINT_2 0x02
+
+#define MOES_CMD_SET_TEMPERATURE_CALIBRATION_1 0x2C
+#define MOES_CMD_SET_TEMPERATURE_CALIBRATION_2 0x02
+
+#define MOES_TARGET_HEATSETPOINT_FACTOR     0x01 //*1
+#define MOES_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
+#define MOES_TEMPERATURE_CALIBRATION_FACTOR 0x0A //*10
+
+
 namespace Supla {
 namespace Control {
 class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, public Element {
@@ -60,7 +168,6 @@ protected:
   uint32_t _refresh_ms      = 5000;
   uint32_t _last_refresh_ms = 0;
 
-  void sendOnOff(bool state);
   void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int16_t temperature_setpoint);
   void sendTRVTemperatureCalibration(int32_t temperature_calibration);
