@@ -44,23 +44,28 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int16_t temper
     _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
 
     switch(_trv_commands_set) {
-      case SASWELL_CS: {
+      case SASWELL_CMD_SET: {
         _Tuya_dp_data[2] = SASWELL_CMD_SET_TARGET_HEATSETPOINT_1; 
         temperature_setpoint *= SASWELL_TARGET_HEATSETPOINT_FACTOR;
       } break;
-      case ME167_CS: {
+      case ME167_CMD_SET: {
         _Tuya_dp_data[2] = ME167_CMD_SET_TARGET_HEATSETPOINT_1; 
         temperature_setpoint *= ME167_TARGET_HEATSETPOINT_FACTOR;
       } break;
-      case BEKA_CS: {   
-        _Tuya_dp_data[2] = BEKA_CMD_SET_TARGET_HEATSETPOINT_1; 
-        temperature_setpoint *= BEKA_TARGET_HEATSETPOINT_FACTOR;
+      case BECA_CMD_SET: {   
+        _Tuya_dp_data[2] = BECA_CMD_SET_TARGET_HEATSETPOINT_1; 
+        temperature_setpoint *= BECA_TARGET_HEATSETPOINT_FACTOR;
       } break;
-      case MOES_CS: {     
+      case MOES_CMD_SET: {     
         _Tuya_dp_data[2] = MOES_CMD_SET_TARGET_HEATSETPOINT_1;
         temperature_setpoint *= MOES_TARGET_HEATSETPOINT_FACTOR;
        } break;
+      default: temperature_setpoint = 0; break;
     }
+    if (temperature_setpoint == 0)
+      return;
+    temperature_setpoint /= 100;
+
     _Tuya_dp_data[3] = 0x02;
     _Tuya_dp_data[4] = 0x00;
     _Tuya_dp_data[5] = 0x04;
@@ -84,23 +89,30 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t tem
     _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
 
     switch(_trv_commands_set) {
-      case SASWELL_CS: {
+      case SASWELL_CMD_SET: {
         _Tuya_dp_data[2] = SASWELL_CMD_SET_TEMPERATURE_CALIBRATION_1; 
         temperature_calibration *= SASWELL_TEMPERATURE_CALIBRATION_FACTOR;
       } break;
-      case ME167_CS: {
+      case ME167_CMD_SET: {
         _Tuya_dp_data[2] = ME167_CMD_SET_TEMPERATURE_CALIBRATION_1; 
         temperature_calibration *= ME167_TEMPERATURE_CALIBRATION_FACTOR;
       } break;
-      case BEKA_CS: {   
-        _Tuya_dp_data[2] = BEKA_CMD_SET_TEMPERATURE_CALIBRATION_1; 
-        temperature_calibration *= BEKA_TEMPERATURE_CALIBRATION_FACTOR;
+      case BECA_CMD_SET: {   
+        _Tuya_dp_data[2] = BECA_CMD_SET_TEMPERATURE_CALIBRATION_1; 
+        temperature_calibration *= BECA_TEMPERATURE_CALIBRATION_FACTOR;
       } break;
-      case MOES_CS: {     
+      case MOES_CMD_SET: {     
         _Tuya_dp_data[2] = MOES_CMD_SET_TEMPERATURE_CALIBRATION_1;
         temperature_calibration *= MOES_TEMPERATURE_CALIBRATION_FACTOR;
        } break;
+      default:
+        temperature_calibration = 0; break;
     }
+
+    if (temperature_calibration == 0)
+      return;
+
+    temperature_calibration /= 100; 
 
     _Tuya_dp_data[3] = 0x02;
     _Tuya_dp_data[4] = 0x00;
@@ -126,28 +138,28 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
 
     if (trv_system_mode == 1) {
       switch(_trv_commands_set) {
-        case SASWELL_CS: {
+        case SASWELL_CMD_SET: {
           _Tuya_dp_data[2] = SASWELL_CMD_ON_1; 
           _Tuya_dp_data[3] = SASWELL_CMD_ON_2;
           _Tuya_dp_data[4] = SASWELL_CMD_ON_3;
           _Tuya_dp_data[5] = SASWELL_CMD_ON_4;
           _Tuya_dp_data[6] = SASWELL_CMD_ON_5;
         } break;
-        case ME167_CS: {
+        case ME167_CMD_SET: {
           _Tuya_dp_data[2] = ME167_CMD_ON_1; 
           _Tuya_dp_data[3] = ME167_CMD_ON_2;
           _Tuya_dp_data[4] = ME167_CMD_ON_3;
           _Tuya_dp_data[5] = ME167_CMD_ON_4;
           _Tuya_dp_data[6] = ME167_CMD_ON_5;
         } break;
-        case BEKA_CS: {   
-          _Tuya_dp_data[2] = BEKA_CMD_ON_1; 
-          _Tuya_dp_data[3] = BEKA_CMD_ON_2;
-          _Tuya_dp_data[4] = BEKA_CMD_ON_3;
-          _Tuya_dp_data[5] = BEKA_CMD_ON_4;
-          _Tuya_dp_data[6] = BEKA_CMD_ON_5;
+        case BECA_CMD_SET: {   
+          _Tuya_dp_data[2] = BECA_CMD_ON_1; 
+          _Tuya_dp_data[3] = BECA_CMD_ON_2;
+          _Tuya_dp_data[4] = BECA_CMD_ON_3;
+          _Tuya_dp_data[5] = BECA_CMD_ON_4;
+          _Tuya_dp_data[6] = BECA_CMD_ON_5;
         } break;
-        case MOES_CS: {     
+        case MOES_CMD_SET: {     
           _Tuya_dp_data[2] = MOES_CMD_ON_1; 
           _Tuya_dp_data[3] = MOES_CMD_ON_2;
           _Tuya_dp_data[4] = MOES_CMD_ON_3;
@@ -157,28 +169,28 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
       }
     } else {
       switch(_trv_commands_set) {
-        case SASWELL_CS: {
+        case SASWELL_CMD_SET: {
           _Tuya_dp_data[2] = SASWELL_CMD_OFF_1; 
           _Tuya_dp_data[3] = SASWELL_CMD_OFF_2;
           _Tuya_dp_data[4] = SASWELL_CMD_OFF_3;
           _Tuya_dp_data[5] = SASWELL_CMD_OFF_4;
           _Tuya_dp_data[6] = SASWELL_CMD_OFF_5;
         } break;
-        case ME167_CS: {
+        case ME167_CMD_SET: {
           _Tuya_dp_data[2] = ME167_CMD_OFF_1; 
           _Tuya_dp_data[3] = ME167_CMD_OFF_2;
           _Tuya_dp_data[4] = ME167_CMD_OFF_3;
           _Tuya_dp_data[5] = ME167_CMD_OFF_4;
           _Tuya_dp_data[6] = ME167_CMD_OFF_5;
         } break;
-        case BEKA_CS: {   
-          _Tuya_dp_data[2] = BEKA_CMD_OFF_1; 
-          _Tuya_dp_data[3] = BEKA_CMD_OFF_2;
-          _Tuya_dp_data[4] = BEKA_CMD_OFF_3;
-          _Tuya_dp_data[5] = BEKA_CMD_OFF_4;
-          _Tuya_dp_data[6] = BEKA_CMD_OFF_5;
+        case BECA_CMD_SET: {   
+          _Tuya_dp_data[2] = BECA_CMD_OFF_1; 
+          _Tuya_dp_data[3] = BECA_CMD_OFF_2;
+          _Tuya_dp_data[4] = BECA_CMD_OFF_3;
+          _Tuya_dp_data[5] = BECA_CMD_OFF_4;
+          _Tuya_dp_data[6] = BECA_CMD_OFF_5;
         } break;
-        case MOES_CS: {     
+        case MOES_CMD_SET: {     
           _Tuya_dp_data[2] = MOES_CMD_OFF_1; 
           _Tuya_dp_data[3] = MOES_CMD_OFF_2;
           _Tuya_dp_data[4] = MOES_CMD_OFF_3;
@@ -194,20 +206,22 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
 
 void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(int16_t trv_temperature_setpoint) {
 
-  switch(_trv_commands_set) {
-    case SASWELL_CS: {
+  _trv_temperature_setpoint = trv_temperature_setpoint;
+
+  /*switch(_trv_commands_set) {
+    case SASWELL_CMD_SET: {
       _trv_temperature_setpoint = trv_temperature_setpoint / SASWELL_LOCAL_TEMPERATURE_FACTOR;
     } break;
-    case ME167_CS: {
+    case ME167_CMD_SET: {
       _trv_temperature_setpoint = trv_temperature_setpoint / ME167_LOCAL_TEMPERATURE_FACTOR;
     } break;
-    case BEKA_CS: {   
-      _trv_temperature_setpoint = trv_temperature_setpoint / BEKA_LOCAL_TEMPERATURE_FACTOR;
+    case BECA_CMD_SET: {   
+      _trv_temperature_setpoint = trv_temperature_setpoint / BECA_LOCAL_TEMPERATURE_FACTOR;
     } break;
-    case MOES_CS: {     
+    case MOES_CMD_SET: {     
       _trv_temperature_setpoint = trv_temperature_setpoint / MOES_LOCAL_TEMPERATURE_FACTOR;
     } break;
-  }
+  }*/
 }
 
 void Supla::Control::Z2S_TRVInterface::setTRVSystemMode(uint8_t trv_system_mode) {
@@ -222,20 +236,22 @@ void Supla::Control::Z2S_TRVInterface::setTRVRunningState(uint8_t trv_running_st
 
 void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int16_t trv_local_temperature) {
   
-  switch(_trv_commands_set) {
-    case SASWELL_CS: {
+  _trv_local_temperature = trv_local_temperature;
+
+  /*switch(_trv_commands_set) {
+    case SASWELL_CMD_SET: {
       _trv_local_temperature = trv_local_temperature / SASWELL_LOCAL_TEMPERATURE_FACTOR;
     } break;
-    case ME167_CS: {
+    case ME167_CMD_SET: {
       _trv_local_temperature = trv_local_temperature / ME167_LOCAL_TEMPERATURE_FACTOR;
     } break;
-    case BEKA_CS: {   
-      _trv_local_temperature = trv_local_temperature / BEKA_LOCAL_TEMPERATURE_FACTOR;
+    case BECA_CMD_SET: {   
+      _trv_local_temperature = trv_local_temperature / BECA_LOCAL_TEMPERATURE_FACTOR;
     } break;
-    case MOES_CS: {     
+    case MOES_CMD_SET: {     
       _trv_local_temperature = trv_local_temperature / MOES_LOCAL_TEMPERATURE_FACTOR;
     } break;
-  }
+  }*/
 }
 
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
@@ -243,12 +259,12 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   if (millis() - _last_refresh_ms > _refresh_ms) {
     _last_refresh_ms = millis();
     
-    if ((_trv_hvac) && (_trv_hvac->getTemperatureSetpointHeat() != _trv_temperature_setpoint * 100)) {
+    if ((_trv_hvac) && (_trv_hvac->getTemperatureSetpointHeat() != _trv_temperature_setpoint)) {
       
       log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - setpoint difference detected: hvac=%d, trv=%d", 
-            _trv_hvac->getTemperatureSetpointHeat(), _trv_temperature_setpoint * 100);
+            _trv_hvac->getTemperatureSetpointHeat(), _trv_temperature_setpoint);
 
-      sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat()/100);        
+      sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());        
     }
     
     if ((_trv_hvac) && ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1)  != _trv_system_mode)) {
@@ -262,11 +278,11 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     if (_trv_hvac)
       hvacLastTemperature = _trv_hvac->getLastTemperature();
-    if ((_trv_local_temperature != INT16_MIN) && (hvacLastTemperature != INT16_MIN) && (hvacLastTemperature != _trv_local_temperature*100)) {
-      int16_t temperature_calibration_offset = (hvacLastTemperature - _trv_local_temperature*100) / 100;
+    if ((_trv_local_temperature != INT16_MIN) && (hvacLastTemperature != INT16_MIN) && (hvacLastTemperature != _trv_local_temperature)) {
+      int16_t temperature_calibration_offset = (hvacLastTemperature - _trv_local_temperature);
 
       log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected: hvac=%d, trv=%d, offset=%d", 
-            hvacLastTemperature, _trv_local_temperature*100, temperature_calibration_offset);
+            hvacLastTemperature, _trv_local_temperature, temperature_calibration_offset);
       if (temperature_calibration_offset !=0)
         sendTRVTemperatureCalibration(temperature_calibration_offset);        
     }

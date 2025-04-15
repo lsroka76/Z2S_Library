@@ -6,11 +6,26 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
 
   switch (z2s_devices_table[channel_number_slot].model_id) {
 
-    case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: trv_commands_set = 1; break;
+    /*case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: trv_commands_set = 1; break;
 
     case Z2S_DEVICE_DESC_TUYA_HVAC_23457: trv_commands_set = 2; break;
 
-    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: trv_commands_set = 3; break;
+    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: trv_commands_set = 3; break;*/
+    
+    case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:  
+      trv_commands_set = SASWELL_CMD_SET; break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_ME167:
+      trv_commands_set = ME167_CMD_SET; break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_BECA:
+      trv_commands_set = BECA_CMD_SET; break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_MOES:
+      trv_commands_set = MOES_CMD_SET; break;  
+    
+    default:
+      trv_commands_set = 0x00; break;
   }
   
   auto Supla_Z2S_TRVInterface = new Supla::Control::Z2S_TRVInterface(gateway, device, trv_commands_set);
@@ -53,7 +68,7 @@ void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint
 
 }
 
-void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, uint16_t msg_value, signed char rssi) {
+void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int16_t msg_value, signed char rssi) {
 
   if (channel_number_slot < 0) {
     
@@ -72,10 +87,10 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, uint16_t msg_
   auto Supla_Z2S_TRVInterface = reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(Supla_Z2S_HvacBase->getPrimaryOutputEE());
 
   switch (msg_id) {
-    case TRV_HEATING_SETPOINT_MSG: {
+    case TRV_HEATING_SETPOINT_MSG: {   //degrees
       log_i("msgZ2SDeviceHvac - TRV_HEATING_SETPOINT_MSG: 0x%x", msg_value);
           
-        Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value*10);
+        Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
         Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
     } break;
 
