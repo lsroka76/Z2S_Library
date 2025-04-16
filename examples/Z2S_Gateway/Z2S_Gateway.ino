@@ -1057,17 +1057,19 @@ void loop() {
                           } break;
 
                           case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: {
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, "CONTACT", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, "CONTACT", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
                             Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID, "VIBRATION", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                             Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-                          }
-                          /*case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
+                          } break;
+
+                          case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B: {
                             
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID);
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID);
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID);
-                          }*/
-                          default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID); 
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID,"CONTACT", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_LOW_BATTERY_SID, "LOW BATTERY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                          } break;
+
+                          default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
                         }
                   }  
                   /*else 

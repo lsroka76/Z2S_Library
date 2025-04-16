@@ -1274,7 +1274,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: 
       case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR: 
       case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
-        addZ2SDeviceIASzone(device, first_free_slot); break;
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
+        addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
         

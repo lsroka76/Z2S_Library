@@ -236,6 +236,7 @@ void Supla::Control::Z2S_TRVInterface::setTRVRunningState(uint8_t trv_running_st
 
 void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int32_t trv_local_temperature) {
   
+  _trv_last_local_temperature = _trv_local_temperature;
   _trv_local_temperature = trv_local_temperature;
 
   /*switch(_trv_commands_set) {
@@ -277,14 +278,17 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     int16_t hvacLastTemperature = INT16_MIN;
 
     if (_trv_hvac)
-      hvacLastTemperature = _trv_hvac->getLastTemperature();
-    if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && (hvacLastTemperature != _trv_local_temperature)) {
-      int32_t temperature_calibration_offset = (hvacLastTemperature - _trv_local_temperature);
+      hvacLastTemperature = _trv_hvac->getPrimaryTemp(); //_trv_hvac->getLastTemperature();
+    if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && 
+        (hvacLastTemperature != _trv_local_temperature)) {
+      
+      _trv_last_temperature_calibration_offset = _trv_temperature_calibration_offset;
+      _trv_temperature_calibration_offset = hvacLastTemperature - (_trv_local_temperature + _trv_last_temperature_calibration_offset);
 
-      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected: hvac=%d, trv=%d, offset=%d", 
-            hvacLastTemperature, _trv_local_temperature, temperature_calibration_offset);
-      if (temperature_calibration_offset !=0)
-        sendTRVTemperatureCalibration(temperature_calibration_offset);        
+      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected: hvac=%d, trv=%d, offset=%d, last offset %d", 
+            hvacLastTemperature, _trv_local_temperature, _trv_temperature_calibration_offset, _trv_last_temperature_calibration_offset);
+      if (_trv_temperature_calibration_offset != _trv_last_temperature_calibration_offset)
+        sendTRVTemperatureCalibration(_trv_temperature_calibration_offset);        
     }
 
     if (_trv_local_temperature == INT32_MIN) {

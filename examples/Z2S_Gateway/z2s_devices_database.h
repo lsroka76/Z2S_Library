@@ -1,7 +1,7 @@
 #ifndef Z2S_DEVICES_DATABASE_H_
 #define Z2S_DEVICES_DATABASE_H_
 
-// Z2S_DEVICE_DESC_ID - used for selection of clusters to bind and matching Supla channels
+// Z2S_DEVICE_DESC_ID - used for selection of clusters to bind and matching Supla channels#define
 
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             0x1000
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1           0x1001
@@ -23,6 +23,7 @@
 
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 0x2000
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T           0x2001
+#define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B           0x2002
 
 #define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR            0x2004
 #define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1          0x2005
@@ -134,6 +135,7 @@
 #define IAS_ZONE_ALARM_1_SID                        0x00
 #define IAS_ZONE_ALARM_2_SID                        0x01
 #define IAS_ZONE_TAMPER_SID                         0x02
+#define IAS_ZONE_LOW_BATTERY_SID                    0x03
 
 #define TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID          0x00
 #define TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID   0x01
@@ -280,6 +282,11 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
       ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -1248,6 +1255,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_lzdjjfss", .model_name = "TS0210", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "ADEO", .model_name = "ZB-DoorSensor-D0007", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B, .z2s_device_endpoints_count = 1},   
+
   { .manufacturer_name = "ADEO", .model_name = "ZB-SMART-PIRTH-V3", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1417,10 +1427,10 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_6567C, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_o3x45p96", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_9xfjixap", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_ymldrmzx", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_endpoints_count = 1},
@@ -1429,13 +1439,11 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_MOES, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_b6wax7g0", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_BECA, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE204_rtrmfadk", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY, .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "_TZE200_rtrmfadk", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_keabpigv", .model_name = "TS0505A",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A, .z2s_device_endpoints_count = 1},

@@ -3,6 +3,8 @@
 void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot) {
   
   uint8_t trv_commands_set;
+  int16_t hvac_room_temperature_min = 500;
+  int16_t hvac_room_temperature_max = 3000;
 
   switch (z2s_devices_table[channel_number_slot].model_id) {
 
@@ -12,17 +14,41 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
 
     case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: trv_commands_set = 3; break;*/
     
-    case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:  
-      trv_commands_set = SASWELL_CMD_SET; break;
+    case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {  
+      
+      trv_commands_set = SASWELL_CMD_SET; 
 
-    case Z2S_DEVICE_DESC_TS0601_TRV_ME167:
-      trv_commands_set = ME167_CMD_SET; break;
+      hvac_room_temperature_min = SASWELL_CMD_SET_HEATSETPOINT_MIN;
+      hvac_room_temperature_max = SASWELL_CMD_SET_HEATSETPOINT_MAX;
 
-    case Z2S_DEVICE_DESC_TS0601_TRV_BECA:
-      trv_commands_set = BECA_CMD_SET; break;
+    } break;
 
-    case Z2S_DEVICE_DESC_TS0601_TRV_MOES:
-      trv_commands_set = MOES_CMD_SET; break;  
+    case Z2S_DEVICE_DESC_TS0601_TRV_ME167: {
+      
+      trv_commands_set = ME167_CMD_SET; 
+
+      hvac_room_temperature_min = ME167_CMD_SET_HEATSETPOINT_MIN;
+      hvac_room_temperature_max = ME167_CMD_SET_HEATSETPOINT_MAX;
+
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_BECA: {
+      
+      trv_commands_set = BECA_CMD_SET; 
+
+      hvac_room_temperature_min = BECA_CMD_SET_HEATSETPOINT_MIN;
+      hvac_room_temperature_max = BECA_CMD_SET_HEATSETPOINT_MAX;
+
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_MOES: {
+
+      trv_commands_set = MOES_CMD_SET; 
+
+      hvac_room_temperature_min = MOES_CMD_SET_HEATSETPOINT_MIN;
+      hvac_room_temperature_max = MOES_CMD_SET_HEATSETPOINT_MAX;
+
+    } break;  
     
     default:
       trv_commands_set = 0x00; break;
@@ -56,6 +82,9 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   Supla_Z2S_HvacBase->allowWrapAroundTemperatureSetpoints();
   Supla_Z2S_HvacBase->setPrimaryOutputEE(Supla_Z2S_TRVInterface);
   Supla_Z2S_TRVInterface->setTRVHvac(Supla_Z2S_HvacBase);
+
+  Supla_Z2S_HvacBase->setTemperatureRoomMin(hvac_room_temperature_min);
+  Supla_Z2S_HvacBase->setTemperatureRoomMax(3000); //hvac_room_temperature_max);
 }
 
 void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint8_t free_slot, uint8_t trv_thermometer_slot) {

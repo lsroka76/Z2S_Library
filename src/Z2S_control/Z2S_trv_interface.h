@@ -53,6 +53,9 @@
 #define SASWELL_CMD_SET_RUNNING_STATE_IDLE        0x00
 #define SASWELL_CMD_SET_RUNNING_STATE_HEAT        0x01
 
+#define SASWELL_CMD_SET_HEATSETPOINT_MIN          0x01F4 //500
+#define SASWELL_CMD_SET_HEATSETPOINT_MAX          0x0BB8 //3000
+
 #define SASWELL_TARGET_HEATSETPOINT_FACTOR        0x0A //*10
 #define SASWELL_LOCAL_TEMPERATURE_FACTOR          0x0A //*10
 #define SASWELL_TEMPERATURE_CALIBRATION_FACTOR    0x01 //*1
@@ -83,6 +86,9 @@
 #define ME167_CMD_SET_RUNNING_STATE_1     0x03
 #define ME167_CMD_SET_RUNNING_STATE_IDLE  0x01
 #define ME167_CMD_SET_RUNNING_STATE_HEAT  0x00 //inverted
+
+#define ME167_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define ME167_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
 
 #define ME167_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
 #define ME167_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
@@ -121,6 +127,8 @@
 #define BECA_CMD_SET_RUNNING_STATE_IDLE  0x00
 #define BECA_CMD_SET_RUNNING_STATE_HEAT  0x01 //valve state
 
+#define BECA_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define BECA_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
 
 #define BECA_TARGET_HEATSETPOINT_FACTOR     0x01 //*1
 #define BECA_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
@@ -153,6 +161,8 @@
 #define MOES_CMD_SET_RUNNING_STATE_IDLE  0x00
 #define MOES_CMD_SET_RUNNING_STATE_HEAT  0x64 //valve state
 
+#define MOES_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define MOES_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500
 
 #define MOES_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
 #define MOES_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
@@ -185,11 +195,17 @@ protected:
 
   HvacBaseEE *_trv_hvac = nullptr;
 
-  uint8_t _trv_system_mode = 0;
-  uint8_t _trv_running_state = 0;
-  int32_t _trv_temperature_setpoint = 0;
-  int32_t _trv_local_temperature = INT32_MIN;
-    
+  uint8_t _trv_system_mode            = 0;
+  uint8_t _trv_running_state          = 0;
+
+  int32_t _trv_temperature_setpoint   = 0;
+
+  int32_t _trv_last_temperature_calibration_offset = 0;
+  int32_t _trv_temperature_calibration_offset      = 0;
+
+  int32_t _trv_local_temperature      = INT32_MIN;
+  int32_t _trv_last_local_temperature = INT32_MIN;
+
   uint32_t _refresh_ms      = 5000;
   uint32_t _last_refresh_ms = 0;
 
