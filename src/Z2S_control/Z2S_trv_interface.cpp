@@ -33,7 +33,7 @@ void Supla::Control::Z2S_TRVInterface::setTRVHvac(Supla::Control::HvacBaseEE * t
 }
 
 
-void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int16_t temperature_setpoint) {
+void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temperature_setpoint) {
 
   if (_gateway && Zigbee.started()) {
     log_i("Z2S_TRVInterface::sendTRVTemperatureSetpoint = %d", temperature_setpoint);
@@ -204,7 +204,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
   }
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(int16_t trv_temperature_setpoint) {
+void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(int32_t trv_temperature_setpoint) {
 
   _trv_temperature_setpoint = trv_temperature_setpoint;
 
@@ -234,7 +234,7 @@ void Supla::Control::Z2S_TRVInterface::setTRVRunningState(uint8_t trv_running_st
   _trv_running_state = trv_running_state;
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int16_t trv_local_temperature) {
+void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int32_t trv_local_temperature) {
   
   _trv_local_temperature = trv_local_temperature;
 
@@ -278,8 +278,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     if (_trv_hvac)
       hvacLastTemperature = _trv_hvac->getLastTemperature();
-    if ((_trv_local_temperature != INT16_MIN) && (hvacLastTemperature != INT16_MIN) && (hvacLastTemperature != _trv_local_temperature)) {
-      int16_t temperature_calibration_offset = (hvacLastTemperature - _trv_local_temperature);
+    if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && (hvacLastTemperature != _trv_local_temperature)) {
+      int32_t temperature_calibration_offset = (hvacLastTemperature - _trv_local_temperature);
 
       log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected: hvac=%d, trv=%d, offset=%d", 
             hvacLastTemperature, _trv_local_temperature, temperature_calibration_offset);
@@ -287,7 +287,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         sendTRVTemperatureCalibration(temperature_calibration_offset);        
     }
 
-    if (_trv_local_temperature == INT16_MIN) {
+    if (_trv_local_temperature == INT32_MIN) {
       log_i("No TRV temperature data - sending TemperatureCalibration with 0 value");
       sendTRVTemperatureCalibration(0);
     }
