@@ -68,7 +68,7 @@ void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint
 
 }
 
-void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int16_t msg_value, signed char rssi) {
+void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value, signed char rssi) {
 
   if (channel_number_slot < 0) {
     
@@ -87,14 +87,14 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int16_t msg_v
   auto Supla_Z2S_TRVInterface = reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(Supla_Z2S_HvacBase->getPrimaryOutputEE());
 
   switch (msg_id) {
-    case TRV_HEATING_SETPOINT_MSG: {   //degrees
+    case TRV_HEATING_SETPOINT_MSG: {   //degrees*100
       log_i("msgZ2SDeviceHvac - TRV_HEATING_SETPOINT_MSG: 0x%x", msg_value);
           
         Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
         Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
     } break;
 
-    case TRV_SYSTEM_MODE_MSG: {
+    case TRV_SYSTEM_MODE_MSG: { //0:off, 1:on
       log_i("msgZ2SDeviceHvac - TRV_SYSTEM_MODE_MSG: 0x%x", msg_value);
 
       switch (msg_value) {
@@ -105,14 +105,14 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int16_t msg_v
 
     } break;
 
-    case TRV_RUNNING_STATE_MSG: {
+    case TRV_RUNNING_STATE_MSG: { //0:idle, 1:heat
       log_i("msgZ2SDeviceHvac - TRV_RUNNING_STATE_MSG: 0x%x", msg_value);
       
       Supla_Z2S_TRVInterface->setTRVRunningState(msg_value);
       Supla_Z2S_TRVInterface->setOutputValueFromRemote(msg_value*100);
     } break;
   
-    case TRV_LOCAL_TEMPERATURE_MSG: {
+    case TRV_LOCAL_TEMPERATURE_MSG: { //degrees*100
       log_i("msgZ2SDeviceHvac - TRV_LOCAL_TEMPERATURE_MSG: 0x%x", msg_value);
         Supla_Z2S_TRVInterface->setTRVLocalTemperature(msg_value);
     } break;
