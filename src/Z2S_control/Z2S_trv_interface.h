@@ -171,10 +171,10 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   void iterateAlways() override;
   void handleAction(int event, int action) override;
 
-  void setTRVTemperatureSetpoint(int16_t trv_temperature_setpoint);
+  void setTRVTemperatureSetpoint(int32_t trv_temperature_setpoint);
   void setTRVSystemMode(uint8_t trv_system_mode);
   void setTRVRunningState(uint8_t trv_running_state);
-  void setTRVLocalTemperature(int16_t trv_local_temperature);
+  void setTRVLocalTemperature(int32_t trv_local_temperature);
 
 protected:
 
@@ -187,14 +187,14 @@ protected:
 
   uint8_t _trv_system_mode = 0;
   uint8_t _trv_running_state = 0;
-  int16_t _trv_temperature_setpoint = 0;
-  int16_t _trv_local_temperature = INT16_MIN;
+  int32_t _trv_temperature_setpoint = 0;
+  int32_t _trv_local_temperature = INT32_MIN;
     
   uint32_t _refresh_ms      = 5000;
   uint32_t _last_refresh_ms = 0;
 
   void sendTRVSystemMode(uint8_t trv_system_mode);
-  void sendTRVTemperatureSetpoint(int16_t temperature_setpoint);
+  void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);
   void sendTRVTemperatureCalibration(int32_t temperature_calibration);
 };
 
