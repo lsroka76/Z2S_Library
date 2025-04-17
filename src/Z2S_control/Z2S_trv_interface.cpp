@@ -81,7 +81,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t temperature_calibration) {
 
   if (_gateway && Zigbee.started()) {
-    log_i("Z2S_TRVInterface::sendTRVTemperatureCorrection = %d", temperature_calibration);
+    log_i("Z2S_TRVInterface::sendTRVTemperatureCalibration = %d", temperature_calibration);
 
     uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -283,7 +283,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         (hvacLastTemperature != _trv_local_temperature)) {
       
       _trv_last_temperature_calibration_offset = _trv_temperature_calibration_offset;
-      _trv_temperature_calibration_offset = hvacLastTemperature - (_trv_local_temperature + _trv_last_temperature_calibration_offset);
+      _trv_temperature_calibration_offset = hvacLastTemperature - _trv_local_temperature;
 
       log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected: hvac=%d, trv=%d, offset=%d, last offset %d", 
             hvacLastTemperature, _trv_local_temperature, _trv_temperature_calibration_offset, _trv_last_temperature_calibration_offset);
