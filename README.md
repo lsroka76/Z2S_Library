@@ -38,9 +38,9 @@ That gateway, as discussed on the [Supla forum](https://forum.supla.org/viewforu
 [(ToC)](#table-of-contents)
 
 ## Installation
-1. You can download source code from this GitHub account and compile it by yourself or
+1. You can download source code from this GitHub account and compile it by yourself, or
    
-2. You can download binary files from latest release and upload to your device with your favorite ESP flashing software:
+2. you can download binary files from latest release and upload to your device with your favorite ESP flashing software:
    
    - Files labeled "merged" should be uploaded at address 0x0000 since they are complete ESP image - they will overwrite any data, nevertheless it's recommended to erase flash before upload,
      
