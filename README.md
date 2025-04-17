@@ -6,6 +6,7 @@ This project is my personal attempt to build a gateway between various Zigbee en
 1. [SUPLA - overview](#supla)
 2. [Zigbee - overview](#zigbee)
 3. [Zigbee <=> SUPLA gateway - overview](#zigbee--supla-gateway-1)
+4. [Installation](#installation)
 
 ## SUPLA
 [SUPLA](https://github.com/SUPLA)  is an open-source Internet of Things (IoT) platform that empowers users to create their own smart home or automation systems. It offers a flexible and cost-effective way to control various devices remotely. The system is based on open software and hardware principles, encouraging community development and customization. Users can build their own devices using popular platforms like Raspberry Pi, Arduino, ESP8266 and ESP32. These devices can then be connected to the Supla cloud or a self-hosted server via Wi-Fi or LAN.
@@ -25,3 +26,7 @@ I've taken an effort to design and build a kind of bidirectional bridge directly
 
 That gateway, as discussed on the [Supla forum](https://forum.supla.org/viewforum.php?f=127), enables the integration of devices using the Zigbee wireless communication protocol with the Supla smart home system. This allows users to control and monitor a wider range of smart devices, which often include sensors, lights, and switches that utilize the low-power and mesh networking capabilities of Zigbee. The gateway essentially acts as a bridge, translating the Zigbee communication into a format that the Supla cloud and applications can understand and interact with.
 [(ToC)](#table-of-contents)
+
+## Installation
+[(ToC)](#table-of-contents)
+
