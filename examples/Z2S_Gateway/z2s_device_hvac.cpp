@@ -69,6 +69,13 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   if (z2s_devices_table[channel_number_slot].Supla_secondary_channel < 0xFF) 
     Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_devices_table[channel_number_slot].Supla_secondary_channel);
 
+  if (z2s_devices_table[channel_number_slot].user_data_1 > 0) 
+    Supla_Z2S_TRVInterface->setTRVTemperatureCalibrationUpdateMs(z2s_devices_table[channel_number_slot].user_data_1 * 1000);
+
+  if (z2s_devices_table[channel_number_slot].user_data_2 > 0) 
+    Supla_Z2S_TRVInterface->setTRVTemperatureCalibrationOffsetTrigger(z2s_devices_table[channel_number_slot].user_data_2 * 100);
+
+
   Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF, Supla_Z2S_TRVInterface,Supla::ON_HVAC_MODE_OFF);
   Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF, Supla_Z2S_TRVInterface,Supla::ON_TURN_OFF);
   Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_HVAC_MODE_HEAT);
@@ -85,6 +92,8 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
 
   Supla_Z2S_HvacBase->setTemperatureRoomMin(hvac_room_temperature_min);
   Supla_Z2S_HvacBase->setTemperatureRoomMax(3000); //hvac_room_temperature_max);
+
+  
 }
 
 void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint8_t free_slot, uint8_t trv_thermometer_slot) {
