@@ -1,7 +1,7 @@
 # Zigbee <=> SUPLA gateway
 This project is my personal attempt to build a gateway between various Zigbee end devices and SUPLA IoT ecosystem.
 
-##Contents:
+## Table of Contents:
 
 1. [SUPLA - overview](#supla)
 2. [Zigbee - overview](#zigbee)
