@@ -1,4 +1,4 @@
-e# Zigbee <=> SUPLA gateway
+# Zigbee <=> SUPLA gateway
 This project is my personal attempt to build a gateway between various Zigbee end devices and SUPLA IoT ecosystem.
 
 ## SUPLA
