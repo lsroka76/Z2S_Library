@@ -38,6 +38,8 @@
 #define Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR              0x2011
 
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
+#define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1           0x2201
+
 
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR            0x2300
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5          0x2305
@@ -157,6 +159,9 @@
 #define TUYA_PRESENCE_SENSOR_PRESENCE_SID             0x01
 #define TUYA_PRESENCE_SENSOR_MOTION_STATE_SID         0x02
 #define TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID          0x03
+
+#define TUYA_SMOKE_DETECTOR_1_SMOKE_SID               0x00
+#define TUYA_SMOKE_DETECTOR_1_TAMPER_SID               0x01
 
 #define TUYA_RAIN_SENSOR_RAIN_SID                     0x01
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_SID              0x02
@@ -1047,6 +1052,9 @@ const dataPoints = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
       TUYA_PRIVATE_CLUSTER_EF00 }}, 
@@ -1183,6 +1191,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 2}, 
 
   { .manufacturer_name = "_TZ3000_yxqnffam", .model_name = "TS0203",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "TZ3000_lqpt3mvr", .model_name = "TS0210",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "IKEA of Sweden", .model_name = "PARASOLL Door/Window Sensor",
@@ -1551,6 +1562,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE200_rccxox8p", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_ntcy3xu1", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_2aaelwxk", .model_name = "TS0225",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_endpoints_count = 1},

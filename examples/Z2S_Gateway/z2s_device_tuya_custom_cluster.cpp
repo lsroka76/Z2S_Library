@@ -487,7 +487,7 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed
   }
 }
 
-void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
+void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
 
   int16_t channel_number_slot_1, channel_number_slot_2;
   Tuya_read_dp_result_t Tuya_read_dp_result;
@@ -523,11 +523,15 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
     updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
     updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
   }
-  /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E, payload_size, payload); //battery_state
-    if (Tuya_read_dp_result.is_success) {
-    log_i("Battery state 0x0E is %d, level %d", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value * 50);
-    Supla_GeneralPurposeMeasurement->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50);
-  } */
+
+  if (model_id == Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1) {
+
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_BATTERY_STATE_DP, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) { 
+      log_i("Battery state 0x0E is %d", Tuya_read_dp_result.dp_value * 50);
+      updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value * 50, rssi);
+    }
+  }
 }
 
 void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
@@ -688,7 +692,8 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
       processTuyaTempHumiditySensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
-      processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, rssi); break;
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
+      processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:

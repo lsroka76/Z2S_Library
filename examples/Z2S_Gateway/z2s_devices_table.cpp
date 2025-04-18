@@ -929,7 +929,10 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
 
   if (channel_number_slot >= 0) {
     log_i("IASZONE - IAS_ZONE_ALARM_1_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
-    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
+    if (iaszone_status < 0x0400)
+      msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
+    else
+    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 0x0400), rssi);
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_2_SID);
@@ -1476,6 +1479,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
         addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "SMOKE CONC.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
+      } break;
+
+      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1: {
+
+        addZ2SDeviceIASzone(device, first_free_slot, -1, "SMOKE DETECT", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
