@@ -178,16 +178,18 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
 
-  void iterateAlways() override;
-  void handleAction(int event, int action) override;
-
-  void setTRVTemperatureCalibrationOffsetTrigger(int32_t trv_temperature_calibration_offset_trigger);
-  void setTRVTemperatureCalibrationUpdateMs(uint32_t trv_temperature_calibration_update_ms);
+  void setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger);
+  void setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms);
 
   void setTRVTemperatureSetpoint(int32_t trv_temperature_setpoint);
   void setTRVSystemMode(uint8_t trv_system_mode);
   void setTRVRunningState(uint8_t trv_running_state);
   void setTRVLocalTemperature(int32_t trv_local_temperature);
+  void setTRVTemperatureCalibration(int32_t trv_temperature_calibration);
+
+  void iterateAlways() override;
+  void handleAction(int event, int action) override;
+
 
 protected:
 
@@ -198,23 +200,33 @@ protected:
 
   HvacBaseEE *_trv_hvac = nullptr;
 
-  uint8_t _trv_system_mode            = 0;
-  uint8_t _trv_running_state          = 0;
+  uint8_t _trv_system_mode         = 0;
+  bool    _trv_system_mode_updated = false;
 
-  int32_t _trv_temperature_setpoint   = 0;
+  uint8_t _trv_running_state         = 0;
+  bool    _trv_running_state_updated = false;
 
-  int32_t _trv_last_temperature_calibration_offset = 0;
-  int32_t _trv_temperature_calibration_offset      = 0;
+  int32_t _trv_temperature_setpoint         = 0;
+  bool    _trv_temperature_setpoint_updated = false;
 
-  int32_t _trv_temperature_calibration_offset_trigger = 500;
+  int32_t _trv_local_temperature         = INT32_MIN;
+  int32_t _trv_last_local_temperature    = INT32_MIN;
+  bool    _trv_local_temperature_updated = false;
 
-  uint32_t  _trv_temperature_calibration_update_ms      = 5 * 60 * 1000; //5 minutes
-  uint32_t  _trv_temperature_calibration_last_update_ms = 0;
+  int32_t _trv_temperature_calibration         = 0;
+  int32_t _trv_last_temperature_calibration    = 0;
+  bool    _trv_temperature_calibration_updated = false;
 
+  int32_t _temperature_calibration_offset      = 0;
+  int32_t _last_temperature_calibration_offset = 0;
   
+  int32_t _temperature_calibration_offset_trigger = 500;
 
-  int32_t _trv_local_temperature      = INT32_MIN;
-  int32_t _trv_last_local_temperature = INT32_MIN;
+  uint32_t  _temperature_calibration_update_ms      = 5 * 60 * 1000; //5 minutes
+  uint32_t  _temperature_calibration_last_update_ms = 0;
+
+  uint32_t _temperature_ping_ms = 60 * 1000;
+  uint32_t _last_temperature_ping_ms = 0;
 
   uint32_t _refresh_ms      = 5000;
   uint32_t _last_refresh_ms = 0;

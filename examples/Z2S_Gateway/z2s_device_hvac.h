@@ -8,10 +8,11 @@
 #include <Z2S_control/hvac_base_ee.h>
 #include <Z2S_control/Z2S_trv_interface.h>
 
-#define TRV_HEATING_SETPOINT_MSG  0x01
-#define TRV_SYSTEM_MODE_MSG       0x02
-#define TRV_LOCAL_TEMPERATURE_MSG 0x03
-#define TRV_RUNNING_STATE_MSG     0x04
+#define TRV_HEATING_SETPOINT_MSG        0x01
+#define TRV_SYSTEM_MODE_MSG             0x02
+#define TRV_LOCAL_TEMPERATURE_MSG       0x03
+#define TRV_RUNNING_STATE_MSG           0x04
+#define TRV_TEMPERATURE_CALIBRATION_MSG 0x05
 
 
 void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);

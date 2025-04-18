@@ -57,6 +57,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   uint8_t running_state_value_idle       = 0xFF;
   uint8_t running_state_value_heat       = 0xFF;
 
+  uint8_t temperature_calibration_dp_id  = 0xFF;
+
   uint8_t system_mode_value_on           = 0xFF;
   uint8_t system_mode_value_off          = 0xFF;
   uint8_t system_mode_value              = 0xFF;
@@ -116,6 +118,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       running_state_value_idle       = SASWELL_CMD_SET_RUNNING_STATE_IDLE;
       running_state_value_heat       = SASWELL_CMD_SET_RUNNING_STATE_HEAT;
 
+      temperature_calibration_dp_id  = SASWELL_CMD_SET_TEMPERATURE_CALIBRATION_1;
+
       local_temperature_factor       = SASWELL_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = SASWELL_TARGET_HEATSETPOINT_FACTOR;
       temperature_calibration_factor = SASWELL_TEMPERATURE_CALIBRATION_FACTOR;
@@ -135,6 +139,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       running_state_dp_id            = ME167_CMD_SET_RUNNING_STATE_1;
       running_state_value_idle       = ME167_CMD_SET_RUNNING_STATE_IDLE;
       running_state_value_heat       = ME167_CMD_SET_RUNNING_STATE_HEAT;
+
+      temperature_calibration_dp_id  = ME167_CMD_SET_TEMPERATURE_CALIBRATION_1;
       
       local_temperature_factor       = ME167_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = ME167_TARGET_HEATSETPOINT_FACTOR;
@@ -155,6 +161,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       running_state_dp_id            = BECA_CMD_SET_RUNNING_STATE_1;
       running_state_value_idle       = BECA_CMD_SET_RUNNING_STATE_IDLE;
       running_state_value_heat       = BECA_CMD_SET_RUNNING_STATE_HEAT;
+
+      temperature_calibration_dp_id  = BECA_CMD_SET_TEMPERATURE_CALIBRATION_1;
       
       local_temperature_factor       = BECA_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = BECA_TARGET_HEATSETPOINT_FACTOR;
@@ -176,6 +184,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       running_state_value_idle       = MOES_CMD_SET_RUNNING_STATE_IDLE;
       running_state_value_heat       = MOES_CMD_SET_RUNNING_STATE_HEAT;
 
+      temperature_calibration_dp_id  = MOES_CMD_SET_TEMPERATURE_CALIBRATION_1;
+
       local_temperature_factor       = MOES_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = MOES_TARGET_HEATSETPOINT_FACTOR;
       temperature_calibration_factor = MOES_TEMPERATURE_CALIBRATION_FACTOR;
@@ -183,40 +193,52 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
     } break;
 
   }
-  if (local_temperature_dp_id < 0xFF)
+  if (local_temperature_dp_id < 0xFF) {
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(local_temperature_dp_id, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) {
-    msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, (float)Tuya_read_dp_result.dp_value/local_temperature_factor, rssi);
-    msgZ2SDeviceHvac(channel_number_slot_2, TRV_LOCAL_TEMPERATURE_MSG, (Tuya_read_dp_result.dp_value*100)/local_temperature_factor, rssi);
+    if (Tuya_read_dp_result.is_success) {
+      msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, (float)Tuya_read_dp_result.dp_value/local_temperature_factor, rssi);
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_LOCAL_TEMPERATURE_MSG, (Tuya_read_dp_result.dp_value*100)/local_temperature_factor, rssi);
+    }
   }
 
-  if (current_heating_setpoint_dp_id < 0xFF)
+  if (current_heating_setpoint_dp_id < 0xFF) {
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(current_heating_setpoint_dp_id, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) {
-    msgZ2SDeviceHvac(channel_number_slot_2, TRV_HEATING_SETPOINT_MSG, (Tuya_read_dp_result.dp_value*100)/target_heatsetpoint_factor, rssi);
+    if (Tuya_read_dp_result.is_success) {
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_HEATING_SETPOINT_MSG, (Tuya_read_dp_result.dp_value*100)/target_heatsetpoint_factor, rssi);
+    }
   }
 
-  if (system_mode_on_dp_id < 0xFF)
+  if (system_mode_on_dp_id < 0xFF) {
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(system_mode_on_dp_id, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) {
-    if (Tuya_read_dp_result.dp_value == system_mode_value_on)
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1, rssi);
+    if (Tuya_read_dp_result.is_success) {
+      if (Tuya_read_dp_result.dp_value == system_mode_value_on)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1, rssi);
+    }
   }
 
-  if (system_mode_off_dp_id < 0xFF)
+  if (system_mode_off_dp_id < 0xFF) {
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(system_mode_off_dp_id, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) {
-    if (Tuya_read_dp_result.dp_value == system_mode_value_off)
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0, rssi);
+    if (Tuya_read_dp_result.is_success) {
+      if (Tuya_read_dp_result.dp_value == system_mode_value_off)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0, rssi);
+    }
   }
 
-  if (running_state_dp_id < 0xFF)
+  if (running_state_dp_id < 0xFF) {
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(running_state_dp_id, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) {
-    if (Tuya_read_dp_result.dp_value == running_state_value_idle)
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, 0, rssi);
-    else
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, 1, rssi);
+    if (Tuya_read_dp_result.is_success) {
+      if (Tuya_read_dp_result.dp_value == running_state_value_idle)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, 0, rssi);
+      else
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, 1, rssi);
+    }
+  }
+
+  if (temperature_calibration_dp_id < 0xFF) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(temperature_calibration_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_TEMPERATURE_CALIBRATION_MSG, (Tuya_read_dp_result.dp_value*100)/temperature_calibration_factor, rssi);
+    }
   }
 }
 

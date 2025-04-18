@@ -70,10 +70,10 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_devices_table[channel_number_slot].Supla_secondary_channel);
 
   if (z2s_devices_table[channel_number_slot].user_data_1 > 0) 
-    Supla_Z2S_TRVInterface->setTRVTemperatureCalibrationUpdateMs(z2s_devices_table[channel_number_slot].user_data_1 * 1000);
+    Supla_Z2S_TRVInterface->setTemperatureCalibrationUpdateMs(z2s_devices_table[channel_number_slot].user_data_1 * 1000);
 
   if (z2s_devices_table[channel_number_slot].user_data_2 > 0) 
-    Supla_Z2S_TRVInterface->setTRVTemperatureCalibrationOffsetTrigger(z2s_devices_table[channel_number_slot].user_data_2 * 100);
+    Supla_Z2S_TRVInterface->setTemperatureCalibrationOffsetTrigger(z2s_devices_table[channel_number_slot].user_data_2 * 100);
 
 
   Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF, Supla_Z2S_TRVInterface,Supla::ON_HVAC_MODE_OFF);
@@ -153,6 +153,11 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     case TRV_LOCAL_TEMPERATURE_MSG: { //degrees*100
       log_i("msgZ2SDeviceHvac - TRV_LOCAL_TEMPERATURE_MSG: 0x%x", msg_value);
         Supla_Z2S_TRVInterface->setTRVLocalTemperature(msg_value);
+    } break;
+    
+    case TRV_TEMPERATURE_CALIBRATION_MSG: { //degrees*100
+      log_i("msgZ2SDeviceHvac - TRV_TEMPERATURE_CALIBRATION_MSG: 0x%x", msg_value);
+        Supla_Z2S_TRVInterface->setTRVTemperatureCalibration(msg_value);
     } break;
     
     default: log_i("msgZ2SDeviceHvac - unknown message id: 0x%x, value 0x%x", msg_id, msg_value); break;

@@ -392,6 +392,23 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }  
     return;
   } else
+  if (strcmp(cmd,"SET-TEMP") == 0) {
+
+    if (params_number < 2)  {
+      telnet.println(">set-temp channel temperature*100");
+      return;
+    }
+    uint8_t channel_id  = strtoul(*(param), nullptr, 0);
+    int32_t temperature = strtoul(*(param+1), nullptr, 0);
+
+    
+    if (channel_id >= 0) {
+        updateDeviceTemperature(channel_id, temperature);
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
   if (strcmp(cmd,"UPDATE-DEVICE-DESC") == 0) {
 
     if (params_number < 2)  {

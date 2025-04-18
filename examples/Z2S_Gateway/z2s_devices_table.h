@@ -209,5 +209,6 @@ uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, esp_zb_iee
 
 void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector = 0, uint32_t timings_secs = 0);
 void updateRGBMode(uint8_t device_id, uint8_t rgb_mode);
+void updateDeviceTemperature(uint8_t device_id, int32_t temperature);
 
 #endif

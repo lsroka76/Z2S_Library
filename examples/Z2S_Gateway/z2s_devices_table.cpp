@@ -16,6 +16,7 @@
 #include <SuplaDevice.h>
 
 #include <supla/control/virtual_relay.h>
+#include <supla/sensor/virtual_thermometer.h>
 
 #include <Z2S_control/Z2S_virtual_relay.h>
 #include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
@@ -663,6 +664,8 @@ void Z2S_initSuplaChannels() {
       }
   }
   free(device);
+  auto TestVT = new Supla::Sensor::VirtualThermometer();
+        TestVT->getChannel()->setChannelNumber(100);
 }
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature, signed char rssi) {
@@ -1680,4 +1683,17 @@ void updateRGBMode(uint8_t device_id, uint8_t rgb_mode) {
   }
   else
     log_i("RGB mode update only allowed for SUPLA_CHANNELTYPE_RGBLEDCONTROLLER");
+}
+
+void updateDeviceTemperature(uint8_t device_id, int32_t temperature) {
+  
+      auto element = Supla::Element::getElementByChannelNumber(device_id);
+
+      if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_THERMOMETER) {
+
+        auto VT1 = reinterpret_cast<Supla::Sensor::VirtualThermometer *>(element);
+        VT1->setValue(double(temperature)/100);
+      }
+  else
+    log_i("set temperature only allowed for virtual thermometer");
 }
