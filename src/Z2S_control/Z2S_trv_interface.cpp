@@ -315,7 +315,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
             _temperature_calibration_offset, 
             _last_temperature_calibration_offset);
       
-      if ((_trv_temperature_calibration_updated) && (abs(_temperature_calibration_offset - _trv_temperature_calibration) > 100)) {
+      if ((_trv_temperature_calibration_updated) && (abs(_temperature_calibration_offset - _trv_temperature_calibration) >= 100)) { 
 
         _trv_local_temperature_updated = false;
         _trv_temperature_calibration_updated = false;

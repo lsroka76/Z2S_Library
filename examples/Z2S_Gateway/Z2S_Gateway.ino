@@ -1086,6 +1086,12 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IAS_ZONE_LOW_BATTERY_SID, "LOW BATTERY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                           } break;
 
+                          case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 0, "lx");
+                          } break;
+
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
                         }
                   }  

@@ -1574,6 +1574,17 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         }
       } break;
 
+      case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR: {
+        
+        switch (sub_id) {
+          case LUMI_MOTION_SENSOR_OCCUPANCY_SID:
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+
+          case LUMI_MOTION_SENSOR_ILLUMINANCE_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+        }
+      } break;
+
       case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 

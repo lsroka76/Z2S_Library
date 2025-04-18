@@ -35,6 +35,7 @@
 #define Z2S_DEVICE_DESC_IKEA_VALLHORN_3                 0x2009
 
 #define Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR              0x2010
+#define Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR              0x2011
 
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
 
@@ -203,8 +204,13 @@
 #define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID   0x0D
 #define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID  0x0E
 
+#define LUMI_MOTION_SENSOR_OCCUPANCY_SID    0x00
+#define LUMI_MOTION_SENSOR_ILLUMINANCE_SID  0x01
+
 #define DIMMER_FUNC_BRIGHTNESS_SID          0x00
 #define DIMMER_FUNC_COLOR_TEMPERATURE_SID   0x01
+
+
 //#define DIMMER_FUNC_
 
 [[maybe_unused]]
@@ -312,6 +318,10 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING,
+      ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY, 
@@ -1228,8 +1238,11 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "LUMI", .model_name = "lumi.magnet.agl02", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_endpoints_count = 1},
 
-   { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_magnet.aq2", 
+  { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_magnet.aq2", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_motion.aq2", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_tgvtvdoc", .model_name = "TS0207", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR, .z2s_device_endpoints_count = 1},
