@@ -206,6 +206,59 @@
 #define MOES_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
 #define MOES_TEMPERATURE_CALIBRATION_FACTOR 0x0A //*10
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+#define TRV601_CMD_SET   0x05
+
+#define TRV601_CMD_ON_1  0x01
+#define TRV601_CMD_ON_2  0x04
+#define TRV601_CMD_ON_3  0x00
+#define TRV601_CMD_ON_4  0x01
+#define TRV601_CMD_ON_5  0x01
+
+#define TRV601_CMD_OFF_1 0x01  
+#define TRV601_CMD_OFF_2 0x04
+#define TRV601_CMD_OFF_3 0x00
+#define TRV601_CMD_OFF_4 0x01
+#define TRV601_CMD_OFF_5 0x02
+
+#define TRV601_CMD_SET_TARGET_HEATSETPOINT_1 0x02
+#define TRV601_CMD_SET_TARGET_HEATSETPOINT_2 0x02
+
+#define TRV601_CMD_SET_TEMPERATURE_CALIBRATION_1 0x65
+#define TRV601_CMD_SET_TEMPERATURE_CALIBRATION_2 0x02
+
+#define TRV601_CMD_SET_LOCAL_TEMPERATURE_1 0x03
+#define TRV601_CMD_SET_LOCAL_TEMPERATURE_2 0x02
+
+#define TRV601_CMD_SET_RUNNING_STATE_1     0x06
+#define TRV601_CMD_SET_RUNNING_STATE_IDLE  0x00
+#define TRV601_CMD_SET_RUNNING_STATE_HEAT  0x01 //normal
+
+#define TRV601_CMD_SET_BATTERY_LEVEL_1     0x0D //05 bitmap 0 OK 1 empty
+
+#define TRV601_CMD_SET_CHILD_LOCK_1              0x0C
+#define TRV601_CMD_SET_WINDOW_DETECT_1           0x08 //7 open/close
+//#define TRV601_CMD_SET_ANTI_FREEZE_1             0x??
+//#define TRV601_CMD_SET_LIMESCALE_PROTECT_1       0x??
+
+
+#define TRV601_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
+#define TRV601_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
+#define TRV601_TEMPERATURE_CALIBRATION_FACTOR 0x0A//*10
+
+#define TRV601_STATE_1 0x06
+#define TRV601_STATE_2 0x04
+
+#define TRV601_STATE_IDLE    0x00
+#define TRV601_STATE_HEATING 0x01
+
+#define TRV601_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define TRV601_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+
 
 namespace Supla {
 namespace Control {

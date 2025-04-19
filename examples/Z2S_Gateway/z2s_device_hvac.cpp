@@ -48,6 +48,15 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
       hvac_room_temperature_min = MOES_CMD_SET_HEATSETPOINT_MIN;
       hvac_room_temperature_max = MOES_CMD_SET_HEATSETPOINT_MAX;
 
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV601: {
+
+      trv_commands_set = TRV601_CMD_SET; 
+
+      hvac_room_temperature_min = TRV601_CMD_SET_HEATSETPOINT_MIN;
+      hvac_room_temperature_max = TRV601_CMD_SET_HEATSETPOINT_MAX;
+
     } break;  
     
     default:

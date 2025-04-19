@@ -68,11 +68,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
       case MOES_CMD_SET: {     
         _Tuya_dp_data[2] = MOES_CMD_SET_TARGET_HEATSETPOINT_1;
         temperature_setpoint *= MOES_TARGET_HEATSETPOINT_FACTOR;
+      } break;
+      case TRV601_CMD_SET: {     
+        _Tuya_dp_data[2] = TRV601_CMD_SET_TARGET_HEATSETPOINT_1;
+        temperature_setpoint *= TRV601_TARGET_HEATSETPOINT_FACTOR;
        } break;
-      default: temperature_setpoint = 0; break;
+
+      default: return; break;
     }
-    if (temperature_setpoint == 0)
-      return;
+
     temperature_setpoint /= 100;
 
     _Tuya_dp_data[3] = 0x02;
@@ -113,7 +117,11 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t tem
       case MOES_CMD_SET: {     
         _Tuya_dp_data[2] = MOES_CMD_SET_TEMPERATURE_CALIBRATION_1;
         temperature_calibration *= MOES_TEMPERATURE_CALIBRATION_FACTOR;
-       } break;
+      } break; 
+      case TRV601_CMD_SET: {     
+        _Tuya_dp_data[2] = TRV601_CMD_SET_TEMPERATURE_CALIBRATION_1;
+        temperature_calibration *= TRV601_TEMPERATURE_CALIBRATION_FACTOR;
+      } break;
       default:
         return; break;
     }
@@ -172,6 +180,13 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
           _Tuya_dp_data[5] = MOES_CMD_ON_4;
           _Tuya_dp_data[6] = MOES_CMD_ON_5;
         } break;
+        case TRV601_CMD_SET: {     
+          _Tuya_dp_data[2] = TRV601_CMD_ON_1; 
+          _Tuya_dp_data[3] = TRV601_CMD_ON_2;
+          _Tuya_dp_data[4] = TRV601_CMD_ON_3;
+          _Tuya_dp_data[5] = TRV601_CMD_ON_4;
+          _Tuya_dp_data[6] = TRV601_CMD_ON_5;
+        } break;
       }
     } else {
       switch(_trv_commands_set) {
@@ -202,6 +217,13 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
           _Tuya_dp_data[4] = MOES_CMD_OFF_3;
           _Tuya_dp_data[5] = MOES_CMD_OFF_4;
           _Tuya_dp_data[6] = MOES_CMD_OFF_5;
+        } break;
+        case TRV601_CMD_SET: {     
+          _Tuya_dp_data[2] = TRV601_CMD_OFF_1; 
+          _Tuya_dp_data[3] = TRV601_CMD_OFF_2;
+          _Tuya_dp_data[4] = TRV601_CMD_OFF_3;
+          _Tuya_dp_data[5] = TRV601_CMD_OFF_4;
+          _Tuya_dp_data[6] = TRV601_CMD_OFF_5;
         } break;
       }  
     }

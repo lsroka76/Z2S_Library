@@ -234,6 +234,35 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       temperature_calibration_factor = MOES_TEMPERATURE_CALIBRATION_FACTOR;
 
     } break;
+    
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV601: {
+
+      local_temperature_dp_id        = TRV601_CMD_SET_LOCAL_TEMPERATURE_1; 
+      current_heating_setpoint_dp_id = TRV601_CMD_SET_TARGET_HEATSETPOINT_1;
+
+      system_mode_on_dp_id           = TRV601_CMD_ON_1;
+      system_mode_off_dp_id          = TRV601_CMD_OFF_1;
+      system_mode_value_on           = TRV601_CMD_ON_5;
+      system_mode_value_off          = TRV601_CMD_OFF_5;
+      
+      running_state_dp_id            = TRV601_CMD_SET_RUNNING_STATE_1;
+      running_state_value_idle       = TRV601_CMD_SET_RUNNING_STATE_IDLE;
+      running_state_value_heat       = TRV601_CMD_SET_RUNNING_STATE_HEAT;
+
+      temperature_calibration_dp_id  = TRV601_CMD_SET_TEMPERATURE_CALIBRATION_1;
+
+      battery_level_dp_id            = TRV601_CMD_SET_BATTERY_LEVEL_1;
+
+      child_lock_dp_id               = TRV601_CMD_SET_CHILD_LOCK_1;
+      window_detect_dp_id            = TRV601_CMD_SET_WINDOW_DETECT_1;
+      //anti_freeze_dp_id              = MOES_CMD_SET_ANTI_FREEZE_1;
+      //limescale_protect_dp_id        = MOES_CMD_SET_LIMESCALE_PROTECT_1;
+
+      local_temperature_factor       = TRV601_LOCAL_TEMPERATURE_FACTOR;
+      target_heatsetpoint_factor     = TRV601_TARGET_HEATSETPOINT_FACTOR;
+      temperature_calibration_factor = TRV601_TEMPERATURE_CALIBRATION_FACTOR;
+
+    } break; 
 
   }
   if (local_temperature_dp_id < 0xFF) {
