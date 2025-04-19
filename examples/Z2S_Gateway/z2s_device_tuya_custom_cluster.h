@@ -6,7 +6,8 @@
 #include <Z2S_control/hvac_base_ee.h>
 
 
-#define TUYA_DATA_REPORT_CMD                   0x02
+#define TUYA_DATA_REPORT_CMD  0x02
+#define TUYA_MCU_SYNC_TIME    0x24                
 
 //#define TUYA_23457_SYSTEM_MODE_DP              0x02
 //#define TUYA_23457_SYSTEM_MODE_AUTO            0x00

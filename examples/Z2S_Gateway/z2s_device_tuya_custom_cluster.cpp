@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include "z2s_device_tuya_custom_cluster.h"
 #include "z2s_device_dimmer.h"
 #include "z2s_device_iaszone.h"
@@ -6,6 +8,8 @@
 #include "z2s_device_action_trigger.h"
 #include "z2s_device_hvac.h"
 #include "z2s_device_electricity_meter.h"
+
+extern ZigbeeGateway zbGateway;
 
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
 
@@ -284,6 +288,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(low_battery_dp_id, payload_size, payload);
     if (Tuya_read_dp_result.is_success) {
       uint8_t battery_level = (Tuya_read_dp_result.dp_value == 0) ? 100 : 0; 
+      updateSuplaBatteryLevel(channel_number_slot_1, battery_level, rssi);
       updateSuplaBatteryLevel(channel_number_slot_2, battery_level, rssi);
       msgZ2SDeviceHvac(channel_number_slot_2, TRV_LOW_BATTERY_MSG, Tuya_read_dp_result.dp_value, rssi);
     }
@@ -292,6 +297,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   if (battery_level_dp_id < 0xFF) {
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(battery_level_dp_id, payload_size, payload);
     if (Tuya_read_dp_result.is_success) {
+      updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
       updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
       msgZ2SDeviceHvac(channel_number_slot_2, TRV_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
     }
@@ -850,6 +856,55 @@ void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
     case 0x01:
     case 0x06:
        processTuyaDataReport(ieee_addr, endpoint, payload_size, payload, rssi); break;
+    case TUYA_MCU_SYNC_TIME: {
+      uint8_t time_sync[10];
+      struct tm *tptr;
+      time_t secs, local_secs, gmt_secs;
+      zbg_device_params_t device = {};
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
+                                                              ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+      if (channel_number_slot < 0) {
+        log_i("TUYA_MCU_SYNC_TIME failed - no Supla channel for that device");
+        return;
+      }
+
+      device.endpoint = z2s_devices_table[channel_number_slot].endpoint;
+      device.cluster_id = z2s_devices_table[channel_number_slot].cluster_id;
+      memcpy(device.ieee_addr, z2s_devices_table[channel_number_slot].ieee_addr, 8);
+      device.short_addr = z2s_devices_table[channel_number_slot].short_addr;
+      device.model_id = z2s_devices_table[channel_number_slot].model_id;
+  
+
+      time_sync[0] = *payload;
+      time_sync[1] = *(payload + 1);
+
+      time( &secs );  // Current time in GMT
+      // Remember that localtime/gmtime overwrite same location
+      tptr = localtime( &secs );
+      local_secs = mktime( tptr );
+      tptr = gmtime( &secs );
+      if (!tptr) log_e("gmtime not supported\n\r");
+      gmt_secs = mktime( tptr );
+      long diff_secs = long(local_secs - gmt_secs);
+      log_i("local secs: %llu, gmt_secs: %llu, diff: %llu\n\r", local_secs, gmt_secs, diff_secs);
+
+      time_sync[2] = uint8_t(gmt_secs>>24); 
+      time_sync[3] = uint8_t(gmt_secs>>16); 
+      time_sync[4] = uint8_t(gmt_secs>>8);
+      time_sync[5] = uint8_t(gmt_secs);
+      
+      time_sync[6] = uint8_t(local_secs>>24); 
+      time_sync[7] = uint8_t(local_secs>>16); 
+      time_sync[8] = uint8_t(local_secs>>8);
+      time_sync[9] = uint8_t(local_secs);
+
+      log_i("TUYA_MCU_SYNC_TIME response payload: %X%X:%X%X%X%X:%X%X%X%X",
+            time_sync[0], time_sync[1], time_sync[2],time_sync[3], time_sync[4], 
+            time_sync[5], time_sync[6], time_sync[7], time_sync[8], time_sync[9]);
+      zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_SYNC_TIME, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, time_sync, false);
+
+    } break;
     default: log_i("Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", command_id); break;
   }
 }
