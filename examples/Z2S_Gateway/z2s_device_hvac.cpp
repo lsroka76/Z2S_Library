@@ -160,6 +160,31 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
         Supla_Z2S_TRVInterface->setTRVTemperatureCalibration(msg_value);
     } break;
     
+    case TRV_LOW_BATTERY_MSG: { //O == OK, 1 - low battery
+      log_i("msgZ2SDeviceHvac - TRV_LOW_BATTERY_MSG: 0x%x", msg_value);
+    } break;
+
+    case TRV_BATTERY_LEVEL_MSG: { 
+      log_i("msgZ2SDeviceHvac - TRV_BATTERY_LEVEL_MSG: 0x%x", msg_value);
+    } break;
+  
+    case TRV_CHILD_LOCK_MSG: { 
+      log_i("msgZ2SDeviceHvac - TRV_CHILD_LOCK_MSG: 0x%x", msg_value);
+    } break;
+
+    case TRV_WINDOW_DETECT_MSG: { 
+      log_i("msgZ2SDeviceHvac - WINDOW_DETECT_MSG: 0x%x", msg_value);
+    } break;
+
+    case TRV_ANTI_FREEZE_MSG: { 
+      log_i("msgZ2SDeviceHvac - ANTI_FREEZE_MSG: 0x%x", msg_value);
+    } break;
+
+    case TRV_LIMESCALE_PROTECT_MSG: { 
+      log_i("msgZ2SDeviceHvac - LIMESCALE_PROTECT_MSG: 0x%x", msg_value);
+    } break;
+
     default: log_i("msgZ2SDeviceHvac - unknown message id: 0x%x, value 0x%x", msg_id, msg_value); break;
   }
 }
+

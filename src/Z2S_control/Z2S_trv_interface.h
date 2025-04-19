@@ -53,12 +53,21 @@
 #define SASWELL_CMD_SET_RUNNING_STATE_IDLE        0x00
 #define SASWELL_CMD_SET_RUNNING_STATE_HEAT        0x01
 
-#define SASWELL_CMD_SET_HEATSETPOINT_MIN          0x01F4 //500
-#define SASWELL_CMD_SET_HEATSETPOINT_MAX          0x0BB8 //3000
+#define SASWELL_CMD_SET_LOW_BATTERY_1             0x69 //05 bitmap type
+
+#define SASWELL_CMD_SET_CHILD_LOCK_1              0x28
+#define SASWELL_CMD_SET_WINDOW_DETECT_1           0x08
+#define SASWELL_CMD_SET_ANTI_FREEZE_1             0x0A
+#define SASWELL_CMD_SET_LIMESCALE_PROTECT_1       0x82
 
 #define SASWELL_TARGET_HEATSETPOINT_FACTOR        0x0A //*10
 #define SASWELL_LOCAL_TEMPERATURE_FACTOR          0x0A //*10
 #define SASWELL_TEMPERATURE_CALIBRATION_FACTOR    0x01 //*1
+
+#define SASWELL_CMD_SET_HEATSETPOINT_MIN          0x01F4 //500
+#define SASWELL_CMD_SET_HEATSETPOINT_MAX          0x0BB8 //3000
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 #define ME167_CMD_SET   0x02
 
@@ -87,8 +96,13 @@
 #define ME167_CMD_SET_RUNNING_STATE_IDLE  0x01
 #define ME167_CMD_SET_RUNNING_STATE_HEAT  0x00 //inverted
 
-#define ME167_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
-#define ME167_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+#define ME167_CMD_SET_LOW_BATTERY_1       0x23 //05 bitmap 0 OK 1 empty
+
+#define ME167_CMD_SET_CHILD_LOCK_1              0x07
+#define ME167_CMD_SET_WINDOW_DETECT_1           0x0E //to verify
+#define ME167_CMD_SET_ANTI_FREEZE_1             0x24
+#define ME167_CMD_SET_LIMESCALE_PROTECT_1       0x27
+
 
 #define ME167_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
 #define ME167_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
@@ -99,6 +113,11 @@
 
 #define ME167_STATE_IDLE    0x01
 #define ME167_STATE_HEATING 0x00
+
+#define ME167_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define ME167_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 #define BECA_CMD_SET   0x03
 
@@ -127,12 +146,23 @@
 #define BECA_CMD_SET_RUNNING_STATE_IDLE  0x00
 #define BECA_CMD_SET_RUNNING_STATE_HEAT  0x01 //valve state
 
-#define BECA_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
-#define BECA_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+#define BECA_CMD_SET_BATTERY_LEVEL_1     0x0E // 02 value 0-100
+
+#define BECA_CMD_SET_CHILD_LOCK_1              0x0D
+#define BECA_CMD_SET_WINDOW_DETECT_1           0x08 //09?
+//#define BECA_CMD_SET_ANTI_FREEZE_1             0x??
+//#define BECA_CMD_SET_LIMESCALE_PROTECT_1       0x??
+
 
 #define BECA_TARGET_HEATSETPOINT_FACTOR     0x01 //*1
 #define BECA_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
 #define BECA_TEMPERATURE_CALIBRATION_FACTOR 0x01 //*1
+
+#define BECA_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define BECA_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 #define MOES_CMD_SET   0x04
 
@@ -163,6 +193,14 @@
 
 #define MOES_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
 #define MOES_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500
+
+#define MOES_CMD_SET_LOW_BATTERY_1       0x6E //
+#define MOES_CMD_SET_BATTERY_LEVEL_1     0x15 //TO VERIFY
+
+#define MOES_CMD_SET_CHILD_LOCK_1              0x07
+#define MOES_CMD_SET_WINDOW_DETECT_1           0x68 //00 RAW [0,35,5] on/off, temperature, operating time (min)
+//#define MOES_CMD_SET_ANTI_FREEZE_1             0x??
+//#define MOES_CMD_SET_LIMESCALE_PROTECT_1       0x??
 
 #define MOES_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
 #define MOES_LOCAL_TEMPERATURE_FACTOR       0x0A //*10

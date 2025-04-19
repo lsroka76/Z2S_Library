@@ -52,8 +52,6 @@ Supla::Html::ProtocolParameters           htmlProto;
 
 #define REFRESH_PERIOD              10 * 1000 //miliseconds
 
-#define USE_WEB_CONFIG_ON_STARTUP
-
 ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
@@ -1090,6 +1088,14 @@ void loop() {
                             
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 0, "lx");
+                          } break;
+
+                          case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_CONC_SID, "CO CONCENTRATION", 0, "ppm");
+                            Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_SELF_TEST_SID, "SELF TEST RESULT", 0, "1..3");
+                            Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_SILENCE_SID, "SILENCE");
                           } break;
 
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);

@@ -214,21 +214,6 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(int32_t trv_tem
 
   _trv_temperature_setpoint = trv_temperature_setpoint;
   _trv_temperature_setpoint_updated = true;
-
-  /*switch(_trv_commands_set) {
-    case SASWELL_CMD_SET: {
-      _trv_temperature_setpoint = trv_temperature_setpoint / SASWELL_LOCAL_TEMPERATURE_FACTOR;
-    } break;
-    case ME167_CMD_SET: {
-      _trv_temperature_setpoint = trv_temperature_setpoint / ME167_LOCAL_TEMPERATURE_FACTOR;
-    } break;
-    case BECA_CMD_SET: {   
-      _trv_temperature_setpoint = trv_temperature_setpoint / BECA_LOCAL_TEMPERATURE_FACTOR;
-    } break;
-    case MOES_CMD_SET: {     
-      _trv_temperature_setpoint = trv_temperature_setpoint / MOES_LOCAL_TEMPERATURE_FACTOR;
-    } break;
-  }*/
 }
 
 void Supla::Control::Z2S_TRVInterface::setTRVSystemMode(uint8_t trv_system_mode) {
@@ -248,21 +233,6 @@ void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int32_t trv_local_
   _trv_last_local_temperature = _trv_local_temperature;
   _trv_local_temperature = trv_local_temperature;
   _trv_local_temperature_updated = true;
-
-  /*switch(_trv_commands_set) {
-    case SASWELL_CMD_SET: {
-      _trv_local_temperature = trv_local_temperature / SASWELL_LOCAL_TEMPERATURE_FACTOR;
-    } break;
-    case ME167_CMD_SET: {
-      _trv_local_temperature = trv_local_temperature / ME167_LOCAL_TEMPERATURE_FACTOR;
-    } break;
-    case BECA_CMD_SET: {   
-      _trv_local_temperature = trv_local_temperature / BECA_LOCAL_TEMPERATURE_FACTOR;
-    } break;
-    case MOES_CMD_SET: {     
-      _trv_local_temperature = trv_local_temperature / MOES_LOCAL_TEMPERATURE_FACTOR;
-    } break;
-  }*/
 }
 
 void Supla::Control::Z2S_TRVInterface::setTRVTemperatureCalibration(int32_t trv_temperature_calibration) {

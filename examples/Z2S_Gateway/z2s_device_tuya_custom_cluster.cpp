@@ -7,31 +7,40 @@
 #include "z2s_device_hvac.h"
 #include "z2s_device_electricity_meter.h"
 
+void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
+
 Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_size, uint8_t *payload) {
   
   uint16_t payload_counter = 2;
-  Tuya_read_dp_result_t Tuya_read_dp_result;
-
-  Tuya_read_dp_result.is_success = false;
-  Tuya_read_dp_result.dp_value = 0;
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
   while ((payload_size >= 7) && (payload_counter < payload_size)) {
     if ((*(payload + payload_counter)) == Tuya_dp_id) {
       Tuya_read_dp_result.dp_id   = (*(payload + payload_counter));
       Tuya_read_dp_result.dp_type = (*(payload + payload_counter + 1));
       Tuya_read_dp_result.dp_size = ((uint16_t)(*(payload + payload_counter + 2))) * 0x100 + (*(payload + payload_counter + 3));
-      switch (Tuya_read_dp_result.dp_size) {
-        case 1: Tuya_read_dp_result.dp_value = (*(payload + payload_counter + 4)); break;
-        case 2: Tuya_read_dp_result.dp_value = ((uint32_t)(*(payload + payload_counter + 4))) * 0x00000100 +
-                                          ((uint32_t)(*(payload + payload_counter + 5))); break;
-        case 4:  Tuya_read_dp_result.dp_value =  ((uint32_t)(*(payload + payload_counter + 4))) * 0x01000000 +
-                                            ((uint32_t)(*(payload + payload_counter + 5))) * 0x00010000 +
-                                            ((uint32_t)(*(payload + payload_counter + 6))) * 0x00000100 +
-                                            ((uint32_t)(*(payload + payload_counter + 7))); break;
-        default: {
-          log_e("unrecognized Tuya DP size 0x%x", Tuya_read_dp_result.dp_size); 
+      
+      if (Tuya_read_dp_result.dp_type != 0) {
+        switch (Tuya_read_dp_result.dp_size) {
+          case 1: Tuya_read_dp_result.dp_value = (*(payload + payload_counter + 4)); break;
+          case 2: Tuya_read_dp_result.dp_value = ((uint32_t)(*(payload + payload_counter + 4))) * 0x00000100 +
+                                                 ((uint32_t)(*(payload + payload_counter + 5))); break;
+          case 4:  Tuya_read_dp_result.dp_value =  ((uint32_t)(*(payload + payload_counter + 4))) * 0x01000000 +
+                                                   ((uint32_t)(*(payload + payload_counter + 5))) * 0x00010000 +
+                                                   ((uint32_t)(*(payload + payload_counter + 6))) * 0x00000100 +
+                                                   ((uint32_t)(*(payload + payload_counter + 7))); break;
+          default: {
+            log_e("unrecognized Tuya DP size 0x%x", Tuya_read_dp_result.dp_size); 
+            return Tuya_read_dp_result;
+          }
+        }
+      } else
+      {
+        if (Tuya_read_dp_result.dp_size > 8) {
+          log_e("Tuya RAW DP size > 8 (0x%x)", Tuya_read_dp_result.dp_size); 
           return Tuya_read_dp_result;
         }
+        memcpy(Tuya_read_dp_result.dp_raw_value_8, payload + payload_counter + 4, Tuya_read_dp_result.dp_size);
       }
       Tuya_read_dp_result.is_success = true;
       return Tuya_read_dp_result;
@@ -41,9 +50,23 @@ Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_s
   }
   return Tuya_read_dp_result;
 }
+
+void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi) {
+
+  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  
+  auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+    
+  if (element != nullptr) {
+    element->getChannel()->setBatteryLevel(value);
+    //element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+  }
+}
+
+
 // HVAC data reporting                         //
 
-void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
+void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, signed char rssi, uint32_t model_id) {
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
@@ -58,6 +81,14 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   uint8_t running_state_value_heat       = 0xFF;
 
   uint8_t temperature_calibration_dp_id  = 0xFF;
+
+  uint8_t low_battery_dp_id              = 0xFF;
+  uint8_t battery_level_dp_id            = 0xFF;
+
+  uint8_t child_lock_dp_id               = 0xFF;
+  uint8_t window_detect_dp_id            = 0xFF;
+  uint8_t anti_freeze_dp_id              = 0xFF;
+  uint8_t limescale_protect_dp_id        = 0xFF;
 
   uint8_t system_mode_value_on           = 0xFF;
   uint8_t system_mode_value_off          = 0xFF;
@@ -79,31 +110,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
 
   switch (model_id) {
-    /*case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: {
-      local_temperature_dp_id         = TUYA_6567C_LOCAL_TEMPERATURE_DP; 
-      current_heating_setpoint_dp_id  = TUYA_6567C_CURRENT_HEATING_SETPOINT_DP;
-      system_mode_dp_id               = TUYA_6567C_SYSTEM_MODE_DP;
-      running_state_dp_id             = TUYA_6567C_RUNNING_STATE_DP;
-      system_mode_value_on            = 0x01;
-      system_mode_value_off           = 0x00;
-    } break;  
-    case Z2S_DEVICE_DESC_TUYA_HVAC_23457: {
-      local_temperature_dp_id         = TUYA_23457_LOCAL_TEMPERATURE_DP;
-      current_heating_setpoint_dp_id  = TUYA_23457_CURRENT_HEATING_SETPOINT_DP; 
-      system_mode_dp_id               = TUYA_23457_SYSTEM_MODE_DP;
-      running_state_dp_id             = TUYA_23457_RUNNING_STATE_DP;
-      system_mode_value_on            = 0x01;
-      system_mode_value_off           = 0x02;
-    } break;
-    case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY: {
-      local_temperature_dp_id         = TUYA_LEGACY_LOCAL_TEMPERATURE_DP;
-      current_heating_setpoint_dp_id  = TUYA_LEGACY_CURRENT_HEATING_SETPOINT_DP; 
-      system_mode_dp_id               = TUYA_LEGACY_SYSTEM_MODE_DP;
-      running_state_dp_id             = TUYA_LEGACY_RUNNING_STATE_DP;
-      system_mode_value_on            = 0x02;
-      system_mode_value_off           = 0x03;
-    } break;*/
-
+    
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {
       
       local_temperature_dp_id        = SASWELL_CMD_SET_LOCAL_TEMPERATURE_1; 
@@ -119,6 +126,14 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       running_state_value_heat       = SASWELL_CMD_SET_RUNNING_STATE_HEAT;
 
       temperature_calibration_dp_id  = SASWELL_CMD_SET_TEMPERATURE_CALIBRATION_1;
+
+      low_battery_dp_id              = SASWELL_CMD_SET_LOW_BATTERY_1;
+
+      child_lock_dp_id               = SASWELL_CMD_SET_CHILD_LOCK_1;
+      window_detect_dp_id            = SASWELL_CMD_SET_WINDOW_DETECT_1;
+      anti_freeze_dp_id              = SASWELL_CMD_SET_ANTI_FREEZE_1;
+      limescale_protect_dp_id        = SASWELL_CMD_SET_LIMESCALE_PROTECT_1;
+
 
       local_temperature_factor       = SASWELL_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = SASWELL_TARGET_HEATSETPOINT_FACTOR;
@@ -142,6 +157,14 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
       temperature_calibration_dp_id  = ME167_CMD_SET_TEMPERATURE_CALIBRATION_1;
       
+      low_battery_dp_id              = ME167_CMD_SET_LOW_BATTERY_1;
+
+      child_lock_dp_id               = ME167_CMD_SET_CHILD_LOCK_1;
+      window_detect_dp_id            = ME167_CMD_SET_WINDOW_DETECT_1;
+      anti_freeze_dp_id              = ME167_CMD_SET_ANTI_FREEZE_1;
+      limescale_protect_dp_id        = ME167_CMD_SET_LIMESCALE_PROTECT_1;
+
+
       local_temperature_factor       = ME167_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = ME167_TARGET_HEATSETPOINT_FACTOR;
       temperature_calibration_factor = ME167_TEMPERATURE_CALIBRATION_FACTOR;
@@ -163,6 +186,13 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       running_state_value_heat       = BECA_CMD_SET_RUNNING_STATE_HEAT;
 
       temperature_calibration_dp_id  = BECA_CMD_SET_TEMPERATURE_CALIBRATION_1;
+
+      battery_level_dp_id             = BECA_CMD_SET_BATTERY_LEVEL_1;
+
+      child_lock_dp_id               = BECA_CMD_SET_CHILD_LOCK_1;
+      window_detect_dp_id            = BECA_CMD_SET_WINDOW_DETECT_1;
+      //anti_freeze_dp_id              = BECA_CMD_SET_ANTI_FREEZE_1;
+      //limescale_protect_dp_id        = BECA_CMD_SET_LIMESCALE_PROTECT_1;
       
       local_temperature_factor       = BECA_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = BECA_TARGET_HEATSETPOINT_FACTOR;
@@ -185,6 +215,15 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       running_state_value_heat       = MOES_CMD_SET_RUNNING_STATE_HEAT;
 
       temperature_calibration_dp_id  = MOES_CMD_SET_TEMPERATURE_CALIBRATION_1;
+
+      low_battery_dp_id              = MOES_CMD_SET_LOW_BATTERY_1;
+      battery_level_dp_id            = MOES_CMD_SET_BATTERY_LEVEL_1;
+
+      child_lock_dp_id               = MOES_CMD_SET_CHILD_LOCK_1;
+      window_detect_dp_id            = MOES_CMD_SET_WINDOW_DETECT_1;
+      //anti_freeze_dp_id              = MOES_CMD_SET_ANTI_FREEZE_1;
+      //limescale_protect_dp_id        = MOES_CMD_SET_LIMESCALE_PROTECT_1;
+
 
       local_temperature_factor       = MOES_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = MOES_TARGET_HEATSETPOINT_FACTOR;
@@ -240,6 +279,52 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       msgZ2SDeviceHvac(channel_number_slot_2, TRV_TEMPERATURE_CALIBRATION_MSG, (Tuya_read_dp_result.dp_value*100)/temperature_calibration_factor, rssi);
     }
   }
+  
+  if (low_battery_dp_id < 0xFF) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(low_battery_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      uint8_t battery_level = (Tuya_read_dp_result.dp_value == 0) ? 100 : 0; 
+      updateSuplaBatteryLevel(channel_number_slot_2, battery_level, rssi);
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_LOW_BATTERY_MSG, Tuya_read_dp_result.dp_value, rssi);
+    }
+  }
+
+  if (battery_level_dp_id < 0xFF) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(battery_level_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+    }
+  }
+
+  if (child_lock_dp_id < 0xFF) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(child_lock_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_CHILD_LOCK_MSG, Tuya_read_dp_result.dp_value, rssi);
+    }
+  }
+
+  if (window_detect_dp_id < 0xFF) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(window_detect_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_WINDOW_DETECT_MSG, Tuya_read_dp_result.dp_value, rssi);
+    }
+  }
+
+  if (anti_freeze_dp_id < 0xFF) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(anti_freeze_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_ANTI_FREEZE_MSG, Tuya_read_dp_result.dp_value, rssi);
+    }
+  }
+
+  if (limescale_protect_dp_id < 0xFF) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(limescale_protect_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      msgZ2SDeviceHvac(channel_number_slot_2, TRV_LIMESCALE_PROTECT_MSG, Tuya_read_dp_result.dp_value, rssi);
+    }
+  }
+
 }
 
 void processTuyaDoubleDimmerSwitchDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
@@ -475,18 +560,6 @@ void processTuyaEF00Switch2x3DataReport(int16_t channel_number_slot, uint16_t pa
   }
 }
 
-void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi) {
-
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
-  
-  auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    
-  if (element != nullptr) {
-    element->getChannel()->setBatteryLevel(value);
-    //element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-  }
-}
-
 void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
 
   int16_t channel_number_slot_1, channel_number_slot_2;
@@ -531,6 +604,60 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
       log_i("Battery state 0x0E is %d", Tuya_read_dp_result.dp_value * 50);
       updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value * 50, rssi);
     }
+  }
+}
+
+void processTuyaCODetectorReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
+
+  int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4;
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+
+    channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                      z2s_devices_table[channel_number_slot].endpoint, 
+                                                      z2s_devices_table[channel_number_slot].cluster_id, 
+                                                      SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_CO_DETECTOR_CO_SID);
+    
+    channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                      z2s_devices_table[channel_number_slot].endpoint, 
+                                                      z2s_devices_table[channel_number_slot].cluster_id, 
+                                                      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_CO_DETECTOR_CO_CONC_SID);
+
+    channel_number_slot_3 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                      z2s_devices_table[channel_number_slot].endpoint, 
+                                                      z2s_devices_table[channel_number_slot].cluster_id, 
+                                                      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_CO_DETECTOR_SELF_TEST_SID);
+
+    channel_number_slot_4 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                      z2s_devices_table[channel_number_slot].endpoint, 
+                                                      z2s_devices_table[channel_number_slot].cluster_id, 
+                                                      SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_CO_DETECTOR_SILENCE_SID);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_CO_DETECTOR_CO_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1), rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_CO_DETECTOR_CO_CONC_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM, 
+                                          Tuya_read_dp_result.dp_value, rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_CO_DETECTOR_SELF_TEST_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                          Tuya_read_dp_result.dp_value, rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_CO_DETECTOR_SILENCE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceIASzone(channel_number_slot_4, (Tuya_read_dp_result.dp_value == 1), rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_CO_DETECTOR_BATTERY_LEVEL_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
+    updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
+    updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+    updateSuplaBatteryLevel(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
+    updateSuplaBatteryLevel(channel_number_slot_4, Tuya_read_dp_result.dp_value, rssi);
   }
 }
 
@@ -694,6 +821,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
       processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
+
+    case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
+      processTuyaCODetectorReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:

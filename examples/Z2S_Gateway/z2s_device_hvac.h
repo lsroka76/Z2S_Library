@@ -13,6 +13,12 @@
 #define TRV_LOCAL_TEMPERATURE_MSG       0x03
 #define TRV_RUNNING_STATE_MSG           0x04
 #define TRV_TEMPERATURE_CALIBRATION_MSG 0x05
+#define TRV_LOW_BATTERY_MSG             0x06
+#define TRV_BATTERY_LEVEL_MSG           0x07
+#define TRV_CHILD_LOCK_MSG              0x08
+#define TRV_WINDOW_DETECT_MSG           0x09
+#define TRV_ANTI_FREEZE_MSG             0x0A
+#define TRV_LIMESCALE_PROTECT_MSG       0x0B
 
 
 void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
