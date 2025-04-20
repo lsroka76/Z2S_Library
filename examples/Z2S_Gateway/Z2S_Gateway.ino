@@ -773,11 +773,11 @@ void setup() {
   zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
   zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
   zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
+  zbGateway.onThermostatTemperaturesReceive(Z2S_onThermostatTemperaturesReceive);
+  zbGateway.onThermostatModesReceive(Z2S_onThermostatModesReceive);
   zbGateway.onBatteryPercentageReceive(Z2S_onBatteryPercentageReceive);
   zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
-
   zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);
-
   zbGateway.onIASzoneStatusChangeNotification(Z2S_onIASzoneStatusChangeNotification);
 
   zbGateway.onBoundDevice(Z2S_onBoundDevice);

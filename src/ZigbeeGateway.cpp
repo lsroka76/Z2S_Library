@@ -714,6 +714,38 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         if (_on_IAS_zone_status_change_notification)
           _on_IAS_zone_status_change_notification(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
         } else log_i("zbAttributeReporting IAS zone cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      } else
+    if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT) {
+      if (attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_S16) {
+        int16_t value = attribute->data.value ? *(int16_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting thermostat local temperature %d",value);
+        if (_on_thermostat_temperatures_receive)
+          _on_thermostat_temperatures_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
+        } else
+        if (attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_S16) {
+        int16_t value = attribute->data.value ? *(int16_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting thermostat occupied heating setpoint %d",value);
+        if (_on_thermostat_temperatures_receive)
+          _on_thermostat_temperatures_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
+        } else
+        if (attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_S8) {
+        int8_t value = attribute->data.value ? *(int8_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting thermostat local temperature calibration %d",value);
+        if (_on_thermostat_temperatures_receive)
+          _on_thermostat_temperatures_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
+        } else
+        if (attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) {
+        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting thermostat system mode %d",value);
+        if (_on_thermostat_modes_receive)
+          _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
+        } else
+        if (attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_RUNNING_MODE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) {
+        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting thermostat running mode %d",value);
+        if (_on_thermostat_modes_receive)
+          _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
+        } else log_i("zbAttributeReporting thermostat cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
       } else log_i("zbAttributeReporting from (0x%x), endpoint (%d), cluster (0x%x), attribute id (0x%x), attribute data type (0x%x) ", 
         src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, attribute->data.type);
 }

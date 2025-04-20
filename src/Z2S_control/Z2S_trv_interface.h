@@ -26,6 +26,8 @@
 #include "ZigbeeGateway.h"
 #include "hvac_base_ee.h"
 
+#define FIRST_0XEF00_CMD_SET 0x01
+
 #define SASWELL_CMD_SET   0x01 
 
 #define SASWELL_CMD_ON_1  0x65
@@ -258,8 +260,27 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
+#define LAST_0XEF00_CMD_SET 0x3F
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
+#define TRVZB_CMD_SET 0x40 //1-63 reserved for Tuya/Saswell/Moes and other TS0601 variants
+
+#define TRVZB_CMD_SET_CHILD_LOCK                    0x0000 //BOOL
+#define TRVZB_CMD_SET_TAMPER                        0x2000 //U8
+#define TRVZB_CMD_SET_ILLUMINATION                  0x2001 //U8
+#define TRVZB_CMD_SET_OPEN_WINDOW                   0x6000 //BOOL
+#define TRVZB_CMD_SET_FROST_PROTECTION_TEMPERATURE  0x6002 //INT16
+#define TRVZB_CMD_SET_IDLE_STEPS                    0x6003 //U16                    
+#define TRVZB_CMD_SET_CLOSING_STEPS                 0x6004 //U16
+#define TRVZB_CMD_SET_VALVE_OPENING_LIMIT_VOLTAGE   0x6005  //U16
+#define TRVZB_CMD_SET_VALVE_CLOSING_LIMIT_VOLTAGE   0x6006 //U16
+#define TRVZB_CMD_SET_VALVE_MOTOR_RUNNING_VOLTAGE   0x6007 //U16
+#define TRVZB_CMD_SET_VALVE_OPENING_DEGREE          0x600B //U8
+#define TRVZB_CMD_SET_VALVE_CLOSING_DEGREE          0x600C  //U8
+#define TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT    0x600D //INT16
+#define TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT     0x600E //U8
+                    
 namespace Supla {
 namespace Control {
 class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, public Element {
@@ -272,11 +293,16 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   void setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger);
   void setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms);
 
+  void enableExternalSensorDetection(bool enable_external_sensor_detection, uint8_t internal_sensor_channel);
+
   void setTRVTemperatureSetpoint(int32_t trv_temperature_setpoint);
   void setTRVSystemMode(uint8_t trv_system_mode);
   void setTRVRunningState(uint8_t trv_running_state);
   void setTRVLocalTemperature(int32_t trv_local_temperature);
   void setTRVTemperatureCalibration(int32_t trv_temperature_calibration);
+
+  void setTimeoutSecs(uint32_t timeout_secs);
+  void refreshTimeout();
 
   void iterateAlways() override;
   void handleAction(int event, int action) override;
@@ -304,6 +330,12 @@ protected:
   int32_t _trv_last_local_temperature    = INT32_MIN;
   bool    _trv_local_temperature_updated = false;
 
+  int32_t _trv_external_sensor_temperature    = INT32_MIN;
+  bool _trv_external_sensor_detection_enabled = false;
+  bool _trv_external_sensor_present           = false;
+  bool _trv_external_sensor_status            = 0xFF;
+  uint8_t _trv_internal_sensor_channel        = 0xFF;
+
   int32_t _trv_temperature_calibration         = 0;
   int32_t _trv_last_temperature_calibration    = 0;
   bool    _trv_temperature_calibration_updated = false;
@@ -319,12 +351,21 @@ protected:
   uint32_t _temperature_ping_ms = 60 * 1000;
   uint32_t _last_temperature_ping_ms = 0;
 
+  uint32_t  _external_temperature_ping_ms = 30 * 60 * 1000;
+  uint32_t  _last_external_temperature_ping_ms = 0;
+
   uint32_t _refresh_ms      = 5000;
   uint32_t _last_refresh_ms = 0;
+
+  uint32_t  _timeout_ms = 0;
+  uint32_t  _last_seen_ms = 0;
+  uint32_t  _last_cmd_sent_ms = 0;
+  bool _timeout_enabled = false;
 
   void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);
   void sendTRVTemperatureCalibration(int32_t temperature_calibration);
+  void sendTRVExternalSensorTemperature(int32_t external_sensor_temperature);
 };
 
 };  // namespace Control

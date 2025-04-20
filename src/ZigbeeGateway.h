@@ -26,11 +26,13 @@
 
 #define ZBG_MAX_DEVICES 0x20 //32
 
-#define TUYA_PRIVATE_CLUSTER_0    0xE000
-#define TUYA_PRIVATE_CLUSTER_1    0xE001
-#define TUYA_PRIVATE_CLUSTER_EF00 0xEF00
+#define TUYA_PRIVATE_CLUSTER_0      0xE000
+#define TUYA_PRIVATE_CLUSTER_1      0xE001
+#define TUYA_PRIVATE_CLUSTER_EF00   0xEF00
 
-#define IKEA_PRIVATE_CLUSTER  0xFC7F
+#define IKEA_PRIVATE_CLUSTER        0xFC7F
+
+#define SONOFF_TRVZB_CUSTOM_CLUSTER 0xFC11
 
 #define ZCL_CMD_TSN_UNKNOWN 0x00
 #define ZCL_CMD_TSN_SYNC    0x01
@@ -203,6 +205,12 @@ public:
   void onColorTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
     _on_color_temperature_receive = callback;
    }
+  void onThermostatTemperaturesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi)) {
+    _on_thermostat_temperatures_receive = callback;
+   }
+   void onThermostatModesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi)) {
+    _on_thermostat_modes_receive = callback;
+   }
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi)) {
     _on_on_off_custom_cmd_receive = callback;
    }
@@ -268,6 +276,8 @@ private:
   void (*_on_color_hue_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_color_saturation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_color_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
+  void (*_on_thermostat_temperatures_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi);
+  void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi);
   bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char rssi);
 
