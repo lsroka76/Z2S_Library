@@ -411,7 +411,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     {
       
       if ((hvacLastTemperature != INT16_MIN) && 
-          ((hvacLastTemperature != _trv_local_temperature) || (millis() - _last_external_temperature_ping_ms > _external_temperature_ping_ms))) {
+          ((abs(hvacLastTemperature - _trv_local_temperature) >= 10) || (millis() - _last_external_temperature_ping_ms > _external_temperature_ping_ms))) {
         log_i("external temperature difference detected %d vs %d",hvacLastTemperature,_trv_local_temperature);
         _last_external_temperature_ping_ms = millis();
         sendTRVExternalSensorTemperature(hvacLastTemperature);
