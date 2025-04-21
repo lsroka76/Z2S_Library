@@ -870,8 +870,8 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
       processTuyaRainSensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
 
-    /*case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
-      processTuya3PhasesElectricityMeterDataReport(channel_number_slot, payload_size, payload, rssi); break;*/
+    case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
+      processTuya3PhasesElectricityMeterDataReport(channel_number_slot, payload_size, payload, rssi); break;
 
     default: 
       log_i("Unknown device model id 0x%x", z2s_devices_table[channel_number_slot].model_id); break;
