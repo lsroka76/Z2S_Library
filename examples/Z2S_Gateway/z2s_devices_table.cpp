@@ -803,8 +803,8 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
 
   switch (id) {
 
-    case ESP_ZB_ZCL_ATTR_THERMOSTAT_RUNNING_MODE_ID: {
-      uint8_t running_mode = (mode == 0) ? 0 : 1; 
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID: {
+      uint8_t running_mode = mode & 1;
       msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, running_mode, rssi);
     } break;
 

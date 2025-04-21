@@ -3,6 +3,7 @@
 void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot) {
   
   uint8_t trv_commands_set;
+  uint8_t trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_IGNORE;
   int16_t hvac_room_temperature_min = 500;
   int16_t hvac_room_temperature_max = 3000;
 
@@ -11,6 +12,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {  
       
       trv_commands_set = SASWELL_CMD_SET; 
+      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
 
       hvac_room_temperature_min = SASWELL_CMD_SET_HEATSETPOINT_MIN;
       hvac_room_temperature_max = SASWELL_CMD_SET_HEATSETPOINT_MAX;
@@ -20,6 +22,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     case Z2S_DEVICE_DESC_TS0601_TRV_ME167: {
       
       trv_commands_set = ME167_CMD_SET; 
+      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
 
       hvac_room_temperature_min = ME167_CMD_SET_HEATSETPOINT_MIN;
       hvac_room_temperature_max = ME167_CMD_SET_HEATSETPOINT_MAX;
@@ -29,6 +32,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     case Z2S_DEVICE_DESC_TS0601_TRV_BECA: {
       
       trv_commands_set = BECA_CMD_SET; 
+      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
 
       hvac_room_temperature_min = BECA_CMD_SET_HEATSETPOINT_MIN;
       hvac_room_temperature_max = BECA_CMD_SET_HEATSETPOINT_MAX;
@@ -38,6 +42,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     case Z2S_DEVICE_DESC_TS0601_TRV_MOES: {
 
       trv_commands_set = MOES_CMD_SET; 
+      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
 
       hvac_room_temperature_min = MOES_CMD_SET_HEATSETPOINT_MIN;
       hvac_room_temperature_max = MOES_CMD_SET_HEATSETPOINT_MAX;
@@ -47,6 +52,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV601: {
 
       trv_commands_set = TRV601_CMD_SET; 
+      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
 
       hvac_room_temperature_min = TRV601_CMD_SET_HEATSETPOINT_MIN;
       hvac_room_temperature_max = TRV601_CMD_SET_HEATSETPOINT_MAX;
@@ -55,7 +61,8 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     
   case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
 
-      trv_commands_set = TRVZB_CMD_SET; 
+      trv_commands_set = TRVZB_CMD_SET;
+      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
 
     } break;
 
@@ -103,8 +110,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   Supla_Z2S_HvacBase->setTemperatureRoomMin(hvac_room_temperature_min);
   Supla_Z2S_HvacBase->setTemperatureRoomMax(3000); //hvac_room_temperature_max);
   
-  if (trv_commands_set == TRVZB_CMD_SET)
-    Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, z2s_devices_table[channel_number_slot].Supla_secondary_channel);
+  Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, trv_external_sensor_mode, z2s_devices_table[channel_number_slot].Supla_secondary_channel);
 
   
 }

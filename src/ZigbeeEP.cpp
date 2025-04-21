@@ -22,6 +22,8 @@ ZigbeeEP::ZigbeeEP(uint8_t endpoint) {
   _ep_config.endpoint = 0;
   _cluster_list = nullptr;
   _on_identify = nullptr;
+  _time_status = 0;
+
 //  _on_bound_device = nullptr;
 
   if (!lock) {
@@ -188,6 +190,77 @@ char *ZigbeeEP::readModel(uint8_t endpoint, uint16_t short_addr, esp_zb_ieee_add
   }
   return _read_model;
 }
+
+
+bool ZigbeeEP::addTimeCluster(tm time, int32_t gmt_offset) {
+  time_t utc_time = 0;
+  // Check if time is set
+  if (time.tm_year > 0) {
+    // Convert time to UTC
+    utc_time = mktime(&time);
+  }
+
+  // Create time cluster server attributes
+  esp_zb_attribute_list_t *time_cluster_server = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_TIME);
+  esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, (void *)&gmt_offset);
+  if (ret != ESP_OK) {
+    log_e("Failed to add time zone attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+    return false;
+  }
+  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, (void *)&utc_time);
+  if (ret != ESP_OK) {
+    log_e("Failed to add time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+    return false;
+  }
+  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, (void *)&_time_status);
+  if (ret != ESP_OK) {
+    log_e("Failed to add time status attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+    return false;
+  }
+  // Create time cluster client attributes
+  esp_zb_attribute_list_t *time_cluster_client = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_TIME);
+  // Add time clusters to cluster list
+  ret = esp_zb_cluster_list_add_time_cluster(_cluster_list, time_cluster_server, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  if (ret != ESP_OK) {
+    log_e("Failed to add time cluster (server role): 0x%x: %s", ret, esp_err_to_name(ret));
+    return false;
+  }
+  ret = esp_zb_cluster_list_add_time_cluster(_cluster_list, time_cluster_client, ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  if (ret != ESP_OK) {
+    log_e("Failed to add time cluster (client role): 0x%x: %s", ret, esp_err_to_name(ret));
+    return false;
+  }
+  return true;
+}
+
+bool ZigbeeEP::setTime(tm time) {
+  esp_zb_zcl_status_t ret = ESP_ZB_ZCL_STATUS_SUCCESS;
+  time_t utc_time = mktime(&time);
+  log_d("Setting time to %lld", utc_time);
+  esp_zb_lock_acquire(portMAX_DELAY);
+  ret = esp_zb_zcl_set_attribute_val(_endpoint, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, &utc_time, false);
+  esp_zb_lock_release();
+  if (ret != ESP_ZB_ZCL_STATUS_SUCCESS) {
+    log_e("Failed to set time: 0x%x: %s", ret, esp_zb_zcl_status_to_name(ret));
+    return false;
+  }
+  return true;
+}
+
+bool ZigbeeEP::setTimezone(int32_t gmt_offset) {
+  esp_zb_zcl_status_t ret = ESP_ZB_ZCL_STATUS_SUCCESS;
+  log_d("Setting timezone to %d", gmt_offset);
+  esp_zb_lock_acquire(portMAX_DELAY);
+  ret =
+    esp_zb_zcl_set_attribute_val(_endpoint, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, &gmt_offset, false);
+  esp_zb_lock_release();
+  if (ret != ESP_ZB_ZCL_STATUS_SUCCESS) {
+    log_e("Failed to set timezone: 0x%x: %s", ret, esp_zb_zcl_status_to_name(ret));
+    return false;
+  }
+  return true;
+}
+
 
 void ZigbeeEP::printBoundDevices() {
   log_i("Bound devices:");

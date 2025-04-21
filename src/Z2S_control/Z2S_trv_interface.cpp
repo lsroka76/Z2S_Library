@@ -62,10 +62,11 @@ void Supla::Control::Z2S_TRVInterface::setTemperatureCalibrationUpdateMs(uint32_
   _temperature_calibration_update_ms = temperature_calibration_update_ms;
 }
 
-void Supla::Control::Z2S_TRVInterface::enableExternalSensorDetection(bool enable_external_sensor_detection, uint8_t internal_sensor_channel) {
+void Supla::Control::Z2S_TRVInterface::enableExternalSensorDetection(bool enable_external_sensor_detection, uint8_t external_sensor_mode, uint8_t internal_sensor_channel) {
   
   _trv_external_sensor_detection_enabled = enable_external_sensor_detection;
   _trv_internal_sensor_channel = internal_sensor_channel;
+  _trv_external_sensor_mode = external_sensor_mode;
 }
 
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temperature_setpoint) {
@@ -121,7 +122,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
       _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID, 
                                    ESP_ZB_ZCL_ATTR_TYPE_S16,2, &temperature_setpoint);
     }
-    _last_cmd_sent_ms = millis();
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
   }
 }
 
@@ -178,7 +180,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t tem
       _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID, 
                                    ESP_ZB_ZCL_ATTR_TYPE_S8,1, &temperature_calibration);
     }
-    _last_cmd_sent_ms = millis();
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
   }
 }
 
@@ -195,7 +198,23 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(int32_t 
       _gateway->sendAttributeWrite(&_device, SONOFF_TRVZB_CUSTOM_CLUSTER, TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT, 
                                    ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &external_sensor_temperature);
     }
-    _last_cmd_sent_ms = millis();
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
+  }
+}
+
+void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(bool trv_external_sensor_present) {
+
+  if (_gateway && Zigbee.started()) {
+    log_i("Z2S_TRVInterface::sendTRVExternalSensorInput = %d", trv_external_sensor_present);
+ 
+    if (_trv_commands_set == TRVZB_CMD_SET) {
+      uint8_t temperature_selector = trv_external_sensor_present ? 1 : 0;
+      _gateway->sendAttributeWrite(&_device, SONOFF_TRVZB_CUSTOM_CLUSTER, TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
+                                   ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
+    }
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
   }
 }
 
@@ -292,12 +311,33 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
       _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
     } else 
     if (_trv_commands_set == TRVZB_CMD_SET) {
-      trv_system_mode = (trv_system_mode == 0) ? 0 : 4;
+      trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //$?
 
       _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
                                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);
     }
-    _last_cmd_sent_ms = millis();
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
+  }
+}
+
+void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
+
+  if (_gateway && Zigbee.started()) {
+    log_i("Z2S_TRVInterface::sendTRVPing");
+ 
+    if (_trv_commands_set == TRVZB_CMD_SET) {
+      uint16_t attributes[5] = { ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
+                                 ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+                                 ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID,
+                                 ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID,
+                                 ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID };
+
+    _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 5, &attributes[0]);
+    }
+
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
   }
 }
 
@@ -358,11 +398,19 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVSystemMode(_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1);        
     }
 
-    _trv_external_sensor_present = false;
+    bool external_sensor_last_state = _trv_external_sensor_present;
 
     if (_trv_hvac && _trv_external_sensor_detection_enabled) {
+      
       if (_trv_hvac->getMainThermometerChannelNo() != _trv_internal_sensor_channel)
         _trv_external_sensor_present = true;
+      else
+        _trv_external_sensor_present = false;
+
+      if (_trv_external_sensor_present != external_sensor_last_state)
+        _trv_external_sensor_changed = true;
+      else
+        _trv_external_sensor_changed = false;
     }
     
 
@@ -371,7 +419,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     if (_trv_hvac)
         hvacLastTemperature = _trv_hvac->getPrimaryTemp();
 
-    if (!_trv_external_sensor_present) {  //standard calibration
+    if (_trv_external_sensor_present && (_trv_external_sensor_mode == EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE)) {  //standard calibration
 
        //_trv_hvac->getLastTemperature();
         //if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && 
@@ -407,8 +455,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
             sendTRVTemperatureCalibration(_trv_temperature_calibration_offset);
         }*/        
       }
-    } else //external_sensor_present
-    {
+    } else 
+    if (_trv_external_sensor_present && (_trv_external_sensor_mode == EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
       
       if ((hvacLastTemperature != INT16_MIN) && 
           ((abs(hvacLastTemperature - _trv_local_temperature) >= 10) || (millis() - _last_external_temperature_ping_ms > _external_temperature_ping_ms))) {
@@ -416,6 +464,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         _last_external_temperature_ping_ms = millis();
         sendTRVExternalSensorTemperature(hvacLastTemperature);
       }
+    }
+    if (_trv_external_sensor_changed && (!_trv_external_sensor_present) && (_trv_external_sensor_mode == EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
+      log_i("Switching OFF external sensor temperature input");
+      sendTRVExternalSensorInput(_trv_external_sensor_present);
     }
   }
 
@@ -427,6 +479,14 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       log_i("No TRV temperature data - sending TemperatureCalibration with 0 value");
       sendTRVTemperatureCalibration(0);
     }
+  }
+
+  if (millis() - _last_thermostat_ping_ms > _thermostat_ping_ms) {
+
+    _last_thermostat_ping_ms = millis();
+
+    log_i("sendTRVPing");
+    sendTRVPing();
   }
 
   if (_timeout_enabled && (_last_cmd_sent_ms > 0) && (millis() - _last_cmd_sent_ms > _timeout_ms)) {

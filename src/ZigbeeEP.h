@@ -87,6 +87,16 @@ public:
   void setBatteryPercentage(uint8_t percentage);
   void reportBatteryPercentage();
 
+  // Set time
+  bool addTimeCluster(tm time = {}, int32_t gmt_offset = 0);  // gmt offset in seconds
+  bool setTime(tm time);
+  bool setTimezone(int32_t gmt_offset);
+
+  // Get time from Coordinator or specific endpoint (blocking until response)
+  //struct tm getTime(uint8_t endpoint = 1, int32_t short_addr = 0x0000, esp_zb_ieee_addr_t ieee_addr = {0});
+  //int32_t getTimezone(uint8_t endpoint = 1, int32_t short_addr = 0x0000, esp_zb_ieee_addr_t ieee_addr = {0});  // gmt offset in seconds
+
+
   // Methods to read manufacturer and model name from selected endpoint and short address
   char *readManufacturer(uint8_t endpoint, uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr);
   char *readModel(uint8_t endpoint, uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr);
@@ -103,12 +113,15 @@ public:
                                 bool is_common_command, bool disable_default_response, bool is_manuf_specific, uint16_t manuf_specific,
                                 uint8_t buffer_size, uint8_t *buffer, signed char  rssi=0) {return false;};
   virtual void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) {};
+  virtual void zbAttributeRead(uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) {};
   virtual void zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute, signed char  rssi=0) {};
   virtual void zbWriteAttrResponse(esp_zb_zcl_status_t status, uint16_t attribute_id) {};
   virtual void zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute, signed char  rssi=0) {};
   virtual void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute);  //already implemented
   virtual void zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) {};
   virtual void zbIdentify(const esp_zb_zcl_set_attr_value_message_t *message);
+  //virtual void zbReadTimeCluster(const esp_zb_zcl_attribute_t *attribute);  //already implemented
+
   virtual void zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
                                       uint16_t attribute_id) {};
   virtual void zbIASZoneEnrollRequest(const esp_zb_zcl_ias_zone_enroll_request_message_t *message) {};
@@ -150,9 +163,14 @@ private:
   char *_read_manufacturer;
   char *_read_model;
   void (*_on_identify)(uint16_t time);
+  time_t _read_time;
+  int32_t _read_timezone;
+
   //void (*_on_bound_device)(zb_device_params_t *);
 
 protected:
+  const char *esp_zb_zcl_status_to_name(esp_zb_zcl_status_t status);
+
   uint8_t _endpoint;
   esp_zb_ha_standard_devices_t _device_id;
   esp_zb_endpoint_config_t _ep_config;
@@ -162,6 +180,7 @@ protected:
   std::list<zb_device_params_t *> _bound_devices;
   SemaphoreHandle_t lock;
   zb_power_source_t _power_source;
+  uint8_t _time_status;
 
   
   friend class ZigbeeCore;

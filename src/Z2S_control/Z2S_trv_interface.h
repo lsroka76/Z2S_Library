@@ -281,6 +281,12 @@
 #define TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT    0x600D //INT16
 #define TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT     0x600E //U8
                     
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+#define EXTERNAL_TEMPERATURE_SENSOR_IGNORE          0x0000
+#define EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE   0x0001
+#define EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT       0x0002
+
 namespace Supla {
 namespace Control {
 class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, public Element {
@@ -293,7 +299,7 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   void setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger);
   void setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms);
 
-  void enableExternalSensorDetection(bool enable_external_sensor_detection, uint8_t internal_sensor_channel);
+  void enableExternalSensorDetection(bool enable_external_sensor_detection, uint8_t external_sensor_mode, uint8_t internal_sensor_channel);
 
   void setTRVTemperatureSetpoint(int32_t trv_temperature_setpoint);
   void setTRVSystemMode(uint8_t trv_system_mode);
@@ -333,8 +339,10 @@ protected:
   int32_t _trv_external_sensor_temperature    = INT32_MIN;
   bool _trv_external_sensor_detection_enabled = false;
   bool _trv_external_sensor_present           = false;
+  bool _trv_external_sensor_changed           = false;       
   bool _trv_external_sensor_status            = 0xFF;
   uint8_t _trv_internal_sensor_channel        = 0xFF;
+  uint8_t _trv_external_sensor_mode           = EXTERNAL_TEMPERATURE_SENSOR_IGNORE;
 
   int32_t _trv_temperature_calibration         = 0;
   int32_t _trv_last_temperature_calibration    = 0;
@@ -351,6 +359,9 @@ protected:
   uint32_t _temperature_ping_ms = 60 * 1000;
   uint32_t _last_temperature_ping_ms = 0;
 
+  uint32_t _thermostat_ping_ms = 15* 60 * 1000;
+  uint32_t _last_thermostat_ping_ms = 0;
+
   uint32_t  _external_temperature_ping_ms = 30 * 60 * 1000;
   uint32_t  _last_external_temperature_ping_ms = 0;
 
@@ -366,6 +377,8 @@ protected:
   void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);
   void sendTRVTemperatureCalibration(int32_t temperature_calibration);
   void sendTRVExternalSensorTemperature(int32_t external_sensor_temperature);
+  void sendTRVExternalSensorInput(bool trv_external_sensor_present);
+  void sendTRVPing();
 };
 
 };  // namespace Control

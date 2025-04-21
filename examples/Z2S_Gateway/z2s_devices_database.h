@@ -423,19 +423,19 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       SONOFF_TRVZB_CUSTOM_CLUSTER }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { TUYA_PRIVATE_CLUSTER_EF00 }},
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { TUYA_PRIVATE_CLUSTER_EF00 }},
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_BECA, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { TUYA_PRIVATE_CLUSTER_EF00 }},
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_MOES, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { TUYA_PRIVATE_CLUSTER_EF00 }},
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV601, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { TUYA_PRIVATE_CLUSTER_EF00 }},
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_SCENES,

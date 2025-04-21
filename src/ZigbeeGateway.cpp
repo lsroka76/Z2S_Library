@@ -84,8 +84,8 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   on_off_cfg.on_off = ESP_ZB_ZCL_ON_OFF_ON_OFF_DEFAULT_VALUE;
 
   esp_zb_time_cluster_cfg_t time_cfg;
-  time_cfg.time = ESP_ZB_ZCL_TIME_TIME_DEFAULT_VALUE;
-  time_cfg.time_status = ESP_ZB_ZCL_TIME_TIME_STATUS_DEFAULT_VALUE;
+  time_cfg.time = 798575471;
+  time_cfg.time_status = 3;
 
   esp_zb_level_cluster_cfg_t level_cfg;
   level_cfg.current_level = ESP_ZB_ZCL_LEVEL_CONTROL_CURRENT_LEVEL_DEFAULT_VALUE;
@@ -629,7 +629,8 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         log_i("zbAttributeReporting on/off report %s",value ? "ON" : "OFF");
         if (_on_on_off_receive)
           _on_on_off_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
-      } else log_i("zbAttributeReporting on/off cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      } else log_i("zbAttributeReporting on/off cluster (0x%x), attribute id (0x%x), attribute data type (0x%x), attribute value (0x%x)", 
+                    cluster_id, attribute->id, attribute->data.type, *(uint8_t *)attribute->data.value);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT) {
       if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
@@ -740,9 +741,9 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         if (_on_thermostat_modes_receive)
           _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
         } else
-        if (attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_RUNNING_MODE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) {
-        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
-        log_i("zbAttributeReporting thermostat running mode %d",value);
+        if (attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_16BITMAP) {
+        uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting thermostat running state %d",value);
         if (_on_thermostat_modes_receive)
           _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
         } else log_i("zbAttributeReporting thermostat cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
