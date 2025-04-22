@@ -129,28 +129,28 @@ time_t local_time = 798653565;
    /*esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, (void *)&gmt_offset);
    if (ret != ESP_OK) {
      log_e("Failed to add time zone attribute: 0x%x: %s", ret, esp_err_to_name(ret));
-     return false;
+   
    }*/
   esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, (void *)&utc_time);
   if (ret != ESP_OK) {
     log_e("Failed to add time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
-    return false;
+ 
   }
   ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, (void *)&time_status);
   if (ret != ESP_OK) {
     log_e("Failed to add time status attribute: 0x%x: %s", ret, esp_err_to_name(ret));
-    return false;
+   
   }
 ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, (void *)&local_time);
   if (ret != ESP_OK) {
-    log_e("Failed to add time status attribute: 0x%x: %s", ret, esp_err_to_name(ret));
-    return false;
+    log_e("Failed to add time local time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+
   }
   // Add time clusters to cluster list
   ret = esp_zb_cluster_list_add_time_cluster(_cluster_list, time_cluster_server, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   if (ret != ESP_OK) {
     log_e("Failed to add time cluster (server role): 0x%x: %s", ret, esp_err_to_name(ret));
-    return false;
+
 
 
   esp_zb_cluster_list_add_ias_zone_cluster(_cluster_list, esp_zb_ias_zone_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
