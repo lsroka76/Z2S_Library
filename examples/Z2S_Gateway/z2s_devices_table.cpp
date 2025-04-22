@@ -1471,6 +1471,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TS0601_TRV_ME167:
       case Z2S_DEVICE_DESC_TS0601_TRV_BECA:
       case Z2S_DEVICE_DESC_TS0601_TRV_MOES:
+      case Z2S_DEVICE_DESC_TS0601_TRV_TRV601:
       case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
       
         addZ2SDeviceTempHumidity(device, first_free_slot);
