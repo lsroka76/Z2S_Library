@@ -121,9 +121,9 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
 
   //esp_zb_cluster_list_add_time_cluster(_cluster_list, esp_zb_time_cluster_create(&time_cfg), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-uint32_t utc_time = 798653565;
+time_t utc_time = 798653565;
 uint8_t time_status = 3;
-uint32_t local_time = 798653565;
+time_t local_time = 798653565;
  esp_zb_attribute_list_t *time_cluster_server = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_TIME);
 
    /*esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, (void *)&gmt_offset);
@@ -131,7 +131,7 @@ uint32_t local_time = 798653565;
      log_e("Failed to add time zone attribute: 0x%x: %s", ret, esp_err_to_name(ret));
      return false;
    }*/
-  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, (void *)&utc_time);
+  esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, (void *)&utc_time);
   if (ret != ESP_OK) {
     log_e("Failed to add time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
     return false;
