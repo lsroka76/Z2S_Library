@@ -52,6 +52,8 @@ Supla::Html::ProtocolParameters           htmlProto;
 
 #define REFRESH_PERIOD              10 * 1000 //miliseconds
 
+#define TIME_CLUSTER_REFRESH_MS     60 * 1000 //miliseconds
+
 ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
@@ -64,6 +66,8 @@ uint32_t zbInit_delay = 0;
 
 uint32_t refresh_time = 0;
 uint8_t refresh_cycle = 0;
+
+uint32_t _time_cluster_last_refresh_ms = 0;
 
 bool zbInit = true;
 uint8_t write_mask;
@@ -844,7 +848,31 @@ void loop() {
     onTelnetCmd(Z2S_onTelnetCmd); 
   }
   
-  //checking status of AC powered devices
+  //
+  if (Zigbee.started() && (millis() - _time_cluster_last_refresh_ms > TIME_CLUSTER_REFRESH_MS)) {
+
+    uint32_t new_utc_time = time(NULL) - 946684800;
+    uint32_t new_local_time = time(NULL) - 946684800;
+        
+    log_i("New UTC time %lu, new local time %lu", new_utc_time, new_local_time);
+    
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_zb_zcl_set_attribute_val(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+                                 ESP_ZB_ZCL_ATTR_TIME_TIME_ID, &new_utc_time, false);
+    esp_zb_zcl_set_attribute_val(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+                                 ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &new_local_time, false);
+    esp_zb_lock_release();
+    
+    uint32_t utc_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+                                                                         ESP_ZB_ZCL_ATTR_TIME_TIME_ID)->data_p);
+    uint32_t local_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+                                                                           ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)->data_p);
+
+    log_i("Local Time Cluster UTC time attribute %lu, local time attribute %lu", utc_time_attribute, local_time_attribute);
+    
+    _time_cluster_last_refresh_ms = millis();
+  }
+
   if (millis() - refresh_time > REFRESH_PERIOD) {
 
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
@@ -854,9 +882,9 @@ void loop() {
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
         log_i("Gateway version: %s", Z2S_VERSION);
       }
-      if (refresh_cycle % 6 == 0)
-        log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis()); 
-
+      if (refresh_cycle % 6 == 0) {
+        log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
+      }
     }
     if (!zbGateway.getGatewayDevices().empty()) {
       refresh_time = millis();

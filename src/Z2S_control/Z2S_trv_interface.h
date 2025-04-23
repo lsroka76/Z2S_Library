@@ -280,6 +280,9 @@
 #define TRVZB_CMD_SET_VALVE_CLOSING_DEGREE          0x600C  //U8
 #define TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT    0x600D //INT16
 #define TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT     0x600E //U8
+
+#define TRVZB_CMD_SET_HEATSETPOINT_MIN    0x0190 //400
+#define TRVZB_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500
                     
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

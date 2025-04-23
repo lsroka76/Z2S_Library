@@ -63,7 +63,8 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
 
       trv_commands_set = TRVZB_CMD_SET;
       trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
-
+      hvac_room_temperature_min = TRVZB_CMD_SET_HEATSETPOINT_MIN;
+      hvac_room_temperature_max = TRVZB_CMD_SET_HEATSETPOINT_MAX;
     } break;
 
     default:
@@ -107,8 +108,9 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   Supla_Z2S_HvacBase->setPrimaryOutputEE(Supla_Z2S_TRVInterface);
   Supla_Z2S_TRVInterface->setTRVHvac(Supla_Z2S_HvacBase);
 
-  Supla_Z2S_HvacBase->setTemperatureRoomMin(hvac_room_temperature_min);
-  Supla_Z2S_HvacBase->setTemperatureRoomMax(3000); //hvac_room_temperature_max);
+  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMin(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, hvac_room_temperature_min);
+  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMax(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, hvac_room_temperature_max);
+  Supla_Z2S_HvacBase->setButtonTemperatureStep(50);
   
   Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, trv_external_sensor_mode, z2s_devices_table[channel_number_slot].Supla_secondary_channel);
 
@@ -120,6 +122,7 @@ void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE();
 
   Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_devices_table[trv_thermometer_slot].Supla_channel);
+  Supla_Z2S_HvacBase->setBinarySensorChannelNo(Supla_Z2S_HvacBase->getChannel()->getChannelNumber());
 
   Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_HvacBase->getChannel()->getChannelNumber(), SUPLA_CHANNELTYPE_HVAC, -1, 
                            "THERMOSTAT", SUPLA_CHANNELFNC_HVAC_THERMOSTAT, z2s_devices_table[trv_thermometer_slot].Supla_channel); 
