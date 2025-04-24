@@ -5,6 +5,7 @@
 
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             0x1000
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1           0x1001
+#define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL        0x1002
 
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR        0x1010
 
@@ -64,6 +65,7 @@
 
 #define Z2S_DEVICE_DESC_DIMMER_BULB                     0x3200
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_BULB                0x3210
+#define Z2S_DEVICE_DESC_IKEA_WW_BULB                    0x3220
 
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_SWITCH              0x3300
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH       0x3305
@@ -264,6 +266,12 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT }},
+      
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_clusters_count = 4, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
       ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT }},
 
@@ -1033,6 +1041,10 @@ const dataPoints = {
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
       
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY, .z2s_device_clusters_count = 4, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
@@ -1123,10 +1135,10 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "SNZB-02D", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "eWeLink", .model_name = "SNZB-02P", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_bjawzodf", .model_name = "TY0201", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
@@ -1501,6 +1513,24 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "\u001aTRADFRI bulb GU10 WW 345lm",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb GU10 WW 345lm",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "\\u001TRADFRI bulb GU10 WW 345lm",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "\u001aTRADFRI bulb GU10 WW 345lm8",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb GU10 WW 380lm",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_bfwvfyx1", .model_name = "TS0505B",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},

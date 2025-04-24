@@ -74,6 +74,7 @@ private:
   zigbee_role_t _role;
   bool _started;
   bool _connected;
+  bool _permit_joining;
 
   uint8_t _open_network;
   zigbee_scan_result_t *_scan_result;
@@ -103,6 +104,13 @@ public:
   }
   zigbee_role_t getRole() {
     return _role;
+  }
+  bool isNetworkOpen() {
+    return _permit_joining;
+  }
+  void setNewtorkOpen(bool permit_joining) {
+
+    _permit_joining = permit_joining;
   }
 
   void addEndpoint(ZigbeeEP *ep);

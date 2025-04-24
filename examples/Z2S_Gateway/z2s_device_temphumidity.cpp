@@ -14,6 +14,11 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot) {
   
   if (z2s_devices_table[channel_number_slot].Supla_channel_func != 0) 
     Supla_Z2S_VirtualThermHygroMeter->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
+
+  if (z2s_devices_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_CORRECTIONS_DISABLED)
+    Supla_Z2S_VirtualThermHygroMeter->setApplyCorrections(false);
+  else
+    Supla_Z2S_VirtualThermHygroMeter->setApplyCorrections(true);
   
 }
 

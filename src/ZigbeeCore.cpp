@@ -21,6 +21,7 @@ ZigbeeCore::ZigbeeCore() {
   _scan_status = ZB_SCAN_FAILED;
   _started = false;
   _connected = false;
+  _permit_joining = false;
   _scan_duration = 3;  // default scan duration
   _rx_on_when_idle = true;
   if (!lock) {
@@ -383,8 +384,10 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
       if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
         if (err_status == ESP_OK) {
           if (*(uint8_t *)esp_zb_app_signal_get_params(p_sg_p)) {
+            Zigbee.setNewtorkOpen(true);
             log_i("Network(0x%04hx) is open for %d seconds", esp_zb_get_pan_id(), *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
           } else {
+            Zigbee.setNewtorkOpen(false);
             log_i("Network(0x%04hx) closed, devices joining not allowed.", esp_zb_get_pan_id());
           }
         }

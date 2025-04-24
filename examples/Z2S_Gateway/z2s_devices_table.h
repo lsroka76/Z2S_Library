@@ -21,8 +21,9 @@
 #define ADD_Z2S_DEVICE_STATUS_DT_FWA  0x03  //device table full while adding = device added partialy
 #define ADD_Z2S_DEVICE_STATUS_DAP     0x04 //device already present
 
-#define USER_DATA_FLAG_SED_TIMEOUT    0x01
-#define USER_DATA_FLAG_MSG_DISABLED   0x02
+#define USER_DATA_FLAG_SED_TIMEOUT            0x01
+#define USER_DATA_FLAG_MSG_DISABLED           0x02
+#define USER_DATA_FLAG_CORRECTIONS_DISABLED   0x04
 //#define USER_DATA_FLA
 
 typedef struct z2s_legacy_device_params_s {
@@ -173,6 +174,9 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee
 //int32_t Z2S_findChannelType(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster);
 void    Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                                  char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
+
+bool Z2S_setDeviceFlags(int16_t channel_number_slot, uint32_t flags_to_set);
+bool Z2S_clearDeviceFlags(int16_t channel_number_slot, uint32_t flags_to_clear);
 
 int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 

@@ -311,7 +311,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
       _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
     } else 
     if (_trv_commands_set == TRVZB_CMD_SET) {
-      trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //$?
+      trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
       _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
                                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);

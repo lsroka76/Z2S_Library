@@ -161,6 +161,35 @@ void Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t
   //Z2S_printDevicesTableSlots();
 }
 
+bool Z2S_setDeviceFlags(int16_t channel_number_slot, uint32_t flags_to_set) {
+
+  if ((channel_number_slot >= 0) && (channel_number_slot < Z2S_CHANNELMAXCOUNT) && z2s_devices_table[channel_number_slot].valid_record) {
+    z2s_devices_table[channel_number_slot].user_data_flags |= flags_to_set;;
+    if (Z2S_saveDevicesTable()) {
+    log_i("Device(channel %d) flags set successfully to %x", z2s_devices_table[channel_number_slot].Supla_channel, z2s_devices_table[channel_number_slot].user_data_flags);
+      return true;
+    }
+    return false;
+  }
+  else 
+    return false;
+}
+
+bool Z2S_clearDeviceFlags(int16_t channel_number_slot, uint32_t flags_to_clear) {
+
+  if ((channel_number_slot >= 0) && (channel_number_slot < Z2S_CHANNELMAXCOUNT) && z2s_devices_table[channel_number_slot].valid_record) {
+    z2s_devices_table[channel_number_slot].user_data_flags &= ~flags_to_clear;
+    if (Z2S_saveDevicesTable()) {
+    log_i("Device(channel %d) flags cleared successfully to %x", z2s_devices_table[channel_number_slot].Supla_channel, z2s_devices_table[channel_number_slot].user_data_flags);
+      return true;
+    }
+    return false;
+  }
+  else 
+    return false;
+}
+
+
 bool Z2S_loadDevicesTable() {
 
   
@@ -1328,6 +1357,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1:
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL:
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
@@ -1476,7 +1506,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       
         addZ2SDeviceTempHumidity(device, first_free_slot);
         uint8_t trv_thermometer_slot = first_free_slot;
-
+        Z2S_setDeviceFlags(trv_thermometer_slot, USER_DATA_FLAG_CORRECTIONS_DISABLED);
+        
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
           log_i("ERROR! Devices table full!");
@@ -1523,6 +1554,18 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         }
         addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB", SUPLA_CHANNELFNC_RGBLIGHTING); 
       } break; 
+
+      case Z2S_DEVICE_DESC_IKEA_WW_BULB: {
+        
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "BULB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
+      } break;
 
       case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY: {
       

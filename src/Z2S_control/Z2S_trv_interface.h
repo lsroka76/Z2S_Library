@@ -117,7 +117,7 @@
 #define ME167_STATE_HEATING 0x00
 
 #define ME167_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
-#define ME167_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+#define ME167_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
@@ -362,7 +362,7 @@ protected:
   uint32_t _temperature_ping_ms = 60 * 1000;
   uint32_t _last_temperature_ping_ms = 0;
 
-  uint32_t _thermostat_ping_ms = 15* 60 * 1000;
+  uint32_t _thermostat_ping_ms = 20 * 60 * 1000;
   uint32_t _last_thermostat_ping_ms = 0;
 
   uint32_t  _external_temperature_ping_ms = 30 * 60 * 1000;
