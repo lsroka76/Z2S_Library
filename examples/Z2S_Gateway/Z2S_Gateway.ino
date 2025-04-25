@@ -35,7 +35,7 @@
 
 #include <HTTPUpdateServer.h>
 
-#include <Adafruit_NeoPixel.h>
+//#include <Adafruit_NeoPixel.h>
 
 Supla::EspWebServer                       suplaServer;
 HTTPUpdateServer                          httpUpdater;
@@ -65,7 +65,7 @@ Supla::LittleFsConfig     configSupla (2048);
 constexpr uint8_t LED_PIN = 8;
 constexpr uint8_t NUM_LEDS = 1;
 
-Adafruit_NeoPixel rgbLed(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel rgbLed(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 uint32_t startTime = 0;
 uint32_t printTime = 0;
@@ -690,8 +690,8 @@ void setup() {
   pinMode(WIFI_ANT_CONFIG, OUTPUT); // pinMode(14, OUTPUT);
   digitalWrite(WIFI_ANT_CONFIG, HIGH);
  
-  rgbLed.begin(); 
-  rgbLed.show(); 
+  //rgbLed.begin(); 
+  //rgbLed.show(); 
 
   eeprom.setStateSavePeriod(5000);
 
@@ -897,7 +897,7 @@ void loop() {
     else
       _status_led_mode = 0;
 
-    if(_status_led_mode != _status_led_last_mode) {
+    /*if(_status_led_mode != _status_led_last_mode) {
       if (_status_led_mode == 1)
         rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 0));
       else
@@ -905,7 +905,7 @@ void loop() {
         rgbLed.setPixelColor(0, rgbLed.Color(0, 0, 0));
       
       rgbLed.show();
-    }
+    }*/
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
@@ -937,8 +937,8 @@ void loop() {
     {
       joined_device = zbGateway.getLastJoinedDevice();
       
-      rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 128));
-      rgbLed.show();
+      //rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 128));
+      //rgbLed.show();
 
       //do some Tuya vodoo - just in case Tuya device is paired
       
