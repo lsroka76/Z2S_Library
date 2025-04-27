@@ -1,4 +1,18 @@
-#### 1. **OPEN-NETWORK**
+# Documentation of Telnet commands
+
+## How to connect
+
+Use PuTTY
+
+![putty](putty.png)
+
+If you want to copy data from PuTTYY to your system use SHIFT key and select by mouse the text. 
+
+If you want to paste data from your system to PuTTY use SFHIT+INSERT or right mouse click.
+
+## Commands list
+
+### 1. **OPEN-NETWORK**
 - **Description**: Opens the Zigbee network for a specified duration.
 - **Parameters**:
   - `time` (optional): Duration in seconds to keep the network open (default: 180 seconds).
@@ -9,7 +23,7 @@
 
 ---
 
-#### 2. **VERSION**
+### 2. **VERSION**
 - **Description**: Displays the gateway version.
 - **Parameters**: None.
 - **Example**:
@@ -19,7 +33,7 @@
 
 ---
 
-#### 3. **LIST-DEVICES**
+### 3. **LIST-DEVICES**
 - **Description**: Lists all devices in the Supla devices table.
 - **Parameters**: None.
 - **Example**:
@@ -29,7 +43,7 @@
 
 ---
 
-#### 4. **LIST-ZB-DEVICES**
+### 4. **LIST-ZB-DEVICES**
 - **Description**: Lists all Zigbee devices in the Zigbee devices table.
 - **Parameters**: None.
 - **Example**:
@@ -39,7 +53,7 @@
 
 ---
 
-#### 5. **LIST-CHANNELs**
+### 5. **LIST-CHANNELs**
 - **Description**: Placeholder for listing channels (currently not implemented).
 - **Parameters**: None.
 - **Example**:
@@ -49,7 +63,7 @@
 
 ---
 
-#### 6. **REMOVE-CHANNEL**
+### 6. **REMOVE-CHANNEL**
 - **Description**: Removes a channel from the devices table.
 - **Parameters**:
   - `channel_id`: The ID of the channel to remove.
@@ -60,7 +74,7 @@
 
 ---
 
-#### 7. **UPDATE-SED-TIMEOUT**
+### 7. **UPDATE-SED-TIMEOUT**
 - **Description**: Updates the timeout for a sleepy end device (SED).
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -72,7 +86,7 @@
 
 ---
 
-#### 8. **UPDATE-DEVICE-TIMINGS**
+### 8. **UPDATE-DEVICE-TIMINGS**
 - **Description**: Updates device timing parameters.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -85,7 +99,7 @@
 
 ---
 
-#### 9. **UPDATE-DEVICE-RGB-MODE**
+### 9. **UPDATE-DEVICE-RGB-MODE**
 - **Description**: Updates the RGB mode of a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -97,7 +111,7 @@
 
 ---
 
-#### 10. **SET-TEMP**
+### 10. **SET-TEMP**
 - **Description**: Sets the temperature for a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -109,7 +123,7 @@
 
 ---
 
-#### 11. **UPDATE-DEVICE-DESC**
+### 11. **UPDATE-DEVICE-DESC**
 - **Description**: Updates the device description ID.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -121,7 +135,7 @@
 
 ---
 
-#### 12. **UPDATE-DEVICE-SID**
+### 12. **UPDATE-DEVICE-SID**
 - **Description**: Updates the device sub-ID.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -133,7 +147,7 @@
 
 ---
 
-#### 13. **UPDATE-DEVICE-FLAGS**
+### 13. **UPDATE-DEVICE-FLAGS**
 - **Description**: Updates device flags by setting or clearing a specific bit.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -146,7 +160,7 @@
 
 ---
 
-#### 14. **UPDATE-DEVICE-PARAMS**
+### 14. **UPDATE-DEVICE-PARAMS**
 - **Description**: Updates user-defined parameters for a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -159,7 +173,7 @@
 
 ---
 
-#### 15. **RESET-ZIGBEE-STACK**
+### 15. **RESET-ZIGBEE-STACK**
 - **Description**: Resets the Zigbee stack to factory settings.
 - **Parameters**: None.
 - **Example**:
@@ -169,7 +183,7 @@
 
 ---
 
-#### 16. **NWK-SCAN**
+### 16. **NWK-SCAN**
 - **Description**: Scans the Zigbee network for neighboring devices.
 - **Parameters**: None.
 - **Example**:
@@ -179,7 +193,7 @@
 
 ---
 
-#### 17. **READ-ATTRIBUTE**
+### 17. **READ-ATTRIBUTE**
 - **Description**: Reads an attribute from a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -193,7 +207,7 @@
 
 ---
 
-#### 18. **CONFIGURE-REPORTING**
+### 18. **CONFIGURE-REPORTING**
 - **Description**: Configures attribute reporting for a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -211,7 +225,7 @@
 
 ---
 
-#### 19. **DEVICE-DISCOVERY**
+### 19. **DEVICE-DISCOVERY**
 - **Description**: Discovers a device on the Zigbee network.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -222,7 +236,7 @@
 
 ---
 
-#### 20. **WRITE-ATTRIBUTE**
+### 20. **WRITE-ATTRIBUTE**
 - **Description**: Writes an attribute to a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -238,7 +252,7 @@
 
 ---
 
-#### 21. **CUSTOM-CMD**
+### 21. **CUSTOM-CMD**
 - **Description**: Sends a custom command to a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -264,7 +278,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 1. **OPEN-NETWORK**
+### 1. **OPEN-NETWORK**
 - **Description**: Opens the Zigbee network for a specified duration.
 - **Parameters**:
   - `time` (optional): Duration in seconds to keep the network open (default: 180 seconds).
@@ -275,7 +289,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 2. **VERSION**
+### 2. **VERSION**
 - **Description**: Displays the gateway version.
 - **Parameters**: None.
 - **Example**:
@@ -285,7 +299,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 3. **LIST-DEVICES**
+### 3. **LIST-DEVICES**
 - **Description**: Lists all devices in the Supla devices table.
 - **Parameters**: None.
 - **Example**:
@@ -295,7 +309,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 4. **LIST-ZB-DEVICES**
+### 4. **LIST-ZB-DEVICES**
 - **Description**: Lists all Zigbee devices in the Zigbee devices table.
 - **Parameters**: None.
 - **Example**:
@@ -305,7 +319,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 5. **LIST-CHANNELs**
+### 5. **LIST-CHANNELs**
 - **Description**: Placeholder for listing channels (currently not implemented).
 - **Parameters**: None.
 - **Example**:
@@ -315,7 +329,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 6. **REMOVE-CHANNEL**
+### 6. **REMOVE-CHANNEL**
 - **Description**: Removes a channel from the devices table.
 - **Parameters**:
   - `channel_id`: The ID of the channel to remove.
@@ -326,7 +340,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 7. **UPDATE-SED-TIMEOUT**
+### 7. **UPDATE-SED-TIMEOUT**
 - **Description**: Updates the timeout for a sleepy end device (SED).
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -338,7 +352,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 8. **UPDATE-DEVICE-TIMINGS**
+### 8. **UPDATE-DEVICE-TIMINGS**
 - **Description**: Updates device timing parameters.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -351,7 +365,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 9. **UPDATE-DEVICE-RGB-MODE**
+### 9. **UPDATE-DEVICE-RGB-MODE**
 - **Description**: Updates the RGB mode of a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -363,7 +377,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 10. **SET-TEMP**
+### 10. **SET-TEMP**
 - **Description**: Sets the temperature for a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -375,7 +389,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 11. **UPDATE-DEVICE-DESC**
+### 11. **UPDATE-DEVICE-DESC**
 - **Description**: Updates the device description ID.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -387,7 +401,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 12. **UPDATE-DEVICE-SID**
+### 12. **UPDATE-DEVICE-SID**
 - **Description**: Updates the device sub-ID.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -399,7 +413,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 13. **UPDATE-DEVICE-FLAGS**
+### 13. **UPDATE-DEVICE-FLAGS**
 - **Description**: Updates device flags by setting or clearing a specific bit.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -412,7 +426,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 14. **UPDATE-DEVICE-PARAMS**
+### 14. **UPDATE-DEVICE-PARAMS**
 - **Description**: Updates user-defined parameters for a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -425,7 +439,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 15. **RESET-ZIGBEE-STACK**
+### 15. **RESET-ZIGBEE-STACK**
 - **Description**: Resets the Zigbee stack to factory settings.
 - **Parameters**: None.
 - **Example**:
@@ -435,7 +449,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 16. **NWK-SCAN**
+### 16. **NWK-SCAN**
 - **Description**: Scans the Zigbee network for neighboring devices.
 - **Parameters**: None.
 - **Example**:
@@ -445,7 +459,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 17. **READ-ATTRIBUTE**
+### 17. **READ-ATTRIBUTE**
 - **Description**: Reads an attribute from a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -459,7 +473,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 18. **CONFIGURE-REPORTING**
+### 18. **CONFIGURE-REPORTING**
 - **Description**: Configures attribute reporting for a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -477,7 +491,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 19. **DEVICE-DISCOVERY**
+### 19. **DEVICE-DISCOVERY**
 - **Description**: Discovers a device on the Zigbee network.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -488,7 +502,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 20. **WRITE-ATTRIBUTE**
+### 20. **WRITE-ATTRIBUTE**
 - **Description**: Writes an attribute to a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
@@ -504,7 +518,7 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-#### 21. **CUSTOM-CMD**
+### 21. **CUSTOM-CMD**
 - **Description**: Sends a custom command to a device.
 - **Parameters**:
   - `channel_id`: The ID of the channel.
