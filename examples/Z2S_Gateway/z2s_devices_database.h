@@ -1532,6 +1532,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb GU10 WW 380lm",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3210_ctv0gump", .model_name = "TS0501B",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_BULB, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3210_bfwvfyx1", .model_name = "TS0505B",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
 
