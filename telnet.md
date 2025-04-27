@@ -1,5 +1,7 @@
 # Documentation of Telnet commands
 
+State for v0.7.58
+
 ## How to connect
 
 Use PuTTY
