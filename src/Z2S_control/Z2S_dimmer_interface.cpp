@@ -96,11 +96,15 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(uint8_t brightness) 
       case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER: {
         uint16_t color_temperature = map(brightness, 0, 100, 500, 153);
 	      _gateway->sendColorMoveToColorTemperatureCmd(&_device, color_temperature, 1);
-      }
+      } break; 
+      case Z2S_TUYA_F0_CMD_DIMMER: {
+        uint16_t F0_brightness = map(brightness, 0, 100, 0, 1000);
+	_gateway->sendCustomClusterCmd(&_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 0xF0, ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &F0_brightness, false);
+      } break;
     } 
     
     //uint8_t light_mode = 0x01;
-    //_gateway->sendCustomClusterCmd(&_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, ESP_ZB_ZCL_ATTR_TYPE_U8, 1,&light_mode , false);
+    //_gateway->sendCustomClusterCmd(&_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode , false);
     //_gateway->sendColorMoveToHueAndSaturationCmd(&_device, brightness, 0xFE, 1);
   }
 }
