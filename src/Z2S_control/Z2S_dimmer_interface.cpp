@@ -100,6 +100,8 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(uint8_t brightness) 
       case Z2S_TUYA_F0_CMD_DIMMER: {
         uint16_t F0_brightness = map(brightness, 0, 100, 0, 1000);
 	      _gateway->sendCustomClusterCmd(&_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 0xF0, ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&F0_brightness, false);
+        if (F0_brightness == 0)
+          _gateway->sendOnOffCmd(&_device, false);
       } break;
       case Z2S_TUYA_E0_CMD_DIMMER: {
         uint16_t E0_color_temperature = map(brightness, 0, 100, 0, 1000);

@@ -10,6 +10,7 @@
 
 #define Z2S_ZBDEVICESMAXCOUNT         32
 #define Z2S_CHANNELMAXCOUNT           128
+#define Z2S_ACTIONSMAXCOUNT           254
 
 #define MAX_ZB_DEVICE_SUPLA_CHANNELS  16 
 
@@ -136,6 +137,22 @@ typedef struct z2s_zb_device_params_s {
   uint8_t             Supla_channels[MAX_ZB_DEVICE_SUPLA_CHANNELS];
 } z2s_zb_device_params_t;
 
+typedef struct z2s_channel_action_s {
+  uint8_t   action_id;
+  bool      enabled;
+  uint8_t   src_Supla_channel;
+  uint8_t   dst_Supla_channel;
+  uint16_t  src_Supla_event;
+  uint16_t  dst_Supla_action;
+  uint32_t  src_Supla_channel_type;
+  uint32_t  dst_Supla_channel_type;
+  char      action_name[33];
+  uint8_t   condition_id;
+  double    min_value;
+  double    mid_value;
+  double    max_value;
+} z2s_channel_action_t;
+
 extern z2s_device_params_t z2s_devices_table[Z2S_CHANNELMAXCOUNT];
 
 const static char   Z2S_DEVICES_TABLE []  PROGMEM = "Z2S_devs_table";
@@ -145,6 +162,23 @@ extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZBDEVICESMAXCOUNT];
 
 const static char   Z2S_ZB_DEVICES_TABLE []  PROGMEM = "Z2S_zbd_table";
 const static char   Z2S_ZB_DEVICES_TABLE_SIZE []  PROGMEM = "Z2S_zbd_ts";
+
+//extern z2s_channel_action_t z2s_channels_actions_table[Z2S_ACTIONSMAXCOUNT];
+
+const static char   Z2S_CHANNELS_ACTIONS_TABLE      []  PROGMEM = "Z2S_actions";
+const static char   Z2S_CHANNELS_ACTIONS_TABLE_SIZE []  PROGMEM = "Z2S_actions_ts";
+
+namespace Supla {
+enum Conditions {
+  ON_LESS,
+  ON_LESS_EQ,
+  ON_GREATER,
+  ON_GREATER_EQ,
+  ON_BETWEEN,
+  ON_BETWEEN_EQ,
+  ON_EQUAL,
+};
+};
 
 
 uint32_t  Z2S_getDevicesTableSize();
@@ -216,5 +250,8 @@ uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, esp_zb_iee
 void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector = 0, uint32_t timings_secs = 0);
 void updateRGBMode(uint8_t device_id, uint8_t rgb_mode);
 void updateDeviceTemperature(uint8_t device_id, int32_t temperature);
+
+bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
+                    double threshold_1 = 0, double threshold_2 = 0);
 
 #endif

@@ -25,6 +25,7 @@
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 0x2000
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T           0x2001
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B           0x2002
+#define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B             0x2003
 
 #define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR            0x2004
 #define Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1          0x2005
@@ -314,6 +315,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
       ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -1304,6 +1308,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_7d8yme6f", .model_name = "TS0203", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3000_bpkijo14", .model_name = "TS0203", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "HEIMAN", .model_name = "SmokeSensor-EF-3.0", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1311,7 +1318,10 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "ADEO", .model_name = "ZB-DoorSensor-D0007", 
-   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B, .z2s_device_endpoints_count = 1},   
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SONOFF", .model_name = "SNZB-05P", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B, .z2s_device_endpoints_count = 1},   
 
   { .manufacturer_name = "ADEO", .model_name = "ZB-SMART-PIRTH-V3", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR, .z2s_device_endpoints_count = 1},

@@ -298,6 +298,74 @@ uint8_t parseRGBModeStr(char *rgb_mode) {
     return 0x00;
 }
 
+uint16_t parseSuplaEventStr(char *Supla_event) {
+  
+  if (strcmp(Supla_event, "ON_TURN_ON") == 0)
+    return Supla::ON_TURN_ON;
+  else
+  if (strcmp(Supla_event, "ON_TURN_OFF") == 0)
+    return Supla::ON_TURN_OFF;
+  else
+  if (strcmp(Supla_event, "ON_CHANGE") == 0)
+    return Supla::ON_CHANGE;
+  else
+    return 0xFFFF;
+}
+
+uint16_t parseSuplaActionStr(char *Supla_action) {
+  
+  if (strcmp(Supla_action, "TURN_ON") == 0)
+    return Supla::TURN_ON;
+  else
+  if (strcmp(Supla_action, "TURN_OFF") == 0)
+    return Supla::TURN_OFF;
+  else
+  if (strcmp(Supla_action, "TOGGLE") == 0)
+    return Supla::TOGGLE;
+  else
+  if (strcmp(Supla_action, "SET") == 0)
+    return Supla::SET;
+  else
+  if (strcmp(Supla_action, "CLEAR") == 0)
+    return Supla::CLEAR;
+  else
+  if (strcmp(Supla_action, "INCREASE_TEMPERATURE") == 0)
+    return Supla::INCREASE_TEMPERATURE;
+  else
+  if (strcmp(Supla_action, "DECREASE_TEMPERATURE") == 0)
+    return Supla::DECREASE_TEMPERATURE;
+  else
+  if (strcmp(Supla_action, "TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES") == 0)
+    return Supla::TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES;
+  else
+    return 0xFFFF;
+}
+
+uint16_t parseSuplaConditionStr(char *Supla_condition) {
+  
+  if (strcmp(Supla_condition, "ON_LESS") == 0)
+    return Supla::ON_LESS;
+  else
+  if (strcmp(Supla_condition, "ON_LESS_EQ") == 0)
+    return Supla::ON_LESS_EQ;
+  else
+  if (strcmp(Supla_condition, "ON_GREATER") == 0)
+    return Supla::ON_GREATER;
+  else
+  if (strcmp(Supla_condition, "ON_GREATER_EQ") == 0)
+    return Supla::ON_GREATER_EQ;
+  else
+  if (strcmp(Supla_condition, "ON_BETWEEN") == 0)
+    return Supla::ON_BETWEEN;
+  else
+  if (strcmp(Supla_condition, "ON_BETWEEN_EQ") == 0)
+    return Supla::ON_BETWEEN_EQ;
+  else
+  if (strcmp(Supla_condition, "ON_EQUAL") == 0)
+    return Supla::ON_EQUAL;
+  else
+    return 0xFFFF;
+}
 
 void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   
@@ -422,6 +490,38 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
     }  
+    return;
+  } else
+  if (strcmp(cmd,"ADD-ACTION") == 0) {
+
+    if ((params_number != 5) && (params_number != 7))  {
+      telnet.println(">add-action action_name src_channel Supla_action dst_channel Supla_event");
+      telnet.println(">or");
+      telnet.println(">add-action action_name src_channel Supla_action dst_channel Supla_condition threshold1 threshold2");
+      return;
+    }
+
+    char *action_name        = *(param);
+    uint8_t src_channel_id   = strtoul(*(param+1), nullptr, 0);
+    uint8_t dst_channel_id   = strtoul(*(param+3), nullptr, 0);
+    uint16_t Supla_event     = parseSuplaEventStr(*(param+4));
+    uint16_t Supla_action    = parseSuplaActionStr(*(param+2));
+    uint16_t Supla_condition = parseSuplaConditionStr(*(param+4));
+    bool is_valid_action     = Supla_action < 0xFFFF ? true : false;
+    bool is_valid_event      = Supla_event < 0xFFFF ? true : false;
+    bool is_valid_condition  = Supla_condition < 0xFFFF ? true : false;
+    double threshold_1;      
+    double threshold_2; 
+    
+    if (is_valid_action && is_valid_event)
+      z2s_add_action(action_name, src_channel_id, Supla_action, dst_channel_id, Supla_event, false);
+    else
+    if ((params_number == 7) && is_valid_action && is_valid_condition) {
+      threshold_1       = strtod(*(param+5), nullptr);
+      threshold_2       = strtod(*(param+6), nullptr);
+      z2s_add_action(action_name, src_channel_id, Supla_action, dst_channel_id, Supla_condition, true, threshold_1, threshold_2);
+    }
+    
     return;
   } else
   if (strcmp(cmd,"UPDATE-DEVICE-DESC") == 0) {
@@ -1154,6 +1254,19 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IAS_ZONE_LOW_BATTERY_SID, "LOW BATTERY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                           } break;
 
+                          case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
+                            
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, "ALARM1", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID, "ALARM2", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID,  "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                          } break;
+
+                          case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B: {
+                            
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, "ALARM1", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_LOW_BATTERY_SID,  "LOW BATTERY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                          } break;
+
                           case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR: {
                             
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
@@ -1197,6 +1310,7 @@ void loop() {
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR:
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
+                case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
                 case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR:
                 case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
                 case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2:
@@ -1361,12 +1475,18 @@ void loop() {
                 
                 } break;
               }
+
               SuplaDevice.scheduleSoftRestart(5000);
             }   
             //else log_i("LIST checking %s::%s, entry # %d",Z2S_DEVICES_LIST[i].manufacturer_name, Z2S_DEVICES_LIST[i].model_name, i);
           }
-      if (!device_recognized) log_d(  "Unknown model %s::%s, no binding is possible", zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+      if (!device_recognized) {
+        log_d(  "Unknown model %s::%s, no binding is possible", zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
                                      zbGateway.getQueryBasicClusterData()->zcl_model_name);
+        rgbLed.setPixelColor(0, rgbLed.Color(255, 0, 0));
+        rgbLed.show();
+        delay(1000);
+      }
     }
   }
 }

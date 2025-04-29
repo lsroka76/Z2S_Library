@@ -18,6 +18,8 @@
 #include <supla/control/virtual_relay.h>
 #include <supla/sensor/virtual_thermometer.h>
 
+#include <supla/condition.h>
+
 #include <Z2S_control/Z2S_virtual_relay.h>
 #include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
 
@@ -1044,9 +1046,16 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
   if (channel_number_slot >= 0) {
     log_i("IASZONE - IAS_ZONE_TAMPER_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 4), rssi);
+  }
+  
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_LOW_BATTERY_SID);
+
+  if (channel_number_slot >= 0) {
+    log_i("IASZONE - IAS_ZONE_LOW_BATTERY_SID channel:%x, status: %x", channel_number_slot, iaszone_status);
+    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 8), rssi);
     return;
   }
-
+  
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
@@ -1379,26 +1388,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR: 
       case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
-
-      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
-        
-        addZ2SDeviceIASzone(device, first_free_slot, IAS_ZONE_ALARM_1_SID, "ALARM 1");
-
-        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
-        if (first_free_slot == 0xFF) {
-          log_i("ERROR! Devices table full!");
-          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
-        }
-        addZ2SDeviceIASzone(device, first_free_slot, IAS_ZONE_ALARM_2_SID, "ALARM 2");
-
-        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
-        if (first_free_slot == 0xFF) {
-          log_i("ERROR! Devices table full!");
-          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
-        }
-        addZ2SDeviceIASzone(device, first_free_slot, IAS_ZONE_TAMPER_SID, "TAMPER");
-      } break;
 
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "POWER SWITCH", 
@@ -1864,4 +1856,75 @@ void updateDeviceTemperature(uint8_t device_id, int32_t temperature) {
       }
   else
     log_i("set temperature only allowed for virtual thermometer");
+}
+
+bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
+                    double threshold_1, double threshold_2) {
+
+  auto src_element = Supla::Element::getElementByChannelNumber(src_channel_id);
+  if (src_element == nullptr) {
+    log_e("z2s_add_action - invalid source Supla channel %d", src_channel_id);
+    return false;
+  }
+  auto Supla_Z2S_ActionHandler = reinterpret_cast<Supla::ElementWithChannelActions *>(src_element);
+
+  auto dst_element = Supla::Element::getElementByChannelNumber(dst_channel_id);
+  if (dst_element == nullptr) {
+    log_e("z2s_add_action - invalid destination Supla channel %d", dst_channel_id);
+    return false;
+  }
+  log_i("Action name %s, src channel %u, dst channel %u, event %u, action %u", action_name, src_channel_id, dst_channel_id, Supla_event, Supla_action);
+  
+  Supla::Condition *Supla_condition = nullptr;
+
+  if (condition) {
+
+    switch (Supla_event) {
+      case Supla::ON_LESS:
+        Supla_condition = OnLess(threshold_1); break;
+      case Supla::ON_LESS_EQ:
+        Supla_condition = OnLessEq(threshold_1); break;
+      case Supla::ON_GREATER:
+        Supla_condition = OnGreater(threshold_1); break;
+      case Supla::ON_GREATER_EQ:
+        Supla_condition = OnGreaterEq(threshold_1); break;
+      case Supla::ON_BETWEEN:
+        Supla_condition = OnBetween(threshold_1, threshold_2); break;
+      case Supla::ON_BETWEEN_EQ:
+        Supla_condition = OnBetweenEq(threshold_1, threshold_2); break;
+      case Supla::ON_EQUAL:
+        Supla_condition = OnEqual(threshold_1); break;
+    }
+    if (Supla_condition == nullptr)
+      return false;
+  }
+  
+  switch (dst_element->getChannel()->getChannelType()) {
+    case SUPLA_CHANNELTYPE_RELAY: {
+      auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::Control::Relay *>(dst_element);
+      if (condition)
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
+      else
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_event);
+    } break; 
+
+    case SUPLA_CHANNELTYPE_BINARYSENSOR: {
+      auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::Sensor::VirtualBinary *>(dst_element);
+      if (condition)
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
+      else
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_event);
+    } break;
+
+    case SUPLA_CHANNELTYPE_HVAC: {
+      auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::Control::HvacBase*>(dst_element);
+      if (condition)
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
+      else
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_event);
+    } break;
+
+    default: return false; 
+  } 
+  return true;
 }
