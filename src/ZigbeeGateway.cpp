@@ -691,9 +691,15 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
       } else log_i("zbAttributeReporting metering cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
-    if (attribute->id == ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) { 
+      if (attribute->id == ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) { 
         uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
         log_i("zbAttributeReporting level control cluster current level 0x%x",value);
+        if (_on_current_level_receive)
+          _on_current_level_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
+      } else 
+      if (attribute->id == 0xF000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) { 
+        uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting level control cluster Tuya 0xF000 brightness 0x%x",value);
         if (_on_current_level_receive)
           _on_current_level_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
       } else log_i("zbAttributeReporting level control cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
@@ -713,10 +719,16 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
       } else
       if (attribute->id == ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
         uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
-        log_i("zbAttributeReporting color control cluster saturation 0x%x",value);
+        log_i("zbAttributeReporting color control cluster color temperature 0x%x",value);
         if (_on_color_temperature_receive)
           _on_color_temperature_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
 
+      } else
+      if (attribute->id == 0xE000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+        uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting color control cluster Tuya 0xE000 color temperature 0x%x",value);
+        if (_on_color_temperature_receive)
+          _on_color_temperature_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
       } else log_i("zbAttributeReporting color control cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG) {

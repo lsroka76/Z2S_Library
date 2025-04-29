@@ -938,7 +938,7 @@ void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
     msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, active_fwd_energy, rssi);
 }
 
-void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t level, signed char rssi) {
+void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t level, signed char rssi) {
 
   log_i("onCurrentLevelReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
         ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
@@ -1516,9 +1516,24 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         addZ2SDeviceHvac(&zbGateway, device, first_free_slot, trv_thermometer_slot); 
       } break;
       
-      case Z2S_DEVICE_DESC_TUYA_DIMMER_BULB: {
+      case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: {
 
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, "DIMMER BULB", SUPLA_CHANNELFNC_DIMMER); 
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "DIMMER SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
+
+        first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
+        if (first_free_slot == 0xFF) {
+          log_i("ERROR! Devices table full!");
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE", SUPLA_CHANNELFNC_DIMMER);
+
       } break; 
 
       case Z2S_DEVICE_DESC_TUYA_RGB_BULB: {

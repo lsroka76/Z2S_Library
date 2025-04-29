@@ -20,6 +20,7 @@
 #include <supla/clock/clock.h>
 #include <supla/actions.h>
 #include <supla/control/button.h>
+#include <supla/device/enter_cfg_mode_after_power_cycle.h>
 #include <action_handler_with_callbacks.h>
 
 #include <supla/network/esp_web_server.h>
@@ -737,6 +738,8 @@ void setup() {
   buttonCfg->setMulticlickTime(500);
 
   buttonCfg->configureAsConfigButton(&SuplaDevice);
+
+   new Supla::Device::EnterCfgModeAfterPowerCycle(10000, 3, true);
 
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_1);
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_5);
