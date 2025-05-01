@@ -644,7 +644,7 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
       } else log_i("zbAttributeReporting illuminance measurement cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
   } else 
   if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT) {
-    if (attribute->id == ESP_ZB_ZCL_ATTR_FLOW_MEASUREMENT_MEASURED_VALUE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+    if (attribute->id == ESP_ZB_ZCL_ATTR_FLOW_MEASUREMENT_VALUE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
       uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
       log_i("zbAttributeReporting flow measurement 0x%x", value);
       if (_on_flow_receive)
