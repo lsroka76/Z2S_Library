@@ -886,6 +886,7 @@ void setup() {
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
   zbGateway.onPressureReceive(Z2S_onPressureReceive);
   zbGateway.onIlluminanceReceive(Z2S_onIlluminanceReceive);
+  zbGateway.onFlowReceive(Z2S_onFlowReceive);
   zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
   zbGateway.onRMSVoltageReceive(Z2S_onRMSVoltageReceive);
