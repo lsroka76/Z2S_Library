@@ -1274,6 +1274,12 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 0, "lx");
                           } break;
 
+                          case Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, SONOFF_FLOW_VALVE_SENSOR_ON_OFF_SID,"VALVE", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_FLOW_VALVE_SENSOR_FLOW_SID, "FLOW", 0, "m³/h");
+                          } break;
+
                           case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
                             
                             Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
