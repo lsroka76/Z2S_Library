@@ -329,7 +329,7 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-      ESP_ZB_ZCL_CLUSTER_ID_IAS_FLOW_MEASUREMENT }},
+      ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
@@ -1671,7 +1671,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "SWV",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_VALVE_SENSOR, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR, .z2s_device_endpoints_count = 1}
 };
 
 #endif
