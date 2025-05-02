@@ -152,15 +152,15 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     case TRV_HEATING_SETPOINT_MSG: {   //degrees*100
       log_i("msgZ2SDeviceHvac - TRV_HEATING_SETPOINT_MSG: 0x%x", msg_value);
        //if (Supla_Z2S_HvacBase->getMode() != SUPLA_HVAC_MODE_OFF) {
-      if (Supla_Z2S_HvacBase->isWeeklyScheduleEnabled()) {
-        if (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 50) {
-          TWeeklyScheduleProgram program = Supla_Z2S_HvacBase->getProgramById(Supla_Z2S_HvacBase->getCurrentProgramId());
-          Supla_Z2S_HvacBase->setProgram(Supla_Z2S_HvacBase->getCurrentProgramId(), program.Mode, msg_value, program.SetpointTemperatureCool, false);
-          Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value); 
-        }
+      if (Supla_Z2S_HvacBase->isWeeklyScheduleEnabled() &&
+          (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 50)) {
+        TWeeklyScheduleProgram program = Supla_Z2S_HvacBase->getProgramById(Supla_Z2S_HvacBase->getCurrentProgramId());
+        Supla_Z2S_HvacBase->setProgram(Supla_Z2S_HvacBase->getCurrentProgramId(), program.Mode, msg_value, program.SetpointTemperatureCool, false);
+        Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
+      } else {
+        Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
+        Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
       }
-      Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
-      Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value); 
     } break;
 
     case TRV_SYSTEM_MODE_MSG: { //0:off, 1:on
