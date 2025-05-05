@@ -89,6 +89,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   uint8_t low_battery_dp_id              = 0xFF;
   uint8_t battery_level_dp_id            = 0xFF;
 
+  uint8_t schedule_mode_dp_id            = 0xFF;
+
   uint8_t child_lock_dp_id               = 0xFF;
   uint8_t window_detect_dp_id            = 0xFF;
   uint8_t anti_freeze_dp_id              = 0xFF;
@@ -97,6 +99,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   uint8_t system_mode_value_on           = 0xFF;
   uint8_t system_mode_value_off          = 0xFF;
   uint8_t system_mode_value              = 0xFF;
+  uint8_t schedule_mode_value_on         = 0xFF;
+  uint8_t schedule_mode_value_off        = 0xFF;
 
   int32_t local_temperature_factor       = 1;
   int32_t target_heatsetpoint_factor     = 1;
@@ -133,6 +137,10 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
       low_battery_dp_id              = SASWELL_CMD_SET_LOW_BATTERY_1;
 
+      schedule_mode_dp_id            = SASWELL_CMD_SET_SCHEDULE_MODE_1;
+      schedule_mode_value_on         = SASWELL_CMD_SET_SCHEDULE_MODE_ON;
+      schedule_mode_value_off        = SASWELL_CMD_SET_SCHEDULE_MODE_OFF;
+
       child_lock_dp_id               = SASWELL_CMD_SET_CHILD_LOCK_1;
       window_detect_dp_id            = SASWELL_CMD_SET_WINDOW_DETECT_1;
       anti_freeze_dp_id              = SASWELL_CMD_SET_ANTI_FREEZE_1;
@@ -162,6 +170,9 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       temperature_calibration_dp_id  = ME167_CMD_SET_TEMPERATURE_CALIBRATION_1;
       
       low_battery_dp_id              = ME167_CMD_SET_LOW_BATTERY_1;
+
+      schedule_mode_dp_id            = ME167_CMD_SET_SCHEDULE_MODE_1;
+      schedule_mode_value_on         = ME167_CMD_SET_SCHEDULE_MODE_ON;
 
       child_lock_dp_id               = ME167_CMD_SET_CHILD_LOCK_1;
       window_detect_dp_id            = ME167_CMD_SET_WINDOW_DETECT_1;
@@ -193,6 +204,9 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
       battery_level_dp_id             = BECA_CMD_SET_BATTERY_LEVEL_1;
 
+      schedule_mode_dp_id            = BECA_CMD_SET_SCHEDULE_MODE_1;
+      schedule_mode_value_on         = BECA_CMD_SET_SCHEDULE_MODE_ON;
+
       child_lock_dp_id               = BECA_CMD_SET_CHILD_LOCK_1;
       window_detect_dp_id            = BECA_CMD_SET_WINDOW_DETECT_1;
       //anti_freeze_dp_id              = BECA_CMD_SET_ANTI_FREEZE_1;
@@ -223,11 +237,14 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       low_battery_dp_id              = MOES_CMD_SET_LOW_BATTERY_1;
       battery_level_dp_id            = MOES_CMD_SET_BATTERY_LEVEL_1;
 
+      schedule_mode_dp_id            = MOES_CMD_SET_SCHEDULE_MODE_1;
+      schedule_mode_value_on         = MOES_CMD_SET_SCHEDULE_MODE_ON;
+      schedule_mode_value_off        = MOES_CMD_SET_SCHEDULE_MODE_OFF;
+
       child_lock_dp_id               = MOES_CMD_SET_CHILD_LOCK_1;
       window_detect_dp_id            = MOES_CMD_SET_WINDOW_DETECT_1;
       //anti_freeze_dp_id              = MOES_CMD_SET_ANTI_FREEZE_1;
       //limescale_protect_dp_id        = MOES_CMD_SET_LIMESCALE_PROTECT_1;
-
 
       local_temperature_factor       = MOES_LOCAL_TEMPERATURE_FACTOR;
       target_heatsetpoint_factor     = MOES_TARGET_HEATSETPOINT_FACTOR;
@@ -252,6 +269,9 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       temperature_calibration_dp_id  = TRV601_CMD_SET_TEMPERATURE_CALIBRATION_1;
 
       battery_level_dp_id            = TRV601_CMD_SET_BATTERY_LEVEL_1;
+
+      schedule_mode_dp_id            = TRV601_CMD_SET_SCHEDULE_MODE_1;
+      schedule_mode_value_on         = TRV601_CMD_SET_SCHEDULE_MODE_ON;
 
       child_lock_dp_id               = TRV601_CMD_SET_CHILD_LOCK_1;
       window_detect_dp_id            = TRV601_CMD_SET_WINDOW_DETECT_1;
@@ -281,6 +301,9 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       temperature_calibration_dp_id  = TRV603_CMD_SET_TEMPERATURE_CALIBRATION_1;
 
       battery_level_dp_id            = TRV603_CMD_SET_BATTERY_LEVEL_1;
+
+      schedule_mode_dp_id            = TRV603_CMD_SET_SCHEDULE_MODE_1;
+      schedule_mode_value_on         = TRV603_CMD_SET_SCHEDULE_MODE_ON;
 
       child_lock_dp_id               = TRV603_CMD_SET_CHILD_LOCK_1;
       window_detect_dp_id            = TRV603_CMD_SET_WINDOW_DETECT_1;
@@ -322,6 +345,22 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
     if (Tuya_read_dp_result.is_success) {
       if (Tuya_read_dp_result.dp_value == system_mode_value_off)
         msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0, rssi);
+    }
+  }
+
+  if (schedule_mode_dp_id < 0xFF) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(schedule_mode_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      if (Tuya_read_dp_result.dp_value == schedule_mode_value_on)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 1, rssi);
+    }
+  } 
+
+  if ((schedule_mode_value_off < 0xFF) && (schedule_mode_dp_id < 0xFF)) {
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(schedule_mode_dp_id, payload_size, payload);
+    if (Tuya_read_dp_result.is_success) {
+      if (Tuya_read_dp_result.dp_value == schedule_mode_value_off)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 0, rssi);
     }
   }
 

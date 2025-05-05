@@ -1451,6 +1451,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_mrpevh8p", .model_name = "TS0041", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3000_8rppvwda", .model_name = "TS0041", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "eWeLink", .model_name = "SNZB-01P", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
     
@@ -1563,6 +1566,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_3lbtuxgp", .model_name = "TS0505B",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_wbsgmojq", .model_name = "TS0505B",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_0zabbfax", .model_name = "TS0503B",

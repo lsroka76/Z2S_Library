@@ -856,8 +856,13 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
     } break;
 
     case ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID: {
-      uint8_t system_mode = (mode == 0) ? 0 : 1;
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, system_mode, rssi);
+      switch (mode) {
+        case 0: msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0, rssi); break;
+        case 1: msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1, rssi); break;
+        case 4: msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 1, rssi); break;
+      }
+      //uint8_t system_mode = (mode == 0) ? 0 : 1;
+      //msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, system_mode, rssi);
     } break;
   }
 }

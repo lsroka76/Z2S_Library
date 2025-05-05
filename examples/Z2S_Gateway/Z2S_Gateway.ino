@@ -380,6 +380,58 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       time = strtoul(*param, nullptr, 0);
     Zigbee.openNetwork(time);
     return;
+  } else 
+  if (strcmp(cmd, "GET-ZIGBEE-PRIMARY-CHANNEL") == 0) {
+
+    uint32_t zb_primary_channel = esp_zb_get_primary_network_channel_set();
+    for (uint8_t i = 11; i <= 26; i++) {
+      if (zb_primary_channel & (1 << i))
+        telnet.printf(">Zigbee primary channel: %u\n\r>", i);
+    }
+    return;
+  } else
+  if (strcmp(cmd, "SET-ZIGBEE-PRIMARY-CHANNEL") == 0) {
+    
+    if (params_number < 1)  {
+      telnet.println(">set-zigbee-primary-channel zigbee_channel(11-26)");
+      return;
+    }
+    
+    uint32_t zb_primary_channel = strtoul(*param, nullptr, 0);
+
+    if ((zb_primary_channel >= 11) && (zb_primary_channel <= 26)) {
+
+      if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_ZIGBEE_PRIMARY_CHANNEL, (1 << zb_primary_channel))) {
+        telnet.printf(">New Zigbee primary channel(%u) mask(%x) write success! Restarting...\n\r", zb_primary_channel, (1 << zb_primary_channel));
+        Supla::Storage::ConfigInstance()->commit();
+        SuplaDevice.scheduleSoftRestart(1000);
+        return;
+      } else {
+        telnet.printf(">New Zigbee primary channel(%u) mask(%x) write failed!\n\r", zb_primary_channel, (1 << zb_primary_channel));
+        return;
+      }
+    } else { 
+      telnet.printf(">Invalid value for Zigbee primary channel: %u (should be between 11 and 26)\n\r");
+      return;
+    }
+  } else
+  if (strcmp(cmd, "GET-ZIGBEE-TX-POWER") == 0) {
+
+    int8_t zb_tx_power;
+    esp_zb_get_tx_power(&zb_tx_power);
+    telnet.printf(">Zigbee TX power: %d\n\r>", zb_tx_power);
+    return;
+  } else
+  if (strcmp(cmd, "SET-ZIGBEE-TX-POWER") == 0) {
+
+    int8_t zb_tx_power = 20;
+    if (*(param))
+      zb_tx_power = strtoul(*param, nullptr, 0);
+    if ((zb_tx_power <= 20) && (zb_tx_power>= -24))
+      esp_zb_set_tx_power(zb_tx_power);
+    else
+      telnet.printf(">Invalid TX power value for SET-ZIGBEE-TX-POWER: %d (should be between -24 and +20)\n\r>", zb_tx_power);
+    return;
   } else
   if (strcmp(cmd, "VERSION") == 0) {
     telnet.printf(">Gateway version: %s\n\r>", Z2S_VERSION);
@@ -913,6 +965,12 @@ void setup() {
 
   Zigbee.addEndpoint(&zbGateway);
 
+  uint32_t zb_primary_channel_mask;
+
+  if (Supla::Storage::ConfigInstance()->getUInt32(Z2S_ZIGBEE_PRIMARY_CHANNEL, &zb_primary_channel_mask)) {
+    log_i("Zigbee primary channel mask (0x%x) loaded successfully", zb_primary_channel_mask);
+    Zigbee.setPrimaryChannelMask(zb_primary_channel_mask);
+  }
   //Open network for 180 seconds after boot
   Zigbee.setRebootOpenNetwork(180);
 
@@ -1021,6 +1079,9 @@ void loop() {
         log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
         log_i("Gateway version: %s", Z2S_VERSION);
+        int8_t zb_tx_power;
+        esp_zb_get_tx_power(&zb_tx_power);
+        log_i("Zigbee TX power: %d", zb_tx_power);
       }
       if (refresh_cycle % 6 == 0) {
         log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());

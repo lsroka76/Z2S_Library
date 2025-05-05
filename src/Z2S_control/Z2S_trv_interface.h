@@ -57,6 +57,10 @@
 
 #define SASWELL_CMD_SET_LOW_BATTERY_1             0x69 //05 bitmap type
 
+#define SASWELL_CMD_SET_SCHEDULE_MODE_1           0x6C
+#define SASWELL_CMD_SET_SCHEDULE_MODE_ON          0x01
+#define SASWELL_CMD_SET_SCHEDULE_MODE_OFF         0x00
+
 #define SASWELL_CMD_SET_CHILD_LOCK_1              0x28
 #define SASWELL_CMD_SET_WINDOW_DETECT_1           0x08
 #define SASWELL_CMD_SET_ANTI_FREEZE_1             0x0A
@@ -100,6 +104,10 @@
 
 #define ME167_CMD_SET_LOW_BATTERY_1       0x23 //05 bitmap 0 OK 1 empty
 
+#define ME167_CMD_SET_SCHEDULE_MODE_1           0x02
+#define ME167_CMD_SET_SCHEDULE_MODE_ON          0x00
+#define ME167_CMD_SET_SCHEDULE_MODE_OFF         0x01
+
 #define ME167_CMD_SET_CHILD_LOCK_1              0x07
 #define ME167_CMD_SET_WINDOW_DETECT_1           0x0E //to verify
 #define ME167_CMD_SET_ANTI_FREEZE_1             0x24
@@ -129,11 +137,18 @@
 #define TRV603_CMD_ON_4  0x01
 #define TRV603_CMD_ON_5  0x02
 
-#define TRV603_CMD_OFF_1 0x02
+/*#define TRV603_CMD_OFF_1 0x02
 #define TRV603_CMD_OFF_2 0x04
 #define TRV603_CMD_OFF_3 0x00
 #define TRV603_CMD_OFF_4 0x01
-#define TRV603_CMD_OFF_5 0x00
+#define TRV603_CMD_OFF_5 0x00 */ // OFF = AUTO
+
+#define TRV603_CMD_OFF_1 0x71
+#define TRV603_CMD_OFF_2 0x01
+#define TRV603_CMD_OFF_3 0x00
+#define TRV603_CMD_OFF_4 0x01
+#define TRV603_CMD_OFF_5 0x00 //OFF = STOP HEATING
+
 
 #define TRV603_CMD_SET_TARGET_HEATSETPOINT_1 0x04
 #define TRV603_CMD_SET_TARGET_HEATSETPOINT_2 0x02
@@ -149,6 +164,10 @@
 #define TRV603_CMD_SET_RUNNING_STATE_HEAT  0x00 //inverted
 
 #define TRV603_CMD_SET_LOW_BATTERY_1       0x23 //05 bitmap 0 OK 1 empty
+
+#define TRV603_CMD_SET_SCHEDULE_MODE_1           0x02
+#define TRV603_CMD_SET_SCHEDULE_MODE_ON          0x00
+#define TRV603_CMD_SET_SCHEDULE_MODE_OFF         0x02
 
 #define TRV603_CMD_SET_BATTERY_LEVEL_1           0x06
 #define TRV603_CMD_SET_CHILD_LOCK_1              0x07
@@ -201,6 +220,10 @@
 
 #define BECA_CMD_SET_BATTERY_LEVEL_1     0x0E // 02 value 0-100
 
+#define BECA_CMD_SET_SCHEDULE_MODE_1           0x01
+#define BECA_CMD_SET_SCHEDULE_MODE_ON          0x00
+#define BECA_CMD_SET_SCHEDULE_MODE_OFF         0x01
+
 #define BECA_CMD_SET_CHILD_LOCK_1              0x0D
 #define BECA_CMD_SET_WINDOW_DETECT_1           0x08 //09?
 //#define BECA_CMD_SET_ANTI_FREEZE_1             0x??
@@ -250,6 +273,10 @@
 #define MOES_CMD_SET_LOW_BATTERY_1       0x6E //
 #define MOES_CMD_SET_BATTERY_LEVEL_1     0x15 //TO VERIFY
 
+#define MOES_CMD_SET_SCHEDULE_MODE_1           0x04
+#define MOES_CMD_SET_SCHEDULE_MODE_ON          0x01
+#define MOES_CMD_SET_SCHEDULE_MODE_OFF         0x02
+
 #define MOES_CMD_SET_CHILD_LOCK_1              0x07
 #define MOES_CMD_SET_WINDOW_DETECT_1           0x68 //00 RAW [0,35,5] on/off, temperature, operating time (min)
 //#define MOES_CMD_SET_ANTI_FREEZE_1             0x??
@@ -289,6 +316,10 @@
 #define TRV601_CMD_SET_RUNNING_STATE_HEAT  0x01 //normal
 
 #define TRV601_CMD_SET_BATTERY_LEVEL_1     0x0D //05 bitmap 0 OK 1 empty
+
+#define TRV601_CMD_SET_SCHEDULE_MODE_1           0x01
+#define TRV601_CMD_SET_SCHEDULE_MODE_ON          0x00
+#define TRV601_CMD_SET_SCHEDULE_MODE_OFF         0x01
 
 #define TRV601_CMD_SET_CHILD_LOCK_1              0x0C
 #define TRV601_CMD_SET_WINDOW_DETECT_1           0x08 //7 open/close
@@ -331,6 +362,9 @@
 #define TRVZB_CMD_SET_VALVE_CLOSING_DEGREE          0x600C  //U8
 #define TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT    0x600D //INT16
 #define TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT     0x600E //U8
+
+//#define TRVZB_CMD_SET_SCHEDULE_MODE_1           0x02 THERMOSTAT CLUSTER
+//#define MEVZB_CMD_SET_SCHEDULE_MODE_ON          0x00
 
 #define TRVZB_CMD_SET_HEATSETPOINT_MIN    0x0190 //400
 #define TRVZB_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500

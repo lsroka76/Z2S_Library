@@ -184,6 +184,18 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
 
     } break;
 
+    case TRV_SCHEDULE_MODE_MSG: { //0:off, 1:on
+      log_i("msgZ2SDeviceHvac - TRV_SCHEDULE_MODE_MSG: 0x%x", msg_value);
+
+      switch (msg_value) {
+        //case 0: Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON); break;
+        case 1: {
+          Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, false); 
+          Supla_Z2S_TRVInterface->setTRVSystemMode(0);
+        } break;
+      }        
+    } break;
+
     case TRV_RUNNING_STATE_MSG: { //0:idle, 1:heat
       log_i("msgZ2SDeviceHvac - TRV_RUNNING_STATE_MSG: 0x%x", msg_value);
       
@@ -199,7 +211,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     case TRV_TEMPERATURE_CALIBRATION_MSG: { //degrees*100
       log_i("msgZ2SDeviceHvac - TRV_TEMPERATURE_CALIBRATION_MSG: 0x%x", msg_value);
         Supla_Z2S_TRVInterface->setTRVTemperatureCalibration(msg_value);
-    } break;
+    } break; 
     
     case TRV_LOW_BATTERY_MSG: { //O == OK, 1 - low battery
       log_i("msgZ2SDeviceHvac - TRV_LOW_BATTERY_MSG: 0x%x", msg_value);

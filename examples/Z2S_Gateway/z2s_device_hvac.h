@@ -19,6 +19,7 @@
 #define TRV_WINDOW_DETECT_MSG           0x09
 #define TRV_ANTI_FREEZE_MSG             0x0A
 #define TRV_LIMESCALE_PROTECT_MSG       0x0B
+#define TRV_SCHEDULE_MODE_MSG           0x0C
 
 
 void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
