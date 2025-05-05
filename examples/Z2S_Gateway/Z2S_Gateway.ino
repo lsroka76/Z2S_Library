@@ -1465,7 +1465,7 @@ void loop() {
                 case Z2S_DEVICE_DESC_TS0601_TRV_BECA:
                 case Z2S_DEVICE_DESC_TS0601_TRV_MOES:
                 case Z2S_DEVICE_DESC_TS0601_TRV_TRV601:
-
+                case Z2S_DEVICE_DESC_TS0601_TRV_TRV603:
                   zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL); break;
 
                   

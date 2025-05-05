@@ -121,7 +121,58 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-#define BECA_CMD_SET   0x03
+#define TRV603_CMD_SET   0x03
+
+#define TRV603_CMD_ON_1  0x02
+#define TRV603_CMD_ON_2  0x04
+#define TRV603_CMD_ON_3  0x00
+#define TRV603_CMD_ON_4  0x01
+#define TRV603_CMD_ON_5  0x02
+
+#define TRV603_CMD_OFF_1 0x02
+#define TRV603_CMD_OFF_2 0x04
+#define TRV603_CMD_OFF_3 0x00
+#define TRV603_CMD_OFF_4 0x01
+#define TRV603_CMD_OFF_5 0x00
+
+#define TRV603_CMD_SET_TARGET_HEATSETPOINT_1 0x04
+#define TRV603_CMD_SET_TARGET_HEATSETPOINT_2 0x02
+
+#define TRV603_CMD_SET_TEMPERATURE_CALIBRATION_1 0x2F
+#define TRV603_CMD_SET_TEMPERATURE_CALIBRATION_2 0x02
+
+#define TRV603_CMD_SET_LOCAL_TEMPERATURE_1 0x05
+#define TRV603_CMD_SET_LOCAL_TEMPERATURE_2 0x02
+
+#define TRV603_CMD_SET_RUNNING_STATE_1     0x03
+#define TRV603_CMD_SET_RUNNING_STATE_IDLE  0x01
+#define TRV603_CMD_SET_RUNNING_STATE_HEAT  0x00 //inverted
+
+#define TRV603_CMD_SET_LOW_BATTERY_1       0x23 //05 bitmap 0 OK 1 empty
+
+#define TRV603_CMD_SET_BATTERY_LEVEL_1           0x06
+#define TRV603_CMD_SET_CHILD_LOCK_1              0x07
+#define TRV603_CMD_SET_WINDOW_DETECT_1           0x0E //to verify
+#define TRV603_CMD_SET_ANTI_FREEZE_1             0x24
+#define TRV603_CMD_SET_LIMESCALE_PROTECT_1       0x27
+
+
+#define TRV603_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
+#define TRV603_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
+#define TRV603_TEMPERATURE_CALIBRATION_FACTOR 0x01//*10
+
+#define TRV603_STATE_1 0x03
+#define TRV603_STATE_2 0x04
+
+#define TRV603_STATE_IDLE    0x01
+#define TRV603_STATE_HEATING 0x00
+
+#define TRV603_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define TRV603_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+#define BECA_CMD_SET   0x04
 
 #define BECA_CMD_ON_1  0x01
 #define BECA_CMD_ON_2  0x04
@@ -166,7 +217,7 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-#define MOES_CMD_SET   0x04
+#define MOES_CMD_SET   0x05
 
 #define MOES_CMD_ON_1  0x6A
 #define MOES_CMD_ON_2  0x04
@@ -210,7 +261,7 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-#define TRV601_CMD_SET   0x05
+#define TRV601_CMD_SET   0x06
 
 #define TRV601_CMD_ON_1  0x01
 #define TRV601_CMD_ON_2  0x04

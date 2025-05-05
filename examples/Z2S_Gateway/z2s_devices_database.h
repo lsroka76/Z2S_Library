@@ -128,6 +128,7 @@
 #define Z2S_DEVICE_DESC_TS0601_TRV_BECA                 0x6012
 #define Z2S_DEVICE_DESC_TS0601_TRV_MOES                 0x6013
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV601               0x6014
+#define Z2S_DEVICE_DESC_TS0601_TRV_TRV603               0x6015
 
 #define Z2S_DEVICE_DESC_ON_OFF                          0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                        0x8001
@@ -447,6 +448,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV601, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV603, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_clusters_count = 3, .z2s_device_clusters =
@@ -1498,7 +1502,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_ymldrmzx", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV603, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_cpmgn2cf", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_MOES, .z2s_device_endpoints_count = 1},
