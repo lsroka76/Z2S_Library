@@ -886,6 +886,7 @@ void setup() {
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
   zbGateway.onPressureReceive(Z2S_onPressureReceive);
   zbGateway.onIlluminanceReceive(Z2S_onIlluminanceReceive);
+  zbGateway.onFlowReceive(Z2S_onFlowReceive);
   zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
   zbGateway.onRMSVoltageReceive(Z2S_onRMSVoltageReceive);
@@ -1271,6 +1272,12 @@ void loop() {
                             
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 0, "lx");
+                          } break;
+
+                          case Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, SONOFF_FLOW_VALVE_SENSOR_ON_OFF_SID,"VALVE", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_FLOW_VALVE_SENSOR_FLOW_SID, "FLOW", 0, "m³/h");
                           } break;
 
                           case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
