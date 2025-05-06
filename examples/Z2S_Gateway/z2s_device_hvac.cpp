@@ -161,12 +161,18 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
   switch (msg_id) {
     case TRV_HEATING_SETPOINT_MSG: {   //degrees*100
       log_i("msgZ2SDeviceHvac - TRV_HEATING_SETPOINT_MSG: 0x%x", msg_value);
+      log_i("HVAC flags: 0x%x", Supla_Z2S_HvacBase->getChannel()->getHvacFlags());
        //if (Supla_Z2S_HvacBase->getMode() != SUPLA_HVAC_MODE_OFF) {
+      //if (Supla_Z2S_HvacBase->isThermostatDisabled()) {
+       // log_i()
+      //}
       if (Supla_Z2S_HvacBase->isWeeklyScheduleEnabled() &&
-          (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 50)) {
+          (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 50) &&
+          (Supla_Z2S_HvacBase->getCurrentProgramId() != 0)) {
         TWeeklyScheduleProgram program = Supla_Z2S_HvacBase->getProgramById(Supla_Z2S_HvacBase->getCurrentProgramId());
-        Supla_Z2S_HvacBase->setProgram(Supla_Z2S_HvacBase->getCurrentProgramId(), program.Mode, msg_value, program.SetpointTemperatureCool, false);
-        Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
+        //Supla_Z2S_HvacBase->setProgram(Supla_Z2S_HvacBase->getCurrentProgramId(), program.Mode, msg_value, program.SetpointTemperatureCool, false);
+        //Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
+        Supla_Z2S_HvacBase->applyNewRuntimeSettings(SUPLA_HVAC_MODE_NOT_SET, msg_value, 0, 0);
         Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
         log_i("Changing weekly schedule program temperature: program id %u,hvac getTemperatureSetpointHeat %d, msg value %d", Supla_Z2S_HvacBase->getCurrentProgramId(),
               Supla_Z2S_HvacBase->getTemperatureSetpointHeat(), msg_value);
@@ -178,7 +184,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
 
     case TRV_SYSTEM_MODE_MSG: { //0:off, 1:on
       log_i("msgZ2SDeviceHvac - TRV_SYSTEM_MODE_MSG: 0x%x", msg_value);
-
+      log_i("HVAC flags: 0x%x", Supla_Z2S_HvacBase->getChannel()->getHvacFlags());
       switch (msg_value) {
         case 1: Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON); break;
         case 0: Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, true); break;
