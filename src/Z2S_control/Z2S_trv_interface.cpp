@@ -74,6 +74,20 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
   if (_gateway && Zigbee.started()) {
     log_i("Z2S_TRVInterface::sendTRVTemperatureSetpoint = %d", temperature_setpoint);
 
+    /*int32_t temperature_setpoint_div = (temperature_setpoint / 100) * 100;
+    int32_t temperature_setpoint_mod = temperature_setpoint % 100;
+    
+    if ((temperature_setpoint_mod >= 0) && (temperature_setpoint_mod < 25))
+      temperature_setpoint = temperature_setpoint_div;
+    else
+    if ((temperature_setpoint_mod >= 25) && (temperature_setpoint_mod < 75))
+      temperature_setpoint = temperature_setpoint_div + 50;
+    else
+    if (temperature_setpoint_mod >= 75)
+      temperature_setpoint = temperature_setpoint_div + 100;
+
+    log_i("Z2S_TRVInterface::sendTRVTemperatureSetpoint (adjusted) = %d", temperature_setpoint);*/
+
     if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
 
       uint16_t _tsn_number = random(0x0000, 0xFFFF); 

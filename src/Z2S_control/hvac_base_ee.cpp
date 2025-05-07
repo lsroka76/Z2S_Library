@@ -26,6 +26,22 @@ HvacBaseEE::~HvacBaseEE() {}
 
 int32_t HvacBaseEE::handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue)
 {
+  /*auto hvacValue = reinterpret_cast<THVACValue *>(newValue->value);
+
+  int32_t temperature_setpoint_div = (hvacValue->SetpointTemperatureHeat / 100) * 100;
+  int32_t temperature_setpoint_mod = hvacValue->SetpointTemperatureHeat % 100;
+  
+  if ((temperature_setpoint_mod >= 0) && (temperature_setpoint_mod < 25))
+    hvacValue->SetpointTemperatureHeat = temperature_setpoint_div;
+  else
+  if ((temperature_setpoint_mod >= 25) && (temperature_setpoint_mod < 75))
+    hvacValue->SetpointTemperatureHeat = temperature_setpoint_div + 50;
+  else
+  if (temperature_setpoint_mod >= 75)
+    hvacValue->SetpointTemperatureHeat = temperature_setpoint_div + 100;
+  */  
+  //log_i("HvacBaseEE::handleNewValueFromServer: hvacValue->SetpointTemperatureHeat (adjusted) = %d", hvacValue->SetpointTemperatureHeat);
+
   int32_t handleNewValueFromServer_result = HvacBase::handleNewValueFromServer(newValue);
   if (handleNewValueFromServer_result)
     runAction(Supla::ON_CHANGE);
