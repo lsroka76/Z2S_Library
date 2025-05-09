@@ -31,8 +31,12 @@
 #define TUYA_PRIVATE_CLUSTER_EF00   0xEF00
 
 #define IKEA_PRIVATE_CLUSTER        0xFC7F
+#define IKEA_PRIVATE_CLUSTER_2      0xFC80
 
 #define SONOFF_TRVZB_CUSTOM_CLUSTER 0xFC11
+
+#define ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER   0xE004
+#define ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER  0xED00
 
 #define ZCL_CMD_TSN_UNKNOWN 0x00
 #define ZCL_CMD_TSN_SYNC    0x01
@@ -133,7 +137,7 @@ public:
   void readClusterReportCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
   void readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
 
-  bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false);
+  bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV);
   void sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, uint16_t *attribute_ids);
   void sendAttributeWrite( zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
@@ -150,7 +154,8 @@ public:
 
   void sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya = false);
   void sendCustomClusterCmd(zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
-                            uint16_t custom_data_size, uint8_t *custom_data, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV);
+                            uint16_t custom_data_size, uint8_t *custom_data, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+                            uint8_t disable_default_response = 0, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
 
   void requestDataSave(uint8_t selector) {
     if (_on_data_save_request)

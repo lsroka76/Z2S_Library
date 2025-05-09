@@ -1332,9 +1332,12 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
                                      uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
   switch (cluster) {
-    case 0xEF00: processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi); break;
-    case 0xFC7F:
-    case 0xFC80: {
+    case TUYA_PRIVATE_CLUSTER_EF00: 
+      processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi); break;
+    case ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER:
+      processZosungCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi); break;
+    case IKEA_PRIVATE_CLUSTER:
+    case IKEA_PRIVATE_CLUSTER_2: {
       log_i("IKEA custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", cluster, endpoint, command_id);
       processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster, command_id, payload_size, payload, rssi);
      } break;
@@ -1760,6 +1763,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break;
+
+      case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
+        addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, "IR REMOTE", 0); break;
 
       default : {
         

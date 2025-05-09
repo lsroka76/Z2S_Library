@@ -25,6 +25,7 @@
 #include <supla/control/remote_output_interface.h>
 #include "ZigbeeGateway.h"
 #include "hvac_base_ee.h"
+#include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>
 
 #define FIRST_0XEF00_CMD_SET 0x01
 

@@ -121,6 +121,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   Supla_Z2S_HvacBase->setDefaultTemperatureRoomMin(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, hvac_room_temperature_min);
   Supla_Z2S_HvacBase->setDefaultTemperatureRoomMax(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, hvac_room_temperature_max);
   Supla_Z2S_HvacBase->setButtonTemperatureStep(50);
+  Supla_Z2S_HvacBase->addLocalUILockCapability(Supla::LocalUILock::Full);
   
   Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, trv_external_sensor_mode, z2s_devices_table[channel_number_slot].Supla_secondary_channel);
 

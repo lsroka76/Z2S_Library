@@ -177,6 +177,8 @@ ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_LOC
 
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC7F),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC7F),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_attribute_list_t *tyua_on_off_cluster = esp_zb_cluster_list_get_cluster(_cluster_list, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   
@@ -1062,7 +1064,7 @@ void ZigbeeGateway::zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16
 }
 
 
-bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack) {
+bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack, uint8_t direction) {
 
     esp_zb_zcl_read_attr_cmd_t read_req;
 
@@ -1084,7 +1086,7 @@ bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t clus
     read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);
     read_req.attr_field = &attributes[0];
 
-    read_req.direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
+    read_req.direction = direction;
     read_req.manuf_specific = 0;
     read_req.dis_defalut_resp = 1;
 
@@ -1485,7 +1487,8 @@ void ZigbeeGateway::zbCmdDefaultResponse( uint8_t tsn, int8_t rssi, esp_zb_zcl_a
 }
 
 void ZigbeeGateway::sendCustomClusterCmd( zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
-                                          uint16_t custom_data_size, uint8_t *custom_data, bool ack, uint8_t direction ) {
+                                          uint16_t custom_data_size, uint8_t *custom_data, bool ack, uint8_t direction, uint8_t disable_default_response,
+                                          uint8_t manuf_specific, uint16_t manuf_code) {
   
   esp_zb_zcl_custom_cluster_cmd_req_t req;
 
@@ -1501,9 +1504,9 @@ void ZigbeeGateway::sendCustomClusterCmd( zbg_device_params_t * device, int16_t 
   req.cluster_id = custom_cluster_id;
   req.profile_id = ESP_ZB_AF_HA_PROFILE_ID;
   req.direction = direction;
-  req.manuf_specific = 0;
-  req.dis_defalut_resp = 0;
-  req.manuf_code = 0;
+  req.manuf_specific = manuf_specific;
+  req.dis_defalut_resp = disable_default_response;
+  req.manuf_code = manuf_code;
   req.custom_cmd_id = custom_command_id;
   req.data.type = data_type; //ESP_ZB_ZCL_ATTR_TYPE_U8;//ESP_ZB_ZCL_ATTR_TYPE_SET;
   req.data.size = custom_data_size;

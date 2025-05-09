@@ -698,18 +698,23 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint16_t attribute_id = strtoul(*(param + 2),nullptr, 0);
     bool sync = (params_number > 3) ? (strcmp(*(param + 3),"ASYNC") == 0 ? false : true) : true;
     
+    uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
+
+    if (params_number == 5)
+      direction = strtoul(*(param + 4),nullptr, 0);
+
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
       telnet.printf(">read-attribute %u %u %u\n\r>", channel_id, cluster_id, attribute_id);
       if (sync) {
-        bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true); 
+        bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true, direction); 
         if (result)
           telnet.printf(">Reading attribute successful - data value is 0x%x, data type is 0x%x\n\r>", 
                         *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
         else
           telnet.printf(">Reading attribute failed\n\r>");
       } else {
-        zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, false);
+        zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, false, direction);
         telnet.println("readAttribute async request sent");
       }
     }
@@ -727,7 +732,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint16_t min_interval = strtoul(*(param + 4),nullptr, 0);
     uint16_t max_interval = strtoul(*(param + 5),nullptr, 0);
     uint16_t delta = strtoul(*(param + 6),nullptr, 0);
-    bool sync = (params_number > 7) ? (strcmp(*(param+7),"ASYNC") == 0 ? false : true) : true;
+    bool sync = (params_number > 7) ? (strcmp(*(param + 7),"ASYNC") == 0 ? false : true) : true;
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
@@ -768,7 +773,8 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint16_t attribute_id = strtoul(*(param + 2),nullptr, 0);
     esp_zb_zcl_attr_type_t attribute_type = (esp_zb_zcl_attr_type_t)parseAttributeTypeStr(*(param + 3));
     uint16_t attribute_size = strtoul(*(param + 4),nullptr, 0);
-    //uint32_t value = strtoul(*(param + 5),nullptr,16);
+    uint8_t manuf_specific = 0;
+    uint16_t manuf_code = 0;
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
@@ -791,7 +797,11 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
           value = &write_mask_32; 
         } break;
       }
-      zbGateway.sendAttributeWrite(&device, cluster_id, attribute_id, attribute_type, attribute_size, value); 
+      if (params_number == 8) {
+        manuf_specific = strtoul(*(param + 6),nullptr, 0);
+        manuf_code = strtoul(*(param + 7),nullptr, 0);
+      }
+      zbGateway.sendAttributeWrite(&device, cluster_id, attribute_id, attribute_type, attribute_size, value, manuf_specific, manuf_code); 
       telnet.println("Write attribute async request sent");
     }
     return;
@@ -807,7 +817,21 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint16_t command_id = strtoul(*(param + 2),nullptr, 0);
     esp_zb_zcl_attr_type_t data_type = (esp_zb_zcl_attr_type_t)parseAttributeTypeStr(*(param + 3));
     uint16_t data_size = strtoul(*(param + 4),nullptr, 0);
-    //uint32_t value = strtoul(*(param + 5),nullptr,16);
+    uint8_t direction = 0;
+    uint8_t disable_default_response = 0;
+    uint8_t manuf_specific = 0;
+    uint8_t manuf_code = 0;
+    
+    bool sync = (params_number >= 7) ? (strcmp(*(param + 6),"ASYNC") == 0 ? false : true) : false;
+    if (params_number >= 8) 
+      direction = strtoul(*(param + 7),nullptr, 0);
+    if (params_number >= 9)
+      disable_default_response = strtoul(*(param + 8),nullptr, 0);
+    if (params_number >= 10)
+      manuf_specific = strtoul(*(param + 9),nullptr, 0);
+    if (params_number >= 11)
+      manuf_code = strtoul(*(param + 10),nullptr, 0);
+      
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
@@ -824,8 +848,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
         custom_cmd_payload[i] = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
         telnet.printf("%X:", custom_cmd_payload[i]);
       }
-      zbGateway.sendCustomClusterCmd(&device, cluster_id, command_id, data_type, data_size, custom_cmd_payload); 
-      telnet.println("Custom command async request sent");
+      zbGateway.sendCustomClusterCmd(&device, cluster_id, command_id, data_type, data_size, custom_cmd_payload, sync, direction, 
+                                     disable_default_response, manuf_specific, manuf_code); 
+      if (!sync) telnet.println("Custom command async request sent");
     }
     return;
   }

@@ -11,6 +11,13 @@
 
 extern ZigbeeGateway zbGateway;
 
+uint8_t learned_ir_code[100];
+bool ir_code_learning = false;
+bool ir_code_receiving = false;
+uint32_t ir_message_position = 0;
+uint32_t ir_message_length = 0;
+uint16_t ir_message_seq = 0;
+
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
 
 Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_size, uint8_t *payload) {
@@ -1005,5 +1012,108 @@ void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 
     } break;
     default: log_i("Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", command_id); break;
+  }
+}
+
+void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, uint16_t payload_size, uint8_t *payload, signed char rssi) {
+  log_i("processing Zosung custom cluster 0xED00, command id 0x%x", command_id);
+  uint8_t ir_code_data_1[17];
+  uint8_t ir_code_data_2[7];
+  uint8_t ir_code_data_4[5];
+  uint8_t ir_code_data_5[4];
+  zbg_device_params_t device = {};
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 
+                                                              ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+  if (channel_number_slot < 0) {
+    log_i("processZosungCustomCluster failed - no Supla channel for that device");
+    return;
+  }
+
+  device.endpoint = z2s_devices_table[channel_number_slot].endpoint;
+  device.cluster_id = ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER;
+  memcpy(device.ieee_addr, z2s_devices_table[channel_number_slot].ieee_addr, 8);
+  device.short_addr = z2s_devices_table[channel_number_slot].short_addr;
+  device.model_id = z2s_devices_table[channel_number_slot].model_id;
+  
+  switch (command_id) {
+    case 0: if ((!ir_code_learning) && (payload_size == 16)) {
+      ir_code_learning = true;
+      ir_code_receiving = false;
+      
+      memset(learned_ir_code, 0, sizeof(learned_ir_code));
+      ir_message_position = 0;
+      ir_message_length = *(payload + 2) + (*(payload + 3) * 0x100) + (*(payload + 4) * 0x10000) + (*(payload + 5) * 0x1000000);
+      ir_message_seq = *payload + (*(payload + 1) * 0x100);
+      log_i("processZosungCustomCluster message seq 0x%x, length 0x%x", ir_message_seq, ir_message_length);
+
+      memset(ir_code_data_1, 0, sizeof(ir_code_data_1));
+      memcpy(ir_code_data_1+1, payload, payload_size);
+      for (int i = 0; i < 17; i++)
+        log_i("processZosungCustomCluster ir_code_data_1[%u] = 0x%x", i, ir_code_data_1[i]);
+      memset(ir_code_data_2, 0, sizeof(ir_code_data_2));
+      ir_code_data_2[0] = *payload;
+      ir_code_data_2[1] = *(payload + 1);
+      ir_code_data_2[6] = 0x38;
+      for (int i = 0; i < 7; i++)
+        log_i("processZosungCustomCluster ir_code_data_2[%u] = 0x%x", i, ir_code_data_2[i]);
+      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 1, ESP_ZB_ZCL_ATTR_TYPE_SET, 17, ir_code_data_1, true, 
+                                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 0x1002);
+      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 2, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, ir_code_data_2, true, 
+                                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 0x1002);
+    } break;
+    case 3:  if (!ir_code_receiving) {
+      ir_code_receiving = true;
+      int32_t crc_sum = 0;
+      int32_t crc_sum_mod = 0;
+      int16_t cur_seq = *(payload + 1) + (*(payload + 2) * 0x100);
+      if (ir_message_seq == cur_seq)
+        log_i("ir code learing seq matched 0x%x == 0x%x", ir_message_seq, cur_seq);
+      else
+        log_i("ir code learing seq not matched 0x%x != 0x%x", ir_message_seq, cur_seq);
+      ir_message_position = *(payload + 3) + (*(payload + 4) * 0x100) + (*(payload + 5) * 0x10000) + (*(payload + 6) * 0x1000000);
+      for (int i = 0; i < *(payload + 7); i++) {
+        log_i("processZosungCustomCluster cmd 3 [%u] = 0x%x", i + 8, *(payload + 8 + i));
+        crc_sum = crc_sum + *(payload + 8 + i);
+        crc_sum_mod = (crc_sum + *(payload + 8 + i)) % 256;
+        learned_ir_code[ir_message_position + i] = *(payload + 8 + i);
+      }
+      log_i("crc_sum 0x%x, crc_sum_mod 0x%x, crc_sum mod 256 0x%x", crc_sum, crc_sum_mod, crc_sum % 256);
+      log_i("ir_message_position %u", ir_message_position);
+      if (ir_message_position < ir_message_length) {
+        ir_code_data_2[0] = *(payload + 1);
+        ir_code_data_2[1] = *(payload + 2);
+        ir_code_data_2[2] = *(payload + 3) + *(payload + 7);
+        ir_code_data_2[3] = *(payload + 4);
+        ir_code_data_2[4] = *(payload + 5);
+        ir_code_data_2[5] = *(payload + 6);
+        ir_code_data_2[6] = 0x38;
+        zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 2, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, ir_code_data_2, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+                                       1, 1, 0x1002);
+      }
+      else {
+        ir_code_data_4[0] = 0;
+        ir_code_data_4[1] = *(payload + 1);
+        ir_code_data_4[2] = *(payload + 2);
+        ir_code_data_4[3] = 0;
+        ir_code_data_4[4] = 0;
+        zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 4, ESP_ZB_ZCL_ATTR_TYPE_SET, 5, ir_code_data_4, false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+                                       1, 1, 0x1002); 
+      }
+    } break;
+    case 4: {
+      ir_code_data_5[0] = *(payload + 1);
+      ir_code_data_5[1] = *(payload + 2);
+      ir_code_data_5[2] = 0;
+      ir_code_data_4[3] = 0;
+      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 5, ESP_ZB_ZCL_ATTR_TYPE_SET, 4, ir_code_data_5, false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+                                     1, 1, 0x1002); 
+    } break;
+    case 5: {
+      ir_code_learning = false;
+      ir_code_receiving = false;
+      for (int i = 0; i < ir_message_length; i++)
+        log_i("learned_ir_code[%u] = 0x%x", i, learned_ir_code[i]);
+    } break;
   }
 }

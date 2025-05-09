@@ -11,6 +11,7 @@ extern "C" {
 
 #include "ZigbeeCore.h"
 #include "Arduino.h"
+#include "send_default_resp.h"
 
 #if SOC_IEEE802154_SUPPORTED 
 //&& CONFIG_ZB_ENABLED
@@ -367,7 +368,7 @@ static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_com
     return ESP_ERR_INVALID_ARG;
   }
   log_i("Receive custom command: %d from address 0x%04hx", message->info.command.id, message->info.src_address.u.short_addr);
-  //log_i("Attribute 0x%x", message->data.type);
+  log_i("Frame control 0x%x", message->info.header.fc);
   log_i("Payload size: %d", message->data.size);
   for (uint8_t i = 0; i < message->data.size; i++)
      log_i("Payload [0x%x] = 0x%x", i, *(((uint8_t *)(message->data.value)) + i));
@@ -375,11 +376,15 @@ static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_com
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (message->info.dst_endpoint == (*it)->getEndpoint()) {
         
-	      (*it)->zbCmdCustomClusterReq( message->info.src_address, message->info.src_endpoint, message->info.cluster, message->info.command.id,
+	      (*it)->zbCmdCustomClusterReq( message->info.src_address, message->info.src_endpoint, message->info.cluster,message->info.command.id,
                                       message->data.size, (uint8_t*) message->data.value);
 	
     }
   }
+  //sendDefaultResponse(message->info.command.id, message->info.header.tsn, message->info.src_address.u.short_addr, message->info.src_endpoint,
+  //                    message->info.profile, message->info.cluster);
   return ESP_OK;
 }
 #endif  //SOC_IEEE802154_SUPPORTED && CONFIG_ZB_ENABLED
+
+

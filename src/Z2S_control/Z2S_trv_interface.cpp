@@ -416,6 +416,8 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureCalibration(int32_t trv_
 
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
+  int16_t hvacLastTemperature = INT16_MIN;
+
   if (millis() - _last_refresh_ms > _refresh_ms) {
     _last_refresh_ms = millis();
 
@@ -448,9 +450,6 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       else
         _trv_external_sensor_changed = false;
     }
-    
-
-    int16_t hvacLastTemperature = INT16_MIN;
 
     if (_trv_hvac)
         hvacLastTemperature = _trv_hvac->getPrimaryTemp();
@@ -514,6 +513,17 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     if (_trv_local_temperature == INT32_MIN) {
       log_i("No TRV temperature data - sending TemperatureCalibration with 0 value");
       sendTRVTemperatureCalibration(0);
+    }
+
+    if(_trv_hvac && _trv_external_sensor_present && (hvacLastTemperature == INT16_MIN) && (_trv_local_temperature > INT32_MIN)) {
+      log_i("No external sensor temperature data available - temporary using TRV local temperature value %d", _trv_local_temperature);
+
+      auto element = Supla::Element::getElementByChannelNumber(_trv_hvac->getMainThermometerChannelNo());
+      if (element != nullptr) { //} && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
+
+        auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+        Supla_Z2S_VirtualThermHygroMeter->setTemp((double)_trv_local_temperature/100);
+      }
     }
   }
 

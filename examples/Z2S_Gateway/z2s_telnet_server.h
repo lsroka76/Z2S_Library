@@ -4,7 +4,7 @@
 
 #include "ESPTelnet.h"
 
-#define MAX_TELNET_CMD_PARAM_NUMBER 8
+#define MAX_TELNET_CMD_PARAM_NUMBER 12
 
 extern ESPTelnet telnet;
 extern bool is_Telnet_server;

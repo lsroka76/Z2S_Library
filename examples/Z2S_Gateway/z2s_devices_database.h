@@ -52,6 +52,8 @@
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR         0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR   0x2501
 
+#define Z2S_DEVICE_DESC_RGBW_START                      0x3000
+
 #define Z2S_DEVICE_DESC_LIGHT_SOURCE                    0x3000 
 #define Z2S_DEVICE_DESC_LIGHT_BULB                      0x3010
 
@@ -69,6 +71,8 @@
 #define Z2S_DEVICE_DESC_DIMMER_BULB                     0x3200
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0           0x3210
 #define Z2S_DEVICE_DESC_IKEA_WW_BULB                    0x3220
+
+#define Z2S_DEVICE_DESC_RGBW_END                        0x3299
 
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_SWITCH              0x3300
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH       0x3305
@@ -118,6 +122,8 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F          0x5300
 
+#define Z2S_DEVICE_DESC_HVAC_START                      0x6000
+
 #define Z2S_DEVICE_DESC_TUYA_HVAC                       0x6000
 #define Z2S_DEVICE_DESC_TUYA_HVAC_23457                 0x6001
 #define Z2S_DEVICE_DESC_TUYA_HVAC_6567C                 0x6002
@@ -131,6 +137,10 @@
 #define Z2S_DEVICE_DESC_TS0601_TRV_MOES                 0x6013
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV601               0x6014
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV603               0x6015
+
+#define Z2S_DEVICE_DESC_HVAC_END                        0x6499
+
+#define Z2S_DEVICE_DESC_IR_REMOTE_CONTROL               0x6500
 
 #define Z2S_DEVICE_DESC_ON_OFF                          0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                        0x8001
@@ -1121,6 +1131,9 @@ const dataPoints = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }}, 
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER }},
 };
         
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
@@ -1571,6 +1584,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3210_wbsgmojq", .model_name = "TS0505B",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3210_ljoasixl", .model_name = "TS0505B",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3210_0zabbfax", .model_name = "TS0503B",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY, .z2s_device_endpoints_count = 1},
 
@@ -1684,8 +1700,11 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "SWV",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3290_7v1k4vufotpowp9z", .model_name = "TS1201",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_endpoints_count = 1}
 };
 
 #endif
-//
+//::
