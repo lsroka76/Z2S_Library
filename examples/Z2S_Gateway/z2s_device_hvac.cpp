@@ -235,6 +235,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
   
     case TRV_CHILD_LOCK_MSG: { 
       log_i("msgZ2SDeviceHvac - TRV_CHILD_LOCK_MSG: 0x%x", msg_value);
+      Supla_Z2S_TRVInterface->setTRVChildLock(msg_value);
     } break;
 
     case TRV_WINDOW_DETECT_MSG: { 

@@ -357,6 +357,56 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
   }
 }
 
+void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) {
+
+  if (_gateway && Zigbee.started()) {
+    log_i("Z2S_TRVInterface::sendTRVChildLock = %d", trv_child_lock);
+
+    if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
+
+      uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+      _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
+      _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
+      _Tuya_dp_data[2] = 0xFF;
+      _Tuya_dp_data[3] = 0x01;
+      _Tuya_dp_data[4] = 0x00;
+      _Tuya_dp_data[5] = 0x01;
+      _Tuya_dp_data[6] = trv_child_lock;
+
+      switch(_trv_commands_set) {
+        case SASWELL_CMD_SET: {
+          _Tuya_dp_data[2] = SASWELL_CMD_SET_CHILD_LOCK_1; 
+        } break;
+        case ME167_CMD_SET: {
+          _Tuya_dp_data[2] = ME167_CMD_SET_CHILD_LOCK_1; 
+        } break;
+        case BECA_CMD_SET: {   
+          _Tuya_dp_data[2] = BECA_CMD_SET_CHILD_LOCK_1; 
+        } break;
+        case MOES_CMD_SET: {     
+          _Tuya_dp_data[2] = MOES_CMD_SET_CHILD_LOCK_1;
+        } break;
+        case TRV601_CMD_SET: {     
+          _Tuya_dp_data[2] = TRV601_CMD_SET_CHILD_LOCK_1; 
+        } break;
+        case TRV603_CMD_SET: {     
+          _Tuya_dp_data[2] = TRV603_CMD_SET_CHILD_LOCK_1;
+        } break;
+      }  
+      if (_Tuya_dp_data[2] < 0xFF)
+        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
+    } else 
+    if (_trv_commands_set == TRVZB_CMD_SET) {
+      _gateway->sendAttributeWrite(&_device, 0xFC11, 0x0, ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &trv_child_lock);
+      delay(200);
+      _gateway->sendAttributeRead(&_device, 0xFC11, 0x0, false);
+    }
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
+  }
+}
+
 void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 
   if (_gateway && Zigbee.started()) {
@@ -414,6 +464,11 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureCalibration(int32_t trv_
   refreshTimeout();
 }
 
+void Supla::Control::Z2S_TRVInterface::setTRVChildLock(uint8_t trv_child_lock) {
+  _trv_child_lock = trv_child_lock;
+  refreshTimeout();
+}
+
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   int16_t hvacLastTemperature = INT16_MIN;
@@ -421,9 +476,14 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   if (millis() - _last_refresh_ms > _refresh_ms) {
     _last_refresh_ms = millis();
 
+    if ((_trv_hvac) && ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
+      log_i("TRV child lock difference detected hvac = %d, trv = %d", (uint8_t)_trv_hvac->getLocalUILock(), _trv_child_lock);
+      sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
+    }
+
     if ((_trv_hvac) && (_trv_hvac->getMode() != SUPLA_HVAC_MODE_OFF) && (_trv_hvac->getTemperatureSetpointHeat() != _trv_temperature_setpoint)) { //??
       
-      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - setpoint difference detected: hvac=%d, trv=%d", 
+      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - setpoint difference detected: hvac = %d, trv = %d", 
             _trv_hvac->getTemperatureSetpointHeat(), _trv_temperature_setpoint);
 
       sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());        

@@ -798,6 +798,14 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         if (_on_thermostat_modes_receive)
           _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
         } else log_i("zbAttributeReporting thermostat cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      } else
+      if (cluster_id == SONOFF_TRVZB_CUSTOM_CLUSTER) {
+        if (attribute->id == 0x000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_BOOL) {
+        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting SONOFF_TRVZB_CUSTOM_CLUSTER child lock %d",value);
+        if (_on_thermostat_modes_receive)
+          _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
+        } else log_i("zbAttributeReporting SONOFF_TRVZB_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
       } else log_i("zbAttributeReporting from (0x%x), endpoint (%d), cluster (0x%x), attribute id (0x%x), attribute data type (0x%x) ", 
         src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, attribute->data.type);
 }

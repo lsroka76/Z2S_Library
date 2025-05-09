@@ -848,6 +848,11 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
     return;
   }
 
+  if ((cluster == SONOFF_TRVZB_CUSTOM_CLUSTER) && (id == 0x000)) {
+    msgZ2SDeviceHvac(channel_number_slot_2, TRV_CHILD_LOCK_MSG, mode, rssi);
+    return;
+  }
+  
   switch (id) {
 
     case ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID: {
