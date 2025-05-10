@@ -11,12 +11,21 @@
 
 extern ZigbeeGateway zbGateway;
 
-uint8_t learned_ir_code[100];
+uint8_t learned_ir_code[256];
+uint8_t ir_code_send_buffer[256];
+
 bool ir_code_learning = false;
 bool ir_code_receiving = false;
 uint32_t ir_message_position = 0;
+uint32_t ir_message_last_position = 0;
+uint32_t ir_message_chunk_last_position = 0xFFFFFFFF;
+uint32_t ir_message_chunk_last_size = 0xFFFFFFFF;
 uint32_t ir_message_length = 0;
 uint16_t ir_message_seq = 0;
+
+uint32_t ir_code_send_position = 0;
+uint32_t ir_code_send_size  = 0;
+uint16_t  ir_code_send_seq = 0;
 
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
 
@@ -1038,14 +1047,22 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
   
   switch (command_id) {
     case 0: if ((!ir_code_learning) && (payload_size == 16)) {
+      
       ir_code_learning = true;
       ir_code_receiving = false;
       
       memset(learned_ir_code, 0, sizeof(learned_ir_code));
       ir_message_position = 0;
+      ir_message_last_position = 0;
+      
+      ir_message_chunk_last_position = 0xFFFFFFFF;
+      ir_message_chunk_last_size = 0xFFFFFFFF;
+      
       ir_message_length = *(payload + 2) + (*(payload + 3) * 0x100) + (*(payload + 4) * 0x10000) + (*(payload + 5) * 0x1000000);
       ir_message_seq = *payload + (*(payload + 1) * 0x100);
       log_i("processZosungCustomCluster message seq 0x%x, length 0x%x", ir_message_seq, ir_message_length);
+
+      learned_ir_code[0] = ir_message_length;
 
       memset(ir_code_data_1, 0, sizeof(ir_code_data_1));
       memcpy(ir_code_data_1+1, payload, payload_size);
@@ -1059,46 +1076,98 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
         log_i("processZosungCustomCluster ir_code_data_2[%u] = 0x%x", i, ir_code_data_2[i]);
       zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 1, ESP_ZB_ZCL_ATTR_TYPE_SET, 17, ir_code_data_1, true, 
                                      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 0x1002);
+      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 0x0B, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, NULL,true, 1, 1, 0, 0);
       zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 2, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, ir_code_data_2, true, 
                                      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 0x1002);
     } break;
-    case 3:  if (!ir_code_receiving) {
+    case 1: {
+      ir_code_send_position = 0;
+      ir_code_send_seq = *(payload + 1) + (*(payload + 2) * 0x100);
+      log_i("IR Remote confirmed IR code receiving start, seq %u", ir_code_send_seq);
+    } break;
+    case 2: {
+      uint16_t cur_seq = *(payload) + (*(payload + 1) * 0x100);
+      if (ir_code_send_seq == cur_seq) {
+        uint32_t crc_sum = 0;
+        uint16_t max_length = *(payload + 6);
+        uint16_t calc_length = ir_message_length - ir_code_send_position;
+        if (calc_length > max_length) 
+          calc_length = max_length;
+        ir_code_send_position = *(payload + 2) + (*(payload + 3) * 0x100) + (*(payload + 4) * 0x10000) + (*(payload + 5) * 0x1000000);
+        log_i("IR Remote command 2 received, asking for code - ir_message_length %u, position %u, max length %u, calc length %u", 
+              ir_message_length, ir_code_send_position, max_length, calc_length);
+        ir_code_send_buffer[0] = 0;
+        ir_code_send_buffer[1] = *(payload);
+        ir_code_send_buffer[2] = *(payload + 1);
+        ir_code_send_buffer[3] = *(payload + 2);
+        ir_code_send_buffer[4] = *(payload + 3);
+        ir_code_send_buffer[5] = *(payload + 4);
+        ir_code_send_buffer[6] = *(payload + 5);
+        ir_code_send_buffer[7] = calc_length - 1;
+        for (uint16_t i = 0; i < (calc_length); i++) {
+          //if (ir_code_send_position + i != 0)
+            crc_sum += learned_ir_code[1 + ir_code_send_position + i];
+          ir_code_send_buffer[8 + i] = learned_ir_code[1 + ir_code_send_position + i];
+        }  
+        ir_code_send_buffer[7 + calc_length] = crc_sum % 256;
+        for (int i = 0; i < 8 + calc_length; i++)
+          log_i("IR Remote command 2 buffer[%u] = %u", i, ir_code_send_buffer[i]);
+        zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 3, ESP_ZB_ZCL_ATTR_TYPE_SET, 7 + calc_length + 1, ir_code_send_buffer, 
+                                      true, ESP_ZB_ZCL_CMD_DIRECTION_TO_CLI,  1, 0, 0);
+      }
+    } break;
+    case 3: {
       ir_code_receiving = true;
-      int32_t crc_sum = 0;
-      int32_t crc_sum_mod = 0;
-      int16_t cur_seq = *(payload + 1) + (*(payload + 2) * 0x100);
+      uint32_t crc_sum = 0;
+      uint32_t crc_sum_mod = 0;
+      uint16_t cur_seq = *(payload + 1) + (*(payload + 2) * 0x100);
       if (ir_message_seq == cur_seq)
         log_i("ir code learing seq matched 0x%x == 0x%x", ir_message_seq, cur_seq);
       else
         log_i("ir code learing seq not matched 0x%x != 0x%x", ir_message_seq, cur_seq);
+      
       ir_message_position = *(payload + 3) + (*(payload + 4) * 0x100) + (*(payload + 5) * 0x10000) + (*(payload + 6) * 0x1000000);
-      for (int i = 0; i < *(payload + 7); i++) {
-        log_i("processZosungCustomCluster cmd 3 [%u] = 0x%x", i + 8, *(payload + 8 + i));
-        crc_sum = crc_sum + *(payload + 8 + i);
-        crc_sum_mod = (crc_sum + *(payload + 8 + i)) % 256;
-        learned_ir_code[ir_message_position + i] = *(payload + 8 + i);
-      }
-      log_i("crc_sum 0x%x, crc_sum_mod 0x%x, crc_sum mod 256 0x%x", crc_sum, crc_sum_mod, crc_sum % 256);
-      log_i("ir_message_position %u", ir_message_position);
-      if (ir_message_position < ir_message_length) {
-        ir_code_data_2[0] = *(payload + 1);
-        ir_code_data_2[1] = *(payload + 2);
-        ir_code_data_2[2] = *(payload + 3) + *(payload + 7);
-        ir_code_data_2[3] = *(payload + 4);
-        ir_code_data_2[4] = *(payload + 5);
-        ir_code_data_2[5] = *(payload + 6);
-        ir_code_data_2[6] = 0x38;
-        zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 2, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, ir_code_data_2, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+      
+      if (ir_message_position == 0)
+          ir_message_position++;
+
+      if (ir_message_position != ir_message_chunk_last_position) {
+        
+        ir_message_chunk_last_position = ir_message_position;
+        ir_message_chunk_last_size = *(payload + 7);
+        for (int i = 0; i < ir_message_chunk_last_size; i++) {
+          log_i("processZosungCustomCluster cmd 3 [%u] = 0x%x", i + 8, *(payload + 8 + i));
+          crc_sum = crc_sum + *(payload + 8 + i);
+          learned_ir_code[ir_message_position + i] = *(payload + 8 + i);
+        }
+        log_i("crc_sum 0x%x, crc_sum mod 256 0x%x", crc_sum, crc_sum % 256);
+        log_i("ir_message_position %u, ir_message_chunk_last_position %u, ir_message_chunk_last_size %u", 
+               ir_message_position, ir_message_chunk_last_position,ir_message_chunk_last_size);
+
+        if ((ir_message_position + ir_message_chunk_last_size) < ir_message_length) {
+          ir_code_data_2[0] = *(payload + 1);
+          ir_code_data_2[1] = *(payload + 2);
+          ir_code_data_2[2] = ir_message_position + ir_message_chunk_last_size;
+          ir_code_data_2[3] = *(payload + 4);
+          ir_code_data_2[4] = *(payload + 5);
+          ir_code_data_2[5] = *(payload + 6);
+          ir_code_data_2[6] = 0x38;
+          for (int i = 0; i < 7; i++) {
+            log_i("processZosungCustomCluster cmd 2 [%u] = 0x%x", i, ir_code_data_2[i]);
+          }
+          zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 2, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, ir_code_data_2, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
                                        1, 1, 0x1002);
-      }
-      else {
-        ir_code_data_4[0] = 0;
-        ir_code_data_4[1] = *(payload + 1);
-        ir_code_data_4[2] = *(payload + 2);
-        ir_code_data_4[3] = 0;
-        ir_code_data_4[4] = 0;
-        zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 4, ESP_ZB_ZCL_ATTR_TYPE_SET, 5, ir_code_data_4, false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+        }
+        else {
+          ir_code_data_4[0] = 0;
+          ir_code_data_4[1] = *(payload + 1);
+          ir_code_data_4[2] = *(payload + 2);
+          ir_code_data_4[3] = 0;
+          ir_code_data_4[4] = 0;
+          log_i("Code 3 has ended, ready for command 4, seq %d:%d", ir_code_data_4[1], ir_code_data_4[1]);
+          zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 4, ESP_ZB_ZCL_ATTR_TYPE_SET, 5, ir_code_data_4, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
                                        1, 1, 0x1002); 
+        }
       }
     } break;
     case 4: {
@@ -1106,7 +1175,7 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
       ir_code_data_5[1] = *(payload + 2);
       ir_code_data_5[2] = 0;
       ir_code_data_4[3] = 0;
-      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 5, ESP_ZB_ZCL_ATTR_TYPE_SET, 4, ir_code_data_5, false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 5, ESP_ZB_ZCL_ATTR_TYPE_SET, 4, ir_code_data_5, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
                                      1, 1, 0x1002); 
     } break;
     case 5: {
