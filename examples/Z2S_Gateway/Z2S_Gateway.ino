@@ -1430,8 +1430,6 @@ void loop() {
                 case Z2S_DEVICE_DESC_DIMMER_BULB:
                 case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
                 case Z2S_DEVICE_DESC_IKEA_WW_BULB:
-                case Z2S_DEVICE_DESC_TUYA_DIMMER_SWITCH:
-                case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
                 case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY:
  {
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_CAPABILITIES_ID, true))
