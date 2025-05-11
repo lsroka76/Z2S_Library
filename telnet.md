@@ -536,4 +536,44 @@ Below is the documentation of all commands implemented in the `Z2S_onTelnetCmd` 
 
 ---
 
-This documentation provides a detailed overview of all commands, their parameters, and usage examples.
+### 22. **GET-ZIGBEE-PRIMARY-CHANNEL**
+- **Description**: Retrieves the primary Zigbee channel.
+- **Parameters**: None
+- **Example**:
+  ```
+  GET-ZIGBEE-PRIMARY-CHANNEL
+  ```
+
+---
+
+### 23. **SET-ZIGBEE-PRIMARY-CHANNEL**
+- **Description**: Sets the primary Zigbee channel.
+- **Parameters**:
+  - `zigbee_channel`: Channel number (11-26).
+- **Example**:
+  ```
+  SET-ZIGBEE-PRIMARY-CHANNEL 15
+  ```
+
+---
+
+### 24. **GET-ZIGBEE-TX-POWER**
+- **Description**: Retrieves the current Zigbee transmission power.
+- **Parameters**: None
+- **Example**:
+  ```
+  GET-ZIGBEE-TX-POWER
+  ```
+
+---
+
+### 25. **SET-ZIGBEE-TX-POWER**
+- **Description**: Sets the Zigbee transmission power.
+- **Parameters**:
+  - `tx_power`: Transmission power value (-24 to 20).
+- **Example**:
+  ```
+  SET-ZIGBEE-TX-POWER 10
+  ```
+
+---
