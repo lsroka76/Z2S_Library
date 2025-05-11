@@ -9,7 +9,7 @@
 #include "z2s_device_hvac.h"
 #include "z2s_device_electricity_meter.h"
 
-#include <arduino_base64.hpp  >
+#include <arduino_base64.hpp>
 
 extern ZigbeeGateway zbGateway;
 
