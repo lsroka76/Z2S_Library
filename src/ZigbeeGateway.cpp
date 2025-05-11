@@ -49,12 +49,12 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   _gateway_devices.clear();
 
   #if !CONFIG_DISABLE_HAL_LOCKS
-  if (!gt_lock) {
-    gt_lock = xSemaphoreCreateBinary();
-    if (gt_lock == NULL) {
-      log_e("Semaphore creation failed");
-    }
+  //if (!gt_lock) {
+  gt_lock = xSemaphoreCreateBinary();
+  if (gt_lock == NULL) {
+    log_e("Semaphore creation failed");
   }
+  //}
   #endif
 
 
@@ -309,7 +309,7 @@ void ZigbeeGateway::zbPrintDeviceDiscovery (zbg_device_params_t * device) {
   esp_zb_lock_release();
 }
 
-bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device) {
+bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device, bool single_attribute, uint16_t attribute_id) {
   
   esp_zb_zcl_read_attr_cmd_t read_req;
 
@@ -329,14 +329,17 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device) {
                               ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
                               0xFFFE};*/
 
-  uint16_t attributes[2] = {  ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID };
+  uint16_t attributes[2] = {ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID };
   
-  
+  if (single_attribute)  
+    attributes[0] = {attribute_id};
+    
   /*uint16_t attributes[6] = {  ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
                               ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
                               0xFFFE};*/
-  
-  for (int attribute_number = 0; attribute_number < 2; attribute_number++) {
+  int8_t attribute_count = single_attribute ? 1 : 2;
+
+  for (int attribute_number = 0; attribute_number < attribute_count; attribute_number++) {
     
     read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);
     read_req.attr_field = &attributes[attribute_number];
@@ -382,6 +385,13 @@ void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t s
     memcpy(_last_device_query.zcl_model_name, zbstr->data, zbstr->len);
     _last_device_query.zcl_model_name[zbstr->len] = '\0';
     log_i("Peer Model is \"%s\"", _last_device_query.zcl_model_name);
+    xSemaphoreGive(gt_lock);
+  }
+  if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING && attribute->data.value) {
+    zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
+    memcpy(_last_device_query.software_build_ID, zbstr->data, zbstr->len);
+    _last_device_query.software_build_ID[zbstr->len] = '\0';
+    log_i("Device firmware build is \"%s\"", _last_device_query.software_build_ID);
     xSemaphoreGive(gt_lock);
   }
   if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {

@@ -465,6 +465,9 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureCalibration(int32_t trv_
 }
 
 void Supla::Control::Z2S_TRVInterface::setTRVChildLock(uint8_t trv_child_lock) {
+  
+  if (_trv_child_lock != trv_child_lock)
+    _trv_child_lock_changed = true;
   _trv_child_lock = trv_child_lock;
   refreshTimeout();
 }
@@ -472,6 +475,13 @@ void Supla::Control::Z2S_TRVInterface::setTRVChildLock(uint8_t trv_child_lock) {
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   int16_t hvacLastTemperature = INT16_MIN;
+
+  if (_trv_child_lock_changed)
+    if ((_trv_hvac) && ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
+      log_i("TRV child lock difference detected hvac = %d, trv = %d", (uint8_t)_trv_hvac->getLocalUILock(), _trv_child_lock);
+      sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
+      _trv_child_lock_changed = false;
+    }
 
   if (millis() - _last_refresh_ms > _refresh_ms) {
     _last_refresh_ms = millis();
@@ -575,8 +585,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVTemperatureCalibration(0);
     }
 
-    if(_trv_hvac && _trv_external_sensor_present && (hvacLastTemperature == INT16_MIN) && (_trv_local_temperature > INT32_MIN)) {
-      log_i("No external sensor temperature data available - temporary using TRV local temperature value %d", _trv_local_temperature);
+    if(_trv_hvac && _trv_external_sensor_present && (_trv_hvac->getPrimaryTemp() == INT16_MIN) && (_trv_local_temperature > INT32_MIN)) {
+      log_i("No external sensor temperature data available - temporarily using TRV local temperature value %d", _trv_local_temperature);
 
       auto element = Supla::Element::getElementByChannelNumber(_trv_hvac->getMainThermometerChannelNo());
       if (element != nullptr) { //} && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {

@@ -367,6 +367,23 @@ uint16_t parseSuplaConditionStr(char *Supla_condition) {
     return 0xFFFF;
 }
 
+uint16_t parseBasicClusterAttributeStr(char *attribute) {
+  
+  if (strcmp(attribute, "MANUFACTURER_NAME") == 0)
+    return ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID;
+  else
+  if (strcmp(attribute, "MODEL_ID") == 0)
+    return ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID;
+  else
+  if (strcmp(attribute, "POWER_SOURCE") == 0)
+    return ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID;
+  else
+  if (strcmp(attribute, "SW_BUILD_ID") == 0)
+    return ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID;
+  else
+    return 0xFFFF;
+}
+
 void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   
   zbg_device_params_t device;
@@ -759,6 +776,38 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
       telnet.printf(">device-discovery %u 0x%X\n\r>", channel_id, device.short_addr);
       zbGateway.zbPrintDeviceDiscovery(&device); 
+    }
+    return;
+  } else
+  if (strcmp(cmd,"QUERY-DEVICE-INFO")== 0) {
+    if (params_number < 2)  {
+      telnet.println("query-device-info channel \"manufacturer_name\"/\"model_id\"/\"power_source\"/\"sw_build_id\"");
+      return;
+    }
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint16_t attribute_id = parseBasicClusterAttributeStr(*(param + 1));
+    
+    if (attribute_id == 0xFFFF) {
+      telnet.printf(">query-device-info error - unrecognized attribute %s\n\r", *(param + 1));
+      return;
+    }
+
+    if (getDeviceByChannelNumber(&device, channel_id)) {
+
+      telnet.printf(">query-device-info channel:%u, short address: 0x%X\n\r>", channel_id, device.short_addr);
+      if (zbGateway.zbQueryDeviceBasicCluster(&device, true, attribute_id)) {
+        switch (attribute_id) {
+          case ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID:
+            telnet.printf(">Device 0x%X manufacturer name: %s\n\r", device.short_addr, zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name); break;
+          case ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID:
+            telnet.printf(">Device 0x%X model name: %s\n\r", device.short_addr, zbGateway.getQueryBasicClusterData()->zcl_model_name); break;
+          case ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID:
+            telnet.printf(">Device 0x%X power source: 0x%x\n\r", device.short_addr, zbGateway.getQueryBasicClusterData()->zcl_power_source_id); break;
+          case ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID:
+            telnet.printf(">Device 0x%X firmware build: %s\n\r", device.short_addr, zbGateway.getQueryBasicClusterData()->software_build_ID); break;
+        }
+      } else
+        telnet.println("read-device-firmware failed :-(");
     }
     return;
   } else

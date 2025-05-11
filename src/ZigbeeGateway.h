@@ -57,6 +57,7 @@ typedef struct query_basic_cluster_data_s {
   uint8_t zcl_application_version_id;
   uint8_t zcl_power_source_id;
   char zcl_model_name[32];
+  char software_build_ID[16];
 } query_basic_cluster_data_t;
 
 typedef struct zbg_device_params_s {
@@ -129,7 +130,8 @@ public:
 
   static uint32_t getZbgDeviceUnitLastSeenMs(uint16_t short_addr);
 
-  bool zbQueryDeviceBasicCluster(zbg_device_params_t * device);
+  bool zbQueryDeviceBasicCluster(zbg_device_params_t * device, bool single_attribute = false, uint16_t attribute_id = 0x0);
+
   //void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) override;
   void zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) override;
   void setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,

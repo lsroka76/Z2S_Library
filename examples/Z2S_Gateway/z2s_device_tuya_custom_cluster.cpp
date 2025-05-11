@@ -9,10 +9,14 @@
 #include "z2s_device_hvac.h"
 #include "z2s_device_electricity_meter.h"
 
+#include <arduino_base64.hpp  >
+
 extern ZigbeeGateway zbGateway;
 
 uint8_t learned_ir_code[256];
-uint8_t ir_code_send_buffer[256];
+char    learned_ir_code_base64[256];
+uint8_t ir_code_send_buffer[128];
+uint8_t ir_code_to_send[512];
 
 bool ir_code_learning = false;
 bool ir_code_receiving = false;
@@ -24,8 +28,22 @@ uint32_t ir_message_length = 0;
 uint16_t ir_message_seq = 0;
 
 uint32_t ir_code_send_position = 0;
-uint32_t ir_code_send_size  = 0;
+uint32_t ir_code_send_length  = 0;
 uint16_t  ir_code_send_seq = 0;
+
+/*{'key_num': 1,'delay': 300,'key1': {'num': 1,'freq': 38000,'type': 1,'key_code': */
+const static uint8_t IR_SEND_CODE_PREAMBLE[] = {0x7B,0x27,0x6B,0x65,0x79,0x5F,0x6E,0x75,0x6D,0x27,0x3A,0x20,0x31,0x2C,0x27,0x64,0x65,
+                                              0x6C,0x61,0x79,0x27,0x3A,0x20,0x33,0x30,0x30,0x2C,0x27,0x6B,0x65,0x79,0x31,0x27,0x3A,
+                                              0x20,0x7B,0x27,0x6E,0x75,0x6D,0x27,0x3A,0x20,0x31,0x2C,0x27,0x66,0x72,0x65,0x71,0x27,
+                                              0x3A,0x20,0x33,0x38,0x30,0x30,0x30,0x2C,0x27,0x74,0x79,0x70,0x65,0x27,0x3A,0x20,0x31,
+                                              0x2C,0x27,0x6B,0x65,0x79,0x5F,0x63,0x6F,0x64,0x65,0x27,0x3A,0x20};
+
+/*,},}*/
+const static uint8_t IR_SEND_CODE_POSTAMBLE[] = {0x2C,0x7D,0x2C,0x7D};
+
+/*testcode01*/
+const static uint8_t TEST_CODE_01[] = {0x74,0x65,0x73,0x74,0x63,0x6F,0x64,0x65,0x30,0x31};
+
 
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
 
@@ -1066,8 +1084,7 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
 
       memset(ir_code_data_1, 0, sizeof(ir_code_data_1));
       memcpy(ir_code_data_1+1, payload, payload_size);
-      for (int i = 0; i < 17; i++)
-        log_i("processZosungCustomCluster ir_code_data_1[%u] = 0x%x", i, ir_code_data_1[i]);
+      for (int i = 0; i < 17; i++)        log_i("processZosungCustomCluster ir_code_data_1[%u] = 0x%x", i, ir_code_data_1[i]);
       memset(ir_code_data_2, 0, sizeof(ir_code_data_2));
       ir_code_data_2[0] = *payload;
       ir_code_data_2[1] = *(payload + 1);
@@ -1084,18 +1101,31 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
       ir_code_send_position = 0;
       ir_code_send_seq = *(payload + 1) + (*(payload + 2) * 0x100);
       log_i("IR Remote confirmed IR code receiving start, seq %u", ir_code_send_seq);
+      memcpy(ir_code_to_send, IR_SEND_CODE_PREAMBLE, sizeof(IR_SEND_CODE_PREAMBLE));
+      //memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE), TEST_CODE_01, sizeof(TEST_CODE_01));
+      memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE), learned_ir_code + 1, ir_message_length);
+      //memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE) + sizeof(TEST_CODE_01), IR_SEND_CODE_POSTAMBLE, sizeof(IR_SEND_CODE_POSTAMBLE));
+      memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE) + ir_message_length, IR_SEND_CODE_POSTAMBLE, sizeof(IR_SEND_CODE_POSTAMBLE));
+      ir_code_send_length = sizeof(IR_SEND_CODE_PREAMBLE) + ir_message_length + sizeof(IR_SEND_CODE_POSTAMBLE);
+      //ir_message_length = sizeof(IR_SEND_CODE_PREAMBLE) + sizeof(TEST_CODE_01) + sizeof(IR_SEND_CODE_POSTAMBLE);
+
     } break;
     case 2: {
+      
+      uint8_t preamble_size = sizeof(IR_SEND_CODE_PREAMBLE);
+      uint8_t  postamble_size = sizeof(IR_SEND_CODE_POSTAMBLE);
+
       uint16_t cur_seq = *(payload) + (*(payload + 1) * 0x100);
       if (ir_code_send_seq == cur_seq) {
+        ir_code_send_position = *(payload + 2) + (*(payload + 3) * 0x100) + (*(payload + 4) * 0x10000) + (*(payload + 5) * 0x1000000);
         uint32_t crc_sum = 0;
         uint16_t max_length = *(payload + 6);
-        uint16_t calc_length = ir_message_length - ir_code_send_position;
-        if (calc_length > max_length) 
+        uint16_t calc_length = ir_code_send_length - ir_code_send_position;
+        if (calc_length >= max_length) 
           calc_length = max_length;
-        ir_code_send_position = *(payload + 2) + (*(payload + 3) * 0x100) + (*(payload + 4) * 0x10000) + (*(payload + 5) * 0x1000000);
-        log_i("IR Remote command 2 received, asking for code - ir_message_length %u, position %u, max length %u, calc length %u", 
-              ir_message_length, ir_code_send_position, max_length, calc_length);
+        else (calc_length++); 
+        log_i("IR Remote command 2 received, asking for code - ir_code_send_length %u, position %u, max length %u, calc length %u", 
+              ir_code_send_length, ir_code_send_position, max_length, calc_length);
         ir_code_send_buffer[0] = 0;
         ir_code_send_buffer[1] = *(payload);
         ir_code_send_buffer[2] = *(payload + 1);
@@ -1104,16 +1134,16 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
         ir_code_send_buffer[5] = *(payload + 4);
         ir_code_send_buffer[6] = *(payload + 5);
         ir_code_send_buffer[7] = calc_length - 1;
-        for (uint16_t i = 0; i < (calc_length); i++) {
+        for (uint16_t i = 0; i < (calc_length - 1); i++) {
           //if (ir_code_send_position + i != 0)
-            crc_sum += learned_ir_code[1 + ir_code_send_position + i];
-          ir_code_send_buffer[8 + i] = learned_ir_code[1 + ir_code_send_position + i];
+            crc_sum += ir_code_to_send[ir_code_send_position + i];//learned_ir_code[1 + ir_code_send_position + i];
+          ir_code_send_buffer[8 + i] = ir_code_to_send[ir_code_send_position + i];//learned_ir_code[1 + ir_code_send_position + i];
         }  
         ir_code_send_buffer[7 + calc_length] = crc_sum % 256;
         for (int i = 0; i < 8 + calc_length; i++)
-          log_i("IR Remote command 2 buffer[%u] = %u", i, ir_code_send_buffer[i]);
+          log_i("IR Remote command 2 buffer[%u] = 0x%x", i, ir_code_send_buffer[i]);
         zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 3, ESP_ZB_ZCL_ATTR_TYPE_SET, 7 + calc_length + 1, ir_code_send_buffer, 
-                                      true, ESP_ZB_ZCL_CMD_DIRECTION_TO_CLI,  1, 0, 0);
+                                      true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,  1, 0, 0);
       }
     } break;
     case 3: {
@@ -1181,8 +1211,11 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
     case 5: {
       ir_code_learning = false;
       ir_code_receiving = false;
-      for (int i = 0; i < ir_message_length; i++)
+      for (int i = 0; i <= ir_message_length; i++)
         log_i("learned_ir_code[%u] = 0x%x", i, learned_ir_code[i]);
+      uint16_t base64_length = base64::encodeLength(ir_message_length);
+      base64::encode(learned_ir_code + 1, ir_message_length, learned_ir_code_base64);
+      
     } break;
   }
 }
