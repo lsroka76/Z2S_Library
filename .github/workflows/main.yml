@@ -24,6 +24,7 @@ jobs:
           arduino-cli lib install --git-url https://github.com/SUPLA/supla-device.git
           arduino-cli lib install --git-url https://github.com/LennartHennigs/ESPTelnet.git
           arduino-cli lib install --git-url https://github.com/adafruit/Adafruit_NeoPixel.git
+          arduino-cli lib install --git-url https://github.com/dojyorin/arduino_base64.git
       - name: Copy boards.txt with C6 config
         run: | 
           cp ./partitions/boards313.txt ~/.arduino15/packages/esp32/hardware/esp32/3.1.3/boards.txt
