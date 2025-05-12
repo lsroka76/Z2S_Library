@@ -450,8 +450,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
       TUYA_PRIVATE_CLUSTER_EF00 }},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_TRVZB, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_TRVZB, .z2s_device_clusters_count = 4, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
       SONOFF_TRVZB_CUSTOM_CLUSTER }},
 
@@ -1226,6 +1227,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_2mbfxlzr", .model_name = "TS0203",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_x8q36xwf", .model_name = "TS0203",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_bh3n6gk8", .model_name = "TS0601", 

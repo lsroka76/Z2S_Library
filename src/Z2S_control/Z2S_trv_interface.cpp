@@ -357,6 +357,123 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
   }
 }
 
+void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(uint8_t trv_schedule_mode) {
+
+  if (_gateway && Zigbee.started()) {
+    log_i("Z2S_TRVInterface::sendTRVScheduleMode = %d", trv_schedule_mode);
+
+    if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
+
+      uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+      _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
+      _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
+
+      if (trv_schedule_mode == 1) {
+        switch(_trv_commands_set) {
+          case SASWELL_CMD_SET: {
+            _Tuya_dp_data[2] = SASWELL_CMD_SET_SCHEDULE_MODE_1; 
+            _Tuya_dp_data[3] = SASWELL_CMD_ON_2;
+            _Tuya_dp_data[4] = SASWELL_CMD_ON_3;
+            _Tuya_dp_data[5] = SASWELL_CMD_ON_4;
+            _Tuya_dp_data[6] = SASWELL_CMD_SET_SCHEDULE_MODE_ON;
+          } break;
+          case ME167_CMD_SET: {
+            _Tuya_dp_data[2] = ME167_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = ME167_CMD_ON_2;
+            _Tuya_dp_data[4] = ME167_CMD_ON_3;
+            _Tuya_dp_data[5] = ME167_CMD_ON_4;
+            _Tuya_dp_data[6] = ME167_CMD_SET_SCHEDULE_MODE_ON;
+          } break;
+          case BECA_CMD_SET: {   
+            _Tuya_dp_data[2] = BECA_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = BECA_CMD_ON_2;
+            _Tuya_dp_data[4] = BECA_CMD_ON_3;
+            _Tuya_dp_data[5] = BECA_CMD_ON_4;
+            _Tuya_dp_data[6] = BECA_CMD_SET_SCHEDULE_MODE_ON;
+          } break;
+          case MOES_CMD_SET: {     
+            _Tuya_dp_data[2] = MOES_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = MOES_CMD_ON_2;
+            _Tuya_dp_data[4] = MOES_CMD_ON_3;
+            _Tuya_dp_data[5] = MOES_CMD_ON_4;
+            _Tuya_dp_data[6] = MOES_CMD_SET_SCHEDULE_MODE_ON;
+          } break;
+          case TRV601_CMD_SET: {     
+            _Tuya_dp_data[2] = TRV601_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = TRV601_CMD_ON_2;
+            _Tuya_dp_data[4] = TRV601_CMD_ON_3;
+            _Tuya_dp_data[5] = TRV601_CMD_ON_4;
+            _Tuya_dp_data[6] = TRV601_CMD_SET_SCHEDULE_MODE_ON;
+          } break;
+          case TRV603_CMD_SET: {     
+            _Tuya_dp_data[2] = TRV603_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = TRV603_CMD_ON_2;
+            _Tuya_dp_data[4] = TRV603_CMD_ON_3;
+            _Tuya_dp_data[5] = TRV603_CMD_ON_4;
+            _Tuya_dp_data[6] = TRV603_CMD_SET_SCHEDULE_MODE_ON;
+          } break;
+        }
+      } else {
+        switch(_trv_commands_set) {
+          case SASWELL_CMD_SET: {
+            _Tuya_dp_data[2] = SASWELL_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = SASWELL_CMD_OFF_2;
+            _Tuya_dp_data[4] = SASWELL_CMD_OFF_3;
+            _Tuya_dp_data[5] = SASWELL_CMD_OFF_4;
+            _Tuya_dp_data[6] = SASWELL_CMD_SET_SCHEDULE_MODE_OFF;
+          } break;
+          case ME167_CMD_SET: {
+            _Tuya_dp_data[2] =  ME167_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = ME167_CMD_OFF_2;
+            _Tuya_dp_data[4] = ME167_CMD_OFF_3;
+            _Tuya_dp_data[5] = ME167_CMD_OFF_4;
+            _Tuya_dp_data[6] = ME167_CMD_SET_SCHEDULE_MODE_OFF;
+          } break;
+          case BECA_CMD_SET: {   
+            _Tuya_dp_data[2] = BECA_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = BECA_CMD_OFF_2;
+            _Tuya_dp_data[4] = BECA_CMD_OFF_3;
+            _Tuya_dp_data[5] = BECA_CMD_OFF_4;
+            _Tuya_dp_data[6] = BECA_CMD_SET_SCHEDULE_MODE_OFF;
+          } break;
+          case MOES_CMD_SET: {     
+            _Tuya_dp_data[2] = MOES_CMD_SET_SCHEDULE_MODE_1; 
+            _Tuya_dp_data[3] = MOES_CMD_OFF_2;
+            _Tuya_dp_data[4] = MOES_CMD_OFF_3;
+            _Tuya_dp_data[5] = MOES_CMD_OFF_4;
+            _Tuya_dp_data[6] = MOES_CMD_SET_SCHEDULE_MODE_OFF;
+          } break;
+          case TRV601_CMD_SET: {     
+            _Tuya_dp_data[2] = TRV601_CMD_SET_SCHEDULE_MODE_1; 
+            _Tuya_dp_data[3] = TRV601_CMD_OFF_2;
+            _Tuya_dp_data[4] = TRV601_CMD_OFF_3;
+            _Tuya_dp_data[5] = TRV601_CMD_OFF_4;
+            _Tuya_dp_data[6] = TRV601_CMD_SET_SCHEDULE_MODE_OFF;
+          } break;
+          case TRV603_CMD_SET: {     
+            _Tuya_dp_data[2] = TRV603_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = TRV603_CMD_OFF_2;
+            _Tuya_dp_data[4] = TRV603_CMD_OFF_3;
+            _Tuya_dp_data[5] = TRV603_CMD_OFF_4;
+            _Tuya_dp_data[6] = TRV603_CMD_SET_SCHEDULE_MODE_OFF;
+          } break;
+        }  
+      }
+
+      _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
+    } else 
+    if (_trv_commands_set == TRVZB_CMD_SET) {
+      trv_schedule_mode = (trv_schedule_mode == 0) ? 4 : 1; //
+
+      _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+                                   ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_schedule_mode);
+    }
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
+  }
+}
+
 void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) {
 
   if (_gateway && Zigbee.started()) {
@@ -472,9 +589,18 @@ void Supla::Control::Z2S_TRVInterface::setTRVChildLock(uint8_t trv_child_lock) {
   refreshTimeout();
 }
 
+void Supla::Control::Z2S_TRVInterface::turnOffTRVScheduleMode() {
+  _trv_switch_schedule_off = true;
+}
+
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   int16_t hvacLastTemperature = INT16_MIN;
+
+  if (_trv_switch_schedule_off) {
+    _trv_switch_schedule_off = false;
+    sendTRVScheduleMode(0);
+  }
 
   if (_trv_child_lock_changed)
     if ((_trv_hvac) && ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
