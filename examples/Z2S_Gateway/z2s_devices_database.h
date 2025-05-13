@@ -100,6 +100,9 @@
 #define Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH               0x4606
 #define Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH               0x4607
 
+#define Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE         0x4800
+#define Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE    0x4810
+
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F            0x5000
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F            0x5001
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F            0x5002
@@ -1106,6 +1109,9 @@ const dataPoints = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
@@ -1710,8 +1716,11 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3290_7v1k4vufotpowp9z", .model_name = "TS1201",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_ol1uhvza", .model_name = "TS130F",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1}
 };
 
 #endif
-//::
+//

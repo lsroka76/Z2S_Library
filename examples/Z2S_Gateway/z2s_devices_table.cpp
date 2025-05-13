@@ -872,6 +872,29 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   }
 }
 
+void Z2S_onWindowCoveringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id,
+                                 uint16_t value, signed char rssi) {
+
+  log_i("Z2S_onWindowCoveringReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, attribute id 0x%x, value %u", 
+        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], 
+        endpoint, id, value);
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+                                                            NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {
+    log_i("Z2S_onWindowCoveringReceive - no roller shutter channel found for address 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x",
+          ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+    return;
+  }
+  
+  switch (id) {
+
+    case ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID:
+      msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG , value, rssi); break;
+  }
+}
+
 
 void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state, signed char rssi) {
 
@@ -1771,6 +1794,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
         addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, "IR REMOTE", 0); break;
+
+      case Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE:
+        addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, "ROLLER SHUTTER", SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER); break;
 
       default : {
         

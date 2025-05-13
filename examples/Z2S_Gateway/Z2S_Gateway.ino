@@ -715,16 +715,30 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint16_t attribute_id = strtoul(*(param + 2),nullptr, 0);
     bool sync = (params_number > 3) ? (strcmp(*(param + 3),"ASYNC") == 0 ? false : true) : true;
     
+    uint8_t disable_default_response = 1;
+    uint8_t manuf_specific = 0;
+    uint16_t manuf_code = 0;
+    
     uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
 
-    if (params_number == 5)
+    if (params_number >= 5)
       direction = strtoul(*(param + 4),nullptr, 0);
+
+    if (params_number >= 6)
+      disable_default_response = strtoul(*(param + 5),nullptr, 0);
+
+    if (params_number >= 7)
+      manuf_specific = strtoul(*(param + 6),nullptr, 0);
+
+    if (params_number >= 8)
+      manuf_code = strtoul(*(param + 7),nullptr, 0);
+
 
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
       telnet.printf(">read-attribute %u %u %u\n\r>", channel_id, cluster_id, attribute_id);
       if (sync) {
-        bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true, direction); 
+        bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true, direction, disable_default_response, manuf_specific, manuf_code); 
         if (result)
           telnet.printf(">Reading attribute successful - data value is 0x%x, data type is 0x%x\n\r>", 
                         *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
@@ -852,7 +866,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       }
       zbGateway.sendAttributeWrite(&device, cluster_id, attribute_id, attribute_type, attribute_size, value, manuf_specific, manuf_code); 
       telnet.println("Write attribute async request sent");
-    }
+    } 
     return;
   } else
   if (strcmp(cmd,"CUSTOM-CMD")== 0) {
@@ -1024,6 +1038,7 @@ void setup() {
   zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
   zbGateway.onThermostatTemperaturesReceive(Z2S_onThermostatTemperaturesReceive);
   zbGateway.onThermostatModesReceive(Z2S_onThermostatModesReceive);
+  zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
   zbGateway.onBatteryPercentageReceive(Z2S_onBatteryPercentageReceive);
   zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
   zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);

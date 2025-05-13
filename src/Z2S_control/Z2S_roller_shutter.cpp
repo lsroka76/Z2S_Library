@@ -14,19 +14,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "Z2S_virtual_relay.h"
+#include "Z2S_roller_shutter.h"
 
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
 
 #include <supla/time.h>
 
-Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions)
+Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(ZigbeeGateway *gateway, zbg_device_params_t *device)
+  : _gateway(gateway) {
+      memcpy(&_device, device, sizeof(zbg_device_params_t));     
+      }
+      
+      void Supla::Control::Z2S_RollerShutter::onInit() {
+        /*uint32_t duration = durationMs;
+        ::Z2S_RollerShutter(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions)
   : Relay(-1, true, functions), _gateway(gateway){
     memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
 
-void Supla::Control::Z2S_VirtualRelay::onInit() {
+void Supla::Control::Z2S_RollerShutter::onInit() {
   /*uint32_t duration = durationMs;
   if (stateOnInit == STATE_ON_INIT_ON ||
       stateOnInit == STATE_ON_INIT_RESTORED_ON) {
@@ -38,62 +45,84 @@ void Supla::Control::Z2S_VirtualRelay::onInit() {
     channel.setStateOffline();
 }
 
-void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
-  SUPLA_LOG_INFO(
-      "Relay[%d] turn ON (duration %d ms)",
-      channel.getChannelNumber(),
-      duration);
-  durationMs = duration;
-  if (keepTurnOnDurationMs) {
-    durationMs = storedTurnOnDurationMs;
-  }
-  if (durationMs != 0) {
-    durationTimestamp = millis();
-  } else {
-    durationTimestamp = 0;
-  }
+void Supla::Control::Z2S_RollerShutter::rsOpen() {
+
 
   if (_gateway && Zigbee.started()) {   
-    state = true;
-    _gateway->sendOnOffCmd(&_device, state);
-    channel.setNewValue(state);
-  }
-  // Schedule save in 5 s after state change
-  Supla::Storage::ScheduleSave(5000);
-}
-
-void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
-  SUPLA_LOG_INFO(
-      "Relay[%d] turn OFF (duration %d ms)",
-      channel.getChannelNumber(),
-      duration);
-  durationMs = duration;
-  if (durationMs != 0) {
-    durationTimestamp = millis();
-  } else {
-    durationTimestamp = 0;
-  }
-  if (_gateway && Zigbee.started()) {   
-    state = false;
-    _gateway->sendOnOffCmd(&_device, state);
-    channel.setNewValue(state);
-  }
+    
+    _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_UP_OPEN, NULL);
   
-  // Schedule save in 5 s after state change
-  Supla::Storage::ScheduleSave(5000);
+  }
 }
 
-void Supla::Control::Z2S_VirtualRelay::ping() {
+void Supla::Control::Z2S_RollerShutter::rsClose() {
+
+
+  if (_gateway && Zigbee.started()) {   
+    
+    _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_DOWN_CLOSE, NULL);
+  
+  }
+}
+
+void Supla::Control::Z2S_RollerShutter::rsStop() {
+
+
+  if (_gateway && Zigbee.started()) {   
+    
+    _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_STOP, NULL);
+  
+  }
+}
+
+void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(uint8_t lift_percentage) {
+
+
+  if (_gateway && Zigbee.started()) {   
+    
+    _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, &lift_percentage);
+  
+  }
+}
+
+
+void Supla::Control::Z2S_RollerShutter::ping() {
 
   if (_gateway && Zigbee.started()) {
     _fresh_start = false;
-    _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+    _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID, false);
   }
 }
 
-void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
+void Supla::Control::Z2S_RollerShutter::onTimer() {
 
-  Supla::Control::Relay::iterateAlways();
+  if (newTargetPositionAvailable && (targetPosition == STOP_POSITION)) {
+    log_i("newTargetPositionAvailable = STOP_POSITION");
+    newTargetPositionAvailable = false;
+    rsStop();
+  }
+  if (newTargetPositionAvailable && (targetPosition == MOVE_UP_POSITION)) {
+    log_i("newTargetPositionAvailable = MOVE_UP_POSITION");
+    newTargetPositionAvailable = false;
+    rsClose();
+  }
+  if (newTargetPositionAvailable && (targetPosition == MOVE_DOWN_POSITION)) {
+    log_i("newTargetPositionAvailable = MOVE_DOWN_POSITION");
+    newTargetPositionAvailable = false;
+    rsOpen();
+  }
+  if (newTargetPositionAvailable && (targetPosition >= 0) && (targetPosition <= 100)) {
+    log_i("newTargetPositionAvailable = %u, reversed = %u", targetPosition, 100 - targetPosition);
+    newTargetPositionAvailable = false;
+    rsMoveToLiftPercentage(targetPosition);
+
+  }
+
+}
+
+void Supla::Control::Z2S_RollerShutter::iterateAlways() {
+
+  Supla::Control::RollerShutterInterface::iterateAlways();
 
   //uint32_t current_millis = millis();
 
@@ -123,16 +152,7 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
   }
 }
 
-bool Supla::Control::Z2S_VirtualRelay::isOn() {
-  
-  if (_gateway && Zigbee.started()) {   
-     if (_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true))
-         state = *((bool *)_gateway->getReadAttrLastResult()->data.value);
-  }
-   return state;
-}
-
-void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
+/*void Supla::Control::Z2S_RollerShutter::Z2S_setOnOff(bool on_off_state) {
   
   state = on_off_state;
 
@@ -146,8 +166,8 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   // Schedule save in 5 s after state change
   Supla::Storage::ScheduleSave(5000);
 }
-
-void Supla::Control::Z2S_VirtualRelay::setKeepAliveSecs(uint32_t keep_alive_secs) {
+*/
+void Supla::Control::Z2S_RollerShutter::setKeepAliveSecs(uint32_t keep_alive_secs) {
 
   _keep_alive_ms = keep_alive_secs * 1000;
   if (_keep_alive_ms == 0)
@@ -156,7 +176,7 @@ void Supla::Control::Z2S_VirtualRelay::setKeepAliveSecs(uint32_t keep_alive_secs
     _keep_alive_enabled = true;
 }
 
-void Supla::Control::Z2S_VirtualRelay::setTimeoutSecs(uint32_t timeout_secs) {
+void Supla::Control::Z2S_RollerShutter::setTimeoutSecs(uint32_t timeout_secs) {
 
   _timeout_ms = timeout_secs * 1000;
   if (_timeout_ms == 0) {
@@ -167,12 +187,12 @@ void Supla::Control::Z2S_VirtualRelay::setTimeoutSecs(uint32_t timeout_secs) {
    _timeout_enabled = true;
 }
 
-uint32_t Supla::Control::Z2S_VirtualRelay::getKeepAliveSecs() {
+uint32_t Supla::Control::Z2S_RollerShutter::getKeepAliveSecs() {
 
   return _keep_alive_ms * 1000;
 }
 
-uint32_t Supla::Control::Z2S_VirtualRelay::getTimeoutSecs() {
+uint32_t Supla::Control::Z2S_RollerShutter::getTimeoutSecs() {
 
   return _timeout_ms * 1000;
 }

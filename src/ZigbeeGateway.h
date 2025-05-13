@@ -139,7 +139,8 @@ public:
   void readClusterReportCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
   void readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
 
-  bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV);
+  bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                         uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
   void sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, uint16_t *attribute_ids);
   void sendAttributeWrite( zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
                                         esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
@@ -153,6 +154,7 @@ public:
   void sendColorEnhancedMoveToHueAndSaturationCmd(zbg_device_params_t *device, uint16_t enhanced_hue, uint8_t saturation, uint16_t transition_time);
   void sendColorMoveToColorCmd(zbg_device_params_t *device, uint16_t color_x, uint16_t color_y, uint16_t transition_time);
   void sendColorMoveToColorTemperatureCmd(zbg_device_params_t *device, uint16_t color_temperature, uint16_t transition_time);
+  void sendWindowCoveringCmd(zbg_device_params_t *device, uint8_t cmd_id, void *cmd_value);
 
   void sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya = false);
   void sendCustomClusterCmd(zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
@@ -202,34 +204,37 @@ public:
   }
   void onBatteryPercentageReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
     _on_battery_percentage_receive = callback;
-   }
-   void onCurrentLevelReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+  }
+  void onCurrentLevelReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
     _on_current_level_receive = callback;
-   }
-   void onColorHueReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi)) {
+  }
+  void onColorHueReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi)) {
     _on_color_hue_receive = callback;
-   }
-   void onColorSaturationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi)) {
+  }
+  void onColorSaturationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi)) {
     _on_color_saturation_receive = callback;
-   }
+  }
   void onColorTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
     _on_color_temperature_receive = callback;
-   }
+  }
   void onThermostatTemperaturesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi)) {
     _on_thermostat_temperatures_receive = callback;
-   }
-   void onThermostatModesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi)) {
+  }
+  void onThermostatModesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi)) {
     _on_thermostat_modes_receive = callback;
-   }
+  }
+  void onWindowCoveringReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+    _on_window_covering_receive = callback;
+  }
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi)) {
     _on_on_off_custom_cmd_receive = callback;
-   }
-   void onCustomCmdReceive(bool (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char  rssi)) {
+  }
+  void onCustomCmdReceive(bool (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char  rssi)) {
     _on_custom_cmd_receive = callback;
-   }
-   void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *, signed char rssi)) {
+  }
+  void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *, signed char rssi)) {
     _on_cmd_custom_cluster_receive = callback;
-   }
+  }
   void onBoundDevice(void (*callback)(zbg_device_params_t *, bool)) {
     _on_bound_device = callback;
   }
@@ -289,6 +294,7 @@ private:
   void (*_on_color_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_thermostat_temperatures_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi);
   void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi);
+  void (*_on_window_covering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi);
   bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char rssi);
 
