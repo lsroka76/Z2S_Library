@@ -810,13 +810,19 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
           _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
         } else log_i("zbAttributeReporting thermostat cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
       } else
-      if (cluster_id == SONOFF_TRVZB_CUSTOM_CLUSTER) {
+      if (cluster_id == SONOFF_CUSTOM_CLUSTER) {
         if (attribute->id == 0x000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_BOOL) {
         uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
-        log_i("zbAttributeReporting SONOFF_TRVZB_CUSTOM_CLUSTER child lock %d",value);
-        if (_on_thermostat_modes_receive)
-          _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
-        } else log_i("zbAttributeReporting SONOFF_TRVZB_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+        log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER child lock %d",value);
+        if (_on_Sonoff_custom_cluster_receive)
+          _on_Sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
+        } else
+        if (attribute->id == 0x2000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) { //TAMPER
+        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER tamper %d",value);
+        if (_on_Sonoff_custom_cluster_receive)
+          _on_Sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
+        } else log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
       } else
       if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING) {
         if (attribute->id == 0xF000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) {
@@ -831,7 +837,7 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         if (_on_window_covering_receive)
           _on_window_covering_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
         } else
-        if (attribute->id == 0xF001 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+        if (attribute->id == 0xF003 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
         uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
         log_i("zbAttributeReporting window covering moesCalibrationTime attribute %d",value);
         if (_on_window_covering_receive)

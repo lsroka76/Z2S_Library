@@ -7,6 +7,7 @@
 #include <Z2S_control/Z2S_roller_shutter.h>
 
 #define RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG 0x01
+#define RS_MOVING_DIRECTION_MSG                 0x02
 
 void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
 

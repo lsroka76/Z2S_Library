@@ -33,7 +33,9 @@
 #define IKEA_PRIVATE_CLUSTER        0xFC7F
 #define IKEA_PRIVATE_CLUSTER_2      0xFC80
 
-#define SONOFF_TRVZB_CUSTOM_CLUSTER 0xFC11
+#define SONOFF_CUSTOM_CLUSTER               0xFC11
+#define SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID 0x0000
+#define SONOFF_CUSTOM_CLUSTER_TAMPER_ID     0x2000
 
 #define ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER   0xE004
 #define ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER  0xED00
@@ -226,6 +228,9 @@ public:
   void onWindowCoveringReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi)) {
     _on_window_covering_receive = callback;
   }
+  void onSonoffCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+    _on_Sonoff_custom_cluster_receive = callback;
+  }
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi)) {
     _on_on_off_custom_cmd_receive = callback;
   }
@@ -295,6 +300,7 @@ private:
   void (*_on_thermostat_temperatures_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi);
   void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_window_covering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi);
+  void (*_on_Sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi);
   bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char rssi);
 

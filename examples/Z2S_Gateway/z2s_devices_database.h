@@ -41,6 +41,8 @@
 #define Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR              0x2010
 #define Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR              0x2011
 
+#define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B    0x2020
+
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1           0x2201
 
@@ -162,6 +164,8 @@
 #define IAS_ZONE_ALARM_2_SID                        0x01
 #define IAS_ZONE_TAMPER_SID                         0x02
 #define IAS_ZONE_LOW_BATTERY_SID                    0x03
+
+#define SONOFF_CUSTOM_CLUSTER_TAMPER_SID            0x10
 
 #define TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID          0x00
 #define TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID   0x01
@@ -457,7 +461,7 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
       ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
-      SONOFF_TRVZB_CUSTOM_CLUSTER }},
+      SONOFF_CUSTOM_CLUSTER }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -1360,6 +1364,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "SONOFF", .model_name = "SNZB-05P", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B, .z2s_device_endpoints_count = 1},   
 
+  { .manufacturer_name = "eWeLink", .model_name = "SNZB-04P", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "ADEO", .model_name = "ZB-SMART-PIRTH-V3", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1373,6 +1380,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_q6a3tepg", .model_name = "TS0001", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_tqlv4ug4", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "eWeLink", .model_name = "SWITCH-ZR03-1", 

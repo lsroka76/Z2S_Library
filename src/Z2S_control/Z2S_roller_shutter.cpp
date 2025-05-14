@@ -124,6 +124,15 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
 
   Supla::Control::RollerShutterInterface::iterateAlways();
 
+  /*if (_rs_current_position_changed) {
+    _rs_current_position_changed = false;
+    if (_gateway && Zigbee.started()) {   
+    
+      _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID,
+                                ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_rs_current_position);
+    }
+  }*/
+
   //uint32_t current_millis = millis();
 
   if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
@@ -152,21 +161,40 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
   }
 }
 
-/*void Supla::Control::Z2S_RollerShutter::Z2S_setOnOff(bool on_off_state) {
-  
-  state = on_off_state;
+void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(uint8_t rs_current_position) {
+ 
+  /*if ((_rs_current_position == 100) && (_rs_current_position == 0))
+    _rs_current_position_changed = true;
+  else
+  if ((_rs_current_position == 0) && (_rs_current_position == 100))
+    _rs_current_position_changed = true;
+  else {
+    _rs_current_position = rs_current_position;
+    setCurrentPosition(_rs_current_position);  
+  }
+  return;
 
-  _last_ping_ms = millis();
-  _last_seen_ms = _last_ping_ms;
-  
-  if (!channel.isStateOnline()) 
-	  channel.setStateOnline();
+  if (_rs_current_position != rs_current_position)
+    _rs_current_position_changed = true;
 
-  channel.setNewValue(state);
-  // Schedule save in 5 s after state change
-  Supla::Storage::ScheduleSave(5000);
+  _rs_current_position = rs_current_position;
+  setCurrentPosition(_rs_current_position);
+
+  return;*/
+
+ if (_rs_moving_direction != 1) {
+  _rs_current_position = rs_current_position;
+  setCurrentPosition(_rs_current_position);
+ }
+ else
+  log_i("No RS movement detected - ignoring setRSCurrentPosition new value %u", rs_current_position);
 }
-*/
+
+void Supla::Control::Z2S_RollerShutter::setRSMovingDirection(uint8_t rs_moving_direction) {
+
+  _rs_moving_direction = rs_moving_direction;
+}
+
 void Supla::Control::Z2S_RollerShutter::setKeepAliveSecs(uint32_t keep_alive_secs) {
 
   _keep_alive_ms = keep_alive_secs * 1000;

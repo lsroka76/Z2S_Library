@@ -847,11 +847,6 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
           ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
     return;
   }
-
-  if ((cluster == SONOFF_TRVZB_CUSTOM_CLUSTER) && (id == 0x000)) {
-    msgZ2SDeviceHvac(channel_number_slot_2, TRV_CHILD_LOCK_MSG, mode, rssi);
-    return;
-  }
   
   switch (id) {
 
@@ -891,10 +886,49 @@ void Z2S_onWindowCoveringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
   switch (id) {
 
     case ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID:
-      msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG , value, rssi); break;
+      msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, value, rssi); break;
+    case 0xF000:
+      msgZ2SDeviceRollerShutter(channel_number_slot, RS_MOVING_DIRECTION_MSG, value, rssi); break;
   }
 }
 
+void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id,
+                                 uint16_t value, signed char rssi) {
+
+  log_i("Z2S_onSonoffCustomClusterReceive 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x, endpoint 0x%x, attribute id 0x%x, value %u", 
+        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], 
+        endpoint, id, value);
+
+
+  switch (id) {
+    case SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
+                                                              NO_CUSTOM_CMD_SID);
+
+      if (channel_number_slot < 0) {
+        log_i("Z2S_onSonoffCustomClusterReceive - no thermostat channel found for address 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x",
+              ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+        return;
+      }
+      
+      msgZ2SDeviceHvac(channel_number_slot, TRV_CHILD_LOCK_MSG, value, rssi);
+    } break;
+    case SONOFF_CUSTOM_CLUSTER_TAMPER_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+                                                              SONOFF_CUSTOM_CLUSTER_TAMPER_SID);
+      
+      if (channel_number_slot < 0) {
+        log_i("Z2S_onSonoffCustomClusterReceive - no tamper channel found for address 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x",
+              ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+        return;
+      }
+
+      msgZ2SDeviceIASzone(channel_number_slot, value, rssi);      
+    } break;
+  }
+}
 
 void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state, signed char rssi) {
 
@@ -1080,7 +1114,7 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
     if (iaszone_status < 0x0400)
       msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1), rssi);
     else
-    msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 0x0400), rssi);
+      msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 0x0400), rssi);
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, IAS_ZONE_ALARM_2_SID);
@@ -1442,6 +1476,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
+      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B:
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_RELAY:
