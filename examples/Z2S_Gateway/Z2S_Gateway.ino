@@ -745,6 +745,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
         if (result) {
           if (zbGateway.getReadAttrLastResult()->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) {
             zbstring_t *zbstr = (zbstring_t *)zbGateway.getReadAttrLastResult()->data.value;
+            if (zbstr->len == 0) {
+              telnet.printf(">Reading attribute successful - data type is char string (0x42), string is empty");
+              return;  
+            }
             char *str_buf = (char *)malloc(zbstr->len + 1);
             memcpy(str_buf, zbstr->data, zbstr->len);
             *(str_buf + zbstr->len) = '\0';
