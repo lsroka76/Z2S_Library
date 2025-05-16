@@ -88,6 +88,7 @@ uint16_t write_mask_16;
 uint32_t write_mask_32;
 
 uint8_t custom_cmd_payload[10]; //TODO - include RAW/STRING
+uint8_t write_attribute_payload[20];
 
 
 const static char PARAM_CMD1[] = "zigbeestack";
@@ -865,27 +866,44 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       telnet.printf(">write-attribute %u 0x%X 0x%X 0x%X 0x%X\n\r>", channel_id, cluster_id, attribute_id, attribute_type,
                     attribute_size);
       
-      void *value;
-      
-      switch (attribute_size) {
-        case 1: {
-          write_mask = strtoul(*(param + 5),nullptr, 0);
-          value = &write_mask; 
-        } break;
-        case 2: {
-          write_mask_16 = strtoul(*(param + 5),nullptr, 0);
-          value = &write_mask_16; 
-        }break;
-        case 4: {
-          write_mask_32 = strtoul(*(param + 5),nullptr, 0);
-          value = &write_mask_32; 
-        } break;
-      }
       if (params_number == 8) {
         manuf_specific = strtoul(*(param + 6),nullptr, 0);
         manuf_code = strtoul(*(param + 7),nullptr, 0);
       }
-      zbGateway.sendAttributeWrite(&device, cluster_id, attribute_id, attribute_type, attribute_size, value, manuf_specific, manuf_code); 
+
+      void *value = nullptr;
+      
+      if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && (attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
+        
+        char byte_str[3];
+        byte_str[2] = '\0';
+
+        memset(write_attribute_payload, 0, sizeof(write_attribute_payload));
+
+        for (int i = 0; i < attribute_size/*strlen(*(param + 5))) / 2*/; i++) {
+          memcpy(byte_str,(*(param + 5))  + (i * 2), 2);
+          write_attribute_payload[i] = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
+          telnet.printf("%X:", write_attribute_payload[i]);
+        }
+        value = write_attribute_payload;
+      } else {
+        switch (attribute_size) {
+          case 1: {
+            write_mask = strtoul(*(param + 5),nullptr, 0);
+            value = &write_mask; 
+          } break;
+          case 2: {
+            write_mask_16 = strtoul(*(param + 5),nullptr, 0);
+            value = &write_mask_16; 
+          } break;
+          case 4: {
+            write_mask_32 = strtoul(*(param + 5),nullptr, 0);
+            value = &write_mask_32; 
+          } break;
+        }
+      }
+      if (value)
+        zbGateway.sendAttributeWrite(&device, cluster_id, attribute_id, attribute_type, attribute_size, value, manuf_specific, manuf_code); 
       telnet.println("Write attribute async request sent");
     } 
     return;
