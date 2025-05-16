@@ -756,7 +756,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
             telnet.printf(">Reading attribute successful - data type is char string (0x42), string length is 0x%u, string data is %s\n\r>", 
                         zbstr->len, zbstr->data);
             free(str_buf);*/
-            telnet.printf(">Reading attribute successful - data type is 0x%x, data size is 0xu\n\r>Data = ", zbGateway.getReadAttrLastResult()->data.type,
+            telnet.printf(">Reading attribute successful - data type is 0x%x, data size is %u\n\r>Data = ", zbGateway.getReadAttrLastResult()->data.type,
                           zbGateway.getReadAttrLastResult()->data.size);
             for (int8_t i = 0; i < zbGateway.getReadAttrLastResult()->data.size; i++)
               telnet.printf("0x%x, ", *(((uint8_t *)zbGateway.getReadAttrLastResult()->data.value) + i));
