@@ -278,6 +278,9 @@ uint8_t parseTimingsStr(char *cluster_id) {
   if (strcmp(cluster_id, "REFRESH") == 0)
     return 0x04;
   else
+  if (strcmp(cluster_id, "AUTOSET") == 0)
+    return 0x04;
+  else
     return 0x00;
 }
 
@@ -509,7 +512,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   if (strcmp(cmd,"UPDATE-DEVICE-TIMINGS") == 0) {
 
     if (params_number < 3)  {
-      telnet.println(">update-device-timings channel \"keepalive\"/\"timeout\"/\"refresh\" time(seconds)");
+      telnet.println(">update-device-timings channel \"keepalive\"/\"timeout\"/\"refresh\"/\"autoset\" time(seconds)");
       return;
     }
 

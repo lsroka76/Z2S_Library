@@ -1372,9 +1372,9 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
         int8_t sub_id;
         switch (command_id) {
-          case 0: sub_id = TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID; break;
+          case 0: sub_id = TUYA_CUSTOM_CMD_BUTTON_HELD_SID; break;
           case 1: sub_id = TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID; break;
-          case 2: sub_id = TUYA_CUSTOM_CMD_BUTTON_HELD_SID; break;
+          case 2: sub_id = TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID; break;
         }  
         channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                                                             SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
@@ -1853,7 +1853,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
 void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector, uint32_t timings_secs) {
   
-  if (timeout >0) {
+  if (timeout > 0) {
     //z2s_devices_table[device_id].user_data_flags |= USER_DATA_FLAG_SED_TIMEOUT;
     //z2s_devices_table[device_id].user_data_1 = timeout;
     z2s_devices_table[device_id].timeout_secs = timeout * 3600;
@@ -1876,7 +1876,10 @@ void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector, uint32_
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
 
       auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
-      Supla_Z2S_VirtualBinary->setTimeout(timeout);
+      if (timeout > 0)
+        Supla_Z2S_VirtualBinary->setTimeout(timeout);
+      if (selector & 4)
+        Supla_Z2S_VirtualBinary->setAutoSetSecs(timings_secs);
     } else
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
 

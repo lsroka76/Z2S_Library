@@ -36,10 +36,36 @@ public:
     _timeout = timeout;
   }
 
+ void setAutoClearSecs(uint32_t auto_clear_secs) {
+    
+   _auto_clear_ms = auto_clear_secs * 1000;
+  }
+
+void setAutoSetSecs(uint32_t auto_set_secs) {
+    
+   _auto_set_ms = auto_set_secs * 1000;
+  }
+
   void Refresh() {
+    
     _timeout_ms = millis();
     channel.setStateOnline();
   }
+
+  void extSet() {
+  
+    state = true;
+    _last_set_ms = millis();
+    _last_clear_ms = 0;
+  }
+
+  void extClear() {
+  
+    state = false;
+    _last_set_ms = 0;
+    _last_clear_ms = millis();
+  }
+    
 
   void iterateAlways() override {
     if (millis() - lastReadTime > readIntervalMs) {
@@ -50,6 +76,8 @@ public:
       _timeout_ms = millis();
       channel.setStateOffline();
     }
+    if (_auto_set_ms && _last_clear_ms && (millis() - _last_clear_ms > _auto_set_ms))
+	extSet();
   }
 
 
@@ -57,6 +85,11 @@ public:
  protected:
    uint8_t  _timeout = 0;
    uint32_t _timeout_ms = 0;
+   
+   uint32_t _auto_clear_ms = 0;
+   uint32_t _auto_set_ms = 0;
+   uint32_t _last_set_ms = 0;
+   uint32_t _last_clear_ms = 0;
 };
 };  // namespace Sensor
 };  // namespace Supla
