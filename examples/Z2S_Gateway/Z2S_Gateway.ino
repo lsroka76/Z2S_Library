@@ -742,10 +742,18 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       telnet.printf(">read-attribute %u %u %u\n\r>", channel_id, cluster_id, attribute_id);
       if (sync) {
         bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true, direction, disable_default_response, manuf_specific, manuf_code); 
-        if (result)
-          telnet.printf(">Reading attribute successful - data value is 0x%x, data type is 0x%x\n\r>", 
+        if (result) {
+          if (zbGateway.getReadAttrLastResult()->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) {
+            zbstring_t *zbstr = (zbstring_t *)zbGateway.getReadAttrLastResult()->data.value;
+            char *str_buf = (char *)malloc(zbstr->len + 1);
+            memcpy(str_buf, zbstr->data, zbstr->len);
+            *(str_buf + zbstr->len) = '\0';
+            telnet.printf(">Reading attribute successful - data type is char string (0x42), string length is 0x%u, string data is %s\n\r>", 
+                        zbstr->len, zbstr->data);
+          } else
+            telnet.printf(">Reading attribute successful - data value is 0x%x, data type is 0x%x\n\r>", 
                         *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
-        else
+        } else
           telnet.printf(">Reading attribute failed\n\r>");
       } else {
         zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, false, direction);
