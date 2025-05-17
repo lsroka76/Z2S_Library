@@ -23,6 +23,8 @@
 #include <supla/device/enter_cfg_mode_after_power_cycle.h>
 #include <action_handler_with_callbacks.h>
 
+#include <supla/control/virtual_relay.h>
+
 #include <supla/network/esp_web_server.h>
 #include <supla/network/html/device_info.h>
 #include "z2s_version_info.h"
@@ -91,6 +93,8 @@ uint8_t custom_cmd_payload[10]; //TODO - include RAW/STRING
 uint8_t write_attribute_payload[20];
 
 
+bool sendIASNotifications = false;
+
 const static char PARAM_CMD1[] = "zigbeestack";
 const static char PARAM_CMD2[] = "RMZ2Sdevices";
 const static char PARAM_CMD3[] = "UPZ2Sdevices";
@@ -149,6 +153,16 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
 
 void supla_callback_bridge(int event, int action) {
   log_i("supla_callback_bridge - event(0x%x), action(0x%x)", event, action);
+  switch (action) {
+    case 0x4000: {
+      sendIASNotifications = true; 
+      return;
+    } break;
+    case 0x4001: {
+      sendIASNotifications = false; 
+      return;
+    } break;
+  }
   switch (event) {
     case Supla::ON_EVENT_1:
     case Supla::ON_CLICK_1: Zigbee.openNetwork(180); break;
@@ -1004,12 +1018,21 @@ void setup() {
   
   //selectCmd->registerCmd("TOGGLE", Supla::ON_EVENT_3);
 
+  auto toggleNotifications = new Supla::Control::VirtualRelay();
+  toggleNotifications->getChannel()->setChannelNumber(110);
+  toggleNotifications->setInitialCaption("IAS ZONE NOTIFICATIONS");
+  toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+  toggleNotifications->setDefaultStateRestore();
+
   auto AHwC = new Supla::ActionHandlerWithCallbacks();
   AHwC->setActionHandlerCallback(supla_callback_bridge);
   selectCmd->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_1, true);
   selectCmd->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_2, true);
   selectCmd->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_3, true);
   selectCmd->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_4, true);
+
+  toggleNotifications->addAction(0x4000, AHwC, Supla::ON_TURN_ON, false);
+  toggleNotifications->addAction(0x4001, AHwC, Supla::ON_TURN_OFF, false);
 
   auto buttonCfg = new Supla::Control::Button(CFG_BUTTON_PIN, true, true);
 

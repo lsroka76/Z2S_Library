@@ -1,4 +1,5 @@
 #include "z2s_device_iaszone.h"
+#include <supla/device/notifications.h>
 
 void initZ2SDeviceIASzone(int16_t channel_number_slot) {
   
@@ -17,7 +18,8 @@ void initZ2SDeviceIASzone(int16_t channel_number_slot) {
     Supla_Z2S_VirtualBinary->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
 
   Supla_Z2S_VirtualBinary->setAutoSetSecs(z2s_devices_table[channel_number_slot].refresh_secs);
-  
+
+  Supla::Notification::RegisterNotification(z2s_devices_table[channel_number_slot].Supla_channel, false, true);
 }
 
 void addZ2SDeviceIASzone(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name, uint32_t func) {
@@ -54,5 +56,8 @@ void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, signed char rs
         if (state) Supla_Z2S_VirtualBinary->extClear(); 
         else Supla_Z2S_VirtualBinary->extSet();
         Supla_Z2S_VirtualBinary->Refresh();
+        if (sendIASNotifications)
+          Supla::Notification::SendF(z2s_devices_table[channel_number_slot].Supla_channel, z2s_devices_table[channel_number_slot].Supla_channel_name,
+                                    "State changed - now is %s", state ? "ON" : "OFF");
     }
 }
