@@ -887,7 +887,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
       void *value = nullptr;
       
-      if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && (attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
+      if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && (attribute_type <= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
         
         char byte_str[3];
         byte_str[2] = '\0';
