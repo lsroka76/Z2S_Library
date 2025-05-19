@@ -1102,7 +1102,7 @@ void setup() {
   zbGateway.onThermostatModesReceive(Z2S_onThermostatModesReceive);
   zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
   zbGateway.onSonoffCustomClusterReceive(Z2S_onSonoffCustomClusterReceive);
-  zbGateway.onBatteryPercentageReceive(Z2S_onBatteryPercentageReceive);
+  zbGateway.onBatteryReceive(Z2S_onBatteryReceive);
   zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
   zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);
   zbGateway.onIASzoneStatusChangeNotification(Z2S_onIASzoneStatusChangeNotification);

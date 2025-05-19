@@ -204,8 +204,8 @@ public:
   void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi)) {
     _on_current_summation_receive = callback;
   }
-  void onBatteryPercentageReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
-    _on_battery_percentage_receive = callback;
+  void onBatteryReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t)) {
+    _on_battery_receive = callback;
   }
   void onCurrentLevelReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
     _on_current_level_receive = callback;
@@ -292,7 +292,7 @@ private:
   void (*_on_rms_current_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_rms_active_power_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi);
-  void (*_on_battery_percentage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
+  void (*_on_battery_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
   void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_color_hue_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_color_saturation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
