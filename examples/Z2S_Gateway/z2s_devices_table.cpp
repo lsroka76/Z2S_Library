@@ -22,6 +22,7 @@
 
 #include <Z2S_control/Z2S_virtual_relay.h>
 #include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
+#include <Z2S_control/dimmer_input_interface.h>
 
 
 extern ZigbeeGateway zbGateway;
@@ -696,7 +697,9 @@ void Z2S_initSuplaChannels() {
   }
   free(device);
   auto TestVT = new Supla::Sensor::VirtualThermometer();
-        TestVT->getChannel()->setChannelNumber(100);
+  TestVT->getChannel()->setChannelNumber(100);
+  //auto TestDI = new Supla::Control::DimmerInputInterface(&zbGateway, device, 0);
+  //TestDI->getChannel()->setChannelNumber(101);
 }
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature, signed char rssi) {

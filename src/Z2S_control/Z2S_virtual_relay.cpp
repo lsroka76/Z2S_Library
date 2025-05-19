@@ -21,8 +21,8 @@
 
 #include <supla/time.h>
 
-Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions)
-  : Relay(-1, true, functions), _gateway(gateway){
+Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions, uint8_t z2s_function)
+  : Relay(-1, true, functions), _gateway(gateway), _z2s_function(z2s_function) {
     memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
 

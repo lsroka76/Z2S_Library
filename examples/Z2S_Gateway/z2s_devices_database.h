@@ -1186,6 +1186,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_upagmta9", .model_name = "TS0601", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE204_d7lpruvi", .model_name = "TS0601", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_xr3htd96", .model_name = "TS0201", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1461,6 +1464,13 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 4, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
   { .manufacturer_name = "_TZ3000_mh9px7cq", .model_name = "TS0044", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3, .z2s_device_endpoints_count = 4, 
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 4, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
+  { .manufacturer_name = "_TZ3000_kfu8zapd", .model_name = "TS0044", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3, .z2s_device_endpoints_count = 4, 
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },

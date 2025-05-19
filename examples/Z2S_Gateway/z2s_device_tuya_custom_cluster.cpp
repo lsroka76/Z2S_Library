@@ -536,6 +536,11 @@ void processTuyaTempHumiditySensorDataReport(int16_t channel_number_slot, uint16
     log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
     msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value * 50, rssi);  
   }
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    log_i("Battery level is %d", Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceTempHumidityBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value , rssi);  
+  }
 }
 
 void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
