@@ -17,16 +17,18 @@
 #define ALL_SUPLA_CHANNEL_TYPES       -1
 
 #define ADD_Z2S_DEVICE_STATUS_OK      0x00 //device added 100%
-#define ADD_Z2S_DEVICE_STATUS_DUN     0x01
+#define ADD_Z2S_DEVICE_STATUS_DUN     0x01 //device unknown
 #define ADD_Z2S_DEVICE_STATUS_DT_FULL 0x02 //device table full = device not added
 #define ADD_Z2S_DEVICE_STATUS_DT_FWA  0x03  //device table full while adding = device added partialy
 #define ADD_Z2S_DEVICE_STATUS_DAP     0x04 //device already present
 
-#define USER_DATA_FLAG_SED_TIMEOUT            0x01
-#define USER_DATA_FLAG_MSG_DISABLED           0x02
-#define USER_DATA_FLAG_CORRECTIONS_DISABLED   0x04
-#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE   0x08
-#define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG    0x10
+#define USER_DATA_FLAG_SED_TIMEOUT            1 << 0 // 0x01
+#define USER_DATA_FLAG_MSG_DISABLED           1 << 1 // 0x02
+#define USER_DATA_FLAG_CORRECTIONS_DISABLED   1 << 2 // 0x04
+#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE   1 << 3 // 0x08 
+#define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG    1 << 4 // 0x10 
+#define USER_DATA_FLAG_DISABLE_NOTIFICATIONS  1 << 5 // 0x20
+
 //#define USER_DATA_FLA
 
 typedef struct z2s_legacy_device_params_s {

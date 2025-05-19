@@ -146,6 +146,7 @@
 #define Z2S_DEVICE_DESC_HVAC_END                        0x6499
 
 #define Z2S_DEVICE_DESC_IR_REMOTE_CONTROL               0x6500
+#define Z2S_DEVICE_DESC_TUYA_SIREN_ALARM                0x6600
 
 #define Z2S_DEVICE_DESC_ON_OFF                          0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                        0x8001
@@ -471,6 +472,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
       SONOFF_CUSTOM_CLUSTER }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -1443,6 +1447,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_2putqrmw", .model_name = "TS011F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3000_kqvb5akv", .model_name = "TS0001", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "ADEO", .model_name = "LDSENK02F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
  
@@ -1759,7 +1766,10 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_ol1uhvza", .model_name = "TS130F",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_c2yscrj8", .model_name = "TS0224",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_endpoints_count = 1}
 };
 
 #endif
