@@ -157,6 +157,14 @@ typedef struct z2s_channel_action_s {
   double    max_value;
 } z2s_channel_action_t;
 
+typedef struct sonoff_smart_valve_cycle_data_s {
+  uint8_t  id;
+  uint8_t  cycle_number;
+  uint8_t  cycles_count;
+  uint32_t cycle_data;
+  uint32_t cycle_pause;
+} ESP_ZB_PACKED_STRUCT sonoff_smart_valve_cycle_data_t;
+
 extern z2s_device_params_t z2s_devices_table[Z2S_CHANNELMAXCOUNT];
 
 const static char   Z2S_DEVICES_TABLE []  PROGMEM = "Z2S_devs_table";
