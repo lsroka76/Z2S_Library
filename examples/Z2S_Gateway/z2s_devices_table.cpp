@@ -961,7 +961,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
                                                               SONOFF_SMART_VALVE_VOLUME_SID);
       
       
-      if ((channel_number_slot_1 < 0) && (channel_number_slot_2 < 0) && (channel_number_slot_3 < 0) && (channel_number_slot_4 < 0)) {
+      if ((channel_number_slot_1 < 0) && (channel_number_slot_2 < 0) && (channel_number_slot_3 < 0) && (channel_number_slot_4 < 0)&& (channel_number_slot_5 < 0)) {
         log_i("Z2S_onSonoffCustomClusterReceive - no smart valve irrigation cycle channels found for address %x:%x:%x:%x:%x:%x:%x:%x",
               ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
         return;
