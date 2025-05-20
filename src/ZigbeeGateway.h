@@ -38,7 +38,7 @@
 #define SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID              0x0000
 /*SNZB-04P attributes*/
 #define SONOFF_CUSTOM_CLUSTER_TAMPER_ID                  0x2000
-/SWV attributes*/
+/*SWV attributes*/
 #define SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID   0x5008
 #define SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID 0x5009
 #define SONOFF_CUSTOM_CLUSTER_IRRIGATION_CYCLE_MODE_ID   0x5010
@@ -235,7 +235,7 @@ public:
   void onWindowCoveringReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi)) {
     _on_window_covering_receive = callback;
   }
-  void onSonoffCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+  void onSonoffCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, esp_zb_zcl_attribute_t, signed char rssi)) {
     _on_Sonoff_custom_cluster_receive = callback;
   }
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi)) {
@@ -307,7 +307,7 @@ private:
   void (*_on_thermostat_temperatures_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi);
   void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_window_covering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi);
-  void (*_on_Sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi);
+  void (*_on_Sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, esp_zb_zcl_attribute_t, signed char rssi);
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi);
   bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char rssi);
 
