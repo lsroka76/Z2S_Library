@@ -770,7 +770,7 @@ void Z2S_onFlowReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t
         ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, flow);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                          NO_CUSTOM_CMD_SID);
+                                                          SONOFF_SMART_VALVE_FLOW_SID);
   if (channel_number_slot >= 0) {                         
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, flow, rssi); 
     return;
@@ -926,9 +926,26 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
               ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
         return;
       }
-
       msgZ2SDeviceIASzone(channel_number_slot, *(uint8_t*)attribute->data.value, rssi);      
     } break;
+    case SONOFF_CUSTOM_CLUSTER_IRRIGATION_CYCLE_MODE_ID: {
+        
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                              SONOFF_SMART_VALVE_MODE_SID);
+      
+      if (channel_number_slot < 0) {
+        log_i("Z2S_onSonoffCustomClusterReceive - no smart valve mode channel found for address 0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x:0x%x",
+              ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+        return;
+      }
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, *(uint8_t*)attribute->data.value, rssi); 
+    } break;
+    
+      /*case :
+      case SONOFF_SMART_VALVE_CYCLE_SID:
+      case SONOFF_SMART_VALVE_TIME_SID:
+      case SONOFF_SMART_VALVE_PAUSE_SID:
+      case SONOFF_SMART_VALVE_VOLUME_SID:*/
   }
 }
 
