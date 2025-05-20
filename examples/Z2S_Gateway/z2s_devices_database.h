@@ -22,8 +22,6 @@
 
 #define Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR                0x1300
 
-#define Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR        0x1500
-
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 0x2000
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T           0x2001
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B           0x2002
@@ -102,8 +100,10 @@
 #define Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH               0x4606
 #define Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH               0x4607
 
-#define Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE         0x4800
-#define Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE    0x4810
+#define Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE          0x4800
+#define Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE     0x4810
+
+#define Z2S_DEVICE_DESC_SONOFF_SMART_VALVE              0x4900
 
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F            0x5000
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F            0x5001
@@ -356,12 +356,7 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
       ESP_ZB_ZCL_CLUSTER_ID_SCENES,
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
-
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR, .z2s_device_clusters_count = 3, .z2s_device_clusters =
-    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-      ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT }},
-
+  
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
@@ -1158,6 +1153,11 @@ const dataPoints = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_VALVE, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT }}
 };
         
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
@@ -1770,7 +1770,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "SWV",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_VALVE, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3290_7v1k4vufotpowp9z", .model_name = "TS1201",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_endpoints_count = 1},
