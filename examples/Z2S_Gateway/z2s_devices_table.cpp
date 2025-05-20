@@ -902,7 +902,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         endpoint,attribute->id, attribute->data.size);
 
 
-  switch (id) {
+  switch (attribute->id) {
     case SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
@@ -914,7 +914,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         return;
       }
       
-      msgZ2SDeviceHvac(channel_number_slot, TRV_CHILD_LOCK_MSG, value, rssi);
+      msgZ2SDeviceHvac(channel_number_slot, TRV_CHILD_LOCK_MSG, *(uint8_t*)attribute->data.value, rssi);
     } break;
     case SONOFF_CUSTOM_CLUSTER_TAMPER_ID: {
 
@@ -927,7 +927,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         return;
       }
 
-      msgZ2SDeviceIASzone(channel_number_slot, value, rssi);      
+      msgZ2SDeviceIASzone(channel_number_slot, *(uint8_t*)attribute->data.value, rssi);      
     } break;
   }
 }
