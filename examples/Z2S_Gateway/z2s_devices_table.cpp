@@ -1823,7 +1823,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       
           case SONOFF_SMART_VALVE_FLOW_SID: 
           case SONOFF_SMART_VALVE_MODE_SID:
-          case SONOFF_SMART_VALVE_CYCLE_SID:
+          case SONOFF_SMART_VALVE_CYCLE_NUMBER_SID:
+          case SONOFF_SMART_VALVE_CYCLES_COUNT_SID:
           case SONOFF_SMART_VALVE_TIME_SID:
           case SONOFF_SMART_VALVE_PAUSE_SID:
           case SONOFF_SMART_VALVE_VOLUME_SID:
