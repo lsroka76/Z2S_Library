@@ -811,7 +811,7 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         } else log_i("zbAttributeReporting thermostat cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
       } else
       if (cluster_id == SONOFF_CUSTOM_CLUSTER) {
-        if (attribute->id == 0x000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_BOOL) {
+        /*if (attribute->id == 0x000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_BOOL) {
         uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
         log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER child lock %d",value);
         if (_on_Sonoff_custom_cluster_receive)
@@ -822,7 +822,10 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER tamper %d",value);
         if (_on_Sonoff_custom_cluster_receive)
           _on_Sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
-        } else log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+        } else */
+	log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+	if (_on_Sonoff_custom_cluster_receive)
+          _on_Sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);      
       } else
       if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING) {
         if (attribute->id == 0xF000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) {
