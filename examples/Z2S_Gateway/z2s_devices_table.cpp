@@ -1766,13 +1766,13 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         }
       } break;
 
-      case Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR: {
+      case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
         
         switch (sub_id) {
-          case SONOFF_FLOW_VALVE_SENSOR_ON_OFF_SID:
+          case SONOFF_SMART_VALVE_ON_OFF_SID:
            addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, name, func); break;
       
-          case SONOFF_FLOW_VALVE_SENSOR_FLOW_SID: 
+          case SONOFF_SMART_VALVE_FLOW_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break; 
