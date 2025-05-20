@@ -1773,6 +1773,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
            addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, name, func); break;
       
           case SONOFF_SMART_VALVE_FLOW_SID: 
+          case SONOFF_SMART_VALVE_MODE_SID:
+          case SONOFF_SMART_VALVE_CYCLE_SID:
+          case SONOFF_SMART_VALVE_TIME_SID:
+          case SONOFF_SMART_VALVE_PAUSE_SID:
+          case SONOFF_SMART_VALVE_VOLUME_SID:
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break; 
