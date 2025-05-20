@@ -1494,10 +1494,15 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 0, "lx");
                           } break;
 
-                          case Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR: {
+                          case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
                             
-                            Z2S_addZ2SDevice(joined_device, SONOFF_FLOW_VALVE_SENSOR_ON_OFF_SID,"VALVE", SUPLA_CHANNELFNC_POWERSWITCH);
-                            Z2S_addZ2SDevice(joined_device, SONOFF_FLOW_VALVE_SENSOR_FLOW_SID, "FLOW", 0, "m³/h");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_ON_OFF_SID,"VALVE", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_FLOW_SID, "FLOW", 0, "m³/h");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_MODE_SID, "MODE", 0, "");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_CYCLE_SID, "CYCLE #", 0, "");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_TIME_SID, "CYCLE TIME", 0, "s");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_PAUSE_SID, "CYCLE PAUSE", 0, "s");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_VOLUME_SID, "CYCLE VOLUME", 0, "l");
                           } break;
 
                           case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
