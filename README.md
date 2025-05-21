@@ -11,7 +11,7 @@ This project is my personal attempt to build a gateway between various Zigbee en
 6. [Telnet commands](telnet.md)
 7. [Supported devices](supported-devices.md)
 
-## SUPLA
+### SUPLA
 [SUPLA](https://github.com/SUPLA)  is an open-source Internet of Things (IoT) platform that empowers users to create their own smart home or automation systems. It offers a flexible and cost-effective way to control various devices remotely. The system is based on open software and hardware principles, encouraging community development and customization. Users can build their own devices using popular platforms like Raspberry Pi, Arduino, ESP8266 and ESP32. These devices can then be connected to the Supla cloud or a self-hosted server via Wi-Fi or LAN.
 One of the significant advantages of Supla is its open architecture. This fosters a large and active community of developers and enthusiasts who contribute to the platform's growth. The availability of source code on platforms like GitHub encourages innovation and allows users to tailor the system to their specific needs. Users also have the option to set up their own independent server for enhanced privacy and control.  
 [(ToC)](#table-of-contents)
