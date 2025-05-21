@@ -56,7 +56,7 @@ void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, signed char rs
         if (state) Supla_Z2S_VirtualBinary->extClear(); 
         else Supla_Z2S_VirtualBinary->extSet();
         Supla_Z2S_VirtualBinary->Refresh();
-        if (sendIASNotifications)
+        if ((sendIASNotifications) && ~(z2s_devices_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_DISABLE_NOTIFICATIONS))
           Supla::Notification::SendF(z2s_devices_table[channel_number_slot].Supla_channel, z2s_devices_table[channel_number_slot].Supla_channel_name,
                                     "State changed - now is %s", state ? "ON" : "OFF");
     }

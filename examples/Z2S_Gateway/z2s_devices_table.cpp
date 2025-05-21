@@ -696,8 +696,8 @@ void Z2S_initSuplaChannels() {
       }
   }
   free(device);
-  auto TestVT = new Supla::Sensor::VirtualThermometer();
-  TestVT->getChannel()->setChannelNumber(100);
+  //auto TestVT = new Supla::Sensor::VirtualThermometer(); //for TRV testing
+  //TestVT->getChannel()->setChannelNumber(100); //RIP
   //auto TestDI = new Supla::Control::DimmerInputInterface(&zbGateway, device, 0);
   //TestDI->getChannel()->setChannelNumber(101);
 }
@@ -1547,14 +1547,14 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_RELAY:
-      case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "POWER SWITCH", 
+      case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "POWER SWITCH", 
                                                               SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1:
       case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2: {
         char gang_name[30];
         sprintf(gang_name, "GANG #%d", device->endpoint);
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, gang_name, SUPLA_CHANNELFNC_LIGHTSWITCH); 
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, gang_name, SUPLA_CHANNELFNC_LIGHTSWITCH); 
       } break;
 
       case Z2S_DEVICE_DESC_ON_OFF:
@@ -1665,7 +1665,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: {
 
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "DIMMER SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "DIMMER SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -1693,7 +1693,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       case Z2S_DEVICE_DESC_RGBW_BULB_XY: {
         
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "RGBW SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "RGBW SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -1719,7 +1719,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_IKEA_WW_BULB: {
         
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "BULB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "BULB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -1731,7 +1731,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY: {
       
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, "RGB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "RGB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -1819,7 +1819,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         
         switch (sub_id) {
           case SONOFF_SMART_VALVE_ON_OFF_SID:
-           addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, name, func); break;
+           addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, sub_id, name, func); break;
       
           case SONOFF_SMART_VALVE_FLOW_SID: 
           case SONOFF_SMART_VALVE_MODE_SID:
@@ -1901,13 +1901,14 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break;
 
       case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
-        addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, "IR REMOTE", 0); break;
+        addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, "IR REMOTE", 0); break;
 
       case Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE:
-        addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, "ROLLER SHUTTER", SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER); break;
+        addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
+                                "ROLLER SHUTTER", SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER); break;
         
       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
-        addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, "ALARM SIREN", SUPLA_CHANNELFNC_POWERSWITCH); break;
+        addZ2SDeviceVirtualRelay(&zbGateway, device,first_free_slot, sub_id, name, func); break;
       default : {
         
         log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);

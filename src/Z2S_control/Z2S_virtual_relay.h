@@ -24,16 +24,18 @@
 #include <supla/control/relay.h>
 #include "ZigbeeGateway.h"
 
-#define Z2S_VIRTUAL_RELAY_FNC_NONE         0x00
+#define Z2S_VIRTUAL_RELAY_FNC_NONE                0x00
 
-#define Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE 0x10
+#define Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE        0x10
+
+#define Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM 0x20
+#define Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM   0x21
 
 namespace Supla {
 namespace Control {
 class Z2S_VirtualRelay : public Relay {
  public:
-  Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions =
-                   (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER), uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
+  Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
 
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;
@@ -57,6 +59,7 @@ class Z2S_VirtualRelay : public Relay {
   zbg_device_params_t 	_device;
 
   uint8_t _z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
+  uint8_t _z2s_function_data[10];
 
   bool _fresh_start = true;
 

@@ -1,7 +1,7 @@
 #ifndef Z2S_VERSION_INFO_H_
 #define Z2S_VERSION_INFO_H_
 
-#define Z2S_VERSION "0.7.94-20/05/2025"
+#define Z2S_VERSION "0.7.95-21/05/2025"
 
 namespace Supla {
 namespace Html {
@@ -12,7 +12,7 @@ class CustomDevInfo : public Supla::HtmlElement {
 
   void send(Supla::WebSender* sender) {
     sender->send("<span>");
-    sender->send("<br>Board rev.: ");
+    sender->send("<br>Z2S gateway ver.: ");
     sender->send(Z2S_VERSION);
     sender->send("<br>Flash chip real size::");
     sender->send(ESP.getFlashChipSize());

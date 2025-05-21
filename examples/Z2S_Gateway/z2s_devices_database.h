@@ -256,6 +256,8 @@
 #define DIMMER_FUNC_BRIGHTNESS_SID          0x00
 #define DIMMER_FUNC_COLOR_TEMPERATURE_SID   0x01
 
+#define IAS_WD_SILENT_ALARM_SID             0x00
+#define IAS_WD_LOUD_ALARM_SID               0x01       
 
 //#define DIMMER_FUNC_
 
@@ -1193,6 +1195,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE204_d7lpruvi", .model_name = "TS0601", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_9yapgbuv", .model_name = "TS0601", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_xr3htd96", .model_name = "TS0201", 

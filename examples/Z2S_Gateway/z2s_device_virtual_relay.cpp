@@ -17,7 +17,20 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
     Supla_Z2S_RollerShutter->setTimeoutSecs(z2s_devices_table[channel_number_slot].timeout_secs);
   } else {  
     
-    auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway, device);
+    uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
+
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+      case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
+        switch (z2s_devices_table[channel_number_slot].sub_id) {
+          case IAS_WD_SILENT_ALARM_SID:
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM; break;
+          case IAS_WD_LOUD_ALARM_SID:
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM; break;
+        }
+      } break;        
+    }
+
+    auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway, device, z2s_function);
   
     Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
@@ -32,7 +45,8 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
 }
 
                                       
-void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name, uint32_t func) {
+void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
+                              int8_t sub_id, char *name, uint32_t func) {
   
   if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
 
@@ -43,7 +57,7 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
   
     Supla_Z2S_RollerShutter->setDefaultFunction(func);
   
-    Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_RollerShutter->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1, name, func);
+    Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_RollerShutter->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY, sub_id, name, func);
 
   } else {
 
@@ -55,7 +69,7 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
     if (func !=0) 
       Supla_Z2S_VirtualRelay->setDefaultFunction(func);
   
-    Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,-1, name, func);
+    Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY, sub_id, name, func);
   }
 }
 

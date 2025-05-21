@@ -1134,6 +1134,8 @@ void setup() {
   SuplaDevice.setName("Zigbee to Supla Gateway");
   //wifi.enableSSL(true);
 
+  SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
+
   SuplaDevice.begin();      
   
   httpUpdater.setup(suplaServer.getServerPtr(), "/update", "admin", "pass");
@@ -1506,6 +1508,12 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_VOLUME_SID, "CYCLE VOLUME", 0, "l");
                           } break;
 
+                          case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
+                            
+                            Z2S_addZ2SDevice(joined_device, IAS_WD_SILENT_ALARM_SID, "SILENT ALARM", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, IAS_WD_LOUD_ALARM_SID, "LOUD ALARM", SUPLA_CHANNELFNC_POWERSWITCH);
+                          } break;
+
                           case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
                             
                             Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
@@ -1705,6 +1713,7 @@ void loop() {
                 case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
                 case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
                 case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
+                case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
                 case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
                 case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
                 case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:

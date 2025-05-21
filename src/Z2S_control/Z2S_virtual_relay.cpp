@@ -21,8 +21,8 @@
 
 #include <supla/time.h>
 
-Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions, uint8_t z2s_function)
-  : Relay(-1, true, functions), _gateway(gateway), _z2s_function(z2s_function) {
+Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function)
+  : Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER), _gateway(gateway), _z2s_function(z2s_function) {
     memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
 
@@ -53,10 +53,36 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
     durationTimestamp = 0;
   }
 
-  if (_gateway && Zigbee.started()) {   
-    state = true;
-    _gateway->sendOnOffCmd(&_device, state);
-    channel.setNewValue(state);
+  if (_gateway && Zigbee.started()) { 
+    switch (_z2s_function) {
+
+      case Z2S_VIRTUAL_RELAY_FNC_NONE: {
+        
+        state = true;
+        _gateway->sendOnOffCmd(&_device, state);
+        channel.setNewValue(state);
+      } break;
+
+      case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM:
+      case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM: {
+        state = true;
+        
+        if (_z2s_function == Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM)
+          _z2s_function_data[0] = 0x34; // emergency + strobe + no sound
+        else
+          _z2s_function_data[0] = 0x37; // emergency + strobe + very high level sound
+        _z2s_function_data[1] = 0xFF;
+        _z2s_function_data[2] = 0xFE; //max duration lenght
+        _z2s_function_data[3] = 0x32; //strobe duty cycle 50/50
+        _z2s_function_data[4] = 0x01; //strobe level field
+
+        _gateway->sendCustomClusterCmd(&_device, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, _z2s_function_data);
+        _gateway->sendOnOffCmd(&_device, state);
+
+        channel.setNewValue(state);
+
+      } break;
+    }  
   }
   // Schedule save in 5 s after state change
   Supla::Storage::ScheduleSave(5000);
@@ -73,12 +99,33 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
   } else {
     durationTimestamp = 0;
   }
-  if (_gateway && Zigbee.started()) {   
-    state = false;
-    _gateway->sendOnOffCmd(&_device, state);
-    channel.setNewValue(state);
+  if (_gateway && Zigbee.started()) { 
+    switch (_z2s_function) {
+
+      case Z2S_VIRTUAL_RELAY_FNC_NONE: {
+        state = false;
+        _gateway->sendOnOffCmd(&_device, state);
+        channel.setNewValue(state);
+      } break;
+
+      case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM:
+      case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM: {
+
+        state = false;
+        
+        _z2s_function_data[0] = 0x00; //no warning, no strobe, no siren
+        _z2s_function_data[1] = 0x00;
+        _z2s_function_data[2] = 0x00; //duration lenght
+        _z2s_function_data[3] = 0x00; //strobe duty cycle
+        _z2s_function_data[4] = 0x00; //strobe level field
+
+        _gateway->sendOnOffCmd(&_device, state);
+        _gateway->sendCustomClusterCmd(&_device, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, _z2s_function_data);
+        channel.setNewValue(state);
+
+      } break;
+    }  
   }
-  
   // Schedule save in 5 s after state change
   Supla::Storage::ScheduleSave(5000);
 }
