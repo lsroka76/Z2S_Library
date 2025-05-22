@@ -28,7 +28,7 @@
 #define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE   1 << 3 // 0x08 
 #define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG    1 << 4 // 0x10 
 #define USER_DATA_FLAG_DISABLE_NOTIFICATIONS  1 << 5 // 0x20
-
+#define USER_DATA_FLAG_DISABLE_BATTERY_MSG    1 << 6 // 0x40
 //#define USER_DATA_FLA
 
 typedef struct z2s_legacy_device_params_s {
