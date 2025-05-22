@@ -68,7 +68,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = true;
         
         if (_z2s_function == Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM)
-          _z2s_function_data[0] = 0x34; // emergency + strobe + no sound
+          _z2s_function_data[0] = 0x25; // emergency + strobe + no sound
         else
           _z2s_function_data[0] = 0x37; // emergency + strobe + very high level sound
         _z2s_function_data[1] = 0xFF;
