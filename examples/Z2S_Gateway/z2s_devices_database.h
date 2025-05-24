@@ -1433,6 +1433,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI control outlet", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "ADEO", .model_name = "LDSENK12F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},   
+
   { .manufacturer_name = "_TZ3000_mmkbptmx", .model_name = "TS0004", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH, .z2s_device_endpoints_count = 4,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 },
