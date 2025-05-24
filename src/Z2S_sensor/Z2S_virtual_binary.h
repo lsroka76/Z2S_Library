@@ -21,7 +21,7 @@
 
 #include <supla/sensor/virtual_binary.h>
 
-#define MSINHOUR 60*60*1000
+#define MSINHOUR (60*60*1000)
 
 namespace Supla {
 namespace Sensor {
