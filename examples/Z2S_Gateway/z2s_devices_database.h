@@ -127,7 +127,7 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F          0x5300
 
-#define Z2S_DEVICE_DESC_ACE_ARM_PANIC_BUTTON.           0x5400
+#define Z2S_DEVICE_DESC_ACE_ARM_PANIC_BUTTON            0x5400
 
 #define Z2S_DEVICE_DESC_HVAC_START                      0x6000
 
@@ -259,7 +259,16 @@
 #define DIMMER_FUNC_COLOR_TEMPERATURE_SID   0x01
 
 #define IAS_WD_SILENT_ALARM_SID             0x00
-#define IAS_WD_LOUD_ALARM_SID               0x01       
+#define IAS_WD_LOUD_ALARM_SID               0x01  
+
+#define IAS_ACE_ARM_CMD_SID                 0x00
+#define IAS_ACE_PANIC_CMD_SID               0x01
+#define IAS_ACE_2_CMD_SID                   0x02 
+#define IAS_ACE_3_CMD_SID                   0x03
+
+#define ADEO_CUSTOM_CMD_BUTTON_PRESSED_SID        0x00
+#define ADEO_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID 0x01
+#define ADEO_CUSTOM_CMD_BUTTON_HELD_SID           0x02
 
 //#define DIMMER_FUNC_
 
