@@ -21,7 +21,7 @@
 
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 
-#define MSINHOUR 60*60*1000
+#define MSINHOUR (60*60*1000)
 
 namespace Supla {
 namespace Sensor {
