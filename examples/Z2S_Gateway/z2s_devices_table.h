@@ -39,6 +39,11 @@
 #define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG (1 << 7)
 #define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG    (1 << 8)
 
+#define ZBD_BATTERY_PERCENTAGE_MSG  0x01
+#define ZGB_BATTERY_VOLTAGE_MSG     0x02
+#define ZGB_BATTERY_LEVEL_MSG       0x03
+#define ZGB_BATTERY_STATE_MSG       0x04
+
 typedef struct z2s_legacy_device_params_s {
 
   bool                valid_record;
@@ -277,7 +282,7 @@ uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, esp_zb_iee
 void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector = 0, uint32_t timings_secs = 0);
 void updateRGBMode(uint8_t device_id, uint8_t rgb_mode);
 void updateDeviceTemperature(uint8_t device_id, int32_t temperature);
-void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
+void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value, signed char rssi);
 
 bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
                     double threshold_1 = 0, double threshold_2 = 0);
