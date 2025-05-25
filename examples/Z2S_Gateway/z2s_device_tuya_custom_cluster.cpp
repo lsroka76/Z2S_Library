@@ -726,7 +726,7 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_BATTERY_STATE_DP, payload_size, payload);
     if (Tuya_read_dp_result.is_success) { 
       log_i("Battery state 0x0E is %d", Tuya_read_dp_result.dp_value * 50);
-      updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value * 50, rssi);
+      updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_STATE_MSG, Tuya_read_dp_result.dp_value * 50, rssi);
     }
   }
 }
