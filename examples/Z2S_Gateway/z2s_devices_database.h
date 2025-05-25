@@ -127,7 +127,7 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F          0x5300
 
-#define Z2S_DEVICE_DESC_ACE_ARM_PANIC_BUTTON            0x5400
+#define Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F    0x5400
 #define Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F            0x5410
 
 #define Z2S_DEVICE_DESC_HVAC_START                      0x6000
@@ -473,7 +473,15 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     {0xFC80}},
-      
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_ACE }},
+  
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_ACE }},
+  
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
