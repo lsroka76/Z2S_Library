@@ -408,7 +408,7 @@ uint8_t parseDeviceFlagsStr(char *device_flag) {
     return USER_DATA_FLAG_DISABLE_NOTIFICATIONS;
   else
   if (strcmp(device_flag, "FLAG_TRV_AUTO_TO_SCHEDULE") == 0)
-    return ZBD_USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE;
+    return USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE;
   else
   if (strcmp(device_flag, "FLAG_IAS_MSG_DISABLED") == 0)
     return USER_DATA_FLAG_MSG_DISABLED;
