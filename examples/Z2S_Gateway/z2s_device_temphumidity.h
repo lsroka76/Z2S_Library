@@ -12,6 +12,6 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp, sign
 
 void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi, signed char rssi); 
 
-void msgZ2SDeviceTempHumidityBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi); 
+//void msgZ2SDeviceTempHumidityBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi); 
 
 #endif
