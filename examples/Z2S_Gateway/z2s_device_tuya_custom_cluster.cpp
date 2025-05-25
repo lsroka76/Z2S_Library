@@ -408,8 +408,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(low_battery_dp_id, payload_size, payload);
     if (Tuya_read_dp_result.is_success) {
       uint8_t battery_level = (Tuya_read_dp_result.dp_value == 0) ? 100 : 0; 
-      updateSuplaBatteryLevel(channel_number_slot_1, battery_level, rssi);
-      updateSuplaBatteryLevel(channel_number_slot_2, battery_level, rssi);
+      updateSuplaBatteryLevel(channel_number_slot_1, ZBD_LOW_BATTERY_MSG, battery_level, rssi);
+      //updateSuplaBatteryLevel(channel_number_slot_2, battery_level, rssi);
       msgZ2SDeviceHvac(channel_number_slot_2, TRV_LOW_BATTERY_MSG, Tuya_read_dp_result.dp_value, rssi);
     }
   }
@@ -417,8 +417,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   if (battery_level_dp_id < 0xFF) {
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(battery_level_dp_id, payload_size, payload);
     if (Tuya_read_dp_result.is_success) {
-      updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
-      updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+      updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+      //updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
       msgZ2SDeviceHvac(channel_number_slot_2, TRV_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
     }
   }
@@ -496,14 +496,8 @@ void processTuyaSoilTempHumiditySensorReport(int16_t channel_number_slot, uint16
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value, rssi);  
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);  
   }
-    /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(0x0E, payload_size, payload); //battery_state
-    if (Tuya_read_dp_result.is_success) {
-      log_i("Battery state 0x0E is %d, level %d", Tuya_read_dp_result.dp_value * 50);
-      Supla_VirtualThermHygroMeter->getChannel()->setBatteryLevel(Tuya_read_dp_result.dp_value * 50);
-      Supla_VirtualThermHygroMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-    }*/
 }
 
 void processTuyaTempHumiditySensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi){
@@ -521,12 +515,12 @@ void processTuyaTempHumiditySensorDataReport(int16_t channel_number_slot, uint16
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value * 50, rssi);  
+    updateSuplaBatteryLevel(channel_number_slot,ZBD_BATTERY_STATE_MSG, Tuya_read_dp_result.dp_value * 50, rssi);  
   }
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery level is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value , rssi);  
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value , rssi);  
   }
 }
 
@@ -660,8 +654,6 @@ void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, u
     msgZ2SDeviceElectricityMeter(channel_number_slot_5, Z2S_EM_ACT_RVR_ENERGY_C_SEL, Tuya_read_dp_result.dp_value, rssi);
 }
 
-
-
 void processTuyaEF00Switch2x3DataReport(int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, signed char rssi) {
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
@@ -683,11 +675,12 @@ void processTuyaEF00Switch2x3DataReport(int16_t channel_number_slot, uint16_t pa
                                                               SUPLA_CHANNELTYPE_ACTIONTRIGGER, 3 + Tuya_read_dp_result.dp_value);
 
     msgZ2SDeviceActionTrigger(channel_number_slot_1, rssi);
-  }          
+  }
+  
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_EF00_SWITCH_2X3_BATTERY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
-    log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot, Tuya_read_dp_result.dp_value, rssi);  
+    log_i("Battery level is %d", Tuya_read_dp_result.dp_value);
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);  
   }
 }
 
@@ -724,8 +717,8 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
-    updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+    updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+    //updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
   }
 
   if (model_id == Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1) {
@@ -733,7 +726,7 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_BATTERY_STATE_DP, payload_size, payload);
     if (Tuya_read_dp_result.is_success) { 
       log_i("Battery state 0x0E is %d", Tuya_read_dp_result.dp_value * 50);
-      updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value * 50, rssi);
+      updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value * 50, rssi);
     }
   }
 }
@@ -785,10 +778,10 @@ void processTuyaCODetectorReport(int16_t channel_number_slot, uint16_t payload_s
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_CO_DETECTOR_BATTERY_LEVEL_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
-    updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
-    updateSuplaBatteryLevel(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
-    updateSuplaBatteryLevel(channel_number_slot_4, Tuya_read_dp_result.dp_value, rssi);
+    updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+    //updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+    //updateSuplaBatteryLevel(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
+    //updateSuplaBatteryLevel(channel_number_slot_4, Tuya_read_dp_result.dp_value, rssi);
   }
 }
 
@@ -852,9 +845,9 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t p
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PRESENCE_SENSOR_BATTERY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery level  is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
-    updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
-    updateSuplaBatteryLevel(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
+    updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+    //updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
+    //updateSuplaBatteryLevel(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
   }
 }
 
