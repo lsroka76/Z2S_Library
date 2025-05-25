@@ -696,9 +696,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     
     if (zb_device_number_slot >= 0) {
         if (flag_set)
-          z2s_zb_devices_table[zb_device_number_slot].user_data_flags |= (1 <<bit_id);
+          z2s_zb_devices_table[zb_device_number_slot].user_data_flags |= (1 << bit_id);
         if (flag_clear)
-          z2s_zb_devices_table[zb_device_number_slot].user_data_flags &= ~(1 <<bit_id);
+          z2s_zb_devices_table[zb_device_number_slot].user_data_flags &= ~(1 << bit_id);
       if (Z2S_saveZBDevicesTable()) {
         log_i("ZB Device(channel %d) global flags changed successfully.", channel_id);
       }
