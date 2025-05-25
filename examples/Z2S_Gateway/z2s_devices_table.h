@@ -35,9 +35,11 @@
 #define ZBD_USER_DATA_FLAG_RESERVED_1                     (1 << 1)
 #define ZBD_USER_DATA_FLAG_RESERVED_2                     (1 << 2) 
 #define ZBD_USER_DATA_FLAG_RESERVED_3                     (1 << 3)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG            (1 << 4)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG (1 << 5)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG    (1 << 6)
+#define ZBD_USER_DATA_FLAG_RESERVED_4                     (1 << 4)
+#define ZBD_USER_DATA_FLAG_RESERVED_5                     (1 << 5) 
+#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG            (1 << 6)
+#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG (1 << 7)
+#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG    (1 << 8)
 
 typedef struct z2s_legacy_device_params_s {
 
