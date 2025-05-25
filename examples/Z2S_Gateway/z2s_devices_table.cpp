@@ -1146,9 +1146,9 @@ void Z2S_onBatteryReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint1
   
   switch (id) {
     case ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID:
-      updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_PERCENTAGE_MSG, battery_remaining); break;
+      updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_PERCENTAGE_MSG, battery_remaining, 0); break;
     case ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID:
-      updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, battery_remaining); break;
+      updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, battery_remaining, 0); break;
   }
 }
 
@@ -2132,7 +2132,15 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
         ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG))
       battery_level = 0xFF;
   } 
-  
+
+  if (battery_level < 0xFF) {
+    z2s_zb_devices_table[zb_device_number_slot].last_battery_percentage =
+    z2s_zb_devices_table[zb_device_number_slot].battery_percentage;
+    
+    z2s_zb_devices_table[zb_device_number_slot].battery_percentage = battery_level;
+    saveZBDevicesTable();
+  }
+    
   /*if ((z2s_devices_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10) &&
       (id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID)) {
     log_i("Temporary fix for inaccurate voltage scaling"); //TODO add battery_voltage_max, battery_voltage_min for different models
@@ -2145,7 +2153,7 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
     if (element) {
       
       if (battery_level < 0xFF)
-        element->getChannel()->setBatteryLevel(battery_remaining);
+        element->getChannel()->setBatteryLevel(battery_level);
 
         switch (element->getChannel()->getChannelType()) {
           case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:{
@@ -2160,6 +2168,6 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
           } break;
         }    
     }
-    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, ieee_addr, -1, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, z2s_devices_table[channel_number_slot].ieee_addr, -1, -1, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   }
 }
