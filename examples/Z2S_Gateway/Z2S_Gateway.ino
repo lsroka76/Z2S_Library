@@ -279,7 +279,7 @@ uint16_t parseClusterIdStr(char *cluster_id) {
   if (strcmp(cluster_id, "POLL") == 0)
     return 0x20;
   else
-    return strtoul(cluster_id,nullptr, 0);
+    return strtoul(cluster_id, nullptr, 0);
 }
 
 uint8_t parseTimingsStr(char *cluster_id) {
@@ -400,6 +400,20 @@ uint16_t parseBasicClusterAttributeStr(char *attribute) {
     return ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID;
   else
     return 0xFFFF;
+}
+
+uint8_t parseZBDeviceFlagsStr(char *zbdevice_flag) {
+  
+  if (strcmp(zbdevice_flag, "ZBD_FLAG_DISABLE_BATTERY_MSG") == 0)
+    return ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG;
+  else
+  if (strcmp(zbdevice_flag, "ZBD_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG") == 0)
+    return ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG;
+  else
+  if (strcmp(zbdevice_flag, "ZBD_FLAG_DISABLE_BATTERY_VOLTAGE_MSG") == 0)
+    return ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG;
+  else
+    return strtoul(zbdevice_flag, nullptr, 0);
 }
 
 void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
@@ -689,7 +703,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     bool flag_set = (strcmp(*(param + 1), "SET") == 0);
     bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
-    uint8_t bit_id = strtoul(*(param + 2), nullptr, 0);
+    uint8_t bit_id = parseZBDeviceFlagsStr(*(param + 2));
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     int8_t zb_device_number_slot = (channel_number_slot >= 0) ? 
       Z2S_findZBDeviceTableSlot(z2s_zb_devices_table[channel_number_slot].ieee_addr) : -1;
