@@ -12,6 +12,6 @@ void addZ2SDeviceActionTrigger(zbg_device_params_t *device, uint8_t free_slot, i
 
 void msgZ2SDeviceActionTrigger(int16_t channel_number_slot, signed char rssi);
 
-void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi); 
+//void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi); 
 
 #endif
