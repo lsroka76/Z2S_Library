@@ -1909,6 +1909,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         
       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
         addZ2SDeviceVirtualRelay(&zbGateway, device,first_free_slot, sub_id, name, func); break;
+      
+      case Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F:
+      case Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F: 
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH); break;
       default : {
         
         log_i("Device (0x%x), endpoint (0x%x), model (0x%x) unknown", device->short_addr, device->endpoint, device->model_id);
