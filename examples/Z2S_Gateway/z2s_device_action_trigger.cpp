@@ -54,7 +54,7 @@ void msgZ2SDeviceActionTrigger(int16_t channel_number_slot, signed char rssi) {
   }
 }
 
-void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi) {
+/*void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi) {
 
   if (channel_number_slot < 0) {
     log_e("msgZ2SDeviceActionTriggerBatteryLevel - invalid channel number slot");
@@ -70,4 +70,4 @@ void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t 
     Supla_Z2S_ActionTrigger->getChannel()->setBatteryLevel(battery_level);
     //Supla_Z2S_ActionTrigger->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
   }
-}
+}*/
