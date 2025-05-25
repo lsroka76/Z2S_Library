@@ -2100,13 +2100,37 @@ bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_ac
 
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value, signed char rssi) {
 
+  uint8_t battery_level = 0xFF;
+
+  switch (msg_id) {
+    case ZBD_BATTERY_PERCENTAGE_MSG:
+      battery_level = msg_value/2; break;
+    case ZBD_BATTERY_VOLTAGE_MSG:
+      battery_level = 100 - ((33 - msg_value)*20); break;
+    case ZBD_BATTERY_LEVEL_MSG:
+      battery_level = msg_value; break;
+    case ZBD_BATTERY_STATE_MSG:
+      battery_level = msg_value; break;
+    case ZBD_LOW_BATTERY_MSG:
+      battery_level = msg_value; break;
+  }
+  
   Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
   
   uint8_t zb_device_number_slot = Z2S_findZBDeviceTableSlot(z2s_devices_table[channel_number_slot].ieee_addr);
 
   if (zb_device_number_slot < 0xFF) {
-    if (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG)
-      return;
+    if (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & 
+        ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG)
+      battery_level = 0xFF;
+    if ((msg_id == ZBD_BATTERY_VOLTAGE_MSG) &&
+        (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & 
+        ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG))
+      battery_level = 0xFF;
+    if ((msg_id == ZBD_BATTERY_PERCENTAGE_MSG) &&
+        (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & 
+        ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG))
+      battery_level = 0xFF;
   } 
   
   /*if ((z2s_devices_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10) &&
@@ -2120,7 +2144,21 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
     if (element) {
       
-      element->getChannel()->setBatteryLevel(battery_remaining);
+      if (battery_level < 0xFF)
+        element->getChannel()->setBatteryLevel(battery_remaining);
+
+        switch (element->getChannel()->getChannelType()) {
+          case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:{
+            auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+            Supla_Z2S_VirtualThermHygroMeter->Refresh();
+
+          } break;
+          case SUPLA_CHANNELTYPE_PRESSURESENSOR: break; //TODO add timeout 
+          case SUPLA_CHANNELTYPE_BINARYSENSOR:{
+            auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
+            Supla_Z2S_VirtualBinary->Refresh();
+          } break;
+        }    
     }
     channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, ieee_addr, -1, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   }
