@@ -78,7 +78,7 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi, sign
   }
 }
 
-void msgZ2SDeviceTempHumidityBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi) {
+/*void msgZ2SDeviceTempHumidityBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi) {
 
   if (channel_number_slot < 0) {
     log_e("msgZ2SDeviceTempHumidityBatteryLevel - invalid channel number slot");
@@ -94,4 +94,4 @@ void msgZ2SDeviceTempHumidityBatteryLevel(int16_t channel_number_slot, uint8_t b
     Supla_Z2S_VirtualThermHygroMeter->getChannel()->setBatteryLevel(battery_level);
     Supla_Z2S_VirtualThermHygroMeter->Refresh();
   }
-}
+}*/
