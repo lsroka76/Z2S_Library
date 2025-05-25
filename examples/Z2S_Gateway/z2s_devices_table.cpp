@@ -1136,7 +1136,19 @@ void Z2S_onBatteryReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint1
 
   log_i("onBatteryReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x, attribute id 0x%x, value %u", ieee_addr[7], ieee_addr[6], 
         ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, id, battery_remaining);
+  
+  uint8_t zb_device_number_slot = Z2S_findZBDeviceTableSlot(ieee_addr);
 
+  if (zb_device_number_slot < 0xFF) {
+    if (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG)
+      return;
+    if ((id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID) &&
+        (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG))
+      return;
+    if ((id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID) &&
+        (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG))
+      return;
+  }
   Z2S_updateZBDeviceLastSeenMs(ieee_addr, millis());
 
   switch (id) {
