@@ -47,7 +47,7 @@ const static uint8_t IR_SEND_CODE_POSTAMBLE[] = {0x2C,0x7D,0x2C,0x7D};
 const static uint8_t TEST_CODE_01[] = {0x74,0x65,0x73,0x74,0x63,0x6F,0x64,0x65,0x30,0x31};
 
 
-void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
+//void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
 
 Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_size, uint8_t *payload) {
   
@@ -90,26 +90,6 @@ Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_s
   }
   return Tuya_read_dp_result;
 }
-
-void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi) {
-
-  updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
-  
-  uint8_t zb_device_number_slot = Z2S_findZBDeviceTableSlot(ieee_addr);
-
-  if (zb_device_number_slot < 0xFF) {
-    if (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG)
-      return;
-  } 
-  
-  auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
-    
-  if (element != nullptr) {
-    element->getChannel()->setBatteryLevel(value);
-    //element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-  }
-}
-
 
 // HVAC data reporting                         //
 
