@@ -2138,7 +2138,7 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
     z2s_zb_devices_table[zb_device_number_slot].battery_percentage;
     
     z2s_zb_devices_table[zb_device_number_slot].battery_percentage = battery_level;
-    saveZBDevicesTable();
+    Z2S_saveZBDevicesTable();
   }
     
   /*if ((z2s_devices_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10) &&
