@@ -40,9 +40,10 @@
 #define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG    (1 << 8)
 
 #define ZBD_BATTERY_PERCENTAGE_MSG  0x01
-#define ZGB_BATTERY_VOLTAGE_MSG     0x02
-#define ZGB_BATTERY_LEVEL_MSG       0x03
-#define ZGB_BATTERY_STATE_MSG       0x04
+#define ZBD_BATTERY_VOLTAGE_MSG     0x02
+#define ZBD_BATTERY_LEVEL_MSG       0x03
+#define ZBD_BATTERY_STATE_MSG       0x04
+#define ZBD_LOW_BATTERY_MSG         0x05
 
 typedef struct z2s_legacy_device_params_s {
 
