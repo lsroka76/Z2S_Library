@@ -402,6 +402,20 @@ uint16_t parseBasicClusterAttributeStr(char *attribute) {
     return 0xFFFF;
 }
 
+uint8_t parseDeviceFlagsStr(char *device_flag) {
+  
+  if (strcmp(device_flag, "FLAG_DISABLE_NOTIFICATIONS") == 0)
+    return USER_DATA_FLAG_DISABLE_NOTIFICATIONS;
+  else
+  if (strcmp(device_flag, "FLAG_TRV_AUTO_TO_SCHEDULE") == 0)
+    return ZBD_USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE;
+  else
+  if (strcmp(device_flag, "FLAG_IAS_MSG_DISABLED") == 0)
+    return USER_DATA_FLAG_MSG_DISABLED;
+  else
+    return strtoul(device_flag, nullptr, 0);
+}
+
 uint8_t parseZBDeviceFlagsStr(char *zbdevice_flag) {
   
   if (strcmp(zbdevice_flag, "ZBD_FLAG_DISABLE_BATTERY_MSG") == 0)
