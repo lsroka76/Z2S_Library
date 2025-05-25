@@ -2129,7 +2129,7 @@ bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_ac
   return true;
 }
 
-void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t selector, uint32_t value, signed char rssi) {
+void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value, signed char rssi) {
 
   updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
   
