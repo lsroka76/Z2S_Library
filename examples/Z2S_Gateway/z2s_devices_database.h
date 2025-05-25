@@ -1815,10 +1815,10 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_c2yscrj8", .model_name = "TS0224",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "ZB-Remote-D0001", .model_name = "ADEO",
+  { .manufacturer_name = "ADEO", .model_name = "ZB-Remote-D0001",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "LDSENK09", .model_name = "ADEO",
+  { .manufacturer_name = "ADEO", .model_name = "LDSENK09",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F, .z2s_device_endpoints_count = 1}
 };
 
