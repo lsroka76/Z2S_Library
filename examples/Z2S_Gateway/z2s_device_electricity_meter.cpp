@@ -35,10 +35,10 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 }
 
 void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, bool active_query, uint8_t free_slot,
-                                  bool one_phase) {
+                                  int8_t sub_id, bool one_phase) {
   
   auto Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(gateway, device, 0, isTuya, active_query, one_phase);
-  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_ElectricityMeter->getChannelNumber(), SUPLA_CHANNELTYPE_ELECTRICITY_METER, -1);
+  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_ElectricityMeter->getChannelNumber(), SUPLA_CHANNELTYPE_ELECTRICITY_METER, sub_id);
 }
 
 void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector, uint64_t value, signed char rssi) {
