@@ -2098,7 +2098,7 @@ bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_ac
   return true;
 }
 
-void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value, signed char rssi) {
+void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value, signed char rssi, bool restore) {
 
   uint8_t battery_level = 0xFF;
 
@@ -2113,9 +2113,11 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
       battery_level = msg_value; break;
     case ZBD_LOW_BATTERY_MSG:
       battery_level = msg_value; break;
+    case ZBD_BATTERY_RESTORE_MSG:
+      battery_level = msg_value; break;
   }
-  
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  if (!restore)
+    Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
   
   uint8_t zb_device_number_slot = Z2S_findZBDeviceTableSlot(z2s_devices_table[channel_number_slot].ieee_addr);
 
@@ -2137,8 +2139,7 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
     else 
       z2s_zb_devices_table[zb_device_number_slot].battery_percentage = 0xFF;
   
-    Z2S_saveZBDevicesTable();
-    
+    Z2S_saveZBDevicesTable();    
   } 
     
   /*if ((z2s_devices_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10) &&
@@ -2150,11 +2151,17 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
   while (channel_number_slot >= 0)
   {
     auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+
+    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, z2s_devices_table[channel_number_slot].ieee_addr, -1, -1, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+ 
     if (element) {
       
       if (battery_level < 0xFF)
         element->getChannel()->setBatteryLevel(battery_level);
 
+        if (restore)
+          continue;
+      
         switch (element->getChannel()->getChannelType()) {
           case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:{
             auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
@@ -2168,6 +2175,5 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
           } break;
         }    
     }
-    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, z2s_devices_table[channel_number_slot].ieee_addr, -1, -1, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   }
 }
