@@ -118,7 +118,7 @@ typedef struct z2s_legacy_zb_device_params_s {
   int8_t              rssi;
   uint8_t             battery_percentage;
   int8_t              last_rssi;
-  uint8_t             last_battery_percentage;
+  uint8_t             battery_voltage_min_max;
   uint32_t            last_seen_ms;
   uint32_t            keep_alive_ms;
   uint32_t            timeout_ms;
@@ -143,7 +143,7 @@ typedef struct z2s_zb_device_params_s {
   int8_t              rssi;
   uint8_t             battery_percentage;
   int8_t              last_rssi;
-  uint8_t             last_battery_percentage;
+  uint8_t             battery_voltage_min_max;
   uint32_t            last_seen_ms;
   uint32_t            keep_alive_ms;
   uint32_t            timeout_ms;
