@@ -44,6 +44,7 @@
 #define ZBD_BATTERY_LEVEL_MSG       0x03
 #define ZBD_BATTERY_STATE_MSG       0x04
 #define ZBD_LOW_BATTERY_MSG         0x05
+#define ZBD_BATTERY_RESTORE_MSG     0x06
 
 typedef struct z2s_legacy_device_params_s {
 
