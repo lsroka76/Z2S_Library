@@ -691,16 +691,16 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     bool flag_set = (strcmp(*(param + 1), "SET") == 0);
     bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
-    uint8_t bit_id = strtoul(*(param + 2), nullptr, 0);
+    uint8_t bit_id = parseDeviceFlagsStr(*(param + 2));
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
         if (flag_set)
-          z2s_devices_table[channel_number_slot].user_data_flags |= (1 <<bit_id);
+          z2s_devices_table[channel_number_slot].user_data_flags |= (1 << bit_id);
         if (flag_clear)
-          z2s_devices_table[channel_number_slot].user_data_flags &= ~(1 <<bit_id);
+          z2s_devices_table[channel_number_slot].user_data_flags &= ~(1 << bit_id);
       if (Z2S_saveDevicesTable()) {
-        log_i("Device(channel %d) flags changed successfully.", channel_id);
+        telnet.printf(">Device(channel %d) flags changed successfully.\n\r>", channel_id);
       }
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
@@ -718,17 +718,19 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     bool flag_set = (strcmp(*(param + 1), "SET") == 0);
     bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
     uint8_t bit_id = parseZBDeviceFlagsStr(*(param + 2));
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
-    int8_t zb_device_number_slot = (channel_number_slot >= 0) ? 
-      Z2S_findZBDeviceTableSlot(z2s_zb_devices_table[channel_number_slot].ieee_addr) : -1;
     
-    if (zb_device_number_slot >= 0) {
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    uint8_t zb_device_number_slot = (channel_number_slot >= 0) ? 
+      Z2S_findZBDeviceTableSlot(z2s_zb_devices_table[channel_number_slot].ieee_addr) : 0xFF;
+    
+    if (zb_device_number_slot < 0xFF) {
         if (flag_set)
           z2s_zb_devices_table[zb_device_number_slot].user_data_flags |= (1 << bit_id);
         if (flag_clear)
           z2s_zb_devices_table[zb_device_number_slot].user_data_flags &= ~(1 << bit_id);
       if (Z2S_saveZBDevicesTable()) {
-        log_i("ZB Device(channel %d) global flags changed successfully.", channel_id);
+        telnet.printf("ZB Device(channel %d) global flags changed successfully.\n\r>", channel_id);
       }
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
