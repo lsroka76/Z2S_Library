@@ -1625,7 +1625,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
         if (sub_id == TUYA_3PHASES_ELECTRICITY_METER_SID)
-          addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, false); 
+          addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, sub_id, false); 
         else
           addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit);
       } break;
