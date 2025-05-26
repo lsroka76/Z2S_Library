@@ -699,7 +699,8 @@ void Z2S_initSuplaChannels() {
         }
         if (channel_created) {
           uint8_t zb_device_number_slot = Z2S_findZBDeviceTableSlot(z2s_devices_table[devices_counter].ieee_addr);
-          if (zb_device_number_slot < 0xFF)
+          if ((zb_device_number_slot < 0xFF) &&
+              (z2s_zb_devices_table[zb_device_number_slot].battery_percentage >= 0x80))
             updateSuplaBatteryLevel(devices_counter, ZBD_BATTERY_RESTORE_MSG, 
                                     z2s_zb_devices_table[zb_device_number_slot].battery_percentage, true);
         }
@@ -2124,7 +2125,7 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
     case ZBD_LOW_BATTERY_MSG:
       battery_level = msg_value; break;
     case ZBD_BATTERY_RESTORE_MSG:
-      battery_level = msg_value; break;
+      battery_level = (msg_value < 0xFF) ? (msg_value - 0x80) : 0xFF; break;
   }
   if (!restore)
     Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
