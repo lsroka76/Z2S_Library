@@ -659,6 +659,8 @@ void Z2S_initSuplaChannels() {
         
         Z2S_updateZBDeviceTableSlot(z2s_devices_table[devices_counter].ieee_addr, z2s_devices_table[devices_counter].Supla_channel);
 
+        bool channel_created = true;
+        
         switch (z2s_devices_table[devices_counter].Supla_channel_type) {
 
           case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
@@ -690,8 +692,16 @@ void Z2S_initSuplaChannels() {
           
           //case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: initZ2SDeviceRGBW(&zbGateway, device, z2s_devices_table[devices_counter].Supla_channel); break;
           
-          default: 
-            log_i("Can't create channel for %d channel type", z2s_devices_table[devices_counter].Supla_channel_type); break; 
+          default: {
+            log_i("Can't create channel for %d channel type", z2s_devices_table[devices_counter].Supla_channel_type); 
+            channel_created = false;
+          } break; 
+        }
+        if (channel_created) {
+          uint8_t zb_device_number_slot = Z2S_findZBDeviceTableSlot(z2s_devices_table[devices_counter].ieee_addr);
+          if (zb_device_number_slot < 0xFF)
+            updateSuplaBatteryLevel(devices_counter, ZBD_BATTERY_RESTORE_MSG, 
+                                    z2s_zb_devices_table[zb_device_number_slot].battery_percentage, true);
         }
       }
   }
