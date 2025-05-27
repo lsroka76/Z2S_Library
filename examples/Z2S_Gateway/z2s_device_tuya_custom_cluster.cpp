@@ -569,12 +569,12 @@ void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, u
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_POWER_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-                                          Tuya_read_dp_result.dp_value, rssi);
+                                          (int32_t)Tuya_read_dp_result.dp_value, rssi);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-                                          Tuya_read_dp_result.dp_value, rssi);
+                                          (int32_t)Tuya_read_dp_result.dp_value, rssi);
 
   
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_AC_FREQUENCY_DP, payload_size, payload);
@@ -587,7 +587,7 @@ void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, u
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_CURRENT_A_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceElectricityMeter(channel_number_slot_5, Z2S_EM_CURRENT_A_SEL, Tuya_read_dp_result.dp_value, rssi);
+    msgZ2SDeviceElectricityMeter(channel_number_slot_5, Z2S_EM_CURRENT_A_SEL, (int32_t)Tuya_read_dp_result.dp_value, rssi);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_POWER_A_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
@@ -611,7 +611,7 @@ void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, u
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_CURRENT_B_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceElectricityMeter(channel_number_slot_5, Z2S_EM_CURRENT_B_SEL, Tuya_read_dp_result.dp_value, rssi);
+    msgZ2SDeviceElectricityMeter(channel_number_slot_5, Z2S_EM_CURRENT_B_SEL, (int32_t)Tuya_read_dp_result.dp_value, rssi);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_POWER_B_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
@@ -635,7 +635,7 @@ void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, u
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_CURRENT_C_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceElectricityMeter(channel_number_slot_5, Z2S_EM_CURRENT_C_SEL, Tuya_read_dp_result.dp_value, rssi);
+    msgZ2SDeviceElectricityMeter(channel_number_slot_5, Z2S_EM_CURRENT_C_SEL, (int32_t)Tuya_read_dp_result.dp_value, rssi);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_3PHASES_ELECTRICITY_METER_POWER_C_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
