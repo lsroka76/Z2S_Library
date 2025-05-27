@@ -49,6 +49,8 @@ void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector,
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
         auto Supla_ElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);
         Supla_ElectricityMeter->pong();
+        log_i("msgZ2SDeviceElectricityMeter: selector 0x%x, value %lld", selector, value);
+        
         //Supla_OnePhaseElectricityMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         switch (selector) {
           case Z2S_EM_VOLTAGE_A_SEL: Supla_ElectricityMeter->setVoltage(0, value * 100); break;
