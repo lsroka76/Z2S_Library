@@ -41,7 +41,7 @@ void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *d
   Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_ElectricityMeter->getChannelNumber(), SUPLA_CHANNELTYPE_ELECTRICITY_METER, sub_id);
 }
 
-void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector, uint64_t value, signed char rssi) {
+void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector, int64_t value, signed char rssi) {
 
   Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
 
