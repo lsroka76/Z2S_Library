@@ -4,7 +4,7 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
   
   if (z2s_devices_table[channel_number_slot].Supla_channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER)
   {
-    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device);
+    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device, Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
   
     Supla_Z2S_RollerShutter->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
@@ -50,7 +50,7 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
   
   if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
 
-    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device);
+    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device, Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
 
     if (name) 
       Supla_Z2S_RollerShutter->setInitialCaption(name);

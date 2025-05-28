@@ -75,6 +75,21 @@
 #define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_C_DP          0x7F//[127, "energy_c", tuya.valueConverter.divideBy100],
 #define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_PRODUCED_C_DP 0x80//[128, "energy_produced_c", tuya.valueConverter.divideBy100],
 
+#define MOES_ALARM_BATTERY_PERCENTAGE_DP   0x0F //15 02 04
+#define MOES_ALARM_MELODY_DP               0x15 //21 ENUM
+#define MOES_ALARM_DURATION_DP             0x07 //07 02 04
+#define MOES_ALARM_ON_DP                   0x0D //13 BOOL
+#define MOES_ALARM_VOLUME_DP               0x05// ENUM 0,1,2
+
+#define MOES_SHADES_DRIVE_MOTOR_STATE_DP                            0x01 //ENUM OPEN(0) STOP (1) CLOSE(2)
+#define MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP  0x02
+#define MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP             0x03
+#define MOES_SHADES_DRIVE_MOTOR_STATE_MOTOR_DIRECTION_DP            0x05 //ENUM? NORMAL (0) REVERSED(1)
+#define MOES_SHADES_DRIVE_MOTOR_STATE_OPENING_MODE_DP               0x65 //101 ENUM? TILT(0) LIFT(1)
+#define MOES_SHADES_DRIVE_MOTOR_STATE_FACTORY_RESET_DP              0x66 //102
+#define MOES_SHADES_DRIVE_MOTOR_SET_UPPER_LIMIT_DP                  0x67 //103
+#define MOES_SHADES_DRIVE_MOTOR_SET_BOTTOM_LIMIT_DP                 0x68 //104
+#define MOES_SHADES_DRIVE_MOTOR_SET_MOTOR_SPEED_DP                  0x69 //105
 
 typedef struct Tuya_read_dp_result_s {
   bool     is_success;
