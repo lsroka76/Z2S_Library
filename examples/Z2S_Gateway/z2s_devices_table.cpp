@@ -699,10 +699,10 @@ void Z2S_initSuplaChannels() {
         }
         if (channel_created) {
           uint8_t zb_device_number_slot = Z2S_findZBDeviceTableSlot(z2s_devices_table[devices_counter].ieee_addr);
-          if ((zb_device_number_slot < 0xFF) &&
-              (z2s_zb_devices_table[zb_device_number_slot].battery_percentage >= 0x80))
-            updateSuplaBatteryLevel(devices_counter, ZBD_BATTERY_RESTORE_MSG, 
-                                    z2s_zb_devices_table[zb_device_number_slot].battery_percentage, true);
+         // if ((zb_device_number_slot < 0xFF) &&
+         //     (z2s_zb_devices_table[zb_device_number_slot].battery_percentage >= 0x80))
+          //  updateSuplaBatteryLevel(devices_counter, ZBD_BATTERY_RESTORE_MSG, 
+           //                         z2s_zb_devices_table[zb_device_number_slot].battery_percentage, true);
         }
       }
   }
