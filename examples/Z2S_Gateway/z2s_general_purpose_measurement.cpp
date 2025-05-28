@@ -50,7 +50,8 @@ void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t 
     log_e("msgZ2SDeviceGeneralPurposeMeasurement - invalid channel number slot");
     return;
   }
-
+  log_i("msgZ2SDeviceGeneralPurposeMeasurement(%u), value: %f", z2s_devices_table[channel_number_slot].Supla_channel, value);
+  
   Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
 
   /*switch (z2s_devices_table[channel_number_slot].model_id) {
