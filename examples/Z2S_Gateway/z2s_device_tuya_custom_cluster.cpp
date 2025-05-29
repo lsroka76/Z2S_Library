@@ -918,19 +918,19 @@ void processMoesShadesDriveMotorDataReport(int16_t channel_number_slot, uint16_t
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    log_i("processMoesShadesDriveMotorDataReport: state = %u", Tuya_read_dp_result.dp_value);
+    log_i("state = %u", Tuya_read_dp_result.dp_value);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("processMoesShadesDriveMotorDataReport: position(%) = %u", Tuya_read_dp_result.dp_value);
+    log_i("position(%) = %u", Tuya_read_dp_result.dp_value);
     msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("processMoesShadesDriveMotorDataReport: position = %u", Tuya_read_dp_result.dp_value);
+    log_i("position = %u", Tuya_read_dp_result.dp_value);
     //msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 }
