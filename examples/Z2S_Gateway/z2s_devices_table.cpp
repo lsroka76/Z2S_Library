@@ -468,7 +468,7 @@ void Z2S_printZBDevicesTableSlots(bool toTelnet) {
             "SHORT ADDRESS\t\t0x%X\n\rENDPOINTS COUNT\t\t0x%X\n\rPOWER SOURCE\t\t0x%X\n\r"
             "MODEL\t\t\t%lu\n\r"
             "LAST RSSI\t\t%d\n\rLAST SEEN (MS)\t\t%lu\n\rKEEP ALIVE (MS)\t\t%lu\n\r"
-            "TIMEOUT (MS)\t\t%lu\n\rUSER FLAGS\t\t%lu\n\rUSER DATA\t\t%lu\n\r"
+            "TIMEOUT (MS)\t\t%lu\n\rBATTERY (%)\t\t%u\n\rUSER FLAGS\t\t%lu\n\rUSER DATA\t\t%lu\n\r"
             "SUPLA CH[0]\t\t%u\n\rSUPLA CH[1]\t\t%u\n\rSUPLA CH[2]\t\t%u\n\rSUPLA CH[3]\t\t%u\n\r"
             "SUPLA CH[4]\t\t%u\n\rSUPLA CH[5]\t\t%u\n\rSUPLA CH[6]\t\t%u\n\rSUPLA CH[7]\t\t%u\n\r"
             "SUPLA CH[8]\t\t%u\n\rSUPLA CH[9]\t\t%u\n\rSUPLA CH[10]\t\t%u\n\rSUPLA CH[11]\t\t%u\n\r"
@@ -487,6 +487,7 @@ void Z2S_printZBDevicesTableSlots(bool toTelnet) {
         z2s_zb_devices_table[devices_counter].last_seen_ms,
         z2s_zb_devices_table[devices_counter].keep_alive_ms,
         z2s_zb_devices_table[devices_counter].timeout_ms,
+        z2s_zb_devices_table[devices_counter].battery_percentage,
         z2s_zb_devices_table[devices_counter].user_data_1,
         z2s_zb_devices_table[devices_counter].user_data_2,
         z2s_zb_devices_table[devices_counter].Supla_channels[0],
