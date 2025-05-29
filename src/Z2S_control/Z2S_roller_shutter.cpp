@@ -54,9 +54,17 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
         _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_UP_OPEN, NULL); break;
 
-      case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR:
-      break;
+      case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
+        uint8_t MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[] = { 00, 00, 01, 04, 00, 01, 00 };
+
+        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+        MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[0] = (_tsn_number & 0xFF00);
+        MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[1] = (_tsn_number & 0x00FF);
+
+        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, MOES_SHADES_DRIVE_MOTOR_OPEN_CMD, false);
+      } break;
     }
   }
 }
@@ -70,9 +78,17 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
         _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_DOWN_CLOSE, NULL); break;
 
-      case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR:
-      break;
+      case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
+        uint8_t MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[] = { 00, 00, 01, 04, 00, 01, 02 };
+
+        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+        MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[0] = (_tsn_number & 0xFF00);
+        MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[1] = (_tsn_number & 0x00FF);
+
+        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD, false);
+      } break;
     }
   }
 }
@@ -86,9 +102,17 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
         _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_STOP, NULL); break;
 
-      case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR:
-      break;
+      case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
+        uint8_t MOES_SHADES_DRIVE_MOTOR_STOP_CMD[] = { 00, 00, 01, 04, 00, 01, 01 };
+
+        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+        MOES_SHADES_DRIVE_MOTOR_STOP_CMD[0] = (_tsn_number & 0xFF00);
+        MOES_SHADES_DRIVE_MOTOR_STOP_CMD[1] = (_tsn_number & 0x00FF);
+
+        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, MOES_SHADES_DRIVE_MOTOR_STOP_CMD, false);
+      } break;
     }
   }
 }
@@ -102,8 +126,18 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(uint8_t lift_perc
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
         _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, &lift_percentage); break;
 
-      case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR:
-      break;
+      case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
+
+        uint8_t MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[] = { 00, 00, 02, 02, 00, 04, 00, 00, 00, 00 };
+
+        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+        MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[0] = (_tsn_number & 0xFF00);
+        MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[1] = (_tsn_number & 0x00FF);
+        MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[9] = lift_percentage;
+
+        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD, false);
+      } break;
 
     }
   }

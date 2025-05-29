@@ -4,7 +4,15 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
   
   if (z2s_devices_table[channel_number_slot].Supla_channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER)
   {
-    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device, Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
+    uint8_t z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
+
+    switch (z2s_devices_table[channel_number_slot].model_id) {
+
+      case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR: 
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR; break;
+    }
+    
+    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device, z2s_function);
   
     Supla_Z2S_RollerShutter->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
@@ -20,10 +28,14 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
     uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
 
     switch (z2s_devices_table[channel_number_slot].model_id) {
+
       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
+
         switch (z2s_devices_table[channel_number_slot].sub_id) {
+          
           case IAS_WD_SILENT_ALARM_SID:
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM; break;
+
           case IAS_WD_LOUD_ALARM_SID:
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM; break;
         }

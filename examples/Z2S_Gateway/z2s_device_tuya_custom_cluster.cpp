@@ -8,6 +8,7 @@
 #include "z2s_device_action_trigger.h"
 #include "z2s_device_hvac.h"
 #include "z2s_device_electricity_meter.h"
+#include "z2s_device_virtual_relay.h"
 
 #include <arduino_base64.hpp>
 
@@ -910,6 +911,30 @@ void processTuyaRainSensorDataReport(int16_t channel_number_slot, uint16_t paylo
   }
 }
 
+void processMoesShadesDriveMotorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    log_i("processMoesShadesDriveMotorDataReport: state = %u", Tuya_read_dp_result.dp_value);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+    log_i("processMoesShadesDriveMotorDataReport: position(%) = %u", Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+    log_i("processMoesShadesDriveMotorDataReport: position = %u", Tuya_read_dp_result.dp_value);
+    //msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
+  }
+}
+
 void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
@@ -963,6 +988,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
       processTuya3PhasesElectricityMeterDataReport(channel_number_slot, payload_size, payload, rssi); break;
+    
+    case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
+      processMoesShadesDriveMotorDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     default: 
       log_i("Unknown device model id 0x%x", z2s_devices_table[channel_number_slot].model_id); break;
