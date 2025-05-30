@@ -78,7 +78,7 @@
 #define MOES_ALARM_BATTERY_PERCENTAGE_DP   0x0F //15 02 04
 #define MOES_ALARM_MELODY_DP               0x15 //21 ENUM
 #define MOES_ALARM_DURATION_DP             0x07 //07 02 04
-#define MOES_ALARM_ON_DP                   0x0D //13 BOOL
+#define MOES_ALARM_SWITCH_DP               0x0D //13 BOOL
 #define MOES_ALARM_VOLUME_DP               0x05// ENUM 0,1,2
 
 #define MOES_SHADES_DRIVE_MOTOR_STATE_DP                            0x01 //ENUM OPEN(0) STOP (1) CLOSE(2)

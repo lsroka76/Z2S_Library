@@ -1906,7 +1906,13 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         
       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
         addZ2SDeviceVirtualRelay(&zbGateway, device,first_free_slot, sub_id, name, func); break;
-      
+
+      case Z2S_DEVICE_DESC_MOES_ALARM:
+        if (sub_id == MOES_ALARM_DISPLAY_SID)
+          addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func);
+        else      
+          addZ2SDeviceVirtualRelay(&zbGateway, device,first_free_slot, sub_id, name, func); break;
+        
       case Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F:
       case Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F: 
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH); break;

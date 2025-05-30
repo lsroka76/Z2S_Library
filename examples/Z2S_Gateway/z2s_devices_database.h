@@ -151,6 +151,7 @@
 
 #define Z2S_DEVICE_DESC_IR_REMOTE_CONTROL               0x6500
 #define Z2S_DEVICE_DESC_TUYA_SIREN_ALARM                0x6600
+#define Z2S_DEVICE_DESC_MOES_ALARM                      0x6610
 
 #define Z2S_DEVICE_DESC_ON_OFF                          0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                        0x8001
@@ -271,6 +272,12 @@
 #define ADEO_CUSTOM_CMD_BUTTON_PRESSED_SID        0x00
 #define ADEO_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID 0x01
 #define ADEO_CUSTOM_CMD_BUTTON_HELD_SID           0x02
+
+#define MOES_ALARM_SWITCH_SID     0x00
+#define MOES_ALARM_MELODY_SID     0x01
+#define MOES_ALARM_VOLUME_SID     0x02
+#define MOES_ALARM_DURATION_SID   0x03
+#define MOES_ALARM_DISPLAY_SID    0x04
 
 //#define DIMMER_FUNC_
 
@@ -1189,6 +1196,9 @@ const dataPoints = {
       ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+    
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }}
 };
         
@@ -1832,8 +1842,13 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_icka1clh", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_t1blo2bj", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM, .z2s_device_endpoints_count = 1}
+
 
 };
 
 #endif
+//

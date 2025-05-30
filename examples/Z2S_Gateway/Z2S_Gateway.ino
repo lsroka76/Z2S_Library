@@ -12,6 +12,7 @@
 #include "priv_auth_data.h"
 #include "z2s_devices_database.h"
 #include "z2s_devices_table.h"
+#include "z2s_device_general_purpose_measurement.h"
 
 #include <supla/network/esp_wifi.h>
 #include <supla/device/supla_ca_cert.h>
@@ -24,6 +25,7 @@
 #include <action_handler_with_callbacks.h>
 
 #include <supla/control/virtual_relay.h>
+#include <supla/sensor/general_purpose_measurement.h>
 
 #include <supla/network/esp_web_server.h>
 #include <supla/network/html/device_info.h>
@@ -94,6 +96,7 @@ uint8_t write_attribute_payload[20];
 
 
 bool sendIASNotifications = false;
+Supla::Sensor::GeneralPurposeMeasurement *Test_GeneralPurposeMeasurement = nullptr;
 
 const static char PARAM_CMD1[] = "zigbeestack";
 const static char PARAM_CMD2[] = "RMZ2Sdevices";
@@ -1030,6 +1033,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   }
 }
 
+zbg_device_params_t test_device = {.model_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
+.rejoined = true, .ZC_binding = true, .ieee_addr = {0,0,0,0,0,0,0,0}, .endpoint = 1, .cluster_id = 0, 
+  .short_addr = 0, .user_data = 0};
+
 void setup() {
   
   log_i("setup start");
@@ -1075,6 +1082,11 @@ void setup() {
   selectCmd->registerCmd("NWK SCAN (EXPERIMENTAL)", Supla::ON_EVENT_4);
   
   //selectCmd->registerCmd("TOGGLE", Supla::ON_EVENT_3);
+
+  Test_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
+  Test_GeneralPurposeMeasurement->getChannel()->setChannelNumber(102);
+  Test_GeneralPurposeMeasurement->setValue(0);
+  Test_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
 
   auto toggleNotifications = new Supla::Control::VirtualRelay();
   toggleNotifications->getChannel()->setChannelNumber(110);
@@ -1210,9 +1222,6 @@ zbg_device_params_t *joined_device;
 uint8_t counter = 0;
 uint8_t tuya_dp_data[10];
 
-zbg_device_params_t test_device = {.model_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
-.rejoined = true, .ZC_binding = true, .ieee_addr = {0,0,0,0,0,0,0,0}, .endpoint = 1, .cluster_id = 0, 
-  .short_addr = 0, .user_data = 0};
 
 void loop() {
   
@@ -1287,13 +1296,37 @@ void loop() {
     
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
-      if (refresh_cycle % 12 == 0) {//print every 120 seconds - only for debug purposes 
+      if (refresh_cycle % 3 == 0) {//print every 120 seconds - only for debug purposes 
         log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
         log_i("Gateway version: %s", Z2S_VERSION);
         int8_t zb_tx_power;
         esp_zb_get_tx_power(&zb_tx_power);
         log_i("Zigbee TX power: %d", zb_tx_power);
+        if (Test_GeneralPurposeMeasurement) {
+          char display_buffer[15] = {};
+          char test_gpm_buf[15];
+          sprintf(test_gpm_buf, "%llu", time(NULL));
+          //Test_GeneralPurposeMeasurement->setNoSpaceBeforeValue(0, true);
+          //Test_GeneralPurposeMeasurement->setNoSpaceAfterValue(0, true);
+          //Test_GeneralPurposeMeasurement->setValue(0.2800);
+          //Test_GeneralPurposeMeasurement->setUnitBeforeValue("0123456789ABCD", true);
+          //sprintf(test_gpm_buf, "%llu", millis());
+          //Test_GeneralPurposeMeasurement->setUnitAfterValue("EF0123456789AB", true);
+          /*display_buffer[0] = random(0,2) + '0';
+          msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 1, 1, display_buffer);
+          sprintf(display_buffer, "%02u", 1 + random(0,18));
+          msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 3, 2, display_buffer);
+          sprintf(display_buffer, "%u", random(0,3));
+          msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 6, 1, display_buffer);
+          sprintf(display_buffer, "%04u", random(0,1801));
+          msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 8, 4, display_buffer);*/
+          sprintf(display_buffer, "A%1uM%02uV%1uD%04u", random(0,2), 1 + random(0,18), random(0,3), random(0,1801));
+          //Test_GeneralPurposeMeasurement->setValue(random(0,10));
+          Test_GeneralPurposeMeasurement->setUnitBeforeValue(display_buffer, true);
+
+
+        }
       }
       if (refresh_cycle % 6 == 0) {
         log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
@@ -1584,6 +1617,16 @@ void loop() {
                             
                             Z2S_addZ2SDevice(joined_device, IAS_WD_SILENT_ALARM_SID, "SILENT ALARM", SUPLA_CHANNELFNC_POWERSWITCH);
                             Z2S_addZ2SDevice(joined_device, IAS_WD_LOUD_ALARM_SID, "LOUD ALARM", SUPLA_CHANNELFNC_POWERSWITCH);
+                          } break;
+
+                          case Z2S_DEVICE_DESC_MOES_ALARM: {
+                            
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_SWITCH_SID, "ALARM SWITCH", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_MELODY_SID, "ALARM MELODY", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_VOLUME_SID, "ALARM VOLUME", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_DURATION_SID, "ALARM DURATION", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_DISPLAY_SID, "ALARM DISPLAY", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+
                           } break;
 
                           case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {

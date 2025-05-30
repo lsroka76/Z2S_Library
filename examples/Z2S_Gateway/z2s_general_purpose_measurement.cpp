@@ -28,7 +28,12 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
         case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID:
           Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("[0..5]"); break;
         default: break;
-      }
+      } break;
+    
+    case Z2S_DEVICE_DESC_MOES_ALARM: {
+      Supla_GeneralPurposeMeasurement->setValue(0);
+      Supla_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
+    } break;
     default: break;
   }
 } 
@@ -47,10 +52,10 @@ void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t 
 
   if (channel_number_slot < 0) {
     
-    log_e("msgZ2SDeviceGeneralPurposeMeasurement - invalid channel number slot");
+    log_e("error: invalid channel number slot");
     return;
   }
-  log_i("msgZ2SDeviceGeneralPurposeMeasurement(%u), value: %f", z2s_devices_table[channel_number_slot].Supla_channel, value);
+  log_i("channel(%u), value: %f", z2s_devices_table[channel_number_slot].Supla_channel, value);
   
   Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
 
@@ -87,3 +92,34 @@ void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t 
   }  
 }
 
+void msgZ2SDeviceGeneralPurposeMeasurementDisplay(int16_t channel_number_slot, uint8_t str_position, uint8_t str_length, char* str_display) {
+
+  if (channel_number_slot < 0) {
+    
+    log_e("error: invalid channel number slot");
+    return;
+  }
+  
+  if ((str_position > 14) || ((str_position + str_length)> 15))  {
+    
+    log_e("error: invalid position (%u) and/or length (%u)", str_position, str_length);
+    return;
+  }
+
+  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+
+  //auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+
+  auto element = Supla::Element::getElementByChannelNumber(102);
+  
+  if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) {
+
+    auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
+      
+    char unitBefore[SUPLA_GENERAL_PURPOSE_UNIT_SIZE] = {};
+    Supla_GeneralPurposeMeasurement->getUnitBeforeValue(unitBefore);
+    memcpy (unitBefore + str_position, str_display, str_length);
+    Supla_GeneralPurposeMeasurement->setValue((uint8_t)(Supla_GeneralPurposeMeasurement->getValue() + 1) % 10);
+    Supla_GeneralPurposeMeasurement->setUnitBeforeValue(unitBefore, true);
+  }  
+} 
