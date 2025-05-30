@@ -31,8 +31,8 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
       } break;
     
     case Z2S_DEVICE_DESC_MOES_ALARM: {
-      Supla_GeneralPurposeMeasurement->setValue(0);
-      Supla_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
+     // Supla_GeneralPurposeMeasurement->setValue(0);
+     // Supla_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
     } break;
     default: break;
   }
