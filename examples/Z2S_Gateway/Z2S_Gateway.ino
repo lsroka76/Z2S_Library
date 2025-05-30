@@ -1083,10 +1083,10 @@ void setup() {
   
   //selectCmd->registerCmd("TOGGLE", Supla::ON_EVENT_3);
 
-  Test_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
-  Test_GeneralPurposeMeasurement->getChannel()->setChannelNumber(102);
-  Test_GeneralPurposeMeasurement->setValue(0);
-  Test_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
+ // Test_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
+//  Test_GeneralPurposeMeasurement->getChannel()->setChannelNumber(102);
+//  Test_GeneralPurposeMeasurement->setValue(0);
+//  Test_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
 
   auto toggleNotifications = new Supla::Control::VirtualRelay();
   toggleNotifications->getChannel()->setChannelNumber(110);
@@ -1296,14 +1296,14 @@ void loop() {
     
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
-      if (refresh_cycle % 3 == 0) {//print every 120 seconds - only for debug purposes 
+      if (refresh_cycle % 12 == 0) {//print every 120 seconds - only for debug purposes 
         log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
         log_i("Gateway version: %s", Z2S_VERSION);
         int8_t zb_tx_power;
         esp_zb_get_tx_power(&zb_tx_power);
         log_i("Zigbee TX power: %d", zb_tx_power);
-        if (Test_GeneralPurposeMeasurement) {
+      /*  if (Test_GeneralPurposeMeasurement) {
           char display_buffer[15] = {};
           char test_gpm_buf[15];
           sprintf(test_gpm_buf, "%llu", time(NULL));
@@ -1326,7 +1326,7 @@ void loop() {
           Test_GeneralPurposeMeasurement->setUnitBeforeValue(display_buffer, true);
 
 
-        }
+        }*/
       }
       if (refresh_cycle % 6 == 0) {
         log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
