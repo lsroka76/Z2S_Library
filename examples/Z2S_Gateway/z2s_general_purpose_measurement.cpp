@@ -13,7 +13,7 @@ uint32_t uipow10(uint8_t power) {
 
 uint32_t setU32Digits(int32_t value, uint8_t first_digit, uint8_t last_digit, uint32_t insert) {
     
-    uint32t result = (value/uipow10(last_digit));
+    uint32_t result = (value/uipow10(last_digit));
     result = result * uipow10(last_digit );
     result += value % uipow10(first_digit-1);
     //printf("%lu, %lu\n\r", value, result);
