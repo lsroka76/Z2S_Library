@@ -997,7 +997,8 @@ void processMoesAlarmDataReport(int16_t channel_number_slot, uint16_t payload_si
     
     msgZ2SDeviceVirtualRelay(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
     display_buffer[0] = Tuya_read_dp_result.dp_value + '0';
-    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 1, 1, display_buffer);
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_5, setU32Digits(Tuya_read_dp_result.dp_value,9,10
+    //msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 1, 1, display_buffer);
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_MELODY_DP, payload_size, payload);
