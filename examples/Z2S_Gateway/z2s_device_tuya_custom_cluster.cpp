@@ -918,22 +918,94 @@ void processMoesShadesDriveMotorDataReport(int16_t channel_number_slot, uint16_t
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    log_i("state = %u", Tuya_read_dp_result.dp_value);
+    log_i("processMoesShadesDriveMotorDataReport: state = %u", Tuya_read_dp_result.dp_value);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("position(%) = %u", Tuya_read_dp_result.dp_value);
+    log_i("processMoesShadesDriveMotorDataReport: position(%) = %u", Tuya_read_dp_result.dp_value);
     msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("position = %u", Tuya_read_dp_result.dp_value);
+    log_i("processMoesShadesDriveMotorDataReport: position = %u", Tuya_read_dp_result.dp_value);
     //msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 }
+
+void processMoesAlarmDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
+
+  int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4, channel_number_slot_5;
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+  char display_buffer[4] = {};
+
+  channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                    z2s_devices_table[channel_number_slot].endpoint, 
+                                                    z2s_devices_table[channel_number_slot].cluster_id, 
+                                                    SUPLA_CHANNELTYPE_RELAY, MOES_ALARM_SWITCH_SID);
+
+  channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                    z2s_devices_table[channel_number_slot].endpoint, 
+                                                    z2s_devices_table[channel_number_slot].cluster_id, 
+                                                    SUPLA_CHANNELTYPE_RELAY, MOES_ALARM_MELODY_SID);
+
+  channel_number_slot_3 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                  z2s_devices_table[channel_number_slot].endpoint, 
+                                                  z2s_devices_table[channel_number_slot].cluster_id, 
+                                                  SUPLA_CHANNELTYPE_RELAY, MOES_ALARM_VOLUME_SID);
+  
+  channel_number_slot_4 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                  z2s_devices_table[channel_number_slot].endpoint, 
+                                                  z2s_devices_table[channel_number_slot].cluster_id, 
+                                                  SUPLA_CHANNELTYPE_RELAY, MOES_ALARM_DURATION_SID);
+
+  channel_number_slot_5 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                  z2s_devices_table[channel_number_slot].endpoint, 
+                                                  z2s_devices_table[channel_number_slot].cluster_id, 
+                                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, MOES_ALARM_DISPLAY_SID);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_SWITCH_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+    msgZ2SDeviceVirtualRelay(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
+    display_buffer[0] = Tuya_read_dp_result.dp_value + '0';
+    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 1, 1, display_buffer);
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_MELODY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceVirtualRelayValue(channel_number_slot_2, VRV_U8_ID, Tuya_read_dp_result.dp_value); 
+    sprintf(display_buffer, "%02u", Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 3, 2, display_buffer);
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_VOLUME_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceVirtualRelayValue(channel_number_slot_3, VRV_U8_ID, Tuya_read_dp_result.dp_value); 
+    sprintf(display_buffer, "%u", Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 6, 1, display_buffer);
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_DURATION_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceVirtualRelayValue(channel_number_slot_4, VRV_U32_ID, Tuya_read_dp_result.dp_value);
+    sprintf(display_buffer, "%04u", Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 8, 4, display_buffer); 
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_BATTERY_PERCENTAGE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+  }  
+}
+
 
 void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
@@ -991,6 +1063,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
       processMoesShadesDriveMotorDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
+
+    case Z2S_DEVICE_DESC_MOES_ALARM:
+      processMoesAlarmDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     default: 
       log_i("Unknown device model id 0x%x", z2s_devices_table[channel_number_slot].model_id); break;
