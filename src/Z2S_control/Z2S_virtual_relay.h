@@ -31,6 +31,11 @@
 #define Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM 0x20
 #define Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM   0x21
 
+#define Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH   0x30
+#define Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY   0x31
+#define Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME   0x32
+#define Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION 0x33
+
 namespace Supla {
 namespace Control {
 class Z2S_VirtualRelay : public Relay {
@@ -43,6 +48,12 @@ class Z2S_VirtualRelay : public Relay {
   void iterateAlways() override;
 
   void Z2S_setOnOff(bool on_off_state);
+
+  void Z2S_setFunctionValueS8(int32_t z2s_function_value_S8);
+  void Z2S_setFunctionValueU8(int32_t z2s_function_value_U8);
+  void Z2S_setFunctionValueS32(int32_t z2s_function_value_S32);
+  void Z2S_setFunctionValueU32(int32_t z2s_function_value_U32);
+
   bool isOn() override;
 
   void ping();
@@ -60,6 +71,11 @@ class Z2S_VirtualRelay : public Relay {
 
   uint8_t _z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
   uint8_t _z2s_function_data[10];
+  
+  int8_t  _z2s_function_value_S8 = INT8_MAX; //0x7F
+  int32_t _z2s_function_value_S32 = INT32_MAX;
+  uint8_t  _z2s_function_value_U8 = UINT8_MAX; //0xFF
+  uint32_t _z2s_function_value_U32 = UINT32_MAX;
 
   bool _fresh_start = true;
 
