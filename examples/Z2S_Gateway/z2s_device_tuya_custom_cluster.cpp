@@ -48,32 +48,6 @@ const static uint8_t IR_SEND_CODE_POSTAMBLE[] = {0x2C,0x7D,0x2C,0x7D};
 /*testcode01*/
 const static uint8_t TEST_CODE_01[] = {0x74,0x65,0x73,0x74,0x63,0x6F,0x64,0x65,0x30,0x31};
 
-uint32_t uipow10(uint8_t power) {
-    
-    switch (power){
-      case 0: return 1;
-      case 1: return 10;
-    }
-    uint32_t result = pow(10, power);
-    return result;
-}
-
-uint32_t setU32Digits(int32_t value, uint8_t first_digit, uint8_t last_digit, uint32_t insert) {
-    
-    uint32t result = (value/uipow10(last_digit));
-    result = result * uipow10(last_digit );
-    result += value % uipow10(first_digit-1);
-    //printf("%lu, %lu\n\r", value, result);
-    uint8_t digits = last_digit-first_digit + 1;
-    for (uint8_t i =1; i <= digits; i++) {
-        result += ((insert/uipow10(i-1)) % 10)*uipow10(i-1+first_digit-1);
-       // printf ("%lu, %lu\n\r"//,insert, tresult);
-    }
-   // result += insert *pow(10, _//last_digit-first_digit-1);
-    //printf ("%lu, %u", result,(uint32_t) pow(10,2));
-    
-    return result;
-}
 //void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
 
 Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_size, uint8_t *payload) {
@@ -965,7 +939,7 @@ void processMoesAlarmDataReport(int16_t channel_number_slot, uint16_t payload_si
 
   int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4, channel_number_slot_5;
   Tuya_read_dp_result_t Tuya_read_dp_result;
-  char display_buffer[4] = {};
+  char display_buffer[5] = {};
 
   channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
                                                     z2s_devices_table[channel_number_slot].endpoint, 
@@ -996,34 +970,36 @@ void processMoesAlarmDataReport(int16_t channel_number_slot, uint16_t payload_si
   if (Tuya_read_dp_result.is_success) {
     
     msgZ2SDeviceVirtualRelay(channel_number_slot_1, Tuya_read_dp_result.dp_value, rssi);
-    display_buffer[0] = Tuya_read_dp_result.dp_value + '0';
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_5, setU32Digits(Tuya_read_dp_result.dp_value,9,10
-    //msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 1, 1, display_buffer);
+    //display_buffer[0] = Tuya_read_dp_result.dp_value + '0';
+    //msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_5, setU32Digits(Tuya_read_dp_result.dp_value,9,10
+    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 9, 10, Tuya_read_dp_result.dp_value);
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_MELODY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
 
     msgZ2SDeviceVirtualRelayValue(channel_number_slot_2, VRV_U8_ID, Tuya_read_dp_result.dp_value); 
-    sprintf(display_buffer, "%02u", Tuya_read_dp_result.dp_value);
-    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 3, 2, display_buffer);
+    //sprintf(display_buffer, "%02u", Tuya_read_dp_result.dp_value);
+    //msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 3, 2, display_buffer);
+    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 7, 8, Tuya_read_dp_result.dp_value);
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_VOLUME_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
 
     msgZ2SDeviceVirtualRelayValue(channel_number_slot_3, VRV_U8_ID, Tuya_read_dp_result.dp_value); 
-    sprintf(display_buffer, "%u", Tuya_read_dp_result.dp_value);
-    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 6, 1, display_buffer);
-    
+    //sprintf(display_buffer, "%u", Tuya_read_dp_result.dp_value);
+    //msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 6, 1, display_buffer);
+    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 5, 6, Tuya_read_dp_result.dp_value);
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_DURATION_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
 
     msgZ2SDeviceVirtualRelayValue(channel_number_slot_4, VRV_U32_ID, Tuya_read_dp_result.dp_value);
-    sprintf(display_buffer, "%04u", Tuya_read_dp_result.dp_value);
-    msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 8, 4, display_buffer); 
+    //sprintf(display_buffer, "%04u", Tuya_read_dp_result.dp_value);
+   //msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 8, 4, display_buffer); 
+   msgZ2SDeviceGeneralPurposeMeasurementDisplay(channel_number_slot_5, 1, 4, Tuya_read_dp_result.dp_value);
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_ALARM_BATTERY_PERCENTAGE_DP, payload_size, payload);

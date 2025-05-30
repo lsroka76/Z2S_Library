@@ -1312,7 +1312,7 @@ void loop() {
           //Test_GeneralPurposeMeasurement->setValue(0.2800);
           //Test_GeneralPurposeMeasurement->setUnitBeforeValue("0123456789ABCD", true);
           //sprintf(test_gpm_buf, "%llu", millis());
-          //Test_GeneralPurposeMeasurement->setUnitAfterValue("EF0123456789AB", true);
+          //Test_GeneralPurposeMeasurement->setUnitAfterValue("EF0123456789AB", true);*/
           /*display_buffer[0] = random(0,2) + '0';
           msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 1, 1, display_buffer);
           sprintf(display_buffer, "%02u", 1 + random(0,18));
@@ -1321,12 +1321,11 @@ void loop() {
           msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 6, 1, display_buffer);
           sprintf(display_buffer, "%04u", random(0,1801));
           msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 8, 4, display_buffer);*/
-          sprintf(display_buffer, "A%1uM%02uV%1uD%04u", random(0,2), 1 + random(0,18), random(0,3), random(0,1801));
+          //sprintf(display_buffer, "A%1uM%02uV%1uD%04u", random(0,2), 1 + random(0,18), random(0,3), random(0,1801));
           //Test_GeneralPurposeMeasurement->setValue(random(0,10));
-          Test_GeneralPurposeMeasurement->setUnitBeforeValue(display_buffer, true);
+          //Test_GeneralPurposeMeasurement->setUnitBeforeValue(display_buffer, true);
 
-
-        }*/
+        //}
       }
       if (refresh_cycle % 6 == 0) {
         log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());

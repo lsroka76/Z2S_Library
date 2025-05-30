@@ -1,4 +1,31 @@
 #include "z2s_device_general_purpose_measurement.h"
+#include <math.h>
+
+uint32_t uipow10(uint8_t power) {
+    
+    switch (power){
+      case 0: return 1;
+      case 1: return 10;
+    }
+    uint32_t result = pow(10, power);
+    return result;
+}
+
+uint32_t setU32Digits(int32_t value, uint8_t first_digit, uint8_t last_digit, uint32_t insert) {
+    
+    uint32t result = (value/uipow10(last_digit));
+    result = result * uipow10(last_digit );
+    result += value % uipow10(first_digit-1);
+    //printf("%lu, %lu\n\r", value, result);
+    uint8_t digits = last_digit-first_digit + 1;
+    for (uint8_t i =1; i <= digits; i++) {
+        result += ((insert/uipow10(i-1)) % 10)*uipow10(i-1+first_digit-1);
+       // printf ("%lu, %lu\n\r"//,insert, tresult);
+    }
+   // result += insert *pow(10, _//last_digit-first_digit-1);
+    //printf ("%lu, %u", result,(uint32_t) pow(10,2));    
+    return result;
+}
 
 void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
@@ -92,7 +119,7 @@ void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t 
   }  
 }
 
-void msgZ2SDeviceGeneralPurposeMeasurementDisplay(int16_t channel_number_slot, uint8_t str_position, uint8_t str_length, char* str_display) {
+void msgZ2SDeviceGeneralPurposeMeasurementDisplay(int16_t channel_number_slot, uint8_t first_digit, uint8_t last_digit, uint32_t insert) {
 
   if (channel_number_slot < 0) {
     
@@ -100,26 +127,28 @@ void msgZ2SDeviceGeneralPurposeMeasurementDisplay(int16_t channel_number_slot, u
     return;
   }
   
-  if ((str_position > 14) || ((str_position + str_length)> 15))  {
+  if ((first_digit > 10) || ((last_digit)> 10))  {
     
-    log_e("error: invalid position (%u) and/or length (%u)", str_position, str_length);
+    log_e("error: invalid first digit position (%u) and/or last digit position (%u)", first_digit, last_digit);
     return;
   }
 
   Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
 
-  //auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+  auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 
-  auto element = Supla::Element::getElementByChannelNumber(102);
+  //auto element = Supla::Element::getElementByChannelNumber(102);
   
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) {
 
     auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
       
-    char unitBefore[SUPLA_GENERAL_PURPOSE_UNIT_SIZE] = {};
+    /*char unitBefore[SUPLA_GENERAL_PURPOSE_UNIT_SIZE] = {};
     Supla_GeneralPurposeMeasurement->getUnitBeforeValue(unitBefore);
     memcpy (unitBefore + str_position, str_display, str_length);
     Supla_GeneralPurposeMeasurement->setValue((uint8_t)(Supla_GeneralPurposeMeasurement->getValue() + 1) % 10);
-    Supla_GeneralPurposeMeasurement->setUnitBeforeValue(unitBefore, true);
+    Supla_GeneralPurposeMeasurement->setUnitBeforeValue(unitBefore, true);*/
+    uint32_t gpm_value = (uint32_t)Supla_GeneralPurposeMeasurement->getValue();
+    Supla_GeneralPurposeMeasurement->setValue(setU32Digits(gpm_value, first_digit, last_digit, insert));
   }  
 } 
