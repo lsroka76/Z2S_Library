@@ -11,6 +11,7 @@
 #include "z2s_device_virtual_relay.h"
 
 #include <arduino_base64.hpp>
+#include <math.h>
 
 extern ZigbeeGateway zbGateway;
 
@@ -47,7 +48,32 @@ const static uint8_t IR_SEND_CODE_POSTAMBLE[] = {0x2C,0x7D,0x2C,0x7D};
 /*testcode01*/
 const static uint8_t TEST_CODE_01[] = {0x74,0x65,0x73,0x74,0x63,0x6F,0x64,0x65,0x30,0x31};
 
+uint32_t uipow10(uint8_t power) {
+    
+    switch (power){
+      case 0: return 1;
+      case 1: return 10;
+    }
+    uint32_t result = pow(10, power);
+    return result;
+}
 
+uint32_t setU32Digits(int32_t value, uint8_t first_digit, uint8_t last_digit, uint32_t insert) {
+    
+    uint32t result = (value/uipow10(last_digit));
+    result = result * uipow10(last_digit );
+    result += value % uipow10(first_digit-1);
+    //printf("%lu, %lu\n\r", value, result);
+    uint8_t digits = last_digit-first_digit + 1;
+    for (uint8_t i =1; i <= digits; i++) {
+        result += ((insert/uipow10(i-1)) % 10)*uipow10(i-1+first_digit-1);
+       // printf ("%lu, %lu\n\r"//,insert, tresult);
+    }
+   // result += insert *pow(10, _//last_digit-first_digit-1);
+    //printf ("%lu, %u", result,(uint32_t) pow(10,2));
+    
+    return result;
+}
 //void updateSuplaBatteryLevel(int16_t channel_number_slot, uint32_t value, signed char rssi);
 
 Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_size, uint8_t *payload) {
