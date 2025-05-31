@@ -198,6 +198,8 @@ const static char   Z2S_CHANNELS_ACTIONS_TABLE_SIZE []  PROGMEM = "Z2S_actions_t
 
 extern bool sendIASNotifications;
 
+//extern Supla::Sensor::GeneralPurposeMeasurement *Test_GeneralPurposeMeasurement;
+
 const static char   Z2S_ZIGBEE_PRIMARY_CHANNEL      []  PROGMEM = "Z2S_primary_ch";
 
 namespace Supla {

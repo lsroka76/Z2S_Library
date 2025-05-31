@@ -39,7 +39,25 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
           case IAS_WD_LOUD_ALARM_SID:
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM; break;
         }
-      } break;        
+      } break;
+
+      case Z2S_DEVICE_DESC_MOES_ALARM: {
+
+        switch (z2s_devices_table[channel_number_slot].sub_id) {
+          
+          case MOES_ALARM_SWITCH_SID:
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH; break;
+
+          case MOES_ALARM_MELODY_SID:
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY; break;
+
+          case MOES_ALARM_VOLUME_SID:
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME; break;
+
+          case MOES_ALARM_DURATION_SID:
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION; break;
+        }
+      } break;       
     }
 
     auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway, device, z2s_function);
@@ -106,6 +124,40 @@ void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, bool state, signed ch
     //Supla_Z2S_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
   }
 }
+
+void msgZ2SDeviceVirtualRelayValue(int16_t channel_number_slot, uint8_t value_id, uint32_t value) {
+
+  if (channel_number_slot < 0) {
+    
+    log_e("error: invalid channel number slot");
+    return;
+  }
+
+  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+
+  auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+
+  if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
+    
+    auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
+
+    switch (value_id) {
+
+      case VRV_U8_ID:
+        Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8((uint8_t)value); break;
+      case VRV_S8_ID:
+        Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS8((int8_t)value); break;
+      case VRV_U32_ID:
+        Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU32((uint32_t)value); break;
+      case VRV_S32_ID:
+        Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS32((int32_t)value); break;
+      default:
+        log_e("error: invalid VRV_ID"); break;
+    }         
+  }
+}
+
+
 
 void msgZ2SDeviceRollerShutter(int16_t channel_number_slot, uint8_t msg_id, uint16_t msg_value, signed char rssi) {
 
