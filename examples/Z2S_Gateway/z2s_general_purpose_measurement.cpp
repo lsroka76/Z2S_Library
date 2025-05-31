@@ -1,25 +1,25 @@
 #include "z2s_device_general_purpose_measurement.h"
 #include <math.h>
 
-uint32_t uipow10(uint8_t power) {
+uint64_t uipow10(uint8_t power) {
     
     switch (power){
       case 0: return 1;
       case 1: return 10;
     }
-    uint32_t result = pow(10, power);
+    uint64_t result = pow(10, power);
     return result;
 }
 
-uint32_t setU32Digits(int32_t value, uint8_t first_digit, uint8_t last_digit, uint32_t insert) {
+uint64_t setU64Digits(int64_t value, uint8_t first_digit, uint8_t last_digit, uint64_t digits_to_insert) {
     
-    uint32_t result = (value/uipow10(last_digit));
+    uint64_t result = (value/uipow10(last_digit));
     result = result * uipow10(last_digit );
     result += value % uipow10(first_digit-1);
     //printf("%lu, %lu\n\r", value, result);
     uint8_t digits = last_digit-first_digit + 1;
     for (uint8_t i =1; i <= digits; i++) {
-        result += ((insert/uipow10(i-1)) % 10)*uipow10(i-1+first_digit-1);
+        result += ((digits_to_insert/uipow10(i-1)) % 10)*uipow10(i-1+first_digit-1);
        // printf ("%lu, %lu\n\r"//,insert, tresult);
     }
    // result += insert *pow(10, _//last_digit-first_digit-1);
@@ -119,7 +119,7 @@ void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t 
   }  
 }
 
-void msgZ2SDeviceGeneralPurposeMeasurementDisplay(int16_t channel_number_slot, uint8_t first_digit, uint8_t last_digit, uint32_t insert) {
+void msgZ2SDeviceGeneralPurposeMeasurementDisplay(int16_t channel_number_slot, uint8_t first_digit, uint8_t last_digit, uint64_t digits_to_insert) {
 
   if (channel_number_slot < 0) {
     
@@ -148,7 +148,7 @@ void msgZ2SDeviceGeneralPurposeMeasurementDisplay(int16_t channel_number_slot, u
     memcpy (unitBefore + str_position, str_display, str_length);
     Supla_GeneralPurposeMeasurement->setValue((uint8_t)(Supla_GeneralPurposeMeasurement->getValue() + 1) % 10);
     Supla_GeneralPurposeMeasurement->setUnitBeforeValue(unitBefore, true);*/
-    uint32_t gpm_value = (uint32_t)Supla_GeneralPurposeMeasurement->getValue();
-    Supla_GeneralPurposeMeasurement->setValue(setU32Digits(gpm_value, first_digit, last_digit, insert));
+    uint64_t gpm_value = (uint64_t)Supla_GeneralPurposeMeasurement->getValue();
+    Supla_GeneralPurposeMeasurement->setValue(setU64Digits(gpm_value, first_digit, last_digit, digits_to_insert));
   }  
 } 
