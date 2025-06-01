@@ -13,8 +13,12 @@ uint64_t uipow10(uint8_t power) {
 
 uint64_t setU64Digits(int64_t value, uint8_t first_digit, uint8_t last_digit, uint64_t digits_to_insert) {
     
+<<<<<<< Updated upstream
 
     uint64_t result = (value/uipow10(last_digit));
+=======
+    uint32_t result = (value/uipow10(last_digit));
+>>>>>>> Stashed changes
     result = result * uipow10(last_digit );
     result += value % uipow10(first_digit-1);
     //printf("%lu, %lu\n\r", value, result);
