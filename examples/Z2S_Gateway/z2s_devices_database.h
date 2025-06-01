@@ -41,6 +41,8 @@
 
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B    0x2020
 
+#define Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR           0x2030
+
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1           0x2201
 
@@ -278,6 +280,10 @@
 #define MOES_ALARM_VOLUME_SID     0x02
 #define MOES_ALARM_DURATION_SID   0x03
 #define MOES_ALARM_DISPLAY_SID    0x04
+
+#define TUYA_VIBRATION_SENSOR_VIBRATION_SID 0x00
+#define TUYA_VIBRATION_SENSOR_CONTACT_SID   0x01
+
 
 //#define DIMMER_FUNC_
 
@@ -1199,7 +1205,11 @@ const dataPoints = {
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
     
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }}
+
 };
         
 static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
@@ -1860,8 +1870,10 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE204_t1blo2bj", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE200_wzk0x7fq", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1}
 
 };
 

@@ -91,6 +91,11 @@
 #define MOES_SHADES_DRIVE_MOTOR_SET_BOTTOM_LIMIT_DP                 0x68 //104
 #define MOES_SHADES_DRIVE_MOTOR_SET_MOTOR_SPEED_DP                  0x69 //105
 
+#define TUYA_VIBRATION_SENSOR_VIBRATION_DP  0x01
+#define TUYA_VIBRATION_SENSOR_CONTACT_DP    0x65
+#define TUYA_VIBRATION_SENSOR_BATTERY_DP    0x04
+
+
 typedef struct Tuya_read_dp_result_s {
   bool     is_success;
   uint8_t  dp_id;

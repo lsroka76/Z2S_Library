@@ -1881,6 +1881,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
+      case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR: 
+        addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+
       case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
 
         switch (sub_id) {

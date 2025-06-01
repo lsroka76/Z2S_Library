@@ -1009,6 +1009,39 @@ void processMoesAlarmDataReport(int16_t channel_number_slot, uint16_t payload_si
   }  
 }
 
+void processTuyaVibrationSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
+
+  int16_t channel_number_slot_1, channel_number_slot_2;
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                    z2s_devices_table[channel_number_slot].endpoint, 
+                                                    z2s_devices_table[channel_number_slot].cluster_id, 
+                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_VIBRATION_SENSOR_VIBRATION_SID);
+
+  channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                    z2s_devices_table[channel_number_slot].endpoint, 
+                                                    z2s_devices_table[channel_number_slot].cluster_id, 
+                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_VIBRATION_SENSOR_CONTACT_SID);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_VIBRATION_SENSOR_VIBRATION_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1), rssi);
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_VIBRATION_SENSOR_CONTACT_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceIASzone(channel_number_slot_2, (Tuya_read_dp_result.dp_value == 1), rssi);
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_VIBRATION_SENSOR_BATTERY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+  }  
+}
 
 void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
@@ -1069,6 +1102,10 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
     case Z2S_DEVICE_DESC_MOES_ALARM:
       processMoesAlarmDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
+
+    case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
+      processTuyaVibrationSensorDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
+      
 
     default: 
       log_i("Unknown device model id 0x%x", z2s_devices_table[channel_number_slot].model_id); break;

@@ -1594,6 +1594,12 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IAS_ZONE_LOW_BATTERY_SID,  "LOW BATTERY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                           } break;
 
+                          case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, TUYA_VIBRATION_SENSOR_VIBRATION_SID, "VIBRATION", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, TUYA_VIBRATION_SENSOR_CONTACT_SID,  "CONTACT", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                          } break;
+
                           case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR: {
                             
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
