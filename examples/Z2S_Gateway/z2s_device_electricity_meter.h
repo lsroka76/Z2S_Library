@@ -28,6 +28,13 @@
 #define Z2S_EM_ACT_RVR_ENERGY_C_SEL 0x0025
 
 #define Z2S_EM_AC_FREQUENCY         0x0030
+
+#define Z2S_EM_AC_VOLTAGE_MUL_SEL      0x0040
+#define Z2S_EM_AC_VOLTAGE_DIV_SEL      0x0041
+#define Z2S_EM_AC_CURRENT_MUL_SEL      0x0042
+#define Z2S_EM_AC_CURRENT_DIV_SEL      0x0043
+#define Z2S_EM_AC_ACTIVE_POWER_MUL_SEL 0x0044
+#define Z2S_EM_AC_ACTIVE_POWER_DIV_SEL 0x0045
 //#define Z2S_EM_
 
 void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);

@@ -924,6 +924,8 @@ void processMoesShadesDriveMotorDataReport(int16_t channel_number_slot, uint16_t
   if (Tuya_read_dp_result.is_success) {
     
     log_i("processMoesShadesDriveMotorDataReport: position(%) = %u", Tuya_read_dp_result.dp_value);
+  
+    msgZ2SDeviceRollerShutter(channel_number_slot, RS_MOVING_DIRECTION_MSG, 0, rssi);
     msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 
@@ -931,7 +933,9 @@ void processMoesShadesDriveMotorDataReport(int16_t channel_number_slot, uint16_t
   if (Tuya_read_dp_result.is_success) {
     
     log_i("processMoesShadesDriveMotorDataReport: position = %u", Tuya_read_dp_result.dp_value);
-    //msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
+    
+    msgZ2SDeviceRollerShutter(channel_number_slot, RS_MOVING_DIRECTION_MSG, 0, rssi);
+    msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 }
 

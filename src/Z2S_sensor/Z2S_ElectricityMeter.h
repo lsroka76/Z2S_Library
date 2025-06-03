@@ -24,13 +24,96 @@ class Z2S_ElectricityMeter : public ElectricityMeter {
 
   }
 
+void setVoltageMultiplier(uint16_t voltage_multiplier) {
+  
+  if (voltage_multiplier > 0)
+    _voltage_multiplier = voltage_multiplier;
+}
+
+uint16_t getVoltageMultiplier() {
+
+  return _voltage_multiplier;
+}
+
+void setVoltageDivisor(uint16_t voltage_divisor) {
+  
+  if (voltage_divisor > 0)
+    _voltage_divisor = voltage_divisor;
+}
+
+uint16_t getVoltageDivisor() {
+	
+  return _voltage_divisor;
+}
+
+void setCurrentMultiplier(uint16_t current_multiplier) {
+
+  if (current_multiplier > 0)
+    _current_multiplier = current_multiplier;
+}
+
+uint16_t getCurrentMultiplier() {
+
+  return _current_multiplier;
+}
+
+void setCurrentDivisor(uint16_t current_divisor) {
+  
+  if (current_divisor > 0)
+    _current_divisor = current_divisor;
+}
+
+uint16_t getCurrentDivisor() {
+  
+  return _voltage_divisor;
+}
+
 void setActivePowerMultiplier(uint16_t active_power_multiplier) {
-	_active_power_multiplier = active_power_multiplier;
+  
+  if (active_power_multiplier > 0)
+    _active_power_multiplier = active_power_multiplier;
 }
 
 uint16_t getActivePowerMultiplier() {
-	return _active_power_multiplier;
+  
+  return _active_power_multiplier;
 } 
+
+void setActivePowerDivisor(uint16_t active_power_divisor) {
+  
+  if (active_power_divisor > 0)  
+    _active_power_divisor = active_power_divisor;
+}
+
+uint16_t getActivePowerDivisor() {
+  
+  return _active_power_divisor;
+} 
+
+ 
+void setVoltage2(int phase, uint32_t voltage) {
+
+  if ((_voltage_multiplier == 0) || (_voltage_divisor == 0)) 
+    setVoltage(phase, voltage * 100);
+  else 
+    setVoltage(phase, (voltage * _voltage_multiplier * 100) / _voltage_divisor);
+}
+
+void setCurrent2(int phase, uint32_t current) {
+
+  if ((_current_multiplier == 0) || (_current_divisor == 0))
+    setCurrent(phase, current * 1);
+  else	
+   setCurrent(phase, (current * _current_multiplier * 1000) / _current_divisor);
+}
+
+void setPowerActive2(int phase, int64_t power) {
+
+  if ((_active_power_multiplier == 0) || (_active_power_divisor == 0))
+    setPowerActive(phase, power * 100000);
+  else
+    setPowerActive(phase, (power * _active_power_multiplier * 100000) / _active_power_divisor);
+}
 
 void setFwdActEnergy2(int phase, unsigned _supla_int64_t energy) {
 
@@ -206,7 +289,13 @@ void iterateAlways() override {
     bool                 _active_query = false;
     esp_zb_uint48_t      _write_mask;
     bool                 _isTuya = false;
-    uint8_t              _active_power_multiplier = 1;
+
+    uint16_t _voltage_multiplier = 0;
+    uint16_t _voltage_divisor 	= 0;
+    uint16_t _current_multiplier = 0;
+    uint16_t _current_divisor = 0;
+    uint16_t _active_power_multiplier = 0;
+    uint16_t _active_power_divisor = 0;
 
     bool _keep_alive_enabled = true;
     bool _timeout_enabled    = true;

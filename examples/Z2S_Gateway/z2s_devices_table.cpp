@@ -1033,7 +1033,7 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
         ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
 }
 
-void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t voltage, signed char rssi) {
+/*void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t voltage, signed char rssi) {
 
   log_i("onRMSVoltageReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
         ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
@@ -1069,10 +1069,83 @@ void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
   if (channel_number_slot < 0)
     log_i("No channel found for address %s", ieee_addr);
   else {
-    msgZ2SDeviceElectricityMeter(z2s_devices_table[channel_number_slot].Supla_channel, Z2S_EM_ACTIVE_POWER_A_SEL, active_power, rssi);
+    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, active_power, rssi);
+  }
+}*/
+
+void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
+
+  char ieee_addr_str[24] = {};
+
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+                                                              NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {
+    
+    log_e("no electricity meter channel found for address %s", ieee_addr_str);
+    return;
+  }
+
+  if (attribute->data.value == nullptr) {
+      
+    log_e("missing data value for address %s", ieee_addr_str);
+    return;
+  }
+
+  switch (attribute->id) {
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_CURRENT_A_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, *(int16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_VOLTAGE_MUL_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_VOLTAGE_DIV_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_CURRENT_MUL_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_CURRENT_DIV_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_ACTIVE_POWER_MUL_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_ACTIVE_POWER_DIV_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
   }
 }
-
+      
 void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint64_t active_fwd_energy, signed char rssi) {
 
   log_i("onCurrentSummationReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], 

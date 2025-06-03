@@ -684,7 +684,7 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
                     cluster_id, attribute->id, attribute->data.type, *(uint8_t *)attribute->data.value);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT) {
-      if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+      /*if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
         uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value :  0;
         log_i("zbAttributeReporting electrical measurement RMS voltage %d",value);
         if (_on_rms_voltage_receive)
@@ -695,13 +695,17 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         log_i("zbAttributeReporting electrical measurement RMS current %d",value);
         if (_on_rms_current_receive)
           _on_rms_current_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
-      } else
+      } else 
       if (attribute->id == ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID) { //&& attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
         uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
         log_i("zbAttributeReporting electrical measurement RMS active power %d, data type 0x%x",value, attribute->data.type);
         if (_on_rms_active_power_receive)
           _on_rms_active_power_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value, rssi);
-      } else log_i("zbAttributeReporting electrical measurement cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      } else */
+      
+      log_i("zbAttributeReporting electrical measurement cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      if (_on_electrical_measurement_receive)
+        _on_electrical_measurement_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_METERING) {
       if (attribute->id == ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U48) {
@@ -824,8 +828,8 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         if (_on_Sonoff_custom_cluster_receive)
           _on_Sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value, rssi);
         } else */
-	log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
-	if (_on_Sonoff_custom_cluster_receive)
+	      log_i("zbAttributeReporting SONOFF_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+	      if (_on_Sonoff_custom_cluster_receive)
           _on_Sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);      
       } else
       if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING) {
