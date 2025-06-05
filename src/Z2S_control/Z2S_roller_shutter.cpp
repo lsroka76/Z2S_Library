@@ -56,7 +56,7 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[] = { 00, 00, 01, 04, 00, 01, 00 };
+        uint8_t MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[] = { 00, 00, 01, 04, 00, 01, 02 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -80,7 +80,7 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[] = { 00, 00, 01, 04, 00, 01, 02 };
+        uint8_t MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[] = { 00, 00, 01, 04, 00, 01, 00 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
