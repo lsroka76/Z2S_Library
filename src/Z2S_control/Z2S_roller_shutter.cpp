@@ -134,7 +134,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(uint8_t lift_perc
 
         MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[0] = (_tsn_number & 0xFF00);
         MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[1] = (_tsn_number & 0x00FF);
-        MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[9] = lift_percentage;
+        MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[9] = 100 - lift_percentage;
 
         _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD, false);
       } break;
