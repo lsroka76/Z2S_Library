@@ -1213,7 +1213,7 @@ void setup() {
 
   SuplaDevice.begin();      
   
-  //httpUpdater.setup(suplaServer.getServerPtr(), "/update", "admin", "pass");
+  httpUpdater.setup(suplaServer.getServerPtr(), "/update", "admin", "pass");
 
   startTime = millis();
   printTime = millis();
