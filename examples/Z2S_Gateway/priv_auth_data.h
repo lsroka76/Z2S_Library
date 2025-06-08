@@ -6,3 +6,4 @@
 #define SUPLA_EMAIL     "e-mail@"
 
 #define USE_WEB_CONFIG_ON_STARTUP
+#define USE_SUPLA_WEB_SERVER
