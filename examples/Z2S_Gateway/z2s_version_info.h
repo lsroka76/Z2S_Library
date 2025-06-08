@@ -3,6 +3,8 @@
 
 #define Z2S_VERSION "0.8.23-07/06/2025"
 
+#ifdef USE_SUPLA_WEB_SERVER 
+
 namespace Supla {
 namespace Html {
 
@@ -33,5 +35,5 @@ class CustomDevInfo : public Supla::HtmlElement {
 
 }; // namespace Html
 }; // namespace Supla
-
+#endif //USE_SUPLA_WEB_SERVER
 #endif
