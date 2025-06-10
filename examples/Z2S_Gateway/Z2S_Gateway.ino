@@ -103,6 +103,7 @@ uint8_t _status_led_last_mode = 0;
 uint8_t _status_led_cycle = 0;
 
 bool zbInit = true;
+bool GUIstarted = false;
 uint8_t write_mask;
 uint16_t write_mask_16;
 uint32_t write_mask_32;
@@ -1246,7 +1247,12 @@ void setup() {
 
   SuplaDevice.begin();      
   
-  //httpUpdater.setup(suplaServer.getServerPtr(), "/update", "admin", "pass");
+#ifdef USE_SUPLA_WEB_SERVER
+
+  httpUpdater.setup(suplaServer.getServerPtr(), "/update", "admin", "pass");
+
+#endif //USE_SUPLA_WEB_SERVER
+
 
   startTime = millis();
   printTime = millis();
@@ -1262,7 +1268,22 @@ uint8_t tuya_dp_data[10];
 
 
 void loop() {
+
+#ifndef USE_SUPLA_WEB_SERVER
+
+  if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE) {
+    GUIstarted = true;
+    Z2S_buildWebGUI();  
+    Z2S_startWebGUI();
+  } 
+  if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+    GUIstarted = true;
+    Z2S_buildWebGUI();  
+    Z2S_startWebGUI();
+  }
   
+#endif 
+
   SuplaDevice.iterate();
 
   if (is_Telnet_server) telnet.loop();

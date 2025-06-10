@@ -133,6 +133,8 @@
 #define Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F    0x5400
 #define Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F            0x5410
 
+#define Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH       0x5500
+
 #define Z2S_DEVICE_DESC_HVAC_START                      0x6000
 
 #define Z2S_DEVICE_DESC_TUYA_HVAC                       0x6000
@@ -1253,6 +1255,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "eWeLink", .model_name = "SNZB-02P", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "SONOFF", .model_name = "SNZB-02WD", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_bjawzodf", .model_name = "TY0201", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1311,6 +1316,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_x8q36xwf", .model_name = "TS0203",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_zutizvyk", .model_name = "TS0203",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_bh3n6gk8", .model_name = "TS0601", 
