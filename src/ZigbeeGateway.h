@@ -290,6 +290,8 @@ private:
   //static bool _read_attr_async;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
 
+  //static bool enable_attribute_reporting 
+
   static   zbg_device_unit_t zbg_device_units[ZBG_MAX_DEVICES];
 
   void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int, signed char rssi);

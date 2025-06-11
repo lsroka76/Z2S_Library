@@ -1402,6 +1402,33 @@ void loop() {
 
   if (zbGateway.isNewDeviceJoined()) {
 
+    //  switch off Zigbee Gateway notifications
+
+    zbGateway.onTemperatureReceive(nullptr);
+    zbGateway.onHumidityReceive(nullptr);
+    zbGateway.onPressureReceive(nullptr);
+    zbGateway.onIlluminanceReceive(nullptr);
+    zbGateway.onFlowReceive(nullptr);
+    zbGateway.onOccupancyReceive(nullptr);
+    zbGateway.onOnOffReceive(nullptr);
+    zbGateway.onElectricalMeasurementReceive(nullptr);
+    zbGateway.onCurrentSummationReceive(nullptr);
+    zbGateway.onCurrentLevelReceive(nullptr);
+    zbGateway.onColorHueReceive(nullptr);
+    zbGateway.onColorSaturationReceive(nullptr);
+    zbGateway.onThermostatTemperaturesReceive(nullptr);
+    zbGateway.onThermostatModesReceive(nullptr);
+    zbGateway.onWindowCoveringReceive(nullptr);
+    zbGateway.onSonoffCustomClusterReceive(nullptr);
+    zbGateway.onBatteryReceive(nullptr);
+    zbGateway.onCustomCmdReceive(nullptr);
+    zbGateway.onCmdCustomClusterReceive(nullptr);
+    zbGateway.onIASzoneStatusChangeNotification(nullptr);
+    zbGateway.onBoundDevice(nullptr);
+    zbGateway.onBTCBoundDevice(nullptr);
+    zbGateway.onDataSaveRequest(nullptr);
+    
+    
     zbGateway.clearNewDeviceJoined();
     zbGateway.printJoinedDevices();
 
