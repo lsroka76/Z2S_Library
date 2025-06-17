@@ -8,7 +8,10 @@
 
 #include "z2s_version_info.h"
 
+//#include <supla/storage/config.h>
+
 #include <supla/storage/littlefs_config.h>
+#include <supla/storage/storage.h>
 
 ESPAsyncHTTPUpdateServer updateServer;
 
