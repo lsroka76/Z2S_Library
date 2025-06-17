@@ -16,6 +16,7 @@
 #include <SuplaDevice.h>
 
 #include <supla/storage/config.h>
+#include <supla/storage/storage.h>
 
 #include <supla/control/virtual_relay.h>
 #include <supla/sensor/virtual_thermometer.h>
