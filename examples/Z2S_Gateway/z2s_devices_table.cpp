@@ -811,6 +811,7 @@ void Z2S_onFlowReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t
   }
   
   log_e("No channel found for address %s", ieee_addr_str);
+}
 
 void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy, signed char rssi) {
 
@@ -836,7 +837,6 @@ void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uin
   }
 
   log_e("No channel found for address %s", ieee_addr_str);
-
 }
 
 void Z2S_onThermostatTemperaturesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
@@ -997,7 +997,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
       }
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, *(uint8_t*)attribute->data.value, rssi); 
     } break;
-    
+
     case SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID:
     case SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID:  {
 
