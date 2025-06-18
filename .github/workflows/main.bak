@@ -36,7 +36,7 @@ jobs:
           cp ./partitions/custom_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.2.0/tools/partitions/custom_zigbee_zczr.csv
       - name: Compile Gateway_4MB_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc,DebugLevel=debug -e --library=.
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc,DebugLevel=debug -e --library=. --libraries=SuplaDevice
       - name: Rename binaries 4MB_logs
         working-directory: .
         run: |
@@ -44,7 +44,7 @@ jobs:
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.logs.bin
       - name: Compile Gateway_4MB_no_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=.
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=. --libraries=SuplaDevice 
       - name: Rename binaries 4MB_no_logs
         working-directory: .
         run: |
@@ -52,7 +52,7 @@ jobs:
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.no_logs.bin
       - name: Compile Gateway_8MB_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc,DebugLevel=debug -e --library=.
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc,DebugLevel=debug -e --library=. --libraries=SuplaDevice
       - name: Rename binaries 8MB_logs
         working-directory: .
         run: |
@@ -60,7 +60,7 @@ jobs:
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.logs.bin
       - name: Compile Gateway_8MB_no_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc -e --library=.
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc -e --library=. --libraries=SuplaDevice
       - name: Rename binaries 8MB_no_logs
         working-directory: .
         run: |
