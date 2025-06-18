@@ -5,9 +5,12 @@
 #include <ESPmDNS.h>
 #include "ESPAsyncHTTPUpdateServer.h"
 
+
 void Z2S_buildWebGUI();
 
 void Z2S_startWebGUI();
+
+void Z2S_updateWebGUI();
 
 void Z2S_startUpdateServer();
 

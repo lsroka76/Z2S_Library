@@ -1332,6 +1332,7 @@ void loop() {
                                                                            ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)->data_p);
 
     log_i("Local Time Cluster UTC time attribute %lu, local time attribute %lu", utc_time_attribute, local_time_attribute);
+    Z2S_updateWebGUI();
     
     _time_cluster_last_refresh_ms = millis();
   }
@@ -1368,6 +1369,7 @@ void loop() {
         int8_t zb_tx_power;
         esp_zb_get_tx_power(&zb_tx_power);
         log_i("Zigbee TX power: %d", zb_tx_power);
+        //Z2S_updateWebGUI();
       /*  if (Test_GeneralPurposeMeasurement) {
           char display_buffer[15] = {};
           char test_gpm_buf[15];

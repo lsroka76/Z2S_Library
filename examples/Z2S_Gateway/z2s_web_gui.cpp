@@ -1,5 +1,3 @@
-#ifndef USE_SUPLA_WEB_SERVER
-
 #include <ZigbeeGateway.h>
 
 #include "z2s_web_gui.h"
@@ -8,16 +6,18 @@
 
 #include "z2s_version_info.h"
 
-//#include <supla/storage/config.h>
-
+#include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
-#include <supla/storage/storage.h>
+#include <supla/device/register_device.h>
 
 ESPAsyncHTTPUpdateServer updateServer;
 
 extern ZigbeeGateway zbGateway;
 
 //UI handles
+uint16_t gateway_general_info;
+uint16_t gateway_memory_info;
+
 uint16_t wifi_ssid_text, wifi_pass_text, Supla_server, Supla_email;
 uint16_t save_button, save_label;
 uint16_t zb_device_info_label, zb_device_address_label;
@@ -25,42 +25,88 @@ uint16_t deviceselector, channelselector;
 uint16_t swbuildlabel;
 volatile bool data_ready = false;
 
+char save_flag		= 'S';
+char restart_flag = 'R';
+
 char zigbee_devices_labels[Z2S_ZBDEVICESMAXCOUNT][11] = {};
 char zigbee_channels_labels[Z2S_CHANNELMAXCOUNT][13] = {};
 
-void enterWifiDetailsCallback(Control *sender, int type);
+void enterWifiDetailsCallback(Control *sender, int type, void *param);
 void textCallback(Control *sender, int type);
 void generalCallback(Control *sender, int type);
 void deviceselectorCallback(Control *sender, int type);
 void channelselectorCallback(Control *sender, int type);
 void getswbuildCallback(Control *sender, int type);
 
+void fillMemoryUptimeInformation(char *buf);
+
+void fillMemoryUptimeInformation(char *buf) {
+
+	if (buf) {
+		time_t local_time_info;
+		time(&local_time_info);
+
+		sprintf(buf, "Flash chip real size: %u kB<br>Free Sketch Space: %u kB<br>"
+						"Free Heap: %u kB<br>Minimal Free Heap: %u kB<br>HeapSize: %u kB<br>"
+						"MaxAllocHeap: %u kB<br><br>Czas lokalny: %sSupla uptime: %lu s", 
+						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
+						ESP.getMaxAllocHeap(), ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
+
+		log_i("Memory & uptime information %s", buf);
+	}
+}
+
+
 void Z2S_buildWebGUI() {
 
-	auto memorylabel = ESPUI.addControl(Label, "Memory", "FreeHeap = " + String(ESP.getFreeHeap())+", MaxAlloc = "+String(ESP.getFreeHeap()));
-	auto versionlabel = ESPUI.addControl(Label, "Version: ", Z2S_VERSION);
+	char buf[1024] = {};
+	char guid_buf[128] = {};
 
-  auto wifitab = ESPUI.addControl(Tab, "", "WiFi Credentials");
+	auto gatewaytab = ESPUI.addControl(Tab, "", "Gateway");
+	
+	generateHexString(Supla::RegisterDevice::getGUID(), guid_buf, SUPLA_GUID_SIZE);
+
+	sprintf(buf, "Supla firmware: %s<br>Supla GUID:%s<br>Z2S Gateway version: %s<br>", 
+					Supla::RegisterDevice::getSoftVer(), guid_buf, Z2S_VERSION);
+	log_i("Device information %s", buf);
+
+	ESPUI.addControl(Separator, "General information", "", None, gatewaytab);
+	gateway_general_info = ESPUI.addControl(Label, "Device information", buf, Emerald, gatewaytab);
+
+	fillMemoryUptimeInformation(buf);
+	
+	ESPUI.addControl(Separator, "Status", "", None, gatewaytab);
+	gateway_memory_info = ESPUI.addControl(Label, "Memory & Uptime", buf, Emerald, gatewaytab);
+	//ESPUI.setElementStyle(gateway_memory_info, "text-align: left; font-size: 6 px; font-style: normal; font-weight: normal;");
+
+  auto wifitab = ESPUI.addControl(Tab, "", "WiFi & Supla credentials");
 	wifi_ssid_text = ESPUI.addControl(Text, "SSID", "", Emerald, wifitab, textCallback);
 	//Note that adding a "Max" control to a text control sets the max length
 	ESPUI.addControl(Max, "", "32", None, wifi_ssid_text);
 	wifi_pass_text = ESPUI.addControl(Text, "Password", "", Emerald, wifitab, textCallback);
 	ESPUI.addControl(Max, "", "64", None, wifi_pass_text);
+	ESPUI.setInputType(wifi_pass_text, "password");
 	Supla_server = ESPUI.addControl(Text, "Supla server", "", Emerald, wifitab, textCallback);
 	ESPUI.addControl(Max, "", "64", None, Supla_server);
 	Supla_email = ESPUI.addControl(Text, "Supla email", "", Emerald, wifitab, textCallback);
 	ESPUI.addControl(Max, "", "64", None, Supla_email);
-	save_button = ESPUI.addControl(Button, "Save", "Save", Emerald, wifitab, enterWifiDetailsCallback);
+	save_button = ESPUI.addControl(Button, "Save", "Save", Emerald, wifitab, enterWifiDetailsCallback,(void*) &save_flag);
+	auto save_n_restart_button = ESPUI.addControl(Button, "Save & Restart", "Save & Restart", Emerald, save_button, enterWifiDetailsCallback, &restart_flag);
 	save_label = ESPUI.addControl(Label, "Status", "Missing data...", Wetasphalt, save_button);
 
 	auto cfg = Supla::Storage::ConfigInstance();
   
 	if (cfg) {
 
-		char buf[100] = {};
   	memset(buf, 0, sizeof(buf));
   	if (cfg->getWiFiSSID(buf) && strlen(buf) > 0)
 			ESPUI.updateText(wifi_ssid_text, buf);
+		memset(buf, 0, sizeof(buf));
+		if (cfg->getSuplaServer(buf) && strlen(buf) > 0)
+			ESPUI.updateText(Supla_server, buf);
+		memset(buf, 0, sizeof(buf));
+		if (cfg->getEmail(buf) && strlen(buf) > 0)
+			ESPUI.updateText(Supla_email, buf);
 	}			
 
 	//----------------------devices-------------------------------------------//
@@ -104,7 +150,16 @@ void Z2S_startUpdateServer() {
   updateServer.setup(ESPUI.WebServer(), "admin", "pass");
 }
 
-void enterWifiDetailsCallback(Control *sender, int type) {
+void Z2S_updateWebGUI() {
+
+	char buf[1024] = {};
+
+	fillMemoryUptimeInformation(buf);
+
+	ESPUI.updateLabel(gateway_memory_info, buf);
+}
+
+void enterWifiDetailsCallback(Control *sender, int type, void *param) {
 	if ((type == B_UP) && data_ready) {
 		Serial.println("Saving credentials to Supla Config...");
 		Serial.println(ESPUI.getControl(wifi_ssid_text)->value);
@@ -121,17 +176,17 @@ void enterWifiDetailsCallback(Control *sender, int type) {
 		  cfg->setEmail(ESPUI.getControl(Supla_email)->value.c_str());
 
 			cfg->commit();
-			//SuplaDevice.softRestart();
+			if (*(char *)param == 'R') SuplaDevice.softRestart();
 		}
 	}
 }
 
 void textCallback(Control *sender, int type) {
 	Serial.println(type);
-	Serial.println(ESPUI.getControl(wifi_ssid_text)->value);
-		Serial.println(ESPUI.getControl(wifi_pass_text)->value);
-		Serial.println(ESPUI.getControl(Supla_server)->value);
-		Serial.println(ESPUI.getControl(Supla_email)->value);
+	//Serial.println(ESPUI.getControl(wifi_ssid_text)->value);
+//		Serial.println(ESPUI.getControl(wifi_pass_text)->value);
+	//	Serial.println(ESPUI.getControl(Supla_server)->value);
+//		Serial.println(ESPUI.getControl(Supla_email)->value);
 		
 		if ((ESPUI.getControl(wifi_ssid_text)->value.length() > 0) &&
 				(ESPUI.getControl(wifi_pass_text)->value.length() > 0) &&
@@ -230,4 +285,3 @@ void getswbuildCallback(Control *sender, int type){
 				ESPUI.updateLabel(swbuildlabel, zbGateway.getQueryBasicClusterData()->software_build_ID);
 	}
 }
-#endif USE_SUPLA_WEB_SERVER
