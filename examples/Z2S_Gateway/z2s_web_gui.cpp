@@ -8,6 +8,8 @@
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
+#include <supla/storage/storage.h>
+
 #include <supla/device/register_device.h>
 
 ESPAsyncHTTPUpdateServer updateServer;
