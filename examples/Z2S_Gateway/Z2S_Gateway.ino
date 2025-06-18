@@ -1244,7 +1244,7 @@ void setup() {
   //wifi.enableSSL(true);
 
   SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
-
+  SuplaDevice.allowWorkInOfflineMode(2);
   SuplaDevice.begin();      
   
 #ifdef USE_SUPLA_WEB_SERVER
