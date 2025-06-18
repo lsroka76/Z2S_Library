@@ -54,6 +54,8 @@
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR         0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR   0x2501
 
+#define Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR               0x2600
+
 #define Z2S_DEVICE_DESC_RGBW_START                      0x3000
 
 #define Z2S_DEVICE_DESC_LIGHT_SOURCE                    0x3000 
@@ -262,6 +264,9 @@
 #define SONOFF_SMART_VALVE_PAUSE_SID        0x06
 #define SONOFF_SMART_VALVE_VOLUME_SID       0x07
 
+#define SONOFF_PIR_SENSOR_OCCUPANCY_SID    0x00
+#define SONOFF_PIR_SENSOR_ILLUMINANCE_SID  0x01
+
 #define DIMMER_FUNC_BRIGHTNESS_SID          0x00
 #define DIMMER_FUNC_COLOR_TEMPERATURE_SID   0x01
 
@@ -402,6 +407,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_3, .z2s_device_clusters_count = 1, .z2s_device_clusters =
@@ -1249,6 +1257,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_xr3htd96", .model_name = "TS0201", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "eWeLink", .model_name = "SNZB-02", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "SONOFF", .model_name = "SNZB-02D", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_endpoints_count = 1},
 
@@ -1464,6 +1475,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "ADEO", .model_name = "ZB-SMART-PIRTH-V3", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "eWeLink", .model_name = "SNZB-03P", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_prits6g4", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
@@ -1523,6 +1537,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_ww6drja5", .model_name = "TS011F", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_gjnozsaz", .model_name = "TS011F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "LUMI", .model_name = "lumi.plug.mmeu01", 

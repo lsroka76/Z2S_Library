@@ -719,47 +719,63 @@ void Z2S_initSuplaChannels() {
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature, signed char rssi) {
 
-  log_i("onTemperatureReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
-        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  char ieee_addr_str[24] = {};
+
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  log_i("%s, endpoint 0x%x, temperature %f", ieee_addr_str, endpoint, temperature);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
+    log_e("No channel found for address %s", ieee_addr_str);
   else
     msgZ2SDeviceTempHumidityTemp(channel_number_slot, temperature, rssi);
 }
 
 void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float humidity, signed char rssi) {
 
-  log_i("onHumidityReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
-        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  
+  char ieee_addr_str[24] = {};
+
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  log_i("%s, endpoint 0x%x, humidity %f", ieee_addr_str, endpoint, humidity);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
+    log_e("No channel found for address %s", ieee_addr_str);
   else
     msgZ2SDeviceTempHumidityHumi(channel_number_slot, humidity, rssi);
 }
 
 void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float pressure, signed char rssi) {
 
-  log_i("onPressureReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
-        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  
+  char ieee_addr_str[24] = {};
+
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  log_i("%s, endpoint 0x%x, pressure %f", ieee_addr_str, endpoint, pressure);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_PRESSURESENSOR, NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
+    log_e("No channel found for address %s", ieee_addr_str);
   else
     msgZ2SDevicePressure(channel_number_slot, pressure, rssi);
 }
 
 void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance, signed char rssi) {
 
-  log_i("onIlluminanceReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x, illuminance 0x%x", ieee_addr[7], ieee_addr[6], 
-        ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, illuminance);
+  char ieee_addr_str[24] = {};
+
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  log_i("%s, endpoint 0x%x, illuminance %u", ieee_addr_str, endpoint, illuminance);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                                                           TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
@@ -775,14 +791,17 @@ void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
     return;
   }
   
-  log_i("onIlluminanceReceive - no channel found for address %x:%x:%x:%x:%x:%x:%x:%x",
-        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+  log_e("No channel found for address %s", ieee_addr_str);
 }
 
 void Z2S_onFlowReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t flow, signed char rssi) {
 
-  log_i("onFlowReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x, flow 0x%x", ieee_addr[7], ieee_addr[6], 
-        ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, flow);
+  char ieee_addr_str[24] = {};
+
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  log_i("%s, endpoint 0x%x, flow %u", ieee_addr_str, endpoint, flow);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                                                           SONOFF_SMART_VALVE_FLOW_SID);
@@ -791,24 +810,32 @@ void Z2S_onFlowReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t
     return;
   }
   
-  log_i("onFlowReceive - no channel found for address %x:%x:%x:%x:%x:%x:%x:%x",
-        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
-}
+  log_e("No channel found for address %s", ieee_addr_str);
 
 void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy, signed char rssi) {
 
-  log_i("onOccupancyReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x, occupancy 0x%x", ieee_addr[7], ieee_addr[6], 
-        ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint, occupancy);
+  char ieee_addr_str[24] = {};
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  log_i("%s, endpoint 0x%x, occupancy 0x%x", ieee_addr_str, endpoint, occupancy);
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, SONOFF_PIR_SENSOR_OCCUPANCY_SID);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0), rssi);
     return;
   }
 
-  log_i("onOccupancyReceive - no channel found for address %x:%x:%x:%x:%x:%x:%x:%x",
-        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+  
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0), rssi);
+    return;
+  }
+
+  log_e("No channel found for address %s", ieee_addr_str);
 
 }
 
@@ -912,55 +939,71 @@ void Z2S_onWindowCoveringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
 
 void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
 
-  log_i("Z2S_onSonoffCustomClusterReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x, attribute id 0x%x, size %u", 
-        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], 
-        endpoint,attribute->id, attribute->data.size);
+  char ieee_addr_str[24] = {};
 
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint,attribute->id, attribute->data.size);
 
   switch (attribute->id) {
+
     case SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
                                                               NO_CUSTOM_CMD_SID);
 
       if (channel_number_slot < 0) {
-        log_i("Z2S_onSonoffCustomClusterReceive - no thermostat channel found for address %x:%x:%x:%x:%x:%x:%x:%x",
-              ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+        log_e("No channel found for address %s", ieee_addr_str);
         return;
       }
       
       msgZ2SDeviceHvac(channel_number_slot, TRV_CHILD_LOCK_MSG, *(uint8_t*)attribute->data.value, rssi);
     } break;
+
     case SONOFF_CUSTOM_CLUSTER_TAMPER_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
                                                               SONOFF_CUSTOM_CLUSTER_TAMPER_SID);
       
       if (channel_number_slot < 0) {
-        log_i("Z2S_onSonoffCustomClusterReceive - no tamper channel found for address %x:%x:%x:%x:%x:%x:%x:%x",
-              ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+        log_e("No channel found for address %s", ieee_addr_str);
         return;
       }
       msgZ2SDeviceIASzone(channel_number_slot, *(uint8_t*)attribute->data.value, rssi);      
     } break;
+
+    case SONOFF_CUSTOM_CLUSTER_ILLUMINATION_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+                                                              SONOFF_PIR_SENSOR_ILLUMINANCE_SID);
+      
+      if (channel_number_slot < 0) {
+        log_e("No channel found for address %s", ieee_addr_str);
+        return;
+      }
+      msgZ2SDeviceIASzone(channel_number_slot, *(uint8_t*)attribute->data.value, rssi);      
+    } break;
+
     case SONOFF_CUSTOM_CLUSTER_IRRIGATION_CYCLE_MODE_ID: {
         
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                                                               SONOFF_SMART_VALVE_MODE_SID);
       
       if (channel_number_slot < 0) {
-        log_i("Z2S_onSonoffCustomClusterReceive - no smart valve mode channel found for address %x:%x:%x:%x:%x:%x:%x:%x",
-              ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+        log_e("No channel found for address %s", ieee_addr_str);
         return;
       }
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, *(uint8_t*)attribute->data.value, rssi); 
     } break;
+    
     case SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID:
     case SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID:  {
 
       if ((attribute->data.type != ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) || (attribute->data.size != 11)) {
-        log_i("Z2S_onSonoffCustomClusterReceive - smart valve irrigation cycle data invalid or empty: ieee address %x:%x:%x:%x:%x:%x:%x:%x, type 0x%x, size 0x%x",
-              ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], attribute->data.type, attribute->data.size);
+        log_e("Smart valve irrigation cycle data invalid or empty: ieee address %s, type 0x%x, size 0x%x",
+              ieee_addr_str, attribute->data.type, attribute->data.size);
         return;
       }
            
@@ -977,8 +1020,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
       
       
       if ((channel_number_slot_1 < 0) && (channel_number_slot_2 < 0) && (channel_number_slot_3 < 0) && (channel_number_slot_4 < 0)&& (channel_number_slot_5 < 0)) {
-        log_i("Z2S_onSonoffCustomClusterReceive - no smart valve irrigation cycle channels found for address %x:%x:%x:%x:%x:%x:%x:%x",
-              ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+        log_e("No smart valve irrigation cycle channels found for address %s", ieee_addr_str);
         return;
       }
       sonoff_smart_valve_cycle_data_t sonoff_smart_valve_cycle_data;
@@ -998,8 +1040,12 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
 
 void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state, signed char rssi) {
 
-  log_i("onOnOffReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
-        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
+  char ieee_addr_str[24] = {};
+
+  sprintf(ieee_addr_str, "%x:%x:%x:%x:%x:%x:%x:%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
+          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+
+  log_i("%s, endpoint 0x%x, state 0x%x", ieee_addr_str, endpoint, state);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
   
@@ -1032,49 +1078,8 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
     return;
   }
   
-  log_i("onOnOffReceive - no channel found for address %x:%x:%x:%x:%x:%x:%x:%x",
-        ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+  log_e("No channel found for address %s", ieee_addr_str);
 }
-
-/*void Z2S_onRMSVoltageReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t voltage, signed char rssi) {
-
-  log_i("onRMSVoltageReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
-        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
-  
-  if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
-  else
-    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, voltage, rssi);
-}
-
-void Z2S_onRMSCurrentReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t current, signed char rssi) {
-
-  log_i("onRMSCurrentReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3],
-        ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-  
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
-  
-  if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
-  else
-    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_CURRENT_A_SEL, current, rssi);
-}
-
-void Z2S_onRMSActivePowerReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t active_power, signed char rssi) {
-
-  log_i("onRMSActivePowerReceive %x:%x:%x:%x:%x:%x:%x:%x, endpoint 0x%x", ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
-        ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], endpoint);
-
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
-  
-  if (channel_number_slot < 0)
-    log_i("No channel found for address %s", ieee_addr);
-  else {
-    msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, active_power, rssi);
-  }
-}*/
 
 void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
 
@@ -1959,6 +1964,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           case LUMI_MOTION_SENSOR_ILLUMINANCE_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
+      } break;
+
+      case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
+        
+        addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
       } break;
 
       case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 

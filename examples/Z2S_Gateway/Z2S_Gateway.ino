@@ -1333,7 +1333,7 @@ void loop() {
 
     log_i("Local Time Cluster UTC time attribute %lu, local time attribute %lu", utc_time_attribute, local_time_attribute);
     Z2S_updateWebGUI();
-    
+
     _time_cluster_last_refresh_ms = millis();
   }
 
@@ -1698,6 +1698,12 @@ void loop() {
                             
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 0, "lx");
+                          } break;
+
+                          case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, SONOFF_PIR_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_PIR_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                           } break;
 
                           case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
