@@ -2020,10 +2020,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         
       case Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F:
       case Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F: 
-        addZ2SDeviceActionTrigger(&zbGateway, device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH); break;
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       case Z2S_DEVICE_DESC_ON_OFF_VALVE_DC: 
-        addZ2SDeviceVirtualValve(device, first_free_slot, sub_id, "VALVE", SUPLA_CHANNELFNC_VALVE_OPENCLOSE); break;
+        addZ2SDeviceVirtualValve(&zbGateway, device, first_free_slot, sub_id, "VALVE", SUPLA_CHANNELFNC_VALVE_OPENCLOSE); break;
 
       default : {
         
