@@ -1273,8 +1273,9 @@ void loop() {
 
   if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE) {
     GUIstarted = true;
-    Z2S_buildWebGUI();  
-    Z2S_startWebGUI();
+    //Z2S_buildWebGUI();  
+    //Z2S_startWebGUI();
+    Z2S_startWebGUIConfig();
     Z2S_startUpdateServer();
   } 
   if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {

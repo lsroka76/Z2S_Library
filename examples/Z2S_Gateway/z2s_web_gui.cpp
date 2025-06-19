@@ -40,7 +40,24 @@ void deviceselectorCallback(Control *sender, int type);
 void channelselectorCallback(Control *sender, int type);
 void getswbuildCallback(Control *sender, int type);
 
+void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf);
+
+void fillGatewayGeneralnformation(char *buf) {
+
+	if (buf) {
+		
+		char guid_buf[128] = {};
+
+		generateHexString(Supla::RegisterDevice::getGUID(), guid_buf, SUPLA_GUID_SIZE);
+
+		snprintf(buf, 1024, "Supla firmware: %s<br>Supla GUID:%s<br>Z2S Gateway version: %s<br>", 
+						Supla::RegisterDevice::getSoftVer(), guid_buf, Z2S_VERSION);
+	
+		log_i("Device information %s", buf);
+
+	}
+}
 
 void fillMemoryUptimeInformation(char *buf) {
 
@@ -48,7 +65,7 @@ void fillMemoryUptimeInformation(char *buf) {
 		time_t local_time_info;
 		time(&local_time_info);
 
-		sprintf(buf, "Flash chip real size: %u kB<br>Free Sketch Space: %u kB<br>"
+		snprintf(buf, 1024, "Flash chip real size: %u kB<br>Free Sketch Space: %u kB<br>"
 						"Free Heap: %u kB<br>Minimal Free Heap: %u kB<br>HeapSize: %u kB<br>"
 						"MaxAllocHeap: %u kB<br><br>Czas lokalny: %sSupla uptime: %lu s", 
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
@@ -62,15 +79,10 @@ void fillMemoryUptimeInformation(char *buf) {
 void Z2S_buildWebGUI() {
 
 	char buf[1024] = {};
-	char guid_buf[128] = {};
 
 	auto gatewaytab = ESPUI.addControl(Tab, "", "Gateway");
 	
-	generateHexString(Supla::RegisterDevice::getGUID(), guid_buf, SUPLA_GUID_SIZE);
-
-	sprintf(buf, "Supla firmware: %s<br>Supla GUID:%s<br>Z2S Gateway version: %s<br>", 
-					Supla::RegisterDevice::getSoftVer(), guid_buf, Z2S_VERSION);
-	log_i("Device information %s", buf);
+	fillGatewayGeneralnformation(buf);
 
 	ESPUI.addControl(Separator, "General information", "", None, gatewaytab);
 	gateway_general_info = ESPUI.addControl(Label, "Device information", buf, Emerald, gatewaytab);
@@ -142,9 +154,56 @@ void Z2S_buildWebGUI() {
 		}
 }
 
+void Z2S_startWebGUIConfig() {
+
+	char buf[1024] = {};
+	
+	fillGatewayGeneralnformation(buf);
+
+	ESPUI.addControl(Separator, "General information", "", None);
+	gateway_general_info = ESPUI.addControl(Label, "Device information", buf, Emerald);
+
+	fillMemoryUptimeInformation(buf);
+	
+	ESPUI.addControl(Separator, "Status", "", None);
+	gateway_memory_info = ESPUI.addControl(Label, "Memory & Uptime", buf, Emerald);
+	//ESPUI.setElementStyle(gateway_memory_info, "text-align: left; font-size: 6 px; font-style: normal; font-weight: normal;");
+
+  ESPUI.addControl(Separator, "WiFi & Supla credentials", "", None);
+	wifi_ssid_text = ESPUI.addControl(Text, "SSID", "", Emerald, Control::noParent, textCallback);
+	ESPUI.addControl(Max, "", "32", None, wifi_ssid_text);
+	wifi_pass_text = ESPUI.addControl(Text, "Password", "", Emerald, Control::noParent, textCallback);
+	ESPUI.addControl(Max, "", "64", None, wifi_pass_text);
+	ESPUI.setInputType(wifi_pass_text, "password");
+	Supla_server = ESPUI.addControl(Text, "Supla server", "", Emerald, Control::noParent, textCallback);
+	ESPUI.addControl(Max, "", "64", None, Supla_server);
+	Supla_email = ESPUI.addControl(Text, "Supla email", "", Emerald, Control::noParent, textCallback);
+	ESPUI.addControl(Max, "", "64", None, Supla_email);
+	save_button = ESPUI.addControl(Button, "Save", "Save", Emerald, Control::noParent, enterWifiDetailsCallback,(void*) &save_flag);
+	auto save_n_restart_button = ESPUI.addControl(Button, "Save & Restart", "Save & Restart", Emerald, save_button, enterWifiDetailsCallback, &restart_flag);
+	save_label = ESPUI.addControl(Label, "Status", "Missing data...", Emerald, save_button);
+
+	auto cfg = Supla::Storage::ConfigInstance();
+  
+	if (cfg) {
+
+  	memset(buf, 0, sizeof(buf));
+  	if (cfg->getWiFiSSID(buf) && strlen(buf) > 0)
+			ESPUI.updateText(wifi_ssid_text, buf);
+		memset(buf, 0, sizeof(buf));
+		if (cfg->getSuplaServer(buf) && strlen(buf) > 0)
+			ESPUI.updateText(Supla_server, buf);
+		memset(buf, 0, sizeof(buf));
+		if (cfg->getEmail(buf) && strlen(buf) > 0)
+			ESPUI.updateText(Supla_email, buf);
+	}
+
+	ESPUI.begin("ZIGBEE <=> SUPLA CONFIG PAGE");
+}
+
 void Z2S_startWebGUI() {
 
-  ESPUI.begin("Z2S GUI INTERFACE");
+  ESPUI.begin("ZIGBEE <=> SUPLA CONTROL PANEL");
 
 }
 

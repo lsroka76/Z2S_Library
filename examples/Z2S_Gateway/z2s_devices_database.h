@@ -104,6 +104,8 @@
 #define Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH               0x4606
 #define Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH               0x4607
 
+#define Z2S_DEVICE_DESC_ON_OFF_VALVE_DC                 0x4700
+
 #define Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE          0x4800
 #define Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE     0x4810
 #define Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR         0x4820
@@ -1350,6 +1352,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_upgcbody", .model_name = "TS0207", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3000_wuep9zng", .model_name = "TS0207", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_upgcbody", .model_name = "SNZB-05", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1506,7 +1511,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_cmcjbqup", .model_name = "TS0001", 
-   .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_VALVE_DC, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_8n7lqbm0", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
