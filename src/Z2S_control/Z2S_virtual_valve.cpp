@@ -20,7 +20,7 @@
 
 using Supla::Control::Z2S_VirtualValve;
 
-Z2S_VirtualValve::Z2S_VirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose = true)
+Z2S_VirtualValve::Z2S_VirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose)
 : ValveBase(openClose), _gateway(gateway) {
 
       memcpy(&_device, device, sizeof(zbg_device_params_t));     
