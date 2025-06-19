@@ -511,6 +511,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_VALVE_DC, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+  
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
       ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
