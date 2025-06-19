@@ -12,6 +12,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 #include "z2s_device_general_purpose_measurement.h"
 #include "z2s_device_action_trigger.h"
+#include "z2s_device_virtual_valve.h"
 
 #include <SuplaDevice.h>
 
