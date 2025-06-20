@@ -39,7 +39,7 @@ void Z2S_VirtualValve::setValueOnDevice(uint8_t openLevel) {
 
 uint8_t Z2S_VirtualValve::getValueOpenStateFromDevice() {
 
-  if (_gateway && Zigbee.started()) {   
+  /*if (_gateway && Zigbee.started()) {   
      
     bool state = true;
 
@@ -47,7 +47,23 @@ uint8_t Z2S_VirtualValve::getValueOpenStateFromDevice() {
          state = *((bool *)_gateway->getReadAttrLastResult()->data.value);
     
     valveOpenState = state ? 100 : 0;
-  }
+  }*/
 
   return valveOpenState;
+}
+
+void Z2S_VirtualValve::setValueOnServer(bool state) {
+  
+  /*state = on_off_state;
+
+  _last_ping_ms = millis();
+  _last_seen_ms = _last_ping_ms;
+  
+  if (!channel.isStateOnline()) 
+	  channel.setStateOnline();
+*/valveOpenState = state ? 100 : 0;
+  channel.setValveOpenState(valveOpenState);
+  //channel.setNewValue(state);
+  // Schedule save in 5 s after state change
+  //Supla::Storage::ScheduleSave(5000);
 }

@@ -48,6 +48,8 @@ class Z2S_VirtualValve : public ValveBase {
    */
   uint8_t getValueOpenStateFromDevice() override;
 
+  void setValueOnServer(bool state);
+
  protected:
   uint8_t valveOpenState = 0;
 
