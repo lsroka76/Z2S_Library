@@ -93,6 +93,7 @@ typedef struct zbg_device_unit_s {
   uint32_t last_seen_ms;
   uint32_t keep_alive_ms;
   uint32_t timeout_ms;
+  int8_t last_rssi;
 } zbg_device_unit_t;
 
 class ZigbeeGateway : public ZigbeeEP {
@@ -142,6 +143,7 @@ public:
   static void bindDeviceCluster(zbg_device_params_t *,int16_t cluster_id);
 
   static uint32_t getZbgDeviceUnitLastSeenMs(uint16_t short_addr);
+  static int8_t getZbgDeviceUnitLastRssi(uint16_t short_addr);
 
   bool zbQueryDeviceBasicCluster(zbg_device_params_t * device, bool single_attribute = false, uint16_t attribute_id = 0x0);
 
@@ -169,8 +171,9 @@ public:
   void sendColorMoveToColorTemperatureCmd(zbg_device_params_t *device, uint16_t color_temperature, uint16_t transition_time);
   void sendWindowCoveringCmd(zbg_device_params_t *device, uint8_t cmd_id, void *cmd_value);
 
+  void sendIEEEAddrReqCmd(zbg_device_params_t *device, bool ack);
   void sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya = false);
-  void sendCustomClusterCmd(zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
+  bool sendCustomClusterCmd(zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
                             uint16_t custom_data_size, uint8_t *custom_data, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
                             uint8_t disable_default_response = 0, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
 
@@ -268,33 +271,34 @@ private:
   // save instance of the class in order to use it in static functions
   static ZigbeeGateway *_instance;
 
-  static bool GatewayReady;
+  static volatile bool GatewayReady;
 
   static findcb_userdata_t findcb_userdata;
-  static bool _last_bind_success;
-  static bool _in_binding;
-  static bool _new_device_joined;
+  static volatile bool _last_bind_success;
+  static volatile bool _in_binding;
+  static volatile bool _new_device_joined;
 
-  static uint8_t _binding_error_retries;
+  static volatile uint8_t _binding_error_retries;
 
-  static uint16_t _clusters_2_discover;
-  static uint16_t _attributes_2_discover;
+  static volatile uint16_t _clusters_2_discover;
+  static volatile uint16_t _attributes_2_discover;
 
-  static uint16_t _endpoints_2_bind;
-  static uint16_t _clusters_2_bind;
+  static volatile uint16_t _endpoints_2_bind;
+  static volatile uint16_t _clusters_2_bind;
 
   static query_basic_cluster_data_t _last_device_query;
-
-  static uint8_t _read_attr_last_tsn;
-  static uint8_t _read_attr_tsn_list[256];
-  static uint8_t _custom_cmd_last_tsn;
-  static uint8_t _custom_cmd_tsn_list[256];
-  //static bool _read_attr_async;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
 
+  static volatile uint8_t _read_attr_last_tsn;
+  static volatile uint8_t _read_attr_tsn_list[256];
+  static volatile uint8_t _custom_cmd_last_tsn;
+  static volatile uint8_t _custom_cmd_last_tsn_flag;
+  static volatile uint8_t _custom_cmd_tsn_list[256];
+  
+  //static bool _read_attr_async;
   //static bool enable_attribute_reporting 
 
-  static   zbg_device_unit_t zbg_device_units[ZBG_MAX_DEVICES];
+  static zbg_device_unit_t zbg_device_units[ZBG_MAX_DEVICES];
 
   void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int, signed char rssi);
   void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
@@ -336,6 +340,7 @@ private:
 
   static void bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
   static void find_Cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx);
+  static void ieee_Cb(esp_zb_zdp_status_t zdo_status, esp_zb_zdo_ieee_addr_rsp_t *resp, void *user_ctx);
 
   static void Z2S_active_ep_req_cb(esp_zb_zdp_status_t zdo_status, uint8_t ep_count, uint8_t *ep_id_list, void *user_ctx);
   static void Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, void *user_ctx);
@@ -358,6 +363,7 @@ private:
   bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
 
   static void updateZbgDeviceUnitLastSeenMs(uint16_t short_addr);
+  static void updateZbgDeviceUnitLastRssi(uint16_t short_addr, int8_t rssi);
 
 protected:
 

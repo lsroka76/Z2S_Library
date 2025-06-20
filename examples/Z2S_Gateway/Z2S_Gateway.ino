@@ -1444,6 +1444,8 @@ void loop() {
       rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 128));
       rgbLed.show();
 
+      Z2S_stopWebGUI();
+
       //do some Tuya vodoo - just in case Tuya device is paired
       
       //zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
