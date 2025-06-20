@@ -47,7 +47,7 @@ void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state, signed ch
     auto Supla_Z2S_VirtualValve = reinterpret_cast<Supla::Control::Z2S_VirtualValve *>(element);
     
     //Supla_Z2S_VirtualRelay->getChannel()->setStateOnline();
-    Supla_Z2S_VirtualValve->setValueOnDevice(state ? 100 : 0);     
+    Supla_Z2S_VirtualValve->setValueOnServer(state);     
     //Supla_Z2S_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
   }
 }
