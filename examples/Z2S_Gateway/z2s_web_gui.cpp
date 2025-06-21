@@ -23,10 +23,12 @@ uint16_t gateway_memory_info;
 uint16_t wifi_ssid_text, wifi_pass_text, Supla_server, Supla_email;
 uint16_t save_button, save_label;
 uint16_t zb_device_info_label, zb_device_address_label, zb_channel_info_label;
-uint16_t channel_status_label;
+uint16_t device_status_label, channel_status_label;
+uint16_t pairing_mode_button, pairing_mode_label;
 uint16_t deviceselector, channelselector;
 uint16_t swbuildlabel, rssilabel;
 uint16_t remove_channel_button;
+uint16_t factory_reset_switch, factory_reset_button, factory_reset_label;
 
 volatile bool data_ready = false;
 
@@ -37,23 +39,33 @@ char restart_flag = 'R';
 char swbuild_flag = 'S';
 char rssi_flag    = 'R';
 
+char pairing_flag = 'P';
+char factory_flag = 'F';
+char channel_flag = 'C';
+
 const static char device_query_failed_str[] = "Device data query failed - try to wake it up first!";
+
+const static char factory_reset_enabled_str[] = "Zigbee stack factory reset enabled";
+const static char factory_reset_disabled_str[] = "Zigbee stack factory reset disabled";
 
 char zigbee_devices_labels[Z2S_ZBDEVICESMAXCOUNT][11] = {};
 char zigbee_channels_labels[Z2S_CHANNELMAXCOUNT][13] = {};
 
 void buildGatewayTabGUI();
 void buildCredentialsGUI();
+void buildZigbeeTabGUI();
 void buildDevicesTabGUI();
 void buildChannelsTabGUI();
 
 void enterWifiDetailsCallback(Control *sender, int type, void *param);
 void textCallback(Control *sender, int type);
 void generalCallback(Control *sender, int type);
+void switchCallback(Control *sender, int type);
 void deviceselectorCallback(Control *sender, int type);
 void channelselectorCallback(Control *sender, int type);
 void removeChannelCallback(Control *sender, int type);
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param);
+void generalZigbeeCallback(Control *sender, int type, void *param);
 
 void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf);
@@ -106,7 +118,6 @@ void buildGatewayTabGUI() {
 	ESPUI.addControl(Separator, "Status", "", None, gatewaytab);
 	gateway_memory_info = ESPUI.addControl(Label, "Memory & Uptime", buf, Emerald, gatewaytab);
 	ESPUI.setElementStyle(gateway_memory_info, "text-align: justify; font-size: 4 px; font-style: normal; font-weight: normal;");
-
 }
 
 void buildCredentialsGUI() {
@@ -146,6 +157,19 @@ void buildCredentialsGUI() {
 		if (cfg->getEmail(buf) && strlen(buf) > 0)
 			ESPUI.updateText(Supla_email, buf);
 	}			
+}
+
+void buildZigbeeTabGUI() {
+
+	auto zigbeetab = ESPUI.addControl(Tab, "", "Zigbee settings");
+
+	//ESPUI.addControl(Separator, "Zigbee", "", None, zigbeetab);
+	auto open_network_button = ESPUI.addControl(Button, "Pairing mode", "Pairing mode", Emerald, zigbeetab, generalZigbeeCallback,(void*) &pairing_flag);
+	
+	ESPUI.addControl(Separator, "Zigbee stack factory reset", "", None, zigbeetab);
+	factory_reset_switch = ESPUI.addControl(Switcher, "Enable Zigbee stack factory reset", "0", Alizarin, zigbeetab, switchCallback);
+	factory_reset_label = ESPUI.addControl(Label, "", factory_reset_disabled_str, Wetasphalt, factory_reset_switch);
+	factory_reset_button = ESPUI.addControl(Button, "FACTORY RESET!", "FACTORY RESET!", Emerald, zigbeetab, generalZigbeeCallback,(void*) &factory_flag);
 }
 
 void buildDevicesTabGUI() {
@@ -196,6 +220,7 @@ void Z2S_buildWebGUI() {
  
 	buildGatewayTabGUI();
 	buildCredentialsGUI();
+	buildZigbeeTabGUI();
 	buildDevicesTabGUI();
 	buildChannelsTabGUI();
 }
@@ -452,6 +477,23 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 	}
 }
 
+void removeDeviceCallback(Control *sender, int type) {
+
+	if ((type == B_UP) && (ESPUI.getControl(deviceselector)->value.toInt() >= 0)) {
+
+		uint8_t device_slot = ESPUI.getControl(deviceselector)->value.toInt();
+
+		z2s_zb_devices_table[device_slot].record_id = 0;
+    
+		if (Z2S_saveZBDevicesTable()) {
+			char status_line[128];
+			sprintf(status_line, "Device # %02u removed. Restarting...", device_slot);
+      ESPUI.updateLabel(device_status_label, status_line);
+      SuplaDevice.scheduleSoftRestart(1000);
+		}
+	}
+}
+
 void removeChannelCallback(Control *sender, int type) {
 
 	if ((type == B_UP) && (ESPUI.getControl(channelselector)->value.toInt() >= 0)) {
@@ -459,11 +501,37 @@ void removeChannelCallback(Control *sender, int type) {
 		uint8_t channel_slot = ESPUI.getControl(channelselector)->value.toInt();
 
 		z2s_devices_table[channel_slot].valid_record = false;
-      if (Z2S_saveDevicesTable()) {
-				char status_line[128];
-				sprintf(status_line, "Channel # %02u removed. Restarting...", channel_slot);
-        ESPUI.updateLabel(channel_status_label, status_line);
-      	SuplaDevice.scheduleSoftRestart(1000);
-			}
+      
+		if (Z2S_saveDevicesTable()) {
+			char status_line[128];
+			sprintf(status_line, "Channel # %02u removed. Restarting...", channel_slot);
+      ESPUI.updateLabel(channel_status_label, status_line);
+      SuplaDevice.scheduleSoftRestart(1000);
+		}
 	}
+}
+
+void generalZigbeeCallback(Control *sender, int type, void *param){
+
+	if (type == B_UP) {
+
+		switch (*(char *)param) {
+			case 'P': {		
+				Zigbee.openNetwork(180); 
+			} break;
+			case 'F'	: {	
+				if (ESPUI.getControl(factory_reset_switch)->value.toInt() > 0)
+					Zigbee.factoryReset(); 
+			} break;
+
+		}
+	}
+}
+
+void switchCallback(Control *sender, int type) {
+
+	if (sender->value.toInt() == 1)
+		ESPUI.updateLabel(factory_reset_label, factory_reset_enabled_str);
+	else
+		ESPUI.updateLabel(factory_reset_label, factory_reset_disabled_str);
 }

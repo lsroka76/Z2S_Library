@@ -1061,8 +1061,22 @@ zbg_device_params_t test_device = {.model_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MO
 .rejoined = true, .ZC_binding = true, .ieee_addr = {0,0,0,0,0,0,0,0}, .endpoint = 1, .cluster_id = 0, 
   .short_addr = 0, .user_data = 0};
 
+static char log_print_buffer[2048];
+
+int spiffs_log_vprintf(const char *fmt, va_list args) {
+
+  int ret = vsnprintf(log_print_buffer, sizeof(log_print_buffer), fmt, args);
+  if (ret >= 0) {
+    Serial.println("My log function");
+    Serial.println(log_print_buffer);
+  }
+  return ret;
+}
+
 void setup() {
   
+  //esp_log_set_vprintf(&spiffs_log_vprintf);
+
   log_i("setup start");
 
   pinMode(BUTTON_PIN, INPUT);

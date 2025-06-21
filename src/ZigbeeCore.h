@@ -108,7 +108,7 @@ public:
   bool isNetworkOpen() {
     return _permit_joining;
   }
-  void setNewtorkOpen(bool permit_joining) {
+  void setNetworkOpen(bool permit_joining) {
 
     _permit_joining = permit_joining;
   }
