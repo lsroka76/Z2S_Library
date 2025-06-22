@@ -675,7 +675,7 @@ void deviceselectorCallback(Control *sender, int type) {
 
 	sprintf(device_info_str,"Manufacturer name: %s<br>"
 					"Model ID: %s<br><br>"
-					"Z2S model: %s(%ul)"
+					"Z2S model: %s(%ul)<br>"
 					"IEEE address %s<br>"
 					"Short address 0x%04X<br><br>"
 					"Power source %d<br><br>"
