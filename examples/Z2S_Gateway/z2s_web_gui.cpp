@@ -82,7 +82,7 @@ bool isNumber(String str);
 
 const char* getSuplaChannelTypeName(int32_t channelType);
 const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc);
-const char* getZ2SDeviceModelName(uint3t_t modelID);
+const char* getZ2SDeviceModelName(uint32_t modelID);
 
 void buildGatewayTabGUI();
 void buildCredentialsGUI();
@@ -216,7 +216,7 @@ const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc) {
 	}
 }
 
-const char* getZ2SDeviceModelName(uint3t_t modelID)  {
+const char* getZ2SDeviceModelName(uint32_t modelID)  {
 
 	switch (modelID) {
 
