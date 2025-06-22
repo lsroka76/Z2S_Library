@@ -356,10 +356,10 @@ bool Z2S_saveDevicesTable() {
   }
 }
 
-void Z2S_clearDevicesTable() {
+bool Z2S_clearDevicesTable() {
   log_i("Clear devices table");
   memset(z2s_devices_table,0,sizeof(z2s_devices_table));
-  Z2S_saveDevicesTable();
+  return Z2S_saveDevicesTable();
 }
 
 /* ZB_DEVICE_FUNCTIONS */

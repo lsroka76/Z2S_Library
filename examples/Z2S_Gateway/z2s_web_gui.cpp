@@ -22,13 +22,20 @@ uint16_t gateway_memory_info;
 
 uint16_t wifi_ssid_text, wifi_pass_text, Supla_server, Supla_email;
 uint16_t save_button, save_label;
-uint16_t zb_device_info_label, zb_device_address_label, zb_channel_info_label;
-uint16_t device_status_label, channel_status_label;
+
 uint16_t pairing_mode_button, pairing_mode_label;
-uint16_t deviceselector, channelselector;
-uint16_t swbuildlabel, rssilabel;
-uint16_t remove_channel_button;
+uint16_t zigbee_tx_power_text, zigbee_get_tx_power_button, zigbee_set_tx_power_button;
+uint16_t zigbee_primary_channel_text, zigbee_get_primary_channel_button, zigbee_set_primary_channel_button;
 uint16_t factory_reset_switch, factory_reset_button, factory_reset_label;
+
+uint16_t deviceselector;
+uint16_t zb_device_info_label, zb_device_address_label, device_status_label;
+uint16_t swbuildlabel, rssilabel;
+
+uint16_t channelselector;
+uint16_t channel_status_label, zb_channel_info_label;
+uint16_t keepalive_number, timeout_number, refresh_number;
+uint16_t remove_channel_button;
 
 volatile bool data_ready = false;
 
@@ -41,15 +48,29 @@ char rssi_flag    = 'R';
 
 char pairing_flag = 'P';
 char factory_flag = 'F';
-char channel_flag = 'C';
+
+char get_tx_flag = 'T';
+char set_tx_flag = 'X';
+char get_pc_flag = 'R';
+char set_pc_flag = 'S';
+
+char keepalive_flag = 'K';
+char timeout_flag = 'T';
+char refresh_flag = 'R';
 
 const static char device_query_failed_str[] = "Device data query failed - try to wake it up first!";
 
 const static char factory_reset_enabled_str[] = "Zigbee stack factory reset enabled";
 const static char factory_reset_disabled_str[] = "Zigbee stack factory reset disabled";
-
+const static char zigbee_tx_power_text_str[] = "Press Read to get current value or enter value between -24 and 20 and press Update";
+const static char zigbee_primary_channel_text_str[] = "Press Read to get current value or enter value between 11 and 26 and press Update";
 char zigbee_devices_labels[Z2S_ZBDEVICESMAXCOUNT][11] = {};
 char zigbee_channels_labels[Z2S_CHANNELMAXCOUNT][13] = {};
+
+bool isNumber(String str);
+
+const char* getSuplaChannelTypeName(int32_t channelType);
+const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc);
 
 void buildGatewayTabGUI();
 void buildCredentialsGUI();
@@ -63,12 +84,120 @@ void generalCallback(Control *sender, int type);
 void switchCallback(Control *sender, int type);
 void deviceselectorCallback(Control *sender, int type);
 void channelselectorCallback(Control *sender, int type);
+void timingsCallback(Control *sender, int type, void *param);
 void removeChannelCallback(Control *sender, int type);
+void removeAllChannelsCallback(Control *sender, int type);
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param);
 void generalZigbeeCallback(Control *sender, int type, void *param);
 
 void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf);
+
+bool isNumber(String str) {
+
+    unsigned int stringLength = str.length();
+ 
+    if (stringLength == 0) {
+        return false;
+    }
+ 
+    //boolean seenDecimal = false;
+ 
+    for(unsigned int i = 0; i < stringLength; ++i) {
+        if (isDigit(str.charAt(i))) {
+            continue;
+        }
+ 
+        /*if (str.charAt(i) == '.') {
+            if (seenDecimal) {
+                return false;
+            }
+            seenDecimal = true;
+            continue;
+        }*/
+        return false;
+    }
+    return true;
+}
+
+const char* getSuplaChannelTypeName(int32_t channelType) {
+
+	switch (channelType) {
+
+		case SUPLA_CHANNELTYPE_BINARYSENSOR:
+			return "Binary sensor";
+		case SUPLA_CHANNELTYPE_RELAY:
+			return "Relay";
+		case SUPLA_CHANNELTYPE_THERMOMETER:
+			return "Thermometer";
+		case SUPLA_CHANNELTYPE_HUMIDITYSENSOR:
+			return "Humidity sensor";
+		case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
+			return "Humidity and temperature sensor";
+		case SUPLA_CHANNELTYPE_PRESSURESENSOR:
+			return "Pressure sensor";
+		case SUPLA_CHANNELTYPE_DIMMER:
+			return "Dimmer";
+		case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER:
+			return "RGB controller";
+		case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
+			return "Electricity meter";
+		case SUPLA_CHANNELTYPE_THERMOSTAT:
+			return "Thermostat";
+		case SUPLA_CHANNELTYPE_HVAC:
+			return "HVAC";
+		case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
+			return "Valve open/close";
+		case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
+			return "General Purpose Measurement";
+		case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
+			return "Action Trigger";
+		case -1:
+			return "Undefined Supla channel type";
+		default:
+			return "Unknown Supla channel type";
+	}
+}
+
+
+const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc) {
+
+	switch (channelType) {
+
+		case SUPLA_CHANNELTYPE_BINARYSENSOR:
+			return Supla::getBinarySensorChannelName(channelFunc);
+		case SUPLA_CHANNELTYPE_RELAY:
+			return Supla::getRelayChannelName(channelFunc);
+		default:
+			return getSuplaChannelTypeName(channelType);
+	}
+//currently unused
+	switch (channelFunc) {
+
+		case SUPLA_CHANNELFNC_THERMOMETER:
+			return "Temperature measurement";
+		case SUPLA_CHANNELFNC_HUMIDITY:
+			return "Humidity measurement";
+		case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+			return "Humidity and temperature measurement";
+		case SUPLA_CHANNELFNC_DIMMER:
+			return "Dimmer control";
+		case SUPLA_CHANNELFNC_RGBLIGHTING:
+			return "RGB control";
+		case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+			return "Electricity measurement";
+		case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+			return "HVAC/Thermostat control";
+		case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+			return "Valve open/close control";
+		case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+			return "General puropose measurement";
+		case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+			return "Action trigger control";
+		default:
+			return "Unknown Supla channel function";
+	}
+}
 
 void fillGatewayGeneralnformation(char *buf) {
 
@@ -165,7 +294,17 @@ void buildZigbeeTabGUI() {
 
 	//ESPUI.addControl(Separator, "Zigbee", "", None, zigbeetab);
 	auto open_network_button = ESPUI.addControl(Button, "Pairing mode", "Pairing mode", Emerald, zigbeetab, generalZigbeeCallback,(void*) &pairing_flag);
-	
+
+	zigbee_tx_power_text = ESPUI.addControl(Text, "Zigbee TX power", zigbee_tx_power_text_str, Emerald, zigbeetab, generalCallback);
+
+	zigbee_get_tx_power_button = ESPUI.addControl(Button, "Read", "Read", Emerald, zigbee_tx_power_text, generalZigbeeCallback,(void*) &get_tx_flag);
+	zigbee_set_tx_power_button = ESPUI.addControl(Button, "Update", "Update", Emerald, zigbee_tx_power_text, generalZigbeeCallback,(void*) &set_tx_flag);
+
+	zigbee_primary_channel_text = ESPUI.addControl(Text, "Zigbee primary channel", zigbee_primary_channel_text_str, Emerald, zigbeetab, generalCallback);
+
+	zigbee_get_primary_channel_button = ESPUI.addControl(Button, "Read", "Read", Emerald, zigbee_primary_channel_text, generalZigbeeCallback,(void*) &get_pc_flag);
+	zigbee_set_primary_channel_button = ESPUI.addControl(Button, "Update", "Update", Emerald, zigbee_primary_channel_text, generalZigbeeCallback,(void*) &set_pc_flag);
+
 	ESPUI.addControl(Separator, "Zigbee stack factory reset", "", None, zigbeetab);
 	factory_reset_switch = ESPUI.addControl(Switcher, "Enable Zigbee stack factory reset", "0", Alizarin, zigbeetab, switchCallback);
 	factory_reset_label = ESPUI.addControl(Label, "", factory_reset_disabled_str, Wetasphalt, factory_reset_switch);
@@ -212,12 +351,34 @@ void buildChannelsTabGUI() {
 	zb_channel_info_label = ESPUI.addControl(Label, "Channel info", "...", Emerald, channelstab);
 	ESPUI.setElementStyle(zb_channel_info_label, "text-align: justify; font-size: 4 px; font-style: normal; font-weight: normal;");
 
-	remove_channel_button = ESPUI.addControl(Button, "Remove channel", "Remove channel", Emerald, channelstab, removeChannelCallback);
+	String clearLabelStyle = "background-color: unset; width: 100%;";
+
+	keepalive_number = ESPUI.addControl(Slider, "Timings panel", "0", Emerald, channelstab, timingsCallback, &keepalive_flag);
+	ESPUI.addControl(Min, "", "0", None, keepalive_number);
+	ESPUI.addControl(Max, "", "360", None, keepalive_number);
+	ESPUI.setElementStyle(ESPUI.addControl(Label, "", "keepalive (s)", None, keepalive_number), clearLabelStyle);
+	
+	timeout_number = ESPUI.addControl(Slider, "", "0", Emerald, keepalive_number, timingsCallback, &timeout_flag);
+	ESPUI.addControl(Min, "", "0", None, timeout_number);
+	ESPUI.addControl(Max, "", "360", None, timeout_number);
+	ESPUI.setElementStyle(ESPUI.addControl(Label, "", "timeout (s)", None, keepalive_number), clearLabelStyle);
+
+	refresh_number = ESPUI.addControl(Slider, "", "0", Emerald, keepalive_number, timingsCallback, &refresh_flag);
+	ESPUI.addControl(Min, "", "0", None, refresh_number);
+	ESPUI.addControl(Max, "", "360", None, refresh_number);
+	ESPUI.setElementStyle(ESPUI.addControl(Label, "", "refresh/autoset (s)", None, keepalive_number), clearLabelStyle);
+
+	ESPUI.addControl(Separator, "Supla channels removal", "", None, channelstab);
+
+	remove_channel_button = ESPUI.addControl(Button, "Remove channel!", "Remove channel", Emerald, channelstab, removeChannelCallback);
+	auto remove_table_button = ESPUI.addControl(Button, "Remove all channels", "Remove all channels!", Emerald, remove_channel_button, removeAllChannelsCallback);
 	channel_status_label = ESPUI.addControl(Label, "Status", "...", Emerald, remove_channel_button);
 }
 
 void Z2S_buildWebGUI() {
  
+	ESPUI.sliderContinuous = true;
+
 	buildGatewayTabGUI();
 	buildCredentialsGUI();
 	buildZigbeeTabGUI();
@@ -353,8 +514,12 @@ void generalCallback(Control *sender, int type) {
 
 void deviceselectorCallback(Control *sender, int type) {
 
-	if (sender->value.toInt() == -1) return;
-	
+	if (!isNumber(sender->value)) 
+		return;
+
+	if ((sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_ZBDEVICESMAXCOUNT))
+		return;
+
 	char device_info_str[256] = {};
 	char ieee_addr_str[24] 		= {};
 
@@ -394,7 +559,11 @@ void deviceselectorCallback(Control *sender, int type) {
 
 void channelselectorCallback(Control *sender, int type) {
 	
-	if (sender->value.toInt() == -1) return;
+	if (!isNumber(sender->value)) 
+		return;
+
+	if ((sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_CHANNELMAXCOUNT))
+		return;
 	
 	char channel_info_str[1024] = {};
 	char ieee_addr_str[24] 		= {};
@@ -416,11 +585,13 @@ void channelselectorCallback(Control *sender, int type) {
 					"IEEE address: %s<br>"
 					"Short address: 0x%04X, endpoint: 0x%02X, cluster: 0x%04X<br><br>"
 					"Model id: 0x%04X, channel: #%u, secondary channel: #%u<br>"
-					"type: %u, function: %u, sub id: %d, data flags: %lu <br>"
-					"user data(1): %lu, user data(2): %lu<br>"
-					"user data(3): %lu, user data(4): %lu<br>"
-					"data counter: %llu<br>"
-					"keep alive: %lu, timeout: %lu, refresh: %lu<br>"
+					"Type: %s<br>"
+					"Function: %s<br>"
+					"Sub id: %d, data flags: %lu <br>"
+					"User data(1) = %lu, user data(2) = %lu<br>"
+					"user data(3) = %lu, user data(4) = %lu<br>"
+					"data counter = %llu<br>"
+					//"keepalive = %lu, timeout = %lu, refresh = %lu<br>"
 					"ZB device: %u",
 					z2s_devices_table[channel_slot].Supla_channel_name,
 					ieee_addr_str,
@@ -430,8 +601,8 @@ void channelselectorCallback(Control *sender, int type) {
         	z2s_devices_table[channel_slot].model_id,
         	z2s_devices_table[channel_slot].Supla_channel,
         	z2s_devices_table[channel_slot].Supla_secondary_channel,
-        	z2s_devices_table[channel_slot].Supla_channel_type,
-        	z2s_devices_table[channel_slot].Supla_channel_func,
+        	getSuplaChannelTypeName(z2s_devices_table[channel_slot].Supla_channel_type),
+        	getSuplaChannelFuncName(z2s_devices_table[channel_slot].Supla_channel_type, z2s_devices_table[channel_slot].Supla_channel_func),
         	z2s_devices_table[channel_slot].sub_id,
         	z2s_devices_table[channel_slot].user_data_flags,
         	z2s_devices_table[channel_slot].user_data_1,
@@ -439,13 +610,16 @@ void channelselectorCallback(Control *sender, int type) {
         	z2s_devices_table[channel_slot].user_data_3,
         	z2s_devices_table[channel_slot].user_data_4,
 					z2s_devices_table[channel_slot].data_counter,
-        	z2s_devices_table[channel_slot].keep_alive_secs,
-        	z2s_devices_table[channel_slot].timeout_secs,
-        	z2s_devices_table[channel_slot].refresh_secs,
+        	//z2s_devices_table[channel_slot].keep_alive_secs,
+        	//z2s_devices_table[channel_slot].timeout_secs,
+        	//z2s_devices_table[channel_slot].refresh_secs,
         	z2s_devices_table[channel_slot].ZB_device_id);
 
 
 	ESPUI.updateLabel(zb_channel_info_label, channel_info_str);
+	ESPUI.updateNumber(keepalive_number, z2s_devices_table[channel_slot].keep_alive_secs);
+	ESPUI.updateNumber(timeout_number, z2s_devices_table[channel_slot].timeout_secs);
+	ESPUI.updateNumber(refresh_number, z2s_devices_table[channel_slot].refresh_secs);
 }
 
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
@@ -511,19 +685,73 @@ void removeChannelCallback(Control *sender, int type) {
 	}
 }
 
+void removeAllChannelsCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+		
+		if (Z2S_clearDevicesTable()) {
+      ESPUI.updateLabel(channel_status_label, "All channels removed!. Restarting...");
+      SuplaDevice.scheduleSoftRestart(1000);
+		}
+	}
+}
+
 void generalZigbeeCallback(Control *sender, int type, void *param){
 
 	if (type == B_UP) {
 
 		switch (*(char *)param) {
-			case 'P': {		
+
+			case 'P' : {		
 				Zigbee.openNetwork(180); 
 			} break;
-			case 'F'	: {	
+
+			case 'F' : {	
 				if (ESPUI.getControl(factory_reset_switch)->value.toInt() > 0)
 					Zigbee.factoryReset(); 
 			} break;
 
+			case 'T' : { 
+				int8_t zb_tx_power;
+    		esp_zb_get_tx_power(&zb_tx_power);
+				log_i("get tx power %d", zb_tx_power);
+				ESPUI.updateText(zigbee_tx_power_text, String(zb_tx_power));
+			} break;
+
+			case 'X' : {
+				if (isNumber(ESPUI.getControl(zigbee_tx_power_text)->value) &&
+						(ESPUI.getControl(zigbee_tx_power_text)->value.toInt() >= -24) &&
+						(ESPUI.getControl(zigbee_tx_power_text)->value.toInt() <= 20))
+							esp_zb_set_tx_power(ESPUI.getControl(zigbee_tx_power_text)->value.toInt());
+				else
+					ESPUI.updateText(zigbee_tx_power_text, zigbee_tx_power_text_str);
+
+			} break;
+
+			case 'R' : {
+				uint32_t zb_primary_channel = esp_zb_get_primary_network_channel_set();
+    		for (uint8_t i = 11; i <= 26; i++) {
+      		if (zb_primary_channel & (1 << i))
+						ESPUI.updateText(zigbee_primary_channel_text, String(i));
+    		}		
+			} break;
+
+			case 'S' : {
+					
+					if (isNumber(ESPUI.getControl(zigbee_primary_channel_text)->value) &&
+						(ESPUI.getControl(zigbee_primary_channel_text)->value.toInt() >= 11) &&
+						(ESPUI.getControl(zigbee_primary_channel_text)->value.toInt() <= 26)) {
+							uint32_t zb_primary_channel = ESPUI.getControl(zigbee_primary_channel_text)->value.toInt();
+
+							if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_ZIGBEE_PRIMARY_CHANNEL, (1 << zb_primary_channel))) {
+        				ESPUI.updateText(zigbee_primary_channel_text, "New Zigbee primary channel write success! Restarting...");
+   				     	Supla::Storage::ConfigInstance()->commit();
+        				SuplaDevice.scheduleSoftRestart(1000);
+							}
+						}
+				else
+					ESPUI.updateText(zigbee_primary_channel_text, zigbee_primary_channel_text_str);
+			} break;
 		}
 	}
 }
@@ -534,4 +762,24 @@ void switchCallback(Control *sender, int type) {
 		ESPUI.updateLabel(factory_reset_label, factory_reset_enabled_str);
 	else
 		ESPUI.updateLabel(factory_reset_label, factory_reset_disabled_str);
+}
+
+void timingsCallback(Control *sender, int type, void *param) {
+
+	uint8_t channel_slot = ESPUI.getControl(channelselector)->value.toInt();
+
+	switch (*(char *)param) {
+
+			case 'K' : {		
+				updateTimeout(channel_slot,0, 1, sender->value.toInt());
+			} break;
+
+			case 'T' : {		
+				updateTimeout(channel_slot,0, 2, sender->value.toInt());
+			} break;
+
+			case 'R' : {		
+				updateTimeout(channel_slot,0, 2, sender->value.toInt());
+			} break;	
+	}
 }

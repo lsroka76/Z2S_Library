@@ -165,6 +165,20 @@ void resetStorage() {
   }
 
 
+  void initZigbee() {
+	
+    if (_gateway && Zigbee.started()) {
+      
+      uint16_t attributes[6] = {ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID,
+                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID,
+                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID};
+
+      _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 6, &attributes[0]);
+      
+      fresh_start = false;
+    }
+  }
+
   void ping() {
 
   uint16_t attributes[3] = {ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
@@ -244,6 +258,9 @@ void iterateAlways() override {
 
   Supla::Sensor::ElectricityMeter::iterateAlways();
 
+  if (fresh_start) 
+    initZigbee();
+
   if ((_refresh_enabled) && ((millis() - _last_refresh_ms) > _refresh_ms)) {
     if (_gateway) {
       
@@ -289,6 +306,8 @@ void iterateAlways() override {
     bool                 _active_query = false;
     esp_zb_uint48_t      _write_mask;
     bool                 _isTuya = false;
+
+    bool fresh_start	= true;
 
     uint16_t _voltage_multiplier = 0;
     uint16_t _voltage_divisor 	= 0;

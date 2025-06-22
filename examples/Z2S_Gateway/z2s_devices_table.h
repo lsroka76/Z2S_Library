@@ -219,7 +219,7 @@ uint8_t   Z2S_findFirstFreeDevicesTableSlot(uint8_t start_slot = 0);
 void      Z2S_printDevicesTableSlots(bool toTelnet = false);
 bool      Z2S_loadDevicesTable();
 bool      Z2S_saveDevicesTable();
-void      Z2S_clearDevicesTable();
+bool      Z2S_clearDevicesTable();
 
 uint8_t   Z2S_findFirstFreeZBDevicesTableSlot(uint8_t start_slot = 0);
 uint32_t  Z2S_getZBDevicesTableSize();
