@@ -280,6 +280,7 @@ const char* getZ2SDeviceModelName(uint32_t modelID)  {
 		default:
 			return "Unknown Zigbee model";
 	}
+}
 
 void fillGatewayGeneralnformation(char *buf) {
 
