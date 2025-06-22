@@ -150,8 +150,10 @@ int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id) {
 void Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                               char *name, uint32_t func, uint8_t secondary_channel) {
 
+  
+  memset(&z2s_devices_table[slot], 0, sizeof(z2s_device_params_t));
   z2s_devices_table[slot].valid_record = true;
-  memcpy(z2s_devices_table[slot].ieee_addr,device->ieee_addr,8);
+  memcpy(z2s_devices_table[slot].ieee_addr,device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   z2s_devices_table[slot].short_addr = device->short_addr;
   z2s_devices_table[slot].model_id = device->model_id;
   z2s_devices_table[slot].endpoint = device->endpoint;
@@ -357,6 +359,7 @@ bool Z2S_saveDevicesTable() {
 }
 
 bool Z2S_clearDevicesTable() {
+
   log_i("Clear devices table");
   memset(z2s_devices_table,0,sizeof(z2s_devices_table));
   return Z2S_saveDevicesTable();
@@ -381,6 +384,36 @@ uint8_t Z2S_findZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr) {
   return 0xFF;  
 }
 
+bool Z2S_removeZBDeviceWithAllChannels(uint8_t zb_device_slot) {
+
+  if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
+
+    //bool zb_devices_table_save_required = false;
+    bool devices_table_save_required = false;
+
+    for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) {
+      if ((z2s_devices_table[devices_counter].valid_record) && 
+          (memcmp(z2s_devices_table[devices_counter].ieee_addr, 
+          z2s_zb_devices_table[zb_device_slot].ieee_addr, 
+          sizeof(esp_zb_ieee_addr_t)) == 0)) {
+
+            z2s_devices_table[devices_counter].valid_record = false;
+            devices_table_save_required = true;
+      }
+    }
+    bool tables_save_result = false;
+
+    if (devices_table_save_required)
+      tables_save_result = Z2S_saveDevicesTable();
+    z2s_zb_devices_table[zb_device_slot].record_id = 0;
+    tables_save_result = Z2S_saveZBDevicesTable();
+    return tables_save_result;
+  } else {
+    log_e("Invalid ZB devices table slot!");
+    return false;
+  }
+}
+
 void Z2S_initZBDevices(uint32_t init_ms) {
 
   for (uint8_t devices_counter = 0; devices_counter < Z2S_ZBDEVICESMAXCOUNT; devices_counter++) 
@@ -388,7 +421,7 @@ void Z2S_initZBDevices(uint32_t init_ms) {
         z2s_zb_devices_table[devices_counter].last_seen_ms = init_ms;
 }
 
-uint8_t Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint8_t Supla_channel) {
+uint8_t Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t ieee_addr, uint8_t Supla_channel) {
 
   uint8_t zb_device_slot = Z2S_findZBDeviceTableSlot(ieee_addr);
   uint8_t first_free_channel_slot = 0xFF;
@@ -427,6 +460,7 @@ bool Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr
       log_e("ZB devices full - can't add new one!");
       return false;
     } else {
+      memset(&z2s_zb_devices_table[zb_device_slot], 0, sizeof(z2s_zb_device_params_t));
       z2s_zb_devices_table[zb_device_slot].record_id = 1;
       memcpy(z2s_zb_devices_table[zb_device_slot].ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t));
       memcpy(z2s_zb_devices_table[zb_device_slot].manufacturer_name, manufacturer_name, strlen(manufacturer_name));
@@ -630,10 +664,10 @@ bool Z2S_saveZBDevicesTable() {
   }
 }
 
-void Z2S_clearZBDevicesTable() {
+bool Z2S_clearZBDevicesTable() {
   log_i("Clear zigbee devices table");
   memset(z2s_zb_devices_table,0,sizeof(z2s_zb_devices_table));
-  Z2S_saveZBDevicesTable();
+  return Z2S_saveZBDevicesTable();
 }
 
 void Z2S_onDataSaveRequest(uint8_t selector) {
@@ -1579,7 +1613,7 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
 
     channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   } 
-  Z2S_addZBDeviceTableSlot(device->ieee_addr, device->short_addr, "unknown","unknown", 0, device->model_id,0);
+  //Z2S_addZBDeviceTableSlot(device->ieee_addr, device->short_addr, "unknown","unknown", 0, device->model_id,0);
 
 }
 

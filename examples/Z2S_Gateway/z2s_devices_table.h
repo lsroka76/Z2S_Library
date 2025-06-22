@@ -225,7 +225,7 @@ uint8_t   Z2S_findFirstFreeZBDevicesTableSlot(uint8_t start_slot = 0);
 uint32_t  Z2S_getZBDevicesTableSize();
 bool      Z2S_saveZBDevicesTable();
 bool      Z2S_loadZBDevicesTable();
-void      Z2S_clearZBDevicesTable();
+bool      Z2S_clearZBDevicesTable();
 void      Z2S_printZBDevicesTableSlots(bool toTelnet = false);
 uint8_t   Z2S_findZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr);
 void      Z2S_initZBDevices(uint32_t init_ms);
@@ -233,7 +233,9 @@ void      Z2S_updateZBDeviceLastSeenMs(esp_zb_ieee_addr_t  ieee_addr, uint32_t l
 
 bool      Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, char *manufacturer_name, char *model_name, 
                                    uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source);
-uint8_t    Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint8_t Supla_channel);
+uint8_t   Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint8_t Supla_channel);
+
+bool      Z2S_removeZBDeviceWithAllChannels(uint8_t zb_device_slot);
 
 int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, int32_t channel_type, int8_t sub_id);
 int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
