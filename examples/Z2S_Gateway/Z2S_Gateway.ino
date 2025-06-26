@@ -1303,6 +1303,11 @@ void loop() {
 
   SuplaDevice.iterate();
 
+#ifndef USE_SUPLA_WEB_SERVER
+
+  
+#endif //USE_SUPLA_WEB_SERVER
+
   if (is_Telnet_server) telnet.loop();
   
   if ((!Zigbee.started()) && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
@@ -1347,7 +1352,13 @@ void loop() {
                                                                            ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)->data_p);
 
     log_i("Local Time Cluster UTC time attribute %lu, local time attribute %lu", utc_time_attribute, local_time_attribute);
-    Z2S_updateWebGUI();
+    
+#ifndef USE_SUPLA_WEB_SERVER
+
+    if (GUIstarted)
+      Z2S_updateWebGUI();
+
+#endif //USE_SUPLA_WEB_SERVER
 
     _time_cluster_last_refresh_ms = millis();
   }
@@ -1355,6 +1366,7 @@ void loop() {
   if (millis() - _status_led_last_refresh_ms > 1000) {
 
     _status_led_last_mode = _status_led_mode;
+    _status_led_last_refresh_ms = millis();
     
     if (Zigbee.isNetworkOpen())
       _status_led_mode = 1;
@@ -1370,6 +1382,8 @@ void loop() {
       
       rgbLed.show();
     }
+    if (GUIstarted)
+      Z2S_loopWebGUI();
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
@@ -1635,12 +1649,24 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
                           } break;
 
+                          case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1: {
+                            Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID, "T&H");
+                            Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+                                             SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+                          } break;
+
                           case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
                             Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
+                          } break;
+
+                          case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2: {
+                            Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_SID);
+                            Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
                           } break;
 
                           case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
@@ -1949,8 +1975,10 @@ void loop() {
                 case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
                 case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
                 case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
+                case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
                 case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
                 case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
+                case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2:
                 case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
                 case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
                 case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:

@@ -15,6 +15,8 @@ void Z2S_stopWebGUI();
 
 void Z2S_updateWebGUI();
 
+void Z2S_loopWebGUI();
+
 void Z2S_startUpdateServer();
 
 #endif // Z2S_WEB_GUI_H_

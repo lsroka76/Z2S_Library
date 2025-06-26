@@ -1927,9 +1927,25 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         }
       } break;
 
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1: {
+        
+        switch (sub_id) {
+          
+          case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+
+          case TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID: 
+            addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+      
+          case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+        }
+      } break;
+
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5: {
         
         switch (sub_id) {
+          
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
       
@@ -1942,6 +1958,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
         
         switch (sub_id) {
+          
           case SONOFF_SMART_VALVE_ON_OFF_SID:
            addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, sub_id, name, func); break;
       
@@ -1959,6 +1976,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
         
         switch (sub_id) {
+          
           case TUYA_RAIN_SENSOR_RAIN_SID:
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, "RAIN", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
@@ -1981,9 +1999,23 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         }
       } break;
 
+      case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2: {
+        
+        switch (sub_id) {
+          
+          case TUYA_RAIN_SENSOR_RAIN_SID:
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, "RAIN", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+
+          case TUYA_RAIN_SENSOR_ILLUMINANCE_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
+                                                  "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+        }
+      } break;
+
       case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR: {
         
         switch (sub_id) {
+          
           case IAS_ZONE_ALARM_1_SID:
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
@@ -2001,6 +2033,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR: {
         
         switch (sub_id) {
+          
           case LUMI_MOTION_SENSOR_OCCUPANCY_SID:
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
@@ -2023,6 +2056,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
 
         switch (sub_id) {
+          
           case TUYA_CO_DETECTOR_CO_SID:
           case TUYA_CO_DETECTOR_SILENCE_SID:
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
