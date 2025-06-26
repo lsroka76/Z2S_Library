@@ -25,7 +25,7 @@ jobs:
           arduino-cli lib install --git-url https://github.com/LennartHennigs/ESPTelnet.git
           arduino-cli lib install --git-url https://github.com/adafruit/Adafruit_NeoPixel.git
           arduino-cli lib install --git-url https://github.com/dojyorin/arduino_base64.git
-          arduino-cli lib install --git-url https://github.com/MartinMueller2003/ESPUI.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/ESPUI.git
           arduino-cli lib install --git-url https://github.com/bblanchon/ArduinoJson.git
           arduino-cli lib install --git-url https://github.com/ESP32Async/ESPAsyncWebServer.git
           arduino-cli lib install --git-url https://github.com/ESP32Async/AsyncTCP.git
