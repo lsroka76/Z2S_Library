@@ -1,3 +1,5 @@
+#ifndef USE_SUPLA_WEB_SERVER
+
 #include <ZigbeeGateway.h>
 
 #include "z2s_web_gui.h"
@@ -52,7 +54,7 @@ volatile bool device_controls_enabled = false;
 volatile bool channel_controls_enabled = false;
 
 #define GUI_UPDATE_CMD_NONE 								0x00
-#define GUI_UPDATE_CMD_DEVICE_INFO_LABEL		0x20
+#define GUI_UPDATE_CMD_DEVICE_INFO_LABEL		0x10
 #define GUI_UPDATE_CMD_CHANNEL_INFO_LABEL_1	0x20
 #define GUI_UPDATE_CMD_CHANNEL_INFO_LABEL_2	0x21
 
@@ -88,8 +90,8 @@ const static char factory_reset_disabled_str[] = "Zigbee stack factory reset dis
 const static char zigbee_tx_power_text_str[] = "Press Read to get current value or enter value between -24 and 20 and press Update";
 const static char zigbee_primary_channel_text_str[] = "Press Read to get current value or enter value between 11 and 26 and press Update";
 
-static char channel_info_str[512] = {};
-static char channel_info_str_2[512] = {};
+static char general_info_str[1024] = {};
+//static char channel_info_str_2[512] = {};
 
 typedef struct zigbee_cluster_s {
 	const char* zigbee_cluster_name;
@@ -141,6 +143,7 @@ void buildDevicesTabGUI();
 void buildChannelsTabGUI();
 
 void updateChannelInfoLabel(uint8_t label_number);
+void updateDeviceInfoLabel();
 
 void enterWifiDetailsCallback(Control *sender, int type, void *param);
 void textCallback(Control *sender, int type);
@@ -550,6 +553,7 @@ void buildChannelsTabGUI() {
 void Z2S_buildWebGUI() {
  
 	ESPUI.sliderContinuous = true;
+	ESPUI.setVerbosity(Verbosity::VerboseJSON);
 
 	buildGatewayTabGUI();
 	buildCredentialsGUI();
@@ -652,6 +656,13 @@ void Z2S_loopWebGUI() {
 				GUI_update_cmd = GUI_UPDATE_CMD_NONE;
 				GUI_update_required = false;
 			} break;
+
+			case GUI_UPDATE_CMD_DEVICE_INFO_LABEL: {
+
+				updateDeviceInfoLabel(); 
+				GUI_update_cmd = GUI_UPDATE_CMD_NONE;
+				GUI_update_required = false;
+			} break;
 		}
 	}
 }
@@ -744,23 +755,12 @@ void enableDeviceControls() {
 	device_controls_enabled = true;
 }
 
+void updateDeviceInfoLabel() {
 
-void deviceselectorCallback(Control *sender, int type) {
-
-	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_ZBDEVICESMAXCOUNT)) {
-
-		if (device_controls_enabled)
-			disableDeviceControls();
-		return;
-	}
-	
-	if (!device_controls_enabled)
-		enableDeviceControls();
-
-	char device_info_str[512] = {};
+	//char device_info_str[512] = {};
 	char ieee_addr_str[24] 		= {};
 
-	uint8_t device_slot = sender->value.toInt();
+	uint8_t device_slot = ESPUI.getControl(deviceselector)->value.toInt();
 
   sprintf(ieee_addr_str, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
 					z2s_zb_devices_table[device_slot].ieee_addr[7],
@@ -775,7 +775,7 @@ void deviceselectorCallback(Control *sender, int type) {
 	uint8_t battery_percentage = z2s_zb_devices_table[device_slot].battery_percentage >= 0x80 ? 
 												  		 z2s_zb_devices_table[device_slot].battery_percentage - 0x80 : 0xFF;
 
-	sprintf(device_info_str,"<b><i><style=color:black>Manufacturer name<style=;></i></b> %s "
+	sprintf(general_info_str,"<b><i><style=color:black>Manufacturer name<style=;></i></b> %s "
 					"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
 					"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X <b>| <i>Power source</b></i> 0x%02X<br>"
 					"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
@@ -790,9 +790,25 @@ void deviceselectorCallback(Control *sender, int type) {
 					z2s_zb_devices_table[device_slot].last_seen_ms,
 					zbGateway.getZbgDeviceUnitLastSeenMs(z2s_zb_devices_table[device_slot].short_addr),
 					zbGateway.getZbgDeviceUnitLastRssi(z2s_zb_devices_table[device_slot].short_addr));
-	log_i("value = %s, length = %u", device_info_str, strlen(device_info_str));
-	ESPUI.updateLabel(zb_device_info_label, device_info_str);
-	//ESPUI.updateLabel(zb_device_address_label, z2s_zb_devices_table[sender->value.toInt()].);
+	log_i("value = %s, length = %u", general_info_str, strlen(general_info_str));
+	ESPUI.updateLabel(zb_device_info_label, general_info_str);
+}
+
+void deviceselectorCallback(Control *sender, int type) {
+
+	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_ZBDEVICESMAXCOUNT)) {
+
+		if (device_controls_enabled)
+			disableDeviceControls();
+		return;
+	}
+	
+	if (!device_controls_enabled)
+		enableDeviceControls();
+
+	GUI_update_required = true;
+
+	GUI_update_cmd = GUI_UPDATE_CMD_DEVICE_INFO_LABEL;
 }
 
 void disableChannelControls() {
@@ -849,8 +865,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					z2s_devices_table[channel_slot].ieee_addr[2],
 					z2s_devices_table[channel_slot].ieee_addr[1], 
 					z2s_devices_table[channel_slot].ieee_addr[0]);
-	//memset(channel_info_str, 0, sizeof(channel_info_str));
-	sprintf(channel_info_str,
+	
+	sprintf(general_info_str,
 					"<meta charset=\"UTF-8\">Channel name: %s<br>"
 					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
 					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
@@ -871,10 +887,10 @@ void updateChannelInfoLabel(uint8_t label_number) {
         	z2s_devices_table[channel_slot].sub_id,
 					z2s_zb_devices_table[z2s_devices_table[channel_slot].ZB_device_id].manufacturer_name,
 					z2s_zb_devices_table[z2s_devices_table[channel_slot].ZB_device_id].model_name);
-	//memset(channel_info_str, 'U', 500);
-	log_i("Up2HERE!, value = %s, length = %u", channel_info_str, strlen(channel_info_str));
+	
+	log_i("Up2HERE!, value = %s, length = %u", general_info_str, strlen(general_info_str));
 	//if (label_number == 1)
-	ESPUI.updateLabel(zb_channel_info_label, channel_info_str);
+	ESPUI.updateLabel(zb_channel_info_label, general_info_str);
 	//delay(200);
 	/*sprintf(channel_info_str_2, 
 				"<meta charset=\"UTF-8\"><b><i>Data flags</b></i> %lu <b>| <i>user data(1)</b></i> %lu <b>| <i>user data(2)</b></i> %lu <b>| <i>user data(3)</b></i> %lu" 
@@ -1110,3 +1126,5 @@ void timingsCallback(Control *sender, int type, void *param) {
 		}
 	}
 }
+
+#endif //USE_SUPLA_WEB_SERVER
