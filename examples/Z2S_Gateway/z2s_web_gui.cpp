@@ -7,7 +7,7 @@
 #include "z2s_devices_table.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.44-27/06/2025"
+#define Z2S_VERSION "0.8.45-27/06/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -634,9 +634,9 @@ void Z2S_updateWebGUI() {
 
 	char buf[1024] = {};
 
-	//fillMemoryUptimeInformation(buf);
+	fillMemoryUptimeInformation(buf);
 
-	//ESPUI.updateLabel(gateway_memory_info, buf);
+	ESPUI.updateLabel(gateway_memory_info, buf);
 }
 
 void Z2S_loopWebGUI() {
