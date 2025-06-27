@@ -1382,8 +1382,13 @@ void loop() {
       
       rgbLed.show();
     }
+
+#ifndef USE_SUPLA_WEB_SERVER
+
     if (GUIstarted)
       Z2S_loopWebGUI();
+
+#endif //USE_SUPLA_WEB_SERVER
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
@@ -1472,7 +1477,11 @@ void loop() {
       rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 128));
       rgbLed.show();
 
+#ifndef USE_SUPLA_WEB_SERVER
+
       Z2S_stopWebGUI();
+
+#endif //USE_SUPLA_WEB_SERVER
 
       //do some Tuya vodoo - just in case Tuya device is paired
       
