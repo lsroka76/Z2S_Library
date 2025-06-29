@@ -1073,6 +1073,66 @@ int spiffs_log_vprintf(const char *fmt, va_list args) {
   return ret;
 }
 
+void enableZ2SNotifications() {
+
+  //  Zigbee Gateway notifications
+
+  zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
+  zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
+  zbGateway.onPressureReceive(Z2S_onPressureReceive);
+  zbGateway.onIlluminanceReceive(Z2S_onIlluminanceReceive);
+  zbGateway.onFlowReceive(Z2S_onFlowReceive);
+  zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
+  zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
+  zbGateway.onElectricalMeasurementReceive(Z2S_onElectricalMeasurementReceive);
+  zbGateway.onCurrentSummationReceive(Z2S_onCurrentSummationReceive);
+  zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
+  zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
+  zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
+  zbGateway.onThermostatTemperaturesReceive(Z2S_onThermostatTemperaturesReceive);
+  zbGateway.onThermostatModesReceive(Z2S_onThermostatModesReceive);
+  zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
+  zbGateway.onSonoffCustomClusterReceive(Z2S_onSonoffCustomClusterReceive);
+  zbGateway.onBatteryReceive(Z2S_onBatteryReceive);
+  zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
+  zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);
+  zbGateway.onIASzoneStatusChangeNotification(Z2S_onIASzoneStatusChangeNotification);
+
+  zbGateway.onBoundDevice(Z2S_onBoundDevice);
+  zbGateway.onBTCBoundDevice(Z2S_onBTCBoundDevice);
+
+  zbGateway.onDataSaveRequest(Z2S_onDataSaveRequest);
+}
+
+void disableZ2SNotifications() {
+
+//  switch off Zigbee Gateway notifications
+
+  zbGateway.onTemperatureReceive(nullptr);
+  zbGateway.onHumidityReceive(nullptr);
+  zbGateway.onPressureReceive(nullptr);
+  zbGateway.onIlluminanceReceive(nullptr);
+  zbGateway.onFlowReceive(nullptr);
+  zbGateway.onOccupancyReceive(nullptr);
+  zbGateway.onOnOffReceive(nullptr);
+  zbGateway.onElectricalMeasurementReceive(nullptr);
+  zbGateway.onCurrentSummationReceive(nullptr);
+  zbGateway.onCurrentLevelReceive(nullptr);
+  zbGateway.onColorHueReceive(nullptr);
+  zbGateway.onColorSaturationReceive(nullptr);
+  zbGateway.onThermostatTemperaturesReceive(nullptr);
+  zbGateway.onThermostatModesReceive(nullptr);
+  zbGateway.onWindowCoveringReceive(nullptr);
+  zbGateway.onSonoffCustomClusterReceive(nullptr);
+  zbGateway.onBatteryReceive(nullptr);
+  zbGateway.onCustomCmdReceive(nullptr);
+  zbGateway.onCmdCustomClusterReceive(nullptr);
+  zbGateway.onIASzoneStatusChangeNotification(nullptr);
+  zbGateway.onBoundDevice(nullptr);
+  zbGateway.onBTCBoundDevice(nullptr);
+  zbGateway.onDataSaveRequest(nullptr);
+}
+
 void setup() {
   
   //esp_log_set_vprintf(&spiffs_log_vprintf);
@@ -1204,36 +1264,7 @@ void setup() {
 
 #endif //USE_SUPLA_WEB_SERVER
 
-  //  Zigbee Gateway notifications
-
-  zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
-  zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
-  zbGateway.onPressureReceive(Z2S_onPressureReceive);
-  zbGateway.onIlluminanceReceive(Z2S_onIlluminanceReceive);
-  zbGateway.onFlowReceive(Z2S_onFlowReceive);
-  zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
-  zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
-  /*zbGateway.onRMSVoltageReceive(Z2S_onRMSVoltageReceive);
-  zbGateway.onRMSCurrentReceive(Z2S_onRMSCurrentReceive);
-  zbGateway.onRMSActivePowerReceive(Z2S_onRMSActivePowerReceive);*/
-  zbGateway.onElectricalMeasurementReceive(Z2S_onElectricalMeasurementReceive);
-  zbGateway.onCurrentSummationReceive(Z2S_onCurrentSummationReceive);
-  zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
-  zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
-  zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
-  zbGateway.onThermostatTemperaturesReceive(Z2S_onThermostatTemperaturesReceive);
-  zbGateway.onThermostatModesReceive(Z2S_onThermostatModesReceive);
-  zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
-  zbGateway.onSonoffCustomClusterReceive(Z2S_onSonoffCustomClusterReceive);
-  zbGateway.onBatteryReceive(Z2S_onBatteryReceive);
-  zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
-  zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);
-  zbGateway.onIASzoneStatusChangeNotification(Z2S_onIASzoneStatusChangeNotification);
-
-  zbGateway.onBoundDevice(Z2S_onBoundDevice);
-  zbGateway.onBTCBoundDevice(Z2S_onBTCBoundDevice);
-
-  zbGateway.onDataSaveRequest(Z2S_onDataSaveRequest);
+  enableZ2SNotifications();
 
   zbGateway.setManufacturerAndModel("Supla", "Z2SGateway");
   zbGateway.allowMultipleBinding(true);
@@ -1440,32 +1471,7 @@ void loop() {
 
   if (zbGateway.isNewDeviceJoined()) {
 
-    //  switch off Zigbee Gateway notifications
-
-    zbGateway.onTemperatureReceive(nullptr);
-    zbGateway.onHumidityReceive(nullptr);
-    zbGateway.onPressureReceive(nullptr);
-    zbGateway.onIlluminanceReceive(nullptr);
-    zbGateway.onFlowReceive(nullptr);
-    zbGateway.onOccupancyReceive(nullptr);
-    zbGateway.onOnOffReceive(nullptr);
-    zbGateway.onElectricalMeasurementReceive(nullptr);
-    zbGateway.onCurrentSummationReceive(nullptr);
-    zbGateway.onCurrentLevelReceive(nullptr);
-    zbGateway.onColorHueReceive(nullptr);
-    zbGateway.onColorSaturationReceive(nullptr);
-    zbGateway.onThermostatTemperaturesReceive(nullptr);
-    zbGateway.onThermostatModesReceive(nullptr);
-    zbGateway.onWindowCoveringReceive(nullptr);
-    zbGateway.onSonoffCustomClusterReceive(nullptr);
-    zbGateway.onBatteryReceive(nullptr);
-    zbGateway.onCustomCmdReceive(nullptr);
-    zbGateway.onCmdCustomClusterReceive(nullptr);
-    zbGateway.onIASzoneStatusChangeNotification(nullptr);
-    zbGateway.onBoundDevice(nullptr);
-    zbGateway.onBTCBoundDevice(nullptr);
-    zbGateway.onDataSaveRequest(nullptr);
-    
+    disableZ2SNotifications();
     
     zbGateway.clearNewDeviceJoined();
     zbGateway.printJoinedDevices();
@@ -2017,6 +2023,13 @@ void loop() {
         rgbLed.setPixelColor(0, rgbLed.Color(255, 0, 0));
         rgbLed.show();
         delay(1000);
+        enableZ2SNotifications();
+
+#ifndef USE_SUPLA_WEB_SERVER
+
+        Z2S_startWebGUI();
+
+#endif //USE_SUPLA_WEB_SERVER
       }
     }
   }

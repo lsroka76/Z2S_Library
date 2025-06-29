@@ -7,7 +7,7 @@
 #include "z2s_devices_table.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.45-27/06/2025"
+#define Z2S_VERSION "0.8.46-29/06/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -91,8 +91,7 @@ const static char factory_reset_disabled_str[] = "Zigbee stack factory reset dis
 const static char zigbee_tx_power_text_str[] = "Press Read to get current value or enter value between -24 and 20 and press Update";
 const static char zigbee_primary_channel_text_str[] = "Press Read to get current value or enter value between 11 and 26 and press Update";
 
-static char general_info_str[1024] = {};
-//static char channel_info_str_2[512] = {};
+static char general_purpose_gui_buffer[1024] = {};
 
 typedef struct zigbee_cluster_s {
 	const char* zigbee_cluster_name;
@@ -372,25 +371,27 @@ void fillMemoryUptimeInformation(char *buf) {
 
 void buildGatewayTabGUI() {
 
-	char buf[1024] = {};
+	//char buf[1024] = {};
 
 	auto gatewaytab = ESPUI.addControl(Control::Type::Tab, "", "Gateway", Control::Color::Emerald, Control::noParent, generalCallback);
 	
-	fillGatewayGeneralnformation(buf);
+	fillGatewayGeneralnformation(general_purpose_gui_buffer);
 
 	ESPUI.addControl(Control::Type::Separator, "General information", "", Control::Color::None, gatewaytab);
-	gateway_general_info = ESPUI.addControl(Control::Type::Label, "Device information", buf, Control::Color::Emerald, gatewaytab);
+	gateway_general_info = ESPUI.addControl(Control::Type::Label, "Device information", general_purpose_gui_buffer, 
+																					Control::Color::Emerald, gatewaytab);
 
-	fillMemoryUptimeInformation(buf);
+	fillMemoryUptimeInformation(general_purpose_gui_buffer);
 	
 	ESPUI.addControl(Control::Type::Separator, "Status", "", Control::Color::None, gatewaytab);
-	gateway_memory_info = ESPUI.addControl(Control::Type::Label, "Memory & Uptime", buf, Control::Color::Emerald, gatewaytab);
+	gateway_memory_info = ESPUI.addControl(Control::Type::Label, "Memory & Uptime", general_purpose_gui_buffer, 
+																				 Control::Color::Emerald, gatewaytab);
 	ESPUI.setElementStyle(gateway_memory_info, "text-align: justify; font-size: 4 px; font-style: normal; font-weight: normal;");
 }
 
 void buildCredentialsGUI() {
 
-	char buf[512] = {};
+	//char buf[512] = {};
 
 	auto wifitab = ESPUI.addControl(Control::Type::Tab, "", "WiFi & Supla credentials");
 
@@ -415,15 +416,15 @@ void buildCredentialsGUI() {
   
 	if (cfg) {
 
-  	memset(buf, 0, sizeof(buf));
-  	if (cfg->getWiFiSSID(buf) && strlen(buf) > 0)
-			ESPUI.updateText(wifi_ssid_text, buf);
-		memset(buf, 0, sizeof(buf));
-		if (cfg->getSuplaServer(buf) && strlen(buf) > 0)
-			ESPUI.updateText(Supla_server, buf);
-		memset(buf, 0, sizeof(buf));
-		if (cfg->getEmail(buf) && strlen(buf) > 0)
-			ESPUI.updateText(Supla_email, buf);
+  	memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+  	if (cfg->getWiFiSSID(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(wifi_ssid_text, general_purpose_gui_buffer);
+		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+		if (cfg->getSuplaServer(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(Supla_server, general_purpose_gui_buffer);
+		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+		if (cfg->getEmail(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
 	}			
 }
 
@@ -567,17 +568,17 @@ void Z2S_buildWebGUI() {
 
 void Z2S_startWebGUIConfig() {
 
-	char buf[1024] = {};
+	//char buf[1024] = {};
 	
-	fillGatewayGeneralnformation(buf);
+	fillGatewayGeneralnformation(general_purpose_gui_buffer);
 
 	ESPUI.addControl(Control::Type::Separator, "General information", "", Control::Color::None);
-	gateway_general_info = ESPUI.addControl(Control::Type::Label, "Device information", buf, Control::Color::Emerald);
+	gateway_general_info = ESPUI.addControl(Control::Type::Label, "Device information", general_purpose_gui_buffer, Control::Color::Emerald);
 
-	fillMemoryUptimeInformation(buf);
+	fillMemoryUptimeInformation(general_purpose_gui_buffer);
 	
 	ESPUI.addControl(Control::Type::Separator, "Status", "", Control::Color::None);
-	gateway_memory_info = ESPUI.addControl(Control::Type::Label, "Memory & Uptime", buf, Control::Color::Emerald);
+	gateway_memory_info = ESPUI.addControl(Control::Type::Label, "Memory & Uptime", general_purpose_gui_buffer, Control::Color::Emerald);
 	//ESPUI.setElementStyle(gateway_memory_info, "text-align: left; font-size: 6 px; font-style: normal; font-weight: normal;");
 
   ESPUI.addControl(Control::Type::Separator, "WiFi & Supla credentials", "", Control::Color::None);
@@ -598,15 +599,15 @@ void Z2S_startWebGUIConfig() {
   
 	if (cfg) {
 
-  	memset(buf, 0, sizeof(buf));
-  	if (cfg->getWiFiSSID(buf) && strlen(buf) > 0)
-			ESPUI.updateText(wifi_ssid_text, buf);
-		memset(buf, 0, sizeof(buf));
-		if (cfg->getSuplaServer(buf) && strlen(buf) > 0)
-			ESPUI.updateText(Supla_server, buf);
-		memset(buf, 0, sizeof(buf));
-		if (cfg->getEmail(buf) && strlen(buf) > 0)
-			ESPUI.updateText(Supla_email, buf);
+  	memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+  	if (cfg->getWiFiSSID(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(wifi_ssid_text, general_purpose_gui_buffer);
+		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+		if (cfg->getSuplaServer(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(Supla_server, general_purpose_gui_buffer);
+		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+		if (cfg->getEmail(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
 	}
 
 	ESPUI.begin("ZIGBEE <=> SUPLA CONFIG PAGE");
@@ -632,11 +633,11 @@ void Z2S_startUpdateServer() {
 
 void Z2S_updateWebGUI() {
 
-	char buf[1024] = {};
+	//char buf[1024] = {};
 
-	fillMemoryUptimeInformation(buf);
+	fillMemoryUptimeInformation(general_purpose_gui_buffer);
 
-	ESPUI.updateLabel(gateway_memory_info, buf);
+	ESPUI.updateLabel(gateway_memory_info, general_purpose_gui_buffer);
 }
 
 void Z2S_loopWebGUI() {
@@ -776,7 +777,7 @@ void updateDeviceInfoLabel() {
 	uint8_t battery_percentage = z2s_zb_devices_table[device_slot].battery_percentage >= 0x80 ? 
 												  		 z2s_zb_devices_table[device_slot].battery_percentage - 0x80 : 0xFF;
 
-	sprintf(general_info_str,"<b><i><style=color:black>Manufacturer name<style=;></i></b> %s "
+	sprintf(general_purpose_gui_buffer,"<b><i><style=color:black>Manufacturer name<style=;></i></b> %s "
 					"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
 					"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X <b>| <i>Power source</b></i> 0x%02X<br>"
 					"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
@@ -791,8 +792,8 @@ void updateDeviceInfoLabel() {
 					z2s_zb_devices_table[device_slot].last_seen_ms,
 					zbGateway.getZbgDeviceUnitLastSeenMs(z2s_zb_devices_table[device_slot].short_addr),
 					zbGateway.getZbgDeviceUnitLastRssi(z2s_zb_devices_table[device_slot].short_addr));
-	log_i("value = %s, length = %u", general_info_str, strlen(general_info_str));
-	ESPUI.updateLabel(zb_device_info_label, general_info_str);
+	log_i("value = %s, length = %u", general_purpose_gui_buffer, strlen(general_purpose_gui_buffer));
+	ESPUI.updateLabel(zb_device_info_label, general_purpose_gui_buffer);
 }
 
 void deviceselectorCallback(Control *sender, int type) {
@@ -807,9 +808,11 @@ void deviceselectorCallback(Control *sender, int type) {
 	if (!device_controls_enabled)
 		enableDeviceControls();
 
-	GUI_update_required = true;
+	//GUI_update_required = true;
 
-	GUI_update_cmd = GUI_UPDATE_CMD_DEVICE_INFO_LABEL;
+	//GUI_update_cmd = GUI_UPDATE_CMD_DEVICE_INFO_LABEL;
+
+	updateDeviceInfoLabel();
 }
 
 void disableChannelControls() {
@@ -867,8 +870,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					z2s_devices_table[channel_slot].ieee_addr[1], 
 					z2s_devices_table[channel_slot].ieee_addr[0]);
 	
-	sprintf(general_info_str,
-					"<meta charset=\"UTF-8\">Channel name: %s<br>"
+	sprintf(general_purpose_gui_buffer,
+					"<meta charset=\"UTF-8\"><b><i>Channel name:</i></b> %s<br>"
 					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
 					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
 					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
@@ -889,9 +892,9 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					z2s_zb_devices_table[z2s_devices_table[channel_slot].ZB_device_id].manufacturer_name,
 					z2s_zb_devices_table[z2s_devices_table[channel_slot].ZB_device_id].model_name);
 	
-	log_i("Up2HERE!, value = %s, length = %u", general_info_str, strlen(general_info_str));
+	log_i("Up2HERE!, value = %s, length = %u", general_purpose_gui_buffer, strlen(general_purpose_gui_buffer));
 	//if (label_number == 1)
-	ESPUI.updateLabel(zb_channel_info_label, general_info_str);
+	ESPUI.updateLabel(zb_channel_info_label, general_purpose_gui_buffer);
 	//delay(200);
 	/*sprintf(channel_info_str_2, 
 				"<meta charset=\"UTF-8\"><b><i>Data flags</b></i> %lu <b>| <i>user data(1)</b></i> %lu <b>| <i>user data(2)</b></i> %lu <b>| <i>user data(3)</b></i> %lu" 
@@ -929,9 +932,11 @@ void channelselectorCallback(Control *sender, int type) {
 	if (!channel_controls_enabled)
 		enableChannelControls();
 
-	GUI_update_required = true;
+	//GUI_update_required = true;
 
-	GUI_update_cmd = GUI_UPDATE_CMD_CHANNEL_INFO_LABEL_2;
+	//GUI_update_cmd = GUI_UPDATE_CMD_CHANNEL_INFO_LABEL_2;
+
+	updateChannelInfoLabel(1);
 }
 
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
@@ -969,7 +974,7 @@ void removeDeviceCallback(Control *sender, int type, void *param) {
 
 		uint8_t device_slot = ESPUI.getControl(deviceselector)->value.toInt();
 
-		char status_line[128];
+		//char status_line[128];
 		bool restart_required = false;
 
 		switch (*(char *)param) {
@@ -978,32 +983,32 @@ void removeDeviceCallback(Control *sender, int type, void *param) {
 				
 				z2s_zb_devices_table[device_slot].record_id = 0;
 				if (Z2S_saveZBDevicesTable()) {
-					sprintf(status_line, "Device #%02u removed! Restarting...", device_slot);
+					sprintf(general_purpose_gui_buffer, "Device #%02u removed! Restarting...", device_slot);
 					restart_required = true;
 				} else
-					sprintf(status_line, "Device #%02u removal failed! Error saving ZB devices table!", device_slot);
+					sprintf(general_purpose_gui_buffer, "Device #%02u removal failed! Error saving ZB devices table!", device_slot);
 			} break;
 
 			case 'C' : {	
 
 				if (Z2S_removeZBDeviceWithAllChannels(device_slot)) {
 
-					sprintf(status_line, "Device #%02u and it's all channels removed! Restarting...", device_slot);
+					sprintf(general_purpose_gui_buffer, "Device #%02u and it's all channels removed! Restarting...", device_slot);
 					restart_required = true;
 				} else
-					sprintf(status_line, "Device #%02u or some of it's channels removal failed! Error saving one of devices table!", device_slot);
+					sprintf(general_purpose_gui_buffer, "Device #%02u or some of it's channels removal failed! Error saving one of devices table!", device_slot);
 			} break;
 
 			case 'A': {
 
 				if (Z2S_clearZBDevicesTable()) {
-					sprintf(status_line, "All devices removed! Restarting...");
+					sprintf(general_purpose_gui_buffer, "All devices removed! Restarting...");
 					restart_required = true;
 				} else
-					sprintf(status_line, "Devices removal failed! Error saving ZB devices table!");
+					sprintf(general_purpose_gui_buffer, "Devices removal failed! Error saving ZB devices table!");
 			} break;
 		}
-    ESPUI.updateLabel(device_status_label, status_line);
+    ESPUI.updateLabel(device_status_label, general_purpose_gui_buffer);
     if (restart_required) 
 			SuplaDevice.scheduleSoftRestart(1000);
 	}
@@ -1018,9 +1023,9 @@ void removeChannelCallback(Control *sender, int type) {
 		z2s_devices_table[channel_slot].valid_record = false;
       
 		if (Z2S_saveDevicesTable()) {
-			char status_line[128];
-			sprintf(status_line, "Channel # %02u removed. Restarting...", channel_slot);
-      ESPUI.updateLabel(channel_status_label, status_line);
+			//char status_line[128];
+			sprintf(general_purpose_gui_buffer, "Channel # %02u removed. Restarting...", channel_slot);
+      ESPUI.updateLabel(channel_status_label, general_purpose_gui_buffer);
       SuplaDevice.scheduleSoftRestart(1000);
 		}
 	}
