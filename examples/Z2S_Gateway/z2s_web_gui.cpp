@@ -7,7 +7,7 @@
 #include "z2s_devices_table.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.46-29/06/2025"
+#define Z2S_VERSION "0.8.47-01/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -345,7 +345,7 @@ void fillGatewayGeneralnformation(char *buf) {
 
 		generateHexString(Supla::RegisterDevice::getGUID(), guid_buf, SUPLA_GUID_SIZE);
 
-		snprintf(buf, 1024, "Supla firmware: %s<br><br>Supla GUID:%s<br><br>Z2S Gateway version: %s<br><br>", 
+		snprintf(buf, 1024, "<b><i>Supla firmware:</i></b> %s<br><br><b><i>Supla GUID:</i></b> %s<br><br><b><i>Z2S Gateway version:</i></b> %s<br><br>", 
 						Supla::RegisterDevice::getSoftVer(), guid_buf, Z2S_VERSION);
 	
 		log_i("Device information %s", buf);
@@ -359,9 +359,10 @@ void fillMemoryUptimeInformation(char *buf) {
 		time_t local_time_info;
 		time(&local_time_info);
 
-		snprintf(buf, 1024, "Flash chip real size: %u kB<br>Free Sketch Space: %u kB<br>"
-						"Free Heap: %u kB<br>Minimal Free Heap: %u kB<br>HeapSize: %u kB<br>"
-						"MaxAllocHeap: %u kB<br><br>Czas lokalny: %sSupla uptime: %lu s", 
+		snprintf(buf, 1024, "<b><i>Flash chip real size:</b></i> %u kB <b>| <i>Free Sketch Space:</b></i> %u kB<br>"
+						"<b><i>Free Heap:</b></i> %u kB <b>| <i>Minimal Free Heap:</b></i> %u kB <b>| <i>"
+						"HeapSize:</b></i> %u kB <b>| <i>MaxAllocHeap:</b></i> %u kB<br><br>"
+						"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s", 
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
 						ESP.getMaxAllocHeap(), ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
 
@@ -380,13 +381,18 @@ void buildGatewayTabGUI() {
 	ESPUI.addControl(Control::Type::Separator, "General information", "", Control::Color::None, gatewaytab);
 	gateway_general_info = ESPUI.addControl(Control::Type::Label, "Device information", general_purpose_gui_buffer, 
 																					Control::Color::Emerald, gatewaytab);
+	ESPUI.setElementStyle(gateway_general_info, "color:black;text-align: justify; font-family:tahoma; font-size: 4 px; font-style: normal; font-weight: normal;");
+	ESPUI.setPanelWide(gateway_general_info, true);
 
 	fillMemoryUptimeInformation(general_purpose_gui_buffer);
 	
 	ESPUI.addControl(Control::Type::Separator, "Status", "", Control::Color::None, gatewaytab);
 	gateway_memory_info = ESPUI.addControl(Control::Type::Label, "Memory & Uptime", general_purpose_gui_buffer, 
 																				 Control::Color::Emerald, gatewaytab);
-	ESPUI.setElementStyle(gateway_memory_info, "text-align: justify; font-size: 4 px; font-style: normal; font-weight: normal;");
+	//ESPUI.setElementStyle(gateway_memory_info, "text-align: justify; font-size: 4 px; font-style: normal; font-weight: normal;");
+	ESPUI.setElementStyle(gateway_memory_info, "color:black;text-align: justify; font-family:tahoma; font-size: 4 px; font-style: normal; font-weight: normal;");
+	ESPUI.setPanelWide(gateway_memory_info, true);
+
 }
 
 void buildCredentialsGUI() {

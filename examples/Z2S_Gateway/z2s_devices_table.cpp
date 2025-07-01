@@ -1763,6 +1763,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit);
       } break;
 
+      case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
+        addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, NO_CUSTOM_CMD_SID, true);
+      } break;
+
       case Z2S_DEVICE_DESC_TUYA_HVAC:
       case Z2S_DEVICE_DESC_TUYA_HVAC_6567C:
       case Z2S_DEVICE_DESC_TUYA_HVAC_23457:

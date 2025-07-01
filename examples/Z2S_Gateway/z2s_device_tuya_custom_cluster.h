@@ -89,6 +89,14 @@
 #define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_C_DP          0x7F//[127, "energy_c", tuya.valueConverter.divideBy100],
 #define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_PRODUCED_C_DP 0x80//[128, "energy_produced_c", tuya.valueConverter.divideBy100],
 
+#define TUYA_1PHASE_ELECTRICITY_METER_ENERGY_A_DP          0x01//[1, "energy", tuya.valueConverter.divideBy100],
+#define TUYA_1PHASE_ELECTRICITY_METER_ENERGY_PRODUCED_A_DP 0x17//[23, "produced_energy", tuya.valueConverter.divideBy100],
+#define TUYA_1PHASE_ELECTRICITY_METER_AC_FREQUENCY_DP      0x20//[32, "ac_frequency", tuya.valueConverter.divideBy100],
+#define TUYA_1PHASE_ELECTRICITY_METER_POWER_FACTOR_A_DP    0x32//[50, "power_factor", tuya.valueConverter.raw],
+#define TUYA_1PHASE_ELECTRICITY_METER_VOLTAGE_A_DP         0x66//[102, "voltage_a", tuya.valueConverter.divideBy10],
+#define TUYA_1PHASE_ELECTRICITY_METER_CURRENT_A_DP         0x67//[103, "current_a", tuya.valueConverter.divideBy1000],
+#define TUYA_1PHASE_ELECTRICITY_METER_POWER_A_DP           0x68//[104, "power", tuya.valueConverter.raw]
+
 #define MOES_ALARM_BATTERY_PERCENTAGE_DP   0x0F //15 02 04
 #define MOES_ALARM_MELODY_DP               0x15 //21 ENUM
 #define MOES_ALARM_DURATION_DP             0x07 //07 02 04

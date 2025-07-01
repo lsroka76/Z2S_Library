@@ -97,6 +97,7 @@
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2  0x4502
 
 #define Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER  0x4550
+#define Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER   0x4551
 
 #define Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1              0x4600
 #define Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2              0x4601
@@ -1215,6 +1216,9 @@ const dataPoints = {
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }}, 
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_clusters_count = 1, .z2s_device_clusters =
@@ -1293,6 +1297,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "SNZB-02WD", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SONOFF", .model_name = "SNZB-02LD", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_bjawzodf", .model_name = "TY0201", 
@@ -1689,7 +1696,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 3, Z2S_DEVICE_DESC_IKEA_VALLHORN_3 }}},
 
   { .manufacturer_name = "_TZ3000_gjrubzje", .model_name = "TS0001",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "ZBMINIL2",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
@@ -1917,6 +1924,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_dikb3dp6", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_iwn0gpzz", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "ADEO", .model_name = "LDSENK08",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1},

@@ -655,6 +655,48 @@ void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, u
     msgZ2SDeviceElectricityMeter(channel_number_slot_5, Z2S_EM_ACT_RVR_ENERGY_C_SEL, Tuya_read_dp_result.dp_value, rssi);
 }
 
+void processTuya1PhaseElectricityMeterDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
+
+
+  int16_t channel_number_slot_1;
+
+  
+  channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                    z2s_devices_table[channel_number_slot].endpoint, 
+                                                    z2s_devices_table[channel_number_slot].cluster_id, 
+                                                    SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
+
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_1PHASE_ELECTRICITY_METER_AC_FREQUENCY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceElectricityMeter(channel_number_slot_1, Z2S_EM_AC_FREQUENCY, Tuya_read_dp_result.dp_value, rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_1PHASE_ELECTRICITY_METER_VOLTAGE_A_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceElectricityMeter(channel_number_slot_1, Z2S_EM_VOLTAGE_A_SEL, Tuya_read_dp_result.dp_value / 10, rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_1PHASE_ELECTRICITY_METER_CURRENT_A_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceElectricityMeter(channel_number_slot_1, Z2S_EM_CURRENT_A_SEL, (int32_t)Tuya_read_dp_result.dp_value, rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_1PHASE_ELECTRICITY_METER_POWER_A_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceElectricityMeter(channel_number_slot_1, Z2S_EM_ACTIVE_POWER_A_SEL, (int32_t)Tuya_read_dp_result.dp_value, rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_1PHASE_ELECTRICITY_METER_POWER_FACTOR_A_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceElectricityMeter(channel_number_slot_1, Z2S_EM_POWER_FACTOR_A_SEL, (int32_t)Tuya_read_dp_result.dp_value, rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_1PHASE_ELECTRICITY_METER_ENERGY_A_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceElectricityMeter(channel_number_slot_1, Z2S_EM_ACT_FWD_ENERGY_A_SEL, Tuya_read_dp_result.dp_value, rssi);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_1PHASE_ELECTRICITY_METER_ENERGY_PRODUCED_A_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceElectricityMeter(channel_number_slot_1, Z2S_EM_ACT_RVR_ENERGY_A_SEL, Tuya_read_dp_result.dp_value, rssi);
+}
+
 void processTuyaEF00Switch2x3DataReport(int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, signed char rssi) {
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
@@ -1175,6 +1217,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
       processTuya3PhasesElectricityMeterDataReport(channel_number_slot, payload_size, payload, rssi); break;
+
+    case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
+      processTuya1PhaseElectricityMeterDataReport(channel_number_slot, payload_size, payload, rssi); break;
     
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
       processMoesShadesDriveMotorDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
