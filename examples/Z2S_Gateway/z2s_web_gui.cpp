@@ -7,7 +7,7 @@
 #include "z2s_devices_table.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.49-01/07/2025"
+#define Z2S_VERSION "0.8.50-01/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
