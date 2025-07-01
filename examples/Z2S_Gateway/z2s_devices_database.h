@@ -1281,6 +1281,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_vaarscrt", .model_name = "TS0601", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1}, //NOUS SZ-T04
 
+  { .manufacturer_name = "HOBEIAN", .model_name = "ZG-227Z", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_xr3htd96", .model_name = "TS0201", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
 
