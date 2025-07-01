@@ -1544,6 +1544,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_cmcjbqup", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_VALVE_DC, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "Aqara", .model_name = "lumi.valve.agl001", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_VALVE_DC, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_8n7lqbm0", .model_name = "TS0001", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
