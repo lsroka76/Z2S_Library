@@ -108,7 +108,7 @@ uint8_t write_mask;
 uint16_t write_mask_16;
 uint32_t write_mask_32;
 
-uint8_t custom_cmd_payload[10]; //TODO - include RAW/STRING
+uint8_t custom_cmd_payload[64]; //TODO - include RAW/STRING 0.8.51 increased 10->64
 uint8_t write_attribute_payload[20];
 
 
@@ -1033,7 +1033,12 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if (params_number >= 11)
       manuf_code = strtoul(*(param + 10),nullptr, 0);
       
-    
+    if (data_size > sizeof(custom_cmd_payload)) {
+      log_e("Custom command data size(%u) to big(max. %u)!",
+            data_size, sizeof(custom_cmd_payload));
+      return;
+    }
+
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
       telnet.printf(">custom-cmd %u 0x%X 0x%X 0x%X 0x%X\n\r>", channel_id, cluster_id, command_id, data_type,
