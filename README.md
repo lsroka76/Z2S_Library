@@ -46,6 +46,6 @@ That gateway, as discussed on the [Supla forum](https://forum.supla.org/viewforu
    
    - Files labeled "merged" should be uploaded at address 0x0000 since they are complete ESP image - they will overwrite any data, nevertheless it's recommended to erase flash before upload,
      
-   - files without label "merged" should be uploaded at address 0x10000 or through OTA (**gateway_IP/upload**) - OTA works only for modules with 8 MB of flash or more.  
+   - files without label "merged" should be uploaded at address 0x10000 or through OTA (**gateway_IP/update**) - OTA works only for modules with 8 MB of flash or more.  
 [(ToC)](#table-of-contents)
 
