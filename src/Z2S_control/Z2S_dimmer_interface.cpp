@@ -226,3 +226,39 @@ uint32_t Supla::Control::Z2S_DimmerInterface::getTimeoutSecs() {
 
   return _timeout_ms * 1000;
 }
+
+void Supla::Control::Z2S_DimmerInterface::increaseBrightness(int8_t add_to_brightness) {
+
+  _last_brightness = _brightness;
+
+  int16_t new_brightness = _brightness + add_to_brightness;
+
+  if (new_brightness < 0)
+    new_brightness = 0;
+
+  if (new_brightness > 100)
+    new_brightness = 100;
+
+  _brightness = new_brightness;
+
+  _lastMsgReceivedMs = millis();
+}
+
+void Supla::Control::Z2S_DimmerInterface::handleAction(int event, int action) {
+
+  (void)(event);
+  
+  switch (action) {
+    case DIM_W: {
+
+      increaseBrightness(-10);
+      break;
+    }
+
+    case BRIGHTEN_W: {
+      
+      increaseBrightness(10);
+      break;
+    }
+  }
+}

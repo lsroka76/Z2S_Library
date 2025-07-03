@@ -7,7 +7,7 @@
 #include "z2s_devices_table.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.51-02/07/2025"
+#define Z2S_VERSION "0.8.52-03/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -43,6 +43,8 @@ uint16_t device_read_attribute_label;
 uint16_t device_attribute_type_selector;
 uint16_t device_attribute_size_number;
 uint16_t device_attribute_value_number;
+uint16_t device_read_attribute_button;
+
 uint16_t remove_device_button, remove_device_and_channels_button, remove_all_devices_button;
 
 uint16_t channelselector;
@@ -66,7 +68,10 @@ char save_flag		= 'S';
 char restart_flag = 'R';
 
 char swbuild_flag = 'S';
-char rssi_flag    = 'R';
+char rssi_flag    = 'I';
+
+char read_attr_flag = 'R';
+char write_attr_flag = 'W';
 
 char pairing_flag = 'P';
 char factory_flag = 'F';
@@ -160,6 +165,7 @@ void timingsCallback(Control *sender, int type, void *param);
 void removeChannelCallback(Control *sender, int type);
 void removeAllChannelsCallback(Control *sender, int type);
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param);
+//void readAttributeCallback(Control *sender, int type, void *param);
 void generalZigbeeCallback(Control *sender, int type, void *param);
 
 void fillGatewayGeneralnformation(char *buf);
@@ -478,17 +484,33 @@ void buildDevicesTabGUI() {
 	
 	ESPUI.setPanelWide(zb_device_info_label, true);
 
-	getswbuild_button = ESPUI.addControl(Control::Type::Button, "Software Build ID", "Read", Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, &swbuild_flag);
+	getswbuild_button = ESPUI.addControl(Control::Type::Button, "Software Build ID", "Read", 
+																			 Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, &swbuild_flag);
 	swbuildlabel = ESPUI.addControl(Control::Type::Label, "Software Build ID", "...", Control::Color::Emerald, getswbuild_button);
 
-	getrssi_button = ESPUI.addControl(Control::Type::Button, "Device RSSI", "Read", Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, &rssi_flag);
+	getrssi_button = ESPUI.addControl(Control::Type::Button, "Device RSSI", "Read", 
+																		Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, &rssi_flag);
 	rssilabel = ESPUI.addControl(Control::Type::Label, "Device Rssi", "...", Control::Color::Emerald, getrssi_button);
 
-	device_cluster_selector = ESPUI.addControl(Control::Type::Select, "Clusters&Attributes", String(-1), Control::Color::Emerald, devicestab, generalCallback);
-	device_attribute_number = ESPUI.addControl(Control::Type::Number, "Attribute", "0", Control::Color::Emerald, device_cluster_selector, generalCallback);
+	device_cluster_selector = ESPUI.addControl(Control::Type::Select, "Clusters&Attributes", String(-1), 
+																						 Control::Color::Emerald, devicestab, generalCallback);
+	
+	ESPUI.setPanelWide(device_cluster_selector, true);
+
+	device_attribute_number = ESPUI.addControl(Control::Type::Number, "Attribute", "0", 
+																						 Control::Color::Emerald, device_cluster_selector, generalCallback);
 	ESPUI.addControl(Control::Type::Min, "", "0", Control::Color::None, device_attribute_number);
 	ESPUI.addControl(Control::Type::Max, "", "65536", Control::Color::None, device_attribute_number);
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Attribute number", Control::Color::None, device_cluster_selector), clearLabelStyle);
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Attribute number", 
+																				 Control::Color::None, device_cluster_selector), clearLabelStyle);
+	
+	/*device_attribute_value_number = ESPUI.addControl(Control::Type::Number, "Value", "0", 
+																									 Control::Color::Emerald, device_cluster_selector, generalCallback);
+	ESPUI.addControl(Control::Type::Min, "", "-32768", Control::Color::None, device_attribute_value_number);
+	ESPUI.addControl(Control::Type::Max, "", "32768", Control::Color::None, device_attribute_value_number);
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Attribute value", 
+																				 Control::Color::None, device_cluster_selector), clearLabelStyle);
+	*/
 	ESPUI.addControl(Control::Type::Option, "Select Zigbee cluster...", String(-1), Control::Color::None, device_cluster_selector);
 
 	uint32_t zigbee_clusters_count = sizeof(zigbee_clusters)/sizeof(zigbee_cluster_t);
@@ -499,7 +521,13 @@ void buildDevicesTabGUI() {
 		String(zigbee_clusters[clusters_counter].zigbee_cluster_id), Control::Color::None, device_cluster_selector);
 	}
 
-	/*uint16_t device_read_attribute_label;
+	device_read_attribute_button = ESPUI.addControl(Control::Type::Button, "Read Attribute", "Read", 
+																									Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, &read_attr_flag);
+	device_read_attribute_label = ESPUI.addControl(Control::Type::Label, "Read result", "...", 
+																								 Control::Color::Emerald, device_read_attribute_button);
+
+
+	/*uint16_t ;
 uint16_t device_attribute_type_selector;
 uint16_t device_attribute_size_number;
 uint16_t device_attribute_value_number;*/
@@ -956,19 +984,41 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
     memcpy(&device.ieee_addr, z2s_zb_devices_table[ESPUI.getControl(deviceselector)->value.toInt()].ieee_addr,8);
     device.short_addr = z2s_zb_devices_table[ESPUI.getControl(deviceselector)->value.toInt()].short_addr;
 
+		uint16_t cluster_id = ESPUI.getControl(device_cluster_selector)->value.toInt();
+		uint16_t attribute_id = ESPUI.getControl(device_attribute_number)->value.toInt();
+
 		switch (*(char *)param) {
 			case 'S': {
+
 				if (zbGateway.zbQueryDeviceBasicCluster(&device, true, ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID)) {
 					if (strlen(zbGateway.getQueryBasicClusterData()->software_build_ID) > 0) 
 						ESPUI.updateLabel(swbuildlabel, zbGateway.getQueryBasicClusterData()->software_build_ID);
 				} else
 						ESPUI.updateLabel(swbuildlabel, device_query_failed_str);
 			} break;
-			case 'R': {
+			case 'I': {
+
 				if (zbGateway.sendCustomClusterCmd(&device, 0x0003, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr, true))
 					ESPUI.updateLabel(rssilabel, String(zbGateway.getZbgDeviceUnitLastRssi(device.short_addr)));
 				else
 					ESPUI.updateLabel(rssilabel, device_query_failed_str);
+			} break;
+
+			case 'R' : {		
+					bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true);
+					if (result) {
+						uint32_t readAttrValue;
+						switch (zbGateway.getReadAttrLastResult()->data.size) {
+							case 1: readAttrValue = *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+							case 2: readAttrValue = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+							case 4: readAttrValue = *(uint32_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+						}
+						
+						sprintf(general_purpose_gui_buffer, "Reading attribute successful! <br>Data value is %u(0x%X), data type is 0x%X, data size is 0x%X", 
+                    readAttrValue, readAttrValue, zbGateway.getReadAttrLastResult()->data.type,
+										zbGateway.getReadAttrLastResult()->data.size);
+						ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
+					}
 			} break;
 		}
 	}
@@ -1138,5 +1188,25 @@ void timingsCallback(Control *sender, int type, void *param) {
 		}
 	}
 }
+
+/*void readAttributeCallback(Control *sender, int type, void *param) {
+
+	if (ESPUI.getControl(device_cluster_selector)->value.toInt() >= 0) {
+
+		uint16_t cluster_id = ESPUI.getControl(device_cluster_selector)->value.toInt();
+		uint16_t attribute_id = ESPUI.getControl(device_attribute_number)->value.toInt();
+		switch (*(char *)param) {
+
+				case 'R' : {		
+					
+					bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true);
+				} break;
+
+				case 'W' : {		
+					//TODO
+				} break;
+		}
+	}
+}*/
 
 #endif //USE_SUPLA_WEB_SERVER

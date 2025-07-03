@@ -51,7 +51,7 @@ public:
   //void onInit() override;
   void iterateAlways() override;
 
-  virtual void handleAction(int event, int action) override {};
+  virtual void handleAction(int event, int action) override;
 
   virtual void sendValueToDevice(uint8_t brightness); //= 0;
 
@@ -95,6 +95,8 @@ protected:
   uint8_t _brightness = 0;
 
   uint32_t _lastMsgReceivedMs = 0;
+
+  void increaseBrightness(int8_t add_to_brightness);
 
 }; //Z2S_DimmerInterface
 

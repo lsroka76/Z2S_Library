@@ -2296,6 +2296,14 @@ bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_ac
         Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_event);
     } break;
 
+    case SUPLA_CHANNELTYPE_DIMMER: {
+      auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::Control::Z2S_DimmerInterface*>(dst_element);
+      if (condition)
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
+      else
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_event);
+    } break;
+
     default: return false; 
   } 
   return true;

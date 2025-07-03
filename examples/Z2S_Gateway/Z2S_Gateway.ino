@@ -383,6 +383,12 @@ uint16_t parseSuplaActionStr(char *Supla_action) {
   if (strcmp(Supla_action, "TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES") == 0)
     return Supla::TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES;
   else
+  if (strcmp(Supla_action, "DIM_W") == 0)
+    return Supla::DIM_W;
+  else
+  if (strcmp(Supla_action, "BRIGHTEN_W") == 0)
+    return Supla::BRIGHTEN_W;
+  else
     return 0xFFFF;
 }
 
