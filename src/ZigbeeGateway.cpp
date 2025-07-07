@@ -1134,7 +1134,7 @@ bool ZigbeeGateway::readClusterReportCfgCmd(zbg_device_params_t * device, uint16
   esp_zb_lock_release();
   delay(200);
 
-  if (ack && xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
+  if (ack && xSemaphoreTake(gt_lock, pdMS_TO_TICKS(2000)) != pdTRUE) {
       log_e("Semaphore timeout read attribute report 0x%x - device 0x%x, endpoint 0x%x, cluster 0x%x", attribute_id, device->short_addr, device->endpoint, cluster_id);
       return false;
     }
