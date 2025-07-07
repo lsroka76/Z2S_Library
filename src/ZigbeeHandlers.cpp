@@ -253,10 +253,10 @@ static esp_err_t zb_cmd_read_report_cfg_resp_handler(const esp_zb_zcl_cmd_read_r
         log_v( "Read report configuration response: status(%d), cluster(0x%x), attribute(0x%x), type(0x%x), min_interval(0x%x), max interval(0x%x), delta(0x%x)", 
                 variable->status, message->info.cluster, variable->attribute_id, variable->client.attr_type, variable->client.min_interval, variable->client.max_interval, 
                 variable->client.delta[0]);
-        if (variable->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
+        //if (variable->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
           
-          //(*it)->zbWriteAttrResponse(variable->status, variable->attribute_id);  //method zbAttributeRead must be implemented in specific EP class
-        }
+          (*it)->zbReadReportConfigResponse(message);
+        //}
         variable = variable->next;
       }
     }

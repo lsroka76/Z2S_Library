@@ -22,7 +22,8 @@ volatile uint8_t ZigbeeGateway::_custom_cmd_last_tsn_flag = 0xFF;
 volatile uint8_t ZigbeeGateway::_custom_cmd_tsn_list[256];
 zbg_device_unit_t ZigbeeGateway::zbg_device_units[ZBG_MAX_DEVICES];
 
-esp_zb_zcl_attribute_t ZigbeeGateway::_read_attr_last_result;
+esp_zb_zcl_attribute_t ZigbeeGateway::_read_attr_last_result = {};
+esp_zb_zcl_read_report_config_resp_variable_t ZigbeeGateway::_read_report_config_resp_variable_last_result = {};
 //
 
 #define ZB_CMD_TIMEOUT 10000
@@ -1099,7 +1100,7 @@ void ZigbeeGateway::readClusterReportCmd(zbg_device_params_t * device, uint16_t 
     }
 }
 
-void ZigbeeGateway::readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack) {
+bool ZigbeeGateway::readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack) {
   
   esp_zb_zcl_read_report_config_cmd_t report_cmd;
   
@@ -1135,7 +1136,9 @@ void ZigbeeGateway::readClusterReportCfgCmd(zbg_device_params_t * device, uint16
 
   if (ack && xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
       log_e("Semaphore timeout read attribute report 0x%x - device 0x%x, endpoint 0x%x, cluster 0x%x", attribute_id, device->short_addr, device->endpoint, cluster_id);
+      return false;
     }
+  return ack;
 }
 
 void ZigbeeGateway::zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
@@ -1145,6 +1148,11 @@ void ZigbeeGateway::zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16
   xSemaphoreGive(gt_lock);
 }
 
+void ZigbeeGateway::zbReadReportConfigResponse(const esp_zb_zcl_cmd_read_report_config_resp_message_t *message) {
+
+  memcpy(&_read_report_config_resp_variable_last_result, message->variables, sizeof(esp_zb_zcl_read_report_config_resp_variable_t));
+  xSemaphoreGive(gt_lock);
+}
 
 bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack, uint8_t direction,
                                       uint8_t disable_default_response, uint8_t manuf_specific, uint16_t manuf_code) {

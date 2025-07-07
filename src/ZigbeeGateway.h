@@ -135,8 +135,11 @@ public:
   static query_basic_cluster_data_t * getQueryBasicClusterData() {
     return &_last_device_query;
   }
-    static esp_zb_zcl_attribute_t * getReadAttrLastResult() {
+  static esp_zb_zcl_attribute_t * getReadAttrLastResult() {
     return &_read_attr_last_result;
+  }
+  static esp_zb_zcl_read_report_config_resp_variable_t * getReportConfigRespVariableLastResult() {
+    return &_read_report_config_resp_variable_last_result;
   }
 
   void zbPrintDeviceDiscovery (zbg_device_params_t * device);
@@ -152,7 +155,7 @@ public:
   void setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
                                         uint16_t min_interval, uint16_t max_interval, uint16_t delta, bool ack);
   void readClusterReportCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
-  void readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
+  bool readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
 
   bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                          uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
@@ -288,6 +291,7 @@ private:
 
   static query_basic_cluster_data_t _last_device_query;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
+  static esp_zb_zcl_read_report_config_resp_variable_t _read_report_config_resp_variable_last_result;
 
   static volatile uint8_t _read_attr_last_tsn;
   static volatile uint8_t _read_attr_tsn_list[256];
@@ -354,6 +358,7 @@ private:
   void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,uint8_t command_id, uint16_t payload_size, uint8_t *payload) override;
   void zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
                              uint16_t attribute_id) override;
+  void zbReadReportConfigResponse(const esp_zb_zcl_cmd_read_report_config_resp_message_t *message) override;
   void zbCmdDefaultResponse( uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) override;
 
   void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
