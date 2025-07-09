@@ -142,6 +142,10 @@ public:
     return &_read_report_config_resp_variable_last_result;
   }
 
+  static esp_zb_zcl_status_t * getConfigReportStatusLastResult() {
+    return &_config_report_status_last_result;
+  }
+
   void zbPrintDeviceDiscovery (zbg_device_params_t * device);
   static void bindDeviceCluster(zbg_device_params_t *,int16_t cluster_id);
 
@@ -152,7 +156,7 @@ public:
 
   //void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) override;
   void zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) override;
-  void setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
+  bool setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
                                         uint16_t min_interval, uint16_t max_interval, uint16_t delta, bool ack);
   void readClusterReportCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
   bool readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
@@ -292,12 +296,18 @@ private:
   static query_basic_cluster_data_t _last_device_query;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
   static esp_zb_zcl_read_report_config_resp_variable_t _read_report_config_resp_variable_last_result;
+  static esp_zb_zcl_status_t _config_report_status_last_result;
 
   static volatile uint8_t _read_attr_last_tsn;
   static volatile uint8_t _read_attr_tsn_list[256];
   static volatile uint8_t _custom_cmd_last_tsn;
   static volatile uint8_t _custom_cmd_last_tsn_flag;
-  static volatile uint8_t _custom_cmd_tsn_list[256];
+  static volatile uint8_t _set_config_last_tsn;
+  static volatile uint8_t _set_config_last_tsn_flag;
+  static volatile uint8_t _read_config_last_tsn;
+  static volatile uint8_t _read_config_last_tsn_flag;
+  
+  //static volatile uint8_t _custom_cmd_tsn_list[256];
   
   //static bool _read_attr_async;
   //static bool enable_attribute_reporting 
@@ -356,7 +366,7 @@ private:
   void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
                             const esp_zb_zcl_disc_attr_variable_t *variable) override;
   void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,uint8_t command_id, uint16_t payload_size, uint8_t *payload) override;
-  void zbConfigReportResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
+  void zbConfigReportResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
                              uint16_t attribute_id) override;
   void zbReadReportConfigResponse(const esp_zb_zcl_cmd_read_report_config_resp_message_t *message) override;
   void zbCmdDefaultResponse( uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) override;

@@ -226,7 +226,7 @@ static esp_err_t zb_configure_report_resp_handler(const esp_zb_zcl_cmd_config_re
     while (variable) {
          log_i("Configure report response: status(%d), cluster(0x%x), direction(0x%x), attribute(0x%x)", variable->status, message->info.cluster, variable->direction,
                 variable->attribute_id);
-     (*it)->zbConfigReportResponse(message->info.src_address, message->info.src_endpoint, message->info.cluster, variable->status, variable->direction, variable->attribute_id);
+     (*it)->zbConfigReportResponse(message->info.header.tsn, message->info.src_address, message->info.src_endpoint, message->info.cluster, variable->status, variable->direction, variable->attribute_id);
      variable = variable->next;  
      }
     }
