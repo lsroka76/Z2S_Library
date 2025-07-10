@@ -822,9 +822,6 @@ void processTuyaCODetectorReport(int16_t channel_number_slot, uint16_t payload_s
   if (Tuya_read_dp_result.is_success) { 
     log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
     updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
-    //updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value, rssi);
-    //updateSuplaBatteryLevel(channel_number_slot_3, Tuya_read_dp_result.dp_value, rssi);
-    //updateSuplaBatteryLevel(channel_number_slot_4, Tuya_read_dp_result.dp_value, rssi);
   }
 }
 
@@ -1031,12 +1028,12 @@ void processMoesShadesDriveMotorDataReport(int16_t channel_number_slot, uint16_t
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    log_i("processMoesShadesDriveMotorDataReport: state = %u", Tuya_read_dp_result.dp_value);
+    log_i("state = %u", Tuya_read_dp_result.dp_value);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("processMoesShadesDriveMotorDataReport: position(%) = %u", Tuya_read_dp_result.dp_value);
+    log_i("position(%) = %u", Tuya_read_dp_result.dp_value);
   
     msgZ2SDeviceRollerShutter(channel_number_slot, RS_MOVING_DIRECTION_MSG, 0, rssi);
     msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 100 - Tuya_read_dp_result.dp_value, rssi);
@@ -1045,10 +1042,17 @@ void processMoesShadesDriveMotorDataReport(int16_t channel_number_slot, uint16_t
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("processMoesShadesDriveMotorDataReport: position = %u", Tuya_read_dp_result.dp_value);
+    log_i("position = %u", Tuya_read_dp_result.dp_value);
     
     msgZ2SDeviceRollerShutter(channel_number_slot, RS_MOVING_DIRECTION_MSG, 0, rssi);
     msgZ2SDeviceRollerShutter(channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 100 - Tuya_read_dp_result.dp_value, rssi);
+  } 
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_COVER_MOTOR_BATTERY_LEVEL_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+    log_i("battery level = %u", Tuya_read_dp_result.dp_value);
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
 }
 
@@ -1332,19 +1336,19 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
       
       ir_message_length = *(payload + 2) + (*(payload + 3) * 0x100) + (*(payload + 4) * 0x10000) + (*(payload + 5) * 0x1000000);
       ir_message_seq = *payload + (*(payload + 1) * 0x100);
-      log_i("processZosungCustomCluster message seq 0x%x, length 0x%x", ir_message_seq, ir_message_length);
+      log_i("message seq 0x%x, length 0x%x", ir_message_seq, ir_message_length);
 
       learned_ir_code[0] = ir_message_length;
 
       memset(ir_code_data_1, 0, sizeof(ir_code_data_1));
       memcpy(ir_code_data_1+1, payload, payload_size);
-      for (int i = 0; i < 17; i++)        log_i("processZosungCustomCluster ir_code_data_1[%u] = 0x%x", i, ir_code_data_1[i]);
+      for (int i = 0; i < 17; i++)        log_i("ir_code_data_1[%u] = 0x%x", i, ir_code_data_1[i]);
       memset(ir_code_data_2, 0, sizeof(ir_code_data_2));
       ir_code_data_2[0] = *payload;
       ir_code_data_2[1] = *(payload + 1);
       ir_code_data_2[6] = 0x38;
       for (int i = 0; i < 7; i++)
-        log_i("processZosungCustomCluster ir_code_data_2[%u] = 0x%x", i, ir_code_data_2[i]);
+        log_i("ir_code_data_2[%u] = 0x%x", i, ir_code_data_2[i]);
       zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 1, ESP_ZB_ZCL_ATTR_TYPE_SET, 17, ir_code_data_1, true, 
                                      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 0x1002);
       zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 0x0B, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, NULL,true, 1, 1, 0, 0);
@@ -1423,7 +1427,7 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
         ir_message_chunk_last_position = ir_message_position;
         ir_message_chunk_last_size = *(payload + 7);
         for (int i = 0; i < ir_message_chunk_last_size; i++) {
-          log_i("processZosungCustomCluster cmd 3 [%u] = 0x%x", i + 8, *(payload + 8 + i));
+          log_i("cmd 3 [%u] = 0x%x", i + 8, *(payload + 8 + i));
           crc_sum = crc_sum + *(payload + 8 + i);
           learned_ir_code[ir_message_position + i] = *(payload + 8 + i);
         }
@@ -1440,7 +1444,7 @@ void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint,
           ir_code_data_2[5] = *(payload + 6);
           ir_code_data_2[6] = 0x38;
           for (int i = 0; i < 7; i++) {
-            log_i("processZosungCustomCluster cmd 2 [%u] = 0x%x", i, ir_code_data_2[i]);
+            log_i("cmd 2 [%u] = 0x%x", i, ir_code_data_2[i]);
           }
           zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 2, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, ir_code_data_2, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
                                        1, 1, 0x1002);

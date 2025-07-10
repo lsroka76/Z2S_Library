@@ -609,8 +609,8 @@ bool Z2S_loadZBDevicesTable() {
               z2s_zb_devices_table[table_index].short_addr = (z2s_zb_devices_legacy_table + table_index)->short_addr;
               z2s_zb_devices_table[table_index].power_source = (z2s_zb_devices_legacy_table + table_index)->power_source;
               z2s_zb_devices_table[table_index].battery_percentage = (z2s_zb_devices_legacy_table + table_index)->battery_percentage;
-              z2s_zb_devices_table[table_index].last_rssi = (z2s_zb_devices_legacy_table + table_index)->last_rssi;
-              z2s_zb_devices_table[table_index].battery_voltage_min_max = (z2s_zb_devices_legacy_table + table_index)->battery_voltage_min_max;
+              z2s_zb_devices_table[table_index].battery_voltage_min = (z2s_zb_devices_legacy_table + table_index)->battery_voltage_min;
+              z2s_zb_devices_table[table_index].battery_voltage_max = (z2s_zb_devices_legacy_table + table_index)->battery_voltage_max;
               z2s_zb_devices_table[table_index].last_seen_ms = (z2s_zb_devices_legacy_table + table_index)->last_seen_ms;
               z2s_zb_devices_table[table_index].keep_alive_ms = (z2s_zb_devices_legacy_table + table_index)->keep_alive_ms;
               z2s_zb_devices_table[table_index].timeout_ms = (z2s_zb_devices_legacy_table + table_index)->timeout_ms;
@@ -2350,7 +2350,7 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
     else 
       z2s_zb_devices_table[zb_device_number_slot].battery_percentage = 0xFF;
   
-    Z2S_saveZBDevicesTable();    
+    //Z2S_saveZBDevicesTable(); //switched off - restore not working
   } 
     
   /*if ((z2s_devices_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10) &&

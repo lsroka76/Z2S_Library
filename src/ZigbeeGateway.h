@@ -142,8 +142,28 @@ public:
     return &_read_report_config_resp_variable_last_result;
   }
 
+  static esp_zb_zcl_status_t * getReadAttrStatusLastResult() {
+    return &_read_attr_status_last_result;
+  }
+
   static esp_zb_zcl_status_t * getConfigReportStatusLastResult() {
     return &_config_report_status_last_result;
+  }
+
+  static esp_zb_zcl_status_t * getWriteAttrStatusLastResult() {
+    return &_write_attr_status_last_result;
+  }
+
+  static esp_zb_zcl_status_t * getCustomCmdStatusLastResult() {
+    return &_custom_cmd_status_last_result;
+  }
+
+  static uint16_t * getWriteAttrAttributeIdLastResult() {
+    return &_write_attr_attribute_id_last_result;
+  }
+
+  static uint8_t * getCustomCmdRespToCmdLastResult() {
+    return &_custom_cmd_resp_to_cmd_last_result;
   }
 
   void zbPrintDeviceDiscovery (zbg_device_params_t * device);
@@ -164,8 +184,8 @@ public:
   bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                          uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
   void sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, uint16_t *attribute_ids);
-  void sendAttributeWrite( zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id,
-                                        esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, void *attribute_value, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
+  bool sendAttributeWrite(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, esp_zb_zcl_attr_type_t attribute_type, 
+                          uint16_t attribute_size, void *attribute_value, bool ack = false, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
   void sendIASzoneEnrollResponseCmd(zbg_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
 
   void sendOnOffCmd(zbg_device_params_t *device, bool value); 
@@ -297,6 +317,12 @@ private:
   static esp_zb_zcl_attribute_t _read_attr_last_result;
   static esp_zb_zcl_read_report_config_resp_variable_t _read_report_config_resp_variable_last_result;
   static esp_zb_zcl_status_t _config_report_status_last_result;
+  static esp_zb_zcl_status_t _read_attr_status_last_result;
+  static esp_zb_zcl_status_t _write_attr_status_last_result;
+  static uint16_t _write_attr_attribute_id_last_result;
+  static esp_zb_zcl_status_t _custom_cmd_status_last_result;
+  static uint8_t _custom_cmd_resp_to_cmd_last_result;
+
 
   static volatile uint8_t _read_attr_last_tsn;
   static volatile uint8_t _read_attr_tsn_list[256];
@@ -306,6 +332,8 @@ private:
   static volatile uint8_t _set_config_last_tsn_flag;
   static volatile uint8_t _read_config_last_tsn;
   static volatile uint8_t _read_config_last_tsn_flag;
+  static volatile uint8_t _write_attr_last_tsn;
+  static volatile uint8_t _write_attr_last_tsn_flag;
   
   //static volatile uint8_t _custom_cmd_tsn_list[256];
   
@@ -360,7 +388,9 @@ private:
   static void Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, void *user_ctx);
 
   void zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute, signed char  rssi) override;
-  void zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute, signed char  rssi) override;
+  void zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+                          esp_zb_zcl_status_t status, const esp_zb_zcl_attribute_t *attribute, signed char  rssi) override;
+  void zbWriteAttrResponse(uint8_t tsn, esp_zb_zcl_status_t status, uint16_t attribute_id) override;
   void zbIASZoneEnrollRequest(const esp_zb_zcl_ias_zone_enroll_request_message_t *message) override;
   void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) override;
   void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 

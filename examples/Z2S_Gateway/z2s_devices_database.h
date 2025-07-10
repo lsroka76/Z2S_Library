@@ -1509,6 +1509,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "SONOFF", .model_name = "SNZB-05P", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "HOBEIAN", .model_name = "ZG-204Z", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B, .z2s_device_endpoints_count = 1},   
 
   { .manufacturer_name = "eWeLink", .model_name = "SNZB-04P", 
@@ -1545,6 +1548,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_VALVE_DC, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "Aqara", .model_name = "lumi.valve.agl001", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_VALVE_DC, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_ahxwesag", .model_name = "TS0011", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_VALVE_DC, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_8n7lqbm0", .model_name = "TS0001", 
@@ -1928,6 +1934,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_rhgsbacq", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "HOBEIAN", .model_name = "ZG-204ZV",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3000_9kbbfeho", .model_name = "TS0222",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR, .z2s_device_endpoints_count = 1},
 
@@ -1962,6 +1971,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_icka1clh", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_68nvbio9", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE204_t1blo2bj", .model_name = "TS0601",

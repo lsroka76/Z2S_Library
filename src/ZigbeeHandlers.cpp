@@ -165,13 +165,14 @@ static esp_err_t zb_cmd_read_attr_resp_handler(const esp_zb_zcl_cmd_read_attr_re
           "Read attribute response: status(%d), cluster(0x%x), attribute(0x%x), type(0x%x), value(%d)", variable->status, message->info.cluster,
           variable->attribute.id, variable->attribute.data.type, variable->attribute.data.value ? *(uint8_t *)variable->attribute.data.value : 0
         );
-        if (variable->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
+        //if (variable->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
           if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_BASIC) {
             (*it)->zbReadBasicCluster(message->info.src_address, message->info.src_endpoint, message->info.cluster, &variable->attribute);  //method zbReadBasicCluster implemented in the common EP class
           } else {
-            (*it)->zbReadAttrResponse(message->info.header.tsn, message->info.src_address, message->info.src_endpoint, message->info.cluster, &variable->attribute, message->info.header.rssi);  //method zbAttributeRead must be implemented in specific EP class
+            (*it)->zbReadAttrResponse(message->info.header.tsn, message->info.src_address, message->info.src_endpoint, message->info.cluster, 
+                                      variable->status, &variable->attribute, message->info.header.rssi); 
           }
-        }
+        //}
         variable = variable->next;
       }
     }
@@ -198,10 +199,10 @@ static esp_err_t zb_cmd_write_attr_resp_handler(const esp_zb_zcl_cmd_write_attr_
         log_v(
           "Write attribute response: status(%d), cluster(0x%x), attribute(0x%x)", variable->status, message->info.cluster,
           variable->attribute_id);
-        if (variable->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
+        //if (variable->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
           
-          (*it)->zbWriteAttrResponse(variable->status, variable->attribute_id);  //method zbAttributeRead must be implemented in specific EP class
-        }
+          (*it)->zbWriteAttrResponse(message->info.header.tsn, variable->status, variable->attribute_id); 
+        //}
         variable = variable->next;
       }
     }
