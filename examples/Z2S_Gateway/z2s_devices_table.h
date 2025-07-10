@@ -93,7 +93,7 @@ typedef struct z2s_device_params_s {
   char                Supla_channel_name[30];
   uint32_t            Supla_channel_func;
   int8_t              sub_id;
-  uint32_t            user_data_1;
+  uint32_t            user_data_1; //Tuya Rain Sensor rain_intensity, RGB mode, HVAC - probably unused
   uint32_t            user_data_2;
   uint32_t            user_data_3;
   uint32_t            user_data_4;
@@ -118,8 +118,8 @@ typedef struct z2s_legacy_zb_device_params_s {
   uint8_t             power_source;
   int8_t              rssi;
   uint8_t             battery_percentage;
-  int8_t              last_rssi;
-  uint8_t             battery_voltage_min_max;
+  uint8_t             battery_voltage_min;
+  uint8_t             battery_voltage_max;
   uint32_t            last_seen_ms;
   uint32_t            keep_alive_ms;
   uint32_t            timeout_ms;
@@ -143,13 +143,13 @@ typedef struct z2s_zb_device_params_s {
   uint8_t             power_source;
   int8_t              rssi;
   uint8_t             battery_percentage;
-  int8_t              last_rssi;
-  uint8_t             battery_voltage_min_max;
+  uint8_t             battery_voltage_min;
+  uint8_t             battery_voltage_max;
   uint32_t            last_seen_ms;
   uint32_t            keep_alive_ms;
   uint32_t            timeout_ms;
   uint32_t            user_data_flags;
-  uint32_t            user_data_1;
+  uint32_t            user_data_1; 
   uint32_t            user_data_2;
   uint64_t            user_data_3;
   uint64_t            user_data_4;
