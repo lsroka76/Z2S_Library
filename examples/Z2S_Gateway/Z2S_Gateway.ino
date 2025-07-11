@@ -1996,6 +1996,7 @@ void loop() {
                  
                 case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
                 case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
+                case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
                 case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
                 case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
                 case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:

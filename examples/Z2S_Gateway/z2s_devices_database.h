@@ -46,6 +46,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1           0x2201
+#define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2           0x2202 //ONENUO
 
 #define Z2S_DEVICE_DESC_TUYA_CO_DETECTOR                0x2210
 
@@ -1191,6 +1192,9 @@ const dataPoints = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_DETECTOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
@@ -1919,6 +1923,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_ntcy3xu1", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE284_n4ttsck2", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2, .z2s_device_endpoints_count = 1}, //ONENUO
+
   { .manufacturer_name = "_TZE284_rjxqso4a", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_DETECTOR, .z2s_device_endpoints_count = 1},
 
@@ -1959,6 +1966,12 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_ol1uhvza", .model_name = "TS130F",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_femsaaua", .model_name = "TS130F",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_5iixzdo7", .model_name = "TS130F",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_c2yscrj8", .model_name = "TS0224",

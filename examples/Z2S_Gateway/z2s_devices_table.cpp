@@ -1936,7 +1936,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "SMOKE CONC.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
       } break;
 
-      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1: {
+      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
+       {
 
         addZ2SDeviceIASzone(device, first_free_slot, -1, "SMOKE DETECT", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
       } break;

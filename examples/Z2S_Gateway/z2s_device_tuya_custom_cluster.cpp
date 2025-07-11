@@ -749,9 +749,13 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_SMOKE_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1), rssi);
-
+  if (Tuya_read_dp_result.is_success) {
+    if (model_id == Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2)
+      msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0), rssi);
+    else
+      msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1), rssi);
+  }
+  
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SMOKE_DETECTOR_PPM_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM, 
