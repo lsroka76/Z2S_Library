@@ -7,7 +7,7 @@
 #include "z2s_devices_table.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.54-10/07/2025"
+#define Z2S_VERSION "0.8.56-11/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -96,7 +96,7 @@ char single_flag = 'S';
 char with_channels_flag = 'C';
 char all_flag = 'A';
 
-const static char device_query_failed_str[] = "Device data query failed - try to wake it up first!";
+/*const static char device_query_failed_str[] = "Device data query failed - try to wake it up first!";
 const static char device_async_query_str[] = "Device data query sent asynchronously";
 const static char device_query_attr_size_error_str[] = "Error - attribute size has to be in range 0..255";
 const static char device_query_attr_size_mismatch_str[] = "Error - attribute size and attribute value length mismatch";
@@ -105,7 +105,18 @@ const static char device_query_attr_size_mismatch_str[] = "Error - attribute siz
 const static char factory_reset_enabled_str[] = "Zigbee stack factory reset enabled";
 const static char factory_reset_disabled_str[] = "Zigbee stack factory reset disabled";
 const static char zigbee_tx_power_text_str[] = "Press Read to get current value or enter value between -24 and 20 and press Update";
-const static char zigbee_primary_channel_text_str[] = "Press Read to get current value or enter value between 11 and 26 and press Update";
+const static char zigbee_primary_channel_text_str[] = "Press Read to get current value or enter value between 11 and 26 and press Update";*/
+
+const static char* device_query_failed_str PROGMEM = "Device data query failed - try to wake it up first!";
+const static char* device_async_query_str PROGMEM = "Device data query sent asynchronously";
+const static char* device_query_attr_size_error_str PROGMEM = "Error - attribute size has to be in range 0..255";
+const static char* device_query_attr_size_mismatch_str PROGMEM = "Error - attribute size and attribute value length mismatch";
+
+
+const static char* factory_reset_enabled_str PROGMEM = "Zigbee stack factory reset enabled";
+const static char* factory_reset_disabled_str PROGMEM = "Zigbee stack factory reset disabled";
+const static char* zigbee_tx_power_text_str PROGMEM = "Press Read to get current value or enter value between -24 and 20 and press Update";
+const static char* zigbee_primary_channel_text_str PROGMEM = "Press Read to get current value or enter value between 11 and 26 and press Update";
 
 static char general_purpose_gui_buffer[1024] = {};
 
@@ -401,7 +412,7 @@ void fillGatewayGeneralnformation(char *buf) {
 
 		generateHexString(Supla::RegisterDevice::getGUID(), guid_buf, SUPLA_GUID_SIZE);
 
-		snprintf(buf, 1024, "<b><i>Supla firmware:</i></b> %s<br><br><b><i>Supla GUID:</i></b> %s<br><br><b><i>Z2S Gateway version:</i></b> %s<br><br>", 
+		snprintf_P(buf, 1024, PSTR("<b><i>Supla firmware:</i></b> %s<br><br><b><i>Supla GUID:</i></b> %s<br><br><b><i>Z2S Gateway version:</i></b> %s<br><br>"), 
 						Supla::RegisterDevice::getSoftVer(), guid_buf, Z2S_VERSION);
 	
 		log_i("Device information %s", buf);
@@ -415,10 +426,10 @@ void fillMemoryUptimeInformation(char *buf) {
 		time_t local_time_info;
 		time(&local_time_info);
 
-		snprintf(buf, 1024, "<b><i>Flash chip real size:</b></i> %u kB <b>| <i>Free Sketch Space:</b></i> %u kB<br>"
-						"<b><i>Free Heap:</b></i> %u kB <b>| <i>Minimal Free Heap:</b></i> %u kB <b>| <i>"
-						"HeapSize:</b></i> %u kB <b>| <i>MaxAllocHeap:</b></i> %u kB<br><br>"
-						"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s", 
+		snprintf_P(buf, 1024, PSTR("<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
+						"<b><i>Free Heap:</b></i> %u B <b>| <i>Minimal Free Heap:</b></i> %u B <b>| <i>"
+						"HeapSize:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br><br>"
+						"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s"), 
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
 						ESP.getMaxAllocHeap(), ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
 
@@ -523,7 +534,7 @@ void buildDevicesTabGUI() {
 	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZBDEVICESMAXCOUNT; devices_counter++) 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
-			sprintf(zigbee_devices_labels[devices_counter], "Device #%02d", devices_counter);
+			sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
 			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], String(devices_counter), Control::Color::None, deviceselector);
 		}
 
@@ -661,7 +672,7 @@ void buildChannelsTabGUI() {
 	for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
     if (z2s_devices_table[devices_counter].valid_record) {
       
-			sprintf(zigbee_channels_labels[devices_counter], "Channel #%02d", devices_counter);
+			sprintf_P(zigbee_channels_labels[devices_counter], PSTR("Channel #%02d"), devices_counter);
 			ESPUI.addControl(Control::Type::Option, zigbee_channels_labels[devices_counter], String(devices_counter), Control::Color::None, channelselector);
 		}
 	zb_channel_info_label = ESPUI.addControl(Control::Type::Label, "Channel info", "...", Control::Color::Emerald, channelstab);
@@ -940,7 +951,7 @@ void updateDeviceInfoLabel() {
 
 	uint8_t device_slot = ESPUI.getControl(deviceselector)->value.toInt();
 
-  sprintf(ieee_addr_str, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
+  sprintf_P(ieee_addr_str, PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
 					z2s_zb_devices_table[device_slot].ieee_addr[7],
 					z2s_zb_devices_table[device_slot].ieee_addr[6], 
 					z2s_zb_devices_table[device_slot].ieee_addr[5], 
@@ -953,11 +964,11 @@ void updateDeviceInfoLabel() {
 	uint8_t battery_percentage = z2s_zb_devices_table[device_slot].battery_percentage >= 0x80 ? 
 												  		 z2s_zb_devices_table[device_slot].battery_percentage - 0x80 : 0xFF;
 
-	sprintf(general_purpose_gui_buffer,"<b><i><style=color:black>Manufacturer name<style=;></i></b> %s "
+	sprintf_P(general_purpose_gui_buffer,PSTR("<b><i><style=color:black>Manufacturer name<style=;></i></b> %s "
 					"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
 					"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X <b>| <i>Power source</b></i> 0x%02X<br>"
 					"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
-					"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>Gateway unit last RSSI</b></i> %d", 
+					"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>Gateway unit last RSSI</b></i> %d"), 
 					z2s_zb_devices_table[device_slot].manufacturer_name,
 					z2s_zb_devices_table[device_slot].model_name,
 					getZ2SDeviceModelName(z2s_zb_devices_table[device_slot].desc_id), z2s_zb_devices_table[device_slot].desc_id,
@@ -1036,7 +1047,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 	uint8_t channel_slot = ESPUI.getControl(channelselector)->value.toInt();
 	
-  sprintf(ieee_addr_str, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
+  sprintf_P(ieee_addr_str, PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
 					z2s_devices_table[channel_slot].ieee_addr[7],
 					z2s_devices_table[channel_slot].ieee_addr[6], 
 					z2s_devices_table[channel_slot].ieee_addr[5], 
@@ -1046,12 +1057,12 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					z2s_devices_table[channel_slot].ieee_addr[1], 
 					z2s_devices_table[channel_slot].ieee_addr[0]);
 	
-	sprintf(general_purpose_gui_buffer,
-					"<meta charset=\"UTF-8\"><b><i>Channel name:</i></b> %s<br>"
+	sprintf_P(general_purpose_gui_buffer,
+					PSTR("<meta charset=\"UTF-8\"><b><i>Channel name:</i></b> %s<br>"
 					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
 					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
 					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
-					"<b><i>ZB device</b></i> %s::%s",
+					"<b><i>ZB device</b></i> %s::%s"),
 					strlen(z2s_devices_table[channel_slot].Supla_channel_name) > 0 ? z2s_devices_table[channel_slot].Supla_channel_name : "---",
 					ieee_addr_str,
 					z2s_devices_table[channel_slot].short_addr,
@@ -1166,15 +1177,15 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 								case 4: readAttrValue = *(uint32_t *)zbGateway.getReadAttrLastResult()->data.value; break;
 							}
 						
-							sprintf(general_purpose_gui_buffer, "Reading attribute successful!<br>Data value is %u(0x%X)<br>Data type is %s(0x%X)<br>Data size is 0x%X", 
+							sprintf_P(general_purpose_gui_buffer, PSTR("Reading attribute successful!<br>Data value is %u(0x%X)<br>Data type is %s(0x%X)<br>Data size is 0x%X"), 
                       readAttrValue, readAttrValue, getZigbeeDataTypeName(zbGateway.getReadAttrLastResult()->data.type), zbGateway.getReadAttrLastResult()->data.type,
 							 		  	zbGateway.getReadAttrLastResult()->data.size);
 							ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
 						} else {
 
-							sprintf(general_purpose_gui_buffer, "Reading attribute failed!<br>"
+							sprintf_P(general_purpose_gui_buffer, PSTR("Reading attribute failed!<br>"
 											"Status code  = %#02X<br>"
-											"Attribute id = %#04X",
+											"Attribute id = %#04X"),
 											*zbGateway.getReadAttrStatusLastResult(),
 											zbGateway.getReadAttrLastResult()->id);
 							ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
@@ -1192,10 +1203,10 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 					if (result) {
 						if (zbGateway.getReportConfigRespVariableLastResult()->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-							sprintf(general_purpose_gui_buffer, "Reading attribute config report successful! <br>"
+							sprintf_P(general_purpose_gui_buffer, PSTR("Reading attribute config report successful! <br>"
 											"Attribute id is 0x%X<br>Data type is %s(0x%X)<br>"
 											"Min interval is %u(0x%x)<br>Max interval is %u(0x%X)<br>"
-											"Delta is %u(0x%X)", 
+											"Delta is %u(0x%X)"), 
                   	  zbGateway.getReportConfigRespVariableLastResult()->attribute_id,
 											getZigbeeDataTypeName(zbGateway.getReportConfigRespVariableLastResult()->client.attr_type),
 											zbGateway.getReportConfigRespVariableLastResult()->client.attr_type,
@@ -1207,10 +1218,11 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 											zbGateway.getReportConfigRespVariableLastResult()->client.delta[0]);
 							ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
 						} else {
-							sprintf(general_purpose_gui_buffer, 
-											"Reading attribute config report successful!<br>"
-											"Status         = %u(%#02X)"
-											"Attribute id   = %#04X<br>",
+							sprintf_P(general_purpose_gui_buffer, 
+											PSTR("Reading attribute config report failed!<br>"
+											"Status         = %u(%#02X)<br>"
+											"Attribute id   = %#04X<br>"),
+											zbGateway.getReportConfigRespVariableLastResult()->status,
 											zbGateway.getReportConfigRespVariableLastResult()->status,
       		       		  zbGateway.getReportConfigRespVariableLastResult()->attribute_id);
 							ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
@@ -1233,10 +1245,10 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 				if (result) {
 					if (*zbGateway.getConfigReportStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-						sprintf(general_purpose_gui_buffer, "Configure reporting successful! <br>"
+						sprintf_P(general_purpose_gui_buffer, PSTR("Configure reporting successful! <br>"
 										"Attribute id is 0x%X, data type is %s(0x%X)<br>"
 										"Min interval is %u(0x%x), max interval is %u(0x%X)<br>"
-										"Delta is %u(0x%X)", 
+										"Delta is %u(0x%X)"), 
           	        attribute_id,
 										getZigbeeDataTypeName(attribute_type),
 										attribute_type,
@@ -1248,10 +1260,11 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 										delta);
 						ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
 					} else {
-						sprintf(general_purpose_gui_buffer, 
-										"Configure reporting failed! <br>"
-										"Status         = %u(%#02X)"
-										"Attribute id   = %#04X<br>",
+						sprintf_P(general_purpose_gui_buffer, 
+										PSTR("Configure reporting failed! <br>"
+										"Status         = %u(%#02X)<br>"
+										"Attribute id   = %#04X<br>"),
+										*zbGateway.getConfigReportStatusLastResult(),
 										*zbGateway.getConfigReportStatusLastResult(),
       		          attribute_id);
 						ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
@@ -1333,10 +1346,10 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 						if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
 						
-							sprintf(general_purpose_gui_buffer, "Write attribute successful! <br>"
+							sprintf_P(general_purpose_gui_buffer, PSTR("Write attribute successful! <br>"
 											"Attribute id   = %#04X<br>"
 											"Attribute type = %s(%#02X)<br>"
-											"Attribute size = %u(%#04X)",
+											"Attribute size = %u(%#04X)"),
       		            attribute_id,
 											getZigbeeDataTypeName(attribute_type),
 											attribute_type,
@@ -1344,14 +1357,15 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 											attribute_size);
 							ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
 						} else {
-							sprintf(general_purpose_gui_buffer, 
-											"Write attribute failed! <br>"
-											"Status         = %u(%#02X)"
+							sprintf_P(general_purpose_gui_buffer, 
+											PSTR("Write attribute failed! <br>"
+											"Status         = %u(%#02X)<br>"
 											"Attribute id   = %#04X<br>"
 											"Attribute type = %s(%#04X)<br>"
-											"Attribute size = %u(0x#04X)",
+											"Attribute size = %u(%#04X)"),
 											*zbGateway.getWriteAttrStatusLastResult(),
-      		            attribute_id,
+											*zbGateway.getWriteAttrStatusLastResult(),
+      		            *zbGateway.getWriteAttrAttributeIdLastResult(),
 											getZigbeeDataTypeName(attribute_type),
 											attribute_type,
 											attribute_size,
@@ -1384,7 +1398,8 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 
 				log_i("payload_value = %s, length = %u", payload_value, strlen(payload_value));
 
-      	if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && (attribute_type <= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
+      	//if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && (attribute_type <= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
+				if (true) {	
 					if (payload_size > 0) {
 						
 						if ((strlen(payload_value) / 2) != payload_size) {
@@ -1422,10 +1437,10 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 						if (*zbGateway.getCustomCmdStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
 						
-							sprintf(general_purpose_gui_buffer, "Custom command successful! <br>"
+							sprintf_P(general_purpose_gui_buffer, PSTR("Custom command successful! <br>"
 											"Command id   = %#04X<br>"
 											"Data type = %s(%#02X)<br>"
-											"Payload size = %u(%#04X)",
+											"Payload size = %u(%#04X)"),
       		            attribute_id,
 											getZigbeeDataTypeName(attribute_type),
 											attribute_type,
@@ -1433,12 +1448,13 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 											payload_size);
 							ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);
 						} else {
-							sprintf(general_purpose_gui_buffer, 
-											"Custom command failed! <br>"
+							sprintf_P(general_purpose_gui_buffer, 
+											PSTR("Custom command failed! <br>"
 											"Status         = %u(%#02X)"
 											"Command id   = %#04X<br>"
 											"Data type = %s(%#04X)<br>"
-											"Payload size = %u(0x#04X)",
+											"Payload size = %u(0x#04X)"),
+											*zbGateway.getCustomCmdStatusLastResult(),
 											*zbGateway.getCustomCmdStatusLastResult(),
       		            *zbGateway.getCustomCmdRespToCmdLastResult(),
 											getZigbeeDataTypeName(attribute_type),
@@ -1476,29 +1492,29 @@ void removeDeviceCallback(Control *sender, int type, void *param) {
 				
 				z2s_zb_devices_table[device_slot].record_id = 0;
 				if (Z2S_saveZBDevicesTable()) {
-					sprintf(general_purpose_gui_buffer, "Device #%02u removed! Restarting...", device_slot);
+					sprintf_P(general_purpose_gui_buffer, PSTR("Device #%02u removed! Restarting..."), device_slot);
 					restart_required = true;
 				} else
-					sprintf(general_purpose_gui_buffer, "Device #%02u removal failed! Error saving ZB devices table!", device_slot);
+					sprintf_P(general_purpose_gui_buffer, PSTR("Device #%02u removal failed! Error saving ZB devices table!"), device_slot);
 			} break;
 
 			case 'C' : {	
 
 				if (Z2S_removeZBDeviceWithAllChannels(device_slot)) {
 
-					sprintf(general_purpose_gui_buffer, "Device #%02u and it's all channels removed! Restarting...", device_slot);
+					sprintf_P(general_purpose_gui_buffer, PSTR("Device #%02u and it's all channels removed! Restarting..."), device_slot);
 					restart_required = true;
 				} else
-					sprintf(general_purpose_gui_buffer, "Device #%02u or some of it's channels removal failed! Error saving one of devices table!", device_slot);
+					sprintf_P(general_purpose_gui_buffer, PSTR("Device #%02u or some of it's channels removal failed! Error saving one of devices table!"), device_slot);
 			} break;
 
 			case 'A': {
 
 				if (Z2S_clearZBDevicesTable()) {
-					sprintf(general_purpose_gui_buffer, "All devices removed! Restarting...");
+					sprintf_P(general_purpose_gui_buffer, PSTR("All devices removed! Restarting..."));
 					restart_required = true;
 				} else
-					sprintf(general_purpose_gui_buffer, "Devices removal failed! Error saving ZB devices table!");
+					sprintf_P(general_purpose_gui_buffer, PSTR("Devices removal failed! Error saving ZB devices table!"));
 			} break;
 		}
     ESPUI.updateLabel(device_status_label, general_purpose_gui_buffer);
@@ -1517,7 +1533,7 @@ void removeChannelCallback(Control *sender, int type) {
       
 		if (Z2S_saveDevicesTable()) {
 			//char status_line[128];
-			sprintf(general_purpose_gui_buffer, "Channel # %02u removed. Restarting...", channel_slot);
+			sprintf_P(general_purpose_gui_buffer, PSTR("Channel # %02u removed. Restarting..."), channel_slot);
       ESPUI.updateLabel(channel_status_label, general_purpose_gui_buffer);
       SuplaDevice.scheduleSoftRestart(1000);
 		}
