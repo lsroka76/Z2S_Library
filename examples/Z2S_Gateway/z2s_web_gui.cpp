@@ -7,7 +7,7 @@
 #include "z2s_devices_table.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.56-11/07/2025"
+#define Z2S_VERSION "0.8.57-12/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -15,10 +15,14 @@
 
 #include <supla/device/register_device.h>
 
+#include "web_gui_templates.h"
+
 ESPAsyncHTTPUpdateServer updateServer;
 
 extern ZigbeeGateway zbGateway;
 
+#define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 16
+#define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 16
 //UI handles
 uint16_t gateway_general_info;
 uint16_t gateway_memory_info;
@@ -37,10 +41,11 @@ uint16_t zb_device_info_label, zb_device_address_label, device_status_label;
 uint16_t getswbuild_button, getrssi_button;
 uint16_t swbuildlabel, rssilabel;
 
+uint16_t device_endpoint_number;
 uint16_t device_cluster_selector;
 uint16_t device_attribute_number, device_attribute_id_text;
 uint16_t device_read_attribute_label;
-uint16_t device_attribute_type_selector;
+uint16_t device_attribute_id_selector, device_attribute_type_selector, device_attribute_value_selector;
 uint16_t device_attribute_size_number;
 uint16_t device_custom_cmd_number;
 uint16_t device_config_min_number, device_config_max_number, device_config_delta_number; 
@@ -55,6 +60,12 @@ uint16_t channelselector;
 uint16_t channel_status_label, zb_channel_info_label, zb_channel_info_label_2;
 uint16_t keepalive_number, timeout_number, refresh_number;
 uint16_t remove_channel_button, remove_all_channels_button;
+
+uint8_t	 attribute_id_selector_options_count = 0;
+uint16_t attribute_id_selector_options[MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS];
+
+uint8_t	 attribute_value_selector_options_count = 0;
+uint16_t attribute_value_selector_options[MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS];
 
 volatile bool data_ready = false;
 volatile bool device_controls_enabled = false;
@@ -96,17 +107,6 @@ char single_flag = 'S';
 char with_channels_flag = 'C';
 char all_flag = 'A';
 
-/*const static char device_query_failed_str[] = "Device data query failed - try to wake it up first!";
-const static char device_async_query_str[] = "Device data query sent asynchronously";
-const static char device_query_attr_size_error_str[] = "Error - attribute size has to be in range 0..255";
-const static char device_query_attr_size_mismatch_str[] = "Error - attribute size and attribute value length mismatch";
-
-
-const static char factory_reset_enabled_str[] = "Zigbee stack factory reset enabled";
-const static char factory_reset_disabled_str[] = "Zigbee stack factory reset disabled";
-const static char zigbee_tx_power_text_str[] = "Press Read to get current value or enter value between -24 and 20 and press Update";
-const static char zigbee_primary_channel_text_str[] = "Press Read to get current value or enter value between 11 and 26 and press Update";*/
-
 const static char* device_query_failed_str PROGMEM = "Device data query failed - try to wake it up first!";
 const static char* device_async_query_str PROGMEM = "Device data query sent asynchronously";
 const static char* device_query_attr_size_error_str PROGMEM = "Error - attribute size has to be in range 0..255";
@@ -119,61 +119,6 @@ const static char* zigbee_tx_power_text_str PROGMEM = "Press Read to get current
 const static char* zigbee_primary_channel_text_str PROGMEM = "Press Read to get current value or enter value between 11 and 26 and press Update";
 
 static char general_purpose_gui_buffer[1024] = {};
-
-typedef struct zigbee_cluster_s {
-	const char* zigbee_cluster_name;
-	const uint16_t zigbee_cluster_id;
-} zigbee_cluster_t;
-
-typedef struct zigbee_datatype_s {
-	const char* zigbee_datatype_name;
-	const uint8_t zigbee_datatype_size;
-	const uint8_t zigbee_datatype_id;
-} zigbee_datatype_t;
-
-static const zigbee_cluster_t zigbee_clusters[] = 
-	{{.zigbee_cluster_name = "BASIC",.zigbee_cluster_id = 0x0000},
-	 {.zigbee_cluster_name = "POWER CFG",.zigbee_cluster_id = 0x0001},
-	 {.zigbee_cluster_name = "IDENTIFY",.zigbee_cluster_id = 0x0003},
-	 {.zigbee_cluster_name = "GROUPS",.zigbee_cluster_id = 0x0004},
-	 {.zigbee_cluster_name = "SCENES",.zigbee_cluster_id = 0x0005},
-	 {.zigbee_cluster_name = "ON/OFF",.zigbee_cluster_id = 0x0006},
-	 {.zigbee_cluster_name = "LEVEL CONTROL",.zigbee_cluster_id = 0x0008},
-	 {.zigbee_cluster_name = "TIME",.zigbee_cluster_id = 0x000A},
-	 {.zigbee_cluster_name = "POLL",.zigbee_cluster_id = 0x0020},																								
-	 {.zigbee_cluster_name = "ILLUMINANCE",.zigbee_cluster_id = 0x0400},
-	 {.zigbee_cluster_name = "TEMPERATURE",.zigbee_cluster_id = 0x0402},
-	 {.zigbee_cluster_name = "PRESSURE",.zigbee_cluster_id = 0x0403},
-	 {.zigbee_cluster_name = "FLOW",.zigbee_cluster_id = 0x0404},
-	 {.zigbee_cluster_name = "HUMIDITY",.zigbee_cluster_id = 0x0405},
-	 {.zigbee_cluster_name = "OCCUPANCY",.zigbee_cluster_id = 0x0406},
-	 {.zigbee_cluster_name = "ELECTRICAL MEASUREMENT",.zigbee_cluster_id = 0x0B04},
-	 {.zigbee_cluster_name = "COLOR CONTROL",.zigbee_cluster_id = 0x0300},
-	 {.zigbee_cluster_name = "WINDOW COVERING",.zigbee_cluster_id = 0x0102},
-	 {.zigbee_cluster_name = "IAS ZONE",.zigbee_cluster_id = 0x0500},
-	 {.zigbee_cluster_name = "IAS WD",.zigbee_cluster_id = 0x0502},
-	 {.zigbee_cluster_name = "TUYA E000",.zigbee_cluster_id = 0xE000},
-	 {.zigbee_cluster_name = "TUYA E001",.zigbee_cluster_id = 0xE001},
-	 {.zigbee_cluster_name = "TUYA EF00",.zigbee_cluster_id = 0xEF00},
-	 {.zigbee_cluster_name = "SONOFF FC11",.zigbee_cluster_id = 0xFC11}};
-
-static const zigbee_datatype_t zigbee_datatypes[] = 
-	{{.zigbee_datatype_name = "BOOL",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL},
-	 {.zigbee_datatype_name = "8BITMAP",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP},
-	 {.zigbee_datatype_name = "16BITMAP",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP},
-	 {.zigbee_datatype_name = "U8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8},
-	 {.zigbee_datatype_name = "U16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16},
-	 {.zigbee_datatype_name = "S8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8},
-	 {.zigbee_datatype_name = "S16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16},
-	 {.zigbee_datatype_name = "8ENUM",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM},
-	 {.zigbee_datatype_name = "16ENUM",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BIT_ENUM},
-	 {.zigbee_datatype_name = "OSTRING",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING},
-	 {.zigbee_datatype_name = "LSTRING",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING},
-	 {.zigbee_datatype_name = "ARRAY",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_ARRAY},
-	 {.zigbee_datatype_name = "SET",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET}};
-	 
-
-	 
 
 
 const String disabledstyle = "background-color: #bbb; border-bottom: #999 3px solid;";
@@ -202,6 +147,7 @@ void enterWifiDetailsCallback(Control *sender, int type, void *param);
 void textCallback(Control *sender, int type);
 void generalCallback(Control *sender, int type);
 void generalMinMaxCallback(Control *sender, int type);
+void endpointCallback(Control *sender, int type);
 void switchCallback(Control *sender, int type);
 void deviceselectorCallback(Control *sender, int type);
 void disableDeviceControls();
@@ -216,6 +162,10 @@ void removeAllChannelsCallback(Control *sender, int type);
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param);
 void generalZigbeeCallback(Control *sender, int type, void *param);
 void datatypeCallback(Control *sender, int type);
+void clusterCallback(Control *sender, int type);
+void attributeCallback(Control *sender, int type);
+void valueCallback(Control *sender, int type);
+
 
 void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf);
@@ -553,63 +503,77 @@ void buildDevicesTabGUI() {
 																		Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, &rssi_flag);
 	rssilabel = ESPUI.addControl(Control::Type::Label, "Device Rssi", "...", Control::Color::Emerald, getrssi_button);
 
-	device_cluster_selector = ESPUI.addControl(Control::Type::Select, "Clusters&Attributes", String(-1), 
-																						 Control::Color::Emerald, devicestab, generalCallback);
+	device_endpoint_number = ESPUI.addControl(Control::Type::Number, "Clusters&Attributes", "1", 
+																									 Control::Color::Emerald, devicestab, endpointCallback);
+	ESPUI.addControl(Control::Type::Min, "", "1", Control::Color::None, device_endpoint_number);
+	ESPUI.addControl(Control::Type::Max, "", "255", Control::Color::None, device_endpoint_number);
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Endpoint id", 
+																				 Control::Color::None, device_endpoint_number), clearLabelStyle);
 
-	device_attribute_type_selector = ESPUI.addControl(Control::Type::Select, "Datatype", String(-1), 
-																    						 		Control::Color::Emerald, device_cluster_selector, datatypeCallback);
-	
-	//ESPUI.setPanelWide(device_cluster_selector, true);
+	device_cluster_selector = ESPUI.addControl(Control::Type::Select, "", String(-1), 
+																						 Control::Color::Emerald, device_endpoint_number, clusterCallback);
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Cluster id", 
+																				 Control::Color::None, device_endpoint_number), clearLabelStyle);
 
-	/*device_attribute_number = ESPUI.addControl(Control::Type::Number, "", "0", 
-																						 Control::Color::Emerald, device_cluster_selector, generalMinMaxCallback);
-	ESPUI.addControl(Control::Type::Min, "", "0", Control::Color::None, device_attribute_number);
-	ESPUI.addControl(Control::Type::Max, "", "65535", Control::Color::None, device_attribute_number);
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Attribute number", 
-																				 Control::Color::None, device_cluster_selector), clearLabelStyle);*/
+	device_attribute_id_selector = ESPUI.addControl(Control::Type::Select, "", String(-1), 
+																    						 		Control::Color::Emerald, device_endpoint_number, attributeCallback);
+	//ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Attribute ID/Command ID", 
+	//																			 Control::Color::None, device_endpoint_number), clearLabelStyle);
+
 	device_attribute_id_text = ESPUI.addControl(Control::Type::Text, "", "0", 
-																							Control::Color::Emerald, device_cluster_selector, generalCallback);
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "attribute id/custom command id (use 0x for hexadecimal values)", 
-																				 Control::Color::None, device_cluster_selector), clearLabelStyle);
+																							Control::Color::Emerald, device_endpoint_number, generalCallback);
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Select or enter attribute id/custom command id<br>use 0x for hexadecimal values)", 
+																				 Control::Color::None, device_endpoint_number), clearLabelStyle);
+
+
+	device_attribute_type_selector = ESPUI.addControl(Control::Type::Select, "", String(-1), 
+																    						 		Control::Color::Emerald, device_endpoint_number, datatypeCallback);
+	//ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Attribute type/Command data type", 
+	//																			 Control::Color::None, device_endpoint_number), clearLabelStyle);
 
 	device_attribute_size_number = ESPUI.addControl(Control::Type::Number, "", "0", 
-																						 Control::Color::Emerald, device_cluster_selector, generalMinMaxCallback);
+																						 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback);
 	ESPUI.addControl(Control::Type::Min, "", "0", Control::Color::None, device_attribute_size_number);
 	ESPUI.addControl(Control::Type::Max, "", "65535", Control::Color::None, device_attribute_size_number);
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "attribute size/custom command payload size<br>(use 0x for hexadecimal values)", 
-																				 Control::Color::None, device_cluster_selector), clearLabelStyle);
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Select or enter attribute/custom command payload size<br>(use 0x for hexadecimal values)", 
+																				 Control::Color::None, device_endpoint_number), clearLabelStyle);
+	
+	device_attribute_value_selector = ESPUI.addControl(Control::Type::Select, "", String(-1), 
+																    						 		Control::Color::Emerald, device_endpoint_number, valueCallback);
 	
 	device_attribute_value_text = ESPUI.addControl(Control::Type::Text, "Value", "0", 
-																									 Control::Color::Emerald, device_cluster_selector, generalCallback);
+																									 Control::Color::Emerald, device_endpoint_number, generalCallback);
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", 
-																				 "attribute value/custom command payload<br>"
+																				 "Select or enter attribute value<br>or custom command payload<br>"
 																				 "use 0x for hexadecimal values or hexstring without 0x", 
-																				 Control::Color::None, device_cluster_selector), clearLabelStyle);
+																				 Control::Color::None, device_endpoint_number), clearLabelStyle);
 	
 	device_config_min_number =	ESPUI.addControl(Control::Type::Number, "Min interval", "0", 
-																									 Control::Color::Emerald, device_cluster_selector, generalMinMaxCallback);
+																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback);
 	ESPUI.addControl(Control::Type::Min, "", "0", Control::Color::None, device_config_min_number);
 	ESPUI.addControl(Control::Type::Max, "", "65535", Control::Color::None, device_config_min_number);
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Min interval", 
-																				 Control::Color::None, device_cluster_selector), clearLabelStyle);
+																				 Control::Color::None, device_endpoint_number), clearLabelStyle);
 
 	device_config_max_number =	ESPUI.addControl(Control::Type::Number, "Max interval", "0", 
-																									 Control::Color::Emerald, device_cluster_selector, generalMinMaxCallback);
+																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback);
 	ESPUI.addControl(Control::Type::Min, "", "0", Control::Color::None, device_config_max_number);
 	ESPUI.addControl(Control::Type::Max, "", "65535", Control::Color::None, device_config_max_number);
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Max interval", 
-																				 Control::Color::None, device_cluster_selector), clearLabelStyle);
+																				 Control::Color::None, device_endpoint_number), clearLabelStyle);
 
 	device_config_delta_number =	ESPUI.addControl(Control::Type::Number, "Delta", "0", 
-																									 Control::Color::Emerald, device_cluster_selector, generalMinMaxCallback);
+																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback);
 	ESPUI.addControl(Control::Type::Min, "", "0", Control::Color::None, device_config_delta_number);
 	ESPUI.addControl(Control::Type::Max, "", "65535", Control::Color::None, device_config_delta_number);
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Delta", 
-																				 Control::Color::None, device_cluster_selector), clearLabelStyle);
+																				 Control::Color::None, device_endpoint_number), clearLabelStyle);
 	
 
 	ESPUI.addControl(Control::Type::Option, "Select Zigbee cluster...", String(-1), Control::Color::None, device_cluster_selector);
+	ESPUI.addControl(Control::Type::Option, "Select attribute id...", String(-1), Control::Color::None, device_attribute_id_selector);
 	ESPUI.addControl(Control::Type::Option, "Select attribute type...", String(-1), Control::Color::None, device_attribute_type_selector);
+	ESPUI.addControl(Control::Type::Option, "Select attribute value...", String(-1), Control::Color::None, device_attribute_value_selector);
 
 	uint32_t zigbee_clusters_count = sizeof(zigbee_clusters)/sizeof(zigbee_cluster_t);
 
@@ -880,6 +844,16 @@ void generalMinMaxCallback(Control *sender, int type) {
 		ESPUI.updateNumber(sender->GetId(), 0);
 	if (sender->value.toInt() > 65535)
 		ESPUI.updateNumber(sender->GetId(), 65535);
+}
+
+void endpointCallback(Control *sender, int type) {
+	Serial.print("CB: id(");
+	Serial.print(sender->GetId());
+	if (sender->value.toInt() < 1)
+		ESPUI.updateNumber(sender->GetId(), 1);
+	uint8_t device_endpoints = z2s_zb_devices_table[ESPUI.getControl(deviceselector)->value.toInt()].endpoints_count;
+	if (sender->value.toInt() > device_endpoints)
+		ESPUI.updateNumber(sender->GetId(), device_endpoints);
 
 }
 
@@ -1132,7 +1106,7 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 
 		zbg_device_params_t device;
 		log_i("deviceselector value %u", ESPUI.getControl(deviceselector)->value.toInt());
-    device.endpoint = 1; //z2s_devices_table[channel_number_slot].endpoint;
+    device.endpoint = ESPUI.getControl(device_endpoint_number)->value.toInt();//1; //z2s_devices_table[channel_number_slot].endpoint;
     device.cluster_id = 0; //z2s_devices_table[channel_number_slot].cluster_id;
     memcpy(&device.ieee_addr, z2s_zb_devices_table[ESPUI.getControl(deviceselector)->value.toInt()].ieee_addr,8);
     device.short_addr = z2s_zb_devices_table[ESPUI.getControl(deviceselector)->value.toInt()].short_addr;
@@ -1646,5 +1620,109 @@ void datatypeCallback (Control *sender, int type) {
 
 	if (ESPUI.getControl(device_attribute_type_selector)->value.toInt() >= 0)
 		ESPUI.updateNumber(device_attribute_size_number, zigbee_datatypes[ESPUI.getControl(device_attribute_type_selector)->value.toInt()].zigbee_datatype_size);
+}
+
+void clearAttributeIdSelect() {
+
+	if (attribute_id_selector_options_count > 0) {
+		for (uint8_t i = 0; i < attribute_id_selector_options_count; i++) {
+
+			ESPUI.removeControl(attribute_id_selector_options[i], false);		
+					//ESPUI.jsonReload();
+		}
+		attribute_id_selector_options_count = 0;
+	}
+
+	ESPUI.updateControlValue(device_attribute_id_selector, String(-1));
+	ESPUI.updateControlValue(device_attribute_type_selector, String(-1));
+}
+
+void clearAttributeValueSelect() {
+
+	log_i("attribute_value_selector_options_count = %u", attribute_value_selector_options_count);
+	if (attribute_value_selector_options_count > 0) {
+		for (uint8_t i = 0; i < attribute_value_selector_options_count; i++) {
+
+			ESPUI.removeControl(attribute_value_selector_options[i], false);		
+			//ESPUI.jsonReload();
+		}
+		attribute_value_selector_options_count = 0;
+	}
+	
+	ESPUI.updateControlValue(device_attribute_value_selector, String(-1));
+	ESPUI.updateNumber(device_attribute_value_text, 0);
+}
+
+void attributeCallback (Control *sender, int type) {
+
+	if (ESPUI.getControl(device_attribute_id_selector)->value.toInt() >= 0) {
+
+		uint16_t zigbee_attributes_idx = ESPUI.getControl(device_attribute_id_selector)->value.toInt();
+
+		uint32_t zigbee_datatypes_count = sizeof(zigbee_datatypes)/sizeof(zigbee_datatype_t);
+
+		for (uint8_t datatypes_counter = 0; datatypes_counter < zigbee_datatypes_count; datatypes_counter++) {
+  
+			if (zigbee_datatypes[datatypes_counter].zigbee_datatype_id == zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_datatype_id) {
+				ESPUI.updateSelect(device_attribute_type_selector, String(datatypes_counter));
+				ESPUI.updateNumber(device_attribute_size_number, zigbee_datatypes[datatypes_counter].zigbee_datatype_size);
+				break;
+			}
+		}
+		ESPUI.updateNumber(device_attribute_id_text, zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id);
+
+		clearAttributeValueSelect();
+
+		//attribute_value_selector_options_count = 0;
+		uint32_t zigbee_attribute_values_count = sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_value_t);
+		uint16_t cluster_id = ESPUI.getControl(device_cluster_selector)->value.toInt();
+
+		//log_i("cluster_id = %u, zigbee_attributes_count = %u", cluster_id, zigbee_attributes_count);
+		for (uint32_t i = 0; i < zigbee_attribute_values_count; i++) {
+			//log_i("i = %u, cluster_id = %u, cluster_id = %u", i, zigbee_attributes[i].zigbee_attribute_cluster_id, cluster_id);
+			if ((zigbee_attribute_values[i].zigbee_cluster_id == cluster_id) && 
+					(zigbee_attribute_values[i].zigbee_attribute_id == zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id)) {
+
+				attribute_value_selector_options[attribute_value_selector_options_count] = 
+					ESPUI.addControl(Control::Type::Option, zigbee_attribute_values[i].zigbee_attribute_value_name, String(i), Control::Color::None, device_attribute_value_selector);
+				attribute_value_selector_options_count++;
+			}
+		}
+	}
+}
+	
+void clusterCallback (Control *sender, int type) {
+
+	if (sender->value.toInt() >= 0) {
+		
+		clearAttributeIdSelect();
+		clearAttributeValueSelect();
+
+		uint16_t cluster_id = sender->value.toInt();
+		//attribute_id_selector_options_count = 0;
+
+		ESPUI.updateNumber(device_attribute_size_number, 0);
+		ESPUI.updateNumber(device_attribute_id_text, 0);
+		
+		uint32_t zigbee_attributes_count = sizeof(zigbee_attributes)/sizeof(zigbee_attribute_t);
+		
+		//log_i("cluster_id = %u, zigbee_attributes_count = %u", cluster_id, zigbee_attributes_count);
+		for (uint32_t i = 0; i < zigbee_attributes_count; i++) {
+			//log_i("i = %u, cluster_id = %u, cluster_id = %u", i, zigbee_attributes[i].zigbee_attribute_cluster_id, cluster_id);
+			if (zigbee_attributes[i].zigbee_attribute_cluster_id == cluster_id) {
+
+				attribute_id_selector_options[attribute_id_selector_options_count] = 
+					ESPUI.addControl(Control::Type::Option, zigbee_attributes[i].zigbee_attribute_name, String(i), Control::Color::None, device_attribute_id_selector);
+				attribute_id_selector_options_count++;
+			}
+		}
+	}
+}
+
+void valueCallback(Control *sender, int type) {
+	if (sender->value.toInt() >= 0) {
+	
+		ESPUI.updateNumber(device_attribute_value_text, zigbee_attribute_values[sender->value.toInt()].zigbee_attribute_value);
+	}
 }
 #endif //USE_SUPLA_WEB_SERVER

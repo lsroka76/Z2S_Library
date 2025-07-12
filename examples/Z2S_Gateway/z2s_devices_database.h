@@ -113,6 +113,7 @@
 #define Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE          0x4800
 #define Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE     0x4810
 #define Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR         0x4820
+#define Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE  0x4830
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_VALVE              0x4900
 
@@ -1186,6 +1187,9 @@ const dataPoints = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
@@ -1923,6 +1927,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_ntcy3xu1", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE200_ai4rqhky", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZE284_n4ttsck2", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2, .z2s_device_endpoints_count = 1}, //ONENUO
 
@@ -1969,10 +1976,14 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_femsaaua", .model_name = "TS130F",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE},
+                              { 2, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE }}},
 
   { .manufacturer_name = "_TZ3000_5iixzdo7", .model_name = "TS130F",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE},
+                              { 2, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE }}},
 
   { .manufacturer_name = "_TZ3000_c2yscrj8", .model_name = "TS0224",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_endpoints_count = 1},

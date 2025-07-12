@@ -1442,9 +1442,9 @@ void loop() {
         log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
         log_i("Gateway version: %s", Z2S_VERSION);
-        int8_t zb_tx_power;
-        esp_zb_get_tx_power(&zb_tx_power);
-        log_i("Zigbee TX power: %d", zb_tx_power);
+        //int8_t zb_tx_power;
+        //esp_zb_get_tx_power(&zb_tx_power);
+        //log_i("Zigbee TX power: %d", zb_tx_power);
         //Z2S_updateWebGUI();
       /*  if (Test_GeneralPurposeMeasurement) {
           char display_buffer[15] = {};
@@ -1470,7 +1470,7 @@ void loop() {
 
         //}
       }
-      if (refresh_cycle % 6 == 0) {
+      if (refresh_cycle % 12 == 0) {
         log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
       }
     }

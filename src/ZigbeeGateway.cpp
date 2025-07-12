@@ -395,39 +395,39 @@ void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t s
     _last_device_query.zcl_manufacturer_name[zbstr->len] = '\0';
     log_i("Peer Manufacturer is \"%s\"", _last_device_query.zcl_manufacturer_name);
     xSemaphoreGive(gt_lock);
-  }
+  } else
   if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING && attribute->data.value) {
     zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
     memcpy(_last_device_query.zcl_model_name, zbstr->data, zbstr->len);
     _last_device_query.zcl_model_name[zbstr->len] = '\0';
     log_i("Peer Model is \"%s\"", _last_device_query.zcl_model_name);
     xSemaphoreGive(gt_lock);
-  }
+  } else
   if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING && attribute->data.value) {
     zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
     memcpy(_last_device_query.software_build_ID, zbstr->data, zbstr->len);
     _last_device_query.software_build_ID[zbstr->len] = '\0';
     log_i("Device firmware build is \"%s\"", _last_device_query.software_build_ID);
     xSemaphoreGive(gt_lock);
-  }
+  } else
   if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
    
     _last_device_query.zcl_version_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL version id is \"%d\"", _last_device_query.zcl_version_id);
     xSemaphoreGive(gt_lock);
-  }
+  } else
   if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
    
     _last_device_query.zcl_application_version_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL application version id is \"%d\"", _last_device_query.zcl_application_version_id);
     xSemaphoreGive(gt_lock);
-  }
+  } else
   if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM && attribute->data.value) {
    
     _last_device_query.zcl_power_source_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL power source id is \"%d\"", _last_device_query.zcl_power_source_id);
     xSemaphoreGive(gt_lock);
-  }
+  } else
   if (attribute->id == 0xFFFE) { // && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
     log_i("Attribute 0xFFFE, data type 0x%x", attribute->data.type);
     //_last_device_query.zcl_power_source_id = *((uint8_t*)attribute->data.value);
