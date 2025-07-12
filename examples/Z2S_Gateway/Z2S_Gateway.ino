@@ -135,7 +135,7 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
   char log_line[384];
   
   if (scan_result == ESP_ERR_NOT_FOUND)
-    log_i_telnet("\033[1mZ2S_nwk_scan_neighbourhood scan empty :-(  \033[22m");
+    log_i_telnet2("\033[1mZ2S_nwk_scan_neighbourhood scan empty :-(  \033[22m");
 
   while (scan_result == ESP_OK) {
     sprintf(log_line, "Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n"
@@ -147,13 +147,13 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
         nwk_neighbour.short_addr, nwk_neighbour.depth, nwk_neighbour.rx_on_when_idle, nwk_neighbour.relationship,
         nwk_neighbour.lqi, nwk_neighbour.rssi, nwk_neighbour.outgoing_cost, nwk_neighbour.age, nwk_neighbour.device_timeout,
         nwk_neighbour.timeout_counter);
-    log_i_telnet(log_line, toTelnet);
+    log_i_telnet2(log_line, toTelnet);
     
     int16_t channel_number_slot = Z2S_findChannelNumberSlot(nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
     
     if (channel_number_slot < 0) {
       sprintf(log_line, "Z2S_nwk_scan_neighbourhood - no channel found for address 0x%x", nwk_neighbour.short_addr);
-      log_i_telnet(log_line, toTelnet);
+      log_i_telnet2(log_line, toTelnet);
     }
     else {
       while (channel_number_slot >= 0) {
@@ -168,10 +168,10 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
     //esp_zb_lock_release();
   }
   if (scan_result == ESP_ERR_INVALID_ARG)
-    log_i_telnet("Z2S_nwk_scan_neighbourhood error ESP_ERR_INVALID_ARG", toTelnet);
+    log_i_telnet2("Z2S_nwk_scan_neighbourhood error ESP_ERR_INVALID_ARG", toTelnet);
 
   if (scan_result == ESP_ERR_NOT_FOUND)
-    log_i_telnet("Z2S_nwk_scan_neighbourhood scan completed", toTelnet);
+    log_i_telnet2("Z2S_nwk_scan_neighbourhood scan completed", toTelnet);
 }
 
 
@@ -213,6 +213,8 @@ void supla_callback_bridge(int event, int action) {
   }
 #endif //SUPLA_WEB_SERVER
 }
+
+#ifdef USE_TELNET_CONSOLE
 
 bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
 
@@ -1068,6 +1070,8 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   }
 }
 
+#endif  //USE_TELNET_CONSOLE
+
 zbg_device_params_t test_device = {.model_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
 .rejoined = true, .ZC_binding = true, .ieee_addr = {0,0,0,0,0,0,0,0}, .endpoint = 1, .cluster_id = 0, 
   .short_addr = 0, .user_data = 0};
@@ -1350,7 +1354,11 @@ void loop() {
   
 #endif //USE_SUPLA_WEB_SERVER
 
+#ifdef USE_TELNET_CONSOLE
+
   if (is_Telnet_server) telnet.loop();
+
+#endif //USE_TELNET_CONSOLE
   
   if ((!Zigbee.started()) && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
   
@@ -1369,8 +1377,13 @@ void loop() {
 #endif //USE_SUPLA_WEB_SERVER
 
     //ESPUI.begin("espui_test");
+
+#ifdef USE_TELNET_CONSOLE
+
     setupTelnet();
     onTelnetCmd(Z2S_onTelnetCmd); 
+
+#endif //USE_TELNET_CONSOLE
   }
   
   //
@@ -1831,6 +1844,9 @@ void loop() {
               }
               //here we can configure reporting and restart ESP32
               //zbGateway.sendDeviceFactoryReset(joined_device);
+              if hasTuyaCustomCluster(Z2S_DEVICES_LIST[i].z2s_device_desc_id)
+                zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL); break;
+                
               switch (Z2S_DEVICES_LIST[i].z2s_device_desc_id) { //(joined_device->model_id) {
 
                 case 0x0000: break;     
@@ -1993,32 +2009,7 @@ void loop() {
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
                                                 ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, false);
                 } break;
-                 
-                case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
-                case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
-                case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
-                case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
-                case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
-                case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
-                case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
-                case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
-                case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
-                case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
-                case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
-                case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2:
-                case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
-                case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
-                case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
-                case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
-                case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:
-                case Z2S_DEVICE_DESC_TS0601_TRV_ME167:
-                case Z2S_DEVICE_DESC_TS0601_TRV_BECA:
-                case Z2S_DEVICE_DESC_TS0601_TRV_MOES:
-                case Z2S_DEVICE_DESC_TS0601_TRV_TRV601:
-                case Z2S_DEVICE_DESC_TS0601_TRV_TRV603:
-                  zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL); break;
-
-                  
+                   
                 case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
                                                 ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 1200, 10, false); 

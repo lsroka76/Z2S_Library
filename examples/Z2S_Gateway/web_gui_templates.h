@@ -37,7 +37,8 @@ static const zigbee_cluster_t zigbee_clusters[] =
 	 {.zigbee_cluster_name = "TIME",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TIME},
 	 {.zigbee_cluster_name = "POLL CONTROLL",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL},
 	 {.zigbee_cluster_name = "WINDOW COVERING",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING},
-	 {.zigbee_cluster_name = "THERMOSTAT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT},					
+	 {.zigbee_cluster_name = "THERMOSTAT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT},
+   {.zigbee_cluster_name = "THERMOSTAT UI",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG},					
 	 {.zigbee_cluster_name = "COLOR CONTROL",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL},																	
 	 {.zigbee_cluster_name = "ILLUMINANCE MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT},
 	 {.zigbee_cluster_name = "TEMPERATURE MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT},
@@ -55,7 +56,7 @@ static const zigbee_cluster_t zigbee_clusters[] =
 	 {.zigbee_cluster_name = "SONOFF FC11",.zigbee_cluster_id = 0xFC11}};
 
 static const zigbee_attribute_t zigbee_attributes[] = {
-
+//POWER CONFIG
 	{
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID, 
 		.zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
@@ -68,6 +69,7 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "BATTERY PERCENTAGE"
 	},
+  //ON OFF
 	{
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
@@ -128,12 +130,14 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_NULL,
 		.zigbee_attribute_name = "TOGGLE (CMD)"
 	},
+  //LEVEL CONTROL
 	{
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
-		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "CURRENT LEVEL"
 	},
+  //POLL CONTROL
 	{
 		.zigbee_attribute_id  = 0x0000, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL, 
@@ -158,6 +162,7 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
 		.zigbee_attribute_name = "FAST POLL TIMEOUT"
 	},
+  //WINDOW COVERING
 	{
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, 
@@ -218,6 +223,247 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "MOVE TO POSITION (%)"
 	},
+  //THERMOSTAT
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "LOCAL TEMPERATURE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8,
+		.zigbee_attribute_name = "TEMPERATURE CALIBRATION"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "HEATING SETPOINT"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "SYSTEM MODE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_THERMOSTAT_RUNNING_MODE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "RUNNING MODE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_TEMPERATURE_DISPLAY_MODE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "TEMPERATURE UNITS"
+	},
+  //COLOR CONTROL
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_HUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "CURRENT HUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_SATURATION_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "CURRENT SATURATION"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_X_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "CURRENT X"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_Y_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "CURRENT Y"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "CURRENT Y"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_MODE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "COLOR MODE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_OPTIONS_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,
+		.zigbee_attribute_name = "COLOR OPTIONS"
+	},
+  //ILLUINANCE/TEMPERATURE/PRESSURE/FLOW/HUMIDITY
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ILLUMINANCE_MEASUREMENT_MEASURED_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "ILLUMINANCE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ILLUMINANCE_MEASUREMENT_MIN_MEASURED_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "MIN VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ILLUMINANCE_MEASUREMENT_MAX_MEASURED_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "MAX VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "TEMPERATURE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_MIN_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "MIN VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_MAX_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "MAX VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "PRESSURE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_MIN_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "MIN VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_MAX_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "MAX VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_FLOW_MEASUREMENT_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "FLOW"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_FLOW_MEASUREMENT_MIN_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "MIN VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_FLOW_MEASUREMENT_MAX_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "MAX VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "HUMIDITY"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_MIN_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "MIN VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_MAX_VALUE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "MAX VALUE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_OCCUPANCY_SENSING_OCCUPANCY_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,
+		.zigbee_attribute_name = "OCCUPANCY"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_OCCUPANCY_SENSING_OCCUPANCY_SENSOR_TYPE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "SENSOR TYPE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_OCCUPANCY_SENSING_OCCUPANCY_SENSOR_TYPE_BITMAP_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,
+		.zigbee_attribute_name = "SENSOR TYPE BITMAP"
+	},
+  //IAS ZONE
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "ZONE STATE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BIT_ENUM,
+		.zigbee_attribute_name = "ZONE TYPE"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
+		.zigbee_attribute_name = "ZONE STATUS"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONEID_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "ZONE id
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_ZONE_NUMBER_OF_ZONE_SENSITIVITY_LEVELS_SUPPORTED_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "SENSITIVITY LEVELS"
+	},
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_ZONE_CURRENT_ZONE_SENSITIVITY_LEVEL_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "SENSITIVITY LEVEL"
+	},
+  //IAS WD
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_WD_MAX_DURATION_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_WD, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "MAX DURATION"
+	},
+  //METERING
+  {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48,
+		.zigbee_attribute_name = "CURRENT SUMMATION"
+	},
+  //ELECTRICAL MESUREMENT
 	{
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
@@ -246,6 +492,7 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 	 {.zigbee_datatype_name = "U8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8},
 	 {.zigbee_datatype_name = "U16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16},
 	 {.zigbee_datatype_name = "U32",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32},
+   {.zigbee_datatype_name = "U48",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48},
 	 {.zigbee_datatype_name = "S8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8},
 	 {.zigbee_datatype_name = "S16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16},
 	 {.zigbee_datatype_name = "8ENUM",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM},

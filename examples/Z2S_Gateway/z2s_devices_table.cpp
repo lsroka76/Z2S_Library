@@ -108,7 +108,7 @@ void Z2S_printDevicesTableSlots(bool toTelnet) {
         z2s_devices_table[devices_counter].refresh_secs,
         z2s_devices_table[devices_counter].ZB_device_id);
  
-      log_i_telnet(log_line, toTelnet);
+      log_i_telnet2(log_line, toTelnet);
     }
 }
 
@@ -563,7 +563,7 @@ void Z2S_printZBDevicesTableSlots(bool toTelnet) {
         z2s_zb_devices_table[devices_counter].Supla_channels[14],
         z2s_zb_devices_table[devices_counter].Supla_channels[15]);  
         
-      log_i_telnet(log_line, toTelnet);
+      log_i_telnet2(log_line, toTelnet);
     }
 }
 
@@ -2444,4 +2444,43 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
     }
     channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, z2s_devices_table[channel_number_slot].ieee_addr, -1, -1, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   }
+}
+
+bool hasTuyaCustomCluster(uint32_t model_id) {
+  
+  switch (model_id) {
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
+    case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
+    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
+    case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
+    case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2:
+    case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
+    case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
+    case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
+    case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
+    case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:
+    case Z2S_DEVICE_DESC_TS0601_TRV_ME167:
+    case Z2S_DEVICE_DESC_TS0601_TRV_BECA:
+    case Z2S_DEVICE_DESC_TS0601_TRV_MOES:
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV601:
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV603:
+      return true;
+    default:
+      return false;
+  }  
+}
+
+void log_i_telnet2(char *log_line, bool toTelnet) {
+#ifdef USE_TELNET_CONSOLE
+  log_i_telnet(log_line, toTelnet);
+#endif //USE_TELNET_CONSOLE
+  log_i("%s", log_line);
 }

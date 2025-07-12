@@ -4,7 +4,12 @@
 #include <ZigbeeGateway.h>
 #include "z2s_devices_database.h"
 #include "priv_auth_data.h"
-#include "z2s_telnet_server.h"
+
+#ifdef USE_TELNET_CONSOLE
+
+  #include "z2s_telnet_server.h"
+
+#endif //USE_TELNET_CONSOLE
 
 #include <supla/tools.h>
 
@@ -294,4 +299,7 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
 bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
                     double threshold_1 = 0, double threshold_2 = 0);
 
+bool hasTuyaCustomCluster(uint32_t model_id);
+
+void log_i_telnet2(char *log_line, bool toTelnet = false);
 #endif
