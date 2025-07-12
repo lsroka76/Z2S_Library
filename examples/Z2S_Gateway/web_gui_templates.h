@@ -435,7 +435,7 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONEID_ID, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
-		.zigbee_attribute_name = "ZONE id
+		.zigbee_attribute_name = "ZONE ID"
 	},
   {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_ZONE_NUMBER_OF_ZONE_SENSITIVITY_LEVELS_SUPPORTED_ID, 
