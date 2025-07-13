@@ -1845,7 +1845,7 @@ void loop() {
               //here we can configure reporting and restart ESP32
               //zbGateway.sendDeviceFactoryReset(joined_device);
               if (hasTuyaCustomCluster(Z2S_DEVICES_LIST[i].z2s_device_desc_id))
-                zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL); break;
+                zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
 
               switch (Z2S_DEVICES_LIST[i].z2s_device_desc_id) { //(joined_device->model_id) {
 
