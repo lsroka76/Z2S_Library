@@ -10,6 +10,9 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
 
       case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR: 
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR; break;
+      
+      case Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE: 
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; break;
     }
     
     auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device, z2s_function);

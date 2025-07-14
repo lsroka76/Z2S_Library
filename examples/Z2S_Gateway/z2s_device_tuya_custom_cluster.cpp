@@ -1204,6 +1204,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
       processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:

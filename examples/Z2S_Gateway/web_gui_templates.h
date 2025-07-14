@@ -463,7 +463,43 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48,
 		.zigbee_attribute_name = "CURRENT SUMMATION"
 	},
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_METERING_UNIT_OF_MEASURE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "UNIT OF MEASURE"
+	},
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U24,
+		.zigbee_attribute_name = "MULTIPLIER"
+	},
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U24,
+		.zigbee_attribute_name = "DIVISOR"
+	},
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_METERING_SUMMATION_FORMATTING_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,
+		.zigbee_attribute_name = "FORMATTING"
+	},
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_METERING_METERING_DEVICE_TYPE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,
+		.zigbee_attribute_name = "DEVICE TYPE"
+	},
   //ELECTRICAL MESUREMENT
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "AC FREQUENCY"
+	},
 	{
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
@@ -479,7 +515,67 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
-		.zigbee_attribute_name = "RMS ACTIVE POWER"
+		.zigbee_attribute_name = "ACTIVE POWER"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_REACTIVE_POWER_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "REACTIVE POWER"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_APPARENT_POWER_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "APPARENT POWER"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_POWER_FACTOR_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8,
+		.zigbee_attribute_name = "POWER FACTOR"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_POWER_FACTOR_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8,
+		.zigbee_attribute_name = "POWER FACTOR"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "AC VOLTAGE MULTIPLIER"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "AC VOLTAGE DIVISOR"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "AC CURRENT MULTIPLIER"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "AC CURRENT DIVISOR"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "AC POWER MULTIPLIER"
+	 },
+	 {
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "AC POWER DIVISOR"
 	 },
 };
 	 
@@ -491,8 +587,9 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 	 {.zigbee_datatype_name = "16BITMAP",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP},
 	 {.zigbee_datatype_name = "U8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8},
 	 {.zigbee_datatype_name = "U16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16},
-	 {.zigbee_datatype_name = "U32",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32},
-   {.zigbee_datatype_name = "U48",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48},
+	 {.zigbee_datatype_name = "U24",.zigbee_datatype_size = 0x03,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U24},
+	 {.zigbee_datatype_name = "U32",.zigbee_datatype_size = 0x04,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32},
+   {.zigbee_datatype_name = "U48",.zigbee_datatype_size = 0x06,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48},
 	 {.zigbee_datatype_name = "S8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8},
 	 {.zigbee_datatype_name = "S16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16},
 	 {.zigbee_datatype_name = "8ENUM",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM},

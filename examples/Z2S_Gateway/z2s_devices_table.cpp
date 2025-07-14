@@ -1212,7 +1212,7 @@ void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, cluster 0x%x, active_fwd_energy llu", ieee_addr_str, endpoint, cluster, active_fwd_energy);
+  log_i("%s, endpoint 0x%x, cluster 0x%x, active_fwd_energy 0xllu", ieee_addr_str, endpoint, cluster, active_fwd_energy);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
   

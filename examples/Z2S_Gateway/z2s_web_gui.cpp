@@ -7,7 +7,7 @@
 #include "z2s_devices_table.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.59-13/07/2025"
+#define Z2S_VERSION "0.8.60-14/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -1143,15 +1143,26 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 					if (result) {
 						if (*zbGateway.getReadAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-							uint32_t readAttrValue;
-							
+							uint64_t readAttrValue;
+							esp_zb_uint48_t readAttrValue48;
+							esp_zb_uint24_t readAttrValue24;
+
 							switch (zbGateway.getReadAttrLastResult()->data.size) {
 								case 1: readAttrValue = *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value; break;
 								case 2: readAttrValue = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+								case 3: {
+									readAttrValue24 = *(esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value; 
+									readAttrValue = (((uint64_t)readAttrValue24.high) << 16) + readAttrValue24.low;
+								} break;
 								case 4: readAttrValue = *(uint32_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+								case 6: {
+									readAttrValue48 = *(esp_zb_uint48_t *)zbGateway.getReadAttrLastResult()->data.value; 
+									readAttrValue = (((uint64_t)readAttrValue48.high) << 32) + readAttrValue48.low;
+								} break;
+								case 8: readAttrValue = *(uint64_t *)zbGateway.getReadAttrLastResult()->data.value; break;
 							}
 						
-							sprintf_P(general_purpose_gui_buffer, PSTR("Reading attribute successful!<br>Data value is %u(0x%X)<br>Data type is %s(0x%X)<br>Data size is 0x%X"), 
+							sprintf_P(general_purpose_gui_buffer, PSTR("Reading attribute successful!<br>Data value is %llu(0x%llX)<br>Data type is %s(0x%X)<br>Data size is 0x%X"), 
                       readAttrValue, readAttrValue, getZigbeeDataTypeName(zbGateway.getReadAttrLastResult()->data.type), zbGateway.getReadAttrLastResult()->data.type,
 							 		  	zbGateway.getReadAttrLastResult()->data.size);
 							ESPUI.updateLabel(device_read_attribute_label, general_purpose_gui_buffer);

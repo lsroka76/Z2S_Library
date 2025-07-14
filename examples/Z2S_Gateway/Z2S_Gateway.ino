@@ -1340,9 +1340,33 @@ void loop() {
   } 
   if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
     GUIstarted = true;
+    log_i( "Before Z2S_buildWebGUI: Flash chip real size:%u B, Free Sketch Space:%u B, "
+						"Free Heap:%u, Minimal Free Heap:%u B, "
+						"HeapSize:%u B, MaxAllocHeap:%u B, "
+						"Supla uptime:%lu s", 
+						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
+						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
     Z2S_buildWebGUI();  
+    log_i( "Before Z2S_startWebGUI: Flash chip real size:%u B, Free Sketch Space:%u B, "
+						"Free Heap:%u, Minimal Free Heap:%u B, "
+						"HeapSize:%u B, MaxAllocHeap:%u B, "
+						"Supla uptime:%lu s", 
+						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
+						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
     Z2S_startWebGUI();
+    log_i( "Before Z2S_startUpdateServer: Flash chip real size:%u B, Free Sketch Space:%u B, "
+						"Free Heap:%u, Minimal Free Heap:%u B, "
+						"HeapSize:%u B, MaxAllocHeap:%u B, "
+						"Supla uptime:%lu s", 
+						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
+						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
     Z2S_startUpdateServer();
+    log_i( "After Z2S_startUpdateServer: Flash chip real size:%u B, Free Sketch Space:%u B, "
+						"Free Heap:%u, Minimal Free Heap:%u B, "
+						"HeapSize:%u B, MaxAllocHeap:%u B, "
+						"Supla uptime:%lu s", 
+						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
+						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
   }
   
 #endif 
@@ -1864,10 +1888,10 @@ void loop() {
                   esp_zb_ieee_addr_t gateway_ieee_addr;
                   memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                                               ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, 8,&gateway_ieee_addr);
+                                               ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr);
                   esp_zb_get_long_address(gateway_ieee_addr);
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                                               ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, 8,&gateway_ieee_addr);
+                                               ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr);
 
                 } break;
                 
