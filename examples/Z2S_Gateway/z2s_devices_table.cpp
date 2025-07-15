@@ -36,6 +36,7 @@ z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZBDEVICESMAXCOUNT];
 static uint32_t Styrbar_timer = 0;
 static bool     Styrbar_ignore_button_1 = false;
 
+void (*_on_Tuya_custom_cluster_receive)(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data) = nullptr;
 
 void no_channel_found_error_func(char *ieee_addr_str) {
 
@@ -1629,15 +1630,24 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
                                      uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
   switch (cluster) {
-    case TUYA_PRIVATE_CLUSTER_EF00: 
-      processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi); break;
+    case TUYA_PRIVATE_CLUSTER_EF00: {
+
+      processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi); 
+      if (_on_Tuya_custom_cluster_receive) 
+        _on_Tuya_custom_cluster_receive(command_id, payload_size, payload);
+    } break;
+
     case ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER:
+      
       processZosungCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload, rssi); break;
+    
     case IKEA_PRIVATE_CLUSTER:
     case IKEA_PRIVATE_CLUSTER_2: {
+      
       log_i("IKEA custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", cluster, endpoint, command_id);
       processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster, command_id, payload_size, payload, rssi);
      } break;
+    
     default: log_i("Unknown custom cluster(0x%x) command(0x%x)", cluster, command_id); break;
   }
 }
@@ -1788,12 +1798,15 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
+
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2:
       case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER:
       case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1:
-      case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
+      case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2:
+      case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A: {
+        
         addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot);
         first_free_slot = Z2S_findFirstFreeDevicesTableSlot();
         if (first_free_slot == 0xFF) {
@@ -2483,4 +2496,9 @@ void log_i_telnet2(char *log_line, bool toTelnet) {
   log_i_telnet(log_line, toTelnet);
 #endif //USE_TELNET_CONSOLE
   log_i("%s", log_line);
+}
+
+void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data)) {
+
+  _on_Tuya_custom_cluster_receive = callback;
 }

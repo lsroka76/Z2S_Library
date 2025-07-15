@@ -302,4 +302,7 @@ bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_ac
 bool hasTuyaCustomCluster(uint32_t model_id);
 
 void log_i_telnet2(char *log_line, bool toTelnet = false);
+
+void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data));
+
 #endif

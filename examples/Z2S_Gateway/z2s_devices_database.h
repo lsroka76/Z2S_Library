@@ -96,6 +96,7 @@
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER    0x4500
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1  0x4501
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2  0x4502
+#define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A  0x4503
 
 #define Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER  0x4550
 #define Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER   0x4551
@@ -467,6 +468,11 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_METERING,
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
@@ -1584,7 +1590,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 4, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
   { .manufacturer_name = "_TZ3000_cehuw1lw", .model_name = "TS011F", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A, .z2s_device_endpoints_count = 1}, //A*1000
   
   { .manufacturer_name = "_TZ3000_okaz9tjs", .model_name = "TS011F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1, .z2s_device_endpoints_count = 1},
@@ -1608,7 +1614,7 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_kqvb5akv", .model_name = "TS0001", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A, .z2s_device_endpoints_count = 1}, //A*1000
 
   { .manufacturer_name = "ADEO", .model_name = "LDSENK02F", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},

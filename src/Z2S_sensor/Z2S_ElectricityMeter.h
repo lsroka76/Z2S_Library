@@ -65,8 +65,32 @@ void setCurrentDivisor(uint16_t current_divisor) {
 
 uint16_t getCurrentDivisor() {
   
-  return _voltage_divisor;
+  return _current_divisor;
 }
+
+
+void setCurrentMultiplierModifier(uint16_t current_multiplier_modifier) {
+
+  if (current_multiplier_modifier > 0)
+    _current_multiplier_modifier = current_multiplier_modifier;
+}
+
+uint16_t getCurrentMultiplierModifier() {
+
+  return _current_multiplier_modifier;
+}
+
+void setCurrentDivisorModifier(uint16_t current_divisor_modifier) {
+  
+  if (current_divisor_modifier > 0)
+    _current_divisor_modifier = current_divisor_modifier;
+}
+
+uint16_t getCurrentDivisorModifier() {
+  
+  return _current_divisor_modifier;
+}
+
 
 void setActivePowerMultiplier(uint16_t active_power_multiplier) {
   
@@ -104,7 +128,7 @@ void setCurrent2(int phase, uint32_t current) {
   if ((_current_multiplier == 0) || (_current_divisor == 0))
     setCurrent(phase, current * 1);
   else	
-   setCurrent(phase, (current * _current_multiplier * 1000) / _current_divisor);
+   setCurrent(phase, (current * _current_multiplier * _current_multiplier_modifier * 1000) / (_current_divisor * _current_divisor_modifier));
 }
 
 void setPowerActive2(int phase, int64_t power) {
@@ -315,6 +339,9 @@ void iterateAlways() override {
     uint16_t _current_divisor = 0;
     uint16_t _active_power_multiplier = 0;
     uint16_t _active_power_divisor = 0;
+
+    uint16_t _current_multiplier_modifier = 1;
+    uint16_t _current_divisor_modifier = 1;
 
     bool _keep_alive_enabled = true;
     bool _timeout_enabled    = true;

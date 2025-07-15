@@ -456,6 +456,24 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
 		.zigbee_attribute_name = "MAX DURATION"
 	},
+	{
+		.zigbee_attribute_id  = 0x0001, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_WD, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "TUYA SIREN ALARM LIGHT"
+	},
+	{
+		.zigbee_attribute_id  = 0x0002, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_WD, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "TUYA SIREN ALARM RADIO"
+	},
+	{
+		.zigbee_attribute_id  = 0xF000, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_WD, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "PROMPT"
+	},
   //METERING
   {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, 

@@ -1368,7 +1368,7 @@ void loop() {
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
 						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
   }
-  
+  onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
 #endif 
 
   SuplaDevice.iterate();
@@ -1922,7 +1922,8 @@ void loop() {
 
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
                 case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1: 
-                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER: {
+                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER:
+                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A: {
                   /*zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 3600, 5, true);
                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
@@ -2046,7 +2047,7 @@ void loop() {
             //else log_i("LIST checking %s::%s, entry # %d",Z2S_DEVICES_LIST[i].manufacturer_name, Z2S_DEVICES_LIST[i].model_name, i);
           }
       if (!device_recognized) {
-        log_d(  "Unknown model %s::%s, no binding is possible", zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+        log_d("Unknown model %s::%s, no binding is possible", zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
                                      zbGateway.getQueryBasicClusterData()->zcl_model_name);
         rgbLed.setPixelColor(0, rgbLed.Color(255, 0, 0));
         rgbLed.show();
@@ -2056,6 +2057,7 @@ void loop() {
 #ifndef USE_SUPLA_WEB_SERVER
 
         Z2S_startWebGUI();
+        GUI_onLastBindingFailure(true);
 
 #endif //USE_SUPLA_WEB_SERVER
       }

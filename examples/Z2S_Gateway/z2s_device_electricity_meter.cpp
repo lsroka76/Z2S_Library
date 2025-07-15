@@ -5,15 +5,25 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   bool _isTuya, _active_query;
   bool _one_phase = true;
 
+  uint16_t current_multiplier_modifier = 1;
+  uint16_t current_multiplier_divisor  = 1;
+  
   switch (z2s_devices_table[channel_number_slot].model_id) {
+    
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
       _isTuya = true; _active_query = false; //true;
     } break;
+
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER: {
       _isTuya = true; _active_query = false;
     } break;
+
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
       _one_phase = false; break;
+
+    case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A:
+      current_multiplier_divisor = 1000; break;
+
     default: {
       _isTuya = false; _active_query = false;
     }
@@ -31,6 +41,10 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   Supla_Z2S_ElectricityMeter->setRefreshSecs(z2s_devices_table[channel_number_slot].refresh_secs);
 
   Supla_Z2S_ElectricityMeter->setEnergyInitialCounter(z2s_devices_table[channel_number_slot].data_counter);
+
+  Supla_Z2S_ElectricityMeter->setCurrentMultiplierModifier(current_multiplier_modifier);
+
+  Supla_Z2S_ElectricityMeter->setCurrentDivisorModifier(current_multiplier_divisor);
 
 }
 

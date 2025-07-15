@@ -141,7 +141,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     return false;
   }
   err = esp_zb_io_buffer_size_set(128);
-  if (err != ESP_OK) {
+  if (err != ESP_OK) {  
     log_e("Failed to set IO buffer size");
     return false;
   }
