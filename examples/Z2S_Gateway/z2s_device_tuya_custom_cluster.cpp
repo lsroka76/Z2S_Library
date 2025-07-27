@@ -36,7 +36,7 @@ uint32_t ir_code_send_length  = 0;
 uint16_t  ir_code_send_seq = 0;
 
 /*{'key_num': 1,'delay': 300,'key1': {'num': 1,'freq': 38000,'type': 1,'key_code': */
-const static uint8_t IR_SEND_CODE_PREAMBLE[] = {0x7B,0x27,0x6B,0x65,0x79,0x5F,0x6E,0x75,0x6D,0x27,0x3A,0x20,0x31,0x2C,0x27,0x64,0x65,
+const static uint8_t IR_SEND_CODE_PREAMBLE[] PROGMEM = {0x7B,0x27,0x6B,0x65,0x79,0x5F,0x6E,0x75,0x6D,0x27,0x3A,0x20,0x31,0x2C,0x27,0x64,0x65,
                                               0x6C,0x61,0x79,0x27,0x3A,0x20,0x33,0x30,0x30,0x2C,0x27,0x6B,0x65,0x79,0x31,0x27,0x3A,
                                               0x20,0x7B,0x27,0x6E,0x75,0x6D,0x27,0x3A,0x20,0x31,0x2C,0x27,0x66,0x72,0x65,0x71,0x27,
                                               0x3A,0x20,0x33,0x38,0x30,0x30,0x30,0x2C,0x27,0x74,0x79,0x70,0x65,0x27,0x3A,0x20,0x31,
@@ -778,9 +778,9 @@ void processTuyaSmokeDetectorReport(int16_t channel_number_slot, uint16_t payloa
   }
 }
 
-void processTuyaCODetectorReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
+void processTuyaCOGasDetectorReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
 
-  int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4;
+  int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4, channel_number_slot_5;
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
 
@@ -803,6 +803,11 @@ void processTuyaCODetectorReport(int16_t channel_number_slot, uint16_t payload_s
                                                       z2s_devices_table[channel_number_slot].endpoint, 
                                                       z2s_devices_table[channel_number_slot].cluster_id, 
                                                       SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_CO_DETECTOR_SILENCE_SID);
+
+    channel_number_slot_5 = Z2S_findChannelNumberSlot(z2s_devices_table[channel_number_slot].ieee_addr, 
+                                                      z2s_devices_table[channel_number_slot].endpoint, 
+                                                      z2s_devices_table[channel_number_slot].cluster_id, 
+                                                      SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_GAS_DETECTOR_PREHEAT_SID);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_CO_DETECTOR_CO_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
@@ -827,6 +832,10 @@ void processTuyaCODetectorReport(int16_t channel_number_slot, uint16_t payload_s
     log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
     updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
   }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_GAS_DETECTOR_PREHEAT_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceIASzone(channel_number_slot_5, (Tuya_read_dp_result.dp_value == 1), rssi);
 }
 
 void processTuyaPresenceSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
@@ -1208,7 +1217,8 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
       processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
-      processTuyaCODetectorReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
+    case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
+      processTuyaCOGasDetectorReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:

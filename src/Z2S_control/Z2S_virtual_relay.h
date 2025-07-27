@@ -70,7 +70,7 @@ class Z2S_VirtualRelay : public Relay {
   zbg_device_params_t 	_device;
 
   uint8_t _z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
-  uint8_t _z2s_function_data[10];
+  uint8_t _z2s_function_data[11];
   
   int8_t  _z2s_function_value_S8 = INT8_MAX; //0x7F
   int32_t _z2s_function_value_S32 = INT32_MAX;

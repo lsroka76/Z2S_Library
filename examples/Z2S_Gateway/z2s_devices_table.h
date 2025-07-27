@@ -154,8 +154,8 @@ typedef struct z2s_zb_device_params_s {
   uint32_t            keep_alive_ms;
   uint32_t            timeout_ms;
   uint32_t            user_data_flags;
-  uint32_t            user_data_1; 
-  uint32_t            user_data_2;
+  uint32_t            user_data_1; //Sonoff SWV b31 = 0 (time)/1(volume) b30-b24 cycles# b23-b0 worktime/volume
+  uint32_t            user_data_2;//Sonoff SWV b31-b24 reserved, b23-b0 pause
   uint64_t            user_data_3;
   uint64_t            user_data_4;
   uint8_t             Supla_channels[MAX_ZB_DEVICE_SUPLA_CHANNELS];
@@ -233,6 +233,7 @@ bool      Z2S_loadZBDevicesTable();
 bool      Z2S_clearZBDevicesTable();
 void      Z2S_printZBDevicesTableSlots(bool toTelnet = false);
 uint8_t   Z2S_findZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr);
+bool      Z2S_hasZBDevice(uint32_t desc_id);
 void      Z2S_initZBDevices(uint32_t init_ms);
 void      Z2S_updateZBDeviceLastSeenMs(esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms);
 

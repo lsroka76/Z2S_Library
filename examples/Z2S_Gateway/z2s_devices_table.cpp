@@ -77,7 +77,7 @@ void Z2S_printDevicesTableSlots(bool toTelnet) {
     if (z2s_devices_table[devices_counter].valid_record) {
       char log_line[1024];
 
-      sprintf_P(log_line,PSTR("ENTRY\t\t\t%u\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%X\n\rENDPOINT\t\t0x%X\n\rCLUSTER\t\t\t0x%X\n\r"
+      sprintf_P(log_line, PSTR("ENTRY\t\t\t%u\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%X\n\rENDPOINT\t\t0x%X\n\rCLUSTER\t\t\t0x%X\n\r"
             "MODEL\t\t\t%X\n\r"
             "SUPLA CHANNEL\t\t%u\n\rSUPLA SECONDARY CHANNEL\t%u\n\rSUPLA CHANNEL TYPE\t%ld\n\r"
             "SUPLA CHANNEL NAME\t%s\n\rSUPLA CHANNEL FUNCTION\t%lu\n\r"
@@ -401,6 +401,15 @@ uint8_t Z2S_findZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr) {
           (memcmp(z2s_zb_devices_table[devices_counter].ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t)) == 0))
         return devices_counter;
   return 0xFF;  
+}
+
+bool  Z2S_hasZBDevice(uint32_t desc_id) {
+
+  for (uint8_t devices_counter = 0; devices_counter < Z2S_ZBDEVICESMAXCOUNT; devices_counter++) 
+      if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
+          (z2s_zb_devices_table[devices_counter].desc_id == desc_id))
+        return true;
+  return false;
 }
 
 bool Z2S_removeZBDeviceWithAllChannels(uint8_t zb_device_slot) {
@@ -2132,6 +2141,20 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
           case TUYA_CO_DETECTOR_CO_CONC_SID:
           case TUYA_CO_DETECTOR_SELF_TEST_SID:
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+        }
+      } break;
+
+      case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR: {
+
+        switch (sub_id) {
+          
+          case TUYA_GAS_DETECTOR_GAS_SID:
+          case TUYA_GAS_DETECTOR_PREHEAT_SID:
+          //case TUYA_GAS_DETECTOR_SILENCE_SID:
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+          case TUYA_GAS_DETECTOR_GAS_CONC_SID:
+          case TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID:
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break;

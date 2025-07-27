@@ -104,6 +104,7 @@ uint8_t _status_led_cycle = 0;
 
 bool zbInit = true;
 bool GUIstarted = false;
+bool GUIdisabled = false;
 uint8_t write_mask;
 uint16_t write_mask_16;
 uint32_t write_mask_32;
@@ -138,9 +139,9 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
     log_i_telnet2("\033[1mZ2S_nwk_scan_neighbourhood scan empty :-(  \033[22m");
 
   while (scan_result == ESP_OK) {
-    sprintf(log_line, "Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n"
+    sprintf_P(log_line, PSTR("Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n"
                       "\rDEPTH\t\t\t0x%x\n\rRX_ON_WHEN_IDLE\t\t0x%x\n\rRELATIONSHIP\t\t0x%x\n\rLQI\t\t\t%d\n\rRSSI\t\t\t%d\n\rOUTGOING COST\t\t0x%x\n"
-                      "\rAGE\t\t\t0x%x\n\rDEVICE TIMEOUT\t\t%lu\n\rTIMEOUT COUNTER\t\t%lu", 
+                      "\rAGE\t\t\t0x%x\n\rDEVICE TIMEOUT\t\t%lu\n\rTIMEOUT COUNTER\t\t%lu"), 
         nwk_iterator, 
         nwk_neighbour.ieee_addr[7], nwk_neighbour.ieee_addr[6], nwk_neighbour.ieee_addr[5], nwk_neighbour.ieee_addr[4], 
         nwk_neighbour.ieee_addr[3], nwk_neighbour.ieee_addr[2], nwk_neighbour.ieee_addr[1], nwk_neighbour.ieee_addr[0],
@@ -191,7 +192,17 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_EVENT_1:
     case Supla::ON_CLICK_1: Zigbee.openNetwork(180); break;
     case Supla::ON_EVENT_2:
-    case Supla::ON_CLICK_5: Zigbee.factoryReset(); break;
+    case Supla::ON_CLICK_5: { //Zigbee.factoryReset(); break;
+      if (GUIdisabled) {
+        if (Supla::Network::IsReady()) {
+          GUIdisabled = false;
+          Z2S_startWebGUI();
+        }
+      } else {
+        GUIdisabled = true;
+        Z2S_stopWebGUI();
+      }
+    } break; 
     case Supla::ON_EVENT_3: 
     case Supla::ON_CLICK_10: Z2S_clearDevicesTable(); break;
     case Supla::ON_EVENT_4: Z2S_nwk_scan_neighbourhood(false); break;
@@ -1338,37 +1349,13 @@ void loop() {
     Z2S_startWebGUIConfig();
     Z2S_startUpdateServer();
   } 
-  if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+  if ((!GUIstarted) && Zigbee.started()) {// SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
     GUIstarted = true;
-    log_i( "Before Z2S_buildWebGUI: Flash chip real size:%u B, Free Sketch Space:%u B, "
-						"Free Heap:%u, Minimal Free Heap:%u B, "
-						"HeapSize:%u B, MaxAllocHeap:%u B, "
-						"Supla uptime:%lu s", 
-						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
-						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
     Z2S_buildWebGUI();  
-    log_i( "Before Z2S_startWebGUI: Flash chip real size:%u B, Free Sketch Space:%u B, "
-						"Free Heap:%u, Minimal Free Heap:%u B, "
-						"HeapSize:%u B, MaxAllocHeap:%u B, "
-						"Supla uptime:%lu s", 
-						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
-						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
     Z2S_startWebGUI();
-    log_i( "Before Z2S_startUpdateServer: Flash chip real size:%u B, Free Sketch Space:%u B, "
-						"Free Heap:%u, Minimal Free Heap:%u B, "
-						"HeapSize:%u B, MaxAllocHeap:%u B, "
-						"Supla uptime:%lu s", 
-						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
-						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
     Z2S_startUpdateServer();
-    log_i( "After Z2S_startUpdateServer: Flash chip real size:%u B, Free Sketch Space:%u B, "
-						"Free Heap:%u, Minimal Free Heap:%u B, "
-						"HeapSize:%u B, MaxAllocHeap:%u B, "
-						"Supla uptime:%lu s", 
-						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
-						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
+    onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
   }
-  onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
 #endif 
 
   SuplaDevice.iterate();
@@ -1444,6 +1431,13 @@ void loop() {
 
   if (millis() - _status_led_last_refresh_ms > 1000) {
 
+    log_i( "Memory information: Flash chip real size:%u B, Free Sketch Space:%u B, "
+						"Free Heap:%u, Minimal Free Heap:%u B, "
+						"HeapSize:%u B, MaxAllocHeap:%u B, "
+						"Supla uptime:%lu s", 
+						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
+						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
+    
     _status_led_last_mode = _status_led_mode;
     _status_led_last_refresh_ms = millis();
     
@@ -1509,6 +1503,12 @@ void loop() {
       }
       if (refresh_cycle % 12 == 0) {
         log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
+        log_i( "Memory information: Flash chip real size:%u B, Free Sketch Space:%u B, "
+						"Free Heap:%u, Minimal Free Heap:%u B, "
+						"HeapSize:%u B, MaxAllocHeap:%u B, "
+						"Supla uptime:%lu s", 
+						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
+						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
       }
     }
     if (!zbGateway.getGatewayDevices().empty()) {
@@ -1846,6 +1846,14 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_CONC_SID, "CO CONCENTRATION", 0, "ppm");
                             Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_SELF_TEST_SID, "SELF TEST RESULT", 0, "1..3");
                             Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_SILENCE_SID, "SILENCE");
+                          } break;
+
+                          case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_GAS_SID,"GAS DETECTED", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_GAS_CONC_SID, "GAS CONCENTRATION", 0, "%LEL");
+                            Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID, "SELF TEST RESULT", 0, "1..3");
+                            Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_PREHEAT_SID, "PREHEAT");
                           } break;
 
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
