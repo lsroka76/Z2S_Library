@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.62-27/07/2025"
+#define Z2S_VERSION "0.8.63-28/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -909,7 +909,6 @@ void enableTuyaGasDetectorGUI(bool enable) {
 
 	ESPUI.updateSelect(gas_alarm_ringtone_selector, minus_one_str);
 	ESPUI.updateNumber(gas_alarm_time_number, 0);
-	ESPUI.updateNumber(gas_alarm_ringtone_button, 0);
 	ESPUI.updateLabel(gas_alarm_info_label, three_dots_str);
 	ESPUI.updateLabel(gas_alarm_Tuya_payload_label, three_dots_str);
 
@@ -2262,7 +2261,7 @@ void valveCallback(Control *sender, int type, void *param) {
 					Tuya_custom_cmd_dp = TUYA_GAS_DETECTOR_ALARM_TIME_DP;
 					current_Tuya_payload_label = gas_alarm_Tuya_payload_label;
 
-					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, gas_detector_payload, true))
+					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, gas_detector_payload, true))
 					ESPUI.updateLabel(gas_alarm_info_label, PSTR("New alarm time sent"));
 				else
 					ESPUI.updateLabel(gas_alarm_info_label, device_query_failed_str);
