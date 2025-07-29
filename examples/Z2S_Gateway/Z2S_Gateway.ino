@@ -104,7 +104,11 @@ uint8_t _status_led_cycle = 0;
 
 bool zbInit = true;
 bool GUIstarted = false;
-bool GUIdisabled = false;
+bool GUIdisabled = true; //false;
+
+uint8_t  _enable_gui_on_start = 1;
+uint32_t _gui_start_delay     = 0;
+
 uint8_t write_mask;
 uint16_t write_mask_16;
 uint32_t write_mask_32;
@@ -193,14 +197,17 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_CLICK_1: Zigbee.openNetwork(180); break;
     case Supla::ON_EVENT_2:
     case Supla::ON_CLICK_5: { //Zigbee.factoryReset(); break;
-      if (GUIdisabled) {
+      if (!GUIstarted) {
         if (Supla::Network::IsReady()) {
-          GUIdisabled = false;
+          GUIstarted = true;
+          Z2S_buildWebGUI();
           Z2S_startWebGUI();
+          Z2S_startUpdateServer();
+          onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
         }
       } else {
-        GUIdisabled = true;
-        Z2S_stopWebGUI();
+        //GUIdisabled = true;
+        //Z2S_stopWebGUI();
       }
     } break; 
     case Supla::ON_EVENT_3: 
@@ -1306,6 +1313,20 @@ void setup() {
   //Open network for 180 seconds after boot
   Zigbee.setRebootOpenNetwork(180);
 
+  if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_ENABLE_GUI_ON_START, &_enable_gui_on_start)) {
+    log_i("Z2S_ENABLE_GUI_ON_START = %d", _enable_gui_on_start);
+  } else {
+    log_i("Z2S_ENABLE_GUI_ON_START not configured - turning on");
+    _enable_gui_on_start = 1;
+  }
+
+  if (Supla::Storage::ConfigInstance()->getUInt32(Z2S_GUI_ON_START_DELAY, &_gui_start_delay)) {
+    log_i("Z2S_GUI_ON_START_DELAY = %d s", _gui_start_delay);
+  } else {
+    log_i("Z2S_GUI_ON_START_DELAY not configured - setting to 0 s");
+    _gui_start_delay = 0;
+  }
+
   //Supla
   
   SuplaDevice.setSuplaCACert(suplaCACert);
@@ -1349,7 +1370,7 @@ void loop() {
     Z2S_startWebGUIConfig();
     Z2S_startUpdateServer();
   } 
-  if ((!GUIstarted) && Zigbee.started()) {// SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+  if ((!GUIstarted) && (_enable_gui_on_start == 1) && Zigbee.started() && (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {// SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
     GUIstarted = true;
     Z2S_buildWebGUI();  
     Z2S_startWebGUI();

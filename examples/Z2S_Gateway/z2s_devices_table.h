@@ -207,6 +207,9 @@ extern bool sendIASNotifications;
 
 const static char   Z2S_ZIGBEE_PRIMARY_CHANNEL      []  PROGMEM = "Z2S_primary_ch";
 
+const static char   Z2S_ENABLE_GUI_ON_START         []  PROGMEM = "Z2S_enable_gui";
+const static char   Z2S_GUI_ON_START_DELAY          []  PROGMEM = "Z2S_gui_delay";
+
 namespace Supla {
 enum Conditions {
   ON_LESS,

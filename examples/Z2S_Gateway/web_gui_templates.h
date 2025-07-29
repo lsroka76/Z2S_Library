@@ -26,7 +26,7 @@ typedef struct zigbee_attribute_value_s {
 	uint32_t zigbee_attribute_value;
 } zigbee_attribute_value_t;
 
-static const zigbee_cluster_t zigbee_clusters[] = 
+static const zigbee_cluster_t zigbee_clusters[] PROGMEM = 
 	{{.zigbee_cluster_name = "BASIC",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_BASIC},
 	 {.zigbee_cluster_name = "POWER CONFIG",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG},
 	 {.zigbee_cluster_name = "IDENTIFY",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY},
@@ -55,7 +55,7 @@ static const zigbee_cluster_t zigbee_clusters[] =
 	 {.zigbee_cluster_name = "TUYA EF00",.zigbee_cluster_id = 0xEF00},
 	 {.zigbee_cluster_name = "SONOFF FC11",.zigbee_cluster_id = 0xFC11}};
 
-static const zigbee_attribute_t zigbee_attributes[] = {
+static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 //POWER CONFIG
 	{
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID, 
@@ -597,7 +597,7 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 	 },
 };
 	 
-	static const zigbee_datatype_t zigbee_datatypes[] = 
+	static const zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
 
 	{{.zigbee_datatype_name = "NULL",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_NULL},
 	 {.zigbee_datatype_name = "BOOL",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL},
@@ -618,7 +618,7 @@ static const zigbee_attribute_t zigbee_attributes[] = {
 	 {.zigbee_datatype_name = "SET",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET}
 	};
 
-static const zigbee_attribute_value_t zigbee_attribute_values [] = {
+static const zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 
 	{
 		.zigbee_attribute_id = ESP_ZB_ZCL_ATTR_ON_OFF_START_UP_ON_OFF,
