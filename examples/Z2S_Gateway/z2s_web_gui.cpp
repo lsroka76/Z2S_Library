@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.65-29/07/2025"
+#define Z2S_VERSION "0.8.66-29/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -25,6 +25,8 @@ extern ZigbeeGateway zbGateway;
 extern uint8_t  _enable_gui_on_start;
 extern uint32_t _gui_start_delay;
 
+extern uint8_t _z2s_security_level;
+
 #define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 16
 #define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 16
 //UI handles
@@ -32,7 +34,7 @@ uint16_t gateway_general_info;
 uint16_t gateway_memory_info;
 uint16_t enable_gui_switch, gui_start_delay_number;
 
-uint16_t wifi_ssid_text, wifi_pass_text, Supla_server, Supla_email;
+uint16_t wifi_ssid_text, wifi_pass_text, Supla_server, Supla_email, Supla_skip_certificate_switch;
 uint16_t save_button, save_label;
 
 uint16_t pairing_mode_button, pairing_mode_label;
@@ -487,6 +489,10 @@ void buildGatewayTabGUI() {
 
 	enable_gui_switch = ESPUI.addControl(Control::Type::Switcher, PSTR("Enable GUI on start"), zero_str, Control::Color::Emerald, gatewaytab, 
 																			 gatewayCallback,(void*)GUI_CB_ENABLE_GUI_FLAG);
+	working_str = PSTR("When GUI is disabled on start use 5x BOOT to enable it.");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(""), working_str, 
+																				 Control::Color::None, enable_gui_switch), PSTR(clearLabelStyle));
+
 	gui_start_delay_number = ESPUI.addControl(Control::Type::Number, PSTR("GUI start delay (s)"), zero_str, Control::Color::Emerald, gatewaytab, generalMinMaxCallback);
 
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, gui_start_delay_number);
@@ -526,6 +532,8 @@ void buildCredentialsGUI() {
 	working_str = PSTR("64");	
 	ESPUI.addControl(Control::Type::Max, PSTR(""), working_str, Control::Color::None, Supla_email);
 
+	Supla_skip_certificate_switch = ESPUI.addControl(Control::Type::Switcher, PSTR("Skip CA certificate check"), zero_str, Control::Color::Emerald, wifitab, generalCallback);
+
 	working_str = PSTR("Save");
 	save_button = ESPUI.addControl(Control::Type::Button, PSTR("Save"), working_str, Control::Color::Emerald, wifitab, enterWifiDetailsCallback,(void*)GUI_CB_SAVE_FLAG);//&save_flag);
 	working_str = PSTR("Save & Restart");
@@ -547,6 +555,7 @@ void buildCredentialsGUI() {
 		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getEmail(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
+		ESPUI.updateNumber(Supla_skip_certificate_switch, _z2s_security_level == 2 ? 1 : 0);
 	}			
 }
 
@@ -1053,6 +1062,8 @@ void Z2S_startWebGUIConfig() {
 	ESPUI.addControl(Control::Type::Max, "", "64", Control::Color::None, Supla_server);
 	Supla_email = ESPUI.addControl(Control::Type::Text, "Supla email", "", Control::Color::Emerald, Control::noParent, textCallback);
 	ESPUI.addControl(Control::Type::Max, "", "64", Control::Color::None, Supla_email);
+	Supla_skip_certificate_switch = ESPUI.addControl(Control::Type::Switcher, PSTR("Skip CA certificate check"), zero_str, Control::Color::Emerald, Control::noParent, generalCallback);
+
 	save_button = ESPUI.addControl(Control::Type::Button, "Save", "Save", Control::Color::Emerald, Control::noParent, enterWifiDetailsCallback,(void*) GUI_CB_SAVE_FLAG);//&save_flag);
 	auto save_n_restart_button = ESPUI.addControl(Control::Type::Button, "Save & Restart", "Save & Restart", Control::Color::Emerald, save_button, enterWifiDetailsCallback, 
 																								(void*) GUI_CB_RESTART_FLAG); //&restart_flag);
@@ -1071,6 +1082,7 @@ void Z2S_startWebGUIConfig() {
 		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getEmail(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
+		ESPUI.updateNumber(Supla_skip_certificate_switch, _z2s_security_level);
 	}
 
 	ESPUI.begin("ZIGBEE <=> SUPLA CONFIG PAGE");
@@ -1149,6 +1161,7 @@ void enterWifiDetailsCallback(Control *sender, int type, void *param) {
   		cfg->setWiFiPassword(ESPUI.getControl(wifi_pass_text)->value.c_str());
 			cfg->setSuplaServer(ESPUI.getControl(Supla_server)->value.c_str());
 		  cfg->setEmail(ESPUI.getControl(Supla_email)->value.c_str());
+			cfg->setUInt8(PSTR("security_level"), ESPUI.getControl(Supla_skip_certificate_switch)->value.toInt() > 0 ? 2 :0);
 
 			cfg->commit();
 			if ((uint32_t)param == GUI_CB_RESTART_FLAG) SuplaDevice.softRestart();

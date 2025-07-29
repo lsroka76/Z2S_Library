@@ -169,6 +169,8 @@
 #define Z2S_DEVICE_DESC_TUYA_SIREN_ALARM                0x6600
 #define Z2S_DEVICE_DESC_MOES_ALARM                      0x6610
 
+#define Z2S_DEVICE_DESC_TUYA_REPEATER                   0x7000
+
 #define Z2S_DEVICE_DESC_ON_OFF                          0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                        0x8001
 
@@ -545,6 +547,9 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
       SONOFF_CUSTOM_CLUSTER }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -2065,7 +2070,11 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "HOBEIAN", .model_name = "ZG-102ZM",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_n0lphcok", .model_name = "TS0001",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER, .z2s_device_endpoints_count = 1}
+    
 };
 
 #endif

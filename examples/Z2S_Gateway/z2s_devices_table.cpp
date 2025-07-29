@@ -1710,8 +1710,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
     log_i("model id %d, first free slot %d", device->model_id, first_free_slot);
     
     switch (device->model_id) {
+      
       case 0x0000: break;
       
+      case Z2S_DEVICE_DESC_TUYA_REPEATER: break;
+
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL:

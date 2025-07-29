@@ -109,6 +109,8 @@ bool GUIdisabled = true; //false;
 uint8_t  _enable_gui_on_start = 1;
 uint32_t _gui_start_delay     = 0;
 
+uint8_t _z2s_security_level = 0;
+
 uint8_t write_mask;
 uint16_t write_mask_16;
 uint32_t write_mask_32;
@@ -1326,6 +1328,8 @@ void setup() {
     log_i("Z2S_GUI_ON_START_DELAY not configured - setting to 0 s");
     _gui_start_delay = 0;
   }
+
+  Supla::Storage::ConfigInstance()->getUInt8(PSTR("security_level"), &_z2s_security_level);
 
   //Supla
   
