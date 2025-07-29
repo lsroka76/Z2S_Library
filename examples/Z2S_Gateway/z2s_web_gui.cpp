@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.66-29/07/2025"
+#define Z2S_VERSION "0.8.67-30/07/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -79,6 +79,10 @@ uint16_t gas_alarm_ringtone_selector, gas_alarm_time_number;
 uint16_t gas_alarm_ringtone_button, gas_alarm_time_button, gas_alarm_self_test_button, gas_alarm_silence_button;
 uint16_t gas_alarm_info_label, gas_alarm_Tuya_payload_label;
 
+uint16_t moes_alarm_melody_selector, moes_alarm_duration_number, moes_alarm_volume_number;
+uint16_t moes_alarm_melody_button, moes_alarm_duration_button, moes_alarm_volume_button;
+uint16_t moes_alarm_info_label, moes_alarm_Tuya_payload_label;
+
 uint8_t	 attribute_id_selector_options_count = 0;
 uint16_t attribute_id_selector_options[MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS];
 
@@ -145,6 +149,11 @@ volatile uint16_t current_Tuya_payload_label = 0;
 #define GUI_CB_SEND_RINGTONE_FLAG	0x6002
 #define GUI_CB_SEND_TIME_FLAG			0x6003
 
+#define GUI_CB_SEND_VOLUME_FLAG		0x7000
+#define GUI_CB_SEND_MELODY_FLAG		0x7001
+#define GUI_CB_SEND_DURATION_FLAG	0x7002
+
+
 
 const static char* three_dots_str PROGMEM = "...";
 
@@ -197,7 +206,7 @@ void gatewayCallback(Control *sender, int type, void *param);
 void enterWifiDetailsCallback(Control *sender, int type, void *param);
 void textCallback(Control *sender, int type);
 void generalCallback(Control *sender, int type);
-void generalMinMaxCallback(Control *sender, int type);
+void generalMinMaxCallback(Control *sender, int type, void *param);
 void endpointCallback(Control *sender, int type);
 void switchCallback(Control *sender, int type);
 void device_selectorCallback(Control *sender, int type);
@@ -493,7 +502,8 @@ void buildGatewayTabGUI() {
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(""), working_str, 
 																				 Control::Color::None, enable_gui_switch), PSTR(clearLabelStyle));
 
-	gui_start_delay_number = ESPUI.addControl(Control::Type::Number, PSTR("GUI start delay (s)"), zero_str, Control::Color::Emerald, gatewaytab, generalMinMaxCallback);
+	gui_start_delay_number = ESPUI.addControl(Control::Type::Number, PSTR("GUI start delay (s)"), zero_str, Control::Color::Emerald, gatewaytab, 
+																						generalMinMaxCallback, (void*)3600);
 
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, gui_start_delay_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(""), max_int_str, Control::Color::None, gui_start_delay_number);
@@ -665,7 +675,7 @@ void buildDevicesTabGUI() {
 	//																			 Control::Color::None, device_endpoint_number), PSTR(clearLabelStyle));
 
 	device_attribute_size_number = ESPUI.addControl(Control::Type::Number, PSTR(""), zero_str, 
-																						 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback);
+																						 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback, (void*)255);
 
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, device_attribute_size_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(""), max_int_str, Control::Color::None, device_attribute_size_number);
@@ -687,7 +697,7 @@ void buildDevicesTabGUI() {
 																				 Control::Color::None, device_endpoint_number), PSTR(clearLabelStyle));
 	
 	device_config_min_number =	ESPUI.addControl(Control::Type::Number, PSTR(""), zero_str, 
-																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback);
+																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback, (void*)65535);
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, device_config_min_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(""), max_int_str, Control::Color::None, device_config_min_number);
 	working_str = PSTR("Min interval");
@@ -695,7 +705,7 @@ void buildDevicesTabGUI() {
 																				 Control::Color::None, device_endpoint_number), PSTR(clearLabelStyle));
 	
 	device_config_max_number =	ESPUI.addControl(Control::Type::Number, PSTR(""), zero_str, 
-																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback);
+																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback, (void*)65535);
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, device_config_max_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(""), max_int_str, Control::Color::None, device_config_max_number);
 	working_str = PSTR("Max interval");
@@ -703,7 +713,7 @@ void buildDevicesTabGUI() {
 																				 Control::Color::None, device_endpoint_number), PSTR(clearLabelStyle));
 
 	device_config_delta_number =	ESPUI.addControl(Control::Type::Number, PSTR(""), zero_str, 
-																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback);
+																									 Control::Color::Emerald, device_endpoint_number, generalMinMaxCallback, (void*)65535);
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, device_config_delta_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(""), max_int_str, Control::Color::None, device_config_delta_number);
 	working_str = PSTR("Delta");
@@ -853,7 +863,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 	ESPUI.addControl(Control::Type::Option, PSTR("Volume program..."), working_str, Control::Color::None, valve_program_selector);
 
 	valve_cycles_number =	ESPUI.addControl(Control::Type::Number, PSTR(""), zero_str, 
-																									 Control::Color::Emerald, valve_program_selector, generalMinMaxCallback);
+																									 Control::Color::Emerald, valve_program_selector, generalMinMaxCallback, (void*)100);
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, valve_cycles_number);
 	working_str = 100;
 	ESPUI.addControl(Control::Type::Max, PSTR(""), working_str, Control::Color::None, valve_cycles_number);
@@ -862,24 +872,24 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 																				 Control::Color::None, valve_program_selector), PSTR(clearLabelStyle));
 
 	valve_worktime_number =	ESPUI.addControl(Control::Type::Number, PSTR(""), zero_str, 
-																									 Control::Color::Emerald, valve_program_selector, generalMinMaxCallback);
+																									 Control::Color::Emerald, valve_program_selector, generalMinMaxCallback, (void*)86400);
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, valve_worktime_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(""), "86400", Control::Color::None, valve_worktime_number);
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(""), "Valve cycle worktime (0s - 86400s)", 
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(""), "Valve cycle worktime (0 s - 86400 s)", 
 																				 Control::Color::None, valve_program_selector), PSTR(clearLabelStyle));
 
 	valve_volume_number =	ESPUI.addControl(Control::Type::Number, PSTR(""), zero_str, 
-																									 Control::Color::Emerald, valve_program_selector, generalMinMaxCallback);
+																									 Control::Color::Emerald, valve_program_selector, generalMinMaxCallback, (void*)6500);
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, valve_volume_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(""), "6500", Control::Color::None, valve_volume_number);
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(""), "Valve cycle volume (0L - 6500L)", 
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(""), "Valve cycle volume (0 L - 6500 L)", 
 																				 Control::Color::None, valve_program_selector), PSTR(clearLabelStyle));
 
 	valve_pause_number =	ESPUI.addControl(Control::Type::Number, PSTR(""), zero_str, 
-																									 Control::Color::Emerald, valve_program_selector, generalMinMaxCallback);
+																									 Control::Color::Emerald, valve_program_selector, generalMinMaxCallback, (void*)86400);
 	ESPUI.addControl(Control::Type::Min, PSTR(""), zero_str, Control::Color::None, valve_pause_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(""), "86400", Control::Color::None, valve_pause_number);
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(""), "Valve cycle pause (0s - 86400s)", 
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(""), "Valve cycle pause (0 s - 86400 s)", 
 																				 Control::Color::None, valve_program_selector), PSTR(clearLabelStyle));
 
 	save_program_button = ESPUI.addControl(Control::Type::Button, "Valve programs", "Save program", 
@@ -930,7 +940,6 @@ void enableTuyaGasDetectorGUI(bool enable) {
 	enableControlStyle(gas_alarm_time_button, enable);
 	enableControlStyle(gas_alarm_self_test_button, enable);
 	enableControlStyle(gas_alarm_silence_button, enable);
-	enableControlStyle(gas_alarm_ringtone_selector, enable);
 }
 
 void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
@@ -940,15 +949,17 @@ void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
 	gas_alarm_ringtone_selector = ESPUI.addControl(Control::Type::Select, "GAS DETECTOR", minus_one_str, Control::Color::Emerald, advanced_devices_tab, generalCallback);
 	ESPUI.addControl(Control::Type::Option, PSTR("Select alarm ringtone..."), minus_one_str, Control::Color::None, gas_alarm_ringtone_selector);
 	for (uint8_t r = 0; r < 5; r++) {
-		ESPUI.addControl(Control::Type::Option, ringtones[r], String(r), Control::Color::None, gas_alarm_ringtone_selector);
+
+		working_str = r;
+		ESPUI.addControl(Control::Type::Option, ringtones[r], working_str, Control::Color::None, gas_alarm_ringtone_selector);
 	}
 	
 	ESPUI.addControl(Control::Type::Separator,"","", Control::Color::None, gas_alarm_ringtone_selector);
 	gas_alarm_time_number =	ESPUI.addControl(Control::Type::Number, "", zero_str, 
-																					 Control::Color::Emerald, gas_alarm_ringtone_selector, generalMinMaxCallback);
+																					 Control::Color::Emerald, gas_alarm_ringtone_selector, generalMinMaxCallback, (void*)180);
 	ESPUI.addControl(Control::Type::Min, "", zero_str, Control::Color::None, gas_alarm_time_number);
 	ESPUI.addControl(Control::Type::Max, "", "180", Control::Color::None, gas_alarm_time_number);
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Alarm duration (0-180s)", 
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Alarm duration (0-180 s)", 
 																				 Control::Color::None, gas_alarm_ringtone_selector), PSTR(clearLabelStyle));
 
 	gas_alarm_ringtone_button  = ESPUI.addControl(Control::Type::Button, "", "Send alarm ringtone", 
@@ -966,6 +977,66 @@ void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
 	gas_alarm_info_label =  ESPUI.addControl(Control::Type::Label, "", three_dots_str,	Control::Color::Emerald, gas_alarm_ringtone_selector);
 
 	gas_alarm_Tuya_payload_label = ESPUI.addControl(Control::Type::Label, "", three_dots_str, Control::Color::Emerald, gas_alarm_ringtone_selector);
+}
+
+void enableMoesAlarmGUI(bool enable) {
+
+	ESPUI.updateSelect(moes_alarm_melody_selector, minus_one_str);
+	ESPUI.updateNumber(moes_alarm_duration_number, 0);
+	ESPUI.updateNumber(moes_alarm_volume_number, 0);
+	updateLabel_P(moes_alarm_info_label, three_dots_str);
+	updateLabel_P(moes_alarm_Tuya_payload_label, three_dots_str);
+
+	enableControlStyle(moes_alarm_melody_selector, enable);
+	enableControlStyle(moes_alarm_duration_number, enable);
+	enableControlStyle(moes_alarm_volume_number, enable);
+	enableControlStyle(moes_alarm_melody_button, enable);
+	enableControlStyle(moes_alarm_duration_button, enable);
+	enableControlStyle(moes_alarm_volume_button, enable);
+}
+
+void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
+
+	static char melodies[18][10] PROGMEM = {"MELODY 1", "MELODY 2", "MELODY 3", "MELODY 4", "MELODY 5", "MELODY 6", "MELODY 7", "MELODY 8", "MELODY 9", "MELODY 10",
+																				  "MELODY 11", "MELODY 12", "MELODY 13", "MELODY 14", "MELODY 15", "MELODY 16", "MELODY 17", "MELODY 18"};
+
+	moes_alarm_melody_selector = ESPUI.addControl(Control::Type::Select, "SIREN ALARM", minus_one_str, Control::Color::Emerald, advanced_devices_tab, generalCallback);
+	ESPUI.addControl(Control::Type::Option, PSTR("Select alarm melody..."), minus_one_str, Control::Color::None, moes_alarm_melody_selector);
+	for (uint8_t m = 0; m < 18; m++) {
+
+		working_str = m;
+		ESPUI.addControl(Control::Type::Option, melodies[m], working_str, Control::Color::None, moes_alarm_melody_selector);
+	}
+	
+	ESPUI.addControl(Control::Type::Separator,"","", Control::Color::None, moes_alarm_melody_selector);
+
+	moes_alarm_duration_number =	ESPUI.addControl(Control::Type::Number, "", zero_str, 
+																								 Control::Color::Emerald, moes_alarm_melody_selector, generalMinMaxCallback, (void*)1800);
+	ESPUI.addControl(Control::Type::Min, "", zero_str, Control::Color::None, moes_alarm_duration_number);
+	ESPUI.addControl(Control::Type::Max, "", "1800", Control::Color::None, moes_alarm_duration_number);
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Alarm duration (0 - 1800 s)", 
+																				 Control::Color::None, moes_alarm_melody_selector), PSTR(clearLabelStyle));
+	
+	moes_alarm_volume_number =	ESPUI.addControl(Control::Type::Number, "", zero_str, 
+																								 Control::Color::Emerald, moes_alarm_melody_selector, generalMinMaxCallback, (void*)2);
+	ESPUI.addControl(Control::Type::Min, "", zero_str, Control::Color::None, moes_alarm_volume_number);
+	ESPUI.addControl(Control::Type::Max, "", "2", Control::Color::None, moes_alarm_volume_number);
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, "", "Alarm volume (0 - 2)", 
+																				 Control::Color::None, moes_alarm_melody_selector), PSTR(clearLabelStyle));
+
+	moes_alarm_melody_button  = ESPUI.addControl(Control::Type::Button, "", "Send alarm melody", 
+																				 			Control::Color::Emerald, moes_alarm_melody_selector, valveCallback, (void*)GUI_CB_SEND_MELODY_FLAG); 
+	
+	moes_alarm_duration_button  = ESPUI.addControl(Control::Type::Button, "", "Send alarm duration", 
+																				 				Control::Color::Emerald, moes_alarm_melody_selector, valveCallback, (void*)GUI_CB_SEND_DURATION_FLAG);
+
+	moes_alarm_volume_button  = ESPUI.addControl(Control::Type::Button, "", "Send alarm volume", 
+																				 				Control::Color::Emerald, moes_alarm_melody_selector, valveCallback, (void*)GUI_CB_SEND_VOLUME_FLAG); 
+
+																			 
+	moes_alarm_info_label =  ESPUI.addControl(Control::Type::Label, "", three_dots_str,	Control::Color::Emerald, moes_alarm_melody_selector);
+
+	moes_alarm_Tuya_payload_label = ESPUI.addControl(Control::Type::Label, "", three_dots_str, Control::Color::Emerald, moes_alarm_melody_selector);
 }
 
 void buildTuyaCustomClusterTabGUI() {
@@ -993,7 +1064,8 @@ void buildAdvancedDevicesTabGUI() {
 	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZBDEVICESMAXCOUNT; devices_counter++) 
     if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
 		((z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_SONOFF_SMART_VALVE) ||
-		  (z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR))) {
+		  (z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR) ||
+			(z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_MOES_ALARM))) {
 			
 			switch (z2s_zb_devices_table[devices_counter].desc_id) {
 				
@@ -1001,10 +1073,10 @@ void buildAdvancedDevicesTabGUI() {
 				case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:		isTuyaGasDetectorPresent = true; break;
 				case Z2S_DEVICE_DESC_MOES_ALARM:					isMoesAlarmPresent = true; break;
 			}
-			
-			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], String(devices_counter), Control::Color::None, advanced_device_selector);
+			working_str = devices_counter;
+			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], working_str, Control::Color::None, advanced_device_selector);
 		}
-	advanced_device_info_label =  ESPUI.addControl(Control::Type::Label, "Device Info", three_dots_str,	Control::Color::Emerald, advanced_devices_tab);
+	advanced_device_info_label =  ESPUI.addControl(Control::Type::Label, PSTR("Device Info"), three_dots_str,	Control::Color::Emerald, advanced_devices_tab);
 
 //SONOFF VALVE SWV
 	if (Z2S_hasZBDevice(Z2S_DEVICE_DESC_SONOFF_SMART_VALVE)) {
@@ -1016,6 +1088,12 @@ void buildAdvancedDevicesTabGUI() {
 	if (Z2S_hasZBDevice(Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR)) {
 		buildTuyaGasDetectorGUI(advanced_devices_tab);
 		enableTuyaGasDetectorGUI(false);
+	}
+	//MOES ALARM
+	if (Z2S_hasZBDevice(Z2S_DEVICE_DESC_MOES_ALARM)) 
+	{
+		buildMoesAlarmGUI(advanced_devices_tab);
+		enableMoesAlarmGUI(false);
 	}
 }
 
@@ -1199,13 +1277,14 @@ void generalCallback(Control *sender, int type) {
 	Serial.println(sender->value);
 }
 
-void generalMinMaxCallback(Control *sender, int type) {
+void generalMinMaxCallback(Control *sender, int type, void* param) {
 	Serial.print("CB: id(");
 	Serial.print(sender->GetId());
 	if (sender->value.toInt() < 0)
 		ESPUI.updateNumber(sender->GetId(), 0);
-	if (sender->value.toInt() > 65535)
-		ESPUI.updateNumber(sender->GetId(), 65535);
+	uint32_t max_value = (uint32_t)param;
+	if (sender->value.toInt() > max_value)
+		ESPUI.updateNumber(sender->GetId(), max_value);
 }
 
 void endpointCallback(Control *sender, int type) {
@@ -2087,6 +2166,8 @@ void advanced_device_selectorCallback(Control *sender, int type) {
 			enableSonoffValveGUI(false);
 		if (isTuyaGasDetectorPresent)
 			enableTuyaGasDetectorGUI(false);
+		if (isMoesAlarmPresent)
+			enableMoesAlarmGUI(false);
 		return;
 	}
 	
@@ -2103,6 +2184,12 @@ void advanced_device_selectorCallback(Control *sender, int type) {
 	else {
 		if (isSonoffValvePresent)
 			enableTuyaGasDetectorGUI(false);
+	}
+	if (z2s_zb_devices_table[device_slot].desc_id == Z2S_DEVICE_DESC_MOES_ALARM)
+		enableMoesAlarmGUI(true);
+	else {
+		if (isMoesAlarmPresent)
+			enableMoesAlarmGUI(false);
 	}
 
 	sprintf_P(general_purpose_gui_buffer,PSTR("<b><i>Manufacturer name</i></b> %s "
@@ -2353,6 +2440,89 @@ void valveCallback(Control *sender, int type, void *param) {
 				else
 					updateLabel_P(gas_alarm_info_label, device_query_failed_str);
 
+			} break;
+
+			case GUI_CB_SEND_MELODY_FLAG: { //send moes alarm melody
+ 
+				if (ESPUI.getControl(moes_alarm_melody_selector)->value.toInt() >= 0) {
+
+					uint8_t moes_alarm_payload[10];
+					uint16_t _tsn_number = random(0x0000, 0xFFFF);
+					
+        	moes_alarm_payload[0] = (_tsn_number & 0xFF00) >> 8;
+        	moes_alarm_payload[1] = (_tsn_number & 0x00FF);
+					moes_alarm_payload[2] = MOES_ALARM_MELODY_DP;
+					moes_alarm_payload[3] = 0x04; //ENUM
+					moes_alarm_payload[4] = 0x00;
+					moes_alarm_payload[5] = 0x01;
+					moes_alarm_payload[6] = ESPUI.getControl(moes_alarm_melody_selector)->value.toInt();
+
+					Tuya_custom_cmd_dp = MOES_ALARM_MELODY_DP;
+					current_Tuya_payload_label = moes_alarm_Tuya_payload_label;
+
+					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, moes_alarm_payload, true))
+					updateLabel_P(moes_alarm_info_label, PSTR("New melody sent"));
+				else
+					updateLabel_P(moes_alarm_info_label, device_query_failed_str);
+				} else
+					updateLabel_P(moes_alarm_info_label, PSTR("Select melody to send."));
+			} break;
+
+			case GUI_CB_SEND_VOLUME_FLAG: { //send moes alarm melody
+ 
+				if (ESPUI.getControl(moes_alarm_volume_number)->value.toInt() >= 0) {
+
+					uint8_t moes_alarm_payload[10];
+					uint16_t _tsn_number = random(0x0000, 0xFFFF);
+					
+        	moes_alarm_payload[0] = (_tsn_number & 0xFF00) >> 8;
+        	moes_alarm_payload[1] = (_tsn_number & 0x00FF);
+					moes_alarm_payload[2] = MOES_ALARM_VOLUME_DP;
+					moes_alarm_payload[3] = 0x04; //ENUM
+					moes_alarm_payload[4] = 0x00;
+					moes_alarm_payload[5] = 0x01;
+					moes_alarm_payload[6] = ESPUI.getControl(moes_alarm_volume_number)->value.toInt();
+
+					Tuya_custom_cmd_dp = MOES_ALARM_VOLUME_DP;
+					current_Tuya_payload_label = moes_alarm_Tuya_payload_label;
+
+					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, moes_alarm_payload, true))
+					updateLabel_P(moes_alarm_info_label, PSTR("New volume sent"));
+				else
+					updateLabel_P(moes_alarm_info_label, device_query_failed_str);
+				} else
+					updateLabel_P(moes_alarm_info_label, PSTR("Enter volume to send."));
+			} break;
+
+			case GUI_CB_SEND_DURATION_FLAG: { //send moes alarm duration
+
+				if (ESPUI.getControl(moes_alarm_duration_number)->value.toInt() >= 0) {
+
+					uint8_t moes_alarm_payload[10];
+					uint16_t _tsn_number = random(0x0000, 0xFFFF);
+
+					uint16_t alarm_duration = ESPUI.getControl(moes_alarm_duration_number)->value.toInt();
+
+        	moes_alarm_payload[0] = (_tsn_number & 0xFF00) >> 8;
+        	moes_alarm_payload[1] = (_tsn_number & 0x00FF);
+					moes_alarm_payload[2] = MOES_ALARM_DURATION_DP;
+					moes_alarm_payload[3] = 0x02; //VALUE
+					moes_alarm_payload[4] = 0x00;
+					moes_alarm_payload[5] = 0x04;
+					moes_alarm_payload[6] = 0x00;
+					moes_alarm_payload[7] = 0x00;
+					moes_alarm_payload[8] = (alarm_duration & 0xFF00) >> 8;
+					moes_alarm_payload[9] = (alarm_duration & 0x00FF);
+
+					Tuya_custom_cmd_dp = MOES_ALARM_DURATION_DP;
+					current_Tuya_payload_label = moes_alarm_Tuya_payload_label;
+
+					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, moes_alarm_payload, true))
+					updateLabel_P(moes_alarm_info_label, PSTR("New alarm duration sent"));
+				else
+					updateLabel_P(moes_alarm_info_label, device_query_failed_str);
+				} else
+					updateLabel_P(moes_alarm_info_label, PSTR("Enter alarm duration to send."));
 			} break; 
 		}
 	}
