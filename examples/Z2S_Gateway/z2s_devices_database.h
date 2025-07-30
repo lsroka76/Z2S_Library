@@ -52,6 +52,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR               0x2220
 
+#define Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR         0x2230
+
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR            0x2300
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5          0x2305
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1       0x2310
@@ -226,6 +228,10 @@
 #define TUYA_GAS_DETECTOR_SILENCE_SID                 0x03
 #define TUYA_GAS_DETECTOR_PREHEAT_SID                 0x05
 
+#define TUYA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID      0x00 
+#define TUYA_AIR_QUALITY_SENSOR_CO2_SID               0x01
+#define TUYA_AIR_QUALITY_SENSOR_VOC_SID               0x02
+#define TUYA_AIR_QUALITY_SENSOR_FA_SID                0x03 //formaldehyde
 
 #define TUYA_RAIN_SENSOR_RAIN_SID                     0x01
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_SID              0x02
@@ -1225,6 +1231,9 @@ const dataPoints = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
       TUYA_PRIVATE_CLUSTER_EF00 }}, 
@@ -1998,6 +2007,9 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_chbyv06x", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_mja3fuja", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_2aaelwxk", .model_name = "TS0225",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR, .z2s_device_endpoints_count = 1},

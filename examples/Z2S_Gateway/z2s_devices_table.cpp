@@ -2162,6 +2162,19 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         }
       } break;
 
+      case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR: {
+
+        switch (sub_id) {
+          
+          case TUYA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID:
+            addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+          case TUYA_AIR_QUALITY_SENSOR_CO2_SID:
+          case TUYA_AIR_QUALITY_SENSOR_VOC_SID:
+          case TUYA_AIR_QUALITY_SENSOR_FA_SID:
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+        }
+      } break;
+
       case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
         addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, "IR REMOTE", 0); break;
 

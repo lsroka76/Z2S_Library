@@ -1880,6 +1880,14 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID, "SELF TEST RESULT", 0, "1..3");
                             Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_PREHEAT_SID, "PREHEAT");
                           } break;
+                          
+                          case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, TUYA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID,"TEMPHUMIDITY");
+                            Z2S_addZ2SDevice(joined_device, TUYA_AIR_QUALITY_SENSOR_CO2_SID, "CO2", 0, "ppm");
+                            Z2S_addZ2SDevice(joined_device, TUYA_AIR_QUALITY_SENSOR_VOC_SID, "VOC", 0, "ppm");
+                            Z2S_addZ2SDevice(joined_device, TUYA_AIR_QUALITY_SENSOR_FA_SID, "FORMALDEHYDE", 0, "mg/m³");
+                          } break;
 
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
                         }
