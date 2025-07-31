@@ -2205,6 +2205,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       case Z2S_DEVICE_DESC_ON_OFF_VALVE_DC: 
+      case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
         addZ2SDeviceVirtualValve(&zbGateway, device, first_free_slot, sub_id, "VALVE", SUPLA_CHANNELFNC_VALVE_OPENCLOSE); break;
 
       default : {

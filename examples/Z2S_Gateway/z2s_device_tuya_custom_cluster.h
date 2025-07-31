@@ -129,6 +129,8 @@
 #define TUYA_VIBRATION_SENSOR_CONTACT_DP    0x65
 #define TUYA_VIBRATION_SENSOR_BATTERY_DP    0x04
 
+#define TUYA_ON_OFF_BATTERY_VALVE_STATE_DP          0x08
+#define TUYA_ON_OFF_BATTERY_VALVE_BATTERY_LEVEL_DP  0x65
 
 typedef struct Tuya_read_dp_result_s {
   bool     is_success;

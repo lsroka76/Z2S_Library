@@ -20,8 +20,8 @@
 
 using Supla::Control::Z2S_VirtualValve;
 
-Z2S_VirtualValve::Z2S_VirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose)
-: ValveBase(openClose), _gateway(gateway) {
+Z2S_VirtualValve::Z2S_VirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose, uint8_t z2s_function)
+: ValveBase(openClose), _gateway(gateway), _z2s_function(z2s_function) {
 
       memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
@@ -30,11 +30,32 @@ void Z2S_VirtualValve::setValueOnDevice(uint8_t openLevel) {
     
   if (_gateway && Zigbee.started()) { 
 
-      valveOpenState = openLevel;
-      bool state = (openLevel == 0) ? false : true;
-      _gateway->sendOnOffCmd(&_device, state);
-  }
+    valveOpenState = openLevel;
 
+    switch (_z2s_function) {
+
+      case Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF: {
+
+        bool state = (openLevel == 0) ? false : true;
+        _gateway->sendOnOffCmd(&_device, state); 
+
+      } break;
+
+      case Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY: {
+
+        uint8_t Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[] = { 00, 00, 0x01, 01, 00, 01, 00};
+
+        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+        Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
+        Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
+        Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[6] = (openLevel == 0) ? 0 : 1;
+
+        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD, false);
+
+      } break;
+    }
+  }
 }
 
 uint8_t Z2S_VirtualValve::getValueOpenStateFromDevice() {

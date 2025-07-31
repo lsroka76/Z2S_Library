@@ -2,7 +2,16 @@
 
 void initZ2SDeviceVirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot) {
   
-  auto Supla_Z2S_VirtualValve = new Supla::Control::Z2S_VirtualValve(gateway, device, true);
+  uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF;
+
+  switch (z2s_devices_table[channel_number_slot].model_id) {
+
+    case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY: 
+      z2s_function = Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY; break;
+  }
+
+  
+  auto Supla_Z2S_VirtualValve = new Supla::Control::Z2S_VirtualValve(gateway, device, true, z2s_function);
   
   Supla_Z2S_VirtualValve->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
 

@@ -114,6 +114,7 @@
 #define Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH               0x4607
 
 #define Z2S_DEVICE_DESC_ON_OFF_VALVE_DC                 0x4700
+#define Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY       0x4710
 
 #define Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE          0x4800
 #define Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE     0x4810
@@ -1201,7 +1202,10 @@ const dataPoints = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
-    { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
@@ -2088,7 +2092,10 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3000_n0lphcok", .model_name = "TS0001",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY, .z2s_device_endpoints_count = 1}
     
 };
 

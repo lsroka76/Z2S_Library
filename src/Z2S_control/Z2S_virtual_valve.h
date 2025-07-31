@@ -22,6 +22,11 @@
 #include <supla/control/valve_base.h>
 #include "ZigbeeGateway.h"
 
+#define Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF  0x00
+
+#define Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY    0x10
+
+
 namespace Supla {
 namespace Control {
 
@@ -32,7 +37,7 @@ class Z2S_VirtualValve : public ValveBase {
     *
     * @param openClose true = open/close, false = 0-100 percentage
     */
-  explicit Z2S_VirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose = true);
+  explicit Z2S_VirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose = true, uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF);
 
   /**
    * Sets the value of the valve virtual device
@@ -55,6 +60,8 @@ class Z2S_VirtualValve : public ValveBase {
 
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
+
+  uint8_t _z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF;
 };
 
 }  // namespace Control

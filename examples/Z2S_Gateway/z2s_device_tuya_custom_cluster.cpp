@@ -9,16 +9,23 @@
 #include "z2s_device_hvac.h"
 #include "z2s_device_electricity_meter.h"
 #include "z2s_device_virtual_relay.h"
+#include "z2s_device_virtual_valve.h"
 
 #include <arduino_base64.hpp>
 #include <math.h>
 
 extern ZigbeeGateway zbGateway;
 
-uint8_t learned_ir_code[256];
+/*uint8_t learned_ir_code[256];
 char    learned_ir_code_base64[256];
 uint8_t ir_code_send_buffer[128];
-uint8_t ir_code_to_send[512];
+uint8_t ir_code_to_send[512];*/
+
+uint8_t learned_ir_code[1];
+char    learned_ir_code_base64[1];
+uint8_t ir_code_send_buffer[1];
+uint8_t ir_code_to_send[1];
+
 
 bool ir_code_learning = false;
 bool ir_code_receiving = false;
@@ -1232,12 +1239,38 @@ void processTuyaVibrationSensorDataReport(int16_t channel_number_slot, uint16_t 
   }  
 }
 
+void processTuyaOnOffValveBatteryDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_ON_OFF_BATTERY_VALVE_STATE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    switch (Tuya_read_dp_result.dp_value) {
+
+      case 1:
+        msgZ2SDeviceVirtualValve(channel_number_slot, true, rssi); break;
+      
+      case 2:
+        msgZ2SDeviceVirtualValve(channel_number_slot, false, rssi); break;
+
+      case 0:
+        log_i("valve state unknown!"); break;
+    }
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_ON_OFF_BATTERY_VALVE_BATTERY_LEVEL_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+  }  
+}
+
 void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
                                                           ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); //first find anything to recognize model_id
   if (channel_number_slot < 0) {
-    log_i("processTuyaDataReport failed - no Supla channel for that device");
+    log_i("failed - no Supla channel for that device");
     return;
   }
   uint32_t model_id = z2s_devices_table[channel_number_slot].model_id;
@@ -1306,6 +1339,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
       processTuyaVibrationSensorDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
+
+    case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
+      processTuyaOnOffValveBatteryDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
       
 
     default: 
@@ -1374,6 +1410,7 @@ void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 }
 
 void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, uint16_t payload_size, uint8_t *payload, signed char rssi) {
+  
   log_i("processing Zosung custom cluster 0xED00, command id 0x%x", command_id);
   uint8_t ir_code_data_1[17];
   uint8_t ir_code_data_2[7];
