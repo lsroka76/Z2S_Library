@@ -348,7 +348,7 @@ static const char IKEA_SYMFONISK_BUTTONS[][20] PROGMEM = {"PLAY", "VOLUME UP", "
                                                     "DOT PRESSED", "DOT SHORT RELEASE", "DOT HELD", "DOT LONG RELEASED", "DOT DOUBLE PRESSED",
                                                     "DOTS PRESSED", "DOTS SHORT RELEASE", "DOTS HELD", "DOTS LONG RELEASED", "DOTS DOUBLE PRESSED"};
 [[maybe_unused]]
-static const char PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[][18] PROGMEM = {"ON_PRESS", "ON_PRESS_RELEASE", "ON_HOLD", "ON_HOLD_RELEASE",
+static const char PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[][19] PROGMEM = {"ON_PRESS", "ON_PRESS_RELEASE", "ON_HOLD", "ON_HOLD_RELEASE",
                                                                      "UP_PRESS", "UP_PRESS_RELEASE", "UP_HOLD", "UP_HOLD_RELEASE",
                                                                      "DOWN_PRESS", "DOWN_PRESS_RELEASE", "DOWN_HOLD", "DOWN_HOLD_RELEASE",
                                                                      "OFF_PRESS", "OFF_PRESS_RELEASE", "OFF_HOLD","OFF_HOLD_RELEASE"};
