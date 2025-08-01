@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.72-01/08/2025"
+#define Z2S_VERSION "0.8.73-01/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -629,12 +629,12 @@ void buildDevicesTabGUI() {
 			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], working_str, Control::Color::None, device_selector);
 		}
 
-	ESPUI.setPanelWide(device_selector, true);
+	ESPUI.setPanelWide(device_selector, false);
 
 	zb_device_info_label = ESPUI.addControl(Control::Type::Label, PSTR("Device info"), three_dots_str, Control::Color::Emerald, devicestab); 
 	ESPUI.setElementStyle(zb_device_info_label, "color:black;text-align: justify; font-family:tahoma; font-size: 4 px; font-style: normal; font-weight: normal;");
 	
-	ESPUI.setPanelWide(zb_device_info_label, true);
+	ESPUI.setPanelWide(zb_device_info_label, false);
 
 	working_str = PSTR("Read");
 	getswbuild_button = ESPUI.addControl(Control::Type::Button, PSTR("Software Build ID"), working_str, 

@@ -149,6 +149,8 @@
 #define Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F            0x5410
 
 #define Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH       0x5500
+#define Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1     0x5501
+#define Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2     0x5502
 
 #define Z2S_DEVICE_DESC_HVAC_START                      0x6000
 
@@ -279,6 +281,23 @@
 #define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID   0x0D
 #define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID  0x0E
 
+#define PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_SID             0x00
+#define PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_RELEASE_SID     0x01
+#define PHILIPS_HUE_DIMMER_SWITCH_ON_HOLD_SID              0x02
+#define PHILIPS_HUE_DIMMER_SWITCH_ON_HOLD_RELEASE_SID      0x03
+#define PHILIPS_HUE_DIMMER_SWITCH_UP_PRESS_SID             0x04
+#define PHILIPS_HUE_DIMMER_SWITCH_UP_PRESS_RELEASE_SID     0x05
+#define PHILIPS_HUE_DIMMER_SWITCH_UP_HOLD_SID              0x06
+#define PHILIPS_HUE_DIMMER_SWITCH_UP_HOLD_RELEASE_SID      0x07
+#define PHILIPS_HUE_DIMMER_SWITCH_DOWN_PRESS_SID           0x08
+#define PHILIPS_HUE_DIMMER_SWITCH_DOWN_PRESS_RELEASE_SID   0x09
+#define PHILIPS_HUE_DIMMER_SWITCH_DOWN_HOLD_SID            0x0A
+#define PHILIPS_HUE_DIMMER_SWITCH_DOWN_HOLD_RELEASE_SID    0x0B
+#define PHILIPS_HUE_DIMMER_SWITCH_OFF_PRESS_SID            0x0C
+#define PHILIPS_HUE_DIMMER_SWITCH_OFF_PRESS_RELEASE_SID    0x0D
+#define PHILIPS_HUE_DIMMER_SWITCH_OFF_HOLD_SID             0x0E
+#define PHILIPS_HUE_DIMMER_SWITCH_OFF_HOLD_RELEASE_SID     0x0F
+
 #define LUMI_MOTION_SENSOR_OCCUPANCY_SID    0x00
 #define LUMI_MOTION_SENSOR_ILLUMINANCE_SID  0x01
 
@@ -322,13 +341,17 @@
 //#define DIMMER_FUNC_
 
 [[maybe_unused]]
-static char IKEA_STYRBAR_BUTTONS[][16] PROGMEM = {"ON PRESSED", "ON HELD", "OFF PRESSED", "OFF HELD", "LEFT PRESSED", "LEFT HELD", "RIGHT PRESSED", "RIGHT HELD"};
+static const char IKEA_STYRBAR_BUTTONS[][16] PROGMEM = {"ON PRESSED", "ON HELD", "OFF PRESSED", "OFF HELD", "LEFT PRESSED", "LEFT HELD", "RIGHT PRESSED", "RIGHT HELD"};
 
 [[maybe_unused]]
-static char IKEA_SYMFONISK_BUTTONS[][20] PROGMEM = {"PLAY", "VOLUME UP", "VOLUME DOWN", "NEXT TRACK ", "PREV TRACK", 
+static const char IKEA_SYMFONISK_BUTTONS[][20] PROGMEM = {"PLAY", "VOLUME UP", "VOLUME DOWN", "NEXT TRACK ", "PREV TRACK", 
                                                     "DOT PRESSED", "DOT SHORT RELEASE", "DOT HELD", "DOT LONG RELEASED", "DOT DOUBLE PRESSED",
                                                     "DOTS PRESSED", "DOTS SHORT RELEASE", "DOTS HELD", "DOTS LONG RELEASED", "DOTS DOUBLE PRESSED"};
-
+[[maybe_unused]]
+static const char PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[][18] PROGMEM = {"ON_PRESS", "ON_PRESS_RELEASE", "ON_HOLD", "ON_HOLD_RELEASE",
+                                                                     "UP_PRESS", "UP_PRESS_RELEASE", "UP_HOLD", "UP_HOLD_RELEASE",
+                                                                     "DOWN_PRESS", "DOWN_PRESS_RELEASE", "DOWN_HOLD", "DOWN_HOLD_RELEASE",
+                                                                     "OFF_PRESS", "OFF_PRESS_RELEASE", "OFF_HOLD","OFF_HOLD_RELEASE"};
 
 typedef struct z2s_device_desc_s {
   uint32_t z2s_device_desc_id;
@@ -350,7 +373,7 @@ typedef struct z2s_device_entity_s {
 } z2s_device_entity_t;
 
 
-static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
+static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG, 
@@ -529,6 +552,14 @@ static z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     {0xFC80}},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { PHILIPS_CUSTOM_CLUSTER,
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG}},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -1284,7 +1315,7 @@ const dataPoints = {
 
 };
         
-static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
+static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
   
   { .manufacturer_name = "_TZ3000_akqdg6g7", .model_name = "TS0201", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR, .z2s_device_endpoints_count = 1},
@@ -1771,12 +1802,16 @@ static z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints =  {{ 1, Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1 },
                               { 2, Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2 }}},
     
-
   { .manufacturer_name = "IKEA of Sweden", .model_name = "VALLHORN Wireless Motion Sensor", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_1, .z2s_device_endpoints_count = 3,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_IKEA_VALLHORN_1 },
                               { 2, Z2S_DEVICE_DESC_IKEA_VALLHORN_2 },
                               { 3, Z2S_DEVICE_DESC_IKEA_VALLHORN_3 }}},
+
+  { .manufacturer_name = "Philips", .model_name = "RWL021", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints =  {{ 1, Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1 },
+                              { 2, Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2}}},
 
   { .manufacturer_name = "_TZ3000_gjrubzje", .model_name = "TS0001",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},

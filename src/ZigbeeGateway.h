@@ -51,6 +51,9 @@
 
 #define ADEO_CUSTOM_CLUSTER                0xFE00    
 
+#define PHILIPS_CUSTOM_CLUSTER      0XFC00
+#define PHILIPS_MANUFACTURER_CODE   0x100B
+
 #define ZCL_CMD_TSN_UNKNOWN 0x00
 #define ZCL_CMD_TSN_SYNC    0x01
 #define ZCL_CMD_TSN_ASYNC   0x02

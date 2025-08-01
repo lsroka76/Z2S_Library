@@ -1804,10 +1804,18 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
+
       case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1:
       case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2: {
         char button_name_function[30];
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+      case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1:
+      case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
+        char button_name_function[30];
+        sprintf(button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
