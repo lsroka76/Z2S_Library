@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.73-01/08/2025"
+#define Z2S_VERSION "0.8.74-01/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -948,7 +948,7 @@ void enableTuyaGasDetectorGUI(bool enable) {
 
 void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
 
-	static char ringtones[5][9] PROGMEM = {"MELODY 1", "MELODY 2", "MELODY 3", "MELODY 4", "MELODY 5"};
+	static const char ringtones[][9] PROGMEM = {"MELODY 1", "MELODY 2", "MELODY 3", "MELODY 4", "MELODY 5"};
 
 	gas_alarm_ringtone_selector = ESPUI.addControl(Control::Type::Select, "GAS DETECTOR", minus_one_str, Control::Color::Emerald, advanced_devices_tab, generalCallback);
 	ESPUI.addControl(Control::Type::Option, PSTR("Select alarm ringtone..."), minus_one_str, Control::Color::None, gas_alarm_ringtone_selector);
@@ -1001,8 +1001,8 @@ void enableMoesAlarmGUI(bool enable) {
 
 void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 
-	static char melodies[18][10] PROGMEM = {"MELODY 1", "MELODY 2", "MELODY 3", "MELODY 4", "MELODY 5", "MELODY 6", "MELODY 7", "MELODY 8", "MELODY 9", "MELODY 10",
-																				  "MELODY 11", "MELODY 12", "MELODY 13", "MELODY 14", "MELODY 15", "MELODY 16", "MELODY 17", "MELODY 18"};
+	static const char melodies[][10] PROGMEM = {"MELODY 1", "MELODY 2", "MELODY 3", "MELODY 4", "MELODY 5", "MELODY 6", "MELODY 7", "MELODY 8", "MELODY 9", "MELODY 10",
+																							  "MELODY 11", "MELODY 12", "MELODY 13", "MELODY 14", "MELODY 15", "MELODY 16", "MELODY 17", "MELODY 18"};
 
 	moes_alarm_melody_selector = ESPUI.addControl(Control::Type::Select, "SIREN ALARM", minus_one_str, Control::Color::Emerald, advanced_devices_tab, generalCallback);
 	ESPUI.addControl(Control::Type::Option, PSTR("Select alarm melody..."), minus_one_str, Control::Color::None, moes_alarm_melody_selector);

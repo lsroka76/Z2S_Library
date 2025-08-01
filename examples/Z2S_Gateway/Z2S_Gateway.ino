@@ -1092,7 +1092,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
 #endif  //USE_TELNET_CONSOLE
 
-zbg_device_params_t test_device = {.model_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
+/*zbg_device_params_t test_device = {.model_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
 .rejoined = true, .ZC_binding = true, .ieee_addr = {0,0,0,0,0,0,0,0}, .endpoint = 1, .cluster_id = 0, 
   .short_addr = 0, .user_data = 0};
 
@@ -1106,7 +1106,7 @@ int spiffs_log_vprintf(const char *fmt, va_list args) {
     Serial.println(log_print_buffer);
   }
   return ret;
-}
+}*/
 
 void enableZ2SNotifications() {
 
