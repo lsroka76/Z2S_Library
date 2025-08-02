@@ -777,7 +777,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     uint8_t zb_device_number_slot = (channel_number_slot >= 0) ? 
-      Z2S_findZBDeviceTableSlot(z2s_zb_devices_table[channel_number_slot].ieee_addr) : 0xFF;
+      Z2S_findZBDeviceTableSlot(z2s_devices_table[channel_number_slot].ieee_addr) : 0xFF;
     
     if (zb_device_number_slot < 0xFF) {
         if (flag_set)
