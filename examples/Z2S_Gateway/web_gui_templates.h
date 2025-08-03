@@ -50,10 +50,31 @@ static const zigbee_cluster_t zigbee_clusters[] PROGMEM =
 	 {.zigbee_cluster_name = "IAS WD",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_WD},
 	 {.zigbee_cluster_name = "SIMPLE METERING",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING},
 	 {.zigbee_cluster_name = "ELECTRICAL MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT},
-	 {.zigbee_cluster_name = "TUYA E000",.zigbee_cluster_id = 0xE000},
-	 {.zigbee_cluster_name = "TUYA E001",.zigbee_cluster_id = 0xE001},
-	 {.zigbee_cluster_name = "TUYA EF00",.zigbee_cluster_id = 0xEF00},
-	 {.zigbee_cluster_name = "SONOFF FC11",.zigbee_cluster_id = 0xFC11}};
+	 {.zigbee_cluster_name = "TUYA (0xE000)",.zigbee_cluster_id = 0xE000},
+	 {.zigbee_cluster_name = "TUYA (0xE001)",.zigbee_cluster_id = 0xE001},
+	 {.zigbee_cluster_name = "TUYA (0xEF00)",.zigbee_cluster_id = 0xEF00},
+	 {.zigbee_cluster_name = "SONOFF (0xFC11)",.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER}};
+
+static const zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
+
+	{{.zigbee_datatype_name = "NULL",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_NULL},
+	 {.zigbee_datatype_name = "BOOL",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL},
+	 {.zigbee_datatype_name = "8BITMAP",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP},
+	 {.zigbee_datatype_name = "16BITMAP",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP},
+	 {.zigbee_datatype_name = "U8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8},
+	 {.zigbee_datatype_name = "U16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16},
+	 {.zigbee_datatype_name = "U24",.zigbee_datatype_size = 0x03,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U24},
+	 {.zigbee_datatype_name = "U32",.zigbee_datatype_size = 0x04,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32},
+   {.zigbee_datatype_name = "U48",.zigbee_datatype_size = 0x06,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48},
+	 {.zigbee_datatype_name = "S8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8},
+	 {.zigbee_datatype_name = "S16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16},
+	 {.zigbee_datatype_name = "8ENUM",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM},
+	 {.zigbee_datatype_name = "16ENUM",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BIT_ENUM},
+	 {.zigbee_datatype_name = "OSTRING",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING},
+	 {.zigbee_datatype_name = "LSTRING",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING},
+	 {.zigbee_datatype_name = "ARRAY",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_ARRAY},
+	 {.zigbee_datatype_name = "SET",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET}
+	};
 
 static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 //POWER CONFIG
@@ -253,6 +274,12 @@ static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
 		.zigbee_attribute_name = "RUNNING MODE"
+	},
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
+		.zigbee_attribute_name = "RUNNING STATE"
 	},
   {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_TEMPERATURE_DISPLAY_MODE_ID, 
@@ -595,28 +622,80 @@ static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
 		.zigbee_attribute_name = "AC POWER DIVISOR"
 	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+		.zigbee_attribute_name = "CHILD LOCK"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_OPEN_WINDOW_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+		.zigbee_attribute_name = "OPEN WINDOW"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_FROST_PROTECTION_TEMPERATURE_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "FROST PROTECTION"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_IDLE_STEPS_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "IDLE STEPS"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_CLOSING_STEPS_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "CLOSING STEPS"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_VALVE_OPENING_LIMIT_VOLTAGE, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "VALVE OPENING LIMIT VOLTAGE"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_VALVE_CLOSING_LIMIT_VOLTAGE, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "VALVE CLOSING LIMIT VOLTAGE"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_VALVE_MOTOR_RUNNING_VOLTAGE, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "VALVE MOTOR RUNNING VOLTAGE"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_VALVE_OPENING_DEGREE, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "VALVE OPENING DEGREE"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_VALVE_CLOSING_DEGREE, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "VALVE CLOSING DEGREE"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "EXTERNAL TEMPERATURE INPUT"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "TEMPERATURE SENSOR SELECT"
+	 }
 };
 	 
-	static const zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
-
-	{{.zigbee_datatype_name = "NULL",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_NULL},
-	 {.zigbee_datatype_name = "BOOL",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL},
-	 {.zigbee_datatype_name = "8BITMAP",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP},
-	 {.zigbee_datatype_name = "16BITMAP",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP},
-	 {.zigbee_datatype_name = "U8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8},
-	 {.zigbee_datatype_name = "U16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16},
-	 {.zigbee_datatype_name = "U24",.zigbee_datatype_size = 0x03,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U24},
-	 {.zigbee_datatype_name = "U32",.zigbee_datatype_size = 0x04,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32},
-   {.zigbee_datatype_name = "U48",.zigbee_datatype_size = 0x06,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48},
-	 {.zigbee_datatype_name = "S8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8},
-	 {.zigbee_datatype_name = "S16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16},
-	 {.zigbee_datatype_name = "8ENUM",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM},
-	 {.zigbee_datatype_name = "16ENUM",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BIT_ENUM},
-	 {.zigbee_datatype_name = "OSTRING",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING},
-	 {.zigbee_datatype_name = "LSTRING",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING},
-	 {.zigbee_datatype_name = "ARRAY",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_ARRAY},
-	 {.zigbee_datatype_name = "SET",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET}
-	};
 
 static const zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 
@@ -666,6 +745,42 @@ static const zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_attribute_id = 0xF002,
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
 		.zigbee_attribute_value_name = "REVERSE",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_OPEN_WINDOW_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_OPEN_WINDOW_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "INTERNAL",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "EXTERNAL",
 		.zigbee_attribute_value = 0x01
 	}
 };

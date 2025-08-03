@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.75-02/08/2025"
+#define Z2S_VERSION "0.8.76-03/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -29,6 +29,7 @@ extern uint8_t _z2s_security_level;
 
 #define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 16
 #define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 16
+
 //UI handles
 uint16_t gateway_general_info;
 uint16_t gateway_memory_info;
@@ -1054,7 +1055,8 @@ void buildTuyaCustomClusterTabGUI() {
     if ((z2s_zb_devices_table[devices_counter].record_id > 0) && hasTuyaCustomCluster(z2s_zb_devices_table[devices_counter].desc_id)) {
 
 			//sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
-			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], String(devices_counter), Control::Color::None, Tuyadevice_selector);
+			working_str = devices_counter;
+			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], working_str, Control::Color::None, Tuyadevice_selector);
 		}
 }
 
@@ -1977,7 +1979,8 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 				int8_t zb_tx_power;
     		esp_zb_get_tx_power(&zb_tx_power);
 				log_i("get tx power %d", zb_tx_power);
-				ESPUI.updateText(zigbee_tx_power_text, String(zb_tx_power));
+				working_str = zb_tx_power;
+				ESPUI.updateText(zigbee_tx_power_text, working_str);
 			} break;
 
 			case GUI_CB_SET_TX_FLAG: {//update TX power
@@ -1993,8 +1996,11 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 			case GUI_CB_GET_PC_FLAG : { //read primary channel
 				uint32_t zb_primary_channel = esp_zb_get_primary_network_channel_set();
     		for (uint8_t i = 11; i <= 26; i++) {
-      		if (zb_primary_channel & (1 << i))
-						ESPUI.updateText(zigbee_primary_channel_text, String(i));
+      		if (zb_primary_channel & (1 << i)) {
+
+						working_str = i;
+						ESPUI.updateText(zigbee_primary_channel_text, working_str);
+					}
     		}		
 			} break;
 
@@ -2097,7 +2103,9 @@ void attributeCallback (Control *sender, int type) {
 		for (uint8_t datatypes_counter = 0; datatypes_counter < zigbee_datatypes_count; datatypes_counter++) {
   
 			if (zigbee_datatypes[datatypes_counter].zigbee_datatype_id == zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_datatype_id) {
-				ESPUI.updateSelect(device_attribute_type_selector, String(datatypes_counter));
+
+				working_str = datatypes_counter;
+				ESPUI.updateSelect(device_attribute_type_selector, working_str);
 				ESPUI.updateNumber(device_attribute_size_number, zigbee_datatypes[datatypes_counter].zigbee_datatype_size);
 				break;
 			}
@@ -2116,8 +2124,10 @@ void attributeCallback (Control *sender, int type) {
 			if ((zigbee_attribute_values[i].zigbee_cluster_id == cluster_id) && 
 					(zigbee_attribute_values[i].zigbee_attribute_id == zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id)) {
 
+				working_str = i;
 				attribute_value_selector_options[attribute_value_selector_options_count] = 
-					ESPUI.addControl(Control::Type::Option, zigbee_attribute_values[i].zigbee_attribute_value_name, String(i), Control::Color::None, device_attribute_value_selector);
+					ESPUI.addControl(Control::Type::Option, zigbee_attribute_values[i].zigbee_attribute_value_name, working_str, 
+													Control::Color::None, device_attribute_value_selector);
 				attribute_value_selector_options_count++;
 			}
 		}
@@ -2144,8 +2154,9 @@ void clusterCallback (Control *sender, int type) {
 			//log_i("i = %u, cluster_id = %u, cluster_id = %u", i, zigbee_attributes[i].zigbee_attribute_cluster_id, cluster_id);
 			if (zigbee_attributes[i].zigbee_attribute_cluster_id == cluster_id) {
 
+				working_str = i;
 				attribute_id_selector_options[attribute_id_selector_options_count] = 
-					ESPUI.addControl(Control::Type::Option, zigbee_attributes[i].zigbee_attribute_name, String(i), Control::Color::None, device_attribute_id_selector);
+					ESPUI.addControl(Control::Type::Option, zigbee_attributes[i].zigbee_attribute_name, working_str, Control::Color::None, device_attribute_id_selector);
 				attribute_id_selector_options_count++;
 			}
 		}
