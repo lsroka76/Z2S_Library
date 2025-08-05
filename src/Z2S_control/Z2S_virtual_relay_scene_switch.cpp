@@ -3,11 +3,11 @@
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
 
-Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(_supla_int_t functions, uint16_t debounceTimeMs)
+Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(_supla_int_t functions, uint32_t debounceTimeMs)
     : Supla::Control::VirtualRelay(functions)
 {
-    _lastChangeTime = millis();
-    _debounceTime = debounceTimeMs;
+    _lastChangeTimeMs = millis();
+    _debounceTimeMs   = debounceTimeMs;
 }
 
 
@@ -45,29 +45,28 @@ void Supla::Control::VirtualRelaySceneSwitch::onLoadState() {
 
 void Supla::Control::VirtualRelaySceneSwitch::turnOn(_supla_int_t duration)
 {
-    unsigned long time = millis() - _lastChangeTime;
-    if ( time> _debounceTime)
+    uint32_t timeMs = millis() - _lastChangeTimeMs;
+    if ( timeMs > _debounceTimeMs)
     {
         VirtualRelay::turnOn(duration);
-        _lastChangeTime=millis();
-         log_i(
-      "Relay[%d] turn ON as following time passed (time %d ms)",
-      channel.getChannelNumber(),
-      time);
+        _lastChangeTimeMs = millis();
+         log_i("Relay[%d] turn ON as following time passed (time %d ms)", channel.getChannelNumber(), timeMs);
     }
 
 }
 
 void Supla::Control::VirtualRelaySceneSwitch::turnOff(_supla_int_t duration)
 {
-    unsigned long time = millis() - _lastChangeTime;
-    if (time > _debounceTime)
+    uint32_t timeMs = millis() - _lastChangeTimeMs;
+    if (timeMs > _debounceTimeMs)
     {
         VirtualRelay::turnOff(duration);
-        _lastChangeTime=millis();
-         log_i(
-      "Relay[%d] turn OFF as following time passed (time %d ms)",
-      channel.getChannelNumber(),
-      time);
+        _lastChangeTimeMs = millis();
+         log_i("Relay[%d] turn OFF as following time passed (time %d ms)", channel.getChannelNumber(), timeMs);
     }
+}
+
+void Supla::Control::VirtualRelaySceneSwitch::setDebounceTimeMs(uint32_t debounceTimeMs) {
+
+  _debounceTimeMs = debounceTimeMs;
 }

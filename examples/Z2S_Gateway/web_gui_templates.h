@@ -26,54 +26,70 @@ typedef struct zigbee_attribute_value_s {
 	uint32_t zigbee_attribute_value;
 } zigbee_attribute_value_t;
 
+typedef struct Tuya_datapoint_type_s {
+	const char* Tuya_datapoint_type_name;
+	uint8_t Tuya_datapoint_type_id;
+	uint16_t Tuya_datapoint_type_length;
+} Tuya_datapoint_type_t;
+
 static const zigbee_cluster_t zigbee_clusters[] PROGMEM = 
-	{{.zigbee_cluster_name = "BASIC",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_BASIC},
-	 {.zigbee_cluster_name = "POWER CONFIG",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG},
-	 {.zigbee_cluster_name = "IDENTIFY",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY},
-	 {.zigbee_cluster_name = "GROUPS",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_GROUPS},
-	 {.zigbee_cluster_name = "SCENES",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_SCENES},
-	 {.zigbee_cluster_name = "ON/OFF",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF},
-	 {.zigbee_cluster_name = "LEVEL CONTROL",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL},
-	 {.zigbee_cluster_name = "TIME",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TIME},
-	 {.zigbee_cluster_name = "POLL CONTROLL",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL},
-	 {.zigbee_cluster_name = "WINDOW COVERING",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING},
-	 {.zigbee_cluster_name = "THERMOSTAT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT},
-   {.zigbee_cluster_name = "THERMOSTAT UI",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG},					
-	 {.zigbee_cluster_name = "COLOR CONTROL",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL},																	
-	 {.zigbee_cluster_name = "ILLUMINANCE MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT},
-	 {.zigbee_cluster_name = "TEMPERATURE MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT},
-	 {.zigbee_cluster_name = "PRESSURE MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT},
-	 {.zigbee_cluster_name = "FLOW MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT},
-	 {.zigbee_cluster_name = "HUMIDITY MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT},
-	 {.zigbee_cluster_name = "OCCUPANCY SENSING",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING},
-	 {.zigbee_cluster_name = "IAS ZONE",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE},
-	 {.zigbee_cluster_name = "IAS WD",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_WD},
-	 {.zigbee_cluster_name = "SIMPLE METERING",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING},
-	 {.zigbee_cluster_name = "ELECTRICAL MEASUREMENT",.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT},
-	 {.zigbee_cluster_name = "TUYA (0xE000)",.zigbee_cluster_id = 0xE000},
-	 {.zigbee_cluster_name = "TUYA (0xE001)",.zigbee_cluster_id = 0xE001},
-	 {.zigbee_cluster_name = "TUYA (0xEF00)",.zigbee_cluster_id = 0xEF00},
-	 {.zigbee_cluster_name = "SONOFF (0xFC11)",.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER}};
+	{{.zigbee_cluster_name = "BASIC",										.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_BASIC},
+	 {.zigbee_cluster_name = "POWER CONFIG",						.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG},
+	 {.zigbee_cluster_name = "IDENTIFY",								.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY},
+	 {.zigbee_cluster_name = "GROUPS",									.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_GROUPS},
+	 {.zigbee_cluster_name = "SCENES",									.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_SCENES},
+	 {.zigbee_cluster_name = "ON/OFF",									.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF},
+	 {.zigbee_cluster_name = "LEVEL CONTROL",						.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL},
+	 {.zigbee_cluster_name = "TIME",										.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TIME},
+	 {.zigbee_cluster_name = "POLL CONTROL",						.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL},
+	 {.zigbee_cluster_name = "WINDOW COVERING",					.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING},
+	 {.zigbee_cluster_name = "THERMOSTAT",							.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT},
+   {.zigbee_cluster_name = "THERMOSTAT UI",						.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG},					
+	 {.zigbee_cluster_name = "COLOR CONTROL",						.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL},																	
+	 {.zigbee_cluster_name = "ILLUMINANCE MEASUREMENT",	.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT},
+	 {.zigbee_cluster_name = "TEMPERATURE MEASUREMENT",	.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT},
+	 {.zigbee_cluster_name = "PRESSURE MEASUREMENT",		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT},
+	 {.zigbee_cluster_name = "FLOW MEASUREMENT",				.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT},
+	 {.zigbee_cluster_name = "HUMIDITY MEASUREMENT",		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT},
+	 {.zigbee_cluster_name = "OCCUPANCY SENSING",				.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING},
+	 {.zigbee_cluster_name = "IAS ZONE",								.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE},
+	 {.zigbee_cluster_name = "IAS WD",									.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_WD},
+	 {.zigbee_cluster_name = "SIMPLE METERING",					.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING},
+	 {.zigbee_cluster_name = "ELECTRICAL MEASUREMENT",	.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT},
+	 {.zigbee_cluster_name = "TUYA (0xE000)",						.zigbee_cluster_id = 0xE000},
+	 {.zigbee_cluster_name = "TUYA (0xE001)",						.zigbee_cluster_id = 0xE001},
+	 {.zigbee_cluster_name = "TUYA (0xEF00)",						.zigbee_cluster_id = 0xEF00},
+	 {.zigbee_cluster_name = "SONOFF (0xFC11)",					.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER}};
 
 static const zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
 
-	{{.zigbee_datatype_name = "NULL",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_NULL},
-	 {.zigbee_datatype_name = "BOOL",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL},
-	 {.zigbee_datatype_name = "8BITMAP",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP},
-	 {.zigbee_datatype_name = "16BITMAP",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP},
-	 {.zigbee_datatype_name = "U8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8},
-	 {.zigbee_datatype_name = "U16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16},
-	 {.zigbee_datatype_name = "U24",.zigbee_datatype_size = 0x03,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U24},
-	 {.zigbee_datatype_name = "U32",.zigbee_datatype_size = 0x04,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32},
-   {.zigbee_datatype_name = "U48",.zigbee_datatype_size = 0x06,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48},
-	 {.zigbee_datatype_name = "S8",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8},
-	 {.zigbee_datatype_name = "S16",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16},
-	 {.zigbee_datatype_name = "8ENUM",.zigbee_datatype_size = 0x01,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM},
-	 {.zigbee_datatype_name = "16ENUM",.zigbee_datatype_size = 0x02,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BIT_ENUM},
-	 {.zigbee_datatype_name = "OSTRING",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING},
-	 {.zigbee_datatype_name = "LSTRING",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING},
-	 {.zigbee_datatype_name = "ARRAY",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_ARRAY},
-	 {.zigbee_datatype_name = "SET",.zigbee_datatype_size = 0x00,.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET}
+	{{.zigbee_datatype_name = "NULL",			.zigbee_datatype_size = 0x00,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_NULL},
+	 {.zigbee_datatype_name = "BOOL",			.zigbee_datatype_size = 0x01,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL},
+	 {.zigbee_datatype_name = "8BITMAP",	.zigbee_datatype_size = 0x01,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP},
+	 {.zigbee_datatype_name = "16BITMAP",	.zigbee_datatype_size = 0x02,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP},
+	 {.zigbee_datatype_name = "U8",				.zigbee_datatype_size = 0x01,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8},
+	 {.zigbee_datatype_name = "U16",			.zigbee_datatype_size = 0x02,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16},
+	 {.zigbee_datatype_name = "U24",			.zigbee_datatype_size = 0x03,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U24},
+	 {.zigbee_datatype_name = "U32",			.zigbee_datatype_size = 0x04,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32},
+   {.zigbee_datatype_name = "U48",			.zigbee_datatype_size = 0x06,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U48},
+	 {.zigbee_datatype_name = "S8",				.zigbee_datatype_size = 0x01,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8},
+	 {.zigbee_datatype_name = "S16",			.zigbee_datatype_size = 0x02,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16},
+	 {.zigbee_datatype_name = "8ENUM",		.zigbee_datatype_size = 0x01,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM},
+	 {.zigbee_datatype_name = "16ENUM",		.zigbee_datatype_size = 0x02,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BIT_ENUM},
+	 {.zigbee_datatype_name = "OSTRING",	.zigbee_datatype_size = 0x00,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING},
+	 {.zigbee_datatype_name = "LSTRING",	.zigbee_datatype_size = 0x00,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING},
+	 {.zigbee_datatype_name = "ARRAY",		.zigbee_datatype_size = 0x00,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_ARRAY},
+	 {.zigbee_datatype_name = "SET",			.zigbee_datatype_size = 0x00,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET}
+	};
+
+static const Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM = 
+	
+	{{.Tuya_datapoint_type_name = "RAW", 		.Tuya_datapoint_type_id = 0x00, .Tuya_datapoint_type_length = 0x00},
+	 {.Tuya_datapoint_type_name = "BOOL", 	.Tuya_datapoint_type_id = 0x01, .Tuya_datapoint_type_length = 0x01},
+	 {.Tuya_datapoint_type_name = "VALUE", 	.Tuya_datapoint_type_id = 0x02, .Tuya_datapoint_type_length = 0x04},
+	 {.Tuya_datapoint_type_name = "STRING", .Tuya_datapoint_type_id = 0x03, .Tuya_datapoint_type_length = 0x00},
+	 {.Tuya_datapoint_type_name = "ENUM", 	.Tuya_datapoint_type_id = 0x04, .Tuya_datapoint_type_length = 0x01},
+	 {.Tuya_datapoint_type_name = "BITMAP", .Tuya_datapoint_type_id = 0x05, .Tuya_datapoint_type_length = 0x01}
 	};
 
 static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {

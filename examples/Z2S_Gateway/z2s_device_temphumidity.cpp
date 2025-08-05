@@ -2,20 +2,20 @@
 
 void initZ2SDeviceTempHumidity(int16_t channel_number_slot) {
   
-  uint8_t timeout = z2s_devices_table[channel_number_slot].timeout_secs / 3600;
-  //if (z2s_devices_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_SED_TIMEOUT == USER_DATA_FLAG_SED_TIMEOUT)
-  //  timeout = z2s_devices_table[channel_number_slot].user_data_1;
+  uint8_t timeout = z2s_channels_table[channel_number_slot].timeout_secs / 3600;
+  //if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_SED_TIMEOUT == USER_DATA_FLAG_SED_TIMEOUT)
+  //  timeout = z2s_channels_table[channel_number_slot].user_data_1;
   auto Supla_Z2S_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(timeout);
 
-  Supla_Z2S_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+  Supla_Z2S_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
-  if (strlen(z2s_devices_table[channel_number_slot].Supla_channel_name) > 0) 
-    Supla_Z2S_VirtualThermHygroMeter->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);
+  if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
+    Supla_Z2S_VirtualThermHygroMeter->setInitialCaption(z2s_channels_table[channel_number_slot].Supla_channel_name);
   
-  if (z2s_devices_table[channel_number_slot].Supla_channel_func != 0) 
-    Supla_Z2S_VirtualThermHygroMeter->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
+  if (z2s_channels_table[channel_number_slot].Supla_channel_func != 0) 
+    Supla_Z2S_VirtualThermHygroMeter->setDefaultFunction(z2s_channels_table[channel_number_slot].Supla_channel_func);
 
-  if (z2s_devices_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_CORRECTIONS_DISABLED)
+  if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_CORRECTIONS_DISABLED)
     Supla_Z2S_VirtualThermHygroMeter->setApplyCorrections(false);
   else
     Supla_Z2S_VirtualThermHygroMeter->setApplyCorrections(true);
@@ -26,7 +26,7 @@ void addZ2SDeviceTempHumidity(zbg_device_params_t *device, uint8_t free_slot, in
 
   auto Supla_Z2S_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter();
   
-  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, sub_id,
+  Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, sub_id,
                            name, func);
 }
 
@@ -45,9 +45,9 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp, sign
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
-  auto Supla_Z2S_VirtualThermHygroMeter = getZ2SDeviceTempHumidityPtr(z2s_devices_table[channel_number_slot].Supla_channel);
+  auto Supla_Z2S_VirtualThermHygroMeter = getZ2SDeviceTempHumidityPtr(z2s_channels_table[channel_number_slot].Supla_channel);
   
   if (Supla_Z2S_VirtualThermHygroMeter) {
     
@@ -63,13 +63,13 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi, sign
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
-  auto Supla_Z2S_VirtualThermHygroMeter = getZ2SDeviceTempHumidityPtr(z2s_devices_table[channel_number_slot].Supla_channel);
+  auto Supla_Z2S_VirtualThermHygroMeter = getZ2SDeviceTempHumidityPtr(z2s_channels_table[channel_number_slot].Supla_channel);
   
   if (Supla_Z2S_VirtualThermHygroMeter) {
     
-    switch (z2s_devices_table[channel_number_slot].model_id) {
+    switch (z2s_channels_table[channel_number_slot].model_id) {
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10: humi *= 10; break;
       default: break;
     }
@@ -85,9 +85,9 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi, sign
     return;
   }
   
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
-  auto Supla_Z2S_VirtualThermHygroMeter = getZ2SDeviceTempHumidityPtr(z2s_devices_table[channel_number_slot].Supla_channel);
+  auto Supla_Z2S_VirtualThermHygroMeter = getZ2SDeviceTempHumidityPtr(z2s_channels_table[channel_number_slot].Supla_channel);
   
   if (Supla_Z2S_VirtualThermHygroMeter) {
     

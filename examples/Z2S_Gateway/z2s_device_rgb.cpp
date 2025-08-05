@@ -26,19 +26,19 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, int16
 
   if (Supla_Z2S_RGBInterface) {
 
-    Supla_Z2S_RGBInterface->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+    Supla_Z2S_RGBInterface->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
    
-    if (strlen(z2s_devices_table[channel_number_slot].Supla_channel_name) > 0) 
-      Supla_Z2S_RGBInterface->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);
+    if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
+      Supla_Z2S_RGBInterface->setInitialCaption(z2s_channels_table[channel_number_slot].Supla_channel_name);
         
-    if (z2s_devices_table[channel_number_slot].Supla_channel_func !=0) 
-      Supla_Z2S_RGBInterface->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
+    if (z2s_channels_table[channel_number_slot].Supla_channel_func !=0) 
+      Supla_Z2S_RGBInterface->setDefaultFunction(z2s_channels_table[channel_number_slot].Supla_channel_func);
 
-    if (z2s_devices_table[channel_number_slot].user_data_1 > 0) 
-      Supla_Z2S_RGBInterface->setRGBMode(z2s_devices_table[channel_number_slot].user_data_1);
+    if (z2s_channels_table[channel_number_slot].user_data_1 > 0) 
+      Supla_Z2S_RGBInterface->setRGBMode(z2s_channels_table[channel_number_slot].user_data_1);
 
-    Supla_Z2S_RGBInterface->setKeepAliveSecs(z2s_devices_table[channel_number_slot].keep_alive_secs);
-    Supla_Z2S_RGBInterface->setTimeoutSecs(z2s_devices_table[channel_number_slot].timeout_secs);
+    Supla_Z2S_RGBInterface->setKeepAliveSecs(z2s_channels_table[channel_number_slot].keep_alive_secs);
+    Supla_Z2S_RGBInterface->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
   }
 } //initZ2SDeviceRGB
 
@@ -61,7 +61,7 @@ void addZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_
   channel_element = new Supla::Control::Z2S_RGBInterface(gateway, device, sub_id);
 
   if (channel_element)
-    Z2S_fillDevicesTableSlot(device, free_slot, channel_element->getChannelNumber(), SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, -1, name, func);
+    Z2S_fillChannelsTableSlot(device, free_slot, channel_element->getChannelNumber(), SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, -1, name, func);
 }
 
 void msgZ2SDeviceRGB(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, bool state, signed char rssi) {

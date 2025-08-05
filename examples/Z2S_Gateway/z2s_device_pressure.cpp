@@ -4,14 +4,14 @@ void initZ2SDevicePressure(int16_t channel_number_slot) {
   
   auto Supla_VirtualPressure = new Supla::Sensor::VirtualPressure();
 
-  Supla_VirtualPressure->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+  Supla_VirtualPressure->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 }
 
 void addZ2SDevicePressure(zbg_device_params_t *device, uint8_t free_slot) {
 
   auto Supla_VirtualPressure = new Supla::Sensor::VirtualPressure();
   
-  Z2S_fillDevicesTableSlot(device, free_slot, Supla_VirtualPressure->getChannelNumber(), 
+  Z2S_fillChannelsTableSlot(device, free_slot, Supla_VirtualPressure->getChannelNumber(), 
                            SUPLA_CHANNELTYPE_PRESSURESENSOR, -1,"PRESSURE", SUPLA_CHANNELFNC_PRESSURESENSOR);
 }
 
@@ -30,9 +30,9 @@ void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure, signed c
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
   
-  auto Supla_VirtualPressure = getZ2SDevicePressurePtr(z2s_devices_table[channel_number_slot].Supla_channel);
+  auto Supla_VirtualPressure = getZ2SDevicePressurePtr(z2s_channels_table[channel_number_slot].Supla_channel);
   
   if (Supla_VirtualPressure) {
     
@@ -48,9 +48,9 @@ void msgZ2SDevicePressureBatteryLevel(int16_t channel_number_slot, uint8_t batte
     return;
   }
   
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
-  auto Supla_VirtualPressure = getZ2SDevicePressurePtr(z2s_devices_table[channel_number_slot].Supla_channel);
+  auto Supla_VirtualPressure = getZ2SDevicePressurePtr(z2s_channels_table[channel_number_slot].Supla_channel);
   
   if (Supla_VirtualPressure) {
     

@@ -164,7 +164,7 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
     }
     else {
       while (channel_number_slot >= 0) {
-      auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+      auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
       if (element) 
         element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(nwk_neighbour.rssi));
         channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
@@ -213,13 +213,13 @@ void supla_callback_bridge(int event, int action) {
       }
     } break; 
     case Supla::ON_EVENT_3: 
-    case Supla::ON_CLICK_10: Z2S_clearDevicesTable(); break;
+    case Supla::ON_CLICK_10: Z2S_clearChannelsTable(); break;
     case Supla::ON_EVENT_4: Z2S_nwk_scan_neighbourhood(false); break;
   }
   if ((event >= Supla::ON_EVENT_5) && (event < Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT)) {
-    z2s_devices_table[event - Supla::ON_EVENT_5].valid_record = false;
-    if (Z2S_saveDevicesTable()) {
-      log_i("Device on channel %d removed. Restarting...", z2s_devices_table[event - Supla::ON_EVENT_5].Supla_channel);
+    z2s_channels_table[event - Supla::ON_EVENT_5].valid_record = false;
+    if (Z2S_saveChannelsTable()) {
+      log_i("Device on channel %d removed. Restarting...", z2s_channels_table[event - Supla::ON_EVENT_5].Supla_channel);
       SuplaDevice.scheduleSoftRestart(1000);
     }
   }
@@ -242,11 +242,11 @@ bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
   
   if (channel_number_slot >= 0) {
 
-    device->endpoint = z2s_devices_table[channel_number_slot].endpoint;
-    device->cluster_id = z2s_devices_table[channel_number_slot].cluster_id;
-    memcpy(device->ieee_addr, z2s_devices_table[channel_number_slot].ieee_addr,8);
-    device->short_addr = z2s_devices_table[channel_number_slot].short_addr;
-    device->model_id = z2s_devices_table[channel_number_slot].model_id;
+    device->endpoint = z2s_channels_table[channel_number_slot].endpoint;
+    device->cluster_id = z2s_channels_table[channel_number_slot].cluster_id;
+    memcpy(device->ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr,8);
+    device->short_addr = z2s_channels_table[channel_number_slot].short_addr;
+    device->model_id = z2s_channels_table[channel_number_slot].model_id;
     telnet.printf(">Device %u\n\r>", device->short_addr);
     return true;
   } else {
@@ -556,7 +556,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     return;
   } else
   if (strcmp(cmd, "LIST-DEVICES") == 0) {
-    Z2S_printDevicesTableSlots(true);
+    Z2S_printChannelsTableSlots(true);
     return;
   } else
   if (strcmp(cmd, "LIST-ZB-DEVICES") == 0) {
@@ -579,8 +579,8 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-      z2s_devices_table[channel_number_slot].valid_record = false;
-      if (Z2S_saveDevicesTable()) {
+      z2s_channels_table[channel_number_slot].valid_record = false;
+      if (Z2S_saveChannelsTable()) {
         log_i("Device on channel %d removed. Restarting...", channel_id);
       SuplaDevice.scheduleSoftRestart(1000);
       }
@@ -706,8 +706,8 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-        z2s_devices_table[channel_number_slot].model_id = device_desc_id;
-      if (Z2S_saveDevicesTable()) {
+        z2s_channels_table[channel_number_slot].model_id = device_desc_id;
+      if (Z2S_saveChannelsTable()) {
         log_i("Device(channel %d) description id changed successfully.", channel_id);
       }
     } else {
@@ -727,8 +727,8 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-        z2s_devices_table[channel_number_slot].sub_id = device_sub_id;
-      if (Z2S_saveDevicesTable()) {
+        z2s_channels_table[channel_number_slot].sub_id = device_sub_id;
+      if (Z2S_saveChannelsTable()) {
         log_i("Device(channel %d) sub id changed successfully.", channel_id);
       }
     } else {
@@ -751,10 +751,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     
     if (channel_number_slot >= 0) {
         if (flag_set)
-          z2s_devices_table[channel_number_slot].user_data_flags |= (1 << bit_id);
+          z2s_channels_table[channel_number_slot].user_data_flags |= (1 << bit_id);
         if (flag_clear)
-          z2s_devices_table[channel_number_slot].user_data_flags &= ~(1 << bit_id);
-      if (Z2S_saveDevicesTable()) {
+          z2s_channels_table[channel_number_slot].user_data_flags &= ~(1 << bit_id);
+      if (Z2S_saveChannelsTable()) {
         telnet.printf(">Device(channel %d) flags changed successfully.\n\r>", channel_id);
       }
     } else {
@@ -777,7 +777,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     uint8_t zb_device_number_slot = (channel_number_slot >= 0) ? 
-      Z2S_findZBDeviceTableSlot(z2s_devices_table[channel_number_slot].ieee_addr) : 0xFF;
+      Z2S_findZBDeviceTableSlot(z2s_channels_table[channel_number_slot].ieee_addr) : 0xFF;
     
     if (zb_device_number_slot < 0xFF) {
         if (flag_set)
@@ -807,17 +807,17 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if (channel_number_slot >= 0) {
       switch (param_id) {
         case 1:
-          z2s_devices_table[channel_number_slot].user_data_1 = param_value; break;
+          z2s_channels_table[channel_number_slot].user_data_1 = param_value; break;
         case 2:
-          z2s_devices_table[channel_number_slot].user_data_2 = param_value; break;
+          z2s_channels_table[channel_number_slot].user_data_2 = param_value; break;
         case 3:
-          z2s_devices_table[channel_number_slot].user_data_3 = param_value; break;
+          z2s_channels_table[channel_number_slot].user_data_3 = param_value; break;
         case 4:
-          z2s_devices_table[channel_number_slot].user_data_4 = param_value; break;
+          z2s_channels_table[channel_number_slot].user_data_4 = param_value; break;
         default:
           telnet.printf(">param_id(%u) should be in range 1...4\n\r>", param_id); break;
       }
-      if (Z2S_saveDevicesTable()) {
+      if (Z2S_saveChannelsTable()) {
         log_i("Device(channel %d) user data daved successfully.", channel_id);
       }
     } else {
@@ -1261,7 +1261,7 @@ void setup() {
 
   Z2S_loadZBDevicesTable();
 
-  Z2S_loadDevicesTable();
+  Z2S_loadChannelsTable();
 
   Z2S_initZBDevices(millis());
 
@@ -1273,12 +1273,12 @@ void setup() {
   
   auto selectCmd2 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD2, "Remove Z2S Device");
   for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
-    if (z2s_devices_table[devices_counter].valid_record) {
+    if (z2s_channels_table[devices_counter].valid_record) {
       char device_removal_cmd[128];
       sprintf(device_removal_cmd, "Remove Z2SDevice [%x:%x:%x:%x:%x:%x:%x:%x] channel # %d",
-      z2s_devices_table[devices_counter].ieee_addr[7], z2s_devices_table[devices_counter].ieee_addr[6], z2s_devices_table[devices_counter].ieee_addr[5],
-      z2s_devices_table[devices_counter].ieee_addr[4], z2s_devices_table[devices_counter].ieee_addr[3], z2s_devices_table[devices_counter].ieee_addr[2],
-      z2s_devices_table[devices_counter].ieee_addr[1], z2s_devices_table[devices_counter].ieee_addr[0], z2s_devices_table[devices_counter].Supla_channel);
+      z2s_channels_table[devices_counter].ieee_addr[7], z2s_channels_table[devices_counter].ieee_addr[6], z2s_channels_table[devices_counter].ieee_addr[5],
+      z2s_channels_table[devices_counter].ieee_addr[4], z2s_channels_table[devices_counter].ieee_addr[3], z2s_channels_table[devices_counter].ieee_addr[2],
+      z2s_channels_table[devices_counter].ieee_addr[1], z2s_channels_table[devices_counter].ieee_addr[0], z2s_channels_table[devices_counter].Supla_channel);
       log_i("cmd %s, len %d", device_removal_cmd, strlen(device_removal_cmd));
       selectCmd2->registerCmd(device_removal_cmd, Supla::ON_EVENT_5 + devices_counter);
       selectCmd2->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_5 + devices_counter, true);
@@ -1286,12 +1286,12 @@ void setup() {
 
   auto selectCmd3 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD3, "Update Z2S Device timeout (h)");
   for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
-    if (z2s_devices_table[devices_counter].valid_record) {
+    if (z2s_channels_table[devices_counter].valid_record) {
       char device_removal_cmd[128];
       sprintf(device_removal_cmd, "Update Z2SDevice [%x:%x:%x:%x:%x:%x:%x:%x] channel # %d",
-      z2s_devices_table[devices_counter].ieee_addr[7], z2s_devices_table[devices_counter].ieee_addr[6], z2s_devices_table[devices_counter].ieee_addr[5],
-      z2s_devices_table[devices_counter].ieee_addr[4], z2s_devices_table[devices_counter].ieee_addr[3], z2s_devices_table[devices_counter].ieee_addr[2],
-      z2s_devices_table[devices_counter].ieee_addr[1], z2s_devices_table[devices_counter].ieee_addr[0], z2s_devices_table[devices_counter].Supla_channel);
+      z2s_channels_table[devices_counter].ieee_addr[7], z2s_channels_table[devices_counter].ieee_addr[6], z2s_channels_table[devices_counter].ieee_addr[5],
+      z2s_channels_table[devices_counter].ieee_addr[4], z2s_channels_table[devices_counter].ieee_addr[3], z2s_channels_table[devices_counter].ieee_addr[2],
+      z2s_channels_table[devices_counter].ieee_addr[1], z2s_channels_table[devices_counter].ieee_addr[0], z2s_channels_table[devices_counter].Supla_channel);
       log_i("cmd %s, len %d", device_removal_cmd, strlen(device_removal_cmd));
       selectCmd3->registerCmd(device_removal_cmd, Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT + devices_counter);
       selectCmd3->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT + devices_counter, true);
@@ -1456,13 +1456,13 @@ void loop() {
 
   if (millis() - _status_led_last_refresh_ms > 1000) {
 
-    log_i( "Memory information: Flash chip real size:%u B, Free Sketch Space:%u B, "
+    /*log_i( "Memory information: Flash chip real size:%u B, Free Sketch Space:%u B, "
 						"Free Heap:%u, Minimal Free Heap:%u B, "
 						"HeapSize:%u B, MaxAllocHeap:%u B, "
 						"Supla uptime:%lu s", 
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
 						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
-    
+    */
     _status_led_last_mode = _status_led_mode;
     _status_led_last_refresh_ms = millis();
     

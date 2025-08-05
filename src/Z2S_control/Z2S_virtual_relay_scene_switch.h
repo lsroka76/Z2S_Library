@@ -17,22 +17,24 @@ namespace Supla
             /// @param debounceTimeMs Debounce time in milliseconds.
             VirtualRelaySceneSwitch(_supla_int_t functions =
                                         (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER),
-                                    uint16_t debounceTimeMs=100);
+                                    uint32_t debounceTimeMs = 100);
 
             
             bool getValue();
 
-	    void onLoadState() override;
-	    void onSaveState() override;
+	        void onLoadState() override;
+	        void onSaveState() override;
 
             void onInit() override;
 
-	    void turnOn(_supla_int_t duration = 0) override;
+	        void turnOn(_supla_int_t duration = 0) override;
             void turnOff(_supla_int_t duration = 0) override;
 
+            void setDebounceTimeMs(uint32_t debounceTimeMs);
+
         protected:
-            unsigned long _lastChangeTime = 0;
-            uint16_t _debounceTime = 0;
+            uint32_t _lastChangeTimeMs = 0;
+            uint32_t _debounceTimeMs   = 0;
         };
 
     }; // namespace Control

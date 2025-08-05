@@ -7,7 +7,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   int16_t hvac_room_temperature_min = 500;
   int16_t hvac_room_temperature_max = 3000;
 
-  switch (z2s_devices_table[channel_number_slot].model_id) {
+  switch (z2s_channels_table[channel_number_slot].model_id) {
     
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {  
       
@@ -85,23 +85,23 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
 
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
             
-  Supla_Z2S_HvacBase->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+  Supla_Z2S_HvacBase->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
-  if (strlen(z2s_devices_table[channel_number_slot].Supla_channel_name) > 0) 
-    Supla_Z2S_HvacBase->setInitialCaption(z2s_devices_table[channel_number_slot].Supla_channel_name);
+  if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
+    Supla_Z2S_HvacBase->setInitialCaption(z2s_channels_table[channel_number_slot].Supla_channel_name);
   
-  if (z2s_devices_table[channel_number_slot].Supla_channel_func !=0) 
-    Supla_Z2S_HvacBase->setDefaultFunction(z2s_devices_table[channel_number_slot].Supla_channel_func);
+  if (z2s_channels_table[channel_number_slot].Supla_channel_func !=0) 
+    Supla_Z2S_HvacBase->setDefaultFunction(z2s_channels_table[channel_number_slot].Supla_channel_func);
 
-  /*if (z2s_devices_table[channel_number_slot].Supla_secondary_channel < 0xFF) 
-    Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_devices_table[channel_number_slot].Supla_secondary_channel);*/
+  /*if (z2s_channels_table[channel_number_slot].Supla_secondary_channel < 0xFF) 
+    Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_channels_table[channel_number_slot].Supla_secondary_channel);*/
 
-  /*if (z2s_devices_table[channel_number_slot].user_data_1 > 0) 
-    Supla_Z2S_TRVInterface->setTemperatureCalibrationUpdateMs(z2s_devices_table[channel_number_slot].user_data_1 * 1000);
+  /*if (z2s_channels_table[channel_number_slot].user_data_1 > 0) 
+    Supla_Z2S_TRVInterface->setTemperatureCalibrationUpdateMs(z2s_channels_table[channel_number_slot].user_data_1 * 1000);
 
-  if (z2s_devices_table[channel_number_slot].user_data_2 > 0) 
-    Supla_Z2S_TRVInterface->setTemperatureCalibrationOffsetTrigger(z2s_devices_table[channel_number_slot].user_data_2 * 100);*/
-  Supla_Z2S_TRVInterface->setTimeoutSecs(z2s_devices_table[channel_number_slot].timeout_secs);
+  if (z2s_channels_table[channel_number_slot].user_data_2 > 0) 
+    Supla_Z2S_TRVInterface->setTemperatureCalibrationOffsetTrigger(z2s_channels_table[channel_number_slot].user_data_2 * 100);*/
+  Supla_Z2S_TRVInterface->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
 
 
   Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF, Supla_Z2S_TRVInterface,Supla::ON_HVAC_MODE_OFF);
@@ -123,7 +123,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   Supla_Z2S_HvacBase->setButtonTemperatureStep(50);
   Supla_Z2S_HvacBase->addLocalUILockCapability(Supla::LocalUILock::Full);
   
-  Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, trv_external_sensor_mode, z2s_devices_table[channel_number_slot].Supla_secondary_channel);
+  Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, trv_external_sensor_mode, z2s_channels_table[channel_number_slot].Supla_secondary_channel);
 
   
 }
@@ -132,11 +132,11 @@ void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint
   
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE();
 
-  Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_devices_table[trv_thermometer_slot].Supla_channel);
+  Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_channels_table[trv_thermometer_slot].Supla_channel);
   Supla_Z2S_HvacBase->setBinarySensorChannelNo(Supla_Z2S_HvacBase->getChannel()->getChannelNumber());
 
-  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_HvacBase->getChannel()->getChannelNumber(), SUPLA_CHANNELTYPE_HVAC, -1, 
-                           "THERMOSTAT", SUPLA_CHANNELFNC_HVAC_THERMOSTAT, z2s_devices_table[trv_thermometer_slot].Supla_channel); 
+  Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_HvacBase->getChannel()->getChannelNumber(), SUPLA_CHANNELTYPE_HVAC, -1, 
+                           "THERMOSTAT", SUPLA_CHANNELFNC_HVAC_THERMOSTAT, z2s_channels_table[trv_thermometer_slot].Supla_channel); 
 
 
 }
@@ -149,9 +149,9 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
   
-  auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+  auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
   if ((element == nullptr) || (element->getChannel()->getChannelType() != SUPLA_CHANNELTYPE_HVAC))
     return;
@@ -163,17 +163,17 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     case TRV_HEATING_SETPOINT_MSG: {   //degrees*100
       log_i("msgZ2SDeviceHvac - TRV_HEATING_SETPOINT_MSG: 0x%x", msg_value);
       log_i("HVAC flags: 0x%x", Supla_Z2S_HvacBase->getChannel()->getHvacFlags());
-      if (z2s_devices_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG) {
+      if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG) {
         log_i("msgZ2SDeviceHvac - ignoring TRV_HEATING_SETPOINT_MSG: 0x%x", msg_value);
         if (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 40)
           break;
         else {
-          z2s_devices_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+          z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
         } 
-        /*if (z2s_devices_table[channel_number_slot].user_data_1 == 0)
-          z2s_devices_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+        /*if (z2s_channels_table[channel_number_slot].user_data_1 == 0)
+          z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
         else
-          z2s_devices_table[channel_number_slot].user_data_1--;*/
+          z2s_channels_table[channel_number_slot].user_data_1--;*/
 
         //break;
       }
@@ -216,10 +216,10 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
       switch (msg_value) {
         //case 0: Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON); break;
         case 1: {
-          if (z2s_devices_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) {
+          if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) {
             Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE, true); 
-            z2s_devices_table[channel_number_slot].user_data_flags |= USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
-            z2s_devices_table[channel_number_slot].user_data_1 = 1;
+            z2s_channels_table[channel_number_slot].user_data_flags |= USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+            z2s_channels_table[channel_number_slot].user_data_1 = 1;
             //Supla_Z2S_HvacBase->applyNewRuntimeSettings(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE, 0);
             Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
           } else

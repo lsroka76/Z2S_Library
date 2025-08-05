@@ -8,7 +8,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   uint16_t current_multiplier_modifier = 1;
   uint16_t current_multiplier_divisor  = 1;
   
-  switch (z2s_devices_table[channel_number_slot].model_id) {
+  switch (z2s_channels_table[channel_number_slot].model_id) {
     
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
       _isTuya = true; _active_query = false; //true;
@@ -30,17 +30,17 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   }
 
   auto Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(gateway, device, 
-                                    &z2s_devices_table[channel_number_slot].data_counter, _isTuya, _active_query, _one_phase);
+                                    &z2s_channels_table[channel_number_slot].data_counter, _isTuya, _active_query, _one_phase);
 
-  Supla_Z2S_ElectricityMeter->getChannel()->setChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+  Supla_Z2S_ElectricityMeter->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
   
-  Supla_Z2S_ElectricityMeter->setKeepAliveSecs(z2s_devices_table[channel_number_slot].keep_alive_secs);
+  Supla_Z2S_ElectricityMeter->setKeepAliveSecs(z2s_channels_table[channel_number_slot].keep_alive_secs);
 
-  Supla_Z2S_ElectricityMeter->setTimeoutSecs(z2s_devices_table[channel_number_slot].timeout_secs);
+  Supla_Z2S_ElectricityMeter->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
 
-  Supla_Z2S_ElectricityMeter->setRefreshSecs(z2s_devices_table[channel_number_slot].refresh_secs);
+  Supla_Z2S_ElectricityMeter->setRefreshSecs(z2s_channels_table[channel_number_slot].refresh_secs);
 
-  Supla_Z2S_ElectricityMeter->setEnergyInitialCounter(z2s_devices_table[channel_number_slot].data_counter);
+  Supla_Z2S_ElectricityMeter->setEnergyInitialCounter(z2s_channels_table[channel_number_slot].data_counter);
 
   Supla_Z2S_ElectricityMeter->setCurrentMultiplierModifier(current_multiplier_modifier);
 
@@ -54,16 +54,16 @@ void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *d
   auto Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(gateway, device, 0, isTuya, active_query, one_phase);
   
   if (active_query) 
-    z2s_devices_table[free_slot].refresh_secs = 30; //active_query replacement 
+    z2s_channels_table[free_slot].refresh_secs = 30; //active_query replacement 
   
-  Z2S_fillDevicesTableSlot(device, free_slot, Supla_Z2S_ElectricityMeter->getChannelNumber(), SUPLA_CHANNELTYPE_ELECTRICITY_METER, sub_id);
+  Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_ElectricityMeter->getChannelNumber(), SUPLA_CHANNELTYPE_ELECTRICITY_METER, sub_id);
 }
 
 void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector, int64_t value, signed char rssi) {
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_devices_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
-  auto element = Supla::Element::getElementByChannelNumber(z2s_devices_table[channel_number_slot].Supla_channel);
+  auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
         auto Supla_ElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);
         Supla_ElectricityMeter->pong();

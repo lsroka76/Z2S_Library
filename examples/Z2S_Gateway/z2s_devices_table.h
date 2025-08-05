@@ -185,10 +185,10 @@ typedef struct sonoff_smart_valve_cycle_data_s {
   uint32_t cycle_pause;
 } ESP_ZB_PACKED_STRUCT sonoff_smart_valve_cycle_data_t;
 
-extern z2s_device_params_t z2s_devices_table[Z2S_CHANNELMAXCOUNT];
+extern z2s_device_params_t z2s_channels_table[Z2S_CHANNELMAXCOUNT];
 
-const static char   Z2S_DEVICES_TABLE []  PROGMEM = "Z2S_devs_table";
-const static char   Z2S_DEVICES_TABLE_SIZE []  PROGMEM = "Z2S_devs_ts";
+const static char   Z2S_CHANNELS_TABLE_ID      []  PROGMEM = "Z2S_devs_table";
+const static char   Z2S_CHANNELS_TABLE_SIZE_ID []  PROGMEM = "Z2S_devs_ts";
 
 extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZBDEVICESMAXCOUNT];
 
@@ -222,12 +222,12 @@ enum Conditions {
 };
 };
 
-uint32_t  Z2S_getDevicesTableSize();
-uint8_t   Z2S_findFirstFreeDevicesTableSlot(uint8_t start_slot = 0);
-void      Z2S_printDevicesTableSlots(bool toTelnet = false);
-bool      Z2S_loadDevicesTable();
-bool      Z2S_saveDevicesTable();
-bool      Z2S_clearDevicesTable();
+uint32_t  Z2S_getChannelsTableSize();
+uint8_t   Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot = 0);
+void      Z2S_printChannelsTableSlots(bool toTelnet = false);
+bool      Z2S_loadChannelsTable();
+bool      Z2S_saveChannelsTable();
+bool      Z2S_clearChannelsTable();
 
 uint8_t   Z2S_findFirstFreeZBDevicesTableSlot(uint8_t start_slot = 0);
 uint32_t  Z2S_getZBDevicesTableSize();
@@ -246,15 +246,18 @@ uint8_t   Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint8_t Sup
 
 bool      Z2S_removeZBDeviceWithAllChannels(uint8_t zb_device_slot);
 
-int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, int32_t channel_type, int8_t sub_id);
-int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
+int16_t   Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, int32_t channel_type, int8_t sub_id);
+int16_t   Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
                                       int32_t channel_type, int8_t sub_id);
 //int32_t Z2S_findChannelType(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster);
-void    Z2S_fillDevicesTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
+void      Z2S_fillChannelsTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                                  char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
 
-bool Z2S_setDeviceFlags(int16_t channel_number_slot, uint32_t flags_to_set);
-bool Z2S_clearDeviceFlags(int16_t channel_number_slot, uint32_t flags_to_clear);
+bool Z2S_setChannelFlags(int16_t channel_number_slot, uint32_t flags_to_set);
+bool Z2S_clearChannelFlags(int16_t channel_number_slot, uint32_t flags_to_clear);
+
+bool Z2S_setZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set);
+bool Z2S_clearZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_clear);
 
 int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 
