@@ -156,6 +156,8 @@
 #define Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_1              0x5601
 #define Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2              0x5602
 
+#define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F            0x5610
+
 #define Z2S_DEVICE_DESC_HVAC_START                      0x6000
 
 #define Z2S_DEVICE_DESC_TUYA_HVAC                       0x6000
@@ -1181,6 +1183,9 @@ const dataPoints = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+    
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
@@ -1805,6 +1810,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "eWeLink", .model_name = "CK-TLSR8656-SS5-01(7000)", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_86sw1", 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F, .z2s_device_endpoints_count = 1},
     
   { .manufacturer_name = "IKEA of Sweden", .model_name = "Remote Control N2", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON, .z2s_device_endpoints_count = 1},

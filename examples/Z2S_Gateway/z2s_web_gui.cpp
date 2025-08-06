@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.78-06/08/2025"
+#define Z2S_VERSION "0.8.79-06/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -1256,6 +1256,10 @@ void buildTestTabGUI() {
 	auto file_display_3 = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
 																			 Control::Color::Emerald, test_tab);
 	
+	working_str = "<table><tr><th>Header 1</th><th>Header 2</th></tr>"
+								"<tr><td>Field 1</td><td>Field 2</td></tr><table>";
+	auto table_label = ESPUI.addControl(Control::Type::Label, PSTR("Table label"), working_str, 
+																			 Control::Color::Emerald, test_tab); 
 	
 	
 
@@ -1353,6 +1357,10 @@ void Z2S_startUpdateServer() {
 
 	if (ESPUI.WebServer())
   	updateServer.setup(ESPUI.WebServer(), "admin", "pass");
+	/*if (ESPUI.WebServer())
+  	ESPUI.WebServer()->serveStatic("/files", LittleFS, "/");
+	if (ESPUI.WebServer())
+  	ESPUI.WebServer()->serveStatic("/supla", LittleFS, "/supla");*/
 }
 
 void Z2S_updateWebGUI() {

@@ -739,11 +739,24 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
       if (_on_multistate_input_receive)
         _on_multistate_input_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);
     } else
+    if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT) { 
+
+      log_i("analog input cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+            cluster_id, attribute->id, attribute->data.type);
+      if (attribute->id == 0x55)
+        log_i("value = %f", *(float *)attribute->data.value);
+      if (attribute->id == 0x149)
+        log_i("value = %u", *(uint8_t *)attribute->data.value);
+      if (attribute->id == 0x10B)
+        log_i("value = %u", *(uint16_t *)attribute->data.value);
+      if (_on_analog_input_receive)
+        _on_analog_input_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);
+    } else
     if (cluster_id == LUMI_CUSTOM_CLUSTER) {      
 
       log_i("LUMI custom cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
             cluster_id, attribute->id, attribute->data.type);
-      if (attribute->id == 0x149)
+      if ((attribute->id == 0x148) || (attribute->id == 0x149))
         log_i("value = %u", *(uint8_t *)attribute->data.value);
       //if (_on_multistate_input_receive)
         //_on_multistate_input_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);

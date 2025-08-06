@@ -159,7 +159,7 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
     int16_t channel_number_slot = Z2S_findChannelNumberSlot(nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
     
     if (channel_number_slot < 0) {
-      sprintf(log_line, "Z2S_nwk_scan_neighbourhood - no channel found for address 0x%x", nwk_neighbour.short_addr);
+      sprintf(log_line, PSTR("Z2S_nwk_scan_neighbourhood - no channel found for address 0x%x"), nwk_neighbour.short_addr);
       log_i_telnet2(log_line, toTelnet);
     }
     else {
@@ -247,10 +247,10 @@ bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
     memcpy(device->ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr,8);
     device->short_addr = z2s_channels_table[channel_number_slot].short_addr;
     device->model_id = z2s_channels_table[channel_number_slot].model_id;
-    telnet.printf(">Device %u\n\r>", device->short_addr);
+    telnet.printf(PSTR(">Device %u\n\r>"), device->short_addr);
     return true;
   } else {
-    telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    telnet.printf(PSTR(">Invalid channel number %u\n\r>"), channel_id);
     return false;
   }
 }
@@ -396,13 +396,13 @@ uint16_t parseSuplaActionStr(char *Supla_action) {
   if (strcmp(Supla_action, "CLEAR") == 0)
     return Supla::CLEAR;
   else
-  if (strcmp(Supla_action, "INCREASE_TEMPERATURE") == 0)
+  if (strcmp(Supla_action, PSTR("INCREASE_TEMPERATURE")) == 0)
     return Supla::INCREASE_TEMPERATURE;
   else
-  if (strcmp(Supla_action, "DECREASE_TEMPERATURE") == 0)
+  if (strcmp(Supla_action, PSTR("DECREASE_TEMPERATURE")) == 0)
     return Supla::DECREASE_TEMPERATURE;
   else
-  if (strcmp(Supla_action, "TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES") == 0)
+  if (strcmp(Supla_action, PSTR("TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES")) == 0)
     return Supla::TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES;
   else
   if (strcmp(Supla_action, "DIM_W") == 0)
@@ -504,7 +504,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint32_t zb_primary_channel = esp_zb_get_primary_network_channel_set();
     for (uint8_t i = 11; i <= 26; i++) {
       if (zb_primary_channel & (1 << i))
-        telnet.printf(">Zigbee primary channel: %u\n\r>", i);
+        telnet.printf(PSTR(">Zigbee primary channel: %u\n\r>"), i);
     }
     return;
   } else
@@ -520,16 +520,16 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if ((zb_primary_channel >= 11) && (zb_primary_channel <= 26)) {
 
       if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_ZIGBEE_PRIMARY_CHANNEL, (1 << zb_primary_channel))) {
-        telnet.printf(">New Zigbee primary channel(%u) mask(%x) write success! Restarting...\n\r", zb_primary_channel, (1 << zb_primary_channel));
+        telnet.printf(PSTR(">New Zigbee primary channel(%u) mask(%x) write success! Restarting...\n\r"), zb_primary_channel, (1 << zb_primary_channel));
         Supla::Storage::ConfigInstance()->commit();
         SuplaDevice.scheduleSoftRestart(1000);
         return;
       } else {
-        telnet.printf(">New Zigbee primary channel(%u) mask(%x) write failed!\n\r", zb_primary_channel, (1 << zb_primary_channel));
+        telnet.printf(PSTR(">New Zigbee primary channel(%u) mask(%x) write failed!\n\r"), zb_primary_channel, (1 << zb_primary_channel));
         return;
       }
     } else { 
-      telnet.printf(">Invalid value for Zigbee primary channel: %u (should be between 11 and 26)\n\r");
+      telnet.printf(PSTR(">Invalid value for Zigbee primary channel: %u (should be between 11 and 26)\n\r"));
       return;
     }
   } else
@@ -537,7 +537,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     int8_t zb_tx_power;
     esp_zb_get_tx_power(&zb_tx_power);
-    telnet.printf(">Zigbee TX power: %d\n\r>", zb_tx_power);
+    telnet.printf(PSTR(">Zigbee TX power: %d\n\r>"), zb_tx_power);
     return;
   } else
   if (strcmp(cmd, "SET-ZIGBEE-TX-POWER") == 0) {

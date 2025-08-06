@@ -260,6 +260,10 @@ public:
                                       const esp_zb_zcl_attribute_t *, signed char rssi)) {
     _on_multistate_input_receive = callback;
   }
+  void onAnalogInputReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
+                            const esp_zb_zcl_attribute_t *, signed char rssi)) {
+    _on_analog_input_receive = callback;
+  }
   void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi)) {
     _on_current_summation_receive = callback;
   }
@@ -367,6 +371,7 @@ private:
   void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool, signed char rssi);
   void (*_on_electrical_measurement_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_multistate_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
+  void (*_on_analog_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi);
   void (*_on_battery_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
   void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);

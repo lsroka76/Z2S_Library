@@ -76,6 +76,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         _z2s_function_data[3] = 0x32; //strobe duty cycle 50/50
         _z2s_function_data[4] = 0x01; //strobe level field
 
+        //log_i("_z2s_function = %u, short addr = 0x%X",_z2s_function, _device.short_addr);
         _gateway->sendCustomClusterCmd(&_device, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, _z2s_function_data);
         _gateway->sendOnOffCmd(&_device, state);
 

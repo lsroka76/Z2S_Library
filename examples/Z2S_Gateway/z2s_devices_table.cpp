@@ -1597,9 +1597,11 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   log_i("z2s_channels_table[channel_number_slot].Supla_channel 0x%x", z2s_channels_table[channel_number_slot].Supla_channel);
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
+    
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F:
     case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: {
+      
       log_i("IKEA command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
       int8_t sub_id = 0x7F;
 
@@ -1646,22 +1648,27 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:  
+      
       return processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer, rssi); break;
 
     case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON:  //this will never happen
+      
       return processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer, rssi); break;
 
     case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1: {
+      
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x00))
         msgZ2SDeviceIASzone(channel_number_slot, false, rssi);
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x01))
         msgZ2SDeviceIASzone(channel_number_slot, true, rssi);
       return true;
     } break;
+    
     case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3:
     case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F:
     case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
     case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F: {
+      
       log_i("TUYA command: cluster(0x%x), command id(0x%x)",  cluster_id, command_id);   
       //process Tuya command
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) &&
@@ -1677,7 +1684,18 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
       return true;
     } 
   } break;
+
+  case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
+    
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && ((command_id >= 0) && (command_id < 2))) {
+      
+      msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
+      return true;
+    }
+  } break;
+
   case Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F: {
+    
     if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && ((command_id >= 0) && (command_id <=2))) {
 
         int8_t sub_id;
@@ -1882,6 +1900,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         char button_name_function[30];
         sprintf(button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+      case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, "SINGLE", SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
