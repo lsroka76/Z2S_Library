@@ -40,6 +40,7 @@ static const zigbee_cluster_t zigbee_clusters[] PROGMEM =
 	 {.zigbee_cluster_name = "SCENES",									.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_SCENES},
 	 {.zigbee_cluster_name = "ON/OFF",									.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF},
 	 {.zigbee_cluster_name = "LEVEL CONTROL",						.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL},
+	 {.zigbee_cluster_name = "MULTISTATE INPUT",				.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT},
 	 {.zigbee_cluster_name = "TIME",										.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TIME},
 	 {.zigbee_cluster_name = "POLL CONTROL",						.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL},
 	 {.zigbee_cluster_name = "WINDOW COVERING",					.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING},
@@ -56,10 +57,12 @@ static const zigbee_cluster_t zigbee_clusters[] PROGMEM =
 	 {.zigbee_cluster_name = "IAS WD",									.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_WD},
 	 {.zigbee_cluster_name = "SIMPLE METERING",					.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING},
 	 {.zigbee_cluster_name = "ELECTRICAL MEASUREMENT",	.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT},
-	 {.zigbee_cluster_name = "TUYA (0xE000)",						.zigbee_cluster_id = 0xE000},
-	 {.zigbee_cluster_name = "TUYA (0xE001)",						.zigbee_cluster_id = 0xE001},
-	 {.zigbee_cluster_name = "TUYA (0xEF00)",						.zigbee_cluster_id = 0xEF00},
-	 {.zigbee_cluster_name = "SONOFF (0xFC11)",					.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER}};
+	 {.zigbee_cluster_name = "TUYA (0xE000)",						.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_0},
+	 {.zigbee_cluster_name = "TUYA (0xE001)",						.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1},
+	 {.zigbee_cluster_name = "TUYA (0xEF00)",						.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_EF00},
+	 {.zigbee_cluster_name = "SONOFF (0xFC11)",					.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER},
+	 {.zigbee_cluster_name = "LUMI (0xFCC0)",						.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER}
+	 };
 
 static const zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
 

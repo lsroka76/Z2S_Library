@@ -1120,6 +1120,7 @@ void enableZ2SNotifications() {
   zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
   zbGateway.onElectricalMeasurementReceive(Z2S_onElectricalMeasurementReceive);
+  zbGateway.onMultistateInputReceive(Z2S_onMultistateInputReceive);
   zbGateway.onCurrentSummationReceive(Z2S_onCurrentSummationReceive);
   zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
   zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
@@ -1166,6 +1167,49 @@ void disableZ2SNotifications() {
   zbGateway.onBoundDevice(nullptr);
   zbGateway.onBTCBoundDevice(nullptr);
   zbGateway.onDataSaveRequest(nullptr);
+}
+
+void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
+  Serial.printf("Listing directory: %s\n", dirname);
+
+  File root = fs.open(dirname);
+  if (!root) {
+    Serial.println("Failed to open directory");
+    return;
+  }
+  if (!root.isDirectory()) {
+    Serial.println("Not a directory");
+    return;
+  }
+
+  File file = root.openNextFile();
+  while (file) {
+    if (file.isDirectory()) {
+      Serial.print("  DIR : ");
+      Serial.print(file.name());
+      time_t t = file.getLastWrite();
+      struct tm *tmstruct = localtime(&t);
+      Serial.printf(
+        "  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour,
+        tmstruct->tm_min, tmstruct->tm_sec
+      );
+      if (levels) {
+        listDir(fs, file.path(), levels - 1);
+      }
+    } else {
+      Serial.print("  FILE: ");
+      Serial.print(file.name());
+      Serial.print("  SIZE: ");
+      Serial.print(file.size());
+      time_t t = file.getLastWrite();
+      struct tm *tmstruct = localtime(&t);
+      Serial.printf(
+        "  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour,
+        tmstruct->tm_min, tmstruct->tm_sec
+      );
+    }
+    file = root.openNextFile();
+  }
 }
 
 void setup() {
@@ -1349,11 +1393,13 @@ void setup() {
 
 #endif //USE_SUPLA_WEB_SERVER
 
-
   startTime = millis();
   printTime = millis();
   zbInit_delay = millis();
   refresh_time = millis();
+  //LittleFS.begin(false);
+  //listDir(LittleFS,"/",3);
+  //LittleFS.end();
 }
 
 zbg_device_params_t *gateway_device;
@@ -1573,10 +1619,10 @@ void loop() {
           log_i("Error while pairing - cann't read manufacturer id. Gateway will restart, try to pair device once again!");
           SuplaDevice.scheduleSoftRestart(0);
         }
-      write_mask = 0x13;
-      zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask); //Tuya black magic continues
-      write_mask = 0x1;
-      zbGateway.sendAttributeWrite(joined_device, 0xfcc0, 0x0009, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, 1, 0x115f); //Lumi magic
+      //write_mask = 0x13;
+      //zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask); //Tuya black magic continues
+      //write_mask = 0x1;
+      //zbGateway.sendAttributeWrite(joined_device, 0xfcc0, 0x0009, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, 1, 0x115F); //Lumi magic
 
       uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
       uint16_t devices_desc_table_size = sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
@@ -1969,6 +2015,7 @@ void loop() {
                 case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR:
                 case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
                 case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2:
+                case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
 {
                   esp_zb_ieee_addr_t gateway_ieee_addr;
                   memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
@@ -2131,7 +2178,17 @@ void loop() {
                   write_mask_16 = 0x000B;
                   joined_device->endpoint = 2;
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
-                                               2, &write_mask_16, false, 1, PHILIPS_MANUFACTURER_CODE);
+                                               2, &write_mask_16, true, 1, PHILIPS_MANUFACTURER_CODE);
+                } break;
+
+                case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO: {
+
+                  write_mask = 0x01;
+                  joined_device->endpoint = 1;
+                  zbGateway.sendAttributeWrite(joined_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_U8, 
+                                               1, &write_mask, true, 1, LUMI_MANUFACTURER_CODE);
+                  zbGateway.sendAttributeRead(joined_device, LUMI_CUSTOM_CLUSTER, 0x0148, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                  1, 1, LUMI_MANUFACTURER_CODE);
                 } break;
               }
 

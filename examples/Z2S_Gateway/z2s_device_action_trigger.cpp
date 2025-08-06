@@ -5,7 +5,7 @@ void initZ2SDeviceActionTrigger(int16_t channel_number_slot) {
   uint32_t debounce_time_ms = 100;
 
   if (z2s_channels_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_TUYA_SWITCH_4X3)
-    debounce_time_ms = 1000;
+    debounce_time_ms = 1500;
   
   if (z2s_channels_table[channel_number_slot].refresh_secs > 0)
     debounce_time_ms = z2s_channels_table[channel_number_slot].refresh_secs;

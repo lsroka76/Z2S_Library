@@ -26,12 +26,12 @@
 
 #define ZBG_MAX_DEVICES 0x20 //32
 
-#define TUYA_PRIVATE_CLUSTER_0      0xE000
-#define TUYA_PRIVATE_CLUSTER_1      0xE001
-#define TUYA_PRIVATE_CLUSTER_EF00   0xEF00
+#define TUYA_PRIVATE_CLUSTER_0                                0xE000
+#define TUYA_PRIVATE_CLUSTER_1                                0xE001
+#define TUYA_PRIVATE_CLUSTER_EF00                             0xEF00
 
-#define IKEA_PRIVATE_CLUSTER        0xFC7F
-#define IKEA_PRIVATE_CLUSTER_2      0xFC80
+#define IKEA_PRIVATE_CLUSTER                                  0xFC7F
+#define IKEA_PRIVATE_CLUSTER_2                                0xFC80
 
 #define SONOFF_CUSTOM_CLUSTER                                 0xFC11
 /*TRVZB attributes*/
@@ -47,7 +47,6 @@
 #define SONOFF_CUSTOM_CLUSTER_VALVE_CLOSING_DEGREE            0x600C //U8
 #define SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT      0x600D //INT16
 #define SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT       0x600E //U8
-
 /*SNZB-04P attributes*/
 #define SONOFF_CUSTOM_CLUSTER_TAMPER_ID                       0x2000 //U8
 /*SNZB-03P attributes*/
@@ -58,13 +57,18 @@
 #define SONOFF_CUSTOM_CLUSTER_IRRIGATION_CYCLE_MODE_ID        0x5010
 
 
-#define ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER   0xE004
-#define ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER  0xED00
+#define ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER                      0xE004
+#define ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER                     0xED00
 
-#define ADEO_CUSTOM_CLUSTER                0xFE00    
+#define ADEO_CUSTOM_CLUSTER                                   0xFE00    
 
-#define PHILIPS_CUSTOM_CLUSTER      0XFC00
-#define PHILIPS_MANUFACTURER_CODE   0x100B
+#define PHILIPS_CUSTOM_CLUSTER                                0xFC00
+#define PHILIPS_MANUFACTURER_CODE                             0x100B
+
+#define LUMI_CUSTOM_CLUSTER                                   0xFCC0
+#define LUMI_MANUFACTURER_CODE                                0x115F
+
+#define LUMI_CUSTOM_CLUSTER_MODE_ID                           0x0009 //U8
 
 #define ZCL_CMD_TSN_UNKNOWN 0x00
 #define ZCL_CMD_TSN_SYNC    0x01
@@ -248,17 +252,13 @@ public:
   void onOnOffReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool, signed char rssi)) {
     _on_on_off_receive = callback;
   }
-/*  void onRMSVoltageReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
-    _on_rms_voltage_receive = callback;
-  }
-  void onRMSCurrentReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
-    _on_rms_current_receive = callback;
-  }
-  void onRMSActivePowerReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
-    _on_rms_active_power_receive = callback;
-  }*/
-  void onElectricalMeasurementReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi)) {
+  void onElectricalMeasurementReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
+                                      const esp_zb_zcl_attribute_t *, signed char rssi)) {
     _on_electrical_measurement_receive = callback;
+  }
+  void onMultistateInputReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
+                                      const esp_zb_zcl_attribute_t *, signed char rssi)) {
+    _on_multistate_input_receive = callback;
   }
   void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi)) {
     _on_current_summation_receive = callback;
@@ -365,10 +365,8 @@ private:
   void (*_on_flow_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_occupancy_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool, signed char rssi);
-  /*void (*_on_rms_voltage_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t , signed char rssi);
-  void (*_on_rms_current_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
-  void (*_on_rms_active_power_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);*/
   void (*_on_electrical_measurement_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
+  void (*_on_multistate_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi);
   void (*_on_battery_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
   void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);

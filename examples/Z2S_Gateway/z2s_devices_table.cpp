@@ -1170,7 +1170,8 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
   no_channel_found_error_func(ieee_addr_str);
 }
 
-void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
+void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+                                        const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
 
   char ieee_addr_str[24] = {};
 
@@ -1241,7 +1242,45 @@ void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t e
     } break;
   }
 }
+
+void Z2S_onMultistateInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+                                        const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
+
+  char ieee_addr_str[24] = {};
+
+  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+                                                              NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {
+    
+    log_e("no action trigger channel found for address %s", ieee_addr_str);
+    //return;
+  }
+
+  if (attribute->data.value == nullptr) {
       
+    log_e("missing data value for address %s", ieee_addr_str);
+    return;
+  }
+
+  switch (attribute->id) {
+
+    case 0x000E: {
+
+      log_i("ESP_ZB_ZCL_ATTR_MULTI_VALUE_STATE_TEXT_ID");
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_MULTI_VALUE_PRESENT_VALUE_ID: {
+
+      log_i("present value = %d", *(uint16_t *)attribute->data.value);
+    } break;  
+  }
+}
+
 void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint64_t active_fwd_energy, signed char rssi) {
 
   char ieee_addr_str[24] = {};
@@ -2241,6 +2280,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_ON_OFF_VALVE_DC: 
       case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
         addZ2SDeviceVirtualValve(&zbGateway, device, first_free_slot, sub_id, "VALVE", SUPLA_CHANNELFNC_VALVE_OPENCLOSE); break;
+      
+      case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO: 
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, "CUBE T1 PRO", SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       default : {
         

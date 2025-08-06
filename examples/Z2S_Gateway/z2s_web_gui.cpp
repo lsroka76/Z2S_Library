@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.77-05/08/2025"
+#define Z2S_VERSION "0.8.78-06/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -668,7 +668,7 @@ void buildDevicesTabGUI() {
 	working_str = PSTR("Save");
 	battery_voltage_min_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, 
 																										battery_voltage_min_number, batteryCallback, (void*)GUI_CB_BATTERY_VOLTAGE_MIN_FLAG);
-	working_str = PSTR("V(min) x10, ie. 28 = 2,8V");
+	working_str = PSTR("&#10023; V(min) x10, ie. 28 = 2,8V &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
 																				 Control::Color::None, battery_voltage_min_number), PSTR(clearLabelStyle));
 
@@ -681,21 +681,21 @@ void buildDevicesTabGUI() {
 	working_str = PSTR("Save");
 	battery_voltage_max_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, 
 																										 battery_voltage_min_number, batteryCallback, (void*)GUI_CB_BATTERY_VOLTAGE_MAX_FLAG);
-	working_str = PSTR("V(max) x10, ie. 33 = 3,3V");
+	working_str = PSTR("&#10023; V(max) x10, ie. 33 = 3,3V &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
 																				 Control::Color::None, battery_voltage_min_number), PSTR(clearLabelStyle));
 	
 	disable_battery_percentage_msg_switch = ESPUI.addControl(Control::Type::Switcher, PSTR(empty_str), zero_str, Control::Color::Emerald, 
 																													 battery_voltage_min_number, batterySwitcherCallback, 
 																													 (void*)GUI_CB_DISABLE_PERCENTAGE_MSG_FLAG);
-	working_str = PSTR("disable battery percentage messages");
+	working_str = PSTR("&#10023; <i>DISABLE BATTERY PERCENTAGE MESSAGES</i> &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
 																				 Control::Color::None, battery_voltage_min_number), PSTR(clearLabelStyle));							
 
 	disable_battery_voltage_msg_switch = ESPUI.addControl(Control::Type::Switcher, PSTR(empty_str), zero_str, Control::Color::Emerald, 
 																											  battery_voltage_min_number, batterySwitcherCallback, 
 																												(void*)GUI_CB_DISABLE_VOLTAGE_MSG_FLAG);
-	working_str = PSTR("disable battery voltage messages");
+	working_str = PSTR("&#10023; <i>DISABLE BATTERY VOLTAGE MESSAGES</i> &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
 																				 Control::Color::None, battery_voltage_min_number), PSTR(clearLabelStyle));							
 
@@ -892,7 +892,7 @@ void buildChannelsTabGUI() {
 	working_str = PSTR("Save");
 	keepalive_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, keepalive_number, 
 																					 timingsCallback, (void*)GUI_CB_KEEPALIVE_FLAG);
-	working_str = PSTR("keepalive (s)");
+	working_str = PSTR("&#10023; keepalive (s) &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, keepalive_number), PSTR(clearLabelStyle));
 	
 	timeout_number = ESPUI.addControl(Control::Type::Number, PSTR(empty_str), zero_str, Control::Color::Emerald, keepalive_number, generalCallback);
@@ -901,7 +901,7 @@ void buildChannelsTabGUI() {
 	working_str = PSTR("Save");
 	timeout_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, keepalive_number, 
 																				 timingsCallback, (void*)GUI_CB_TIMEOUT_FLAG);
-	working_str = PSTR("timeout (s)");
+	working_str = PSTR("&#10023; timeout (s) &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
 																				 Control::Color::None, keepalive_number), PSTR(clearLabelStyle));
 	
@@ -911,7 +911,8 @@ void buildChannelsTabGUI() {
 	working_str = PSTR("Save");
 	refresh_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, keepalive_number, 
 																				 timingsCallback, (void*)GUI_CB_REFRESH_FLAG); 
-	working_str = PSTR("&#10023; refresh(s) [ElectricityMeter] &#10023; autoset(s) [VirtualBinary]<br>&#10023; debounce(ms) [VirtualSceneSwitch]");
+	working_str = PSTR("&#10023; refresh(s) [ElectricityMeter] &#10023; autoset(s) [VirtualBinary] &#10023;"
+										 "<br>&#10023; debounce(ms) [VirtualSceneSwitch] &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
 																				 Control::Color::None, keepalive_number), PSTR(clearLabelStyle));
 
@@ -1239,6 +1240,27 @@ void buildAdvancedDevicesTabGUI() {
 	}
 }
 
+void buildTestTabGUI() {
+
+	auto test_tab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), "Test");
+	working_str = "/supla/Z2S_devs_table";
+	auto file_display = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
+																			 Control::Color::Emerald, test_tab);
+	working_str = "/Supla/Z2S_devs_table";
+	auto file_display_1 = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
+																			 Control::Color::Emerald, test_tab);
+	working_str = "/supla/Z2S_devs_table.";
+	auto file_display_2 = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
+																			 Control::Color::Emerald, test_tab);
+	working_str = "/Supla/Z2S_devs_table.";
+	auto file_display_3 = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
+																			 Control::Color::Emerald, test_tab);
+	
+	
+	
+
+}
+
 void Z2S_buildWebGUI() {
  
 	ESPUI.sliderContinuous = true;
@@ -1253,6 +1275,7 @@ void Z2S_buildWebGUI() {
 	buildChannelsTabGUI();
 	buildAdvancedDevicesTabGUI();
 	buildTuyaCustomClusterTabGUI();
+	buildTestTabGUI();
 	enableDeviceControls(false);
 	enableChannelControls(false);
 }

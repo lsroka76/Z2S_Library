@@ -152,6 +152,10 @@
 #define Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1     0x5501
 #define Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2     0x5502
 
+#define Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO                0x5600
+#define Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_1              0x5601
+#define Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2              0x5602
+
 #define Z2S_DEVICE_DESC_HVAC_START                      0x6000
 
 #define Z2S_DEVICE_DESC_TUYA_HVAC                       0x6000
@@ -540,26 +544,35 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2, .z2s_device_clusters_count = 2, .z2s_device_clusters =
-    {0xFC80,
-     0xFC7F}},
+    { IKEA_PRIVATE_CLUSTER_2,
+     IKEA_PRIVATE_CLUSTER_2 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3, .z2s_device_clusters_count = 2, .z2s_device_clusters =
-    {0xFC80,
-     0xFC7F}}, 
+    { IKEA_PRIVATE_CLUSTER_2,
+     IKEA_PRIVATE_CLUSTER }}, 
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    {0xFC80}},
+    { IKEA_PRIVATE_CLUSTER_2 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    {0xFC80}},
+    { IKEA_PRIVATE_CLUSTER_2 }},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { PHILIPS_CUSTOM_CLUSTER,
       ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG}},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_1, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+
+    { ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT,
+      LUMI_CUSTOM_CLUSTER }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -589,8 +602,9 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
-  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_clusters_count = 1, .z2s_device_clusters =
-    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
+      ESP_ZB_ZCL_CLUSTER_ID_IAS_WD }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -2118,6 +2132,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_c2yscrj8", .model_name = "TS0224",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3000_cipibmnp", .model_name = "TS0224",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "ADEO", .model_name = "ZB-Remote-D0001",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F, .z2s_device_endpoints_count = 1},
 
@@ -2143,7 +2160,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY, .z2s_device_endpoints_count = 1}
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY, .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.remote.cagl02",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_1},
+                              { 2, Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2 }}},
     
 };
 
