@@ -542,7 +542,7 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,int16_t clust
 void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   
   zbg_device_params_t *device = (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
-  device->endpoint = 1;
+  device->endpoint = 35;
   device->short_addr = short_addr;
   log_d("zbDeviceAnnce short address (0x%x), ieee_addr (0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x)", short_addr,
         ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
