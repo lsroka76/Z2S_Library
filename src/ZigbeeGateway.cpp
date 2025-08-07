@@ -370,8 +370,21 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device, bool
 
     //Wait for response or timeout
     if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(2000)/*ZB_CMD_TIMEOUT*/) != pdTRUE) {
-      log_e("Error while querying basic cluster attribute 0x%x", attributes[attribute_number]);
-      if (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) return false;
+      //log_e("Error while querying basic cluster attribute 0x%x", attributes[attribute_number]);
+      //if (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) {
+      read_req.zcl_basic_cmd.dst_endpoint = 0; //temporary solution for Develco
+      esp_zb_lock_acquire(portMAX_DELAY);
+      basic_tsn = esp_zb_zcl_read_attr_cmd_req(&read_req);
+      esp_zb_lock_release();
+      delay(1000);
+      log_i("basic tsn 0x%x", basic_tsn);
+
+      if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(2000)/*ZB_CMD_TIMEOUT*/) != pdTRUE) {
+        log_e("Error while querying basic cluster attribute 0x%x", attributes[attribute_number]);
+        if (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) {
+          return false;
+        }
+      }
     }
   }
   /*read_req.attr_number = 1; //ZB_ARRAY_LENTH(attributes);

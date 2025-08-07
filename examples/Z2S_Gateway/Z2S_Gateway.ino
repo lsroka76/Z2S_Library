@@ -1620,7 +1620,7 @@ void loop() {
         
           log_i("Error while pairing - cann't read manufacturer id. Gateway will restart, try to pair device once again!");
           SuplaDevice.scheduleSoftRestart(0);
-        }
+        } 
       //write_mask = 0x13;
       //zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask); //Tuya black magic continues
       //write_mask = 0x1;
