@@ -982,6 +982,7 @@ void ZigbeeGateway::zbIASZoneEnrollRequest(const esp_zb_zcl_ias_zone_enroll_requ
   enroll_resp_req.enroll_rsp_code = ESP_ZB_ZCL_IAS_ZONE_ENROLL_RESPONSE_CODE_SUCCESS;
   enroll_resp_req.zone_id = 1;
 
+
   log_i("Sending 'ias zone enroll resp' command");
   //esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_zcl_ias_zone_enroll_cmd_resp(&enroll_resp_req);

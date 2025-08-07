@@ -1207,12 +1207,19 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
     return;
   } 
   
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, NO_CUSTOM_CMD_SID);
-  if (channel_number_slot >= 0) {
+  //channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, NO_CUSTOM_CMD_SID);
+  //if (channel_number_slot >= 0) {
     //msgZ2SDeviceRGBW(z2s_channels_table[channel_number_slot].model_id, z2s_channels_table[channel_number_slot].Supla_channel, 0xFF, 0xFF, 0xFFFF, state, rssi);
+    //return;
+ // }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ACTIONTRIGGER, NO_CUSTOM_CMD_SID);
+  if (channel_number_slot >= 0) {
+    if (state)
+      msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
     return;
   }
-  
+
   no_channel_found_error_func(ieee_addr_str);
 }
 
@@ -1731,14 +1738,14 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
     } 
   } break;
 
-  case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
+  /*case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
     
     if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && ((command_id >= 0) && (command_id < 2))) {
       
       msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
       return true;
     }
-  } break;
+  } break;*/
 
   case Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F: {
     

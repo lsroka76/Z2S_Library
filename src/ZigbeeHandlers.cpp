@@ -298,7 +298,8 @@ static esp_err_t zb_cmd_ias_zone_enroll_request_handler(const esp_zb_zcl_ias_zon
   }
   log_v(
     "IAS Zone Enroll Request: from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x), zone type (0x%x), manufacturer code (0x%x)", 
-    message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, message->zone_type, message->manufacturer_code); 
+    message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, 
+    message->zone_type, message->manufacturer_code); 
 
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (message->info.dst_endpoint == (*it)->getEndpoint()) {
