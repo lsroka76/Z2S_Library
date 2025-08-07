@@ -93,6 +93,8 @@
 #define Z2S_DEVICE_DESC_RELAY                           0x4000
 #define Z2S_DEVICE_DESC_RELAY_1                         0x4001
 
+#define Z2S_DEVICE_DESC_LUMI_SWITCH                     0x4010
+
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER         0x4100
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1       0x4101
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2       0x4102
@@ -370,9 +372,17 @@ typedef struct z2s_device_endpoint_s {
   uint32_t z2s_device_desc_id;
 } z2s_device_endpoint_t;
 
-typedef struct z2s_device_entity_s {
+/*typedef struct z2s_device_entity_s {
   char manufacturer_name[33];
   char model_name[33];
+  uint32_t z2s_device_desc_id;
+  uint8_t z2s_device_endpoints_count;
+  z2s_device_endpoint_t z2s_device_endpoints[MAX_BOUND_ENDPOINTS];
+} z2s_device_entity_t;*/
+
+typedef struct z2s_device_entity_s {
+  const char *manufacturer_name;
+  const char *model_name;
   uint32_t z2s_device_desc_id;
   uint8_t z2s_device_endpoints_count;
   z2s_device_endpoint_t z2s_device_endpoints[MAX_BOUND_ENDPOINTS];
@@ -629,11 +639,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
       ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
-      TUYA_PRIVATE_CLUSTER_EF00 }}, /*2, 'system_mode', tuya.valueConverterBasic.lookup({auto: tuya.enum(0), heat: tuya.enum(1), off: tuya.enum(2)})],
-                [3, 'running_state', tuya.valueConverterBasic.lookup({heat: tuya.enum(0), idle: tuya.enum(1)})],
-                [4, 'current_heating_setpoint', tuya.valueConverter.divideBy10],
-                [5, 'local_temperature', tuya.valueConverter.divideBy10],
-                [7, 'child_lock', tuya.valueConverter.lockUnlock],*/
+      TUYA_PRIVATE_CLUSTER_EF00 }}, 
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_6567C, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { //ESP_ZB_ZCL_CLUSTER_ID_SCENES,
@@ -1331,7 +1337,6 @@ const dataPoints = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }}
-
 };
         
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = { 
@@ -1666,7 +1671,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "LUMI", .model_name = "lumi.switch.b1lc04", 
-   .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SWITCH, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI control outlet", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1, .z2s_device_endpoints_count = 1},

@@ -195,11 +195,16 @@ extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZBDEVICESMAXCOUNT];
 const static char   Z2S_ZB_DEVICES_TABLE []  PROGMEM = "Z2S_zbd_table";
 const static char   Z2S_ZB_DEVICES_TABLE_SIZE []  PROGMEM = "Z2S_zbd_ts";
 
-//extern z2s_channel_action_t z2s_channels_actions_table[Z2S_ACTIONSMAXCOUNT];
+extern uint8_t z2s_actions_index_table[32];
 
-const static char   Z2S_CHANNELS_ACTIONS_TABLE      []  PROGMEM = "Z2S_actions";
-const static char   Z2S_CHANNELS_ACTIONS_TABLE_SIZE []  PROGMEM = "Z2S_actions_ts";
+//const static char   Z2S_CHANNELS_ACTIONS_TABLE      []  PROGMEM = "Z2S_actions";
+//const static char   Z2S_CHANNELS_ACTIONS_TABLE_SIZE []  PROGMEM = "Z2S_actions_ts";
 
+const static char   Z2S_CHANNELS_ACTIONS_INDEX_TABLE  []  PROGMEM = "Z2S_actions_i";
+const static char   Z2S_CHANNELS_ACTIONS_PPREFIX      []  PROGMEM = "Z2S_action_";
+const static char   Z2S_CHANNELS_ACTIONS_NUMBER       []  PROGMEM = "Z2S_actions_n";
+
+const static char   Z2S_FILES_STRUCTURE_VERSION       []  PROGMEM = "Z2S_files_ver";
 
 extern bool sendIASNotifications;
 
@@ -250,18 +255,27 @@ int16_t   Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, int16_t endpoi
 int16_t   Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
                                       int32_t channel_type, int8_t sub_id);
 //int32_t Z2S_findChannelType(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster);
-void      Z2S_fillChannelsTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
+void    Z2S_fillChannelsTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                                  char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
 
-bool Z2S_setChannelFlags(int16_t channel_number_slot, uint32_t flags_to_set);
-bool Z2S_clearChannelFlags(int16_t channel_number_slot, uint32_t flags_to_clear);
+bool    Z2S_setChannelFlags(int16_t channel_number_slot, uint32_t flags_to_set);
+bool    Z2S_clearChannelFlags(int16_t channel_number_slot, uint32_t flags_to_clear);
 
-bool Z2S_setZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set);
-bool Z2S_clearZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_clear);
+bool    Z2S_setZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set);
+bool    Z2S_clearZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_clear);
 
 int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 
 void    Z2S_initSuplaChannels(); 
+
+bool     Z2S_loadActionsIndexTable();
+uint16_t Z2S_getActionsNumber();
+int16_t  Z2S_findFreeActionIndex();
+bool     Z2S_saveAction(uint8_t action_index);
+z2s_channel_action_t Z2S_loadAction(uint8_t action_index);
+bool     Z2S_removeAction(uint8_t action_index);
+
+void     Z2S_initSuplaActions();
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature, signed char rssi); 
 void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float humidity, signed char rssi); 

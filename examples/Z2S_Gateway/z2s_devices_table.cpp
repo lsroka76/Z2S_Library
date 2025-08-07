@@ -33,6 +33,8 @@ z2s_device_params_t    z2s_channels_table[Z2S_CHANNELMAXCOUNT];
 
 z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZBDEVICESMAXCOUNT];
 
+uint8_t z2s_actions_index_table[32];
+
 static uint32_t Styrbar_timer = 0;
 static bool     Styrbar_ignore_button_1 = false;
 
@@ -806,6 +808,50 @@ void Z2S_initSuplaChannels() {
   //TestVT->getChannel()->setChannelNumber(100); //RIP
   //auto TestDI = new Supla::Control::DimmerInputInterface(&zbGateway, device, 0);
   //TestDI->getChannel()->setChannelNumber(101);
+}
+
+bool Z2S_loadActionsIndexTable() {
+
+  memset(z2s_actions_index_table, 0, sizeof(z2s_actions_index_table));
+
+  if (Supla::Storage::ConfigInstance()->getBlob(Z2S_CHANNELS_ACTIONS_INDEX_TABLE, (char *)z2s_actions_index_table, sizeof(z2s_actions_index_table))) {
+  
+    log_i ("Zigbee<=>Supla actions index table load SUCCESS!");
+    return true;
+  } else
+  if (Supla::Storage::ConfigInstance()->setBlob(Z2S_CHANNELS_ACTIONS_INDEX_TABLE, (char *)z2s_actions_index_table, sizeof(z2s_actions_index_table))) {
+    
+    log_i ("Zigbee<=>Supla actions index table not found - writing new one SUCCESS!");
+    Supla::Storage::ConfigInstance()->commit();
+    return true;
+  } else {
+    log_i ("Zigbee<=>Supla actions index table not found - writing new one FAILED!");
+    return false;
+  }
+}
+
+uint16_t Z2S_getActionsNumber() {
+
+}
+
+int16_t  Z2S_findFreeActionIndex() {
+
+}
+
+bool     Z2S_saveAction(uint8_t action_index) {
+
+}
+
+z2s_channel_action_t Z2S_loadAction(uint8_t action_index) {
+
+}
+
+bool     Z2S_removeAction(uint8_t action_index) {
+
+}
+
+void     Z2S_initSuplaActions() {
+
 }
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature, signed char rssi) {
@@ -1828,7 +1874,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_RELAY:
-      case Z2S_DEVICE_DESC_RELAY_1: addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "POWER SWITCH", 
+      case Z2S_DEVICE_DESC_RELAY_1: 
+      case Z2S_DEVICE_DESC_LUMI_SWITCH:
+        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "POWER SWITCH", 
                                                               SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1:

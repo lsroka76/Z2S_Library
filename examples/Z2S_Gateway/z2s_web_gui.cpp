@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.79-06/08/2025"
+#define Z2S_VERSION "0.8.80-07/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -1243,21 +1243,13 @@ void buildAdvancedDevicesTabGUI() {
 void buildTestTabGUI() {
 
 	auto test_tab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), "Test");
-	working_str = "/supla/Z2S_devs_table";
-	auto file_display = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
-																			 Control::Color::Emerald, test_tab);
-	working_str = "/Supla/Z2S_devs_table";
-	auto file_display_1 = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
-																			 Control::Color::Emerald, test_tab);
-	working_str = "/supla/Z2S_devs_table.";
-	auto file_display_2 = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
-																			 Control::Color::Emerald, test_tab);
-	working_str = "/Supla/Z2S_devs_table.";
-	auto file_display_3 = ESPUI.addControl(Control::Type::FileDisplay, PSTR("Channels file"), working_str, 
-																			 Control::Color::Emerald, test_tab);
 	
-	working_str = "<table><tr><th>Header 1</th><th>Header 2</th></tr>"
-								"<tr><td>Field 1</td><td>Field 2</td></tr><table>";
+	working_str = "<style>table {width: 100%;} th, td {border: 2px solid black;text-align: left; padding: 8px;}"
+								"tr:nth-child(even) {background-color: black;}</style>"
+								"<table><tr><th>Header 1</th><th>Header 2</th></tr>"
+								"<tr><td>Field 1</td><td>Field 2</td></tr>"
+								"<tr><td>Field 3</td><td>Field 4</td></tr>"
+								"<tr><td>Field 5</td><td>Field 6</td></tr><table>";
 	auto table_label = ESPUI.addControl(Control::Type::Label, PSTR("Table label"), working_str, 
 																			 Control::Color::Emerald, test_tab); 
 	

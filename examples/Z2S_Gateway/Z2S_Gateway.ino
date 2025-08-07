@@ -1311,6 +1311,8 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
+  Z2S_loadActionsIndexTable();
+
 #ifdef USE_SUPLA_WEB_SERVER
 
   new Supla::Html::CustomParameter(PARAM_TXT1,"SED Timeout (h)", 0);
@@ -1397,9 +1399,9 @@ void setup() {
   printTime = millis();
   zbInit_delay = millis();
   refresh_time = millis();
-  //LittleFS.begin(false);
-  //listDir(LittleFS,"/",3);
-  //LittleFS.end();
+  LittleFS.begin(false);
+  listDir(LittleFS,"/",3);
+  LittleFS.end();
 }
 
 zbg_device_params_t *gateway_device;
@@ -2181,6 +2183,9 @@ void loop() {
                                                2, &write_mask_16, true, 1, PHILIPS_MANUFACTURER_CODE);
                 } break;
 
+                case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR:
+                case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
+                case Z2S_DEVICE_DESC_LUMI_SWITCH:
                 case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO: {
 
                   write_mask = 0x01;
