@@ -13,9 +13,9 @@
 
 #include <supla/tools.h>
 
-#define Z2S_ZBDEVICESMAXCOUNT         32
-#define Z2S_CHANNELMAXCOUNT           128
-#define Z2S_ACTIONSMAXCOUNT           254
+#define Z2S_ZB_DEVICES_MAX_NUMBER     32
+#define Z2S_CHANNELS_MAX_NUMBER       128
+#define Z2S_ACTIONS_MAX_NUMBER        256
 
 #define MAX_ZB_DEVICE_SUPLA_CHANNELS  16 
 
@@ -168,12 +168,9 @@ typedef struct z2s_channel_action_s {
   uint8_t   dst_Supla_channel;
   uint16_t  src_Supla_event;
   uint16_t  dst_Supla_action;
-  uint32_t  src_Supla_channel_type;
-  uint32_t  dst_Supla_channel_type;
   char      action_name[33];
-  uint8_t   condition_id;
+  bool      is_condition;
   double    min_value;
-  double    mid_value;
   double    max_value;
 } z2s_channel_action_t;
 
@@ -185,24 +182,31 @@ typedef struct sonoff_smart_valve_cycle_data_s {
   uint32_t cycle_pause;
 } ESP_ZB_PACKED_STRUCT sonoff_smart_valve_cycle_data_t;
 
-extern z2s_device_params_t z2s_channels_table[Z2S_CHANNELMAXCOUNT];
+extern z2s_device_params_t z2s_channels_table[Z2S_CHANNELS_MAX_NUMBER];
 
-const static char   Z2S_CHANNELS_TABLE_ID      []  PROGMEM = "Z2S_devs_table";
-const static char   Z2S_CHANNELS_TABLE_SIZE_ID []  PROGMEM = "Z2S_devs_ts";
+const static char   Z2S_CHANNELS_TABLE_ID             []  PROGMEM = "Z2S_devs_table";
+const static char   Z2S_CHANNELS_TABLE_ID_V2          []  PROGMEM = "channels_table_v2.z2s";
+const static char   Z2S_CHANNELS_TABLE_BACKUP_ID_V2   []  PROGMEM = "channels_table_v2.bak";
+const static char   Z2S_CHANNELS_TABLE_SIZE_ID        []  PROGMEM = "Z2S_devs_ts";
 
-extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZBDEVICESMAXCOUNT];
+extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZB_DEVICES_MAX_NUMBER];
 
-const static char   Z2S_ZB_DEVICES_TABLE []  PROGMEM = "Z2S_zbd_table";
+const static char   Z2S_ZB_DEVICES_TABLE              []  PROGMEM = "Z2S_zbd_table";
+const static char   Z2S_ZB_DEVICES_TABLE_ID_V2        []  PROGMEM = "zb_devices_table_v2.z2s";
+const static char   Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2 []  PROGMEM = "zb_devices_table_v2.bak";
+
 const static char   Z2S_ZB_DEVICES_TABLE_SIZE []  PROGMEM = "Z2S_zbd_ts";
 
-extern uint8_t z2s_actions_index_table[32];
+extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8];
 
 //const static char   Z2S_CHANNELS_ACTIONS_TABLE      []  PROGMEM = "Z2S_actions";
 //const static char   Z2S_CHANNELS_ACTIONS_TABLE_SIZE []  PROGMEM = "Z2S_actions_ts";
 
-const static char   Z2S_CHANNELS_ACTIONS_INDEX_TABLE  []  PROGMEM = "Z2S_actions_i";
-const static char   Z2S_CHANNELS_ACTIONS_PPREFIX      []  PROGMEM = "Z2S_action_";
-const static char   Z2S_CHANNELS_ACTIONS_NUMBER       []  PROGMEM = "Z2S_actions_n";
+const static char   Z2S_CHANNELS_ACTIONS_INDEX_TABLE    []  PROGMEM = "Z2S_actions_i";
+const static char   Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2 []  PROGMEM = "actions_index_table.z2s";
+const static char   Z2S_CHANNELS_ACTIONS_PPREFIX        []  PROGMEM = "Z2S_an_";
+const static char   Z2S_CHANNELS_ACTIONS_PPREFIX_V2     []  PROGMEM = "action_%04d.z2s";
+const static char   Z2S_CHANNELS_ACTIONS_NUMBER         []  PROGMEM = "Z2S_actions_n";
 
 const static char   Z2S_FILES_STRUCTURE_VERSION       []  PROGMEM = "Z2S_files_ver";
 
@@ -268,12 +272,17 @@ int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 
 void    Z2S_initSuplaChannels(); 
 
+bool     checkActionsIndexTablePosition(uint16_t index_position);
+bool     setActionsIndexTablePosition(uint16_t index_position);
+bool     clearActionsIndexTablePosition(uint16_t index_position);
+
 bool     Z2S_loadActionsIndexTable();
+bool     Z2S_saveActionsIndexTable();
 uint16_t Z2S_getActionsNumber();
 int16_t  Z2S_findFreeActionIndex();
-bool     Z2S_saveAction(uint8_t action_index);
-z2s_channel_action_t Z2S_loadAction(uint8_t action_index);
-bool     Z2S_removeAction(uint8_t action_index);
+bool     Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action);
+bool     Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action);
+bool     Z2S_removeAction(uint16_t action_index);
 
 void     Z2S_initSuplaActions();
 
@@ -320,7 +329,7 @@ void updateRGBMode(uint8_t device_id, uint8_t rgb_mode);
 void updateDeviceTemperature(uint8_t device_id, int32_t temperature);
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value, signed char rssi, bool restore = false);
 
-bool z2s_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
+bool Z2S_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
                     double threshold_1 = 0, double threshold_2 = 0);
 
 bool hasTuyaCustomCluster(uint32_t model_id);

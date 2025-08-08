@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.83-07/08/2025"
+#define Z2S_VERSION "0.8.84-08/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -191,8 +191,8 @@ static char general_purpose_gui_buffer[1024] = {};
 const static char* disabledstyle PROGMEM = "background-color: #bbb; border-bottom: #999 3px solid;";
 const String clearLabelStyle PROGMEM = "background-color: unset; width: 100%;";
 
-char zigbee_devices_labels[Z2S_ZBDEVICESMAXCOUNT][11] = {};
-char zigbee_channels_labels[Z2S_CHANNELMAXCOUNT][13] = {};
+char zigbee_devices_labels[Z2S_ZB_DEVICES_MAX_NUMBER][11] = {};
+char zigbee_channels_labels[Z2S_CHANNELS_MAX_NUMBER][13] = {};
 
 //const static String zigbee_devices_values[] PROGMEM {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9","10", "11", "12", "13", "14","15","16",
 //																										 "17", "18", "19", "20", "21", "22", "23", "24", "25", "26","27", "28", "29", "30", "31"};	
@@ -644,7 +644,7 @@ void buildDevicesTabGUI() {
 	device_selector = ESPUI.addControl(Control::Type::Select, PSTR("Devices"), working_str, Control::Color::Emerald, devicestab, deviceSelectorCallback);
 	ESPUI.addControl(Control::Type::Option, PSTR("Select Zigbee device..."), working_str, Control::Color::None, device_selector);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZBDEVICESMAXCOUNT; devices_counter++) 
+	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
 			sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
@@ -872,7 +872,7 @@ void buildChannelsTabGUI() {
 	
 	ESPUI.setPanelWide(channel_selector, true);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) {
+	for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELS_MAX_NUMBER; devices_counter++) {
     if (z2s_channels_table[devices_counter].valid_record) {
       
 			sprintf_P(zigbee_channels_labels[devices_counter], PSTR("Channel #%02d"), devices_counter);
@@ -1128,7 +1128,7 @@ void buildTuyaCustomClusterTabGUI() {
 																				 Tuya_custom_cluster_tab, TuyaDeviceSelectorCallback);
 	ESPUI.addControl(Control::Type::Option, PSTR("Select Tuya device..."), minus_one_str, Control::Color::None, Tuya_device_selector);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZBDEVICESMAXCOUNT; devices_counter++) {
+	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
     if ((z2s_zb_devices_table[devices_counter].record_id > 0) && hasTuyaCustomCluster(z2s_zb_devices_table[devices_counter].desc_id)) {
 
 			//sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
@@ -1203,7 +1203,7 @@ void buildAdvancedDevicesTabGUI() {
 																							Control::Color::Emerald, advanced_devices_tab, advancedDeviceSelectorCallback);
 	ESPUI.addControl(Control::Type::Option, PSTR("Select device..."), minus_one_str, Control::Color::None, advanced_device_selector);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZBDEVICESMAXCOUNT; devices_counter++) 
+	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
     if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
 		((z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_SONOFF_SMART_VALVE) ||
 		  (z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR) ||
@@ -1244,14 +1244,38 @@ void buildTestTabGUI() {
 
 	auto test_tab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), "Test");
 	
-	working_str = "<style>table {width: 100%;} th, td {border: 2px solid black;text-align: left; padding: 8px;}"
-								"tr:nth-child(even) {background-color: black;}</style>"
-								"<table><tr><th>Header 1</th><th>Header 2</th></tr>"
-								"<tr><td>Field 1</td><td>Field 2</td></tr>"
-								"<tr><td>Field 3</td><td>Field 4</td></tr>"
-								"<tr><td>Field 5</td><td>Field 6</td></tr><table>";
+	z2s_channel_action_t new_action = {};
+
+	working_str = Z2S_getActionsNumber();
+	auto actions_number_label = ESPUI.addControl(Control::Type::Label, PSTR("Actions number"), working_str, 
+																			 Control::Color::Emerald, test_tab);
+
+	for (uint16_t index = 0; index < Z2S_ACTIONS_MAX_NUMBER; index++)
+    if (checkActionsIndexTablePosition(index)) {
+
+      Z2S_loadAction(index, new_action);
+			break;
+		}
+
+	sprintf(general_purpose_gui_buffer, "<style>table {width: 100%;} th, td {border: 2px solid black;text-align: left; padding: 8px;}"
+								"tr:nth-child(even) {background-color: LightSlateGray;}</style>"
+								"<table><tr><th>Action Name</th><th>Source channel</th><th>Destination channel</th>"
+								"<th>Supla event</th><th>Supla action</th><th>Condition</th></tr>"
+								"<tr><td>%s</td><td>%u</td><td>%u</td><td>%u</td><td>%u</td><td>%s</td></tr></table>",
+								new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_channel,
+								new_action.src_Supla_event, new_action.dst_Supla_action, new_action.is_condition ? "YES" : "NO");
+
+	log_i("table html source length: %u", strlen(general_purpose_gui_buffer));
+      //log_i("Action name: %s, src_Supla_channel %u, dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, is_condition %u" 
+        //    "min_value %f, max_value %f", new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_action, new_action.dst_Supla_channel, 
+          //          new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);    
+								//"<tr><td>%s</td><td>%u</td><td>%u</td></tr>"
+								//"<tr><td>%s</td><td>%u</td><td>%u</td></tr>",
+
+	working_str = general_purpose_gui_buffer;							
 	auto table_label = ESPUI.addControl(Control::Type::Label, PSTR("Table label"), working_str, 
 																			 Control::Color::Emerald, test_tab); 
+	
 	
 	
 
@@ -1578,7 +1602,7 @@ void updateDeviceInfoLabel() {
 
 void deviceSelectorCallback(Control *sender, int type) {
 
-	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_ZBDEVICESMAXCOUNT)) {
+	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_ZB_DEVICES_MAX_NUMBER)) {
 
 		if (device_controls_enabled)
 			enableDeviceControls(false);
@@ -1685,7 +1709,7 @@ void channelSelectorCallback(Control *sender, int type) {
 	
 	if (GUI_update_required) return;
 
-	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_CHANNELMAXCOUNT)) {
+	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_CHANNELS_MAX_NUMBER)) {
 
 		if (channel_controls_enabled)
 			enableChannelControls(false);
@@ -2425,7 +2449,7 @@ void valueCallback(Control *sender, int type) {
 void advancedDeviceSelectorCallback(Control *sender, int type) {
 
 	log_i("value = %s(%u)", sender->value.c_str(), sender->value.toInt());
-	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_ZBDEVICESMAXCOUNT)) {
+	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_ZB_DEVICES_MAX_NUMBER)) {
 
 		updateLabel_P(advanced_device_info_label, three_dots_str);
 

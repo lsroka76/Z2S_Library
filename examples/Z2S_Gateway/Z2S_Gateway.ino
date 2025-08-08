@@ -216,7 +216,7 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_CLICK_10: Z2S_clearChannelsTable(); break;
     case Supla::ON_EVENT_4: Z2S_nwk_scan_neighbourhood(false); break;
   }
-  if ((event >= Supla::ON_EVENT_5) && (event < Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT)) {
+  if ((event >= Supla::ON_EVENT_5) && (event < Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER)) {
     z2s_channels_table[event - Supla::ON_EVENT_5].valid_record = false;
     if (Z2S_saveChannelsTable()) {
       log_i("Device on channel %d removed. Restarting...", z2s_channels_table[event - Supla::ON_EVENT_5].Supla_channel);
@@ -225,11 +225,11 @@ void supla_callback_bridge(int event, int action) {
   }
 #ifdef SUPLA_WEB_SERVER 
 
-  if ((event >= Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT) && (event < Supla::ON_EVENT_5 + 2*Z2S_CHANNELMAXCOUNT)) {
+  if ((event >= Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER) && (event < Supla::ON_EVENT_5 + 2*Z2S_CHANNELS_MAX_NUMBER)) {
     int32_t timeout = 0;
     Supla::Storage::ConfigInstance()->getInt32(PARAM_TXT1, &timeout);
     log_i("Timeout is %d", timeout);   
-    updateTimeout(event - (Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT), timeout);
+    updateTimeout(event - (Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER), timeout);
   }
 #endif //SUPLA_WEB_SERVER
 }
@@ -684,12 +684,12 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     double threshold_2; 
     
     if (is_valid_action && is_valid_event)
-      z2s_add_action(action_name, src_channel_id, Supla_action, dst_channel_id, Supla_event, false);
+      Z2S_add_action(action_name, src_channel_id, Supla_action, dst_channel_id, Supla_event, false);
     else
     if ((params_number == 7) && is_valid_action && is_valid_condition) {
       threshold_1       = strtod(*(param+5), nullptr);
       threshold_2       = strtod(*(param+6), nullptr);
-      z2s_add_action(action_name, src_channel_id, Supla_action, dst_channel_id, Supla_condition, true, threshold_1, threshold_2);
+      Z2S_add_action(action_name, src_channel_id, Supla_action, dst_channel_id, Supla_condition, true, threshold_1, threshold_2);
     }
     
     return;
@@ -1303,6 +1303,24 @@ void setup() {
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_5);
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_10);
 
+  LittleFS.begin(false);
+  listDir(LittleFS,"/",3);
+
+  if (LittleFS.exists("/supla/Z2S_devs_table")) {
+
+    log_i("/supla/Z2S_devs_table found - moving to /z2s_gateway/channels_table_v2.z2s");
+    LittleFS.rename("/supla/Z2S_devs_table", "/z2s_gateway/channels_table_v2.z2s");
+  }
+
+  if (LittleFS.exists("/supla/Z2S_zbd_table")) {
+
+    log_i("/supla/Z2S_zbd_table found - moving to /z2s_gateway/zb_devices_table_v2.z2s");
+    LittleFS.rename("/supla/Z2S_zbd_table", "/z2s_gateway/zb_devices_table_v2.z2s");
+  }
+
+  listDir(LittleFS,"/",3);
+  LittleFS.end();
+
   Z2S_loadZBDevicesTable();
 
   Z2S_loadChannelsTable();
@@ -1311,14 +1329,33 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
-  Z2S_loadActionsIndexTable();
+  z2s_channel_action_t test_action;
+
+   //uint8_t   action_id;
+  //bool      enabled;
+  test_action.src_Supla_channel = 1;
+  test_action.dst_Supla_channel = 2;
+  test_action.src_Supla_event = Supla::ON_CLICK_1;
+  test_action.dst_Supla_action = Supla::TURN_ON;
+  strcpy(test_action.action_name, "Test A(c)tion");
+  test_action.is_condition = false;
+  test_action.min_value = 12.8;
+  test_action.max_value = 1214.56;
+
+  /*Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
+  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
+  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
+  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
+  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);*/
+
+  Z2S_initSuplaActions();
 
 #ifdef USE_SUPLA_WEB_SERVER
 
   new Supla::Html::CustomParameter(PARAM_TXT1,"SED Timeout (h)", 0);
   
   auto selectCmd2 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD2, "Remove Z2S Device");
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
+  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELS_MAX_NUMBER; devices_counter++) 
     if (z2s_channels_table[devices_counter].valid_record) {
       char device_removal_cmd[128];
       sprintf(device_removal_cmd, "Remove Z2SDevice [%x:%x:%x:%x:%x:%x:%x:%x] channel # %d",
@@ -1331,7 +1368,7 @@ void setup() {
     }
 
   auto selectCmd3 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD3, "Update Z2S Device timeout (h)");
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELMAXCOUNT; devices_counter++) 
+  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELS_MAX_NUMBER; devices_counter++) 
     if (z2s_channels_table[devices_counter].valid_record) {
       char device_removal_cmd[128];
       sprintf(device_removal_cmd, "Update Z2SDevice [%x:%x:%x:%x:%x:%x:%x:%x] channel # %d",
@@ -1339,8 +1376,8 @@ void setup() {
       z2s_channels_table[devices_counter].ieee_addr[4], z2s_channels_table[devices_counter].ieee_addr[3], z2s_channels_table[devices_counter].ieee_addr[2],
       z2s_channels_table[devices_counter].ieee_addr[1], z2s_channels_table[devices_counter].ieee_addr[0], z2s_channels_table[devices_counter].Supla_channel);
       log_i("cmd %s, len %d", device_removal_cmd, strlen(device_removal_cmd));
-      selectCmd3->registerCmd(device_removal_cmd, Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT + devices_counter);
-      selectCmd3->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_5 + Z2S_CHANNELMAXCOUNT + devices_counter, true);
+      selectCmd3->registerCmd(device_removal_cmd, Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER + devices_counter);
+      selectCmd3->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER + devices_counter, true);
     }
 
 #endif //USE_SUPLA_WEB_SERVER
@@ -1399,9 +1436,6 @@ void setup() {
   printTime = millis();
   zbInit_delay = millis();
   refresh_time = millis();
-  LittleFS.begin(false);
-  listDir(LittleFS,"/",3);
-  LittleFS.end();
 }
 
 zbg_device_params_t *gateway_device;
@@ -1671,6 +1705,18 @@ void loop() {
 
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[k].z2s_device_desc_id;
+
+                        if ((Z2S_DEVICES_LIST[i].z2s_device_desc_id == Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR) &&
+                            (endpoint_id == 35)) {
+                              log_i("Develco test");
+                              esp_zb_ieee_addr_t gateway_ieee_addr;
+                              memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
+                              zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+                                                           ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr);
+                              esp_zb_get_long_address(gateway_ieee_addr);
+                              zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+                                                           ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr);
+                            }
                         
                         for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
@@ -2018,6 +2064,7 @@ void loop() {
                 case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
                 case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2:
                 case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
+                //case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR:
 {
                   esp_zb_ieee_addr_t gateway_ieee_addr;
                   memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));

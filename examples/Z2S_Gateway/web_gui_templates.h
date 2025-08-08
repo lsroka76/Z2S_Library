@@ -1,6 +1,9 @@
 #ifndef WEB_GUI_TEMPLATES_H_
 #define WEB_GUI_TEMPLATES_H_
 
+#include <supla/actions.h>
+#include <supla/events.h>
+
 typedef struct zigbee_cluster_s {
 	const char* zigbee_cluster_name;
 	const uint16_t zigbee_cluster_id;
@@ -31,6 +34,16 @@ typedef struct Tuya_datapoint_type_s {
 	uint8_t Tuya_datapoint_type_id;
 	uint16_t Tuya_datapoint_type_length;
 } Tuya_datapoint_type_t;
+
+typedef struct Supla_action_type_s {
+	Supla::Action	Supla_action_id;
+	const char* Supla_action_name;
+} Supla_action_type_t;
+
+typedef struct Supla_event_type_s {
+	Supla::Event Supla_event_id;
+	const char* Supla_event_name;
+} Supla_event_type_t;
 
 static const zigbee_cluster_t zigbee_clusters[] PROGMEM = 
 	{{.zigbee_cluster_name = "BASIC",										.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_BASIC},
@@ -94,6 +107,24 @@ static const Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM =
 	 {.Tuya_datapoint_type_name = "ENUM", 	.Tuya_datapoint_type_id = 0x04, .Tuya_datapoint_type_length = 0x01},
 	 {.Tuya_datapoint_type_name = "BITMAP", .Tuya_datapoint_type_id = 0x05, .Tuya_datapoint_type_length = 0x01}
 	};
+
+static const Supla_action_type_t Supla_actions [] PROGMEM = {
+	{
+		.Supla_action_id = Supla::TURN_ON,
+		.Supla_action_name = "TURN ON"
+	},
+	{
+		.Supla_action_id = Supla::TURN_OFF,
+		.Supla_action_name = "TURN OFF"
+	}
+};
+
+static const Supla_event_type_t Supla_events [] PROGMEM = {
+		{
+			.Supla_event_id = Supla::ON_CHANGE,
+			.Supla_event_name =  "ON CHANGE"
+		}
+};
 
 static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 //POWER CONFIG

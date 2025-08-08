@@ -44,6 +44,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR           0x2030
 
+#define Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR    0x2050
+
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             0x2200
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1           0x2201
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2           0x2202 //ONENUO
@@ -132,6 +134,7 @@
 #define Z2S_DEVICE_DESC_TUYA_SWITCH_4X3                 0x5100
 
 #define Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3            0x5105
+#define Z2S_DEVICE_DESC_TUYA_SOS_BUTTON                 0x5110
 
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON               0x5200
 #define Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F            0x5201
@@ -175,6 +178,8 @@
 #define Z2S_DEVICE_DESC_TS0601_TRV_MOES                 0x6013
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV601               0x6014
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV603               0x6015
+#define Z2S_DEVICE_DESC_TS0601_TRV_GTZ10                0x6016
+
 
 #define Z2S_DEVICE_DESC_HVAC_END                        0x6499
 
@@ -224,6 +229,9 @@
 #define TUYA_PRESENCE_SENSOR_MOTION_STATE_SID         0x02
 #define TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID          0x03
 #define TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID         0x04
+
+#define TUYA_SMOKE_DETECTOR_SMOKE_SID                 0x00
+#define TUYA_SMOKE_DETECTOR_TAMPER_SID                0x01
 
 #define TUYA_SMOKE_DETECTOR_1_SMOKE_SID               0x00
 #define TUYA_SMOKE_DETECTOR_1_TAMPER_SID              0x01
@@ -345,7 +353,9 @@
 #define TUYA_VIBRATION_SENSOR_VIBRATION_SID 0x10
 #define TUYA_VIBRATION_SENSOR_CONTACT_SID   0x11
 
-
+#define TUYA_SOS_BUTTON_SOS_SID         0x00
+#define TUYA_SOS_BUTTON_EMERGENCY_SID   0x01
+#define TUYA_SOS_BUTTON_LOW_BATTERY_SID 0x03 //IAS_ZONE_LOW_BATTERY_SID
 //#define DIMMER_FUNC_
 
 [[maybe_unused]]
@@ -634,6 +644,9 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV603, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_GTZ10, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_HVAC_23457, .z2s_device_clusters_count = 3, .z2s_device_clusters =
@@ -1315,6 +1328,10 @@ const dataPoints = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOS_BUTTON, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
+      TUYA_PRIVATE_CLUSTER_EF00 }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { TUYA_PRIVATE_CLUSTER_EF00 }},
 
@@ -1622,6 +1639,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "HOBEIAN", .model_name = "ZG-102Z", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "Develco Products A/S", .model_name = "WISZB-120", 
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR, .z2s_device_endpoints_count = 2,
+   .z2s_device_endpoints = {{ 35, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B },
+                             { 38, Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR }}},
+
   { .manufacturer_name = "SONOFF", .model_name = "SNZB-05P", 
    .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B, .z2s_device_endpoints_count = 1},
 
@@ -1914,6 +1936,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_rtrmfadk", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV601, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE200_pbo8cj0z", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_GTZ10, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "SONOFF", .model_name = "TRVZB",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_TRVZB, .z2s_device_endpoints_count = 1},
 
@@ -2072,6 +2097,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_rccxox8p", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE284_rccxox8p", .model_name = "TS0601",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZE204_ntcy3xu1", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1, .z2s_device_endpoints_count = 1},
 
@@ -2113,6 +2141,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZ3210_3ulg9kpo", .model_name = "TS0021",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3, .z2s_device_endpoints_count = 1},
+
+  //{ .manufacturer_name = "_TZE200_nojsjtj2", .model_name = "TS0601",
+  //  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOS_BUTTON, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_dikb3dp6", .model_name = "TS0601",
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
@@ -2179,8 +2210,10 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO, .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_1},
                               { 2, Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2 }}},
+
+  
     
 };
 
 #endif
-//
+//Develco Products A/S::WISZB-120

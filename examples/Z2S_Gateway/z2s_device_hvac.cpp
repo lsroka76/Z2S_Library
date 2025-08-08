@@ -67,6 +67,16 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
       hvac_room_temperature_min = TRV603_CMD_SET_HEATSETPOINT_MIN;
       hvac_room_temperature_max = TRV603_CMD_SET_HEATSETPOINT_MAX;
 
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10: {
+
+      trv_commands_set = GTZ10_CMD_SET; 
+      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
+
+      hvac_room_temperature_min = GTZ10_CMD_SET_HEATSETPOINT_MIN;
+      hvac_room_temperature_max = GTZ10_CMD_SET_HEATSETPOINT_MAX;
+
     } break;  
     
     case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
@@ -161,13 +171,18 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
 
   switch (msg_id) {
     case TRV_HEATING_SETPOINT_MSG: {   //degrees*100
+
       log_i("msgZ2SDeviceHvac - TRV_HEATING_SETPOINT_MSG: 0x%x", msg_value);
       log_i("HVAC flags: 0x%x", Supla_Z2S_HvacBase->getChannel()->getHvacFlags());
+
       if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG) {
+
         log_i("msgZ2SDeviceHvac - ignoring TRV_HEATING_SETPOINT_MSG: 0x%x", msg_value);
+
         if (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 40)
           break;
         else {
+
           z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
         } 
         /*if (z2s_channels_table[channel_number_slot].user_data_1 == 0)
@@ -184,25 +199,33 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
       if (Supla_Z2S_HvacBase->isWeeklyScheduleEnabled() &&
           (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 40) &&
           (Supla_Z2S_HvacBase->getCurrentProgramId() != 0)) {
+
         TWeeklyScheduleProgram program = Supla_Z2S_HvacBase->getProgramById(Supla_Z2S_HvacBase->getCurrentProgramId());
         //Supla_Z2S_HvacBase->setProgram(Supla_Z2S_HvacBase->getCurrentProgramId(), program.Mode, msg_value, program.SetpointTemperatureCool, false);
         //Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
         Supla_Z2S_HvacBase->applyNewRuntimeSettings(/*SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE*/SUPLA_HVAC_MODE_NOT_SET, msg_value, 0, 0);
         Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
+
         log_i("Changing weekly schedule program temperature: program id %u,hvac getTemperatureSetpointHeat %d, msg value %d", Supla_Z2S_HvacBase->getCurrentProgramId(),
               Supla_Z2S_HvacBase->getTemperatureSetpointHeat(), msg_value);
+
       } else {
+
         Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
         Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
       }
     } break;
 
     case TRV_SYSTEM_MODE_MSG: { //0:off, 1:on
+
       log_i("msgZ2SDeviceHvac - TRV_SYSTEM_MODE_MSG: 0x%x", msg_value);
       log_i("HVAC flags: 0x%x", Supla_Z2S_HvacBase->getChannel()->getHvacFlags());
+
       switch (msg_value) {
+
         case 1: if (Supla_Z2S_HvacBase->isThermostatDisabled()) 
                   Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON); break;
+
         case 0: if (!Supla_Z2S_HvacBase->isThermostatDisabled())
                   Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, true); break;
       }
@@ -211,19 +234,22 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     } break;
 
     case TRV_SCHEDULE_MODE_MSG: { //0:off, 1:on
+
       log_i("msgZ2SDeviceHvac - TRV_SCHEDULE_MODE_MSG: 0x%x", msg_value);
 
       switch (msg_value) {
         //case 0: Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON); break;
         case 1: {
           if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) {
+
             Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE, true); 
             z2s_channels_table[channel_number_slot].user_data_flags |= USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
             z2s_channels_table[channel_number_slot].user_data_1 = 1;
             //Supla_Z2S_HvacBase->applyNewRuntimeSettings(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE, 0);
             Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
-          } else
-          {
+
+          } else {
+
             Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, false); 
             Supla_Z2S_TRVInterface->setTRVSystemMode(0);
           }
@@ -232,6 +258,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     } break;
 
     case TRV_RUNNING_STATE_MSG: { //0:idle, 1:heat
+
       log_i("msgZ2SDeviceHvac - TRV_RUNNING_STATE_MSG: 0x%x", msg_value);
       
       Supla_Z2S_TRVInterface->setTRVRunningState(msg_value);
@@ -239,37 +266,45 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     } break;
   
     case TRV_LOCAL_TEMPERATURE_MSG: { //degrees*100
+
       log_i("msgZ2SDeviceHvac - TRV_LOCAL_TEMPERATURE_MSG: 0x%x", msg_value);
         Supla_Z2S_TRVInterface->setTRVLocalTemperature(msg_value);
     } break;
     
     case TRV_TEMPERATURE_CALIBRATION_MSG: { //degrees*100
+
       log_i("msgZ2SDeviceHvac - TRV_TEMPERATURE_CALIBRATION_MSG: 0x%x", msg_value);
         Supla_Z2S_TRVInterface->setTRVTemperatureCalibration(msg_value);
     } break; 
     
     case TRV_LOW_BATTERY_MSG: { //O == OK, 1 - low battery
+
       log_i("msgZ2SDeviceHvac - TRV_LOW_BATTERY_MSG: 0x%x", msg_value);
     } break;
 
     case TRV_BATTERY_LEVEL_MSG: { 
+
       log_i("msgZ2SDeviceHvac - TRV_BATTERY_LEVEL_MSG: 0x%x", msg_value);
     } break;
   
     case TRV_CHILD_LOCK_MSG: { 
+
       log_i("msgZ2SDeviceHvac - TRV_CHILD_LOCK_MSG: 0x%x", msg_value);
       Supla_Z2S_TRVInterface->setTRVChildLock(msg_value);
     } break;
 
     case TRV_WINDOW_DETECT_MSG: { 
+
       log_i("msgZ2SDeviceHvac - WINDOW_DETECT_MSG: 0x%x", msg_value);
     } break;
 
     case TRV_ANTI_FREEZE_MSG: { 
+
       log_i("msgZ2SDeviceHvac - ANTI_FREEZE_MSG: 0x%x", msg_value);
     } break;
 
     case TRV_LIMESCALE_PROTECT_MSG: { 
+      
       log_i("msgZ2SDeviceHvac - LIMESCALE_PROTECT_MSG: 0x%x", msg_value);
     } break;
 

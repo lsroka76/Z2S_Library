@@ -72,6 +72,7 @@ void Supla::Control::Z2S_TRVInterface::enableExternalSensorDetection(bool enable
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temperature_setpoint) {
 
   if (_gateway && Zigbee.started()) {
+
     log_i("Z2S_TRVInterface::sendTRVTemperatureSetpoint = %d", temperature_setpoint);
 
     /*int32_t temperature_setpoint_div = (temperature_setpoint / 100) * 100;
@@ -96,30 +97,49 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
       _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
 
       switch(_trv_commands_set) {
+        
         case SASWELL_CMD_SET: {
+
          _Tuya_dp_data[2] = SASWELL_CMD_SET_TARGET_HEATSETPOINT_1; 
          temperature_setpoint *= SASWELL_TARGET_HEATSETPOINT_FACTOR;
         } break;
+
         case ME167_CMD_SET: {
+
           _Tuya_dp_data[2] = ME167_CMD_SET_TARGET_HEATSETPOINT_1; 
           temperature_setpoint *= ME167_TARGET_HEATSETPOINT_FACTOR;
         } break;
-        case BECA_CMD_SET: {   
+
+        case BECA_CMD_SET: {  
+
           _Tuya_dp_data[2] = BECA_CMD_SET_TARGET_HEATSETPOINT_1; 
           temperature_setpoint *= BECA_TARGET_HEATSETPOINT_FACTOR;
         } break;
-        case MOES_CMD_SET: {     
+
+        case MOES_CMD_SET: {   
+
           _Tuya_dp_data[2] = MOES_CMD_SET_TARGET_HEATSETPOINT_1;
           temperature_setpoint *= MOES_TARGET_HEATSETPOINT_FACTOR;
         } break;
-        case TRV601_CMD_SET: {     
+
+        case TRV601_CMD_SET: {  
+
           _Tuya_dp_data[2] = TRV601_CMD_SET_TARGET_HEATSETPOINT_1;
           temperature_setpoint *= TRV601_TARGET_HEATSETPOINT_FACTOR;
         } break;
-        case TRV603_CMD_SET: {     
+
+        case TRV603_CMD_SET: {   
+
           _Tuya_dp_data[2] = TRV603_CMD_SET_TARGET_HEATSETPOINT_1;
           temperature_setpoint *= TRV603_TARGET_HEATSETPOINT_FACTOR;
         } break;
+
+        case GTZ10_CMD_SET: {  
+
+          _Tuya_dp_data[2] = GTZ10_CMD_SET_TARGET_HEATSETPOINT_1;
+          temperature_setpoint *= GTZ10_TARGET_HEATSETPOINT_FACTOR;
+        } break;
+
         default: return; break;
       }
 
@@ -134,12 +154,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
       _Tuya_dp_data[9] = (temperature_setpoint & 0x000000FF);
 
       _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
-    } else 
+
+    } else
+
     if (_trv_commands_set == TRVZB_CMD_SET) {
 
       _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID, 
                                    ESP_ZB_ZCL_ATTR_TYPE_S16,2, &temperature_setpoint);
     }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -148,6 +171,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t temperature_calibration) {
 
   if (_gateway && Zigbee.started()) {
+
     log_i("Z2S_TRVInterface::sendTRVTemperatureCalibration = %d", temperature_calibration);
 
     if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
@@ -158,30 +182,49 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t tem
       _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
 
       switch(_trv_commands_set) {
+
         case SASWELL_CMD_SET: {
+
          _Tuya_dp_data[2] = SASWELL_CMD_SET_TEMPERATURE_CALIBRATION_1; 
           temperature_calibration *= SASWELL_TEMPERATURE_CALIBRATION_FACTOR;
         } break;
+
         case ME167_CMD_SET: {
+
           _Tuya_dp_data[2] = ME167_CMD_SET_TEMPERATURE_CALIBRATION_1; 
           temperature_calibration *= ME167_TEMPERATURE_CALIBRATION_FACTOR;
         } break;
+
         case BECA_CMD_SET: {   
+
           _Tuya_dp_data[2] = BECA_CMD_SET_TEMPERATURE_CALIBRATION_1; 
           temperature_calibration *= BECA_TEMPERATURE_CALIBRATION_FACTOR;
         } break;
-        case MOES_CMD_SET: {     
+
+        case MOES_CMD_SET: {    
+
           _Tuya_dp_data[2] = MOES_CMD_SET_TEMPERATURE_CALIBRATION_1;
           temperature_calibration *= MOES_TEMPERATURE_CALIBRATION_FACTOR;
         } break; 
-        case TRV601_CMD_SET: {     
+
+        case TRV601_CMD_SET: { 
+
           _Tuya_dp_data[2] = TRV601_CMD_SET_TEMPERATURE_CALIBRATION_1;
           temperature_calibration *= TRV601_TEMPERATURE_CALIBRATION_FACTOR;
         } break;
-        case TRV603_CMD_SET: {     
+
+        case TRV603_CMD_SET: { 
+
           _Tuya_dp_data[2] = TRV603_CMD_SET_TEMPERATURE_CALIBRATION_1;
           temperature_calibration *= TRV603_TEMPERATURE_CALIBRATION_FACTOR;
         } break;
+
+        case GTZ10_CMD_SET: {     
+
+          _Tuya_dp_data[2] = GTZ10_CMD_SET_TEMPERATURE_CALIBRATION_1;
+          temperature_calibration *= GTZ10_TEMPERATURE_CALIBRATION_FACTOR;
+        } break;
+
         default: return; break;
       }
 
@@ -196,12 +239,16 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t tem
       _Tuya_dp_data[9] = (temperature_calibration & 0x000000FF);
 
       _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
+
     } else 
+
     if (_trv_commands_set == TRVZB_CMD_SET) {
+      
       temperature_calibration = temperature_calibration / 10;
       _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID, 
                                    ESP_ZB_ZCL_ATTR_TYPE_S8,1, &temperature_calibration);
     }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -254,93 +301,138 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
 
       if (trv_system_mode == 1) {
         switch(_trv_commands_set) {
+
           case SASWELL_CMD_SET: {
+
             _Tuya_dp_data[2] = SASWELL_CMD_ON_1; 
             _Tuya_dp_data[3] = SASWELL_CMD_ON_2;
             _Tuya_dp_data[4] = SASWELL_CMD_ON_3;
             _Tuya_dp_data[5] = SASWELL_CMD_ON_4;
             _Tuya_dp_data[6] = SASWELL_CMD_ON_5;
           } break;
+
           case ME167_CMD_SET: {
+
             _Tuya_dp_data[2] = ME167_CMD_ON_1; 
             _Tuya_dp_data[3] = ME167_CMD_ON_2;
             _Tuya_dp_data[4] = ME167_CMD_ON_3;
             _Tuya_dp_data[5] = ME167_CMD_ON_4;
             _Tuya_dp_data[6] = ME167_CMD_ON_5;
           } break;
-          case BECA_CMD_SET: {   
+
+          case BECA_CMD_SET: {  
+
             _Tuya_dp_data[2] = BECA_CMD_ON_1; 
             _Tuya_dp_data[3] = BECA_CMD_ON_2;
             _Tuya_dp_data[4] = BECA_CMD_ON_3;
             _Tuya_dp_data[5] = BECA_CMD_ON_4;
             _Tuya_dp_data[6] = BECA_CMD_ON_5;
           } break;
+
           case MOES_CMD_SET: {     
+
             _Tuya_dp_data[2] = MOES_CMD_ON_1; 
             _Tuya_dp_data[3] = MOES_CMD_ON_2;
             _Tuya_dp_data[4] = MOES_CMD_ON_3;
             _Tuya_dp_data[5] = MOES_CMD_ON_4;
             _Tuya_dp_data[6] = MOES_CMD_ON_5;
           } break;
-          case TRV601_CMD_SET: {     
+
+          case TRV601_CMD_SET: {  
+
             _Tuya_dp_data[2] = TRV601_CMD_ON_1; 
             _Tuya_dp_data[3] = TRV601_CMD_ON_2;
             _Tuya_dp_data[4] = TRV601_CMD_ON_3;
             _Tuya_dp_data[5] = TRV601_CMD_ON_4;
             _Tuya_dp_data[6] = TRV601_CMD_ON_5;
           } break;
-          case TRV603_CMD_SET: {     
+
+          case TRV603_CMD_SET: {   
+
             _Tuya_dp_data[2] = TRV603_CMD_ON_1; 
             _Tuya_dp_data[3] = TRV603_CMD_ON_2;
             _Tuya_dp_data[4] = TRV603_CMD_ON_3;
             _Tuya_dp_data[5] = TRV603_CMD_ON_4;
             _Tuya_dp_data[6] = TRV603_CMD_ON_5;
           } break;
+
+          case GTZ10_CMD_SET: {   
+
+            _Tuya_dp_data[2] = GTZ10_CMD_ON_1; 
+            _Tuya_dp_data[3] = GTZ10_CMD_ON_2;
+            _Tuya_dp_data[4] = GTZ10_CMD_ON_3;
+            _Tuya_dp_data[5] = GTZ10_CMD_ON_4;
+            _Tuya_dp_data[6] = GTZ10_CMD_ON_5;
+          } break;
         }
+
       } else {
+
         switch(_trv_commands_set) {
+
           case SASWELL_CMD_SET: {
+
             _Tuya_dp_data[2] = SASWELL_CMD_OFF_1; 
             _Tuya_dp_data[3] = SASWELL_CMD_OFF_2;
             _Tuya_dp_data[4] = SASWELL_CMD_OFF_3;
             _Tuya_dp_data[5] = SASWELL_CMD_OFF_4;
             _Tuya_dp_data[6] = SASWELL_CMD_OFF_5;
           } break;
+
           case ME167_CMD_SET: {
+
             _Tuya_dp_data[2] = ME167_CMD_OFF_1; 
             _Tuya_dp_data[3] = ME167_CMD_OFF_2;
             _Tuya_dp_data[4] = ME167_CMD_OFF_3;
             _Tuya_dp_data[5] = ME167_CMD_OFF_4;
             _Tuya_dp_data[6] = ME167_CMD_OFF_5;
           } break;
-          case BECA_CMD_SET: {   
+
+          case BECA_CMD_SET: { 
+
             _Tuya_dp_data[2] = BECA_CMD_OFF_1; 
             _Tuya_dp_data[3] = BECA_CMD_OFF_2;
             _Tuya_dp_data[4] = BECA_CMD_OFF_3;
             _Tuya_dp_data[5] = BECA_CMD_OFF_4;
             _Tuya_dp_data[6] = BECA_CMD_OFF_5;
           } break;
-          case MOES_CMD_SET: {     
+
+          case MOES_CMD_SET: {    
+
             _Tuya_dp_data[2] = MOES_CMD_OFF_1; 
             _Tuya_dp_data[3] = MOES_CMD_OFF_2;
             _Tuya_dp_data[4] = MOES_CMD_OFF_3;
             _Tuya_dp_data[5] = MOES_CMD_OFF_4;
             _Tuya_dp_data[6] = MOES_CMD_OFF_5;
           } break;
-          case TRV601_CMD_SET: {     
+
+          case TRV601_CMD_SET: {
+
             _Tuya_dp_data[2] = TRV601_CMD_OFF_1; 
             _Tuya_dp_data[3] = TRV601_CMD_OFF_2;
             _Tuya_dp_data[4] = TRV601_CMD_OFF_3;
             _Tuya_dp_data[5] = TRV601_CMD_OFF_4;
             _Tuya_dp_data[6] = TRV601_CMD_OFF_5;
           } break;
+
           case TRV603_CMD_SET: {     
+
             _Tuya_dp_data[2] = TRV603_CMD_OFF_1; 
             _Tuya_dp_data[3] = TRV603_CMD_OFF_2;
             _Tuya_dp_data[4] = TRV603_CMD_OFF_3;
             _Tuya_dp_data[5] = TRV603_CMD_OFF_4;
             _Tuya_dp_data[6] = TRV603_CMD_OFF_5;
           } break;
+
+          case GTZ10_CMD_SET: {     
+
+            _Tuya_dp_data[2] = GTZ10_CMD_OFF_1; 
+            _Tuya_dp_data[3] = GTZ10_CMD_OFF_2;
+            _Tuya_dp_data[4] = GTZ10_CMD_OFF_3;
+            _Tuya_dp_data[5] = GTZ10_CMD_OFF_4;
+            _Tuya_dp_data[6] = GTZ10_CMD_OFF_5;
+          } break;
+
         }  
       }
 
@@ -370,93 +462,138 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(uint8_t trv_schedule_
       _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
 
       if (trv_schedule_mode == 1) {
+
         switch(_trv_commands_set) {
+
           case SASWELL_CMD_SET: {
+
             _Tuya_dp_data[2] = SASWELL_CMD_SET_SCHEDULE_MODE_1; 
             _Tuya_dp_data[3] = SASWELL_CMD_ON_2;
             _Tuya_dp_data[4] = SASWELL_CMD_ON_3;
             _Tuya_dp_data[5] = SASWELL_CMD_ON_4;
             _Tuya_dp_data[6] = SASWELL_CMD_SET_SCHEDULE_MODE_ON;
           } break;
+
           case ME167_CMD_SET: {
+
             _Tuya_dp_data[2] = ME167_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = ME167_CMD_ON_2;
             _Tuya_dp_data[4] = ME167_CMD_ON_3;
             _Tuya_dp_data[5] = ME167_CMD_ON_4;
             _Tuya_dp_data[6] = ME167_CMD_SET_SCHEDULE_MODE_ON;
           } break;
+
           case BECA_CMD_SET: {   
+
             _Tuya_dp_data[2] = BECA_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = BECA_CMD_ON_2;
             _Tuya_dp_data[4] = BECA_CMD_ON_3;
             _Tuya_dp_data[5] = BECA_CMD_ON_4;
             _Tuya_dp_data[6] = BECA_CMD_SET_SCHEDULE_MODE_ON;
           } break;
+
           case MOES_CMD_SET: {     
+
             _Tuya_dp_data[2] = MOES_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = MOES_CMD_ON_2;
             _Tuya_dp_data[4] = MOES_CMD_ON_3;
             _Tuya_dp_data[5] = MOES_CMD_ON_4;
             _Tuya_dp_data[6] = MOES_CMD_SET_SCHEDULE_MODE_ON;
           } break;
-          case TRV601_CMD_SET: {     
+
+          case TRV601_CMD_SET: {   
+
             _Tuya_dp_data[2] = TRV601_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = TRV601_CMD_ON_2;
             _Tuya_dp_data[4] = TRV601_CMD_ON_3;
             _Tuya_dp_data[5] = TRV601_CMD_ON_4;
             _Tuya_dp_data[6] = TRV601_CMD_SET_SCHEDULE_MODE_ON;
           } break;
-          case TRV603_CMD_SET: {     
+
+          case TRV603_CMD_SET: {  
+
             _Tuya_dp_data[2] = TRV603_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = TRV603_CMD_ON_2;
             _Tuya_dp_data[4] = TRV603_CMD_ON_3;
             _Tuya_dp_data[5] = TRV603_CMD_ON_4;
             _Tuya_dp_data[6] = TRV603_CMD_SET_SCHEDULE_MODE_ON;
           } break;
+
+          case GTZ10_CMD_SET: {  
+
+            _Tuya_dp_data[2] = GTZ10_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = GTZ10_CMD_ON_2;
+            _Tuya_dp_data[4] = GTZ10_CMD_ON_3;
+            _Tuya_dp_data[5] = GTZ10_CMD_ON_4;
+            _Tuya_dp_data[6] = GTZ10_CMD_SET_SCHEDULE_MODE_ON;
+          } break;
         }
+
       } else {
+
         switch(_trv_commands_set) {
+
           case SASWELL_CMD_SET: {
+
             _Tuya_dp_data[2] = SASWELL_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = SASWELL_CMD_OFF_2;
             _Tuya_dp_data[4] = SASWELL_CMD_OFF_3;
             _Tuya_dp_data[5] = SASWELL_CMD_OFF_4;
             _Tuya_dp_data[6] = SASWELL_CMD_SET_SCHEDULE_MODE_OFF;
           } break;
+
           case ME167_CMD_SET: {
+
             _Tuya_dp_data[2] =  ME167_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = ME167_CMD_OFF_2;
             _Tuya_dp_data[4] = ME167_CMD_OFF_3;
             _Tuya_dp_data[5] = ME167_CMD_OFF_4;
             _Tuya_dp_data[6] = ME167_CMD_SET_SCHEDULE_MODE_OFF;
           } break;
+
           case BECA_CMD_SET: {   
+
             _Tuya_dp_data[2] = BECA_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = BECA_CMD_OFF_2;
             _Tuya_dp_data[4] = BECA_CMD_OFF_3;
             _Tuya_dp_data[5] = BECA_CMD_OFF_4;
             _Tuya_dp_data[6] = BECA_CMD_SET_SCHEDULE_MODE_OFF;
           } break;
+
           case MOES_CMD_SET: {     
+
             _Tuya_dp_data[2] = MOES_CMD_SET_SCHEDULE_MODE_1; 
             _Tuya_dp_data[3] = MOES_CMD_OFF_2;
             _Tuya_dp_data[4] = MOES_CMD_OFF_3;
             _Tuya_dp_data[5] = MOES_CMD_OFF_4;
             _Tuya_dp_data[6] = MOES_CMD_SET_SCHEDULE_MODE_OFF;
           } break;
-          case TRV601_CMD_SET: {     
+
+          case TRV601_CMD_SET: { 
+
             _Tuya_dp_data[2] = TRV601_CMD_SET_SCHEDULE_MODE_1; 
             _Tuya_dp_data[3] = TRV601_CMD_OFF_2;
             _Tuya_dp_data[4] = TRV601_CMD_OFF_3;
             _Tuya_dp_data[5] = TRV601_CMD_OFF_4;
             _Tuya_dp_data[6] = TRV601_CMD_SET_SCHEDULE_MODE_OFF;
           } break;
-          case TRV603_CMD_SET: {     
+
+          case TRV603_CMD_SET: {
+
             _Tuya_dp_data[2] = TRV603_CMD_SET_SCHEDULE_MODE_1;
             _Tuya_dp_data[3] = TRV603_CMD_OFF_2;
             _Tuya_dp_data[4] = TRV603_CMD_OFF_3;
             _Tuya_dp_data[5] = TRV603_CMD_OFF_4;
             _Tuya_dp_data[6] = TRV603_CMD_SET_SCHEDULE_MODE_OFF;
+          } break;
+
+          case GTZ10_CMD_SET: {
+
+            _Tuya_dp_data[2] = GTZ10_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = GTZ10_CMD_OFF_2;
+            _Tuya_dp_data[4] = GTZ10_CMD_OFF_3;
+            _Tuya_dp_data[5] = GTZ10_CMD_OFF_4;
+            _Tuya_dp_data[6] = GTZ10_CMD_SET_SCHEDULE_MODE_OFF;
           } break;
         }  
       }
@@ -477,6 +614,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(uint8_t trv_schedule_
 void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) {
 
   if (_gateway && Zigbee.started()) {
+
     log_i("Z2S_TRVInterface::sendTRVChildLock = %d", trv_child_lock);
 
     if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
@@ -492,33 +630,53 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) 
       _Tuya_dp_data[6] = trv_child_lock;
 
       switch(_trv_commands_set) {
+
         case SASWELL_CMD_SET: {
+
           _Tuya_dp_data[2] = SASWELL_CMD_SET_CHILD_LOCK_1; 
         } break;
+
         case ME167_CMD_SET: {
+
           _Tuya_dp_data[2] = ME167_CMD_SET_CHILD_LOCK_1; 
         } break;
-        case BECA_CMD_SET: {   
+
+        case BECA_CMD_SET: {
+
           _Tuya_dp_data[2] = BECA_CMD_SET_CHILD_LOCK_1; 
         } break;
-        case MOES_CMD_SET: {     
+
+        case MOES_CMD_SET: {   
+
           _Tuya_dp_data[2] = MOES_CMD_SET_CHILD_LOCK_1;
         } break;
-        case TRV601_CMD_SET: {     
+
+        case TRV601_CMD_SET: {    
+
           _Tuya_dp_data[2] = TRV601_CMD_SET_CHILD_LOCK_1; 
         } break;
+
         case TRV603_CMD_SET: {     
           _Tuya_dp_data[2] = TRV603_CMD_SET_CHILD_LOCK_1;
         } break;
+
+        case GTZ10_CMD_SET: {     
+          _Tuya_dp_data[2] = GTZ10_CMD_SET_CHILD_LOCK_1;
+        } break;
       }  
+
       if (_Tuya_dp_data[2] < 0xFF)
         _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
+
     } else 
+
     if (_trv_commands_set == TRVZB_CMD_SET) {
+
       _gateway->sendAttributeWrite(&_device, 0xFC11, 0x0, ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &trv_child_lock);
       delay(200);
       _gateway->sendAttributeRead(&_device, 0xFC11, 0x0, false);
     }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -527,9 +685,11 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) 
 void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 
   if (_gateway && Zigbee.started()) {
+
     log_i("Z2S_TRVInterface::sendTRVPing");
  
     if (_trv_commands_set == TRVZB_CMD_SET) {
+
       uint16_t attributes[5] = { ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID,

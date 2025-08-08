@@ -343,6 +343,60 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
+#define GTZ10_CMD_SET   0x07
+
+#define GTZ10_CMD_ON_1  0x02
+#define GTZ10_CMD_ON_2  0x04
+#define GTZ10_CMD_ON_3  0x00
+#define GTZ10_CMD_ON_4  0x01
+#define GTZ10_CMD_ON_5  0x00
+
+#define GTZ10_CMD_OFF_1 0x02
+#define GTZ10_CMD_OFF_2 0x04
+#define GTZ10_CMD_OFF_3 0x00
+#define GTZ10_CMD_OFF_4 0x01
+#define GTZ10_CMD_OFF_5 0x05
+
+#define GTZ10_CMD_SET_TARGET_HEATSETPOINT_1 0x04
+#define GTZ10_CMD_SET_TARGET_HEATSETPOINT_2 0x02
+
+#define GTZ10_CMD_SET_TEMPERATURE_CALIBRATION_1 0x2F
+#define GTZ10_CMD_SET_TEMPERATURE_CALIBRATION_2 0x02
+
+#define GTZ10_CMD_SET_LOCAL_TEMPERATURE_1 0x05
+#define GTZ10_CMD_SET_LOCAL_TEMPERATURE_2 0x02
+
+#define GTZ10_CMD_SET_RUNNING_STATE_1     0x31
+#define GTZ10_CMD_SET_RUNNING_STATE_IDLE  0x00
+#define GTZ10_CMD_SET_RUNNING_STATE_HEAT  0x01
+
+#define GTZ10_CMD_SET_BATTERY_LEVEL_1       0x06 //
+
+#define GTZ10_CMD_SET_SCHEDULE_MODE_1           0x02
+#define GTZ10_CMD_SET_SCHEDULE_MODE_ON          0x01
+#define GTZ10_CMD_SET_SCHEDULE_MODE_OFF         0x00
+
+#define GTZ10_CMD_SET_CHILD_LOCK_1              0x07
+#define GTZ10_CMD_SET_WINDOW_DETECT_1           0x0E //0x0F open/close
+#define GTZ10_CMD_SET_ANTI_FREEZE_1             0x24
+#define GTZ10_CMD_SET_LIMESCALE_PROTECT_1       0x27
+
+
+#define GTZ10_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
+#define GTZ10_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
+#define GTZ10_TEMPERATURE_CALIBRATION_FACTOR 0x01//*10
+
+#define GTZ10_STATE_1 0x03
+#define GTZ10_STATE_2 0x04
+
+#define GTZ10_STATE_IDLE    0x00
+#define GTZ10_STATE_HEATING 0x01
+
+#define GTZ10_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define GTZ10_CMD_SET_HEATSETPOINT_MAX    0x0FA0 //4000
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 #define LAST_0XEF00_CMD_SET 0x3F
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

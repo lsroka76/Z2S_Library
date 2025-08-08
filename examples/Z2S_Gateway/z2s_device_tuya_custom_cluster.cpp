@@ -345,6 +345,38 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       target_heatsetpoint_factor     = TRV603_TARGET_HEATSETPOINT_FACTOR;
       temperature_calibration_factor = TRV603_TEMPERATURE_CALIBRATION_FACTOR;
 
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10: {
+
+      local_temperature_dp_id        = GTZ10_CMD_SET_LOCAL_TEMPERATURE_1; 
+      current_heating_setpoint_dp_id = GTZ10_CMD_SET_TARGET_HEATSETPOINT_1;
+
+      system_mode_on_dp_id           = GTZ10_CMD_ON_1;
+      system_mode_off_dp_id          = GTZ10_CMD_OFF_1;
+      system_mode_value_on           = GTZ10_CMD_ON_5;
+      system_mode_value_off          = GTZ10_CMD_OFF_5;
+      
+      running_state_dp_id            = GTZ10_CMD_SET_RUNNING_STATE_1;
+      running_state_value_idle       = GTZ10_CMD_SET_RUNNING_STATE_IDLE;
+      running_state_value_heat       = GTZ10_CMD_SET_RUNNING_STATE_HEAT;
+
+      temperature_calibration_dp_id  = GTZ10_CMD_SET_TEMPERATURE_CALIBRATION_1;
+
+      battery_level_dp_id            = GTZ10_CMD_SET_BATTERY_LEVEL_1;
+
+      schedule_mode_dp_id            = GTZ10_CMD_SET_SCHEDULE_MODE_1;
+      schedule_mode_value_on         = GTZ10_CMD_SET_SCHEDULE_MODE_ON;
+
+      child_lock_dp_id               = GTZ10_CMD_SET_CHILD_LOCK_1;
+      window_detect_dp_id            = GTZ10_CMD_SET_WINDOW_DETECT_1;
+      anti_freeze_dp_id              = GTZ10_CMD_SET_ANTI_FREEZE_1;
+      limescale_protect_dp_id        = GTZ10_CMD_SET_LIMESCALE_PROTECT_1;
+
+      local_temperature_factor       = GTZ10_LOCAL_TEMPERATURE_FACTOR;
+      target_heatsetpoint_factor     = GTZ10_TARGET_HEATSETPOINT_FACTOR;
+      temperature_calibration_factor = GTZ10_TEMPERATURE_CALIBRATION_FACTOR;
+
     } break; 
 
   }
@@ -1285,6 +1317,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     case Z2S_DEVICE_DESC_TS0601_TRV_MOES:
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV601:
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV603:
+    case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10:
       processTuyaHvacDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
