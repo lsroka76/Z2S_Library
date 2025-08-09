@@ -1309,12 +1309,14 @@ void setup() {
   if (LittleFS.exists("/supla/Z2S_devs_table")) {
 
     log_i("/supla/Z2S_devs_table found - moving to /z2s_gateway/channels_table_v2.z2s");
+    LittleFS.mkdir("/z2s_gateway");
     LittleFS.rename("/supla/Z2S_devs_table", "/z2s_gateway/channels_table_v2.z2s");
   }
 
   if (LittleFS.exists("/supla/Z2S_zbd_table")) {
 
     log_i("/supla/Z2S_zbd_table found - moving to /z2s_gateway/zb_devices_table_v2.z2s");
+    LittleFS.mkdir("/z2s_gateway");
     LittleFS.rename("/supla/Z2S_zbd_table", "/z2s_gateway/zb_devices_table_v2.z2s");
   }
 

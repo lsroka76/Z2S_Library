@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.84-08/08/2025"
+#define Z2S_VERSION "0.8.85-09/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -1240,6 +1240,26 @@ void buildAdvancedDevicesTabGUI() {
 	}
 }
 
+const char* getSuplaActionName(Supla::Action action_id) {
+
+	uint16_t actions_number = sizeof(Supla_actions)/sizeof(Supla_action_type_t);
+
+	for (uint16_t i = 0; i < actions_number; i++)
+		if (Supla_actions[i].Supla_action_id == action_id)
+			return Supla_actions[i].Supla_action_name;
+	return "Unknown";
+}
+
+const char* getSuplaEventName(Supla::Event event_id) {
+
+	uint16_t events_number = sizeof(Supla_events)/sizeof(Supla_event_type_t);
+
+	for (uint16_t i = 0; i < events_number; i++)
+		if (Supla_events[i].Supla_event_id == event_id)
+			return Supla_events[i].Supla_event_name;
+	return "Unknown";	
+}
+
 void buildTestTabGUI() {
 
 	auto test_tab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), "Test");
@@ -1261,9 +1281,11 @@ void buildTestTabGUI() {
 								"tr:nth-child(even) {background-color: LightSlateGray;}</style>"
 								"<table><tr><th>Action Name</th><th>Source channel</th><th>Destination channel</th>"
 								"<th>Supla event</th><th>Supla action</th><th>Condition</th></tr>"
-								"<tr><td>%s</td><td>%u</td><td>%u</td><td>%u</td><td>%u</td><td>%s</td></tr></table>",
+								"<tr><td>%s</td><td>%u</td><td>%u</td><td>%s</td><td>%s</td><td>%s</td></tr></table>",
 								new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_channel,
-								new_action.src_Supla_event, new_action.dst_Supla_action, new_action.is_condition ? "YES" : "NO");
+								getSuplaEventName(new_action.src_Supla_event), 
+								getSuplaActionName(new_action.dst_Supla_action), 
+								new_action.is_condition ? "YES" : "NO");
 
 	log_i("table html source length: %u", strlen(general_purpose_gui_buffer));
       //log_i("Action name: %s, src_Supla_channel %u, dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, is_condition %u" 
@@ -1276,7 +1298,9 @@ void buildTestTabGUI() {
 	auto table_label = ESPUI.addControl(Control::Type::Label, PSTR("Table label"), working_str, 
 																			 Control::Color::Emerald, test_tab); 
 	
-	
+	working_str = strlen(general_purpose_gui_buffer);
+	auto temp_label = ESPUI.addControl(Control::Type::Label, PSTR("table html source length"), working_str, 
+																			 Control::Color::Emerald, test_tab);
 	
 
 }
@@ -1295,7 +1319,7 @@ void Z2S_buildWebGUI() {
 	buildChannelsTabGUI();
 	buildAdvancedDevicesTabGUI();
 	buildTuyaCustomClusterTabGUI();
-	buildTestTabGUI();
+	//buildTestTabGUI();
 	enableDeviceControls(false);
 	enableChannelControls(false);
 }

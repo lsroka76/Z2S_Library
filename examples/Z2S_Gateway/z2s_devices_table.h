@@ -12,6 +12,8 @@
 #endif //USE_TELNET_CONSOLE
 
 #include <supla/tools.h>
+#include <supla/actions.h>
+#include <supla/events.h>
 
 #define Z2S_ZB_DEVICES_MAX_NUMBER     32
 #define Z2S_CHANNELS_MAX_NUMBER       128
@@ -162,16 +164,16 @@ typedef struct z2s_zb_device_params_s {
 } z2s_zb_device_params_t;
 
 typedef struct z2s_channel_action_s {
-  uint8_t   action_id;
-  bool      enabled;
-  uint8_t   src_Supla_channel;
-  uint8_t   dst_Supla_channel;
-  uint16_t  src_Supla_event;
-  uint16_t  dst_Supla_action;
-  char      action_name[33];
-  bool      is_condition;
-  double    min_value;
-  double    max_value;
+  uint8_t       action_id;
+  bool          enabled;
+  uint8_t       src_Supla_channel;
+  uint8_t       dst_Supla_channel;
+  Supla::Event  src_Supla_event;
+  Supla::Action dst_Supla_action;
+  char          action_name[33];
+  bool          is_condition;
+  double        min_value;
+  double        max_value;
 } z2s_channel_action_t;
 
 typedef struct sonoff_smart_valve_cycle_data_s {

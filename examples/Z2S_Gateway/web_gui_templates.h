@@ -123,6 +123,10 @@ static const Supla_event_type_t Supla_events [] PROGMEM = {
 		{
 			.Supla_event_id = Supla::ON_CHANGE,
 			.Supla_event_name =  "ON CHANGE"
+		},
+		{
+			.Supla_event_id = Supla::ON_CLICK_1,
+			.Supla_event_name =  "ON CLICK 1"
 		}
 };
 
