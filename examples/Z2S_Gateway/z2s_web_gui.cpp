@@ -912,14 +912,15 @@ void buildChannelsTabGUI() {
 	
 	ESPUI.setPanelWide(channel_selector, true);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELS_MAX_NUMBER; devices_counter++) {
-    if (z2s_channels_table[devices_counter].valid_record) {
+	for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+    if (z2s_channels_table[channels_counter].valid_record) {
       
 			//sprintf_P(zigbee_channels_labels[devices_counter], PSTR("Channel #%02d"), devices_counter);
-			working_str = devices_counter;
+			working_str = channels_counter;
+			z2s_channels_table[channels_counter].user_data_4  = ESPUI.addControl(Control::Type::Option, 
+																																					z2s_channels_table[channels_counter].Supla_channel_name, 
+																																					working_str, Control::Color::None, channel_selector);
 			//ESPUI.addControl(Control::Type::Option, zigbee_channels_labels[devices_counter], working_str, Control::Color::None, channel_selector);
-			ESPUI.addControl(Control::Type::Option, z2s_channels_table[devices_counter].Supla_channel_name, working_str, 
-											 Control::Color::None, channel_selector);
 		}
 	}
 	zb_channel_info_label = ESPUI.addControl(Control::Type::Label, PSTR("Channel info"), three_dots_str, Control::Color::Emerald, channelstab);
@@ -2510,8 +2511,8 @@ void removeChannelCallback(Control *sender, int type) {
 		z2s_channels_table[channel_slot].valid_record = false;
       
 		if (Z2S_saveChannelsTable()) {
-			//char status_line[128];
-			sprintf_P(general_purpose_gui_buffer, PSTR("Channel # %02u removed. Restarting..."), channel_slot);
+			Z2S_removeChannelActions(z2s_channels_table[channel_slot].Supla_channel, false);
+			sprintf_P(general_purpose_gui_buffer, PSTR("Channel # %02u with all actions removed. Restarting..."), channel_slot);
       updateLabel_P(channel_status_label, general_purpose_gui_buffer);
       SuplaDevice.scheduleSoftRestart(1000);
 		}
@@ -2523,7 +2524,8 @@ void removeAllChannelsCallback(Control *sender, int type) {
 	if (type == B_UP) {
 		
 		if (Z2S_clearChannelsTable()) {
-      updateLabel_P(channel_status_label, PSTR("All channels removed!. Restarting..."));
+			Z2S_removeChannelActions(0, true);
+      updateLabel_P(channel_status_label, PSTR("All channels and actions removed!. Restarting..."));
       SuplaDevice.scheduleSoftRestart(1000);
 		}
 	}
@@ -2612,8 +2614,11 @@ void editChannelCallback(Control *sender, int type, void *param) {
 				case GUI_CB_UPDATE_CHANNEL_NAME_FLAG : {	
 					strncpy(z2s_channels_table[channel_slot].Supla_channel_name, ESPUI.getControl(channel_name_text)->value.c_str(), 32);
 					z2s_channels_table[channel_slot].Supla_channel_name[32] = '\0';
-					Z2S_saveChannelsTable();
-					
+					if (Z2S_saveChannelsTable()) {
+						log_i("%d, %s", z2s_channels_table[channel_slot].user_data_4, z2s_channels_table[channel_slot].Supla_channel_name);
+						ESPUI.updateControlLabel(z2s_channels_table[channel_slot].user_data_4, z2s_channels_table[channel_slot].Supla_channel_name);
+						ESPUI.jsonReload();
+					}
 				} break;
 
 				case GUI_CB_UPDATE_KEEPALIVE_FLAG : {		

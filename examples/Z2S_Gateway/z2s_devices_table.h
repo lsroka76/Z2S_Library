@@ -104,7 +104,7 @@ typedef struct z2s_device_params_s {
   uint32_t            user_data_1; //Tuya Rain Sensor rain_intensity, RGB mode, HVAC - probably unused
   uint32_t            user_data_2;
   uint32_t            user_data_3;
-  uint32_t            user_data_4;
+  uint32_t            user_data_4; //reserved for WebGUI bits 0...15 for Control_Id
   uint32_t            user_data_flags;
   uint32_t            timeout_secs;
   uint32_t            keep_alive_secs;
@@ -292,6 +292,7 @@ int16_t  Z2S_findPrevActionPosition(uint16_t action_position = Z2S_ACTIONS_MAX_N
 bool     Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action);
 bool     Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action);
 bool     Z2S_removeAction(uint16_t action_index);
+void     Z2S_removeChannelActions(uint8_t channel_id, bool all_channels = false);
 
 void     Z2S_initSuplaActions();
 

@@ -131,6 +131,66 @@ static const Supla_action_type_t Supla_actions [] PROGMEM = {
 	{
 		.Supla_action_id = Supla::TURN_OFF,
 		.Supla_action_name = "TURN OFF"
+	},
+	{
+		.Supla_action_id = Supla::TOGGLE,
+		.Supla_action_name = "TOGGLE"
+	},
+	{
+		.Supla_action_id = Supla::SET,
+		.Supla_action_name = "SET"
+	},
+	{
+		.Supla_action_id = Supla::CLEAR,
+		.Supla_action_name = "CLEAR"
+	},
+	{
+		.Supla_action_id = Supla::OPEN,
+		.Supla_action_name = "OPEN"
+	},
+	{
+		.Supla_action_id = Supla::CLOSE,
+		.Supla_action_name = "CLOSE"
+	},
+	{
+		.Supla_action_id = Supla::STOP,
+		.Supla_action_name = "STOP"
+	},
+	{
+		.Supla_action_id = Supla::BRIGHTEN_ALL,
+		.Supla_action_name = "BRIGHTEN ALL"
+	},
+	{
+		.Supla_action_id = Supla::DIM_ALL,
+		.Supla_action_name = "DIM ALL"
+	},
+	{
+		.Supla_action_id = Supla::ENTER_CONFIG_MODE,
+		.Supla_action_name = "ENTER CONFIG MODE"
+	},
+	{
+		.Supla_action_id = Supla::SOFT_RESTART,
+		.Supla_action_name = "SOFT RESTART"
+	},
+	{
+		.Supla_action_id = Supla::INCREASE_TEMPERATURE,
+		.Supla_action_name = "INCREASE TEMPERATURE"
+	},
+	{
+		.Supla_action_id = Supla::DECREASE_TEMPERATURE,
+		.Supla_action_name = "DECREASE TEMPERATURE"
+	},
+	{
+		.Supla_action_id = Supla::TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES,
+		.Supla_action_name = "TOGGLE_OFF/MANUAL/WEEKLY SCHEDULE MODES"
+	},
+	{
+		.Supla_action_id = Supla::SWITCH_TO_MANUAL_MODE,
+		.Supla_action_name = "SWITCH TO MANUAL MODE"
+	},
+	{
+		.Supla_action_id = Supla::SWITCH_TO_WEEKLY_SCHEDULE_MODE,
+		.Supla_action_name = "SWITCH TO WEEKLY SCHEDULE MODE"
 	}
 };
 
@@ -142,6 +202,46 @@ static const Supla_event_type_t Supla_events [] PROGMEM = {
 		{
 			.Supla_event_id = Supla::ON_CLICK_1,
 			.Supla_event_name =  "ON CLICK 1"
+		},
+		{
+			.Supla_event_id = Supla::ON_TURN_ON,
+			.Supla_event_name =  "ON TURN ON"
+		},
+		{
+			.Supla_event_id = Supla::ON_TURN_OFF,
+			.Supla_event_name =  "ON TURN OFF"
+		},
+		{
+			.Supla_event_id = Supla::ON_OPEN,
+			.Supla_event_name =  "ON VALVE OPEN"
+		},
+		{
+			.Supla_event_id = Supla::ON_CLOSE,
+			.Supla_event_name =  "ON VALVE CLOSE"
+		},
+		{
+			.Supla_event_id = Supla::ON_HVAC_HEATING,
+			.Supla_event_name =  "ON HVAC HEATING"
+		},
+		{
+			.Supla_event_id = Supla::ON_HVAC_STANDBY,
+			.Supla_event_name =  "ON HVAC STANDBY"
+		},
+		{
+			.Supla_event_id = Supla::ON_HVAC_WEEKLY_SCHEDULE_ENABLED,
+			.Supla_event_name =  "ON HVAC WEEKLY SCHEDULE ENABLED"
+		},
+		{
+			.Supla_event_id = Supla::ON_HVAC_WEEKLY_SCHEDULE_DISABLED,
+			.Supla_event_name =  "ON HVAC WEEKLY SCHEDULE DISABLED"
+		},
+		{
+			.Supla_event_id = Supla::ON_HVAC_MODE_OFF,
+			.Supla_event_name =  "ON HVAC MODE OFF"
+		},
+		{
+			.Supla_event_id = Supla::ON_HVAC_MODE_HEAT,
+			.Supla_event_name =  "ON HVAC MODE HEAT"
 		}
 };
 

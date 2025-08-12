@@ -434,7 +434,7 @@ bool Z2S_removeZBDeviceWithAllChannels(uint8_t zb_device_slot) {
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
 
     //bool zb_devices_table_save_required = false;
-    bool devices_table_save_required = false;
+    bool channels_table_save_required = false;
 
     for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
       if ((z2s_channels_table[channels_counter].valid_record) && 
@@ -443,12 +443,13 @@ bool Z2S_removeZBDeviceWithAllChannels(uint8_t zb_device_slot) {
           sizeof(esp_zb_ieee_addr_t)) == 0)) {
 
             z2s_channels_table[channels_counter].valid_record = false;
-            devices_table_save_required = true;
+            Z2S_removeChannelActions(z2s_channels_table[channels_counter].Supla_channel, false);
+            channels_table_save_required = true;
       }
     }
     bool tables_save_result = false;
 
-    if (devices_table_save_required)
+    if (channels_table_save_required)
       tables_save_result = Z2S_saveChannelsTable();
     z2s_zb_devices_table[zb_device_slot].record_id = 0;
     tables_save_result = Z2S_saveZBDevicesTable();
@@ -1037,6 +1038,27 @@ bool Z2S_removeAction(uint16_t action_index) {
   Z2S_saveActionsIndexTable();
 
   return true;
+}
+
+void Z2S_removeChannelActions(uint8_t channel_id, bool all_channels) {
+
+  if (channel_id >= Z2S_CHANNELS_MAX_NUMBER)
+    return;
+
+  z2s_channel_action_t new_action = {};
+
+  for (uint16_t index = 0; index < Z2S_ACTIONS_MAX_NUMBER; index++)
+    if (checkActionsIndexTablePosition(index)) {
+
+      if (all_channels) {
+        Z2S_removeAction(index);
+        continue;
+      }
+
+      Z2S_loadAction(index, new_action);      
+      if (( new_action.src_Supla_channel == channel_id) || ( new_action.dst_Supla_channel))
+        Z2S_removeAction(index);
+    }  
 }
 
 void Z2S_initSuplaActions() {
