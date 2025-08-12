@@ -1,7 +1,7 @@
 #ifndef Z2S_VERSION_INFO_H_
 #define Z2S_VERSION_INFO_H_
 
-#define Z2S_VERSION "0.8.85-09/08/2025"
+#define Z2S_VERSION "0.8.86-12/08/2025"
 
 #ifdef USE_SUPLA_WEB_SERVER 
 

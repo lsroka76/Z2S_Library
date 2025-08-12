@@ -1331,23 +1331,28 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
-  z2s_channel_action_t test_action;
+  /*z2s_channel_action_t test_action;
 
-   //uint8_t   action_id;
-  //bool      enabled;
+  
+  test_action.is_enabled = true;
   test_action.src_Supla_channel = 1;
   test_action.dst_Supla_channel = 2;
   test_action.src_Supla_event = Supla::ON_CLICK_1;
   test_action.dst_Supla_action = Supla::TURN_ON;
-  strcpy(test_action.action_name, "Test A(c)tion");
+  strcpy(test_action.action_name, "Test Action 1");
+  strcpy(test_action.action_description, "Short description");
   test_action.is_condition = false;
   test_action.min_value = 12.8;
   test_action.max_value = 1214.56;
 
-  /*Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
   Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
+  strcpy(test_action.action_name, "Test Action 2");
   Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
+  strcpy(test_action.action_name, "Test Action 3");
   Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
+  strcpy(test_action.action_name, "Test Action 4");
+  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
+  strcpy(test_action.action_name, "Test Action 5");
   Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);*/
 
   Z2S_initSuplaActions();

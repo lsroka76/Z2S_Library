@@ -31,6 +31,7 @@
 
 #define USER_DATA_FLAG_SED_TIMEOUT            (1 << 0) // 0x01
 #define USER_DATA_FLAG_MSG_DISABLED           (1 << 1) // 0x02
+
 #define USER_DATA_FLAG_CORRECTIONS_DISABLED   (1 << 2) // 0x04
 #define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE   (1 << 3) // 0x08 
 #define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG    (1 << 4) // 0x10 
@@ -164,13 +165,14 @@ typedef struct z2s_zb_device_params_s {
 } z2s_zb_device_params_t;
 
 typedef struct z2s_channel_action_s {
-  uint8_t       action_id;
-  bool          enabled;
+  uint16_t      action_id;
+  bool          is_enabled;
   uint8_t       src_Supla_channel;
   uint8_t       dst_Supla_channel;
   Supla::Event  src_Supla_event;
   Supla::Action dst_Supla_action;
   char          action_name[33];
+  char          action_description[128];
   bool          is_condition;
   double        min_value;
   double        max_value;
@@ -281,7 +283,12 @@ bool     clearActionsIndexTablePosition(uint16_t index_position);
 bool     Z2S_loadActionsIndexTable();
 bool     Z2S_saveActionsIndexTable();
 uint16_t Z2S_getActionsNumber();
+int16_t  Z2S_getActionCounter(uint16_t action_position);
+
 int16_t  Z2S_findFreeActionIndex();
+int16_t  Z2S_findNextActionPosition(uint16_t action_position = 0);
+int16_t  Z2S_findPrevActionPosition(uint16_t action_position = Z2S_ACTIONS_MAX_NUMBER);
+
 bool     Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action);
 bool     Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action);
 bool     Z2S_removeAction(uint16_t action_index);

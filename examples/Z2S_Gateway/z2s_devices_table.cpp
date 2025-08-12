@@ -931,6 +931,25 @@ uint16_t Z2S_getActionsNumber() {
   return actions_number;
 }
 
+int16_t  Z2S_getActionCounter(uint16_t action_position) {
+
+  if (!checkActionsIndexTablePosition(action_position))
+      return -1;
+  
+  uint16_t action_counter = 0;
+
+  for (uint16_t index = 0; index < Z2S_ACTIONS_MAX_NUMBER; index++) {
+    
+    if (action_position == index)
+      return action_counter + 1;
+
+    if (checkActionsIndexTablePosition(index))
+      action_counter++;
+  }
+
+  return -1;
+}
+
 int16_t  Z2S_findFreeActionIndex() {
 
   for (uint16_t index = 0; index < Z2S_ACTIONS_MAX_NUMBER; index++)
@@ -939,6 +958,25 @@ int16_t  Z2S_findFreeActionIndex() {
   
   return -1; 
 }
+
+int16_t  Z2S_findNextActionPosition(uint16_t action_position) {
+
+  for (uint16_t index = action_position; index < Z2S_ACTIONS_MAX_NUMBER; index++)
+    if (checkActionsIndexTablePosition(index))
+      return index;
+  
+  return -1;
+}
+
+int16_t  Z2S_findPrevActionPosition(uint16_t action_position) {
+
+for (uint16_t index = action_position; index >= 0; index--)
+    if (checkActionsIndexTablePosition(index))
+      return index;
+  
+  return -1;
+}
+
 
 bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
 
@@ -1017,8 +1055,8 @@ void Z2S_initSuplaActions() {
     
     if (checkActionsIndexTablePosition(index)) {
       Z2S_loadAction(index, new_action);
-      //Z2S_add_action(new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_action, new_action.dst_Supla_channel, 
-        //            new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);
+      Z2S_add_action(new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_action, new_action.dst_Supla_channel, 
+                     new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);
       log_i("Action name: %s, src_Supla_channel %u, dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, is_condition %u" 
             "min_value %f, max_value %f", new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_action, new_action.dst_Supla_channel, 
                     new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);    
