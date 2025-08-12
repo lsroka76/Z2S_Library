@@ -1906,6 +1906,15 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_SID);
                           } break;
 
+                          case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
+                            
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ON_OFF_SID, "SWITCH", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_SID, "EM");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID, "ENERGY (TODAY)", 0, "kWh");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID, "ENERGY (MONTH)", 0, "kWh");   
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID, "ENERGY (YESTERDAY)", 0, "kWh");
+                          } break;
+
                           case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR: {
                             
                             Z2S_addZ2SDevice(joined_device, ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID, "TH");

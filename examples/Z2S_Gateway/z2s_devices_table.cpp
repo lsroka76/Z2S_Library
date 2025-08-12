@@ -1348,6 +1348,67 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
       msgZ2SDeviceIASzone(channel_number_slot, *(uint8_t*)attribute->data.value, rssi);      
     } break;
 
+    case SONOFF_CUSTOM_CLUSTER_AC_CURRENT_ID:
+    case SONOFF_CUSTOM_CLUSTER_AC_VOLTAGE_ID:
+    case SONOFF_CUSTOM_CLUSTER_AC_POWER_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+                                                              SONOFF_ELECTRICITY_METER_SID);
+      
+      if (channel_number_slot < 0) {
+        no_channel_found_error_func(ieee_addr_str);
+        return;
+      }
+      switch (attribute->id) {
+
+        case SONOFF_CUSTOM_CLUSTER_AC_CURRENT_ID:
+          msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_CURRENT_A_SEL, *(int32_t*)attribute->data.value, rssi); break;
+        case SONOFF_CUSTOM_CLUSTER_AC_VOLTAGE_ID:
+          msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, *(int32_t*)attribute->data.value, rssi); break;
+        case SONOFF_CUSTOM_CLUSTER_AC_POWER_ID:
+          msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, *(int32_t*)attribute->data.value, rssi); break;
+      }      
+    } break;
+
+    case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_TODAY_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                              SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID);
+      
+      if (channel_number_slot < 0) {
+        no_channel_found_error_func(ieee_addr_str);
+        return;
+      }
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            *(uint32_t*)attribute->data.value, rssi);     
+    } break;
+
+    case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_MONTH_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                              SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID);
+      
+      if (channel_number_slot < 0) {
+        no_channel_found_error_func(ieee_addr_str);
+        return;
+      }
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            *(uint32_t*)attribute->data.value, rssi);     
+    } break;
+
+    case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_YESTERDAY_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                              SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID);
+      
+      if (channel_number_slot < 0) {
+        no_channel_found_error_func(ieee_addr_str);
+        return;
+      }
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            *(uint32_t*)attribute->data.value, rssi);     
+    } break;
+
     case SONOFF_CUSTOM_CLUSTER_IRRIGATION_CYCLE_MODE_ID: {
         
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
@@ -1357,7 +1418,8 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, *(uint8_t*)attribute->data.value, rssi); 
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            *(uint8_t*)attribute->data.value, rssi); 
     } break;
 
     case SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID:
@@ -2220,6 +2282,23 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, sub_id, false); 
         else
           addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit);
+      } break;
+
+      case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
+
+        switch (sub_id) {
+          
+          case SONOFF_ON_OFF_SID:
+            addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, sub_id, name, func); break;
+            
+          case SONOFF_ELECTRICITY_METER_SID:
+            addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, sub_id, true); break;
+
+          case SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID:
+          case SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID:
+          case SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID:
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+        }
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {

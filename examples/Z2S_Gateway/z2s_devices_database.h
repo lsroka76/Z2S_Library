@@ -101,6 +101,8 @@
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1       0x4101
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2       0x4102
 
+#define Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER  0x4200
+
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER    0x4500
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1  0x4501
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2  0x4502
@@ -263,6 +265,12 @@
 //#define IAS_ZONE_TAMPER_SID                         0x02
 #define ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID          0x10
 #define ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID       0x11
+
+#define SONOFF_ON_OFF_SID                             0X00
+#define SONOFF_ELECTRICITY_METER_SID                  0x01
+#define SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID     0x02
+#define SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID     0x03
+#define SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID 0x04
 
 #define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID           0x00
 #define TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID  0x01
@@ -523,6 +531,10 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_METERING,
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER, .z2s_device_clusters_count = 2, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      SONOFF_CUSTOM_CLUSTER }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -2214,10 +2226,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_1},
                               { 2, Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2 }}},
 
-  
+  { .manufacturer_name = "SONOFF", .model_name = "S60ZBTPF",
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 1},
     
 };
 
 #endif
 //Develco Products A/S::WISZB-120
 //Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F
+//
