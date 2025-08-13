@@ -893,6 +893,48 @@ static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "TEMPERATURE SENSOR SELECT"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_AC_CURRENT_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
+		.zigbee_attribute_name = "AC CURRENT"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_AC_VOLTAGE_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
+		.zigbee_attribute_name = "AC VOLTAGE"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_AC_POWER_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
+		.zigbee_attribute_name = "AC ACTIVE POWER"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_AC_ENERGY_TODAY_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
+		.zigbee_attribute_name = "ENERGY (TODAY)"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_AC_ENERGY_MONTH_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
+		.zigbee_attribute_name = "ENERGY (MONTH)"
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_AC_ENERGY_YESTERDAY_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
+		.zigbee_attribute_name = "ENERGY (YESTERDAY)"	
+	 },
+	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_OUTLET_CONTROL_PROTECT_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "OUTLET CONTROL PROTECT"	
 	 }
 };
 	 
@@ -982,7 +1024,18 @@ static const zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
 		.zigbee_attribute_value_name = "EXTERNAL",
 		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_OUTLET_CONTROL_PROTECT_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_OUTLET_CONTROL_PROTECT_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 0x01
 	}
 };
-
 #endif //WEB_GUI_TEMPLATES_H_

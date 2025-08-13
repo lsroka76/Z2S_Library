@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.89-13/08/2025"
+#define Z2S_VERSION "0.8.90-13/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -27,7 +27,7 @@ extern uint32_t _gui_start_delay;
 
 extern uint8_t _z2s_security_level;
 
-#define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 16
+#define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 24
 #define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 16
 
 //UI handles
