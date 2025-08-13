@@ -1379,8 +1379,9 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
+      double energy_value = ((double)(*(uint32_t*)attribute->data.value)) / 1000;
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-                                            *(uint32_t*)attribute->data.value, rssi);     
+                                            energy_value, rssi);     
     } break;
 
     case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_MONTH_ID: {
@@ -1392,8 +1393,9 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
+      double energy_value = ((double)(*(uint32_t*)attribute->data.value)) / 1000;
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-                                            *(uint32_t*)attribute->data.value, rssi);     
+                                            energy_value, rssi);      
     } break;
 
     case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_YESTERDAY_ID: {
@@ -1405,8 +1407,9 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
+      double energy_value = ((double)(*(uint32_t*)attribute->data.value)) / 1000;
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-                                            *(uint32_t*)attribute->data.value, rssi);     
+                                            energy_value, rssi);      
     } break;
 
     case SONOFF_CUSTOM_CLUSTER_IRRIGATION_CYCLE_MODE_ID: {
