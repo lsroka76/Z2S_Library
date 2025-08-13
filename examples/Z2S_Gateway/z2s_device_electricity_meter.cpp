@@ -6,8 +6,17 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   bool _one_phase = true;
 
   uint16_t current_multiplier_modifier = 1;
-  uint16_t current_multiplier_divisor  = 1;
+  uint16_t current_divisor_modifier    = 1;
   
+  uint16_t current_multiplier = 0;
+  uint16_t current_divisor    = 0;
+
+  uint16_t voltage_multiplier = 0;
+  uint16_t voltage_divisor    = 0;
+  
+  uint16_t active_power_multiplier = 0;
+  uint16_t active_power_divisor    = 0;
+
   switch (z2s_channels_table[channel_number_slot].model_id) {
     
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
@@ -18,11 +27,33 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
       _isTuya = true; _active_query = false;
     } break;
 
-    case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
-      _one_phase = false; break;
+    case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
+      _one_phase = false; 
+      voltage_multiplier = 1;
+      voltage_divisor    = 10;
+    } break;
+
+    case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
+      _one_phase = true;
+      voltage_multiplier = 1;
+      voltage_divisor    = 10;
+    } break;
 
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A:
-      current_multiplier_divisor = 1000; break;
+      current_divisor_modifier = 1000; break;
+
+    case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
+
+    current_multiplier = 1;
+    current_divisor    = 10;
+
+    voltage_multiplier = 1;
+    voltage_divisor    = 1000;
+  
+    active_power_multiplier = 1;
+    active_power_divisor    = 1000;
+
+    } break;
 
     default: {
       _isTuya = false; _active_query = false;
@@ -44,7 +75,19 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
   Supla_Z2S_ElectricityMeter->setCurrentMultiplierModifier(current_multiplier_modifier);
 
-  Supla_Z2S_ElectricityMeter->setCurrentDivisorModifier(current_multiplier_divisor);
+  Supla_Z2S_ElectricityMeter->setCurrentDivisorModifier(current_divisor_modifier);
+
+  Supla_Z2S_ElectricityMeter->setVoltageMultiplier(voltage_multiplier);
+
+  Supla_Z2S_ElectricityMeter->setVoltageDivisor(voltage_divisor);
+
+  Supla_Z2S_ElectricityMeter->setCurrentMultiplier(current_multiplier);
+
+  Supla_Z2S_ElectricityMeter->setCurrentDivisor(current_divisor);
+
+  Supla_Z2S_ElectricityMeter->setActivePowerMultiplier(active_power_multiplier);
+
+  Supla_Z2S_ElectricityMeter->setActivePowerDivisor(active_power_divisor);
 
 }
 

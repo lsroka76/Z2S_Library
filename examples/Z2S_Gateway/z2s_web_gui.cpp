@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.88-12/08/2025"
+#define Z2S_VERSION "0.8.89-13/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
