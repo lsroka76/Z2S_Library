@@ -1,8 +1,9 @@
 /* Zigbee Core Functions */
 
 #include "ZigbeeCore.h"
-#if SOC_IEEE802154_SUPPORTED //
+//#if SOC_IEEE802154_SUPPORTED //
 //&& CONFIG_ZB_ENABLED
+#if CONFIG_ZB_ENABLED
 
 #include "ZigbeeHandlers.cpp"
 #include "Arduino.h"
@@ -30,6 +31,11 @@ ZigbeeCore::ZigbeeCore() {
       log_e("Semaphore creation failed");
     }
   }
+
+  //esp_zb_radio_config_t 
+  //_radio_config = ZIGBEE_DEFAULT_UART_RCP_RADIO_CONFIG();
+  //Zigbee.setRadioConfig(radio_config);
+
 }
 ZigbeeCore::~ZigbeeCore() {}
 

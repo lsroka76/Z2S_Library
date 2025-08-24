@@ -1218,6 +1218,9 @@ void setup() {
 
   log_i("setup start");
 
+  //log_d("Total PSRAM: %d", ESP.getPsramSize());
+  //log_d("Free PSRAM: %d", ESP.getFreePsram());
+
   pinMode(BUTTON_PIN, INPUT);
 
   pinMode(WIFI_ENABLE, OUTPUT); // pinMode(3, OUTPUT); (credits @Zibi_007)

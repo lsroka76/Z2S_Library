@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.91-14/08/2025"
+#define Z2S_VERSION "0.8.92-24/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -499,10 +499,11 @@ void fillMemoryUptimeInformation(char *buf) {
 
 		snprintf_P(buf, 1024, PSTR("<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
 						"<b><i>Free Heap:</b></i> %u B <b>| <i>Minimal Free Heap:</b></i> %u B <b>| <i>"
-						"HeapSize:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br><br>"
+						"HeapSize:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
+						"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
 						"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s"), 
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
-						ESP.getMaxAllocHeap(), ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
+						ESP.getMaxAllocHeap(), ESP.getPsramSize(), ESP.getFreePsram(), ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
 
 		log_i("Memory & uptime information %s", buf);
 	}

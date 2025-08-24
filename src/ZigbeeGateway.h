@@ -1,11 +1,10 @@
-/* Class of Zigbee Temperature sensor endpoint inherited from common EP class */
-
 #pragma once
 
 #include "soc/soc_caps.h"
 #include "sdkconfig.h"
-#if SOC_IEEE802154_SUPPORTED 
+//#if SOC_IEEE802154_SUPPORTED 
 //&& CONFIG_ZB_ENABLED
+#if CONFIG_ZB_ENABLED
 
 #include "ZigbeeEP.h"
 #include "ha/esp_zigbee_ha_standard.h"

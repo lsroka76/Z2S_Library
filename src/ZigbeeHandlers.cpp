@@ -13,8 +13,9 @@ extern "C" {
 #include "Arduino.h"
 #include "send_default_resp.h"
 
-#if SOC_IEEE802154_SUPPORTED 
+//#if SOC_IEEE802154_SUPPORTED 
 //&& CONFIG_ZB_ENABLED
+#if CONFIG_ZB_ENABLED
 
 // forward declaration of all implemented handlers
 static esp_err_t zb_attribute_set_handler(const esp_zb_zcl_set_attr_value_message_t *message);

@@ -2,8 +2,9 @@
 
 #include "ZigbeeEP.h"
 
-#if SOC_IEEE802154_SUPPORTED 
+//#if SOC_IEEE802154_SUPPORTED 
 //&& CONFIG_ZB_ENABLED
+#if CONFIG_ZB_ENABLED
 
 #include "esp_zigbee_cluster.h"
 #include "zcl/esp_zigbee_zcl_power_config.h"

@@ -3,8 +3,9 @@
 #pragma once
 
 #include "ZigbeeCore.h"
-#if SOC_IEEE802154_SUPPORTED
+//#if SOC_IEEE802154_SUPPORTED
 // && CONFIG_ZB_ENABLED
+#if CONFIG_ZB_ENABLED
 
 #include <Arduino.h>
 

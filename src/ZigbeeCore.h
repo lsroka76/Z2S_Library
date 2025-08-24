@@ -4,11 +4,13 @@
 
 #include "soc/soc_caps.h"
 #include "sdkconfig.h"
-#if SOC_IEEE802154_SUPPORTED 
+//#if SOC_IEEE802154_SUPPORTED 
 //&& CONFIG_ZB_ENABLED
+#if CONFIG_ZB_ENABLED
 
 #include "esp_zigbee_core.h"
 #include "zdo/esp_zigbee_zdo_common.h"
+#include "aps/esp_zigbee_aps.h"
 #include <esp32-hal-log.h>
 #include <list>
 #include "ZigbeeEP.h"
@@ -59,6 +61,30 @@ typedef enum {
           .max_children = 32,                                                                 \
         },                                                                                    \
     }                                                                                         \
+  }
+
+#define GATEWAY_RCP_UART_PORT   UART_NUM_1
+#define GATEWAY_RCP_RX_PIN      18
+#define GATEWAY_RCP_TX_PIN      17
+
+#define ZIGBEE_DEFAULT_UART_RCP_RADIO_CONFIG()   \
+  {                                              \
+    .radio_mode = ZB_RADIO_MODE_UART_RCP,        \
+    .radio_uart_config = {                       \
+      .port = (uart_port_t)GATEWAY_RCP_UART_PORT,\
+      .rx_pin = (gpio_num_t)GATEWAY_RCP_RX_PIN,  \
+      .tx_pin = (gpio_num_t)GATEWAY_RCP_TX_PIN,  \
+      .uart_config =                             \
+        {                                        \
+          .baud_rate = 460800,                   \
+          .data_bits = UART_DATA_8_BITS,         \
+          .parity = UART_PARITY_DISABLE,         \
+          .stop_bits = UART_STOP_BITS_1,         \
+          .flow_ctrl = UART_HW_FLOWCTRL_DISABLE, \
+          .rx_flow_ctrl_thresh = 0,              \
+          .source_clk = UART_SCLK_DEFAULT,       \
+        },                                       \
+    },                                           \
   }
 
 class ZigbeeCore {
