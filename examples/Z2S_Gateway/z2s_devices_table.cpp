@@ -1077,11 +1077,13 @@ void Z2S_initSuplaActions() {
     
     if (checkActionsIndexTablePosition(index)) {
       Z2S_loadAction(index, new_action);
-      Z2S_add_action(new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_action, new_action.dst_Supla_channel, 
-                     new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);
-      log_i("Action name: %s, src_Supla_channel %u, dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, is_condition %u" 
-            "min_value %f, max_value %f", new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_action, new_action.dst_Supla_channel, 
-                    new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);    
+      if (new_action.is_enabled)
+        Z2S_add_action(new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_action, new_action.dst_Supla_channel, 
+                       new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);
+
+      log_i("Action name: %s, enabled: %s, src_Supla_channel %u, dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, is_condition %u" 
+            "min_value %f, max_value %f", new_action.action_name, new_action.is_enabled ? "YES" : "NO", new_action.src_Supla_channel, new_action.dst_Supla_action, 
+            new_action.dst_Supla_channel, new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);    
     }
   }
 }
