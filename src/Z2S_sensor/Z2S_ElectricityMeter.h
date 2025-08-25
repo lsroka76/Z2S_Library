@@ -117,26 +117,45 @@ uint16_t getActivePowerDivisor() {
  
 void setVoltage2(int phase, uint32_t voltage) {
 
+  uint32_t em_voltage;
+
   if ((_voltage_multiplier == 0) || (_voltage_divisor == 0)) 
-    setVoltage(phase, voltage * 100);
+    em_voltage = voltage * 100;
   else 
-    setVoltage(phase, (voltage * _voltage_multiplier * 100) / _voltage_divisor);
+    em_voltage = (voltage * _voltage_multiplier * 100) / _voltage_divisor;
+
+  log_d("em_voltage = %ld", em_voltage);
+
+  setVoltage(phase, em_voltage);
 }
 
 void setCurrent2(int phase, uint32_t current) {
 
+  uint32_t em_current;
+
   if ((_current_multiplier == 0) || (_current_divisor == 0))
-    setCurrent(phase, current * 1);
+    em_current = current * 1;
   else	
-   setCurrent(phase, (current * _current_multiplier * _current_multiplier_modifier * 1000) / (_current_divisor * _current_divisor_modifier));
+    em_current = (current * _current_multiplier * _current_multiplier_modifier * 1000) / (_current_divisor * _current_divisor_modifier);
+
+  log_d("em_current = %ld", em_current);
+
+  setCurrent(phase, em_current);
 }
 
 void setPowerActive2(int phase, int64_t power) {
 
+  int64_t em_power;
+  
   if ((_active_power_multiplier == 0) || (_active_power_divisor == 0))
-    setPowerActive(phase, power * 100000);
+    em_power = power * 100000;
   else
-    setPowerActive(phase, (power * _active_power_multiplier * 100000) / _active_power_divisor);
+    em_power = (power * _active_power_multiplier * 100000) / _active_power_divisor;
+
+  log_d("em_power = %lld", em_power);
+
+  setPowerActive(phase, em_power);
+
 }
 
 void setFwdActEnergy2(int phase, unsigned _supla_int64_t energy) {
