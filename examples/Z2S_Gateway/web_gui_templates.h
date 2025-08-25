@@ -36,31 +36,31 @@ typedef struct zigbee_attribute_value_s {
 	const uint16_t zigbee_attribute_id;
 	const uint16_t zigbee_cluster_id;
 	const char* zigbee_attribute_value_name;
-	uint32_t zigbee_attribute_value;
+	const uint32_t zigbee_attribute_value;
 } zigbee_attribute_value_t;
 
 typedef struct Tuya_datapoint_type_s {
 	const char* Tuya_datapoint_type_name;
-	uint8_t Tuya_datapoint_type_id;
-	uint16_t Tuya_datapoint_type_length;
+	const uint8_t Tuya_datapoint_type_id;
+	const uint16_t Tuya_datapoint_type_length;
 } Tuya_datapoint_type_t;
 
 typedef struct Supla_action_type_s {
-	Supla::Action	Supla_action_id;
+	const Supla::Action	Supla_action_id;
 	const char* Supla_action_name;
 } Supla_action_type_t;
 
 typedef struct Supla_event_type_s {
-	Supla::Event Supla_event_id;
+	const Supla::Event Supla_event_id;
 	const char* Supla_event_name;
 } Supla_event_type_t;
 
 typedef struct Supla_condition_type_s {
-	Supla::Conditions Supla_condition_id;
+	const Supla::Conditions Supla_condition_id;
 	const char* Supla_condition_name;
 } Supla_condition_type_t;
 
-static const zigbee_cluster_t zigbee_clusters[] PROGMEM = 
+static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = 
 	{{.zigbee_cluster_name = "BASIC",										.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_BASIC},
 	 {.zigbee_cluster_name = "POWER CONFIG",						.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG},
 	 {.zigbee_cluster_name = "IDENTIFY",								.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY},
@@ -92,7 +92,7 @@ static const zigbee_cluster_t zigbee_clusters[] PROGMEM =
 	 {.zigbee_cluster_name = "LUMI (0xFCC0)",						.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER}
 	 };
 
-static const zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
+static constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
 
 	{{.zigbee_datatype_name = "NULL",			.zigbee_datatype_size = 0x00,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_NULL},
 	 {.zigbee_datatype_name = "BOOL",			.zigbee_datatype_size = 0x01,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL},
@@ -113,7 +113,7 @@ static const zigbee_datatype_t zigbee_datatypes[] PROGMEM =
 	 {.zigbee_datatype_name = "SET",			.zigbee_datatype_size = 0x00,	.zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET}
 	};
 
-static const Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM = 
+static constexpr Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM = 
 	
 	{{.Tuya_datapoint_type_name = "RAW", 		.Tuya_datapoint_type_id = 0x00, .Tuya_datapoint_type_length = 0x00},
 	 {.Tuya_datapoint_type_name = "BOOL", 	.Tuya_datapoint_type_id = 0x01, .Tuya_datapoint_type_length = 0x01},
@@ -123,7 +123,7 @@ static const Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM =
 	 {.Tuya_datapoint_type_name = "BITMAP", .Tuya_datapoint_type_id = 0x05, .Tuya_datapoint_type_length = 0x01}
 	};
 
-static const Supla_action_type_t Supla_actions [] PROGMEM = {
+static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{
 		.Supla_action_id = Supla::TURN_ON,
 		.Supla_action_name = "TURN ON"
@@ -194,7 +194,7 @@ static const Supla_action_type_t Supla_actions [] PROGMEM = {
 	}
 };
 
-static const Supla_event_type_t Supla_events [] PROGMEM = {
+static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 		{
 			.Supla_event_id = Supla::ON_CHANGE,
 			.Supla_event_name =  "ON CHANGE"
@@ -245,7 +245,7 @@ static const Supla_event_type_t Supla_events [] PROGMEM = {
 		}
 };
 
-static const Supla_condition_type_t Supla_conditions [] PROGMEM = {
+static constexpr Supla_condition_type_t Supla_conditions [] PROGMEM = {
 		{
 			.Supla_condition_id = Supla::ON_LESS,
 			.Supla_condition_name =  "ON LESS"
@@ -276,7 +276,7 @@ static const Supla_condition_type_t Supla_conditions [] PROGMEM = {
 		},
 };
 
-static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {
+static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 //POWER CONFIG
 	{
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID, 
@@ -939,7 +939,7 @@ static const zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 };
 	 
 
-static const zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
+static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 
 	{
 		.zigbee_attribute_id = ESP_ZB_ZCL_ATTR_ON_OFF_START_UP_ON_OFF,

@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.8.93-24/08/2025"
+#define Z2S_VERSION "0.8.94-25/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -207,24 +207,24 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 
 
 
-const static char* three_dots_str PROGMEM = "...";
-const static char* empty_str PROGMEM = "";
+static constexpr char* three_dots_str PROGMEM = "...";
+static constexpr char* empty_str PROGMEM = "";
 
-const static char* device_query_failed_str 								PROGMEM = "Device data query failed - try to wake it up first!";
-const static char* device_async_query_str 								PROGMEM = "Device data query sent asynchronously";
-const static char* device_query_attr_size_error_str 			PROGMEM = "Error - attribute size has to be in range 0..255";
-const static char* Tuya_device_payload_size_error_str 		PROGMEM = "Error - Tuya DP payload size has to be in range 0..58";
-const static char* device_query_attr_size_mismatch_str 		PROGMEM = "Error - attribute size and attribute value length mismatch";
-const static char* Tuya_device_payload_size_mismatch_str	PROGMEM = "Error - Tuya payload type length and payload value length mismatch";
+static constexpr char* device_query_failed_str 								PROGMEM = "Device data query failed - try to wake it up first!";
+static constexpr char* device_async_query_str 								PROGMEM = "Device data query sent asynchronously";
+static constexpr char* device_query_attr_size_error_str 			PROGMEM = "Error - attribute size has to be in range 0..255";
+static constexpr char* Tuya_device_payload_size_error_str 		PROGMEM = "Error - Tuya DP payload size has to be in range 0..58";
+static constexpr char* device_query_attr_size_mismatch_str 		PROGMEM = "Error - attribute size and attribute value length mismatch";
+static constexpr char* Tuya_device_payload_size_mismatch_str	PROGMEM = "Error - Tuya payload type length and payload value length mismatch";
 
-const static char* factory_reset_enabled_str PROGMEM = "Zigbee stack factory reset enabled";
-const static char* factory_reset_disabled_str PROGMEM = "Zigbee stack factory reset disabled";
-const static char* zigbee_tx_power_text_str PROGMEM = "Press Read to get current value or enter value between -24 and 20 and press Update";
-const static char* zigbee_primary_channel_text_str PROGMEM = "Press Read to get current value or enter value between 11 and 26 and press Update";
+static constexpr char* factory_reset_enabled_str PROGMEM = "Zigbee stack factory reset enabled";
+static constexpr char* factory_reset_disabled_str PROGMEM = "Zigbee stack factory reset disabled";
+static constexpr char* zigbee_tx_power_text_str PROGMEM = "Press Read to get current value or enter value between -24 and 20 and press Update";
+static constexpr char* zigbee_primary_channel_text_str PROGMEM = "Press Read to get current value or enter value between 11 and 26 and press Update";
 
 static char general_purpose_gui_buffer[1024] = {};
 
-const static char* disabledstyle PROGMEM = "background-color: #bbb; border-bottom: #999 3px solid;";
+static constexpr char* disabledstyle PROGMEM = "background-color: #bbb; border-bottom: #999 3px solid;";
 const String clearLabelStyle PROGMEM = "background-color: unset; width: 100%;";
 
 char zigbee_devices_labels[Z2S_ZB_DEVICES_MAX_NUMBER][11] = {};
