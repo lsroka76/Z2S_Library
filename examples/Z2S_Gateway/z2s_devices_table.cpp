@@ -2113,7 +2113,7 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
   while (channel_number_slot >= 0)
   {
     device->model_id = z2s_channels_table[channel_number_slot].model_id;
-    device->user_data = z2s_channels_table[channel_number_slot].Supla_channel;
+    device->user_data = z2s_channels_table[channel_number_slot].Supla_channel; //probably not used ?
 
     channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   } 
@@ -2123,6 +2123,8 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
 
 
 void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster) {
+
+  //not used
 }
 
 uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name, uint32_t func, char *unit) {

@@ -1715,6 +1715,9 @@ void loop() {
 
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[k].z2s_device_desc_id;
+                        
+                        for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
+                          zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
 
                         if ((Z2S_DEVICES_LIST[i].z2s_device_desc_id == Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR) &&
                             (endpoint_id == 35)) {
@@ -1722,14 +1725,11 @@ void loop() {
                               esp_zb_ieee_addr_t gateway_ieee_addr;
                               memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
                               zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                                                           ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr);
+                                                           ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr, true, 1, 0x1015);
                               esp_zb_get_long_address(gateway_ieee_addr);
                               zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                                                           ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr);
+                                                           ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr, true, 1, 0x1015);
                             }
-                        
-                        for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
-                          zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
                         
                         if (j == 0) //(endpoint_id == 1)
                           Z2S_addZBDeviceTableSlot(joined_device->ieee_addr,
