@@ -9,6 +9,8 @@
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1           0x1001
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL        0x1002
 
+#define Z2S_DEVICE_DESC_TEMPERATURE_SENSOR              0x1005
+
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR        0x1010
 
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10     0x1020
@@ -429,6 +431,9 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
       ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
       ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT }},
+
+   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPERATURE_SENSOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -1662,7 +1667,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "Develco Products A/S", .model_name = "WISZB-120", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR, .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {{ 35, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B },
-                             { 38, Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR }}},
+                             { 38, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR }}},
 
   { .manufacturer_name = "Develco Products A/S", .model_name = "SPLZB-132", 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 2,

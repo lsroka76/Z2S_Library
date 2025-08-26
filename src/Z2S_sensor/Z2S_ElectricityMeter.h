@@ -124,7 +124,7 @@ void setVoltage2(int phase, uint32_t voltage) {
   else 
     em_voltage = (voltage * _voltage_multiplier * 100) / _voltage_divisor;
 
-  log_d("em_voltage = %ld", em_voltage);
+  log_d("_voltage_multiplier = %d, _voltage_divisor = %d, em_voltage = %ld", _voltage_multiplier, _voltage_divisor, em_voltage);
 
   setVoltage(phase, em_voltage);
 }
@@ -138,7 +138,7 @@ void setCurrent2(int phase, uint32_t current) {
   else	
     em_current = (current * _current_multiplier * _current_multiplier_modifier * 1000) / (_current_divisor * _current_divisor_modifier);
 
-  log_d("em_current = %ld", em_current);
+  log_d("_current_multiplier = %d, _current_divisor = %d, em_current = %ld", _current_multiplier, _current_divisor, em_current);
 
   setCurrent(phase, em_current);
 }
@@ -152,7 +152,7 @@ void setPowerActive2(int phase, int64_t power) {
   else
     em_power = (power * _active_power_multiplier * 100000) / _active_power_divisor;
 
-  log_d("em_power = %lld", em_power);
+  log_d("_active_power_multiplier = %d, _active_power_divisor = %d, em_power = %lld", _active_power_multiplier, _active_power_divisor, em_power);
 
   setPowerActive(phase, em_power);
 
@@ -278,17 +278,17 @@ void setEnergyInitialCounter(uint64_t energy_initial_counter) {
 
 uint32_t getKeepAliveSecs() {
 
-  return _keep_alive_ms * 1000;
+  return _keep_alive_ms / 1000;
 }
 
 uint32_t getTimeoutSecs() {
 
-  return _timeout_ms * 1000;
+  return _timeout_ms / 1000;
 }
 
 uint32_t getRefreshSecs() {
 
-  return _refresh_ms * 1000;
+  return _refresh_ms / 1000;
 }
 
 uint64_t getEnergyInitialCounter() {
@@ -346,21 +346,21 @@ void iterateAlways() override {
     ZigbeeGateway 	 *_gateway = nullptr;
     zbg_device_params_t  _device;  
     uint64_t		 *_data_counter = nullptr;
-    bool                 _active_query = false;
+    bool                 _active_query  = false;
     esp_zb_uint48_t      _write_mask;
     bool                 _isTuya = false;
 
     bool fresh_start	= true;
 
-    uint16_t _voltage_multiplier = 0;
-    uint16_t _voltage_divisor 	= 0;
-    uint16_t _current_multiplier = 0;
-    uint16_t _current_divisor = 0;
+    uint16_t _voltage_multiplier      = 0;
+    uint16_t _voltage_divisor 	      = 0;
+    uint16_t _current_multiplier      = 0;
+    uint16_t _current_divisor         = 0;
     uint16_t _active_power_multiplier = 0;
-    uint16_t _active_power_divisor = 0;
+    uint16_t _active_power_divisor    = 0;
 
     uint16_t _current_multiplier_modifier = 1;
-    uint16_t _current_divisor_modifier = 1;
+    uint16_t _current_divisor_modifier    = 1;
 
     bool _keep_alive_enabled = true;
     bool _timeout_enabled    = true;
@@ -381,4 +381,4 @@ void iterateAlways() override {
 };  // namespace Sensor
 };  // namespace Supla
 
-#endif  //Z2S_ONE_PHASE_ELECTRICITY_METER_H_
+#endif  //Z2S_ELECTRICITY_METER_H_

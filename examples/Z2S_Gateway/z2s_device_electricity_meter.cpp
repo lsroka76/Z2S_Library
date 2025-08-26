@@ -44,14 +44,14 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
     case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
 
-    current_multiplier = 0;
-    current_divisor    = 0;
+      current_multiplier = 1;
+      current_divisor    = 1;
 
-    voltage_multiplier = 1;
-    voltage_divisor    = 1000;
+      voltage_multiplier = 1;
+      voltage_divisor    = 1000;
   
-    active_power_multiplier = 1;
-    active_power_divisor    = 1000;
+      active_power_multiplier = 1;
+      active_power_divisor    = 1000;
 
     } break;
 

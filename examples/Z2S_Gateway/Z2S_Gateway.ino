@@ -1731,7 +1731,7 @@ void loop() {
                         for (int m = 0; m < Z2S_DEVICES_DESC[k].z2s_device_clusters_count; m++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[k].z2s_device_clusters[m]);
                         
-                        if (endpoint_id == 1)
+                        if (j == 0) //(endpoint_id == 1)
                           Z2S_addZBDeviceTableSlot(joined_device->ieee_addr,
                                                    joined_device->short_addr,
                                                    zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
