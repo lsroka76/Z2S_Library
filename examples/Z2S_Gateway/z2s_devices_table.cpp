@@ -2269,7 +2269,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER:
       case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1:
       case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2:
-      case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A: {
+      case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A:
+      case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
         
         addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot);
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();

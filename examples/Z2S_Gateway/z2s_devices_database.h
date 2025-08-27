@@ -106,6 +106,7 @@
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2       0x4102
 
 #define Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER  0x4200
+#define Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER 0x4300
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER    0x4500
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1  0x4501
@@ -546,6 +547,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER, .z2s_device_clusters_count = 2, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       SONOFF_CUSTOM_CLUSTER }},
+
+   { .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER, .z2s_device_clusters_count = 3, .z2s_device_clusters =
+    { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER, .z2s_device_clusters_count = 3, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -1674,8 +1680,8 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                              { 38, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR }}},
 
   { .manufacturer_name = "Develco Products A/S", .model_name = "SPLZB-132", 
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 2,
-    .z2s_device_endpoints = {{ 2, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER },
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER, .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 2, Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER },
                              { 1, Z2S_DEVICE_DESC_NULL }}},
 
   { .manufacturer_name = "SONOFF", .model_name = "SNZB-05P", 

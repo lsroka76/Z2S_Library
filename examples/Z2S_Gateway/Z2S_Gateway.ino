@@ -2137,7 +2137,8 @@ void loop() {
                 } [[fallthrough]];//break;
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2:
-                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
+                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2:
+                case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
                    zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
                                                 ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, false);
                   /*zbGateway.readClusterReportCfgCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, false);
