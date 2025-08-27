@@ -347,7 +347,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
     } break;
 
-    case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10: {
+    case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10:
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z: {
 
       local_temperature_dp_id        = GTZ10_CMD_SET_LOCAL_TEMPERATURE_1; 
       current_heating_setpoint_dp_id = GTZ10_CMD_SET_TARGET_HEATSETPOINT_1;
@@ -357,7 +358,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       system_mode_value_on           = GTZ10_CMD_ON_5;
       system_mode_value_off          = GTZ10_CMD_OFF_5;
       
-      running_state_dp_id            = GTZ10_CMD_SET_RUNNING_STATE_1;
+      running_state_dp_id            = (model_id == Z2S_DEVICE_DESC_TS0601_TRV_GTZ10) ? GTZ10_CMD_SET_RUNNING_STATE_1 : TRV602Z_CMD_SET_RUNNING_STATE_1;
       running_state_value_idle       = GTZ10_CMD_SET_RUNNING_STATE_IDLE;
       running_state_value_heat       = GTZ10_CMD_SET_RUNNING_STATE_HEAT;
 
@@ -1308,6 +1309,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
   uint32_t model_id = z2s_channels_table[channel_number_slot].model_id;
 
   switch (model_id) {
+    
     case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
     case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
     case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
@@ -1318,6 +1320,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV601:
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV603:
     case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10:
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z:
       processTuyaHvacDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
 
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
