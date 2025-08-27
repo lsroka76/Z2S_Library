@@ -17,6 +17,8 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   uint16_t active_power_multiplier = 0;
   uint16_t active_power_divisor    = 0;
 
+  bool ignore_zigbee_scaling = false;
+
   switch (z2s_channels_table[channel_number_slot].model_id) {
     
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
@@ -53,6 +55,8 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
       active_power_multiplier = 1;
       active_power_divisor    = 1000;
 
+      ignore_zigbee_scaling = true;
+
     } break;
 
     default: {
@@ -73,21 +77,23 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
   Supla_Z2S_ElectricityMeter->setEnergyInitialCounter(z2s_channels_table[channel_number_slot].data_counter);
 
+  Supla_Z2S_ElectricityMeter->setIgnoreZigbeeScaling(ignore_zigbee_scaling);
+
   Supla_Z2S_ElectricityMeter->setCurrentMultiplierModifier(current_multiplier_modifier);
 
   Supla_Z2S_ElectricityMeter->setCurrentDivisorModifier(current_divisor_modifier);
 
-  Supla_Z2S_ElectricityMeter->setVoltageMultiplier(voltage_multiplier);
+  Supla_Z2S_ElectricityMeter->setVoltageMultiplier(voltage_multiplier, false);
 
-  Supla_Z2S_ElectricityMeter->setVoltageDivisor(voltage_divisor);
+  Supla_Z2S_ElectricityMeter->setVoltageDivisor(voltage_divisor, false);
 
-  Supla_Z2S_ElectricityMeter->setCurrentMultiplier(current_multiplier);
+  Supla_Z2S_ElectricityMeter->setCurrentMultiplier(current_multiplier, false);
 
-  Supla_Z2S_ElectricityMeter->setCurrentDivisor(current_divisor);
+  Supla_Z2S_ElectricityMeter->setCurrentDivisor(current_divisor, false);
 
-  Supla_Z2S_ElectricityMeter->setActivePowerMultiplier(active_power_multiplier);
+  Supla_Z2S_ElectricityMeter->setActivePowerMultiplier(active_power_multiplier, false);
 
-  Supla_Z2S_ElectricityMeter->setActivePowerDivisor(active_power_divisor);
+  Supla_Z2S_ElectricityMeter->setActivePowerDivisor(active_power_divisor, false);
 
 }
 

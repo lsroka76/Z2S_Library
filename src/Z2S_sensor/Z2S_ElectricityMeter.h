@@ -24,8 +24,11 @@ class Z2S_ElectricityMeter : public ElectricityMeter {
 
   }
 
-void setVoltageMultiplier(uint16_t voltage_multiplier) {
+void setVoltageMultiplier(uint16_t voltage_multiplier, bool from_zigbee = true) {
   
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
+
   if (voltage_multiplier > 0)
     _voltage_multiplier = voltage_multiplier;
 }
@@ -35,7 +38,10 @@ uint16_t getVoltageMultiplier() {
   return _voltage_multiplier;
 }
 
-void setVoltageDivisor(uint16_t voltage_divisor) {
+void setVoltageDivisor(uint16_t voltage_divisor, bool from_zigbee = true) {
+  
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
   
   if (voltage_divisor > 0)
     _voltage_divisor = voltage_divisor;
@@ -46,8 +52,11 @@ uint16_t getVoltageDivisor() {
   return _voltage_divisor;
 }
 
-void setCurrentMultiplier(uint16_t current_multiplier) {
+void setCurrentMultiplier(uint16_t current_multiplier, bool from_zigbee = true) {
 
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
+  
   if (current_multiplier > 0)
     _current_multiplier = current_multiplier;
 }
@@ -57,7 +66,10 @@ uint16_t getCurrentMultiplier() {
   return _current_multiplier;
 }
 
-void setCurrentDivisor(uint16_t current_divisor) {
+void setCurrentDivisor(uint16_t current_divisor, bool from_zigbee = true) {
+  
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
   
   if (current_divisor > 0)
     _current_divisor = current_divisor;
@@ -92,7 +104,10 @@ uint16_t getCurrentDivisorModifier() {
 }
 
 
-void setActivePowerMultiplier(uint16_t active_power_multiplier) {
+void setActivePowerMultiplier(uint16_t active_power_multiplier, bool from_zigbee = true) {
+  
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
   
   if (active_power_multiplier > 0)
     _active_power_multiplier = active_power_multiplier;
@@ -103,7 +118,10 @@ uint16_t getActivePowerMultiplier() {
   return _active_power_multiplier;
 } 
 
-void setActivePowerDivisor(uint16_t active_power_divisor) {
+void setActivePowerDivisor(uint16_t active_power_divisor, bool from_zigbee = true) {
+  
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
   
   if (active_power_divisor > 0)  
     _active_power_divisor = active_power_divisor;
@@ -114,6 +132,15 @@ uint16_t getActivePowerDivisor() {
   return _active_power_divisor;
 } 
 
+void setIgnoreZigbeeScaling(bool ignore_zigbee_scaling) {
+
+  _ignore_zigbee_scaling = ignore_zigbee_scaling;
+}
+
+bool getIgnoreZigbeeScaling() {
+
+  return _ignore_zigbee_scaling;
+}
  
 void setVoltage2(int phase, uint32_t voltage) {
 
@@ -218,7 +245,7 @@ void resetStorage() {
 
       _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 6, &attributes[0]);
       
-      fresh_start = false;
+      _fresh_start = false;
     }
   }
 
@@ -301,7 +328,7 @@ void iterateAlways() override {
 
   Supla::Sensor::ElectricityMeter::iterateAlways();
 
-  if (fresh_start) 
+  if (_fresh_start) 
     initZigbee();
 
   if ((_refresh_enabled) && ((millis() - _last_refresh_ms) > _refresh_ms)) {
@@ -343,14 +370,16 @@ void iterateAlways() override {
 }
 
   protected:
-    ZigbeeGateway 	 *_gateway = nullptr;
+    ZigbeeGateway 	     *_gateway = nullptr;
     zbg_device_params_t  _device;  
-    uint64_t		 *_data_counter = nullptr;
+    uint64_t		         *_data_counter = nullptr;
     bool                 _active_query  = false;
     esp_zb_uint48_t      _write_mask;
     bool                 _isTuya = false;
 
-    bool fresh_start	= true;
+    bool _fresh_start	        = true;
+
+    bool _ignore_zigbee_scaling = false;
 
     uint16_t _voltage_multiplier      = 0;
     uint16_t _voltage_divisor 	      = 0;
