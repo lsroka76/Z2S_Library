@@ -8,7 +8,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 
 //#include "z2s_version_info.h"
-#define Z2S_VERSION "0.9.00-27/08/2025"
+#define Z2S_VERSION "0.9.1-27/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -1838,9 +1838,9 @@ void endpointCallback(Control *sender, int type) {
 	Serial.print(sender->GetId());
 	if (sender->value.toInt() < 1)
 		ESPUI.updateNumber(sender->GetId(), 1);
-	uint8_t device_endpoints = z2s_zb_devices_table[ESPUI.getControl(device_selector)->value.toInt()].endpoints_count;
-	if (sender->value.toInt() > device_endpoints)
-		ESPUI.updateNumber(sender->GetId(), device_endpoints);
+	//uint8_t device_endpoints = z2s_zb_devices_table[ESPUI.getControl(device_selector)->value.toInt()].endpoints_count;
+	if (sender->value.toInt() > 255) //device_endpoints)
+		ESPUI.updateNumber(sender->GetId(), 255); //device_endpoints);
 
 }
 
