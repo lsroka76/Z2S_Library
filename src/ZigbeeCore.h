@@ -76,7 +76,7 @@ typedef enum {
       .tx_pin = (gpio_num_t)GATEWAY_RCP_TX_PIN,  \
       .uart_config =                             \
         {                                        \
-          .baud_rate = 460800,                   \
+          .baud_rate = 921600,                   \
           .data_bits = UART_DATA_8_BITS,         \
           .parity = UART_PARITY_DISABLE,         \
           .stop_bits = UART_STOP_BITS_1,         \

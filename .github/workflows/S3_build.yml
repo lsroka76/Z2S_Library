@@ -1,0 +1,54 @@
+name: Build
+on: [workflow_dispatch]
+jobs:
+  build:
+    name: Build and create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.arduino15/packages/
+          key: ${{ runner.os }}-arduino      
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+      - name: Install platform
+        run: |
+          arduino-cli config init
+          arduino-cli config set board_manager.additional_urls "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
+          arduino-cli config set library.enable_unsafe_install true
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32@3.3.0
+          arduino-cli lib install --git-url https://github.com/lsroka76/supla-device.git
+          arduino-cli lib install --git-url https://github.com/LennartHennigs/ESPTelnet.git
+          arduino-cli lib install --git-url https://github.com/adafruit/Adafruit_NeoPixel.git
+          arduino-cli lib install --git-url https://github.com/dojyorin/arduino_base64.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/ESPUI.git
+          arduino-cli lib install --git-url https://github.com/bblanchon/ArduinoJson.git
+          arduino-cli lib install --git-url https://github.com/ESP32Async/ESPAsyncWebServer.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/AsyncTCP.git
+          arduino-cli lib install --git-url https://github.com/IPdotSetAF/ESPAsyncHTTPUpdateServer.git
+      - name: Compile Gateway_8MB_logs
+        working-directory: .
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32s3:CDCOnBoot=cdc,FlashSize=8M,PartitionScheme=zigbee_zczr_8MB,DebugLevel=verbose,PSRAM=opi,EraseFlash=all,ZigbeeMode=zczr --library=.
+      - name: Rename binaries 8MB_logs
+        working-directory: .
+        run: |
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.ino.S3.8MB.OTA.logs.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.ino.merged.S3.8MB.OTA.logs.bin 
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fetch_all_tags: true
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+          artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.S3.8MB.OTA.logs.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.S3.8MB.OTA.logs.bin
