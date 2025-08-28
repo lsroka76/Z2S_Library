@@ -59,7 +59,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
     } break;
 
-    case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER {
+    case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
 
       current_multiplier = 1;
       current_divisor    = 1000;
