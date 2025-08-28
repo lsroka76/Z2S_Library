@@ -1820,10 +1820,38 @@ bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
   return true;
 }
 
+bool processPhilipsCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, 
+                            uint8_t buffer_size, uint8_t *buffer, signed char  rssi) {
+
+    log_i("endopoint (0x%x), command id (0x%x), buffer_size (0x%x)", endpoint, command_id, buffer_size);
+
+    if ((command_id == 0) && (buffer_size ==8)) {
+
+      uint8_t button_id = *buffer;
+      uint8_t action_id = *(buffer + 4);
+      uint8_t is_valid  = *(buffer + 2);
+      uint16_t duration = ((*(buffer + 7)) << 8) | (*(buffer + 6));
+
+      log_i("is_valid = %d, button_id = %d, action_id = %d, duration = %d", is_valid, button_id, action_id, duration);
+
+      uint8_t sub_id = 4 * (button_id - 1);
+      sub_id += action_id;
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+
+      if (channel_number_slot < 0)
+        log_i("No PHILIPS HUE channel found for address %s", ieee_addr);
+      else 
+        msgZ2SDeviceActionTrigger(channel_number_slot, rssi);
+      return true;
+    }
+    return false;
+}
+
 bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, 
                                   uint8_t buffer_size, uint8_t *buffer, signed char  rssi) {
 
-  log_i("IKEA SYMFONISK/SOMRIG command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
+  log_i("IKEA SYMFONISK/SOMRIG command: cluster(0x%x), command id(0x%x)", cluster_id, command_id);
   
   uint8_t sub_id = 0x7F;
 
@@ -1949,6 +1977,11 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   log_i("z2s_channels_table[channel_number_slot].Supla_channel 0x%x", z2s_channels_table[channel_number_slot].Supla_channel);
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
+    
+    case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1: {
+      
+      return true;
+    } break;
     
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F:
@@ -2090,6 +2123,12 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
       
       log_i("IKEA custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", cluster, endpoint, command_id);
       processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster, command_id, payload_size, payload, rssi);
+     } break;
+
+     case PHILIPS_CUSTOM_CLUSTER: {
+      
+      log_i("Philips custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", cluster, endpoint, command_id);
+      processPhilipsCommands(ieee_addr, endpoint, cluster, command_id, payload_size, payload, rssi);
      } break;
     
     default: log_i("Unknown custom cluster(0x%x) command(0x%x)", cluster, command_id); break;
