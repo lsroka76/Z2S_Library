@@ -33,7 +33,7 @@ ZigbeeCore::ZigbeeCore() {
   }
 
   //esp_zb_radio_config_t 
-  _radio_config = ZIGBEE_DEFAULT_UART_RCP_RADIO_CONFIG();
+  //_radio_config = ZIGBEE_DEFAULT_UART_RCP_RADIO_CONFIG();
   //Zigbee.setRadioConfig(radio_config);
 
 }

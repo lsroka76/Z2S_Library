@@ -2021,6 +2021,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb GU10 WW 380lm",
      .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI Driver 10W",
+     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3210_ctv0gump", .model_name = "TS0501B",
      .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0, .z2s_device_endpoints_count = 1},
 
