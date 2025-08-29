@@ -242,10 +242,10 @@ void Supla::Control::Z2S_RGBInterface::setTimeoutSecs(uint32_t timeout_secs) {
 
 uint32_t Supla::Control::Z2S_RGBInterface::getKeepAliveSecs() {
 
-  return _keep_alive_ms * 1000;
+  return _keep_alive_ms / 1000;
 }
 
 uint32_t Supla::Control::Z2S_RGBInterface::getTimeoutSecs() {
 
-  return _timeout_ms * 1000;
+  return _timeout_ms / 1000;
 }

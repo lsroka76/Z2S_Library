@@ -15,6 +15,7 @@
 */
 
 #include "Z2S_virtual_relay.h"
+#include "TuyaDatapoints.h"
 
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
@@ -86,7 +87,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[] = { 00, 00, 0x0D, 01, 00, 01, 01};
+        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[] = { 00, 00, MOES_ALARM_SWITCH_DP, TUYA_DP_TYPE_BOOL, 00, 01, 01};
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -102,7 +103,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[] = { 00, 00, 07, 02, 00, 04, 00, 00, 00, 00 };
+        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[] = { 00, 00, MOES_ALARM_DURATION_DP, TUYA_DP_TYPE_VALUE, 00, 04, 00, 00, 00, 00 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -130,7 +131,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[] = { 00, 00, 0x15, 04, 00, 01, 01 };
+        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[] = { 00, 00, MOES_ALARM_MELODY_DP, TUYA_DP_TYPE_ENUM, 00, 01, 01 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -158,7 +159,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[] = { 00, 00, 05, 04, 00, 01, 00 };
+        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[] = { 00, 00, MOES_ALARM_VOLUME_DP, TUYA_DP_TYPE_ENUM, 00, 01, 00 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -180,6 +181,22 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD, false);
 
         state = false;
+        channel.setNewValue(state);
+
+      } break;
+
+      case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
+
+        uint8_t Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[] = { 00, 00, GIEX_WATER_VALVE_STATE_DP, TUYA_DP_TYPE_BOOL, 00, 01, 01};
+
+        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+        Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
+        Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
+
+        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD, false);
+
+        state = true;
         channel.setNewValue(state);
 
       } break;
@@ -433,12 +450,12 @@ void Supla::Control::Z2S_VirtualRelay::setTimeoutSecs(uint32_t timeout_secs) {
 
 uint32_t Supla::Control::Z2S_VirtualRelay::getKeepAliveSecs() {
 
-  return _keep_alive_ms * 1000;
+  return _keep_alive_ms / 1000;
 }
 
 uint32_t Supla::Control::Z2S_VirtualRelay::getTimeoutSecs() {
 
-  return _timeout_ms * 1000;
+  return _timeout_ms / 1000;
 }
 
 //#endif

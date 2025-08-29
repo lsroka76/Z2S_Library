@@ -9,11 +9,7 @@
 
 #include "priv_auth_data.h"
 
-#ifndef USE_SUPLA_WEB_SERVER
-
-  #include "z2s_web_gui.h"
-
-#endif //USE_SUPLA_WEB_SERVER
+#include "z2s_web_gui.h"
 
 #include <SuplaDevice.h>
 
@@ -34,37 +30,9 @@
 #include <supla/control/virtual_relay.h>
 #include <supla/sensor/general_purpose_measurement.h>
 
-#ifdef USE_SUPLA_WEB_SERVER
-
-  #include <supla/network/esp_web_server.h>
-  #include <supla/network/html/device_info.h>
-  #include <supla/network/html/protocol_parameters.h>
-  #include <supla/network/html/wifi_parameters.h>
-  #include <supla/network/html/custom_parameter.h>
-  #include <supla/network/html/custom_text_parameter.h>
-  #include <supla/network/html/text_cmd_input_parameter.h>
-  #include <supla/network/html/select_cmd_input_parameter.h>
-  #include <supla/network/html/select_input_parameter.h>
-
-  #include <HTTPUpdateServer.h>
-
-#endif //USE_SUPLA_WEB_SERVER
-
 #include "z2s_version_info.h"
 
 #include <Adafruit_NeoPixel.h>
-
-#ifdef USE_SUPLA_WEB_SERVER
-
-  Supla::EspWebServer                       suplaServer;
-  HTTPUpdateServer                          httpUpdater;
-
-  Supla::Html::DeviceInfo                   htmlDeviceInfo(&SuplaDevice);
-  Supla::Html::CustomDevInfo                htmlCustomDevInfo;
-  Supla::Html::WifiParameters               htmlWifi;
-  Supla::Html::ProtocolParameters           htmlProto;
-
-#endif //USE_SUPLA_WEB_SERVER
 
 #define GATEWAY_ENDPOINT_NUMBER 1
 
@@ -80,36 +48,37 @@
 ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
-Supla::ESPWifi            wifi; //(SUPLA_WIFI_SSID, SUPLA_WIFI_SSID);
+Supla::ESPWifi            wifi;
 Supla::LittleFsConfig     configSupla (2048);
 
-constexpr uint8_t LED_PIN = 8;
-constexpr uint8_t NUM_LEDS = 1;
+constexpr uint8_t LED_PIN   = 8;
+constexpr uint8_t NUM_LEDS  = 1;
 
 Adafruit_NeoPixel rgbLed(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-uint32_t startTime = 0;
-uint32_t printTime = 0;
-uint32_t zbInit_delay = 0;
+uint32_t startTime          = 0;
+uint32_t printTime          = 0;
+uint32_t zbInit_delay       = 0;
 
-uint32_t refresh_time = 0;
-uint8_t refresh_cycle = 0;
+uint32_t refresh_time       = 0;
+uint8_t refresh_cycle       = 0;
 
 uint32_t _time_cluster_last_refresh_ms = 0;
 
 uint32_t _status_led_last_refresh_ms = 0;
-uint8_t _status_led_mode = 0;
-uint8_t _status_led_last_mode = 0;
-uint8_t _status_led_cycle = 0;
+uint8_t _status_led_mode             = 0;
+uint8_t _status_led_last_mode        = 0;
+uint8_t _status_led_cycle            = 0;
 
-bool zbInit = true;
-bool GUIstarted = false;
-bool GUIdisabled = true; //false;
+bool zbInit       = true;
+bool GUIstarted   = false;
+bool GUIdisabled  = true; //false;
 
-uint8_t  _enable_gui_on_start = 1;
-uint32_t _gui_start_delay     = 0;
+uint8_t  _enable_gui_on_start  = 1;
+uint8_t	_force_config_on_start = 0;
+uint32_t _gui_start_delay      = 0;
 
-uint8_t _z2s_security_level = 0;
+uint8_t _z2s_security_level    = 0;
 
 uint8_t write_mask;
 uint16_t write_mask_16;
@@ -118,18 +87,7 @@ uint32_t write_mask_32;
 uint8_t custom_cmd_payload[64]; //TODO - include RAW/STRING 0.8.51 increased 10->64
 uint8_t write_attribute_payload[20];
 
-
 bool sendIASNotifications = false;
-Supla::Sensor::GeneralPurposeMeasurement *Test_GeneralPurposeMeasurement = nullptr;
-
-#ifdef USE_SUPLA_WEB_SERVER
-
-  const static char PARAM_CMD1[] = "zigbeestack";
-  const static char PARAM_CMD2[] = "RMZ2Sdevices";
-  const static char PARAM_CMD3[] = "UPZ2Sdevices";
-  const static char PARAM_TXT1[] = "SEDtimeout";
-
-#endif //USE_SUPLA_WEB_SERVER
 
 void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
 
@@ -223,6 +181,7 @@ void supla_callback_bridge(int event, int action) {
       SuplaDevice.scheduleSoftRestart(1000);
     }
   }
+
 #ifdef SUPLA_WEB_SERVER 
 
   if ((event >= Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER) && (event < Supla::ON_EVENT_5 + 2*Z2S_CHANNELS_MAX_NUMBER)) {
@@ -249,7 +208,9 @@ bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
     device->model_id = z2s_channels_table[channel_number_slot].model_id;
     telnet.printf(PSTR(">Device %u\n\r>"), device->short_addr);
     return true;
+
   } else {
+    
     telnet.printf(PSTR(">Invalid channel number %u\n\r>"), channel_id);
     return false;
   }
@@ -1255,23 +1216,6 @@ void setup() {
 
 #endif
 
-#ifdef USE_SUPLA_WEB_SERVER
-
-  auto selectCmd = new Supla::Html::SelectCmdInputParameter(PARAM_CMD1, "Z2S Commands");
-  selectCmd->registerCmd("OPEN ZIGBEE NETWORK (180 SECONDS)", Supla::ON_EVENT_1);
-  selectCmd->registerCmd("!RESET ZIGBEE STACK!", Supla::ON_EVENT_2);
-  selectCmd->registerCmd("!!CLEAR Z2S TABLE!! (RESET RECOMMENDED)", Supla::ON_EVENT_3);
-  selectCmd->registerCmd("NWK SCAN (EXPERIMENTAL)", Supla::ON_EVENT_4);
-  
-  //selectCmd->registerCmd("TOGGLE", Supla::ON_EVENT_3);
-
-#endif //USE_SUPLA_WEB_SERVER
-
- // Test_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
-//  Test_GeneralPurposeMeasurement->getChannel()->setChannelNumber(102);
-//  Test_GeneralPurposeMeasurement->setValue(0);
-//  Test_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
-
   auto toggleNotifications = new Supla::Control::VirtualRelay();
   toggleNotifications->getChannel()->setChannelNumber(110);
   toggleNotifications->setInitialCaption("IAS ZONE NOTIFICATIONS");
@@ -1280,15 +1224,6 @@ void setup() {
 
   auto AHwC = new Supla::ActionHandlerWithCallbacks();
   AHwC->setActionHandlerCallback(supla_callback_bridge);
-
-#ifdef USE_SUPLA_WEB_SERVER
-
-  selectCmd->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_1, true);
-  selectCmd->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_2, true);
-  selectCmd->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_3, true);
-  selectCmd->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_4, true);
-
-#endif
 
   toggleNotifications->addAction(0x4000, AHwC, Supla::ON_TURN_ON, false);
   toggleNotifications->addAction(0x4001, AHwC, Supla::ON_TURN_OFF, false);
@@ -1360,38 +1295,6 @@ void setup() {
 
   Z2S_initSuplaActions();
 
-#ifdef USE_SUPLA_WEB_SERVER
-
-  new Supla::Html::CustomParameter(PARAM_TXT1,"SED Timeout (h)", 0);
-  
-  auto selectCmd2 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD2, "Remove Z2S Device");
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELS_MAX_NUMBER; devices_counter++) 
-    if (z2s_channels_table[devices_counter].valid_record) {
-      char device_removal_cmd[128];
-      sprintf(device_removal_cmd, "Remove Z2SDevice [%x:%x:%x:%x:%x:%x:%x:%x] channel # %d",
-      z2s_channels_table[devices_counter].ieee_addr[7], z2s_channels_table[devices_counter].ieee_addr[6], z2s_channels_table[devices_counter].ieee_addr[5],
-      z2s_channels_table[devices_counter].ieee_addr[4], z2s_channels_table[devices_counter].ieee_addr[3], z2s_channels_table[devices_counter].ieee_addr[2],
-      z2s_channels_table[devices_counter].ieee_addr[1], z2s_channels_table[devices_counter].ieee_addr[0], z2s_channels_table[devices_counter].Supla_channel);
-      log_i("cmd %s, len %d", device_removal_cmd, strlen(device_removal_cmd));
-      selectCmd2->registerCmd(device_removal_cmd, Supla::ON_EVENT_5 + devices_counter);
-      selectCmd2->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_5 + devices_counter, true);
-    }
-
-  auto selectCmd3 = new Supla::Html::SelectCmdInputParameter(PARAM_CMD3, "Update Z2S Device timeout (h)");
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_CHANNELS_MAX_NUMBER; devices_counter++) 
-    if (z2s_channels_table[devices_counter].valid_record) {
-      char device_removal_cmd[128];
-      sprintf(device_removal_cmd, "Update Z2SDevice [%x:%x:%x:%x:%x:%x:%x:%x] channel # %d",
-      z2s_channels_table[devices_counter].ieee_addr[7], z2s_channels_table[devices_counter].ieee_addr[6], z2s_channels_table[devices_counter].ieee_addr[5],
-      z2s_channels_table[devices_counter].ieee_addr[4], z2s_channels_table[devices_counter].ieee_addr[3], z2s_channels_table[devices_counter].ieee_addr[2],
-      z2s_channels_table[devices_counter].ieee_addr[1], z2s_channels_table[devices_counter].ieee_addr[0], z2s_channels_table[devices_counter].Supla_channel);
-      log_i("cmd %s, len %d", device_removal_cmd, strlen(device_removal_cmd));
-      selectCmd3->registerCmd(device_removal_cmd, Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER + devices_counter);
-      selectCmd3->addAction(Supla::TURN_ON, AHwC, Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER + devices_counter, true);
-    }
-
-#endif //USE_SUPLA_WEB_SERVER
-
   enableZ2SNotifications();
 
   zbGateway.setManufacturerAndModel("Supla", "Z2SGateway");
@@ -1415,6 +1318,13 @@ void setup() {
     _enable_gui_on_start = 1;
   }
 
+  if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
+    log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
+  } else {
+    log_i("Z2S_FORCE_CONFIG_ON_START not configured - turning off");
+    _force_config_on_start = 0;
+  }
+
   if (Supla::Storage::ConfigInstance()->getUInt32(Z2S_GUI_ON_START_DELAY, &_gui_start_delay)) {
     log_i("Z2S_GUI_ON_START_DELAY = %d s", _gui_start_delay);
   } else {
@@ -1429,19 +1339,14 @@ void setup() {
   SuplaDevice.setSuplaCACert(suplaCACert);
   SuplaDevice.setSupla3rdPartyCACert(supla3rdCACert);
   
-  SuplaDevice.setName("Zigbee to Supla Gateway");
+  SuplaDevice.setName("Zigbee <=> Supla Gateway");
+  SuplaDevice.setSwVersion(Z2S_VERSION);
   //wifi.enableSSL(true);
 
   SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
   SuplaDevice.allowWorkInOfflineMode(2);
   SuplaDevice.begin();      
   
-#ifdef USE_SUPLA_WEB_SERVER
-
-  httpUpdater.setup(suplaServer.getServerPtr(), "/update", "admin", "pass");
-
-#endif //USE_SUPLA_WEB_SERVER
-
   startTime = millis();
   printTime = millis();
   zbInit_delay = millis();
@@ -1457,7 +1362,15 @@ uint8_t tuya_dp_data[10];
 
 void loop() {
 
-#ifndef USE_SUPLA_WEB_SERVER
+  if (_force_config_on_start == 1) {
+    
+    _force_config_on_start = 0;
+    
+    if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_FORCE_CONFIG_ON_START, _force_config_on_start))
+      Supla::Storage::ConfigInstance()->commit();
+
+    SuplaDevice.enterConfigMode();
+  }
 
   if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE) {
     GUIstarted = true;
@@ -1473,14 +1386,8 @@ void loop() {
     Z2S_startUpdateServer();
     onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
   }
-#endif 
-
+ 
   SuplaDevice.iterate();
-
-#ifndef USE_SUPLA_WEB_SERVER
-
-  
-#endif //USE_SUPLA_WEB_SERVER
 
 #ifdef USE_TELNET_CONSOLE
 
@@ -1499,12 +1406,6 @@ void loop() {
       SuplaDevice.scheduleSoftRestart(1000);
     }
     refresh_time = 0;
-
-#ifdef USE_SUPLA_WEB_SERVER    
-    SuplaDevice.handleAction(0, Supla::START_LOCAL_WEB_SERVER); //don't start local web server until Zigbee is ready
-#endif //USE_SUPLA_WEB_SERVER
-
-    //ESPUI.begin("espui_test");
 
 #ifdef USE_TELNET_CONSOLE
 
@@ -1536,12 +1437,9 @@ void loop() {
 
     log_i("Local Time Cluster UTC time attribute %lu, local time attribute %lu", utc_time_attribute, local_time_attribute);
     
-#ifndef USE_SUPLA_WEB_SERVER
 
     if (GUIstarted)
       Z2S_updateWebGUI();
-
-#endif //USE_SUPLA_WEB_SERVER
 
     _time_cluster_last_refresh_ms = millis();
   }
@@ -1573,12 +1471,9 @@ void loop() {
       rgbLed.show();
     }
 
-#ifndef USE_SUPLA_WEB_SERVER
-
     if (GUIstarted)
       Z2S_loopWebGUI();
 
-#endif //USE_SUPLA_WEB_SERVER
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
@@ -1648,11 +1543,8 @@ void loop() {
       rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 128));
       rgbLed.show();
 
-#ifndef USE_SUPLA_WEB_SERVER
-
       Z2S_stopWebGUI();
 
-#endif //USE_SUPLA_WEB_SERVER
 
       //do some Tuya vodoo - just in case Tuya device is paired
       
@@ -2276,12 +2168,9 @@ void loop() {
         delay(1000);
         enableZ2SNotifications();
 
-#ifndef USE_SUPLA_WEB_SERVER
-
         Z2S_startWebGUI();
         GUI_onLastBindingFailure(true);
 
-#endif //USE_SUPLA_WEB_SERVER
       }
     }
   }

@@ -219,12 +219,12 @@ void Supla::Control::Z2S_DimmerInterface::setTimeoutSecs(uint32_t timeout_secs) 
 
 uint32_t Supla::Control::Z2S_DimmerInterface::getKeepAliveSecs() {
 
-  return _keep_alive_ms * 1000;
+  return _keep_alive_ms / 1000;
 }
 
 uint32_t Supla::Control::Z2S_DimmerInterface::getTimeoutSecs() {
 
-  return _timeout_ms * 1000;
+  return _timeout_ms / 1000;
 }
 
 void Supla::Control::Z2S_DimmerInterface::increaseBrightness(int8_t add_to_brightness) {

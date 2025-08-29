@@ -17,6 +17,7 @@
 */
 
 #include "Z2S_virtual_valve.h"
+#include "TuyaDatapoints.h"
 
 using Supla::Control::Z2S_VirtualValve;
 
@@ -43,7 +44,7 @@ void Z2S_VirtualValve::setValueOnDevice(uint8_t openLevel) {
 
       case Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY: {
 
-        uint8_t Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[] = { 00, 00, 0x01, 01, 00, 01, 00};
+        uint8_t Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[] = { 00, 00, TUYA_ON_OFF_BATTERY_VALVE_SWITCH_DP, TUYA_DP_TYPE_BOOL, 00, 01, 00};
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 

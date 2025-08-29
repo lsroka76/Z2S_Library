@@ -3071,6 +3071,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_MOES_ALARM:
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
+    case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
       return true;
     default:
       return false;

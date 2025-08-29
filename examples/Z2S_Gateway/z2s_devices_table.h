@@ -201,7 +201,7 @@ const static char   Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2 []  PROGMEM = "zb_devices_
 
 const static char   Z2S_ZB_DEVICES_TABLE_SIZE []  PROGMEM = "Z2S_zbd_ts";
 
-extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8];
+extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8]; //bit-indexed table
 
 //const static char   Z2S_CHANNELS_ACTIONS_TABLE      []  PROGMEM = "Z2S_actions";
 //const static char   Z2S_CHANNELS_ACTIONS_TABLE_SIZE []  PROGMEM = "Z2S_actions_ts";
@@ -222,6 +222,7 @@ const static char   Z2S_ZIGBEE_PRIMARY_CHANNEL      []  PROGMEM = "Z2S_primary_c
 
 const static char   Z2S_ENABLE_GUI_ON_START         []  PROGMEM = "Z2S_enable_gui";
 const static char   Z2S_GUI_ON_START_DELAY          []  PROGMEM = "Z2S_gui_delay";
+const static char   Z2S_FORCE_CONFIG_ON_START       []  PROGMEM = "Z2S_force_cfg";
 
 namespace Supla {
 enum Conditions {

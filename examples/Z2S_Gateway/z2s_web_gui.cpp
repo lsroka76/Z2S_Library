@@ -6,9 +6,9 @@
 #include "z2s_devices_database.h"
 #include "z2s_devices_table.h"
 #include "z2s_device_tuya_custom_cluster.h"
+#include "TuyaDatapoints.h"
 
 #include "z2s_version_info.h"
-//#define Z2S_VERSION "0.9.00-27/08/2025"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -23,6 +23,7 @@ ESPAsyncHTTPUpdateServer updateServer;
 extern ZigbeeGateway zbGateway;
 
 extern uint8_t  _enable_gui_on_start;
+extern uint8_t	_force_config_on_start;
 extern uint32_t _gui_start_delay;
 
 extern uint8_t _z2s_security_level;
@@ -33,7 +34,7 @@ extern uint8_t _z2s_security_level;
 //UI handles
 uint16_t gateway_general_info;
 uint16_t gateway_memory_info;
-uint16_t enable_gui_switcher, gui_start_delay_number;
+uint16_t enable_gui_switcher, force_config_switcher, gui_start_delay_number;
 
 uint16_t wifi_ssid_text, wifi_pass_text, Supla_server, Supla_email, Supla_skip_certificate_switcher;
 uint16_t save_button, save_label;
@@ -138,8 +139,9 @@ volatile ActionGUIState current_action_gui_state = VIEW_ACTION;
 volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 
 #define GUI_CB_ENABLE_GUI_FLAG							0x0100
-#define GUI_CB_GUI_DELAY_FLAG								0x0101
-#define GUI_CB_GUI_RESTART_FLAG							0x0102
+#define GUI_CB_FORCE_CONFIG_FLAG						0x0101
+#define GUI_CB_GUI_DELAY_FLAG								0x0102
+#define GUI_CB_GUI_RESTART_FLAG							0x0103
 
 #define GUI_CB_SAVE_FLAG										0x1000
 #define GUI_CB_RESTART_FLAG									0x1001
@@ -563,6 +565,12 @@ void buildGatewayTabGUI() {
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
 																				 Control::Color::None, enable_gui_switcher), PSTR(clearLabelStyle));
 
+	force_config_switcher = ESPUI.addControl(Control::Type::Switcher, PSTR("Force config mode on next startup"), zero_str, 
+																				 Control::Color::Emerald, gatewaytab, gatewayCallback,(void*)GUI_CB_FORCE_CONFIG_FLAG);
+	working_str = PSTR("On next startup gateway will enter config mode.");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
+																				 Control::Color::None, force_config_switcher), PSTR(clearLabelStyle));
+
 	gui_start_delay_number = ESPUI.addControl(Control::Type::Number, PSTR("GUI start delay (s)"), zero_str, 
 																						Control::Color::Emerald, gatewaytab, generalMinMaxCallback, (void*)3600);
 
@@ -572,11 +580,12 @@ void buildGatewayTabGUI() {
 	save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
 																 Control::Color::Emerald, gui_start_delay_number, gatewayCallback, (void*)GUI_CB_GUI_DELAY_FLAG);
 
-	working_str = PSTR("Restart");
+	working_str = PSTR("Restart gateway");
 	save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
-																 Control::Color::Emerald, gui_start_delay_number, gatewayCallback, (void*)GUI_CB_GUI_RESTART_FLAG);
+																 Control::Color::Emerald, gatewaytab, gatewayCallback, (void*)GUI_CB_GUI_RESTART_FLAG);
 	ESPUI.updateNumber(enable_gui_switcher, _enable_gui_on_start);
 	ESPUI.updateNumber(gui_start_delay_number, _gui_start_delay);
+	ESPUI.updateNumber(force_config_switcher, _force_config_on_start);
 }
 
 void buildCredentialsGUI() {
@@ -2867,6 +2876,12 @@ void gatewayCallback(Control *sender, int type, void *param) {
 		case GUI_CB_ENABLE_GUI_FLAG: { 
 
 			if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_ENABLE_GUI_ON_START, ESPUI.getControl(enable_gui_switcher)->value.toInt()))
+      	Supla::Storage::ConfigInstance()->commit();
+		} break;
+
+		case GUI_CB_FORCE_CONFIG_FLAG: { 
+
+			if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_FORCE_CONFIG_ON_START, ESPUI.getControl(force_config_switcher)->value.toInt()))
       	Supla::Storage::ConfigInstance()->commit();
 		} break;
 

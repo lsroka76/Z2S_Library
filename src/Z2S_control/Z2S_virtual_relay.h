@@ -38,6 +38,9 @@
 #define Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME       0x32
 #define Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION     0x33
 
+#define Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL       0x40
+#define Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_PROGRAM      0x41
+
 namespace Supla {
 namespace Control {
 class Z2S_VirtualRelay : public Relay {

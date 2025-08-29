@@ -15,6 +15,7 @@
 */
 
 #include "Z2S_roller_shutter.h"
+#include "TuyaDatapoints.h"
 
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
@@ -62,7 +63,7 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[] = { 00, 00, 01, 04, 00, 01, 02 };
+        uint8_t MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[] = { 00, 00, MOES_SHADES_DRIVE_MOTOR_STATE_DP, TUYA_DP_TYPE_ENUM, 00, 01, 02 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -92,7 +93,7 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[] = { 00, 00, 01, 04, 00, 01, 00 };
+        uint8_t MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[] = { 00, 00, MOES_SHADES_DRIVE_MOTOR_STATE_DP, TUYA_DP_TYPE_ENUM, 00, 01, 00 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -117,7 +118,7 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_STOP_CMD[] = { 00, 00, 01, 04, 00, 01, 01 };
+        uint8_t MOES_SHADES_DRIVE_MOTOR_STOP_CMD[] = { 00, 00, MOES_SHADES_DRIVE_MOTOR_STATE_DP, TUYA_DP_TYPE_ENUM, 00, 01, 01 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -142,7 +143,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(uint8_t lift_perc
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[] = { 00, 00, 02, 02, 00, 04, 00, 00, 00, 00 };
+        uint8_t MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[] = { 00, 00, MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, TUYA_DP_TYPE_VALUE, 00, 04, 00, 00, 00, 00 };
 
         uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
@@ -298,12 +299,12 @@ void Supla::Control::Z2S_RollerShutter::setTimeoutSecs(uint32_t timeout_secs) {
 
 uint32_t Supla::Control::Z2S_RollerShutter::getKeepAliveSecs() {
 
-  return _keep_alive_ms * 1000;
+  return _keep_alive_ms / 1000;
 }
 
 uint32_t Supla::Control::Z2S_RollerShutter::getTimeoutSecs() {
 
-  return _timeout_ms * 1000;
+  return _timeout_ms / 1000;
 }
 
 //#endif

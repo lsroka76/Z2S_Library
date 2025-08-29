@@ -133,6 +133,7 @@
 #define Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE  0x4830
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_VALVE              0x4900
+#define Z2S_DEVICE_DESC_GIEX_SMART_VALVE                0x4910
 
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F            0x5000
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F            0x5001
@@ -339,6 +340,13 @@
 #define SONOFF_SMART_VALVE_TIME_SID         0x05
 #define SONOFF_SMART_VALVE_PAUSE_SID        0x06
 #define SONOFF_SMART_VALVE_VOLUME_SID       0x07
+
+#define GIEX_SMART_VALVE_STATE_SID          0x00
+#define GIEX_SMART_VALVE_MODE_SID           0x01
+#define GIEX_SMART_VALVE_CYCLES_NUMBER_SID  0x02
+#define GIEX_SMART_VALVE_TARGET_SID         0x03
+#define GIEX_SMART_VALVE_INTERVAL_SID       0x04
+#define GIEX_SMART_VALVE_VOLUME_SID       0x07
 
 #define SONOFF_PIR_SENSOR_OCCUPANCY_SID    0x00
 #define SONOFF_PIR_SENSOR_ILLUMINANCE_SID  0x01
@@ -1378,6 +1386,9 @@ const dataPoints = {
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT }},
 
+   { .z2s_device_desc_id = Z2S_DEVICE_DESC_GIEX_SMART_VALVE, .z2s_device_clusters_count = 1, .z2s_device_clusters =
+    { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR, .z2s_device_clusters_count = 1, .z2s_device_clusters =
     { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
     
@@ -2024,6 +2035,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI Driver 10W",
      .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
 
+   { .manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI Driver 30W",
+     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB, .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3210_ctv0gump", .model_name = "TS0501B",
      .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0, .z2s_device_endpoints_count = 1},
 
@@ -2218,6 +2232,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "SONOFF", .model_name = "SWV",
      .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_VALVE, .z2s_device_endpoints_count = 1},
+
+   { .manufacturer_name = "_TZE204_a7sghmms", .model_name = "TS0601",
+     .z2s_device_desc_id = Z2S_DEVICE_DESC_GIEX_SMART_VALVE, .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3290_7v1k4vufotpowp9z", .model_name = "TS1201",
      .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL, .z2s_device_endpoints_count = 1},

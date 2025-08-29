@@ -10,6 +10,7 @@
 #include "z2s_device_electricity_meter.h"
 #include "z2s_device_virtual_relay.h"
 #include "z2s_device_virtual_valve.h"
+#include "TuyaDatapoints.h"
 
 #include <arduino_base64.hpp>
 #include <math.h>
@@ -1298,6 +1299,62 @@ void processTuyaOnOffValveBatteryDataReport(int16_t channel_number_slot, uint16_
   }  
 }
 
+void processGiexSmartValveDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi, uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_STATE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_MODE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_IRRIGATION_START_TIME_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_IRRIGATION_END_TIME_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_CYCLE_IRRIGATION_NUMBER_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_IRRIGATION_TARGET_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_CYCLE_IRRIGATION_INTERVAL_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_WATER_CONSUMED_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_LAST_IRRIGATION_DURATION_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+    
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(GIEX_WATER_VALVE_BATTERY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value, rssi);
+  }  
+}
+
 void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t payload_size, uint8_t *payload, signed char rssi) {
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
@@ -1378,8 +1435,10 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
     case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
       processTuyaOnOffValveBatteryDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
-      
 
+    case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
+      processGiexSmartValveDataReport(channel_number_slot, payload_size, payload, rssi, model_id); break;
+      
     default: 
       log_i("Unknown device model id 0x%x", z2s_channels_table[channel_number_slot].model_id); break;
   }
