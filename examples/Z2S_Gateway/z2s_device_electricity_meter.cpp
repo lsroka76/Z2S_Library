@@ -61,16 +61,16 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
     case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
 
-      current_multiplier = 1;
+      /*current_multiplier = 1;
       current_divisor    = 1000;
 
       voltage_multiplier = 1;
       voltage_divisor    = 1000;
   
       active_power_multiplier = 1;
-      active_power_divisor    = 1000;
+      active_power_divisor    = 1000;*/
 
-      ignore_zigbee_scaling = true;
+      ignore_zigbee_scaling = false;
 
     } break;
 
@@ -135,6 +135,7 @@ void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector,
         
         //Supla_OnePhaseElectricityMeter->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
         switch (selector) {
+          
           case Z2S_EM_VOLTAGE_A_SEL: Supla_ElectricityMeter->setVoltage2(0, value); break;
           case Z2S_EM_CURRENT_A_SEL: Supla_ElectricityMeter->setCurrent2(0, abs(value)); break;
           case Z2S_EM_ACTIVE_POWER_A_SEL: Supla_ElectricityMeter->setPowerActive2(0, value); break;
@@ -156,7 +157,7 @@ void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector,
           case Z2S_EM_ACT_RVR_ENERGY_C_SEL: Supla_ElectricityMeter->setRvrActEnergy(2, value * 1000); break;
           case Z2S_EM_POWER_FACTOR_C_SEL: Supla_ElectricityMeter->setPowerFactor(2, value * 1000); break;
 
-          case Z2S_EM_AC_FREQUENCY: Supla_ElectricityMeter->setFreq(value); break;
+          case Z2S_EM_AC_FREQUENCY: Supla_ElectricityMeter->setFreq2(value); break;
 
           case Z2S_EM_AC_VOLTAGE_MUL_SEL: Supla_ElectricityMeter->setVoltageMultiplier(value); break;
           case Z2S_EM_AC_VOLTAGE_DIV_SEL: Supla_ElectricityMeter->setVoltageDivisor(value); break;
@@ -164,6 +165,11 @@ void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector,
           case Z2S_EM_AC_CURRENT_DIV_SEL: Supla_ElectricityMeter->setCurrentDivisor(value); break;
           case Z2S_EM_AC_ACTIVE_POWER_MUL_SEL:  Supla_ElectricityMeter->setActivePowerMultiplier(value); break;
           case Z2S_EM_AC_ACTIVE_POWER_DIV_SEL:  Supla_ElectricityMeter->setActivePowerDivisor(value); break;
+          case Z2S_EM_AC_FREQUENCY_MUL_SEL: Supla_ElectricityMeter->setFreqMultiplier(value); break;
+          case Z2S_EM_AC_FREQUENCY_DIV_SEL: Supla_ElectricityMeter->setFreqDivisor(value); break;
+          case Z2S_EM_ACT_FWD_ENERGY_MUL_SEL: Supla_ElectricityMeter->setEnergyMultiplier(value); break;
+          case Z2S_EM_ACT_FWD_ENERGY_DIV_SEL: Supla_ElectricityMeter->setEnergyDivisor(value); break;
+
         }
     }
 }

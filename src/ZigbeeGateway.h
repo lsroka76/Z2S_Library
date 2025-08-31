@@ -76,6 +76,9 @@
 
 #define LUMI_CUSTOM_CLUSTER_MODE_ID                           0x0009 //U8
 
+#define DEVELCO_CUSTOM_CLUSTER                                0xFC03
+#define DEVELCO_MANUFACTURER_CODE                             0x1015
+
 #define ZCL_CMD_TSN_UNKNOWN 0x00
 #define ZCL_CMD_TSN_SYNC    0x01
 #define ZCL_CMD_TSN_ASYNC   0x02
@@ -151,12 +154,23 @@ public:
   static void clearNewDeviceJoined() {
     _new_device_joined = false;
   }
-  static void setEndpoints2Bind(uint8_t endpoints_count) {
+  /*static void setEndpoints2Bind(uint8_t endpoints_count) {
     _endpoints_2_bind = endpoints_count;
   }
   static void setClusters2Bind(uint16_t clusters_count) {
     _clusters_2_bind = clusters_count;
+  }*/
+
+  static void setActivePairing(bool active_pairing) {
+
+    _active_pairing = active_pairing;
   }
+
+  static bool getActivePairing() {
+
+    return _active_pairing;
+  }
+
   static query_basic_cluster_data_t * getQueryBasicClusterData() {
     return &_last_device_query;
   }
@@ -270,6 +284,10 @@ public:
                             const esp_zb_zcl_attribute_t *, signed char rssi)) {
     _on_analog_input_receive = callback;
   }
+  void onMeteringReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
+                         const esp_zb_zcl_attribute_t *, signed char rssi)) {
+    _on_metering_receive = callback;
+  }
   void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi)) {
     _on_current_summation_receive = callback;
   }
@@ -298,7 +316,10 @@ public:
     _on_window_covering_receive = callback;
   }
   void onSonoffCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi)) {
-    _on_Sonoff_custom_cluster_receive = callback;
+    _on_sonoff_custom_cluster_receive = callback;
+  }
+  void onDevelcoCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi)) {
+    _on_develco_custom_cluster_receive = callback;
   }
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi)) {
     _on_on_off_custom_cmd_receive = callback;
@@ -323,7 +344,9 @@ private:
   // save instance of the class in order to use it in static functions
   static ZigbeeGateway *_instance;
 
-  static volatile bool GatewayReady;
+  static volatile bool _active_pairing;
+
+  //static volatile bool GatewayReady;
 
   static findcb_userdata_t findcb_userdata;
   static volatile bool _last_bind_success;
@@ -332,11 +355,11 @@ private:
 
   static volatile uint8_t _binding_error_retries;
 
-  static volatile uint16_t _clusters_2_discover;
-  static volatile uint16_t _attributes_2_discover;
+  //static volatile uint16_t _clusters_2_discover;
+  //static volatile uint16_t _attributes_2_discover;
 
-  static volatile uint16_t _endpoints_2_bind;
-  static volatile uint16_t _clusters_2_bind;
+  //static volatile uint16_t _endpoints_2_bind;
+  //static volatile uint16_t _clusters_2_bind;
 
   static query_basic_cluster_data_t _last_device_query;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
@@ -378,6 +401,7 @@ private:
   void (*_on_electrical_measurement_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_multistate_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_analog_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
+  void (*_on_metering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi);
   void (*_on_battery_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
   void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
@@ -387,7 +411,8 @@ private:
   void (*_on_thermostat_temperatures_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi);
   void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi);
   void (*_on_window_covering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi);
-  void (*_on_Sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
+  void (*_on_sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
+  void (*_on_develco_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi);
   bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char rssi);
 

@@ -1548,6 +1548,11 @@ void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t e
 
   switch (attribute->id) {
 
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_FREQUENCY, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+    
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID: {
 
       msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, *(uint16_t *)attribute->data.value, rssi);
@@ -1592,6 +1597,16 @@ void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t e
 
       msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_ACTIVE_POWER_DIV_SEL, *(uint16_t *)attribute->data.value, rssi);
     } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_MULTIPLIER_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_FREQUENCY_MUL_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_DIVISOR_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_FREQUENCY_DIV_SEL, *(uint16_t *)attribute->data.value, rssi);
+    } break;
   }
 }
 
@@ -1633,7 +1648,59 @@ void Z2S_onMultistateInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   }
 }
 
-void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint64_t active_fwd_energy, signed char rssi) {
+void Z2S_onMeteringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+                           const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
+
+  char ieee_addr_str[24] = {};
+
+  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {
+    
+    log_e("no electricity meter channel found for address %s", ieee_addr_str);
+    return;
+  }
+
+  if (attribute->data.value == nullptr) {
+      
+    log_e("missing data value for address %s", ieee_addr_str);
+    return;
+  }
+
+  switch (attribute->id) {
+
+    case ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID: {
+      
+      esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
+      uint64_t act_fwd_energy = (((uint64_t)value->high) << 32) + value->low;
+    
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, act_fwd_energy, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID: {
+
+      esp_zb_uint24_t *value = (esp_zb_uint24_t *)attribute->data.value;
+      uint32_t energy_multiplier = (((uint32_t)value->high) << 16) + value->low;
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_MUL_SEL, energy_multiplier, rssi);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID: {
+
+      esp_zb_uint24_t *value = (esp_zb_uint24_t *)attribute->data.value;
+      uint32_t energy_divisor = (((uint32_t)value->high) << 16) + value->low;
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_DIV_SEL, energy_divisor, rssi);
+    } break;
+  }
+}
+
+
+/*void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint64_t active_fwd_energy, signed char rssi) {
 
   char ieee_addr_str[24] = {};
 
@@ -1648,7 +1715,7 @@ void Z2S_onCurrentSummationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
     no_channel_found_error_func(ieee_addr_str);
   else
     msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, active_fwd_energy, rssi);
-}
+}*/
 
 void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t level, signed char rssi) {
 
@@ -2153,6 +2220,8 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
   {
     device->model_id = z2s_channels_table[channel_number_slot].model_id;
     device->user_data = z2s_channels_table[channel_number_slot].Supla_channel; //probably not used ?
+
+    z2s_channels_table[channel_number_slot].short_addr = device->short_addr;
 
     channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   } 
@@ -2730,11 +2799,18 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
     }
     return ADD_Z2S_DEVICE_STATUS_OK;
   } else {
-    log_i("Device (0x%x), endpoint (0x%x) already in z2s_channels_table (index 0x%x)", device->short_addr, device->endpoint, channel_number_slot);
-    if (z2s_channels_table[channel_number_slot].short_addr != device->short_addr) {
-      z2s_channels_table[channel_number_slot].short_addr = device->short_addr;
-      Z2S_saveChannelsTable();
-      log_i("Device short address updated");
+
+    while (channel_number_slot >= 0) {
+
+      log_i("Device (0x%x), endpoint (0x%x) already in z2s_channels_table (index 0x%x)", device->short_addr, device->endpoint, channel_number_slot);
+
+      if (z2s_channels_table[channel_number_slot].short_addr != device->short_addr) {
+      
+        z2s_channels_table[channel_number_slot].short_addr = device->short_addr;
+        Z2S_saveChannelsTable();
+        log_i("Device short address updated");
+      }
+      channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, sub_id);
     }
     return ADD_Z2S_DEVICE_STATUS_DAP; 
   }

@@ -144,14 +144,56 @@ void supla_callback_bridge(int event, int action) {
   log_i("supla_callback_bridge - event(0x%x), action(0x%x)", event, action);
   switch (action) {
     case 0x4000: {
+      
       sendIASNotifications = true; 
       return;
     } break;
+    
     case 0x4001: {
+      
       sendIASNotifications = false; 
       return;
     } break;
+
+    case 0x4010: {
+
+      if ((!Zigbee.started()) && (SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY)) {
+  
+        log_i("Starting Zigbee subsystem");
+    
+        esp_coex_wifi_i154_enable();
+  
+        if (!Zigbee.begin(ZIGBEE_COORDINATOR)) {
+          
+          log_e("Zigbee failed to start! Rebooting...");
+          SuplaDevice.scheduleSoftRestart(1000);
+        }
+      
+        refresh_time = 0;
+        
+        #ifdef USE_TELNET_CONSOLE
+
+        setupTelnet();
+        onTelnetCmd(Z2S_onTelnetCmd); 
+
+        #endif //USE_TELNET_CONSOLE
+        return;
+      }
+      if (Zigbee.started() && (SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE)) {
+        
+        if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_FORCE_CONFIG_ON_START, 1)) {
+      	  
+          log_i("Supla config mode detected (Zigbee stack active) - setting Z2S_FORCE_CONFIG_ON_START flag and restarting!");
+          Supla::Storage::ConfigInstance()->commit();
+          SuplaDevice.scheduleSoftRestart();
+        }
+        else
+          log_e("Supla config mode detected (Zigbee stack active) - setting Z2S_FORCE_CONFIG_ON_START flag FAILED!");
+        return;  
+      }
+    } break;
   }
+
   switch (event) {
     case Supla::ON_EVENT_1:
     case Supla::ON_CLICK_1: Zigbee.openNetwork(180); break;
@@ -174,23 +216,6 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_CLICK_10: Z2S_clearChannelsTable(); break;
     case Supla::ON_EVENT_4: Z2S_nwk_scan_neighbourhood(false); break;
   }
-  if ((event >= Supla::ON_EVENT_5) && (event < Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER)) {
-    z2s_channels_table[event - Supla::ON_EVENT_5].valid_record = false;
-    if (Z2S_saveChannelsTable()) {
-      log_i("Device on channel %d removed. Restarting...", z2s_channels_table[event - Supla::ON_EVENT_5].Supla_channel);
-      SuplaDevice.scheduleSoftRestart(1000);
-    }
-  }
-
-#ifdef SUPLA_WEB_SERVER 
-
-  if ((event >= Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER) && (event < Supla::ON_EVENT_5 + 2*Z2S_CHANNELS_MAX_NUMBER)) {
-    int32_t timeout = 0;
-    Supla::Storage::ConfigInstance()->getInt32(PARAM_TXT1, &timeout);
-    log_i("Timeout is %d", timeout);   
-    updateTimeout(event - (Supla::ON_EVENT_5 + Z2S_CHANNELS_MAX_NUMBER), timeout);
-  }
-#endif //SUPLA_WEB_SERVER
 }
 
 #ifdef USE_TELNET_CONSOLE
@@ -1082,7 +1107,8 @@ void enableZ2SNotifications() {
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
   zbGateway.onElectricalMeasurementReceive(Z2S_onElectricalMeasurementReceive);
   zbGateway.onMultistateInputReceive(Z2S_onMultistateInputReceive);
-  zbGateway.onCurrentSummationReceive(Z2S_onCurrentSummationReceive);
+  zbGateway.onMeteringReceive(Z2S_onMeteringReceive);
+  //zbGateway.onCurrentSummationReceive(Z2S_onCurrentSummationReceive);
   zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
   zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
   zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
@@ -1113,7 +1139,8 @@ void disableZ2SNotifications() {
   zbGateway.onOccupancyReceive(nullptr);
   zbGateway.onOnOffReceive(nullptr);
   zbGateway.onElectricalMeasurementReceive(nullptr);
-  zbGateway.onCurrentSummationReceive(nullptr);
+  zbGateway.onMeteringReceive(nullptr);
+  //zbGateway.onCurrentSummationReceive(nullptr);
   zbGateway.onCurrentLevelReceive(nullptr);
   zbGateway.onColorHueReceive(nullptr);
   zbGateway.onColorSaturationReceive(nullptr);
@@ -1240,6 +1267,8 @@ void setup() {
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_1);
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_5);
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_10);
+
+  SuplaDevice.addAction(0x4010, AHwC, Supla::ON_DEVICE_STATUS_CHANGE, false);
 
   LittleFS.begin(false);
   listDir(LittleFS,"/",3);
@@ -1374,11 +1403,10 @@ void loop() {
 
   if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE) {
     GUIstarted = true;
-    //Z2S_buildWebGUI();  
-    //Z2S_startWebGUI();
     Z2S_startWebGUIConfig();
     Z2S_startUpdateServer();
   } 
+
   if ((!GUIstarted) && (_enable_gui_on_start == 1) && Zigbee.started() && (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {// SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
     GUIstarted = true;
     Z2S_buildWebGUI();  
@@ -1394,26 +1422,6 @@ void loop() {
   if (is_Telnet_server) telnet.loop();
 
 #endif //USE_TELNET_CONSOLE
-  
-  if ((!Zigbee.started()) && SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
-  
-    log_i("Starting Zigbee subsystem");
-    
-    esp_coex_wifi_i154_enable();
-  
-    if (!Zigbee.begin(ZIGBEE_COORDINATOR)) {
-      log_e("Zigbee failed to start! Rebooting...");
-      SuplaDevice.scheduleSoftRestart(1000);
-    }
-    refresh_time = 0;
-
-#ifdef USE_TELNET_CONSOLE
-
-    setupTelnet();
-    onTelnetCmd(Z2S_onTelnetCmd); 
-
-#endif //USE_TELNET_CONSOLE
-  }
   
   //
   if (Zigbee.started() && (millis() - _time_cluster_last_refresh_ms > TIME_CLUSTER_REFRESH_MS)) {
@@ -1532,6 +1540,7 @@ void loop() {
   if (zbGateway.isNewDeviceJoined()) {
 
     disableZ2SNotifications();
+    zbGateway.setActivePairing(true);
     
     zbGateway.clearNewDeviceJoined();
     zbGateway.printJoinedDevices();
@@ -2012,62 +2021,43 @@ void loop() {
                     
                 } break;
 
+                case  Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
+
+                  joined_device->endpoint = Z2S_DEVICES_LIST[i].z2s_device_endpoints[0].endpoint_id; //2
+                } [[fallthrough]];
+
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
                 case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1: 
                 case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER:
-                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A: {
-                  /*zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 3600, 5, true);
-                  zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 5, 3600, 50, true);
-                  zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 300, 5, true);
-                  zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING,  
-                                                ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, ESP_ZB_ZCL_ATTR_TYPE_U48, 5, 3600, 2, true);
-                  */
-                  
-                } [[fallthrough]];//break;
+                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A: 
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2:
-                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2:
-                case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
+                case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
+
+                   /*bool sync_cmd = true;
                    zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
-                                                ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, false);
-                  /*zbGateway.readClusterReportCfgCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, false);
-                  zbGateway.readClusterReportCfgCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, false);
-                  zbGateway.readClusterReportCfgCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, false);
-                  zbGateway.readClusterReportCfgCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, false);
-                  */
-                  zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                      ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, false);
-                  //  log_i("AC voltage multiplier 0x%x", *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
-                  zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                      ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID, false);
-                    //log_i("AC divisor 0x%x", *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
-                  zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                      ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID, false);
-                    //log_i("AC current multiplier 0x%x", *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
-                  zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                      ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID, false);
-                    //log_i("AC current divisor 0x%x", *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
-                  zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                      ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID, false);
-                    //log_i("AC power multiplier 0x%x", *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
-                  zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                      ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID, false);
-                    //log_i("AC power divisor 0x%x", *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
-                  /*if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 
-                      ESP_ZB_ZCL_ATTR_METERING_SUMMATION_FORMATTING_ID, true))
-                    log_i("Summation formating 0x%x", *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
-                  if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 
-                      ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID, true)) {
-                    log_i("Metering multiplier 0x%x:0x%x", 
-                          ((esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value)->low, ((esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value)->high);
-                  }
-                  if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 
-                      ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID, true))
-                    log_i("Metering divisor 0x%x:0x%x", 
-                          ((esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value)->low, ((esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value)->high);*/
+                                                ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_MULTIPLIER_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_DIVISOR_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U24, 0, 3600, 1, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 3600, 1, sync_cmd);*/
+                  
                   //relay restore mode on startup
                   write_mask = 0xFF;
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 0x4003, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
@@ -2109,7 +2099,7 @@ void loop() {
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 0x8002, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); //Tuya special
                   for(int n = 0; n < Z2S_DEVICES_LIST[i].z2s_device_endpoints_count; n++) {
                     joined_device->endpoint = ( Z2S_DEVICES_LIST[i].z2s_device_endpoints_count == 1) ? 
-                                                1 : Z2S_DEVICES_LIST[i].z2s_device_endpoints[n].endpoint_id;;
+                                                1 : Z2S_DEVICES_LIST[i].z2s_device_endpoints[n].endpoint_id;
                       //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD010, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); 
                       //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD030, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
                   }
@@ -2167,6 +2157,7 @@ void loop() {
         rgbLed.show();
         delay(1000);
         enableZ2SNotifications();
+        zbGateway.setActivePairing(false);
 
         Z2S_startWebGUI();
         GUI_onLastBindingFailure(true);

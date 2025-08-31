@@ -13,15 +13,19 @@ class Z2S_ElectricityMeter : public ElectricityMeter {
  public:
   Z2S_ElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, uint64_t *data_counter, bool isTuya, 
 		       bool active_query = false, bool one_phase = true) : _gateway(gateway), _data_counter(data_counter) {
-	memcpy(&_device, device, sizeof(zbg_device_params_t));
-	_active_query = active_query;
-        _isTuya = isTuya;
-	if (_active_query) refreshRateSec = 30;
-	if (one_phase) {
-	  extChannel.setFlag(SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED);
-          extChannel.setFlag(SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED);
-        }
-
+	
+    memcpy(&_device, device, sizeof(zbg_device_params_t));
+	
+    _active_query = active_query;
+    _isTuya       = isTuya;
+	
+    if (_active_query) refreshRateSec = 30;
+	
+    if (one_phase) {
+	  
+      extChannel.setFlag(SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED);
+      extChannel.setFlag(SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED);
+    }
   }
 
 void setVoltageMultiplier(uint16_t voltage_multiplier, bool from_zigbee = true) {
@@ -80,7 +84,6 @@ uint16_t getCurrentDivisor() {
   return _current_divisor;
 }
 
-
 void setCurrentMultiplierModifier(uint16_t current_multiplier_modifier) {
 
   if (current_multiplier_modifier > 0)
@@ -102,7 +105,6 @@ uint16_t getCurrentDivisorModifier() {
   
   return _current_divisor_modifier;
 }
-
 
 void setActivePowerMultiplier(uint16_t active_power_multiplier, bool from_zigbee = true) {
   
@@ -130,7 +132,63 @@ void setActivePowerDivisor(uint16_t active_power_divisor, bool from_zigbee = tru
 uint16_t getActivePowerDivisor() {
   
   return _active_power_divisor;
+}
+
+void setFreqMultiplier(uint16_t ac_frequency_multiplier, bool from_zigbee = true) {
+  
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
+  
+  if (ac_frequency_multiplier > 0)
+    _ac_frequency_multiplier = ac_frequency_multiplier;
+}
+
+uint16_t getFreqMultiplier() {
+  
+  return _ac_frequency_multiplier;
 } 
+
+void setFreqDivisor(uint16_t ac_frequency_divisor, bool from_zigbee = true) {
+  
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
+  
+  if (ac_frequency_divisor > 0)  
+    _ac_frequency_divisor = ac_frequency_divisor;
+}
+
+uint16_t getFreqDivisor() {
+  
+  return _ac_frequency_divisor;
+}
+
+void setEnergyMultiplier(uint32_t energy_multiplier, bool from_zigbee = true) {
+  
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
+  
+  if (energy_multiplier > 0)
+    _energy_multiplier = energy_multiplier;
+}
+
+uint32_t getEnergyMultiplier() {
+  
+  return _energy_multiplier;
+} 
+
+void setEnergyDivisor(uint16_t energy_divisor, bool from_zigbee = true) {
+  
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
+  
+  if (energy_divisor > 0)  
+    _energy_divisor = energy_divisor;
+}
+
+uint32_t getEnergyDivisor() {
+  
+  return _energy_divisor;
+}
 
 void setIgnoreZigbeeScaling(bool ignore_zigbee_scaling) {
 
@@ -182,11 +240,27 @@ void setPowerActive2(int phase, int64_t power) {
   log_d("_active_power_multiplier = %d, _active_power_divisor = %d, em_power = %lld", _active_power_multiplier, _active_power_divisor, em_power);
 
   setPowerActive(phase, em_power);
+}
 
+void setFreq2(uint32_t freq) {
+
+  uint32_t em_freq;
+  
+  if ((_ac_frequency_multiplier == 0) || (_ac_frequency_divisor == 0))
+    em_freq = freq * 100;
+  else
+    em_freq = (freq * _ac_frequency_multiplier * 100) / _ac_frequency_divisor;
+
+  log_d("_ac_frequency_multiplier = %d, _ac_frequency_divisor = %d, em_freq = %ld", _ac_frequency_multiplier, _ac_frequency_divisor, em_freq);
+
+  setFreq(em_freq);
 }
 
 void setFwdActEnergy2(int phase, unsigned _supla_int64_t energy) {
 
+  if ((_energy_multiplier != 0) && (_energy_divisor != 0))
+    energy = (energy * _energy_multiplier) / _energy_divisor;
+  
   if (energy > _energy_initial_counter)
     energy -= _energy_initial_counter;
   else
@@ -205,20 +279,21 @@ void onInit() override {
 virtual void readValuesFromDevice() {
 
   return; //rest is invalid for now
-  if (_gateway && Zigbee.started()) {
-    if ((_active_query || 0 /*(emValue.m[0].voltage[0] == 0)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,      			ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, true))
-         setVoltage(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value) * 100);
-    if ((_active_query || 0/*(!currentMeasurementAvailable)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 		ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, true))
-         setCurrent(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value) * 1);
-    if ((_active_query || 0/*(!powerActiveMeasurementAvailable)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 	ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, true))
-         setPowerActive(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value)*100000*_active_power_multiplier);
-       
-    if (_active_query && _gateway->sendAttributeRead(&_device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, true)) {
-      esp_zb_uint48_t *value = (esp_zb_uint48_t *)_gateway->getReadAttrLastResult()->data.value;
-      _supla_int64_t energy = ((_supla_int64_t)value->high << 32) + value->low;
-      setFwdActEnergy(0, energy * 1000);
-    }
-  }
+  
+  //if (_gateway && Zigbee.started()) {
+  //  if ((_active_query || 0 /*(emValue.m[0].voltage[0] == 0)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,      			ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, true))
+  //       setVoltage(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value) * 100);
+  //  if ((_active_query || 0/*(!currentMeasurementAvailable)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 		ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, true))
+  //       setCurrent(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value) * 1);
+  //  if ((_active_query || 0/*(!powerActiveMeasurementAvailable)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 	ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, true))
+  //       setPowerActive(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value)*100000*_active_power_multiplier);
+  //     
+  //  if (_active_query && _gateway->sendAttributeRead(&_device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, true)) {
+  //    esp_zb_uint48_t *value = (esp_zb_uint48_t *)_gateway->getReadAttrLastResult()->data.value;
+  //    _supla_int64_t energy = ((_supla_int64_t)value->high << 32) + value->low;
+  //    setFwdActEnergy(0, energy * 1000);
+  //  }
+  //}
 }
 
 void resetStorage() {
@@ -239,13 +314,50 @@ void resetStorage() {
 	
     if (_gateway && Zigbee.started()) {
       
-      uint16_t attributes[6] = {ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID,
-                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID,
-                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID};
+      uint16_t em_attributes[8] = {ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID,
+                                  ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID,
+                                  ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID,
+                                  ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_DIVISOR_ID};
 
-      _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 6, &attributes[0]);
+      uint16_t sm_attributes[2] = {ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID, ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID};
+                                  
+
+      _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 8, &em_attributes[0]);
+      _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 2, &sm_attributes[0]);
       
-      _fresh_start = false;
+      if (_init_ms < 3600000)
+        _init_ms *= 2;
+      
+      /*for (uint8_t em_idx  = 0; em_idx < 8; em_idx++) {
+
+        uint8_t idx_mask = 1 << em_idx;
+        
+        if ((_em_scaling_mask & idx_mask) == idx_mask) {
+          
+          
+          if (_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, em_attributes[em_idx], false)) {
+            
+            //_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, em_attributes[em_idx], false);
+            _em_scaling_mask &= ~idx_mask;
+          }
+        }
+      }
+
+      for (uint8_t sm_idx  = 0; sm_idx < 2; sm_idx++) {
+
+        uint8_t idx_mask = 1 << sm_idx;
+        
+        if ((_sm_scaling_mask & idx_mask) == idx_mask) {
+          
+          if (_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, sm_attributes[sm_idx], false)) {
+
+            //_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, sm_attributes[sm_idx], false);
+            _sm_scaling_mask &= ~idx_mask;
+          }
+        }
+      }
+      if ((_em_scaling_mask == 0) && (_sm_scaling_mask ==0))
+        _fresh_start = false;*/
     }
   }
 
@@ -328,8 +440,10 @@ void iterateAlways() override {
 
   Supla::Sensor::ElectricityMeter::iterateAlways();
 
-  if (_fresh_start) 
+  if (_fresh_start && ((millis() - _last_init_ms) > _init_ms)) {
     initZigbee();
+    _last_init_ms = millis();
+  }
 
   if ((_refresh_enabled) && ((millis() - _last_refresh_ms) > _refresh_ms)) {
     if (_gateway) {
@@ -381,12 +495,21 @@ void iterateAlways() override {
 
     bool _ignore_zigbee_scaling = false;
 
+    uint8_t _em_scaling_mask          = 0xFF; //0x3F; //bits 0-5 on
+    uint8_t _sm_scaling_mask          = 0x03; // bits 0-1 on
+
     uint16_t _voltage_multiplier      = 0;
     uint16_t _voltage_divisor 	      = 0;
     uint16_t _current_multiplier      = 0;
     uint16_t _current_divisor         = 0;
     uint16_t _active_power_multiplier = 0;
     uint16_t _active_power_divisor    = 0;
+
+    uint16_t _ac_frequency_multiplier = 0;
+    uint16_t _ac_frequency_divisor    = 0;
+
+    uint32_t _energy_multiplier       = 0;
+    uint32_t _energy_divisor          = 0;
 
     uint16_t _current_multiplier_modifier = 1;
     uint16_t _current_divisor_modifier    = 1;
@@ -400,11 +523,12 @@ void iterateAlways() override {
     uint32_t _refresh_ms    = 30000;
     uint32_t _keep_alive_ms = 30000;
     uint32_t _timeout_ms    = 60000;
+    uint32_t _init_ms       = 30000;
     
     uint32_t _last_ping_ms    = 0;
     uint32_t _last_seen_ms    = 0;
     uint32_t _last_refresh_ms = 0;
-
+    uint32_t _last_init_ms    = 0;
 };
 
 };  // namespace Sensor

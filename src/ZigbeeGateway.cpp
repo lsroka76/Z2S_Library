@@ -10,10 +10,11 @@ findcb_userdata_t ZigbeeGateway::findcb_userdata;
 volatile bool ZigbeeGateway::_last_bind_success = false;
 volatile bool ZigbeeGateway::_in_binding = false;
 volatile bool ZigbeeGateway::_new_device_joined = false;
-volatile uint16_t ZigbeeGateway::_clusters_2_discover = 0;
-volatile uint16_t ZigbeeGateway::_attributes_2_discover = 0;
-volatile uint16_t ZigbeeGateway::_endpoints_2_bind = 0;
-volatile uint16_t ZigbeeGateway::_clusters_2_bind = 0;
+volatile bool ZigbeeGateway::_active_pairing = false;
+//volatile uint16_t ZigbeeGateway::_clusters_2_discover = 0;
+//volatile uint16_t ZigbeeGateway::_attributes_2_discover = 0;
+//volatile uint16_t ZigbeeGateway::_endpoints_2_bind = 0;
+//volatile uint16_t ZigbeeGateway::_clusters_2_bind = 0;
 volatile uint8_t ZigbeeGateway::_binding_error_retries = 0;
 query_basic_cluster_data_t ZigbeeGateway::_last_device_query;
 volatile uint8_t ZigbeeGateway::_read_attr_last_tsn = 0;
@@ -51,8 +52,8 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   _new_device_joined = false;
   _last_bind_success = false;
 
-  _clusters_2_discover = 0;
-  _attributes_2_discover = 0;
+  //_clusters_2_discover = 0;
+  //_attributes_2_discover = 0;
 
   memset((void*)_read_attr_tsn_list, 0, sizeof(_read_attr_tsn_list));
   //memset((void*)_custom_cmd_tsn_list, 0, sizeof(_custom_cmd_tsn_list));
@@ -781,14 +782,15 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_METERING) {
 
-      if (attribute->id == ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U48) {
-        esp_zb_uint48_t *value; 
-        if (attribute->data.value) value = (esp_zb_uint48_t *)attribute->data.value ;
-        log_i("metering cluster current summation delivered %d:%d",value->high, value->low);
-        uint64_t value64 = (((uint64_t)value->high) << 32) + value->low;
-        if (_on_current_summation_receive)
-          _on_current_summation_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value64, rssi);
-      } else log_i("metering cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      log_i("metering cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      if (_on_metering_receive)
+        _on_metering_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);
+    } else
+    if (cluster_id == DEVELCO_CUSTOM_CLUSTER) {
+
+      log_i("Develco custom cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      if (_on_develco_custom_cluster_receive)
+        _on_develco_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
 
@@ -896,8 +898,8 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
       if (cluster_id == SONOFF_CUSTOM_CLUSTER) {
 
         log_i("SONOFF_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
-	      if (_on_Sonoff_custom_cluster_receive)
-          _on_Sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);      
+	      if (_on_sonoff_custom_cluster_receive)
+          _on_sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);      
       } else
       if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING) {
 
@@ -943,11 +945,14 @@ void ZigbeeGateway::zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_addres
     delay(200);
     _read_attr_tsn_list[tsn] = ZCL_CMD_TSN_UNKNOWN;
     xSemaphoreGive(gt_lock);  
+    if (status == ESP_ZB_ZCL_STATUS_SUCCESS)
+      zbAttributeReporting(src_address, src_endpoint, cluster_id, attribute, rssi);
   }
   else 
   {
     log_i("zbReadAttrResponse async read, tsn 0x%x[0x%x]", tsn, _read_attr_tsn_list[tsn]);
-    zbAttributeReporting(src_address, src_endpoint, cluster_id, attribute, rssi);
+    if (status == ESP_ZB_ZCL_STATUS_SUCCESS)
+      zbAttributeReporting(src_address, src_endpoint, cluster_id, attribute, rssi);
   }
 }
 
@@ -1083,8 +1088,7 @@ bool ZigbeeGateway::isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
                 return true;
               }
 	}
-	return false;
-		
+	return false;	
 }
 
 bool ZigbeeGateway::setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
@@ -1277,6 +1281,9 @@ void ZigbeeGateway::zbReadReportConfigResponse(const esp_zb_zcl_cmd_read_report_
 bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack, uint8_t direction,
                                       uint8_t disable_default_response, uint8_t manuf_specific, uint16_t manuf_code) {
 
+    if (_active_pairing)
+      return false;
+
     esp_zb_zcl_read_attr_cmd_t read_req;
 
     if (device->short_addr != 0) {
@@ -1324,6 +1331,9 @@ bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t clus
 
 void ZigbeeGateway::sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, uint16_t *attribute_ids) {
   
+  if (_active_pairing)
+    return;
+  
   esp_zb_zcl_read_attr_cmd_t read_req;
 
   if (device->short_addr != 0) {
@@ -1360,6 +1370,9 @@ void ZigbeeGateway::sendAttributesRead(zbg_device_params_t * device, int16_t clu
 bool ZigbeeGateway::sendAttributeWrite(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, esp_zb_zcl_attr_type_t attribute_type, 
                                        uint16_t attribute_size, void *attribute_value, bool ack, uint8_t manuf_specific, uint16_t manuf_code) {
 
+    if (_active_pairing)
+      return false;
+    
     esp_zb_zcl_write_attr_cmd_t write_req;
     esp_zb_zcl_attribute_t attribute_field[1];
     esp_zb_zcl_attribute_data_t attribute_data;

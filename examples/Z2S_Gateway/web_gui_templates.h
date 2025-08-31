@@ -966,6 +966,54 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_attribute_value = 0xFF
 	},
 	{
+		.zigbee_attribute_id = 0x8002,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0
+	},
+	{
+		.zigbee_attribute_id = 0x8002,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 1
+	},
+	{
+		.zigbee_attribute_id = 0x8002,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+		.zigbee_attribute_value_name = "RESTORE",
+		.zigbee_attribute_value = 2
+	},
+	{
+		.zigbee_attribute_id = 0x8001,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0
+	},
+	{
+		.zigbee_attribute_id = 0x8001,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+		.zigbee_attribute_value_name = "ON WHEN SWITCH ON",
+		.zigbee_attribute_value = 1
+	},
+	{
+		.zigbee_attribute_id = 0x8001,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+		.zigbee_attribute_value_name = "ON WHEN SWITCH OFF",
+		.zigbee_attribute_value = 2
+	},
+	{
+		.zigbee_attribute_id = 0x5000,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0
+	},
+	{
+		.zigbee_attribute_id = 0x5000,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 1
+	},
+	{
 		.zigbee_attribute_id = 0xF001,
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
 		.zigbee_attribute_value_name = "START",
