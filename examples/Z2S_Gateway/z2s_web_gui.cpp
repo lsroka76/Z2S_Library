@@ -2164,8 +2164,9 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 						} else {
 
 							sprintf_P(general_purpose_gui_buffer, PSTR("Reading attribute failed!<br>"
-											"Status code  = %#02X<br>"
-											"Attribute id = %#04X"),
+											"Status = %s(0x%02X)<br>"
+											"Attribute id = 0x%04X"),
+											esp_zb_zcl_status_to_name(*zbGateway.getReadAttrStatusLastResult()),
 											*zbGateway.getReadAttrStatusLastResult(),
 											zbGateway.getReadAttrLastResult()->id);
 							updateLabel_P(device_read_attribute_label, general_purpose_gui_buffer);
@@ -2200,8 +2201,9 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 						} else {
 							sprintf_P(general_purpose_gui_buffer, 
 											PSTR("Reading attribute config report failed!<br>"
-											"Status         = %u(%#02X)<br>"
-											"Attribute id   = %#04X<br>"),
+											"Status = %s(0x%02X)<br>"
+											"Attribute id = 0x%04X<br>"),
+											esp_zb_zcl_status_to_name(zbGateway.getReportConfigRespVariableLastResult()->status),
 											zbGateway.getReportConfigRespVariableLastResult()->status,
 											zbGateway.getReportConfigRespVariableLastResult()->status,
       		       		  zbGateway.getReportConfigRespVariableLastResult()->attribute_id);
@@ -2242,8 +2244,9 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 					} else {
 						sprintf_P(general_purpose_gui_buffer, 
 										PSTR("Configure reporting failed! <br>"
-										"Status         = %u(%#02X)<br>"
-										"Attribute id   = %#04X<br>"),
+										"Status = %s(0x%02X)<br>"
+										"Attribute id = 0x%04X<br>"),
+										esp_zb_zcl_status_to_name(*zbGateway.getConfigReportStatusLastResult()),
 										*zbGateway.getConfigReportStatusLastResult(),
 										*zbGateway.getConfigReportStatusLastResult(),
       		          attribute_id);
@@ -2299,7 +2302,7 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
         	for (int i = 0; i < attribute_size; i++) {
           memcpy(byte_str, attribute_value + (i * 2), 2);
           *(write_attribute_payload + i) = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
-					log_i("write_attribute_payload[%u] = %u(%#02X)", i, *(write_attribute_payload + i), *(write_attribute_payload + i));
+					log_i("write_attribute_payload[%u] = %u(0x%02X)", i, *(write_attribute_payload + i), *(write_attribute_payload + i));
         }
         value = write_attribute_payload;
       	} else {
@@ -2328,9 +2331,9 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 
 						
 							sprintf_P(general_purpose_gui_buffer, PSTR("Write attribute successful! <br>"
-											"Attribute id   = %#04X<br>"
-											"Attribute type = %s(%#02X)<br>"
-											"Attribute size = %u(%#04X)"),
+											"Attribute id   = 0x%04X<br>"
+											"Attribute type = %s(0x%02X)<br>"
+											"Attribute size = %u(0x%04X)"),
       		            attribute_id,
 											getZigbeeDataTypeName(attribute_type),
 											attribute_type,
@@ -2340,10 +2343,11 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 						} else {
 							sprintf_P(general_purpose_gui_buffer, 
 											PSTR("Write attribute failed! <br>"
-											"Status         = %u(%#02X)<br>"
-											"Attribute id   = %#04X<br>"
-											"Attribute type = %s(%#04X)<br>"
-											"Attribute size = %u(%#04X)"),
+											"Status = %s(0x%02X)<br>"
+											"Attribute id = 0x%04X<br>"
+											"Attribute type = %s(0x%04X)<br>"
+											"Attribute size = %u(0x%04X)"),
+											esp_zb_zcl_status_to_name(*zbGateway.getWriteAttrStatusLastResult()),
 											*zbGateway.getWriteAttrStatusLastResult(),
 											*zbGateway.getWriteAttrStatusLastResult(),
       		            *zbGateway.getWriteAttrAttributeIdLastResult(),
@@ -2402,7 +2406,7 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
         		for (int i = 0; i < payload_size; i++) {
           		memcpy(byte_str, payload_value + (i * 2), 2);
           		*(custom_cmd_payload + i) = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
-							log_i("custom_cmd_payload[%u] = %u(%#02X)", i, *(custom_cmd_payload + i), *(custom_cmd_payload + i));
+							log_i("custom_cmd_payload[%u] = %u(0x%02X)", i, *(custom_cmd_payload + i), *(custom_cmd_payload + i));
         		}
 					} else
 						log_i("Payload size equals 0"); 
@@ -2427,9 +2431,9 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 
 						
 							sprintf_P(general_purpose_gui_buffer, PSTR("Custom command successful! <br>"
-											"Command id   = %#04X<br>"
-											"Data type = %s(%#02X)<br>"
-											"Payload size = %u(%#04X)"),
+											"Command id   = 0x%04X<br>"
+											"Data type = %s(0x%02X)<br>"
+											"Payload size = %u(0x%04X)"),
       		            attribute_id,
 											getZigbeeDataTypeName(attribute_type),
 											attribute_type,
@@ -2439,10 +2443,11 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 						} else {
 							sprintf_P(general_purpose_gui_buffer, 
 											PSTR("Custom command failed! <br>"
-											"Status         = %u(%#02X)"
-											"Command id   = %#04X<br>"
-											"Data type = %s(%#04X)<br>"
+											"Status = %s(0x%02X)"
+											"Command id = 0x%04X<br>"
+											"Data type = %s(0x%04X)<br>"
 											"Payload size = %u(0x#04X)"),
+											esp_zb_zcl_status_to_name(*zbGateway.getCustomCmdStatusLastResult()),
 											*zbGateway.getCustomCmdStatusLastResult(),
 											*zbGateway.getCustomCmdStatusLastResult(),
       		            *zbGateway.getCustomCmdRespToCmdLastResult(),
@@ -2992,7 +2997,7 @@ void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
           		
 						memcpy(byte_str, payload_value + (i * 2), 2);
           	*(custom_cmd_payload + 6 + i) = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
-						log_i("custom_cmd_payload[%u] = %u(%#02X)", 6 + i, *(custom_cmd_payload + 6 + i), *(custom_cmd_payload + 6 + i));
+						log_i("custom_cmd_payload[%u] = %u(0x%02X)", 6 + i, *(custom_cmd_payload + 6 + i), *(custom_cmd_payload + 6 + i));
         	}
 				} else
 					log_i("Tuya datapoint payload size equals 0"); 
@@ -3010,9 +3015,9 @@ void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
 						if (*zbGateway.getCustomCmdStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 						
 							sprintf_P(general_purpose_gui_buffer, PSTR("Tuya custom cluster data request sent successfully! <br>"
-											"Datapoint id   = %u(%#02X)<br>"
-											"Datapoint type = %s(%#02X)<br>"
-											"Payload size 	= %u(%#02X)"),
+											"Datapoint id   = %u(0x%02X)<br>"
+											"Datapoint type = %s(0x%02X)<br>"
+											"Payload size 	= %u(0x%02X)"),
       		            cmd_dp_id,
 											cmd_dp_id,
 											Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_name,
@@ -3023,10 +3028,10 @@ void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
 						} else {
 							sprintf_P(general_purpose_gui_buffer, 
 											PSTR("Tuya custom cluster data request failed! <br>"
-											"Status         = %u(%#02X)<br>"
-											"Datapoint id   = %u(%#02X)<br>"
-											"Datapoint type = %s(%#02X)<br>"
-											"Payload size 	= %u(%#02X)"),
+											"Status         = %u(0x%02X)<br>"
+											"Datapoint id   = %u(0x%02X)<br>"
+											"Datapoint type = %s(0x%02X)<br>"
+											"Payload size 	= %u(0x%02X)"),
 											*zbGateway.getCustomCmdStatusLastResult(),
 											*zbGateway.getCustomCmdStatusLastResult(),
       		            cmd_dp_id,

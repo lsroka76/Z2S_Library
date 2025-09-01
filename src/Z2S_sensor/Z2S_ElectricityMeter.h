@@ -259,7 +259,8 @@ void setFreq2(uint32_t freq) {
 void setFwdActEnergy2(int phase, unsigned _supla_int64_t energy) {
 
   if ((_energy_multiplier != 0) && (_energy_divisor != 0))
-    energy = (energy * _energy_multiplier) / _energy_divisor;
+    energy = (energy * _energy_multiplier * 1000) / _energy_divisor;
+  else energy *= 1000;
   
   if (energy > _energy_initial_counter)
     energy -= _energy_initial_counter;

@@ -1568,6 +1568,11 @@ void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t e
       msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, *(int16_t *)attribute->data.value, rssi);
     } break;
 
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_REACTIVE_POWER_ID: {
+
+      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_REACTIVE_POWER_A_SEL, *(int16_t *)attribute->data.value, rssi);
+    } break;
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID: {
 
       msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_VOLTAGE_MUL_SEL, *(uint16_t *)attribute->data.value, rssi);
@@ -1890,7 +1895,7 @@ bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
 bool processPhilipsCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, 
                             uint8_t buffer_size, uint8_t *buffer, signed char  rssi) {
 
-    log_i("endopoint (0x%x), command id (0x%x), buffer_size (0x%x)", endpoint, command_id, buffer_size);
+    log_i("endpoint (0x%x), command id (0x%x), buffer_size (0x%x)", endpoint, command_id, buffer_size);
 
     if ((command_id == 0) && (buffer_size ==8)) {
 

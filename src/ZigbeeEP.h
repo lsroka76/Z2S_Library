@@ -51,6 +51,9 @@ typedef enum {
   ZB_POWER_SOURCE_BATTERY = 0x03,
 } zb_power_source_t;
 
+// Global function for converting ZCL status to name
+const char *esp_zb_zcl_status_to_name(esp_zb_zcl_status_t status);
+
 /* Zigbee End Device Class */
 class ZigbeeEP {
 public:
@@ -171,7 +174,6 @@ private:
   //void (*_on_bound_device)(zb_device_params_t *);
 
 protected:
-  const char *esp_zb_zcl_status_to_name(esp_zb_zcl_status_t status);
 
   uint8_t _endpoint;
   esp_zb_ha_standard_devices_t _device_id;

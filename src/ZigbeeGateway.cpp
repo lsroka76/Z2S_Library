@@ -138,15 +138,19 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   //esp_zb_cluster_list_add_time_cluster(_cluster_list, esp_zb_time_cluster_create(&time_cfg), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
 time_t utc_time = 798653565;
-uint8_t time_status = 0;
+uint8_t time_status = 0x02;
+int32_t time_zone = ESP_ZB_ZCL_TIME_TIME_ZONE_DEFAULT_VALUE;
 time_t local_time = 798653565;
+uint32_t dst_start = ESP_ZB_ZCL_TIME_DST_START_DEFAULT_VALUE;
+uint32_t dst_end = ESP_ZB_ZCL_TIME_DST_END_DEFAULT_VALUE;
+
  esp_zb_attribute_list_t *time_cluster_server = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_TIME);
 
-   /*esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, (void *)&gmt_offset);
+   esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, (void *)&time_zone);
    if (ret != ESP_OK) {
      log_e("Failed to add time zone attribute: 0x%x: %s", ret, esp_err_to_name(ret));
-   }*/
-  esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, (void *)&utc_time);
+   }
+  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, (void *)&utc_time);
   if (ret != ESP_OK) {
     log_e("Failed to add time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
   }
@@ -154,7 +158,15 @@ time_t local_time = 798653565;
   if (ret != ESP_OK) {
     log_e("Failed to add time status attribute: 0x%x: %s", ret, esp_err_to_name(ret));
   }
-ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, (void *)&local_time);
+  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, (void *)&local_time);
+  if (ret != ESP_OK) {
+    log_e("Failed to add time local time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+  }
+  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_DST_START_ID, (void *)&dst_start);
+  if (ret != ESP_OK) {
+    log_e("Failed to add time local time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+  }
+  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_DST_END_ID, (void *)&dst_end);
   if (ret != ESP_OK) {
     log_e("Failed to add time local time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
   }

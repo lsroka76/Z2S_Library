@@ -1428,12 +1428,15 @@ void loop() {
 
     uint32_t new_utc_time = time(NULL) - 946684800;
     uint32_t new_local_time = time(NULL) - 946684800;
+    uint8_t time_status = 0x02;
         
     log_i("New UTC time %lu, new local time %lu", new_utc_time, new_local_time);
     
     esp_zb_lock_acquire(portMAX_DELAY);
     esp_zb_zcl_set_attribute_val(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
                                  ESP_ZB_ZCL_ATTR_TIME_TIME_ID, &new_utc_time, false);
+    esp_zb_zcl_set_attribute_val(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+                                 ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, &time_status, false);
     esp_zb_zcl_set_attribute_val(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
                                  ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &new_local_time, false);
     esp_zb_lock_release();
@@ -1442,8 +1445,10 @@ void loop() {
                                                                          ESP_ZB_ZCL_ATTR_TIME_TIME_ID)->data_p);
     uint32_t local_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
                                                                            ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)->data_p);
+    uint8_t time_status_attribute = (*(uint8_t *)esp_zb_zcl_get_attribute(1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+                                                                           ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID)->data_p);
 
-    log_i("Local Time Cluster UTC time attribute %lu, local time attribute %lu", utc_time_attribute, local_time_attribute);
+    log_i("Local Time Cluster Time status attribute %u, UTC time attribute %lu, local time attribute %lu", time_status_attribute, utc_time_attribute, local_time_attribute);
     
 
     if (GUIstarted)
@@ -1739,7 +1744,7 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID);
                           } break;
 
-                          case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1: {
+                          case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
                             
                             Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_SID);
                             Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_RELEASE_SID);
@@ -2128,6 +2133,14 @@ void loop() {
 
                   write_mask_16 = 0x000B;
                   joined_device->endpoint = 2;
+                  if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                  1, 1, PHILIPS_MANUFACTURER_CODE)) {
+
+                    uint16_t philips_0031 = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value;
+                    log_i("Philips basic cluster attribute 0x0031 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, philips_0031);
+                    if (philips_0031 != write_mask_16)
+                      write_mask_16 = 0x0000;
+                  }
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
                                                2, &write_mask_16, true, 1, PHILIPS_MANUFACTURER_CODE);
                 } break;

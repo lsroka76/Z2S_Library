@@ -41,6 +41,7 @@ ZigbeeCore::~ZigbeeCore() {}
 
 //forward declaration
 static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id, const void *message);
+bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind);
 
 bool ZigbeeCore::begin(esp_zb_cfg_t *role_cfg, bool erase_nvs) {
   if (!zigbeeInit(role_cfg, erase_nvs)) {
@@ -202,6 +203,9 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     return false;
   }
 
+  // Register APSDATA INDICATION handler to catch bind/unbind requests
+  esp_zb_aps_data_indication_handler_register(zb_apsde_data_indication_handler);
+
   //Erase NVRAM before creating connection to new Coordinator
   if (erase_nvs) {
     esp_zb_nvram_erase_at_start(true);
@@ -264,6 +268,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
   //coordinator variables
   esp_zb_zdo_signal_device_annce_params_t *dev_annce_params = NULL;
   esp_zb_zdo_signal_leave_indication_params_t *dev_leave_params = NULL;
+  esp_zb_zdo_signal_device_update_params_t *dev_update_params = NULL;
 
   //main switch
   switch (sig_type) {
@@ -375,6 +380,27 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
         }
       } break;
 
+    case ESP_ZB_ZDO_SIGNAL_DEVICE_UPDATE:  // Coordinator
+      if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
+        dev_update_params = (esp_zb_zdo_signal_device_update_params_t *)esp_zb_app_signal_get_params(p_sg_p);
+        log_i("New device commissioned or rejoined (short: 0x%04hx)", dev_update_params->short_addr);
+        esp_zb_zdo_match_desc_req_param_t cmd_req;
+        cmd_req.dst_nwk_addr = dev_update_params->short_addr;
+        cmd_req.addr_of_interest = dev_update_params->short_addr;
+        // for each endpoint in the list call the findEndpoint function if not bounded or allowed to bind multiple devices
+        for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+          if (!(*it)->bound() || (*it)->epAllowMultipleBinding()) {
+	
+		        if ((*it)->isDeviceBound(dev_update_params->short_addr, dev_update_params->long_addr))
+			        log_d("Device already bound to endpoint %d", (*it)->getEndpoint());
+		        else 
+              (*it)->zbDeviceAnnce(dev_update_params->short_addr, dev_update_params->long_addr);
+          }
+        }
+        
+      }
+      break;
+
     case ESP_ZB_NWK_SIGNAL_PERMIT_JOIN_STATUS:  // Coordinator
       if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
         if (err_status == ESP_OK) {
@@ -409,6 +435,30 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
     } break;
     default: log_v("ZDO signal: %s (0x%x), status: %s", esp_zb_zdo_signal_to_string(sig_type), sig_type, esp_err_to_name(err_status)); break;
   }
+}
+
+// APS DATA INDICATION HANDLER to catch bind/unbind requests
+bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind) {
+  //if (Zigbee.getDebugMode()) {
+    log_d("APSDE INDICATION - Received APSDE-DATA indication, status: %d", ind.status);
+    log_d(
+      "APSDE INDICATION - dst_endpoint: %d, src_endpoint: %d, dst_addr_mode: %d, src_addr_mode: %d, cluster_id: 0x%04x, asdu_length: %d", ind.dst_endpoint,
+      ind.src_endpoint, ind.dst_addr_mode, ind.src_addr_mode, ind.cluster_id, ind.asdu_length
+    );
+    log_d(
+      "APSDE INDICATION - dst_short_addr: 0x%04x, src_short_addr: 0x%04x, profile_id: 0x%04x, security_status: %d, lqi: %d, rx_time: %d", ind.dst_short_addr,
+      ind.src_short_addr, ind.profile_id, ind.security_status, ind.lqi, ind.rx_time
+    );
+  //}
+  /*if (ind.status == 0x00) {
+    // Catch bind/unbind requests to update the bound devices list
+    if (ind.cluster_id == 0x21 || ind.cluster_id == 0x22) {
+      Zigbee.searchBindings();
+    }
+  } else {
+    log_e("APSDE INDICATION - Invalid status of APSDE-DATA indication, error code: %d", ind.status);
+  }*/
+  return false;  //False to let the stack process the message as usual
 }
 
 void ZigbeeCore::factoryReset() {

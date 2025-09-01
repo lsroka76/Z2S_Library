@@ -176,6 +176,7 @@ public:
 
   // Friend function declaration to allow access to private members
   friend void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct);
+  
 };
 
 extern ZigbeeCore Zigbee;

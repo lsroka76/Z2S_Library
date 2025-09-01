@@ -139,21 +139,22 @@ void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector,
           case Z2S_EM_VOLTAGE_A_SEL: Supla_ElectricityMeter->setVoltage2(0, value); break;
           case Z2S_EM_CURRENT_A_SEL: Supla_ElectricityMeter->setCurrent2(0, abs(value)); break;
           case Z2S_EM_ACTIVE_POWER_A_SEL: Supla_ElectricityMeter->setPowerActive2(0, value); break;
-          case Z2S_EM_ACT_FWD_ENERGY_A_SEL: Supla_ElectricityMeter->setFwdActEnergy2(0, value * 1000); break;
+          case Z2S_EM_ACT_FWD_ENERGY_A_SEL: Supla_ElectricityMeter->setFwdActEnergy2(0, value); break;
           case Z2S_EM_ACT_RVR_ENERGY_A_SEL: Supla_ElectricityMeter->setRvrActEnergy(0, value * 1000); break;
           case Z2S_EM_POWER_FACTOR_A_SEL: Supla_ElectricityMeter->setPowerFactor(0, value * 1000); break;
+          case Z2S_EM_REACTIVE_POWER_A_SEL: Supla_ElectricityMeter->setPowerReactive(0, value * 100000); break;
           
           case Z2S_EM_VOLTAGE_B_SEL: Supla_ElectricityMeter->setVoltage2(1, value); break;
           case Z2S_EM_CURRENT_B_SEL: Supla_ElectricityMeter->setCurrent2(1, abs(value)); break;
           case Z2S_EM_ACTIVE_POWER_B_SEL: Supla_ElectricityMeter->setPowerActive2(1, value); break;
-          case Z2S_EM_ACT_FWD_ENERGY_B_SEL: Supla_ElectricityMeter->setFwdActEnergy2(1, value * 1000); break;
+          case Z2S_EM_ACT_FWD_ENERGY_B_SEL: Supla_ElectricityMeter->setFwdActEnergy2(1, value); break;
           case Z2S_EM_ACT_RVR_ENERGY_B_SEL: Supla_ElectricityMeter->setRvrActEnergy(1, value * 1000); break;
           case Z2S_EM_POWER_FACTOR_B_SEL: Supla_ElectricityMeter->setPowerFactor(1, value * 1000); break;
 
           case Z2S_EM_VOLTAGE_C_SEL: Supla_ElectricityMeter->setVoltage2(2, value); break;
           case Z2S_EM_CURRENT_C_SEL: Supla_ElectricityMeter->setCurrent2(2, abs(value)); break;
           case Z2S_EM_ACTIVE_POWER_C_SEL: Supla_ElectricityMeter->setPowerActive2(2, value); break;
-          case Z2S_EM_ACT_FWD_ENERGY_C_SEL: Supla_ElectricityMeter->setFwdActEnergy2(2, value * 1000); break;
+          case Z2S_EM_ACT_FWD_ENERGY_C_SEL: Supla_ElectricityMeter->setFwdActEnergy2(2, value); break;
           case Z2S_EM_ACT_RVR_ENERGY_C_SEL: Supla_ElectricityMeter->setRvrActEnergy(2, value * 1000); break;
           case Z2S_EM_POWER_FACTOR_C_SEL: Supla_ElectricityMeter->setPowerFactor(2, value * 1000); break;
 
