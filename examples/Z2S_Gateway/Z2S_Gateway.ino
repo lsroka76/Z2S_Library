@@ -2147,7 +2147,7 @@ void loop() {
                       1, 1, PHILIPS_MANUFACTURER_CODE)) {
 
                     uint16_t philips_0034 = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value;
-                    log_i("Philips basic cluster attribute 0x0034 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, philips_0034x`);
+                    log_i("Philips basic cluster attribute 0x0034 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, philips_0034);
                   }
                 } break;
 
