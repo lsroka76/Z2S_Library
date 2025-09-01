@@ -2134,7 +2134,7 @@ void loop() {
                   write_mask_16 = 0x000B;
                   joined_device->endpoint = 2;
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-                  1, 1, PHILIPS_MANUFACTURER_CODE)) {
+                      1, 1, PHILIPS_MANUFACTURER_CODE)) {
 
                     uint16_t philips_0031 = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value;
                     log_i("Philips basic cluster attribute 0x0031 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, philips_0031);
@@ -2143,6 +2143,12 @@ void loop() {
                   }
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
                                                2, &write_mask_16, true, 1, PHILIPS_MANUFACTURER_CODE);
+                  if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0034, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                      1, 1, PHILIPS_MANUFACTURER_CODE)) {
+
+                    uint16_t philips_0034 = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value;
+                    log_i("Philips basic cluster attribute 0x0034 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, philips_0034x`);
+                  }
                 } break;
 
                 case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR:
