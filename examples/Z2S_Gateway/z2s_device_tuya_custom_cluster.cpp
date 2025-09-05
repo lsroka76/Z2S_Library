@@ -1447,10 +1447,12 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, uint16_t payload_size, uint8_t *payload, signed char rssi) {
   log_i("processing Tuya custom cluster 0xEF00, command id 0x%x", command_id);
   switch (command_id) {
+    
     case TUYA_DATA_REPORT_CMD:
     case 0x01:
     case 0x06:
        processTuyaDataReport(ieee_addr, endpoint, payload_size, payload, rssi); break;
+
     case TUYA_MCU_SYNC_TIME: {
       uint8_t time_sync[10];
       struct tm *tptr;
@@ -1500,6 +1502,34 @@ void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
       zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_SYNC_TIME, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, time_sync, false);
 
     } break;
+
+    case TUYA_MCU_VERSION_RESPONSE: {
+
+      uint8_t seq[2];
+    
+      zbg_device_params_t device = {};
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
+                                                              ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+      if (channel_number_slot < 0) {
+        log_i("TUYA_MCU_VERSION_REQUEST failed - no Supla channel for that device");
+        return;
+      }
+
+      device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
+      device.cluster_id = z2s_channels_table[channel_number_slot].cluster_id;
+      memcpy(device.ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr, 8);
+      device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
+      device.model_id = z2s_channels_table[channel_number_slot].model_id;
+  
+
+      seq[0] = 00;
+      seq[1] = 02;
+
+      log_i("Sending TUYA_VERSION_REQUEST");
+      zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_VERSION_REQUEST, ESP_ZB_ZCL_ATTR_TYPE_SET, 2, seq, false);
+    } break;
+    
     default: log_i("Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", command_id); break;
   }
 }

@@ -145,6 +145,8 @@ public:
 
   virtual void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
 
+  virtual void zbDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
+
   virtual void zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {};
 
   virtual bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {

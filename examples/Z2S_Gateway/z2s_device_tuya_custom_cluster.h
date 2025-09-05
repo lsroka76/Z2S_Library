@@ -5,8 +5,10 @@
 
 #include <Z2S_control/hvac_base_ee.h>
 
-#define TUYA_DATA_REPORT_CMD  0x02
-#define TUYA_MCU_SYNC_TIME    0x24                
+#define TUYA_DATA_REPORT_CMD      0x02
+#define TUYA_MCU_SYNC_TIME        0x24
+#define TUYA_MCU_VERSION_REQUEST  0x10                
+#define TUYA_MCU_VERSION_RESPONSE 0x11            
 
 
 typedef struct Tuya_read_dp_result_s {

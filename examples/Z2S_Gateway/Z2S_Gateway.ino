@@ -1126,6 +1126,7 @@ void enableZ2SNotifications() {
   zbGateway.onBTCBoundDevice(Z2S_onBTCBoundDevice);
 
   zbGateway.onDataSaveRequest(Z2S_onDataSaveRequest);
+  zbGateway.onDeviceRejoin(Z2S_onDeviceRejoin);
 }
 
 void disableZ2SNotifications() {
@@ -1156,6 +1157,7 @@ void disableZ2SNotifications() {
   zbGateway.onBoundDevice(nullptr);
   zbGateway.onBTCBoundDevice(nullptr);
   zbGateway.onDataSaveRequest(nullptr);
+  zbGateway.onDeviceRejoin(nullptr);
 }
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
@@ -1667,14 +1669,20 @@ void loop() {
                                                            ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr, true, 1, 0x1015);
                             }*/
                         
-                        if (endpoint_counter == 0) //(endpoint_id == 1)
-                          Z2S_addZBDeviceTableSlot(joined_device->ieee_addr,
-                                                   joined_device->short_addr,
-                                                   zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-                                                   zbGateway.getQueryBasicClusterData()->zcl_model_name,
-                                                   Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count,
-                                                   Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id,
-                                                   zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
+                        if (endpoint_counter == 0) {//(endpoint_id == 1)
+                          
+                          uint8_t zb_device_slot = Z2S_addZBDeviceTableSlot(joined_device->ieee_addr,
+                                                                            joined_device->short_addr,
+                                                                            zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+                                                                            zbGateway.getQueryBasicClusterData()->zcl_model_name,
+                                                                            Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count,
+                                                                            Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id,
+                                                                            zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
+                          if ((zb_device_slot < 0xFF) &&
+                              (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY))
+                            Z2S_setZBDeviceFlags(zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
+                          
+                        }
 
                         switch (joined_device->model_id) {
                           

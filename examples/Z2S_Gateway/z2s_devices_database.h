@@ -13,8 +13,9 @@
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_7          (1 << 7)
 
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT           (1 << 8)  //aka Tuya magic 
-#define Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY          (1 << 9)  
-#define Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT          `(1 << 10)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY          (1 << 9)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY   (1 << 10)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT          `(1 << 12)
 
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL_1   (1 << 16)
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL_2   (1 << 17)
@@ -972,7 +973,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR, 
     .z2s_device_clusters_count = 1, 
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT, 
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY, 
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY, 

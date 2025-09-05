@@ -557,7 +557,7 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,int16_t clust
 
 void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   
-  zbg_device_params_t *device = (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
+  /*zbg_device_params_t *device = (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
   device->endpoint = 0xFF;
   device->short_addr = short_addr;
   log_d("zbDeviceAnnce short address (0x%x), ieee_addr (0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x)", short_addr,
@@ -565,7 +565,8 @@ void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
   memcpy(device->ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t));
   log_d("zbDeviceAnnce joined device short address (0x%x), ieee_addr (0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x):(0x%x)", device->short_addr,
         device->ieee_addr[7], device->ieee_addr[6], device->ieee_addr[5], device->ieee_addr[4], device->ieee_addr[3], device->ieee_addr[2], device->ieee_addr[1], device->ieee_addr[0]);
-
+  */       
+  
   /*esp_zb_zcl_read_attr_cmd_t read_req;
 
   if (device->short_addr != 0) {
@@ -594,8 +595,8 @@ void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
     esp_zb_lock_release();
     delay(500);
   */
-  _new_device_joined = true;
-  _instance->_joined_devices.push_back(device);
+  //_new_device_joined = true;
+  //_instance->_joined_devices.push_back(device);
 }
 
 void ZigbeeGateway::zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {
@@ -604,6 +605,12 @@ void ZigbeeGateway::zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
       (*bound_device)->rejoin_after_leave = true;
     }
 	}
+}
+
+void ZigbeeGateway::zbDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
+
+  if (_on_device_rejoin)
+    _on_device_rejoin(short_addr, ieee_addr);
 }
 
 void ZigbeeGateway::findEndpoint(esp_zb_zdo_match_desc_req_param_t *param) {

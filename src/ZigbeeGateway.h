@@ -344,6 +344,9 @@ public:
   void onDataSaveRequest(void (*callback)(uint8_t)) {
     _on_data_save_request = callback;
   }
+  void onDeviceRejoin(void (*callback)(uint16_t, esp_zb_ieee_addr_t)) {
+    _on_device_rejoin = callback;
+  }
 
 private:
   // save instance of the class in order to use it in static functions
@@ -427,6 +430,7 @@ private:
   void (*_on_btc_bound_device)(zbg_device_params_t *);
 
   void (*_on_data_save_request)(uint8_t);
+  void (*_on_device_rejoin)(uint16_t, esp_zb_ieee_addr_t);
 
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);
 
@@ -456,6 +460,7 @@ private:
   void zbCmdDefaultResponse( uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) override;
 
   void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
+  void zbDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
   void zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) override;
 
   void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id) override;

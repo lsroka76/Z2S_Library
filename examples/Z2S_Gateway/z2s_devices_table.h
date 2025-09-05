@@ -47,6 +47,8 @@
 #define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG (1 << 7)
 #define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG    (1 << 8)
 
+#define ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN        (1 << 16)
+
 #define ZBD_BATTERY_PERCENTAGE_MSG  0x01
 #define ZBD_BATTERY_VOLTAGE_MSG     0x02
 #define ZBD_BATTERY_LEVEL_MSG       0x03
@@ -254,7 +256,7 @@ bool      Z2S_hasZBDevice(uint32_t desc_id);
 void      Z2S_initZBDevices(uint32_t init_ms);
 void      Z2S_updateZBDeviceLastSeenMs(esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms);
 
-bool      Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, char *manufacturer_name, char *model_name, 
+uint8_t   Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, char *manufacturer_name, char *model_name, 
                                    uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source);
 uint8_t   Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint8_t Supla_channel);
 
@@ -325,14 +327,15 @@ void Z2S_onDevelcoCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t en
 void Z2S_onBatteryReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, uint8_t battery_remaining);
 bool Z2S_onCustomCmdReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, 
                             uint8_t buffer_size, uint8_t *buffer, signed char  rssi);
-void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
-                                    uint16_t payload_size, uint8_t *payload, signed char rssi);
+void Z2S_onCmdCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
+                                  uint16_t payload_size, uint8_t *payload, signed char rssi);
 void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status, signed char rssi);
 
 void Z2S_onBTCBoundDevice(zbg_device_params_t *device); 
 void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster);
 
 void Z2S_onDataSaveRequest(uint8_t selector);
+void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr);
 
 uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id = -1, char *name = nullptr, uint32_t func = 0, char *unit = nullptr);
 uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, 
