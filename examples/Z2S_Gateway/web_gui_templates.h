@@ -88,6 +88,7 @@ static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM =
 	 {.zigbee_cluster_name = "TUYA (0xE000)",						.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_0},
 	 {.zigbee_cluster_name = "TUYA (0xE001)",						.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1},
 	 {.zigbee_cluster_name = "TUYA (0xEF00)",						.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_EF00},
+	 {.zigbee_cluster_name = "DEVELCO (0xFC03)",				.zigbee_cluster_id = DEVELCO_CUSTOM_CLUSTER},
 	 {.zigbee_cluster_name = "SONOFF (0xFC11)",					.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER},
 	 {.zigbee_cluster_name = "LUMI (0xFCC0)",						.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER}
 	 };

@@ -405,10 +405,11 @@ const char* getZ2SDeviceModelName(uint32_t modelID)  {
 
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1:
+		case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
 			return "Temperature and humidity sensor(0x402, 0x405)";
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL:
 			return "Temperature and humidity sensor(0x20, 0x402, 0x405)";
-		case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
+		case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
 			return "Temperature and humidity sensor(Tuya 0xEF00)";
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
 			return "Temperature and humidity(x10) sensor(0x402, 0x405)";
@@ -420,7 +421,7 @@ const char* getZ2SDeviceModelName(uint32_t modelID)  {
 			return "Tuya soil temperature(/1) and humidity sensor(0xEF00)";
 		case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
 			return "Tuya illuminance sensor (0x400)";
-		case Z2S_DEVICE_DESC_ILLUZONE_SENSOR:
+		case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
 			return "Illuminance and IAS Zone sensor (0x400, 0x500)";
 		case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
 			return "Tuya rain and illuminance sensor (0xEF00)";

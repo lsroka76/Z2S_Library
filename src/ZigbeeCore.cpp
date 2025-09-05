@@ -11,6 +11,7 @@
 #define ZB_INIT_TIMEOUT 30000  // 30 seconds
 
 extern "C" void zb_set_ed_node_descriptor(bool power_src, bool rx_on_when_idle, bool alloc_addr);
+extern "C" void zb_bdb_set_legacy_device_support(zb_uint8_t state);
 static bool edBatteryPowered = false;
 
 ZigbeeCore::ZigbeeCore() {
@@ -197,6 +198,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
   // Register Zigbee action handler
   esp_zb_raw_command_handler_register(zb_raw_cmd_handler);
   esp_zb_core_action_handler_register(zb_action_handler);
+  zb_bdb_set_legacy_device_support(1);
   err = esp_zb_set_primary_network_channel_set(_primary_channel_mask);
   if (err != ESP_OK) {
     log_e("Failed to set primary network channel mask");
@@ -375,13 +377,14 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
 		        if ((*it)->isDeviceBound(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr))
 			        log_d("Device already bound to endpoint %d", (*it)->getEndpoint());
 		        else 
-              (*it)->zbDeviceAnnce(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr);//findEndpoint(&cmd_req);
+              (*it)->findEndpoint(&cmd_req); //zbDeviceAnnce(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr);//
           }
         }
       } break;
 
     case ESP_ZB_ZDO_SIGNAL_DEVICE_UPDATE:  // Coordinator
-      if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
+
+      /*if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
         dev_update_params = (esp_zb_zdo_signal_device_update_params_t *)esp_zb_app_signal_get_params(p_sg_p);
         log_i("New device commissioned or rejoined (short: 0x%04hx)", dev_update_params->short_addr);
         esp_zb_zdo_match_desc_req_param_t cmd_req;
@@ -398,7 +401,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
           }
         }
         
-      }
+      }*/
       break;
 
     case ESP_ZB_NWK_SIGNAL_PERMIT_JOIN_STATUS:  // Coordinator
@@ -414,12 +417,24 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
         }
       }
       break;
+
     case ESP_ZB_ZDO_SIGNAL_LEAVE:  // End Device + Router
       // Device was removed from the network, factory reset the device
       if ((zigbee_role_t)Zigbee.getRole() != ZIGBEE_COORDINATOR) {
         Zigbee.factoryReset();
       }
       break;
+
+    case ESP_ZB_ZDO_SIGNAL_DEVICE_AUTHORIZED: {
+
+      esp_zb_zdo_signal_device_authorized_params_t *auth_params = 
+            (esp_zb_zdo_signal_device_authorized_params_t*)esp_zb_app_signal_get_params(p_sg_p);
+        
+        log_i("Device 0x%04x authorized (status: %d, type: %d)", 
+                auth_params->short_addr, auth_params->authorization_status, 
+                auth_params->authorization_type);
+    } break;
+
     case ESP_ZB_ZDO_SIGNAL_LEAVE_INDICATION: {
 
       dev_leave_params = (esp_zb_zdo_signal_leave_indication_params_t *)esp_zb_app_signal_get_params(p_sg_p);

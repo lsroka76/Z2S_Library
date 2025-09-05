@@ -42,7 +42,7 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
       Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("ppm"); break;
 
     case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
-    case Z2S_DEVICE_DESC_ILLUZONE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
       Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); break;
 
     case Z2S_DEVICE_DESC_IKEA_VALLHORN_3:
@@ -58,9 +58,18 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
       } break;
     
     case Z2S_DEVICE_DESC_MOES_ALARM: {
-    Supla_GeneralPurposeMeasurement->setValue(90000000000);
-    //Supla_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
+      
+      Supla_GeneralPurposeMeasurement->setValue(90000000000);
+      //Supla_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
     } break;
+
+    case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
+      
+      Supla_GeneralPurposeMeasurement->setValuePrecision(3, true);
+      Supla_GeneralPurposeMeasurement->setValueDivider(1000000, true);
+      Supla_GeneralPurposeMeasurement->setUnitAfterValue("kWh", true);
+    } break;
+
     default: break;
   }
 } 

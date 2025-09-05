@@ -1302,6 +1302,39 @@ void Z2S_onWindowCoveringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint
   }
 }
 
+void Z2S_onDevelcoCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
+
+  char ieee_addr_str[24] = {};
+
+  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint,attribute->id, attribute->data.size);
+
+  switch (attribute->id) {
+
+    case DEVELCO_CUSTOM_CLUSTER_MEASURED_VALUE_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                              DEVELCO_AIR_QUALITY_SENSOR_VOC_SID);
+
+      if (channel_number_slot < 0) {
+        no_channel_found_error_func(ieee_addr_str);
+        return;
+      }
+
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            *(uint16_t*)attribute->data.value, rssi);
+    } break;
+
+    case DEVELCO_CUSTOM_CLUSTER_RESOLUTION_ID: {
+
+      log_i("resolution = %u", *(uint16_t*)attribute->data.value);
+    } break;
+  }
+}
+
+
 void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
 
   char ieee_addr_str[24] = {};
@@ -1381,7 +1414,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
-      double energy_value = ((double)(*(uint32_t*)attribute->data.value)) / 1000;
+      double energy_value = ((double)(*(uint32_t*)attribute->data.value));
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
                                             energy_value, rssi);     
     } break;
@@ -1395,7 +1428,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
-      double energy_value = ((double)(*(uint32_t*)attribute->data.value)) / 1000;
+      double energy_value = ((double)(*(uint32_t*)attribute->data.value));
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
                                             energy_value, rssi);      
     } break;
@@ -1409,7 +1442,7 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
-      double energy_value = ((double)(*(uint32_t*)attribute->data.value)) / 1000;
+      double energy_value = ((double)(*(uint32_t*)attribute->data.value));
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
                                             energy_value, rssi);      
     } break;
@@ -2270,9 +2303,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL:
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
-      case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR: 
+      case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR: 
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
       case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR:
+      case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
         addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: {
@@ -2287,6 +2321,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break;
 
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: 
+      case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR: 
       case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR: 
       case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
@@ -2298,6 +2333,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: 
       case Z2S_DEVICE_DESC_LUMI_SWITCH:
+      case Z2S_DEVICE_DESC_TUYA_RELAY:
         addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "POWER SWITCH", 
                                                               SUPLA_CHANNELFNC_POWERSWITCH); break;
 
@@ -2555,7 +2591,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
         addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
 
-      case Z2S_DEVICE_DESC_ILLUZONE_SENSOR: {
+      case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR: {
         
         addZ2SDeviceIASzone(device, first_free_slot, -1, "LS ZONE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
@@ -2760,6 +2796,17 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         }
       } break;
 
+      case Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR: {
+
+        switch (sub_id) {
+          
+          case DEVELCO_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID:
+            addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+          case DEVELCO_AIR_QUALITY_SENSOR_VOC_SID:
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+        }
+      } break;
+
       case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
         addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, "IR REMOTE", 0); break;
 
@@ -2790,6 +2837,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       case Z2S_DEVICE_DESC_ON_OFF_VALVE_DC: 
+      case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC:
       case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
         addZ2SDeviceVirtualValve(&zbGateway, device, first_free_slot, sub_id, "VALVE", SUPLA_CHANNELFNC_VALVE_OPENCLOSE); break;
       
@@ -3127,7 +3175,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
-    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
