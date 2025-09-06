@@ -2354,7 +2354,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
         addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
 
-      case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: {
+      case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: 
+      case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR: {
         addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func);
         
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
