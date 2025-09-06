@@ -1654,6 +1654,27 @@ void loop() {
 
                         }
 
+                        //before bind
+
+                        switch (z2s_device_desc_id) {
+
+                          case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
+
+                            write_mask_16 = 0x000B;
+                            //joined_device->endpoint = 2;
+                            /*if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                                1, 1, PHILIPS_MANUFACTURER_CODE)) {
+
+                              uint16_t philips_0031 = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value;
+                              log_i("Philips basic cluster attribute 0x0031 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, philips_0031);
+                              if (philips_0031 != write_mask_16)
+                              write_mask_16 = 0x0000;
+                            }*/
+                            zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
+                                                         2, &write_mask_16, true, 1, PHILIPS_MANUFACTURER_CODE);
+                          } break;
+                        }
+
                         for (int clusters_bind_counter = 0; clusters_bind_counter < Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count; clusters_bind_counter++)
                           zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[clusters_bind_counter]);
 
@@ -2178,7 +2199,7 @@ void loop() {
                 
                 case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH: {
 
-                  write_mask_16 = 0x000B;
+                  /*write_mask_16 = 0x000B;
                   joined_device->endpoint = 2;
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                       1, 1, PHILIPS_MANUFACTURER_CODE)) {
@@ -2189,7 +2210,7 @@ void loop() {
                       write_mask_16 = 0x0000;
                   }
                   zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
-                                               2, &write_mask_16, true, 1, PHILIPS_MANUFACTURER_CODE);
+                                               2, &write_mask_16, true, 1, PHILIPS_MANUFACTURER_CODE);*/
                   /*if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0034, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                       1, 1, PHILIPS_MANUFACTURER_CODE)) {
 
