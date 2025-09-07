@@ -2027,8 +2027,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					PSTR("<meta charset=\"UTF-8\">"
 					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
 					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
-					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
-					"<b><i>ZB device</b></i> %s::%s"),
+					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"),
+					//"<b><i>ZB device</b></i> %s::%s"),
 					//strlen(z2s_channels_table[channel_slot].Supla_channel_name) > 0 ? z2s_channels_table[channel_slot].Supla_channel_name : "---",
 					ieee_addr_str,
 					z2s_channels_table[channel_slot].short_addr,
@@ -2041,9 +2041,9 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					getSuplaChannelTypeName(z2s_channels_table[channel_slot].Supla_channel_type),
         	z2s_channels_table[channel_slot].Supla_channel_func > 0 ? 
 						getSuplaChannelFuncName(z2s_channels_table[channel_slot].Supla_channel_type, z2s_channels_table[channel_slot].Supla_channel_func) : "none",
-        	z2s_channels_table[channel_slot].sub_id,
-					z2s_zb_devices_table[z2s_channels_table[channel_slot].ZB_device_id].manufacturer_name,
-					z2s_zb_devices_table[z2s_channels_table[channel_slot].ZB_device_id].model_name);
+        	z2s_channels_table[channel_slot].sub_id);
+					//z2s_zb_devices_table[z2s_channels_table[channel_slot].ZB_device_id].manufacturer_name,
+					//z2s_zb_devices_table[z2s_channels_table[channel_slot].ZB_device_id].model_name);
 	
 	log_i("Up2HERE!, value = %s, length = %u", general_purpose_gui_buffer, strlen(general_purpose_gui_buffer));
 	//if (label_number == 1)
