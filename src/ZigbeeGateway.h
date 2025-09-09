@@ -29,6 +29,9 @@
 #define TUYA_PRIVATE_CLUSTER_1                                0xE001
 #define TUYA_PRIVATE_CLUSTER_EF00                             0xEF00
 
+#define TUYA_QUERY_CMD                                        0x03 //TUYA_PRIVATE_CLUSTER_EF00
+#define TUYA_SETUP_CMD                                        0xF0 //ESP_ZB_ZCL_CLUSTER_ID_BASIC 
+
 #define IKEA_PRIVATE_CLUSTER                                  0xFC7F
 #define IKEA_PRIVATE_CLUSTER_2                                0xFC80
 

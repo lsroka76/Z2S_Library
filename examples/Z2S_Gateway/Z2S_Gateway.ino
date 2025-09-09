@@ -1670,8 +1670,9 @@ void loop() {
                         joined_device->endpoint = endpoint_id;
                         joined_device->model_id = Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id;
                         
-                        if ((endpoint_counter == 0) && 
-                            (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT)) {
+                        if (endpoint_counter == 0) { 
+
+                          if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT) {
 
                               log_i("Tuya magic");
 
@@ -1680,7 +1681,15 @@ void loop() {
                                                                    ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
                                                                    0xFFFE };
                               zbGateway.sendAttributesRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 6, tuya_init_attributes);  
+                            }
 
+                          if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_SETUP) {
+
+                              log_i("Tuya setup");
+
+                              zbGateway.sendCustomClusterCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, TUYA_SETUP_CMD, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, nullptr,
+                                                             false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 0, 0); //disable default response, no manufacurer code  
+                            }
                         }
 
                         //before bind
@@ -2067,7 +2076,7 @@ void loop() {
               //here we can configure reporting and restart ESP32
 
               if (hasTuyaCustomCluster(Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id))
-                zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
+                zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
 
               switch (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id) { //(joined_device->model_id) {
 
@@ -2125,7 +2134,23 @@ void loop() {
                 case  Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
 
                   joined_device->endpoint = Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[0].endpoint_id; //2
-                } [[fallthrough]];
+                  
+                  bool sync_cmd = true;
+                  zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, sync_cmd);
+                  zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 232, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 50, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 10, sync_cmd);
+                   zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 1, sync_cmd);
+
+                    zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
+                                                ESP_ZB_ZCL_ATTR_TYPE_U48, 0, 0, 1, sync_cmd);
+
+                } break; //[[fallthrough]];
 
                 case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1:
                 case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1: 

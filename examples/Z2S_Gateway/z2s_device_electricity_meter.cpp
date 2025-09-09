@@ -17,6 +17,9 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   uint16_t active_power_multiplier = 0;
   uint16_t active_power_divisor    = 0;
 
+  uint16_t ac_frequency_multiplier = 0;
+  uint16_t ac_frequency_divisor = 0;
+
   bool ignore_zigbee_scaling = false;
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
@@ -33,6 +36,9 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
       _one_phase = false; 
       voltage_multiplier = 1;
       voltage_divisor    = 10;
+
+      ac_frequency_multiplier = 1;
+      ac_frequency_divisor = 100;
       
       ignore_zigbee_scaling = true;
     } break;
@@ -41,6 +47,9 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
       _one_phase = true;
       voltage_multiplier = 1;
       voltage_divisor    = 10;
+
+      ac_frequency_multiplier = 1;
+      ac_frequency_divisor = 100;
       
       ignore_zigbee_scaling = true;
     } break;
@@ -113,6 +122,10 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   Supla_Z2S_ElectricityMeter->setActivePowerMultiplier(active_power_multiplier, false);
 
   Supla_Z2S_ElectricityMeter->setActivePowerDivisor(active_power_divisor, false);
+
+  Supla_Z2S_ElectricityMeter->setFreqMultiplier(ac_frequency_multiplier, false);
+
+  Supla_Z2S_ElectricityMeter->setFreqDivisor(ac_frequency_divisor, false);
 
 }
 
