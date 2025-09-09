@@ -27,8 +27,10 @@ void addZ2SDeviceIASzone(zbg_device_params_t *device, uint8_t free_slot, int8_t 
   auto Supla_Z2S_VirtualBinary = new Supla::Sensor::Z2S_VirtualBinary(true);
   Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_VirtualBinary->getChannelNumber(), SUPLA_CHANNELTYPE_BINARYSENSOR, sub_id, name, func);
 
-  if (name) 
-    Supla_Z2S_VirtualBinary->setInitialCaption(name);
+  if (name == nullptr)
+    name = (char*)default_vb_name;
+
+  Supla_Z2S_VirtualBinary->setInitialCaption(name);
   
   if (func !=0) 
     Supla_Z2S_VirtualBinary->setDefaultFunction(func);

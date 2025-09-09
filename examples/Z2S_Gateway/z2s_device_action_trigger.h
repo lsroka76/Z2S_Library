@@ -5,6 +5,7 @@
 
 #include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
 
+static const char* default_at_name = "Virtual button";
 
 void initZ2SDeviceActionTrigger(int16_t channel_number_slot);
 

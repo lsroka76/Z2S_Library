@@ -14,6 +14,9 @@
 #define VRV_U32_ID 0x03
 #define VRV_S32_ID 0x04
 
+static const char *default_relay_name = "Relay";
+static const char *default_rs_name = "Roller shutter";
+
 void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
 
 void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 

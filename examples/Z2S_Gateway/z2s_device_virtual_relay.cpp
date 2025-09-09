@@ -85,8 +85,10 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
 
     auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device, Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
 
-    if (name) 
-      Supla_Z2S_RollerShutter->setInitialCaption(name);
+    if (name == nullptr)
+      name = (char*)default_rs_name;
+
+    Supla_Z2S_RollerShutter->setInitialCaption(name);
   
     Supla_Z2S_RollerShutter->setDefaultFunction(func);
   
@@ -96,8 +98,10 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
 
     auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway,device);
 
-    if (name) 
-      Supla_Z2S_VirtualRelay->setInitialCaption(name);
+    if (name == nullptr)
+      name = (char*)default_relay_name;
+
+    Supla_Z2S_VirtualRelay->setInitialCaption(name);
   
     if (func !=0) 
       Supla_Z2S_VirtualRelay->setDefaultFunction(func);

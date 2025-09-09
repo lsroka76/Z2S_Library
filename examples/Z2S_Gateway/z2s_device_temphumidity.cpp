@@ -25,6 +25,9 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot) {
 void addZ2SDeviceTempHumidity(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name, uint32_t func) {
 
   auto Supla_Z2S_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter();
+
+  if (name == nullptr)
+    name = (char*)default_th_name;
   
   Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_VirtualThermHygroMeter->getChannelNumber(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, sub_id,
                            name, func);

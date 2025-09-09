@@ -37,7 +37,7 @@
 #define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG    (1 << 4) // 0x10 
 #define USER_DATA_FLAG_DISABLE_NOTIFICATIONS  (1 << 5) // 0x20
 
-#define ZBD_USER_DATA_FLAG_RESERVED_0                     (1 << 0)
+#define ZBD_USER_DATA_FLAG_VERSION_2_0                    (1 << 0)
 #define ZBD_USER_DATA_FLAG_RESERVED_1                     (1 << 1)
 #define ZBD_USER_DATA_FLAG_RESERVED_2                     (1 << 2) 
 #define ZBD_USER_DATA_FLAG_RESERVED_3                     (1 << 3)
@@ -139,12 +139,28 @@ typedef struct z2s_legacy_zb_device_params_s {
   uint8_t             Supla_channels[MAX_ZB_DEVICE_SUPLA_CHANNELS];
 } z2s_legacy_zb_device_params_t;
 
+typedef struct z2s_zb_device_v2_params_s {
+
+  uint8_t            device_uid[4];
+  uint8_t            devices_list_idx[4];
+  uint8_t            device_gui_selector;
+
+} z2s_zb_device_v2_params_t;
 
 typedef struct z2s_zb_device_params_s {
   
   uint8_t             record_id;
+
+union {  //V2 extension
   char                manufacturer_name[33];
+  z2s_zb_device_v2_params_t v2_params;
+};
+
+union { //V2 extension
   char                model_name[33];
+  char                device_local_name[33];
+};
+
   esp_zb_ieee_addr_t  ieee_addr;
   uint16_t            short_addr;
   uint8_t             endpoints_count;
@@ -266,16 +282,22 @@ int16_t   Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, int16_t endpoi
 int16_t   Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
                                       int32_t channel_type, int8_t sub_id);
 //int32_t Z2S_findChannelType(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster);
-void    Z2S_fillChannelsTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
+void      Z2S_fillChannelsTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
                                  char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
 
-bool    Z2S_setChannelFlags(int16_t channel_number_slot, uint32_t flags_to_set);
-bool    Z2S_clearChannelFlags(int16_t channel_number_slot, uint32_t flags_to_clear);
+bool      Z2S_setChannelFlags(int16_t channel_number_slot, uint32_t flags_to_set);
+bool      Z2S_clearChannelFlags(int16_t channel_number_slot, uint32_t flags_to_clear);
 
-bool    Z2S_setZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set);
-bool    Z2S_clearZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_clear);
+bool      Z2S_setZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set);
+bool      Z2S_clearZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_clear);
 
-int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
+const char*     Z2S_getZBDeviceManufacturerName(int8_t device_number_slot);
+const char*     Z2S_getZBDeviceModelName(int8_t device_number_slot);
+//uint32_t  Z2S_getZBdeviceUid(int8_t device_number_slot);
+
+int16_t   Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
+
+bool    Z2S_getDevicesListUidIdx(const char *manufacturer_name, const char * model_name, uint32_t *device_uid, uint32_t *devices_list_idx);
 
 void    Z2S_initSuplaChannels(); 
 

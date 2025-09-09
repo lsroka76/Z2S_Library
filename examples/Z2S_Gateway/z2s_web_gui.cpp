@@ -46,7 +46,9 @@ uint16_t zigbee_last_binding_result_label;
 uint16_t factory_reset_switcher, factory_reset_button, factory_reset_label;
 
 uint16_t device_selector;
-uint16_t zb_device_info_label, zb_device_address_label, device_status_label;
+uint16_t zb_device_info_label, device_status_label;
+uint16_t device_name_text; 
+uint16_t device_name_save_button;
 
 uint16_t battery_voltage_min_number, battery_voltage_max_number;
 uint16_t battery_voltage_min_save_button, battery_voltage_max_save_button;
@@ -71,7 +73,7 @@ uint16_t remove_device_button, remove_device_and_channels_button, remove_all_dev
 
 uint16_t channel_selector;
 uint16_t channel_status_label, zb_channel_info_label; // zb_channel_info_label_2;
-uint16_t channel_name_text, channel_desc_number, channel_sub_id_number;
+uint16_t channel_name_text; //, channel_desc_number, channel_sub_id_number;
 uint16_t channel_name_save_button;
 uint16_t keepalive_number, timeout_number, refresh_number;
 uint16_t keepalive_save_button, timeout_save_button, refresh_save_button;
@@ -158,6 +160,8 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_DISABLE_PERCENTAGE_MSG_FLAG	0x3002
 #define GUI_CB_DISABLE_VOLTAGE_MSG_FLAG 		0x3003
 
+#define GUI_CB_UPDATE_DEVICE_NAME_FLAG			0x3005
+
 #define GUI_CB_SWBUILD_FLAG									0x3010
 #define GUI_CB_RSSI_FLAG										0x3011
 
@@ -229,7 +233,7 @@ static char general_purpose_gui_buffer[1024] = {};
 static constexpr char* disabledstyle PROGMEM = "background-color: #bbb; border-bottom: #999 3px solid;";
 const String clearLabelStyle PROGMEM = "background-color: unset; width: 100%;";
 
-char zigbee_devices_labels[Z2S_ZB_DEVICES_MAX_NUMBER][11] = {};
+//char zigbee_devices_labels[Z2S_ZB_DEVICES_MAX_NUMBER][11] = {};
 //char zigbee_channels_labels[Z2S_CHANNELS_MAX_NUMBER][13] = {};
 
 //const static String zigbee_devices_values[] PROGMEM {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9","10", "11", "12", "13", "14","15","16",
@@ -245,7 +249,7 @@ bool isNumber(String& str);
 
 const char* getSuplaChannelTypeName(int32_t channelType);
 const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc);
-const char* getZ2SDeviceModelName(uint32_t modelID);
+const char* getZ2SDeviceDescName(uint32_t modelID);
 const char* getZigbeeDataTypeName(uint8_t dataType);
 
 void buildGatewayTabGUI();
@@ -274,6 +278,7 @@ void enableDeviceControls(bool enable);
 void removeDeviceCallback(Control *sender, int type, void *param);
 void channelSelectorCallback(Control *sender, int type);
 void enableChannelControls(bool enable);
+void editDeviceCallback(Control *sender, int type, void *param);
 void editChannelCallback(Control *sender, int type, void *param);
 void batteryCallback(Control *sender, int type, void *param);
 void batterySwitcherCallback(Control *sender, int type, void *param);
@@ -399,7 +404,7 @@ const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc) {
 	}*/
 }
 
-const char* getZ2SDeviceModelName(uint32_t modelID)  {
+const char* getZ2SDeviceDescName(uint32_t modelID)  {
 
 	switch (modelID) {
 
@@ -698,18 +703,42 @@ void buildDevicesTabGUI() {
 	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
-			sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
+			//sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
 			working_str = devices_counter;
-			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], working_str, Control::Color::None, device_selector);
+			z2s_zb_devices_table[devices_counter].v2_params.device_gui_selector = ESPUI.addControl(Control::Type::Option, 
+																																														z2s_zb_devices_table[devices_counter].device_local_name, 
+																																														working_str, 
+																																														Control::Color::None, 
+																																														device_selector);
 		}
 
-	ESPUI.setPanelWide(device_selector, false);
+	ESPUI.setPanelWide(device_selector, true);
 
 	zb_device_info_label = ESPUI.addControl(Control::Type::Label, PSTR("Device info"), three_dots_str, Control::Color::Emerald, devicestab); 
 	ESPUI.setElementStyle(zb_device_info_label, "color:black;text-align: justify; font-family:tahoma; font-size: 4 px; font-style: normal; font-weight: normal;");
 	
-	ESPUI.setPanelWide(zb_device_info_label, false);
+	ESPUI.setPanelWide(zb_device_info_label, true);
 
+	working_str = PSTR(empty_str);
+	device_name_text = ESPUI.addControl(Control::Type::Text, PSTR("Device panel"), working_str, 
+																			 Control::Color::Emerald, devicestab, generalCallback); 
+	working_str = PSTR("&#10023; device name (local) &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, device_name_text), 
+												PSTR(clearLabelStyle));
+	working_str = PSTR("Save");
+	device_name_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, device_name_text, 
+																				  	 editDeviceCallback, (void*)GUI_CB_UPDATE_DEVICE_NAME_FLAG);
+
+	working_str = PSTR("Read Software Build ID");
+	getswbuild_button = ESPUI.addControl(Control::Type::Button, PSTR("Software Build ID / RSSI"), working_str, 
+																			 Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, (void*)GUI_CB_SWBUILD_FLAG);
+	//swbuildlabel = ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str, Control::Color::Emerald, getswbuild_button);
+
+	working_str = PSTR("Read device RSSI");
+	getrssi_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str,
+																		Control::Color::Emerald, getswbuild_button, getZigbeeDeviceQueryCallback, (void*)GUI_CB_RSSI_FLAG);
+	rssilabel = ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str, Control::Color::Emerald, getswbuild_button);
+	
 	battery_voltage_min_number = ESPUI.addControl(Control::Type::Number, PSTR("Battery panel"), zero_str, 
 																								Control::Color::Emerald, devicestab, generalMinMaxCallback, (void*)255);
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, battery_voltage_min_number);
@@ -750,16 +779,6 @@ void buildDevicesTabGUI() {
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
 																				 Control::Color::None, battery_voltage_min_number), PSTR(clearLabelStyle));							
 
-
-	working_str = PSTR("Read Software Build ID");
-	getswbuild_button = ESPUI.addControl(Control::Type::Button, PSTR("Software Build ID / RSSI"), working_str, 
-																			 Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, (void*)GUI_CB_SWBUILD_FLAG);
-	//swbuildlabel = ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str, Control::Color::Emerald, getswbuild_button);
-
-	working_str = PSTR("Read device RSSI");
-	getrssi_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str,
-																		Control::Color::Emerald, getswbuild_button, getZigbeeDeviceQueryCallback, (void*)GUI_CB_RSSI_FLAG);
-	rssilabel = ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str, Control::Color::Emerald, getswbuild_button);
 
 	ESPUI.addControl(Control::Type::Separator, PSTR(empty_str), working_str, Control::Color::None, devicestab);
 
@@ -1198,7 +1217,7 @@ void buildTuyaCustomClusterTabGUI() {
 
 			//sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
 			working_str = devices_counter;
-			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], working_str, Control::Color::None, Tuya_device_selector);
+			ESPUI.addControl(Control::Type::Option, z2s_zb_devices_table[devices_counter].device_local_name, working_str, Control::Color::None, Tuya_device_selector);
 		}
 	}
 
@@ -1281,7 +1300,7 @@ void buildAdvancedDevicesTabGUI() {
 				case Z2S_DEVICE_DESC_MOES_ALARM:					isMoesAlarmPresent = true; break;
 			}
 			working_str = devices_counter;
-			ESPUI.addControl(Control::Type::Option, zigbee_devices_labels[devices_counter], working_str, Control::Color::None, advanced_device_selector);
+			ESPUI.addControl(Control::Type::Option, z2s_zb_devices_table[devices_counter].device_local_name, working_str, Control::Color::None, advanced_device_selector);
 		}
 	advanced_device_info_label =  ESPUI.addControl(Control::Type::Label, PSTR("Advanced Device"), three_dots_str,	
 																								 Control::Color::Emerald, advanced_devices_tab);
@@ -1859,9 +1878,15 @@ void enableDeviceControls(bool enable) {
 	updateLabel_P(zb_device_info_label, three_dots_str);
 	enableControlStyle(zb_device_info_label, enable);
 
+	working_str = PSTR(empty_str);
+	ESPUI.updateText(device_name_text, working_str);
+
 	ESPUI.updateNumber(battery_voltage_min_number, 0);
 	ESPUI.updateNumber(battery_voltage_max_number, 0);
 	
+	enableControlStyle(device_name_text, enable);
+	enableControlStyle(device_name_save_button, enable);
+
 	enableControlStyle(battery_voltage_min_number, enable);
 	enableControlStyle(battery_voltage_min_save_button, enable);
 	enableControlStyle(battery_voltage_max_number, enable);
@@ -1939,9 +1964,9 @@ void updateDeviceInfoLabel() {
 					"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X <b>| <i>Power source</b></i> 0x%02X<br>"
 					"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
 					"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>Gateway unit last RSSI</b></i> %d"), 
-					z2s_zb_devices_table[device_slot].manufacturer_name,
-					z2s_zb_devices_table[device_slot].model_name,
-					getZ2SDeviceModelName(z2s_zb_devices_table[device_slot].desc_id), z2s_zb_devices_table[device_slot].desc_id,
+					Z2S_getZBDeviceManufacturerName(device_slot),
+					Z2S_getZBDeviceModelName(device_slot),
+					getZ2SDeviceDescName(z2s_zb_devices_table[device_slot].desc_id), z2s_zb_devices_table[device_slot].desc_id,
 					ieee_addr_str,
 					z2s_zb_devices_table[device_slot].short_addr,
 					z2s_zb_devices_table[device_slot].power_source,
@@ -1951,6 +1976,9 @@ void updateDeviceInfoLabel() {
 					zbGateway.getZbgDeviceUnitLastRssi(z2s_zb_devices_table[device_slot].short_addr));
 	log_i("value = %s, length = %u", general_purpose_gui_buffer, strlen(general_purpose_gui_buffer));
 	updateLabel_P(zb_device_info_label, general_purpose_gui_buffer);
+
+	working_str = z2s_zb_devices_table[device_slot].device_local_name;
+	ESPUI.updateText(device_name_text, working_str);
 
 	ESPUI.updateNumber(battery_voltage_min_number, z2s_zb_devices_table[device_slot].battery_voltage_min);
 	ESPUI.updateNumber(battery_voltage_max_number, z2s_zb_devices_table[device_slot].battery_voltage_max);
@@ -2027,23 +2055,23 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					PSTR("<meta charset=\"UTF-8\">"
 					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
 					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
-					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"),
-					//"<b><i>ZB device</b></i> %s::%s"),
+					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
+					"<b><i>ZB device</b></i> %s::%s"),
 					//strlen(z2s_channels_table[channel_slot].Supla_channel_name) > 0 ? z2s_channels_table[channel_slot].Supla_channel_name : "---",
 					ieee_addr_str,
 					z2s_channels_table[channel_slot].short_addr,
 					z2s_channels_table[channel_slot].endpoint,
         	z2s_channels_table[channel_slot].cluster_id,
-					getZ2SDeviceModelName(z2s_channels_table[channel_slot].model_id),
+					getZ2SDeviceDescName(z2s_channels_table[channel_slot].model_id),
         	z2s_channels_table[channel_slot].model_id,
         	z2s_channels_table[channel_slot].Supla_channel,
         	z2s_channels_table[channel_slot].Supla_secondary_channel,
 					getSuplaChannelTypeName(z2s_channels_table[channel_slot].Supla_channel_type),
         	z2s_channels_table[channel_slot].Supla_channel_func > 0 ? 
 						getSuplaChannelFuncName(z2s_channels_table[channel_slot].Supla_channel_type, z2s_channels_table[channel_slot].Supla_channel_func) : "none",
-        	z2s_channels_table[channel_slot].sub_id);
-					//z2s_zb_devices_table[z2s_channels_table[channel_slot].ZB_device_id].manufacturer_name,
-					//z2s_zb_devices_table[z2s_channels_table[channel_slot].ZB_device_id].model_name);
+        	z2s_channels_table[channel_slot].sub_id,
+					Z2S_getZBDeviceManufacturerName(z2s_channels_table[channel_slot].ZB_device_id),
+					Z2S_getZBDeviceModelName(z2s_channels_table[channel_slot].ZB_device_id));
 	
 	log_i("Up2HERE!, value = %s, length = %u", general_purpose_gui_buffer, strlen(general_purpose_gui_buffer));
 	//if (label_number == 1)
@@ -2618,6 +2646,30 @@ void switchCallback(Control *sender, int type) {
 	else
 		updateLabel_P(factory_reset_label, factory_reset_disabled_str);
 }
+
+void editDeviceCallback(Control *sender, int type, void *param) {
+
+	if ((type == B_UP) && (ESPUI.getControl(device_selector)->value.toInt() >= 0)) {
+
+		uint8_t device_slot = ESPUI.getControl(device_selector)->value.toInt();
+
+		switch ((uint32_t)param) {
+
+			case GUI_CB_UPDATE_DEVICE_NAME_FLAG : {
+
+				strncpy(z2s_zb_devices_table[device_slot].device_local_name, ESPUI.getControl(device_name_text)->value.c_str(), 32);
+				z2s_zb_devices_table[device_slot].device_local_name[32] = '\0';
+				if (Z2S_saveZBDevicesTable()) {
+					log_i("%d, %s", z2s_zb_devices_table[device_slot].v2_params.device_gui_selector, z2s_zb_devices_table[device_slot].device_local_name);
+					ESPUI.updateControlLabel(z2s_zb_devices_table[device_slot].v2_params.device_gui_selector, z2s_zb_devices_table[device_slot].device_local_name);
+					ESPUI.jsonReload();
+				}
+			} break;
+		}
+	}
+}
+
+
 
 void editChannelCallback(Control *sender, int type, void *param) {
 

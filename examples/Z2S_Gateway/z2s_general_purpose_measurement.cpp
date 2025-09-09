@@ -78,6 +78,9 @@ void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, uint8_t 
   
   auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
   
+  if (name == nullptr)
+    name = (char*)default_gpm_name;
+
   Z2S_fillChannelsTableSlot(device, free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
                                   SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id, name, func);
   
