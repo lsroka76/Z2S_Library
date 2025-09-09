@@ -1959,11 +1959,12 @@ void updateDeviceInfoLabel() {
 	uint8_t battery_percentage = z2s_zb_devices_table[device_slot].battery_percentage >= 0x80 ? 
 												  		 z2s_zb_devices_table[device_slot].battery_percentage - 0x80 : 0xFF;
 
-	sprintf_P(general_purpose_gui_buffer,PSTR("<b><i><style=color:black>Manufacturer name<style=;></i></b> %s "
+	sprintf_P(general_purpose_gui_buffer,PSTR("<b><i><style=color:black>Slot#</b></i> %02u <b>| <i>Manufacturer name<style=;></i></b> %s "
 					"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
 					"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X <b>| <i>Power source</b></i> 0x%02X<br>"
 					"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
 					"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>Gateway unit last RSSI</b></i> %d"), 
+					device_slot,
 					Z2S_getZBDeviceManufacturerName(device_slot),
 					Z2S_getZBDeviceModelName(device_slot),
 					getZ2SDeviceDescName(z2s_zb_devices_table[device_slot].desc_id), z2s_zb_devices_table[device_slot].desc_id,
