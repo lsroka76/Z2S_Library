@@ -33,12 +33,16 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
       _one_phase = false; 
       voltage_multiplier = 1;
       voltage_divisor    = 10;
+      
+      ignore_zigbee_scaling = true;
     } break;
 
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
       _one_phase = true;
       voltage_multiplier = 1;
       voltage_divisor    = 10;
+      
+      ignore_zigbee_scaling = true;
     } break;
 
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A:
