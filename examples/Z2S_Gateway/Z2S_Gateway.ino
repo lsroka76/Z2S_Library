@@ -2114,21 +2114,22 @@ void loop() {
                 case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
                 case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
                 case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
+                case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
                 case Z2S_DEVICE_DESC_RGBW_BULB_XY:
                 case Z2S_DEVICE_DESC_DIMMER_BULB:
                 case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
                 case Z2S_DEVICE_DESC_IKEA_WW_BULB:
-                case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY:
- {
-                  if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_CAPABILITIES_ID, true))
+                case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
+                case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY: {
+
+                  /*if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_CAPABILITIES_ID, true))
                     log_i("Color control caps 0x%x, type 0x%x", *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE100, true)) {
                     esp_zb_uint48_t *value = (esp_zb_uint48_t *)zbGateway.getReadAttrLastResult()->data.value;
                     log_i("Color full data 0x%x::0x%x, type 0x%x", value->low, value->high, zbGateway.getReadAttrLastResult()->data.type);
-                    zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+                  }*/
+                  zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
                                                 ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, false);
-                  }
-                    
                 } break;
 
                 case  Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
@@ -2145,7 +2146,7 @@ void loop() {
                    zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
                                                 ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 10, sync_cmd);
                    zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID,
-                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 1, sync_cmd);
+                                                ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 0, 1, sync_cmd);
 
                     zbGateway.setClusterReporting(joined_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
                                                 ESP_ZB_ZCL_ATTR_TYPE_U48, 0, 0, 1, sync_cmd);

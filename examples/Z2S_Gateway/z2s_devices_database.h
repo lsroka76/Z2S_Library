@@ -107,10 +107,12 @@
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A          0x3110
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B          0x3111
 #define Z2S_DEVICE_DESC_IKEA_RGBW_BULB                  0x3120
+#define Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB               0x3130
 
 #define Z2S_DEVICE_DESC_DIMMER_BULB                     0x3200
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0           0x3210
 #define Z2S_DEVICE_DESC_IKEA_WW_BULB                    0x3220
+#define Z2S_DEVICE_DESC_PHILIPS_WW_BULB                 0x3225
 
 #define Z2S_DEVICE_DESC_RGBW_END                        0x3299
 
@@ -954,7 +956,20 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
                              ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+                             ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_WW_BULB,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -2151,6 +2166,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "Philips", .model_name = "LCA006",
+    .z2s_device_uid = 19050,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "\u001aTRADFRI bulb GU10 WW 345lm",
     .z2s_device_uid = 19100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
@@ -2184,6 +2204,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI Driver 30W",
     .z2s_device_uid = 19700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "Philips", .model_name = "LWW003",
+    .z2s_device_uid = 19750,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_WW_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "Philips", .model_name = "LWF003",
+    .z2s_device_uid = 19755,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_WW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3210_ctv0gump", .model_name = "TS0501B",

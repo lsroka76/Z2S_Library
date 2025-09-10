@@ -29,7 +29,7 @@ extern uint32_t _gui_start_delay;
 extern uint8_t _z2s_security_level;
 
 #define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 24
-#define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 16
+#define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 6
 
 //UI handles
 uint16_t gateway_general_info;

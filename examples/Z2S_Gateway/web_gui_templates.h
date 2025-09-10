@@ -830,6 +830,12 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_name = "CHILD LOCK"
 	 },
 	 {
+		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_TURBO_MODE_ID, 
+	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+		.zigbee_attribute_name = "TURBO MODE"
+	 },
+	 {
 		.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_OPEN_WINDOW_ID, 
 	  .zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
@@ -1049,6 +1055,18 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
 		.zigbee_attribute_value_name = "ON",
 		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_TURBO_MODE_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0x09
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_TURBO_MODE_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 0x14
 	},
 	{
 		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_OPEN_WINDOW_ID,

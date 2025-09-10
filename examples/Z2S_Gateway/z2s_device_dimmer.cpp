@@ -31,9 +31,13 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, in
         case Z2S_DEVICE_DESC_IKEA_WW_BULB:
         case Z2S_DEVICE_DESC_RGBW_BULB_XY:
         case Z2S_DEVICE_DESC_RGBW_BULB_HS: 
+        case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
+        case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
           dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER; break;
+
         case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
           dimmer_mode = Z2S_TUYA_F0_CMD_DIMMER; break;
+
       } break;
 
     case DIMMER_FUNC_COLOR_TEMPERATURE_SID:
@@ -47,8 +51,13 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, in
         case Z2S_DEVICE_DESC_RGBW_BULB_XY:
         case Z2S_DEVICE_DESC_RGBW_BULB_HS: 
           dimmer_mode = Z2S_COLOR_TEMPERATURE_DIMMER; break;
+
         case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
           dimmer_mode = Z2S_TUYA_E0_CMD_DIMMER; break;
+        
+        case  Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
+        case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
+          dimmer_mode = Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER;
       } break;
   }
   
@@ -84,8 +93,10 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uin
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
     case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
     case Z2S_DEVICE_DESC_IKEA_WW_BULB:
+    case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
     case Z2S_DEVICE_DESC_RGBW_BULB_XY:
     case Z2S_DEVICE_DESC_RGBW_BULB_HS:
+    case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
       channel_element = new Supla::Control::Z2S_DimmerInterface(gateway, device, sub_id); break;
   }
   if (channel_element)
@@ -96,8 +107,6 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uin
   
   addZ2SDeviceDimmer(gateway, device, free_slot, -1, name, func);
 }
-
-
 
 void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, signed char rssi) {
 
@@ -118,8 +127,10 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       case Z2S_DEVICE_DESC_IKEA_WW_BULB:
+      case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
       case Z2S_DEVICE_DESC_RGBW_BULB_XY:
-      case Z2S_DEVICE_DESC_RGBW_BULB_HS: {
+      case Z2S_DEVICE_DESC_RGBW_BULB_HS:
+      case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB: {
         auto Supla_Z2S_DimmerInterface = reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
         //Supla_Z2S_TuyaDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
           Supla_Z2S_DimmerInterface->setValueOnServer(level);

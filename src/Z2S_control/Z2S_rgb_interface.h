@@ -24,13 +24,17 @@
 #include <supla/channel_element.h>
 #include "ZigbeeGateway.h"
 
-#define Z2S_COLOR_HS_RGB          0x01
-#define Z2S_COLOR_HS_XY_RGB       0x02
-#define Z2S_COLOR_XY_RGB          0x03
+#define Z2S_COLOR_HS_RGB            0x01
+#define Z2S_COLOR_HS_XY_RGB         0x02
+#define Z2S_COLOR_XY_RGB            0x03
 
-#define Z2S_TUYA_COLOR_HS_RGB     0x11
-#define Z2S_TUYA_COLOR_HS_XY_RGB  0x12
-#define Z2S_TUYA_COLOR_XY_RGB     0x13
+#define Z2S_TUYA_COLOR_HS_RGB       0x11
+#define Z2S_TUYA_COLOR_HS_XY_RGB    0x12
+#define Z2S_TUYA_COLOR_XY_RGB       0x13
+
+#define Z2S_PHILIPS_COLOR_HS_RGB    0x21
+#define Z2S_PHILIPS_COLOR_HS_XY_RGB 0x22
+#define Z2S_PHILIPS_COLOR_XY_RGB    0x23
 
 
 namespace Supla {

@@ -2757,7 +2757,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
-      case Z2S_DEVICE_DESC_RGBW_BULB_XY: {
+      case Z2S_DEVICE_DESC_RGBW_BULB_XY:
+      case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB: {
         
         addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "RGBW SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
@@ -2783,7 +2784,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB", SUPLA_CHANNELFNC_RGBLIGHTING); 
       } break; 
 
-      case Z2S_DEVICE_DESC_IKEA_WW_BULB: {
+      case Z2S_DEVICE_DESC_IKEA_WW_BULB:
+      case Z2S_DEVICE_DESC_PHILIPS_WW_BULB: {
         
         addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "BULB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 

@@ -24,11 +24,12 @@
 #include <supla/channel_element.h>
 #include "ZigbeeGateway.h"
 
-#define Z2S_SEND_TO_LEVEL_DIMMER          0x00
-#define Z2S_COLOR_TEMPERATURE_DIMMER      0x01
-#define Z2S_TUYA_COLOR_TEMPERATURE_DIMMER 0x02
-#define Z2S_TUYA_F0_CMD_DIMMER            0x03 //LEVEL CONTROL 0 - 1000
-#define Z2S_TUYA_E0_CMD_DIMMER            0x04 //COLOR CLUSTER 0 - 1000
+#define Z2S_SEND_TO_LEVEL_DIMMER              0x00
+#define Z2S_COLOR_TEMPERATURE_DIMMER          0x01
+#define Z2S_TUYA_COLOR_TEMPERATURE_DIMMER     0x02
+#define Z2S_TUYA_F0_CMD_DIMMER                0x03 //LEVEL CONTROL 0 - 1000
+#define Z2S_TUYA_E0_CMD_DIMMER                0x04 //COLOR CLUSTER 0 - 1000
+#define Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER  0x05
 
 namespace Supla {
 namespace Control {

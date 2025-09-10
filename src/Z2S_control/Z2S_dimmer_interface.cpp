@@ -93,7 +93,8 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(uint8_t brightness) 
         uint16_t color_temperature = map(brightness, 0, 100, 454, 200);
 	      _gateway->sendColorMoveToColorTemperatureCmd(&_device, color_temperature, 1);
       } break;
-      case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER: {
+      case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER:
+      case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER: {
         uint16_t color_temperature = map(brightness, 0, 100, 500, 153);
 	      _gateway->sendColorMoveToColorTemperatureCmd(&_device, color_temperature, 1);
       } break; 

@@ -139,20 +139,29 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(uint8_t red,
     uint8_t light_mode = 0x01;
 
     switch (_rgb_mode) {
+
       case Z2S_COLOR_HS_RGB:
+      case Z2S_PHILIPS_COLOR_HS_RGB:
         _gateway->sendColorMoveToHueAndSaturationCmd(&_device, _hue, _saturation, 1); break;
-      case Z2S_COLOR_XY_RGB: {
+
+      case Z2S_COLOR_XY_RGB:
+      case Z2S_PHILIPS_COLOR_XY_RGB: {
+
         espXyColor_t xy_color = espRgbToXYColor(red, green, blue);
         xy_color.x = map(xy_color.x, 0 ,0xFFFF, 0, 0xFEFF);
         xy_color.y = map(xy_color.y, 0 ,0xFFFF, 0, 0xFEFF);
         log_i("XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
         _gateway->sendColorMoveToColorCmd(&_device, xy_color.x, xy_color.y,1);
       } break;
+
       case Z2S_TUYA_COLOR_HS_RGB: {
+        
         _gateway->sendCustomClusterCmd(&_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, ESP_ZB_ZCL_ATTR_TYPE_U8, 1,&light_mode , false);
         _gateway->sendColorMoveToHueAndSaturationCmd(&_device, _hue, _saturation, 1);
       } break;
+
       case Z2S_TUYA_COLOR_XY_RGB: {
+        
         _gateway->sendCustomClusterCmd(&_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, ESP_ZB_ZCL_ATTR_TYPE_U8, 1,&light_mode , false);
         espXyColor_t xy_color = espRgbToXYColor(red, green, blue);
         xy_color.x = map(xy_color.x, 0 ,0xFFFF, 0, 0xFEFF);
