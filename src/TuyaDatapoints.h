@@ -146,4 +146,7 @@
 #define GIEX_WATER_VALVE_WATER_CONSUMED_DP                          0x6F
 #define GIEX_WATER_VALVE_LAST_IRRIGATION_DURATION_DP                0x72
 
+#define TUYA_ILLUMINANCE_SENSOR_ILLUMINANCE_DP                      0x02
+#define TUYA_ILLUMINANCE_SENSOR_BATTERY_DP                          0x04
+
 #endif //TUYA_DATAPOINTS_H_

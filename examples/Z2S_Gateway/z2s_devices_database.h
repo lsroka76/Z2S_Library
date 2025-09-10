@@ -44,6 +44,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR         0x1200
 #define Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR            0x1205
+#define Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR      0x1210
 
 #define Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR                0x1300
 #define Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2              0x1305
@@ -136,6 +137,8 @@
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1  0x4501
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2  0x4502
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A  0x4503
+
+#define Z2S_DEVICE_DESC_TUYA_DIN_RELAY_EM_TEMP          0x4540
 
 #define Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER  0x4550
 #define Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER   0x4551
@@ -532,6 +535,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR,
     .z2s_device_clusters_count = 5,
@@ -1527,6 +1535,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3210_tgvtvdoc", .model_name = "TS0207",
     .z2s_device_uid = 7700,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3210_p68kms0l", .model_name = "TS0207",
+    .z2s_device_uid = 7701,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
@@ -2574,6 +2587,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "eWeLink", .model_name = "CK-BL702-SWP-01(7020)",
     .z2s_device_uid = 26800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_7kscdesh", .model_name = "TS0222",
+    .z2s_device_uid = 26900,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR,
 	  .z2s_device_endpoints_count = 1}
 };
 

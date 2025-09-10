@@ -2819,7 +2819,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "SMOKE CONC.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "SMOKE CONCENTRATION", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
@@ -2829,7 +2829,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+      case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
 
       case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR: {
         
@@ -2840,7 +2841,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "LIGHT ILLU.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "ILLUMINANCE.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
       } break;
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: 

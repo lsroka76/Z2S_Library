@@ -566,6 +566,21 @@ void processTuyaTempHumiditySensorDataReport(int16_t channel_number_slot, uint16
   }
 }
 
+void processTuyaIlluminanceSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi){
+
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_ILLUMINANCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, Tuya_read_dp_result.dp_value, rssi);
+            
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_ILLUMINANCE_SENSOR_BATTERY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    log_i("Battery level is %d", Tuya_read_dp_result.dp_value);
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value , rssi);  
+  }
+}
+
 void processTuya3PhasesElectricityMeterDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, signed char rssi) {
 
 
@@ -1391,6 +1406,9 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR: 
       processTuyaTempHumiditySensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
+
+    case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
+      processTuyaIlluminanceSensorDataReport(channel_number_slot, payload_size, payload, rssi); break;
 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
