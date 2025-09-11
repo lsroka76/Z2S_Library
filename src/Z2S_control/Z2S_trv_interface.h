@@ -433,7 +433,7 @@
 #define TV02_CMD_SET_RUNNING_STATE_HEAT  0x00
 
 //#define TV02_CMD_SET_BATTERY_LEVEL_1       0x06 //
-#define TV02_CMD_SET_BATTERY_LOW_1           0x23 //
+#define TV02_CMD_SET_LOW_BATTERY_1           0x23 //
 
 #define TV02_CMD_SET_SCHEDULE_MODE_1           0x02
 #define TV02_CMD_SET_SCHEDULE_MODE_ON          0x00
