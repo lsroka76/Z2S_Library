@@ -580,7 +580,7 @@ uint8_t Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_a
         return 0xFF;
       }
       
-      z2s_zb_devices_table[zb_device_slot].user_data_flags = z2s_zb_devices_table[zb_device_slot].user_data_flags | ZBD_USER_DATA_FLAG_VERSION_2_0;
+      z2s_zb_devices_table[zb_device_slot].user_data_flags |= ZBD_USER_DATA_FLAG_VERSION_2_0;
 
       char device_name[33];
       sprintf(device_name, "Device #%02u", zb_device_slot);
@@ -607,7 +607,27 @@ uint8_t Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_a
 
         log_e("Critical error - couldn't get devices list idx!");
         return 0xFF;
-      }
+      } else {
+
+        if (*((uint32_t*)&z2s_zb_devices_table[zb_device_slot].v2_params.device_uid) == 0) {
+
+          log_i("Updating unknown device");
+          if (!Z2S_getDevicesListUidIdx(manufacturer_name, 
+                                        model_name, 
+                                        z2s_zb_devices_table[zb_device_slot].v2_params.device_uid, 
+                                        z2s_zb_devices_table[zb_device_slot].v2_params.devices_list_idx)) {
+
+            log_e("Critical error - couldn't get device uid!");
+            return 0xFF;
+          }
+          z2s_zb_devices_table[zb_device_slot].endpoints_count = endpoints_count;
+          z2s_zb_devices_table[zb_device_slot].desc_id = desc_id;
+          z2s_zb_devices_table[zb_device_slot].power_source = power_source;
+
+          if (Z2S_saveZBDevicesTable())
+            log_i("Unknown ZB device updated!");
+        }
+      } 
       
     } else {
 
@@ -623,7 +643,7 @@ uint8_t Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_a
       char device_name[33];
       sprintf(device_name, "Device #%02u", zb_device_slot);
       memcpy(z2s_zb_devices_table[zb_device_slot].device_local_name, device_name, sizeof(device_name));
-      z2s_zb_devices_table[zb_device_slot].user_data_flags = z2s_zb_devices_table[zb_device_slot].user_data_flags | ZBD_USER_DATA_FLAG_VERSION_2_0;
+      z2s_zb_devices_table[zb_device_slot].user_data_flags |= ZBD_USER_DATA_FLAG_VERSION_2_0;
       z2s_zb_devices_table[zb_device_slot].record_id = 2; //V2
       if (Z2S_saveZBDevicesTable())
         log_i("ZB device slot updated to V2!");

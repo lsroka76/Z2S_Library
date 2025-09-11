@@ -1244,9 +1244,7 @@ void setup() {
 
   pinMode(BUTTON_PIN, INPUT);
 
-  pinMode(WIFI_ENABLE, OUTPUT); // pinMode(3, OUTPUT); (credits @Zibi_007)
-  digitalWrite(WIFI_ENABLE, LOW); // digitalWrite(3, LOW); // Activate RF switch control
-  delay(100);
+  pinMode(WIFI_ENABLE, OUTPUT); // pinMode(3, OUTPUT); (credits @Zibi_007)in
   pinMode(WIFI_ANT_CONFIG, OUTPUT); // pinMode(14, OUTPUT);
   digitalWrite(WIFI_ANT_CONFIG, HIGH);
  
@@ -1519,7 +1517,7 @@ void loop() {
     if(_status_led_mode != _status_led_last_mode) {
       if (_status_led_mode == 1)
         //rgbLed.setPixelColor(0, rgbLed.Color(255, 215, 0));
-        rgbLedWrite(RGB_BUILTIN, 255, 215, 0);  // Green
+        rgbLedWrite(RGB_BUILTIN, 0, 255, 0);  // Green
       else
       if (_status_led_mode == 0)
         //rgbLed.setPixelColor(0, rgbLed.Color(0, 0, 0));
