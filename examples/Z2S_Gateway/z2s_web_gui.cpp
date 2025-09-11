@@ -1750,10 +1750,23 @@ void Z2S_stopWebGUI() {
 	current_Tuya_payload_label = 0;
 }
 
+void onUpdateBegin(const UpdateType type, int &result) {
+
+	rgbLedWrite(RGB_BUILTIN, 255, 0, 255);  
+}
+
+void onUpdateEnd(const UpdateType type, int &result) {
+
+	rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+}
+
 void Z2S_startUpdateServer() {
 
-	if (ESPUI.WebServer())
-  	updateServer.setup(ESPUI.WebServer(), "admin", "pass");
+	if (ESPUI.WebServer()) {
+  	updateServer.setup(ESPUI.WebServer());
+		updateServer.onUpdateBegin = onUpdateBegin;
+		updateServer.onUpdateEnd = onUpdateEnd;
+	}
 	/*if (ESPUI.WebServer())
   	ESPUI.WebServer()->serveStatic("/files", LittleFS, "/");
 	if (ESPUI.WebServer())
