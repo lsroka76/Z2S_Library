@@ -338,6 +338,22 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         channel.setNewValue(state);
 
       } break;
+
+      case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
+
+        uint8_t Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[] = { 00, 00, GIEX_WATER_VALVE_STATE_DP, TUYA_DP_TYPE_BOOL, 00, 01, 00};
+
+        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+
+        Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
+        Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
+
+        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD, false);
+
+        state = false;
+        channel.setNewValue(state);
+
+      } break;
     }  
   }
   // Schedule save in 5 s after state change
@@ -402,6 +418,23 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   
   if (!channel.isStateOnline()) 
 	  channel.setStateOnline();
+
+  log_i("durationMs = %lu, storedTurnOnDurationMs = %lu, durationTimestamp = %lu, keepTurnOnDurationMs = %u",
+        durationMs, storedTurnOnDurationMs, durationTimestamp, keepTurnOnDurationMs);
+
+  if (on_off_state) {
+    if (keepTurnOnDurationMs) {
+      durationMs = storedTurnOnDurationMs;
+    }
+    if (durationMs != 0) {
+      durationTimestamp = millis();
+    } else {
+      durationTimestamp = 0;
+    }
+  } else {
+    durationMs = 0;
+    durationTimestamp = 0;
+  }
 
   channel.setNewValue(state);
   // Schedule save in 5 s after state change
