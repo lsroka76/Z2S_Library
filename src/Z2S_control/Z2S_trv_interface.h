@@ -117,7 +117,7 @@
 
 #define ME167_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
 #define ME167_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
-#define ME167_TEMPERATURE_CALIBRATION_FACTOR 0x01//*10
+#define ME167_TEMPERATURE_CALIBRATION_FACTOR 0x01 //*1
 
 #define ME167_STATE_1 0x03
 #define ME167_STATE_2 0x04
@@ -179,7 +179,7 @@
 
 #define TRV603_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
 #define TRV603_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
-#define TRV603_TEMPERATURE_CALIBRATION_FACTOR 0x01//*10
+#define TRV603_TEMPERATURE_CALIBRATION_FACTOR 0x0A //*10
 
 #define TRV603_STATE_1 0x03
 #define TRV603_STATE_2 0x04
@@ -330,7 +330,7 @@
 
 #define TRV601_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
 #define TRV601_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
-#define TRV601_TEMPERATURE_CALIBRATION_FACTOR 0x0A//*10
+#define TRV601_TEMPERATURE_CALIBRATION_FACTOR 0x0A //*10
 
 #define TRV601_STATE_1 0x06
 #define TRV601_STATE_2 0x04
@@ -384,7 +384,7 @@
 
 #define GTZ10_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
 #define GTZ10_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
-#define GTZ10_TEMPERATURE_CALIBRATION_FACTOR 0x01//*10
+#define GTZ10_TEMPERATURE_CALIBRATION_FACTOR 0x0A //*10
 
 #define GTZ10_STATE_1 0x03
 #define GTZ10_STATE_2 0x04
@@ -397,11 +397,67 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-#define TRV602Z_CMD_SET   0x08 //reserved but currently not used - GTX10_CMD_SET is used insetead, since only RUNNING_STATE is different
+#define TRV602Z_CMD_SET   0x08 //reserved but currently not used - GTZ10_CMD_SET is used insetead, since only RUNNING_STATE is different
 
 #define TRV602Z_CMD_SET_RUNNING_STATE_1     0x03
 
 #define TRV602Z_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+#define TV02_CMD_SET   0x09
+
+#define TV02_CMD_ON_1  0x02
+#define TV02_CMD_ON_2  0x04
+#define TV02_CMD_ON_3  0x00
+#define TV02_CMD_ON_4  0x01
+#define TV02_CMD_ON_5  0x01
+
+#define TV02_CMD_OFF_1 0x6B //HEATING STOP
+#define TV02_CMD_OFF_2 0x01
+#define TV02_CMD_OFF_3 0x00
+#define TV02_CMD_OFF_4 0x01
+#define TV02_CMD_OFF_5 0x01
+
+#define TV02_CMD_SET_TARGET_HEATSETPOINT_1 0x10
+#define TV02_CMD_SET_TARGET_HEATSETPOINT_2 0x02
+
+#define TV02_CMD_SET_TEMPERATURE_CALIBRATION_1 0x1B
+#define TV02_CMD_SET_TEMPERATURE_CALIBRATION_2 0x02
+
+#define TV02_CMD_SET_LOCAL_TEMPERATURE_1 0x18
+#define TV02_CMD_SET_LOCAL_TEMPERATURE_2 0x02
+
+#define TV02_CMD_SET_RUNNING_STATE_1     0x6B
+#define TV02_CMD_SET_RUNNING_STATE_IDLE  0x01
+#define TV02_CMD_SET_RUNNING_STATE_HEAT  0x00
+
+//#define TV02_CMD_SET_BATTERY_LEVEL_1       0x06 //
+#define TV02_CMD_SET_BATTERY_LOW_1           0x23 //
+
+#define TV02_CMD_SET_SCHEDULE_MODE_1           0x02
+#define TV02_CMD_SET_SCHEDULE_MODE_ON          0x00
+#define TV02_CMD_SET_SCHEDULE_MODE_OFF         0x01
+
+#define TV02_CMD_SET_CHILD_LOCK_1              0x28
+#define TV02_CMD_SET_WINDOW_DETECT_1           0x08 //0x0F open/close
+#define TV02_CMD_SET_ANTI_FREEZE_1             0x0A //ON , OFF -0x02/1 manual
+#define TV02_CMD_SET_LIMESCALE_PROTECT_1       0x27
+
+
+#define TV02_TARGET_HEATSETPOINT_FACTOR     0x0A //*10
+#define TV02_LOCAL_TEMPERATURE_FACTOR       0x0A //*10
+#define TV02_TEMPERATURE_CALIBRATION_FACTOR 0x0A //*10
+
+#define TV02_STATE_1 0x03
+#define TV02_STATE_2 0x04
+
+#define TV02_STATE_IDLE    0x01
+#define TV02_STATE_HEATING 0x00
+
+#define TV02_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define TV02_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

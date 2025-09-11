@@ -140,6 +140,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
           temperature_setpoint *= GTZ10_TARGET_HEATSETPOINT_FACTOR;
         } break;
 
+        case TV02_CMD_SET: {  
+
+          _Tuya_dp_data[2] = TV02_CMD_SET_TARGET_HEATSETPOINT_1;
+          temperature_setpoint *= TV02_TARGET_HEATSETPOINT_FACTOR;
+        } break;
+
         default: return; break;
       }
 
@@ -223,6 +229,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t tem
 
           _Tuya_dp_data[2] = GTZ10_CMD_SET_TEMPERATURE_CALIBRATION_1;
           temperature_calibration *= GTZ10_TEMPERATURE_CALIBRATION_FACTOR;
+        } break;
+
+        case TV02_CMD_SET: {     
+
+          _Tuya_dp_data[2] = TV02_CMD_SET_TEMPERATURE_CALIBRATION_1;
+          temperature_calibration *= TV02_TEMPERATURE_CALIBRATION_FACTOR;
         } break;
 
         default: return; break;
@@ -364,6 +376,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
             _Tuya_dp_data[5] = GTZ10_CMD_ON_4;
             _Tuya_dp_data[6] = GTZ10_CMD_ON_5;
           } break;
+
+          case TV02_CMD_SET: {   
+
+            _Tuya_dp_data[2] = TV02_CMD_ON_1; 
+            _Tuya_dp_data[3] = TV02_CMD_ON_2;
+            _Tuya_dp_data[4] = TV02_CMD_ON_3;
+            _Tuya_dp_data[5] = TV02_CMD_ON_4;
+            _Tuya_dp_data[6] = TV02_CMD_ON_5;
+          } break;
         }
 
       } else {
@@ -431,6 +452,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
             _Tuya_dp_data[4] = GTZ10_CMD_OFF_3;
             _Tuya_dp_data[5] = GTZ10_CMD_OFF_4;
             _Tuya_dp_data[6] = GTZ10_CMD_OFF_5;
+          } break;
+
+          case TV02_CMD_SET: {     
+
+            _Tuya_dp_data[2] = TV02_CMD_OFF_1; 
+            _Tuya_dp_data[3] = TV02_CMD_OFF_2;
+            _Tuya_dp_data[4] = TV02_CMD_OFF_3;
+            _Tuya_dp_data[5] = TV02_CMD_OFF_4;
+            _Tuya_dp_data[6] = TV02_CMD_OFF_5;
           } break;
 
         }  
@@ -527,6 +557,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(uint8_t trv_schedule_
             _Tuya_dp_data[5] = GTZ10_CMD_ON_4;
             _Tuya_dp_data[6] = GTZ10_CMD_SET_SCHEDULE_MODE_ON;
           } break;
+
+          case TV02_CMD_SET: {  
+
+            _Tuya_dp_data[2] = TV02_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = TV02_CMD_ON_2;
+            _Tuya_dp_data[4] = TV02_CMD_ON_3;
+            _Tuya_dp_data[5] = TV02_CMD_ON_4;
+            _Tuya_dp_data[6] = TV02_CMD_SET_SCHEDULE_MODE_ON;
+          } break;
         }
 
       } else {
@@ -595,6 +634,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(uint8_t trv_schedule_
             _Tuya_dp_data[5] = GTZ10_CMD_OFF_4;
             _Tuya_dp_data[6] = GTZ10_CMD_SET_SCHEDULE_MODE_OFF;
           } break;
+
+          case TV02_CMD_SET: {
+
+            _Tuya_dp_data[2] = TV02_CMD_SET_SCHEDULE_MODE_1;
+            _Tuya_dp_data[3] = TV02_CMD_OFF_2;
+            _Tuya_dp_data[4] = TV02_CMD_OFF_3;
+            _Tuya_dp_data[5] = TV02_CMD_OFF_4;
+            _Tuya_dp_data[6] = TV02_CMD_SET_SCHEDULE_MODE_OFF;
+          } break;
         }  
       }
 
@@ -662,6 +710,10 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) 
 
         case GTZ10_CMD_SET: {     
           _Tuya_dp_data[2] = GTZ10_CMD_SET_CHILD_LOCK_1;
+        } break;
+
+        case TV02_CMD_SET: {     
+          _Tuya_dp_data[2] = TV02_CMD_SET_CHILD_LOCK_1;
         } break;
       }  
 

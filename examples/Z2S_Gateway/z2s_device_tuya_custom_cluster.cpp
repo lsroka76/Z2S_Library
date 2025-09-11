@@ -381,6 +381,38 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
     } break; 
 
+    case Z2S_DEVICE_DESC_TS0601_TRV_TV02: {
+
+      local_temperature_dp_id        = TV02_CMD_SET_LOCAL_TEMPERATURE_1; 
+      current_heating_setpoint_dp_id = TV02_CMD_SET_TARGET_HEATSETPOINT_1;
+
+      system_mode_on_dp_id           = TV02_CMD_ON_1;
+      system_mode_off_dp_id          = TV02_CMD_OFF_1;
+      system_mode_value_on           = TV02_CMD_ON_5;
+      system_mode_value_off          = TV02_CMD_OFF_5;
+      
+      running_state_dp_id            = TV02_CMD_SET_RUNNING_STATE_1;
+      running_state_value_idle       = TV02_CMD_SET_RUNNING_STATE_IDLE;
+      running_state_value_heat       = TV02_CMD_SET_RUNNING_STATE_HEAT;
+
+      temperature_calibration_dp_id  = TV02_CMD_SET_TEMPERATURE_CALIBRATION_1;
+
+      low_battery_dp_id              = TV02_CMD_SET_LOW_BATTERY_1;
+
+      schedule_mode_dp_id            = TV02_CMD_SET_SCHEDULE_MODE_1;
+      schedule_mode_value_on         = TV02_CMD_SET_SCHEDULE_MODE_ON;
+      schedule_mode_value_off        = TV02_CMD_SET_SCHEDULE_MODE_OFF;
+
+      child_lock_dp_id               = TV02_CMD_SET_CHILD_LOCK_1;
+      window_detect_dp_id            = TV02_CMD_SET_WINDOW_DETECT_1;
+      anti_freeze_dp_id              = TV02_CMD_SET_ANTI_FREEZE_1;
+      //limescale_protect_dp_id        = TV02_CMD_SET_LIMESCALE_PROTECT_1;
+
+      local_temperature_factor       = TV02_LOCAL_TEMPERATURE_FACTOR;
+      target_heatsetpoint_factor     = TV02_TARGET_HEATSETPOINT_FACTOR;
+      temperature_calibration_factor = TV02_TEMPERATURE_CALIBRATION_FACTOR;
+    } break;
+
   }
   if (local_temperature_dp_id < 0xFF) {
     Tuya_read_dp_result = Z2S_readTuyaDPvalue(local_temperature_dp_id, payload_size, payload);
