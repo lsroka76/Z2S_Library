@@ -1285,7 +1285,7 @@ void setup() {
 
   auto toggleNotifications = new Supla::Control::VirtualRelay();
   toggleNotifications->getChannel()->setChannelNumber(110);
-  toggleNotifications->setInitialCaption("IAS ZONE NOTIFICATIONS");
+  toggleNotifications->setInitialCaption("Gateway sensors notifications");
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
 
