@@ -2935,8 +2935,8 @@ void advancedDeviceSelectorCallback(Control *sender, int type) {
 
 	sprintf_P(general_purpose_gui_buffer,PSTR("<b><i>Manufacturer name</i></b> %s "
 					"<b>| <i>model ID</b></i> %s"), 
-					z2s_zb_devices_table[device_slot].manufacturer_name,
-					z2s_zb_devices_table[device_slot].model_name);
+					Z2S_getZBDeviceManufacturerName(device_slot),
+					Z2S_getZBDeviceModelName(device_slot));
 
 	updateLabel_P(advanced_device_info_label, general_purpose_gui_buffer);
 }
@@ -3644,8 +3644,8 @@ void TuyaDeviceSelectorCallback(Control *sender, int type) {
 
 		sprintf_P(general_purpose_gui_buffer,PSTR("<b><i>Manufacturer name</i></b> %s "
 						"<b>| <i>model ID</b></i> %s"), 
-						z2s_zb_devices_table[device_slot].manufacturer_name,
-						z2s_zb_devices_table[device_slot].model_name);
+						Z2S_getZBDeviceManufacturerName(device_slot),
+						Z2S_getZBDeviceModelName(device_slot));
 
 		updateLabel_P(Tuya_device_info_label, general_purpose_gui_buffer);
 	} else
@@ -3685,7 +3685,8 @@ void GUI_onTuyaCustomClusterReceive(uint8_t command_id, uint16_t payload_size, u
 
 void GUI_onLastBindingFailure(bool binding_failed) {
 	
-	sprintf_P(general_purpose_gui_buffer, PSTR("Unknown model %s::%s, no binding is possible"), zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+	sprintf_P(general_purpose_gui_buffer, PSTR("Unknown model %s::%s, no binding is possible"), 
+						zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
             zbGateway.getQueryBasicClusterData()->zcl_model_name);
 
 	updateLabel_P(zigbee_last_binding_result_label, general_purpose_gui_buffer);
