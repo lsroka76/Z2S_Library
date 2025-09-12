@@ -1946,6 +1946,26 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_kjfzuycl", .model_name = "TS004F",
+    .z2s_device_uid = 14705,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_egvb1p2g", .model_name = "TS004F",
+    .z2s_device_uid = 14710,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_kaflzta4", .model_name = "TS004F",
+    .z2s_device_uid = 14715,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_lrfvzq1e", .model_name = "TS004F",
+    .z2s_device_uid = 14720,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_mrpevh8p", .model_name = "TS0041",
     .z2s_device_uid = 14800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F,
@@ -2055,7 +2075,10 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 16700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
+
 // TUYA HVAC SECTION
+  
+// SASWELL
   {	.manufacturer_name = "_TZE200_0dvm9mva", .model_name = "TS0601",
     .z2s_device_uid = 16800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
@@ -2071,6 +2094,67 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE200_zr9c0day", .model_name = "TS0601",
+    .z2s_device_uid = 17005,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_c88teujp", .model_name = "TS0601",
+    .z2s_device_uid = 17010,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_yw7cahqs", .model_name = "TS0601",
+    .z2s_device_uid = 17015,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_azqp6ssj", .model_name = "TS0601",
+    .z2s_device_uid = 17020,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_zuhszj9s", .model_name = "TS0601",
+    .z2s_device_uid = 17025,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_h4cgnbzg", .model_name = "TS0601",
+    .z2s_device_uid = 17030,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_gd4rvykv", .model_name = "TS0601",
+    .z2s_device_uid = 17035,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_exfrnlow", .model_name = "TS0601",
+    .z2s_device_uid = 17040,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_9m4kmbfu", .model_name = "TS0601",
+    .z2s_device_uid = 17045,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_3yp57tby", .model_name = "TS0601",
+    .z2s_device_uid = 17050,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_7p8ugv8d", .model_name = "TS0601",
+    .z2s_device_uid = 17055,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE284_3yp57tby", .model_name = "TS0601",
+    .z2s_device_uid = 17060,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SASWELL,
+	  .z2s_device_endpoints_count = 1},  
+
+//ME167
 
   {	.manufacturer_name = "_TZE284_o3x45p96", .model_name = "TS0601",
     .z2s_device_uid = 17100,
