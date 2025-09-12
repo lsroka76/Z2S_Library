@@ -368,13 +368,14 @@
 #define LUMI_MOTION_SENSOR_ILLUMINANCE_SID  0x01
 
 #define SONOFF_SMART_VALVE_ON_OFF_SID       0x00
-#define SONOFF_SMART_VALVE_FLOW_SID         0x01
-#define SONOFF_SMART_VALVE_MODE_SID         0x02
-#define SONOFF_SMART_VALVE_CYCLE_NUMBER_SID 0x03
-#define SONOFF_SMART_VALVE_CYCLES_COUNT_SID 0x04
-#define SONOFF_SMART_VALVE_TIME_SID         0x05
-#define SONOFF_SMART_VALVE_PAUSE_SID        0x06
-#define SONOFF_SMART_VALVE_VOLUME_SID       0x07
+#define SONOFF_SMART_VALVE_RUN_PROGRAM_SID  0x01
+#define SONOFF_SMART_VALVE_FLOW_SID         0x02
+#define SONOFF_SMART_VALVE_MODE_SID         0x03
+#define SONOFF_SMART_VALVE_CYCLE_NUMBER_SID 0x04
+#define SONOFF_SMART_VALVE_CYCLES_COUNT_SID 0x05
+#define SONOFF_SMART_VALVE_TIME_SID         0x06
+#define SONOFF_SMART_VALVE_PAUSE_SID        0x07
+#define SONOFF_SMART_VALVE_VOLUME_SID       0x08
 
 #define GIEX_SMART_VALVE_STATE_SID          0x00
 #define GIEX_SMART_VALVE_MODE_SID           0x01
@@ -2423,6 +2424,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_c7xsiexw", .model_name = "TS0002",
     .z2s_device_uid = 21000,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  {	.manufacturer_name = "_TZ3000_nuenzetq", .model_name = "TS0002",
+    .z2s_device_uid = 21005,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},

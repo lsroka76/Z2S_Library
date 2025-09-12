@@ -3133,27 +3133,27 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
   }
 }
 
-void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector, uint32_t timings_secs) {
+void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selector, uint32_t timings_secs) {
   
   if (timeout > 0) {
     //z2s_channels_table[device_id].user_data_flags |= USER_DATA_FLAG_SED_TIMEOUT;
     //z2s_channels_table[device_id].user_data_1 = timeout;
-    z2s_channels_table[device_id].timeout_secs = timeout * 3600;
+    z2s_channels_table[channel_number_slot].timeout_secs = timeout * 3600;
   }
   else {
     if (selector & 1)
-      z2s_channels_table[device_id].keep_alive_secs = timings_secs;
+      z2s_channels_table[channel_number_slot].keep_alive_secs = timings_secs;
     if (selector & 2)
-      z2s_channels_table[device_id].timeout_secs = timings_secs;
+      z2s_channels_table[channel_number_slot].timeout_secs = timings_secs;
     if (selector & 4)
-      z2s_channels_table[device_id].refresh_secs = timings_secs;
+      z2s_channels_table[channel_number_slot].refresh_secs = timings_secs;
   }
 
   
   if (Z2S_saveChannelsTable()) {
-    log_i("Device(channel %d) timeout updated. Table saved successfully.", z2s_channels_table[device_id].Supla_channel);
+    log_i("Device(channel %d) timeout updated. Table saved successfully.", z2s_channels_table[channel_number_slot].Supla_channel);
       
-    auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[device_id].Supla_channel);
+    auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
       
     if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
 
@@ -3222,16 +3222,16 @@ void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector, uint32_
     }
   }
 }
-void updateRGBMode(uint8_t device_id, uint8_t rgb_mode) {
+void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode) {
 
-  if (z2s_channels_table[device_id].Supla_channel_type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
+  if (z2s_channels_table[channel_number_slot].Supla_channel_type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
 
-    z2s_channels_table[device_id].user_data_1 = rgb_mode;
+    z2s_channels_table[channel_number_slot].user_data_1 = rgb_mode;
 
     if (Z2S_saveChannelsTable()) {
-      log_i("Device(channel %d) RGB mode updated. Table saved successfully.", z2s_channels_table[device_id].Supla_channel);
+      log_i("Device(channel %d) RGB mode updated. Table saved successfully.", z2s_channels_table[channel_number_slot].Supla_channel);
       
-      auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[device_id].Supla_channel);
+      auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
       if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
 
@@ -3244,9 +3244,32 @@ void updateRGBMode(uint8_t device_id, uint8_t rgb_mode) {
     log_i("RGB mode update only allowed for SUPLA_CHANNELTYPE_RGBLEDCONTROLLER");
 }
 
-void updateDeviceTemperature(uint8_t device_id, int32_t temperature) {
+bool updateRelayCommandData(uint8_t channel_number_slot, uint8_t cmd_data_size, uint8_t *cmd_data) {
+
+  if (z2s_channels_table[channel_number_slot].Supla_channel_type == SUPLA_CHANNELTYPE_RELAY) {
+
+    //z2s_channels_table[channel_number_slot].user_data_1 = rgb_mode;
+
+    //if (Z2S_saveChannelsTable()) {
+    //  log_i("Device(channel %d) RGB mode updated. Table saved successfully.", z2s_channels_table[channel_number_slot].Supla_channel);
+      
+      auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+
+      if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
+
+        auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
+        if (Supla_Z2S_VirtualRelay->Z2S_updateCommandData(cmd_data_size, cmd_data))
+          return true;
+      }
+    //}
+  }
+  else
+    log_i("command data update only allowed for SUPLA_CHANNELTYPE_RELAY");
+}
+
+void updateDeviceTemperature(uint8_t channel_number_slot, int32_t temperature) {
   
-      auto element = Supla::Element::getElementByChannelNumber(device_id);
+      auto element = Supla::Element::getElementByChannelNumber(channel_number_slot);
 
       if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_THERMOMETER) {
 

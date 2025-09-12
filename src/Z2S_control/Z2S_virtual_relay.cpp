@@ -461,6 +461,15 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU32(int32_t z2s_funct
   _z2s_function_value_U32 = z2s_function_value_U32;
 }
 
+bool Supla::Control::Z2S_VirtualRelay::Z2S_updateCommandData(uint8_t cmd_data_size, uint8_t *cmd_data) {
+
+  if (cmd_data_size > MAX_COMMAND_DATA_SIZE)
+    return false;
+  memset(_z2s_function_data, 0, MAX_COMMAND_DATA_SIZE);
+  memcpy(_z2s_function_data, cmd_data, cmd_data_size);
+  return true;
+}
+
 void Supla::Control::Z2S_VirtualRelay::setKeepAliveSecs(uint32_t keep_alive_secs) {
 
   _keep_alive_ms = keep_alive_secs * 1000;

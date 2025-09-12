@@ -187,6 +187,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_LOAD_PROGRAM_FLAG						0x5001
 #define GUI_CB_START_PROGRAM_FLAG						0x5002
 #define GUI_CB_STOP_PROGRAM_FLAG						0x5003
+#define GUI_CB_SEND_PROGRAM_FLAG						0x5004
 
 #define GUI_CB_SELF_TEST_FLAG								0x6000
 #define GUI_CB_SILENCE_FLAG									0x6001
@@ -1066,6 +1067,9 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 
 	stop_program_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), "Stop program", 
 																				 Control::Color::Emerald, valve_program_selector, valveCallback, (void*)GUI_CB_STOP_PROGRAM_FLAG);
+
+	stop_program_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), "Send program to device", 
+																				 Control::Color::Emerald, valve_program_selector, valveCallback, (void*)GUI_CB_SEND_PROGRAM_FLAG);
 																			 
 	valve_info_label =  ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str,	Control::Color::Emerald, valve_program_selector);
 }

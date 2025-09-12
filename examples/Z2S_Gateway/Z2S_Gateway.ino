@@ -2004,13 +2004,19 @@ void loop() {
 
                           case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
                             
-                            Z2S_addZ2SDevice(joined_device, SONOFF_PIR_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-                            Z2S_addZ2SDevice(joined_device, SONOFF_PIR_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_PIR_SENSOR_OCCUPANCY_SID,"OCCUPANCY", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_PIR_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                           } break;
 
                           case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
                             
-                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_ON_OFF_SID,"VALVE", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_ON_OFF_SID,"VALVE ON/OFF (MANUAL)", 
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_RUN_PROGRAM_SID,"RUN SAVED PROGRAM", 
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
+                                             
                             Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_FLOW_SID, "FLOW", 0, "m³/h");
                             Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_MODE_SID, "MODE", 0, "");
                             Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_CYCLE_NUMBER_SID, "CYCLE #", 0, "");

@@ -364,9 +364,10 @@ uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, esp_zb_iee
                            uint8_t endpoints, uint32_t desc_id);
 
 
-void updateTimeout(uint8_t device_id, uint8_t timeout, uint8_t selector = 0, uint32_t timings_secs = 0);
-void updateRGBMode(uint8_t device_id, uint8_t rgb_mode);
-void updateDeviceTemperature(uint8_t device_id, int32_t temperature);
+void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selector = 0, uint32_t timings_secs = 0);
+void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode);
+bool updateRelayCommandData(uint8_t channel_number_slot, uint8_t cmd_data_size, uint8_t *cmd_data);
+void updateDeviceTemperature(uint8_t channel_number_slot, int32_t temperature);
 void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value, signed char rssi, bool restore = false);
 
 bool Z2S_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
