@@ -30,6 +30,7 @@
 
 #include <supla/control/virtual_relay.h>
 #include <supla/sensor/general_purpose_measurement.h>
+#include <supla/device/status_led.h>
 
 #include "z2s_version_info.h"
 
@@ -84,9 +85,6 @@ uint8_t _z2s_security_level    = 0;
 uint8_t write_mask;
 uint16_t write_mask_16;
 uint32_t write_mask_32;
-
-uint8_t custom_cmd_payload[64]; //TODO - include RAW/STRING 0.8.51 increased 10->64
-uint8_t write_attribute_payload[20];
 
 bool sendIASNotifications = false;
 
@@ -213,9 +211,6 @@ void supla_callback_bridge(int event, int action) {
         //Z2S_stopWebGUI();
       }
     } break; 
-    case Supla::ON_EVENT_3: 
-    case Supla::ON_CLICK_10: Z2S_clearChannelsTable(); break;
-    case Supla::ON_EVENT_4: Z2S_nwk_scan_neighbourhood(false); break;
   }
 }
 
@@ -475,6 +470,10 @@ uint8_t parseZBDeviceFlagsStr(char *zbdevice_flag) {
 void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   
   zbg_device_params_t device;
+  
+  uint8_t custom_cmd_payload[64]; //TODO - include RAW/STRING 0.8.51 increased 10->64
+  uint8_t write_attribute_payload[20];
+
 
   log_i("cmd: %s, param %s, param %s", cmd, *param != NULL ? *param : "-",*(param+1) != NULL ? *(param+1) : "-" );
   
@@ -1232,6 +1231,8 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
     file = root.openNextFile();
   }
 }
+
+Supla::Device::StatusLed statusLed(RGB_BUILTIN, true);
 
 void setup() {
   

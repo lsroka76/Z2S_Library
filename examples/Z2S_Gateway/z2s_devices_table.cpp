@@ -529,11 +529,15 @@ bool  Z2S_getDevicesListUidIdx(const char *manufacturer_name, const char * model
   for (int devices_list_counter = 0; devices_list_counter < devices_list_table_size; devices_list_counter++) {
 
     if (idx_scan) {
-      if (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid == *((uint32_t*)device_uid)) {
+      if (memcmp(&Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid, 
+                 std::bit_cast<uint32_t*>(device_uid), sizeof(uint32_t)) == 0) {//*((uint32_t*)device_uid)) {
 
-        *((uint32_t*)devices_list_idx) = devices_list_counter;
+        memcpy(devices_list_idx, &devices_list_counter, sizeof(uint32_t));
+        //*((uint32_t*)devices_list_idx) = devices_list_counter;
 
-        log_i("device uid = %lu, devices list index = %lu", *((uint32_t*)device_uid), *((uint32_t*)devices_list_idx));
+        //log_i("device uid = %lu, devices list index = %lu", *((uint32_t*)device_uid), *((uint32_t*)devices_list_idx));
+        log_i("device uid = %lu, devices list index = %lu", 
+              std::bit_cast<uint32_t>(device_uid), std::bit_cast<uint32_t>(devices_list_idx));
 
         return true;
       }
@@ -1569,8 +1573,17 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint,attribute->id, attribute->data.size);
+  uint32_t value = 0;
+
+  switch (attribute->data.size) {
+
+    case 1: value = *(uint8_t*)attribute->data.value; break;
+
+    case 4: value = *(uint32_t*)attribute->data.value; break;
+  }
+
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u, value %u", 
+        ieee_addr_str, endpoint,attribute->id, attribute->data.size, value);
 
   switch (attribute->id) {
 
@@ -2927,6 +2940,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case SONOFF_SMART_VALVE_ON_OFF_SID:
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID:
            addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, sub_id, name, func); break;
       
           case SONOFF_SMART_VALVE_FLOW_SID: 
@@ -3242,29 +3256,6 @@ void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode) {
   }
   else
     log_i("RGB mode update only allowed for SUPLA_CHANNELTYPE_RGBLEDCONTROLLER");
-}
-
-bool updateRelayCommandData(uint8_t channel_number_slot, uint8_t cmd_data_size, uint8_t *cmd_data) {
-
-  if (z2s_channels_table[channel_number_slot].Supla_channel_type == SUPLA_CHANNELTYPE_RELAY) {
-
-    //z2s_channels_table[channel_number_slot].user_data_1 = rgb_mode;
-
-    //if (Z2S_saveChannelsTable()) {
-    //  log_i("Device(channel %d) RGB mode updated. Table saved successfully.", z2s_channels_table[channel_number_slot].Supla_channel);
-      
-      auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
-
-      if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
-
-        auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
-        if (Supla_Z2S_VirtualRelay->Z2S_updateCommandData(cmd_data_size, cmd_data))
-          return true;
-      }
-    //}
-  }
-  else
-    log_i("command data update only allowed for SUPLA_CHANNELTYPE_RELAY");
 }
 
 void updateDeviceTemperature(uint8_t channel_number_slot, int32_t temperature) {

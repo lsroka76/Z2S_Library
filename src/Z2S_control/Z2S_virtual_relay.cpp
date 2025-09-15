@@ -55,6 +55,9 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
   }
 
   if (_gateway && Zigbee.started()) { 
+    
+    uint8_t _z2s_function_data[MAX_COMMAND_DATA_SIZE];
+
     switch (_z2s_function) {
 
       case Z2S_VIRTUAL_RELAY_FNC_NONE: {
@@ -200,6 +203,41 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         channel.setNewValue(state);
 
       } break;
+
+      case Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM: {
+
+        uint16_t attribute_id;
+
+        switch (_z2s_function_value_S8) {
+          
+          case 1: attribute_id = SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID; break;
+
+          case 2: attribute_id = SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID; break;
+
+          default: attribute_id = 0xFFFF; break;
+        }
+
+        if (attribute_id < 0xFFFF) {
+
+
+          _z2s_function_data[0] = 0x0A;
+          _z2s_function_data[1] = 0x00;
+          _z2s_function_data[2] = _z2s_function_value_U8;
+          _z2s_function_data[3] = 0x00;
+          _z2s_function_data[4] = (_z2s_function_value_S32 & 0xFF0000) >> 16;
+          _z2s_function_data[5] = (_z2s_function_value_S32 & 0xFF00) >> 8;
+          _z2s_function_data[6] = _z2s_function_value_S32 & 0xFF;
+          _z2s_function_data[7] = 0x00;
+          _z2s_function_data[8] = (_z2s_function_value_U32 & 0xFF0000) >> 16;
+          _z2s_function_data[9] = (_z2s_function_value_U32 & 0xFF00) >> 8;
+          _z2s_function_data[10] = _z2s_function_value_U32 & 0xFF;
+		
+          _gateway->sendAttributeWrite(&_device, SONOFF_CUSTOM_CLUSTER, attribute_id, 
+																	  	 ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, _z2s_function_data, true);
+        }
+        state = false;
+        channel.setNewValue(state);
+      } break;
     }  
   }
   // Schedule save in 5 s after state change
@@ -207,6 +245,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 }
 
 void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
+  
   SUPLA_LOG_INFO(
       "Relay[%d] turn OFF (duration %d ms)",
       channel.getChannelNumber(),
@@ -217,7 +256,10 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
   } else {
     durationTimestamp = 0;
   }
+
   if (_gateway && Zigbee.started()) { 
+    
+    uint8_t _z2s_function_data[MAX_COMMAND_DATA_SIZE];
     switch (_z2s_function) {
 
       case Z2S_VIRTUAL_RELAY_FNC_NONE: {
@@ -459,15 +501,6 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS32(int32_t z2s_funct
 void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU32(int32_t z2s_function_value_U32) {
 
   _z2s_function_value_U32 = z2s_function_value_U32;
-}
-
-bool Supla::Control::Z2S_VirtualRelay::Z2S_updateCommandData(uint8_t cmd_data_size, uint8_t *cmd_data) {
-
-  if (cmd_data_size > MAX_COMMAND_DATA_SIZE)
-    return false;
-  memset(_z2s_function_data, 0, MAX_COMMAND_DATA_SIZE);
-  memcpy(_z2s_function_data, cmd_data, cmd_data_size);
-  return true;
 }
 
 void Supla::Control::Z2S_VirtualRelay::setKeepAliveSecs(uint32_t keep_alive_secs) {

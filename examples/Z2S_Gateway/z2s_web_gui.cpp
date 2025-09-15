@@ -6,6 +6,7 @@
 #include "z2s_devices_database.h"
 #include "z2s_devices_table.h"
 #include "z2s_device_tuya_custom_cluster.h"
+#include "z2s_device_virtual_relay.h"
 #include "TuyaDatapoints.h"
 
 #include "z2s_version_info.h"
@@ -3333,12 +3334,14 @@ void valveCallback(Control *sender, int type, void *param) {
 
 	if ((type == B_UP) && (ESPUI.getControl(advanced_device_selector)->value.toInt() >= 0)) {
 
+		uint8_t device_slot = ESPUI.getControl(advanced_device_selector)->value.toInt();
+
 		zbg_device_params_t device;
-		log_i("device_selector value %u, param id %d", ESPUI.getControl(advanced_device_selector)->value.toInt(), (uint32_t)param);
+		log_i("device_selector value %u, param id %d", device_slot, (uint32_t)param);
     device.endpoint = 1;//ESPUI.getControl(device_endpoint_number)->value.toInt();//1; //z2s_channels_table[channel_number_slot].endpoint;
-    device.cluster_id = 0; //z2s_channels_table[channel_number_slot].cluster_id;
-    memcpy(&device.ieee_addr, z2s_zb_devices_table[ESPUI.getControl(advanced_device_selector)->value.toInt()].ieee_addr,8);
-    device.short_addr = z2s_zb_devices_table[ESPUI.getControl(advanced_device_selector)->value.toInt()].short_addr;
+    device.cluster_id = SONOFF_CUSTOM_CLUSTER; //z2s_channels_table[channel_number_slot].cluster_id;
+    memcpy(&device.ieee_addr, z2s_zb_devices_table[device_slot].ieee_addr,8);
+    device.short_addr = z2s_zb_devices_table[device_slot].short_addr;
 
 		uint16_t attribute_id;
 
@@ -3361,11 +3364,11 @@ void valveCallback(Control *sender, int type, void *param) {
 						valve_cycles = valve_cycles + 0x80;
 					}
 					
-					z2s_zb_devices_table[ESPUI.getControl(advanced_device_selector)->value.toInt()].user_data_1 = (valve_cycles << 24) + value_32;
+					z2s_zb_devices_table[device_slot].user_data_1 = (valve_cycles << 24) + value_32;
 
 					value_32 = ESPUI.getControl(valve_pause_number)->value.toInt();
 
-					z2s_zb_devices_table[ESPUI.getControl(advanced_device_selector)->value.toInt()].user_data_2 = value_32;
+					z2s_zb_devices_table[device_slot].user_data_2 = value_32;
 
 					if (Z2S_saveZBDevicesTable()) 
         		updateLabel_P(valve_info_label, PSTR("Valve program saved successfully."));
@@ -3377,7 +3380,7 @@ void valveCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_LOAD_PROGRAM_FLAG: { //load valve program
 
-				uint8_t valve_cycles = z2s_zb_devices_table[ESPUI.getControl(advanced_device_selector)->value.toInt()].user_data_1 >> 24;
+				uint8_t valve_cycles = z2s_zb_devices_table[device_slot].user_data_1 >> 24;
 				
 				if (valve_cycles > 0) {
 
@@ -3386,7 +3389,7 @@ void valveCallback(Control *sender, int type, void *param) {
 					ESPUI.updateNumber(valve_program_selector, program_mode);
 					ESPUI.updateNumber(valve_cycles_number, valve_cycles & 0x7F);
 
-					value_32 = z2s_zb_devices_table[ESPUI.getControl(advanced_device_selector)->value.toInt()].user_data_1 & 0x00FFFFFF;
+					value_32 = z2s_zb_devices_table[device_slot].user_data_1 & 0x00FFFFFF;
 					if (program_mode == 1) {
 						ESPUI.updateNumber(valve_worktime_number, value_32);
 						ESPUI.updateNumber(valve_volume_number, 0);
@@ -3396,7 +3399,7 @@ void valveCallback(Control *sender, int type, void *param) {
 						ESPUI.updateNumber(valve_worktime_number, 0);
 					}
 
-					value_32 = z2s_zb_devices_table[ESPUI.getControl(advanced_device_selector)->value.toInt()].user_data_2 & 0x00FFFFFF;
+					value_32 = z2s_zb_devices_table[device_slot].user_data_2 & 0x00FFFFFF;
 
 					ESPUI.updateNumber(valve_pause_number, value_32);
 
@@ -3409,9 +3412,9 @@ void valveCallback(Control *sender, int type, void *param) {
 
 				switch (ESPUI.getControl(valve_program_selector)->value.toInt()) {
 
-					case 1: attribute_id = 0x5008; break;
+					case 1: attribute_id = SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID; break;
 
-					case 2: attribute_id = 0x5009; break;
+					case 2: attribute_id = SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID; break;
 
 					default: return;
 				}
@@ -3437,7 +3440,8 @@ void valveCallback(Control *sender, int type, void *param) {
 				for (int i = 0; i < 11; i++)
 					log_i("valve payload [%u] = 0x%02x", i,valve_cmd_payload[i]);
 
-				if (zbGateway.sendAttributeWrite(&device, 0xFC11, attribute_id, ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, &valve_cmd_payload, true))
+				if (zbGateway.sendAttributeWrite(&device, SONOFF_CUSTOM_CLUSTER, attribute_id, 
+																				 ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, &valve_cmd_payload, true))
 					if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS)
 						updateLabel_P(valve_info_label, PSTR("Valve program start success!"));
 					else
@@ -3447,7 +3451,48 @@ void valveCallback(Control *sender, int type, void *param) {
 			} break;
 
 			case GUI_CB_STOP_PROGRAM_FLAG: { //stop valve program
+
 				zbGateway.sendOnOffCmd(&device, false);
+			} break;
+
+			case GUI_CB_SEND_PROGRAM_FLAG: {
+
+				int16_t channel_number_slot = Z2S_findChannelNumberSlot(z2s_zb_devices_table[device_slot].ieee_addr, -1, SONOFF_CUSTOM_CLUSTER, 
+																																SUPLA_CHANNELTYPE_RELAY, SONOFF_SMART_VALVE_RUN_PROGRAM_SID);
+  
+  			if (channel_number_slot < 0) {
+					
+					log_i("no Supla channel for Sonoff program run");
+					return;
+				}
+
+				switch (ESPUI.getControl(valve_program_selector)->value.toInt()) {
+
+					case 1: {
+						
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 1);
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S32_ID,
+																					ESPUI.getControl(valve_worktime_number)->value.toInt());
+					} break;
+
+					case 2: {
+						
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 2);
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S32_ID,
+																					ESPUI.getControl(valve_volume_number)->value.toInt());
+					} break;
+
+					default: {
+
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 0);
+						return;
+					} break;
+				}
+				msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_U8_ID,
+																			ESPUI.getControl(valve_cycles_number)->value.toInt());
+																			
+				msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_U32_ID, 
+																			ESPUI.getControl(valve_pause_number)->value.toInt());
 			} break;
 
 			case GUI_CB_SEND_RINGTONE_FLAG: { //write gas detector alarm ringtone

@@ -29,8 +29,9 @@
 #define Z2S_VIRTUAL_RELAY_FNC_NONE                    0x00
 
 #define Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE            0x10
-#define Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM_T  0x11
-#define Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM_V  0x12
+#define Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM    0x11
+#define Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM_T  0x12
+#define Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM_V  0x13
 
 #define Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM     0x20
 #define Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM       0x21
@@ -61,8 +62,6 @@ class Z2S_VirtualRelay : public Relay {
   void Z2S_setFunctionValueS32(int32_t z2s_function_value_S32);
   void Z2S_setFunctionValueU32(int32_t z2s_function_value_U32);
 
-  bool Z2S_updateCommandData(uint8_t cmd_data_size, uint8_t *cmd_data);
-
   bool isOn() override;
 
   void ping();
@@ -79,7 +78,7 @@ class Z2S_VirtualRelay : public Relay {
   zbg_device_params_t 	_device;
 
   uint8_t _z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
-  uint8_t _z2s_function_data[MAX_COMMAND_DATA_SIZE];
+  //uint8_t _z2s_function_data[MAX_COMMAND_DATA_SIZE];
   
   int8_t  _z2s_function_value_S8 = INT8_MAX; //0x7F
   int32_t _z2s_function_value_S32 = INT32_MAX;

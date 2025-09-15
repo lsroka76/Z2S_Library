@@ -32,6 +32,15 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
 
     switch (z2s_channels_table[channel_number_slot].model_id) {
 
+      case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
+
+        switch (z2s_channels_table[channel_number_slot].sub_id) {
+          
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID:
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM; break;
+        }
+      } break;
+      
       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
 
         switch (z2s_channels_table[channel_number_slot].sub_id) {
