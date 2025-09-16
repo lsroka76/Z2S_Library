@@ -1078,7 +1078,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 	stop_program_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), "Stop program", 
 																				 Control::Color::Emerald, valve_program_selector, valveCallback, (void*)GUI_CB_STOP_PROGRAM_FLAG);
 
-	stop_program_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), "Send program to device", 
+	stop_program_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), "Save program in Supla channel", 
 																				 Control::Color::Emerald, valve_program_selector, valveCallback, (void*)GUI_CB_SEND_PROGRAM_FLAG);
 																			 
 	valve_info_label =  ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str,	Control::Color::Emerald, valve_program_selector);
