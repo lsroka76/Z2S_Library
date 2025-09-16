@@ -36,7 +36,7 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
 
         switch (z2s_channels_table[channel_number_slot].sub_id) {
           
-          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID:
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: 
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM; break;
         }
       } break;
@@ -83,6 +83,30 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
 
     Supla_Z2S_VirtualRelay->setKeepAliveSecs(z2s_channels_table[channel_number_slot].keep_alive_secs);
     Supla_Z2S_VirtualRelay->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
+
+    switch (z2s_channels_table[channel_number_slot].model_id) {
+
+      case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
+
+        switch (z2s_channels_table[channel_number_slot].sub_id) {
+          
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: {
+            if (z2s_channels_table[channel_number_slot].smart_valve_data.program > 0) {
+              
+              Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS8(z2s_channels_table[channel_number_slot].smart_valve_data.program);
+              Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(z2s_channels_table[channel_number_slot].smart_valve_data.cycles);
+              Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS32(z2s_channels_table[channel_number_slot].smart_valve_data.value);
+              Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU32(z2s_channels_table[channel_number_slot].smart_valve_data.pause_time);
+              log_i("program: %d, cycles#: %d, time/volume: %d, pause: %d",
+                    z2s_channels_table[channel_number_slot].smart_valve_data.program,
+                    z2s_channels_table[channel_number_slot].smart_valve_data.cycles,
+                    z2s_channels_table[channel_number_slot].smart_valve_data.value,
+                    z2s_channels_table[channel_number_slot].smart_valve_data.pause_time);
+            }
+          } break;
+        }
+      } break;
+    }
   }
 }
 

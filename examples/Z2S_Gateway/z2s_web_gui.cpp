@@ -699,19 +699,22 @@ void buildDevicesTabGUI() {
 	auto devicestab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), working_str);
 	
 	working_str = -1;
-	device_selector = ESPUI.addControl(Control::Type::Select, PSTR("Devices"), working_str, Control::Color::Emerald, devicestab, deviceSelectorCallback);
-	ESPUI.addControl(Control::Type::Option, PSTR("Select Zigbee device..."), working_str, Control::Color::None, device_selector);
+	device_selector = ESPUI.addControl(Control::Type::Select, PSTR("Devices"), working_str, 
+																		 Control::Color::Emerald, devicestab, deviceSelectorCallback);
+	ESPUI.addControl(Control::Type::Option, PSTR("Select Zigbee device..."), working_str, 
+									 Control::Color::None, device_selector);
 
 	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
 			//sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
 			working_str = devices_counter;
-			z2s_zb_devices_table[devices_counter].v2_params.device_gui_selector = ESPUI.addControl(Control::Type::Option, 
-																																														z2s_zb_devices_table[devices_counter].device_local_name, 
-																																														working_str, 
-																																														Control::Color::None, 
-																																														device_selector);
+			z2s_zb_devices_table[devices_counter].device_gui_id = 
+				ESPUI.addControl(Control::Type::Option, 
+												 z2s_zb_devices_table[devices_counter].device_local_name, 
+												 working_str, 
+												 Control::Color::None, 
+												 device_selector);
 		}
 
 	ESPUI.setPanelWide(device_selector, true);
@@ -725,24 +728,30 @@ void buildDevicesTabGUI() {
 	device_name_text = ESPUI.addControl(Control::Type::Text, PSTR("Device panel"), working_str, 
 																			 Control::Color::Emerald, devicestab, generalCallback); 
 	working_str = PSTR("&#10023; device name (local) &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, device_name_text), 
-												PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
+																				 Control::Color::None, device_name_text), 
+																				 PSTR(clearLabelStyle));
 	working_str = PSTR("Save");
-	device_name_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, device_name_text, 
+	device_name_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
+																						 Control::Color::Emerald, device_name_text, 
 																				  	 editDeviceCallback, (void*)GUI_CB_UPDATE_DEVICE_NAME_FLAG);
 
 	working_str = PSTR("Read Software Build ID");
 	getswbuild_button = ESPUI.addControl(Control::Type::Button, PSTR("Software Build ID / RSSI"), working_str, 
-																			 Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, (void*)GUI_CB_SWBUILD_FLAG);
+																			 Control::Color::Emerald, devicestab, 
+																			 getZigbeeDeviceQueryCallback, (void*)GUI_CB_SWBUILD_FLAG);
 	//swbuildlabel = ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str, Control::Color::Emerald, getswbuild_button);
 
 	working_str = PSTR("Read device RSSI");
 	getrssi_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str,
-																		Control::Color::Emerald, getswbuild_button, getZigbeeDeviceQueryCallback, (void*)GUI_CB_RSSI_FLAG);
-	rssilabel = ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str, Control::Color::Emerald, getswbuild_button);
+																		Control::Color::Emerald, getswbuild_button, 
+																		getZigbeeDeviceQueryCallback, (void*)GUI_CB_RSSI_FLAG);
+	rssilabel = ESPUI.addControl(Control::Type::Label, PSTR(empty_str), three_dots_str, 
+															 Control::Color::Emerald, getswbuild_button);
 	
 	battery_voltage_min_number = ESPUI.addControl(Control::Type::Number, PSTR("Battery panel"), zero_str, 
-																								Control::Color::Emerald, devicestab, generalMinMaxCallback, (void*)255);
+																								Control::Color::Emerald, devicestab, 
+																								generalMinMaxCallback, (void*)255);
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, battery_voltage_min_number);
 	working_str = 255;
 	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, battery_voltage_min_number);
@@ -949,9 +958,9 @@ void buildChannelsTabGUI() {
       
 			//sprintf_P(zigbee_channels_labels[devices_counter], PSTR("Channel #%02d"), devices_counter);
 			working_str = channels_counter;
-			z2s_channels_table[channels_counter].user_data_4  = ESPUI.addControl(Control::Type::Option, 
-																																					z2s_channels_table[channels_counter].Supla_channel_name, 
-																																					working_str, Control::Color::None, channel_selector);
+			z2s_channels_table[channels_counter].gui_control_data.gui_control_id  = 
+				ESPUI.addControl(Control::Type::Option, z2s_channels_table[channels_counter].Supla_channel_name, 
+												 working_str, Control::Color::None, channel_selector);
 			//ESPUI.addControl(Control::Type::Option, zigbee_channels_labels[devices_counter], working_str, Control::Color::None, channel_selector);
 		}
 	}
@@ -2074,8 +2083,9 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					PSTR("<meta charset=\"UTF-8\">"
 					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
 					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
-					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
-					"<b><i>ZB device</b></i> %s::%s"),
+					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d <b>| <i>ud(1)</b></i> 0x%08X "
+					"<b>| <i>ud(2)</b></i> 0x%08X<br>"
+					"<b><i>ZB device</b></i> %s (%s::%s)"),
 					//strlen(z2s_channels_table[channel_slot].Supla_channel_name) > 0 ? z2s_channels_table[channel_slot].Supla_channel_name : "---",
 					ieee_addr_str,
 					z2s_channels_table[channel_slot].short_addr,
@@ -2089,6 +2099,9 @@ void updateChannelInfoLabel(uint8_t label_number) {
         	z2s_channels_table[channel_slot].Supla_channel_func > 0 ? 
 						getSuplaChannelFuncName(z2s_channels_table[channel_slot].Supla_channel_type, z2s_channels_table[channel_slot].Supla_channel_func) : "none",
         	z2s_channels_table[channel_slot].sub_id,
+					z2s_channels_table[channel_slot].user_data_1,
+					z2s_channels_table[channel_slot].user_data_2,
+					Z2S_getZBDeviceLocalName(z2s_channels_table[channel_slot].ZB_device_id),
 					Z2S_getZBDeviceManufacturerName(z2s_channels_table[channel_slot].ZB_device_id),
 					Z2S_getZBDeviceModelName(z2s_channels_table[channel_slot].ZB_device_id));
 	
@@ -2679,8 +2692,10 @@ void editDeviceCallback(Control *sender, int type, void *param) {
 				strncpy(z2s_zb_devices_table[device_slot].device_local_name, ESPUI.getControl(device_name_text)->value.c_str(), 32);
 				z2s_zb_devices_table[device_slot].device_local_name[32] = '\0';
 				if (Z2S_saveZBDevicesTable()) {
-					log_i("%d, %s", z2s_zb_devices_table[device_slot].v2_params.device_gui_selector, z2s_zb_devices_table[device_slot].device_local_name);
-					ESPUI.updateControlLabel(z2s_zb_devices_table[device_slot].v2_params.device_gui_selector, z2s_zb_devices_table[device_slot].device_local_name);
+					log_i("%d, %s", z2s_zb_devices_table[device_slot].device_gui_id, 
+								z2s_zb_devices_table[device_slot].device_local_name);
+					ESPUI.updateControlLabel(z2s_zb_devices_table[device_slot].device_gui_id, 
+																	 z2s_zb_devices_table[device_slot].device_local_name);
 					ESPUI.jsonReload();
 				}
 			} break;
@@ -2702,8 +2717,10 @@ void editChannelCallback(Control *sender, int type, void *param) {
 					strncpy(z2s_channels_table[channel_slot].Supla_channel_name, ESPUI.getControl(channel_name_text)->value.c_str(), 32);
 					z2s_channels_table[channel_slot].Supla_channel_name[32] = '\0';
 					if (Z2S_saveChannelsTable()) {
-						log_i("%d, %s", z2s_channels_table[channel_slot].user_data_4, z2s_channels_table[channel_slot].Supla_channel_name);
-						ESPUI.updateControlLabel(z2s_channels_table[channel_slot].user_data_4, z2s_channels_table[channel_slot].Supla_channel_name);
+						log_i("%d, %s", z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
+									z2s_channels_table[channel_slot].Supla_channel_name);
+						ESPUI.updateControlLabel(z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
+																		 z2s_channels_table[channel_slot].Supla_channel_name);
 						ESPUI.jsonReload();
 					}
 				} break;
@@ -3390,6 +3407,7 @@ void valveCallback(Control *sender, int type, void *param) {
 					ESPUI.updateNumber(valve_cycles_number, valve_cycles & 0x7F);
 
 					value_32 = z2s_zb_devices_table[device_slot].user_data_1 & 0x00FFFFFF;
+					
 					if (program_mode == 1) {
 						ESPUI.updateNumber(valve_worktime_number, value_32);
 						ESPUI.updateNumber(valve_volume_number, 0);
@@ -3470,6 +3488,8 @@ void valveCallback(Control *sender, int type, void *param) {
 
 					case 1: {
 						
+						z2s_channels_table[channel_number_slot].smart_valve_data.program = 1;
+						z2s_channels_table[channel_number_slot].smart_valve_data.value = ESPUI.getControl(valve_worktime_number)->value.toInt();
 						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 1);
 						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S32_ID,
 																					ESPUI.getControl(valve_worktime_number)->value.toInt());
@@ -3477,17 +3497,25 @@ void valveCallback(Control *sender, int type, void *param) {
 
 					case 2: {
 						
+						z2s_channels_table[channel_number_slot].smart_valve_data.program = 2;
+						z2s_channels_table[channel_number_slot].smart_valve_data.value = ESPUI.getControl(valve_volume_number)->value.toInt();
 						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 2);
 						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S32_ID,
 																					ESPUI.getControl(valve_volume_number)->value.toInt());
 					} break;
 
 					default: {
-
+						z2s_channels_table[channel_number_slot].smart_valve_data.program = 0;
+						z2s_channels_table[channel_number_slot].smart_valve_data.cycles = 0;
+						z2s_channels_table[channel_number_slot].smart_valve_data.value = 0;
 						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 0);
+						Z2S_saveChannelsTable();
 						return;
 					} break;
 				}
+				z2s_channels_table[channel_number_slot].smart_valve_data.cycles = ESPUI.getControl(valve_cycles_number)->value.toInt();
+				z2s_channels_table[channel_number_slot].smart_valve_data.pause_time = ESPUI.getControl(valve_pause_number)->value.toInt();
+				Z2S_saveChannelsTable();
 				msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_U8_ID,
 																			ESPUI.getControl(valve_cycles_number)->value.toInt());
 																			

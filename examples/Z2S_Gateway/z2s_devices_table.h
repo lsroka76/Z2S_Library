@@ -103,10 +103,34 @@ typedef struct z2s_device_params_s {
   char                Supla_channel_name[30];
   uint32_t            Supla_channel_func;
   int8_t              sub_id;
+union {
+struct {
   uint32_t            user_data_1; //Tuya Rain Sensor rain_intensity, RGB mode, HVAC - probably unused
   uint32_t            user_data_2;
+};
+struct {
+  uint32_t            rain_intensity_treshold;
+  //uint32_t            user_data_2;
+};
+struct {
+  uint32_t            rgb_color_mode;
+  //uint32_t            user_data_2;
+};
+struct {
+	uint32_t value      : 24;
+	uint32_t program    : 8;
+	uint32_t pause_time : 24;
+  uint32_t cycles     : 8;
+} smart_valve_data;
+};
   uint32_t            user_data_3;
+union {
   uint32_t            user_data_4; //reserved for WebGUI bits 0...15 for Control_Id
+struct {
+	uint32_t gui_control_id: 16;
+  uint32_t gui_reserved: 16;
+} gui_control_data;
+};
   uint32_t            user_data_flags;
   uint32_t            timeout_secs;
   uint32_t            keep_alive_secs;
@@ -143,11 +167,11 @@ typedef struct z2s_zb_device_v2_params_s {
 
   uint8_t            device_uid[4];
   uint8_t            devices_list_idx[4];
-  uint8_t            device_gui_selector;
+  uint8_t            device_gui_id;
 
 } z2s_zb_device_v2_params_t;
 
-typedef struct z2s_zb_device_params_s {
+typedef struct z2s_legacy_2_zb_device_params_s {
   
   uint8_t             record_id;
 
@@ -175,12 +199,61 @@ union { //V2 extension
   uint32_t            keep_alive_ms;
   uint32_t            timeout_ms;
   uint32_t            user_data_flags;
+union {
+struct {  
   uint32_t            user_data_1; //Sonoff SWV b31 = 0 (time)/1(volume) b30-b24 cycles# b23-b0 worktime/volume
   uint32_t            user_data_2;//Sonoff SWV b31-b24 reserved, b23-b0 pause
+};
+struct {
+  uint32_t value      : 24;
+	uint32_t program    : 8;
+	uint32_t pause_time : 24;
+  uint32_t cycles     : 8;
+} smart_valve_data;
+};
   uint64_t            user_data_3;
   uint64_t            user_data_4;
   uint8_t             Supla_channels[MAX_ZB_DEVICE_SUPLA_CHANNELS];
-} z2s_zb_device_params_t;
+} z2s_legacy_2_zb_device_params_t;
+
+typedef struct z2s_zb_device_params_s {
+  
+  uint32_t            record_id;
+  uint32_t            device_uid;
+  uint32_t            devices_list_idx;
+  uint32_t            desc_id;
+  uint32_t            device_gui_id;
+  uint32_t            reserved_0;
+  uint32_t            reserved_1;
+  char                device_local_name[36];
+  esp_zb_ieee_addr_t  ieee_addr;
+  uint16_t            short_addr;
+  uint8_t             endpoints_count;
+  uint8_t             power_source;
+  int8_t              rssi;
+  uint8_t             battery_percentage;
+  uint8_t             battery_voltage_min;
+  uint8_t             battery_voltage_max;
+  uint32_t            last_seen_ms;
+  uint32_t            keep_alive_ms;
+  uint32_t            timeout_ms;
+  uint32_t            user_data_flags;
+union {
+struct {  
+  uint32_t            user_data_1; //Sonoff SWV b31 = 0 (time)/1(volume) b30-b24 cycles# b23-b0 worktime/volume
+  uint32_t            user_data_2;//Sonoff SWV b31-b24 reserved, b23-b0 pause
+};
+struct {
+  uint32_t value      : 24;
+	uint32_t program    : 8;
+	uint32_t pause_time : 24;
+  uint32_t cycles     : 8;
+} smart_valve_data;
+};
+  uint64_t            user_data_3;
+  uint64_t            user_data_4;
+  //uint8_t             Supla_channels[MAX_ZB_DEVICE_SUPLA_CHANNELS];
+} __attribute__ ((packed)) z2s_zb_device_params_t; //fields are padded properly anyway
 
 typedef struct z2s_channel_action_s {
   uint16_t      action_id;
@@ -274,7 +347,7 @@ void      Z2S_updateZBDeviceLastSeenMs(esp_zb_ieee_addr_t  ieee_addr, uint32_t l
 
 uint8_t   Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, char *manufacturer_name, char *model_name, 
                                    uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source);
-uint8_t   Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint8_t Supla_channel);
+//uint8_t   Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint8_t Supla_channel);
 
 bool      Z2S_removeZBDeviceWithAllChannels(uint8_t zb_device_slot);
 
@@ -293,11 +366,12 @@ bool      Z2S_clearZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_cl
 
 const char*     Z2S_getZBDeviceManufacturerName(int8_t device_number_slot);
 const char*     Z2S_getZBDeviceModelName(int8_t device_number_slot);
-//uint32_t  Z2S_getZBdeviceUid(int8_t device_number_slot);
+char*           Z2S_getZBDeviceLocalName(int8_t device_number_slot);
 
 int16_t   Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 
 bool    Z2S_getDevicesListUidIdx(const char *manufacturer_name, const char * model_name, uint32_t *device_uid, uint32_t *devices_list_idx);
+bool    Z2S_updateZBDeviceUidIdx(uint8_t zb_device_slot, const char *manufacturer_name, const char * model_name);
 
 void    Z2S_initSuplaChannels(); 
 

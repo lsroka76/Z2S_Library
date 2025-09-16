@@ -790,10 +790,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     
     if ((device_slot >= 0) && (device_slot < Z2S_ZB_DEVICES_MAX_NUMBER)) {
 
-      if (z2s_zb_devices_table[device_slot].record_id == 2) {
+      if (z2s_zb_devices_table[device_slot].record_id >= 2) {
 
-        uint32_t* device_uid = (uint32_t*)&z2s_zb_devices_table[device_slot].v2_params.device_uid;
-        *device_uid = device_new_uid;
+        z2s_zb_devices_table[device_slot].device_uid = device_new_uid;
+        
         if (Z2S_saveZBDevicesTable()) {
           telnet.printf("ZB Device #%02u UID changed successfully to %lu!\n\r>", device_slot, device_new_uid);
         } else {
