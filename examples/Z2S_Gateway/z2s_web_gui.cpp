@@ -3376,16 +3376,21 @@ void valveCallback(Control *sender, int type, void *param) {
 
 					if (program_mode == 1) 
 						value_32 = ESPUI.getControl(valve_worktime_number)->value.toInt();
+						
 					else {
 						value_32 = ESPUI.getControl(valve_volume_number)->value.toInt();
-						valve_cycles = valve_cycles + 0x80;
+						//valve_cycles = valve_cycles + 0x80;
 					}
 					
-					z2s_zb_devices_table[device_slot].user_data_1 = (valve_cycles << 24) + value_32;
+					z2s_zb_devices_table[device_slot].smart_valve_data.program = program_mode;
+					z2s_zb_devices_table[device_slot].smart_valve_data.cycles = valve_cycles;
+					z2s_zb_devices_table[device_slot].smart_valve_data.value = value_32;
+					z2s_zb_devices_table[device_slot].smart_valve_data.pause_time = ESPUI.getControl(valve_pause_number)->value.toInt();
+					//z2s_zb_devices_table[device_slot].user_data_1 = (valve_cycles << 24) + value_32;
 
-					value_32 = ESPUI.getControl(valve_pause_number)->value.toInt();
+					//value_32 = ESPUI.getControl(valve_pause_number)->value.toInt();
 
-					z2s_zb_devices_table[device_slot].user_data_2 = value_32;
+					//z2s_zb_devices_table[device_slot].user_data_2 = value_32;
 
 					if (Z2S_saveZBDevicesTable()) 
         		updateLabel_P(valve_info_label, PSTR("Valve program saved successfully."));
@@ -3397,16 +3402,18 @@ void valveCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_LOAD_PROGRAM_FLAG: { //load valve program
 
-				uint8_t valve_cycles = z2s_zb_devices_table[device_slot].user_data_1 >> 24;
+				uint8_t valve_cycles = z2s_zb_devices_table[device_slot].smart_valve_data.cycles; 
+				//z2s_zb_devices_table[device_slot].user_data_1 >> 24;
 				
 				if (valve_cycles > 0) {
 
-					uint8_t program_mode = (valve_cycles & 0x80) + 1;
+					uint8_t program_mode = z2s_zb_devices_table[device_slot].smart_valve_data.program; //(valve_cycles & 0x80) + 1;
 
 					ESPUI.updateNumber(valve_program_selector, program_mode);
-					ESPUI.updateNumber(valve_cycles_number, valve_cycles & 0x7F);
+					ESPUI.updateNumber(valve_cycles_number, valve_cycles); // & 0x7F);
 
-					value_32 = z2s_zb_devices_table[device_slot].user_data_1 & 0x00FFFFFF;
+					value_32 = z2s_zb_devices_table[device_slot].smart_valve_data.value; 
+					//z2s_zb_devices_table[device_slot].user_data_1 & 0x00FFFFFF;
 					
 					if (program_mode == 1) {
 						ESPUI.updateNumber(valve_worktime_number, value_32);
@@ -3417,7 +3424,8 @@ void valveCallback(Control *sender, int type, void *param) {
 						ESPUI.updateNumber(valve_worktime_number, 0);
 					}
 
-					value_32 = z2s_zb_devices_table[device_slot].user_data_2 & 0x00FFFFFF;
+					value_32 = z2s_zb_devices_table[device_slot].smart_valve_data.pause_time; 
+					//z2s_zb_devices_table[device_slot].user_data_2 & 0x00FFFFFF;
 
 					ESPUI.updateNumber(valve_pause_number, value_32);
 
