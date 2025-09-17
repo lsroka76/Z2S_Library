@@ -80,6 +80,11 @@
 #define LUMI_MANUFACTURER_CODE                                0x115F
 
 #define LUMI_CUSTOM_CLUSTER_MODE_ID                           0x0009 //U8
+#define LUMI_CUSTOM_CLUSTER_ILLUMINANCE_ID                    0x0112 //U32
+#define LUMI_CUSTOM_CLUSTER_DISPLAY_UNIT_ID                   0x0114 //U8
+#define LUMI_CUSTOM_CLUSTER_AIR_QUALITY_ID                    0x0129 //U8
+
+#define LUMI_CUSTOM_CLUSTER_MODE_ID                           0x0009 //U8
 
 #define DEVELCO_CUSTOM_CLUSTER                                0xFC03
 #define DEVELCO_MANUFACTURER_CODE                             0x1015
@@ -230,8 +235,9 @@ public:
   void readClusterReportCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
   bool readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
 
-  bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-                         uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
+  bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false, 
+                         uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,uint8_t disable_default_response = 1, 
+                         uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
   void sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, uint16_t *attribute_ids);
   bool sendAttributeWrite(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, esp_zb_zcl_attr_type_t attribute_type, 
                           uint16_t attribute_size, void *attribute_value, bool ack = false, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
@@ -331,6 +337,9 @@ public:
   void onDevelcoCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi)) {
     _on_develco_custom_cluster_receive = callback;
   }
+  void onLumiCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi)) {
+    _on_lumi_custom_cluster_receive = callback;
+  }
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi)) {
     _on_on_off_custom_cmd_receive = callback;
   }
@@ -426,6 +435,7 @@ private:
   void (*_on_window_covering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi);
   void (*_on_sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_develco_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
+  void (*_on_lumi_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi);
   bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char rssi);
 

@@ -103,7 +103,8 @@
 #define ME167_CMD_SET_RUNNING_STATE_IDLE  0x01
 #define ME167_CMD_SET_RUNNING_STATE_HEAT  0x00 //inverted
 
-#define ME167_CMD_SET_LOW_BATTERY_1       0x23 //05 bitmap 0 OK 1 empty
+#define ME167_CMD_SET_BATTERY_LEVEL_1           0x06
+#define ME167_CMD_SET_LOW_BATTERY_1             0x23 //05 bitmap 0 OK 1 empty
 
 #define ME167_CMD_SET_SCHEDULE_MODE_1           0x02
 #define ME167_CMD_SET_SCHEDULE_MODE_ON          0x00
@@ -339,7 +340,7 @@
 #define TRV601_STATE_HEATING 0x01
 
 #define TRV601_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
-#define TRV601_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+#define TRV601_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

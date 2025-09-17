@@ -82,6 +82,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR         0x2230
 #define Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR      0x2250
+#define Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR         0x2260
 
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR            0x2300
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5          0x2305
@@ -289,6 +290,11 @@
 
 #define DEVELCO_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID   0x00
 #define DEVELCO_AIR_QUALITY_SENSOR_VOC_SID            0x01
+
+#define LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID      0x00
+#define LUMI_AIR_QUALITY_SENSOR_VOC_SID               0x01
+#define LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID       0x02
+
 
 #define TUYA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID      0x00
 #define TUYA_AIR_QUALITY_SENSOR_CO2_SID               0x01
@@ -1075,6 +1081,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR,
     .z2s_device_clusters_count = 4,
@@ -2261,6 +2272,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE200_ybsqljjg", .model_name = "TS0601",
+    .z2s_device_uid = 17105,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE200_9xfjixap", .model_name = "TS0601",
     .z2s_device_uid = 17200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
@@ -2313,6 +2329,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE200_rtrmfadk", .model_name = "TS0601",
     .z2s_device_uid = 18200,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV601,
+  	.z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_dv8abrrz", .model_name = "TS0601",
+    .z2s_device_uid = 18205,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV601,
   	.z2s_device_endpoints_count = 1},
 
@@ -2834,7 +2855,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_7kscdesh", .model_name = "TS0222",
     .z2s_device_uid = 26900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR,
-	  .z2s_device_endpoints_count = 1}
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "LUMI", .model_name = "lumi.airmonitor.acn01",
+    .z2s_device_uid = 27000,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+
 };
 
 #endif

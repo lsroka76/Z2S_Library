@@ -1700,6 +1700,60 @@ void Z2S_onDevelcoCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t en
   }
 }
 
+void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+                                    const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
+
+  char ieee_addr_str[24] = {};
+
+  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint,attribute->id, attribute->data.size);
+
+  switch (attribute->id) {
+
+    case 0xF7: {
+
+      for (uint8_t i = 0; i < attribute->data.size; i++)
+        log_i("F7 attribute[%d] = %d", i, *((uint8_t*)(attribute->data.value + i)));
+    }
+
+    case LUMI_CUSTOM_CLUSTER_ILLUMINANCE_ID: {
+
+      /*int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                              DEVELCO_AIR_QUALITY_SENSOR_VOC_SID);
+
+      if (channel_number_slot < 0) {
+        no_channel_found_error_func(ieee_addr_str);
+        return;
+      }
+
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            *(uint16_t*)attribute->data.value, rssi);*/
+    } break;
+
+    case LUMI_CUSTOM_CLUSTER_DISPLAY_UNIT_ID: {
+
+      log_i("display unit = %u", *(uint8_t*)attribute->data.value);
+    } break;
+
+    case LUMI_CUSTOM_CLUSTER_AIR_QUALITY_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                              LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
+      if (channel_number_slot < 0) {
+    
+        log_e("no GPM channel found for address %s", ieee_addr_str);
+        return;
+      }       
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+                                                *(uint8_t *)attribute->data.value, rssi);
+
+      log_i("air quality = %u", *(uint8_t*)attribute->data.value);
+    } break;
+  }
+}
 
 void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
 
@@ -2057,6 +2111,56 @@ void Z2S_onMultistateInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
     case ESP_ZB_ZCL_ATTR_MULTI_VALUE_PRESENT_VALUE_ID: {
 
       log_i("present value = %d", *(uint16_t *)attribute->data.value);
+    } break;  
+  }
+}
+
+void Z2S_onAnalogInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+                              const esp_zb_zcl_attribute_t *attribute, signed char rssi) {
+
+  char ieee_addr_str[24] = {};
+
+  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, 
+                                                              NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {
+    
+    log_e("no Supla channel found for address %s", ieee_addr_str);
+    return;
+  }
+
+  if (attribute->data.value == nullptr) {
+      
+    log_e("missing data value for address %s", ieee_addr_str);
+    return;
+  }
+
+  switch (attribute->id) {
+
+    case ESP_ZB_ZCL_ATTR_ANALOG_INPUT_PRESENT_VALUE_ID: {
+
+      switch (z2s_channels_table[channel_number_slot].model_id) {
+
+        case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
+
+          channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                          SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                          LUMI_AIR_QUALITY_SENSOR_VOC_SID);    
+          if (channel_number_slot < 0) {
+    
+            log_e("no GPM channel found for address %s", ieee_addr_str);
+            return;
+          }       
+          msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+                                                *(float *)attribute->data.value, rssi);
+        } break;
+      }
+
+      log_i("present value = %f", *(float *)attribute->data.value);
     } break;  
   }
 }
@@ -2713,10 +2817,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
       case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
+
         addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: 
       case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR: {
+
         addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func);
         
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
@@ -2735,17 +2841,20 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B:
+
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: 
       case Z2S_DEVICE_DESC_LUMI_SWITCH:
       case Z2S_DEVICE_DESC_TUYA_RELAY:
+
         addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "POWER SWITCH", 
                                                               SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1:
       case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2: {
+
         char gang_name[30];
         sprintf(gang_name, "GANG #%d", device->endpoint);
         addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, gang_name, SUPLA_CHANNELFNC_LIGHTSWITCH); 
@@ -2758,25 +2867,28 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3: {
+
         char button_name_function[30];
-        char button_function[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
+        static const char button_function[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
         sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3: {
-        char button_name_function[][30] =  {"BUTTON #1 PRESSED", "BUTTON #1 DOUBLE PRESSED","BUTTON #1 HELD",
+
+        static const char button_name_function[][30] =  {"BUTTON #1 PRESSED", "BUTTON #1 DOUBLE PRESSED","BUTTON #1 HELD",
                                             "BUTTON #2 PRESSED", "BUTTON #2 DOUBLE PRESSED","BUTTON #2 HELD"};
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function[sub_id], SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, (char *)button_name_function[sub_id], SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F:
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F:
       case Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F: {
+
         char button_name_function[30];
-        char button_function_press[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
-        char button_function_rotate[][15] = {"ROTATED RIGHT", "ROTATED LEFT"};
+        static const char button_function_press[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
+        static const char button_function_rotate[][15] = {"ROTATED RIGHT", "ROTATED LEFT"};
         if (sub_id < TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID)
           sprintf(button_name_function, "BUTTON %s", button_function_press[sub_id]);
         else
@@ -2787,6 +2899,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
       case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F: {
+
         char button_name_function[30];
         sprintf(button_name_function, IKEA_STYRBAR_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
@@ -2796,6 +2909,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2:
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: {
+
         char button_name_function[30];
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
@@ -2803,6 +2917,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1:
       case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2: {
+
         char button_name_function[30];
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
@@ -2810,12 +2925,14 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1:
       case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
+
         char button_name_function[30];
         sprintf(button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
+
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, "SINGLE", SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
@@ -2843,6 +2960,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
+
         if (sub_id == TUYA_3PHASES_ELECTRICITY_METER_SID)
           addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, sub_id, false); 
         else
@@ -2854,19 +2972,23 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case SONOFF_ON_OFF_SID:
+
             addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, sub_id, name, func); break;
             
           case SONOFF_ELECTRICITY_METER_SID:
+
             addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, sub_id, true); break;
 
           case SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID:
           case SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID:
           case SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID:
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
+
         addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, NO_CUSTOM_CMD_SID, true);
       } break;
 
@@ -2978,6 +3100,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break; 
 
       case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
+      
         addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, sub_id, "DIMMER SWITCH", SUPLA_CHANNELFNC_DIMMER); break;
 
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: {
@@ -3000,6 +3123,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
+
         addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
 
       case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR: {
@@ -3015,12 +3139,15 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break;
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: 
+
         addZ2SDeviceActionTrigger(device, first_free_slot, -1, "OCCUPANCY EXEC", SUPLA_CHANNELFNC_STAIRCASETIMER); break;
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_2:  
+
         addZ2SDeviceIASzone(device, first_free_slot, -1, "OCCUPANCY_DETECTED", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_3: 
+
         addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
                                               SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
 
@@ -3028,14 +3155,17 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         
         switch (sub_id) {
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
           case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
                                                   "MOTION STATE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..5]");
             break;
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
         }
@@ -3046,12 +3176,15 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
           case TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID: 
+
             addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break;
@@ -3061,9 +3194,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
         }
@@ -3075,6 +3210,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           
           case SONOFF_SMART_VALVE_ON_OFF_SID:
           case SONOFF_SMART_VALVE_RUN_PROGRAM_SID:
+
            addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, sub_id, name, func); break;
       
           case SONOFF_SMART_VALVE_FLOW_SID: 
@@ -3084,6 +3220,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           case SONOFF_SMART_VALVE_TIME_SID:
           case SONOFF_SMART_VALVE_PAUSE_SID:
           case SONOFF_SMART_VALVE_VOLUME_SID:
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break; 
@@ -3093,22 +3230,27 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case TUYA_RAIN_SENSOR_RAIN_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, "RAIN", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_SID: 
+          
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
                                                   "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV");
             break;
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID: 
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE AVG 20",
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); break;
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID: 
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE MAX TODAY",
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); break;
 
           case TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID: 
+          
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "RAIN INTENSITY",
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); break;
         }
@@ -3119,9 +3261,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case TUYA_RAIN_SENSOR_RAIN_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, "RAIN", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_SID: 
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
                                                   "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
         }
@@ -3132,15 +3276,19 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case IAS_ZONE_ALARM_1_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
           case IAS_ZONE_TAMPER_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
           case ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID: 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
 
           case ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID: 
+
+
             addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
         }
       } break;
@@ -3163,9 +3311,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break;
 
       case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
+
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
-      case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR: 
+      case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
+
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
@@ -3174,9 +3324,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           
           case TUYA_CO_DETECTOR_CO_SID:
           case TUYA_CO_DETECTOR_SILENCE_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+
           case TUYA_CO_DETECTOR_CO_CONC_SID:
           case TUYA_CO_DETECTOR_SELF_TEST_SID:
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break;
@@ -3188,9 +3341,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           case TUYA_GAS_DETECTOR_GAS_SID:
           case TUYA_GAS_DETECTOR_PREHEAT_SID:
           //case TUYA_GAS_DETECTOR_SILENCE_SID:
+
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+
           case TUYA_GAS_DETECTOR_GAS_CONC_SID:
           case TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID:
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break;
@@ -3200,10 +3356,13 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case TUYA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID:
+
             addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+
           case TUYA_AIR_QUALITY_SENSOR_CO2_SID:
           case TUYA_AIR_QUALITY_SENSOR_VOC_SID:
           case TUYA_AIR_QUALITY_SENSOR_FA_SID:
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break;
@@ -3213,32 +3372,56 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         switch (sub_id) {
           
           case DEVELCO_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID:
+
             addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+
           case DEVELCO_AIR_QUALITY_SENSOR_VOC_SID:
+          
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+        }
+      } break;
+
+      case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
+
+        switch (sub_id) {
+          
+          case LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID:
+
+            addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+          
+          case LUMI_AIR_QUALITY_SENSOR_VOC_SID:
+          case LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID:
+
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
         }
       } break;
 
       case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
+
         addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, "IR REMOTE", 0); break;
 
       case Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE:
+
         addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
                                 "ROLLER SHUTTER", SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER); break;
 
       case Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE:
+
         if (device->endpoint == 1)
           addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
                                   "ROLLER SHUTTER", SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER); break;
 
       case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
+
         addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
                                 "ROLLER SHUTTER", SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER); break;
         
       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
+
         addZ2SDeviceVirtualRelay(&zbGateway, device,first_free_slot, sub_id, name, func); break;
 
       case Z2S_DEVICE_DESC_MOES_ALARM:
+
         if (sub_id == MOES_ALARM_DISPLAY_SID)
           addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func);
         else      
@@ -3246,14 +3429,17 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         
       case Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F:
       case Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F: 
+
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       case Z2S_DEVICE_DESC_ON_OFF_VALVE_DC: 
       case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC:
       case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
+
         addZ2SDeviceVirtualValve(&zbGateway, device, first_free_slot, sub_id, "VALVE", SUPLA_CHANNELFNC_VALVE_OPENCLOSE); break;
       
       case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO: 
+
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, "CUBE T1 PRO", SUPLA_CHANNELFNC_POWERSWITCH); break;
 
       default : {

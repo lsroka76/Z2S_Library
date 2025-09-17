@@ -201,6 +201,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
       temperature_calibration_dp_id  = ME167_CMD_SET_TEMPERATURE_CALIBRATION_1;
       
+      battery_level_dp_id            = ME167_CMD_SET_BATTERY_LEVEL_1;
       low_battery_dp_id              = ME167_CMD_SET_LOW_BATTERY_1;
 
       schedule_mode_dp_id            = ME167_CMD_SET_SCHEDULE_MODE_1;

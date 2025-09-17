@@ -45,6 +45,11 @@ typedef struct Tuya_datapoint_type_s {
 	const uint16_t Tuya_datapoint_type_length;
 } Tuya_datapoint_type_t;
 
+typedef struct zigbee_manufacturer_code_s {
+	const uint16_t manufacturer_code;
+	const char* manufacturer_name;
+} zigbee_manufacturer_code_t;
+
 typedef struct Supla_action_type_s {
 	const Supla::Action	Supla_action_id;
 	const char* Supla_action_name;
@@ -122,6 +127,14 @@ static constexpr Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM =
 	 {.Tuya_datapoint_type_name = "STRING", .Tuya_datapoint_type_id = 0x03, .Tuya_datapoint_type_length = 0x00},
 	 {.Tuya_datapoint_type_name = "ENUM", 	.Tuya_datapoint_type_id = 0x04, .Tuya_datapoint_type_length = 0x01},
 	 {.Tuya_datapoint_type_name = "BITMAP", .Tuya_datapoint_type_id = 0x05, .Tuya_datapoint_type_length = 0x01}
+	};
+
+static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM =
+
+	{{.manufacturer_code = PHILIPS_MANUFACTURER_CODE,	.manufacturer_name = "PHILIPS"},
+	 {.manufacturer_code = LUMI_MANUFACTURER_CODE,		.manufacturer_name = "LUMI"},
+	 {.manufacturer_code = DEVELCO_MANUFACTURER_CODE,	.manufacturer_name = "DEVELCO"},
+	 {.manufacturer_code = 0x1286,										.manufacturer_name = "SHENZHEN_COOLKIT_TECHNOLOGY_CO_LTD"}
 	};
 
 static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
@@ -639,6 +652,13 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,
 		.zigbee_attribute_name = "SENSOR TYPE BITMAP"
+	},
+
+	{
+		.zigbee_attribute_id  = 0x0020, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "SNZB-03P MOTION TIMEOUT (5-60)"
 	},
   //IAS ZONE
   {

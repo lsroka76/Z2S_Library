@@ -796,8 +796,8 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
             cluster_id, attribute->id, attribute->data.type);
       if ((attribute->id == 0x148) || (attribute->id == 0x149))
         log_i("value = %u", *(uint8_t *)attribute->data.value);
-      //if (_on_multistate_input_receive)
-        //_on_multistate_input_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);
+      if (_on_lumi_custom_cluster_receive)
+        _on_lumi_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute, rssi);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_METERING) {
 

@@ -69,6 +69,7 @@ uint16_t device_attribute_value_text;
 uint16_t device_async_switcher;
 uint16_t device_read_attribute_button, device_write_attribute_button, device_read_config_button;
 uint16_t device_write_config_button, device_custom_command_button;
+uint16_t manufacturer_code_switcher, manufacturer_code_selector;
 uint16_t device_Tuya_payload_label;
 uint16_t remove_device_button, remove_device_and_channels_button, remove_all_devices_button;
 
@@ -915,6 +916,31 @@ void buildDevicesTabGUI() {
 	device_custom_command_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
 																									Control::Color::Emerald, device_read_attribute_button, 
 																									getZigbeeDeviceQueryCallback, (void*)GUI_CB_CUSTOM_CMD_FLAG);
+
+	manufacturer_code_switcher = ESPUI.addControl(Control::Type::Switcher, PSTR("Manufacturer code"), zero_str, Control::Color::Emerald, 
+										  													devicestab, generalCallback);
+	working_str = PSTR("&#10023; <i>Use manufacturer code</i> &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
+																				 Control::Color::None, manufacturer_code_switcher), PSTR(clearLabelStyle));
+
+	manufacturer_code_selector = ESPUI.addControl(Control::Type::Select, PSTR(empty_str), minus_one_str, 
+										 													  Control::Color::Emerald, manufacturer_code_switcher, generalCallback);
+	working_str = PSTR("Manufacturer code");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
+																				 Control::Color::None, manufacturer_code_switcher), PSTR(clearLabelStyle));
+	ESPUI.addControl(Control::Type::Option, PSTR("Select manufacturer code..."), minus_one_str, 
+									 Control::Color::None, manufacturer_code_selector);
+
+	uint32_t zigbee_manufacturer_codes_count = sizeof(zigbee_manufacturer_codes)/sizeof(zigbee_manufacturer_code_t);
+
+	for (uint8_t manufacturer_codes_counter = 0; 
+			 manufacturer_codes_counter < zigbee_manufacturer_codes_count; 
+			 manufacturer_codes_counter++) {
+  
+		working_str = zigbee_manufacturer_codes[manufacturer_codes_counter].manufacturer_code;
+		ESPUI.addControl(Control::Type::Option, zigbee_manufacturer_codes[manufacturer_codes_counter].manufacturer_name, 
+		working_str, Control::Color::None, manufacturer_code_selector);
+	}
 
 	device_async_switcher = ESPUI.addControl(Control::Type::Switcher, PSTR("Asynchronous command"), zero_str, 
 																				 Control::Color::Emerald, devicestab, generalCallback);
@@ -2170,6 +2196,9 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 		uint8_t attribute_type_idx = ESPUI.getControl(device_attribute_type_selector)->value.toInt();
 		uint8_t attribute_type = attribute_type_idx < 0xFF ? zigbee_datatypes[attribute_type_idx].zigbee_datatype_id : 0xFF;
 		bool sync_cmd = ESPUI.getControl(device_async_switcher)->value.toInt() == 0;
+		uint8_t manuf_specific = (ESPUI.getControl(manufacturer_code_switcher)->value.toInt() == 0) ? 0 : 1;
+		uint16_t manuf_code = (ESPUI.getControl(manufacturer_code_selector)->value.toInt() > 0) ? 
+			ESPUI.getControl(manufacturer_code_selector)->value.toInt() : 0;
 
 		switch ((uint32_t)param) {
 			case GUI_CB_SWBUILD_FLAG: { //software build ID
@@ -2195,7 +2224,8 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 					//if (ESPUI.getControl(device_cluster_selector)->value.toInt() < 0) 
 					//	break;
 					
-					bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, sync_cmd);
+					bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, sync_cmd,
+																										ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, manuf_specific, manuf_code);
 					if (result) {
 						if (*zbGateway.getReadAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
@@ -2385,7 +2415,7 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
       	if (value) {
 					
 					bool result = zbGateway.sendAttributeWrite(&device, cluster_id, attribute_id, (esp_zb_zcl_attr_type_t)attribute_type, 
-																										 attribute_size, value, sync_cmd);
+																										 attribute_size, value, sync_cmd, manuf_specific, manuf_code);
 					
 					if (result) {
 						if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
@@ -2484,8 +2514,11 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 						current_Tuya_payload_label = device_Tuya_payload_label;
 					}
 
-					bool result = zbGateway.sendCustomClusterCmd(&device, cluster_id, attribute_id, (esp_zb_zcl_attr_type_t)attribute_type, 
-																											 payload_size, custom_cmd_payload, sync_cmd);
+					bool result = zbGateway.sendCustomClusterCmd(&device, cluster_id, attribute_id, 
+																											 (esp_zb_zcl_attr_type_t)attribute_type, 
+																											 payload_size, custom_cmd_payload, sync_cmd,
+																											 ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 
+																											 manuf_specific, manuf_code);
 					
 					if (result) {
 						if (*zbGateway.getCustomCmdStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {

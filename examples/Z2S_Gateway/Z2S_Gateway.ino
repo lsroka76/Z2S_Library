@@ -1136,8 +1136,8 @@ void enableZ2SNotifications() {
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
   zbGateway.onElectricalMeasurementReceive(Z2S_onElectricalMeasurementReceive);
   zbGateway.onMultistateInputReceive(Z2S_onMultistateInputReceive);
+  zbGateway.onAnalogInputReceive(Z2S_onAnalogInputReceive);
   zbGateway.onMeteringReceive(Z2S_onMeteringReceive);
-  //zbGateway.onCurrentSummationReceive(Z2S_onCurrentSummationReceive);
   zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
   zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
   zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
@@ -1146,6 +1146,7 @@ void enableZ2SNotifications() {
   zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
   zbGateway.onSonoffCustomClusterReceive(Z2S_onSonoffCustomClusterReceive);
   zbGateway.onDevelcoCustomClusterReceive(Z2S_onDevelcoCustomClusterReceive);
+  zbGateway.onLumiCustomClusterReceive(Z2S_onLumiCustomClusterReceive);
   zbGateway.onBatteryReceive(Z2S_onBatteryReceive);
   zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
   zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);
@@ -1170,8 +1171,9 @@ void disableZ2SNotifications() {
   zbGateway.onOccupancyReceive(nullptr);
   zbGateway.onOnOffReceive(nullptr);
   zbGateway.onElectricalMeasurementReceive(nullptr);
+  zbGateway.onMultistateInputReceive(nullptr);
+  zbGateway.onAnalogInputReceive(nullptr);
   zbGateway.onMeteringReceive(nullptr);
-  //zbGateway.onCurrentSummationReceive(nullptr);
   zbGateway.onCurrentLevelReceive(nullptr);
   zbGateway.onColorHueReceive(nullptr);
   zbGateway.onColorSaturationReceive(nullptr);
@@ -1179,6 +1181,8 @@ void disableZ2SNotifications() {
   zbGateway.onThermostatModesReceive(nullptr);
   zbGateway.onWindowCoveringReceive(nullptr);
   zbGateway.onSonoffCustomClusterReceive(nullptr);
+  zbGateway.onDevelcoCustomClusterReceive(nullptr);
+  zbGateway.onLumiCustomClusterReceive(nullptr);
   zbGateway.onBatteryReceive(nullptr);
   zbGateway.onCustomCmdReceive(nullptr);
   zbGateway.onCmdCustomClusterReceive(nullptr);
@@ -1411,7 +1415,7 @@ void setup() {
   
   SuplaDevice.setName("Zigbee <=> Supla Gateway");
   SuplaDevice.setSwVersion(Z2S_VERSION);
-  //wifi.enableSSL(true);
+  wifi.enableSSL(true);
 
   SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
   SuplaDevice.allowWorkInOfflineMode(2);
@@ -2073,6 +2077,13 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, DEVELCO_AIR_QUALITY_SENSOR_VOC_SID, "VOC", 0, "ppb");
                           } break;
 
+                          case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, "T/H");
+                            Z2S_addZ2SDevice(joined_device, LUMI_AIR_QUALITY_SENSOR_VOC_SID, "VOC", 0, "ppb");
+                            Z2S_addZ2SDevice(joined_device, LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID, "AIR QUALITY", 0, "1-5");
+                          } break;
+
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
                         }
                   }  
@@ -2296,7 +2307,8 @@ void loop() {
                 case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_SWITCH:
                 case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO:
-                case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR: {
+                case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
+                case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
 
                   write_mask = 0x01;
                   joined_device->endpoint = 1;
