@@ -104,7 +104,7 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
       auto Supla_Z2S_VirtualThermometer = 
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
     
-      Supla_Z2S_VirtualThermometer->setTemp(temp);
+      Supla_Z2S_VirtualThermometer->setValue(temp);
       Supla_Z2S_VirtualThermometer->Refresh();
     } break;
   }
