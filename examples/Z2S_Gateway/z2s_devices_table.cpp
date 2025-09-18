@@ -386,7 +386,7 @@ bool Z2S_loadChannelsTable() {
           }
           if (channels_table_save_required) 
             Z2S_saveChannelsTable();
-          Z2S_printChannelsTableSlots();
+          //Z2S_printChannelsTableSlots();
           return true;
         }
     }
@@ -784,7 +784,7 @@ bool Z2S_loadZBDevicesTable() {
           }
           log_i("Zigbee devices table upgrade completed - saving new table");
           Z2S_saveZBDevicesTable();
-          Z2S_printZBDevicesTableSlots();
+          //Z2S_printZBDevicesTableSlots();
           free(z2s_zb_devices_legacy_table);
           return true;
         } break;
@@ -876,7 +876,7 @@ bool Z2S_loadZBDevicesTable() {
           }
           log_i("Zigbee devices table upgrade completed - saving new table");
           Z2S_saveZBDevicesTable();
-          Z2S_printZBDevicesTableSlots();
+          //Z2S_printZBDevicesTableSlots();
           free(z2s_zb_devices_legacy_2_table);
           return true;
         } break;
@@ -921,7 +921,7 @@ bool Z2S_loadZBDevicesTable() {
             }
           }
 
-          Z2S_printZBDevicesTableSlots();
+          //Z2S_printZBDevicesTableSlots();
           return true;
         }
     }

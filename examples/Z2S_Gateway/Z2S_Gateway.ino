@@ -1542,9 +1542,9 @@ void loop() {
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
       if (refresh_cycle % 12 == 0) {//print every 120 seconds - only for debug purposes 
-        log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
+        /*log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
-        log_i("Gateway version: %s", Z2S_VERSION);
+        log_i("Gateway version: %s", Z2S_VERSION);*/
         //int8_t zb_tx_power;
         //esp_zb_get_tx_power(&zb_tx_power);
         //log_i("Zigbee TX power: %d", zb_tx_power);
@@ -1574,13 +1574,13 @@ void loop() {
         //}
       }
       if (refresh_cycle % 12 == 0) {
-        log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
+        /*log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
         log_i( "Memory information: Flash chip real size:%u B, Free Sketch Space:%u B, "
 						"Free Heap:%u, Minimal Free Heap:%u B, "
 						"HeapSize:%u B, MaxAllocHeap:%u B, "
 						"Supla uptime:%lu s", 
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
-						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
+						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());*/
       }
     }
     if (!zbGateway.getGatewayDevices().empty()) {
