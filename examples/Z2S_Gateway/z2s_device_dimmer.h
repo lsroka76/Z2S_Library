@@ -14,7 +14,7 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uin
 
 void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name = nullptr, uint32_t func = 0);
 
-void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, signed char rssi);
+void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state);
 
 
 #endif

@@ -171,7 +171,7 @@ void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint
 
 }
 
-void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value, signed char rssi) {
+void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value) {
 
   if (channel_number_slot < 0) {
     

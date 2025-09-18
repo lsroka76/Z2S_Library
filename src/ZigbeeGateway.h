@@ -264,89 +264,89 @@ public:
       _on_data_save_request(selector);
   }
 
-  void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int, signed char rssi)) {
+  void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int)) {
     _on_IAS_zone_status_change_notification = callback;
   }
-  void onTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi)) {
+  void onTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float)) {
     _on_temperature_receive = callback; 
   }
-  void onHumidityReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi)) {
+  void onHumidityReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float)) {
     _on_humidity_receive = callback;
   }
-  void onPressureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi)) {
+  void onPressureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float)) {
     _on_pressure_receive = callback;
   }
-  void onIlluminanceReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+  void onIlluminanceReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
     _on_illuminance_receive = callback;
   }
-  void onFlowReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+  void onFlowReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
     _on_flow_receive = callback;
   }
-  void onOccupancyReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi)) {
+  void onOccupancyReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
     _on_occupancy_receive = callback;
   }
-  void onOnOffReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool, signed char rssi)) {
+  void onOnOffReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool)) {
     _on_on_off_receive = callback;
   }
   void onElectricalMeasurementReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
-                                      const esp_zb_zcl_attribute_t *, signed char rssi)) {
+                                      const esp_zb_zcl_attribute_t *)) {
     _on_electrical_measurement_receive = callback;
   }
   void onMultistateInputReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
-                                      const esp_zb_zcl_attribute_t *, signed char rssi)) {
+                                      const esp_zb_zcl_attribute_t *)) {
     _on_multistate_input_receive = callback;
   }
   void onAnalogInputReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
-                            const esp_zb_zcl_attribute_t *, signed char rssi)) {
+                            const esp_zb_zcl_attribute_t *)) {
     _on_analog_input_receive = callback;
   }
   void onMeteringReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
-                         const esp_zb_zcl_attribute_t *, signed char rssi)) {
+                         const esp_zb_zcl_attribute_t *)) {
     _on_metering_receive = callback;
   }
-  void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi)) {
+  void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t)) {
     _on_current_summation_receive = callback;
   }
   void onBatteryReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t)) {
     _on_battery_receive = callback;
   }
-  void onCurrentLevelReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+  void onCurrentLevelReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
     _on_current_level_receive = callback;
   }
-  void onColorHueReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi)) {
+  void onColorHueReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
     _on_color_hue_receive = callback;
   }
-  void onColorSaturationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi)) {
+  void onColorSaturationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t)) {
     _on_color_saturation_receive = callback;
   }
-  void onColorTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+  void onColorTemperatureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
     _on_color_temperature_receive = callback;
   }
-  void onThermostatTemperaturesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi)) {
+  void onThermostatTemperaturesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t)) {
     _on_thermostat_temperatures_receive = callback;
   }
-  void onThermostatModesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi)) {
+  void onThermostatModesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t)) {
     _on_thermostat_modes_receive = callback;
   }
-  void onWindowCoveringReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi)) {
+  void onWindowCoveringReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t)) {
     _on_window_covering_receive = callback;
   }
-  void onSonoffCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi)) {
+  void onSonoffCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *)) {
     _on_sonoff_custom_cluster_receive = callback;
   }
-  void onDevelcoCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi)) {
+  void onDevelcoCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *)) {
     _on_develco_custom_cluster_receive = callback;
   }
-  void onLumiCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi)) {
+  void onLumiCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *)) {
     _on_lumi_custom_cluster_receive = callback;
   }
-  void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi)) {
+  void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t)) {
     _on_on_off_custom_cmd_receive = callback;
   }
-  void onCustomCmdReceive(bool (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char  rssi)) {
+  void onCustomCmdReceive(bool (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *)) {
     _on_custom_cmd_receive = callback;
   }
-  void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *, signed char rssi)) {
+  void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *)) {
     _on_cmd_custom_cluster_receive = callback;
   }
   void onBoundDevice(void (*callback)(zbg_device_params_t *, bool)) {
@@ -412,34 +412,34 @@ private:
 
   static zbg_device_unit_t zbg_device_units[ZBG_MAX_DEVICES];
 
-  void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int, signed char rssi);
-  void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
-  void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
-  void (*_on_pressure_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float, signed char rssi);
-  void (*_on_illuminance_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
-  void (*_on_flow_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
-  void (*_on_occupancy_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
-  void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool, signed char rssi);
-  void (*_on_electrical_measurement_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
-  void (*_on_multistate_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
-  void (*_on_analog_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
-  void (*_on_metering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
-  void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t, signed char rssi);
+  void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int);
+  void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
+  void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
+  void (*_on_pressure_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
+  void (*_on_illuminance_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
+  void (*_on_flow_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
+  void (*_on_occupancy_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
+  void (*_on_on_off_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, bool);
+  void (*_on_electrical_measurement_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_multistate_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_analog_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_metering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t);
   void (*_on_battery_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
-  void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
-  void (*_on_color_hue_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
-  void (*_on_color_saturation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, signed char rssi);
-  void (*_on_color_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, signed char rssi);
-  void (*_on_thermostat_temperatures_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t, signed char rssi);
-  void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, signed char rssi);
-  void (*_on_window_covering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t, signed char rssi);
-  void (*_on_sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
-  void (*_on_develco_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
-  void (*_on_lumi_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, signed char rssi);
-  void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t, signed char rssi);
-  bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *, signed char rssi);
+  void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
+  void (*_on_color_hue_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
+  void (*_on_color_saturation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
+  void (*_on_color_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
+  void (*_on_thermostat_temperatures_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t);
+  void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
+  void (*_on_window_covering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t);
+  void (*_on_sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_develco_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_lumi_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t);
+  bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
 
-  void (*_on_cmd_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *, signed char rssi);
+  void (*_on_cmd_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *);
 
   void (*_on_bound_device)(zbg_device_params_t *, bool);
   void (*_on_btc_bound_device)(zbg_device_params_t *);
@@ -451,7 +451,7 @@ private:
 
   bool zbRawCmdHandler( esp_zb_zcl_addr_t source, uint8_t src_endpoint, uint8_t dst_endpoint, uint16_t cluster_id, uint8_t cmd_id, 
                                 bool is_common_command, bool disable_default_response, bool is_manuf_specific, uint16_t manuf_specific,
-                                uint8_t buffer_size, uint8_t *buffer, signed char  rssi);
+                                uint8_t buffer_size, uint8_t *buffer);
 
   static void bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
   static void find_Cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx);
@@ -460,19 +460,25 @@ private:
   static void Z2S_active_ep_req_cb(esp_zb_zdp_status_t zdo_status, uint8_t ep_count, uint8_t *ep_id_list, void *user_ctx);
   static void Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, void *user_ctx);
 
-  void zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute, signed char  rssi) override;
+  void zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+                            const esp_zb_zcl_attribute_t *attribute) override;
   void zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-                          esp_zb_zcl_status_t status, const esp_zb_zcl_attribute_t *attribute, signed char  rssi) override;
+                          esp_zb_zcl_status_t status, const esp_zb_zcl_attribute_t *attribute) override;
   void zbWriteAttrResponse(uint8_t tsn, esp_zb_zcl_status_t status, uint16_t attribute_id) override;
   void zbIASZoneEnrollRequest(const esp_zb_zcl_ias_zone_enroll_request_message_t *message) override;
   void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) override;
   void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
                             const esp_zb_zcl_disc_attr_variable_t *variable) override;
-  void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,uint8_t command_id, uint16_t payload_size, uint8_t *payload) override;
-  void zbConfigReportResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
+  void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
+                             uint16_t cluster_id,uint8_t command_id, 
+                             uint16_t payload_size, uint8_t *payload) override;
+  void zbConfigReportResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
+                              uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
                              uint16_t attribute_id) override;
   void zbReadReportConfigResponse(const esp_zb_zcl_cmd_read_report_config_resp_message_t *message) override;
-  void zbCmdDefaultResponse( uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, esp_zb_zcl_status_t status_code) override;
+  void zbCmdDefaultResponse(uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 
+                            uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, 
+                            esp_zb_zcl_status_t status_code) override;
 
   void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
   void zbDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;

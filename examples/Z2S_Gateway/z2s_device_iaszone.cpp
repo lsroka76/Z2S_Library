@@ -37,7 +37,7 @@ void addZ2SDeviceIASzone(zbg_device_params_t *device, uint8_t free_slot, int8_t 
   
 }
 
-void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, signed char rssi, bool check_flags) {
+void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, bool check_flags) {
 
   if (channel_number_slot < 0) {
     log_e("msgZ2SDeviceIASzone - invalid channel number slot");

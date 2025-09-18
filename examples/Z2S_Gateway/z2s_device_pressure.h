@@ -8,8 +8,8 @@ void initZ2SDevicePressure(int16_t channel_number_slot);
 
 void addZ2SDevicePressure(zbg_device_params_t *device, uint8_t free_slot);
 
-void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure, signed char rssi);
+void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure);
 
-void msgZ2SDevicePressureBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi); 
+void msgZ2SDevicePressureBatteryLevel(int16_t channel_number_slot, uint8_t battery_level); 
 
 #endif

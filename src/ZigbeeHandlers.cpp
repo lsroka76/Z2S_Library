@@ -80,7 +80,7 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
     if (cmd_info->addr_data.common_data.dst_endpoint == (*it)->getEndpoint()) {
       if ((*it)->zbRawCmdHandler(esp_zb_zcl_address, cmd_info->addr_data.common_data.src_endpoint, cmd_info->addr_data.common_data.dst_endpoint, 
                                 cmd_info->cluster_id, cmd_info->cmd_id, cmd_info->is_common_command,cmd_info->disable_default_response, cmd_info->is_manuf_specific,
-                                  cmd_info->manuf_specific, sizeof(buf), &buf[0], cmd_info->rssi)) {
+                                  cmd_info->manuf_specific, sizeof(buf), &buf[0])) {
         zb_zcl_send_default_handler(bufid, cmd_info, ZB_ZCL_STATUS_SUCCESS);
         log_i("----------------------------raw command proccessed---------------------------------------------------------------");
         return true;
@@ -175,7 +175,7 @@ static esp_err_t zb_cmd_read_attr_resp_handler(const esp_zb_zcl_cmd_read_attr_re
             (*it)->zbReadBasicCluster(message->info.src_address, message->info.src_endpoint, message->info.cluster, &variable->attribute);  //method zbReadBasicCluster implemented in the common EP class
           } else {
             (*it)->zbReadAttrResponse(message->info.header.tsn, message->info.src_address, message->info.src_endpoint, message->info.cluster, 
-                                      variable->status, &variable->attribute, message->info.header.rssi); 
+                                      variable->status, &variable->attribute); 
           }
         //}
         variable = variable->next;

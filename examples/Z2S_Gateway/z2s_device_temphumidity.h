@@ -10,10 +10,10 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot);
 
 void addZ2SDeviceTempHumidity(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id = -1, char *name = nullptr, uint32_t func = 0);
 
-void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp, signed char rssi); 
+void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp); 
 
-void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi, signed char rssi); 
+void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi); 
 
-//void msgZ2SDeviceTempHumidityBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi); 
+//void msgZ2SDeviceTempHumidityBatteryLevel(int16_t channel_number_slot, uint8_t battery_level); 
 
 #endif

@@ -129,10 +129,12 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
 }
 
-void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, bool active_query, uint8_t free_slot,
+void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, 
+                                  bool isTuya, bool active_query, uint8_t free_slot,
                                   int8_t sub_id, bool one_phase) {
   
-  auto Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(gateway, device, 0, isTuya, active_query, one_phase);
+  auto Supla_Z2S_ElectricityMeter = 
+    new Supla::Sensor::Z2S_ElectricityMeter(gateway, device, 0, isTuya, active_query, one_phase);
   
   if (active_query) 
     z2s_channels_table[free_slot].refresh_secs = 30; //active_query replacement 
@@ -141,7 +143,7 @@ void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *d
                             SUPLA_CHANNELTYPE_ELECTRICITY_METER, sub_id, "Electricity meter");
 }
 
-void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector, int64_t value, signed char rssi) {
+void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, uint8_t selector, int64_t value) {
 
   Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 

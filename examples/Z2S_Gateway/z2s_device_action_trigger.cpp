@@ -38,7 +38,7 @@ void addZ2SDeviceActionTrigger(zbg_device_params_t *device, uint8_t free_slot, i
   Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_ActionTrigger->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id, name, func);
 }
 
-void msgZ2SDeviceActionTrigger(int16_t channel_number_slot, signed char rssi) {
+void msgZ2SDeviceActionTrigger(int16_t channel_number_slot) {
 
   if (channel_number_slot < 0) {
     
@@ -59,7 +59,7 @@ void msgZ2SDeviceActionTrigger(int16_t channel_number_slot, signed char rssi) {
   }
 }
 
-/*void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi) {
+/*void msgZ2SDeviceActionTriggerBatteryLevel(int16_t channel_number_slot, uint8_t battery_level) {
 
   if (channel_number_slot < 0) {
     log_e("msgZ2SDeviceActionTriggerBatteryLevel - invalid channel number slot");

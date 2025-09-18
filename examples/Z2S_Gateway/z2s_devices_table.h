@@ -345,18 +345,22 @@ bool      Z2S_hasZBDevice(uint32_t desc_id);
 void      Z2S_initZBDevices(uint32_t init_ms);
 void      Z2S_updateZBDeviceLastSeenMs(esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms);
 
-uint8_t   Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, char *manufacturer_name, char *model_name, 
+uint8_t   Z2S_addZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, 
+                                   char *manufacturer_name, char *model_name, 
                                    uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source);
-//uint8_t   Z2S_updateZBDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint8_t Supla_channel);
 
 bool      Z2S_removeZBDeviceWithAllChannels(uint8_t zb_device_slot);
 
-int16_t   Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, int32_t channel_type, int8_t sub_id);
-int16_t   Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
-                                      int32_t channel_type, int8_t sub_id);
+int16_t   Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, 
+                                    uint16_t cluster, int32_t channel_type, int8_t sub_id);
+int16_t   Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, 
+                                        int16_t endpoint, uint16_t cluster, 
+                                        int32_t channel_type, int8_t sub_id);
 //int32_t Z2S_findChannelType(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster);
-void      Z2S_fillChannelsTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, int32_t channel_type, int8_t sub_id,
-                                 char *name = nullptr, uint32_t func = 0, uint8_t secondary_channel = 0xFF);
+void      Z2S_fillChannelsTableSlot(zbg_device_params_t *device, uint8_t slot, uint8_t channel, 
+                                    int32_t channel_type, int8_t sub_id,
+                                    char *name = nullptr, uint32_t func = 0, 
+                                    uint8_t secondary_channel = 0xFF);
 
 bool      Z2S_setChannelFlags(int16_t channel_number_slot, uint32_t flags_to_set);
 bool      Z2S_clearChannelFlags(int16_t channel_number_slot, uint32_t flags_to_clear);
@@ -364,16 +368,16 @@ bool      Z2S_clearChannelFlags(int16_t channel_number_slot, uint32_t flags_to_c
 bool      Z2S_setZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set);
 bool      Z2S_clearZBDeviceFlags(int8_t device_number_slot, uint32_t flags_to_clear);
 
-const char*     Z2S_getZBDeviceManufacturerName(int8_t device_number_slot);
-const char*     Z2S_getZBDeviceModelName(int8_t device_number_slot);
-char*           Z2S_getZBDeviceLocalName(int8_t device_number_slot);
+const char* Z2S_getZBDeviceManufacturerName(int8_t device_number_slot);
+const char* Z2S_getZBDeviceModelName(int8_t device_number_slot);
+char*       Z2S_getZBDeviceLocalName(int8_t device_number_slot);
 
-int16_t   Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
+int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 
-bool    Z2S_getDevicesListUidIdx(const char *manufacturer_name, const char * model_name, uint32_t *device_uid, uint32_t *devices_list_idx);
-bool    Z2S_updateZBDeviceUidIdx(uint8_t zb_device_slot, const char *manufacturer_name, const char * model_name);
+bool  Z2S_updateZBDeviceUidIdx(uint8_t zb_device_slot, 
+                               const char *manufacturer_name, const char * model_name);
 
-void    Z2S_initSuplaChannels(); 
+void  Z2S_initSuplaChannels(); 
 
 bool     checkActionsIndexTablePosition(uint16_t index_position);
 bool     setActionsIndexTablePosition(uint16_t index_position);
@@ -395,40 +399,40 @@ void     Z2S_removeChannelActions(uint8_t channel_id, bool all_channels = false)
 
 void     Z2S_initSuplaActions();
 
-void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature, signed char rssi); 
-void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float humidity, signed char rssi); 
-void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float pressure, signed char rssi); 
-void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance, signed char rssi);
-void Z2S_onFlowReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t flow, signed char rssi);
-void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy, signed char rssi);
-void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state, signed char rssi); 
+void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature); 
+void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float humidity); 
+void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float pressure); 
+void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance);
+void Z2S_onFlowReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t flow);
+void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy);
+void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state); 
 void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-                                        const esp_zb_zcl_attribute_t *attribute, signed char rssi);
+                                        const esp_zb_zcl_attribute_t *attribute);
 void Z2S_onMultistateInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-                                  const esp_zb_zcl_attribute_t *attribute, signed char rssi);
+                                  const esp_zb_zcl_attribute_t *attribute);
 void Z2S_onAnalogInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-                              const esp_zb_zcl_attribute_t *attribute, signed char rssi);
+                              const esp_zb_zcl_attribute_t *attribute);
 void Z2S_onMeteringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-                           const esp_zb_zcl_attribute_t *attribute, signed char rssi);
-void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t level, signed char rssi);
-void Z2S_onColorHueReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t hue, signed char rssi);
-void Z2S_onColorSaturationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t saturation, signed char rssi);
+                           const esp_zb_zcl_attribute_t *attribute);
+void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t level);
+void Z2S_onColorHueReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t hue);
+void Z2S_onColorSaturationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t saturation);
 void Z2S_onThermostatTemperaturesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, 
-                                         int16_t temperature, signed char rssi);
-void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, uint8_t mode, signed char rssi);
-void Z2S_onWindowCoveringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, uint16_t value, signed char rssi);
+                                         int16_t temperature);
+void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, uint8_t mode);
+void Z2S_onWindowCoveringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, uint16_t value);
 void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-                                      const esp_zb_zcl_attribute_t *attribute, signed char rssi);
+                                      const esp_zb_zcl_attribute_t *attribute);
 void Z2S_onDevelcoCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-                                      const esp_zb_zcl_attribute_t *attribute, signed char rssi);
+                                      const esp_zb_zcl_attribute_t *attribute);
 void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-                                    const esp_zb_zcl_attribute_t *attribute, signed char rssi);
+                                    const esp_zb_zcl_attribute_t *attribute);
 void Z2S_onBatteryReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, uint8_t battery_remaining);
 bool Z2S_onCustomCmdReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, 
-                            uint8_t buffer_size, uint8_t *buffer, signed char  rssi);
+                            uint8_t buffer_size, uint8_t *buffer);
 void Z2S_onCmdCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
-                                  uint16_t payload_size, uint8_t *payload, signed char rssi);
-void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status, signed char rssi);
+                                  uint16_t payload_size, uint8_t *payload);
+void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status);
 
 void Z2S_onBTCBoundDevice(zbg_device_params_t *device); 
 void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster);
@@ -436,23 +440,33 @@ void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster);
 void Z2S_onDataSaveRequest(uint8_t selector);
 void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr);
 
-uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id = -1, char *name = nullptr, uint32_t func = 0, char *unit = nullptr);
-uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, 
+uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id = -1, 
+                         char *name = nullptr, uint32_t func = 0, char *unit = nullptr);
+
+uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name, char *model_name, 
+                           esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, 
                            uint8_t endpoints, uint32_t desc_id);
 
 
-void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selector = 0, uint32_t timings_secs = 0);
-void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode);
-void updateDeviceTemperature(uint8_t channel_number_slot, int32_t temperature);
-void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value, signed char rssi, bool restore = false);
+void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, 
+                   uint8_t selector = 0, uint32_t timings_secs = 0);
 
-bool Z2S_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
+void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode);
+
+void updateDeviceTemperature(uint8_t channel_number_slot, int32_t temperature);
+
+void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, 
+                             uint32_t msg_value, bool restore = false);
+
+bool Z2S_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, 
+                    uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
                     double threshold_1 = 0, double threshold_2 = 0);
 
 bool hasTuyaCustomCluster(uint32_t model_id);
 
 void log_i_telnet2(char *log_line, bool toTelnet = false);
 
-void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data));
+void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id, 
+                                uint16_t payload_size, uint8_t * payload_data));
 
 #endif

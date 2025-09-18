@@ -23,7 +23,7 @@ Supla::Sensor::VirtualPressure* getZ2SDevicePressurePtr(uint8_t Supla_channel) {
   else return nullptr;  
 }
 
-void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure, signed char rssi) {
+void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure) {
 
   if (channel_number_slot < 0) {
     log_e("msgZ2SDevicePressure - invalid channel number slot");
@@ -41,7 +41,7 @@ void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure, signed c
   }
 }
 
-void msgZ2SDevicePressureBatteryLevel(int16_t channel_number_slot, uint8_t battery_level, signed char rssi) {
+void msgZ2SDevicePressureBatteryLevel(int16_t channel_number_slot, uint8_t battery_level) {
 
   if (channel_number_slot < 0) {
     log_e("msgZ2SDevicePressureBatteryLevel - invalid channel number slot");

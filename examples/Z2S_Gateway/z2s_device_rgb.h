@@ -8,7 +8,7 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, int16
 
 void addZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name = nullptr, uint32_t func = 0);
 
-void msgZ2SDeviceRGB(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, bool state, signed char rssi);
+void msgZ2SDeviceRGB(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, bool state);
 
 
 #endif

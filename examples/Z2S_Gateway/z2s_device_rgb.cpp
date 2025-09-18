@@ -70,7 +70,7 @@ void addZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_
     Z2S_fillChannelsTableSlot(device, free_slot, channel_element->getChannelNumber(), SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, -1, name, func);
 }
 
-void msgZ2SDeviceRGB(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, bool state, signed char rssi) {
+void msgZ2SDeviceRGB(uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, bool state) {
 
   auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
 

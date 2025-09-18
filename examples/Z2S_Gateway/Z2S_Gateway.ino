@@ -1415,7 +1415,7 @@ void setup() {
   
   SuplaDevice.setName("Zigbee <=> Supla Gateway");
   SuplaDevice.setSwVersion(Z2S_VERSION);
-  wifi.enableSSL(true);
+  wifi.enableSSL(ENABLE_SSL);
 
   SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
   SuplaDevice.allowWorkInOfflineMode(2);

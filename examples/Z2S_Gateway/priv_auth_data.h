@@ -8,3 +8,5 @@
 #define USE_WEB_CONFIG_ON_STARTUP
 //#define USE_SUPLA_WEB_SERVER
 #define USE_TELNET_CONSOLE
+
+#define ENABLE_SSL true

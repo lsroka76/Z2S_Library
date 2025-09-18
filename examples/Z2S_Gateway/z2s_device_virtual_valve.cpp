@@ -36,10 +36,11 @@ void addZ2SDeviceVirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *devic
   if (func !=0) 
     Supla_Z2S_VirtualValve->setDefaultFunction(func);
   
-  Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_VirtualValve->getChannelNumber(), SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, sub_id, name, func);
+  Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_VirtualValve->getChannelNumber(), 
+                            SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, sub_id, name, func);
 }
 
-void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state, signed char rssi) {
+void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state) {
 
   if (channel_number_slot < 0) {
     

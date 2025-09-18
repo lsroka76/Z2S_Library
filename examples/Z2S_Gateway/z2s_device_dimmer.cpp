@@ -108,7 +108,7 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uin
   addZ2SDeviceDimmer(gateway, device, free_slot, -1, name, func);
 }
 
-void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state, signed char rssi) {
+void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state) {
 
   if (channel_number_slot < 0) {
     log_e("msgZ2SDeviceDimmer - invalid channel number slot");

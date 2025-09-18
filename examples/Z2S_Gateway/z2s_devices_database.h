@@ -1083,9 +1083,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR,
-    .z2s_device_clusters_count = 1,
+    .z2s_device_clusters_count = 4,
     .z2s_device_config_flags = 0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
+                             LUMI_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR,
     .z2s_device_clusters_count = 4,
