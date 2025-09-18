@@ -1090,6 +1090,9 @@ void Z2S_initSuplaChannels() {
         
         switch (z2s_channels_table[channels_counter].Supla_channel_type) {
 
+          case SUPLA_CHANNELTYPE_THERMOMETER:
+            initZ2SDeviceTempHumidity(channels_counter, false); break;
+
           case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
             initZ2SDeviceTempHumidity(channels_counter); break;
 
