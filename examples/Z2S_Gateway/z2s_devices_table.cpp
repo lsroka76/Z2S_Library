@@ -2882,6 +2882,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       
       case Z2S_DEVICE_DESC_TUYA_REPEATER: break;
 
+      case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR:
+
+        addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func, false); break; //thermometer only
+      
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL:
@@ -2889,7 +2893,6 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR: 
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
-      case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
 
         addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
@@ -2901,9 +2904,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
+
         addZ2SDevicePressure(device, first_free_slot);
       } break;
 
@@ -2936,8 +2941,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_ON_OFF:
       case Z2S_DEVICE_DESC_ON_OFF_1: {
+
         auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
-        Z2S_fillChannelsTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id); 
+        Z2S_fillChannelsTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), 
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id); 
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3: {
@@ -2952,7 +2959,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
         static const char button_name_function[][30] =  {"BUTTON #1 PRESSED", "BUTTON #1 DOUBLE PRESSED","BUTTON #1 HELD",
                                             "BUTTON #2 PRESSED", "BUTTON #2 DOUBLE PRESSED","BUTTON #2 HELD"};
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, (char *)button_name_function[sub_id], SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+                                  (char *)button_name_function[sub_id], 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F:
@@ -2966,9 +2975,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         if (sub_id < TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID)
           sprintf(button_name_function, "BUTTON %s", button_function_press[sub_id]);
         else
-          sprintf(button_name_function, "BUTTON %s", button_function_rotate[sub_id - TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID]);
+          sprintf(button_name_function, "BUTTON %s", 
+                  button_function_rotate[sub_id - TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID]);
 
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+                                  button_name_function, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON:
@@ -2976,7 +2988,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
         char button_name_function[30];
         sprintf(button_name_function, IKEA_STYRBAR_BUTTONS[sub_id]);
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+                                  button_name_function, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
@@ -2986,7 +3000,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
         char button_name_function[30];
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+                                  button_name_function, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1:
@@ -2994,7 +3010,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
         char button_name_function[30];
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+                                  button_name_function, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1:
@@ -3002,12 +3020,16 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
         char button_name_function[30];
         sprintf(button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+                                  button_name_function, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
 
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, "SINGLE", SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+                                  "SINGLE", 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
       case Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER:
@@ -3081,7 +3103,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TS0601_TRV_TV02:
       case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
       
-        addZ2SDeviceTempHumidity(device, first_free_slot);
+        addZ2SDeviceTempHumidity(device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
         uint8_t trv_thermometer_slot = first_free_slot;
         Z2S_setChannelFlags(trv_thermometer_slot, USER_DATA_FLAG_CORRECTIONS_DISABLED);
         
@@ -3095,27 +3117,42 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: {
 
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "DIMMER SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot, 
+                                NO_CUSTOM_CMD_SID, "DIMMER SWITCH", 
+                                SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+        
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
+
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, 
+                           DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", 
+                           SUPLA_CHANNELFNC_DIMMER);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+        
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE", SUPLA_CHANNELFNC_DIMMER);
+
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, 
+                           DIMMER_FUNC_COLOR_TEMPERATURE_SID, 
+                           "COLOR TEMPERATURE", 
+                           SUPLA_CHANNELFNC_DIMMER);
 
       } break; 
 
       case Z2S_DEVICE_DESC_TUYA_RGB_BULB: {
 
-        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB BULB", SUPLA_CHANNELFNC_RGBLIGHTING);
+        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, 
+                        "RGB BULB", 
+                        SUPLA_CHANNELFNC_RGBLIGHTING);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
@@ -3124,124 +3161,187 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_RGBW_BULB_XY:
       case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB: {
         
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "RGBW SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot, 
+                                NO_CUSTOM_CMD_SID, "RGBW SWITCH", 
+                                SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
         if (first_free_slot == 0xFF) {
+
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
+
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, 
+                           DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", 
+                           SUPLA_CHANNELFNC_DIMMER);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE", SUPLA_CHANNELFNC_DIMMER);
+
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, 
+                           DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE", 
+                           SUPLA_CHANNELFNC_DIMMER);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB", SUPLA_CHANNELFNC_RGBLIGHTING); 
+
+        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, 
+                        "RGB", SUPLA_CHANNELFNC_RGBLIGHTING); 
       } break; 
 
       case Z2S_DEVICE_DESC_IKEA_WW_BULB:
       case Z2S_DEVICE_DESC_PHILIPS_WW_BULB: {
         
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "BULB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot, 
+                                NO_CUSTOM_CMD_SID, "BULB SWITCH", 
+                                SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
+
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, 
+                           DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS", 
+                           SUPLA_CHANNELFNC_DIMMER);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY: {
       
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "RGB SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot, 
+                                  NO_CUSTOM_CMD_SID, "RGB SWITCH", 
+                                  SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, "RGB", SUPLA_CHANNELFNC_RGBLIGHTING); 
+
+        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, 
+                        "RGB", SUPLA_CHANNELFNC_RGBLIGHTING); 
       } break; 
 
       case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
       
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, sub_id, "DIMMER SWITCH", SUPLA_CHANNELFNC_DIMMER); break;
+        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, sub_id, 
+                           "DIMMER SWITCH", SUPLA_CHANNELFNC_DIMMER); break;
 
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: {
 
-        addZ2SDeviceIASzone(device, first_free_slot, -1, "SMOKE DETECT", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        addZ2SDeviceIASzone(device, first_free_slot, -1, 
+                            "SMOKE DETECT", 
+                            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
         //sub_id = -1 has to kept for compatibility reason   
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "SMOKE CONCENTRATION", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
+
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, 
+                                              "SMOKE CONCENTRATION", 
+                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                                              "ppm");
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2: {
 
-        addZ2SDeviceIASzone(device, first_free_slot, -1, "SMOKE DETECT", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        addZ2SDeviceIASzone(device, first_free_slot, -1, 
+                            "SMOKE DETECT", 
+                            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
 
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, 
+                                              "ILLUMINANCE", 
+                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                                              "lx"); break;
 
       case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR: {
         
         addZ2SDeviceIASzone(device, first_free_slot, -1, "LS ZONE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
         if (first_free_slot == 0xFF) {
+          
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, "ILLUMINANCE.", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, 
+                                              "ILLUMINANCE.", 
+                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                                              "lx");
       } break;
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: 
 
-        addZ2SDeviceActionTrigger(device, first_free_slot, -1, "OCCUPANCY EXEC", SUPLA_CHANNELFNC_STAIRCASETIMER); break;
+        addZ2SDeviceActionTrigger(device, first_free_slot, -1, 
+                                  "OCCUPANCY EXEC", 
+                                  SUPLA_CHANNELFNC_STAIRCASETIMER); break;
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_2:  
 
-        addZ2SDeviceIASzone(device, first_free_slot, -1, "OCCUPANCY_DETECTED", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+        addZ2SDeviceIASzone(device, first_free_slot, -1, 
+                            "OCCUPANCY_DETECTED", 
+                            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_3: 
 
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
-                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, 
+                                              "ILLUMINANCE",
+                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                                              "lx"); break;
 
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
         
         switch (sub_id) {
+
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
-            addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, 
+                                "PRESENCE", 
+                                SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
           case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
 
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
-                                                  "MOTION STATE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..5]");
+                                                  "MOTION STATE", 
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                                                  "[0..5]");
             break;
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
-                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, 
+                                                  "ILLUMINANCE",
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                                                  "lx"); break;
         }
       } break;
 
@@ -3259,7 +3359,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, 
+                                                  sub_id, name, func, unit); break;
         }
       } break;
 
@@ -3269,12 +3370,16 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
-            addZ2SDeviceIASzone(device, first_free_slot, sub_id, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, 
+                                "PRESENCE", 
+                                SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, "ILLUMINANCE",
-                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); break;
+            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, 
+                                                  "ILLUMINANCE",
+                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                                                  "lx"); break;
         }
       } break;
 
