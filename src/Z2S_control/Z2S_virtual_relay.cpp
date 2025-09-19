@@ -465,7 +465,7 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
         durationMs, storedTurnOnDurationMs, durationTimestamp, keepTurnOnDurationMs);
 
   if (on_off_state) {
-    if (keepTurnOnDurationMs) {
+    if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction()) {
       durationMs = storedTurnOnDurationMs;
     }
     if (durationMs != 0) {

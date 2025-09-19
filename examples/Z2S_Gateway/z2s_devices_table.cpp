@@ -2799,9 +2799,14 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
 
   ieee_addr_to_str(ieee_addr_str, device->ieee_addr);
 
-  log_i("BTC bound device(0x%x) on endpoint(0x%x), cluster id(0x%x)", device->short_addr, device->endpoint, device->cluster_id);
+  log_i("BTC bound device(0x%x) on endpoint(0x%x), cluster id(0x%x)", 
+        device->short_addr, device->endpoint, device->cluster_id);
   
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, 
+                                                          device->endpoint, 
+                                                          device->cluster_id, 
+                                                          ALL_SUPLA_CHANNEL_TYPES, 
+                                                          NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0)
     //log_i(_no_channel_found_str, device->ieee_addr);
@@ -2814,7 +2819,12 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device) {
 
     z2s_channels_table[channel_number_slot].short_addr = device->short_addr;
 
-    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, device->ieee_addr, device->endpoint, device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, 
+                                                        device->ieee_addr, 
+                                                        device->endpoint, 
+                                                        device->cluster_id, 
+                                                        ALL_SUPLA_CHANNEL_TYPES, 
+                                                        NO_CUSTOM_CMD_SID);
   } 
   //Z2S_addZBDeviceTableSlot(device->ieee_addr, device->short_addr, "unknown","unknown", 0, device->model_id,0);
 
