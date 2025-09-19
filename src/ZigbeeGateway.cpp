@@ -1044,7 +1044,7 @@ void ZigbeeGateway::addBoundDevice(zb_device_params_t *device, uint16_t cluster_
     
     //return; //temporary
     zbg_device_params_t *zbg_device = (zbg_device_params_t *)calloc(1, sizeof(zbg_device_params_t));
-    
+
     zbg_device->short_addr = device->short_addr;
     memcpy(zbg_device->ieee_addr, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
     zbg_device->cluster_id = cluster_id;
@@ -1127,7 +1127,7 @@ bool ZigbeeGateway::setClusterReporting(zbg_device_params_t * device, uint16_t c
       report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
       memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   }
-  //report_cmd.dis_defalut_resp = 0;   
+  //report_cmd.dis_default_resp = 0;   
   report_cmd.zcl_basic_cmd.dst_endpoint = device->endpoint;
   report_cmd.zcl_basic_cmd.src_endpoint = _endpoint;
   report_cmd.clusterID = cluster_id;
@@ -1147,7 +1147,7 @@ bool ZigbeeGateway::setClusterReporting(zbg_device_params_t * device, uint16_t c
   report_cmd.record_field = &records[0];
 
   report_cmd.manuf_specific = 0;
-  report_cmd.dis_defalut_resp = 0;
+  report_cmd.dis_default_resp = 0;
   report_cmd.direction = 0;
   report_cmd.manuf_code = 0;
 
@@ -1190,14 +1190,14 @@ void ZigbeeGateway::readClusterReportCmd(zbg_device_params_t * device,
       report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
       memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   }
-  //report_cmd.dis_defalut_resp = 0;   
+  //report_cmd.dis_default_resp = 0;   
   report_cmd.zcl_basic_cmd.dst_endpoint = device->endpoint;
   report_cmd.zcl_basic_cmd.src_endpoint = _endpoint;
   report_cmd.clusterID = cluster_id;
   report_cmd.attributeID = attribute_id;
 
   report_cmd.manuf_specific = 0;
-  report_cmd.dis_defalut_resp = 0;
+  report_cmd.dis_default_resp = 0;
   report_cmd.direction = 0;
   report_cmd.manuf_code = 0;
 
@@ -1225,13 +1225,13 @@ bool ZigbeeGateway::readClusterReportCfgCmd(zbg_device_params_t * device,
       report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
       memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   }
-  //report_cmd.dis_defalut_resp = 0;   
+  //report_cmd.dis_default_resp = 0;   
   report_cmd.zcl_basic_cmd.dst_endpoint = device->endpoint;
   report_cmd.zcl_basic_cmd.src_endpoint = _endpoint;
   report_cmd.clusterID = cluster_id;
 
   report_cmd.manuf_specific = 0;
-  report_cmd.dis_defalut_resp = 0;
+  report_cmd.dis_default_resp = 0;
   report_cmd.direction = 0;
   report_cmd.manuf_code = 0;
 
@@ -1345,7 +1345,7 @@ bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t clus
 
     read_req.direction = direction;
     read_req.manuf_specific = manuf_specific;
-    read_req.dis_defalut_resp = disable_default_response;
+    read_req.dis_default_resp = disable_default_response;
     read_req.manuf_code = manuf_code;
 
     log_i("Sending 'read attribute' command");
@@ -1397,7 +1397,7 @@ void ZigbeeGateway::sendAttributesRead(zbg_device_params_t * device, int16_t clu
 
   read_req.direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
   read_req.manuf_specific = 0;
-  read_req.dis_defalut_resp = 1;
+  read_req.dis_default_resp = 1;
 
   log_i("Sending 'read attribute' command");
   esp_zb_lock_acquire(portMAX_DELAY);
@@ -1441,7 +1441,7 @@ bool ZigbeeGateway::sendAttributeWrite(zbg_device_params_t * device, int16_t clu
     attribute_field[0].data.value = attribute_value;
 
     write_req.manuf_specific = manuf_specific;
-    write_req.dis_defalut_resp = 0;
+    write_req.dis_default_resp = 0;
     write_req.direction = 0;
     write_req.manuf_code = manuf_code;
 
@@ -1838,7 +1838,7 @@ bool ZigbeeGateway::sendCustomClusterCmd(zbg_device_params_t * device, int16_t c
   req.profile_id = ESP_ZB_AF_HA_PROFILE_ID;
   req.direction = direction;
   req.manuf_specific = manuf_specific;
-  req.dis_defalut_resp = disable_default_response;
+  req.dis_default_resp = disable_default_response;
   req.manuf_code = manuf_code;
   req.custom_cmd_id = custom_command_id;
   req.data.type = data_type; //ESP_ZB_ZCL_ATTR_TYPE_U8;//ESP_ZB_ZCL_ATTR_TYPE_SET;

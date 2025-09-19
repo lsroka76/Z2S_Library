@@ -1784,7 +1784,7 @@ void Z2S_startWebGUI() {
 }
 
 void Z2S_stopWebGUI() {
-  
+	
 	if (ESPUI.WebServer())
 		ESPUI.WebServer()->end();
 	current_Tuya_payload_label = 0;
