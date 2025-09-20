@@ -138,10 +138,16 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   int32_t target_heatsetpoint_factor     = 1;
   int32_t temperature_calibration_factor = 1;
 
-  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, //legacy compatibility
                                                             z2s_channels_table[channel_number_slot].endpoint, 
                                                             z2s_channels_table[channel_number_slot].cluster_id, 
                                                             SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
+                                                            
+  if (channel_number_slot_1 < 0)
+    channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+                                                      z2s_channels_table[channel_number_slot].endpoint, 
+                                                      z2s_channels_table[channel_number_slot].cluster_id, 
+                                                      SUPLA_CHANNELTYPE_THERMOMETER, NO_CUSTOM_CMD_SID);
 
   int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                                                             z2s_channels_table[channel_number_slot].endpoint, 

@@ -1397,8 +1397,13 @@ void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 
   log_i("%s, endpoint 0x%x, temperature %f", ieee_addr_str, endpoint, temperature);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
-  
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                          SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+                                                          NO_CUSTOM_CMD_SID);
+  if (channel_number_slot < 0) 
+    channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                    SUPLA_CHANNELTYPE_THERMOMETER, 
+                                                    NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0) 
     no_channel_found_error_func(ieee_addr_str);
   else
@@ -1413,7 +1418,9 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
   log_i("%s, endpoint 0x%x, humidity %f", ieee_addr_str, endpoint, humidity);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                          SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+                                                          NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0)
     no_channel_found_error_func(ieee_addr_str);
@@ -1512,9 +1519,14 @@ void Z2S_onThermostatTemperaturesReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t 
         ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0], 
         endpoint, id, temperature);
 
-  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                            SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
                                                             NO_CUSTOM_CMD_SID);
-  
+  if (channel_number_slot_1 < 0)
+    channel_number_slot_1 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                      SUPLA_CHANNELTYPE_THERMOMETER, 
+                                                      NO_CUSTOM_CMD_SID);
+
   int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
                                                             NO_CUSTOM_CMD_SID);
 
@@ -1753,7 +1765,9 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
     case 0xF7: {
 
       for (uint8_t i = 0; i < attribute->data.size; i++)
-        log_i("F7 attribute[%d] = 0x%02X(%d)", i, *((uint8_t*)(attribute->data.value + i)), *((uint8_t*)(attribute->data.value + i)));
+        log_i("F7 attribute[%d] = 0x%02X(%d)", i, 
+              *((uint8_t*)(attribute->data.value + i)), 
+              *((uint8_t*)(attribute->data.value + i)));
       
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
                                                               SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
@@ -3659,11 +3673,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selector, uint32_t timings_secs) {
   
   if (timeout > 0) {
-    //z2s_channels_table[device_id].user_data_flags |= USER_DATA_FLAG_SED_TIMEOUT;
-    //z2s_channels_table[device_id].user_data_1 = timeout;
+
     z2s_channels_table[channel_number_slot].timeout_secs = timeout * 3600;
-  }
-  else {
+  } else {
+
     if (selector & 1)
       z2s_channels_table[channel_number_slot].keep_alive_secs = timings_secs;
     if (selector & 2)
@@ -3674,77 +3687,102 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
   
   if (Z2S_saveChannelsTable()) {
-    log_i("Device(channel %d) timeout updated. Table saved successfully.", z2s_channels_table[channel_number_slot].Supla_channel);
+    log_i("Device(channel %d) timeout updated. Table saved successfully.", 
+          z2s_channels_table[channel_number_slot].Supla_channel);
       
     auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
-      
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
 
-      auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
-      if (timeout > 0)
-        Supla_Z2S_VirtualBinary->setTimeout(timeout);
-      if (selector & 4)
-        Supla_Z2S_VirtualBinary->setAutoSetSecs(timings_secs);
-    } else
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
+    if (element == nullptr)
+      return;
 
-      auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
-      Supla_Z2S_VirtualThermHygroMeter->setTimeout(timeout);
-    } else
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RELAY) {
+    switch (element->getChannel()->getChannelType()) {
 
-      auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
-      if (selector & 1)
-        Supla_Z2S_VirtualRelay->setKeepAliveSecs(timings_secs);
-      if (selector & 2)
-        Supla_Z2S_VirtualRelay->setTimeoutSecs(timings_secs);
-    }  else
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+      case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
-      auto Supla_Z2S_ElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);
-      if (selector & 1)
-        Supla_Z2S_ElectricityMeter->setKeepAliveSecs(timings_secs);
-      if (selector & 2)
-        Supla_Z2S_ElectricityMeter->setTimeoutSecs(timings_secs);
-      if (selector & 4)
-        Supla_Z2S_ElectricityMeter->setRefreshSecs(timings_secs);
-    } else
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_DIMMER) {
+        auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
+        if (timeout > 0)
+          Supla_Z2S_VirtualBinary->setTimeout(timeout);
+        if (selector & 4)
+          Supla_Z2S_VirtualBinary->setAutoSetSecs(timings_secs);
+      } break;
 
-      auto Supla_Z2S_DimmerInterface = reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
-      if (selector & 1)
-        Supla_Z2S_DimmerInterface->setKeepAliveSecs(timings_secs);
-      if (selector & 2)
-        Supla_Z2S_DimmerInterface->setTimeoutSecs(timings_secs);
-    }  else
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
+      case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
-      auto Supla_Z2S_RGBInterface = reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
-      if (selector & 1)
-        Supla_Z2S_RGBInterface->setKeepAliveSecs(timings_secs);
-      if (selector & 2)
-        Supla_Z2S_RGBInterface->setTimeoutSecs(timings_secs);
-    } else
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HVAC) {
+        auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
 
-      auto Supla_Z2S_HvacBaseEE = reinterpret_cast<Supla::Control::HvacBaseEE*>(element);
-      auto Supla_Z2S_TRVInterface = reinterpret_cast<Supla::Control::Z2S_TRVInterface*>(Supla_Z2S_HvacBaseEE->getPrimaryOutputEE());
-      //if (selector & 1)
-      //  Supla_Z2S_RGBInterface->setKeepAliveSecs(timings_secs);
-      if (Supla_Z2S_TRVInterface && (selector & 2))
+        Supla_Z2S_VirtualThermHygroMeter->setTimeout(timeout);
+      } break;
+
+      case SUPLA_CHANNELTYPE_THERMOMETER: {
+
+        auto Supla_Z2S_VirtualThermometer = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
+
+        Supla_Z2S_VirtualThermometer->setTimeout(timeout);
+      } break;
+
+      case SUPLA_CHANNELTYPE_RELAY: {
+
+        auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
+
+        if (selector & 1)
+          Supla_Z2S_VirtualRelay->setKeepAliveSecs(timings_secs);
+        if (selector & 2)
+          Supla_Z2S_VirtualRelay->setTimeoutSecs(timings_secs);
+      } break;
+
+      case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
+
+        auto Supla_Z2S_ElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);
+
+        if (selector & 1)
+          Supla_Z2S_ElectricityMeter->setKeepAliveSecs(timings_secs);
+        if (selector & 2)
+          Supla_Z2S_ElectricityMeter->setTimeoutSecs(timings_secs);
+        if (selector & 4)
+          Supla_Z2S_ElectricityMeter->setRefreshSecs(timings_secs);
+      } break;
+
+      case SUPLA_CHANNELTYPE_DIMMER: {
+
+        auto Supla_Z2S_DimmerInterface = reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
+
+        if (selector & 1)
+          Supla_Z2S_DimmerInterface->setKeepAliveSecs(timings_secs);
+        if (selector & 2)
+          Supla_Z2S_DimmerInterface->setTimeoutSecs(timings_secs);
+      } break;
+
+      case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: {
+
+        auto Supla_Z2S_RGBInterface = reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
+        
+        if (selector & 1)
+          Supla_Z2S_RGBInterface->setKeepAliveSecs(timings_secs);
+        if (selector & 2)
+          Supla_Z2S_RGBInterface->setTimeoutSecs(timings_secs);
+      } break;
+
+      case SUPLA_CHANNELTYPE_HVAC: {
+
+        auto Supla_Z2S_HvacBaseEE = reinterpret_cast<Supla::Control::HvacBaseEE*>(element);
+        auto Supla_Z2S_TRVInterface = 
+          reinterpret_cast<Supla::Control::Z2S_TRVInterface*>(Supla_Z2S_HvacBaseEE->getPrimaryOutputEE());
+        
+        if (Supla_Z2S_TRVInterface && (selector & 2))
         Supla_Z2S_TRVInterface->setTimeoutSecs(timings_secs);
-    }
-    else
-    if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
+      } break;
 
-      auto Supla_Z2S_ActionTrigger = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
-      //if (selector & 1)
-      //  Supla_Z2S_RGBInterface->setKeepAliveSecs(timings_secs);
+      case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
+
+        auto Supla_Z2S_ActionTrigger = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
+     
       if (Supla_Z2S_ActionTrigger && (selector & 4))
         Supla_Z2S_ActionTrigger->setDebounceTimeMs(timings_secs);
+      } break;
     }
   }
 }
+
 void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode) {
 
   if (z2s_channels_table[channel_number_slot].Supla_channel_type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
@@ -3937,19 +3975,36 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot, uint8_t msg_id, uint32
           break; //only actual channel since rest will be scanned anyway in initSuplaChannels()
       
         switch (element->getChannel()->getChannelType()) {
+
           case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:{
+
             auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+
             Supla_Z2S_VirtualThermHygroMeter->Refresh();
 
           } break;
+
+          case SUPLA_CHANNELTYPE_THERMOMETER:{
+
+            auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+
+            Supla_Z2S_VirtualThermHygroMeter->Refresh();
+
+          } break;
+
           case SUPLA_CHANNELTYPE_PRESSURESENSOR: break; //TODO add timeout 
+
           case SUPLA_CHANNELTYPE_BINARYSENSOR:{
+
             auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
+
             Supla_Z2S_VirtualBinary->Refresh();
           } break;
         }    
     }
-    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, z2s_channels_table[channel_number_slot].ieee_addr, -1, -1, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+    channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, 
+                                                        z2s_channels_table[channel_number_slot].ieee_addr, 
+                                                        -1, -1, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   }
 }
 
