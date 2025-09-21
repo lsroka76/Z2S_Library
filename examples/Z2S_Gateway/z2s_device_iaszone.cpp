@@ -3,9 +3,9 @@
 
 void initZ2SDeviceIASzone(int16_t channel_number_slot) {
   
-  uint8_t timeout = z2s_channels_table[channel_number_slot].timeout_secs / 3600;
+  //uint8_t timeout = z2s_channels_table[channel_number_slot].timeout_secs / 3600;
   
-  auto Supla_Z2S_VirtualBinary = new Supla::Sensor::Z2S_VirtualBinary(true, timeout);
+  auto Supla_Z2S_VirtualBinary = new Supla::Sensor::Z2S_VirtualBinary(true);
   
   Supla_Z2S_VirtualBinary->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
@@ -17,8 +17,12 @@ void initZ2SDeviceIASzone(int16_t channel_number_slot) {
 
   Supla_Z2S_VirtualBinary->setAutoSetSecs(z2s_channels_table[channel_number_slot].refresh_secs);
 
-  if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) 
+  if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) {
     Supla_Z2S_VirtualBinary->getChannel()->setStateOfflineRemoteWakeupNotSupported();
+    Supla_Z2S_VirtualBinary->setRWNSFlag(true);
+  }
+
+  Supla_Z2S_VirtualBinary->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
 
   Supla::Notification::RegisterNotification(z2s_channels_table[channel_number_slot].Supla_channel, false, true);
 }
@@ -26,7 +30,7 @@ void initZ2SDeviceIASzone(int16_t channel_number_slot) {
 void addZ2SDeviceIASzone(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name, uint32_t func) {
   
   auto Supla_Z2S_VirtualBinary = new Supla::Sensor::Z2S_VirtualBinary(true);
-  
+
   Z2S_fillChannelsTableSlot(device, free_slot, 
                             Supla_Z2S_VirtualBinary->getChannelNumber(), 
                             SUPLA_CHANNELTYPE_BINARYSENSOR, 

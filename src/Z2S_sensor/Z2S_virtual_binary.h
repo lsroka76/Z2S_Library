@@ -21,19 +21,22 @@
 
 #include <supla/sensor/virtual_binary.h>
 
-#define MSINHOUR (60*60*1000)
-
 namespace Supla {
 namespace Sensor {
 class Z2S_VirtualBinary : public Supla::Sensor::VirtualBinary {
   
 public:
     
-  Z2S_VirtualBinary(bool keepStateInStorage = false, uint8_t timeout = 0) : VirtualBinary(keepStateInStorage), _timeout(timeout) {}
+  Z2S_VirtualBinary(bool keepStateInStorage = false, bool rwns_flag = false) : VirtualBinary(keepStateInStorage), _rwns_flag(rwns_flag) {}
 
-  void setTimeout(uint8_t timeout) {
+  void setRWNSFlag(bool rwns_flag) {
+
+    _rwns_flag = rwns_flag;    
+  }
+  
+  void setTimeoutSecs(uint32_t timeout_secs) {
     
-    _timeout = timeout;
+    _timeout_ms = timeout_secs * 1000;
   }
 
  void setAutoClearSecs(uint32_t auto_clear_secs) {
@@ -48,7 +51,7 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
 
   void Refresh() {
     
-    _timeout_ms = millis();
+    _last_timeout_ms = millis();
     channel.setStateOnline();
   }
 
@@ -73,10 +76,17 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
       lastReadTime = millis();
       channel.setNewValue(getValue());
     }
-    if ((_timeout > 0) && (millis() - _timeout_ms > _timeout * MSINHOUR)) {
-      _timeout_ms = millis();
-      channel.setStateOffline();
+    
+    if ((_timeout_ms > 0) && (millis() - _last_timeout_ms > _timeout_ms)) {
+      
+      _last_timeout_ms = millis();
+
+      if (_rwns_flag) 
+        channel.setStateOfflineRemoteWakeupNotSupported();
+      else
+        channel.setStateOffline();
     }
+
     if (_auto_set_ms && _last_clear_ms && (millis() - _last_clear_ms > _auto_set_ms))
 	    extSet();
   }
@@ -84,13 +94,14 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
 
     
  protected:
-   uint8_t  _timeout = 0;
-   uint32_t _timeout_ms = 0;
+  bool     _rwns_flag;
+  uint32_t _timeout_ms = 0;
+  uint32_t _last_timeout_ms = 0;
    
-   uint32_t _auto_clear_ms = 0;
-   uint32_t _auto_set_ms = 0;
-   uint32_t _last_set_ms = 0;
-   uint32_t _last_clear_ms = 0;
+  uint32_t _auto_clear_ms = 0;
+  uint32_t _auto_set_ms = 0;
+  uint32_t _last_set_ms = 0;
+  uint32_t _last_clear_ms = 0;
 };
 };  // namespace Sensor
 };  // namespace Supla

@@ -1504,7 +1504,11 @@ void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uin
 
   log_i("%s, endpoint 0x%x, occupancy 0x%x", ieee_addr_str, endpoint, occupancy);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, SONOFF_PIR_SENSOR_OCCUPANCY_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                          endpoint, 
+                                                          cluster, 
+                                                          SUPLA_CHANNELTYPE_BINARYSENSOR, 
+                                                          SONOFF_PIR_SENSOR_OCCUPANCY_SID);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0));
@@ -1904,7 +1908,10 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
 
     case SONOFF_CUSTOM_CLUSTER_TAMPER_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                              endpoint, 
+                                                              cluster, 
+                                                              SUPLA_CHANNELTYPE_BINARYSENSOR, 
                                                               SONOFF_CUSTOM_CLUSTER_TAMPER_SID);
       
       if (channel_number_slot < 0) {
@@ -1916,7 +1923,10 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
 
     case SONOFF_CUSTOM_CLUSTER_ILLUMINATION_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                              endpoint, 
+                                                              cluster, 
+                                                              SUPLA_CHANNELTYPE_BINARYSENSOR, 
                                                               SONOFF_PIR_SENSOR_ILLUMINANCE_SID);
       
       if (channel_number_slot < 0) {
@@ -2098,7 +2108,8 @@ void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_
   no_channel_found_error_func(ieee_addr_str);
 }
 
-void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, 
+                                        uint16_t endpoint, uint16_t cluster, 
                                         const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
@@ -2107,8 +2118,9 @@ void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t e
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
-                                                              NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                          SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+                                                          NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
     
@@ -2126,82 +2138,111 @@ void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t e
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_FREQUENCY, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_AC_FREQUENCY, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
     
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_VOLTAGE_A_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_CURRENT_A_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_CURRENT_A_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, *(int16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_ACTIVE_POWER_A_SEL, 
+                                   *(int16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_REACTIVE_POWER_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_REACTIVE_POWER_A_SEL, *(int16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_REACTIVE_POWER_A_SEL, 
+                                   *(int16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_VOLTAGE_MUL_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_AC_VOLTAGE_MUL_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_VOLTAGE_DIV_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_AC_VOLTAGE_DIV_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_CURRENT_MUL_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_AC_CURRENT_MUL_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_CURRENT_DIV_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_AC_CURRENT_DIV_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_ACTIVE_POWER_MUL_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_AC_ACTIVE_POWER_MUL_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_ACTIVE_POWER_DIV_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_AC_ACTIVE_POWER_DIV_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_MULTIPLIER_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_FREQUENCY_MUL_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                   Z2S_EM_AC_FREQUENCY_MUL_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_DIVISOR_ID: {
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_AC_FREQUENCY_DIV_SEL, *(uint16_t *)attribute->data.value);
+      msgZ2SDeviceElectricityMeter(channel_number_slot,  
+                                   Z2S_EM_AC_FREQUENCY_DIV_SEL, 
+                                   *(uint16_t *)attribute->data.value);
     } break;
   }
 }
 
-void Z2S_onMultistateInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-                                        const esp_zb_zcl_attribute_t *attribute) {
+void Z2S_onMultistateInputReceive(esp_zb_ieee_addr_t ieee_addr, 
+                                  uint16_t endpoint, uint16_t cluster, 
+                                  const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
+        ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
-                                                              NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                          SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+                                                          NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
     
@@ -2229,7 +2270,8 @@ void Z2S_onMultistateInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
   }
 }
 
-void Z2S_onAnalogInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+void Z2S_onAnalogInputReceive(esp_zb_ieee_addr_t ieee_addr, 
+                              uint16_t endpoint, uint16_t cluster, 
                               const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
@@ -2238,8 +2280,9 @@ void Z2S_onAnalogInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, 
-                                                              NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                          ALL_SUPLA_CHANNEL_TYPES, 
+                                                          NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
     
@@ -2269,7 +2312,8 @@ void Z2S_onAnalogInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
             log_e("no GPM channel found for address %s", ieee_addr_str);
             return;
           }       
-          msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+          msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
+                                                ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
                                                 *(float *)attribute->data.value);
         } break;
       }
@@ -2288,7 +2332,9 @@ void Z2S_onMeteringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                                          SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+                                                          NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
     
@@ -3892,28 +3938,36 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
     switch (element->getChannel()->getChannelType()) {
 
+
       case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
         auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
-        if (timeout > 0)
-          Supla_Z2S_VirtualBinary->setTimeout(timeout);
+        
+        if (selector & 2)
+          Supla_Z2S_VirtualBinary->setTimeoutSecs(timings_secs);
+
         if (selector & 4)
           Supla_Z2S_VirtualBinary->setAutoSetSecs(timings_secs);
       } break;
+
 
       case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
         auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
 
-        Supla_Z2S_VirtualThermHygroMeter->setTimeout(timeout);
+        if (selector & 2)
+          Supla_Z2S_VirtualThermHygroMeter->setTimeout(timings_secs);
       } break;
+
 
       case SUPLA_CHANNELTYPE_THERMOMETER: {
 
         auto Supla_Z2S_VirtualThermometer = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
 
-        Supla_Z2S_VirtualThermometer->setTimeout(timeout);
+        if (selector & 2)
+          Supla_Z2S_VirtualThermometer->setTimeout(timings_secs);
       } break;
+
 
       case SUPLA_CHANNELTYPE_RELAY: {
 
@@ -3921,9 +3975,11 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
         if (selector & 1)
           Supla_Z2S_VirtualRelay->setKeepAliveSecs(timings_secs);
+
         if (selector & 2)
           Supla_Z2S_VirtualRelay->setTimeoutSecs(timings_secs);
       } break;
+
 
       case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
@@ -3931,11 +3987,14 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
         if (selector & 1)
           Supla_Z2S_ElectricityMeter->setKeepAliveSecs(timings_secs);
+        
         if (selector & 2)
           Supla_Z2S_ElectricityMeter->setTimeoutSecs(timings_secs);
+
         if (selector & 4)
           Supla_Z2S_ElectricityMeter->setRefreshSecs(timings_secs);
       } break;
+
 
       case SUPLA_CHANNELTYPE_DIMMER: {
 
@@ -3943,9 +4002,11 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
         if (selector & 1)
           Supla_Z2S_DimmerInterface->setKeepAliveSecs(timings_secs);
+
         if (selector & 2)
           Supla_Z2S_DimmerInterface->setTimeoutSecs(timings_secs);
       } break;
+
 
       case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: {
 
@@ -3953,6 +4014,7 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
         
         if (selector & 1)
           Supla_Z2S_RGBInterface->setKeepAliveSecs(timings_secs);
+
         if (selector & 2)
           Supla_Z2S_RGBInterface->setTimeoutSecs(timings_secs);
       } break;
