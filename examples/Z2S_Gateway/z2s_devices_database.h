@@ -2939,5 +2939,3 @@ static const Tuya_datapoint_desc_t TUYA_DATAPOINTS_DESC_TABLE[] PROGMEM [[maybe_
 };
 
 #endif
-//Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F
-//
