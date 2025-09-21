@@ -36,6 +36,7 @@
 #define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE   (1 << 3) // 0x08 
 #define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG    (1 << 4) // 0x10 
 #define USER_DATA_FLAG_DISABLE_NOTIFICATIONS  (1 << 5) // 0x20
+#define USER_DATA_FLAG_SET_SORWNS_ON_START    (1 << 6) // 0x40
 
 #define ZBD_USER_DATA_FLAG_VERSION_2_0                    (1 << 0)
 #define ZBD_USER_DATA_FLAG_RESERVED_1                     (1 << 1)

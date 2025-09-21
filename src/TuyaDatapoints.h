@@ -149,4 +149,7 @@
 #define TUYA_ILLUMINANCE_SENSOR_ILLUMINANCE_DP                      0x02
 #define TUYA_ILLUMINANCE_SENSOR_BATTERY_DP                          0x04
 
+#define TUYA_PIR_ILLUMINANCE_SENSOR_PIR_DP                          0x01
+#define TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_DP                  0x0C
+#define TUYA_PIR_ILLUMINANCE_SENSOR_BATTERY_LEVEL_DP                0x04
 #endif //TUYA_DATAPOINTS_H_

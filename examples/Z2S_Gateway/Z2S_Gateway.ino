@@ -1253,18 +1253,6 @@ void setup() {
   pinMode(WIFI_ANT_CONFIG, OUTPUT); // pinMode(14, OUTPUT);
   digitalWrite(WIFI_ANT_CONFIG, HIGH);
  
-  //rgbLed.begin(); 
-  //rgbLed.show(); 
-
-  //for (uint8_t i = 0; i < 256; i++) {
-    //rgbLedWrite(RGB_BUILTIN, 16, 0, 16);
-    //delay(2000);
-    //rgbLedWrite(RGB_BUILTIN, 128, 0, 128);  
-    //delay(2000);
-    //rgbLedWrite(RGB_BUILTIN, 255, 0, 255);  
-    //delay(2000);
-  //}
-
   eeprom.setStateSavePeriod(5000);
 
   new Supla::Clock;
@@ -1688,23 +1676,31 @@ void loop() {
                         
                         if (endpoint_counter == 0) { 
 
-                          if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT) {
+                          if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
+                              Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT) {
 
                               log_i("Tuya magic");
 
-                              uint16_t tuya_init_attributes[6] = { ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
+                              uint16_t tuya_init_attributes[6] = { ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,
+                                                                   ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
                                                                    ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, 
-                                                                   ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
+                                                                   ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,
+                                                                   ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
                                                                    0xFFFE };
                               zbGateway.sendAttributesRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 6, tuya_init_attributes);  
                             }
 
-                          if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_SETUP) {
+                          if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
+                              Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_SETUP) {
 
                               log_i("Tuya setup");
 
-                              zbGateway.sendCustomClusterCmd(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, TUYA_SETUP_CMD, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, nullptr,
-                                                             false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 0, 0); //disable default response, no manufacurer code  
+                              zbGateway.sendCustomClusterCmd(joined_device, 
+                                                             ESP_ZB_ZCL_CLUSTER_ID_BASIC, 
+                                                             TUYA_SETUP_CMD, 
+                                                             ESP_ZB_ZCL_ATTR_TYPE_SET, 
+                                                             0, nullptr, false, 
+                                                             ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 0, 0); //disable default response, no manufacurer code  
                             }
                         }
 
@@ -1729,21 +1725,12 @@ void loop() {
                           } break;
                         }
 
-                        for (int clusters_bind_counter = 0; clusters_bind_counter < Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count; clusters_bind_counter++)
-                          zbGateway.bindDeviceCluster(joined_device, Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[clusters_bind_counter]);
+                        for (int clusters_bind_counter = 0; 
+                              clusters_bind_counter < Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count; 
+                              clusters_bind_counter++)
+                          zbGateway.bindDeviceCluster(joined_device, 
+                                                      Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[clusters_bind_counter]);
 
-                        /*if ((Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id == Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR) &&
-                            (endpoint_id == 35)) {
-                              log_i("Develco test");
-                              esp_zb_ieee_addr_t gateway_ieee_addr;
-                              memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
-                              zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                                                           ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr, true, 1, 0x1015);
-                              esp_zb_get_long_address(gateway_ieee_addr);
-                              zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                                                           ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr, true, 1, 0x1015);
-                            }*/
-                        
                         if (endpoint_counter == 0) {//(endpoint_id == 1)
                           
                           uint8_t zb_device_slot = Z2S_addZBDeviceTableSlot(joined_device->ieee_addr,
@@ -1754,7 +1741,8 @@ void loop() {
                                                                             Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id,
                                                                             zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
                           if ((zb_device_slot < 0xFF) &&
-                              (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY))
+                              (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY))
                             Z2S_setZBDeviceFlags(zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
                           
                         }
@@ -1898,7 +1886,8 @@ void loop() {
 
                           case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1: {
                             
-                            Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                             Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID, "T&H");
                             Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
@@ -1921,35 +1910,56 @@ void loop() {
 
                           case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
                             
-                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID, "ENERGY", 0, "kWh");
-                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID, "PRODUCED ENERGY", 0, "kWh");
-                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_SID, "POWER", 0, "W");
-                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID, "POWER FACTOR");   
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID, 
+                                             "ENERGY", 0, "kWh");
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID,
+                                             "PRODUCED ENERGY", 0, "kWh");
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_SID, 
+                                             "POWER", 0, "W");
+                            Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID, 
+                                             "POWER FACTOR");   
                             Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_SID);
                           } break;
 
                           case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
                             
-                            Z2S_addZ2SDevice(joined_device, SONOFF_ON_OFF_SID, "SWITCH", SUPLA_CHANNELFNC_POWERSWITCH);
-                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_SID, "EM");
-                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID, "ENERGY (TODAY)", 0, "kWh");
-                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID, "ENERGY (MONTH)", 0, "kWh");   
-                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID, "ENERGY (YESTERDAY)", 0, "kWh");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ON_OFF_SID, "SWITCH", 
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_SID, 
+                                             "EM");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID, 
+                                             "ENERGY (TODAY)", 0, "kWh");
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID, 
+                                             "ENERGY (MONTH)", 0, "kWh");   
+                            Z2S_addZ2SDevice(joined_device, SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID, 
+                                             "ENERGY (YESTERDAY)", 0, "kWh");
                           } break;
 
                           case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR: {
                             
-                            Z2S_addZ2SDevice(joined_device, ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID, "TH");
-                            Z2S_addZ2SDevice(joined_device, ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 0, "lx");
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, "ALARM_1", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);  
+                            Z2S_addZ2SDevice(joined_device, ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID, 
+                                             "TH");
+                            Z2S_addZ2SDevice(joined_device, ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID, 
+                                             "ILLUMINANCE", 0, "lx");
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, 
+                                             "ALARM_1", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, 
+                                             "TAMPER", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);  
                           } break;
 
                           case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: {
                             
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, "CONTACT", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID, "VIBRATION", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, 
+                                             "CONTACT", 
+                                             SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID, 
+                                             "VIBRATION", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, 
+                                             "TAMPER", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                           } break;
 
                           case Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F: {
@@ -2001,6 +2011,14 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, TUYA_VIBRATION_SENSOR_CONTACT_SID,  "CONTACT", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
                           } break;
 
+                          case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR: {
+                            
+                            Z2S_addZ2SDevice(joined_device, Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID, 
+                                             "PIR", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID,  
+                                             "ILLUMINANCE", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                          } break;
+
                           case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR: {
                             
                             Z2S_addZ2SDevice(joined_device, LUMI_MOTION_SENSOR_OCCUPANCY_SID,"OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
@@ -2033,23 +2051,31 @@ void loop() {
 
                           case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
                             
-                            Z2S_addZ2SDevice(joined_device, IAS_WD_SILENT_ALARM_SID, "SILENT ALARM", SUPLA_CHANNELFNC_POWERSWITCH);
-                            Z2S_addZ2SDevice(joined_device, IAS_WD_LOUD_ALARM_SID, "LOUD ALARM", SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, IAS_WD_SILENT_ALARM_SID, "SILENT ALARM", 
+                                            SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, IAS_WD_LOUD_ALARM_SID, "LOUD ALARM", 
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
                           } break;
 
                           case Z2S_DEVICE_DESC_MOES_ALARM: {
                             
-                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_SWITCH_SID, "ALARM SWITCH", SUPLA_CHANNELFNC_POWERSWITCH);
-                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_MELODY_SID, "ALARM MELODY", SUPLA_CHANNELFNC_POWERSWITCH);
-                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_VOLUME_SID, "ALARM VOLUME", SUPLA_CHANNELFNC_POWERSWITCH);
-                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_DURATION_SID, "ALARM DURATION", SUPLA_CHANNELFNC_POWERSWITCH);
-                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_DISPLAY_SID, "ALARM DISPLAY", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_SWITCH_SID, "ALARM SWITCH", 
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_MELODY_SID, "ALARM MELODY", 
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_VOLUME_SID, "ALARM VOLUME", 
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_DURATION_SID, "ALARM DURATION", 
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, MOES_ALARM_DISPLAY_SID, "ALARM DISPLAY", 
+                                             SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
 
                           } break;
 
                           case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
                             
-                            Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                             Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_CONC_SID, "CO CONCENTRATION", 0, "ppm");
                             Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_SELF_TEST_SID, "SELF TEST RESULT", 0, "1..3");
                             Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_SILENCE_SID, "SILENCE");
@@ -2057,7 +2083,8 @@ void loop() {
 
                           case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR: {
                             
-                            Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_GAS_SID,"GAS DETECTED", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                            Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_GAS_SID,"GAS DETECTED", 
+                                             SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                             Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_GAS_CONC_SID, "GAS CONCENTRATION", 0, "%LEL");
                             Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID, "SELF TEST RESULT", 0, "1..3");
                             Z2S_addZ2SDevice(joined_device, TUYA_GAS_DETECTOR_PREHEAT_SID, "PREHEAT");
@@ -2083,6 +2110,15 @@ void loop() {
                             Z2S_addZ2SDevice(joined_device, LUMI_AIR_QUALITY_SENSOR_VOC_SID, "VOC", 0, "ppb");
                             Z2S_addZ2SDevice(joined_device, LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID, "AIR QUALITY", 0, "1-5");
                           } break;
+                          
+                          case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP: {
+
+                            Z2S_addZ2SDevice(joined_device, Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_TEMP_SID, "TEMP");
+                            Z2S_addZ2SDevice(joined_device, Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_SWITCH_SID, "SWITCH",
+                                             SUPLA_CHANNELFNC_POWERSWITCH);
+                            Z2S_addZ2SDevice(joined_device, Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_EM_SID);
+                            
+                          }break;
 
                           default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
                         }

@@ -1161,12 +1161,14 @@ void processTuyaRainSensor2DataReport(int16_t channel_number_slot, uint16_t payl
   channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                                                     z2s_channels_table[channel_number_slot].endpoint, 
                                                     z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
+                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                    TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
 
   channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                                                     z2s_channels_table[channel_number_slot].endpoint, 
                                                     z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_RAIN_SENSOR_RAIN_SID);
+                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, 
+                                                    TUYA_RAIN_SENSOR_RAIN_SID);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_RAIN_SENSOR_2_ILLUMINANCE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
@@ -1301,12 +1303,14 @@ void processTuyaVibrationSensorDataReport(int16_t channel_number_slot, uint16_t 
   channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                                                     z2s_channels_table[channel_number_slot].endpoint, 
                                                     z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_VIBRATION_SENSOR_VIBRATION_SID);
+                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, 
+                                                    TUYA_VIBRATION_SENSOR_VIBRATION_SID);
 
   channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                                                     z2s_channels_table[channel_number_slot].endpoint, 
                                                     z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_VIBRATION_SENSOR_CONTACT_SID);
+                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, 
+                                                    TUYA_VIBRATION_SENSOR_CONTACT_SID);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_VIBRATION_SENSOR_VIBRATION_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
@@ -1321,6 +1325,45 @@ void processTuyaVibrationSensorDataReport(int16_t channel_number_slot, uint16_t 
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_VIBRATION_SENSOR_BATTERY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
+  }  
+}
+
+void processTuyaPIRIlluminanceSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,
+                                               uint8_t *payload, uint32_t model_id) {
+
+  int16_t channel_number_slot_1, channel_number_slot_2;
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+                                                    z2s_channels_table[channel_number_slot].endpoint, 
+                                                    z2s_channels_table[channel_number_slot].cluster_id, 
+                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, 
+                                                    Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID);
+
+  channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+                                                    z2s_channels_table[channel_number_slot].endpoint, 
+                                                    z2s_channels_table[channel_number_slot].cluster_id, 
+                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                    Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID);
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PIR_ILLUMINANCE_SENSOR_PIR_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1));
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, 
+                                          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                          Tuya_read_dp_result.dp_value);
+  }
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_PIR_ILLUMINANCE_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) {
 
     updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
@@ -1432,69 +1475,113 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV603:
     case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10:
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z:
+
       processTuyaHvacDataReport(channel_number_slot, payload_size, payload, model_id); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
+
       processTuyaDoubleDimmerSwitchDataReport(channel_number_slot, payload_size, payload); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
+
       processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, 10); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
+
       processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, 1); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR: 
+
       processTuyaTempHumiditySensorDataReport(channel_number_slot, payload_size, payload); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
+
       processTuyaIlluminanceSensorDataReport(channel_number_slot, payload_size, payload); break;
+
 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
+
       processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, model_id); break;
+
 
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
+
       processTuyaCOGasDetectorReport(channel_number_slot, payload_size, payload, model_id); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
+
       processTuyaAirQualitySensorReport(channel_number_slot, payload_size, payload, model_id); break;
+
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
+
       processTuyaPresenceSensorDataReport(channel_number_slot, payload_size, payload, model_id); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
+
       processTuyaEF00Switch2x3DataReport(channel_number_slot, payload_size, payload); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
+
       processTuyaRainSensorDataReport(channel_number_slot, payload_size, payload); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2:
+
       processTuyaRainSensor2DataReport(channel_number_slot, payload_size, payload); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
+
       processTuya3PhasesElectricityMeterDataReport(channel_number_slot, payload_size, payload); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
+
       processTuya1PhaseElectricityMeterDataReport(channel_number_slot, payload_size, payload); break;
+
     
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
+
       processMoesShadesDriveMotorDataReport(channel_number_slot, payload_size, payload, model_id); break;
 
+
     case Z2S_DEVICE_DESC_MOES_ALARM:
+
       processMoesAlarmDataReport(channel_number_slot, payload_size, payload, model_id); break;
 
+
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
+
       processTuyaVibrationSensorDataReport(channel_number_slot, payload_size, payload, model_id); break;
 
+    case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
+
+      processTuyaPIRIlluminanceSensorDataReport(channel_number_slot, payload_size, payload, model_id); break;
+
+
     case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
+
       processTuyaOnOffValveBatteryDataReport(channel_number_slot, payload_size, payload, model_id); break;
 
+
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
+
       processGiexSmartValveDataReport(channel_number_slot, payload_size, payload, model_id); break;
+
       
     default: 
       log_i("Unknown device model id 0x%x", z2s_channels_table[channel_number_slot].model_id); break;

@@ -68,6 +68,7 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
     
 
   void iterateAlways() override {
+
     if (millis() - lastReadTime > readIntervalMs) {
       lastReadTime = millis();
       channel.setNewValue(getValue());
@@ -77,7 +78,7 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
       channel.setStateOffline();
     }
     if (_auto_set_ms && _last_clear_ms && (millis() - _last_clear_ms > _auto_set_ms))
-	extSet();
+	    extSet();
   }
 
 

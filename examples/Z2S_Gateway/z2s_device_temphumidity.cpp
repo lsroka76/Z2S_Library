@@ -90,7 +90,7 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
   
   switch (element->getChannel()->getChannelType()) {
     
-    case  SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
+    case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
       auto Supla_Z2S_VirtualThermHygroMeter = 
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
