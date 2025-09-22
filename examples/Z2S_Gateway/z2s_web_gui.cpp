@@ -1994,31 +1994,6 @@ void Z2S_updateWebGUI() {
 
 void Z2S_loopWebGUI() {
 
-	if (GUI_update_required) {
-
-		switch (GUI_update_cmd) {
-
-			case GUI_UPDATE_CMD_CHANNEL_INFO_LABEL_1: {
-
-				updateChannelInfoLabel(1); 
-				GUI_update_cmd = GUI_UPDATE_CMD_CHANNEL_INFO_LABEL_2;
-			} break;
-
-			case GUI_UPDATE_CMD_CHANNEL_INFO_LABEL_2: {
-
-				updateChannelInfoLabel(2); 
-				GUI_update_cmd = GUI_UPDATE_CMD_NONE;
-				GUI_update_required = false;
-			} break;
-
-			case GUI_UPDATE_CMD_DEVICE_INFO_LABEL: {
-
-				updateDeviceInfoLabel(); 
-				GUI_update_cmd = GUI_UPDATE_CMD_NONE;
-				GUI_update_required = false;
-			} break;
-		}
-	}
 }
 
 void enterWifiDetailsCallback(Control *sender, int type, void *param) {
@@ -2164,7 +2139,6 @@ void enableDeviceControls(bool enable) {
 
 void updateDeviceInfoLabel() {
 
-	//char device_info_str[512] = {};
 	char ieee_addr_str[24] 		= {};
 
 	uint8_t device_slot = ESPUI.getControl(device_selector)->value.toInt();
@@ -2186,7 +2160,8 @@ void updateDeviceInfoLabel() {
 					"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
 					"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X <b>| <i>Power source</b></i> 0x%02X<br>"
 					"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
-					"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>Gateway unit last RSSI</b></i> %d"), 
+					"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>Gateway unit last RSSI</b></i> %d<br>"
+					"<b><i>Device flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X <b>| <i>ud(2)</b></i> 0x%08X<br>"), 
 					device_slot,
 					Z2S_getZBDeviceManufacturerName(device_slot),
 					Z2S_getZBDeviceModelName(device_slot),
@@ -2197,26 +2172,40 @@ void updateDeviceInfoLabel() {
 					battery_percentage,
 					z2s_zb_devices_table[device_slot].last_seen_ms,
 					zbGateway.getZbgDeviceUnitLastSeenMs(z2s_zb_devices_table[device_slot].short_addr),
-					zbGateway.getZbgDeviceUnitLastRssi(z2s_zb_devices_table[device_slot].short_addr));
-	log_i("value = %s, length = %u", general_purpose_gui_buffer, strlen(general_purpose_gui_buffer));
+					zbGateway.getZbgDeviceUnitLastRssi(z2s_zb_devices_table[device_slot].short_addr),
+					z2s_zb_devices_table[device_slot].user_data_flags,
+					z2s_zb_devices_table[device_slot].user_data_1,
+					z2s_zb_devices_table[device_slot].user_data_2);
+
+	log_i("value = %s, length = %u", 
+				general_purpose_gui_buffer, 
+				strlen(general_purpose_gui_buffer));
+
 	updateLabel_P(zb_device_info_label, general_purpose_gui_buffer);
 
 	working_str = z2s_zb_devices_table[device_slot].device_local_name;
 	ESPUI.updateText(device_name_text, working_str);
 
-	ESPUI.updateNumber(battery_voltage_min_number, z2s_zb_devices_table[device_slot].battery_voltage_min);
-	ESPUI.updateNumber(battery_voltage_max_number, z2s_zb_devices_table[device_slot].battery_voltage_max);
+	ESPUI.updateNumber(battery_voltage_min_number, 
+										 z2s_zb_devices_table[device_slot].battery_voltage_min);
+	ESPUI.updateNumber(battery_voltage_max_number, 
+										 z2s_zb_devices_table[device_slot].battery_voltage_max);
+	
 	ESPUI.updateNumber(disable_battery_percentage_msg_switcher, 
-										 (z2s_zb_devices_table[device_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG) ? 1 : 0);
+										 (z2s_zb_devices_table[device_slot].user_data_flags & 
+										 	ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG) ? 1 : 0);
 	ESPUI.updateNumber(disable_battery_voltage_msg_switcher, 
-										 (z2s_zb_devices_table[device_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG) ? 1 : 0);
+										 (z2s_zb_devices_table[device_slot].user_data_flags & 
+										 ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG) ? 1 : 0);
 	
 	
 }
 
 void deviceSelectorCallback(Control *sender, int type) {
 
-	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_ZB_DEVICES_MAX_NUMBER)) {
+	if ((!isNumber(sender->value)) || 
+			(sender->value.toInt() < 0) || 
+			(sender->value.toInt() >= Z2S_ZB_DEVICES_MAX_NUMBER)) {
 
 		if (device_controls_enabled)
 			enableDeviceControls(false);
@@ -2225,10 +2214,6 @@ void deviceSelectorCallback(Control *sender, int type) {
 	
 	if (!device_controls_enabled)
 		enableDeviceControls(true);
-
-	//GUI_update_required = true;
-
-	//GUI_update_cmd = GUI_UPDATE_CMD_DEVICE_INFO_LABEL;
 
 	updateDeviceInfoLabel();
 }
@@ -2263,8 +2248,6 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(zb_channel_timings_label, enable);
 	enableControlStyle(zb_channel_flags_label, enable);
 	
-
-
 	channel_controls_enabled = enable;
 }
 
@@ -2290,6 +2273,11 @@ void enableChannelTimings(uint8_t timings_mask) {
 		ESPUI.updateNumber(refresh_number, 0);
 		enableControlStyle(refresh_number, false);
 	}
+
+	if (timings_mask == 0)
+		enableControlStyle(zb_channel_timings_label, false);
+	else
+		enableControlStyle(zb_channel_timings_label, true);
 }
 
 void enableChannelFlags(uint8_t flags_mask) {
@@ -2314,6 +2302,11 @@ void enableChannelFlags(uint8_t flags_mask) {
 		ESPUI.updateNumber(set_sorwns_on_start_switcher, 0);
 		enableControlStyle(set_sorwns_on_start_switcher, false);
 	}
+
+	if (flags_mask == 0)
+		enableControlStyle(zb_channel_flags_label, false);
+	else
+		enableControlStyle(zb_channel_flags_label, true);
 }
 
 
@@ -2339,7 +2332,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
 					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
 					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
-					"Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X <b>| <i>ud(2)</b></i> 0x%08X<br>"
+					"<b><i>Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X <b>| <i>ud(2)</b></i> 0x%08X<br>"
 					"<b><i>ZB device</b></i> %s (%s::%s)"),
 					//strlen(z2s_channels_table[channel_slot].Supla_channel_name) > 0 ? z2s_channels_table[channel_slot].Supla_channel_name : "---",
 					ieee_addr_str,
@@ -2419,7 +2412,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
 		case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
-			enableChannelTimings(4); //timeout only
+			enableChannelTimings(2); //timeout only
 			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
 	
 			enableChannelFlags(4);
@@ -2435,7 +2428,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		
 		case SUPLA_CHANNELTYPE_HVAC: {
 			
-			enableChannelTimings(4); //timeout only
+			enableChannelTimings(2); //timeout only
 			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
 	
 			enableChannelFlags(2);
@@ -2480,7 +2473,9 @@ void channelSelectorCallback(Control *sender, int type) {
 	
 	if (GUI_update_required) return;
 
-	if ((!isNumber(sender->value)) || (sender->value.toInt() < 0) || (sender->value.toInt() >= Z2S_CHANNELS_MAX_NUMBER)) {
+	if ((!isNumber(sender->value)) || 
+			(sender->value.toInt() < 0) || 
+			(sender->value.toInt() >= Z2S_CHANNELS_MAX_NUMBER)) {
 
 		if (channel_controls_enabled)
 			enableChannelControls(false);
@@ -2490,10 +2485,6 @@ void channelSelectorCallback(Control *sender, int type) {
 	if (!channel_controls_enabled)
 		enableChannelControls(true);
 
-	//GUI_update_required = true;
-
-	//GUI_update_cmd = GUI_UPDATE_CMD_CHANNEL_INFO_LABEL_2;
-
 	updateChannelInfoLabel(1);
 }
 
@@ -2502,9 +2493,10 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 	if ((type == B_UP) && (ESPUI.getControl(device_selector)->value.toInt() >= 0)) {
 
 		zbg_device_params_t device;
+
 		log_i("device_selector value %u", ESPUI.getControl(device_selector)->value.toInt());
-    device.endpoint = ESPUI.getControl(device_endpoint_number)->value.toInt();//1; //z2s_channels_table[channel_number_slot].endpoint;
-    device.cluster_id = 0; //z2s_channels_table[channel_number_slot].cluster_id;
+    device.endpoint = ESPUI.getControl(device_endpoint_number)->value.toInt();
+    device.cluster_id = 0; 
     memcpy(&device.ieee_addr, z2s_zb_devices_table[ESPUI.getControl(device_selector)->value.toInt()].ieee_addr,8);
     device.short_addr = z2s_zb_devices_table[ESPUI.getControl(device_selector)->value.toInt()].short_addr;
 

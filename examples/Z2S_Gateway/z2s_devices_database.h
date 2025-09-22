@@ -498,18 +498,6 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
   return value;
 }
 */
-
-typedef struct Tuya_datapoint_desc_s {
-
-  uint32_t    Tuya_datapoint_desc_id;
-  uint32_t    z2s_device_desc_id;
-  uint8_t     Tuya_datapoint_id;
-  uint8_t     Tuya_datapoint_type;
-  uint16_t    Tuya_datapoint_length;
-  const char *Tuya_datapoint_name;
-  const char *Tuya_datapoint_description;
-} Tuya_datapoint_desc_t;
-
 static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
 
@@ -2541,6 +2529,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "Zbeacon", .model_name = "TS0505B",
+    .z2s_device_uid = 19905,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3210_3lbtuxgp", .model_name = "TS0505B",
     .z2s_device_uid = 20000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
@@ -2961,16 +2954,4 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR,
 	  .z2s_device_endpoints_count = 1}
 };
-
-static const Tuya_datapoint_desc_t TUYA_DATAPOINTS_DESC_TABLE[] PROGMEM [[maybe_unused]] = {
-
-  { .Tuya_datapoint_desc_id = 1,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
-    .Tuya_datapoint_id = 9,
-    .Tuya_datapoint_type = 4,
-    .Tuya_datapoint_length = 1,
-    .Tuya_datapoint_name = "Sensitivity",
-    .Tuya_datapoint_description = "0 (low), 1 (medium), 2 (high)" }
-};
-
 #endif

@@ -1395,6 +1395,8 @@ void setup() {
   }
 
   Supla::Storage::ConfigInstance()->getUInt8(PSTR("security_level"), &_z2s_security_level);
+  
+  Supla::Storage::ConfigInstance()->setUInt8(Z2S_FILES_STRUCTURE_VERSION, 2);
 
   //Supla
   

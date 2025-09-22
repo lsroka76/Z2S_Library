@@ -1956,7 +1956,10 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
     case SONOFF_CUSTOM_CLUSTER_AC_VOLTAGE_ID:
     case SONOFF_CUSTOM_CLUSTER_AC_POWER_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                              endpoint, 
+                                                              cluster, 
+                                                              SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
                                                               SONOFF_ELECTRICITY_METER_SID);
       
       if (channel_number_slot < 0) {
@@ -1965,106 +1968,187 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
       }
       switch (attribute->id) {
 
+
         case SONOFF_CUSTOM_CLUSTER_AC_CURRENT_ID:
-          msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_CURRENT_A_SEL, *(int32_t*)attribute->data.value); break;
+
+          msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                       Z2S_EM_CURRENT_A_SEL, 
+                                       *(int32_t*)attribute->data.value); break;
+
+
         case SONOFF_CUSTOM_CLUSTER_AC_VOLTAGE_ID:
-          msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, *(int32_t*)attribute->data.value); break;
+
+          msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                       Z2S_EM_VOLTAGE_A_SEL, 
+                                       *(int32_t*)attribute->data.value); break;
+
+
         case SONOFF_CUSTOM_CLUSTER_AC_POWER_ID:
-          msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, *(int32_t*)attribute->data.value); break;
+
+          msgZ2SDeviceElectricityMeter(channel_number_slot, 
+                                       Z2S_EM_ACTIVE_POWER_A_SEL, 
+                                       *(int32_t*)attribute->data.value); break;
       }      
     } break;
 
+
     case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_TODAY_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                              endpoint, 
+                                                              cluster, 
+                                                              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                                                               SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID);
       
       if (channel_number_slot < 0) {
+
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
+
       double energy_value = ((double)(*(uint32_t*)attribute->data.value));
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
+                                            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
                                             energy_value);     
     } break;
 
+
     case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_MONTH_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                              endpoint, 
+                                                              cluster, 
+                                                              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                                                               SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID);
       
       if (channel_number_slot < 0) {
+
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
+
       double energy_value = ((double)(*(uint32_t*)attribute->data.value));
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
+                                            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
                                             energy_value);      
     } break;
+
 
     case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_YESTERDAY_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                              endpoint, 
+                                                              cluster, 
+                                                              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                                                               SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID);
       
       if (channel_number_slot < 0) {
+
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
+
       double energy_value = ((double)(*(uint32_t*)attribute->data.value));
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
+                                            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
                                             energy_value);      
     } break;
 
+
     case SONOFF_CUSTOM_CLUSTER_IRRIGATION_CYCLE_MODE_ID: {
         
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                              endpoint, 
+                                                              cluster, 
+                                                              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                                                               SONOFF_SMART_VALVE_MODE_SID);
       
       if (channel_number_slot < 0) {
+
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
+                                            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
                                             *(uint8_t*)attribute->data.value); 
     } break;
+
 
     case SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID:
     case SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID:  {
 
-      if ((attribute->data.type != ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) || (attribute->data.size != 11)) {
+      if ((attribute->data.type != ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) || 
+          (attribute->data.size != 11)) {
+
         log_e("Smart valve irrigation cycle data invalid or empty: ieee address %s, type 0x%x, size 0x%x",
               ieee_addr_str, attribute->data.type, attribute->data.size);
         return;
       }
            
-      int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                              SONOFF_SMART_VALVE_CYCLE_NUMBER_SID);
-      int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                              SONOFF_SMART_VALVE_CYCLES_COUNT_SID);
-      int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                              SONOFF_SMART_VALVE_TIME_SID);
-      int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                              SONOFF_SMART_VALVE_PAUSE_SID);
-      int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                              SONOFF_SMART_VALVE_VOLUME_SID);
+      int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                                endpoint, 
+                                                                cluster, 
+                                                                SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                                SONOFF_SMART_VALVE_CYCLE_NUMBER_SID);
+
+      int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                                endpoint, 
+                                                                cluster, 
+                                                                SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                                SONOFF_SMART_VALVE_CYCLES_COUNT_SID);
+
+      int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                                endpoint, 
+                                                                cluster, 
+                                                                SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                                SONOFF_SMART_VALVE_TIME_SID);
+
+      int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                                endpoint, 
+                                                                cluster, 
+                                                                SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                                SONOFF_SMART_VALVE_PAUSE_SID);
+
+      int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                                endpoint, 
+                                                                cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                                                SONOFF_SMART_VALVE_VOLUME_SID);
       
-      
-      if ((channel_number_slot_1 < 0) && (channel_number_slot_2 < 0) && (channel_number_slot_3 < 0) && (channel_number_slot_4 < 0)&& (channel_number_slot_5 < 0)) {
+      if ((channel_number_slot_1 < 0) && (channel_number_slot_2 < 0) && 
+          (channel_number_slot_3 < 0) && (channel_number_slot_4 < 0) && 
+          (channel_number_slot_5 < 0)) {
+
         log_e("No smart valve irrigation cycle channels found for address %s", ieee_addr_str);
         return;
       }
       sonoff_smart_valve_cycle_data_t sonoff_smart_valve_cycle_data;
+
       memcpy(&sonoff_smart_valve_cycle_data, attribute->data.value, sizeof(sonoff_smart_valve_cycle_data_t));
       
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, sonoff_smart_valve_cycle_data.cycle_number); 
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, sonoff_smart_valve_cycle_data.cycles_count); 
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_1, 
+                                            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            sonoff_smart_valve_cycle_data.cycle_number); 
+
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, 
+                                            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            sonoff_smart_valve_cycle_data.cycles_count); 
+
       if (attribute->id == SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID)
-        msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_data));
+        msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, 
+                                              ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                              __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_data));
+
       if (attribute->id == SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID)
-        msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_5, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_data));
+        msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_5, 
+                                              ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                              __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_data));
       
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_pause));
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_4, 
+                                            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+                                            __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_pause));
     } break;
   }
 }
