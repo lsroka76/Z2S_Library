@@ -2968,7 +2968,7 @@ void pairingSwitcherCallback(Control *sender, int type, void *param){
 				Zigbee.openNetwork(180); 
 			else {
     if (Zigbee.isNetworkOpen())
-			ESPUI.updateNumber(pairing_mode_switcher, 1);
+			Zigbee.openNetwork(0);//ESPUI.updateNumber(pairing_mode_switcher, 1);
 			}
 		} break;
 	}
