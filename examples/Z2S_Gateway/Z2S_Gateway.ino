@@ -1508,20 +1508,20 @@ void loop() {
       _status_led_mode = 0;
 
     if(_status_led_mode != _status_led_last_mode) {
-      if (_status_led_mode == 1)
-        //rgbLed.setPixelColor(0, rgbLed.Color(255, 215, 0));
+      if (_status_led_mode == 1) {
+
+        GUI_onZigbeeOpenNetwork(true);
         rgbLedWrite(RGB_BUILTIN, 0, 255, 0);  // Green
-      else
-      if (_status_led_mode == 0)
-        //rgbLed.setPixelColor(0, rgbLed.Color(0, 0, 0));
-        rgbLedWrite(RGB_BUILTIN, 0, 0, 0);  // Green
-      
-      //rgbLed.show();
+      } else
+      if (_status_led_mode == 0) {
+
+        GUI_onZigbeeOpenNetwork(false);
+        rgbLedWrite(RGB_BUILTIN, 0, 0, 0);  // Black
+      }
     }
 
     if (GUIstarted)
       Z2S_loopWebGUI();
-
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {

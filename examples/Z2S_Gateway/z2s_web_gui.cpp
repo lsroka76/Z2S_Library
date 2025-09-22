@@ -40,7 +40,7 @@ uint16_t enable_gui_switcher, force_config_switcher, gui_start_delay_number;
 uint16_t wifi_ssid_text, wifi_pass_text, Supla_server, Supla_email, Supla_skip_certificate_switcher;
 uint16_t save_button, save_label;
 
-uint16_t pairing_mode_button, pairing_mode_label;
+uint16_t pairing_mode_switcher;// pairing_mode_label;
 uint16_t zigbee_tx_power_text, zigbee_get_tx_power_button, zigbee_set_tx_power_button;
 uint16_t zigbee_primary_channel_text, zigbee_get_primary_channel_button, zigbee_set_primary_channel_button;
 uint16_t zigbee_last_binding_result_label;
@@ -75,6 +75,7 @@ uint16_t remove_device_button, remove_device_and_channels_button, remove_all_dev
 
 uint16_t channel_selector;
 uint16_t channel_status_label, zb_channel_info_label; // zb_channel_info_label_2;
+uint16_t zb_channel_timings_label, zb_channel_flags_label;
 uint16_t channel_name_text; //, channel_desc_number, channel_sub_id_number;
 uint16_t channel_name_save_button;
 uint16_t disable_channel_notifications_switcher, trv_auto_to_schedule_switcher, set_sorwns_on_start_switcher;
@@ -294,6 +295,7 @@ void batterySwitcherCallback(Control *sender, int type, void *param);
 void removeChannelCallback(Control *sender, int type);
 void removeAllChannelsCallback(Control *sender, int type);
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param);
+void pairingSwitcherCallback(Control *sender, int type, void *param);
 void generalZigbeeCallback(Control *sender, int type, void *param);
 void datatypeCallback(Control *sender, int type);
 void clusterCallback(Control *sender, int type);
@@ -675,12 +677,20 @@ void buildCredentialsGUI() {
 void buildZigbeeTabGUI() {
 
 	working_str = PSTR("Zigbee settings");
-	auto zigbeetab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), working_str, Control::Color::Emerald, Control::noParent, generalCallback);
+	auto zigbeetab = ESPUI.addControl(Control::Type::Tab, 
+																		PSTR(empty_str), 
+																		working_str, 
+																		Control::Color::Emerald, 
+																		Control::noParent, 
+																		generalCallback);
 
-	//ESPUI.addControl(Control::Type::Separator, "Zigbee", "", Control::Color::None, zigbeetab);
 	working_str = PSTR("Pairing mode");
-	auto open_network_button = ESPUI.addControl(Control::Type::Button, PSTR("Pairing mode"), working_str, Control::Color::Emerald, zigbeetab, 
-																							generalZigbeeCallback,(void*)GUI_CB_PAIRING_FLAG); //&pairing_flag);
+	pairing_mode_switcher = ESPUI.addControl(Control::Type::Switcher, 
+																							PSTR("Pairing mode"), 
+																							working_str, 
+																							Control::Color::Emerald, 
+																							zigbeetab, 
+																							pairingSwitcherCallback,(void*)GUI_CB_PAIRING_FLAG);
 
 	working_str = zigbee_tx_power_text_str;
 	zigbee_tx_power_text = ESPUI.addControl(Control::Type::Text, PSTR("Zigbee TX power"), working_str, Control::Color::Emerald, zigbeetab, generalCallback);
@@ -1053,12 +1063,18 @@ void buildChannelsTabGUI() {
 																				  		editChannelCallback, 
 																							(void*)GUI_CB_UPDATE_CHANNEL_NAME_FLAG);
 
+	
+	zb_channel_flags_label = ESPUI.addControl(Control::Type::Label, 
+																						PSTR("Channel flags panel"), 
+																					 	PSTR("Here you can set different channel flags<br>(changes are saved immediately)"), 
+																					 	Control::Color::Emerald, 
+																					 	channelstab);
 	working_str = PSTR(empty_str);
 	disable_channel_notifications_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																														PSTR("Channel flags panel"), 
+																														PSTR(empty_str), 
 																														working_str, 
 																														Control::Color::Emerald, 
-																													  channelstab, 
+																													  zb_channel_flags_label, 
 																														editChannelFlagsCallback, 
 																													  (void*)GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG);
 	working_str = PSTR("&#10023; <i>DISABLE SINGLE CHANNEL NOTIFICATIONS</i> &#10023;");
@@ -1066,14 +1082,14 @@ void buildChannelsTabGUI() {
 																				 PSTR(empty_str), 
 																				 working_str,
 																				 Control::Color::None, 
-																				 disable_channel_notifications_switcher), 
+																				 zb_channel_flags_label), 
 												PSTR(clearLabelStyle));
 
 	trv_auto_to_schedule_switcher = ESPUI.addControl(Control::Type::Switcher, 
 																									 PSTR(empty_str), 
 																									 zero_str, 
 																									 Control::Color::Emerald, 
-																									 disable_channel_notifications_switcher, 
+																									 zb_channel_flags_label, 
 																									 editChannelFlagsCallback, 
 																									 (void*)GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG);
 	working_str = PSTR("&#10023; <i>TRV AUTO MODE SWITCHES TO SCHEDULE</i> &#10023;");
@@ -1081,37 +1097,43 @@ void buildChannelsTabGUI() {
 																				 PSTR(empty_str), 
 																				 working_str,
 																				 Control::Color::None, 
-																				 disable_channel_notifications_switcher), 
+																				 zb_channel_flags_label), 
 												PSTR(clearLabelStyle));
 	
 	set_sorwns_on_start_switcher = ESPUI.addControl(Control::Type::Switcher, 
 																									PSTR(empty_str), 
 																									zero_str, 
 																									Control::Color::Emerald, 
-																									disable_channel_notifications_switcher, 
+																									zb_channel_flags_label, 
 																									editChannelFlagsCallback, 
 																									(void*)GUI_CB_SET_SORWNS_ON_START_FLAG);
 	working_str = PSTR("&#10023; <i>BINARY SENSOR STARTS IN OFFLINE STATE<br>(NO REMOTE WAKEUP SUPPORTED)</i> &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), working_str,
 																				 Control::Color::None, 
-																				 disable_channel_notifications_switcher), 
+																				 zb_channel_flags_label), 
 												PSTR(clearLabelStyle));
 
+	zb_channel_timings_label = ESPUI.addControl(Control::Type::Label, 
+																							PSTR("Channel timings panel"), 
+																						 	PSTR("Input new value and press Save"), 
+																						 	Control::Color::Emerald, 
+																					 		channelstab);
+
 	keepalive_number = ESPUI.addControl(Control::Type::Number, 
-																			PSTR("Timings panel"), 
+																			PSTR(empty_str), 
 																			zero_str, 
 																			Control::Color::Emerald, 
-																			channelstab, 
+																			zb_channel_timings_label, 
 																			generalCallback);
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, keepalive_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), max_int_str, Control::Color::None, keepalive_number);
 	working_str = PSTR("Save");
 	keepalive_save_button = ESPUI.addControl(Control::Type::Button, 
 																					 PSTR(empty_str),
-																					working_str, 
-																					Control::Color::Emerald, 
-																					keepalive_number, 
+																					 working_str, 
+																					 Control::Color::Emerald, 
+																					 zb_channel_timings_label, 
 																					 editChannelCallback, 
 																					 (void*)GUI_CB_UPDATE_KEEPALIVE_FLAG);
 	working_str = PSTR("&#10023; keepalive (s) &#10023;");
@@ -1119,14 +1141,14 @@ void buildChannelsTabGUI() {
 																				 PSTR(empty_str), 
 																				 working_str, 
 																				 Control::Color::None, 
-																				 keepalive_number), 
+																				 zb_channel_timings_label), 
 												PSTR(clearLabelStyle));
 	
 	timeout_number = ESPUI.addControl(Control::Type::Number, 
 																		PSTR(empty_str), 
 																		zero_str, 
 																		Control::Color::Emerald, 
-																		keepalive_number, 
+																		zb_channel_timings_label, 
 																		generalCallback);
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, timeout_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), max_int_str, Control::Color::None, timeout_number);
@@ -1135,21 +1157,21 @@ void buildChannelsTabGUI() {
 																				 PSTR(empty_str), 
 																				 working_str, 
 																				 Control::Color::Emerald, 
-																				 keepalive_number, 
+																				 zb_channel_timings_label, 
 																				 editChannelCallback, 
 																				 (void*)GUI_CB_UPDATE_TIMEOUT_FLAG);
 	working_str = PSTR("&#10023; timeout (s) &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), working_str, 
 																				 Control::Color::None, 
-																				 keepalive_number), 
+																				 zb_channel_timings_label), 
 												PSTR(clearLabelStyle));
 	
 	refresh_number = ESPUI.addControl(Control::Type::Number, 
 																		PSTR(empty_str), 
 																		zero_str, 
 																		Control::Color::Emerald, 
-																		keepalive_number, 
+																		zb_channel_timings_label, 
 																		generalCallback);
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, refresh_number);
 	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), max_int_str, Control::Color::None, refresh_number);
@@ -1158,7 +1180,7 @@ void buildChannelsTabGUI() {
 																				 PSTR(empty_str), 
 																				 working_str, 
 																				 Control::Color::Emerald, 
-																				 keepalive_number, 
+																				 zb_channel_timings_label, 
 																				 editChannelCallback, 
 																				 (void*)GUI_CB_UPDATE_REFRESH_FLAG); 
 	working_str = PSTR("&#10023; refresh(s) [ElectricityMeter] &#10023; autoset(s) [VirtualBinary] &#10023;"
@@ -1167,10 +1189,10 @@ void buildChannelsTabGUI() {
 																				 PSTR(empty_str), 
 																				 working_str, 
 																				 Control::Color::None, 
-																				 keepalive_number), 
+																				 zb_channel_timings_label), 
 												PSTR(clearLabelStyle));
 
-	ESPUI.setPanelWide(keepalive_number, false);
+	ESPUI.setPanelWide(zb_channel_timings_label, false);
 	
 	working_str = PSTR(empty_str);
 	ESPUI.addControl(Control::Type::Separator, 
@@ -2238,6 +2260,10 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(refresh_save_button, enable);
 	enableControlStyle(remove_channel_button, enable);
 	enableControlStyle(remove_all_channels_button, enable);
+	enableControlStyle(zb_channel_timings_label, enable);
+	enableControlStyle(zb_channel_flags_label, enable);
+	
+
 
 	channel_controls_enabled = enable;
 }
@@ -2928,6 +2954,23 @@ void removeAllChannelsCallback(Control *sender, int type) {
       updateLabel_P(channel_status_label, PSTR("All channels and actions removed!. Restarting..."));
       SuplaDevice.scheduleSoftRestart(1000);
 		}
+	}
+}
+
+void pairingSwitcherCallback(Control *sender, int type, void *param){
+
+
+	switch ((uint32_t)param) {
+
+		case GUI_CB_PAIRING_FLAG : {		//open network
+
+			if (type == S_ACTIVE) 
+				Zigbee.openNetwork(180); 
+			else {
+    if (Zigbee.isNetworkOpen())
+			ESPUI.updateNumber(pairing_mode_switcher, 1);
+			}
+		} break;
 	}
 }
 
@@ -4144,5 +4187,10 @@ void GUI_onLastBindingFailure(bool binding_failed) {
             zbGateway.getQueryBasicClusterData()->zcl_model_name);
 
 	updateLabel_P(zigbee_last_binding_result_label, general_purpose_gui_buffer);
+}
+
+void GUI_onZigbeeOpenNetwork(bool is_network_open) {
+
+	ESPUI.updateNumber(pairing_mode_switcher, is_network_open ? 1 : 0);
 }
 #endif //USE_SUPLA_WEB_SERVER

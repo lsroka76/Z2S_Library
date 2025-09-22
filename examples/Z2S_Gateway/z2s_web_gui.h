@@ -23,4 +23,6 @@ void GUI_onLastBindingFailure(bool binding_failed);
 
 void GUI_onTuyaCustomClusterReceive(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data);
 
+void GUI_onZigbeeOpenNetwork(bool is_network_open);
+
 #endif // Z2S_WEB_GUI_H_
