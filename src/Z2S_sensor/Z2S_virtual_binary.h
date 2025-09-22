@@ -27,7 +27,8 @@ class Z2S_VirtualBinary : public Supla::Sensor::VirtualBinary {
   
 public:
     
-  Z2S_VirtualBinary(bool keepStateInStorage = false, bool rwns_flag = false) : VirtualBinary(keepStateInStorage), _rwns_flag(rwns_flag) {}
+  Z2S_VirtualBinary(bool keepStateInStorage = false, bool rwns_flag = false) 
+    : VirtualBinary(keepStateInStorage), _rwns_flag(rwns_flag) {}
 
   void setRWNSFlag(bool rwns_flag) {
 

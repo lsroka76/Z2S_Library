@@ -2,11 +2,9 @@
 
 void initZ2SDeviceTempHumidity(int16_t channel_number_slot, bool thermhygrometer) {
   
-  uint8_t timeout = z2s_channels_table[channel_number_slot].timeout_secs / 3600;
-
   if (thermhygrometer) {
 
-    auto Supla_Z2S_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter(timeout);
+    auto Supla_Z2S_VirtualThermHygroMeter = new Supla::Sensor::Z2S_VirtualThermHygroMeter();
 
     Supla_Z2S_VirtualThermHygroMeter->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
@@ -21,9 +19,18 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot, bool thermhygrometer
     else
       Supla_Z2S_VirtualThermHygroMeter->setApplyCorrections(true);
 
+    if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) {
+      
+      Supla_Z2S_VirtualThermHygroMeter->getChannel()->setStateOfflineRemoteWakeupNotSupported();
+      Supla_Z2S_VirtualThermHygroMeter->setRWNSFlag(true);
+    }
+
+    Supla_Z2S_VirtualThermHygroMeter->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
+
+
   } else {
 
-    auto Supla_Z2S_VirtualThermometer = new Supla::Sensor::Z2S_VirtualThermometer(timeout);
+    auto Supla_Z2S_VirtualThermometer = new Supla::Sensor::Z2S_VirtualThermometer();
 
     Supla_Z2S_VirtualThermometer->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
@@ -37,6 +44,14 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot, bool thermhygrometer
       Supla_Z2S_VirtualThermometer->setApplyCorrections(false);
     else
       Supla_Z2S_VirtualThermometer->setApplyCorrections(true);
+
+    if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) {
+      
+      Supla_Z2S_VirtualThermometer->getChannel()->setStateOfflineRemoteWakeupNotSupported();
+      Supla_Z2S_VirtualThermometer->setRWNSFlag(true);
+    }
+
+    Supla_Z2S_VirtualThermometer->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
   }
   
 }

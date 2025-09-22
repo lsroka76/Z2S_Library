@@ -24,7 +24,8 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, in
     case DIMMER_FUNC_BRIGHTNESS_SID:
       
       switch (device->model_id) {
-        
+
+
         case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
         case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
         case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
@@ -33,36 +34,49 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, in
         case Z2S_DEVICE_DESC_RGBW_BULB_HS: 
         case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
         case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
+        case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
+
           dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER; break;
 
-        case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
-          dimmer_mode = Z2S_TUYA_F0_CMD_DIMMER; break;
 
+        case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
+
+          dimmer_mode = Z2S_TUYA_F0_CMD_DIMMER; break;
       } break;
+
 
     case DIMMER_FUNC_COLOR_TEMPERATURE_SID:
       
       switch (device->model_id) {
-        
+
+
         case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
         case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
         case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
         case Z2S_DEVICE_DESC_IKEA_WW_BULB:
         case Z2S_DEVICE_DESC_RGBW_BULB_XY:
         case Z2S_DEVICE_DESC_RGBW_BULB_HS: 
+        case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
+
           dimmer_mode = Z2S_COLOR_TEMPERATURE_DIMMER; break;
 
+
         case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
+
           dimmer_mode = Z2S_TUYA_E0_CMD_DIMMER; break;
-        
+
+
         case  Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
         case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
+
           dimmer_mode = Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER;
       } break;
   }
   
   if (dimmer_mode == 0xFF) {
-    log_e("initZ2SDeviceDimmer error - dimmer id 0x%x, model id 0x%x", z2s_channels_table[channel_number_slot].sub_id, device->model_id);
+
+    log_e("initZ2SDeviceDimmer error - dimmer id 0x%x, model id 0x%x", 
+          z2s_channels_table[channel_number_slot].sub_id, device->model_id);
     return;
   }
 
@@ -79,14 +93,17 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, in
   Supla_Z2S_DimmerInterface->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
 }
 
-void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name, uint32_t func) {
+void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, 
+                        uint8_t free_slot, int8_t sub_id, char *name, uint32_t func) {
   
   Supla::ChannelElement *channel_element = nullptr;
 
   switch (device->model_id) {
     
+
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
       channel_element = new Supla::Control::Z2S_TuyaDimmerSwitch(gateway, device, sub_id); break;
+
 
     case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
@@ -97,20 +114,33 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uin
     case Z2S_DEVICE_DESC_RGBW_BULB_XY:
     case Z2S_DEVICE_DESC_RGBW_BULB_HS:
     case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
+    case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
+
       channel_element = new Supla::Control::Z2S_DimmerInterface(gateway, device, sub_id); break;
   }
+  
   if (channel_element)
-    Z2S_fillChannelsTableSlot(device, free_slot, channel_element->getChannelNumber(), SUPLA_CHANNELTYPE_DIMMER, sub_id, name, func);
+    Z2S_fillChannelsTableSlot(device, 
+                              free_slot, 
+                              channel_element->getChannelNumber(), 
+                              SUPLA_CHANNELTYPE_DIMMER, 
+                              sub_id, 
+                              name, 
+                              func);
 }
 
-void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name, uint32_t func) {
+
+void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, 
+                        uint8_t free_slot, char *name, uint32_t func) {
   
   addZ2SDeviceDimmer(gateway, device, free_slot, -1, name, func);
 }
 
+
 void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state) {
 
   if (channel_number_slot < 0) {
+    
     log_e("msgZ2SDeviceDimmer - invalid channel number slot");
     return;
   }
@@ -120,8 +150,10 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state) 
   auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_DIMMER) {
+    
     switch (z2s_channels_table[channel_number_slot].model_id) {
-      
+
+
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
@@ -130,15 +162,19 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state) 
       case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
       case Z2S_DEVICE_DESC_RGBW_BULB_XY:
       case Z2S_DEVICE_DESC_RGBW_BULB_HS:
-      case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB: {
+      case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
+      case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB: {
+
         auto Supla_Z2S_DimmerInterface = reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
-        //Supla_Z2S_TuyaDimmerBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-          Supla_Z2S_DimmerInterface->setValueOnServer(level);
+        
+        Supla_Z2S_DimmerInterface->setValueOnServer(level);
       } break;
 
+
       case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
+        
         auto Supla_Z2S_TuyaDimmerSwitch = reinterpret_cast<Supla::Control::Z2S_TuyaDimmerSwitch *>(element);
-        //Supla_Z2S_TuyaDimmerSwitch->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+        
         if (level == DIMMER_NO_LEVEL_DATA)
           Supla_Z2S_TuyaDimmerSwitch->setStateOnServer(state);
         else

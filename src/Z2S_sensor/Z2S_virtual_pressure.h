@@ -16,18 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef Z2S_VIRTUAL_THERM_HYGRO_METER_H_
-#define Z2S_VIRTUAL_THERM_HYGRO_METER_H_
+#ifndef Z2S_VIRTUAL_PRESSURE_H_
+#define Z2S_VIRTUAL_PRESSURE_H_
 
-#include <supla/sensor/virtual_therm_hygro_meter.h>
+#include <supla/sensor/pressure.h>
+
 
 namespace Supla {
 namespace Sensor {
-class Z2S_VirtualThermHygroMeter : public Supla::Sensor::VirtualThermHygroMeter {
-  
+class Z2S_VirtualPressure : public Pressure {
+ 
 public:
-    
-  Z2S_VirtualThermHygroMeter(bool rwns_flag = false) : _rwns_flag(rwns_flag) {}
+  
+  Z2S_VirtualPressure(bool rwns_flag = false) : _rwns_flag(rwns_flag) {}
 
   void setRWNSFlag(bool rwns_flag) {
 
@@ -40,15 +41,17 @@ public:
   }
 
   void Refresh() {
-    _last_timeout_ms = millis();
+    
+    _timeout_ms = millis();
     channel.setStateOnline();
   }
 
   void iterateAlways() override {
-
-    if (millis() - lastReadTime > refreshIntervalMs) {
+    
+    if (millis() - lastReadTime > 10000) {
+      
       lastReadTime = millis();
-      channel.setNewValue(getTemp(), getHumi());
+      channel.setNewValue(getValue());
     }
 
     if ((_timeout_ms > 0) && (millis() - _last_timeout_ms > _timeout_ms)) {
@@ -62,14 +65,22 @@ public:
     }
   }
 
+  virtual double getValue() {
+    return pressure;
+  }
 
-    
+  virtual void setPressure(double val) {
+    pressure = val;
+  }
  protected:
+  double pressure = PRESSURE_NOT_AVAILABLE;
+
   bool     _rwns_flag;
   uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;
 };
+
 };  // namespace Sensor
 };  // namespace Supla
 
-#endif  // Z2S_SRC_SUPLA_SENSOR_VIRTUAL_THERM_HYGRO_METER_H_
+#endif  // Z2S_VIRTUAL_PRESSURE_H_

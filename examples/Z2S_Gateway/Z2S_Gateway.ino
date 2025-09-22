@@ -2181,10 +2181,15 @@ void loop() {
 
                       case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
                         
-                        Z2S_addZ2SDevice(joined_device, SONOFF_PIR_SENSOR_OCCUPANCY_SID,"OCCUPANCY", 
-                                          SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-                        Z2S_addZ2SDevice(joined_device, SONOFF_PIR_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 
-                                          SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                        Z2S_addZ2SDevice(joined_device, 
+                                         SONOFF_PIR_SENSOR_OCCUPANCY_SID,
+                                         "OCCUPANCY", 
+                                         SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+                        Z2S_addZ2SDevice(joined_device, 
+                                         SONOFF_PIR_SENSOR_ILLUMINANCE_SID, 
+                                         "ILLUMINANCE", 
+                                         SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
                       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -2344,6 +2349,28 @@ void loop() {
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
+                      case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB: {
+
+                        Z2S_addZ2SDevice(joined_device, 
+                                         DIMMER_ON_OFF_SWITCH_SID,
+                                         "DIMMER SWITCH",
+                                         SUPLA_CHANNELFNC_POWERSWITCH);
+                        
+                        Z2S_addZ2SDevice(joined_device, 
+                                         DIMMER_FUNC_BRIGHTNESS_SID,
+                                         "BRIGHTNESS",
+                                         SUPLA_CHANNELFNC_DIMMER);
+
+                        Z2S_addZ2SDevice(joined_device, 
+                                         DIMMER_FUNC_COLOR_TEMPERATURE_SID,
+                                         "COLOR TEMPERATURE",
+                                         SUPLA_CHANNELFNC_DIMMER);
+
+
+                      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
                       default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
                     }
                   }          
@@ -2401,7 +2428,8 @@ void loop() {
                 case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
                 case Z2S_DEVICE_DESC_IKEA_WW_BULB:
                 case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
-                case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY: {
+                case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY:
+                case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB: {
 
                   /*if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_CAPABILITIES_ID, true))
                     log_i("Color control caps 0x%x, type 0x%x", *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);

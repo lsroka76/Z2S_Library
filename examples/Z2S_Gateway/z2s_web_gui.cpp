@@ -995,16 +995,23 @@ void buildChannelsTabGUI() {
 	working_str = PSTR("Zigbee channels");
 	auto channelstab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), working_str);
   
-	channel_selector = ESPUI.addControl(Control::Type::Select, PSTR("Channels"), minus_one_str, 
-																			Control::Color::Emerald, channelstab, channelSelectorCallback);
-	ESPUI.addControl(Control::Type::Option, PSTR("Select Zigbee channel..."), minus_one_str, Control::Color::None, channel_selector);
+	channel_selector = ESPUI.addControl(Control::Type::Select, 
+																		  PSTR("Channels"), 
+																			minus_one_str, 
+																			Control::Color::Emerald, 
+																			channelstab, 
+																			channelSelectorCallback);
+	ESPUI.addControl(Control::Type::Option, 
+									 PSTR("Select Zigbee channel..."), 
+									 minus_one_str, 
+									 Control::Color::None, 
+									 channel_selector);
 	
 	ESPUI.setPanelWide(channel_selector, true);
 
 	for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
     if (z2s_channels_table[channels_counter].valid_record) {
       
-			//sprintf_P(zigbee_channels_labels[devices_counter], PSTR("Channel #%02d"), devices_counter);
 			working_str = channels_counter;
 			z2s_channels_table[channels_counter].gui_control_data.gui_control_id  = 
 				ESPUI.addControl(Control::Type::Option, 
@@ -1014,8 +1021,11 @@ void buildChannelsTabGUI() {
 												 channel_selector);
 		}
 	}
-	zb_channel_info_label = ESPUI.addControl(Control::Type::Label, PSTR("Channel info"), three_dots_str, 
-																					 Control::Color::Emerald, channelstab);
+	zb_channel_info_label = ESPUI.addControl(Control::Type::Label, 
+																					 PSTR("Channel info"), 
+																					 three_dots_str, 
+																					 Control::Color::Emerald, 
+																					 channelstab);
 	
 	ESPUI.setElementStyle(zb_channel_info_label, "color:black;text-align: justify;"
 												" font-family:tahoma; font-size: 4 px; font-style: normal; font-weight: normal;");
@@ -1042,6 +1052,7 @@ void buildChannelsTabGUI() {
 																							channel_name_text, 
 																				  		editChannelCallback, 
 																							(void*)GUI_CB_UPDATE_CHANNEL_NAME_FLAG);
+
 	working_str = PSTR(empty_str);
 	disable_channel_notifications_switcher = ESPUI.addControl(Control::Type::Switcher, 
 																														PSTR("Channel flags panel"), 
@@ -1162,7 +1173,11 @@ void buildChannelsTabGUI() {
 	ESPUI.setPanelWide(keepalive_number, false);
 	
 	working_str = PSTR(empty_str);
-	ESPUI.addControl(Control::Type::Separator, PSTR(empty_str), working_str, Control::Color::None, channelstab);
+	ESPUI.addControl(Control::Type::Separator, 
+									 PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::None, 
+									 channelstab);
 
 	working_str = PSTR("Remove channel");
 	remove_channel_button = ESPUI.addControl(Control::Type::Button, 
@@ -2227,6 +2242,55 @@ void enableChannelControls(bool enable) {
 	channel_controls_enabled = enable;
 }
 
+void enableChannelTimings(uint8_t timings_mask) {
+
+	if (timings_mask & 1)
+		enableControlStyle(keepalive_number, true);
+	else {
+		ESPUI.updateNumber(keepalive_number, 0);
+		enableControlStyle(keepalive_number, false);
+	}
+
+	if (timings_mask & 2)
+		enableControlStyle(timeout_number, true);
+	else {
+		ESPUI.updateNumber(timeout_number, 0);
+		enableControlStyle(timeout_number, false);
+	}
+
+	if (timings_mask & 4)
+		enableControlStyle(refresh_number, true);
+	else {
+		ESPUI.updateNumber(refresh_number, 0);
+		enableControlStyle(refresh_number, false);
+	}
+}
+
+void enableChannelFlags(uint8_t flags_mask) {
+
+	if (flags_mask & 1)
+		enableControlStyle(disable_channel_notifications_switcher, true);
+	else {
+		ESPUI.updateNumber(disable_channel_notifications_switcher, 0);
+		enableControlStyle(disable_channel_notifications_switcher, false);
+	}
+
+	if (flags_mask & 2)
+		enableControlStyle(trv_auto_to_schedule_switcher, true);
+	else {
+		ESPUI.updateNumber(trv_auto_to_schedule_switcher, 0);
+		enableControlStyle(trv_auto_to_schedule_switcher, false);
+	}
+
+	if (flags_mask & 4)
+		enableControlStyle(set_sorwns_on_start_switcher, true);
+	else {
+		ESPUI.updateNumber(set_sorwns_on_start_switcher, 0);
+		enableControlStyle(set_sorwns_on_start_switcher, false);
+	}
+}
+
+
 void updateChannelInfoLabel(uint8_t label_number) {
 
 	char ieee_addr_str[24] 		= {};
@@ -2248,8 +2312,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					PSTR("<meta charset=\"UTF-8\">"
 					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
 					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
-					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d <b>| <i>ud(1)</b></i> 0x%08X "
-					"<b>| <i>ud(2)</b></i> 0x%08X<br>"
+					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
+					"Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X <b>| <i>ud(2)</b></i> 0x%08X<br>"
 					"<b><i>ZB device</b></i> %s (%s::%s)"),
 					//strlen(z2s_channels_table[channel_slot].Supla_channel_name) > 0 ? z2s_channels_table[channel_slot].Supla_channel_name : "---",
 					ieee_addr_str,
@@ -2262,8 +2326,10 @@ void updateChannelInfoLabel(uint8_t label_number) {
         	z2s_channels_table[channel_slot].Supla_secondary_channel,
 					getSuplaChannelTypeName(z2s_channels_table[channel_slot].Supla_channel_type),
         	z2s_channels_table[channel_slot].Supla_channel_func > 0 ? 
-						getSuplaChannelFuncName(z2s_channels_table[channel_slot].Supla_channel_type, z2s_channels_table[channel_slot].Supla_channel_func) : "none",
+						getSuplaChannelFuncName(z2s_channels_table[channel_slot].Supla_channel_type, 
+																		z2s_channels_table[channel_slot].Supla_channel_func) : "none",
         	z2s_channels_table[channel_slot].sub_id,
+					z2s_channels_table[channel_slot].user_data_flags,
 					z2s_channels_table[channel_slot].user_data_1,
 					z2s_channels_table[channel_slot].user_data_2,
 					Z2S_getZBDeviceLocalName(z2s_channels_table[channel_slot].ZB_device_id),
@@ -2291,20 +2357,18 @@ void updateChannelInfoLabel(uint8_t label_number) {
 	//updateLabel_P(zb_channel_info_label, channel_info_str);
 	if (label_number == 2)
 		updateLabel_P(zb_channel_info_label_2, channel_info_str_2);*/
-	ESPUI.updateNumber(keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
-	ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
-	ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
 	working_str = z2s_channels_table[channel_slot].Supla_channel_name;
 	ESPUI.updateText(channel_name_text, working_str);
 	switch (z2s_channels_table[channel_slot].Supla_channel_type) {
 
+
 		case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
-			
-			enableControlStyle(disable_channel_notifications_switcher,true);
-			enableControlStyle(trv_auto_to_schedule_switcher, false);
-			enableControlStyle(set_sorwns_on_start_switcher, true);
-
+			enableChannelTimings(6); //timeout+debounce
+			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+	
+			enableChannelFlags(5);
 			ESPUI.updateNumber(disable_channel_notifications_switcher, 
 										 (z2s_channels_table[channel_slot].user_data_flags & 
 											USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0);
@@ -2315,24 +2379,73 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		} break;
 
 
-		case SUPLA_CHANNELTYPE_HVAC: {
+		case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
 
-			enableControlStyle(disable_channel_notifications_switcher,false);
-			enableControlStyle(trv_auto_to_schedule_switcher, true);
-			enableControlStyle(set_sorwns_on_start_switcher, false);
+			enableChannelTimings(6); //timeout + debounce 
+			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+	
+			enableChannelFlags(0); 
+		} break;
+
+
+		case SUPLA_CHANNELTYPE_THERMOMETER:
+		case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
+		case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
+
+			enableChannelTimings(4); //timeout only
+			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+	
+			enableChannelFlags(4);
+		} break;
+
+
+		case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT: {
+
+			enableChannelTimings(0);
+			enableChannelFlags(0);
+		} break;
+		
+		
+		case SUPLA_CHANNELTYPE_HVAC: {
 			
+			enableChannelTimings(4); //timeout only
+			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+	
+			enableChannelFlags(2);
 			ESPUI.updateNumber(trv_auto_to_schedule_switcher, 
 										 (z2s_channels_table[channel_slot].user_data_flags &
 										 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
 		} break;
 
 
+		case SUPLA_CHANNELTYPE_RELAY:
+		case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
+		case SUPLA_CHANNELTYPE_DIMMER:
+		case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: {
+
+			enableChannelTimings(3); //timeout + keepalive
+			ESPUI.updateNumber(keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
+			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+
+			enableChannelFlags(0);
+		} break;
+
+		case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
+
+			enableChannelTimings(7); //timeout + keepalive + refresh
+			ESPUI.updateNumber(keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
+			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+
+			enableChannelFlags(0);
+		} break;
+
+
 		default: {
 
-			enableControlStyle(disable_channel_notifications_switcher,false);
-			enableControlStyle(trv_auto_to_schedule_switcher, false);
-			enableControlStyle(set_sorwns_on_start_switcher, false);
-
+			enableChannelTimings(0);
+			enableChannelFlags(0);
 		} break;
 	}
 }

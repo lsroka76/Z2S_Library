@@ -110,7 +110,6 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
   }
 }
 
-                                      
 void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
                               int8_t sub_id, char *name, uint32_t func) {
   
@@ -160,8 +159,7 @@ void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, bool state) {
     auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
     
     //Supla_Z2S_VirtualRelay->getChannel()->setStateOnline();
-    Supla_Z2S_VirtualRelay->Z2S_setOnOff(state);     
-    //Supla_Z2S_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
+    Supla_Z2S_VirtualRelay->Z2S_setOnOff(state);          
   }
 }
 
@@ -183,15 +181,29 @@ void msgZ2SDeviceVirtualRelayValue(int16_t channel_number_slot, uint8_t value_id
 
     switch (value_id) {
 
+
       case VRV_U8_ID:
+
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8((uint8_t)value); break;
+
+
       case VRV_S8_ID:
+
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS8((int8_t)value); break;
+
+
       case VRV_U32_ID:
+
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU32((uint32_t)value); break;
+
+
       case VRV_S32_ID:
+
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS32((int32_t)value); break;
+
+
       default:
+        
         log_e("error: invalid VRV_ID"); break;
     }         
   }

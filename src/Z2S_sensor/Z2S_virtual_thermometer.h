@@ -29,11 +29,16 @@ class Z2S_VirtualThermometer : public Supla::Sensor::VirtualThermometer {
   
 public:
     
-  Z2S_VirtualThermometer(uint8_t timeout = 0) : _timeout(timeout) {}
+  Z2S_VirtualThermometer(bool rwns_flag = false) : _rwns_flag(rwns_flag) {}
 
-  void setTimeout(uint8_t timeout) {
+  void setRWNSFlag(bool rwns_flag) {
+
+    _rwns_flag = rwns_flag;    
+  }
+  
+  void setTimeoutSecs(uint32_t timeout_secs) {
     
-    _timeout = timeout;
+    _timeout_ms = timeout_secs * 1000;
   }
 
   void Refresh() {
@@ -50,16 +55,21 @@ public:
       channel.setNewValue(getTemp());
     }
 
-    if ((_timeout > 0) && (millis() - _timeout_ms > _timeout * MSINHOUR)) {
+    if ((_timeout_ms > 0) && (millis() - _last_timeout_ms > _timeout_ms)) {
       
-      _timeout_ms = millis();
-      channel.setStateOffline();
+      _last_timeout_ms = millis();
+
+      if (_rwns_flag) 
+        channel.setStateOfflineRemoteWakeupNotSupported();
+      else
+        channel.setStateOffline();
     }
   }
     
  protected:
-   uint8_t  _timeout = 0;
-   uint32_t _timeout_ms = 0;
+  bool     _rwns_flag;
+  uint32_t _timeout_ms = 0;
+  uint32_t _last_timeout_ms = 0;
 };
 };  // namespace Sensor
 };  // namespace Supla

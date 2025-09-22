@@ -112,6 +112,7 @@
 #define Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB                   0x3130
 
 #define Z2S_DEVICE_DESC_DIMMER_BULB                         0x3200
+#define Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB                 0x3205
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0               0x3210
 #define Z2S_DEVICE_DESC_IKEA_WW_BULB                        0x3220
 #define Z2S_DEVICE_DESC_PHILIPS_WW_BULB                     0x3225
@@ -403,6 +404,7 @@
 
 #define DIMMER_FUNC_BRIGHTNESS_SID                          0x00
 #define DIMMER_FUNC_COLOR_TEMPERATURE_SID                   0x01
+#define DIMMER_ON_OFF_SWITCH_SID                            0x02
 
 #define IAS_WD_SILENT_ALARM_SID                             0x00
 #define IAS_WD_LOUD_ALARM_SID                               0x01
@@ -988,9 +990,17 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_BULB,
-    .z2s_device_clusters_count = 2, .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters_count = 2, 
+    .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB,
+    .z2s_device_clusters_count = 3, 
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+                             ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGB_BULB,
     .z2s_device_clusters_count = 3,
@@ -2161,6 +2171,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "eWeLink", .model_name = "SNZB-01",
+    .z2s_device_uid = 15205,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "eWeLink", .model_name = "CK-TLSR8656-SS5-01(7000)",
     .z2s_device_uid = 15300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F,
@@ -2429,6 +2444,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "zbeacon", .model_name = "TS0505",
     .z2s_device_uid = 18700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "TZ3000_riwp3k79", .model_name = "TS0505A",
+    .z2s_device_uid = 18705,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "TZ3000_8uaoilu9", .model_name = "TS0502A",
+    .z2s_device_uid = 18750,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E27 CWS globe 806lm",

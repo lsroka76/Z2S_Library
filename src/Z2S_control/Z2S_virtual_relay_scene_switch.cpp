@@ -43,27 +43,37 @@ void Supla::Control::VirtualRelaySceneSwitch::onLoadState() {
 }
 
 
-void Supla::Control::VirtualRelaySceneSwitch::turnOn(_supla_int_t duration)
-{
-    uint32_t timeMs = millis() - _lastChangeTimeMs;
-    if ( timeMs > _debounceTimeMs)
-    {
-        VirtualRelay::turnOn(duration);
-        _lastChangeTimeMs = millis();
-         log_i("Relay[%d] turn ON as following time passed (time %d ms)", channel.getChannelNumber(), timeMs);
-    }
+void Supla::Control::VirtualRelaySceneSwitch::turnOn(_supla_int_t duration) {
 
+  uint32_t timeMs = millis() - _lastChangeTimeMs;
+
+  if ( timeMs > _debounceTimeMs) {
+
+    log_i("durationMs = %lu, storedTurnOnDurationMs = %lu, durationTimestamp = %lu, keepTurnOnDurationMs = %u",
+          durationMs, storedTurnOnDurationMs, durationTimestamp, keepTurnOnDurationMs);
+
+    if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction())
+      
+      VirtualRelay::turnOn(storedTurnOnDurationMs);
+
+    else
+
+      VirtualRelay::turnOn(duration);
+
+    _lastChangeTimeMs = millis();
+    log_i("Relay[%d] turn ON as following time passed (time %d ms)", channel.getChannelNumber(), timeMs);
+  }
 }
 
-void Supla::Control::VirtualRelaySceneSwitch::turnOff(_supla_int_t duration)
-{
-    uint32_t timeMs = millis() - _lastChangeTimeMs;
-    if (timeMs > _debounceTimeMs)
-    {
-        VirtualRelay::turnOff(duration);
-        _lastChangeTimeMs = millis();
-         log_i("Relay[%d] turn OFF as following time passed (time %d ms)", channel.getChannelNumber(), timeMs);
-    }
+void Supla::Control::VirtualRelaySceneSwitch::turnOff(_supla_int_t duration) {
+
+  uint32_t timeMs = millis() - _lastChangeTimeMs;
+  if (timeMs > _debounceTimeMs) {
+
+    VirtualRelay::turnOff(duration);
+    _lastChangeTimeMs = millis();
+    log_i("Relay[%d] turn OFF as following time passed (time %d ms)", channel.getChannelNumber(), timeMs);
+  }
 }
 
 void Supla::Control::VirtualRelaySceneSwitch::setDebounceTimeMs(uint32_t debounceTimeMs) {

@@ -74,7 +74,8 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
   }
 } 
 
-void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, char *name, uint32_t func, char *unit) {
+void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, uint8_t free_slot, 
+                                           int8_t sub_id, char *name, uint32_t func, char *unit) {
   
   auto Supla_GeneralPurposeMeasurement = new Supla::Sensor::GeneralPurposeMeasurement();
   
@@ -127,7 +128,6 @@ void msgZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot, uint8_t 
 
     auto Supla_GeneralPurposeMeasurement = reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
     Supla_GeneralPurposeMeasurement->setValue(value);
-    //Supla_GeneralPurposeMeasurement->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
   }  
 }
 

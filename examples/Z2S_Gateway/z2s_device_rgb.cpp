@@ -45,7 +45,8 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, int16
   }
 } //initZ2SDeviceRGB
 
-void addZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, char *name, uint32_t func) {
+void addZ2SDeviceRGB(ZigbeeGateway *gateway, zbg_device_params_t *device, 
+                     uint8_t free_slot, char *name, uint32_t func) {
   
   Supla::ChannelElement *channel_element = nullptr;
   int8_t sub_id = Z2S_COLOR_HS_RGB;
