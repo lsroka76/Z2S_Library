@@ -276,6 +276,7 @@ void gatewayCallback(Control *sender, int type, void *param);
 void enterWifiDetailsCallback(Control *sender, int type, void *param);
 void textCallback(Control *sender, int type);
 void generalCallback(Control *sender, int type);
+void onZigbeeTabCallback(Control *sender, int type);
 void generalMinMaxCallback(Control *sender, int type, void *param);
 void endpointCallback(Control *sender, int type);
 void switchCallback(Control *sender, int type);
@@ -682,7 +683,7 @@ void buildZigbeeTabGUI() {
 																		working_str, 
 																		Control::Color::Emerald, 
 																		Control::noParent, 
-																		generalCallback);
+																		onZigbeeTabCallback);
 
 	working_str = PSTR("Pairing mode");
 	pairing_mode_switcher = ESPUI.addControl(Control::Type::Switcher, 
@@ -2048,6 +2049,18 @@ void generalCallback(Control *sender, int type) {
 	Serial.print(sender->label);
 	Serial.print("' = ");
 	Serial.println(sender->value);
+}
+
+void onZigbeeTabCallback(Control *sender, int type) {
+	Serial.print("CB: id(");
+	Serial.print(sender->GetId());
+	Serial.print(") Type(");
+	Serial.print(type);
+	Serial.print(") '");
+	Serial.print(sender->label);
+	Serial.print("' = ");
+	Serial.println(sender->value);
+	ESPUI.updateNumber(pairing_mode_switcher, Zigbee.isNetworkOpen() ? 1 : 0);	
 }
 
 void generalMinMaxCallback(Control *sender, int type, void* param) {

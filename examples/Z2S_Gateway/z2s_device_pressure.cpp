@@ -5,6 +5,14 @@ void initZ2SDevicePressure(int16_t channel_number_slot) {
   auto Supla_VirtualPressure = new Supla::Sensor::Z2S_VirtualPressure();
 
   Supla_VirtualPressure->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+
+  if (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) {
+      
+      Supla_VirtualPressure->getChannel()->setStateOfflineRemoteWakeupNotSupported();
+      Supla_VirtualPressure->setRWNSFlag(true);
+    }
+
+    Supla_VirtualPressure->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
 }
 
 

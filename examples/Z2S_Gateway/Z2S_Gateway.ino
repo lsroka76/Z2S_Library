@@ -1138,6 +1138,7 @@ void enableZ2SNotifications() {
   zbGateway.onMultistateInputReceive(Z2S_onMultistateInputReceive);
   zbGateway.onAnalogInputReceive(Z2S_onAnalogInputReceive);
   zbGateway.onMeteringReceive(Z2S_onMeteringReceive);
+  zbGateway.onBasicReceive(Z2S_onBasicReceive);
   zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
   zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
   zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
@@ -1174,6 +1175,7 @@ void disableZ2SNotifications() {
   zbGateway.onMultistateInputReceive(nullptr);
   zbGateway.onAnalogInputReceive(nullptr);
   zbGateway.onMeteringReceive(nullptr);
+  zbGateway.onBasicReceive(nullptr);
   zbGateway.onCurrentLevelReceive(nullptr);
   zbGateway.onColorHueReceive(nullptr);
   zbGateway.onColorSaturationReceive(nullptr);
@@ -1512,12 +1514,13 @@ void loop() {
     if(_status_led_mode != _status_led_last_mode) {
       if (_status_led_mode == 1) {
 
-        GUI_onZigbeeOpenNetwork(true);
+        if (GUIstarted)
+          GUI_onZigbeeOpenNetwork(true);
         rgbLedWrite(RGB_BUILTIN, 0, 255, 0);  // Green
       } else
       if (_status_led_mode == 0) {
-
-        GUI_onZigbeeOpenNetwork(false);
+        if (GUIstarted)
+          GUI_onZigbeeOpenNetwork(false);
         rgbLedWrite(RGB_BUILTIN, 0, 0, 0);  // Black
       }
     }
@@ -1703,6 +1706,21 @@ void loop() {
                                                         ESP_ZB_ZCL_ATTR_TYPE_SET, 
                                                         0, nullptr, false, 
                                                         ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 0, 0); //disable default response, no manufacurer code  
+                      }
+
+                      if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
+                          Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT) {
+
+                        log_i("LUMI magic");
+
+                        write_mask = 0x01;
+                        //joined_device->endpoint = 1;
+                        zbGateway.sendAttributeWrite(joined_device, 
+                                                     LUMI_CUSTOM_CLUSTER, 
+                                                     LUMI_CUSTOM_CLUSTER_MODE_ID, 
+                                                     ESP_ZB_ZCL_ATTR_TYPE_U8, 
+                                                    1, &write_mask, true, 
+                                                    1, LUMI_MANUFACTURER_CODE);
                       }
                     }
 
@@ -2589,7 +2607,7 @@ void loop() {
                 case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_SWITCH:
                 case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO:
-                case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
+                //case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
 
                   write_mask = 0x01;

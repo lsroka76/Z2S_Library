@@ -42,7 +42,7 @@ public:
 
   void Refresh() {
     
-    _timeout_ms = millis();
+    _last_timeout_ms = millis();
     channel.setStateOnline();
   }
 

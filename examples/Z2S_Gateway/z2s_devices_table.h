@@ -415,6 +415,8 @@ void Z2S_onAnalogInputReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
                               const esp_zb_zcl_attribute_t *attribute);
 void Z2S_onMeteringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
                            const esp_zb_zcl_attribute_t *attribute);
+void Z2S_onBasicReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+                           const esp_zb_zcl_attribute_t *attribute);
 void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t level);
 void Z2S_onColorHueReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t hue);
 void Z2S_onColorSaturationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t saturation);

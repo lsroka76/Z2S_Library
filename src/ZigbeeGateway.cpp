@@ -417,43 +417,61 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device, bool
   return true; 
 }
 
-//void ZigbeeGateway::zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) {
-void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) {
+void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address, 
+                                       uint16_t src_endpoint, 
+                                       uint16_t cluster_id, 
+                                       esp_zb_zcl_attribute_t *attribute) {
   /* Basic cluster attributes */
-  if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING && attribute->data.value) {
+  if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) &&
+       (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
+       attribute->data.value) {
+
     zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
+    
     memcpy(_last_device_query.zcl_manufacturer_name, zbstr->data, zbstr->len);
     _last_device_query.zcl_manufacturer_name[zbstr->len] = '\0';
     log_i("Peer Manufacturer is \"%s\"", _last_device_query.zcl_manufacturer_name);
     xSemaphoreGive(gt_lock);
   } else
-  if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING && attribute->data.value) {
+  if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID) &&
+      (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
+      attribute->data.value) {
+
     zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
     memcpy(_last_device_query.zcl_model_name, zbstr->data, zbstr->len);
     _last_device_query.zcl_model_name[zbstr->len] = '\0';
     log_i("Peer Model is \"%s\"", _last_device_query.zcl_model_name);
     xSemaphoreGive(gt_lock);
   } else
-  if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING && attribute->data.value) {
+  if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID) && 
+      (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
+      attribute->data.value) {
+
     zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
     memcpy(_last_device_query.software_build_ID, zbstr->data, zbstr->len);
     _last_device_query.software_build_ID[zbstr->len] = '\0';
     log_i("Device firmware build is \"%s\"", _last_device_query.software_build_ID);
     xSemaphoreGive(gt_lock);
   } else
-  if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
+  if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID) && 
+      (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) && 
+      attribute->data.value) {
    
     _last_device_query.zcl_version_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL version id is \"%d\"", _last_device_query.zcl_version_id);
     xSemaphoreGive(gt_lock);
   } else
-  if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
+  if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID) &&
+      (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) && 
+      attribute->data.value) {
    
     _last_device_query.zcl_application_version_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL application version id is \"%d\"", _last_device_query.zcl_application_version_id);
     xSemaphoreGive(gt_lock);
   } else
-  if (attribute->id == ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM && attribute->data.value) {
+  if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID) && 
+      (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) && 
+      attribute->data.value) {
    
     _last_device_query.zcl_power_source_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL power source id is \"%d\"", _last_device_query.zcl_power_source_id);
@@ -464,12 +482,20 @@ void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t s
     //_last_device_query.zcl_power_source_id = *((uint8_t*)attribute->data.value);
     //log_i("ZCL power source id is \"%d\"", _last_device_query.zcl_power_source_id;
     xSemaphoreGive(gt_lock);
-  }
-  if (attribute->id == 0xFFE2 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
-    uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
-    log_i("Tuya 0xFFE2 attribute report value",value);
-    //if (_on_battery_percentage_receive)
-    //  _on_battery_percentage_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value / 2);
+  } else {
+
+    uint16_t short_addr = src_address.u.short_addr;
+    if (src_address.addr_type == ESP_ZB_ZCL_ADDR_TYPE_SHORT) {
+
+      log_i("attribute reporting with short address(0x%02X), updating IEEE address", short_addr);
+      esp_zb_ieee_address_by_short(short_addr,src_address.u.ieee_addr);
+    }
+    
+    log_i("Basic cluster: attribute(0x%02X), type (0x%02X), size (0x%02X)",
+          attribute->id, attribute->data.type, attribute->data.size);
+    
+    if (_on_basic_receive)
+      _on_basic_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute);
   }
 }
 

@@ -90,6 +90,13 @@
 
 #define LUMI_CUSTOM_CLUSTER_MODE_ID                           0x0009 //U8
 
+#define LUMI_ATTRIBUTE_BATTERY_ID                             0x01 //ESP_ZB_ZCL_ATTR_TYPE_U16
+#define LUMI_ATTRIBUTE_TEMPERATURE_ID                         0x64 //ESP_ZB_ZCL_ATTR_TYPE_S16
+#define LUMI_ATTRIBUTE_HUMIDITY_ID                            0x65 //ESP_ZB_ZCL_ATTR_TYPE_U16
+#define LUMI_ATTRIBUTE_PRESSURE_ID                            0x66 //ESP_ZB_ZCL_ATTR_TYPE_S32
+#define LUMI_ATTRIBUTE_VOC_ID                                 0x66 //ESP_ZB_ZCL_ATTR_TYPE_U16
+#define LUMI_ATTRIBUTE_AIR_QUALITY_ID                         0x67 //ESP_ZB_ZCL_ATTR_TYPE_U8
+
 #define DEVELCO_CUSTOM_CLUSTER                                0xFC03
 #define DEVELCO_MANUFACTURER_CODE                             0x1015
 
@@ -308,6 +315,10 @@ public:
                          const esp_zb_zcl_attribute_t *)) {
     _on_metering_receive = callback;
   }
+  void onBasicReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
+                         const esp_zb_zcl_attribute_t *)) {
+    _on_basic_receive = callback;
+  }
   void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t)) {
     _on_current_summation_receive = callback;
   }
@@ -428,6 +439,7 @@ private:
   void (*_on_multistate_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_analog_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_metering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_basic_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t);
   void (*_on_battery_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
   void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
