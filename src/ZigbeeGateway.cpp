@@ -510,9 +510,14 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,int16_t clust
   bind_req.src_endp = device->endpoint;
   bind_req.cluster_id = cluster_id; 
   
-  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
-  esp_zb_get_long_address(bind_req.dst_address_u.addr_long);
-  bind_req.dst_endp = _instance->getEndpoint(); 
+  //if (cluster_id == 4) {
+  //  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
+  //  bind_req.dst_address_u.addr_short = 0;
+  //} else {
+    bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+    esp_zb_get_long_address(bind_req.dst_address_u.addr_long);
+    bind_req.dst_endp = _instance->getEndpoint(); 
+  //}
     
   device->ZC_binding = false;
   device->cluster_id = cluster_id;
@@ -543,11 +548,15 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,int16_t clust
   esp_zb_get_long_address(bind_req.src_address);
   bind_req.src_endp = _instance->getEndpoint();
   bind_req.cluster_id = cluster_id;
-    
+    if (cluster_id == 4) {
+   bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
+   bind_req.dst_address_u.addr_short = 0;
+  } else {
+  
   bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
   memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   bind_req.dst_endp = device->endpoint;
-    
+  }
   /*memcpy(bind_req.src_address, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   bind_req.src_endp = device->endpoint;
   bind_req.cluster_id = cluster_id; 

@@ -3326,6 +3326,17 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
+      case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21: {
+
+        //char button_name_function[30];
+        //static const char button_function[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
+        //sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, "LIVARNO_TEST", SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+
+/*---------------------------------------------------------------------------------------------------------------------------*/     
+
       case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3: {
 
         static const char button_name_function[][30] =  {"BUTTON #1 PRESSED", "BUTTON #1 DOUBLE PRESSED","BUTTON #1 HELD",

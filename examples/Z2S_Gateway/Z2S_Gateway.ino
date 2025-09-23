@@ -1599,7 +1599,7 @@ void loop() {
       rgbLedWrite(RGB_BUILTIN, 0, 128, 128);  // Green
 
       Z2S_stopWebGUI();
-
+      //zbGateway.zbPrintDeviceDiscovery(joined_device); 
 
       //do some Tuya vodoo - just in case Tuya device is paired
       
@@ -2533,14 +2533,24 @@ void loop() {
                 case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F:
                 case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:
                 case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_2F: {
+                //case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB20:
+                //case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21: {
 
                   joined_device->endpoint = 0x01;
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,0x8004, true))
-                    log_i("Tuya custom attribute 0x8004 has been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    log_i("Tuya custom attribute 0x8004 has been read id 0x%x, value 0x%x", 
+                          zbGateway.getReadAttrLastResult()->id, 
+                          *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
                   write_mask = 0x01; //Tuya switch mode, 0x00 - scenes
-                  zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 0x8004, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
+                  zbGateway.sendAttributeWrite(joined_device, 
+                                               ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                                               0x8004, 
+                                               ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
+                                               1, &write_mask);
                   if (zbGateway.sendAttributeRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,0x8004, true))
-                    log_i("Tuya custom attribute has 0x8004 been read id 0x%x, value 0x%x", zbGateway.getReadAttrLastResult()->id, *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
+                    log_i("Tuya custom attribute has 0x8004 been read id 0x%x, value 0x%x", 
+                          zbGateway.getReadAttrLastResult()->id, 
+                          *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value);
                 } break;
 
                 case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1: //Z2S_DEVICE_DESC_TUYA_1GANG_SWITCH:
