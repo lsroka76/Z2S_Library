@@ -499,7 +499,9 @@ void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address,
   }
 }
 
-void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,int16_t cluster_id) {
+void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,
+                                      int16_t cluster_id, 
+                                      uint8_t groupcast_flag) {
 
   esp_zb_zdo_bind_req_param_t bind_req = {};
     
@@ -510,19 +512,23 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,int16_t clust
   bind_req.src_endp = device->endpoint;
   bind_req.cluster_id = cluster_id; 
   
-  //if (cluster_id == 4) {
-  //  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
-  //  bind_req.dst_address_u.addr_short = 0;
-  //} else {
+  if (groupcast_flag & 1) {
+
+    bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
+    bind_req.dst_address_u.addr_short = esp_zb_get_short_address();
+    bind_req.dst_endp = 1;
+    log_i("groupcast 1: mode 0x%02X, addr 0x%04X", bind_req.dst_addr_mode, bind_req.dst_address_u.addr_short);
+  } else {
     bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
     esp_zb_get_long_address(bind_req.dst_address_u.addr_long);
     bind_req.dst_endp = _instance->getEndpoint(); 
-  //}
+  }
     
   device->ZC_binding = false;
   device->cluster_id = cluster_id;
 
-  log_d("Requesting ZED (0x%x), endpoint (0x%x), cluster_id (0x%x) to bind ZC", device->short_addr, device->endpoint, device->cluster_id);
+  log_d("Requesting ZED (0x%x), endpoint (0x%x), cluster_id (0x%x) to bind ZC", 
+  device->short_addr, device->endpoint, device->cluster_id);
 
   zbg_device_params_t *bind_device =(zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
   memcpy(bind_device, device, sizeof(zbg_device_params_t));
@@ -543,19 +549,28 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,int16_t clust
   }
   free(bind_device);
 
+  if (groupcast_flag == 1)
+    return;
+
   bind_req.req_dst_addr = esp_zb_get_short_address();
 
   esp_zb_get_long_address(bind_req.src_address);
   bind_req.src_endp = _instance->getEndpoint();
   bind_req.cluster_id = cluster_id;
-    if (cluster_id == 4) {
-   bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
-   bind_req.dst_address_u.addr_short = 0;
+
+  if (groupcast_flag & 2) {
+
+    bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
+    bind_req.dst_address_u.addr_short = esp_zb_get_short_address();
+    bind_req.dst_endp = _instance->getEndpoint();
+    memcpy(bind_req.src_address, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+    bind_req.src_endp = device->endpoint;
+    log_i("groupcast 2: mode 0x%02X, addr 0x%04X", bind_req.dst_addr_mode, bind_req.dst_address_u.addr_short);
   } else {
   
-  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
-  memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
-  bind_req.dst_endp = device->endpoint;
+    bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+    memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+    bind_req.dst_endp = device->endpoint;
   }
   /*memcpy(bind_req.src_address, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   bind_req.src_endp = device->endpoint;
@@ -571,7 +586,8 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,int16_t clust
   bind_device =(zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
   memcpy(bind_device, device, sizeof(zbg_device_params_t));
 
-  log_d("Requesting ZC to bind ZED (0x%x), endpoint (0x%x), cluster_id (0x%x)", device->short_addr, device->endpoint, device->cluster_id);
+  log_d("Requesting ZC to bind ZED (0x%x), endpoint (0x%x), cluster_id (0x%x)", 
+        device->short_addr, device->endpoint, device->cluster_id);
 
   _last_bind_success = false;
   _binding_error_retries = 5;
@@ -860,53 +876,82 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t
         log_i("level control cluster Tuya 0xF000 brightness 0x%x",value);
         if (_on_current_level_receive)
           _on_current_level_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
-      } else log_i("level control cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      } else log_i("level control cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+                  cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL) {
 
-      if (attribute->id == ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_HUE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) {
+      if (attribute->id == ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_HUE_ID && 
+          attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) {
+        
         uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        
         log_i("color control cluster hue 0x%x",value);
+        
         if (_on_color_hue_receive)
           _on_color_hue_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
       } else 
-      if (attribute->id == ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_SATURATION_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) {
+
+      if (attribute->id == ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_SATURATION_ID &&
+          attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) {
+
         uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        
         log_i("color control cluster saturation 0x%x",value);
+        
         if (_on_color_saturation_receive)
           _on_color_saturation_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
       } else
-      if (attribute->id == ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+
+      if (attribute->id == ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID && 
+          attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+        
         uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+        
         log_i("color control cluster color temperature 0x%x",value);
+        
         if (_on_color_temperature_receive)
           _on_color_temperature_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
 
       } else
-      if (attribute->id == 0xE000 && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+      if (attribute->id == 0xE000 && 
+          attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+
         uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+        
         log_i("color control cluster Tuya 0xE000 color temperature 0x%x",value);
+        
         if (_on_color_temperature_receive)
           _on_color_temperature_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, value);
-      } else log_i("color control cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      } else 
+        log_i("color control cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+               cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG) {
 
-      if (attribute->id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) 
+      if (attribute->id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID && 
+          attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) 
       {
         uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        
         log_i("power config battery percentage remaining %d",value);
+        
         if (_on_battery_receive)
           _on_battery_receive(src_address.u.ieee_addr, src_endpoint,cluster_id, attribute->id, value);
       } else
-      if (attribute->id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) 
+      if (attribute->id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID && 
+          attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) 
       {
         uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+
         log_i("power config battery voltage %d",value);
+        
         if (_on_battery_receive)
-          _on_battery_receive(src_address.u.ieee_addr, src_endpoint,cluster_id, attribute->id, value); //100 - ((33 - value)*20));
+          _on_battery_receive(src_address.u.ieee_addr, src_endpoint,cluster_id, attribute->id, value);
       }
-      else log_i("power config cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      else 
+        log_i("power config cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+              cluster_id, attribute->id, attribute->data.type);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE) {
 

@@ -198,6 +198,7 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_CLICK_1: Zigbee.openNetwork(180); break;
     case Supla::ON_EVENT_2:
     case Supla::ON_CLICK_5: { //Zigbee.factoryReset(); break;
+      log_i("GUIstarted = %s", GUIstarted ? "YES" : "NO");
       if (!GUIstarted) {
         if (Supla::Network::IsReady()) {
           GUIstarted = true;
@@ -207,8 +208,8 @@ void supla_callback_bridge(int event, int action) {
           onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
         }
       } else {
-        //GUIdisabled = true;
-        //Z2S_stopWebGUI();
+        Z2S_stopWebGUI();
+        Z2S_startWebGUI();
       }
     } break; 
   }
@@ -565,9 +566,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-      z2s_channels_table[channel_number_slot].valid_record = false;
-      if (Z2S_saveChannelsTable()) {
-        log_i("Device on channel %d removed. Restarting...", channel_id);
+      //z2s_channels_table[channel_number_slot].valid_record = false;
+      if (Z2S_removeChannel(channel_number_slot)) {
+        log_i("Supla channel #%d removed. Restarting...", channel_id);
       SuplaDevice.scheduleSoftRestart(1000);
       }
     } else {
@@ -576,6 +577,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     return;
   } else
   if (strcmp(cmd,"UPDATE-SED-TIMEOUT") == 0) {
+
+    telnet.println(">command update-sed-timeout depreciated");
+    return;
 
     if (params_number < 2)  {
       telnet.println(">update-sed-timeout channel timeout(h)");
@@ -973,18 +977,40 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
       telnet.printf(">query-device-info channel:%u, short address: 0x%X\n\r>", channel_id, device.short_addr);
+      
       if (zbGateway.zbQueryDeviceBasicCluster(&device, true, attribute_id)) {
         switch (attribute_id) {
+          
+
           case ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID:
-            telnet.printf(">Device 0x%X manufacturer name: %s\n\r", device.short_addr, zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name); break;
+            
+            telnet.printf(">Device 0x%X manufacturer name: %s\n\r", 
+                          device.short_addr, 
+                          zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name); break;
+
+
           case ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID:
-            telnet.printf(">Device 0x%X model name: %s\n\r", device.short_addr, zbGateway.getQueryBasicClusterData()->zcl_model_name); break;
+            
+            telnet.printf(">Device 0x%X model name: %s\n\r", 
+                          device.short_addr, 
+                          zbGateway.getQueryBasicClusterData()->zcl_model_name); break;
+
+
           case ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID:
-            telnet.printf(">Device 0x%X power source: 0x%x\n\r", device.short_addr, zbGateway.getQueryBasicClusterData()->zcl_power_source_id); break;
+            
+            telnet.printf(">Device 0x%X power source: 0x%x\n\r", 
+                          device.short_addr, 
+                          zbGateway.getQueryBasicClusterData()->zcl_power_source_id); break;
+
+
           case ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID:
-            telnet.printf(">Device 0x%X firmware build: %s\n\r", device.short_addr, zbGateway.getQueryBasicClusterData()->software_build_ID); break;
+            
+            telnet.printf(">Device 0x%X firmware build: %s\n\r", 
+                          device.short_addr, 
+                          zbGateway.getQueryBasicClusterData()->software_build_ID); break;
         }
       } else
+
         telnet.println("read-device-firmware failed :-(");
     }
     return;
@@ -1097,8 +1123,17 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
         custom_cmd_payload[i] = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
         telnet.printf("%X:", custom_cmd_payload[i]);
       }
-      zbGateway.sendCustomClusterCmd(&device, cluster_id, command_id, data_type, data_size, custom_cmd_payload, sync, direction, 
-                                     disable_default_response, manuf_specific, manuf_code); 
+      zbGateway.sendCustomClusterCmd(&device, 
+                                     cluster_id, 
+                                     command_id, 
+                                     data_type, 
+                                     data_size, 
+                                     custom_cmd_payload, 
+                                     sync, 
+                                     direction, 
+                                     disable_default_response, 
+                                     manuf_specific, manuf_code); 
+
       if (!sync) telnet.println("Custom command async request sent");
     }
     return;
@@ -1364,7 +1399,7 @@ void setup() {
   zbGateway.setManufacturerAndModel("Supla", "Z2SGateway");
   zbGateway.allowMultipleBinding(true);
 
-  Zigbee.addEndpoint(&zbGateway);
+  Zigbee.addGatewayEndpoint(&zbGateway);
 
   uint32_t zb_primary_channel_mask;
 
@@ -1381,7 +1416,7 @@ void setup() {
     log_i("Z2S_ENABLE_GUI_ON_START not configured - turning on");
     _enable_gui_on_start = 1;
   }
-
+  _enable_gui_on_start = 1;
   if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
     log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
   } else {
@@ -1395,7 +1430,7 @@ void setup() {
     log_i("Z2S_GUI_ON_START_DELAY not configured - setting to 0 s");
     _gui_start_delay = 0;
   }
-
+  _gui_start_delay = 15;
   Supla::Storage::ConfigInstance()->getUInt8(PSTR("security_level"), &_z2s_security_level);
   
   Supla::Storage::ConfigInstance()->setUInt8(Z2S_FILES_STRUCTURE_VERSION, 2);
@@ -1444,7 +1479,11 @@ void loop() {
     Z2S_startUpdateServer();
   } 
 
-  if ((!GUIstarted) && (_enable_gui_on_start == 1) && Zigbee.started() && (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {// SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+  if ((!GUIstarted) && 
+      (_enable_gui_on_start == 1) && 
+      Zigbee.started() && 
+      (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {// SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+
     GUIstarted = true;
     Z2S_buildWebGUI();  
     Z2S_startWebGUI();
@@ -1461,7 +1500,8 @@ void loop() {
 #endif //USE_TELNET_CONSOLE
   
   //
-  if (Zigbee.started() && (millis() - _time_cluster_last_refresh_ms > TIME_CLUSTER_REFRESH_MS)) {
+  if (Zigbee.started() && 
+     (millis() - _time_cluster_last_refresh_ms > TIME_CLUSTER_REFRESH_MS)) {
 
     uint32_t new_utc_time = time(NULL) - 946684800;
     uint32_t new_local_time = time(NULL) - 946684800;
@@ -1635,7 +1675,8 @@ void loop() {
 
           for (int devices_list_counter = 0; devices_list_counter < devices_list_table_size; devices_list_counter++) { 
             
-            if ((strcmp(zbGateway.getQueryBasicClusterData()->zcl_model_name, Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
+            if ((strcmp(zbGateway.getQueryBasicClusterData()->zcl_model_name, 
+                        Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
             (strcmp(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name, Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
               log_i("LIST matched %s::%s, entry # %d, endpoints # %d, endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
                     Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, Z2S_DEVICES_LIST[devices_list_counter].model_name, devices_list_counter, 
@@ -1740,16 +1781,28 @@ void loop() {
                               if (philips_0031 != write_mask_16)
                               write_mask_16 = 0x0000;
                             }*/
-                        zbGateway.sendAttributeWrite(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
-                                                         2, &write_mask_16, true, 1, PHILIPS_MANUFACTURER_CODE);
+                        zbGateway.sendAttributeWrite(joined_device, 
+                                                     ESP_ZB_ZCL_CLUSTER_ID_BASIC, 
+                                                     0x0031, 
+                                                     ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
+                                                     2, &write_mask_16, 
+                                                     true, 
+                                                     1, PHILIPS_MANUFACTURER_CODE);
                       } break;
                     }
 
                     for (int clusters_bind_counter = 0; 
                          clusters_bind_counter < Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count; 
-                         clusters_bind_counter++)
+                         clusters_bind_counter++) {
+                      
+                      if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags &
+                          Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_5)
+                        zbGateway.bindDeviceCluster(joined_device, 
+                                                    Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[clusters_bind_counter], 3);  
+                      
                       zbGateway.bindDeviceCluster(joined_device, 
                                                   Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[clusters_bind_counter]);
+                    }
 
                     if (endpoint_counter == 0) {//(endpoint_id == 1)
                           

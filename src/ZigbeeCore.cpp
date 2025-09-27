@@ -41,8 +41,11 @@ ZigbeeCore::ZigbeeCore() {
 ZigbeeCore::~ZigbeeCore() {}
 
 //forward declaration
-static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id, const void *message);
+static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id, 
+                                   const void *message);
 bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind);
+
+static void set_zb_broadcast_ep_handler2();
 
 bool ZigbeeCore::begin(esp_zb_cfg_t *role_cfg, bool erase_nvs) {
   if (!zigbeeInit(role_cfg, erase_nvs)) {
@@ -171,6 +174,8 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     return false;
   }
 
+  //esp_zb_set_trace_level_mask(ESP_ZB_TRACE_LEVEL_VERBOSE, ESP_ZB_TRACE_SUBSYSTEM_NWK);
+
   // Initialize Zigbee stack
   log_d("Initialize Zigbee stack");
   esp_zb_init(zb_cfg);
@@ -196,8 +201,11 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     }
   }
   // Register Zigbee action handler
+  set_zb_broadcast_ep_handler2();
+  
   esp_zb_raw_command_handler_register(zb_raw_cmd_handler);
   esp_zb_core_action_handler_register(zb_action_handler);
+  
   zb_bdb_set_legacy_device_support(1);
   err = esp_zb_set_primary_network_channel_set(_primary_channel_mask);
   if (err != ESP_OK) {
@@ -458,14 +466,13 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
 bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind) {
   //if (Zigbee.getDebugMode()) {
     log_d("APSDE INDICATION - Received APSDE-DATA indication, status: %d", ind.status);
-    log_d(
-      "APSDE INDICATION - dst_endpoint: %d, src_endpoint: %d, dst_addr_mode: %d, src_addr_mode: %d, cluster_id: 0x%04x, asdu_length: %d", ind.dst_endpoint,
-      ind.src_endpoint, ind.dst_addr_mode, ind.src_addr_mode, ind.cluster_id, ind.asdu_length
-    );
-    log_d(
-      "APSDE INDICATION - dst_short_addr: 0x%04x, src_short_addr: 0x%04x, profile_id: 0x%04x, security_status: %d, lqi: %d, rx_time: %d", ind.dst_short_addr,
-      ind.src_short_addr, ind.profile_id, ind.security_status, ind.lqi, ind.rx_time
-    );
+    log_d("APSDE INDICATION - dst_endpoint: %d, src_endpoint: %d, dst_addr_mode: %d\n\r"
+          "APSDE INDICATION - src_addr_mode: %d, cluster_id: 0x%04x, asdu_length: %d\n\r"
+          "APSDE INDICATION - dst_short_addr: 0x%04x, src_short_addr: 0x%04x\n\r"
+          "APSDE INDICATION - profile_id: 0x%04x, security_status: %d, lqi: %d, rx_time: %d", 
+          ind.dst_endpoint, ind.src_endpoint, ind.dst_addr_mode, ind.src_addr_mode, 
+          ind.cluster_id, ind.asdu_length, ind.dst_short_addr,
+          ind.src_short_addr, ind.profile_id, ind.security_status, ind.lqi, ind.rx_time);
   //}
   /*if (ind.status == 0x00) {
     // Catch bind/unbind requests to update the bound devices list

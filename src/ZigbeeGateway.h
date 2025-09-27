@@ -9,7 +9,6 @@
 #include "ZigbeeEP.h"
 #include "ha/esp_zigbee_ha_standard.h"
 
-//define the thermostat configuration to avoid narrowing conversion issue in zigbee-sdk
 #define ZB_DEFAULT_GATEWAY_CONFIG()                                                               \
   {                                                                                                  \
     .basic_cfg =                                                                                     \
@@ -232,47 +231,133 @@ public:
   }
 
   void zbPrintDeviceDiscovery (zbg_device_params_t * device);
-  static void bindDeviceCluster(zbg_device_params_t *,int16_t cluster_id);
+
+  static void bindDeviceCluster(zbg_device_params_t *,
+                                int16_t cluster_id, 
+                                uint8_t groupcast_flag = 0);
 
   static uint32_t getZbgDeviceUnitLastSeenMs(uint16_t short_addr);
   static int8_t getZbgDeviceUnitLastRssi(uint16_t short_addr);
 
-  bool zbQueryDeviceBasicCluster(zbg_device_params_t * device, bool single_attribute = false, uint16_t attribute_id = 0x0);
+  bool zbQueryDeviceBasicCluster(zbg_device_params_t * device, 
+                                 bool single_attribute = false, 
+                                 uint16_t attribute_id = 0x0);
 
   //void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) override;
-  void zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) override;
-  bool setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, uint8_t attribute_type,
-                                        uint16_t min_interval, uint16_t max_interval, uint16_t delta, bool ack);
-  void readClusterReportCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
-  bool readClusterReportCfgCmd(zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, bool ack);
+  void zbReadBasicCluster(esp_zb_zcl_addr_t src_address, 
+                          uint16_t src_endpoint, 
+                          uint16_t cluster_id, 
+                          esp_zb_zcl_attribute_t *attribute) override;
 
-  bool sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, bool ack = false, 
-                         uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,uint8_t disable_default_response = 1, 
-                         uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
-  void sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, uint16_t *attribute_ids);
-  bool sendAttributeWrite(zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, esp_zb_zcl_attr_type_t attribute_type, 
-                          uint16_t attribute_size, void *attribute_value, bool ack = false, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
-  void sendIASzoneEnrollResponseCmd(zbg_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
+  bool setClusterReporting(zbg_device_params_t * device, 
+                           uint16_t cluster_id, 
+                           uint16_t attribute_id, 
+                           uint8_t attribute_type,
+                           uint16_t min_interval, 
+                           uint16_t max_interval, 
+                           uint16_t delta, bool ack);
+
+  void readClusterReportCmd(zbg_device_params_t * device, 
+                            uint16_t cluster_id, 
+                            uint16_t attribute_id, 
+                            bool ack);
+
+  bool readClusterReportCfgCmd(zbg_device_params_t * device, 
+                               uint16_t cluster_id, 
+                               uint16_t attribute_id, 
+                               bool ack);
+
+  bool sendAttributeRead(zbg_device_params_t * device, 
+                         int16_t cluster_id, 
+                         uint16_t attribute_id, 
+                         bool ack = false, 
+                         uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                         uint8_t disable_default_response = 1, 
+                         uint8_t manuf_specific = 0, 
+                         uint16_t manuf_code = 0);
+
+  void sendAttributesRead(zbg_device_params_t * device, 
+                          int16_t cluster_id, 
+                          uint8_t attr_number, 
+                          uint16_t *attribute_ids);
+
+  bool sendAttributeWrite(zbg_device_params_t * device, 
+                          int16_t cluster_id, 
+                          uint16_t attribute_id, 
+                          esp_zb_zcl_attr_type_t attribute_type, 
+                          uint16_t attribute_size, 
+                          void *attribute_value, 
+                          bool ack = false, 
+                          uint8_t manuf_specific = 0, 
+                          uint16_t manuf_code = 0);
+
+  void sendIASzoneEnrollResponseCmd(zbg_device_params_t *device, 
+                                    uint8_t enroll_rsp_code, 
+                                    uint8_t zone_id);
 
   void sendOnOffCmd(zbg_device_params_t *device, bool value); 
-  void sendLevelMoveToLevelCmd(zbg_device_params_t *device, uint8_t level, uint16_t transition_time);
-  void sendColorMoveToHueCmd(zbg_device_params_t *device, uint8_t hue, uint8_t directon, uint16_t transition_time);
-  void sendColorMoveToSaturationCmd(zbg_device_params_t *device, uint8_t saturation, uint16_t transition_time);
-  void sendColorMoveToHueAndSaturationCmd(zbg_device_params_t *device, uint8_t hue, uint8_t saturation, uint16_t transition_time);
-  void sendColorEnhancedMoveToHueAndSaturationCmd(zbg_device_params_t *device, uint16_t enhanced_hue, uint8_t saturation, uint16_t transition_time);
-  void sendColorMoveToColorCmd(zbg_device_params_t *device, uint16_t color_x, uint16_t color_y, uint16_t transition_time);
-  void sendColorMoveToColorTemperatureCmd(zbg_device_params_t *device, uint16_t color_temperature, uint16_t transition_time);
-  void sendWindowCoveringCmd(zbg_device_params_t *device, uint8_t cmd_id, void *cmd_value);
+
+  void sendLevelMoveToLevelCmd(zbg_device_params_t *device, 
+                               uint8_t level, 
+                               uint16_t transition_time);
+
+  void sendColorMoveToHueCmd(zbg_device_params_t *device, 
+                             uint8_t hue, uint8_t directon, 
+                             uint16_t transition_time);
+
+  void sendColorMoveToSaturationCmd(zbg_device_params_t *device, 
+                                    uint8_t saturation, 
+                                    uint16_t transition_time);
+
+  void sendColorMoveToHueAndSaturationCmd(zbg_device_params_t *device, 
+                                          uint8_t hue, 
+                                          uint8_t saturation, 
+                                          uint16_t transition_time);
+
+  void sendColorEnhancedMoveToHueAndSaturationCmd(zbg_device_params_t *device, 
+                                                  uint16_t enhanced_hue, 
+                                                  uint8_t saturation, 
+                                                  uint16_t transition_time);
+
+  void sendColorMoveToColorCmd(zbg_device_params_t *device, 
+                               uint16_t color_x, 
+                               uint16_t color_y, 
+                               uint16_t transition_time);
+
+  void sendColorMoveToColorTemperatureCmd(zbg_device_params_t *device, 
+                                          uint16_t color_temperature, 
+                                          uint16_t transition_time);
+
+  void sendWindowCoveringCmd(zbg_device_params_t *device, 
+                             uint8_t cmd_id, 
+                             void *cmd_value);
 
   void sendIEEEAddrReqCmd(zbg_device_params_t *device, bool ack);
-  void sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya = false);
-  bool sendCustomClusterCmd(zbg_device_params_t * device, int16_t custom_cluster_id, uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
-                            uint16_t custom_data_size, uint8_t *custom_data, bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-                            uint8_t disable_default_response = 0, uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
 
-  void requestDataSave(uint8_t selector) {
+  void sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya = false);
+
+  bool sendCustomClusterCmd(zbg_device_params_t * device, 
+                            int16_t custom_cluster_id, 
+                            uint16_t custom_command_id, 
+                            esp_zb_zcl_attr_type_t data_type, 
+                            uint16_t custom_data_size, 
+                            uint8_t *custom_data, 
+                            bool ack = false, 
+                            uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+                            uint8_t disable_default_response = 0, 
+                            uint8_t manuf_specific = 0, 
+                            uint16_t manuf_code = 0);
+
+  void requestDataSave(uint8_t Supla_channel,
+                       uint8_t data_save_mode, 
+                       uint8_t extended_data_type = 0, 
+                       uint8_t *extended_data = nullptr) {
+
     if (_on_data_save_request)
-      _on_data_save_request(selector);
+      _on_data_save_request(Supla_channel, 
+                            data_save_mode, 
+                            extended_data_type, 
+                            extended_data);
   }
 
   void onIASzoneStatusChangeNotification (void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int)) {
@@ -361,7 +446,12 @@ public:
   void onCustomCmdReceive(bool (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *)) {
     _on_custom_cmd_receive = callback;
   }
-  void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *)) {
+  void onCmdCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, 
+                                                  uint16_t endpoint_id, 
+                                                  uint16_t cluster_id, 
+                                                  uint8_t command_id, 
+                                                  uint16_t payload_size, 
+                                                  uint8_t *payload)) {
     _on_cmd_custom_cluster_receive = callback;
   }
   void onBoundDevice(void (*callback)(zbg_device_params_t *, bool)) {
@@ -370,7 +460,10 @@ public:
   void onBTCBoundDevice(void (*callback)(zbg_device_params_t *)) {
     _on_btc_bound_device = callback;
   }
-  void onDataSaveRequest(void (*callback)(uint8_t)) {
+  void onDataSaveRequest(void (*callback)(uint8_t Supla_channel, 
+                                          uint8_t data_save_mode,  
+                                          uint8_t extended_data_type, 
+                                          uint8_t *extended_data)) {
     _on_data_save_request = callback;
   }
   void onDeviceRejoin(void (*callback)(uint16_t, esp_zb_ieee_addr_t)) {
@@ -460,7 +553,8 @@ private:
   void (*_on_bound_device)(zbg_device_params_t *, bool);
   void (*_on_btc_bound_device)(zbg_device_params_t *);
 
-  void (*_on_data_save_request)(uint8_t);
+  void (*_on_data_save_request)(uint8_t , uint8_t, uint8_t, uint8_t *);
+
   void (*_on_device_rejoin)(uint16_t, esp_zb_ieee_addr_t);
 
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);

@@ -968,15 +968,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB20,
     .z2s_device_clusters_count = 1,
-    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_5, //0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21,
-    .z2s_device_clusters_count = 4,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
-                             ESP_ZB_ZCL_CLUSTER_ID_GROUPS,
-                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_5, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB,
@@ -1599,6 +1597,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "eWeLink", .model_name = "CK-TLSR8656-SS5-01(7003)",
+   .z2s_device_uid = 6005,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_au1rjicn", .model_name = "TS0203",
    .z2s_device_uid = 6100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
@@ -2174,10 +2177,6 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 15055,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21,
 	  .z2s_device_endpoints_count = 1},
-    /*.z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21 },
-                              { 2, Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21 },
-                              { 3, Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21 },
-                              { 4, Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21 }}},*/
   
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-101ZL",
     .z2s_device_uid = 15100,

@@ -1419,75 +1419,140 @@ void buildTuyaCustomClusterTabGUI() {
 	working_str = "Tuya custom cluster (0xEF00) devices";
 	auto Tuya_custom_cluster_tab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), working_str);
 	
-	Tuya_device_selector = ESPUI.addControl(Control::Type::Select, PSTR("Tuya devices"), minus_one_str, Control::Color::Emerald, 
-																				 Tuya_custom_cluster_tab, TuyaDeviceSelectorCallback);
-	ESPUI.addControl(Control::Type::Option, PSTR("Select Tuya device..."), minus_one_str, Control::Color::None, Tuya_device_selector);
+	Tuya_device_selector = ESPUI.addControl(Control::Type::Select, 
+																					PSTR("Tuya devices"), 
+																					minus_one_str, 
+																					Control::Color::Emerald, 
+																				 Tuya_custom_cluster_tab, 
+																				 TuyaDeviceSelectorCallback);
+
+	ESPUI.addControl(Control::Type::Option, 
+									 PSTR("Select Tuya device..."), 
+									 minus_one_str, 
+									 Control::Color::None, 
+									 Tuya_device_selector);
 
 	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
-    if ((z2s_zb_devices_table[devices_counter].record_id > 0) && hasTuyaCustomCluster(z2s_zb_devices_table[devices_counter].desc_id)) {
 
-			//sprintf_P(zigbee_devices_labels[devices_counter], PSTR("Device #%02d"), devices_counter);
+    if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
+				 hasTuyaCustomCluster(z2s_zb_devices_table[devices_counter].desc_id)) {
+
 			working_str = devices_counter;
-			ESPUI.addControl(Control::Type::Option, z2s_zb_devices_table[devices_counter].device_local_name, working_str, Control::Color::None, Tuya_device_selector);
+			ESPUI.addControl(Control::Type::Option, 
+											 z2s_zb_devices_table[devices_counter].device_local_name, 
+											 working_str, 
+											 Control::Color::None, 
+											 Tuya_device_selector);
 		}
 	}
 
-	Tuya_device_info_label =  ESPUI.addControl(Control::Type::Label, PSTR("Tuya device"), three_dots_str,	
-																						 Control::Color::Emerald, Tuya_custom_cluster_tab);
+	Tuya_device_info_label =  ESPUI.addControl(Control::Type::Label, 
+																						 PSTR("Tuya device"), 
+																						 three_dots_str,	
+																						 Control::Color::Emerald, 
+																						 Tuya_custom_cluster_tab);
 
-	Tuya_datapoint_id_number =	ESPUI.addControl(Control::Type::Number, PSTR(empty_str), zero_str, 
-																								 Control::Color::Emerald, Tuya_custom_cluster_tab, generalMinMaxCallback, (void*)255);
+	Tuya_datapoint_id_number =	ESPUI.addControl(Control::Type::Number, 
+																							 PSTR(empty_str), 
+																							 zero_str, 
+																							 Control::Color::Emerald, 
+																							 Tuya_custom_cluster_tab, 
+																							 generalMinMaxCallback, (void*)255);
+
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, Tuya_datapoint_id_number);
 	working_str = 255;
 	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, Tuya_datapoint_id_number);
 	working_str = "Datapoint id (1 - 255)";
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
-																				 Control::Color::None, Tuya_datapoint_id_number), PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str, 
+																				 Control::Color::None, 
+																				 Tuya_datapoint_id_number), 
+												PSTR(clearLabelStyle));
 	
-	Tuya_datapoint_type_selector = ESPUI.addControl(Control::Type::Select, PSTR("Datapoint type"), minus_one_str, 
-																									Control::Color::Emerald, Tuya_datapoint_id_number, TuyaDatapointTypeSelectorCallback);
-	ESPUI.addControl(Control::Type::Option, PSTR("Select datapoint type..."), minus_one_str, Control::Color::None, Tuya_datapoint_type_selector);
+	Tuya_datapoint_type_selector = ESPUI.addControl(Control::Type::Select, 
+																									PSTR("Datapoint type"), 
+																									minus_one_str, 
+																									Control::Color::Emerald, 
+																									Tuya_datapoint_id_number, 
+																									TuyaDatapointTypeSelectorCallback);
+
+	ESPUI.addControl(Control::Type::Option, 
+									 PSTR("Select datapoint type..."), 
+									 minus_one_str, 
+									 Control::Color::None, 
+									 Tuya_datapoint_type_selector);
 	
 	for (uint8_t t = 0; t < 6; t++) {
 
 		working_str = Tuya_datapoint_types[t].Tuya_datapoint_type_id;
-		ESPUI.addControl(Control::Type::Option, Tuya_datapoint_types[t].Tuya_datapoint_type_name, working_str, 
-										 Control::Color::None, Tuya_datapoint_type_selector);
+		ESPUI.addControl(Control::Type::Option, 
+										 Tuya_datapoint_types[t].Tuya_datapoint_type_name, 
+										 working_str, 
+										 Control::Color::None, 
+										 Tuya_datapoint_type_selector);
 	}
 
-	Tuya_datapoint_length_number =	ESPUI.addControl(Control::Type::Number, PSTR(empty_str), zero_str, 
-																							  	 Control::Color::Emerald, Tuya_datapoint_id_number, generalMinMaxCallback, (void*)58);
+	Tuya_datapoint_length_number =	ESPUI.addControl(Control::Type::Number, 
+																									 PSTR(empty_str), 
+																									 zero_str, 
+																							  	 Control::Color::Emerald, 
+																									 Tuya_datapoint_id_number, 
+																									 generalMinMaxCallback, (void*)58);
 
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, Tuya_datapoint_length_number);
 	working_str = 58;
 	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, Tuya_datapoint_length_number);
 	working_str = "Datapoint type length (1-58)";
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
-																				 Control::Color::None, Tuya_datapoint_id_number), PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str, 
+																				 Control::Color::None, 
+																				 Tuya_datapoint_id_number), 
+												PSTR(clearLabelStyle));
 	
-	Tuya_datapoint_value_text = ESPUI.addControl(Control::Type::Text, PSTR("Datapoint payload"), zero_str, 
-																										 Control::Color::Emerald, Tuya_datapoint_id_number, generalCallback);
+	Tuya_datapoint_value_text = ESPUI.addControl(Control::Type::Text, 
+																							 PSTR("Datapoint payload"), 
+																							 zero_str, 
+																							 Control::Color::Emerald, 
+																							 Tuya_datapoint_id_number, 
+																							 generalCallback);
 
 	working_str = PSTR("Enter custom command payload - "
 										 "use hexstring without 0x <br> ie. 00120B020004090706FF");															 
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), 
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
 																				 working_str, 
-																				 Control::Color::None, Tuya_datapoint_id_number), PSTR(clearLabelStyle));
+																				 Control::Color::None, 
+																				 Tuya_datapoint_id_number), 
+												PSTR(clearLabelStyle));
 
-	Tuya_device_data_request_button  = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), "Data request", 
-																				 			Control::Color::Emerald, Tuya_custom_cluster_tab, TuyaCustomCmdCallback, 
-																							(void*)GUI_CB_SEND_TUYA_REQUEST_FLAG); 
+	Tuya_device_data_request_button  = ESPUI.addControl(Control::Type::Button, 
+																											PSTR(empty_str), "Data request", 
+																				 							Control::Color::Emerald, 
+																											Tuya_custom_cluster_tab, 
+																											TuyaCustomCmdCallback, 
+																											(void*)GUI_CB_SEND_TUYA_REQUEST_FLAG); 
 	
-	Tuya_device_data_query_button  = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), "Data query", 
-																				 				Control::Color::Emerald, Tuya_device_data_request_button, TuyaCustomCmdCallback, 
-																								(void*)GUI_CB_SEND_TUYA_QUERY_FLAG);
+	Tuya_device_data_query_button  = ESPUI.addControl(Control::Type::Button, 
+																										PSTR(empty_str), 
+																										"Data query", 
+																				 						Control::Color::Emerald, 
+																										Tuya_device_data_request_button, 
+																										TuyaCustomCmdCallback, 
+																										(void*)GUI_CB_SEND_TUYA_QUERY_FLAG);
 
-	Tuya_device_cmd_result_label =  ESPUI.addControl(Control::Type::Label, PSTR("Command Result"), three_dots_str,	
-																							  Control::Color::Emerald, Tuya_custom_cluster_tab);
+	Tuya_device_cmd_result_label =  ESPUI.addControl(Control::Type::Label, 
+																									 PSTR("Command Result"), 
+																									 three_dots_str,	
+																							  	 Control::Color::Emerald, 
+																									 Tuya_custom_cluster_tab);
 
-	Tuya_device_payload_label =  ESPUI.addControl(Control::Type::Label, PSTR("Command Response payload"), three_dots_str,	
-																							  Control::Color::Emerald, Tuya_custom_cluster_tab);
-
+	Tuya_device_payload_label =  ESPUI.addControl(Control::Type::Label, 
+																								PSTR("Command Response payload"), 
+																								three_dots_str,	
+																							  Control::Color::Emerald, 
+																								Tuya_custom_cluster_tab);
 }
 
 void buildAdvancedDevicesTabGUI() {
@@ -1875,8 +1940,10 @@ void buildActionsTabGUI() {
 
 void Z2S_buildWebGUI() {
  
+	log_i(" GUI building STARTED...");
+	
 	ESPUI.sliderContinuous = true;
-	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
+	ESPUI.setVerbosity(Verbosity::VerboseJSON);
 
 	working_str.reserve(1056);
 
@@ -1890,6 +1957,8 @@ void Z2S_buildWebGUI() {
 	buildTuyaCustomClusterTabGUI();
 	enableDeviceControls(false);
 	enableChannelControls(false);
+
+	log_i(" ...GUI building FINISHED");
 }
 
 void Z2S_startWebGUIConfig() {
@@ -2340,14 +2409,15 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					z2s_channels_table[channel_slot].ieee_addr[0]);
 	
 	sprintf_P(general_purpose_gui_buffer,
-					//PSTR("<meta charset=\"UTF-8\"><b><i>Channel name:</i></b> %s<br>"
 					PSTR("<meta charset=\"UTF-8\">"
-					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X <b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
-					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u <b>| <i>secondary channel</i></b> #%u<br>"
-					"<b><i>Type</b></i> %s <b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
-					"<b><i>Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X <b>| <i>ud(2)</b></i> 0x%08X<br>"
+					"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X "
+					"<b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
+					"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u "
+					"<b>| <i>secondary channel</i></b> #%u<br><b><i>Type</b></i> %s "
+					"<b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
+					"<b><i>Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X "
+					"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
 					"<b><i>ZB device</b></i> %s (%s::%s)"),
-					//strlen(z2s_channels_table[channel_slot].Supla_channel_name) > 0 ? z2s_channels_table[channel_slot].Supla_channel_name : "---",
 					ieee_addr_str,
 					z2s_channels_table[channel_slot].short_addr,
 					z2s_channels_table[channel_slot].endpoint,
@@ -2364,33 +2434,16 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					z2s_channels_table[channel_slot].user_data_flags,
 					z2s_channels_table[channel_slot].user_data_1,
 					z2s_channels_table[channel_slot].user_data_2,
+					z2s_channels_table[channel_slot].extended_data_type,
 					Z2S_getZBDeviceLocalName(z2s_channels_table[channel_slot].ZB_device_id),
 					Z2S_getZBDeviceManufacturerName(z2s_channels_table[channel_slot].ZB_device_id),
 					Z2S_getZBDeviceModelName(z2s_channels_table[channel_slot].ZB_device_id));
 	
-	log_i("Up2HERE!, value = %s, length = %u", general_purpose_gui_buffer, strlen(general_purpose_gui_buffer));
-	//if (label_number == 1)
 	updateLabel_P(zb_channel_info_label, general_purpose_gui_buffer);
-	//delay(200);
-	/*sprintf(channel_info_str_2, 
-				"<meta charset=\"UTF-8\"><b><i>Data flags</b></i> %lu <b>| <i>user data(1)</b></i> %lu <b>| <i>user data(2)</b></i> %lu <b>| <i>user data(3)</b></i> %lu" 
-					"<b>| <i>user data(4)</b></i> %lu <b>| <i>data counter</b></i> %llu<br>"
-					"<b><i>ZB device</b></i> %s::%s",
-        	z2s_channels_table[channel_slot].user_data_flags,
-        	z2s_channels_table[channel_slot].user_data_1,
-        	z2s_channels_table[channel_slot].user_data_2,
-        	z2s_channels_table[channel_slot].user_data_3,
-        	z2s_channels_table[channel_slot].user_data_4,
-					z2s_channels_table[channel_slot].data_counter,
-					z2s_zb_devices_table[z2s_channels_table[channel_slot].ZB_device_id].manufacturer_name,
-					z2s_zb_devices_table[z2s_channels_table[channel_slot].ZB_device_id].model_name);
-
-	log_i("Up2HERE!, value = %s, length = %u", channel_info_str_2, strlen(channel_info_str_2));
-	//updateLabel_P(zb_channel_info_label, channel_info_str);
-	if (label_number == 2)
-		updateLabel_P(zb_channel_info_label_2, channel_info_str_2);*/
+	
 	working_str = z2s_channels_table[channel_slot].Supla_channel_name;
 	ESPUI.updateText(channel_name_text, working_str);
+	
 	switch (z2s_channels_table[channel_slot].Supla_channel_type) {
 
 
@@ -2429,6 +2482,9 @@ void updateChannelInfoLabel(uint8_t label_number) {
 			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
 	
 			enableChannelFlags(4);
+			ESPUI.updateNumber(set_sorwns_on_start_switcher, 
+												 (z2s_channels_table[channel_slot].user_data_flags & 
+										 		 USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
 		} break;
 
 
@@ -2939,10 +2995,11 @@ void removeChannelCallback(Control *sender, int type) {
 
 		uint8_t channel_slot = ESPUI.getControl(channel_selector)->value.toInt();
 
-		z2s_channels_table[channel_slot].valid_record = false;
+		//z2s_channels_table[channel_slot].valid_record = false;
       
-		if (Z2S_saveChannelsTable()) {
-			Z2S_removeChannelActions(z2s_channels_table[channel_slot].Supla_channel, false);
+		if (Z2S_removeChannel(channel_slot, true)) {
+
+			//Z2S_removeChannelActions(z2s_channels_table[channel_slot].Supla_channel, false);
 			sprintf_P(general_purpose_gui_buffer, PSTR("Channel # %02u with all actions removed. Restarting..."), channel_slot);
       updateLabel_P(channel_status_label, general_purpose_gui_buffer);
       SuplaDevice.scheduleSoftRestart(1000);
@@ -2954,8 +3011,8 @@ void removeAllChannelsCallback(Control *sender, int type) {
 
 	if (type == B_UP) {
 		
-		if (Z2S_clearChannelsTable()) {
-			Z2S_removeChannelActions(0, true);
+		if (Z2S_removeAllChannels()) {
+
       updateLabel_P(channel_status_label, PSTR("All channels and actions removed!. Restarting..."));
       SuplaDevice.scheduleSoftRestart(1000);
 		}
