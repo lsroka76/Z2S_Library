@@ -1416,7 +1416,7 @@ void setup() {
     log_i("Z2S_ENABLE_GUI_ON_START not configured - turning on");
     _enable_gui_on_start = 1;
   }
-  _enable_gui_on_start = 1;
+  //_enable_gui_on_start = 1;
   if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
     log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
   } else {
@@ -1430,7 +1430,7 @@ void setup() {
     log_i("Z2S_GUI_ON_START_DELAY not configured - setting to 0 s");
     _gui_start_delay = 0;
   }
-  _gui_start_delay = 15;
+  //_gui_start_delay = 15;
   Supla::Storage::ConfigInstance()->getUInt8(PSTR("security_level"), &_z2s_security_level);
   
   Supla::Storage::ConfigInstance()->setUInt8(Z2S_FILES_STRUCTURE_VERSION, 2);
