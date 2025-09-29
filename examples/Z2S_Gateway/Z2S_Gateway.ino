@@ -209,7 +209,7 @@ void supla_callback_bridge(int event, int action) {
           onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
         }
       } else {
-        Z2S_reloadWebGUI();
+        //Z2S_reloadWebGUI();
       }
     } break; 
   }
@@ -1368,7 +1368,7 @@ void setup() {
                                                  &_rebuild_Supla_channels_on_start)) {
                                                   
     log_i("Z2S_REBUILD_CHANNELS_ON_START = %d", _rebuild_Supla_channels_on_start);
-    
+
   } else {
 
     log_i("Z2S_REBUILD_CHANNELS_ON_START not configured - turning off");
