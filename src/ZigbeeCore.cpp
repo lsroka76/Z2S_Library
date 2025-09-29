@@ -551,7 +551,10 @@ void ZigbeeCore::bindingTableCb(const esp_zb_zdo_binding_table_info_t *table_inf
   log_d("Binding table callback for address 0x%04x with status %d", req->dst_addr, zdo_status);
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
     // Print binding table log simple
-    log_d("Binding table info: total %d, index %d, count %d", table_info->total, table_info->index, table_info->count);
+    log_d("Binding table info: total %d, index %d, count %d", 
+          table_info->total, 
+          table_info->index, 
+          table_info->count);
 
     if (table_info->total == 0) {
       log_d("No binding table entries found");
@@ -561,10 +564,8 @@ void ZigbeeCore::bindingTableCb(const esp_zb_zdo_binding_table_info_t *table_inf
 
     esp_zb_zdo_binding_table_record_t *record = table_info->record;
     for (int i = 0; i < table_info->count; i++) {
-      log_d(
-        "Binding table record: src_endp %d, dst_endp %d, cluster_id 0x%04x, dst_addr_mode %d", record->src_endp, record->dst_endp, record->cluster_id,
-        record->dst_addr_mode
-      );
+      log_d("Binding table record: src_endp %d, dst_endp %d, cluster_id 0x%04x, dst_addr_mode %d", 
+             record->src_endp, record->dst_endp, record->cluster_id, record->dst_addr_mode);
 
       zb_device_params_t *device = (zb_device_params_t *)calloc(1, sizeof(zb_device_params_t));
       
@@ -583,8 +584,9 @@ void ZigbeeCore::bindingTableCb(const esp_zb_zdo_binding_table_info_t *table_inf
 
         if ((*it)->getEndpoint() == record->src_endp) {
           
-          (*it)->addBoundDevice(device, record->cluster_id);
-          log_d("Device bound to EP %d -> device endpoint: %d, short addr: 0x%04x, ieee addr: %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
+          (*it)->addBoundDevice(device, record->cluster_id, table_info->total, table_info->index);
+          log_d("Device bound to EP %d -> device endpoint: %d, short addr: 0x%04x, "
+                "ieee addr: %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
                 record->src_endp,device->endpoint, device->short_addr, 
                 device->ieee_addr[7], device->ieee_addr[6], 
                 device->ieee_addr[5], device->ieee_addr[4], 

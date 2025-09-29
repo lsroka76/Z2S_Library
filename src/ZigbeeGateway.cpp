@@ -1120,7 +1120,7 @@ void ZigbeeGateway::zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_
   }
 }
 
-void ZigbeeGateway::addBoundDevice(zb_device_params_t *device, uint16_t cluster_id) {
+void ZigbeeGateway::addBoundDevice(zb_device_params_t *device, uint16_t cluster_id, uint8_t count, uint8_t position) {
     
     //return; //temporary
     zbg_device_params_t *zbg_device = (zbg_device_params_t *)calloc(1, sizeof(zbg_device_params_t));
@@ -1140,7 +1140,7 @@ void ZigbeeGateway::addBoundDevice(zb_device_params_t *device, uint16_t cluster_
     zbg_device->rejoin_after_leave = false;
     
     if (_on_btc_bound_device)
-      _on_btc_bound_device(zbg_device);
+      _on_btc_bound_device(zbg_device, count, position);
 
     _gateway_devices.push_back(zbg_device);
 
@@ -1155,7 +1155,8 @@ void ZigbeeGateway::addBoundDevice(zb_device_params_t *device, uint16_t cluster_
       if ((zbg_device_units[i].record_id > 0) &&
            (memcmp(zbg_device_units[i].ieee_addr, zbg_device->ieee_addr, sizeof(esp_zb_ieee_addr_t)) == 0)) {
 
-        log_i("Zigbee device unit already registered, last short address 0x%x, current short address 0x%x", zbg_device_units[i].short_addr, zbg_device->short_addr);
+        log_i("Zigbee device unit already registered, last short address 0x%x, current short address 0x%x", 
+              zbg_device_units[i].short_addr, zbg_device->short_addr);
         zgb_device_unit_found = true;
         if (zbg_device_units[i].short_addr != zbg_device->short_addr)
           zbg_device_units[i].short_addr = zbg_device->short_addr;
@@ -1181,8 +1182,12 @@ void ZigbeeGateway::addBoundDevice(zb_device_params_t *device, uint16_t cluster_
 
 bool ZigbeeGateway::isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
-	for (std::list<zbg_device_params_t *>::iterator bound_device = _gateway_devices.begin(); bound_device != _gateway_devices.end(); ++bound_device) {
-              if (((*bound_device)->short_addr == short_addr) || (memcmp((*bound_device)->ieee_addr, ieee_addr, 8) == 0)) {
+	for (std::list<zbg_device_params_t *>::iterator bound_device = _gateway_devices.begin(); 
+       bound_device != _gateway_devices.end(); ++bound_device) {
+
+              if (((*bound_device)->short_addr == short_addr) || 
+                   (memcmp((*bound_device)->ieee_addr, ieee_addr, 8) == 0)) {
+                
                 (*bound_device)->rejoined = true;
                 if ((*bound_device)->rejoin_after_leave)
                   return false;

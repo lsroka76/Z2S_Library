@@ -11,6 +11,8 @@ void Z2S_buildWebGUI();
 
 void Z2S_startWebGUI();
 
+void Z2S_reloadWebGUI();
+
 void Z2S_stopWebGUI();
 
 void Z2S_updateWebGUI();

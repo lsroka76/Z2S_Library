@@ -330,6 +330,7 @@ const static char Z2S_ZIGBEE_PRIMARY_CHANNEL[] PROGMEM = "Z2S_primary_ch";
 const static char Z2S_ENABLE_GUI_ON_START[] PROGMEM = "Z2S_enable_gui";
 const static char Z2S_GUI_ON_START_DELAY[] PROGMEM = "Z2S_gui_delay";
 const static char Z2S_FORCE_CONFIG_ON_START[] PROGMEM = "Z2S_force_cfg";
+const static char Z2S_REBUILD_CHANNELS_ON_START[] PROGMEM = "Z2S_rebuild";
 
 namespace Supla {
 enum Conditions {
@@ -421,6 +422,8 @@ bool Z2S_updateZBDeviceUidIdx(uint8_t zb_device_slot,
                               const char *model_name);
 
 void Z2S_initSuplaChannels();
+
+void Z2S_rebuildSuplaChannels();
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
@@ -599,7 +602,7 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr,
                                            uint16_t cluster, 
                                            int iaszone_status);
 
-void Z2S_onBTCBoundDevice(zbg_device_params_t *device);
+void Z2S_onBTCBoundDevice(zbg_device_params_t *device, uint8_t count, uint8_t position);
 
 void Z2S_onBoundDevice(zbg_device_params_t *device,
                        bool last_cluster);
@@ -617,6 +620,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
                          char *name = nullptr,
                          uint32_t func = 0,
                          char *unit = nullptr);
+
+void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device);
 
 uint8_t Z2S_addZ2SZBDevice(char *manufacturer_name,
                            char *model_name,

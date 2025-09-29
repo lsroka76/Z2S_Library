@@ -354,17 +354,25 @@ void resetStorage() {
 
   for (uint8_t i = 0; i <3; i++) {
   
-    total_forward_active_energy_counter[i] = emValue.total_forward_active_energy[i];
-    channel_extended_data_em.total_forward_active_energy_counter[i] = total_forward_active_energy_counter[i];
+    total_forward_active_energy_counter[i] = 
+      emValue.total_forward_active_energy[i];
+    channel_extended_data_em.total_forward_active_energy_counter[i] = 
+      total_forward_active_energy_counter[i];
     
-    total_reverse_active_energy_counter[i] = emValue.total_reverse_active_energy[i];
-    channel_extended_data_em.total_reverse_active_energy_counter[i] = total_reverse_active_energy_counter[i];
+    total_reverse_active_energy_counter[i] = 
+      emValue.total_reverse_active_energy[i];
+    channel_extended_data_em.total_reverse_active_energy_counter[i] = 
+      total_reverse_active_energy_counter[i];
 
-    total_forward_reactive_energy_counter[i] = emValue.total_forward_reactive_energy[i];
-    channel_extended_data_em.total_forward_reactive_energy_counter[i] = total_forward_reactive_energy_counter[i];
+    total_forward_reactive_energy_counter[i] = 
+      emValue.total_forward_reactive_energy[i];
+    channel_extended_data_em.total_forward_reactive_energy_counter[i] = 
+      total_forward_reactive_energy_counter[i];
 
-    total_reverse_reactive_energy_counter[i] = emValue.total_reverse_reactive_energy[i];
-    channel_extended_data_em.total_reverse_reactive_energy_counter[i] = total_reverse_reactive_energy_counter[i];
+    total_reverse_reactive_energy_counter[i] = 
+      emValue.total_reverse_reactive_energy[i];
+    channel_extended_data_em.total_reverse_reactive_energy_counter[i] = 
+      total_reverse_reactive_energy_counter[i];
 
   }
 

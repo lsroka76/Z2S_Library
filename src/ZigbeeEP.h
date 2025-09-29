@@ -154,7 +154,7 @@ public:
     _is_bound = true;
    }
 
-  virtual void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id) {};
+  virtual void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id, uint8_t count, uint8_t position) {};
 
   virtual void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
 

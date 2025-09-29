@@ -457,7 +457,7 @@ public:
   void onBoundDevice(void (*callback)(zbg_device_params_t *, bool)) {
     _on_bound_device = callback;
   }
-  void onBTCBoundDevice(void (*callback)(zbg_device_params_t *)) {
+  void onBTCBoundDevice(void (*callback)(zbg_device_params_t *, uint8_t count, uint8_t position)) {
     _on_btc_bound_device = callback;
   }
   void onDataSaveRequest(void (*callback)(uint8_t Supla_channel, 
@@ -551,7 +551,7 @@ private:
   void (*_on_cmd_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *);
 
   void (*_on_bound_device)(zbg_device_params_t *, bool);
-  void (*_on_btc_bound_device)(zbg_device_params_t *);
+  void (*_on_btc_bound_device)(zbg_device_params_t *, uint8_t count, uint8_t position);
 
   void (*_on_data_save_request)(uint8_t , uint8_t, uint8_t, uint8_t *);
 
@@ -594,7 +594,7 @@ private:
   void zbDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
   void zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) override;
 
-  void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id) override;
+  void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id, uint8_t count, uint8_t position) override;
   bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
 
   static void updateZbgDeviceUnitLastSeenMs(uint16_t short_addr);

@@ -35,6 +35,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
       _active_query = false; //true;
     } break;
 
+
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER: {
 
       _isTuya = true; 
@@ -50,7 +51,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
       ac_frequency_multiplier = 1;
       ac_frequency_divisor = 100;
-
+      
       energy_multiplier = 1;
       energy_divisor  = 100;
       
@@ -73,9 +74,20 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
       ignore_zigbee_scaling = true;
     } break;
 
-    case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A:
 
-      current_divisor_modifier = 1000; break;
+    case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A: {
+
+      //current_divisor_modifier = 1000; break;
+      current_multiplier = 1;
+      current_divisor    = 1000;
+
+      energy_multiplier = 1;
+      energy_divisor  = 100;
+
+      ignore_zigbee_scaling = true;
+
+    } break;
+
 
     case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
 
