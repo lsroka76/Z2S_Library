@@ -88,6 +88,8 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR                0x2300
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5              0x2305
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1           0x2310
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY          0x2315
+
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
@@ -278,6 +280,9 @@
 #define TUYA_PRESENCE_SENSOR_MOTION_STATE_SID               0x02
 #define TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID                0x03
 #define TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID               0x04
+#define TUYA_PRESENCE_SENSOR_DISTANCE_SID                   0x05
+#define TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID               0x20
+#define TUYA_PRESENCE_SENSOR_RELAY_MODE_SID                 0x21
 
 #define TUYA_SMOKE_DETECTOR_SMOKE_SID                       0x00
 #define TUYA_SMOKE_DETECTOR_TAMPER_SID                      0x01
@@ -1178,6 +1183,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -1624,6 +1634,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_bb6xaihh", .model_name = "SNZB-03",
     .z2s_device_uid = 6200,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "eWeLink", .model_name = "CK-TLSR8656-SS5-01(7002)",
+    .z2s_device_uid = 6205,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
@@ -2855,6 +2870,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-204ZV",
     .z2s_device_uid = 24000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE204_mtoaryre", .model_name = "TS0601",
+    .z2s_device_uid = 24005,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_9kbbfeho", .model_name = "TS0222",

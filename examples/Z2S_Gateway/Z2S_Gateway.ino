@@ -203,7 +203,7 @@ void supla_callback_bridge(int event, int action) {
       if (!GUIstarted) {
         if (Supla::Network::IsReady()) {
           GUIstarted = true;
-          Z2S_buildWebGUI();
+          Z2S_buildWebGUI(minimal_gui_mode);
           Z2S_startWebGUI();
           Z2S_startUpdateServer();
           onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
@@ -454,7 +454,7 @@ uint8_t parseDeviceFlagsStr(char *device_flag) {
     return strtoul(device_flag, nullptr, 0);
 }
 
-uint8_t parseZBDeviceFlagsStr(char *zbdevice_flag) {
+uint8_t parseZbDeviceFlagsStr(char *zbdevice_flag) {
   
   if (strcmp(zbdevice_flag, "ZBD_FLAG_DISABLE_BATTERY_MSG") == 0)
     return ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG;
@@ -507,7 +507,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if ((zb_primary_channel >= 11) && (zb_primary_channel <= 26)) {
 
       if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_ZIGBEE_PRIMARY_CHANNEL, (1 << zb_primary_channel))) {
-        telnet.printf(PSTR(">New Zigbee primary channel(%u) mask(%x) write success! Restarting...\n\r"), zb_primary_channel, (1 << zb_primary_channel));
+        
+        telnet.printf(PSTR(">New Zigbee primary channel(%u) mask(%x) write success! Restarting...\n\r"), 
+                           zb_primary_channel, (1 << zb_primary_channel));
         Supla::Storage::ConfigInstance()->commit();
         SuplaDevice.scheduleSoftRestart(1000);
         return;
@@ -547,7 +549,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     return;
   } else
   if (strcmp(cmd, "LIST-ZB-DEVICES") == 0) {
-    Z2S_printZBDevicesTableSlots(true);
+    Z2S_printZbDevicesTableSlots(true);
     return;
   } else
   if (strcmp(cmd,"LIST-CHANNELs") == 0) {
@@ -762,19 +764,19 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     bool flag_set = (strcmp(*(param + 1), "SET") == 0);
     bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
-    uint8_t bit_id = parseZBDeviceFlagsStr(*(param + 2));
+    uint8_t bit_id = parseZbDeviceFlagsStr(*(param + 2));
     
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     uint8_t zb_device_number_slot = (channel_number_slot >= 0) ? 
-      Z2S_findZBDeviceTableSlot(z2s_channels_table[channel_number_slot].ieee_addr) : 0xFF;
+      Z2S_findZbDeviceTableSlot(z2s_channels_table[channel_number_slot].ieee_addr) : 0xFF;
     
     if (zb_device_number_slot < 0xFF) {
         if (flag_set)
           z2s_zb_devices_table[zb_device_number_slot].user_data_flags |= (1 << bit_id);
         if (flag_clear)
           z2s_zb_devices_table[zb_device_number_slot].user_data_flags &= ~(1 << bit_id);
-      if (Z2S_saveZBDevicesTable()) {
+      if (Z2S_saveZbDevicesTable()) {
         telnet.printf("ZB Device(channel %d) global flags changed successfully.\n\r>", channel_id);
       }
     } else {
@@ -798,7 +800,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
         z2s_zb_devices_table[device_slot].device_uid = device_new_uid;
         
-        if (Z2S_saveZBDevicesTable()) {
+        if (Z2S_saveZbDevicesTable()) {
           telnet.printf("ZB Device #%02u UID changed successfully to %lu!\n\r>", device_slot, device_new_uid);
         } else {
           telnet.printf("Error saving ZB Devices Table (device #%02u)!\n\r>", device_slot);
@@ -1360,7 +1362,7 @@ void setup() {
   listDir(LittleFS,"/",3);
   LittleFS.end();
 
-  Z2S_loadZBDevicesTable();
+  Z2S_loadZbDevicesTable();
 
   Z2S_loadChannelsTable();
 
@@ -1388,7 +1390,7 @@ void setup() {
     Z2S_rebuildSuplaChannels();
   }
 
-  Z2S_initZBDevices(millis());
+  Z2S_initZbDevices(millis());
 
   Z2S_initSuplaChannels();
 
@@ -1444,7 +1446,7 @@ void setup() {
     log_i("Z2S_ENABLE_GUI_ON_START not configured - turning on");
     _enable_gui_on_start = 1;
   }
-  //_enable_gui_on_start = 1;
+  
   if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
     log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
   } else {
@@ -1508,12 +1510,12 @@ void loop() {
   } 
 
   if ((!GUIstarted) && 
-      (_enable_gui_on_start == 1) && 
+      (_enable_gui_on_start != no_gui_mode) && 
       Zigbee.started() && 
-      (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {// SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+      (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {
 
     GUIstarted = true;
-    Z2S_buildWebGUI();  
+    Z2S_buildWebGUI((gui_modes_t)_enable_gui_on_start);  
     Z2S_startWebGUI();
     Z2S_startUpdateServer();
     onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
@@ -1836,7 +1838,7 @@ void loop() {
 
                     if (endpoint_counter == 0) {//(endpoint_id == 1)
                           
-                      uint8_t zb_device_slot = Z2S_addZBDeviceTableSlot(joined_device->ieee_addr,
+                      uint8_t zb_device_slot = Z2S_addZbDeviceTableSlot(joined_device->ieee_addr,
                                                                         joined_device->short_addr,
                                                                         zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
                                                                         zbGateway.getQueryBasicClusterData()->zcl_model_name,
@@ -1846,7 +1848,7 @@ void loop() {
                       if ((zb_device_slot < 0xFF) &&
                           (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
                           Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY))
-                            Z2S_setZBDeviceFlags(zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
+                            Z2S_setZbDeviceFlags(zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
                           
                     }
 

@@ -1,9 +1,11 @@
 #include "z2s_device_virtual_relay.h"
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot) {
   
-  if (z2s_channels_table[channel_number_slot].Supla_channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER)
-  {
+  if (z2s_channels_table[channel_number_slot].Supla_channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
+
     uint8_t z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
 
     switch (z2s_channels_table[channel_number_slot].model_id) {
@@ -26,7 +28,7 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
 
     Supla_Z2S_RollerShutter->setKeepAliveSecs(z2s_channels_table[channel_number_slot].keep_alive_secs);
     Supla_Z2S_RollerShutter->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
-  } else {  
+  } else {  //VirtualRelay section
     
     uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
 
@@ -41,6 +43,21 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
         }
       } break;
       
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY: {
+
+        switch (z2s_channels_table[channel_number_slot].sub_id) {
+          
+          case TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID: 
+
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE; break;
+
+          case TUYA_PRESENCE_SENSOR_RELAY_MODE_SID:
+
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE; break;
+        }
+      } break;
+
+
       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
 
         switch (z2s_channels_table[channel_number_slot].sub_id) {
@@ -52,6 +69,7 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM; break;
         }
       } break;
+
 
       case Z2S_DEVICE_DESC_MOES_ALARM: {
 
@@ -115,7 +133,9 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
   
   if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
 
-    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, device, Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
+    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(gateway, 
+                                                                         device, 
+                                                                         Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
 
     if (name == nullptr)
       name = (char*)default_rs_name;
@@ -124,11 +144,17 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
   
     Supla_Z2S_RollerShutter->setDefaultFunction(func);
   
-    Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_RollerShutter->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY, sub_id, name, func);
+    Z2S_fillChannelsTableSlot(device, 
+                              free_slot, 
+                              Supla_Z2S_RollerShutter->getChannelNumber(),
+                               SUPLA_CHANNELTYPE_RELAY, 
+                               sub_id, 
+                               name, 
+                               func);
 
   } else {
 
-    auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway,device);
+    auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway, device);
 
     if (name == nullptr)
       name = (char*)default_relay_name;
@@ -138,7 +164,13 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devic
     if (func !=0) 
       Supla_Z2S_VirtualRelay->setDefaultFunction(func);
   
-    Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY, sub_id, name, func);
+    Z2S_fillChannelsTableSlot(device, 
+                              free_slot, 
+                              Supla_Z2S_VirtualRelay->getChannelNumber(), 
+                              SUPLA_CHANNELTYPE_RELAY, 
+                              sub_id, 
+                              name, 
+                              func);
   }
 }
 
@@ -150,7 +182,7 @@ void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, bool state) {
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
   auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
@@ -171,7 +203,7 @@ void msgZ2SDeviceVirtualRelayValue(int16_t channel_number_slot, uint8_t value_id
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
   auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
@@ -219,7 +251,7 @@ void msgZ2SDeviceRollerShutter(int16_t channel_number_slot, uint8_t msg_id, uint
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
   auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 

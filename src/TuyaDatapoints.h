@@ -1,6 +1,8 @@
 #ifndef TUYA_DATAPOINTS_H_
 #define TUYA_DATAPOINTS_H_
 
+#include "ZigbeeGateway.h"
+
 #define TUYA_DP_TYPE_RAW                                            0x00
 #define TUYA_DP_TYPE_BOOL                                           0x01
 #define TUYA_DP_TYPE_VALUE                                          0x02
@@ -61,6 +63,11 @@
 #define TUYA_PRESENCE_SENSOR_4IN1_BATTERY_DP                        0x6E
 #define TUYA_PRESENCE_SENSOR_4IN1_HUMIDITY_DP                       0x65
 #define TUYA_PRESENCE_SENSOR_4IN1_TEMPERATURE_DP                    0x6F
+
+#define TUYA_PRESENCE_SENSOR_RELAY_ILLUMINANCE_DP                   0x68
+#define TUYA_PRESENCE_SENSOR_RELAY_DISTANCE_DP                      0x09
+#define TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP                   0x6B
+#define TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP                  0x6C
 
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_DP                             0x65
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_DP                  0x66
@@ -152,4 +159,92 @@
 #define TUYA_PIR_ILLUMINANCE_SENSOR_PIR_DP                          0x01
 #define TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_DP                  0x0C
 #define TUYA_PIR_ILLUMINANCE_SENSOR_BATTERY_LEVEL_DP                0x04
+
+#define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
+#define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
+#define TUYA_DP_ZCL_PAYLOAD_8   0x07 //8 bit value /7 bytes/
+
+typedef struct Tuya_dp_zcl_payload_s {
+
+union {
+    uint16_t  tsn_16_big_endian;
+    uint8_t   tsn_8[2];
+};
+    uint8_t   dp_id;
+    uint8_t   dp_type;
+union {
+    uint16_t  dp_size_16_big_endian;
+    uint8_t   dp_size_8[2];
+};
+union {
+    uint32_t  dp_value_32_big_endian;
+    uint8_t   dp_value_32_8[4];
+    uint16_t  dp_value_16_big_endian;
+    uint8_t   dp_value_16_8[2];
+    uint8_t   dp_value_8;
+};
+} __attribute__((packed)) Tuya_dp_zcl_payload_t;
+
+typedef struct Tuya_dp_data_s {
+
+    uint8_t   dp_id;
+    uint8_t   dp_type;
+union {
+    uint16_t  dp_size_16_big_endian;
+    uint8_t   dp_size_8[2];
+};
+union {
+    uint32_t  dp_value_32_big_endian;
+    uint8_t   dp_value_32_8[4];
+    uint16_t  dp_value_16_big_endian;
+    uint8_t   dp_value_16_8[2];
+    uint8_t   dp_value_8;
+};
+} __attribute__((packed)) Tuya_dp_data_t;
+
+
+inline void makeTuyaDPValue32(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t dp_id, uint32_t dp_value_32_little_endian) {
+ 
+  Tuya_dp_zcl_payload.tsn_16_big_endian      =  __builtin_bswap16(random(0x0000, 0xFFFF));
+  Tuya_dp_zcl_payload.dp_id                  =  dp_id;
+  Tuya_dp_zcl_payload.dp_type                =  0x02; //VALUE
+
+  Tuya_dp_zcl_payload.dp_size_16_big_endian  =  0x0400; 
+  Tuya_dp_zcl_payload.dp_value_32_big_endian =  __builtin_bswap32(dp_value_32_little_endian);
+}
+
+inline void makeTuyaDPBool(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t dp_id, uint8_t value_8) {
+ 
+  Tuya_dp_zcl_payload.tsn_16_big_endian      =  __builtin_bswap16(random(0x0000, 0xFFFF));
+  Tuya_dp_zcl_payload.dp_id                  =  dp_id;
+  Tuya_dp_zcl_payload.dp_type                =  0x01; //BOOL
+
+  Tuya_dp_zcl_payload.dp_size_16_big_endian  =  0x0100; 
+  Tuya_dp_zcl_payload.dp_value_8             =  value_8;
+}
+
+inline void makeTuyaDPEnum8(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t dp_id, uint8_t value_8) {
+ 
+  Tuya_dp_zcl_payload.tsn_16_big_endian      =  __builtin_bswap16(random(0x0000, 0xFFFF));
+  Tuya_dp_zcl_payload.dp_id                  =  dp_id;
+  Tuya_dp_zcl_payload.dp_type                =  0x04; //ENUM8
+
+  Tuya_dp_zcl_payload.dp_size_16_big_endian  =  0x0100; 
+  Tuya_dp_zcl_payload.dp_value_8             =  value_8;
+}
+
+void sendTuyaRequestCmdBool(ZigbeeGateway *gateway, 
+                            zbg_device_params_t *device, 
+                            uint8_t dp_id, 
+                            bool dp_value);
+
+void sendTuyaRequestCmdEnum8(ZigbeeGateway *gateway, 
+                             zbg_device_params_t *device, 
+                             uint8_t dp_id, 
+                             uint8_t dp_value);
+
+void sendTuyaRequestCmdValue32(ZigbeeGateway *gateway, 
+                               zbg_device_params_t *device,
+                               uint8_t dp_id, 
+                               uint32_t dp_value);
 #endif //TUYA_DATAPOINTS_H_

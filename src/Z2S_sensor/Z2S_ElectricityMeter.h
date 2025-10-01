@@ -459,8 +459,14 @@ void resetStorage() {
                               ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
                               ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID  };
 
-  if (_gateway && Zigbee.started())
+  if (_gateway && Zigbee.started()) {
+
     _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 3, &attributes[0]);
+
+    _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, false);
+  }
+
+
 }
 
 void pong() {

@@ -5,9 +5,19 @@
 #include <ESPmDNS.h>
 #include "ESPAsyncHTTPUpdateServer.h"
 
+typedef enum gui_modes {
+
+  no_gui_mode = 0,
+  minimal_gui_mode = 1,
+  standard_gui_mode = 2,
+  extended_gui_mode = 3,
+  full_gui_mode = 4,
+  gui_modes_number
+} gui_modes_t;
+
 void Z2S_startWebGUIConfig();
 
-void Z2S_buildWebGUI();
+void Z2S_buildWebGUI(gui_modes_t mode = minimal_gui_mode);
 
 void Z2S_startWebGUI();
 

@@ -84,19 +84,23 @@ void addZ2SDeviceTempHumidity(zbg_device_params_t *device, uint8_t free_slot,
 Supla::Sensor::Z2S_VirtualThermHygroMeter* getZ2SDeviceTempHumidityPtr(uint8_t Supla_channel) {
 
   auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
+
   if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR)  
+
     return reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+
   else return nullptr;  
 }
 
 void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
 
   if (channel_number_slot < 0) {
+    
     log_e("msgZ2SDeviceTempHumidityTemp - invalid channel number slot");
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
   auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
@@ -132,7 +136,7 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi) {
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
   auto Supla_Z2S_VirtualThermHygroMeter = getZ2SDeviceTempHumidityPtr(z2s_channels_table[channel_number_slot].Supla_channel);
   

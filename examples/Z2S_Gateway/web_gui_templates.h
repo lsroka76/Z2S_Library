@@ -94,6 +94,15 @@ typedef struct Supla_condition_type_s {
 	const char* Supla_condition_name;
 } Supla_condition_type_t;
 
+static constexpr char* GUI_MODE_OPTIONS[5] PROGMEM = {
+
+	"No GUI on start",
+	"Minimal GUI (Gateway + Credentials)",
+	"Standard GUI (Minimal + Devices + Channels)",
+	"Extended GUI (Standard + Clusters&Attributes)",
+	"Full GUI"
+};
+
 static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 
 	{ .zigbee_cluster_name = "BASIC",										

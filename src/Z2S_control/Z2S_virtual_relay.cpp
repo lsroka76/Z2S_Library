@@ -67,6 +67,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         channel.setNewValue(state);
       } break;
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM:
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM: {
         state = true;
@@ -88,6 +90,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       } break;
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH: {
 
         uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[] = { 00, 00, MOES_ALARM_SWITCH_DP, TUYA_DP_TYPE_BOOL, 00, 01, 01};
@@ -103,6 +107,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         channel.setNewValue(state);
 
       } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION: {
 
@@ -132,6 +138,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       } break;
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY: {
 
         uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[] = { 00, 00, MOES_ALARM_MELODY_DP, TUYA_DP_TYPE_ENUM, 00, 01, 01 };
@@ -159,6 +167,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         channel.setNewValue(state);
 
       } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME: {
 
@@ -188,6 +198,30 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       } break;
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+      case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE: {
+
+        state = true;
+
+        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, state ? 1 : 0);
+        
+        channel.setNewValue(state);
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
+
+        state = true;
+
+        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, state ? 0 : 1); //automatic = local mode = 1
+        
+        channel.setNewValue(state);
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 
         uint8_t Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[] = { 00, 00, GIEX_WATER_VALVE_STATE_DP, TUYA_DP_TYPE_BOOL, 00, 01, 01};
@@ -197,7 +231,13 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
         Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
 
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD, false);
+        _gateway->sendCustomClusterCmd(&_device, 
+                                       TUYA_PRIVATE_CLUSTER_EF00, 
+                                       TUYA_REQUEST_CMD, 
+                                       ESP_ZB_ZCL_ATTR_TYPE_SET, 
+                                       sizeof(Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD), 
+                                       Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD, 
+                                       false);
 
         state = true;
         channel.setNewValue(state);
@@ -380,6 +420,34 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         channel.setNewValue(state);
 
       } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+      case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE: {
+
+        state = false;
+
+        Tuya_dp_zcl_payload_t Tuya_dp_zcl_payload;
+
+        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, state ? 1 : 0);
+        
+        channel.setNewValue(state);
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+      case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
+
+        state = false;
+
+        Tuya_dp_zcl_payload_t Tuya_dp_zcl_payload;
+
+        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, state ? 0 : 1);
+        
+        channel.setNewValue(state);
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 

@@ -44,6 +44,9 @@
 #define Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL       0x40
 #define Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_PROGRAM      0x41
 
+#define Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE    0x50
+#define Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE     0x51
+
 namespace Supla {
 namespace Control {
 class Z2S_VirtualRelay : public Relay {
@@ -101,4 +104,3 @@ class Z2S_VirtualRelay : public Relay {
 };  // namespace Supla
 
 #endif  // SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_
-//#endif  // #ifdef Z2S_GATEWAY

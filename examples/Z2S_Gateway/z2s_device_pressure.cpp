@@ -50,7 +50,7 @@ void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure) {
     return;
   }
 
-  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
   
   auto Supla_Z2S_VirtualPressure = getZ2SDevicePressurePtr(z2s_channels_table[channel_number_slot].Supla_channel);
   
@@ -68,7 +68,7 @@ void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure) {
     return;
   }
   
-  Z2S_updateZBDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
   auto Supla_Z2S_VirtualPressure = getZ2SDevicePressurePtr(z2s_channels_table[channel_number_slot].Supla_channel);
   
