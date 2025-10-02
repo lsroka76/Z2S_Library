@@ -22,26 +22,16 @@
 
 #include <supla/time.h>
 
-Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function)
+Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(ZigbeeGateway *gateway, 
+                                                     zbg_device_params_t *device, 
+                                                     uint8_t z2s_function)
   : _gateway(gateway), _z2s_function(z2s_function) {
+
       memcpy(&_device, device, sizeof(zbg_device_params_t));     
       }
       
-      void Supla::Control::Z2S_RollerShutter::onInit() {
-        /*uint32_t duration = durationMs;
-        ::Z2S_RollerShutter(ZigbeeGateway *gateway, zbg_device_params_t *device, _supla_int_t functions)
-  : Relay(-1, true, functions), _gateway(gateway){
-    memcpy(&_device, device, sizeof(zbg_device_params_t));     
-}
-
 void Supla::Control::Z2S_RollerShutter::onInit() {
-  /*uint32_t duration = durationMs;
-  if (stateOnInit == STATE_ON_INIT_ON ||
-      stateOnInit == STATE_ON_INIT_RESTORED_ON) {
-    turnOn(duration);
-  } else {
-    turnOff(duration);
-  }*/
+
   if (_timeout_enabled)
     channel.setStateOffline();
 }
@@ -52,25 +42,28 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
     
     switch (_z2s_function) {
 
+
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
-        _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_UP_OPEN, NULL); break;
+
+        _gateway->sendWindowCoveringCmd(&_device, 
+                                        ESP_ZB_ZCL_CMD_WINDOW_COVERING_UP_OPEN, 
+                                        nullptr); break;
+
 
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT: {
         
         uint8_t lift_percentage = 0;
-        _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, &lift_percentage); 
+
+        _gateway->sendWindowCoveringCmd(&_device, 
+                                        ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
+                                        &lift_percentage); 
       } break;
+
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[] = { 00, 00, MOES_SHADES_DRIVE_MOTOR_STATE_DP, TUYA_DP_TYPE_ENUM, 00, 01, 02 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[0] = (_tsn_number & 0xFF00);
-        MOES_SHADES_DRIVE_MOTOR_OPEN_CMD[1] = (_tsn_number & 0x00FF);
-
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, MOES_SHADES_DRIVE_MOTOR_OPEN_CMD, false);
+        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x02);
+        
       } break;
     }
   }
@@ -82,25 +75,26 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
 
     switch (_z2s_function) {
 
+
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
-        _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_DOWN_CLOSE, NULL); break;
+
+        _gateway->sendWindowCoveringCmd(&_device, 
+                                        ESP_ZB_ZCL_CMD_WINDOW_COVERING_DOWN_CLOSE, 
+                                        nullptr); break;
+
 
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT: {
         
         uint8_t lift_percentage = 100;
-        _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, &lift_percentage); 
+        _gateway->sendWindowCoveringCmd(&_device, 
+                                        ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
+                                        &lift_percentage); 
       } break;
+
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[] = { 00, 00, MOES_SHADES_DRIVE_MOTOR_STATE_DP, TUYA_DP_TYPE_ENUM, 00, 01, 00 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[0] = (_tsn_number & 0xFF00);
-        MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD[1] = (_tsn_number & 0x00FF);
-
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, MOES_SHADES_DRIVE_MOTOR_CLOSE_CMD, false);
+        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x00);
       } break;
     }
   }
@@ -112,20 +106,18 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
     
     switch (_z2s_function) {
 
+
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT:
-        _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_STOP, NULL); break;
+
+        _gateway->sendWindowCoveringCmd(&_device, 
+                                        ESP_ZB_ZCL_CMD_WINDOW_COVERING_STOP, 
+                                        nullptr); break;
+
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
-
-        uint8_t MOES_SHADES_DRIVE_MOTOR_STOP_CMD[] = { 00, 00, MOES_SHADES_DRIVE_MOTOR_STATE_DP, TUYA_DP_TYPE_ENUM, 00, 01, 01 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        MOES_SHADES_DRIVE_MOTOR_STOP_CMD[0] = (_tsn_number & 0xFF00);
-        MOES_SHADES_DRIVE_MOTOR_STOP_CMD[1] = (_tsn_number & 0x00FF);
-
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, MOES_SHADES_DRIVE_MOTOR_STOP_CMD, false);
+        
+        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x01);
       } break;
     }
   }
@@ -137,23 +129,19 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(uint8_t lift_perc
 
     switch (_z2s_function) {
 
+
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT:
-        _gateway->sendWindowCoveringCmd(&_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, &lift_percentage); break;
+
+        _gateway->sendWindowCoveringCmd(&_device, 
+                                        ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
+                                        &lift_percentage); break;
+
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        uint8_t MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[] = { 00, 00, MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, TUYA_DP_TYPE_VALUE, 00, 04, 00, 00, 00, 00 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[0] = (_tsn_number & 0xFF00);
-        MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[1] = (_tsn_number & 0x00FF);
-        MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD[9] = 100 - lift_percentage;
-
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, MOES_SHADES_DRIVE_MOTOR_POSITION_PERCENTAGE_CMD, false);
+        sendTuyaRequestCmdValue32(_gateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, 100 - lift_percentage);
       } break;
-
     }
   }
 }
@@ -166,12 +154,18 @@ void Supla::Control::Z2S_RollerShutter::ping() {
 
     switch (_z2s_function) {
 
+
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
-        _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID, false); break;
+
+        _gateway->sendAttributeRead(&_device, 
+                                    ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, 
+                                    ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID, 
+                                    false); break;
+
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR:
-      break;
 
+      break;
     }
   }
 }
@@ -179,27 +173,37 @@ void Supla::Control::Z2S_RollerShutter::ping() {
 void Supla::Control::Z2S_RollerShutter::onTimer() {
 
   if (newTargetPositionAvailable && (targetPosition == STOP_POSITION)) {
+    
     log_i("newTargetPositionAvailable = STOP_POSITION");
+
     newTargetPositionAvailable = false;
     rsStop();
   }
+
   if (newTargetPositionAvailable && (targetPosition == MOVE_UP_POSITION)) {
+    
     log_i("newTargetPositionAvailable = MOVE_UP_POSITION");
+
     newTargetPositionAvailable = false;
     rsClose();
   }
+
   if (newTargetPositionAvailable && (targetPosition == MOVE_DOWN_POSITION)) {
+    
     log_i("newTargetPositionAvailable = MOVE_DOWN_POSITION");
+
     newTargetPositionAvailable = false;
     rsOpen();
   }
+
   if (newTargetPositionAvailable && (targetPosition >= 0) && (targetPosition <= 100)) {
-    log_i("newTargetPositionAvailable = %u, reversed = %u", targetPosition, 100 - targetPosition);
+    
+    log_i("newTargetPositionAvailable = %u, reversed = %u", 
+          targetPosition, 100 - targetPosition);
+
     newTargetPositionAvailable = false;
     rsMoveToLiftPercentage(targetPosition);
-
   }
-
 }
 
 void Supla::Control::Z2S_RollerShutter::iterateAlways() {

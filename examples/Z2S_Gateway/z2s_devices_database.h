@@ -2930,6 +2930,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "TELINK", .model_name = "TLSR82xx",
+    .z2s_device_uid = 24305,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3,
+	  .z2s_device_endpoints_count = 1},
+
   //{	.manufacturer_name = "_TZE200_nojsjtj2", .model_name = "TS0601",
   // .z2s_device_uid = 24400,
 	//  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOS_BUTTON,
@@ -2965,6 +2970,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3210_1ptgp0az", .model_name = "TS130F",
+    .z2s_device_uid = 25105,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
+	  .z2s_device_endpoints_count = 1},
+
    {	.manufacturer_name = "_TZ3000_fccpjz5z", .model_name = "TS130F",
     .z2s_device_uid = 25200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
@@ -2972,6 +2982,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_femsaaua", .model_name = "TS130F",
     .z2s_device_uid = 25300,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE},
+                              { 2, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE }}},
+
+  {	.manufacturer_name = "_TZ3210_dwytrmda", .model_name = "TS130F",
+    .z2s_device_uid = 25305,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE},

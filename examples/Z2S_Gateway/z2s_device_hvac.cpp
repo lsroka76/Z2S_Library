@@ -4,51 +4,61 @@
 uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
 
   switch (model_id) {
-    
+
+
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {  
       
       return saswell_cmd_set; 
     } break;
+
 
     case Z2S_DEVICE_DESC_TS0601_TRV_ME167: {
       
       return me167_cmd_set;
     } break;
 
+
     case Z2S_DEVICE_DESC_TS0601_TRV_BECA: {
       
       return beca_cmd_set; 
     } break;
+
 
     case Z2S_DEVICE_DESC_TS0601_TRV_MOES: {
 
       return moes_cmd_set;
     } break;
 
+
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV601: {
 
       return trv601_cmd_set;
     } break;
+
 
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV603: {
 
       return trv603_cmd_set;
     } break;
 
+
     case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10: {
 
       return gtz10_cmd_set;
     } break;
+
 
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z: {
 
       return trv602z_cmd_set;
     } break;  
 
+
     case Z2S_DEVICE_DESC_TS0601_TRV_TV02: {
 
       return tv02_cmd_set;
     } break;
+
 
     case Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL: {
 
@@ -75,109 +85,6 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   int16_t hvac_room_temperature_min = 500;
   int16_t hvac_room_temperature_max = 3000;
 
-  /*switch (z2s_channels_table[channel_number_slot].model_id) {
-    
-    case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {  
-      
-      trv_commands_set = SASWELL_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = SASWELL_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = SASWELL_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_TS0601_TRV_ME167: {
-      
-      trv_commands_set = ME167_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = ME167_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = ME167_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_TS0601_TRV_BECA: {
-      
-      trv_commands_set = BECA_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = BECA_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = BECA_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_TS0601_TRV_MOES: {
-
-      trv_commands_set = MOES_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = MOES_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = MOES_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_TS0601_TRV_TRV601: {
-
-      trv_commands_set = TRV601_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = TRV601_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = TRV601_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_TS0601_TRV_TRV603: {
-
-      trv_commands_set = TRV603_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = TRV603_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = TRV603_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10: {
-
-      trv_commands_set = GTZ10_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = GTZ10_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = GTZ10_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z: {
-
-      trv_commands_set = GTZ10_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = GTZ10_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = TRV602Z_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;  
-
-    case Z2S_DEVICE_DESC_TS0601_TRV_TV02: {
-
-      trv_commands_set = TV02_CMD_SET; 
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-
-      hvac_room_temperature_min = TV02_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = TV02_CMD_SET_HEATSETPOINT_MAX;
-
-    } break;
-    
-    case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
-
-      trv_commands_set = TRVZB_CMD_SET;
-      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
-      hvac_room_temperature_min = TRVZB_CMD_SET_HEATSETPOINT_MIN;
-      hvac_room_temperature_max = TRVZB_CMD_SET_HEATSETPOINT_MAX;
-    } break;
-
-    default:
-      trv_commands_set = 0x00; break;
-  }*/
   
   trv_commands_set = getZ2SDeviceHvacCmdSet(z2s_channels_table[channel_number_slot].model_id);
 
@@ -186,19 +93,24 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     if (ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id == trv_commands_set) {
 
       trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
-      hvac_room_temperature_min = ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_min;
-      hvac_room_temperature_max = ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_max;
-    } else
+      hvac_room_temperature_min = 
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_min;
+      hvac_room_temperature_max = 
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_max;
+    } else {
+
       log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
             ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id,
             trv_commands_set);
+      return;
+    }
   } else {
 
     switch (trv_commands_set) {
 
+
       case TRVZB_CMD_SET: {
 
-        //trv_commands_set = TRVZB_CMD_SET;
         trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
         hvac_room_temperature_min = TRVZB_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = TRVZB_CMD_SET_HEATSETPOINT_MAX;
@@ -207,7 +119,6 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   }
 
   auto Supla_Z2S_TRVInterface = new Supla::Control::Z2S_TRVInterface(gateway, device, trv_commands_set);
-
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
             
   Supla_Z2S_HvacBase->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
@@ -222,22 +133,52 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   Supla_Z2S_TRVInterface->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
 
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF, Supla_Z2S_TRVInterface,Supla::ON_HVAC_MODE_OFF);
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF, Supla_Z2S_TRVInterface,Supla::ON_TURN_OFF);
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_HVAC_MODE_HEAT);
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_TURN_ON);
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_HVAC_WEEKLY_SCHEDULE_ENABLED);
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_HVAC_WEEKLY_SCHEDULE_DISABLED);
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_HVAC_STANDBY);
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_HVAC_HEATING);
-  //Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_CHANGE);
+  Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF, 
+                                Supla_Z2S_TRVInterface,
+                                Supla::ON_HVAC_MODE_OFF);
+
+  Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF,
+                                Supla_Z2S_TRVInterface,
+                                Supla::ON_TURN_OFF);
+
+  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
+                                Supla_Z2S_TRVInterface,
+                                Supla::ON_HVAC_MODE_HEAT);
+
+  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
+                                Supla_Z2S_TRVInterface,
+                                Supla::ON_TURN_ON);
+
+  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
+                                Supla_Z2S_TRVInterface,
+                                Supla::ON_HVAC_WEEKLY_SCHEDULE_ENABLED);
+
+  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
+                                Supla_Z2S_TRVInterface,
+                                Supla::ON_HVAC_WEEKLY_SCHEDULE_DISABLED);
+
+  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
+                                Supla_Z2S_TRVInterface,
+                                Supla::ON_HVAC_STANDBY);
+
+  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
+                                Supla_Z2S_TRVInterface,
+                                Supla::ON_HVAC_HEATING);
+
+  //Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
+  //                                Supla_Z2S_TRVInterface,
+  //                                Supla::ON_CHANGE);
 
   Supla_Z2S_HvacBase->allowWrapAroundTemperatureSetpoints();
   Supla_Z2S_HvacBase->setPrimaryOutputEE(Supla_Z2S_TRVInterface);
   Supla_Z2S_TRVInterface->setTRVHvac(Supla_Z2S_HvacBase);
 
-  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMin(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, hvac_room_temperature_min);
-  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMax(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, hvac_room_temperature_max);
+  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMin(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 
+                                                   hvac_room_temperature_min);
+
+  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMax(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 
+                                                   hvac_room_temperature_max);
+
   Supla_Z2S_HvacBase->setButtonTemperatureStep(50);
   Supla_Z2S_HvacBase->addLocalUILockCapability(Supla::LocalUILock::Full);
   

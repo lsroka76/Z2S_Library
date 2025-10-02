@@ -700,7 +700,9 @@ void processTuyaEF00Switch2x3DataReport(int16_t channel_number_slot,
   }
             
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_EF00_SWITCH_2X3_BUTTON_2_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success) {
+
     int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                                                               z2s_channels_table[channel_number_slot].endpoint, 
                                                               z2s_channels_table[channel_number_slot].cluster_id, 
@@ -711,7 +713,9 @@ void processTuyaEF00Switch2x3DataReport(int16_t channel_number_slot,
   }
   
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_EF00_SWITCH_2X3_BATTERY_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success) { 
+    
     log_i("Battery level is %d", Tuya_read_dp_result.dp_value);
     updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);  
   }

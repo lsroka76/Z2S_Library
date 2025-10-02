@@ -4294,11 +4294,12 @@ void editChannelCallback(Control *sender, int type, void *param) {
 					log_i("%d, %s", z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
 								z2s_channels_table[channel_slot].Supla_channel_name);
 
-					rebuildChannelsSelector();
-					/*ESPUI.updateControlLabel(z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
+					//rebuildChannelsSelector();
+					ESPUI.updateControlLabel(z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
 																	 z2s_channels_table[channel_slot].Supla_channel_name);
-					ESPUI.updateControlLabel(channel_selector, PSTR("Channels"));*/
-					//ESPUI.jsonReload();
+					//working_str = channel_slot;
+					//ESPUI.updateControlValue(channel_selector, working_str);
+					ESPUI.jsonDom(0);
 					//json_reload_required = true;
 				}
 			} break;
