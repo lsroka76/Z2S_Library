@@ -53,3 +53,33 @@ void sendTuyaRequestCmdValue32(ZigbeeGateway *gateway,
                                 (uint8_t*)&Tuya_dp_zcl_payload, 
                                 false);
 }
+
+void sendTuyaRequestCmdData(ZigbeeGateway *gateway, 
+                            zbg_device_params_t *device,
+                            uint8_t dp_id,
+                            uint8_t dp_type, 
+                            uint32_t dp_value) {
+
+  switch (dp_type) {
+
+
+    case TUYA_DP_TYPE_BOOL:
+
+      sendTuyaRequestCmdBool(gateway, device, dp_id, dp_value); break;
+
+
+    case TUYA_DP_TYPE_VALUE:
+
+      sendTuyaRequestCmdValue32(gateway, device, dp_id, dp_value); break;
+
+
+    case TUYA_DP_TYPE_ENUM:
+
+      sendTuyaRequestCmdEnum8(gateway, device, dp_id, dp_value); break;
+
+
+    default:
+
+      log_e("unsupported Tuya datapoint %02x type %02x", dp_id, dp_type); break;
+  }
+}

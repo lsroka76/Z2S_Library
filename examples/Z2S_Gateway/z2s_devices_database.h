@@ -118,6 +118,7 @@
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0               0x3210
 #define Z2S_DEVICE_DESC_IKEA_WW_BULB                        0x3220
 #define Z2S_DEVICE_DESC_PHILIPS_WW_BULB                     0x3225
+#define Z2S_DEVICE_DESC_TUYA_LED_DIMMER                     0x3230
 
 #define Z2S_DEVICE_DESC_RGBW_END                            0x3299
 
@@ -227,6 +228,7 @@
 #define Z2S_DEVICE_DESC_TS0601_TRV_GTZ10                    0x6016
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z                  0x6017
 #define Z2S_DEVICE_DESC_TS0601_TRV_TV02                     0x6018
+#define Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL                0x6019
 
 
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
@@ -923,7 +925,8 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV603,
     .z2s_device_clusters_count = 1,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_GTZ10,
@@ -937,6 +940,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TV02,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -1051,6 +1059,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_WW_BULB,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -1546,6 +1560,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_rr1cqjwu", .model_name = "TS0207",
+    .z2s_device_uid = 4610,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_ww9i3e0y", .model_name = "TS0207",
     .z2s_device_uid = 4610,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
@@ -2094,6 +2113,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 4, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
+  {	.manufacturer_name = "HOBEIAN", .model_name = "TS0044",
+    .z2s_device_uid = 13535,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+	  .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 4, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
   {	.manufacturer_name = "_TZ3000_kfu8zapd", .model_name = "TS0044",
     .z2s_device_uid = 13600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
@@ -2473,6 +2501,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_GTZ10,
 	  .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE200_ps5v5jor", .model_name = "TS0601",
+    .z2s_device_uid = 18350,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE204_ltwbm23f", .model_name = "TS0601",
     .z2s_device_uid = 18400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
@@ -2586,6 +2619,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3210_ctv0gump", .model_name = "TS0501B",
     .z2s_device_uid = 19800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3210_i680rtja", .model_name = "TS0501B",
+    .z2s_device_uid = 19805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3210_bfwvfyx1", .model_name = "TS0505B",

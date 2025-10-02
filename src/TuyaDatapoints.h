@@ -7,7 +7,7 @@
 #define TUYA_DP_TYPE_BOOL                                           0x01
 #define TUYA_DP_TYPE_VALUE                                          0x02
 #define TUYA_DP_TYPE_ENUM                                           0x04
-
+#define TUYA_DP_TYPE_BITMAP                                         0x05
 
 #define TUYA_DOUBLE_DIMMER_SWITCH_1_STATE_DP                        0x01
 #define TUYA_DOUBLE_DIMMER_SWITCH_2_STATE_DP                        0x07
@@ -247,4 +247,11 @@ void sendTuyaRequestCmdValue32(ZigbeeGateway *gateway,
                                zbg_device_params_t *device,
                                uint8_t dp_id, 
                                uint32_t dp_value);
+
+void sendTuyaRequestCmdData(ZigbeeGateway *gateway, 
+                            zbg_device_params_t *device,
+                            uint8_t dp_id,
+                            uint8_t dp_type, 
+                            uint32_t dp_value);
+
 #endif //TUYA_DATAPOINTS_H_

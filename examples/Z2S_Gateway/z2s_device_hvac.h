@@ -21,6 +21,7 @@
 #define TRV_LIMESCALE_PROTECT_MSG       0x0B
 #define TRV_SCHEDULE_MODE_MSG           0x0C
 
+uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id);
 
 void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
 

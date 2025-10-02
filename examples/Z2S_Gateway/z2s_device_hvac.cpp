@@ -1,5 +1,73 @@
 #include "z2s_device_hvac.h"
 
+/*----------------------------------------------------------------------------------------------------------------------------*/
+uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
+
+  switch (model_id) {
+    
+    case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {  
+      
+      return saswell_cmd_set; 
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_ME167: {
+      
+      return me167_cmd_set;
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_BECA: {
+      
+      return beca_cmd_set; 
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_MOES: {
+
+      return moes_cmd_set;
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV601: {
+
+      return trv601_cmd_set;
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV603: {
+
+      return trv603_cmd_set;
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10: {
+
+      return gtz10_cmd_set;
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z: {
+
+      return trv602z_cmd_set;
+    } break;  
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_TV02: {
+
+      return tv02_cmd_set;
+    } break;
+
+    case Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL: {
+
+      return siterwell_cmd_set;
+    } break;
+    
+    
+    case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
+
+      return  TRVZB_CMD_SET;
+    } break;
+
+    default:
+      return 0xFF; break;
+  }  
+}
+
+/*----------------------------------------------------------------------------------------------------------------------------*/
+
 void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot) {
   
   uint8_t trv_commands_set;
@@ -7,7 +75,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   int16_t hvac_room_temperature_min = 500;
   int16_t hvac_room_temperature_max = 3000;
 
-  switch (z2s_channels_table[channel_number_slot].model_id) {
+  /*switch (z2s_channels_table[channel_number_slot].model_id) {
     
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {  
       
@@ -109,8 +177,35 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
 
     default:
       trv_commands_set = 0x00; break;
-  }
+  }*/
   
+  trv_commands_set = getZ2SDeviceHvacCmdSet(z2s_channels_table[channel_number_slot].model_id);
+
+  if ((trv_commands_set >= saswell_cmd_set) && (trv_commands_set < ts0601_cmd_sets_number)) {
+
+    if (ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id == trv_commands_set) {
+
+      trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
+      hvac_room_temperature_min = ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_min;
+      hvac_room_temperature_max = ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_max;
+    } else
+      log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
+            ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id,
+            trv_commands_set);
+  } else {
+
+    switch (trv_commands_set) {
+
+      case TRVZB_CMD_SET: {
+
+        //trv_commands_set = TRVZB_CMD_SET;
+        trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
+        hvac_room_temperature_min = TRVZB_CMD_SET_HEATSETPOINT_MIN;
+        hvac_room_temperature_max = TRVZB_CMD_SET_HEATSETPOINT_MAX;
+      } break;
+    }
+  }
+
   auto Supla_Z2S_TRVInterface = new Supla::Control::Z2S_TRVInterface(gateway, device, trv_commands_set);
 
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
@@ -123,14 +218,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   if (z2s_channels_table[channel_number_slot].Supla_channel_func !=0) 
     Supla_Z2S_HvacBase->setDefaultFunction(z2s_channels_table[channel_number_slot].Supla_channel_func);
 
-  /*if (z2s_channels_table[channel_number_slot].Supla_secondary_channel < 0xFF) 
-    Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_channels_table[channel_number_slot].Supla_secondary_channel);*/
 
-  /*if (z2s_channels_table[channel_number_slot].user_data_1 > 0) 
-    Supla_Z2S_TRVInterface->setTemperatureCalibrationUpdateMs(z2s_channels_table[channel_number_slot].user_data_1 * 1000);
-
-  if (z2s_channels_table[channel_number_slot].user_data_2 > 0) 
-    Supla_Z2S_TRVInterface->setTemperatureCalibrationOffsetTrigger(z2s_channels_table[channel_number_slot].user_data_2 * 100);*/
   Supla_Z2S_TRVInterface->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
 
 
@@ -153,10 +241,12 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   Supla_Z2S_HvacBase->setButtonTemperatureStep(50);
   Supla_Z2S_HvacBase->addLocalUILockCapability(Supla::LocalUILock::Full);
   
-  Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, trv_external_sensor_mode, z2s_channels_table[channel_number_slot].Supla_secondary_channel);
-
-  
+  Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, 
+                                                        trv_external_sensor_mode, 
+                                                        z2s_channels_table[channel_number_slot].Supla_secondary_channel); 
 }
+
+/*----------------------------------------------------------------------------------------------------------------------------*/
 
 void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint8_t free_slot, uint8_t trv_thermometer_slot) {
   
@@ -165,11 +255,17 @@ void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint
   Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_channels_table[trv_thermometer_slot].Supla_channel);
   Supla_Z2S_HvacBase->setBinarySensorChannelNo(Supla_Z2S_HvacBase->getChannel()->getChannelNumber());
 
-  Z2S_fillChannelsTableSlot(device, free_slot, Supla_Z2S_HvacBase->getChannel()->getChannelNumber(), SUPLA_CHANNELTYPE_HVAC, -1, 
-                           "THERMOSTAT", SUPLA_CHANNELFNC_HVAC_THERMOSTAT, z2s_channels_table[trv_thermometer_slot].Supla_channel); 
-
-
+  Z2S_fillChannelsTableSlot(device, 
+                            free_slot, 
+                            Supla_Z2S_HvacBase->getChannel()->getChannelNumber(), 
+                            SUPLA_CHANNELTYPE_HVAC, 
+                            -1, 
+                            "THERMOSTAT", 
+                            SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 
+                            z2s_channels_table[trv_thermometer_slot].Supla_channel); 
 }
+
+/*----------------------------------------------------------------------------------------------------------------------------*/
 
 void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value) {
 
