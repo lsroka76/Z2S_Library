@@ -12,6 +12,7 @@ typedef enum gui_modes {
   standard_gui_mode = 2,
   extended_gui_mode = 3,
   full_gui_mode = 4,
+  developer_gui_mode = 5,
   gui_modes_number
 } gui_modes_t;
 

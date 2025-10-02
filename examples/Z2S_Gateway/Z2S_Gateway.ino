@@ -728,6 +728,48 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }  
     return;
   } else
+  if (strcmp(cmd,"UPDATE-CHANNEL-TYPE") == 0) {
+
+    if (params_number < 2)  {
+      telnet.println(">update-channel-type channel Supla_channel_type");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint32_t channel_type = strtoul(*(param + 1), nullptr, 0);
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+        z2s_channels_table[channel_number_slot].Supla_channel_type = channel_type;
+      if (Z2S_saveChannelsTable()) {
+        log_i("Channel (%02u) type changed successfully.", channel_id);
+      }
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
+  if (strcmp(cmd,"UPDATE-CHANNEL-FUNC") == 0) {
+
+    if (params_number < 2)  {
+      telnet.println(">update-channel-type channel Supla_channel_func");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    uint32_t channel_func = strtoul(*(param + 1), nullptr, 0);
+    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    
+    if (channel_number_slot >= 0) {
+        z2s_channels_table[channel_number_slot].Supla_channel_func = channel_func;
+      if (Z2S_saveChannelsTable()) {
+        log_i("Channel (%02u) function changed successfully.", channel_id);
+      }
+    } else {
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+    }  
+    return;
+  } else
   if (strcmp(cmd,"UPDATE-DEVICE-FLAGS") == 0) {
 
     if (params_number < 3)  {

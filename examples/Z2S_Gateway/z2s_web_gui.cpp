@@ -2671,6 +2671,14 @@ void Z2S_buildWebGUI(gui_modes_t mode) {
 			buildAdvancedDevicesTabGUI();
 			buildTuyaCustomClusterTabGUI();
 		} break;
+
+		case developer_gui_mode: {
+
+			buildGatewayTabGUI();
+			buildClustersAttributesTab();
+			buildAdvancedDevicesTabGUI();
+			buildTuyaCustomClusterTabGUI();
+		} break;
 	}
 	
 	log_i(" ...GUI building FINISHED");
