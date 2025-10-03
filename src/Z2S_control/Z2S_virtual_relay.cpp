@@ -466,7 +466,7 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   Supla::Storage::ScheduleSave(5000);
 }
 
-void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS8(int32_t z2s_function_value_S8)v{
+void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS8(int32_t z2s_function_value_S8) {
 
   _z2s_function_value_S8 = z2s_function_value_S8;
 }
@@ -476,7 +476,7 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU8(int32_t z2s_functi
   _z2s_function_value_U8 = z2s_function_value_U8;
 }
 
-void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS32(int32_t z2s_function_value_S32)v{ 
+void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS32(int32_t z2s_function_value_S32) { 
 
   _z2s_function_value_S32 = z2s_function_value_S32;
 }
