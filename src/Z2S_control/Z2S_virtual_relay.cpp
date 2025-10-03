@@ -115,7 +115,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
                                 &_device, 
                                 MOES_ALARM_DURATION_DP, 
                                 Z2S_incValueU32(MOES_ALARM_MELODY_MIN_DURATION, 
-                                                MOES_ALARM_MELODY_MAX_DURATION));
+                                                MOES_ALARM_MELODY_MAX_DURATION,
+                                                10));
         channel.setNewValue(state);
 
       } break;
@@ -300,7 +301,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
                                 &_device, 
                                 MOES_ALARM_DURATION_DP, 
                                 Z2S_decValueU32(MOES_ALARM_MELODY_MIN_DURATION, 
-                                                MOES_ALARM_MELODY_MAX_DURATION));
+                                                MOES_ALARM_MELODY_MAX_DURATION,
+                                                10));
 
         channel.setNewValue(state);
       } break;
@@ -500,7 +502,7 @@ uint8_t Supla::Control::Z2S_VirtualRelay::Z2S_decValueU8(uint8_t lower_limit,
 }
 
 uint8_t Supla::Control::Z2S_VirtualRelay::Z2S_incValueU8(uint8_t lower_limit, 
-                                                         uint8_t upper_limit
+                                                         uint8_t upper_limit,
                                                          uint8_t step) {
 
   if (_z2s_function_value_U8 < UINT8_MAX) {
