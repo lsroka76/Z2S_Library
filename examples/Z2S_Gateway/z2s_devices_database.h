@@ -114,6 +114,7 @@
 #define Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB                   0x3130
 
 #define Z2S_DEVICE_DESC_DIMMER_BULB                         0x3200
+#define Z2S_DEVICE_DESC_LED_DIMMER                          0x3201
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB                 0x3205
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0               0x3210
 #define Z2S_DEVICE_DESC_IKEA_WW_BULB                        0x3220
@@ -1030,6 +1031,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_BULB,
+    .z2s_device_clusters_count = 2, 
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LED_DIMMER,
     .z2s_device_clusters_count = 2, 
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -2656,6 +2663,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3210_i680rtja", .model_name = "TS0501B",
     .z2s_device_uid = 19805,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "eWeLight", .model_name = "ZB-DL01",
+    .z2s_device_uid = 19850,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LED_DIMMER,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3210_bfwvfyx1", .model_name = "TS0505B",
