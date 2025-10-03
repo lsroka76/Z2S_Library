@@ -215,7 +215,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
         state = true;
 
-        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, state ? 0 : 1); //automatic = local mode = 1
+        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, state ? 1 : 0); //automatic = local mode = 1
         
         channel.setNewValue(state);
       } break;
@@ -442,7 +442,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
         Tuya_dp_zcl_payload_t Tuya_dp_zcl_payload;
 
-        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, state ? 0 : 1);
+        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, state ? 1 : 0);
         
         channel.setNewValue(state);
       } break;

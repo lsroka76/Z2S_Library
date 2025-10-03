@@ -1340,6 +1340,8 @@ void setup() {
 
   Supla::Storage::Init();
 
+  Supla::Storage::Instance()->enableChannelNumbers();
+
   auto cfg = Supla::Storage::ConfigInstance();
 
   cfg->commit();
@@ -1734,7 +1736,7 @@ void loop() {
       if (!_basic_cluster_query_success) {
         
           log_i("Error while pairing - cann't read manufacturer id (5x). Gateway will restart, try to pair device once again!");
-          SuplaDevice.scheduleSoftRestart(0);
+          SuplaDevice.scheduleSoftRestart(1000);
         } 
       //write_mask = 0x13;
       //zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask); //Tuya black magic continues
@@ -2158,7 +2160,6 @@ void loop() {
                   1, 1, LUMI_MANUFACTURER_CODE);
                 } break;
               }
-
               SuplaDevice.scheduleSoftRestart(5000);
             }   
             //else log_i("LIST checking %s::%s, entry # %d",Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, Z2S_DEVICES_LIST[devices_list_counter].model_name, devices_list_counter);

@@ -3685,7 +3685,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: 
-      case Z2S_DEVICE_DESC_LUMI_SWITCH:
+      case  :
       case Z2S_DEVICE_DESC_TUYA_RELAY:
 
         addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "POWER SWITCH", 
@@ -3811,6 +3811,20 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
         sprintf(button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
                                   button_name_function, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/     
+     
+
+      case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH: {
+
+        //char button_name_function[30];
+        //sprintf(button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
+        addZ2SDeviceActionTrigger(device, 
+                                  first_free_slot, 
+                                  sub_id, 
+                                  name, 
                                   SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
@@ -5247,11 +5261,20 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2:
     case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1: {
       
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID);
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID);
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_HELD_SID);
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_LONG_RELEASED_SID);
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOT_HELD_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOT_LONG_RELEASED_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5259,72 +5282,157 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3: 
     case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2: {
       
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID);
 
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID);
 
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_HELD_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOTS_HELD_SID);
 
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID);
 
-      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
     case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
       
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_RELEASE_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_ON_HOLD_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_ON_HOLD_RELEASE_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_UP_PRESS_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_UP_PRESS_RELEASE_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_UP_HOLD_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_UP_HOLD_RELEASE_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_DOWN_PRESS_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_DOWN_PRESS_RELEASE_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_DOWN_HOLD_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_DOWN_HOLD_RELEASE_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_OFF_PRESS_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_OFF_PRESS_RELEASE_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_OFF_HOLD_SID);
-      Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_OFF_HOLD_RELEASE_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_RELEASE_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_ON_HOLD_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_ON_HOLD_RELEASE_SID);
+      
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_UP_PRESS_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_UP_PRESS_RELEASE_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_UP_HOLD_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_UP_HOLD_RELEASE_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_DOWN_PRESS_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_DOWN_PRESS_RELEASE_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_DOWN_HOLD_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_DOWN_HOLD_RELEASE_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_OFF_PRESS_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_OFF_PRESS_RELEASE_SID);
+
+      Z2S_addZ2SDevice(joined_device,  
+                       PHILIPS_HUE_DIMMER_SWITCH_OFF_HOLD_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       PHILIPS_HUE_DIMMER_SWITCH_OFF_HOLD_RELEASE_SID);
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+    
+    case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH: {
+      
+      Z2S_addZ2SDevice(joined_device, 
+                       LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID,
+                       "LEFT PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, LUMI_
+                       DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID,
+                       "LEFT DOUBLE PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LUMI_DOUBLE_SWITCH_RIGTH_PRESSED_SID,
+                       "RIGHT PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LUMI_DOUBLE_SWITCH_RIGHT_DOUBLE_PRESSED_SID,
+                       "RIGHT DOUBLE PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LUMI_DOUBLE_SWITCH_BOTH_PRESSED_SID,
+                       "BOTH PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LUMI_DOUBLE_SWITCH_BOTH_DOUBLE_PRESSED_SID,
+                       "BOTH DOUBLE PRESSED");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
 
-      Z2S_addZ2SDevice(joined_device, TUYA_DOUBLE_DIMMER_SWITCH_1_SID);
-      Z2S_addZ2SDevice(joined_device, TUYA_DOUBLE_DIMMER_SWITCH_2_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_DOUBLE_DIMMER_SWITCH_1_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_DOUBLE_DIMMER_SWITCH_2_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
-      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID);
-      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_PRESENCE_SID);
+                       
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_MOTION_STATE_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5: {
       
-      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
-      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_PRESENCE_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/                                         
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1: {
       
-      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID, "T&H");
-      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
-                        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_PRESENCE_SID, 
+                       "PRESENCE", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID, 
+                       "T&H");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, 
+                       "ILLUMINANCE",
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "lx");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/                                         
@@ -5339,22 +5447,24 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
       Z2S_addZ2SDevice(joined_device, 
                        TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, 
                        "ILLUMINANCE",
-                        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "lx");
 
       Z2S_addZ2SDevice(joined_device, 
                        TUYA_PRESENCE_SENSOR_DISTANCE_SID, 
                        "DISTANCE",
-                        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "m");
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "m");
 
       Z2S_addZ2SDevice(joined_device, 
                        TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID, 
                        "SWITCH (FOR MANUAL MODE)",
-                        SUPLA_CHANNELFNC_POWERSWITCH);
+                       SUPLA_CHANNELFNC_POWERSWITCH);
 
       Z2S_addZ2SDevice(joined_device, 
                        TUYA_PRESENCE_SENSOR_RELAY_MODE_SID, 
                        "SWITCH AUTO MODE",
-                        SUPLA_CHANNELFNC_POWERSWITCH);
+                       SUPLA_CHANNELFNC_POWERSWITCH);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5362,27 +5472,30 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_RAIN_SENSOR_RAIN_SID);
+                       TUYA_RAIN_SENSOR_RAIN_SID);
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
+                       TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID);
+                       TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID);
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
+                       TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
+                       TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2: {
       
-      Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_SID);
-      Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_RAIN_SENSOR_RAIN_SID);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5390,23 +5503,29 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID, 
-                        "ENERGY", 0, "kWh");
+                       TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID, 
+                       "ENERGY", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "kWh");
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID,
-                      "PRODUCED ENERGY", 0, "kWh");
+                       TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID,
+                       "PRODUCED ENERGY", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "kWh");
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_3PHASES_ELECTRICITY_METER_POWER_SID, 
-                      "POWER", 0, "W");
+                       TUYA_3PHASES_ELECTRICITY_METER_POWER_SID, 
+                       "POWER", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "W");
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID, 
-                      "POWER FACTOR"); 
+                       TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID, 
+                       "POWER FACTOR"); 
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_3PHASES_ELECTRICITY_METER_SID);
+                       TUYA_3PHASES_ELECTRICITY_METER_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5424,15 +5543,21 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
 
       Z2S_addZ2SDevice(joined_device, 
                        SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID, 
-                       "ENERGY (TODAY)", 0, "kWh");
+                       "ENERGY (TODAY)", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "kWh");
 
       Z2S_addZ2SDevice(joined_device, 
                        SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID, 
-                       "ENERGY (MONTH)", 0, "kWh");   
+                       "ENERGY (MONTH)", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "kWh");   
 
       Z2S_addZ2SDevice(joined_device, 
                        SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID, 
-                       "ENERGY (YESTERDAY)", 0, "kWh");
+                       "ENERGY (YESTERDAY)", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "kWh");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5440,20 +5565,22 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID, 
-                        "TH");
+                       ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID, 
+                       "TH");
 
       Z2S_addZ2SDevice(joined_device, 
-                        ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID, 
-                      "ILLUMINANCE", 0, "lx");
+                       ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID, 
+                       "ILLUMINANCE", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "lx");
 
       Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, 
-                        "ALARM_1", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       "ALARM_1", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, 
-                        "TAMPER", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);  
+                       "TAMPER", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);  
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5461,16 +5588,16 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, 
-                        "CONTACT", 
-                        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                       "CONTACT", 
+                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
 
       Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID, 
-                        "VIBRATION", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       "VIBRATION", 
+                      SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, 
-                        "TAMPER", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       "TAMPER", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5478,24 +5605,24 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ACE_ARM_CMD_SID, 
-                        "ARM", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       IAS_ACE_ARM_CMD_SID, 
+                       "ARM", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ACE_PANIC_CMD_SID, 
-                        "PANIC", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       IAS_ACE_PANIC_CMD_SID, 
+                       "PANIC", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ACE_2_CMD_SID, 
-                        "2 ?", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       IAS_ACE_2_CMD_SID, 
+                       "2 ?", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ACE_3_CMD_SID, 
-                        "3 ?", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       IAS_ACE_3_CMD_SID, 
+                       "3 ?", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
     } break;
 
@@ -5504,34 +5631,56 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        ADEO_CUSTOM_CMD_BUTTON_PRESSED_SID, 
-                        "PRESSED");
+                       ADEO_CUSTOM_CMD_BUTTON_PRESSED_SID, 
+                       "PRESSED");
 
       Z2S_addZ2SDevice(joined_device, 
-                        ADEO_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID, 
-                        "DOUBLE PRESSED");
+                       ADEO_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID, 
+                       "DOUBLE PRESSED");
 
       Z2S_addZ2SDevice(joined_device,  
-                        ADEO_CUSTOM_CMD_BUTTON_HELD_SID, 
-                        "HELD");
+                       ADEO_CUSTOM_CMD_BUTTON_HELD_SID, 
+                       "HELD");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B: {
       
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID,"CONTACT", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_LOW_BATTERY_SID, "LOW BATTERY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(joined_device, 
+                       IAS_ZONE_ALARM_1_SID,
+                       "CONTACT", 
+                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IAS_ZONE_TAMPER_SID, 
+                       "TAMPER", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IAS_ZONE_LOW_BATTERY_SID, 
+                       "LOW BATTERY", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B: {
       
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID,"CONTACT", SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
-      Z2S_addZ2SDevice(joined_device, SONOFF_CUSTOM_CLUSTER_TAMPER_SID, "TAMPER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_LOW_BATTERY_SID, "LOW BATTERY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(joined_device, 
+                       IAS_ZONE_ALARM_1_SID,
+                       "CONTACT", 
+                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       SONOFF_CUSTOM_CLUSTER_TAMPER_SID, 
+                       "TAMPER", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IAS_ZONE_LOW_BATTERY_SID, 
+                       "LOW BATTERY", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5539,17 +5688,19 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ZONE_ALARM_1_SID, 
-                        "ALARM1", 
-                        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                       IAS_ZONE_ALARM_1_SID, 
+                       "ALARM1", 
+                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ZONE_ALARM_2_SID, 
-                        "ALARM2", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       IAS_ZONE_ALARM_2_SID, 
+                       "ALARM2", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ZONE_TAMPER_SID,  
-                        "TAMPER", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       IAS_ZONE_TAMPER_SID,  
+                       "TAMPER", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5557,13 +5708,14 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ZONE_ALARM_1_SID, 
-                        "ALARM1", 
-                        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                       IAS_ZONE_ALARM_1_SID, 
+                       "ALARM1", 
+                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_ZONE_LOW_BATTERY_SID,  
-                        "LOW BATTERY", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       IAS_ZONE_LOW_BATTERY_SID,  
+                       "LOW BATTERY", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5571,14 +5723,14 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_VIBRATION_SENSOR_VIBRATION_SID, 
-                        "VIBRATION", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       TUYA_VIBRATION_SENSOR_VIBRATION_SID, 
+                       "VIBRATION", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_VIBRATION_SENSOR_CONTACT_SID,  
-                        "CONTACT", 
-                        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+                       TUYA_VIBRATION_SENSOR_CONTACT_SID,  
+                       "CONTACT", 
+                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5586,15 +5738,15 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID, 
-                        "PIR", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID, 
+                       "PIR", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, 
-                        Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID,  
-                        "ILLUMINANCE",
-                        0 ,
-                        "lx");
+                       Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID,  
+                       "ILLUMINANCE",
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
+                       "lx");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5602,14 +5754,15 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        LUMI_MOTION_SENSOR_OCCUPANCY_SID,
-                        "OCCUPANCY", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       LUMI_MOTION_SENSOR_OCCUPANCY_SID,
+                       "OCCUPANCY", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
       Z2S_addZ2SDevice(joined_device, 
-                        LUMI_MOTION_SENSOR_ILLUMINANCE_SID, 
-                        "ILLUMINANCE", 
-                        0, 
-                        "lx");
+                       LUMI_MOTION_SENSOR_ILLUMINANCE_SID, 
+                       "ILLUMINANCE", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "lx");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5617,14 +5770,14 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        SONOFF_PIR_SENSOR_OCCUPANCY_SID,
-                        "OCCUPANCY", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       SONOFF_PIR_SENSOR_OCCUPANCY_SID,
+                       "OCCUPANCY", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, 
-                        SONOFF_PIR_SENSOR_ILLUMINANCE_SID, 
-                        "ILLUMINANCE", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       SONOFF_PIR_SENSOR_ILLUMINANCE_SID, 
+                       "ILLUMINANCE", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5632,22 +5785,56 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        SONOFF_SMART_VALVE_ON_OFF_SID,
-                        "VALVE ON/OFF (MANUAL)", 
-                        SUPLA_CHANNELFNC_POWERSWITCH);
+                       SONOFF_SMART_VALVE_ON_OFF_SID,
+                       "VALVE ON/OFF (MANUAL)", 
+                       SUPLA_CHANNELFNC_POWERSWITCH);
 
       Z2S_addZ2SDevice(joined_device, 
-                        SONOFF_SMART_VALVE_RUN_PROGRAM_SID,
-                        "RUN SAVED PROGRAM", 
-                        SUPLA_CHANNELFNC_POWERSWITCH);
+                       SONOFF_SMART_VALVE_RUN_PROGRAM_SID,
+                       "RUN SAVED PROGRAM", 
+                       SUPLA_CHANNELFNC_POWERSWITCH);
                         
-      Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_FLOW_SID, "FLOW", 0, "m³/h");
-      Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_MODE_SID, "MODE", 0, "");
-      Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_CYCLE_NUMBER_SID, "CYCLE #", 0, "");
-      Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_CYCLES_COUNT_SID, "TOTAL CYCLES", 0, "");
-      Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_TIME_SID, "CYCLE TIME", 0, "s");
-      Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_PAUSE_SID, "CYCLE PAUSE", 0, "s");
-      Z2S_addZ2SDevice(joined_device, SONOFF_SMART_VALVE_VOLUME_SID, "CYCLE VOLUME", 0, "l");
+      Z2S_addZ2SDevice(joined_device, 
+                       SONOFF_SMART_VALVE_FLOW_SID, 
+                       "FLOW", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "m³/h");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       SONOFF_SMART_VALVE_MODE_SID, 
+                       "MODE", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       SONOFF_SMART_VALVE_CYCLE_NUMBER_SID, 
+                       "CYCLE #", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       SONOFF_SMART_VALVE_CYCLES_COUNT_SID, 
+                       "TOTAL CYCLES", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       SONOFF_SMART_VALVE_TIME_SID, 
+                       "CYCLE TIME", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "s");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       SONOFF_SMART_VALVE_PAUSE_SID, 
+                       "CYCLE PAUSE", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "s");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       SONOFF_SMART_VALVE_VOLUME_SID, 
+                       "CYCLE VOLUME", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "l");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5655,41 +5842,69 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_WD_SILENT_ALARM_SID, 
-                        "SILENT ALARM", 
-                      SUPLA_CHANNELFNC_POWERSWITCH);
+                       IAS_WD_SILENT_ALARM_SID, 
+                       "SILENT ALARM", 
+                       SUPLA_CHANNELFNC_POWERSWITCH);
+
       Z2S_addZ2SDevice(joined_device, 
-                        IAS_WD_LOUD_ALARM_SID, 
-                        "LOUD ALARM", 
-                        SUPLA_CHANNELFNC_POWERSWITCH);
+                       IAS_WD_LOUD_ALARM_SID, 
+                       "LOUD ALARM", 
+                       SUPLA_CHANNELFNC_POWERSWITCH);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_MOES_ALARM: {
       
-      Z2S_addZ2SDevice(joined_device, MOES_ALARM_SWITCH_SID, "ALARM SWITCH", 
-                        SUPLA_CHANNELFNC_POWERSWITCH);
-      Z2S_addZ2SDevice(joined_device, MOES_ALARM_MELODY_SID, "ALARM MELODY", 
-                        SUPLA_CHANNELFNC_POWERSWITCH);
-      Z2S_addZ2SDevice(joined_device, MOES_ALARM_VOLUME_SID, "ALARM VOLUME", 
-                        SUPLA_CHANNELFNC_POWERSWITCH);
-      Z2S_addZ2SDevice(joined_device, MOES_ALARM_DURATION_SID, "ALARM DURATION", 
-                        SUPLA_CHANNELFNC_POWERSWITCH);
-      Z2S_addZ2SDevice(joined_device, MOES_ALARM_DISPLAY_SID, "ALARM DISPLAY", 
-                        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+      Z2S_addZ2SDevice(joined_device, 
+                       MOES_ALARM_SWITCH_SID, 
+                       "ALARM SWITCH", 
+                      SUPLA_CHANNELFNC_POWERSWITCH);
 
+      Z2S_addZ2SDevice(joined_device, 
+                       MOES_ALARM_MELODY_SID, 
+                       "ALARM MELODY", 
+                       SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       MOES_ALARM_VOLUME_SID, 
+                       "ALARM VOLUME", 
+                       SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       MOES_ALARM_DURATION_SID, 
+                       "ALARM DURATION", 
+                       SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       MOES_ALARM_DISPLAY_SID, 
+                       "ALARM DISPLAY", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
       
-      Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
-      Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_CO_CONC_SID, "CO CONCENTRATION", 0, "ppm");
-      Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_SELF_TEST_SID, "SELF TEST RESULT", 0, "1..3");
-      Z2S_addZ2SDevice(joined_device, TUYA_CO_DETECTOR_SILENCE_SID, "SILENCE");
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_CO_DETECTOR_CO_CONC_SID, 
+                       "CO CONCENTRATION", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "ppm");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_CO_DETECTOR_SELF_TEST_SID, 
+                       "SELF TEST RESULT", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "1..3");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_CO_DETECTOR_SILENCE_SID, 
+                       "SILENCE");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5697,20 +5912,25 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_GAS_DETECTOR_GAS_SID,"GAS DETECTED", 
-                        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+                       TUYA_GAS_DETECTOR_GAS_SID,
+                       "GAS DETECTED", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_GAS_DETECTOR_GAS_CONC_SID, 
-                        "GAS CONCENTRATION", 0, "%LEL");
+                       TUYA_GAS_DETECTOR_GAS_CONC_SID, 
+                       "GAS CONCENTRATION", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "%LEL");
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID, 
-                        "SELF TEST RESULT", 0, "1..3");
+                       TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID, 
+                       "SELF TEST RESULT", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "1..3");
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_GAS_DETECTOR_PREHEAT_SID, 
-                        "PREHEAT");
+                       TUYA_GAS_DETECTOR_PREHEAT_SID, 
+                       "PREHEAT");
     } break;
     
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5718,21 +5938,26 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID,
-                        "TEMPHUMIDITY");
+                       TUYA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID,
+                       "TEMPHUMIDITY");
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_AIR_QUALITY_SENSOR_CO2_SID, 
-                        "CO2", 0, "ppm");
+                       TUYA_AIR_QUALITY_SENSOR_CO2_SID, 
+                       "CO2", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "ppm");
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_AIR_QUALITY_SENSOR_VOC_SID, 
-                        "VOC", 0, "ppm");
+                       TUYA_AIR_QUALITY_SENSOR_VOC_SID, 
+                       "VOC", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "ppm");
 
       Z2S_addZ2SDevice(joined_device, 
-                        TUYA_AIR_QUALITY_SENSOR_FA_SID, 
-                        "FORMALDEHYDE", 0, "mg/m³");
-
+                       TUYA_AIR_QUALITY_SENSOR_FA_SID, 
+                       "FORMALDEHYDE", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "mg/m³");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5740,12 +5965,14 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        DEVELCO_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
-                        "TEMPHUMIDITY");
+                       DEVELCO_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
+                       "TEMPHUMIDITY");
 
       Z2S_addZ2SDevice(joined_device, 
-                        DEVELCO_AIR_QUALITY_SENSOR_VOC_SID, 
-                        "VOC", 0, "ppb");
+                       DEVELCO_AIR_QUALITY_SENSOR_VOC_SID, 
+                       "VOC", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "ppb");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5753,16 +5980,20 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
-                        LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
-                        "T/H");
+                       LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
+                       "T/H");
 
       Z2S_addZ2SDevice(joined_device, 
-                        LUMI_AIR_QUALITY_SENSOR_VOC_SID, 
-                        "VOC", 0, "ppb");
+                       LUMI_AIR_QUALITY_SENSOR_VOC_SID, 
+                       "VOC", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "ppb");
 
       Z2S_addZ2SDevice(joined_device, 
-                        LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID, 
-                        "AIR QUALITY", 0, "1-5");
+                       LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID, 
+                       "AIR QUALITY", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "1-5");
     } break;
     
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5770,16 +6001,16 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP: {
 
       Z2S_addZ2SDevice(joined_device, 
-                        Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_TEMP_SID, 
-                        "TEMP");
+                       Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_TEMP_SID, 
+                       "TEMP");
 
       Z2S_addZ2SDevice(joined_device, 
-                        Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_SWITCH_SID, 
-                        "SWITCH",
-                        SUPLA_CHANNELFNC_POWERSWITCH);
+                       Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_SWITCH_SID, 
+                       "SWITCH",
+                       SUPLA_CHANNELFNC_POWERSWITCH);
 
       Z2S_addZ2SDevice(joined_device, 
-                        Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_EM_SID);
+                       Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_EM_SID);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5787,25 +6018,24 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB: {
 
       Z2S_addZ2SDevice(joined_device, 
-                        DIMMER_ON_OFF_SWITCH_SID,
-                        "DIMMER SWITCH",
-                        SUPLA_CHANNELFNC_POWERSWITCH);
+                       DIMMER_ON_OFF_SWITCH_SID,
+                       "DIMMER SWITCH",
+                       SUPLA_CHANNELFNC_POWERSWITCH);
       
       Z2S_addZ2SDevice(joined_device, 
-                        DIMMER_FUNC_BRIGHTNESS_SID,
-                        "BRIGHTNESS",
-                        SUPLA_CHANNELFNC_DIMMER);
+                       DIMMER_FUNC_BRIGHTNESS_SID,
+                       "BRIGHTNESS",
+                       SUPLA_CHANNELFNC_DIMMER);
 
       Z2S_addZ2SDevice(joined_device, 
-                        DIMMER_FUNC_COLOR_TEMPERATURE_SID,
-                        "COLOR TEMPERATURE",
-                        SUPLA_CHANNELFNC_DIMMER);
-
-
+                       DIMMER_FUNC_COLOR_TEMPERATURE_SID,
+                       "COLOR TEMPERATURE",
+                       SUPLA_CHANNELFNC_DIMMER);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-    default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
+    default: Z2S_addZ2SDevice(joined_device, 
+                              NO_CUSTOM_CMD_SID);
   }
 }
