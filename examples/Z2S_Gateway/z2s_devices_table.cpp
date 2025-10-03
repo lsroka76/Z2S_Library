@@ -5383,8 +5383,8 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
                        LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID,
                        "LEFT PRESSED");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID,
+       Z2S_addZ2SDevice(joined_device, 
+                        LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID,
                        "LEFT DOUBLE PRESSED");
 
       Z2S_addZ2SDevice(joined_device, 
