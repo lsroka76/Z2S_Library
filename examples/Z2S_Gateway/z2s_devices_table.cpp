@@ -4102,6 +4102,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
+      case Z2S_DEVICE_DESC_LED_DIMMER:
       case Z2S_DEVICE_DESC_IKEA_WW_BULB:
       case Z2S_DEVICE_DESC_PHILIPS_WW_BULB: {
         
