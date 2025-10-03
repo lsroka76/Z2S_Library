@@ -5000,7 +5000,8 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 
 				if (remove_result)
 					updateLabel_P(action_state_label, "Removing Z2S Action: SUCCESS! <br>"
-																						"Action still active in Supla Device - restart gateway to deactivate it!");
+																						"Action still active in Supla Device - "
+																						"restart gateway to deactivate it!");
 				else
 					updateLabel_P(action_state_label, "Removing Z2S Action: FAILED!");
 			} break;
@@ -5032,49 +5033,50 @@ void valveCallback(Control *sender, int type, void *param) {
 				if ((ESPUI.getControl(valve_program_selector)->value.toInt() > 0) &&
 						(ESPUI.getControl(valve_cycles_number)->value.toInt() > 0)) {
 
-					uint8_t program_mode = ESPUI.getControl(valve_program_selector)->value.toInt();
-					uint8_t valve_cycles = ESPUI.getControl(valve_cycles_number)->value.toInt();
+					uint8_t program_mode = 
+						ESPUI.getControl(valve_program_selector)->value.toInt();
+
+					uint8_t valve_cycles = 
+						ESPUI.getControl(valve_cycles_number)->value.toInt();
 
 					if (program_mode == 1) 
+						
 						value_32 = ESPUI.getControl(valve_worktime_number)->value.toInt();
 						
 					else {
+						
 						value_32 = ESPUI.getControl(valve_volume_number)->value.toInt();
-						//valve_cycles = valve_cycles + 0x80;
 					}
 					
 					z2s_zb_devices_table[device_slot].smart_valve_data.program = program_mode;
 					z2s_zb_devices_table[device_slot].smart_valve_data.cycles = valve_cycles;
 					z2s_zb_devices_table[device_slot].smart_valve_data.value = value_32;
-					z2s_zb_devices_table[device_slot].smart_valve_data.pause_time = ESPUI.getControl(valve_pause_number)->value.toInt();
-					//z2s_zb_devices_table[device_slot].user_data_1 = (valve_cycles << 24) + value_32;
-
-					//value_32 = ESPUI.getControl(valve_pause_number)->value.toInt();
-
-					//z2s_zb_devices_table[device_slot].user_data_2 = value_32;
-
+					z2s_zb_devices_table[device_slot].smart_valve_data.pause_time = 
+						ESPUI.getControl(valve_pause_number)->value.toInt();
+					
 					if (Z2S_saveZbDevicesTable()) 
-        		updateLabel_P(valve_info_label, PSTR("Valve program saved successfully."));
+        		
+						updateLabel_P(valve_info_label, PSTR("Valve program saved successfully."));
 					else
+						
 						updateLabel_P(valve_info_label, PSTR("Valve program save failed."));
 				} else
+				
 				updateLabel_P(valve_info_label, PSTR("No valve program to save"));
 			} break;
 
 			case GUI_CB_LOAD_PROGRAM_FLAG: { //load valve program
 
 				uint8_t valve_cycles = z2s_zb_devices_table[device_slot].smart_valve_data.cycles; 
-				//z2s_zb_devices_table[device_slot].user_data_1 >> 24;
 				
 				if (valve_cycles > 0) {
 
-					uint8_t program_mode = z2s_zb_devices_table[device_slot].smart_valve_data.program; //(valve_cycles & 0x80) + 1;
+					uint8_t program_mode = z2s_zb_devices_table[device_slot].smart_valve_data.program; 
 
 					ESPUI.updateNumber(valve_program_selector, program_mode);
 					ESPUI.updateNumber(valve_cycles_number, valve_cycles); // & 0x7F);
 
 					value_32 = z2s_zb_devices_table[device_slot].smart_valve_data.value; 
-					//z2s_zb_devices_table[device_slot].user_data_1 & 0x00FFFFFF;
 					
 					if (program_mode == 1) {
 						ESPUI.updateNumber(valve_worktime_number, value_32);
@@ -5086,12 +5088,12 @@ void valveCallback(Control *sender, int type, void *param) {
 					}
 
 					value_32 = z2s_zb_devices_table[device_slot].smart_valve_data.pause_time; 
-					//z2s_zb_devices_table[device_slot].user_data_2 & 0x00FFFFFF;
 
 					ESPUI.updateNumber(valve_pause_number, value_32);
 
         	updateLabel_P(valve_info_label, PSTR("Valve program loaded successfully."));	
 				} else
+					
 					updateLabel_P(valve_info_label, PSTR("No Valve program found."));
 			} break;
 			
@@ -5127,13 +5129,22 @@ void valveCallback(Control *sender, int type, void *param) {
 				for (int i = 0; i < 11; i++)
 					log_i("valve payload [%u] = 0x%02x", i,valve_cmd_payload[i]);
 
-				if (zbGateway.sendAttributeWrite(&device, SONOFF_CUSTOM_CLUSTER, attribute_id, 
-																				 ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, &valve_cmd_payload, true))
+				if (zbGateway.sendAttributeWrite(&device, 
+																				 SONOFF_CUSTOM_CLUSTER, 
+																				 attribute_id, 
+																				 ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 
+																				 11, 
+																				 &valve_cmd_payload, 
+																				 true)) {
+
 					if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS)
+						
 						updateLabel_P(valve_info_label, PSTR("Valve program start success!"));
 					else
+						
 						updateLabel_P(valve_info_label, PSTR("Valve program start error!"));
-				else
+				} else
+					
 					updateLabel_P(valve_info_label, device_query_failed_str);
 			} break;
 
@@ -5144,8 +5155,11 @@ void valveCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_SEND_PROGRAM_FLAG: {
 
-				int16_t channel_number_slot = Z2S_findChannelNumberSlot(z2s_zb_devices_table[device_slot].ieee_addr, -1, SONOFF_CUSTOM_CLUSTER, 
-																																SUPLA_CHANNELTYPE_RELAY, SONOFF_SMART_VALVE_RUN_PROGRAM_SID);
+				int16_t channel_number_slot = Z2S_findChannelNumberSlot(z2s_zb_devices_table[device_slot].ieee_addr, 
+																																-1, 
+																																SONOFF_CUSTOM_CLUSTER, 
+																																SUPLA_CHANNELTYPE_RELAY, 
+																																SONOFF_SMART_VALVE_RUN_PROGRAM_SID);
   
   			if (channel_number_slot < 0) {
 					
@@ -5158,18 +5172,30 @@ void valveCallback(Control *sender, int type, void *param) {
 					case 1: {
 						
 						z2s_channels_table[channel_number_slot].smart_valve_data.program = 1;
-						z2s_channels_table[channel_number_slot].smart_valve_data.value = ESPUI.getControl(valve_worktime_number)->value.toInt();
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 1);
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S32_ID,
+						z2s_channels_table[channel_number_slot].smart_valve_data.value = 
+							ESPUI.getControl(valve_worktime_number)->value.toInt();
+
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
+																					VRV_S8_ID, 
+																					1);
+
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
+																					VRV_S32_ID,
 																					ESPUI.getControl(valve_worktime_number)->value.toInt());
 					} break;
 
 					case 2: {
 						
 						z2s_channels_table[channel_number_slot].smart_valve_data.program = 2;
-						z2s_channels_table[channel_number_slot].smart_valve_data.value = ESPUI.getControl(valve_volume_number)->value.toInt();
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 2);
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S32_ID,
+						z2s_channels_table[channel_number_slot].smart_valve_data.value = 
+							ESPUI.getControl(valve_volume_number)->value.toInt();
+
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
+																					VRV_S8_ID, 
+																					2);
+
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
+																					VRV_S32_ID,
 																					ESPUI.getControl(valve_volume_number)->value.toInt());
 					} break;
 
@@ -5177,204 +5203,185 @@ void valveCallback(Control *sender, int type, void *param) {
 						z2s_channels_table[channel_number_slot].smart_valve_data.program = 0;
 						z2s_channels_table[channel_number_slot].smart_valve_data.cycles = 0;
 						z2s_channels_table[channel_number_slot].smart_valve_data.value = 0;
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_S8_ID, 0);
+
+						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
+																					VRV_S8_ID, 
+																					0);
+
 						Z2S_saveChannelsTable();
 						return;
 					} break;
 				}
-				z2s_channels_table[channel_number_slot].smart_valve_data.cycles = ESPUI.getControl(valve_cycles_number)->value.toInt();
-				z2s_channels_table[channel_number_slot].smart_valve_data.pause_time = ESPUI.getControl(valve_pause_number)->value.toInt();
+
+				z2s_channels_table[channel_number_slot].smart_valve_data.cycles = 
+					ESPUI.getControl(valve_cycles_number)->value.toInt();
+
+				z2s_channels_table[channel_number_slot].smart_valve_data.pause_time = 
+				ESPUI.getControl(valve_pause_number)->value.toInt();
+
 				Z2S_saveChannelsTable();
-				msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_U8_ID,
+
+				msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
+																			VRV_U8_ID,
 																			ESPUI.getControl(valve_cycles_number)->value.toInt());
 																			
-				msgZ2SDeviceVirtualRelayValue(channel_number_slot, VRV_U32_ID, 
+				msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
+																			VRV_U32_ID, 
 																			ESPUI.getControl(valve_pause_number)->value.toInt());
 			} break;
 
 			case GUI_CB_SEND_RINGTONE_FLAG: { //write gas detector alarm ringtone
- 
-				if (ESPUI.getControl(gas_alarm_ringtone_selector)->value.toInt() >= 0) {
 
-					uint8_t gas_detector_payload[10];
-					uint16_t _tsn_number = random(0x0000, 0xFFFF);
-					
-        	gas_detector_payload[0] = (_tsn_number & 0xFF00) >> 8;
-        	gas_detector_payload[1] = (_tsn_number & 0x00FF);
-					gas_detector_payload[2] = TUYA_GAS_DETECTOR_RINGTONE_DP;
-					gas_detector_payload[3] = 0x04; //ENUM
-					gas_detector_payload[4] = 0x00;
-					gas_detector_payload[5] = 0x01;
-					gas_detector_payload[6] = ESPUI.getControl(gas_alarm_ringtone_selector)->value.toInt();
+				int16_t gas_alarm_ringtone = 
+					ESPUI.getControl(gas_alarm_ringtone_selector)->value.toInt();
+				
+				if (gas_alarm_ringtone >= 0) {
 
-					Tuya_custom_cmd_dp = TUYA_GAS_DETECTOR_RINGTONE_DP;
 					current_Tuya_payload_label = gas_alarm_Tuya_payload_label;
+					
+					if (sendTuyaRequestCmdEnum8(&zbGateway, 
+																			&device, 
+																			TUYA_GAS_DETECTOR_RINGTONE_DP,
+																			gas_alarm_ringtone, 
+																			CUSTOM_CMD_SYNC))
 
-					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, gas_detector_payload, true))
-					updateLabel_P(gas_alarm_info_label, PSTR("New ringtone sent"));
-				else
-					updateLabel_P(gas_alarm_info_label, device_query_failed_str);
+						updateLabel_P(gas_alarm_info_label, PSTR("New ringtone sent"));
+					else
+					
+						updateLabel_P(gas_alarm_info_label, device_query_failed_str);
 				} else
+					
 					updateLabel_P(gas_alarm_info_label, PSTR("Select ringtone to send."));
 			} break;
 
 			case GUI_CB_SEND_TIME_FLAG: { //write gas detector alarm duration
 
-				if (ESPUI.getControl(gas_alarm_time_number)->value.toInt() >= 0) {
+				int32_t gas_alarm_time = 
+					ESPUI.getControl(gas_alarm_time_number)->value.toInt();
+				
+				if (gas_alarm_time >= 0) {
 
-					uint8_t gas_detector_payload[10];
-					uint16_t _tsn_number = random(0x0000, 0xFFFF);
-
-        	gas_detector_payload[0] = (_tsn_number & 0xFF00) >> 8;
-        	gas_detector_payload[1] = (_tsn_number & 0x00FF);
-					gas_detector_payload[2] = TUYA_GAS_DETECTOR_ALARM_TIME_DP;
-					gas_detector_payload[3] = 0x02; //VALUE
-					gas_detector_payload[4] = 0x00;
-					gas_detector_payload[5] = 0x04;
-					gas_detector_payload[6] = 0x00;
-					gas_detector_payload[7] = 0x00;
-					gas_detector_payload[8] = 0x00;
-					gas_detector_payload[9] = ESPUI.getControl(gas_alarm_time_number)->value.toInt();
-
-					Tuya_custom_cmd_dp = TUYA_GAS_DETECTOR_ALARM_TIME_DP;
 					current_Tuya_payload_label = gas_alarm_Tuya_payload_label;
+					
+					if (sendTuyaRequestCmdValue32(&zbGateway, 
+																				&device, 
+																				TUYA_GAS_DETECTOR_ALARM_TIME_DP,
+																				gas_alarm_time, 
+																				CUSTOM_CMD_SYNC))
 
-					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, gas_detector_payload, true))
 					updateLabel_P(gas_alarm_info_label, PSTR("New alarm time sent"));
 				else
+
 					updateLabel_P(gas_alarm_info_label, device_query_failed_str);
 				} else
+					
 					updateLabel_P(gas_alarm_info_label, PSTR("Enter alarm duration to send."));
 			} break;
 
 			case GUI_CB_SELF_TEST_FLAG: { //gas detector self test cmd
 
-				uint8_t gas_detector_payload[10];
-
-				uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        gas_detector_payload[0] = (_tsn_number & 0xFF00) >> 8;
-        gas_detector_payload[1] = (_tsn_number & 0x00FF);
-				gas_detector_payload[2] = TUYA_GAS_DETECTOR_SELF_TEST_DP;
-				gas_detector_payload[3] = 0x01; //BOOL
-				gas_detector_payload[4] = 0x00;
-				gas_detector_payload[5] = 0x01;
-				gas_detector_payload[6] = 0x01; //ON
-
-				Tuya_custom_cmd_dp = TUYA_GAS_DETECTOR_SELF_TEST_RESULT_DP;
 				current_Tuya_payload_label = gas_alarm_Tuya_payload_label;
 
-				if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, gas_detector_payload, true))
+				if (sendTuyaRequestCmdBool(&zbGateway, 
+																			&device, 
+																			TUYA_GAS_DETECTOR_SELF_TEST_RESULT_DP,
+																			true, //ON
+																			CUSTOM_CMD_SYNC))
+
 					updateLabel_P(gas_alarm_info_label, PSTR("Self-test command sent"));
 				else
+
 					updateLabel_P(gas_alarm_info_label, device_query_failed_str);
 
 			} break;
 
 			case GUI_CB_SILENCE_FLAG: { //gas detector silence cmd
 
-				uint8_t gas_detector_payload[10];
-
-				uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        gas_detector_payload[0] = (_tsn_number & 0xFF00) >> 8;
-        gas_detector_payload[1] = (_tsn_number & 0x00FF);
-				gas_detector_payload[2] = TUYA_GAS_DETECTOR_SILENCE_DP;
-				gas_detector_payload[3] = 0x01; //BOOL
-				gas_detector_payload[4] = 0x00;
-				gas_detector_payload[5] = 0x01;
-				gas_detector_payload[6] = 0x01; //ON
-
-				Tuya_custom_cmd_dp = TUYA_GAS_DETECTOR_SILENCE_DP;
 				current_Tuya_payload_label = gas_alarm_Tuya_payload_label;
 
-				if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, gas_detector_payload, true))
+				if (sendTuyaRequestCmdBool(&zbGateway, 
+																			&device, 
+																			TUYA_GAS_DETECTOR_SILENCE_DP,
+																			true, //ON
+																			CUSTOM_CMD_SYNC))
+
 					updateLabel_P(gas_alarm_info_label, PSTR("Silence command sent"));
 				else
-					updateLabel_P(gas_alarm_info_label, device_query_failed_str);
 
+					updateLabel_P(gas_alarm_info_label, device_query_failed_str);
 			} break;
+
 
 			case GUI_CB_SEND_MELODY_FLAG: { //send moes alarm melody
  
-				if (ESPUI.getControl(moes_alarm_melody_selector)->value.toInt() >= 0) {
+				int16_t moes_alarm_melody = 
+					ESPUI.getControl(moes_alarm_melody_selector)->value.toInt();
+				
+				if (moes_alarm_melody >= 0) {
 
-					uint8_t moes_alarm_payload[10];
-					uint16_t _tsn_number = random(0x0000, 0xFFFF);
-					
-        	moes_alarm_payload[0] = (_tsn_number & 0xFF00) >> 8;
-        	moes_alarm_payload[1] = (_tsn_number & 0x00FF);
-					moes_alarm_payload[2] = MOES_ALARM_MELODY_DP;
-					moes_alarm_payload[3] = 0x04; //ENUM
-					moes_alarm_payload[4] = 0x00;
-					moes_alarm_payload[5] = 0x01;
-					moes_alarm_payload[6] = ESPUI.getControl(moes_alarm_melody_selector)->value.toInt();
-
-					Tuya_custom_cmd_dp = MOES_ALARM_MELODY_DP;
 					current_Tuya_payload_label = moes_alarm_Tuya_payload_label;
+					
+					if (sendTuyaRequestCmdEnum8(&zbGateway, 
+																			&device, 
+																			MOES_ALARM_MELODY_DP,
+																			moes_alarm_melody, 
+																			CUSTOM_CMD_SYNC))
 
-					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, moes_alarm_payload, true))
-					updateLabel_P(moes_alarm_info_label, PSTR("New melody sent"));
-				else
-					updateLabel_P(moes_alarm_info_label, device_query_failed_str);
+						updateLabel_P(moes_alarm_info_label, PSTR("New melody sent"));
+					else
+					
+						updateLabel_P(moes_alarm_info_label, device_query_failed_str);
 				} else
+						
 					updateLabel_P(moes_alarm_info_label, PSTR("Select melody to send."));
 			} break;
 
-			case GUI_CB_SEND_VOLUME_FLAG: { //send moes alarm melody
- 
-				if (ESPUI.getControl(moes_alarm_volume_number)->value.toInt() >= 0) {
 
-					uint8_t moes_alarm_payload[10];
-					uint16_t _tsn_number = random(0x0000, 0xFFFF);
-					
-        	moes_alarm_payload[0] = (_tsn_number & 0xFF00) >> 8;
-        	moes_alarm_payload[1] = (_tsn_number & 0x00FF);
-					moes_alarm_payload[2] = MOES_ALARM_VOLUME_DP;
-					moes_alarm_payload[3] = 0x04; //ENUM
-					moes_alarm_payload[4] = 0x00;
-					moes_alarm_payload[5] = 0x01;
-					moes_alarm_payload[6] = ESPUI.getControl(moes_alarm_volume_number)->value.toInt();
+			case GUI_CB_SEND_VOLUME_FLAG: { //send moes alarm volume
 
-					Tuya_custom_cmd_dp = MOES_ALARM_VOLUME_DP;
+				int16_t moes_alarm_volume = 
+					ESPUI.getControl(moes_alarm_volume_number)->value.toInt();
+				
+				if (moes_alarm_volume >= 0) {
+
 					current_Tuya_payload_label = moes_alarm_Tuya_payload_label;
+					
+					if (sendTuyaRequestCmdEnum8(&zbGateway, 
+																			&device, 
+																			MOES_ALARM_VOLUME_DP,
+																			moes_alarm_volume, 
+																			CUSTOM_CMD_SYNC))
 
-					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, moes_alarm_payload, true))
-					updateLabel_P(moes_alarm_info_label, PSTR("New volume sent"));
-				else
-					updateLabel_P(moes_alarm_info_label, device_query_failed_str);
+						updateLabel_P(moes_alarm_info_label, PSTR("New volume sent"));
+					else
+					
+						updateLabel_P(moes_alarm_info_label, device_query_failed_str);
 				} else
+					
 					updateLabel_P(moes_alarm_info_label, PSTR("Enter volume to send."));
 			} break;
 
 			case GUI_CB_SEND_DURATION_FLAG: { //send moes alarm duration
 
-				if (ESPUI.getControl(moes_alarm_duration_number)->value.toInt() >= 0) {
+				int32_t moes_alarm_duration = 
+					ESPUI.getControl(moes_alarm_duration_number)->value.toInt();
+				
+				if (moes_alarm_duration >= 0) {
 
-					uint8_t moes_alarm_payload[10];
-					uint16_t _tsn_number = random(0x0000, 0xFFFF);
-
-					uint16_t alarm_duration = ESPUI.getControl(moes_alarm_duration_number)->value.toInt();
-
-        	moes_alarm_payload[0] = (_tsn_number & 0xFF00) >> 8;
-        	moes_alarm_payload[1] = (_tsn_number & 0x00FF);
-					moes_alarm_payload[2] = MOES_ALARM_DURATION_DP;
-					moes_alarm_payload[3] = 0x02; //VALUE
-					moes_alarm_payload[4] = 0x00;
-					moes_alarm_payload[5] = 0x04;
-					moes_alarm_payload[6] = 0x00;
-					moes_alarm_payload[7] = 0x00;
-					moes_alarm_payload[8] = (alarm_duration & 0xFF00) >> 8;
-					moes_alarm_payload[9] = (alarm_duration & 0x00FF);
-
-					Tuya_custom_cmd_dp = MOES_ALARM_DURATION_DP;
 					current_Tuya_payload_label = moes_alarm_Tuya_payload_label;
+					
+					if (sendTuyaRequestCmdValue32(&zbGateway, 
+																				&device, 
+																				MOES_ALARM_DURATION_DP,
+																				moes_alarm_duration, 
+																				CUSTOM_CMD_SYNC))
 
-					if (zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, moes_alarm_payload, true))
 					updateLabel_P(moes_alarm_info_label, PSTR("New alarm duration sent"));
-				else
-					updateLabel_P(moes_alarm_info_label, device_query_failed_str);
+					else
+						
+						updateLabel_P(moes_alarm_info_label, device_query_failed_str);
 				} else
+					
 					updateLabel_P(moes_alarm_info_label, PSTR("Enter alarm duration to send."));
 			} break; 
 		}

@@ -120,6 +120,13 @@
 #define MOES_ALARM_SWITCH_DP                                        0x0D //13 BOOL
 #define MOES_ALARM_VOLUME_DP                                        0x05// ENUM 0,1,2
 
+#define MOES_ALARM_MELODY_FIRST_MELODY                              0x01
+#define MOES_ALARM_MELODY_LAST_MELODY                               0x12
+#define MOES_ALARM_VOLUME_LOWEST                                    0x00
+#define MOES_ALARM_VOLUME_HIGHEST                                   0x02
+#define MOES_ALARM_MELODY_MIN_DURATION                              0x0000
+#define MOES_ALARM_MELODY_MAX_DURATION                              0x0708 //1800 s
+
 #define MOES_SHADES_DRIVE_MOTOR_STATE_DP                            0x01 //ENUM OPEN(0) STOP (1) CLOSE(2)
 #define MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP  0x03
 #define MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP             0x02
@@ -233,25 +240,29 @@ inline void makeTuyaDPEnum8(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t 
   Tuya_dp_zcl_payload.dp_value_8             =  value_8;
 }
 
-void sendTuyaRequestCmdBool(ZigbeeGateway *gateway, 
+bool sendTuyaRequestCmdBool(ZigbeeGateway *gateway, 
                             zbg_device_params_t *device, 
                             uint8_t dp_id, 
-                            bool dp_value);
+                            bool dp_value,
+                            bool cmd_sync = CUSTOM_CMD_ASYNC);
 
-void sendTuyaRequestCmdEnum8(ZigbeeGateway *gateway, 
+bool sendTuyaRequestCmdEnum8(ZigbeeGateway *gateway, 
                              zbg_device_params_t *device, 
                              uint8_t dp_id, 
-                             uint8_t dp_value);
+                             uint8_t dp_value,
+                             bool cmd_sync = CUSTOM_CMD_ASYNC);
 
-void sendTuyaRequestCmdValue32(ZigbeeGateway *gateway, 
+bool sendTuyaRequestCmdValue32(ZigbeeGateway *gateway, 
                                zbg_device_params_t *device,
                                uint8_t dp_id, 
-                               uint32_t dp_value);
+                               uint32_t dp_value,
+                               bool cmd_sync = CUSTOM_CMD_ASYNC);
 
-void sendTuyaRequestCmdData(ZigbeeGateway *gateway, 
+bool sendTuyaRequestCmdData(ZigbeeGateway *gateway, 
                             zbg_device_params_t *device,
                             uint8_t dp_id,
                             uint8_t dp_type, 
-                            uint32_t dp_value);
+                            uint32_t dp_value,
+                            bool cmd_sync = CUSTOM_CMD_ASYNC);
 
 #endif //TUYA_DATAPOINTS_H_

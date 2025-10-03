@@ -1157,6 +1157,13 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
 		.zigbee_attribute_name = "HUMIDITY CALIBRATION [-50°C..50°C/0.1°C/x100]" },
+
+	{ .zigbee_attribute_id  = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "SWITCH MODE" },
+
+		
 };
 	 
 
@@ -1330,6 +1337,18 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
 		.zigbee_attribute_value_name = "FAHRENHEIT",
 		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "CONTROL RELAY",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "DECOUPLED",
+		.zigbee_attribute_value = 0x00
 	}
 };
 

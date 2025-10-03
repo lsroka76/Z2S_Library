@@ -131,6 +131,7 @@
 #define Z2S_DEVICE_DESC_RELAY_1                             0x4001
 
 #define Z2S_DEVICE_DESC_LUMI_SWITCH                         0x4010
+#define Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH                  0x4011
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY                          0x4020
 
@@ -388,6 +389,16 @@
 #define PHILIPS_HUE_DIMMER_SWITCH_OFF_HOLD_SID              0x0D
 #define PHILIPS_HUE_DIMMER_SWITCH_OFF_PRESS_RELEASE_SID     0x0E
 #define PHILIPS_HUE_DIMMER_SWITCH_OFF_HOLD_RELEASE_SID      0x0F
+
+#define LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID                 0x00
+#define LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID          0x01
+#define LUMI_DOUBLE_SWITCH_RIGTH_PRESSED_SID                0x02
+#define LUMI_DOUBLE_SWITCH_RIGHT_DOUBLE_PRESSED_SID         0x03
+#define LUMI_DOUBLE_SWITCH_BOTH_PRESSED_SID                 0x04
+#define LUMI_DOUBLE_SWITCH_BOTH_DOUBLE_PRESSED_SID          0x05
+//#define LUMI_DOUBLE_SWITCH_CHANGE_MODE_SID                  0x06
+#define LUMI_DOUBLE_SWITCH_LEFT_SWITCH_SID                  0x07
+#define LUMI_DOUBLE_SWITCH_RIGHT_SWITCH_SID                 0x08
 
 #define LUMI_MOTION_SENSOR_OCCUPANCY_SID                    0x00
 #define LUMI_MOTION_SENSOR_ILLUMINANCE_SID                  0x01
@@ -851,6 +862,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT,
+                             LUMI_CUSTOM_CLUSTER }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT,
                              LUMI_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F,
@@ -1933,6 +1951,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 11200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SWITCH,
 	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "LUMI", .model_name = "lumi.switch.l2aeu1",
+    .z2s_device_uid = 11205,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+     .z2s_device_endpoints = {{ 1, Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH },
+                              { 2, Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH }}},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI control outlet",
     .z2s_device_uid = 11300,

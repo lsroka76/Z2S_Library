@@ -94,16 +94,13 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[] = { 00, 00, MOES_ALARM_SWITCH_DP, TUYA_DP_TYPE_BOOL, 00, 01, 01};
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
-
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD, false);
-
         state = true;
+
+        sendTuyaRequestCmdBool(_gateway, 
+                               &_device, 
+                               MOES_ALARM_SWITCH_DP,
+                               state);
+      
         channel.setNewValue(state);
 
       } break;
@@ -112,28 +109,13 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[] = { 00, 00, MOES_ALARM_DURATION_DP, TUYA_DP_TYPE_VALUE, 00, 04, 00, 00, 00, 00 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[1] = (_tsn_number & 0x00FF);
-
-        if (_z2s_function_value_U32 < UINT32_MAX) {
-
-          if (_z2s_function_value_U32 <= 1790) 
-            _z2s_function_value_U32 += 10; //+10 seconds
-          else
-            _z2s_function_value_U32 = 1800;
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[8] = (_z2s_function_value_U32 & 0xFF00) >> 8;
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[9] = (_z2s_function_value_U32 & 0x00FF);
-
-        } else
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[9] = 0;
-        
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD, false);
-
         state = false;
+
+        sendTuyaRequestCmdValue32(_gateway, 
+                                &_device, 
+                                MOES_ALARM_DURATION_DP, 
+                                Z2S_incValueU32(MOES_ALARM_MELODY_MIN_DURATION, 
+                                                MOES_ALARM_MELODY_MAX_DURATION));
         channel.setNewValue(state);
 
       } break;
@@ -142,58 +124,29 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[] = { 00, 00, MOES_ALARM_MELODY_DP, TUYA_DP_TYPE_ENUM, 00, 01, 01 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[1] = (_tsn_number & 0x00FF);
-
-        if (_z2s_function_value_U8 < UINT8_MAX) {
-
-          if (_z2s_function_value_U8 <= 18) 
-            _z2s_function_value_U8 += 1; //up
-          else
-            _z2s_function_value_U8 = 18;
-
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[6] = _z2s_function_value_U8;
-
-        } else
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[6] = 1;
-        
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD, false);
-
         state = false;
-        channel.setNewValue(state);
 
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                MOES_ALARM_MELODY_DP, 
+                                Z2S_incValueU8(MOES_ALARM_MELODY_FIRST_MELODY, 
+                                               MOES_ALARM_MELODY_LAST_MELODY));
+
+        channel.setNewValue(state);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[] = { 00, 00, MOES_ALARM_VOLUME_DP, TUYA_DP_TYPE_ENUM, 00, 01, 00 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[1] = (_tsn_number & 0x00FF);
-
-        if (_z2s_function_value_U8 < UINT8_MAX) {
-
-          if (_z2s_function_value_U8 < 2) 
-            _z2s_function_value_U8 += 1; //up
-          else
-            _z2s_function_value_U8 = 2;
-
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[6] = _z2s_function_value_U8;
-
-        } else
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[6] = 0;
-        
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD, false);
-
         state = false;
+        
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                MOES_ALARM_MELODY_DP, 
+                                Z2S_incValueU8(MOES_ALARM_VOLUME_LOWEST, 
+                                               MOES_ALARM_VOLUME_HIGHEST));
+        
         channel.setNewValue(state);
 
       } break;
@@ -204,7 +157,10 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
         state = true;
 
-        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, state ? 1 : 0);
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
+                                state ? 1 : 0);
         
         channel.setNewValue(state);
       } break;
@@ -215,7 +171,10 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
         state = true;
 
-        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, state ? 1 : 0); //automatic = local mode = 1
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
+                                state ? 1 : 0); //automatic = local mode = 1
         
         channel.setNewValue(state);
       } break;
@@ -224,24 +183,14 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[] = { 00, 00, GIEX_WATER_VALVE_STATE_DP, TUYA_DP_TYPE_BOOL, 00, 01, 01};
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
-
-        _gateway->sendCustomClusterCmd(&_device, 
-                                       TUYA_PRIVATE_CLUSTER_EF00, 
-                                       TUYA_REQUEST_CMD, 
-                                       ESP_ZB_ZCL_ATTR_TYPE_SET, 
-                                       sizeof(Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD), 
-                                       Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD, 
-                                       false);
-
         state = true;
-        channel.setNewValue(state);
 
+        sendTuyaRequestCmdBool(_gateway, 
+                               &_device, 
+                               GIEX_WATER_VALVE_STATE_DP, 
+                               state);
+        
+        channel.setNewValue(state);
       } break;
 
       case Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM: {
@@ -272,8 +221,13 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
           _z2s_function_data[9] = (_z2s_function_value_U32 & 0xFF00) >> 8;
           _z2s_function_data[10] = _z2s_function_value_U32 & 0xFF;
 		
-          _gateway->sendAttributeWrite(&_device, SONOFF_CUSTOM_CLUSTER, attribute_id, 
-																	  	 ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, _z2s_function_data, true);
+          _gateway->sendAttributeWrite(&_device, 
+                                       SONOFF_CUSTOM_CLUSTER, 
+                                       attribute_id, 
+																	  	 ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 
+                                       11, 
+                                       _z2s_function_data, 
+                                       true);
         }
         state = false;
         channel.setNewValue(state);
@@ -327,96 +281,53 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[] = { 00, 00, 0x0D, 01, 00, 01, 00};
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
-
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH_CMD, false);
-
         state = false;
+
+        sendTuyaRequestCmdBool(_gateway, 
+                               &_device, 
+                               MOES_ALARM_SWITCH_DP,
+                               state);
+
         channel.setNewValue(state);
 
       } break;
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[] = { 00, 00, 07, 02, 00, 04, 00, 00, 00, 00 };
+        state = false;
 
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
+        sendTuyaRequestCmdValue32(_gateway, 
+                                &_device, 
+                                MOES_ALARM_DURATION_DP, 
+                                Z2S_decValueU32(MOES_ALARM_MELODY_MIN_DURATION, 
+                                                MOES_ALARM_MELODY_MAX_DURATION));
 
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[1] = (_tsn_number & 0x00FF);
-
-        if (_z2s_function_value_U32 < UINT32_MAX) {
-
-          if (_z2s_function_value_U32 >= 10) 
-            _z2s_function_value_U32 -= 10; //-10 seconds
-          else
-            _z2s_function_value_U32 = 0;
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[8] = (_z2s_function_value_U32 & 0xFF00) >> 8;
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[9] = (_z2s_function_value_U32 & 0x00FF);
-
-        } else
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD[9] = 0;
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION_CMD, false);
-
+        channel.setNewValue(state);
       } break;
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[] = { 00, 00, 0x15, 04, 00, 01, 01 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[1] = (_tsn_number & 0x00FF);
-
-        if (_z2s_function_value_U8 < UINT8_MAX) {
-
-          if (_z2s_function_value_U8 > 1) 
-            _z2s_function_value_U8 -= 1; //down
-          else
-            _z2s_function_value_U8 = 1;
-
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[6] = _z2s_function_value_U8;
-
-        } else
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD[6] = 1;
-
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY_CMD, false);
-
         state = false;
-        channel.setNewValue(state);
 
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                MOES_ALARM_MELODY_DP, 
+                                Z2S_decValueU8(MOES_ALARM_MELODY_FIRST_MELODY, 
+                                               MOES_ALARM_MELODY_LAST_MELODY));
+
+        channel.setNewValue(state);
       } break;
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME: {
-
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[] = { 00, 00, 05, 04, 00, 01, 00 };
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[1] = (_tsn_number & 0x00FF);
-
-        if (_z2s_function_value_U8 < UINT8_MAX) {
-
-          if (_z2s_function_value_U8 > 0) 
-            _z2s_function_value_U8 -= 1; //down
-          else
-            _z2s_function_value_U8 = 0;
-
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[6] = _z2s_function_value_U8;
-
-        } else
-          Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD[6] = 0;
         
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME_CMD, false);
-
         state = false;
+        
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                MOES_ALARM_MELODY_DP, 
+                                Z2S_decValueU8(MOES_ALARM_VOLUME_LOWEST, 
+                                               MOES_ALARM_VOLUME_HIGHEST));
+        
         channel.setNewValue(state);
 
       } break;
@@ -427,9 +338,10 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
         state = false;
 
-        Tuya_dp_zcl_payload_t Tuya_dp_zcl_payload;
-
-        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, state ? 1 : 0);
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
+                                state ? 1 : 0);
         
         channel.setNewValue(state);
       } break;
@@ -440,9 +352,10 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
         state = false;
 
-        Tuya_dp_zcl_payload_t Tuya_dp_zcl_payload;
-
-        sendTuyaRequestCmdEnum8(_gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, state ? 1 : 0);
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
+                                state ? 1 : 0);
         
         channel.setNewValue(state);
       } break;
@@ -451,16 +364,13 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 
-        uint8_t Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[] = { 00, 00, GIEX_WATER_VALVE_STATE_DP, TUYA_DP_TYPE_BOOL, 00, 01, 00};
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
-
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL_SWITCH_CMD, false);
-
         state = false;
+
+        sendTuyaRequestCmdBool(_gateway, 
+                               &_device, 
+                               GIEX_WATER_VALVE_STATE_DP, 
+                               state);
+        
         channel.setNewValue(state);
 
       } break;
@@ -474,7 +384,10 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
 
   if (_gateway && Zigbee.started()) {
     _fresh_start = false;
-    _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+    _gateway->sendAttributeRead(&_device, 
+                                ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                                ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, 
+                                false);
   }
 }
 
@@ -551,7 +464,7 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   Supla::Storage::ScheduleSave(5000);
 }
 
-void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS8(int32_t z2s_function_value_S8){
+void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS8(int32_t z2s_function_value_S8)v{
 
   _z2s_function_value_S8 = z2s_function_value_S8;
 }
@@ -561,7 +474,7 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU8(int32_t z2s_functi
   _z2s_function_value_U8 = z2s_function_value_U8;
 }
 
-void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS32(int32_t z2s_function_value_S32){ 
+void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS32(int32_t z2s_function_value_S32)v{ 
 
   _z2s_function_value_S32 = z2s_function_value_S32;
 }
@@ -570,6 +483,67 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU32(int32_t z2s_funct
 
   _z2s_function_value_U32 = z2s_function_value_U32;
 }
+
+uint8_t Supla::Control::Z2S_VirtualRelay::Z2S_decValueU8(uint8_t lower_limit, 
+                                                         uint8_t upper_limit,
+                                                         uint8_t step) {
+
+  if (_z2s_function_value_U8 < UINT8_MAX) {
+
+    _z2s_function_value_U8 = (_z2s_function_value_U8 >= (lower_limit + step)) ? 
+      (_z2s_function_value_U8 - step) : upper_limit;
+    
+    return  _z2s_function_value_U8;
+  }
+
+  return lower_limit;
+}
+
+uint8_t Supla::Control::Z2S_VirtualRelay::Z2S_incValueU8(uint8_t lower_limit, 
+                                                         uint8_t upper_limit
+                                                         uint8_t step) {
+
+  if (_z2s_function_value_U8 < UINT8_MAX) {
+
+    _z2s_function_value_U8 = (_z2s_function_value_U8 <= (upper_limit - step)) ?
+      _z2s_function_value_U8 + step : lower_limit;
+    
+    return _z2s_function_value_U8;
+  }
+
+  return lower_limit; 
+}
+
+uint32_t Supla::Control::Z2S_VirtualRelay::Z2S_decValueU32(uint32_t lower_limit, 
+                                                           uint32_t upper_limit, 
+                                                           uint32_t step) {
+
+  if (_z2s_function_value_U32 < UINT32_MAX) {
+
+    _z2s_function_value_U32 = (_z2s_function_value_U32 >= (lower_limit + step)) ? 
+      (_z2s_function_value_U32 - step) : upper_limit;
+    
+    return  _z2s_function_value_U32;
+  }
+
+  return lower_limit;
+}
+
+uint32_t Supla::Control::Z2S_VirtualRelay::Z2S_incValueU32(uint32_t lower_limit, 
+                                                           uint32_t upper_limit, 
+                                                           uint32_t step) {
+
+  if (_z2s_function_value_U32 < UINT32_MAX) {
+
+    _z2s_function_value_U32 = (_z2s_function_value_U32 <= (upper_limit - step)) ?
+      _z2s_function_value_U32 + step : lower_limit;
+    
+    return _z2s_function_value_U32;
+  }
+
+  return lower_limit; 
+}
+
 
 void Supla::Control::Z2S_VirtualRelay::setKeepAliveSecs(uint32_t keep_alive_secs) {
 

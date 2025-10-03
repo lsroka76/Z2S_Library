@@ -3685,7 +3685,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_RELAY:
       case Z2S_DEVICE_DESC_RELAY_1: 
-      case  :
+      case Z2S_DEVICE_DESC_LUMI_SWITCH:
       case Z2S_DEVICE_DESC_TUYA_RELAY:
 
         addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "POWER SWITCH", 
@@ -3821,18 +3821,42 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
         //char button_name_function[30];
         //sprintf(button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
-        addZ2SDeviceActionTrigger(device, 
-                                  first_free_slot, 
-                                  sub_id, 
-                                  name, 
-                                  SUPLA_CHANNELFNC_POWERSWITCH);
+        switch (sub_id) {
+
+
+          case LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID:
+          case LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID:
+          case LUMI_DOUBLE_SWITCH_RIGTH_PRESSED_SID:
+          case LUMI_DOUBLE_SWITCH_RIGHT_DOUBLE_PRESSED_SID:
+          case LUMI_DOUBLE_SWITCH_BOTH_PRESSED_SID:
+          case LUMI_DOUBLE_SWITCH_BOTH_DOUBLE_PRESSED_SID:
+            
+            addZ2SDeviceActionTrigger(device, 
+                                      first_free_slot, 
+                                      sub_id, 
+                                      name, 
+                                      SUPLA_CHANNELFNC_POWERSWITCH); break;
+
+
+          case LUMI_DOUBLE_SWITCH_LEFT_SWITCH_SID:
+          case LUMI_DOUBLE_SWITCH_RIGHT_SWITCH_SID:
+
+            addZ2SDeviceVirtualRelay(&zbGateway,
+                                     device, 
+                                     first_free_slot,
+                                     sub_id,
+                                     name,
+                                     SUPLA_CHANNELFNC_POWERSWITCH); break;
+        }        
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
       case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
 
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+        addZ2SDeviceActionTrigger(device, 
+                                  first_free_slot, 
+                                  sub_id, 
                                   "SINGLE", 
                                   SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
@@ -5377,6 +5401,14 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
       Z2S_addZ2SDevice(joined_device, 
                        LUMI_DOUBLE_SWITCH_BOTH_DOUBLE_PRESSED_SID,
                        "BOTH DOUBLE PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LUMI_DOUBLE_SWITCH_LEFT_SWITCH_SID,
+                       "LEFT SWITCH");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LUMI_DOUBLE_SWITCH_RIGHT_SWITCH_SID,
+                       "RIGHT SWITCH");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

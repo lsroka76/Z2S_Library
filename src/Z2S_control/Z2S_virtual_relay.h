@@ -50,8 +50,12 @@
 namespace Supla {
 namespace Control {
 class Z2S_VirtualRelay : public Relay {
+
  public:
-  Z2S_VirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
+  
+  Z2S_VirtualRelay(ZigbeeGateway *gateway, 
+                   zbg_device_params_t *device,
+                   uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
 
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;
@@ -76,6 +80,14 @@ class Z2S_VirtualRelay : public Relay {
   uint32_t getTimeoutSecs();
 
  protected:
+
+  uint8_t Z2S_decValueU8(uint8_t lower_limit, uint8_t upper_limit, uint8_t step = 1);
+  uint8_t Z2S_incValueU8(uint8_t lower_limit, uint8_t upper_limit, uint8_t step = 1);
+
+  uint32_t Z2S_decValueU32(uint32_t lower_limit, uint32_t upper_limit, uint32_t step);
+  uint32_t Z2S_incValueU32(uint32_t lower_limit, uint32_t upper_limit, uint32_t step);
+
+
   bool state = false;
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;

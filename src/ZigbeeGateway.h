@@ -89,7 +89,7 @@
 #define LUMI_CUSTOM_CLUSTER_DISPLAY_UNIT_ID                   0x0114 //U8
 #define LUMI_CUSTOM_CLUSTER_AIR_QUALITY_ID                    0x0129 //U8
 
-#define LUMI_CUSTOM_CLUSTER_MODE_ID                           0x0009 //U8
+#define LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID                  0x0200 //U8
 
 #define LUMI_ATTRIBUTE_BATTERY_ID                             0x01 //ESP_ZB_ZCL_ATTR_TYPE_U16
 #define LUMI_ATTRIBUTE_TEMPERATURE_ID                         0x64 //ESP_ZB_ZCL_ATTR_TYPE_S16
@@ -105,6 +105,9 @@
 #define DEVELCO_CUSTOM_CLUSTER_MIN_MEASURED_VALUE_ID          0x0001
 #define DEVELCO_CUSTOM_CLUSTER_MAX_MEASURED_VALUE_ID          0x0002
 #define DEVELCO_CUSTOM_CLUSTER_RESOLUTION_ID                  0x0003
+
+#define CUSTOM_CMD_SYNC                                       true
+#define CUSTOM_CMD_ASYNC                                      false
 
 #define ZCL_CMD_TSN_UNKNOWN 0x00
 #define ZCL_CMD_TSN_SYNC    0x01
