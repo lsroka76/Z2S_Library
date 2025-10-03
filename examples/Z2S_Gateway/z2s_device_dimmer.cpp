@@ -36,6 +36,7 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device, in
         case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
         case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
         case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
+        case Z2S_DEVICE_DESC_LED_DIMMER:
 
           dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER; break;
 
@@ -117,6 +118,7 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway, zbg_device_params_t *device,
     case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
     case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
     case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
+    case Z2S_DEVICE_DESC_LED_DIMMER:
 
       channel_element = new Supla::Control::Z2S_DimmerInterface(gateway, device, sub_id); break;
   }
