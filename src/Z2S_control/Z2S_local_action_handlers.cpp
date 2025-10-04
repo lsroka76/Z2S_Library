@@ -38,86 +38,80 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
   bool logic_operation_result = false;
 
+  bool pins_changed = false;
+
   switch (action) {
 
     case TURN_ON: {
       
       if (_pin_a == 0) {
-        _pin_a = 1;
-      } else {
-      if (_pin_b == 0)
-        _pin_b = 1;
-      }
-
-      log_i("TURN ON _pin_a %u, _pin_b %u, _pin_logic_operator %u", 
-        _pin_a, _pin_b, _pin_logic_operator);
-
-      switch (_pin_logic_operator) {
-
-
-        case PIN_LOGIC_OPERATOR_AND:
-
-          logic_operation_result = (_pin_a && _pin_b); break;
-
-
-        case PIN_LOGIC_OPERATOR_OR:
-
-          logic_operation_result = (_pin_a || _pin_b); break;
-
-
-        case PIN_LOGIC_OPERATOR_XOR:
-
-          logic_operation_result = (_pin_a != _pin_b); break;
-
         
-        case PIN_LOGIC_OPERATOR_NOT:
+        _pin_a = 1;
+        pins_changed = true;
+      } else {
 
-          runAction(ON_TURN_OFF); break;
+        if (_pin_b == 0) {
+
+          _pin_b = 1;
+          pins_changed = true;
+        }
       }
-      log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
-      if (logic_operation_result)
-        runAction(ON_TURN_ON);
+
+      log_i("TURN_ON _pin_a %u, _pin_b %u, _pin_logic_operator %u, pins_changed %s", 
+            _pin_a, _pin_b, _pin_logic_operator, pins_changed ? "TRUE" : "FALSE");
     } break;
 
     case TURN_OFF: {
 
-      if (_pin_a == 1)
+      if (_pin_a == 1) {
+
         _pin_a = 0;
-      else
-      if (_pin_b == 1)
-        _pin_b = 0;
-      
-      log_i("TURN OFF _pin_a %u, _pin_b %u, _pin_logic_operator %u", 
-        _pin_a, _trigger_value, _pin_logic_operator);
+        pins_changed = true;
+      } else {
 
+        if (_pin_b == 1) {
 
-      switch (_pin_logic_operator) {
-
-
-        case PIN_LOGIC_OPERATOR_AND:
-
-          logic_operation_result = !(_pin_a && _pin_b); break;
-
-
-        case PIN_LOGIC_OPERATOR_OR:
-
-          logic_operation_result = !(_pin_a || _pin_b); break;
-
-
-        case PIN_LOGIC_OPERATOR_XOR:
-
-          logic_operation_result = !(_pin_a != _pin_b); break;
-
-        
-        case PIN_LOGIC_OPERATOR_NOT:
-
-          runAction(ON_TURN_ON); break;
+          _pin_b = 0;
+          pins_changed = true;
+        }
       }
-      log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
-      if (logic_operation_result)
-        runAction(ON_TURN_OFF);
+      log_i("TURN_OFF _pin_a %u, _pin_b %u, _pin_logic_operator %u, pins_changed %s", 
+            _pin_a, _pin_b, _pin_logic_operator, pins_changed ? "TRUE" : "FALSE");
     } break;
-  } 
+  }
+  
+  if  (pins_changed == false)
+    return;
+
+  switch (_pin_logic_operator) {
+
+
+    case PIN_LOGIC_OPERATOR_AND:
+
+      logic_operation_result = _pin_a && _pin_b; break;
+
+
+    case PIN_LOGIC_OPERATOR_OR:
+
+      logic_operation_result = _pin_a || _pin_b; break;
+
+
+    case PIN_LOGIC_OPERATOR_XOR:
+
+      logic_operation_result = _pin_a ^ _pin_b; break;
+
+    
+    case PIN_LOGIC_OPERATOR_NOT:
+
+      logic_operation_result = !_pin_a; break;
+  }
+  
+  log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
+  
+  if (logic_operation_result)
+    runAction(ON_TURN_ON);
+  else       
+   runAction(ON_TURN_OFF);
 }
 
 /*void LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(_actionhandler_callback actionhandler_callback)
