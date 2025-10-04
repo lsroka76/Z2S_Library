@@ -33,11 +33,11 @@ bool addZ2SDeviceLocalActionHandler() {
   z2s_channels_table[first_free_slot].Supla_channel_type = 0x0000;
 
   z2s_channels_table[first_free_slot].sub_id = 0; 
-  strcpy(z2s_channels_table[first_free_slot].Supla_channel_name, "LOCAL ACTION  HANDLER");
+  strcpy(z2s_channels_table[first_free_slot].Supla_channel_name, "LOCAL ACTION HANDLER");
   z2s_channels_table[first_free_slot].Supla_channel_func = 0;
 
-  z2s_channels_table[first_free_slot].local_action_handler_data.Supla_element =
-    new Supla::LocalActionHandlerWithTrigger(2);
+  z2s_channels_table[first_free_slot].local_action_handler_data.Supla_element = nullptr;
+  Z2S_saveChannelsTable();
 }
 
 

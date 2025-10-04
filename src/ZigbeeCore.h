@@ -2,8 +2,8 @@
 
 #pragma once
 
-  #include "soc/soc_caps.h"
-  #include "sdkconfig.h"
+ #include "soc/soc_caps.h"
+#include "sdkconfig.h"
 //#if SOC_IEEE802154_SUPPORTED 
 //&& CONFIG_ZB_ENABLED
 #if CONFIG_ZB_ENABLED

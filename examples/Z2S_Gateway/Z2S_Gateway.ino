@@ -141,7 +141,7 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
 
 
 void supla_callback_bridge(int event, int action) {
-  log_i("supla_callback_bridge - event(0x%x), action(0x%x)", event, action);
+  log_i("event(0x%x), action(0x%x)", event, action);
   switch (action) {
     case 0x4000: {
       

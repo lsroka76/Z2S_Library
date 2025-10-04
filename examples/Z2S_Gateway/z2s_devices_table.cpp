@@ -84,7 +84,7 @@ uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot) {
           (z2s_channels_table[channels_counter].Supla_channel >= 0x80))
         local_action_handlers_number++;
 
-  return 0x80 + local_action_handlers_number;
+  return (0x80 + local_action_handlers_number);
   
 }
 
@@ -4921,10 +4921,11 @@ void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode) {
 
   if (z2s_channels_table[channel_number_slot].Supla_channel_type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
 
-    z2s_channels_table[channel_number_slot].user_data_1 = rgb_mode;
+    z2s_channels_table[channel_number_slot].rgb_color_mode = rgb_mode;
 
     if (Z2S_saveChannelsTable()) {
-      log_i("Device(channel %d) RGB mode updated. Table saved successfully.", z2s_channels_table[channel_number_slot].Supla_channel);
+      log_i("Device(channel %d) RGB mode updated. Table saved successfully.", 
+            z2s_channels_table[channel_number_slot].Supla_channel);
       
       auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
