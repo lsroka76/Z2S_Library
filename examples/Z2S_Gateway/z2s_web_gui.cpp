@@ -306,6 +306,11 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_UPDATE_TIMEOUT_FLAG								0x4011
 #define GUI_CB_UPDATE_REFRESH_FLAG								0x4012
 
+#define GUI_CB_ADD_AND_HANDLER_FLAG								0x4050
+#define GUI_CB_ADD_OR_HANDLER_FLAG								0x4051
+#define GUI_CB_ADD_XOR_HANDLER_FLAG								0x4052
+#define GUI_CB_ADD_NOT_HANDLER_FLAG								0x4053
+
 #define GUI_CB_SAVE_PROGRAM_FLAG									0x5000
 #define GUI_CB_LOAD_PROGRAM_FLAG									0x5001
 #define GUI_CB_START_PROGRAM_FLAG									0x5002
@@ -334,6 +339,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_ACTION_SAVE_FLAG										0x9012
 #define GUI_CB_ACTION_CANCEL_FLAG									0x9013
 #define GUI_CB_ACTION_REMOVE_FLAG									0x9014
+
 
 
 
@@ -418,7 +424,7 @@ void valueCallback(Control *sender, int type);
 void valveCallback(Control *sender, int type, void *param);
 void TuyaCustomCmdCallback(Control *sender, int type, void *param);
 void actionsTableCallback(Control *sender, int type, void *param);
-void addLocalActionHandlerCallback(Control *sender, int type);
+void addLocalActionHandlerCallback(Control *sender, int type, void *param);
 void addLocalVirtualRelayCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
@@ -1453,16 +1459,46 @@ void buildChannelsTabGUI() {
 																					Control::Color::Alizarin, 
 																					remove_channel_button);
 
-	working_str = PSTR("Local action handler");
+	working_str = PSTR("Add AND gate");
 	auto lah_panel = ESPUI.addControl(Control::Type::Button, 
-								  								  PSTR("Add LAH (experimental!)"), 
+								  								  PSTR("Local logic components (experimental!)"), 
 									 									working_str, 
 									 									Control::Color::Emerald, 
 									 									channelstab, 
-									 									addLocalActionHandlerCallback);
+									 									addLocalActionHandlerCallback,
+																		(void*)GUI_CB_ADD_AND_HANDLER_FLAG);
 
+	working_str = PSTR("Add OR gate");
 	ESPUI.addControl(Control::Type::Button, 
-								   PSTR("Add VR (experimental!)"), 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalActionHandlerCallback,
+									 (void*)GUI_CB_ADD_OR_HANDLER_FLAG);
+
+	working_str = PSTR("Add XOR gate");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalActionHandlerCallback,
+									 (void*)GUI_CB_ADD_XOR_HANDLER_FLAG);
+
+	working_str = PSTR("Add NOT gate");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalActionHandlerCallback,
+									 (void*)GUI_CB_ADD_NOT_HANDLER_FLAG);
+
+
+	working_str = PSTR("Add virtual relay");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
 									 working_str, 
 									 Control::Color::Emerald, 
 									 lah_panel, 
@@ -2589,7 +2625,7 @@ void buildActionsTabGUI() {
 	for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
     if (z2s_channels_table[channels_counter].valid_record) {
       
-			working_str = channels_counter;
+			working_str = z2s_channels_table[channels_counter].Supla_channel; //channels_counter;
 			ESPUI.addControl(Control::Type::Option, z2s_channels_table[channels_counter].Supla_channel_name, working_str, 
 											 Control::Color::None, action_source_channel_selector);
 			ESPUI.addControl(Control::Type::Option, z2s_channels_table[channels_counter].Supla_channel_name, working_str, 
@@ -5426,11 +5462,42 @@ void TuyaDeviceSelectorCallback(Control *sender, int type) {
 		updateLabel_P(Tuya_device_info_label, three_dots_str);
 }
 
-void addLocalActionHandlerCallback(Control *sender, int type) {
+void addLocalActionHandlerCallback(Control *sender, int type, void *param) {
 
 	if (type == B_UP) {
 
-		if (addZ2SDeviceLocalActionHandler(1, 0))
+		uint8_t logic_operator = PIN_LOGIC_OPERATOR_NONE;
+
+		switch ((uint32_t)param) {
+
+
+			case GUI_CB_ADD_AND_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_AND;
+			break;
+
+
+			case GUI_CB_ADD_OR_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_OR;
+			break;
+
+
+			case GUI_CB_ADD_XOR_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_XOR;
+			break;
+
+
+			case GUI_CB_ADD_NOT_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_NOT;
+			break;
+		}
+
+		if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 
+																			 SUPLA_CHANNELFNC_NONE,
+																			 logic_operator))
 			rebuildChannelsSelector();
 	}
 }

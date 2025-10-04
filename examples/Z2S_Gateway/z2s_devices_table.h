@@ -136,6 +136,7 @@ typedef struct z2s_device_params_s {
     } smart_valve_data;
     struct {
       Supla::Element *Supla_element;
+      uint8_t logic_operator;
     } local_action_handler_data;
   };
   uint32_t user_data_3;

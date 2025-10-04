@@ -21,8 +21,11 @@
 using Supla::LocalActionHandlerWithTrigger;
 
 
-LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(uint8_t trigger_value) 
-  : _trigger_value(trigger_value) {};
+LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(uint8_t pin_logic_operator) 
+  : _pin_logic_operator(pin_logic_operator) {
+
+    log_i("_pin_logic_operator %u, pin_logic_operator %u", _pin_logic_operator, pin_logic_operator);
+  };
 
 LocalActionHandlerWithTrigger::~LocalActionHandlerWithTrigger() {};
 
@@ -30,30 +33,81 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
   //if (actionhandler_callback != nullptr)  actionhandler_callback(event, action);  
   log_i("event %u, action %u", event, action);
+  log_i("_trigger_counter %u, _trigger_value %u", 
+        _trigger_counter, _trigger_value);
+
+  bool logic_operation_result = false;
 
   switch (action) {
 
     case TURN_ON: {
       
-      if (_trigger_counter < UINT8_MAX) 
-        _trigger_counter++; 
-        
-      if (_trigger_counter >= _trigger_value) {
+      if (_pin_a == 0)
+        _pin_a = 1;
+      else
+      if (_pin_b == 0)
+        _pin_b = 1;
+      
+      switch (_pin_logic_operator) {
 
-        _trigger_counter = 0;
-        runAction(ON_TURN_ON);
+
+        case PIN_LOGIC_OPERATOR_AND:
+
+          logic_operation_result = (_pin_a && _pin_b); break;
+
+
+        case PIN_LOGIC_OPERATOR_OR:
+
+          logic_operation_result = (_pin_a || _pin_b); break;
+
+
+        case PIN_LOGIC_OPERATOR_XOR:
+
+          logic_operation_result = (_pin_a != _pin_b); break;
+
+        
+        case PIN_LOGIC_OPERATOR_NOT:
+
+          runAction(ON_TURN_OFF); break;
       }
+
+      if (logic_operation_result)
+        runAction(ON_TURN_ON);
     } break;
 
     case TURN_OFF: {
 
-      if (_trigger_counter > 0) {
+      if (_pin_a == 1)
+        _pin_a = 0;
+      else
+      if (_pin_b == 1)
+        _pin_b = 0;
+      
+      switch (_pin_logic_operator) {
 
-        _trigger_counter--;
 
-        if (_trigger_counter < _trigger_value)
-          runAction(ON_TURN_OFF);
+        case PIN_LOGIC_OPERATOR_AND:
+
+          logic_operation_result = !(_pin_a && _pin_b); break;
+
+
+        case PIN_LOGIC_OPERATOR_OR:
+
+          logic_operation_result = !(_pin_a || _pin_b); break;
+
+
+        case PIN_LOGIC_OPERATOR_XOR:
+
+          logic_operation_result = !(_pin_a != _pin_b); break;
+
+        
+        case PIN_LOGIC_OPERATOR_NOT:
+
+          runAction(ON_TURN_ON); break;
       }
+
+      if (logic_operation_result)
+        runAction(ON_TURN_OFF);
     } break;
   } 
 }

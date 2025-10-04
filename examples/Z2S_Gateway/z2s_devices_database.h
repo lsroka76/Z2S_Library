@@ -868,11 +868,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              LUMI_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH,
-    .z2s_device_clusters_count = 3,
+    .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT,
-                             LUMI_CUSTOM_CLUSTER }},
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+                            // ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT,
+                            // LUMI_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F,
     .z2s_device_clusters_count = 2,

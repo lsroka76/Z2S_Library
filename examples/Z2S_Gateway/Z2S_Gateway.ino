@@ -2148,6 +2148,7 @@ void loop() {
                 case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_SWITCH:
+                case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH:
                 case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO:
                 //case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {

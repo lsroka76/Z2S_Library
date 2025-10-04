@@ -5,10 +5,14 @@
 #include <supla/control/virtual_relay.h>
 #include <Z2S_control/Z2S_local_action_handlers.h>
 
+#define LOCAL_CHANNEL_TYPE_ACTION_HANDLER 0x01
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY  0x02
+
 void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot);
 
-bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type = 1, 
-                                    uint32_t local_channel_func = 0);
+bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type = LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 
+                                    uint32_t local_channel_func = SUPLA_CHANNELFNC_NONE,
+                                    uint8_t logic_operator = PIN_LOGIC_OPERATOR_NONE);
 
 
 #endif //Z2S_DEVICE_LOCAL_ACTION_HANDLERS_H_

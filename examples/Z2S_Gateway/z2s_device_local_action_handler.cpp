@@ -4,13 +4,18 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
 
   switch (z2s_channels_table[channel_number_slot].local_channel_type) {
 
-    case 1:
+    /*case 0:
+      z2s_channels_table[channel_number_slot].local_channel_type = 1;
+      z2s_channels_table[channel_number_slot].ZB_device_id = 0xFF;
+      Z2S_saveChannelsTable();*/
+    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER:
       
       z2s_channels_table[channel_number_slot].local_action_handler_data.Supla_element =
-        new Supla::LocalActionHandlerWithTrigger(2); 
+        new Supla::LocalActionHandlerWithTrigger(
+          z2s_channels_table[channel_number_slot].local_action_handler_data.logic_operator); 
     break;
 
-    case 2:
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY:
       
       uint8_t Supla_channel = z2s_channels_table[channel_number_slot].Supla_channel;
       auto Supla_VirtualRelay = new Supla::Control::VirtualRelay(); 
@@ -23,7 +28,8 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
 bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type, 
-                                    uint32_t local_channel_func) {
+                                    uint32_t local_channel_func,
+                                    uint8_t logic_operator) {
 
   uint8_t first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
@@ -45,18 +51,20 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
 
   switch(local_channel_type) {
 
-    case 1: {
+    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
 
       z2s_channels_table[first_free_slot].Supla_channel = 
         Z2S_findFirstFreeLocalActionHandlerId();
 
       strcpy(z2s_channels_table[first_free_slot].Supla_channel_name, "LOCAL ACTION HANDLER");
 
+      z2s_channels_table[first_free_slot].local_action_handler_data.logic_operator = logic_operator;
+
       z2s_channels_table[first_free_slot].local_action_handler_data.Supla_element = 
-        new Supla::LocalActionHandlerWithTrigger(2);   
+        new Supla::LocalActionHandlerWithTrigger(logic_operator);   
     } break;
 
-    case 2: {
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
 
       auto Supla_VirtualRelay = new Supla::Control::VirtualRelay(); 
 
@@ -78,6 +86,7 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
   z2s_channels_table[first_free_slot].Supla_channel_func = local_channel_func;
 
   //z2s_channels_table[first_free_slot].local_action_handler_data.Supla_element = nullptr;
+  z2s_channels_table[first_free_slot].ZB_device_id = 0xFF;
   
   return Z2S_saveChannelsTable();
 }
