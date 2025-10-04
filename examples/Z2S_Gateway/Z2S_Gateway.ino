@@ -1896,7 +1896,7 @@ void loop() {
                           
                     }
 
-                    Z2S_buildSuplaChannels(joined_device);
+                    Z2S_buildSuplaChannels(joined_device, endpoint_counter);
                   }          
                 }
               }

@@ -99,7 +99,7 @@ typedef struct z2s_device_params_s {
 
   bool valid_record;
   uint8_t extended_data_type;
-  uint8_t reserved_1;
+  uint8_t local_channel_type;
   uint8_t reserved_3;
   uint32_t model_id;
   esp_zb_ieee_addr_t ieee_addr;
@@ -628,7 +628,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
                          uint32_t func = 0,
                          char *unit = nullptr);
 
-void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device);
+void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
+                            uint8_t endpoint_counter);
 
 uint8_t Z2S_addZ2SZbDevice(char *manufacturer_name,
                            char *model_name,

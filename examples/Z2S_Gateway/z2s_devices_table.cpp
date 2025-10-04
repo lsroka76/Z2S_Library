@@ -3525,7 +3525,7 @@ void Z2S_rebuildZbDeviceSuplaChannels(uint8_t device_number_slot) {
     device.endpoint = endpoint_id;
     device.model_id = z2s_device_desc_id;
 
-    Z2S_buildSuplaChannels(&device);
+    Z2S_buildSuplaChannels(&device, endpoint_counter);
   }
 }
 
@@ -5270,7 +5270,8 @@ void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id, uint16_t pa
 }
 
 
-void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
+void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
+                            uint8_t endpoint_counter) {
 
   switch (joined_device->model_id) {
                       
@@ -5464,37 +5465,47 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device) {
     
     case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID,
-                       "LEFT PRESSED");
+      swittch (Endpoint_counter) {
 
-       Z2S_addZ2SDevice(joined_device, 
-                        LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID,
-                       "LEFT DOUBLE PRESSED");
+        case 0: {
 
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_DOUBLE_SWITCH_RIGTH_PRESSED_SID,
-                       "RIGHT PRESSED");
+          Z2S_addZ2SDevice(joined_device, 
+                           LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID,
+                           "LEFT PRESSED");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_DOUBLE_SWITCH_RIGHT_DOUBLE_PRESSED_SID,
-                       "RIGHT DOUBLE PRESSED");
+          Z2S_addZ2SDevice(joined_device, 
+                          LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID,
+                          "LEFT DOUBLE PRESSED");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_DOUBLE_SWITCH_BOTH_PRESSED_SID,
-                       "BOTH PRESSED");
+          Z2S_addZ2SDevice(joined_device, 
+                           LUMI_DOUBLE_SWITCH_BOTH_PRESSED_SID,
+                           "BOTH PRESSED");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_DOUBLE_SWITCH_BOTH_DOUBLE_PRESSED_SID,
-                       "BOTH DOUBLE PRESSED");
+          Z2S_addZ2SDevice(joined_device, 
+                           LUMI_DOUBLE_SWITCH_BOTH_DOUBLE_PRESSED_SID,
+                           "BOTH DOUBLE PRESSED");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_DOUBLE_SWITCH_LEFT_SWITCH_SID,
-                       "LEFT SWITCH");
+          Z2S_addZ2SDevice(joined_device, 
+                           LUMI_DOUBLE_SWITCH_LEFT_SWITCH_SID,
+                           "LEFT SWITCH");
+        } break;
 
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_DOUBLE_SWITCH_RIGHT_SWITCH_SID,
-                       "RIGHT SWITCH");
+        case 1: {
+
+          Z2S_addZ2SDevice(joined_device, 
+                           LUMI_DOUBLE_SWITCH_RIGHT_PRESSED_SID,
+                           "RIGHT PRESSED");
+
+          Z2S_addZ2SDevice(joined_device, 
+                          LUMI_DOUBLE_SWITCH_RIGHT_DOUBLE_PRESSED_SID,
+                          "RIGHT DOUBLE PRESSED");
+
+          Z2S_addZ2SDevice(joined_device, 
+                           LUMI_DOUBLE_SWITCH_RIGHT_SWITCH_SID,
+                           "RIGHT SWITCH");
+        } break;
+      }
+      
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

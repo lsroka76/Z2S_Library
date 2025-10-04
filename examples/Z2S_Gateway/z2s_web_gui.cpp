@@ -419,6 +419,7 @@ void valveCallback(Control *sender, int type, void *param);
 void TuyaCustomCmdCallback(Control *sender, int type, void *param);
 void actionsTableCallback(Control *sender, int type, void *param);
 void addLocalActionHandlerCallback(Control *sender, int type);
+void addLocalVirtualRelayCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
 
@@ -1453,12 +1454,19 @@ void buildChannelsTabGUI() {
 																					remove_channel_button);
 
 	working_str = PSTR("Local action handler");
+	auto lah_panel = ESPUI.addControl(Control::Type::Button, 
+								  								  PSTR("Add LAH (experimental!)"), 
+									 									working_str, 
+									 									Control::Color::Emerald, 
+									 									channelstab, 
+									 									addLocalActionHandlerCallback);
+
 	ESPUI.addControl(Control::Type::Button, 
-								   PSTR("Add LAH (experimental!)"), 
+								   PSTR("Add VR (experimental!)"), 
 									 working_str, 
 									 Control::Color::Emerald, 
-									 channelstab, 
-									 addLocalActionHandlerCallback);																				
+									 lah_panel, 
+									 addLocalVirtualRelayCallback);																					
 
 	enableChannelControls(false);
 }
@@ -5422,10 +5430,20 @@ void addLocalActionHandlerCallback(Control *sender, int type) {
 
 	if (type == B_UP) {
 
-		if (addZ2SDeviceLocalActionHandler())
+		if (addZ2SDeviceLocalActionHandler(1, 0))
 			rebuildChannelsSelector();
 	}
 }
+
+void addLocalVirtualRelayCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+
+		if (addZ2SDeviceLocalActionHandler(2, SUPLA_CHANNELFNC_POWERSWITCH))
+			rebuildChannelsSelector();
+	}
+}
+
 
 void GUI_onTuyaCustomClusterReceive(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data){
 
