@@ -40,9 +40,15 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
 
     case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
       
-      z2s_channels_table[channel_number_slot].local_action_handler_data.Supla_element =
+      auto Supla_LocalActionHandlerWithTrigger = 
         new Supla::LocalActionHandlerWithTrigger(
           z2s_channels_table[channel_number_slot].local_action_handler_data.logic_operator); 
+
+      z2s_channels_table[channel_number_slot].local_action_handler_data.Supla_element =
+        Supla_LocalActionHandlerWithTrigger;
+
+      Supla_LocalActionHandlerWithTrigger->setPostponedTurnOnSecs(  
+        z2s_channels_table[channel_number_slot].keep_alive_secs);
     } break;
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {

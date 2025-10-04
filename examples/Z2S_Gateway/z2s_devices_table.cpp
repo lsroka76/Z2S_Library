@@ -4804,9 +4804,20 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
   
   if (Z2S_saveChannelsTable()) {
+    
     log_i("Device(channel %d) timeout updated. Table saved successfully.", 
           z2s_channels_table[channel_number_slot].Supla_channel);
-      
+
+    if (z2s_channels_table[channel_number_slot].local_channel_type == 
+       LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
+
+      auto Supla_LocalActionHandlerWithTrigger = reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>
+        (z2s_channels_table[channel_number_slot].local_action_handler_data.Supla_element); 
+
+      Supla_LocalActionHandlerWithTrigger->setPostponedTurnOnSecs(timings_secs);
+      return;
+    } 
+
     auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
     if (element == nullptr)

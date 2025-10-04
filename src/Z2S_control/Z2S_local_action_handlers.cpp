@@ -108,14 +108,36 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   
   log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
   
-  if (logic_operation_result)
-    runAction(ON_TURN_ON);
-  else       
+  if (logic_operation_result) {
+
+    if (_postponed_turn_on_ms)
+      _pending_postponed_turn_on_ms = millis();
+    else
+      runAction(ON_TURN_ON);
+  }
+  else {
+
+    if (_pending_postponed_turn_on_ms)
+      _pending_postponed_turn_on_ms = 0;
    runAction(ON_TURN_OFF);
+  }
+  
+  log_i("_postponed_turn_on_ms %lu, _pending_postponed_turn_on_ms %lu", 
+        _postponed_turn_on_ms, _pending_postponed_turn_on_ms);
+
 }
 
-/*void LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(_actionhandler_callback actionhandler_callback)
-{
-    this->actionhandler_callback = actionhandler_callback;
-}*/
-//void iterateAlways();
+void LocalActionHandlerWithTrigger::iterateAlways() {
+
+  uint32_t millis_ms = millis();
+
+  if ((_pending_postponed_turn_on_ms) && 
+      ((millis_ms - _pending_postponed_turn_on_ms) > _postponed_turn_on_ms)) {
+
+        log_i("millis_ms %lu, _postponed_turn_on_ms %lu, _pending_postponed_turn_on_ms %lu", 
+              millis_ms, _postponed_turn_on_ms, _pending_postponed_turn_on_ms);
+
+        _pending_postponed_turn_on_ms = 0;
+        runAction(ON_TURN_ON);
+  }
+}

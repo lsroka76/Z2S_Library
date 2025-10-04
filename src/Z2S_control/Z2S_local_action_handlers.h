@@ -51,15 +51,23 @@ class LocalActionHandlerWithTrigger : public Element, public LocalAction, public
                    uint16_t event,
                    bool alwaysEnabled = false) override;*/
     //void  setActionHandlerCallback(_actionhandler_callback actionhandler_callback);
-    //void iterateAlways();
-  protected:
-    //_actionhandler_callback actionhandler_callback = nullptr;
-    uint8_t _trigger_value = 0;
-    uint8_t _trigger_counter = 0;
+    void iterateAlways() override;
+    void setPostponedTurnOnSecs(uint32_t _postponed_turn_on_secs) {
 
+      _postponed_turn_on_ms = _postponed_turn_on_secs * 1000;
+    }
+    uint32_t getPostponedTurnOnSecs() {
+
+      return _postponed_turn_on_ms / 1000;
+    }
+  protected:
     uint8_t _pin_a = 0;
     uint8_t _pin_b = 0;
     uint8_t _pin_logic_operator = PIN_LOGIC_OPERATOR_AND;
+
+    uint32_t _pending_postponed_turn_on_ms = 0;
+    uint32_t _postponed_turn_on_ms = 0;
+
 };
 
 };  // namespace Supla

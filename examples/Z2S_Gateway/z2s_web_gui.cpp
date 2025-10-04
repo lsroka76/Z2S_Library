@@ -229,6 +229,17 @@ volatile uint8_t gui_command = 0;
 #define GUI_COMMAND_CLUSTER_ID_CHANGE			34
 #define GUI_COMMAND_ATTRIBUTE_ID_CHANGE		35
 
+#define GUI_BUILD_CONTROL_FLAG_GATEWAY 			0x0001
+#define GUI_BUILD_CONTROL_FLAG_CREDENTIALS 	0x0002
+#define GUI_BUILD_CONTROL_FLAG_ZIGBEE 			0x0004
+#define GUI_BUILD_CONTROL_FLAG_DEVICES 			0x0008
+#define GUI_BUILD_CONTROL_FLAG_CHANNELS 		0x0010
+#define GUI_BUILD_CONTROL_FLAG_ACTIONS 			0x0020
+#define GUI_BUILD_CONTROL_FLAG_CA 					0x0040
+#define GUI_BUILD_CONTROL_FLAG_AD 					0x0080
+#define GUI_BUILD_CONTROL_FLAG_TCC 					0x0100
+
+volatile uint32_t gui_build_control_flags = 0x00;
 
 
 volatile uint8_t controls_enabled_flags = 0xFF;
@@ -1372,7 +1383,7 @@ void buildChannelsTabGUI() {
 																					 zb_channel_timings_label, 
 																					 editChannelCallback, 
 																					 (void*)GUI_CB_UPDATE_KEEPALIVE_FLAG);
-	working_str = PSTR("&#10023; keepalive (s) &#10023;");
+	working_str = PSTR("&#10023; keepalive (s) &#10023; turn on delay (s) [logical gates] &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str, 
@@ -2682,61 +2693,106 @@ void Z2S_buildWebGUI(gui_modes_t mode) {
 
 	working_str.reserve(1056);
 
+#define GUI_BUILD_CONTROL_FLAG_GATEWAY 			0x0001
+#define GUI_BUILD_CONTROL_FLAG_CREDENTIALS 	0x0002
+#define GUI_BUILD_CONTROL_FLAG_ZIGBEE 			0x0004
+#define GUI_BUILD_CONTROL_FLAG_DEVICES 			0x0008
+#define GUI_BUILD_CONTROL_FLAG_CHANNELS 		0x0010
+#define GUI_BUILD_CONTROL_FLAG_ACTIONS 			0x0020
+#define GUI_BUILD_CONTROL_FLAG_CA 					0x0040
+#define GUI_BUILD_CONTROL_FLAG_AD 					0x0080
+#define GUI_BUILD_CONTROL_FLAG_TCC 					0x0100
+
+volatile uint32_t gui_build_control_flags = 0x00;
+
+
 	switch (mode) {
 
+
 		case no_gui_mode:
-			break;
+			
+			gui_build_control_flags = 0x0000;
+		break;
 
 		case minimal_gui_mode: {
 
-			buildGatewayTabGUI();
-			buildCredentialsGUI();
-			buildZigbeeTabGUI();
+			
+			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
+																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+																GUI_BUILD_CONTROL_FLAG_ZIGBEE;
 		} break;
 
 		case standard_gui_mode: {
 
-			buildGatewayTabGUI();
-			buildCredentialsGUI();
-			buildZigbeeTabGUI();
-			buildDevicesTabGUI();
-			buildChannelsTabGUI();
-			buildActionsTabGUI();
+			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
+																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+																GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+																GUI_BUILD_CONTROL_FLAG_DEVICES |
+																GUI_BUILD_CONTROL_FLAG_CHANNELS |
+																GUI_BUILD_CONTROL_FLAG_ACTIONS;
 		} break;
 
 		case extended_gui_mode: {
 
-			buildGatewayTabGUI();
-			buildCredentialsGUI();
-			buildZigbeeTabGUI();
-			buildDevicesTabGUI();
-			buildChannelsTabGUI();
-			buildActionsTabGUI();
-			buildClustersAttributesTab();
+			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
+																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+																GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+																GUI_BUILD_CONTROL_FLAG_DEVICES |
+																GUI_BUILD_CONTROL_FLAG_CHANNELS |
+																GUI_BUILD_CONTROL_FLAG_ACTIONS |
+																GUI_BUILD_CONTROL_FLAG_CA;
 		} break;
 
 		case full_gui_mode: {
 
-			buildGatewayTabGUI();
-			buildCredentialsGUI();
-			buildZigbeeTabGUI();
-			buildDevicesTabGUI();
-			buildChannelsTabGUI();
-			buildActionsTabGUI();
-			buildClustersAttributesTab();
-			buildAdvancedDevicesTabGUI();
-			buildTuyaCustomClusterTabGUI();
+			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
+																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+																GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+																GUI_BUILD_CONTROL_FLAG_DEVICES |
+																GUI_BUILD_CONTROL_FLAG_CHANNELS |
+																GUI_BUILD_CONTROL_FLAG_ACTIONS |
+																GUI_BUILD_CONTROL_FLAG_CA |
+																GUI_BUILD_CONTROL_FLAG_AD |
+																GUI_BUILD_CONTROL_FLAG_TCC;
 		} break;
 
 		case developer_gui_mode: {
 
-			buildGatewayTabGUI();
-			buildClustersAttributesTab();
-			buildAdvancedDevicesTabGUI();
-			buildTuyaCustomClusterTabGUI();
+			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
+																GUI_BUILD_CONTROL_FLAG_CA |
+																GUI_BUILD_CONTROL_FLAG_AD |
+																GUI_BUILD_CONTROL_FLAG_TCC;
+
 		} break;
 	}
-	
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_GATEWAY)
+		buildGatewayTabGUI();
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CREDENTIALS)
+		buildCredentialsGUI();
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_ZIGBEE)
+		buildZigbeeTabGUI();
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_DEVICES)
+		buildDevicesTabGUI();
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CHANNELS)
+		buildChannelsTabGUI();
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_ACTIONS)
+		buildActionsTabGUI();
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CA)
+		buildClustersAttributesTab();
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_AD)
+		buildAdvancedDevicesTabGUI();
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_TCC)
+		buildTuyaCustomClusterTabGUI();
+
 	log_i(" ...GUI building FINISHED");
 }
 
@@ -3488,6 +3544,15 @@ void updateChannelInfoLabel(uint8_t label_number) {
 	
 	switch (z2s_channels_table[channel_slot].Supla_channel_type) {
 
+		case 0x0000: {
+
+			enableChannelTimings(1); //keepalive
+			ESPUI.updateNumber(keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
+			//ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+	
+			enableChannelFlags(0);
+		} break;
+		
 
 		case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
