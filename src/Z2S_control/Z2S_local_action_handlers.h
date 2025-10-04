@@ -17,7 +17,7 @@
 #ifndef LOCAL_ACTION_HANDLER_WITH_TRIGGER_H
 #define LOCAL_ACTION_HANDLER_WITH_TRIGGER_H
 
-//#include <Arduino.h>
+#include <Arduino.h>
 //#include <SuplaDevice.h>
 //#include <supla/storage/storage.h>
 #include <supla/actions.h>
@@ -26,6 +26,8 @@
 #include <supla/local_action.h>
 #include <supla/events.h>
 #include <supla/element_with_channel_actions.h>
+
+
 
 //typedef void (*_actionhandler_callback)(int event, int action);
 
@@ -41,6 +43,7 @@ class LocalActionHandlerWithTrigger : public ActionHandler, public  ElementWithC
   protected:
     //_actionhandler_callback actionhandler_callback = nullptr;
     uint8_t _trigger_value = 0;
+    uint8_t _trigger_counter = 0;
 };
 
 };  // namespace Supla
