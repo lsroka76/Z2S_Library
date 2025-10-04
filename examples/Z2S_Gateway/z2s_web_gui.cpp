@@ -3474,8 +3474,12 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					z2s_channels_table[channel_slot].user_data_2,
 					z2s_channels_table[channel_slot].extended_data_type,
 					Z2S_getZbDeviceLocalName(z2s_channels_table[channel_slot].ZB_device_id),
-					Z2S_getZbDeviceManufacturerName(z2s_channels_table[channel_slot].ZB_device_id),
-					Z2S_getZbDeviceModelName(z2s_channels_table[channel_slot].ZB_device_id));
+					(z2s_channels_table[channel_slot].local_channel_type == 0) ?
+					Z2S_getZbDeviceManufacturerName(z2s_channels_table[channel_slot].ZB_device_id):
+					getZ2SDeviceLocalActionHandlerTypeName(channel_slot),
+					(z2s_channels_table[channel_slot].local_channel_type == 0) ?
+					Z2S_getZbDeviceModelName(z2s_channels_table[channel_slot].ZB_device_id):
+					getZ2SDeviceLocalActionHandlerLogicOperatorName(channel_slot));
 	
 	updateLabel_P(zb_channel_info_label, general_purpose_gui_buffer);
 	

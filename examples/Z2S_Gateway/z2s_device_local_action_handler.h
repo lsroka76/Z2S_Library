@@ -8,6 +8,19 @@
 #define LOCAL_CHANNEL_TYPE_ACTION_HANDLER 0x01
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY  0x02
 
+static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
+
+  "LOCAL ACTION HANDLER",
+  "AND GATE",
+  "OR GATE",
+  "XOR GATE",
+  "NOT GATE"
+};
+
+const char* getZ2SDeviceLocalActionHandlerTypeName(int16_t channel_number_slot);
+
+const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(int16_t channel_number_slot);
+
 void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot);
 
 bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type = LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 

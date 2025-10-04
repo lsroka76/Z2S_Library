@@ -1,26 +1,57 @@
 #include "z2s_device_local_action_handler.h"
 
+const char* getZ2SDeviceLocalActionHandlerTypeName(int16_t channel_number_slot){
+
+  switch (z2s_channels_table[channel_number_slot].local_channel_type) {
+
+    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
+      
+      return "Local action handler";
+    } break;
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY:
+      
+      return "Local virtual relay";
+    break;
+  }
+}
+
+const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(int16_t channel_number_slot) {
+
+  switch (z2s_channels_table[channel_number_slot].local_channel_type) {
+
+    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
+      
+      return 
+        ACTION_HANDLERS_DEFAULT_NAMES[z2s_channels_table[channel_number_slot].local_action_handler_data.logic_operator];
+    } break;
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY:
+      
+      return "No special functions";
+    break;
+  }
+}
+
+
 void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
 
   switch (z2s_channels_table[channel_number_slot].local_channel_type) {
 
-    /*case 0:
-      z2s_channels_table[channel_number_slot].local_channel_type = 1;
-      z2s_channels_table[channel_number_slot].ZB_device_id = 0xFF;
-      Z2S_saveChannelsTable();*/
-    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER:
+    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
       
       z2s_channels_table[channel_number_slot].local_action_handler_data.Supla_element =
         new Supla::LocalActionHandlerWithTrigger(
           z2s_channels_table[channel_number_slot].local_action_handler_data.logic_operator); 
-    break;
+    } break;
 
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY:
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
       
       uint8_t Supla_channel = z2s_channels_table[channel_number_slot].Supla_channel;
       auto Supla_VirtualRelay = new Supla::Control::VirtualRelay(); 
       
       Supla_VirtualRelay->getChannel()->setChannelNumber(Supla_channel);
+    }
     break;
   } 
 }
@@ -56,7 +87,8 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
       z2s_channels_table[first_free_slot].Supla_channel = 
         Z2S_findFirstFreeLocalActionHandlerId();
 
-      strcpy(z2s_channels_table[first_free_slot].Supla_channel_name, "LOCAL ACTION HANDLER");
+      strcpy(z2s_channels_table[first_free_slot].Supla_channel_name, 
+             ACTION_HANDLERS_DEFAULT_NAMES[logic_operator]);
 
       z2s_channels_table[first_free_slot].local_action_handler_data.logic_operator = logic_operator;
 

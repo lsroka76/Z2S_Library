@@ -33,8 +33,8 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
   //if (actionhandler_callback != nullptr)  actionhandler_callback(event, action);  
   log_i("event %u, action %u", event, action);
-  log_i("_trigger_counter %u, _trigger_value %u", 
-        _trigger_counter, _trigger_value);
+  log_i("_pin_a %u, _pin_b %u, _pin_logic_operator %u", 
+        _pin_a, _pin_b, _pin_logic_operator);
 
   bool logic_operation_result = false;
 
@@ -42,12 +42,16 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
     case TURN_ON: {
       
-      if (_pin_a == 0)
+      if (_pin_a == 0) {
         _pin_a = 1;
-      else
+      } else {
       if (_pin_b == 0)
         _pin_b = 1;
-      
+      }
+
+      log_i("TURN ON _pin_a %u, _pin_b %u, _pin_logic_operator %u", 
+        _pin_a, _pin_b, _pin_logic_operator);
+
       switch (_pin_logic_operator) {
 
 
@@ -70,7 +74,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
           runAction(ON_TURN_OFF); break;
       }
-
+      log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
       if (logic_operation_result)
         runAction(ON_TURN_ON);
     } break;
@@ -83,6 +87,10 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
       if (_pin_b == 1)
         _pin_b = 0;
       
+      log_i("TURN OFF _pin_a %u, _pin_b %u, _pin_logic_operator %u", 
+        _pin_a, _trigger_value, _pin_logic_operator);
+
+
       switch (_pin_logic_operator) {
 
 
@@ -105,7 +113,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
           runAction(ON_TURN_ON); break;
       }
-
+      log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
       if (logic_operation_result)
         runAction(ON_TURN_OFF);
     } break;
