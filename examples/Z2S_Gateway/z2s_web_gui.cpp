@@ -209,6 +209,7 @@ uint16_t action_save_button;
 uint16_t action_cancel_button;
 uint16_t action_edit_button; 
 uint16_t action_new_button; 
+uint16_t action_copy_button;
 uint16_t action_remove_button;
 uint16_t action_state_label;
 
@@ -350,6 +351,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_ACTION_SAVE_FLAG										0x9012
 #define GUI_CB_ACTION_CANCEL_FLAG									0x9013
 #define GUI_CB_ACTION_REMOVE_FLAG									0x9014
+#define GUI_CB_ACTION_COPY_FLAG										0x9015
 
 
 
@@ -2438,8 +2440,15 @@ void enableActionControls(bool enable) {
 
 void updateActionButtons() {
 
-	bool action_save_button_enable, action_new_button_enable, action_edit_button_enable, action_cancel_button_enable, action_remove_button_enable;
+	bool action_save_button_enable;
+	bool action_new_button_enable;
+	bool action_edit_button_enable; 
+	bool action_copy_button_enable;
+	bool action_cancel_button_enable;
+	bool action_remove_button_enable;
+
 	switch (current_action_gui_state) {
+
 
 		case VIEW_ACTION: {
 
@@ -2450,15 +2459,18 @@ void updateActionButtons() {
 
 				action_edit_button_enable  = false;
 				action_remove_button_enable = false;
+				action_copy_button_enable = false;
 			} else {
 
 				action_edit_button_enable  = true;
 				action_remove_button_enable = true;
+				action_copy_button_enable = true;
 			}
 
 			action_new_button_enable  = true;
 			
 		} break;
+
 
 		case NEW_ACTION: {
 
@@ -2469,7 +2481,18 @@ void updateActionButtons() {
 			action_remove_button_enable = false;
 		} break;
 
+
 		case EDIT_ACTION: {
+
+			action_save_button_enable = true;
+			action_new_button_enable  = false;
+			action_edit_button_enable  = false;
+			action_cancel_button_enable = true;
+			action_remove_button_enable = false;
+		} break;
+
+
+		case COPY_ACTION: {
 
 			action_save_button_enable = true;
 			action_new_button_enable  = false;
@@ -2484,6 +2507,7 @@ void updateActionButtons() {
 	enableControlStyle(action_edit_button, action_edit_button_enable);
 	enableControlStyle(action_cancel_button, action_cancel_button_enable);
 	enableControlStyle(action_remove_button, action_remove_button_enable);
+	enableControlStyle(action_copy_button, action_remove_button_enable);
 }
 
 void updateActionDetails(z2s_channel_action_t &action, bool empty_action = false) {
@@ -2663,23 +2687,65 @@ void buildActionsTabGUI() {
 	}
 
 	working_str = "EDIT ACTION";							
-	action_edit_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
-																					   Control::Color::Emerald, actions_tab, actionsTableCallback, (void*)GUI_CB_ACTION_EDIT_FLAG);
+	action_edit_button = ESPUI.addControl(Control::Type::Button, 
+																			  PSTR(empty_str), 
+																				working_str, 
+																				Control::Color::Emerald, 
+																				actions_tab, 
+																				actionsTableCallback, 
+																				(void*)GUI_CB_ACTION_EDIT_FLAG);
+
 	working_str = "NEW ACTION";							
-	action_new_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
-																		  			Control::Color::Emerald, action_edit_button, actionsTableCallback, (void*)GUI_CB_ACTION_NEW_FLAG);
+	action_new_button = ESPUI.addControl(Control::Type::Button, 
+																			PSTR(empty_str), 
+																			working_str, 
+																			Control::Color::Emerald, 
+																			action_edit_button, 
+																			actionsTableCallback, 
+																			(void*)GUI_CB_ACTION_NEW_FLAG);
+	
+	working_str = "COPY ACTION";							
+	action_copy_button = ESPUI.addControl(Control::Type::Button, 
+																				PSTR(empty_str), 
+																				working_str, 
+																				Control::Color::Emerald, 
+																				action_edit_button, 
+																				actionsTableCallback, 
+																				(void*)GUI_CB_ACTION_COPY_FLAG);
+																			
 	working_str = "SAVE ACTION";							
-	action_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
-																				  	 Control::Color::Emerald, action_edit_button, actionsTableCallback, (void*)GUI_CB_ACTION_SAVE_FLAG);
+	action_save_button = ESPUI.addControl(Control::Type::Button, 
+																				PSTR(empty_str), 
+																				working_str, 
+																				Control::Color::Emerald, 
+																				action_edit_button, 
+																				actionsTableCallback, 
+																				(void*)GUI_CB_ACTION_SAVE_FLAG);
+
 	working_str = "CANCEL CHANGES";							
-	action_cancel_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
-																			 					 Control::Color::Emerald, action_edit_button, actionsTableCallback, (void*)GUI_CB_ACTION_CANCEL_FLAG);
+	action_cancel_button = ESPUI.addControl(Control::Type::Button, 
+																					PSTR(empty_str), 
+																					working_str, 
+																			 		Control::Color::Emerald, 
+																					action_edit_button, 
+																					actionsTableCallback, 
+																					(void*)GUI_CB_ACTION_CANCEL_FLAG);
+
 	working_str = "DELETE ACTION";							
-	action_remove_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, 
-																			 			 		Control::Color::Emerald, action_edit_button, actionsTableCallback, (void*)GUI_CB_ACTION_REMOVE_FLAG);
+	action_remove_button = ESPUI.addControl(Control::Type::Button, 
+																					PSTR(empty_str), 
+																					working_str, 
+																			 		Control::Color::Emerald, 
+																					action_edit_button, 
+																					actionsTableCallback, 
+																					(void*)GUI_CB_ACTION_REMOVE_FLAG);
+
 	working_str = three_dots_str;
-	action_state_label = ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str, 
-																			 			 		Control::Color::Emerald, action_edit_button);
+	action_state_label = ESPUI.addControl(Control::Type::Label, 
+																				PSTR(empty_str), 
+																				working_str, 
+																			 	Control::Color::Emerald, 
+																				action_edit_button);
 	
 	enableActionDetails(false);
 }
@@ -2764,6 +2830,15 @@ volatile uint32_t gui_build_control_flags = 0x00;
 																GUI_BUILD_CONTROL_FLAG_TCC;
 
 		} break;
+
+		case supla_gui_mode: {
+
+			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
+																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+																GUI_BUILD_CONTROL_FLAG_CHANNELS |
+																GUI_BUILD_CONTROL_FLAG_ACTIONS;
+		} break;
+
 	}
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_GATEWAY)
@@ -4942,6 +5017,7 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 
 		switch ((uint32_t)param) {
 
+
 			case GUI_CB_ACTION_FIRST_FLAG: {
 
 				int16_t first_action = Z2S_findNextActionPosition(0);
@@ -4956,6 +5032,7 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 					updateActionDetails(new_action);
 				}
 			} break;
+
 
 			case GUI_CB_ACTION_NEXT_FLAG: {
 
@@ -4975,6 +5052,7 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 				}				
 			} break;
 
+
 			case GUI_CB_ACTION_PREV_FLAG: {
 
 				if (current_action_id <= 0)
@@ -4992,6 +5070,7 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 					updateActionDetails(new_action);
 				}
 			} break;
+
 
 			case GUI_CB_ACTION_LAST_FLAG: {
 
@@ -5011,6 +5090,7 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 				}
 			} break;
 
+
 			case GUI_CB_ACTION_EDIT_FLAG: {
 
 				if ((current_action_gui_state != VIEW_ACTION) || (current_action_id == -1))
@@ -5023,6 +5103,29 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 				updateActionDetails(new_action);
 				updateActionButtons();
 			} break;
+
+
+			case GUI_CB_ACTION_COPY_FLAG: {
+
+				if ((current_action_gui_state != VIEW_ACTION) || (current_action_id == -1))
+					return;
+
+				new_action_id = Z2S_findFreeActionIndex();
+				
+				if (new_action_id == -1) {
+					
+					updateLabel_P(action_state_label, "Actions table is full - can't add new Z2S Action!");
+					return;
+				}
+				
+				previous_action_gui_state = current_action_gui_state;
+				current_action_gui_state = COPY_ACTION;
+				Z2S_loadAction(current_action_id, new_action);
+				enableActionDetails(true);
+				updateActionDetails(new_action);
+				updateActionButtons();
+			} break;
+
 
 			case GUI_CB_ACTION_NEW_FLAG: {
 
@@ -5045,7 +5148,9 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_ACTION_SAVE_FLAG: {
 
-				if ((current_action_gui_state != NEW_ACTION) && (current_action_gui_state != EDIT_ACTION))
+				if ((current_action_gui_state != NEW_ACTION) && 
+						(current_action_gui_state != EDIT_ACTION) && 
+						(current_action_gui_state != COPY_ACTION))
 					return;
 				
 				if (!fillActionDetails(new_action)) {
@@ -5055,14 +5160,16 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 
 				previous_action_gui_state = SAVE_ACTION;
 				
-				if (current_action_gui_state == NEW_ACTION) {
+				if ((current_action_gui_state == NEW_ACTION) ||
+				 		(current_action_gui_state == COPY_ACTION)) {
 					
 					current_action_id = new_action_id;
 				}
 
 				bool save_result = Z2S_saveAction(current_action_id, new_action);
 
-				if (current_action_gui_state == NEW_ACTION) {
+				if ((current_action_gui_state == NEW_ACTION) ||
+						(current_action_gui_state == COPY_ACTION)) {
 					
 					current_action_counter = Z2S_getActionCounter(current_action_id);
 				}
@@ -5084,7 +5191,9 @@ void actionsTableCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_ACTION_CANCEL_FLAG: {
 
-				if ((current_action_gui_state != NEW_ACTION) && (current_action_gui_state != EDIT_ACTION))
+				if ((current_action_gui_state != NEW_ACTION) && 
+						(current_action_gui_state != EDIT_ACTION) &&
+						(current_action_gui_state != COPY_ACTION))
 					return;
 
 				previous_action_gui_state = CANCEL_ACTION;

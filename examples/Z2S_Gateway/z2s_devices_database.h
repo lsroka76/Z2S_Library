@@ -3137,7 +3137,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "LUMI", .model_name = "lumi.airmonitor.acn01",
     .z2s_device_uid = 27000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR,
-	  .z2s_device_endpoints_count = 1}
+	  .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3000_utwgoauk", .model_name = "TS0201",
+    .z2s_device_uid = 27001,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
+    .z2s_device_endpoints_count = 1}
 };
 
 

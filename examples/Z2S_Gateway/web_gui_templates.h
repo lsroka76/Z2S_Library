@@ -12,6 +12,7 @@ enum ActionGUIState {
 	SAVE_ACTION,
 	CANCEL_ACTION,
 	REMOVE_ACTION,
+	COPY_ACTION
 };
 
 typedef struct zigbee_cluster_s {
@@ -98,10 +99,11 @@ static constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 
 	"No GUI on start",
 	"Minimal GUI (Gateway + Credentials)",
-	"Standard GUI (Minimal + Devices + Channels)",
+	"Standard GUI (Minimal + Devices + Channels + Actions)",
 	"Extended GUI (Standard + Clusters&Attributes)",
 	"Full GUI",
-	"Developer GUI (Gateway + C&A + AD +TCC)"
+	"Developer GUI (Gateway + C&A + AD +TCC)",
+	"Supla GUI (Gateway + Credentials + Channels + Actions)"
 };
 
 static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
