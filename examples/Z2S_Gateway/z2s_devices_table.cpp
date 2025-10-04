@@ -5465,7 +5465,7 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
     
     case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH: {
       
-      swittch (Endpoint_counter) {
+      switch (endpoint_counter) {
 
         case 0: {
 
