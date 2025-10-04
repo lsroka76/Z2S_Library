@@ -51,7 +51,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
         _trigger_counter--;
 
-        if (_trigger_counter == 0)
+        if (_trigger_counter < _trigger_value)
           runAction(ON_TURN_OFF);
       }
     } break;
