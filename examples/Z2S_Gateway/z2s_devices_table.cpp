@@ -3871,7 +3871,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
           case LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID:
           case LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID:
-          case LUMI_DOUBLE_SWITCH_RIGTH_PRESSED_SID:
+          case LUMI_DOUBLE_SWITCH_RIGHT_PRESSED_SID:
           case LUMI_DOUBLE_SWITCH_RIGHT_DOUBLE_PRESSED_SID:
           case LUMI_DOUBLE_SWITCH_BOTH_PRESSED_SID:
           case LUMI_DOUBLE_SWITCH_BOTH_DOUBLE_PRESSED_SID:
