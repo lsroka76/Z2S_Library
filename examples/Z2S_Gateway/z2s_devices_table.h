@@ -14,6 +14,7 @@
 #include <supla/tools.h>
 #include <supla/actions.h>
 #include <supla/events.h>
+#include <supla/element.h>
 
 #define Z2S_ZB_DEVICES_MAX_NUMBER 32
 #define Z2S_CHANNELS_MAX_NUMBER 128
@@ -133,6 +134,9 @@ typedef struct z2s_device_params_s {
       uint32_t pause_time : 24;
       uint32_t cycles : 8;
     } smart_valve_data;
+    struct {
+      Supla::Element *Supla_element;
+    } local_action_handler_data;
   };
   uint32_t user_data_3;
   union {
@@ -348,6 +352,7 @@ void ieee_addr_to_str(char *ieee_addr_str, esp_zb_ieee_addr_t ieee_addr);
 
 uint32_t Z2S_getChannelsTableSize();
 uint8_t Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot = 0);
+uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot = 0);
 void Z2S_printChannelsTableSlots(bool toTelnet = false);
 bool Z2S_loadChannelsTable();
 bool Z2S_saveChannelsTable();
@@ -420,6 +425,8 @@ int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
 bool Z2S_updateZbDeviceUidIdx(uint8_t zb_device_slot,
                               const char *manufacturer_name, 
                               const char *model_name);
+
+Supla::Element *Z2S_getSuplaElementByChannelNumber(uint8_t channel_id);
 
 void Z2S_initSuplaChannels();
 

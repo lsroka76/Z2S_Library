@@ -26,6 +26,7 @@
 #include "z2s_device_action_trigger.h"
 #include "z2s_device_virtual_valve.h"
 #include "z2s_little_fs.h"
+#include "z2s_device_local_action_handler.h"
 
 extern ZigbeeGateway zbGateway;
 
@@ -73,6 +74,20 @@ uint8_t Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot) {
   return 0xFF;
   
 }
+
+uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot) {
+
+  uint8_t local_action_handlers_number = 0;
+
+  for (uint8_t channels_counter = start_slot; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) 
+      if (z2s_channels_table[channels_counter].valid_record &&
+          (z2s_channels_table[channels_counter].Supla_channel >= 0x80))
+        local_action_handlers_number++;
+
+  return 0x80 + local_action_handlers_number;
+  
+}
+
 
 void Z2S_printChannelsTableSlots(bool toTelnet) {
   
@@ -174,6 +189,16 @@ int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id) {
   }
   
   return -1;
+}
+
+Supla::Element *Z2S_getSuplaElementByChannelNumber(uint8_t channel_id) {
+
+  if (channel_id < 0x80)
+    return  
+      Supla::Element::getElementByChannelNumber(channel_id);
+  else
+    return 
+      z2s_channels_table[Z2S_findTableSlotByChannelNumber(channel_id)].local_action_handler_data.Supla_element;
 }
 
 void Z2S_fillChannelsTableSlot(zbg_device_params_t *device, 
@@ -1270,6 +1295,9 @@ void Z2S_initSuplaChannels() {
         case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE: 
         
           initZ2SDeviceVirtualValve(&zbGateway, &device, channels_counter); break;
+
+        case 0x000:
+          initZ2SDeviceLocalActionHandler(channels_counter); break;
         
         
         default: {
@@ -1521,12 +1549,27 @@ void Z2S_initSuplaActions() {
     if (checkActionsIndexTablePosition(index)) {
       Z2S_loadAction(index, new_action);
       if (new_action.is_enabled)
-        Z2S_add_action(new_action.action_name, new_action.src_Supla_channel, new_action.dst_Supla_action, new_action.dst_Supla_channel, 
-                       new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);
+        Z2S_add_action(new_action.action_name, 
+                       new_action.src_Supla_channel, 
+                       new_action.dst_Supla_action, 
+                       new_action.dst_Supla_channel, 
+                       new_action.src_Supla_event, 
+                       new_action.is_condition, 
+                       new_action.min_value, 
+                       new_action.max_value);
 
-      log_i("Action name: %s, enabled: %s, src_Supla_channel %u, dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, is_condition %u" 
-            "min_value %f, max_value %f", new_action.action_name, new_action.is_enabled ? "YES" : "NO", new_action.src_Supla_channel, new_action.dst_Supla_action, 
-            new_action.dst_Supla_channel, new_action.src_Supla_event, new_action.is_condition, new_action.min_value, new_action.max_value);    
+      log_i("Action name: %s, enabled: %s, src_Supla_channel %u, dst_Supla_action %u, "
+            "dst_Supla_channel %u, src_Supla_event %u, is_condition %u" 
+            "min_value %f, max_value %f", 
+            new_action.action_name, 
+            new_action.is_enabled ? "YES" : "NO", 
+            new_action.src_Supla_channel, 
+            new_action.dst_Supla_action, 
+            new_action.dst_Supla_channel, 
+            new_action.src_Supla_event, 
+            new_action.is_condition, 
+            new_action.min_value, 
+            new_action.max_value);    
     }
   }
 }
@@ -1637,6 +1680,8 @@ bool Z2S_loadChannelExtendedData(int16_t channel_number_slot,
   log_e("no extended data found");
   return false;
 }
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float temperature) {
 
@@ -4907,40 +4952,58 @@ void updateDeviceTemperature(uint8_t channel_number_slot, int32_t temperature) {
     log_i("set temperature only allowed for virtual thermometer");
 }
 
-bool Z2S_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
-                    double threshold_1, double threshold_2) {
+bool Z2S_add_action(char *action_name, 
+                    uint8_t src_channel_id, 
+                    uint16_t Supla_action, 
+                    uint8_t dst_channel_id, 
+                    uint16_t Supla_event, 
+                    bool condition, 
+                    double threshold_1, 
+                    double threshold_2) {
 
-  auto src_element = Supla::Element::getElementByChannelNumber(src_channel_id);
+  auto src_element = Z2S_getSuplaElementByChannelNumber(src_channel_id);
+  
   if (src_element == nullptr) {
+    
     log_e("Invalid source Supla channel %d", src_channel_id);
     return false;
   }
   auto Supla_Z2S_ActionHandler = reinterpret_cast<Supla::ElementWithChannelActions *>(src_element);
 
-  auto dst_element = Supla::Element::getElementByChannelNumber(dst_channel_id);
+  auto dst_element = Z2S_getSuplaElementByChannelNumber(dst_channel_id);
+
   if (dst_element == nullptr) {
+    
     log_e("Invalid destination Supla channel %d", dst_channel_id);
     return false;
   }
-  log_i("Action name %s, src channel %u, dst channel %u, event %u, action %u", action_name, src_channel_id, dst_channel_id, Supla_event, Supla_action);
+  log_i("Action name %s, src channel %u, dst channel %u, event %u, action %u", 
+        action_name, src_channel_id, dst_channel_id, Supla_event, Supla_action);
   
   Supla::Condition *Supla_condition = nullptr;
 
   if (condition) {
 
     switch (Supla_event) {
-      case Supla::ON_LESS:
+
+      case Supla::ON_LESS:  
         Supla_condition = OnLess(threshold_1); break;
+      
       case Supla::ON_LESS_EQ:
         Supla_condition = OnLessEq(threshold_1); break;
+      
       case Supla::ON_GREATER:
         Supla_condition = OnGreater(threshold_1); break;
+      
       case Supla::ON_GREATER_EQ:
         Supla_condition = OnGreaterEq(threshold_1); break;
+      
       case Supla::ON_BETWEEN:
         Supla_condition = OnBetween(threshold_1, threshold_2); break;
+      
       case Supla::ON_BETWEEN_EQ:
         Supla_condition = OnBetweenEq(threshold_1, threshold_2); break;
+      
       case Supla::ON_EQUAL:
         Supla_condition = OnEqual(threshold_1); break;
     }
@@ -4949,24 +5012,43 @@ bool Z2S_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_ac
   }
   
   switch (dst_element->getChannel()->getChannelType()) {
+
+    case 0x000: {
+
+      auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
+      
+      if (condition)
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
+      else
+        Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_event);
+    } break;
+    
     case SUPLA_CHANNELTYPE_RELAY: {
+      
       auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::Control::Relay *>(dst_element);
+      
       if (condition)
         Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
       else
         Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_event);
     } break; 
 
+
     case SUPLA_CHANNELTYPE_BINARYSENSOR: {
+      
       auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::Sensor::VirtualBinary *>(dst_element);
+      
       if (condition)
         Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
       else
         Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_event);
     } break;
 
+
     case SUPLA_CHANNELTYPE_HVAC: {
+      
       auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::Control::HvacBase*>(dst_element);
+      
       if (condition)
         Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
       else
@@ -4974,7 +5056,9 @@ bool Z2S_add_action(char *action_name, uint8_t src_channel_id, uint16_t Supla_ac
     } break;
 
     case SUPLA_CHANNELTYPE_DIMMER: {
+      
       auto Supla_Z2S_ActionClient = reinterpret_cast<Supla::Control::Z2S_DimmerInterface*>(dst_element);
+      
       if (condition)
         Supla_Z2S_ActionHandler->addAction(Supla_action, Supla_Z2S_ActionClient, Supla_condition);
       else

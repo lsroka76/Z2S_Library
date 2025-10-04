@@ -340,9 +340,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_on_dp_type                           =  TUYA_DP_TYPE_ENUM,
     .ts0601_cmd_on_dp_value_on                       =  0x01,
 
-    .ts0601_cmd_off_dp_id                            =  0x07,
-    .ts0601_cmd_off_dp_type                          =  TUYA_DP_TYPE_ENUM,
-    .ts0601_cmd_off_dp_value_off                     =  0x00,
+    .ts0601_cmd_off_dp_id                            =  0x02,
+    .ts0601_cmd_off_dp_type                          =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_off_dp_value_off                     =  0x05,
     
     .ts0601_cmd_set_target_heatsetpoint_dp_id        =  0x02,
     .ts0601_cmd_set_target_heatsetpoint_dp_type      =  TUYA_DP_TYPE_VALUE,

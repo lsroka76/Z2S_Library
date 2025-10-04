@@ -26,7 +26,7 @@
 #include <supla/actions.h>
 #include <supla/control/button.h>
 #include <supla/device/enter_cfg_mode_after_power_cycle.h>
-#include <action_handler_with_callbacks.h>
+#include <Z2S_control/action_handler_with_callbacks.h>
 
 #include <supla/control/virtual_relay.h>
 #include <supla/sensor/general_purpose_measurement.h>

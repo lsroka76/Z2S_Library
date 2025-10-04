@@ -7,6 +7,7 @@
 #include "z2s_devices_table.h"
 #include "z2s_device_tuya_custom_cluster.h"
 #include "z2s_device_virtual_relay.h"
+#include "z2s_device_local_action_handler.h"
 #include "TuyaDatapoints.h"
 
 #include "z2s_version_info.h"
@@ -417,6 +418,7 @@ void valueCallback(Control *sender, int type);
 void valveCallback(Control *sender, int type, void *param);
 void TuyaCustomCmdCallback(Control *sender, int type, void *param);
 void actionsTableCallback(Control *sender, int type, void *param);
+void addLocalActionHandlerCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
 
@@ -1435,6 +1437,7 @@ void buildChannelsTabGUI() {
 																					 Control::Color::Alizarin, 
 																					 channelstab, 
 																					removeChannelCallback);
+
 	working_str = PSTR("Remove all channels!");
 	remove_all_channels_button = ESPUI.addControl(Control::Type::Button, 
 																								PSTR(empty_str), 
@@ -1442,11 +1445,20 @@ void buildChannelsTabGUI() {
 																								Control::Color::Alizarin, 
 																								remove_channel_button, 
 																								removeAllChannelsCallback);
+
 	channel_status_label = ESPUI.addControl(Control::Type::Label, 
 																					PSTR("Status"), 
 																					three_dots_str, 
 																					Control::Color::Alizarin, 
 																					remove_channel_button);
+
+	working_str = PSTR("Local action handler");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR("Add LAH (experimental!)"), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 channelstab, 
+									 addLocalActionHandlerCallback);																				
 
 	enableChannelControls(false);
 }
@@ -5388,21 +5400,31 @@ void valveCallback(Control *sender, int type, void *param) {
 	}
 }
 
-
 void TuyaDeviceSelectorCallback(Control *sender, int type) {
 
 	int16_t device_slot = sender->value.toInt();
 
 	if (device_slot >=0) {
 
-		sprintf_P(general_purpose_gui_buffer,PSTR("<b><i>Manufacturer name</i></b> %s "
-						"<b>| <i>model ID</b></i> %s"), 
-						Z2S_getZbDeviceManufacturerName(device_slot),
-						Z2S_getZbDeviceModelName(device_slot));
+		sprintf_P(general_purpose_gui_buffer,
+							PSTR("<b><i>Manufacturer name</i></b> %s "
+							"<b>| <i>model ID</b></i> %s"), 
+							Z2S_getZbDeviceManufacturerName(device_slot),
+							Z2S_getZbDeviceModelName(device_slot));
 
 		updateLabel_P(Tuya_device_info_label, general_purpose_gui_buffer);
 	} else
+
 		updateLabel_P(Tuya_device_info_label, three_dots_str);
+}
+
+void addLocalActionHandlerCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+
+		if (addZ2SDeviceLocalActionHandler())
+			rebuildChannelsSelector();
+	}
 }
 
 void GUI_onTuyaCustomClusterReceive(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data){

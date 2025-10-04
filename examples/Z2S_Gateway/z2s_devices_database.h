@@ -23,6 +23,8 @@
 
 #define Z2S_DEVICE_DESC_NULL                                0x0000
 
+#define Z2S_DEVICE_DESC_LOCAL_ACTION_HANDLER                0x0100
+
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR                 0x1000
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1               0x1001
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL            0x1002

@@ -1066,8 +1066,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         _last_temperature_calibration_offset = _temperature_calibration_offset;
         _temperature_calibration_offset = hvacLastTemperature - (_trv_local_temperature - _trv_temperature_calibration);
 
-        log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv temperature difference detected:\n\rhvac_temperature = %d,\n\rtrv_temperature = %d,\n\r"
-              "trv_last_temperature = %d,\n\rtrv_calibration = %d,\n\rtrv_last_calibration = %d,\n\rcalculated offset = %d,\n\rlast calculated offset %d", 
+        log_i("trv temperature difference detected:\n\rhvac_temperature = %d,\n\rtrv_temperature = %d,\n\r"
+              "trv_last_temperature = %d,\n\rtrv_calibration = %d,\n\rtrv_last_calibration = %d,\n\r"
+              "calculated offset = %d,\n\rlast calculated offset %d", 
               hvacLastTemperature, 
               _trv_local_temperature,
               _trv_last_local_temperature,
