@@ -1751,9 +1751,13 @@ void loop() {
             
             if ((strcmp(zbGateway.getQueryBasicClusterData()->zcl_model_name, 
                         Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
-            (strcmp(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name, Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
+            (strcmp(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name, 
+                    Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
+
               log_i("LIST matched %s::%s, entry # %d, endpoints # %d, endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
-                    Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, Z2S_DEVICES_LIST[devices_list_counter].model_name, devices_list_counter, 
+                    Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, 
+                    Z2S_DEVICES_LIST[devices_list_counter].model_name, 
+                    devices_list_counter, 
                     Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count,
                     Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[0].endpoint_id, 
                     Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[0].z2s_device_desc_id,
@@ -2162,6 +2166,7 @@ void loop() {
                 } break;
               }
               SuplaDevice.scheduleSoftRestart(5000);
+              break;
             }   
             //else log_i("LIST checking %s::%s, entry # %d",Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, Z2S_DEVICES_LIST[devices_list_counter].model_name, devices_list_counter);
           }

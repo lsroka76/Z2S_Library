@@ -1328,8 +1328,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
 	  .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3000_zl1kmjqx", .model_name = "",
+  {	.manufacturer_name = "_TZ3000_zl1kmjqx", .model_name = "", //only manufacturer name
     .z2s_device_uid = 120,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
+	  .z2s_device_endpoints_count = 1 },
+
+  {	.manufacturer_name = "Zbeacon", .model_name = "TS0201",
+    .z2s_device_uid = 125,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
 	  .z2s_device_endpoints_count = 1 },
 
@@ -2014,6 +2019,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_ww6drja5", .model_name = "TS011F",
     .z2s_device_uid = 12100,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_wzmuk9ai", .model_name = "TS011F",
+    .z2s_device_uid = 12105,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
 	  .z2s_device_endpoints_count = 1},
 
