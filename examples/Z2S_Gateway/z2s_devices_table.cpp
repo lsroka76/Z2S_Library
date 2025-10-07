@@ -4866,15 +4866,29 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_RELAY: {
 
-        auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
+        if (element->getChannel()->isRollerShutterRelayType()) {
 
-        if (selector & 1)
-          Supla_Z2S_VirtualRelay->setKeepAliveSecs(timings_secs);
+          auto Supla_Z2S_RollerShutter = reinterpret_cast<Supla::Control::Z2S_RollerShutter *>(element);
 
-        if (selector & 2)
-          Supla_Z2S_VirtualRelay->setTimeoutSecs(timings_secs);
+          if (selector & 1)
+            Supla_Z2S_RollerShutter->setKeepAliveSecs(timings_secs);
+
+          if (selector & 2)
+            Supla_Z2S_RollerShutter->setTimeoutSecs(timings_secs);
+
+        } else {
+
+          auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
+
+          if (selector & 1)
+            Supla_Z2S_VirtualRelay->setKeepAliveSecs(timings_secs);
+
+          if (selector & 2)
+            Supla_Z2S_VirtualRelay->setTimeoutSecs(timings_secs);
+        }
       } break;
 
+      
 
       case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 

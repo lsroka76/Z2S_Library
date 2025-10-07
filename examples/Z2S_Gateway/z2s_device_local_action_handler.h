@@ -2,6 +2,8 @@
 #define Z2S_DEVICE_LOCAL_ACTION_HANDLERS_H_
 
 #include "z2s_devices_table.h"
+
+#include <SuplaDevice.h>
 #include <supla/control/virtual_relay.h>
 #include <Z2S_control/Z2S_local_action_handlers.h>
 

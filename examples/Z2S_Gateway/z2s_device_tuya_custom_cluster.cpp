@@ -230,35 +230,57 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
     if (ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id == trv_commands_set) {
 
-      local_temperature_dp_id        =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_local_temperature_dp_id;
-      current_heating_setpoint_dp_id =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_dp_id;
+      local_temperature_dp_id        =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_local_temperature_dp_id;
+      current_heating_setpoint_dp_id =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_dp_id;
 
-      system_mode_on_dp_id           =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_on_dp_id;
-      system_mode_off_dp_id          =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_off_dp_id;
-      system_mode_value_on           =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_on_dp_value_on;
-      system_mode_value_off          =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_off_dp_value_off;
+      system_mode_on_dp_id           =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_on_dp_id;
+      system_mode_off_dp_id          =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_off_dp_id;
+      system_mode_value_on           =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_on_dp_value_on;
+      system_mode_value_off          =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_off_dp_value_off;
       
-      running_state_dp_id            =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_id;
-      running_state_value_idle       =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_value_idle;
-      running_state_value_heat       =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_value_heat;
+      running_state_dp_id            =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_id;
+      running_state_value_idle       =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_value_idle;
+      running_state_value_heat       =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_value_heat;
 
-      temperature_calibration_dp_id  =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_calibration_dp_id;
+      temperature_calibration_dp_id  =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_calibration_dp_id;
 
-      low_battery_dp_id              =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_low_battery_dp_id;
-      battery_level_dp_id            =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_battery_level_dp_id;
+      low_battery_dp_id              =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_low_battery_dp_id;
+      battery_level_dp_id            =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_battery_level_dp_id;
 
-      schedule_mode_dp_id            =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_schedule_mode_dp_id;
-      schedule_mode_value_on         =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_schedule_mode_dp_value_on;
-      schedule_mode_value_off        =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_schedule_mode_dp_value_off;
+      schedule_mode_dp_id            =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_schedule_mode_dp_id;
+      schedule_mode_value_on         =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_schedule_mode_dp_value_on;
+      schedule_mode_value_off        =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_schedule_mode_dp_value_off;
 
-      child_lock_dp_id               =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_child_lock_dp_id;
-      window_detect_dp_id            =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_winodow_detect_dp_id;
-      anti_freeze_dp_id              =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_anti_freeze_protect_dp_id;
-      limescale_protect_dp_id        =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_limescale_protect_dp_id;
+      child_lock_dp_id               =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_child_lock_dp_id;
+      window_detect_dp_id            =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_winodow_detect_dp_id;
+      anti_freeze_dp_id              =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_anti_freeze_protect_dp_id;
+      limescale_protect_dp_id        =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_limescale_protect_dp_id;
 
-      local_temperature_factor       =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_local_temperature_factor;
-      target_heatsetpoint_factor     =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_factor;
-      temperature_calibration_factor =  ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_calibration_factor;
+      local_temperature_factor       =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_local_temperature_factor;
+      target_heatsetpoint_factor     =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_factor;
+      temperature_calibration_factor =  
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_calibration_factor;
     } else
       log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
             ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id,
@@ -268,157 +290,222 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
   if (local_temperature_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(local_temperature_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(local_temperature_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
       
       msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, 
-                                   (float)Tuya_read_dp_result.dp_value/local_temperature_factor);
+                                   (float)Tuya_read_dp_result.dp_value /
+                                   local_temperature_factor);
+                                   
       msgZ2SDeviceHvac(channel_number_slot_2, 
                        TRV_LOCAL_TEMPERATURE_MSG, 
-                       (Tuya_read_dp_result.dp_value*100)/local_temperature_factor);
+                       (Tuya_read_dp_result.dp_value * 100) / 
+                       local_temperature_factor);
     }
   }
 
   if (current_heating_setpoint_dp_id) {
     
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(current_heating_setpoint_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(current_heating_setpoint_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_HEATING_SETPOINT_MSG, (Tuya_read_dp_result.dp_value*100)/target_heatsetpoint_factor);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_HEATING_SETPOINT_MSG, 
+                       (Tuya_read_dp_result.dp_value * 100) / 
+                       target_heatsetpoint_factor);
     }
   }
 
   if (system_mode_on_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(system_mode_on_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(system_mode_on_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
       
       if (Tuya_read_dp_result.dp_value == system_mode_value_on)
-        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1);
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_SYSTEM_MODE_MSG, 
+                         1);
     }
   }
 
   if (system_mode_off_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(system_mode_off_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(system_mode_off_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
      
       if (Tuya_read_dp_result.dp_value == system_mode_value_off)
-        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0);
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_SYSTEM_MODE_MSG, 
+                         0);
     }
   }
 
   if (schedule_mode_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(schedule_mode_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(schedule_mode_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
       
       if (Tuya_read_dp_result.dp_value == schedule_mode_value_on)
-        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 1);
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_SCHEDULE_MODE_MSG, 
+                         1);
     }
   } 
 
   if (schedule_mode_dp_id && (schedule_mode_value_off < 0xFF)) {
     
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(schedule_mode_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(schedule_mode_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
       
       if (Tuya_read_dp_result.dp_value == schedule_mode_value_off)
-        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 0);
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_SCHEDULE_MODE_MSG, 
+                         0);
     }
   }
 
   if (running_state_dp_id) {
     
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(running_state_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(running_state_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
       
       if (Tuya_read_dp_result.dp_value == running_state_value_idle)
-        msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, 0);
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                        TRV_RUNNING_STATE_MSG, 
+                        0);
       else
-        msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, 1);
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_RUNNING_STATE_MSG, 
+                         1);
     }
   }
 
   if (temperature_calibration_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(temperature_calibration_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(temperature_calibration_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
 
       msgZ2SDeviceHvac(channel_number_slot_2, 
                        TRV_TEMPERATURE_CALIBRATION_MSG, 
-                       (Tuya_read_dp_result.dp_value*100)/temperature_calibration_factor);
+                       (Tuya_read_dp_result.dp_value * 100) / 
+                       temperature_calibration_factor);
     }
   }
   
   if (low_battery_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(low_battery_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(low_battery_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
 
       uint8_t battery_level = (Tuya_read_dp_result.dp_value == 0) ? 100 : 0; 
     
-      updateSuplaBatteryLevel(channel_number_slot_1, ZBD_LOW_BATTERY_MSG, battery_level);
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_LOW_BATTERY_MSG, Tuya_read_dp_result.dp_value);
+      updateSuplaBatteryLevel(channel_number_slot_1, 
+                              ZBD_LOW_BATTERY_MSG, 
+                              battery_level);
+
+      msgZ2SDeviceHvac(channel_number_slot_2,
+                       TRV_LOW_BATTERY_MSG, 
+                       Tuya_read_dp_result.dp_value);
     }
   }
 
   if (battery_level_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(battery_level_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(battery_level_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
 
-      updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
+      updateSuplaBatteryLevel(channel_number_slot_1, 
+                              ZBD_BATTERY_LEVEL_MSG, 
+                              Tuya_read_dp_result.dp_value);
+
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_BATTERY_LEVEL_MSG, 
+                       Tuya_read_dp_result.dp_value);
     }
   }
 
   if (child_lock_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(child_lock_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(child_lock_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
 
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_CHILD_LOCK_MSG, Tuya_read_dp_result.dp_value);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_CHILD_LOCK_MSG, 
+                       Tuya_read_dp_result.dp_value);
     }
   }
 
   if (window_detect_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(window_detect_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(window_detect_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
 
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_WINDOW_DETECT_MSG, Tuya_read_dp_result.dp_value);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_WINDOW_DETECT_MSG, 
+                       Tuya_read_dp_result.dp_value);
     }
   }
 
   if (anti_freeze_dp_id) {
 
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(anti_freeze_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(anti_freeze_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
 
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_ANTI_FREEZE_MSG, Tuya_read_dp_result.dp_value);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_ANTI_FREEZE_MSG, 
+                       Tuya_read_dp_result.dp_value);
     }
   }
 
   if (limescale_protect_dp_id) {
     
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(limescale_protect_dp_id, payload_size, payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(limescale_protect_dp_id, 
+                                              payload_size, 
+                                              payload);
     
     if (Tuya_read_dp_result.is_success) {
 
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_LIMESCALE_PROTECT_MSG, Tuya_read_dp_result.dp_value);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_LIMESCALE_PROTECT_MSG, 
+                       Tuya_read_dp_result.dp_value);
     }
   }
 }

@@ -260,13 +260,18 @@ void msgZ2SDeviceRollerShutter(int16_t channel_number_slot, uint8_t msg_id, uint
     auto Supla_Z2S_RollerShutter = reinterpret_cast<Supla::Control::Z2S_RollerShutter *>(element);
 
     switch (msg_id) {
+
+
       case RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG:
+
         Supla_Z2S_RollerShutter->setRSCurrentPosition(msg_value); break;
+
+
       case RS_MOVING_DIRECTION_MSG:
+
         Supla_Z2S_RollerShutter->setRSMovingDirection(msg_value); break;
     }
-    //Supla_Z2S_VirtualRelay->getChannel()->setStateOnline();
-    //Supla_Z2S_VirtualRelay->Z2S_setOnOff(state);     
-    //Supla_Z2S_VirtualRelay->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));     
+    
+    Supla_Z2S_RollerShutter->Refresh();
   }
 }

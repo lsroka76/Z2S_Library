@@ -23,6 +23,7 @@ ZigbeeEP::ZigbeeEP(uint8_t endpoint) {
   _ep_config.endpoint = 0;
   _cluster_list = nullptr;
   _on_identify = nullptr;
+  _on_open_network = nullptr;
   _time_status = 0;
 
 //  _on_bound_device = nullptr;
@@ -310,7 +311,10 @@ void ZigbeeEP::zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute) {
 }
 
 void ZigbeeEP::zbIdentify(const esp_zb_zcl_set_attr_value_message_t *message) {
-  if (message->attribute.id == ESP_ZB_ZCL_CMD_IDENTIFY_IDENTIFY_ID && message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+  
+  if (message->attribute.id == ESP_ZB_ZCL_CMD_IDENTIFY_IDENTIFY_ID && 
+      message->attribute.data.type == ESP_ZB_ZCL_ATTR_TYPE_U16) {
+
     if (_on_identify != NULL) {
       _on_identify(*(uint16_t *)message->attribute.data.value);
     }

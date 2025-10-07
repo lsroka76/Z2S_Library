@@ -44,6 +44,8 @@ class Z2S_RollerShutter : public RollerShutterInterface {
   void setRSCurrentPosition(uint8_t rs_current_position);
   void setRSMovingDirection(uint8_t rs_moving_direction);
 
+  void Refresh();
+
   void setKeepAliveSecs(uint32_t keep_alive_secs);
   void setTimeoutSecs(uint32_t timeout_secs);
 
@@ -65,7 +67,9 @@ class Z2S_RollerShutter : public RollerShutterInterface {
 
   uint8_t _rs_moving_direction = 1;
   uint8_t _rs_current_position = 0xFF;
-  bool _rs_current_position_changed = false;
+  bool    _rs_current_position_changed = false;
+
+  int8_t  _rs_target_position = -1;
 
   bool _fresh_start = true;
 

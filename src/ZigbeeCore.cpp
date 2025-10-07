@@ -419,14 +419,20 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
         if (err_status == ESP_OK) {
           if (*(uint8_t *)esp_zb_app_signal_get_params(p_sg_p)) {
             Zigbee.setNetworkOpen(true);
-            log_i("Network(0x%04hx) is open for %d seconds", esp_zb_get_pan_id(), *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
+            log_i("Network(0x%04hx) is open for %d seconds", 
+                  esp_zb_get_pan_id(), 
+                  *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
           } else {
             Zigbee.setNetworkOpen(false);
-            log_i("Network(0x%04hx) closed, devices joining not allowed.", esp_zb_get_pan_id());
+            log_i("Network(0x%04hx) closed, devices joining not allowed.", 
+            esp_zb_get_pan_id());
           }
+          for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); 
+               it != Zigbee.ep_objects.end(); 
+               ++it) 
+            (*it)->zbOpenNetwork(*(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
         }
-      }
-      break;
+      } break;
 
     case ESP_ZB_ZDO_SIGNAL_LEAVE:  // End Device + Router
       // Device was removed from the network, factory reset the device

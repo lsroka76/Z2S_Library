@@ -53,7 +53,7 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT: {
         
         uint8_t lift_percentage = 0;
-
+        
         _gateway->sendWindowCoveringCmd(&_device, 
                                         ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
                                         &lift_percentage); 
@@ -131,11 +131,53 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(uint8_t lift_perc
 
 
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
-      case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT:
 
         _gateway->sendWindowCoveringCmd(&_device, 
                                         ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
-                                        &lift_percentage); break;
+                                        &lift_percentage);
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT: {
+
+        if (_rs_target_position == 0) {
+
+          if (_rs_current_position > 10) {
+
+            targetPosition = _rs_current_position - 10;
+          } else {
+
+            targetPosition = 0;
+            _rs_target_position = -1;
+          }
+        }
+
+        if (_rs_target_position == 100) {
+
+          if (_rs_current_position < 90) {
+
+            targetPosition = _rs_current_position + 10;
+          } else {
+
+            targetPosition = 100;
+            _rs_target_position = -1;
+          }
+        }
+
+        log_i("lift_percentage %u\n\r"
+              "_rs_target_position %d\n\r"
+              "_rs_current_position %d\n\r"
+              "newTargetPositionAvailable %d",
+              lift_percentage,
+              _rs_target_position,
+              _rs_current_position,
+              newTargetPositionAvailable); 
+
+        
+        _gateway->sendWindowCoveringCmd(&_device, 
+                                        ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
+                                        &lift_percentage); 
+
+      }break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
@@ -156,11 +198,18 @@ void Supla::Control::Z2S_RollerShutter::ping() {
 
 
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
+      case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT:
 
-        _gateway->sendAttributeRead(&_device, 
+        if (_gateway->sendAttributeRead(&_device, 
                                     ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, 
                                     ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID, 
-                                    false); break;
+                                    false)) { /*true))
+          if (*(esp_zb_zcl_status_t *)_gateway->getReadAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
+            
+            _rs_current_position = *(uint8_t *)_gateway->getReadAttrLastResult()->data.value;
+            setCurrentPosition(_rs_current_position);*/
+          }
+      break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR:
@@ -202,6 +251,17 @@ void Supla::Control::Z2S_RollerShutter::onTimer() {
           targetPosition, 100 - targetPosition);
 
     newTargetPositionAvailable = false;
+
+    /*switch (targetPosition) {
+
+      case 0: 
+      case 100:
+        _rs_target_position = targetPosition; break;
+
+      default:
+      break;
+    }*/
+    
     rsMoveToLiftPercentage(targetPosition);
   }
 }
@@ -268,18 +328,43 @@ void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(uint8_t rs_current_
 
   return;*/
 
- if (_rs_moving_direction != 1) {
+  if (_rs_moving_direction != 1) {
   _rs_current_position = rs_current_position;
+
+  /*if (_rs_target_position >= 0)
+          newTargetPositionAvailable = true;
+  */
   setCurrentPosition(_rs_current_position);
- }
- else
+ } else
   log_i("No RS movement detected - ignoring setRSCurrentPosition new value %u", rs_current_position);
 }
 
 void Supla::Control::Z2S_RollerShutter::setRSMovingDirection(uint8_t rs_moving_direction) {
 
-  _rs_moving_direction = rs_moving_direction;
+  switch (_z2s_function) {
+
+
+    case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT:
+      
+      //_rs_moving_direction = 0; break;
+      _rs_moving_direction = rs_moving_direction; break;
+    
+
+    default:
+      
+      _rs_moving_direction = rs_moving_direction; break;
+  }
 }
+
+void Supla::Control::Z2S_RollerShutter::Refresh() {
+
+  _last_ping_ms = millis();
+  _last_seen_ms = _last_ping_ms;
+  
+  if (!channel.isStateOnline()) 
+	  channel.setStateOnline();
+}
+
 
 void Supla::Control::Z2S_RollerShutter::setKeepAliveSecs(uint32_t keep_alive_secs) {
 

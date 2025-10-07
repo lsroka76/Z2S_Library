@@ -104,6 +104,8 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
 
+      SuplaDevice.saveStateToStorage();
+      
       auto Supla_VirtualRelay = new Supla::Control::VirtualRelay(); 
 
       z2s_channels_table[first_free_slot].Supla_channel = Supla_VirtualRelay->getChannelNumber();

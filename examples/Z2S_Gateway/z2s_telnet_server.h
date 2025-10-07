@@ -1,4 +1,3 @@
-//#include <Arduino.h>
 #ifndef Z2S_TELNET_SERVER_H_
 #define Z2S_TELNET_SERVER_H_
 

@@ -122,6 +122,8 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
             
   Supla_Z2S_HvacBase->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+  Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_channels_table[channel_number_slot].Supla_secondary_channel);
+  Supla_Z2S_HvacBase->setBinarySensorChannelNo(z2s_channels_table[channel_number_slot].Supla_channel);
 
   if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
     Supla_Z2S_HvacBase->setInitialCaption(z2s_channels_table[channel_number_slot].Supla_channel_name);
