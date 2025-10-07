@@ -1528,6 +1528,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000", .model_name = "SNZB-03",
+   .z2s_device_uid = 3810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_mcxw5ehu", .model_name = "TS0202",
    .z2s_device_uid = 3900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
@@ -2004,6 +2009,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_okaz9tjs", .model_name = "TS011F",
     .z2s_device_uid = 11800,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3210_fgwhjm9j", .model_name = "TS011F",
+    .z2s_device_uid = 11805,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
 	  .z2s_device_endpoints_count = 1},
 
