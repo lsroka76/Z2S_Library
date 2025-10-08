@@ -16,7 +16,11 @@ static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
   "AND GATE",
   "OR GATE",
   "NOT GATE",
-  "XOR GATE"
+  "XOR GATE",
+  "NAND GATE",
+  "NOR GATE",
+  "AND GATE (3 INPUTS)",
+  "OR GATE (3 INPUTS)"
 };
 
 const char* getZ2SDeviceLocalActionHandlerTypeName(int16_t channel_number_slot);

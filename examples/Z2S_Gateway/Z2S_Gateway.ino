@@ -406,6 +406,10 @@ void setup() {
 
   Z2S_loadZbDevicesTable();
 
+  //esp_zb_ieee_addr_t esp_zb_ieee_addr = {};
+
+  //Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr, 0, "_TZE204_mtoaryre","TS0601", 1, Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY, 0);
+
   Z2S_loadChannelsTable();
 
   if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_REBUILD_CHANNELS_ON_START, 

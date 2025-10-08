@@ -128,6 +128,8 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *devi
   }
 }
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
                               int8_t sub_id, char *name, uint32_t func) {
   
@@ -195,6 +197,8 @@ void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, bool state) {
   }
 }
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 void msgZ2SDeviceVirtualRelayValue(int16_t channel_number_slot, uint8_t value_id, uint32_t value) {
 
   if (channel_number_slot < 0) {
@@ -241,7 +245,7 @@ void msgZ2SDeviceVirtualRelayValue(int16_t channel_number_slot, uint8_t value_id
   }
 }
 
-
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void msgZ2SDeviceRollerShutter(int16_t channel_number_slot, uint8_t msg_id, uint16_t msg_value) {
 

@@ -25,6 +25,20 @@ LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(uint8_t pin_logic_o
   : _pin_logic_operator(pin_logic_operator) {
 
     log_i("_pin_logic_operator %u, pin_logic_operator %u", _pin_logic_operator, pin_logic_operator);
+    switch (_pin_logic_operator) {
+
+
+      case PIN_LOGIC_OPERATOR_AND3:
+      case PIN_LOGIC_OPERATOR_OR3:
+
+        _pin_c = 0;
+      break;
+
+      default:
+
+        _pin_c = 0xFF;
+      break;
+    }
   };
 
 LocalActionHandlerWithTrigger::~LocalActionHandlerWithTrigger() {};
@@ -38,13 +52,18 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
   bool logic_operation_result = false;
 
-  bool pins_changed = false;
+  bool pins_changed = true;
 
   switch (action) {
 
     case TURN_ON: {
       
-      if (_pin_a == 0) {
+      (_pin_a == 0) ? 
+        _pin_a = 1 : (_pin_b == 0) ? 
+          _pin_b = 1 : (_pin_c == 0) ? 
+            _pin_c = 1 : pins_changed = false;
+
+      /*if (_pin_a == 0) {
         
         _pin_a = 1;
         pins_changed = true;
@@ -55,15 +74,20 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
           _pin_b = 1;
           pins_changed = true;
         }
-      }
+      }*/
 
-      log_i("TURN_ON _pin_a %u, _pin_b %u, _pin_logic_operator %u, pins_changed %s", 
-            _pin_a, _pin_b, _pin_logic_operator, pins_changed ? "TRUE" : "FALSE");
+      log_i("TURN_ON _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, pins_changed %s", 
+            _pin_a, _pin_b, _pin_c, _pin_logic_operator, pins_changed ? "TRUE" : "FALSE");
     } break;
 
     case TURN_OFF: {
 
-      if (_pin_a == 1) {
+      (_pin_a == 1) ? 
+        _pin_a = 0 : (_pin_b == 1) ? 
+          _pin_b = 0 : (_pin_c == 1) ? 
+            _pin_c = 0 : pins_changed = false;
+
+      /*if (_pin_a == 1) {
 
         _pin_a = 0;
         pins_changed = true;
@@ -74,9 +98,10 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
           _pin_b = 0;
           pins_changed = true;
         }
-      }
-      log_i("TURN_OFF _pin_a %u, _pin_b %u, _pin_logic_operator %u, pins_changed %s", 
-            _pin_a, _pin_b, _pin_logic_operator, pins_changed ? "TRUE" : "FALSE");
+      }*/
+
+      log_i("TURN_OFF _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, pins_changed %s", 
+            _pin_a, _pin_b, _pin_c, _pin_logic_operator, pins_changed ? "TRUE" : "FALSE");
     } break;
   }
   
@@ -104,6 +129,22 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
     case PIN_LOGIC_OPERATOR_NOT:
 
       logic_operation_result = !_pin_a; break;
+
+    case PIN_LOGIC_OPERATOR_NAND:
+
+      logic_operation_result = !(_pin_a & _pin_b); break;
+
+    case PIN_LOGIC_OPERATOR_NOR:
+
+      logic_operation_result = !(_pin_a | _pin_b); break;
+
+    case PIN_LOGIC_OPERATOR_AND3:
+
+      logic_operation_result = (_pin_a & _pin_b & _pin_c); break;
+
+    case PIN_LOGIC_OPERATOR_OR3:
+
+      logic_operation_result = (_pin_a | _pin_b & _pin_c); break;
   }
   
   log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");

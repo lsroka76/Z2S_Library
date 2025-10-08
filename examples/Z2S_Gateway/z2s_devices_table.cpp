@@ -672,8 +672,13 @@ bool Z2S_updateZbDeviceUidIdx(uint8_t zb_device_slot, const char *manufacturer_n
   return false;
 }
 
-uint8_t Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, char *manufacturer_name, char *model_name, 
-                                 uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source) {
+uint8_t Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, 
+                                 uint16_t short_addr, 
+                                 char *manufacturer_name, 
+                                 char *model_name, 
+                                 uint8_t endpoints_count, 
+                                 uint32_t desc_id, 
+                                 uint8_t power_source) {
 
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 

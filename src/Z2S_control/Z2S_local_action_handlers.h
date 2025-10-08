@@ -32,6 +32,11 @@
 #define PIN_LOGIC_OPERATOR_OR   0x02
 #define PIN_LOGIC_OPERATOR_NOT  0x03
 #define PIN_LOGIC_OPERATOR_XOR  0x04
+#define PIN_LOGIC_OPERATOR_NAND 0x05
+#define PIN_LOGIC_OPERATOR_NOR  0x06
+#define PIN_LOGIC_OPERATOR_AND3 0x07
+#define PIN_LOGIC_OPERATOR_OR3  0x08
+
 
 //typedef void (*_actionhandler_callback)(int event, int action);
 
@@ -63,11 +68,12 @@ class LocalActionHandlerWithTrigger : public Element, public LocalAction, public
   protected:
     uint8_t _pin_a = 0;
     uint8_t _pin_b = 0;
+    uint8_t _pin_c = 0xFF;
+
     uint8_t _pin_logic_operator = PIN_LOGIC_OPERATOR_AND;
 
     uint32_t _pending_postponed_turn_on_ms = 0;
     uint32_t _postponed_turn_on_ms = 0;
-
 };
 
 };  // namespace Supla

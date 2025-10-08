@@ -337,6 +337,10 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_ADD_OR_HANDLER_FLAG								0x4051
 #define GUI_CB_ADD_XOR_HANDLER_FLAG								0x4052
 #define GUI_CB_ADD_NOT_HANDLER_FLAG								0x4053
+#define GUI_CB_ADD_NAND_HANDLER_FLAG							0x4054
+#define GUI_CB_ADD_NOR_HANDLER_FLAG								0x4055
+#define GUI_CB_ADD_AND3_HANDLER_FLAG							0x4056
+#define GUI_CB_ADD_OR3_HANDLER_FLAG								0x4057
 
 #define GUI_CB_SAVE_PROGRAM_FLAG									0x5000
 #define GUI_CB_LOAD_PROGRAM_FLAG									0x5001
@@ -1598,6 +1602,42 @@ void buildChannelsTabGUI() {
 									 lah_panel, 
 									 addLocalActionHandlerCallback,
 									 (void*)GUI_CB_ADD_NOT_HANDLER_FLAG);
+
+	working_str = PSTR("Add NAND gate");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalActionHandlerCallback,
+									 (void*)GUI_CB_ADD_NAND_HANDLER_FLAG);
+
+	working_str = PSTR("Add NOR gate");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalActionHandlerCallback,
+									 (void*)GUI_CB_ADD_NOR_HANDLER_FLAG);
+
+	working_str = PSTR("Add AND gate (3 inputs)");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalActionHandlerCallback,
+									 (void*)GUI_CB_ADD_AND3_HANDLER_FLAG);
+
+	working_str = PSTR("Add OR gate (3 inputs)");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalActionHandlerCallback,
+									 (void*)GUI_CB_ADD_OR3_HANDLER_FLAG);
 
 	working_str = PSTR("Add virtual relay");
 	ESPUI.addControl(Control::Type::Button, 
@@ -6472,6 +6512,26 @@ void addLocalActionHandlerCallback(Control *sender, int type, void *param) {
 			case GUI_CB_ADD_NOT_HANDLER_FLAG:
 
 				logic_operator = PIN_LOGIC_OPERATOR_NOT;
+			break;
+
+			case GUI_CB_ADD_NAND_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_NAND;
+			break;
+
+			case GUI_CB_ADD_NOR_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_NOR;
+			break;
+
+			case GUI_CB_ADD_AND3_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_AND3;
+			break;
+
+			case GUI_CB_ADD_OR3_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_OR3;
 			break;
 		}
 
