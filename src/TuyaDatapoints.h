@@ -116,6 +116,7 @@
 #define TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_C_DP            0x7E//[126, "power_factor_c", tuya.valueConverter.raw],
 #define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_C_DP                  0x7F//[127, "energy_c", tuya.valueConverter.divideBy100],
 #define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_PRODUCED_C_DP         0x80//[128, "energy_produced_c", tuya.valueConverter.divideBy100],
+#define TUYA_3PHASES_ELECTRICITY_METER_UPDATE_FREQUENCY_DP          0x66//[102, "update_frequency", tuya.valueConverterBasic.divideBy(1)],
 
 #define TUYA_1PHASE_ELECTRICITY_METER_ENERGY_A_DP                   0x01//[1, "energy", tuya.valueConverter.divideBy100],
 #define TUYA_1PHASE_ELECTRICITY_METER_ENERGY_PRODUCED_A_DP          0x17//[23, "produced_energy", tuya.valueConverter.divideBy100],

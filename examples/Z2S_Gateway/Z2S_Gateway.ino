@@ -406,9 +406,10 @@ void setup() {
 
   Z2S_loadZbDevicesTable();
 
-  //esp_zb_ieee_addr_t esp_zb_ieee_addr = {};
+  esp_zb_ieee_addr_t esp_zb_ieee_addr = {};
 
-  //Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr, 0, "_TZE204_mtoaryre","TS0601", 1, Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY, 0);
+  esp_zb_ieee_addr[0] = 0xAB;
+  //Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr, 0, "_TZE204_t1blo2bj","TS0601", 1, Z2S_DEVICE_DESC_MOES_ALARM, 0);
 
   Z2S_loadChannelsTable();
 

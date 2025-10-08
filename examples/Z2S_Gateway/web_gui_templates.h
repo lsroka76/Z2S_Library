@@ -104,7 +104,7 @@ static constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 	"Standard GUI (Minimal + Devices + Channels + Actions)",
 	"Extended GUI (Standard + Clusters&Attributes)",
 	"Full GUI",
-	"Developer GUI (Gateway + C&A + AD +TCC)",
+	"Developer GUI (Gateway + C&A + AD + TCC)",
 	"Supla GUI (Gateway + Credentials + Channels + Actions)"
 };
 
@@ -1362,63 +1362,69 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Sensitivity",
-    .Tuya_datapoint_description = "0 (low), 1 (medium), 2 (high)" },
+    .Tuya_datapoint_description = "Enter numeric value: <br><br>"
+																	"0 => low), 1 => medium, 2 => high" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_KEEP_TIME_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Keep Time",
-    .Tuya_datapoint_description = "0 (10s), 1 (30s), 2 (60 s), 3 (120 s)" },
+    .Tuya_datapoint_description = "Enter numeric value: <br><br>"
+																	"0 => 10s, 1 => 30s, 2 => 60 s, 3 => 120 s" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Illuminance Interval",
-    .Tuya_datapoint_description = "Brightness acquisition interval<br>"
-																	"Enter numeric value between 1 and 720 [min]" },
+    .Tuya_datapoint_description = "Brightness acquisition interval.<br><br>"
+																	"Enter numeric value between 1 and 720 [min]." },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Sensitivity",
-    .Tuya_datapoint_description = "0 (low), 1 (medium), 2 (high)" },
+    .Tuya_datapoint_description = "Enter numeric value: <br><br>"
+																	"0 => low), 1 => medium, 2 => high" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_KEEP_TIME_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Keep Time",
-    .Tuya_datapoint_description = "0 (10s), 1 (30s), 2 (60 s), 3 (120 s)" },
+    .Tuya_datapoint_description = "Enter numeric value: <br><br>"
+																	"0 => 10s, 1 => 30s, 2 => 60 s, 3 => 120 s" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Illuminance Interval",
     .Tuya_datapoint_description = "Brightness acquisition interval<br>"
-																	"Enter numeric value between 1 and 720 [min]" },
+																	"Enter numeric value between 1 and 720 [min]." },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_ALARM,
     .Tuya_datapoint_id 		 			= MOES_ALARM_DURATION_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Alarm Duration",
-    .Tuya_datapoint_description = "Alarm duration 1- 1800 s/1s" },
+    .Tuya_datapoint_description = "Alarm duration 1- 1800 [s]." },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_ALARM,
     .Tuya_datapoint_id 		 			= MOES_ALARM_MELODY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Alarm Melody",
-    .Tuya_datapoint_description = "Enter numeric value between 0 - 17" },
+    .Tuya_datapoint_description = "Enter numeric value between 0 - 17." },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_ALARM,
     .Tuya_datapoint_id 		 			= MOES_ALARM_VOLUME_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Alarm Volume",
-    .Tuya_datapoint_description = "0 (low), 1 (medium), 2 (high)" },
+    .Tuya_datapoint_description = "Enter numeric value: <br><br>"
+																	"0 =>low, 1 =>medium, 2 => high" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_ALARM,
     .Tuya_datapoint_id 		 			= MOES_ALARM_SWITCH_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
     .Tuya_datapoint_name 	 			= "Alarm On/Off",
-    .Tuya_datapoint_description = "0 (off), 1 (on)" },
+    .Tuya_datapoint_description = "Enter numeric value: <br><br>"
+																	"0 => OFF, 1 => ON" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_RELAY_SENSITIVITY_DP,
@@ -1444,9 +1450,9 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_RELAY_ENTRY_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Sensitivity Threshold",
-    .Tuya_datapoint_description = "triggered for the first time when the target "
+    .Tuya_datapoint_description = "Triggered for the first time when the target "
 																	"enters the detection range.<br><br>"
-																	"Enter numeric value between 0 and 9" },
+																	"Enter numeric value between 0 and 9." },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_RELAY_ENTRY_DISTANCE_INDENTATION_DP,
@@ -1463,7 +1469,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Time threshold for the initial detection "
 																	"once a target enters the detection area "
 																	"(for reducing/eliminating false triggers "
-																	"when sensor first detects motion<br><br>"
+																	"when sensor first detects motion).<br><br>"
 																	"Enter numeric value between 0 and 100 / 1 = 0.1 [s]" },
 	
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
@@ -1472,7 +1478,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Departure Delay",
     .Tuya_datapoint_description = "This is a motion clearance timer, which holds "
 																	"the state of the sensor to occupied "
-																	"for the set duration (default 15 s) <br><br>"
+																	"for the set duration (default 15 s).<br><br>"
 																	"Enter numeric value between 1 and 1500 [s]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
@@ -1485,7 +1491,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
 																	"detect presence again until he timer "
 																	"expires for reducing/eliminating "
 																	"false triggers caused by edge "
-																	"interference (default: 2,5 s)<br><br>"
+																	"interference (default: 2,5 s).<br><br>"
 																	"Enter numeric value between 0 and 100 / 1 = 0.1 [s]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
@@ -1508,7 +1514,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Sensor state",
-    .Tuya_datapoint_description = "The radar sensor can be set in four states: on, off, occupied and unoccupied.<br>"
+    .Tuya_datapoint_description = "The radar sensor can be set in four states: <br>on, off, occupied and unoccupied.<br><br>"
 																	"0 => turn sensor ON<br>"
 																	"1 => turn sensor OFF<br>"
 																	"2 => set sensor to OCCUPIED (permanently)<br>"
@@ -1521,9 +1527,41 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "The Illuminance Threshold is used when the Breaker Mode is set to local. "
 																	"When the illuminance is below the threshold, the relay is turned on/off normally "
 																	"When the illuminance is above the threshold, the relay will not be turned on/off "
-																	"regardless of detected presence. Default value is  lx<br><br>"
+																	"regardless of detected presence. Default value is 420 lx<br><br>"
 																	"Enter numeric value between 0 and 4200 / 1 = 0.1 [lx]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER,
+    .Tuya_datapoint_id 		 			= TUYA_3PHASES_ELECTRICITY_METER_UPDATE_FREQUENCY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Measurement update frequency",
+    .Tuya_datapoint_description = "Enter numeric value between 30 and 3600 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR,
+    .Tuya_datapoint_id 		 			= TUYA_GAS_DETECTOR_RINGTONE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Alarm Ringtone",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 4 to select melody number (1 - 5)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR,
+    .Tuya_datapoint_id 		 			= TUYA_GAS_DETECTOR_ALARM_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Alarm Duration",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 180 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR,
+    .Tuya_datapoint_id 		 			= TUYA_GAS_DETECTOR_SELF_TEST_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Selftest",
+    .Tuya_datapoint_description = "Enter numeric value:<br><br>"
+																	"0 => turn Selftest OFF, 1 => turn Selftest ON" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR,
+    .Tuya_datapoint_id 		 			= TUYA_GAS_DETECTOR_SILENCE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Silence",
+    .Tuya_datapoint_description = "Enter numeric value:<br><br>"
+																	"0 => turn Silence OFF, 1 => turn Silence ON" }
 };
-	
+
 #endif //WEB_GUI_TEMPLATES_H_
 //

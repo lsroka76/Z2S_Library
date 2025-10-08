@@ -6350,10 +6350,10 @@ void valveCallback(Control *sender, int type, void *param) {
 				current_Tuya_payload_label = gas_alarm_Tuya_payload_label;
 
 				if (sendTuyaRequestCmdBool(&zbGateway, 
-																			&device, 
-																			TUYA_GAS_DETECTOR_SELF_TEST_RESULT_DP,
-																			true, //ON
-																			CUSTOM_CMD_SYNC))
+																	 &device, 
+																	 TUYA_GAS_DETECTOR_SELF_TEST_RESULT_DP,
+																	 true, //ON
+																	 CUSTOM_CMD_SYNC))
 
 					updateLabel_P(gas_alarm_info_label, PSTR("Self-test command sent"));
 				else
@@ -6367,10 +6367,10 @@ void valveCallback(Control *sender, int type, void *param) {
 				current_Tuya_payload_label = gas_alarm_Tuya_payload_label;
 
 				if (sendTuyaRequestCmdBool(&zbGateway, 
-																			&device, 
-																			TUYA_GAS_DETECTOR_SILENCE_DP,
-																			true, //ON
-																			CUSTOM_CMD_SYNC))
+																	 &device, 
+																	 TUYA_GAS_DETECTOR_SILENCE_DP,
+																	 true, //ON
+																	 CUSTOM_CMD_SYNC))
 
 					updateLabel_P(gas_alarm_info_label, PSTR("Silence command sent"));
 				else
