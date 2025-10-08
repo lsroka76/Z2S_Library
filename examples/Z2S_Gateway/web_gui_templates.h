@@ -4,6 +4,8 @@
 #include <supla/actions.h>
 #include <supla/events.h>
 
+#include "TuyaDatapoints.h"
+
 enum ActionGUIState {
 
 	VIEW_ACTION,
@@ -58,11 +60,11 @@ typedef struct Tuya_datapoint_type_s {
 
 typedef struct Tuya_datapoint_desc_s {
 
-  uint32_t    Tuya_datapoint_desc_id;
+  //uint32_t    Tuya_datapoint_desc_id;
   uint32_t    z2s_device_desc_id;
   uint8_t     Tuya_datapoint_id;
   uint8_t     Tuya_datapoint_type;
-  uint16_t    Tuya_datapoint_length;
+  //uint16_t    Tuya_datapoint_length;
   const char *Tuya_datapoint_name;
   const char *Tuya_datapoint_description;
 } Tuya_datapoint_desc_t;
@@ -276,27 +278,27 @@ static constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM =
 static constexpr Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM = 
 	
 	{{ .Tuya_datapoint_type_name = "RAW", 		
-		 .Tuya_datapoint_type_id = 0x00, 
+		 .Tuya_datapoint_type_id = TUYA_DP_TYPE_RAW, 
 		 .Tuya_datapoint_type_length = 0x00 },
 	
 	 { .Tuya_datapoint_type_name = "BOOL", 	
-	 	 .Tuya_datapoint_type_id = 0x01, 
+	 	 .Tuya_datapoint_type_id = TUYA_DP_TYPE_BOOL, 
 		 .Tuya_datapoint_type_length = 0x01 },
 
 	 { .Tuya_datapoint_type_name = "VALUE", 	
-	 	 .Tuya_datapoint_type_id = 0x02, 
+	 	 .Tuya_datapoint_type_id = TUYA_DP_TYPE_VALUE, 
 		 .Tuya_datapoint_type_length = 0x04 },
 
 	 { .Tuya_datapoint_type_name = "STRING", 
-	 	 .Tuya_datapoint_type_id = 0x03, 
+	 	 .Tuya_datapoint_type_id = TUYA_DP_TYPE_STRING, 
 		 .Tuya_datapoint_type_length = 0x00 },
 
 	 { .Tuya_datapoint_type_name = "ENUM", 	
-	 	 .Tuya_datapoint_type_id = 0x04, 
+	 	 .Tuya_datapoint_type_id = TUYA_DP_TYPE_ENUM, 
 		 .Tuya_datapoint_type_length = 0x01 },
 
 	 { .Tuya_datapoint_type_name = "BITMAP", 
-	 	 .Tuya_datapoint_type_id = 0x05, 
+	 	 .Tuya_datapoint_type_id = TUYA_DP_TYPE_BITMAP, 
 		 .Tuya_datapoint_type_length = 0x01 }
 	};
 
@@ -1356,13 +1358,41 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 
 static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
 
-  { .Tuya_datapoint_desc_id = 1,
-    .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
-    .Tuya_datapoint_id 		 			= 0x09,
-    .Tuya_datapoint_type 				= 0x04,
-    .Tuya_datapoint_length 			= 0x01,
+  { .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Sensitivity",
-    .Tuya_datapoint_description = "0 (low), 1 (medium), 2 (high)" }
+    .Tuya_datapoint_description = "0 (low), 1 (medium), 2 (high)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_KEEP_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Keep time",
+    .Tuya_datapoint_description = "0 (10s), 1 (30s), 2 (60 s), 3 (120 s)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Illuminance interval",
+    .Tuya_datapoint_description = "Brightness acquisition interval (1-720 min/1 min)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Sensitivity",
+    .Tuya_datapoint_description = "0 (low), 1 (medium), 2 (high)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_KEEP_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Keep time",
+    .Tuya_datapoint_description = "0 (10s), 1 (30s), 2 (60 s), 3 (120 s)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Illuminance interval",
+    .Tuya_datapoint_description = "Brightness acquisition interval (1-720 min/1 min)" }
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

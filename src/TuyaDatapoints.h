@@ -6,6 +6,7 @@
 #define TUYA_DP_TYPE_RAW                                            0x00
 #define TUYA_DP_TYPE_BOOL                                           0x01
 #define TUYA_DP_TYPE_VALUE                                          0x02
+#define TUYA_DP_TYPE_STRING                                         0x03
 #define TUYA_DP_TYPE_ENUM                                           0x04
 #define TUYA_DP_TYPE_BITMAP                                         0x05
 
@@ -166,6 +167,9 @@
 #define TUYA_PIR_ILLUMINANCE_SENSOR_PIR_DP                          0x01
 #define TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_DP                  0x0C
 #define TUYA_PIR_ILLUMINANCE_SENSOR_BATTERY_LEVEL_DP                0x04
+#define TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP                  0x09 //ENUM
+#define TUYA_PIR_ILLUMINANCE_SENSOR_KEEP_TIME_DP                    0x0A //ENUM
+#define TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP         0x66 //VALUE
 
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
@@ -210,7 +214,9 @@ union {
 } __attribute__((packed)) Tuya_dp_data_t;
 
 
-inline void makeTuyaDPValue32(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t dp_id, uint32_t dp_value_32_little_endian) {
+inline void makeTuyaDPValue32(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, 
+                              uint8_t dp_id, 
+                              uint32_t dp_value_32_little_endian) {
  
   Tuya_dp_zcl_payload.tsn_16_big_endian      =  __builtin_bswap16(random(0x0000, 0xFFFF));
   Tuya_dp_zcl_payload.dp_id                  =  dp_id;
@@ -220,7 +226,9 @@ inline void makeTuyaDPValue32(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_
   Tuya_dp_zcl_payload.dp_value_32_big_endian =  __builtin_bswap32(dp_value_32_little_endian);
 }
 
-inline void makeTuyaDPBool(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t dp_id, uint8_t value_8) {
+inline void makeTuyaDPBool(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, 
+                           uint8_t dp_id, 
+                           uint8_t value_8) {
  
   Tuya_dp_zcl_payload.tsn_16_big_endian      =  __builtin_bswap16(random(0x0000, 0xFFFF));
   Tuya_dp_zcl_payload.dp_id                  =  dp_id;
@@ -230,7 +238,10 @@ inline void makeTuyaDPBool(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t d
   Tuya_dp_zcl_payload.dp_value_8             =  value_8;
 }
 
-inline void makeTuyaDPEnum8(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t dp_id, uint8_t value_8) {
+inline void makeTuyaDPEnum8(Tuya_dp_zcl_payload_s 
+                            &Tuya_dp_zcl_payload, 
+                            uint8_t dp_id, 
+                            uint8_t value_8) {
  
   Tuya_dp_zcl_payload.tsn_16_big_endian      =  __builtin_bswap16(random(0x0000, 0xFFFF));
   Tuya_dp_zcl_payload.dp_id                  =  dp_id;
@@ -244,25 +255,29 @@ bool sendTuyaRequestCmdBool(ZigbeeGateway *gateway,
                             zbg_device_params_t *device, 
                             uint8_t dp_id, 
                             bool dp_value,
-                            bool cmd_sync = CUSTOM_CMD_ASYNC);
+                            bool cmd_sync = CUSTOM_CMD_ASYNC,
+                            volatile uint16_t *tsn_id = nullptr);
 
 bool sendTuyaRequestCmdEnum8(ZigbeeGateway *gateway, 
                              zbg_device_params_t *device, 
                              uint8_t dp_id, 
                              uint8_t dp_value,
-                             bool cmd_sync = CUSTOM_CMD_ASYNC);
+                             bool cmd_sync = CUSTOM_CMD_ASYNC,
+                             volatile uint16_t *tsn_id = nullptr);
 
 bool sendTuyaRequestCmdValue32(ZigbeeGateway *gateway, 
                                zbg_device_params_t *device,
                                uint8_t dp_id, 
                                uint32_t dp_value,
-                               bool cmd_sync = CUSTOM_CMD_ASYNC);
+                               bool cmd_sync = CUSTOM_CMD_ASYNC,
+                               volatile uint16_t *tsn_id = nullptr);
 
 bool sendTuyaRequestCmdData(ZigbeeGateway *gateway, 
                             zbg_device_params_t *device,
                             uint8_t dp_id,
                             uint8_t dp_type, 
                             uint32_t dp_value,
-                            bool cmd_sync = CUSTOM_CMD_ASYNC);
+                            bool cmd_sync = CUSTOM_CMD_ASYNC,
+                            volatile uint16_t *tsn_id = nullptr);
 
 #endif //TUYA_DATAPOINTS_H_

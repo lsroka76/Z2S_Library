@@ -3482,6 +3482,7 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
     case TUYA_PRIVATE_CLUSTER_EF00: {
 
       processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload); 
+      
       if (_on_Tuya_custom_cluster_receive) 
         _on_Tuya_custom_cluster_receive(command_id, payload_size, payload);
     } break;
@@ -5288,6 +5289,8 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
   
   switch (model_id) {
   
+    case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
@@ -5336,7 +5339,9 @@ void log_i_telnet2(char *log_line, bool toTelnet) {
 #endif //USE_TELNET_CONSOLE
 }
 
-void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data)) {
+void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id, 
+                                uint16_t payload_size, 
+                                uint8_t * payload_data)) {
 
   _on_Tuya_custom_cluster_receive = callback;
 }

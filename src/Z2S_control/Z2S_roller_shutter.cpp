@@ -62,7 +62,10 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
-        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x02);
+        sendTuyaRequestCmdEnum8(_gateway, 
+                                &_device, 
+                                MOES_SHADES_DRIVE_MOTOR_STATE_DP, 
+                                0x02);
         
       } break;
     }
