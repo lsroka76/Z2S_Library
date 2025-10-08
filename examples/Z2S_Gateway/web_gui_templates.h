@@ -1392,7 +1392,32 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Illuminance interval",
-    .Tuya_datapoint_description = "Brightness acquisition interval (1-720 min/1 min)" }
+    .Tuya_datapoint_description = "Brightness acquisition interval (1-720 min/1 min)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_ALARM,
+    .Tuya_datapoint_id 		 			= MOES_ALARM_DURATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Alarm duration",
+    .Tuya_datapoint_description = "Alarm duration 1- 1800 s/1s" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_ALARM,
+    .Tuya_datapoint_id 		 			= MOES_ALARM_MELODY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Alarm melody",
+    .Tuya_datapoint_description = "Input numeric value between 0 - 17" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_ALARM,
+    .Tuya_datapoint_id 		 			= MOES_ALARM_VOLUME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Alarm volume",
+    .Tuya_datapoint_description = "0 (low), 1 (medium), 2 (high)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_ALARM,
+    .Tuya_datapoint_id 		 			= MOES_ALARM_SWITCH_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Alarm on/ff",
+    .Tuya_datapoint_description = "0 (off), 1 (on)" }
+
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

@@ -1,18 +1,16 @@
 #include "TuyaDatapoints.h"
 
+/*---------------------------------------------------------------------------*/
+
 bool sendTuyaRequestCmdBool(ZigbeeGateway *gateway, 
                             zbg_device_params_t *device, 
                             uint8_t dp_id, 
                             bool dp_value,
-                            bool cmd_sync,
-                            volatile uint16_t *tsn_id) {
+                            bool cmd_sync) {
 
   Tuya_dp_zcl_payload_t Tuya_dp_zcl_payload;
         
   makeTuyaDPBool(Tuya_dp_zcl_payload, dp_id, dp_value ? 1 : 0);
-
-  if(tsn_id)
-    *tsn_id = Tuya_dp_zcl_payload.tsn_16_big_endian;
   
   return gateway->sendCustomClusterCmd(device,
                                        TUYA_PRIVATE_CLUSTER_EF00, 
@@ -23,21 +21,18 @@ bool sendTuyaRequestCmdBool(ZigbeeGateway *gateway,
                                        cmd_sync);
 }
 
+/*---------------------------------------------------------------------------*/
 
 bool sendTuyaRequestCmdEnum8(ZigbeeGateway *gateway, 
                              zbg_device_params_t *device, 
                              uint8_t dp_id, 
                              uint8_t dp_value,
-                             bool cmd_sync,
-                             volatile uint16_t *tsn_id) {
+                             bool cmd_sync) {
 
   Tuya_dp_zcl_payload_t Tuya_dp_zcl_payload;
         
   makeTuyaDPEnum8(Tuya_dp_zcl_payload, dp_id, dp_value);
   
-  if(tsn_id)
-    *tsn_id = Tuya_dp_zcl_payload.tsn_16_big_endian;
-
   return  gateway->sendCustomClusterCmd(device,
                                         TUYA_PRIVATE_CLUSTER_EF00, 
                                         TUYA_REQUEST_CMD, 
@@ -47,20 +42,18 @@ bool sendTuyaRequestCmdEnum8(ZigbeeGateway *gateway,
                                         cmd_sync);
 }
 
+/*---------------------------------------------------------------------------*/
+
 bool sendTuyaRequestCmdValue32(ZigbeeGateway *gateway, 
                                zbg_device_params_t *device,
                                uint8_t dp_id, 
                                uint32_t dp_value,
-                               bool cmd_sync,
-                               volatile uint16_t *tsn_id) {
+                               bool cmd_sync) {
 
   Tuya_dp_zcl_payload_t Tuya_dp_zcl_payload;
         
   makeTuyaDPValue32(Tuya_dp_zcl_payload, dp_id, dp_value);
   
-  if(tsn_id)
-    *tsn_id = Tuya_dp_zcl_payload.tsn_16_big_endian;
-
   return  gateway->sendCustomClusterCmd(device,
                                         TUYA_PRIVATE_CLUSTER_EF00, 
                                         TUYA_REQUEST_CMD, 
@@ -70,13 +63,14 @@ bool sendTuyaRequestCmdValue32(ZigbeeGateway *gateway,
                                         cmd_sync);
 }
 
+/*---------------------------------------------------------------------------*/
+
 bool sendTuyaRequestCmdData(ZigbeeGateway *gateway, 
                             zbg_device_params_t *device,
                             uint8_t dp_id,
                             uint8_t dp_type, 
                             uint32_t dp_value,
-                            bool cmd_sync,
-                            volatile uint16_t *tsn_id) {
+                            bool cmd_sync) {
 
   switch (dp_type) {
 
@@ -88,8 +82,7 @@ bool sendTuyaRequestCmdData(ZigbeeGateway *gateway,
                                device, 
                                dp_id, 
                                dp_value, 
-                               cmd_sync, 
-                               tsn_id);
+                               cmd_sync);
     break;
 
 
@@ -100,8 +93,7 @@ bool sendTuyaRequestCmdData(ZigbeeGateway *gateway,
                                   device, 
                                   dp_id, 
                                   dp_value, 
-                                  cmd_sync, 
-                                  tsn_id); 
+                                  cmd_sync); 
     break;
 
 
@@ -112,15 +104,30 @@ bool sendTuyaRequestCmdData(ZigbeeGateway *gateway,
                                 device, 
                                 dp_id, 
                                 dp_value, 
-                                cmd_sync,
-                                tsn_id); 
+                                cmd_sync); 
     break;
 
 
     default:
 
-      log_e("unsupported Tuya datapoint %02x type %02x", dp_id, dp_type); 
+      log_e("unsupported Tuya datapoint %02x type %02x", 
+            dp_id, 
+            dp_type); 
     break;
   }
   return false;
 }
+
+bool sendTuyaQueryCmd(ZigbeeGateway *gateway, 
+                      zbg_device_params_t *device,
+                      bool cmd_sync) {
+
+  return gateway->sendCustomClusterCmd(device,
+                                       TUYA_PRIVATE_CLUSTER_EF00, 
+                                       TUYA_QUERY_CMD, 
+                                       ESP_ZB_ZCL_ATTR_TYPE_SET, 
+                                       TUYA_DP_ZCL_PAYLOAD_0, 
+                                       nullptr, 
+                                       cmd_sync);
+
+} 

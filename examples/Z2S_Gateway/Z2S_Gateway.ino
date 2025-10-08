@@ -915,7 +915,8 @@ if (GUIstarted)
                                                TUYA_PRIVATE_CLUSTER_EF00, 
                                                TUYA_QUERY_CMD, 
                                                ESP_ZB_ZCL_ATTR_TYPE_SET, 
-                                               0, NULL);
+                                               0, 
+                                               nullptr);
 
               switch (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id) { //(joined_device->model_id) {
 
