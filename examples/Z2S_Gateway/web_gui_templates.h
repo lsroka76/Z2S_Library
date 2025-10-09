@@ -1663,6 +1663,21 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Temperature unit",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => Celsius, 1 => Fahrenheit" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_1_PIR_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "PIR Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => low, 1 => medium, 2 => high sensitivity" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_1_PIR_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "PIR Time",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => 15 [s], 1 => 30 [s], 2 => 60 [s]" }
+
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

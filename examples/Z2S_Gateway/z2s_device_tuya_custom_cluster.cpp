@@ -990,7 +990,7 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot,
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  uint8_t presence_dp_id = 0x00;
+  uint8_t presence_dp_id      = 0x00;
   uint8_t motion_state_dp_id  = 0x00;
   uint8_t illuminance_dp_id   = 0x00;
   uint8_t temperature_dp_id   = 0x00;
@@ -1051,6 +1051,12 @@ void processTuyaPresenceSensorDataReport(int16_t channel_number_slot,
       motion_state_dp_id = TUYA_PRESENCE_SENSOR_MOTION_STATE_DP;
       illuminance_dp_id = TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP;
       battery_dp_id = TUYA_PRESENCE_SENSOR_BATTERY_DP;
+    } break;
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1: {
+      
+      presence_dp_id = TUYA_PRESENCE_SENSOR_PRESENCE_DP;
+      battery_dp_id = TUYA_PRESENCE_SENSOR_1_BATTERY_DP;
     } break;
 
 
@@ -1600,6 +1606,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:

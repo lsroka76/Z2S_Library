@@ -338,7 +338,8 @@ public:
                              void *cmd_value);
 
   void sendAddGroupRequestCmd(zbg_device_params_t *device, 
-                              uint16_t group_id);
+                              uint16_t group_id,
+                              bool local = false);
 
   void sendIEEEAddrReqCmd(zbg_device_params_t *device, bool ack);
 

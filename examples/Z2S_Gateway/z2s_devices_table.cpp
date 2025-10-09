@@ -41,6 +41,8 @@ uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8] = {};
 static uint32_t Styrbar_timer = 0;
 static bool     Styrbar_ignore_button_1 = false;
 
+static int8_t cmd_dir = -1;
+
 void (*_on_Tuya_custom_cluster_receive)(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data) = nullptr;
 
 void no_channel_found_error_func(char *ieee_addr_str) {
@@ -3352,9 +3354,67 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
     
-    case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21:
+    case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB20:
+    case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB21: {
+
+
+      int8_t sub_id = 0x7F;
+
+      switch(cluster_id) {
+
+
+        case ESP_ZB_ZCL_CLUSTER_ID_ON_OFF: {
+          
+          (command_id == 0xFD) ?
+            sub_id = LIVARNO_DIMMER_SWITCH_REMOTE_TURN_ON_SID :
+              (command_id == ESP_ZB_ZCL_CMD_ON_OFF_ON_ID) ?
+                sub_id = LIVARNO_DIMMER_SWITCH_ON_PRESSED_SID :
+                sub_id = LIVARNO_DIMMER_SWITCH_OFF_PRESSED_SID;
+        } break;
+
+
+        case ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL: {
+
+          if (buffer)
+            cmd_dir = *(uint8_t*)buffer;
+
+          switch (command_id) {
+
+            case ESP_ZB_ZCL_CMD_LEVEL_CONTROL_MOVE:
+
+              (cmd_dir == 0) ? 
+                sub_id = LIVARNO_DIMMER_SWITCH_DIM_UP_HOLD_SID :
+                sub_id = LIVARNO_DIMMER_SWITCH_DIM_DOWN_HOLD_SID;
+            break;
+
+            case ESP_ZB_ZCL_CMD_LEVEL_CONTROL_STEP:
+
+            (cmd_dir == 0) ? 
+                sub_id = LIVARNO_DIMMER_SWITCH_DIM_UP_PRESSED_SID :
+                sub_id = LIVARNO_DIMMER_SWITCH_DIM_DOWN_PRESSED_SID;
+            break;
+
+            case ESP_ZB_ZCL_CMD_LEVEL_CONTROL_STOP:
+
+              (cmd_dir == 0) ? 
+                sub_id = LIVARNO_DIMMER_SWITCH_DIM_UP_LONG_PRESSED_SID :
+                sub_id = LIVARNO_DIMMER_SWITCH_DIM_DOWN_LONG_PRESSED_SID;
+            break;
+          }
+        } break;
+      }  
+      if (sub_id == 0x7F) return false;
+
+      channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+      if (channel_number_slot < 0)
+        log_i("No Livarno device channel found for address %s", ieee_addr_str);
+      else 
+        msgZ2SDeviceActionTrigger(channel_number_slot);
       return true;
-    
+    }
+
+
     case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1: {
       
       return true;
@@ -3376,22 +3436,33 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
           Styrbar_ignore_button_1 = false;
         }
       }
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x00))
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) &&
+               (command_id == 0x00))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_2_PRESSED_SID;
       else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x05))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_1_HELD_SID;
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) && compareBuffer(buffer, buffer_size, "01530000"))
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && (command_id == 0x01) &&
+                compareBuffer(buffer, buffer_size, "01530000"))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_2_HELD_SID;
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x09) && compareBuffer(buffer, buffer_size, "0000")) {
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && 
+                (command_id == 0x09) && 
+                 compareBuffer(buffer, buffer_size, "0000")) {
+
         Styrbar_ignore_button_1 = true;
         Styrbar_timer = millis();
         return true; //
       }
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x08) && compareBuffer(buffer, 1/*buffer_size*/, "01"))
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && 
+                (command_id == 0x08) && 
+                compareBuffer(buffer, 1/*buffer_size*/, "01"))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_3_HELD_SID;
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x08) && compareBuffer(buffer, 1/* buffer_size*/, "00"))
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && 
+               (command_id == 0x08) && 
+               compareBuffer(buffer, 1/* buffer_size*/, "00"))
         sub_id = IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID;
-      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && (command_id == 0x07)) {
+      else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && 
+               (command_id == 0x07)) {
+
         if (compareBuffer(buffer, buffer_size, "01010D00"))
           sub_id = IKEA_CUSTOM_CMD_BUTTON_3_PRESSED_SID;
         else if (compareBuffer(buffer, buffer_size, "00010D00"))
@@ -3434,22 +3505,54 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
       log_i("TUYA command: cluster(0x%x), command id(0x%x)",  cluster_id, command_id);   
       //process Tuya command
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) &&
-        ((command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID) || (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID))) {
+        ((command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID) || 
+         (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID))) {
 
-        int8_t sub_id = (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID) ? TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID + (*buffer) : (*buffer);
-        channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+        int8_t sub_id = (command_id == TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID) ? 
+          TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID + (*buffer) : 
+          (*buffer);
+
+        channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                        endpoint, 
+                                                        ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                                                        SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+                                                        sub_id);
+
         if (channel_number_slot < 0)
           log_i("No Tuya device channel found for address %s", ieee_addr_str);
         else 
           msgZ2SDeviceActionTrigger(channel_number_slot);
+
       return true;
     } 
   } break;
 
+  case Z2S_DEVICE_DESC_SMART_BUTTON_2F: {
+
+    uint8_t action_id = (buffer) ? *((uint8_t *)(buffer + 3)) : 0xFF;
+
+    if (action_id > 1)
+      return false;
+
+    (action_id == 0) ?
+      action_id = CUSTOM_CMD_BUTTON_PRESSED_SID :
+      action_id = CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID;
+
+    channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, action_id);
+
+    if (channel_number_slot < 0)
+      no_channel_found_error_func(ieee_addr_str);
+    else 
+      msgZ2SDeviceActionTrigger(channel_number_slot);
+    
+    return true;
+  } break;
+  
   /*case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
     
-    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && ((command_id >= 0) && (command_id < 2))) {
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && 
+        ((command_id >= 0) && (command_id < 2))) {
       
       msgZ2SDeviceActionTrigger(channel_number_slot);
       return true;
@@ -3458,14 +3561,20 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
   case Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F: {
     
-    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && ((command_id >= 0) && (command_id <=2))) {
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && 
+        ((command_id >= 0) && (command_id <=2))) {
 
         int8_t sub_id;
+
         switch (command_id) {
+
           case 0: sub_id = TUYA_CUSTOM_CMD_BUTTON_HELD_SID; break;
+
           case 1: sub_id = TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID; break;
+
           case 2: sub_id = TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID; break;
-        }  
+        } 
+
         channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                                                             SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
         if (channel_number_slot < 0)
@@ -3774,19 +3883,32 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3: {
 
         char button_name_function[30];
-        static const char button_function[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
+        static constexpr char *button_function[] = {"PRESSED", "DOUBLE PRESSED","HELD"};
         sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
         addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
-      case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21: {
+      case Z2S_DEVICE_DESC_SMART_BUTTON_2F: {
+
+        char button_name_function[30];
+        static constexpr char *button_function[] = {"PRESSED", "DOUBLE PRESSED"};
+        sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/     
+
+
+
+      case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB20: 
+      case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB21: {
 
         //char button_name_function[30];
         //static const char button_function[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
         //sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, "LIVARNO_TEST", SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 
@@ -3873,7 +3995,6 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
-     
 
       case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH: {
 
@@ -4314,20 +4435,25 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1: {
         
         switch (sub_id) {
 
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
-            addZ2SDeviceIASzone(device, first_free_slot, sub_id, 
+            addZ2SDeviceIASzone(device, 
+                                first_free_slot, 
+                                sub_id, 
                                 "PRESENCE", 
                                 SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
 
 
           case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id,
+            addZ2SDeviceGeneralPurposeMeasurement(device, 
+                                                  first_free_slot, 
+                                                  sub_id,
                                                   "MOTION STATE", 
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
                                                   "[0..5]"); break;
@@ -4335,7 +4461,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, 
+            addZ2SDeviceGeneralPurposeMeasurement(device, 
+                                                  first_free_slot, 
+                                                  sub_id, 
                                                   "ILLUMINANCE",
                                                   SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
                                                   "lx"); break;
@@ -5304,6 +5432,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:
@@ -5364,6 +5493,15 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
       Z2S_addZ2SDevice(joined_device, TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID);
       Z2S_addZ2SDevice(joined_device, TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
       Z2S_addZ2SDevice(joined_device, TUYA_CUSTOM_CMD_BUTTON_HELD_SID);
+    } break;
+    
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+    case Z2S_DEVICE_DESC_SMART_BUTTON_2F: {
+      
+      Z2S_addZ2SDevice(joined_device, CUSTOM_CMD_BUTTON_PRESSED_SID);
+      Z2S_addZ2SDevice(joined_device, CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
+      //Z2S_addZ2SDevice(joined_device, TUYA_CUSTOM_CMD_BUTTON_HELD_SID);
     } break;
     
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5470,6 +5608,48 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
       Z2S_addZ2SDevice(joined_device, 
                        IKEA_CUSTOM_CMD_SYMFONISK_DOT_DOUBLE_PRESSED_SID);
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+    
+    case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB20: 
+    case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB21: {
+  
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_REMOTE_TURN_ON_SID,
+                       "REMOTE TURN ON");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_ON_PRESSED_SID,
+                       "ON PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_OFF_PRESSED_SID,
+                       "OFF PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_DIM_UP_PRESSED_SID,
+                       "DIM UP PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_DIM_UP_HOLD_SID,
+                       "DIM UP HOLD");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_DIM_UP_LONG_PRESSED_SID,
+                       "DIM UP LONG PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_DIM_DOWN_PRESSED_SID,
+                       "DIM DOWN PRESSED");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_DIM_DOWN_HOLD_SID,
+                       "DIM DOWN HOLD");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       LIVARNO_DIMMER_SWITCH_DIM_DOWN_LONG_PRESSED_SID,
+                       "DIM DOWN LONG PRESSED");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -5615,6 +5795,15 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
       Z2S_addZ2SDevice(joined_device, 
                        TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1: {
+      
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_PRESENCE_SID);
+                       
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

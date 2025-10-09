@@ -1071,11 +1071,18 @@ if (GUIstarted)
                 }; break;
                 
 
-                case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB20:
-                case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21: {
+                case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB20:
+                case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB21: {
 
-                  zbGateway.sendAddGroupRequestCmd(joined_device, 1);
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 0x4E20, true);
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 0x4E20, false);
                 } break;
+
+                /*case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3: {
+
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 0, true);
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 0, false);
+                } break;*/
 
     
     

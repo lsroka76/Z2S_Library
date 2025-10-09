@@ -65,6 +65,10 @@
 #define TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP                         0x6A
 #define TUYA_PRESENCE_SENSOR_BATTERY_DP                             0x79
 
+#define TUYA_PRESENCE_SENSOR_1_BATTERY_DP                           0x04
+#define TUYA_PRESENCE_SENSOR_1_PIR_SENSITIVITY_DP                   0x09
+#define TUYA_PRESENCE_SENSOR_1_PIR_TIME_DP                          0x0A
+
 #define TUYA_PRESENCE_SENSOR_5_PRESENCE_DP                          0x65
 #define TUYA_PRESENCE_SENSOR_5_ILLUMINANCE_DP                       0x0C
 

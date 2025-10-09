@@ -1627,15 +1627,26 @@ void  ZigbeeGateway::sendWindowCoveringCmd(zbg_device_params_t *device,
 }
 
 void ZigbeeGateway::sendAddGroupRequestCmd(zbg_device_params_t *device, 
-                                           uint16_t group_id) {
+                                           uint16_t group_id,
+                                           bool local) {
 
   esp_zb_zcl_groups_add_group_cmd_t cmd_req = {};
 
-  cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+  if (local)
+    cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = 0;
+  else
+    cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
 
-  cmd_req.zcl_basic_cmd.src_endpoint = _endpoint;
-  cmd_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
-  
+  if (local) {
+
+    cmd_req.zcl_basic_cmd.dst_endpoint = _endpoint;
+    cmd_req.zcl_basic_cmd.src_endpoint = device->endpoint;
+  } else {
+
+    cmd_req.zcl_basic_cmd.src_endpoint = _endpoint;
+    cmd_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+  }
+
   cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
   cmd_req.group_id = group_id;
 

@@ -28,6 +28,7 @@ static esp_err_t zb_cmd_ias_zone_enroll_request_handler(const esp_zb_zcl_ias_zon
 static esp_err_t zb_cmd_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message);
 static esp_err_t zb_core_cmd_disc_attr_resp_handler(esp_zb_zcl_cmd_discover_attributes_resp_message_t *message);
 static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_command_message_t *message);
+static esp_err_t zb_zcl_group_operation_resp(esp_zb_zcl_groups_operate_group_resp_message_t message);
 static bool zb_raw_cmd_handler(uint8_t bufid); 
 static uint8_t zb_broadcast_ep_handler(uint8_t bufid); 
 static void set_zb_broadcast_ep_handler2();
@@ -101,6 +102,12 @@ static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id,
     case ESP_ZB_CORE_CMD_CUSTOM_CLUSTER_RESP_CB_ID:   
       
       ret = zb_cmd_custom_cluster_req_handler((esp_zb_zcl_custom_cluster_command_message_t *)message); break;
+
+    
+    case ESP_ZB_CORE_CMD_OPERATE_GROUP_RESP_CB_ID:
+
+        ret = zb_zcl_group_operation_resp(*(esp_zb_zcl_groups_operate_group_resp_message_t *)message);
+        break;
     
     
     default:                                       
@@ -491,6 +498,27 @@ static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_com
   //sendDefaultResponse(message->info.command.id, message->info.header.tsn, message->info.src_address.u.short_addr, message->info.src_endpoint,
   //                    message->info.profile, message->info.cluster);
   return ESP_OK;
+}
+
+static esp_err_t zb_zcl_group_operation_resp(esp_zb_zcl_groups_operate_group_resp_message_t message)
+{
+    esp_err_t ret = ESP_OK;
+    if (message.info.status == ESP_ZB_ZCL_STATUS_SUCCESS) {
+        switch (message.info.command.id) {
+        case ESP_ZB_ZCL_CMD_GROUPS_ADD_GROUP:
+            log_i("Succeed in adding endpoint: %d to group: %d", message.info.src_endpoint, message.group_id);
+            break;
+        case ESP_ZB_ZCL_CMD_GROUPS_REMOVE_GROUP:
+            log_i("Succeed in removing endpoint: %d from group: %d", message.info.src_endpoint, message.group_id);
+            break;
+        default:
+            log_i("Unknown response command: %d", message.info.command.id);
+            break;
+        }
+    } else {
+        log_i("Failed to operate group with error code: %d", message.info.status);
+    }
+    return ret;
 }
 #endif  //SOC_IEEE802154_SUPPORTED && CONFIG_ZB_ENABLED
 

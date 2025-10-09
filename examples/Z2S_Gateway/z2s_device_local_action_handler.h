@@ -4,6 +4,8 @@
 #include "z2s_devices_table.h"
 
 #include <SuplaDevice.h>
+#include <supla/storage/eeprom.h>
+#include <supla/storage/littlefs_config.h>
 #include <supla/control/virtual_relay.h>
 #include <Z2S_control/Z2S_local_action_handlers.h>
 
