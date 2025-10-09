@@ -1626,6 +1626,25 @@ void  ZigbeeGateway::sendWindowCoveringCmd(zbg_device_params_t *device,
     delay(200);
 }
 
+void ZigbeeGateway::sendAddGroupRequestCmd(zbg_device_params_t *device, 
+                                           uint16_t group_id) {
+
+  esp_zb_zcl_groups_add_group_cmd_t cmd_req = {};
+
+  cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+
+  cmd_req.zcl_basic_cmd.src_endpoint = _endpoint;
+  cmd_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
+  
+  cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+  cmd_req.group_id = group_id;
+
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zcl_groups_add_group_cmd_req(&cmd_req);
+  esp_zb_lock_release();
+  delay(200);
+}
+
 void ZigbeeGateway::sendLevelMoveToLevelCmd(zbg_device_params_t *device, 
                                             uint8_t level, uint16_t transition_time) {
   

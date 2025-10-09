@@ -1070,6 +1070,14 @@ if (GUIstarted)
                                                &write_mask); //Tuya special
                 }; break;
                 
+
+                case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB20:
+                case Z2S_DEVICE_DESC_LIVARNO_SWITCH_DIMMER_FB21: {
+
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 1);
+                } break;
+
+    
     
                 case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F:
                 case Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F:

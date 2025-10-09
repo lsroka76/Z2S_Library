@@ -6540,7 +6540,7 @@ void addLocalActionHandlerCallback(Control *sender, int type, void *param) {
 		if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 
 																			 SUPLA_CHANNELFNC_NONE,
 																			 logic_operator)) {
-																			
+			delay(200);																
 			rebuildChannelsSelector(true);
 			buildActionsChannelSelectors(true);
 		}

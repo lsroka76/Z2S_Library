@@ -337,6 +337,9 @@ public:
                              uint8_t cmd_id, 
                              void *cmd_value);
 
+  void sendAddGroupRequestCmd(zbg_device_params_t *device, 
+                              uint16_t group_id);
+
   void sendIEEEAddrReqCmd(zbg_device_params_t *device, bool ack);
 
   void sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya = false);
