@@ -3534,9 +3534,10 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
     if (action_id > 1)
       return false;
 
-    (action_id == 0) ?
+    /*(action_id == 0) ?
       action_id = CUSTOM_CMD_BUTTON_PRESSED_SID :
-      action_id = CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID;
+      action_id = CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID;*/
+    action_id = CUSTOM_CMD_BUTTON_PRESSED_SID;
 
     channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                                                             SUPLA_CHANNELTYPE_ACTIONTRIGGER, action_id);
@@ -3893,9 +3894,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_SMART_BUTTON_2F: {
 
         char button_name_function[30];
-        static constexpr char *button_function[] = {"PRESSED", "DOUBLE PRESSED"};
+        static constexpr char *button_function[] = {"PRESSED"}; //, "DOUBLE PRESSED"};
         sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -5500,7 +5501,7 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
     case Z2S_DEVICE_DESC_SMART_BUTTON_2F: {
       
       Z2S_addZ2SDevice(joined_device, CUSTOM_CMD_BUTTON_PRESSED_SID);
-      Z2S_addZ2SDevice(joined_device, CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
+      //Z2S_addZ2SDevice(joined_device, CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
       //Z2S_addZ2SDevice(joined_device, TUYA_CUSTOM_CMD_BUTTON_HELD_SID);
     } break;
     
