@@ -3539,8 +3539,11 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
       action_id = CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID;*/
     action_id = CUSTOM_CMD_BUTTON_PRESSED_SID;
 
-    channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, action_id);
+    channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
+                                                    endpoint, 
+                                                    ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                                                    SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+                                                    action_id);
 
     if (channel_number_slot < 0)
       no_channel_found_error_func(ieee_addr_str);
