@@ -1633,6 +1633,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
 
     
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
+    case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
 
       processMoesShadesDriveMotorDataReport(channel_number_slot, payload_size, payload, model_id); break;
 

@@ -408,8 +408,8 @@ void setup() {
 
   esp_zb_ieee_addr_t esp_zb_ieee_addr = {};
 
-  esp_zb_ieee_addr[0] = 0xAB;
-  //Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr, 0, "_TZE204_t1blo2bj","TS0601", 1, Z2S_DEVICE_DESC_MOES_ALARM, 0);
+  esp_zb_ieee_addr[0] = 0xCC;
+  //Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr, 0, "_TZE200_wzk0x7fq","TS0601", 1, Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, 0);
 
   Z2S_loadChannelsTable();
 

@@ -27,6 +27,7 @@
 #define TUYA_TH_SENSOR_HUMIDITY_DP                                  0x02
 #define TUYA_TH_SENSOR_BATTERY_STATE_DP                             0x03
 #define TUYA_TH_SENSOR_BATTERY_LEVEL_DP                             0x04
+#define TUYA_TH_SENSOR_TEMPERATURE_UNIT_DP                          0x09
 
 #define TUYA_SMOKE_DETECTOR_SMOKE_DP                                0x01
 #define TUYA_SMOKE_DETECTOR_PPM_DP                                  0x02
@@ -34,6 +35,8 @@
 #define TUYA_SMOKE_DETECTOR_DEVICE_FAULT_DP                         0x0B
 #define TUYA_SMOKE_DETECTOR_BATTERY_STATE_DP                        0x0E
 #define TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP                        0x0F
+
+#define TUYA_SMOKE_DETECTOR_2_SENSITIVITY_DP                        0x66
 
 #define TUYA_CO_DETECTOR_CO_DP                                      0x01
 #define TUYA_CO_DETECTOR_CO_CONC_DP                                 0x02
@@ -99,6 +102,8 @@
 #define TUYA_RAIN_SENSOR_RAIN_INTENSITY_DP                          0x69
 
 #define TUYA_RAIN_SENSOR_2_RAIN_DP                                  0x01
+#define TUYA_RAIN_SENSOR_2_SENSITIVITY_DP                           0x02
+#define TUYA_RAIN_SENSOR_2_ILLUMINANCE_INTERVAL_DP                  0x65
 #define TUYA_RAIN_SENSOR_2_ILLUMINANCE_DP                           0x66
 #define TUYA_RAIN_SENSOR_2_BATTERY_DP                               0x68
 

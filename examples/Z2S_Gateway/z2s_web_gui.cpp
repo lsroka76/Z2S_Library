@@ -2780,15 +2780,14 @@ void buildTuyaCustomClusterTabGUI() {
 																				 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]), 
 												PSTR(clearLabelStyle));
 	*/
-Tuya_devices_tab_controls_table[Tuya_datapoint_description_label] =
-	ESPUI.addControl(Control::Type::Label, 
-									 PSTR("Datapoint description"), 
-									 three_dots_str, 
-									 Control::Color::Emerald, 
-									 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+	Tuya_devices_tab_controls_table[Tuya_datapoint_description_label] =
+		ESPUI.addControl(Control::Type::Label, 
+										 PSTR("Datapoint description"), 
+										 three_dots_str, 
+										 Control::Color::Emerald, 
+										 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
 	working_str = PSTR("Datapoint acceptable values description.<br>"
-										 "Use it to fill datapoint value field -"
-										 "lorem ipsum");															 
+										 "Use it to fill datapoint value field.");															 
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str, 
@@ -2796,6 +2795,9 @@ Tuya_devices_tab_controls_table[Tuya_datapoint_description_label] =
 																				 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]), 
 												PSTR(clearLabelStyle));
 
+	ESPUI.setElementStyle(Tuya_devices_tab_controls_table[Tuya_datapoint_description_label], 
+												"text-align: left; font-family:tahoma; font-size: "
+												"4 px; font-style: normal; font-weight: normal;");
 
 	Tuya_devices_tab_controls_table[Tuya_device_data_request_button]  = 
 		ESPUI.addControl(Control::Type::Button, 
@@ -6539,10 +6541,8 @@ void addLocalActionHandlerCallback(Control *sender, int type, void *param) {
 																			 SUPLA_CHANNELFNC_NONE,
 																			 logic_operator)) {
 																			
-			//Z2S_stopWebGUI();
 			rebuildChannelsSelector(true);
 			buildActionsChannelSelectors(true);
-			//Z2S_startWebGUI();
 		}
 	}
 }
