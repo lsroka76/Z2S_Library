@@ -473,7 +473,7 @@ bool Supla::Control::Z2S_VirtualRelay::isOn() {
 
 void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   
-  state = on_off_state;
+  
 
   _last_ping_ms = millis();
   _last_seen_ms = _last_ping_ms;
@@ -484,19 +484,28 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   log_i("durationMs = %lu, storedTurnOnDurationMs = %lu, durationTimestamp = %lu, keepTurnOnDurationMs = %u",
         durationMs, storedTurnOnDurationMs, durationTimestamp, keepTurnOnDurationMs);
 
-  if (on_off_state) {
-    if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction()) {
-      durationMs = storedTurnOnDurationMs;
-    }
-    if (durationMs != 0) {
-      durationTimestamp = millis();
+  if (state != on_off_state) {
+
+    if (on_off_state) {
+      
+      if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction()) {
+        durationMs = storedTurnOnDurationMs;
+      }
+      if (durationMs != 0) {
+
+        durationTimestamp = millis();
+      } else {
+
+        durationTimestamp = 0;
+      }
     } else {
+      
+      durationMs = 0;
       durationTimestamp = 0;
     }
-  } else {
-    durationMs = 0;
-    durationTimestamp = 0;
   }
+  
+  state = on_off_state;
 
   channel.setNewValue(state);
   // Schedule save in 5 s after state change
