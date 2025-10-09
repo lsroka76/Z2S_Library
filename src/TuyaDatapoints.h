@@ -18,6 +18,10 @@
 #define TUYA_SOIL_SENSOR_TEMPERATURE_DP                             0x05
 #define TUYA_SOIL_SENSOR_MOISTURE_DP                                0x03
 #define TUYA_SOIL_SENSOR_BATTERY_LEVEL_DP                           0x0F
+#define TUYA_SOIL_SENSOR_BATTERY_LEVEL_DP                           0x0F
+#define TUYA_SOIL_SENSOR_TEMPERATURE_SENSITIVITY_DP                 0x6B
+#define TUYA_SOIL_SENSOR_MOISTURE_SENSITIVITY_DP                    0x6C
+#define TUYA_SOIL_SENSOR_REFRESH_FREQUENCY_DP                       0x6D
 
 #define TUYA_TH_SENSOR_TEMPERATURE_DP                               0x01
 #define TUYA_TH_SENSOR_HUMIDITY_DP                                  0x02
@@ -61,8 +65,17 @@
 #define TUYA_PRESENCE_SENSOR_5_PRESENCE_DP                          0x65
 #define TUYA_PRESENCE_SENSOR_5_ILLUMINANCE_DP                       0x0C
 
+#define TUYA_PRESENCE_SENSOR_4IN1_MOTION_DETECTION_SENSITIVITY_DP   0x02
 #define TUYA_PRESENCE_SENSOR_4IN1_BATTERY_DP                        0x6E
 #define TUYA_PRESENCE_SENSOR_4IN1_HUMIDITY_DP                       0x65
+#define TUYA_PRESENCE_SENSOR_4IN1_FADING_TIME_DP                    0x66
+#define TUYA_PRESENCE_SENSOR_4IN1_HUMIDITY_CALIBRATION_DP           0x68
+#define TUYA_PRESENCE_SENSOR_4IN1_TEMPERATURE_CALIBRATION_DP        0x69
+#define TUYA_PRESENCE_SENSOR_4IN1_ILLUMINANCE_DP                    0x6A
+#define TUYA_PRESENCE_SENSOR_4IN1_ILLUMINANCE_INTERVAL_DP           0x6B
+#define TUYA_PRESENCE_SENSOR_4IN1_LED_INDICATOR_MODE_DP             0x6C
+#define TUYA_PRESENCE_SENSOR_4IN1_TEMPERATURE_UNIT_DP               0x6D
+#define TUYA_PRESENCE_SENSOR_4IN1_BATTERY_DP                        0x6E
 #define TUYA_PRESENCE_SENSOR_4IN1_TEMPERATURE_DP                    0x6F
 
 #define TUYA_PRESENCE_SENSOR_RELAY_ILLUMINANCE_DP                   0x68
@@ -154,6 +167,7 @@
 #define TUYA_VIBRATION_SENSOR_VIBRATION_DP                          0x01
 #define TUYA_VIBRATION_SENSOR_CONTACT_DP                            0x65
 #define TUYA_VIBRATION_SENSOR_BATTERY_DP                            0x04
+#define TUYA_VIBRATION_SENSOR_SENSITIVITY_DP                        0x09
 
 #define TUYA_ON_OFF_BATTERY_VALVE_SWITCH_DP                         0x01
 #define TUYA_ON_OFF_BATTERY_VALVE_STATE_DP                          0x08
