@@ -205,6 +205,10 @@
 #define TUYA_PIR_ILLUMINANCE_SENSOR_KEEP_TIME_DP                    0x0A //ENUM
 #define TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP         0x66 //VALUE
 
+#define TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP                          0x18
+#define TUYA_LCD_PANEL_3_RELAYS_RELAY_2_DP                          0x19
+#define TUYA_LCD_PANEL_3_RELAYS_RELAY_3_DP                          0x1A
+
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_8   0x07 //8 bit value /7 bytes/

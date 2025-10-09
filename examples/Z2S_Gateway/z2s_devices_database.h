@@ -139,6 +139,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY                          0x4020
 
+#define Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS                   0x4030
+
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER             0x4100
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1           0x4101
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2           0x4102
@@ -473,6 +475,10 @@
 #define TUYA_SOS_BUTTON_EMERGENCY_SID                       0x01
 #define TUYA_SOS_BUTTON_LOW_BATTERY_SID                     0x03 //IAS_ZONE_LOW_BATTERY_SID
 
+#define TUYA_LCD_PANEL_3_RELAYS_RELAY_1_SID                 0x00
+#define TUYA_LCD_PANEL_3_RELAYS_RELAY_2_SID                 0x01
+#define TUYA_LCD_PANEL_3_RELAYS_RELAY_3_SID                 0x02
+
 
 [[maybe_unused]]
 static const char IKEA_STYRBAR_BUTTONS[][16] PROGMEM = {"ON PRESSED", "ON HELD", "OFF PRESSED", 
@@ -740,6 +746,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
     .z2s_device_clusters_count = 3,
@@ -3200,6 +3211,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3000_utwgoauk", .model_name = "TS0201",
     .z2s_device_uid = 27001,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_mua6ucdj", .model_name = "TS0601",
+    .z2s_device_uid = 28000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS,
     .z2s_device_endpoints_count = 1}
 };
 

@@ -194,6 +194,24 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
         channel.setNewValue(state);
       } break;
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+      case Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY: {
+
+        state = true;
+
+        uint8_t realy_dp_id = TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP + _z2s_function_value_U8;
+
+        sendTuyaRequestCmdBool(_gateway, 
+                               &_device, 
+                               realy_dp_id, 
+                               state);
+        
+        channel.setNewValue(state);
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
       case Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM: {
 
         uint16_t attribute_id;
@@ -376,6 +394,25 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         channel.setNewValue(state);
 
       } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+      
+      case Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY: {
+
+        state = false;
+
+        uint8_t realy_dp_id = TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP + _z2s_function_value_U8;
+
+        sendTuyaRequestCmdBool(_gateway, 
+                               &_device, 
+                               realy_dp_id, 
+                               state);
+        
+        channel.setNewValue(state);
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
     }  
   }
   // Schedule save in 5 s after state change

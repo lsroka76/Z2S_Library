@@ -47,6 +47,8 @@
 #define Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE    0x50
 #define Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE     0x51
 
+#define Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY           0x60
+
 namespace Supla {
 namespace Control {
 class Z2S_VirtualRelay : public Relay {

@@ -3859,8 +3859,25 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_LUMI_SWITCH:
       case Z2S_DEVICE_DESC_TUYA_RELAY:
 
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, "POWER SWITCH", 
-                                                              SUPLA_CHANNELFNC_POWERSWITCH); break;
+        addZ2SDeviceVirtualRelay(&zbGateway,
+                                device, 
+                                first_free_slot, 
+                                NO_CUSTOM_CMD_SID, 
+                                "POWER SWITCH", 
+                                SUPLA_CHANNELFNC_POWERSWITCH); 
+      break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/     
+
+      case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
+
+        addZ2SDeviceVirtualRelay(&zbGateway,
+                                device, 
+                                first_free_slot, 
+                                sub_id, 
+                                name, 
+                                SUPLA_CHANNELFNC_POWERSWITCH); 
+      break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
@@ -3869,7 +3886,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
         char gang_name[30];
         sprintf(gang_name, "GANG #%d", device->endpoint);
-        addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, gang_name, SUPLA_CHANNELFNC_LIGHTSWITCH); 
+        addZ2SDeviceVirtualRelay(&zbGateway,
+                                 device, 
+                                 first_free_slot, 
+                                 NO_CUSTOM_CMD_SID, 
+                                 gang_name, 
+                                 SUPLA_CHANNELFNC_LIGHTSWITCH); 
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -5788,6 +5810,24 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
+
+    case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS: {
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_RELAY_1_SID,
+                       "RELAY 1");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_RELAY_2_SID,
+                       "RELAY 2");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_RELAY_3_SID,
+                       "RELAY 3");
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
       
