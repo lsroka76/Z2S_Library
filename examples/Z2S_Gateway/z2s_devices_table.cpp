@@ -3894,6 +3894,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
       case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
+      case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
 
         addZ2SDeviceVirtualRelay(&zbGateway,
                                 device, 
@@ -5513,6 +5514,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
     case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
     case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
+    Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
       return true;
     default:
       return false;
