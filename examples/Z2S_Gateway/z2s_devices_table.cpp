@@ -3365,9 +3365,10 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
         case ESP_ZB_ZCL_CLUSTER_ID_ON_OFF: {
           
-          (command_id == 0xFD) ?
-            sub_id = LIVARNO_DIMMER_SWITCH_REMOTE_TURN_ON_SID :
-              (command_id == ESP_ZB_ZCL_CMD_ON_OFF_ON_ID) ?
+          //(command_id == 0xFD) ?
+            //sub_id = LIVARNO_DIMMER_SWITCH_REMOTE_TURN_ON_SID :
+              ((command_id == ESP_ZB_ZCL_CMD_ON_OFF_ON_ID) ||
+               (command_id == 0xFD)) ?
                 sub_id = LIVARNO_DIMMER_SWITCH_ON_PRESSED_SID :
                 sub_id = LIVARNO_DIMMER_SWITCH_OFF_PRESSED_SID;
         } break;
@@ -5641,9 +5642,9 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
     case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB20: 
     case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB21: {
   
-      Z2S_addZ2SDevice(joined_device, 
+      /*Z2S_addZ2SDevice(joined_device, 
                        LIVARNO_DIMMER_SWITCH_REMOTE_TURN_ON_SID,
-                       "REMOTE TURN ON");
+                       "REMOTE TURN ON");*/
 
       Z2S_addZ2SDevice(joined_device, 
                        LIVARNO_DIMMER_SWITCH_ON_PRESSED_SID,
