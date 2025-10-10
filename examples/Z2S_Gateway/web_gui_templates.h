@@ -1717,10 +1717,49 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Touch control",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => set touch control OFF<br>"
-																	"1 => set touch control turn ON" }
+																	"1 => set touch control turn ON" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_STATIC_DETECTION_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Static Detection Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_STATIC_DETECTION_DISTANCE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Static Detection Distance",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 1000 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_FADING_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Presence Keep Time",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 28800 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_INDICATOR_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "LED Indicator",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set indicator OFF<br>"
+																	"1 => set indicator ON" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_MOTION_DETECTION_MODE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Motion Detection Mode",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => PIR, 1 => PIR + radar, 2 => radar" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_MOTION_DETECTION_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Motion Detection Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10"
+																	"Only for firmware version >= 0122052017" }
 };
 
 #endif //WEB_GUI_TEMPLATES_H_
-//
-//
+
+

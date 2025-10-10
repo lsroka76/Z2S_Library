@@ -61,9 +61,15 @@
 #define TUYA_AIR_QUALITY_SENSOR_FA_DP                               0x02
 
 #define TUYA_PRESENCE_SENSOR_PRESENCE_DP                            0x01
+#define TUYA_PRESENCE_SENSOR_STATIC_DETECTION_SENSITIVITY_DP        0x02
+#define TUYA_PRESENCE_SENSOR_STATIC_DETECTION_DISTANCE_DP           0x04
 #define TUYA_PRESENCE_SENSOR_MOTION_STATE_DP                        0x65
+#define TUYA_PRESENCE_SENSOR_FADING_TIME_DP                         0x66
 #define TUYA_PRESENCE_SENSOR_ILLUMINANCE_DP                         0x6A
+#define TUYA_PRESENCE_SENSOR_INDICATOR_DP                           0x6B
 #define TUYA_PRESENCE_SENSOR_BATTERY_DP                             0x79
+#define TUYA_PRESENCE_SENSOR_MOTION_DETECTION_MODE_DP               0x7A
+#define TUYA_PRESENCE_SENSOR_MOTION_DETECTION_SENSITIVITY_DP        0x7B
 
 #define TUYA_PRESENCE_SENSOR_1_BATTERY_DP                           0x04
 #define TUYA_PRESENCE_SENSOR_1_PIR_SENSITIVITY_DP                   0x09
