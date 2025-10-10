@@ -209,6 +209,15 @@
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_2_DP                          0x19
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_3_DP                          0x1A
 
+#define TUYA_FINGERBOT_PLUS_MODE_DP                                 0x65
+#define TUYA_FINGERBOT_PLUS_LOWER_LIMIT_DP                          0x66
+#define TUYA_FINGERBOT_SUSTAIN_TIME_DP                              0x67
+#define TUYA_FINGERBOT_PLUS_REVERSE_DP                              0x68
+#define TUYA_FINGERBOT_PLUS_BATTERY_DP                              0x69
+#define TUYA_FINGERBOT_PLUS_UPPER_LIMIT_DP                          0x6A
+#define TUYA_FINGERBOT_PLUS_TOUCH_DP                                0x6B
+
+
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_8   0x07 //8 bit value /7 bytes/

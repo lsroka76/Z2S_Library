@@ -3810,7 +3810,13 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR:
       case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_POLL:
 
-        addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func, false); break; //thermometer only
+        addZ2SDeviceTempHumidity(device, 
+                                 first_free_slot, 
+                                 sub_id, 
+                                 name, 
+                                 func, 
+                                 false); //thermometer only
+      break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
@@ -3823,12 +3829,21 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
 
-        addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+        addZ2SDeviceTempHumidity(device, 
+                                 first_free_slot, 
+                                 sub_id, 
+                                 name, 
+                                 func); 
+      break;
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: 
       case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR: {
 
-        addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func);
+        addZ2SDeviceTempHumidity(device, 
+                                 first_free_slot, 
+                                 sub_id, 
+                                 name, 
+                                 func);
         
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
         if (first_free_slot == 0xFF) {
@@ -3837,7 +3852,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDevicePressure(device, first_free_slot);
+        addZ2SDevicePressure(device, 
+                             first_free_slot);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -3851,7 +3867,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B:
 
-        addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+        addZ2SDeviceIASzone(device, 
+                            first_free_slot, 
+                            sub_id, 
+                            name, 
+                            func); 
+      break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
@@ -3859,6 +3880,7 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_RELAY_1: 
       case Z2S_DEVICE_DESC_LUMI_SWITCH:
       case Z2S_DEVICE_DESC_TUYA_RELAY:
+      case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
 
         addZ2SDeviceVirtualRelay(&zbGateway,
                                 device, 
@@ -5489,6 +5511,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
     case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
+    case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
       return true;
     default:
       return false;

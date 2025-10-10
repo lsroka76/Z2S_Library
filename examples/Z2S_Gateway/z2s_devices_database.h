@@ -247,6 +247,8 @@
 #define Z2S_DEVICE_DESC_TUYA_SIREN_ALARM                    0x6600
 #define Z2S_DEVICE_DESC_MOES_ALARM                          0x6610
 
+#define Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS                 0x6700
+
 #define Z2S_DEVICE_DESC_TUYA_REPEATER                       0x7000
 
 #define Z2S_DEVICE_DESC_ON_OFF                              0x8000
@@ -1327,7 +1329,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }}
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }}
 };
 
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
@@ -3216,6 +3223,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_mua6ucdj", .model_name = "TS0601",
     .z2s_device_uid = 28000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_j4pdtz9v", .model_name = "TS0001",
+    .z2s_device_uid = 29000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
     .z2s_device_endpoints_count = 1}
 };
 

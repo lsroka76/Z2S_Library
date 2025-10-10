@@ -1597,7 +1597,33 @@ void processGiexSmartValveDataReport(int16_t channel_number_slot, uint16_t paylo
   }  
 }
 
-void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t payload_size, uint8_t *payload) {
+
+void processFingerbotPlusDataReport(channel_number_slot, 
+                                    payload_size, 
+                                    payload, 
+                                    model_id) { 
+
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      TUYA_FINGERBOT_PLUS_BATTERY_DP, 
+      payload_size, 
+      payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    updateSuplaBatteryLevel(
+      channel_number_slot, 
+      ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);
+  } 
+}
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, 
+                           uint16_t endpoint, 
+                           uint16_t payload_size, 
+                           uint8_t *payload) {
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
                                                           ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); //first find anything to recognize model_id
@@ -1736,6 +1762,10 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
 
       processGiexSmartValveDataReport(channel_number_slot, payload_size, payload, model_id); break;
+
+    case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
+
+      processFingerbotPlusDataReport(channel_number_slot, payload_size, payload, model_id); break;
 
       
     default: 

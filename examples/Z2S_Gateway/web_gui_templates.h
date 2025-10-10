@@ -1676,7 +1676,48 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "PIR Time",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
-																	"0 => 15 [s], 1 => 30 [s], 2 => 60 [s]" }
+																	"0 => 15 [s], 1 => 30 [s], 2 => 60 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .Tuya_datapoint_id 		 			= TUYA_FINGERBOT_PLUS_MODE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "working Mode",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => click, 1 => switch, 2 => program" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .Tuya_datapoint_id 		 			= TUYA_FINGERBOT_PLUS_LOWER_LIMIT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Lower Limit",
+    .Tuya_datapoint_description = "Enter numeric value: 51 - 100 [%]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .Tuya_datapoint_id 		 			= TUYA_FINGERBOT_PLUS_UPPER_LIMIT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Upper Limit",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 50 [%]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .Tuya_datapoint_id 		 			= TUYA_FINGERBOT_SUSTAIN_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Sustain Time",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .Tuya_datapoint_id 		 			= TUYA_FINGERBOT_PLUS_REVERSE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Reverse Mode",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set reverse mode OFF<br>"
+																	"1 => set reverse mode ON" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .Tuya_datapoint_id 		 			= TUYA_FINGERBOT_PLUS_TOUCH_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Touch control",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set touch control OFF<br>"
+																	"1 => set touch control turn ON" }
 
 };
 
