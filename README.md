@@ -1,4 +1,4 @@
-# Zigbee <=> SUPLA gateway
+# Zigbee <=> SUPLA Gateway
 This project is my personal attempt to build a gateway between various Zigbee end devices and SUPLA IoT ecosystem.
 
 ## Table of Contents:
@@ -22,7 +22,7 @@ Zigbee is a low-power, low-cost wireless communication protocol designed for sho
 Zigbee supports a large number of devices on a single network, often up to 65,000 nodes, making it highly scalable for extensive deployments. It offers reliable and secure communication with features like AES-128 encryption. Compared to other wireless technologies like Wi-Fi and Bluetooth, Zigbee typically consumes less power, which is crucial for battery-operated sensors and devices. Its cost-effectiveness and ease of installation have contributed to its widespread adoption in various IoT applications, including industrial automation and healthcare monitoring. The Zigbee Alliance (now the Connectivity Standards Alliance) continues to develop and promote the standard, ensuring interoperability between different manufacturers' devices.  
 [(ToC)](#table-of-contents)
   
-## Zigbee <=> SUPLA gateway
+## Zigbee <=> SUPLA Gateway
 Zigbee's strength lies in the vast number and diverse range of available sensors, catering to numerous smart applications. This extensive ecosystem includes low-cost options for temperature, humidity, motion, contact, light, and many other environmental and security parameters. The variety extends to specialized sensors like those for air quality, water leak detection, and even presence detection. Due to its widespread adoption and open standard, numerous manufacturers produce Zigbee sensors, driving down costs and increasing accessibility. This affordability and wide selection empower users to build comprehensive and customized smart environments without significant expense. The low power nature of Zigbee also makes these battery-operated sensors practical for long-term, widespread deployment.  
   
 I've taken an effort to design and build a kind of bidirectional bridge directly between Zigbee devices and SUPLA, thus eliminating the need for some proxy solutions like [Zigbee2MQTT](https://www.zigbee2mqtt.io).
