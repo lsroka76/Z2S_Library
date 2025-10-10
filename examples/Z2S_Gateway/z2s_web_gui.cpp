@@ -5829,14 +5829,44 @@ void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_SEND_TUYA_QUERY_FLAG: {
 
+				updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+											three_dots_str);
+				updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_payload_label], 
+											three_dots_str);
+				
 				uint8_t cmd_dp_id = 
 					ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_datapoint_id_number])->value.toInt();
 				
 				Tuya_custom_cmd_dp = cmd_dp_id;
 				current_Tuya_payload_label = Tuya_devices_tab_controls_table[Tuya_device_payload_label];
 
-				sendTuyaQueryCmd(&zbGateway, &device);
-			
+				bool result = sendTuyaQueryCmd(&zbGateway, &device);
+
+				if (result) {
+
+						if (*zbGateway.getCustomCmdStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
+						
+							sprintf_P(general_purpose_gui_buffer, 
+												PSTR("Tuya custom cluster data query sent successfully!"));
+							updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+														general_purpose_gui_buffer);
+						} else {
+
+							sprintf_P(general_purpose_gui_buffer, 
+												PSTR("Tuya custom cluster data query failed! <br>"
+														 "Status = %u(0x%02X)"),
+												*zbGateway.getCustomCmdStatusLastResult(),
+												*zbGateway.getCustomCmdStatusLastResult());
+							updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+														general_purpose_gui_buffer);
+						}
+				} else {
+
+					updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+												device_query_failed_str);
+					updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_payload_label], 
+												three_dots_str);										
+				}
 			} break; 
 		}
 	}
