@@ -257,7 +257,7 @@
 #define Z2S_DEVICE_DESC_ON_OFF_1                            0x8001
 
 
-#define MAX_BOUND_ENDPOINTS                                 0x04
+#define MAX_BOUND_ENDPOINTS                                 0x06
 #define MAX_BOUND_CLUSTERS                                  0x08
 
 
@@ -759,7 +759,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
     .z2s_device_clusters_count = 3,
@@ -3241,13 +3241,17 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_oahqgdig", .model_name = "TS0601",
     .z2s_device_uid = 28100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES,
-    .z2s_device_endpoints_count = 1},
+    .z2s_device_endpoints_count = 6,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES },
+                              { 2, Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES },
+                              { 3, Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES },
+                              { 4, Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES },
+                              { 5, Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES },
+                              { 6, Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES }}},
 
   { .manufacturer_name = "_TZ3210_j4pdtz9v", .model_name = "TS0001",
     .z2s_device_uid = 29000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
     .z2s_device_endpoints_count = 1}
 };
-
-
 #endif
