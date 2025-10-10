@@ -5488,6 +5488,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
+    case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
       return true;
     default:
       return false;
