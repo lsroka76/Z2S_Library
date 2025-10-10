@@ -1598,11 +1598,12 @@ void processGiexSmartValveDataReport(int16_t channel_number_slot, uint16_t paylo
 }
 
 
-void processFingerbotPlusDataReport(channel_number_slot, 
-                                    payload_size, 
-                                    payload, 
-                                    model_id) { 
-
+void processFingerbotPlusDataReport(int16_t channel_number_slot, 
+                                    uint16_t payload_size,
+                                    uint8_t *payload, 
+                                    uint32_t model_id) {
+                                      
+  Tuya_read_dp_result_t Tuya_read_dp_result;
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(
       TUYA_FINGERBOT_PLUS_BATTERY_DP, 
