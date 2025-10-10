@@ -125,7 +125,7 @@ bool sendTuyaQueryCmd(ZigbeeGateway *gateway,
   return gateway->sendCustomClusterCmd(device,
                                        TUYA_PRIVATE_CLUSTER_EF00, 
                                        TUYA_QUERY_CMD, 
-                                       ESP_ZB_ZCL_ATTR_TYPE_SET, 
+                                       ESP_ZB_ZCL_ATTR_TYPE_NULL, 
                                        TUYA_DP_ZCL_PAYLOAD_0, 
                                        nullptr, 
                                        cmd_sync);

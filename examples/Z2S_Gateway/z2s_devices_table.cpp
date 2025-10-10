@@ -3763,15 +3763,16 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
         ieee_addr_str,device_number_slot, 
         z2s_zb_devices_table[device_number_slot].user_data_flags);  
 
-  if (Z2S_checkZbDeviceFlags(device_number_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN)) {
+  if (Z2S_checkZbDeviceFlags(device_number_slot, 
+      ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN)) {
     
     log_i("Tuya query after rejoin");
     zbGateway.sendCustomClusterCmd(&device, 
                                    TUYA_PRIVATE_CLUSTER_EF00, 
-                                   0x03, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_SET, 
+                                   TUYA_QUERY_CMD, 
+                                   ESP_ZB_ZCL_ATTR_TYPE_NULL, 
                                    0, 
-                                   NULL); 
+                                   nullptr); 
   }
 }
 

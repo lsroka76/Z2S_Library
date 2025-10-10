@@ -5840,7 +5840,9 @@ void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
 				Tuya_custom_cmd_dp = cmd_dp_id;
 				current_Tuya_payload_label = Tuya_devices_tab_controls_table[Tuya_device_payload_label];
 
-				bool result = sendTuyaQueryCmd(&zbGateway, &device);
+				bool result = sendTuyaQueryCmd(&zbGateway, 
+																			 &device, 
+																			 true);
 
 				if (result) {
 

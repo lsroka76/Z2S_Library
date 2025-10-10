@@ -919,7 +919,7 @@ if (GUIstarted)
                 zbGateway.sendCustomClusterCmd(joined_device, 
                                                TUYA_PRIVATE_CLUSTER_EF00, 
                                                TUYA_QUERY_CMD, 
-                                               ESP_ZB_ZCL_ATTR_TYPE_SET, 
+                                               ESP_ZB_ZCL_ATTR_TYPE_NULL, 
                                                0, 
                                                nullptr);
 

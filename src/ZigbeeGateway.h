@@ -147,10 +147,10 @@ typedef struct zbg_device_unit_s {
   uint8_t record_id;
   esp_zb_ieee_addr_t ieee_addr;
   uint16_t short_addr;
-  uint32_t model_id;
+  //uint32_t model_id;
   uint32_t last_seen_ms;
-  uint32_t keep_alive_ms;
-  uint32_t timeout_ms;
+  //uint32_t keep_alive_ms;
+  //uint32_t timeout_ms;
   int8_t last_rssi;
 } zbg_device_unit_t;
 
