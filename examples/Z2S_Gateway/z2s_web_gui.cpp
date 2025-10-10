@@ -87,6 +87,7 @@ enum clusters_attributes_controls {
 
 	clusters_attributes_tab,
 	clusters_attributes_device_selector,
+	clusters_attributes_device_info_label,
 	device_endpoint_number,
 	device_cluster_selector,	
 	device_attribute_id_text,
@@ -108,6 +109,8 @@ enum clusters_attributes_controls {
 	manufacturer_code_switcher, 
 	manufacturer_code_selector,
 	device_Tuya_payload_label,
+	device_bind_button,
+	device_bind_2_button,
 	device_last_enum_position
 };
 
@@ -316,6 +319,9 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_CONFIG_REPORT_FLAG									0x3022
 #define GUI_CB_READ_CONFIG_FLAG										0x3023
 #define GUI_CB_CUSTOM_CMD_FLAG										0x3024
+
+#define GUI_CB_BIND_CLUSTER_FLAG									0x3028
+#define GUI_CB_BIND_CLUSTER_2_FLAG								0x3029
 
 #define GUI_CB_SINGLE_FLAG												0x3030
 #define GUI_CB_WITH_CHANNELS_FLAG									0x3031
@@ -1669,6 +1675,13 @@ void buildClustersAttributesTab() {
 										 clusters_attributes_table[clusters_attributes_tab], 
 										 clustersattributesdeviceSelectorCallback);
 
+	clusters_attributes_table[clusters_attributes_device_info_label] =
+		ESPUI.addControl(Control::Type::Label, 
+										 PSTR("Device info"), 
+										 three_dots_str,	
+										 Control::Color::Emerald, 
+										 clusters_attributes_table[clusters_attributes_tab]);
+
 	ESPUI.addControl(Control::Type::Option, 
 									 PSTR("Select Zigbee device..."), 
 									 working_str, 
@@ -1686,7 +1699,7 @@ void buildClustersAttributesTab() {
 											 clusters_attributes_table[clusters_attributes_device_selector]);
 		}
 
-	ESPUI.setPanelWide(clusters_attributes_table[clusters_attributes_device_selector], true);
+	ESPUI.setPanelWide(clusters_attributes_table[clusters_attributes_device_selector], false);
 
 	
 	working_str = 1;
@@ -2078,6 +2091,26 @@ void buildClustersAttributesTab() {
 										 three_dots_str, 
 										 Control::Color::Emerald, 
 										 clusters_attributes_table[clusters_attributes_tab]);
+
+	working_str = PSTR("Bind cluster (experimental!!!)");
+	clusters_attributes_table[device_bind_button] = 
+		ESPUI.addControl(Control::Type::Button, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 clusters_attributes_table[clusters_attributes_tab],
+										 getClustersAttributesQueryCallback, 
+										 (void*)GUI_CB_BIND_CLUSTER_FLAG);
+
+	working_str = PSTR("Bind cluster 2(experimental!!!)");
+	clusters_attributes_table[device_bind_2_button] = 
+		ESPUI.addControl(Control::Type::Button, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 clusters_attributes_table[device_bind_button],
+										 getClustersAttributesQueryCallback, 
+										 (void*)GUI_CB_BIND_CLUSTER_2_FLAG);
 
 	enableClustersAttributesControls(false);
 }
@@ -4190,9 +4223,21 @@ void clustersattributesdeviceSelectorCallback(Control *sender, int type) {
 
 		enableClustersAttributesControls(false);
 	
-	else
+	else {
 		
 		enableClustersAttributesControls(true);
+
+		uint8_t device_slot = sender->value.toInt();
+
+		sprintf_P(general_purpose_gui_buffer,
+							PSTR("<b><i>Manufacturer name</i></b> %s "
+							"<b>| <i>model ID</b></i> %s"), 
+							Z2S_getZbDeviceManufacturerName(device_slot),
+							Z2S_getZbDeviceModelName(device_slot));
+
+		updateLabel_P(clusters_attributes_table[clusters_attributes_device_info_label], 
+									general_purpose_gui_buffer);
+	}
 
 }
 
@@ -4515,7 +4560,8 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 void getClustersAttributesQueryCallback(Control *sender, int type, void *param) {
 
 	if ((type == B_UP) && 
-			(ESPUI.getControl(clusters_attributes_table[clusters_attributes_device_selector])->value.toInt() >= 0)) {
+			(ESPUI.getControl(
+				clusters_attributes_table[clusters_attributes_device_selector])->value.toInt() >= 0)) {
 
 		zbg_device_params_t device;
 
@@ -4524,29 +4570,39 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 		log_i("device_selector value %u", 
 					ESPUI.getControl(c_a_device_selector)->value.toInt());
 
-    device.endpoint = ESPUI.getControl(clusters_attributes_table[device_endpoint_number])->value.toInt();
+    device.endpoint = 
+			ESPUI.getControl(clusters_attributes_table[device_endpoint_number])->value.toInt();
+
     device.cluster_id = 0; 
-    memcpy(&device.ieee_addr, 
+    
+		memcpy(&device.ieee_addr, 
 					 z2s_zb_devices_table[ESPUI.getControl(c_a_device_selector)->value.toInt()].ieee_addr,8);
-    device.short_addr = z2s_zb_devices_table[ESPUI.getControl(c_a_device_selector)->value.toInt()].short_addr;
+
+    device.short_addr = 
+			z2s_zb_devices_table[ESPUI.getControl(c_a_device_selector)->value.toInt()].short_addr;
 
 		uint16_t cluster_id = 
 			ESPUI.getControl(clusters_attributes_table[device_cluster_selector])->value.toInt();
 
 		uint16_t attribute_id = 
-			strtoul(ESPUI.getControl(clusters_attributes_table[device_attribute_id_text])->value.c_str(), nullptr,0);
+			strtoul(ESPUI.getControl(
+								clusters_attributes_table[device_attribute_id_text])->value.c_str(), nullptr,0);
 
 		uint8_t attribute_type_idx = 
 			ESPUI.getControl(clusters_attributes_table[device_attribute_type_selector])->value.toInt();
 
 		uint8_t attribute_type = 
-			attribute_type_idx < 0xFF ? zigbee_datatypes[attribute_type_idx].zigbee_datatype_id : 0xFF;
+			attribute_type_idx < 0xFF ? 
+				zigbee_datatypes[attribute_type_idx].zigbee_datatype_id : 
+				0xFF;
 
 		bool sync_cmd = 
-			ESPUI.getControl(clusters_attributes_table[device_async_switcher])->value.toInt() == 0;
+			ESPUI.getControl(
+				clusters_attributes_table[device_async_switcher])->value.toInt() == 0;
 
 		uint8_t manuf_specific = 
-			(ESPUI.getControl(clusters_attributes_table[manufacturer_code_switcher])->value.toInt() == 0) ? 0 : 1;
+			(ESPUI.getControl(
+				clusters_attributes_table[manufacturer_code_switcher])->value.toInt() == 0) ? 0 : 1;
 		
 		uint16_t manuf_code = 
 			(ESPUI.getControl(clusters_attributes_table[manufacturer_code_selector])->value.toInt() > 0) ? 
@@ -4574,29 +4630,53 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 
 							switch (zbGateway.getReadAttrLastResult()->data.size) {
 
-								case 1: readAttrValue = *(uint8_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+
+								case 1: 
+									
+									readAttrValue = 
+										*(uint8_t *)zbGateway.getReadAttrLastResult()->data.value; 
+								break;
 								
-								case 2: readAttrValue = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+
+								case 2: 
+									readAttrValue = 
+										*(uint16_t *)zbGateway.getReadAttrLastResult()->data.value; 
+								break;
 								
+
 								case 3: {
-									readAttrValue24 = *(esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value; 
-									readAttrValue = (((uint64_t)readAttrValue24.high) << 16) + readAttrValue24.low;
+									
+										readAttrValue24 = 
+											*(esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value; 
+
+										readAttrValue = 
+											(((uint64_t)readAttrValue24.high) << 16) + readAttrValue24.low;
 								} break;
 								
-								case 4: readAttrValue = *(uint32_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+								case 4: 
+									readAttrValue = 
+										*(uint32_t *)zbGateway.getReadAttrLastResult()->data.value; 
+								break;
 								
 								case 6: {
-									readAttrValue48 = *(esp_zb_uint48_t *)zbGateway.getReadAttrLastResult()->data.value; 
-									readAttrValue = (((uint64_t)readAttrValue48.high) << 32) + readAttrValue48.low;
+
+									readAttrValue48 = 
+										*(esp_zb_uint48_t *)zbGateway.getReadAttrLastResult()->data.value; 
+									readAttrValue = 
+										(((uint64_t)readAttrValue48.high) << 32) + readAttrValue48.low;
 								} break;
 								
-								case 8: readAttrValue = *(uint64_t *)zbGateway.getReadAttrLastResult()->data.value; break;
+								case 8: 
+									readAttrValue = 
+										*(uint64_t *)zbGateway.getReadAttrLastResult()->data.value; 
+								break;
 							}
 						
 							sprintf_P(general_purpose_gui_buffer, 
 												PSTR("Reading attribute successful!<br>Data value is %llu(0x%llX)"
 														 "<br>Data type is %s(0x%X)<br>Data size is 0x%X"), 
-                      readAttrValue, readAttrValue, 
+                      readAttrValue, 
+											readAttrValue, 
 											getZigbeeDataTypeName(zbGateway.getReadAttrLastResult()->data.type), 
 											zbGateway.getReadAttrLastResult()->data.type,
 							 		  	zbGateway.getReadAttrLastResult()->data.size);
@@ -4751,26 +4831,33 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 				uint8_t *write_attribute_payload = nullptr;
 
 				uint16_t attribute_size = 
-					ESPUI.getControl(clusters_attributes_table[device_attribute_size_number])->value.toInt();
+					ESPUI.getControl(
+							clusters_attributes_table[device_attribute_size_number])->value.toInt();
 				
 				if (attribute_size > 255) {
-					updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-												device_query_attr_size_error_str);
+
+					updateLabel_P(
+							clusters_attributes_table[device_read_attribute_label], 
+							device_query_attr_size_error_str);
 					return;
 				}
 
 				const char* attribute_value = 
-					ESPUI.getControl(clusters_attributes_table[device_attribute_value_text])->value.c_str();
+					ESPUI.getControl(
+						clusters_attributes_table[device_attribute_value_text])->value.c_str();
 
 				log_i("attribute_value = %s, length = %u", 
-							attribute_value, strlen(attribute_value));
+							attribute_value, 
+							strlen(attribute_value));
 
       	if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
 						(attribute_type <= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
         
 					if ((strlen(attribute_value) / 2) != attribute_size) {
-						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-													device_query_attr_size_mismatch_str);
+						
+						updateLabel_P(
+							clusters_attributes_table[device_read_attribute_label], 
+							device_query_attr_size_mismatch_str);
 						return;
 					}
 
@@ -4779,8 +4866,10 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 					write_attribute_payload = (uint8_t*)malloc(attribute_size); //2 by
 
 					if (write_attribute_payload == nullptr) {
-						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-													PSTR("Error allocating attribute write buffer!"));
+
+						updateLabel_P(
+							clusters_attributes_table[device_read_attribute_label], 
+							PSTR("Error allocating attribute write buffer!"));
 						return;
 					}
 
@@ -4790,7 +4879,9 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 
           	memcpy(byte_str, attribute_value + (i * 2), 2);
           	*(write_attribute_payload + i) = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
-						log_i("write_attribute_payload[%u] = %u(0x%02X)", i, *(write_attribute_payload + i), *(write_attribute_payload + i));
+						log_i("write_attribute_payload[%u] = %u(0x%02X)", i, 
+									*(write_attribute_payload + i), 
+									*(write_attribute_payload + i));
         	}
         	
 					value = write_attribute_payload;
@@ -5004,6 +5095,18 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 				if (custom_cmd_payload) 
 					free(custom_cmd_payload);
 			} break;
+
+
+			case GUI_CB_BIND_CLUSTER_FLAG:
+
+				zbGateway.bindDeviceCluster(&device, cluster_id);
+			break;
+
+
+			case GUI_CB_BIND_CLUSTER_2_FLAG:
+			
+				zbGateway.bindDeviceCluster2(&device, cluster_id);
+			break;
 		}
 	}
 }

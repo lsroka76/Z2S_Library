@@ -173,44 +173,131 @@ uint32_t dst_end = ESP_ZB_ZCL_TIME_DST_END_DEFAULT_VALUE;
   }
 
 
-  esp_zb_cluster_list_add_ias_zone_cluster(_cluster_list, esp_zb_ias_zone_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_temperature_meas_cluster(_cluster_list, esp_zb_temperature_meas_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_humidity_meas_cluster(_cluster_list, esp_zb_humidity_meas_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_pressure_meas_cluster(_cluster_list, esp_zb_pressure_meas_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_on_off_cluster(_cluster_list, esp_zb_on_off_cluster_create(&on_off_cfg), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_cluster_list_add_on_off_cluster(_cluster_list, esp_zb_on_off_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_on_off_switch_config_cluster(_cluster_list, esp_zb_on_off_switch_config_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_electrical_meas_cluster(_cluster_list, esp_zb_electrical_meas_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_flow_meas_cluster(_cluster_list, esp_zb_flow_meas_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_metering_cluster(_cluster_list, esp_zb_metering_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_illuminance_meas_cluster(_cluster_list, esp_zb_illuminance_meas_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_occupancy_sensing_cluster(_cluster_list, esp_zb_occupancy_sensing_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_thermostat_cluster(_cluster_list, esp_zb_thermostat_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_window_covering_cluster(_cluster_list, esp_zb_window_covering_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_ias_ace_cluster(_cluster_list, esp_zb_ias_ace_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_ias_zone_cluster(_cluster_list, 
+                                           esp_zb_ias_zone_cluster_create(NULL), 
+                                           ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0x0020), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_temperature_meas_cluster(_cluster_list, 
+                                                    esp_zb_temperature_meas_cluster_create(NULL), 
+                                                    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_humidity_meas_cluster(_cluster_list, 
+                                                esp_zb_humidity_meas_cluster_create(NULL), 
+                                                ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_pressure_meas_cluster(_cluster_list, 
+                                                esp_zb_pressure_meas_cluster_create(NULL), 
+                                                ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_on_off_cluster(_cluster_list, 
+                                         esp_zb_on_off_cluster_create(&on_off_cfg), 
+                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_on_off_cluster(_cluster_list, 
+                                         esp_zb_on_off_cluster_create(NULL), 
+                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_on_off_switch_config_cluster(_cluster_list, 
+                                                       esp_zb_on_off_switch_config_cluster_create(NULL), 
+                                                       ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_electrical_meas_cluster(_cluster_list, 
+                                                  esp_zb_electrical_meas_cluster_create(NULL), 
+                                                  ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_flow_meas_cluster(_cluster_list, 
+                                            esp_zb_flow_meas_cluster_create(NULL), 
+                                            ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_metering_cluster(_cluster_list, 
+                                           esp_zb_metering_cluster_create(NULL), 
+                                           ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_illuminance_meas_cluster(_cluster_list, 
+                                                   esp_zb_illuminance_meas_cluster_create(NULL), 
+                                                   ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_occupancy_sensing_cluster(_cluster_list, 
+                                                    esp_zb_occupancy_sensing_cluster_create(NULL), 
+                                                    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_thermostat_cluster(_cluster_list, 
+                                             esp_zb_thermostat_cluster_create(NULL), 
+                                             ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_window_covering_cluster(_cluster_list, 
+                                                  esp_zb_window_covering_cluster_create(NULL), 
+                                                  ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_ias_ace_cluster(_cluster_list, 
+                                          esp_zb_ias_ace_cluster_create(NULL), 
+                                          ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                        esp_zb_zcl_attr_list_create(0x0020), 
+                                        ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                          esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
+                                          ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
+                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
+                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
+                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
+                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC80),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC80),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
+                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(PHILIPS_CUSTOM_CLUSTER),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(0xFC80),
+                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC7F),ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC7F),ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(0xFC80),
+                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  esp_zb_attribute_list_t *tyua_on_off_cluster = esp_zb_cluster_list_get_cluster(_cluster_list, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                        esp_zb_zcl_attr_list_create(PHILIPS_CUSTOM_CLUSTER),
+                                        ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                        esp_zb_zcl_attr_list_create(0xFC7F),
+                                        ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(0xFC7F),
+                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
+                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
+                                         esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
+                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_attribute_list_t *tyua_on_off_cluster = 
+    esp_zb_cluster_list_get_cluster(_cluster_list, 
+                                    ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                                    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   
-  _ep_config = {.endpoint = _endpoint, .app_profile_id = ESP_ZB_AF_HA_PROFILE_ID, .app_device_id = ESP_ZB_HA_REMOTE_CONTROL_DEVICE_ID, .app_device_version = 0};
+  _ep_config = {.endpoint = _endpoint, 
+                .app_profile_id = ESP_ZB_AF_HA_PROFILE_ID, 
+                .app_device_id = ESP_ZB_HA_REMOTE_CONTROL_DEVICE_ID, 
+                .app_device_version = 0 };
 }
 
 void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
@@ -221,13 +308,18 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
           
       if (device->ZC_binding) { 
-        log_i("ZC has bounded to ZED (0x%x), endpoint (0x%x) cluster (0x%x)", device->short_addr, device->endpoint, device->cluster_id);
+
+        log_i("ZC has bounded to ZED (0x%x), endpoint (0x%x) cluster (0x%x)", 
+              device->short_addr, device->endpoint, device->cluster_id);
       } else 
-        log_i("ZED (0x%x), endpoint (0x%x) cluster (0x%x) has bounded to ZC", device->short_addr, device->endpoint, device->cluster_id);
+        log_i("ZED (0x%x), endpoint (0x%x) cluster (0x%x) has bounded to ZC", 
+              device->short_addr, device->endpoint, device->cluster_id);
       _is_bound = true;
       _last_bind_success = true;
   } else {
-      log_e("Binding failed (0x%x)! Device (0x%x), endpoint (0x%x), cluster (0x%x)", zdo_status, device->short_addr, device->endpoint, device->cluster_id);
+
+      log_e("Binding failed (0x%x)! Device (0x%x), endpoint (0x%x), cluster (0x%x)", 
+            zdo_status, device->short_addr, device->endpoint, device->cluster_id);
       //if (zdo_status == 0x8c) 
       if(_binding_error_retries > 0) {
         _last_bind_success = false;
@@ -241,7 +333,10 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
   xSemaphoreGive(gt_lock);
 }
 
-void ZigbeeGateway::find_Cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx) {
+void ZigbeeGateway::find_Cb(esp_zb_zdp_status_t zdo_status, 
+                            uint16_t addr, 
+                            uint8_t endpoint, 
+                            void *user_ctx) {
   
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
     
@@ -252,40 +347,54 @@ void ZigbeeGateway::find_Cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8
     sensor->endpoint = endpoint;
     sensor->short_addr = addr;
     esp_zb_ieee_address_by_short(sensor->short_addr, sensor->ieee_addr);
-    log_d("BASIC cluster found: short address(0x%x), endpoint(%d)", sensor->short_addr, sensor->endpoint);
+    log_d("BASIC cluster found: short address(0x%x), endpoint(%d)", 
+          sensor->short_addr, sensor->endpoint);
 
     _new_device_joined = true;
     _instance->_joined_devices.push_back(sensor); 
   }
 }
 
- void ZigbeeGateway::Z2S_active_ep_req_cb(esp_zb_zdp_status_t zdo_status, uint8_t ep_count, uint8_t *ep_id_list, void *user_ctx) {
+ void ZigbeeGateway::Z2S_active_ep_req_cb(esp_zb_zdp_status_t zdo_status, 
+                                          uint8_t ep_count, 
+                                          uint8_t *ep_id_list, 
+                                          void *user_ctx) {
+
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
       
       uint16_t short_addr = *((uint16_t*)(user_ctx));
       esp_zb_zdo_simple_desc_req_param_t cl_cmd_req;
 
-      log_i("Z2S active_ep_req: device address %d, endpoints count %d", short_addr, ep_count);
+      log_i("Z2S active_ep_req: device address %d, endpoints count %d", 
+            short_addr, ep_count);
       
       for (int i = 0; i < ep_count; i++) {
         log_i("Endpont # %d, id %d ", i+1, *(ep_id_list+i));
         cl_cmd_req.addr_of_interest = short_addr;
         cl_cmd_req.endpoint = *(ep_id_list+i);
-        if (cl_cmd_req.endpoint != 0xF2) esp_zb_zdo_simple_desc_req(&cl_cmd_req, Z2S_simple_desc_req_cb, user_ctx);
+        if (cl_cmd_req.endpoint != 0xF2) 
+          esp_zb_zdo_simple_desc_req(&cl_cmd_req, Z2S_simple_desc_req_cb, user_ctx);
     }
   }
   else log_i("Z2S active_ep_req failed");
 }
 
-void ZigbeeGateway::Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, void *user_ctx) {
+void ZigbeeGateway::Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, 
+                                           esp_zb_af_simple_desc_1_1_t *simple_desc, 
+                                           void *user_ctx) {
+
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
     
     uint16_t short_addr = *((uint16_t*)(user_ctx));
     
     esp_zb_zcl_disc_attr_cmd_t disc_attr_cmd_req;
 
-    log_i("Z2S simple_desc_req: device address %d, endpoint # %d", short_addr, simple_desc->endpoint);
-    log_i("Z2S simple_desc_req: in clusters # %d, out clusters # %d", simple_desc->app_input_cluster_count, simple_desc->app_output_cluster_count);
+    log_i("Z2S simple_desc_req: device address %d, endpoint # %d", 
+          short_addr, simple_desc->endpoint);
+
+    log_i("Z2S simple_desc_req: in clusters # %d, out clusters # %d", 
+          simple_desc->app_input_cluster_count, 
+          simple_desc->app_output_cluster_count);
     
     for (int i = 0; i < simple_desc->app_input_cluster_count; i++) {
       
@@ -304,13 +413,15 @@ void ZigbeeGateway::Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, esp_z
     }
     
     for (int i = 0; i < simple_desc->app_output_cluster_count; i++) {
-      log_i("Out cluster # %d, id %d ", i+1, *(simple_desc->app_cluster_list + simple_desc->app_input_cluster_count + i));
+      log_i("Out cluster # %d, id %d ", i + 1, 
+            *(simple_desc->app_cluster_list + simple_desc->app_input_cluster_count + i));
 
       disc_attr_cmd_req.zcl_basic_cmd.dst_endpoint = simple_desc->endpoint;
       disc_attr_cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = short_addr;
       disc_attr_cmd_req.zcl_basic_cmd.src_endpoint = 1;
       disc_attr_cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
-      disc_attr_cmd_req.cluster_id = *(simple_desc->app_cluster_list + simple_desc->app_input_cluster_count + i);
+      disc_attr_cmd_req.cluster_id = 
+        *(simple_desc->app_cluster_list + simple_desc->app_input_cluster_count + i);
       disc_attr_cmd_req.direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV;
       disc_attr_cmd_req.start_attr_id = 0;
       disc_attr_cmd_req.max_attr_number = 99;
@@ -337,7 +448,9 @@ void ZigbeeGateway::zbPrintDeviceDiscovery (zbg_device_params_t * device) {
   esp_zb_lock_release();
 }
 
-bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device, bool single_attribute, uint16_t attribute_id) {
+bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device, 
+                                              bool single_attribute, 
+                                              uint16_t attribute_id) {
   
   esp_zb_zcl_read_attr_cmd_t read_req = {};
 
@@ -513,8 +626,11 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,
     bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
     bind_req.dst_address_u.addr_short = esp_zb_get_short_address();
     bind_req.dst_endp = 1;
-    log_i("groupcast 1: mode 0x%02X, addr 0x%04X", bind_req.dst_addr_mode, bind_req.dst_address_u.addr_short);
+    log_i("groupcast 1: mode 0x%02X, addr 0x%04X", 
+          bind_req.dst_addr_mode, 
+          bind_req.dst_address_u.addr_short);
   } else {
+
     bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
     esp_zb_get_long_address(bind_req.dst_address_u.addr_long);
     bind_req.dst_endp = _instance->getEndpoint(); 
@@ -526,7 +642,9 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,
   log_d("Requesting ZED (0x%x), endpoint (0x%x), cluster_id (0x%x) to bind ZC", 
   device->short_addr, device->endpoint, device->cluster_id);
 
-  zbg_device_params_t *bind_device =(zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
+  zbg_device_params_t *bind_device =
+    (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
+
   memcpy(bind_device, device, sizeof(zbg_device_params_t));
 
   _last_bind_success = false;
@@ -602,7 +720,80 @@ void ZigbeeGateway::bindDeviceCluster(zbg_device_params_t * device,
   free(bind_device);
 }
 
-void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
+
+void ZigbeeGateway::bindDeviceCluster2(zbg_device_params_t * device,
+                                      int16_t cluster_id) {
+
+  esp_zb_zdo_bind_req_param_t bind_req = {};
+    
+  bind_req.req_dst_addr = device->short_addr;
+
+  /* populate the src information of the binding */
+  memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  bind_req.dst_endp = device->endpoint;
+  bind_req.cluster_id = cluster_id; 
+  
+  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+  esp_zb_get_long_address(bind_req.src_address);
+  bind_req.src_endp = _instance->getEndpoint(); 
+    
+  device->ZC_binding = false;
+  device->cluster_id = cluster_id;
+
+  log_d("Requesting ZED (0x%x), endpoint (0x%x), cluster_id (0x%x) to bind ZC (2)", 
+  device->short_addr, device->endpoint, device->cluster_id);
+
+  _last_bind_success = false;
+  _binding_error_retries = 5;
+
+  while (!_last_bind_success){
+
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)device);
+    esp_zb_lock_release();
+    delay(200);
+
+    if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
+    log_e("Semaphore timeout while binding");
+    }
+  }
+
+  /*bind_req.req_dst_addr = esp_zb_get_short_address();
+
+  esp_zb_get_long_address(bind_req.src_address);
+  bind_req.src_endp = _instance->getEndpoint();
+  bind_req.cluster_id = cluster_id;
+
+  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+  memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  bind_req.dst_endp = device->endpoint;
+
+  device->ZC_binding = true;
+  device->cluster_id = cluster_id;
+
+  log_d("Requesting ZC to bind ZED (0x%x), endpoint (0x%x), cluster_id (0x%x)", 
+        device->short_addr, device->endpoint, device->cluster_id);
+
+  _last_bind_success = false;
+  _binding_error_retries = 5;
+
+  while (!_last_bind_success) {
+
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)device);
+    esp_zb_lock_release();
+    delay(200);
+
+    if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
+    log_e("Semaphore timeout while binding");
+    }
+  }*/
+}
+
+
+
+void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, 
+                                  esp_zb_ieee_addr_t ieee_addr) {
   
   /*zbg_device_params_t *device = (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
   device->endpoint = 0xFF;
@@ -646,15 +837,21 @@ void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
   //_instance->_joined_devices.push_back(device);
 }
 
-void ZigbeeGateway::zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {
-  for (std::list<zbg_device_params_t *>::iterator bound_device = _gateway_devices.begin(); bound_device != _gateway_devices.end(); ++bound_device) {
+void ZigbeeGateway::zbDeviceLeave(uint16_t short_addr, 
+                                  esp_zb_ieee_addr_t ieee_addr, 
+                                  uint8_t rejoin) {
+
+  for (std::list<zbg_device_params_t *>::iterator bound_device = _gateway_devices.begin(); 
+       bound_device != _gateway_devices.end(); ++bound_device) {
+
     if (((*bound_device)->short_addr == short_addr) || (memcmp((*bound_device)->ieee_addr, ieee_addr, 8) == 0)) {
       (*bound_device)->rejoin_after_leave = true;
     }
 	}
 }
 
-void ZigbeeGateway::zbDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
+void ZigbeeGateway::zbDeviceRejoin(uint16_t short_addr, 
+                                   esp_zb_ieee_addr_t ieee_addr) {
 
   if (_on_device_rejoin)
     _on_device_rejoin(short_addr, ieee_addr);
@@ -695,7 +892,10 @@ void ZigbeeGateway::printJoinedDevices() {
 uint32_t ZigbeeGateway::getZbgDeviceUnitLastSeenMs(uint16_t short_addr) {
 
 for (uint8_t i = 0; i < ZBG_MAX_DEVICES; i++) {
-    if ((zbg_device_units[i].record_id > 0) && (zbg_device_units[i].short_addr == short_addr)) {
+  
+    if ((zbg_device_units[i].record_id > 0) && 
+        (zbg_device_units[i].short_addr == short_addr)) {
+
       return zbg_device_units[i].last_seen_ms;
     }
   }
@@ -705,7 +905,9 @@ for (uint8_t i = 0; i < ZBG_MAX_DEVICES; i++) {
 int8_t ZigbeeGateway::getZbgDeviceUnitLastRssi(uint16_t short_addr) {
 
 for (uint8_t i = 0; i < ZBG_MAX_DEVICES; i++) {
-    if ((zbg_device_units[i].record_id > 0) && (zbg_device_units[i].short_addr == short_addr)) {
+    if ((zbg_device_units[i].record_id > 0) && 
+        (zbg_device_units[i].short_addr == short_addr)) {
+
       return zbg_device_units[i].last_rssi;
     }
   }
@@ -714,7 +916,6 @@ for (uint8_t i = 0; i < ZBG_MAX_DEVICES; i++) {
 
 void ZigbeeGateway::updateZbgDeviceUnitLastSeenMs(uint16_t short_addr) {
 
-//log_i("Inside updateZbgDeviceUnitLastSeenMs with short address 0x%x", short_addr);
   for (uint8_t i = 0; i < ZBG_MAX_DEVICES; i++) {
 
     if ((zbg_device_units[i].record_id > 0) && 
@@ -726,7 +927,8 @@ void ZigbeeGateway::updateZbgDeviceUnitLastSeenMs(uint16_t short_addr) {
   }
 }
 
-void ZigbeeGateway::updateZbgDeviceUnitLastRssi(uint16_t short_addr, int8_t rssi) {
+void ZigbeeGateway::updateZbgDeviceUnitLastRssi(uint16_t short_addr, 
+                                                int8_t rssi) {
   
   for (uint8_t i = 0; i < ZBG_MAX_DEVICES; i++) {
 

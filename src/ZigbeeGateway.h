@@ -241,6 +241,10 @@ public:
                                 int16_t cluster_id, 
                                 uint8_t groupcast_flag = 0);
 
+static void bindDeviceCluster2(zbg_device_params_t *,
+                                int16_t cluster_id);
+
+
   static uint32_t getZbgDeviceUnitLastSeenMs(uint16_t short_addr);
   static int8_t getZbgDeviceUnitLastRssi(uint16_t short_addr);
 
