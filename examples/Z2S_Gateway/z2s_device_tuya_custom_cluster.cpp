@@ -269,7 +269,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
       child_lock_dp_id               =  
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_child_lock_dp_id;
       window_detect_dp_id            =  
-        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_winodow_detect_dp_id;
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_window_detect_dp_id;
       anti_freeze_dp_id              =  
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_anti_freeze_protect_dp_id;
       limescale_protect_dp_id        =  
