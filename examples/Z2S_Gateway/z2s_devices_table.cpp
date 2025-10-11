@@ -5515,6 +5515,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
     case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
     case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
+    case Z2S_DEVICE_DESC_SMART_THERMOSTAT_DISPLAY_TEST_1:
       return true;
     default:
       return false;

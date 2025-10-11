@@ -242,6 +242,7 @@
 #define Z2S_DEVICE_DESC_TS0601_TRV_TV02                     0x6018
 #define Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL                0x6019
 
+#define Z2S_DEVICE_DESC_SMART_THERMOSTAT_DISPLAY_TEST_1     0x6200
 
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
 
@@ -1001,6 +1002,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_THERMOSTAT_DISPLAY_TEST_1,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -3263,6 +3269,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3210_j4pdtz9v", .model_name = "TS0001",
     .z2s_device_uid = 29000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_aaeaifez", .model_name = "TS0601",
+    .z2s_device_uid = 29100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_THERMOSTAT_DISPLAY_TEST_1,
     .z2s_device_endpoints_count = 1},
 
 
