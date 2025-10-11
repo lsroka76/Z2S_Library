@@ -1079,8 +1079,7 @@ void processTuyaRelaysDataReport(int16_t channel_number_slot,
                                   dps_counter);
     
       if (Tuya_read_dp_result.is_success) {
-        msgZ2SDeviceActionTrigger(channel_number_slot,
-                                  Tuya_read_dp_result.dp_value);
+        msgZ2SDeviceActionTrigger(channel_number_slot);
     }
   }
   /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP, 
