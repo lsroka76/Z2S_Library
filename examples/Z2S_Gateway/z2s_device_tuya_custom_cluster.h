@@ -10,7 +10,6 @@
 #define TUYA_MCU_VERSION_REQUEST  0x10                
 #define TUYA_MCU_VERSION_RESPONSE 0x11            
 
-
 typedef struct Tuya_read_dp_result_s {
   bool     is_success;
   uint8_t  dp_id;

@@ -3893,7 +3893,38 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
-      case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
+      case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS: {
+
+
+        switch (sub_id) {
+
+
+          case TUYA_LCD_PANEL_3_RELAYS_RELAY_1_SID:
+          case TUYA_LCD_PANEL_3_RELAYS_RELAY_2_SID:
+          case TUYA_LCD_PANEL_3_RELAYS_RELAY_3_SID:
+
+            addZ2SDeviceVirtualRelay(&zbGateway,
+                                     device, 
+                                     first_free_slot, 
+                                     sub_id, 
+                                     name, 
+                                     SUPLA_CHANNELFNC_POWERSWITCH);
+          break;
+
+
+          default:
+
+            addZ2SDeviceActionTrigger(device, 
+                                      first_free_slot, 
+                                      sub_id, 
+                                      name, 
+                                      SUPLA_CHANNELFNC_POWERSWITCH);
+          break;
+        }
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/     
+
       case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
 
         addZ2SDeviceVirtualRelay(&zbGateway,
@@ -3924,9 +3955,14 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_ON_OFF:
       case Z2S_DEVICE_DESC_ON_OFF_1: {
 
-        auto Supla_Z2S_VirtualRelay = new Supla::Control::VirtualRelay();
-        Z2S_fillChannelsTableSlot(device, first_free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), 
-                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id); 
+        auto Supla_Z2S_VirtualRelay = 
+          new Supla::Control::VirtualRelay();
+
+        Z2S_fillChannelsTableSlot(device, 
+                                  first_free_slot, 
+                                  Supla_Z2S_VirtualRelay->getChannelNumber(), 
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+                                  sub_id); 
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -3935,8 +3971,14 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
         char button_name_function[30];
         static constexpr char *button_function[] = {"PRESSED", "DOUBLE PRESSED","HELD"};
+        
         sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, button_name_function, SUPLA_CHANNELFNC_POWERSWITCH);
+
+        addZ2SDeviceActionTrigger(device, 
+                                  first_free_slot, 
+                                  sub_id, 
+                                  button_name_function, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -5854,6 +5896,70 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
       Z2S_addZ2SDevice(joined_device, 
                        TUYA_LCD_PANEL_3_RELAYS_RELAY_3_SID,
                        "RELAY 3");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_TURN_ON_SID,
+                       "TURN ON");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_TURN_OFF_SID,
+                       "TURN OFF");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_TV_MODE_SID,
+                       "TV MODE");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_MEETING_MODE_SID,
+                       "MEETING MODE");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_SLEEP_MODE_SID,
+                       "SLEEP MODE");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_COFFE_BREAK_MODE_SID,
+                       "COFFE BREAK MODE");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_SHUTTER_CLOSE_SID,
+                       "CLOSE SHUTTER");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_SHUTTER_STOP_SID,
+                       "PAUSE SHUTTER");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_SHUTTER_OPEN_SID,
+                       "OPEN SHUTTER");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_CURTAIN_MOVE_UP_SID,
+                       "CURTAIN UP");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_CURTAIN_STOP_SID,
+                       "CURTAIN STOP");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_CURTAIN_MOVE_DOWN_SID,
+                       "CURTAIN DOWN");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_AC_ON_SID,
+                       "AC ON");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_AC_OFF_SID,
+                       "AC OFF");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_COOL_ON_SID,
+                       "COOLING");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_LCD_PANEL_3_RELAYS_HEAT_ON_SID,
+                       "HEATING");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

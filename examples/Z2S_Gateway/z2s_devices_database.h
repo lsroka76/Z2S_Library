@@ -484,30 +484,71 @@
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_2_SID                 0x01
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_3_SID                 0x02
 
+#define TUYA_LCD_PANEL_3_RELAYS_TURN_ON_SID                 0x03
+#define TUYA_LCD_PANEL_3_RELAYS_TURN_OFF_SID                0x04
+#define TUYA_LCD_PANEL_3_RELAYS_TV_MODE_SID                 0x05
+#define TUYA_LCD_PANEL_3_RELAYS_MEETING_MODE_SID            0x06
+#define TUYA_LCD_PANEL_3_RELAYS_SLEEP_MODE_SID              0x07
+#define TUYA_LCD_PANEL_3_RELAYS_COFFE_BREAK_MODE_SID        0x08
+
+
+#define TUYA_LCD_PANEL_3_RELAYS_SHUTTER_CLOSE_SID           0x09
+#define TUYA_LCD_PANEL_3_RELAYS_SHUTTER_STOP_SID            0x0A
+#define TUYA_LCD_PANEL_3_RELAYS_SHUTTER_OPEN_SID            0x0B
+
+#define TUYA_LCD_PANEL_3_RELAYS_CURTAIN_MOVE_UP_SID         0x0C
+#define TUYA_LCD_PANEL_3_RELAYS_CURTAIN_STOP_SID            0x0D
+#define TUYA_LCD_PANEL_3_RELAYS_CURTAIN_MOVE_DOWN_SID       0x0E
+#define TUYA_LCD_PANEL_3_RELAYS_AC_ON_SID                   0x0F
+#define TUYA_LCD_PANEL_3_RELAYS_AC_OFF_SID                  0x10
+#define TUYA_LCD_PANEL_3_RELAYS_COOL_ON_SID                 0x11
+#define TUYA_LCD_PANEL_3_RELAYS_HEAT_ON_SID                 0x12
+
+
 
 [[maybe_unused]]
-static const char IKEA_STYRBAR_BUTTONS[][16] PROGMEM = {"ON PRESSED", "ON HELD", "OFF PRESSED", 
-                                                        "OFF HELD", "LEFT PRESSED", "LEFT HELD", 
-                                                        "RIGHT PRESSED", "RIGHT HELD"};
+static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { "ON PRESSED", 
+                                                      "ON HELD", 
+                                                      "OFF PRESSED", 
+                                                      "OFF HELD", 
+                                                      "LEFT PRESSED", 
+                                                      "LEFT HELD", 
+                                                      "RIGHT PRESSED", 
+                                                      "RIGHT HELD" };
 
 [[maybe_unused]]
-static const char IKEA_SYMFONISK_BUTTONS[][20] PROGMEM = {"PLAY", "VOLUME UP", "VOLUME DOWN", 
-                                                          "NEXT TRACK ", "PREV TRACK",
-                                                          "DOT PRESSED", "DOT SHORT RELEASE", 
-                                                          "DOT HELD", "DOT LONG RELEASED", 
-                                                          "DOT DOUBLE PRESSED",
-                                                          "DOTS PRESSED", "DOTS SHORT RELEASE", 
-                                                          "DOTS HELD", "DOTS LONG RELEASED", 
-                                                          "DOTS DOUBLE PRESSED"};
+static const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = { "PLAY", 
+                                                        "VOLUME UP", 
+                                                        "VOLUME DOWN", 
+                                                        "NEXT TRACK ", 
+                                                        "PREV TRACK",
+                                                        "DOT PRESSED", 
+                                                        "DOT SHORT RELEASE", 
+                                                        "DOT HELD", 
+                                                        "DOT LONG RELEASED", 
+                                                        "DOT DOUBLE PRESSED",
+                                                        "DOTS PRESSED", 
+                                                        "DOTS SHORT RELEASE", 
+                                                        "DOTS HELD", 
+                                                        "DOTS LONG RELEASED", 
+                                                        "DOTS DOUBLE PRESSED" };
 [[maybe_unused]]
-static const char PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[][19] PROGMEM = {"ON_PRESS", "ON_PRESS_RELEASE", 
-                                                                     "ON_HOLD", "ON_HOLD_RELEASE",
-                                                                     "UP_PRESS", "UP_PRESS_RELEASE", 
-                                                                     "UP_HOLD", "UP_HOLD_RELEASE",
-                                                                     "DOWN_PRESS", "DOWN_PRESS_RELEASE", 
-                                                                     "DOWN_HOLD", "DOWN_HOLD_RELEASE",
-                                                                     "OFF_PRESS", "OFF_PRESS_RELEASE", 
-                                                                     "OFF_HOLD","OFF_HOLD_RELEASE"};
+static const char *PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[] PROGMEM = {  "ON_PRESS", 
+                                                                     "ON_PRESS_RELEASE", 
+                                                                    "ON_HOLD", 
+                                                                    "ON_HOLD_RELEASE",
+                                                                    "UP_PRESS", 
+                                                                    "UP_PRESS_RELEASE", 
+                                                                    "UP_HOLD", 
+                                                                    "UP_HOLD_RELEASE",
+                                                                    "DOWN_PRESS", 
+                                                                    "DOWN_PRESS_RELEASE", 
+                                                                    "DOWN_HOLD", 
+                                                                    "DOWN_HOLD_RELEASE",
+                                                                    "OFF_PRESS", 
+                                                                    "OFF_PRESS_RELEASE", 
+                                                                    "OFF_HOLD",
+                                                                    "OFF_HOLD_RELEASE" };
 
 typedef struct z2s_device_desc_s {
   uint32_t z2s_device_desc_id;

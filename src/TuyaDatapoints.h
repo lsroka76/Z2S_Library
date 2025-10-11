@@ -215,6 +215,31 @@
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_2_DP                          0x19
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_3_DP                          0x1A
 
+#define TUYA_LCD_PANEL_3_RELAYS_TURN_ON_DP                          0x05
+#define TUYA_LCD_PANEL_3_RELAYS_TURN_OFF_DP                         0x06
+#define TUYA_LCD_PANEL_3_RELAYS_TV_MODE_DP                          0x07
+#define TUYA_LCD_PANEL_3_RELAYS_MEETING_MODE_DP                     0x08
+#define TUYA_LCD_PANEL_3_RELAYS_SLEEP_MODE_DP                       0x09
+#define TUYA_LCD_PANEL_3_RELAYS_COFFE_BREAK_MODE_DP                 0x0A
+
+
+#define TUYA_LCD_PANEL_3_RELAYS_SHUTTER_CLOSE_DP                    0x6B
+#define TUYA_LCD_PANEL_3_RELAYS_SHUTTER_STOP_DP                     0x6C
+#define TUYA_LCD_PANEL_3_RELAYS_SHUTTER_OPEN_DP                     0x6D
+
+#define TUYA_LCD_PANEL_3_RELAYS_CURTAIN_MOVE_UP_DP                  0x76
+#define TUYA_LCD_PANEL_3_RELAYS_CURTAIN_STOP_DP                     0x77
+#define TUYA_LCD_PANEL_3_RELAYS_CURTAIN_MOVE_DOWN_DP                0x78
+#define TUYA_LCD_PANEL_3_RELAYS_AC_ON_DP                            0x7C
+#define TUYA_LCD_PANEL_3_RELAYS_AC_OFF_DP                           0x7D
+#define TUYA_LCD_PANEL_3_RELAYS_COOL_ON_DP                          0x7E
+#define TUYA_LCD_PANEL_3_RELAYS_HEAT_ON_DP                          0x7F
+
+
+
+
+
+
 #define TUYA_FINGERBOT_PLUS_MODE_DP                                 0x65
 #define TUYA_FINGERBOT_PLUS_LOWER_LIMIT_DP                          0x66
 #define TUYA_FINGERBOT_SUSTAIN_TIME_DP                              0x67

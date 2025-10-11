@@ -1004,9 +1004,34 @@ void processTuyaRelaysDataReport(int16_t channel_number_slot,
                                  uint8_t *payload, 
                                  uint32_t model_id) {
 
+
+  static constexpr uint8_t TUYA_LCD_PANEL_3_RELAYS_DPS[] PROGMEM = {
+
+  TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP,
+  TUYA_LCD_PANEL_3_RELAYS_RELAY_2_DP,
+  TUYA_LCD_PANEL_3_RELAYS_RELAY_3_DP,
+  TUYA_LCD_PANEL_3_RELAYS_TURN_ON_DP,
+  TUYA_LCD_PANEL_3_RELAYS_TURN_OFF_DP,
+  TUYA_LCD_PANEL_3_RELAYS_TV_MODE_DP,
+  TUYA_LCD_PANEL_3_RELAYS_MEETING_MODE_DP,
+  TUYA_LCD_PANEL_3_RELAYS_SLEEP_MODE_DP,
+  TUYA_LCD_PANEL_3_RELAYS_COFFE_BREAK_MODE_DP,
+  TUYA_LCD_PANEL_3_RELAYS_SHUTTER_CLOSE_DP,
+  TUYA_LCD_PANEL_3_RELAYS_SHUTTER_STOP_DP,
+  TUYA_LCD_PANEL_3_RELAYS_SHUTTER_OPEN_DP,
+  TUYA_LCD_PANEL_3_RELAYS_CURTAIN_MOVE_UP_DP,
+  TUYA_LCD_PANEL_3_RELAYS_CURTAIN_STOP_DP,
+  TUYA_LCD_PANEL_3_RELAYS_CURTAIN_MOVE_DOWN_DP,
+  TUYA_LCD_PANEL_3_RELAYS_AC_ON_DP,
+  TUYA_LCD_PANEL_3_RELAYS_AC_OFF_DP,
+  TUYA_LCD_PANEL_3_RELAYS_COOL_ON_DP,
+  TUYA_LCD_PANEL_3_RELAYS_HEAT_ON_DP,
+};
+
+
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+  /*int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                                                             z2s_channels_table[channel_number_slot].endpoint, 
                                                             z2s_channels_table[channel_number_slot].cluster_id, 
                                                             SUPLA_CHANNELTYPE_RELAY, 
@@ -1022,10 +1047,43 @@ void processTuyaRelaysDataReport(int16_t channel_number_slot,
                                                             z2s_channels_table[channel_number_slot].endpoint, 
                                                             z2s_channels_table[channel_number_slot].cluster_id, 
                                                             SUPLA_CHANNELTYPE_RELAY, 
-                                                            TUYA_LCD_PANEL_3_RELAYS_RELAY_3_SID);
+                                                            TUYA_LCD_PANEL_3_RELAYS_RELAY_3_SID);*/
 
+  for (uint8_t dps_counter = 0; dps_counter < sizeof(TUYA_LCD_PANEL_3_RELAYS_DPS); dps_counter++) {
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP, 
+    Tuya_read_dp_result = 
+      Z2S_readTuyaDPvalue(TUYA_LCD_PANEL_3_RELAYS_DPS[dps_counter], 
+                          payload_size, 
+                          payload);
+     
+    if (dps_counter < 3) {
+
+      channel_number_slot = 
+        Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+                                  z2s_channels_table[channel_number_slot].endpoint, 
+                                  z2s_channels_table[channel_number_slot].cluster_id, 
+                                  SUPLA_CHANNELTYPE_RELAY, 
+                                  dps_counter);
+    
+      if (Tuya_read_dp_result.is_success) {
+        msgZ2SDeviceVirtualRelay(channel_number_slot,
+                                 Tuya_read_dp_result.dp_value);
+      }
+    } else {
+
+      channel_number_slot = 
+        Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+                                  z2s_channels_table[channel_number_slot].endpoint, 
+                                  z2s_channels_table[channel_number_slot].cluster_id, 
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+                                  dps_counter);
+    
+      if (Tuya_read_dp_result.is_success) {
+        msgZ2SDeviceActionTrigger(channel_number_slot,
+                                  Tuya_read_dp_result.dp_value);
+    }
+  }
+  /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP, 
                                             payload_size, 
                                             payload);
   if (Tuya_read_dp_result.is_success) 
@@ -1044,7 +1102,7 @@ void processTuyaRelaysDataReport(int16_t channel_number_slot,
                                             payload);
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceVirtualRelay(channel_number_slot_3,
-                             Tuya_read_dp_result.dp_value);
+                             Tuya_read_dp_result.dp_value);*/
 }
 
 
