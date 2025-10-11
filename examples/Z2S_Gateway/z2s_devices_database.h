@@ -242,7 +242,7 @@
 #define Z2S_DEVICE_DESC_TS0601_TRV_TV02                     0x6018
 #define Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL                0x6019
 
-#define Z2S_DEVICE_DESC_SMART_THERMOSTAT_DISPLAY_TEST_1     0x6200
+#define Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198                   0x6200
 
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
 
@@ -3273,7 +3273,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_aaeaifez", .model_name = "TS0601",
     .z2s_device_uid = 29100,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_THERMOSTAT_DISPLAY_TEST_1,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
     .z2s_device_endpoints_count = 1},
 
 

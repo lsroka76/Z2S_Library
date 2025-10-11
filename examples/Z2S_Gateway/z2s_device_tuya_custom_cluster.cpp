@@ -1649,6 +1649,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr,
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z:
     case Z2S_DEVICE_DESC_TS0601_TRV_TV02:
     case Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL:
+    case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
 
       processTuyaHvacDataReport(channel_number_slot, payload_size, payload, model_id); break;
 

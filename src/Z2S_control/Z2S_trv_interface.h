@@ -95,7 +95,7 @@ typedef struct ts0601_command_set_s {
   uint8_t ts0601_cmd_set_child_lock_dp_value_on;
   uint8_t ts0601_cmd_set_child_lock_dp_value_off;
 
-  uint8_t ts0601_cmd_set_winodow_detect_dp_id;
+  uint8_t ts0601_cmd_set_window_detect_dp_id;
   uint8_t ts0601_cmd_set_window_detect_dp_type;
   uint8_t ts0601_cmd_set_window_detect_dp_value_on;
   uint8_t ts0601_cmd_set_window_detect_dp_value_off;
@@ -122,6 +122,10 @@ typedef struct ts0601_command_set_s {
   uint16_t ts0601_cmd_set_target_heatsetpoint_min;
   uint16_t ts0601_cmd_set_target_heatsetpoint_max;
 
+//extended 
+  uint8_t ts_0601_cmd_set_deadzone_temperature_dp_id;
+  uint16_t ts_0601_cmd_set_deadzone_temperature_factor;
+
 } ts0601_command_set_t;
 
 enum ts0601_cmd_sets {
@@ -136,6 +140,7 @@ enum ts0601_cmd_sets {
   trv602z_cmd_set,
   tv02_cmd_set,
   siterwell_cmd_set,
+  zwt198_cmd_set,
   ts0601_cmd_sets_number
 
 };
@@ -175,7 +180,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x08,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x08,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL,
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -239,7 +244,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x0E,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x0E,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL,
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -303,7 +308,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x0E,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x0E,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL,
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -367,7 +372,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x08,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x08,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL,
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -431,7 +436,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x68,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x68,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_RAW, ////00 RAW [0,35,5] on/off, temperature, operating time (min)
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x00,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -494,9 +499,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x08,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x08,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL, //7 open/close
-    .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
+    .ts0601_cmd_set_window_detect_dp_value_on        =  0x01, 
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
     
     .ts0601_cmd_set_anti_freeze_protect_dp_id        =  0x00,
@@ -557,7 +562,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x0E,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x0E,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL, //0x0F open/close
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -620,7 +625,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x0E,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x0E,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL, //0x0F open/close
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -683,7 +688,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x08,
+    .ts0601_cmd_set_window_detect_dp_id             =  0x08,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL, //0x0F open/close
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -746,7 +751,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_winodow_detect_dp_id             =  0x12,// ALARM 0x11 ENUM
+    .ts0601_cmd_set_window_detect_dp_id             =  0x12,// ALARM 0x11 ENUM
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL, 
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -773,6 +778,72 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8 }, //3000
+
+/*---------------------------------------------------------------------------------------*/
+
+  { .ts0601_cmd_set_id                               =  zwt198_cmd_set,
+    
+    .ts0601_cmd_on_dp_id                             =  0x01,
+    .ts0601_cmd_on_dp_type                           =  TUYA_DP_TYPE_BOOL,
+    .ts0601_cmd_on_dp_value_on                       =  0x00,
+
+    .ts0601_cmd_off_dp_id                            =  0x04,
+    .ts0601_cmd_off_dp_type                          =  TUYA_DP_TYPE_BOOL,
+    .ts0601_cmd_off_dp_value_off                     =  0x01,
+    
+    .ts0601_cmd_set_target_heatsetpoint_dp_id        =  0x02,
+    .ts0601_cmd_set_target_heatsetpoint_dp_type      =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_calibration_dp_id    =  0x13,
+    .ts0601_cmd_set_temperature_calibration_dp_type  =  TUYA_DP_TYPE_VALUE,
+
+    .ts0601_cmd_set_local_temperature_dp_id          =  0x03,
+    .ts0601_cmd_set_local_temperature_dp_type        =  TUYA_DP_TYPE_VALUE,
+
+    .ts0601_cmd_set_running_state_dp_id              =  0x65,
+    .ts0601_cmd_set_running_state_dp_type            =  TUYA_DP_TYPE_ENUM,
+    .ts0601_cmd_set_running_state_dp_value_idle      =  0x00,
+    .ts0601_cmd_set_running_state_dp_value_heat      =  0x01,
+
+    .ts0601_cmd_set_schedule_mode_dp_id              =  0x04,
+    .ts0601_cmd_set_schedule_mode_dp_type            =  TUYA_DP_TYPE_ENUM,
+    .ts0601_cmd_set_schedule_mode_dp_value_on        =  0x01,
+    .ts0601_cmd_set_schedule_mode_dp_value_off       =  0x00,
+
+    .ts0601_cmd_set_child_lock_dp_id                 =  0x09,
+    .ts0601_cmd_set_child_lock_dp_type               =  TUYA_DP_TYPE_BOOL,
+    .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
+    .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
+
+    .ts0601_cmd_set_window_detect_dp_id              =  0x00,
+    .ts0601_cmd_set_window_detect_dp_type            =  0xFF, 
+    .ts0601_cmd_set_window_detect_dp_value_on        =  0xFF,
+    .ts0601_cmd_set_window_detect_dp_value_off       =  0xFF,
+    
+    .ts0601_cmd_set_anti_freeze_protect_dp_id        =  0x66, 
+    .ts0601_cmd_set_anti_freeze_protect_dp_type      =  TUYA_DP_TYPE_BOOL,
+    .ts0601_cmd_set_anti_freeze_protect_dp_value_on  =  0x01,
+    .ts0601_cmd_set_anti_freeze_protect_dp_value_off =  0x00,
+
+    .ts0601_cmd_set_limescale_protect_dp_id          =  0x00,
+    .ts0601_cmd_set_limescale_protect_dp_type        =  0xFF,
+    .ts0601_cmd_set_limescale_protect_dp_value_on    =  0xFF,
+    .ts0601_cmd_set_limescale_protect_dp_value_off   =  0xFF,
+
+    .ts0601_cmd_set_battery_level_dp_id              =  0x00,
+    .ts0601_cmd_set_battery_level_dp_type            =  0xFF,
+    .ts0601_cmd_set_low_battery_dp_id                =  0x00,
+    .ts0601_cmd_set_low_battery_dp_type              =  0xFF,
+
+    .ts0601_cmd_set_target_heatsetpoint_factor       =  0x0A,
+    .ts0601_cmd_set_local_temperature_factor         =  0x0A,
+    .ts0601_cmd_set_temperature_calibration_factor   =  0x0A,
+    
+
+    .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
+    
+    .ts_0601_cmd_set_deadzone_temperature_dp_id      =  0x6B,
+    .ts_0601_cmd_set_deadzone_temperature_factor     =  0x0A }, 
 };
 
 namespace Supla {
