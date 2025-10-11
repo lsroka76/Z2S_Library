@@ -20,6 +20,8 @@
 #define TRV_ANTI_FREEZE_MSG             0x0A
 #define TRV_LIMESCALE_PROTECT_MSG       0x0B
 #define TRV_SCHEDULE_MODE_MSG           0x0C
+#define TRV_TEMPERATURE_HISTERESIS_MSG  0x0D
+
 
 uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id);
 

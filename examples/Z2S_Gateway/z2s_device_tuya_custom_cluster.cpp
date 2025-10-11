@@ -201,9 +201,12 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
   uint8_t schedule_mode_value_on         = 0xFF;
   uint8_t schedule_mode_value_off        = 0xFF;
 
+  uint8_t temperature_histeresis_dp_id   = 0x00;
+
   int32_t local_temperature_factor       = 1;
   int32_t target_heatsetpoint_factor     = 1;
   int32_t temperature_calibration_factor = 1;
+  int32_t temperature_histeresis_factor  = 1;
 
   int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, //legacy compatibility
                                                             z2s_channels_table[channel_number_slot].endpoint, 
@@ -248,7 +251,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_id;
       running_state_value_idle       =  
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_value_idle;
-      running_state_value_heat       =  
+      running_state_value_heat=  
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_value_heat;
 
       temperature_calibration_dp_id  =  
@@ -281,6 +284,11 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_factor;
       temperature_calibration_factor =  
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_calibration_factor;
+
+      temperature_histeresis_dp_id   =              
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_histeresis_dp_id;
+      temperature_histeresis_factor  =
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_histeresis_factor;
     } else
       log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
             ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id,
@@ -412,6 +420,21 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
                        TRV_TEMPERATURE_CALIBRATION_MSG, 
                        (Tuya_read_dp_result.dp_value * 100) / 
                        temperature_calibration_factor);
+    }
+  }
+
+  if (temperature_histeresis_dp_id) {
+
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(temperature_histeresis_dp_id, 
+                                              payload_size, 
+                                              payload);
+    
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_TEMPERATURE_HISTERESIS_MSG, 
+                       (Tuya_read_dp_result.dp_value * 100) / 
+                       temperature_histeresis_factor);
     }
   }
   

@@ -16,23 +16,38 @@
 
 #include "Z2S_trv_interface.h"
 
-Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set) 
-  : RemoteOutputInterface(true), _gateway(gateway), _trv_commands_set(trv_commands_set) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
-    memcpy(&_device, device, sizeof(zbg_device_params_t));     
+Supla::Control::Z2S_TRVInterface::
+  Z2S_TRVInterface(ZigbeeGateway *gateway, 
+                   zbg_device_params_t *device, 
+                   uint8_t trv_commands_set) 
+    : RemoteOutputInterface(true), 
+      _gateway(gateway), 
+      _trv_commands_set(trv_commands_set) {
+
+  memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 Supla::Control::HvacBaseEE *Supla::Control::Z2S_TRVInterface::getTRVHvac(){
 
   return _trv_hvac;
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVHvac(Supla::Control::HvacBaseEE * trv_hvac) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  setTRVHvac(Supla::Control::HvacBaseEE * trv_hvac) {
 
   _trv_hvac = trv_hvac;
 }
 
-void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(uint32_t timeout_secs) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  setTimeoutSecs(uint32_t timeout_secs) {
 
   _timeout_ms = timeout_secs * 1000;
   if (_timeout_ms == 0) {
@@ -44,7 +59,10 @@ void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(uint32_t timeout_secs) {
    _timeout_enabled = true;
 }
 
-void Supla::Control::Z2S_TRVInterface::refreshTimeout() {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  refreshTimeout() {
 
   _last_seen_ms = millis();
   _last_cmd_sent_ms = 0;
@@ -52,135 +70,66 @@ void Supla::Control::Z2S_TRVInterface::refreshTimeout() {
       _trv_hvac->getChannel()->setStateOnline();
 }
 
-void Supla::Control::Z2S_TRVInterface::setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger) {
 
   _temperature_calibration_offset_trigger = temperature_calibration_offset_trigger;
 }
 
-void Supla::Control::Z2S_TRVInterface::setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms) {
 
   _temperature_calibration_update_ms = temperature_calibration_update_ms;
 }
 
-void Supla::Control::Z2S_TRVInterface::enableExternalSensorDetection(bool enable_external_sensor_detection, uint8_t external_sensor_mode, uint8_t internal_sensor_channel) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  enableExternalSensorDetection(bool enable_external_sensor_detection, 
+                                uint8_t external_sensor_mode, 
+                                uint8_t internal_sensor_channel) {
   
   _trv_external_sensor_detection_enabled = enable_external_sensor_detection;
   _trv_internal_sensor_channel = internal_sensor_channel;
   _trv_external_sensor_mode = external_sensor_mode;
 }
 
-void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temperature_setpoint) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  sendTRVTemperatureSetpoint(int32_t temperature_setpoint) {
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVTemperatureSetpoint = %d", temperature_setpoint);
+    log_i("Z2S_TRVInterface::sendTRVTemperatureSetpoint = %d", 
+          temperature_setpoint);
 
-    /*int32_t temperature_setpoint_div = (temperature_setpoint / 100) * 100;
-    int32_t temperature_setpoint_mod = temperature_setpoint % 100;
-    
-    if ((temperature_setpoint_mod >= 0) && (temperature_setpoint_mod < 25))
-      temperature_setpoint = temperature_setpoint_div;
-    else
-    if ((temperature_setpoint_mod >= 25) && (temperature_setpoint_mod < 75))
-      temperature_setpoint = temperature_setpoint_div + 50;
-    else
-    if (temperature_setpoint_mod >= 75)
-      temperature_setpoint = temperature_setpoint_div + 100;
-
-    log_i("Z2S_TRVInterface::sendTRVTemperatureSetpoint (adjusted) = %d", temperature_setpoint);*/
-
-    if ((_trv_commands_set >= saswell_cmd_set) && (_trv_commands_set < ts0601_cmd_sets_number)) { 
+    if ((_trv_commands_set >= saswell_cmd_set) &&
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
 
       if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == _trv_commands_set) {
         
-        if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_target_heatsetpoint_dp_type == TUYA_DP_TYPE_VALUE) {
+        if (ts0601_command_sets_table[_trv_commands_set].
+              ts0601_cmd_set_target_heatsetpoint_dp_type == TUYA_DP_TYPE_VALUE) {
 
-          temperature_setpoint *= ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_target_heatsetpoint_factor;
+          temperature_setpoint *= ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_target_heatsetpoint_factor;
           temperature_setpoint /= 100;
 
           sendTuyaRequestCmdValue32(_gateway, 
                                     &_device, 
-                                    ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_target_heatsetpoint_dp_id,
+                                    ts0601_command_sets_table[_trv_commands_set].
+                                      ts0601_cmd_set_target_heatsetpoint_dp_id,
                                     temperature_setpoint);
         }
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
-    
-
-    /*if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
-
-      uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-      _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
-      _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
-
-      switch(_trv_commands_set) {
-        
-        case SASWELL_CMD_SET: {
-
-         _Tuya_dp_data[2] = SASWELL_CMD_SET_TARGET_HEATSETPOINT_1; 
-         temperature_setpoint *= SASWELL_TARGET_HEATSETPOINT_FACTOR;
-        } break;
-
-        case ME167_CMD_SET: {
-
-          _Tuya_dp_data[2] = ME167_CMD_SET_TARGET_HEATSETPOINT_1; 
-          temperature_setpoint *= ME167_TARGET_HEATSETPOINT_FACTOR;
-        } break;
-
-        case BECA_CMD_SET: {  
-
-          _Tuya_dp_data[2] = BECA_CMD_SET_TARGET_HEATSETPOINT_1; 
-          temperature_setpoint *= BECA_TARGET_HEATSETPOINT_FACTOR;
-        } break;
-
-        case MOES_CMD_SET: {   
-
-          _Tuya_dp_data[2] = MOES_CMD_SET_TARGET_HEATSETPOINT_1;
-          temperature_setpoint *= MOES_TARGET_HEATSETPOINT_FACTOR;
-        } break;
-
-        case TRV601_CMD_SET: {  
-
-          _Tuya_dp_data[2] = TRV601_CMD_SET_TARGET_HEATSETPOINT_1;
-          temperature_setpoint *= TRV601_TARGET_HEATSETPOINT_FACTOR;
-        } break;
-
-        case TRV603_CMD_SET: {   
-
-          _Tuya_dp_data[2] = TRV603_CMD_SET_TARGET_HEATSETPOINT_1;
-          temperature_setpoint *= TRV603_TARGET_HEATSETPOINT_FACTOR;
-        } break;
-
-        case GTZ10_CMD_SET: {  
-
-          _Tuya_dp_data[2] = GTZ10_CMD_SET_TARGET_HEATSETPOINT_1;
-          temperature_setpoint *= GTZ10_TARGET_HEATSETPOINT_FACTOR;
-        } break;
-
-        case TV02_CMD_SET: {  
-
-          _Tuya_dp_data[2] = TV02_CMD_SET_TARGET_HEATSETPOINT_1;
-          temperature_setpoint *= TV02_TARGET_HEATSETPOINT_FACTOR;
-        } break;
-
-        default: return; break;
-      }
-
-      temperature_setpoint /= 100;
-
-      _Tuya_dp_data[3] = 0x02;
-      _Tuya_dp_data[4] = 0x00;
-      _Tuya_dp_data[5] = 0x04;
-      _Tuya_dp_data[6] = (temperature_setpoint & 0xFF000000) >> 24;
-      _Tuya_dp_data[7] = (temperature_setpoint & 0x00FF0000) >> 16;
-      _Tuya_dp_data[8] = (temperature_setpoint & 0x0000FF00) >> 8;
-      _Tuya_dp_data[9] = (temperature_setpoint & 0x000000FF);
-
-      _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);*/
-
     } else
 
     if (_trv_commands_set == TRVZB_CMD_SET) {
@@ -198,104 +147,40 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(int32_t temper
   }
 }
 
-void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t temperature_calibration) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  sendTRVTemperatureCalibration(int32_t temperature_calibration) {
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVTemperatureCalibration = %d", temperature_calibration);
+    log_i("Z2S_TRVInterface::sendTRVTemperatureCalibration = %d", 
+          temperature_calibration);
 
-    if ((_trv_commands_set >= saswell_cmd_set) && (_trv_commands_set < ts0601_cmd_sets_number)) { 
+    if ((_trv_commands_set >= saswell_cmd_set) && 
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
 
-      if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == _trv_commands_set) {
+      if (ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_id == _trv_commands_set) {
         
-        if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_temperature_calibration_dp_type == TUYA_DP_TYPE_VALUE) {
+        if (ts0601_command_sets_table[_trv_commands_set].
+          ts0601_cmd_set_temperature_calibration_dp_type == TUYA_DP_TYPE_VALUE) {
 
-          temperature_calibration *= ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_temperature_calibration_factor;
+          temperature_calibration *= ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_temperature_calibration_factor;
+
           temperature_calibration /= 100;
 
           sendTuyaRequestCmdValue32(_gateway, 
                                     &_device, 
-                                    ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_temperature_calibration_dp_id,
+                                    ts0601_command_sets_table[_trv_commands_set].
+                                      ts0601_cmd_set_temperature_calibration_dp_id,
                                     temperature_calibration);
         }
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
-
-
-    /*if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
-      
-      uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-      _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
-      _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
-
-      switch(_trv_commands_set) {
-
-        case SASWELL_CMD_SET: {
-
-         _Tuya_dp_data[2] = SASWELL_CMD_SET_TEMPERATURE_CALIBRATION_1; 
-          temperature_calibration *= SASWELL_TEMPERATURE_CALIBRATION_FACTOR;
-        } break;
-
-        case ME167_CMD_SET: {
-
-          _Tuya_dp_data[2] = ME167_CMD_SET_TEMPERATURE_CALIBRATION_1; 
-          temperature_calibration *= ME167_TEMPERATURE_CALIBRATION_FACTOR;
-        } break;
-
-        case BECA_CMD_SET: {   
-
-          _Tuya_dp_data[2] = BECA_CMD_SET_TEMPERATURE_CALIBRATION_1; 
-          temperature_calibration *= BECA_TEMPERATURE_CALIBRATION_FACTOR;
-        } break;
-
-        case MOES_CMD_SET: {    
-
-          _Tuya_dp_data[2] = MOES_CMD_SET_TEMPERATURE_CALIBRATION_1;
-          temperature_calibration *= MOES_TEMPERATURE_CALIBRATION_FACTOR;
-        } break; 
-
-        case TRV601_CMD_SET: { 
-
-          _Tuya_dp_data[2] = TRV601_CMD_SET_TEMPERATURE_CALIBRATION_1;
-          temperature_calibration *= TRV601_TEMPERATURE_CALIBRATION_FACTOR;
-        } break;
-
-        case TRV603_CMD_SET: { 
-
-          _Tuya_dp_data[2] = TRV603_CMD_SET_TEMPERATURE_CALIBRATION_1;
-          temperature_calibration *= TRV603_TEMPERATURE_CALIBRATION_FACTOR;
-        } break;
-
-        case GTZ10_CMD_SET: {     
-
-          _Tuya_dp_data[2] = GTZ10_CMD_SET_TEMPERATURE_CALIBRATION_1;
-          temperature_calibration *= GTZ10_TEMPERATURE_CALIBRATION_FACTOR;
-        } break;
-
-        case TV02_CMD_SET: {     
-
-          _Tuya_dp_data[2] = TV02_CMD_SET_TEMPERATURE_CALIBRATION_1;
-          temperature_calibration *= TV02_TEMPERATURE_CALIBRATION_FACTOR;
-        } break;
-
-        default: return; break;
-      }
-
-      temperature_calibration /= 100; 
-
-      _Tuya_dp_data[3] = 0x02;
-      _Tuya_dp_data[4] = 0x00;
-      _Tuya_dp_data[5] = 0x04;
-      _Tuya_dp_data[6] = (temperature_calibration & 0xFF000000) >> 24;
-      _Tuya_dp_data[7] = (temperature_calibration & 0x00FF0000) >> 16;
-      _Tuya_dp_data[8] = (temperature_calibration & 0x0000FF00) >> 8;
-      _Tuya_dp_data[9] = (temperature_calibration & 0x000000FF);
-
-      _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);*/
-
     } else 
 
     if (_trv_commands_set == TRVZB_CMD_SET) {
@@ -313,6 +198,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(int32_t tem
       _last_cmd_sent_ms = millis();
   }
 }
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(int32_t external_sensor_temperature) {
 
@@ -343,6 +230,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(int32_t 
   }
 }
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(bool trv_external_sensor_present) {
 
   if (_gateway && Zigbee.started()) {
@@ -365,15 +254,20 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(bool trv_exter
   }
 }
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode) {
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVMode = %d", trv_system_mode);
+    log_i("Z2S_TRVInterface::sendTRVMode = %d", 
+          trv_system_mode);
 
-    if ((_trv_commands_set >= saswell_cmd_set) && (_trv_commands_set < ts0601_cmd_sets_number)) { 
+    if ((_trv_commands_set >= saswell_cmd_set) && 
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
 
-      if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == _trv_commands_set) {
+      if (ts0601_command_sets_table[_trv_commands_set].
+        ts0601_cmd_set_id == _trv_commands_set) {
 
         uint8_t system_mode_dp_id;
         uint8_t system_mode_dp_type;
@@ -383,16 +277,26 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
 
           case 1: {
 
-            system_mode_dp_id = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_on_dp_id;
-            system_mode_dp_type = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_on_dp_type;
-            system_mode_value = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_on_dp_value_on;
+            system_mode_dp_id = 
+              ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_on_dp_id;
+
+            system_mode_dp_type = 
+              ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_on_dp_type;
+
+            system_mode_value = 
+              ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_on_dp_value_on;
           } break;
 
           case 0: {
 
-            system_mode_dp_id = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_off_dp_id;
-            system_mode_dp_type = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_off_dp_type;
-            system_mode_value = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_off_dp_value_off;
+            system_mode_dp_id = 
+              ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_off_dp_id;
+              
+            system_mode_dp_type = 
+              ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_off_dp_type;
+
+            system_mode_value = 
+              ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_off_dp_value_off;
           } break;
         }
             
@@ -406,206 +310,60 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
-
-    /*if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
-
-      uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-      _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
-      _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
-
-      if (trv_system_mode == 1) {
-        switch(_trv_commands_set) {
-
-          case SASWELL_CMD_SET: {
-
-            _Tuya_dp_data[2] = SASWELL_CMD_ON_1; 
-            _Tuya_dp_data[3] = SASWELL_CMD_ON_2;
-            _Tuya_dp_data[4] = SASWELL_CMD_ON_3;
-            _Tuya_dp_data[5] = SASWELL_CMD_ON_4;
-            _Tuya_dp_data[6] = SASWELL_CMD_ON_5;
-          } break;
-
-          case ME167_CMD_SET: {
-
-            _Tuya_dp_data[2] = ME167_CMD_ON_1; 
-            _Tuya_dp_data[3] = ME167_CMD_ON_2;
-            _Tuya_dp_data[4] = ME167_CMD_ON_3;
-            _Tuya_dp_data[5] = ME167_CMD_ON_4;
-            _Tuya_dp_data[6] = ME167_CMD_ON_5;
-          } break;
-
-          case BECA_CMD_SET: {  
-
-            _Tuya_dp_data[2] = BECA_CMD_ON_1; 
-            _Tuya_dp_data[3] = BECA_CMD_ON_2;
-            _Tuya_dp_data[4] = BECA_CMD_ON_3;
-            _Tuya_dp_data[5] = BECA_CMD_ON_4;
-            _Tuya_dp_data[6] = BECA_CMD_ON_5;
-          } break;
-
-          case MOES_CMD_SET: {     
-
-            _Tuya_dp_data[2] = MOES_CMD_ON_1; 
-            _Tuya_dp_data[3] = MOES_CMD_ON_2;
-            _Tuya_dp_data[4] = MOES_CMD_ON_3;
-            _Tuya_dp_data[5] = MOES_CMD_ON_4;
-            _Tuya_dp_data[6] = MOES_CMD_ON_5;
-          } break;
-
-          case TRV601_CMD_SET: {  
-
-            _Tuya_dp_data[2] = TRV601_CMD_ON_1; 
-            _Tuya_dp_data[3] = TRV601_CMD_ON_2;
-            _Tuya_dp_data[4] = TRV601_CMD_ON_3;
-            _Tuya_dp_data[5] = TRV601_CMD_ON_4;
-            _Tuya_dp_data[6] = TRV601_CMD_ON_5;
-          } break;
-
-          case TRV603_CMD_SET: {   
-
-            _Tuya_dp_data[2] = TRV603_CMD_ON_1; 
-            _Tuya_dp_data[3] = TRV603_CMD_ON_2;
-            _Tuya_dp_data[4] = TRV603_CMD_ON_3;
-            _Tuya_dp_data[5] = TRV603_CMD_ON_4;
-            _Tuya_dp_data[6] = TRV603_CMD_ON_5;
-          } break;
-
-          case GTZ10_CMD_SET: {   
-
-            _Tuya_dp_data[2] = GTZ10_CMD_ON_1; 
-            _Tuya_dp_data[3] = GTZ10_CMD_ON_2;
-            _Tuya_dp_data[4] = GTZ10_CMD_ON_3;
-            _Tuya_dp_data[5] = GTZ10_CMD_ON_4;
-            _Tuya_dp_data[6] = GTZ10_CMD_ON_5;
-          } break;
-
-          case TV02_CMD_SET: {   
-
-            _Tuya_dp_data[2] = TV02_CMD_ON_1; 
-            _Tuya_dp_data[3] = TV02_CMD_ON_2;
-            _Tuya_dp_data[4] = TV02_CMD_ON_3;
-            _Tuya_dp_data[5] = TV02_CMD_ON_4;
-            _Tuya_dp_data[6] = TV02_CMD_ON_5;
-          } break;
-        }
-
-      } else {
-
-        switch(_trv_commands_set) {
-
-          case SASWELL_CMD_SET: {
-
-            _Tuya_dp_data[2] = SASWELL_CMD_OFF_1; 
-            _Tuya_dp_data[3] = SASWELL_CMD_OFF_2;
-            _Tuya_dp_data[4] = SASWELL_CMD_OFF_3;
-            _Tuya_dp_data[5] = SASWELL_CMD_OFF_4;
-            _Tuya_dp_data[6] = SASWELL_CMD_OFF_5;
-          } break;
-
-          case ME167_CMD_SET: {
-
-            _Tuya_dp_data[2] = ME167_CMD_OFF_1; 
-            _Tuya_dp_data[3] = ME167_CMD_OFF_2;
-            _Tuya_dp_data[4] = ME167_CMD_OFF_3;
-            _Tuya_dp_data[5] = ME167_CMD_OFF_4;
-            _Tuya_dp_data[6] = ME167_CMD_OFF_5;
-          } break;
-
-          case BECA_CMD_SET: { 
-
-            _Tuya_dp_data[2] = BECA_CMD_OFF_1; 
-            _Tuya_dp_data[3] = BECA_CMD_OFF_2;
-            _Tuya_dp_data[4] = BECA_CMD_OFF_3;
-            _Tuya_dp_data[5] = BECA_CMD_OFF_4;
-            _Tuya_dp_data[6] = BECA_CMD_OFF_5;
-          } break;
-
-          case MOES_CMD_SET: {    
-
-            _Tuya_dp_data[2] = MOES_CMD_OFF_1; 
-            _Tuya_dp_data[3] = MOES_CMD_OFF_2;
-            _Tuya_dp_data[4] = MOES_CMD_OFF_3;
-            _Tuya_dp_data[5] = MOES_CMD_OFF_4;
-            _Tuya_dp_data[6] = MOES_CMD_OFF_5;
-          } break;
-
-          case TRV601_CMD_SET: {
-
-            _Tuya_dp_data[2] = TRV601_CMD_OFF_1; 
-            _Tuya_dp_data[3] = TRV601_CMD_OFF_2;
-            _Tuya_dp_data[4] = TRV601_CMD_OFF_3;
-            _Tuya_dp_data[5] = TRV601_CMD_OFF_4;
-            _Tuya_dp_data[6] = TRV601_CMD_OFF_5;
-          } break;
-
-          case TRV603_CMD_SET: {     
-
-            _Tuya_dp_data[2] = TRV603_CMD_OFF_1; 
-            _Tuya_dp_data[3] = TRV603_CMD_OFF_2;
-            _Tuya_dp_data[4] = TRV603_CMD_OFF_3;
-            _Tuya_dp_data[5] = TRV603_CMD_OFF_4;
-            _Tuya_dp_data[6] = TRV603_CMD_OFF_5;
-          } break;
-
-          case GTZ10_CMD_SET: {     
-
-            _Tuya_dp_data[2] = GTZ10_CMD_OFF_1; 
-            _Tuya_dp_data[3] = GTZ10_CMD_OFF_2;
-            _Tuya_dp_data[4] = GTZ10_CMD_OFF_3;
-            _Tuya_dp_data[5] = GTZ10_CMD_OFF_4;
-            _Tuya_dp_data[6] = GTZ10_CMD_OFF_5;
-          } break;
-
-          case TV02_CMD_SET: {     
-
-            _Tuya_dp_data[2] = TV02_CMD_OFF_1; 
-            _Tuya_dp_data[3] = TV02_CMD_OFF_2;
-            _Tuya_dp_data[4] = TV02_CMD_OFF_3;
-            _Tuya_dp_data[5] = TV02_CMD_OFF_4;
-            _Tuya_dp_data[6] = TV02_CMD_OFF_5;
-          } break;
-
-        }  
-      }
-
-      _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);*/
     } else 
     if (_trv_commands_set == TRVZB_CMD_SET) {
+      
       trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
-      _gateway->sendAttributeWrite(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);
+      _gateway->sendAttributeWrite(&_device, 
+                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                                   ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+                                   ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
+                                   1, 
+                                   &trv_system_mode);
     }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
 }
 
-void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(uint8_t trv_schedule_mode) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  sendTRVScheduleMode(uint8_t trv_schedule_mode) {
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVScheduleMode = %d", trv_schedule_mode);
+    log_i("Z2S_TRVInterface::sendTRVScheduleMode = %d", 
+          trv_schedule_mode);
 
-    if ((_trv_commands_set >= saswell_cmd_set) && (_trv_commands_set < ts0601_cmd_sets_number)) { 
+    if ((_trv_commands_set >= saswell_cmd_set) && 
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
 
-      if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == _trv_commands_set) {
+      if (ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_id == _trv_commands_set) {
 
-        uint8_t schedule_mode_dp_id = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_schedule_mode_dp_id;
-        uint8_t schedule_mode_dp_type = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_schedule_mode_dp_type;
+        uint8_t schedule_mode_dp_id = 
+          ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_schedule_mode_dp_id;
+
+        uint8_t schedule_mode_dp_type = 
+          ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_schedule_mode_dp_type;
+
         uint8_t schedule_mode_value;
 
         switch (trv_schedule_mode) {
 
           case 1: {
 
-            schedule_mode_value = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_schedule_mode_dp_value_on;
+            schedule_mode_value = ts0601_command_sets_table[_trv_commands_set].
+              ts0601_cmd_set_schedule_mode_dp_value_on;
           } break;
 
           case 0: {
 
-            schedule_mode_value = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_schedule_mode_dp_value_off;
+            schedule_mode_value = ts0601_command_sets_table[_trv_commands_set].
+              ts0601_cmd_set_schedule_mode_dp_value_off;
           } break;
         }
         
@@ -620,171 +378,6 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(uint8_t trv_schedule_
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
-
-
-    /*if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
-
-      uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-      _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
-      _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
-
-      if (trv_schedule_mode == 1) {
-
-        switch(_trv_commands_set) {
-
-          case SASWELL_CMD_SET: {
-
-            _Tuya_dp_data[2] = SASWELL_CMD_SET_SCHEDULE_MODE_1; 
-            _Tuya_dp_data[3] = SASWELL_CMD_ON_2;
-            _Tuya_dp_data[4] = SASWELL_CMD_ON_3;
-            _Tuya_dp_data[5] = SASWELL_CMD_ON_4;
-            _Tuya_dp_data[6] = SASWELL_CMD_SET_SCHEDULE_MODE_ON;
-          } break;
-
-          case ME167_CMD_SET: {
-
-            _Tuya_dp_data[2] = ME167_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = ME167_CMD_ON_2;
-            _Tuya_dp_data[4] = ME167_CMD_ON_3;
-            _Tuya_dp_data[5] = ME167_CMD_ON_4;
-            _Tuya_dp_data[6] = ME167_CMD_SET_SCHEDULE_MODE_ON;
-          } break;
-
-          case BECA_CMD_SET: {   
-
-            _Tuya_dp_data[2] = BECA_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = BECA_CMD_ON_2;
-            _Tuya_dp_data[4] = BECA_CMD_ON_3;
-            _Tuya_dp_data[5] = BECA_CMD_ON_4;
-            _Tuya_dp_data[6] = BECA_CMD_SET_SCHEDULE_MODE_ON;
-          } break;
-
-          case MOES_CMD_SET: {     
-
-            _Tuya_dp_data[2] = MOES_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = MOES_CMD_ON_2;
-            _Tuya_dp_data[4] = MOES_CMD_ON_3;
-            _Tuya_dp_data[5] = MOES_CMD_ON_4;
-            _Tuya_dp_data[6] = MOES_CMD_SET_SCHEDULE_MODE_ON;
-          } break;
-
-          case TRV601_CMD_SET: {   
-
-            _Tuya_dp_data[2] = TRV601_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = TRV601_CMD_ON_2;
-            _Tuya_dp_data[4] = TRV601_CMD_ON_3;
-            _Tuya_dp_data[5] = TRV601_CMD_ON_4;
-            _Tuya_dp_data[6] = TRV601_CMD_SET_SCHEDULE_MODE_ON;
-          } break;
-
-          case TRV603_CMD_SET: {  
-
-            _Tuya_dp_data[2] = TRV603_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = TRV603_CMD_ON_2;
-            _Tuya_dp_data[4] = TRV603_CMD_ON_3;
-            _Tuya_dp_data[5] = TRV603_CMD_ON_4;
-            _Tuya_dp_data[6] = TRV603_CMD_SET_SCHEDULE_MODE_ON;
-          } break;
-
-          case GTZ10_CMD_SET: {  
-
-            _Tuya_dp_data[2] = GTZ10_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = GTZ10_CMD_ON_2;
-            _Tuya_dp_data[4] = GTZ10_CMD_ON_3;
-            _Tuya_dp_data[5] = GTZ10_CMD_ON_4;
-            _Tuya_dp_data[6] = GTZ10_CMD_SET_SCHEDULE_MODE_ON;
-          } break;
-
-          case TV02_CMD_SET: {  
-
-            _Tuya_dp_data[2] = TV02_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = TV02_CMD_ON_2;
-            _Tuya_dp_data[4] = TV02_CMD_ON_3;
-            _Tuya_dp_data[5] = TV02_CMD_ON_4;
-            _Tuya_dp_data[6] = TV02_CMD_SET_SCHEDULE_MODE_ON;
-          } break;
-        }
-
-      } else {
-
-        switch(_trv_commands_set) {
-
-          case SASWELL_CMD_SET: {
-
-            _Tuya_dp_data[2] = SASWELL_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = SASWELL_CMD_OFF_2;
-            _Tuya_dp_data[4] = SASWELL_CMD_OFF_3;
-            _Tuya_dp_data[5] = SASWELL_CMD_OFF_4;
-            _Tuya_dp_data[6] = SASWELL_CMD_SET_SCHEDULE_MODE_OFF;
-          } break;
-
-          case ME167_CMD_SET: {
-
-            _Tuya_dp_data[2] =  ME167_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = ME167_CMD_OFF_2;
-            _Tuya_dp_data[4] = ME167_CMD_OFF_3;
-            _Tuya_dp_data[5] = ME167_CMD_OFF_4;
-            _Tuya_dp_data[6] = ME167_CMD_SET_SCHEDULE_MODE_OFF;
-          } break;
-
-          case BECA_CMD_SET: {   
-
-            _Tuya_dp_data[2] = BECA_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = BECA_CMD_OFF_2;
-            _Tuya_dp_data[4] = BECA_CMD_OFF_3;
-            _Tuya_dp_data[5] = BECA_CMD_OFF_4;
-            _Tuya_dp_data[6] = BECA_CMD_SET_SCHEDULE_MODE_OFF;
-          } break;
-
-          case MOES_CMD_SET: {     
-
-            _Tuya_dp_data[2] = MOES_CMD_SET_SCHEDULE_MODE_1; 
-            _Tuya_dp_data[3] = MOES_CMD_OFF_2;
-            _Tuya_dp_data[4] = MOES_CMD_OFF_3;
-            _Tuya_dp_data[5] = MOES_CMD_OFF_4;
-            _Tuya_dp_data[6] = MOES_CMD_SET_SCHEDULE_MODE_OFF;
-          } break;
-
-          case TRV601_CMD_SET: { 
-
-            _Tuya_dp_data[2] = TRV601_CMD_SET_SCHEDULE_MODE_1; 
-            _Tuya_dp_data[3] = TRV601_CMD_OFF_2;
-            _Tuya_dp_data[4] = TRV601_CMD_OFF_3;
-            _Tuya_dp_data[5] = TRV601_CMD_OFF_4;
-            _Tuya_dp_data[6] = TRV601_CMD_SET_SCHEDULE_MODE_OFF;
-          } break;
-
-          case TRV603_CMD_SET: {
-
-            _Tuya_dp_data[2] = TRV603_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = TRV603_CMD_OFF_2;
-            _Tuya_dp_data[4] = TRV603_CMD_OFF_3;
-            _Tuya_dp_data[5] = TRV603_CMD_OFF_4;
-            _Tuya_dp_data[6] = TRV603_CMD_SET_SCHEDULE_MODE_OFF;
-          } break;
-
-          case GTZ10_CMD_SET: {
-
-            _Tuya_dp_data[2] = GTZ10_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = GTZ10_CMD_OFF_2;
-            _Tuya_dp_data[4] = GTZ10_CMD_OFF_3;
-            _Tuya_dp_data[5] = GTZ10_CMD_OFF_4;
-            _Tuya_dp_data[6] = GTZ10_CMD_SET_SCHEDULE_MODE_OFF;
-          } break;
-
-          case TV02_CMD_SET: {
-
-            _Tuya_dp_data[2] = TV02_CMD_SET_SCHEDULE_MODE_1;
-            _Tuya_dp_data[3] = TV02_CMD_OFF_2;
-            _Tuya_dp_data[4] = TV02_CMD_OFF_3;
-            _Tuya_dp_data[5] = TV02_CMD_OFF_4;
-            _Tuya_dp_data[6] = TV02_CMD_SET_SCHEDULE_MODE_OFF;
-          } break;
-        }  
-      }
-
-      _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);*/
     } else 
     if (_trv_commands_set == TRVZB_CMD_SET) {
 
@@ -802,30 +395,41 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(uint8_t trv_schedule_
   }
 }
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) {
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVChildLock = %d", trv_child_lock);
+    log_i("Z2S_TRVInterface::sendTRVChildLock = %d", 
+          trv_child_lock);
 
-    if ((_trv_commands_set >= saswell_cmd_set) && (_trv_commands_set < ts0601_cmd_sets_number)) { 
+    if ((_trv_commands_set >= saswell_cmd_set) && 
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
 
-      if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == _trv_commands_set) {
+      if (ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_id == _trv_commands_set) {
 
-        uint8_t child_lock_dp_id = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_child_lock_dp_id;
-        uint8_t child_lock_dp_type = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_child_lock_dp_type;
+        uint8_t child_lock_dp_id = 
+          ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_child_lock_dp_id;
+
+        uint8_t child_lock_dp_type = 
+          ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_child_lock_dp_type;
+
         uint8_t child_lock_value;
 
         switch (trv_child_lock) {
 
           case 1: {
 
-            child_lock_value = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_child_lock_dp_value_on;
+            child_lock_value = ts0601_command_sets_table[_trv_commands_set].
+              ts0601_cmd_set_child_lock_dp_value_on;
           } break;
 
           case 0: {
 
-            child_lock_value = ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_child_lock_dp_value_off;
+            child_lock_value = ts0601_command_sets_table[_trv_commands_set].
+              ts0601_cmd_set_child_lock_dp_value_off;
           } break;
         }
       
@@ -839,63 +443,6 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) 
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
-
-
-    /*if ((_trv_commands_set >= FIRST_0XEF00_CMD_SET) && (_trv_commands_set <= LAST_0XEF00_CMD_SET)) {
-
-      uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-      _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
-      _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
-      _Tuya_dp_data[2] = 0xFF;
-      _Tuya_dp_data[3] = 0x01;
-      _Tuya_dp_data[4] = 0x00;
-      _Tuya_dp_data[5] = 0x01;
-      _Tuya_dp_data[6] = trv_child_lock;
-
-      switch(_trv_commands_set) {
-
-        case SASWELL_CMD_SET: {
-
-          _Tuya_dp_data[2] = SASWELL_CMD_SET_CHILD_LOCK_1; 
-        } break;
-
-        case ME167_CMD_SET: {
-
-          _Tuya_dp_data[2] = ME167_CMD_SET_CHILD_LOCK_1; 
-        } break;
-
-        case BECA_CMD_SET: {
-
-          _Tuya_dp_data[2] = BECA_CMD_SET_CHILD_LOCK_1; 
-        } break;
-
-        case MOES_CMD_SET: {   
-
-          _Tuya_dp_data[2] = MOES_CMD_SET_CHILD_LOCK_1;
-        } break;
-
-        case TRV601_CMD_SET: {    
-
-          _Tuya_dp_data[2] = TRV601_CMD_SET_CHILD_LOCK_1; 
-        } break;
-
-        case TRV603_CMD_SET: {     
-          _Tuya_dp_data[2] = TRV603_CMD_SET_CHILD_LOCK_1;
-        } break;
-
-        case GTZ10_CMD_SET: {     
-          _Tuya_dp_data[2] = GTZ10_CMD_SET_CHILD_LOCK_1;
-        } break;
-
-        case TV02_CMD_SET: {     
-          _Tuya_dp_data[2] = TV02_CMD_SET_CHILD_LOCK_1;
-        } break;
-      }  
-
-      if (_Tuya_dp_data[2] < 0xFF)
-        _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);*/
-
     } else 
 
     if (_trv_commands_set == TRVZB_CMD_SET) {
@@ -907,6 +454,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) 
                                    1, 
                                    &trv_child_lock);
       delay(200);
+
       _gateway->sendAttributeRead(&_device, 
                                   SONOFF_CUSTOM_CLUSTER, 
                                   SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
@@ -917,6 +465,67 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) 
       _last_cmd_sent_ms = millis();
   }
 }
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::
+  sendTRVTemperatureHisteresis(int32_t temperature_histeresis) {
+
+  if (_gateway && Zigbee.started()) {
+
+    log_i("temperature histeresis = %d", 
+          temperature_histeresis);
+
+    if ((_trv_commands_set >= saswell_cmd_set) &&
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
+
+      if (ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_id == _trv_commands_set) {
+
+        if ((ts0601_command_sets_table[_trv_commands_set].
+               ts0601_cmd_set_temperature_histeresis_dp_id > 0) &&
+            (ts0601_command_sets_table[_trv_commands_set].
+               ts0601_cmd_set_temperature_histeresis_dp_type == TUYA_DP_TYPE_VALUE)) {
+
+          temperature_histeresis *= ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_temperature_histeresis_factor;
+
+          temperature_histeresis /= 100;
+
+          sendTuyaRequestCmdValue32(_gateway, 
+                                    &_device, 
+                                    ts0601_command_sets_table[_trv_commands_set].
+                                      ts0601_cmd_set_temperature_histeresis_dp_id,
+                                    temperature_histeresis);
+        }
+      } else
+        log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
+              ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
+              _trv_commands_set);
+    } else 
+
+    if (_trv_commands_set == TRVZB_CMD_SET) {
+
+      /*_gateway->sendAttributeWrite(&_device, 
+                                   SONOFF_CUSTOM_CLUSTER, 
+                                   SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+                                   ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
+                                   1, 
+                                   &trv_child_lock);
+      delay(200);
+      _gateway->sendAttributeRead(&_device, 
+                                  SONOFF_CUSTOM_CLUSTER, 
+                                  SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+                                  false);*/
+    }
+
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
+  }
+}
+
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 
@@ -954,14 +563,16 @@ void Supla::Control::Z2S_TRVInterface::setTRVSystemMode(uint8_t trv_system_mode)
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVRunningState(uint8_t trv_running_state) {
+void Supla::Control::Z2S_TRVInterface::
+  setTRVRunningState(uint8_t trv_running_state) {
 
   _trv_running_state = trv_running_state;
   _trv_running_state_updated = true;
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int32_t trv_local_temperature) {
+void Supla::Control::Z2S_TRVInterface::
+  setTRVLocalTemperature(int32_t trv_local_temperature) {
   
   _trv_last_local_temperature = _trv_local_temperature;
   _trv_local_temperature = trv_local_temperature;
@@ -969,7 +580,8 @@ void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(int32_t trv_local_
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVTemperatureCalibration(int32_t trv_temperature_calibration) {
+void Supla::Control::Z2S_TRVInterface::
+  setTRVTemperatureCalibration(int32_t trv_temperature_calibration) {
   
   _trv_last_temperature_calibration = _trv_temperature_calibration;
   _trv_temperature_calibration = trv_temperature_calibration;
@@ -977,7 +589,8 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureCalibration(int32_t trv_
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVChildLock(uint8_t trv_child_lock) {
+void Supla::Control::Z2S_TRVInterface::
+  setTRVChildLock(uint8_t trv_child_lock) {
   
   if (_trv_child_lock != trv_child_lock)
     _trv_child_lock_changed = true;
@@ -985,33 +598,68 @@ void Supla::Control::Z2S_TRVInterface::setTRVChildLock(uint8_t trv_child_lock) {
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::turnOffTRVScheduleMode() {
+void Supla::Control::Z2S_TRVInterface::
+  setTRVTemperatureHisteresis(int32_t trv_temperature_histeresis) {
+
+    _trv_temperature_histeresis = trv_temperature_histeresis;
+    _trv_temperature_histeresis_updated = true;
+    refreshTimeout();
+}
+
+void Supla::Control::Z2S_TRVInterface::
+  turnOffTRVScheduleMode() {
+
   _trv_switch_schedule_off = true;
 }
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   int16_t hvacLastTemperature = INT16_MIN;
 
   if (_trv_switch_schedule_off) {
+
     _trv_switch_schedule_off = false;
     sendTRVScheduleMode(0);
   }
 
-  if (_trv_child_lock_changed)
-    if ((_trv_hvac) && ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
+  if (_trv_child_lock_changed) {
+
+    if ((_trv_hvac) && 
+        ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
 
       log_i("TRV child lock difference detected hvac = %d, trv = %d", 
-            (uint8_t)_trv_hvac->getLocalUILock(), _trv_child_lock);
+            (uint8_t)_trv_hvac->getLocalUILock(), 
+            _trv_child_lock);
 
       sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
       _trv_child_lock_changed = false;
     }
+  }
+
+  if (_trv_temperature_histeresis_updated) {
+
+    if ((_trv_hvac) && 
+        (_trv_hvac->getTemperatureHisteresis() != _trv_temperature_histeresis)) {
+
+      log_i("TRV temperature histeresis difference detected hvac = %d, trv = %d", 
+            _trv_hvac->getTemperatureHisteresis(),
+            _trv_temperature_histeresis);
+      
+      _trv_hvac->setTemperatureHisteresis(_trv_temperature_histeresis);
+
+      _trv_temperature_histeresis_updated = false;
+    }
+
+  }
 
   if (millis() - _last_refresh_ms > _refresh_ms) {
+
     _last_refresh_ms = millis();
 
-    if ((_trv_hvac) && ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
+    if ((_trv_hvac) && 
+        ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
 
       log_i("TRV child lock difference detected hvac = %d, trv = %d", 
             (uint8_t)_trv_hvac->getLocalUILock(), _trv_child_lock);
@@ -1019,11 +667,24 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
     }
 
+    if ((_trv_hvac) && 
+        (_trv_hvac->getTemperatureHisteresis() != _trv_temperature_histeresis)) {
+
+      log_i("HVAC temperature histeresis difference detected hvac = %d, trv = %d", 
+            _trv_hvac->getTemperatureHisteresis(),
+            _trv_temperature_histeresis);
+      
+      sendTRVTemperatureHisteresis(_trv_hvac->getTemperatureHisteresis());
+    }
+
+
     if ((_trv_hvac) && (_trv_hvac->getMode() != SUPLA_HVAC_MODE_OFF) && 
         (_trv_hvac->getTemperatureSetpointHeat() != _trv_temperature_setpoint)) { //??
       
-      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - setpoint difference detected: hvac = %d, trv = %d", 
-            _trv_hvac->getTemperatureSetpointHeat(), _trv_temperature_setpoint);
+      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - "
+            "setpoint difference detected: hvac = %d, trv = %d", 
+            _trv_hvac->getTemperatureSetpointHeat(), 
+            _trv_temperature_setpoint);
 
       sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());        
     }
@@ -1142,6 +803,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       _trv_hvac->getChannel()->setStateOffline();
   }
 }
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void Supla::Control::Z2S_TRVInterface::handleAction(int event, int action) {
 

@@ -64,6 +64,11 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
 
       return siterwell_cmd_set;
     } break;
+
+      case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198: {
+
+      return zwt198_cmd_set;
+    } break;
     
     
     case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
@@ -365,6 +370,15 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     case TRV_LIMESCALE_PROTECT_MSG: { 
       
       log_i("msgZ2SDeviceHvac - LIMESCALE_PROTECT_MSG: 0x%x", msg_value);
+    } break;
+
+
+  case TRV_TEMPERATURE_HISTERESIS_MSG: { 
+      
+      log_i("msgZ2SDeviceHvac - TRV_TEMPERATURE_HISTERESIS_MSG: 0x%x", 
+            msg_value);
+
+      Supla_Z2S_TRVInterface->setTRVTemperatureHisteresis(msg_value);
     } break;
 
     default: log_i("msgZ2SDeviceHvac - unknown message id: 0x%x, value 0x%x", msg_id, msg_value); break;

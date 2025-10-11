@@ -123,8 +123,9 @@ typedef struct ts0601_command_set_s {
   uint16_t ts0601_cmd_set_target_heatsetpoint_max;
 
 //extended 
-  uint8_t ts_0601_cmd_set_deadzone_temperature_dp_id;
-  uint16_t ts_0601_cmd_set_deadzone_temperature_factor;
+  uint8_t ts0601_cmd_set_temperature_histeresis_dp_id;
+  uint8_t ts0601_cmd_set_temperature_histeresis_dp_type;
+  uint16_t ts0601_cmd_set_temperature_histeresis_factor;
 
 } ts0601_command_set_t;
 
@@ -842,8 +843,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
     
-    .ts_0601_cmd_set_deadzone_temperature_dp_id      =  0x6B,
-    .ts_0601_cmd_set_deadzone_temperature_factor     =  0x0A }, 
+    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x6B,
+    .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A }, 
 };
 
 namespace Supla {
@@ -868,6 +870,7 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   void setTRVLocalTemperature(int32_t trv_local_temperature);
   void setTRVTemperatureCalibration(int32_t trv_temperature_calibration);
   void setTRVChildLock(uint8_t trv_child_lock);
+  void setTRVTemperatureHisteresis(int32_t trv_temperature_histeresis);
   void turnOffTRVScheduleMode();
 
   void setTimeoutSecs(uint32_t timeout_secs);
@@ -897,6 +900,9 @@ protected:
   int32_t _trv_local_temperature         = INT32_MIN;
   int32_t _trv_last_local_temperature    = INT32_MIN;
   bool    _trv_local_temperature_updated = false;
+
+  int32_t _trv_temperature_histeresis         = INT32_MIN;
+  bool    _trv_temperature_histeresis_updated = false;
 
   int32_t _trv_external_sensor_temperature    = INT32_MIN;
   bool _trv_external_sensor_detection_enabled = false;
@@ -947,6 +953,7 @@ protected:
   void sendTRVExternalSensorInput(bool trv_external_sensor_present);
   void sendTRVChildLock(uint8_t trv_child_lock);
   void sendTRVScheduleMode(uint8_t trv_schedule_mode);
+  void sendTRVTemperatureHisteresis(int32_t temperature_histeresis);
   void sendTRVPing();
 };
 
