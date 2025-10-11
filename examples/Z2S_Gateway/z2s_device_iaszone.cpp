@@ -48,30 +48,39 @@ void addZ2SDeviceIASzone(zbg_device_params_t *device, uint8_t free_slot, int8_t 
 void msgZ2SDeviceIASzone(int16_t channel_number_slot, bool state, bool check_flags) {
 
   if (channel_number_slot < 0) {
+
     log_e("msgZ2SDeviceIASzone - invalid channel number slot");
     return;
   }
 
-  if (check_flags && (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_MSG_DISABLED)) {
-    log_e("msgZ2SDeviceIASzone - USER_DATA_FLAG_MSG_DISABLED set, no message is sent");
+  if (check_flags && 
+     (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_MSG_DISABLED)) {
+
+    log_i("Warning: USER_DATA_FLAG_MSG_DISABLED set, no message is sent");
     return;
   }
 
   Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
-  auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+  auto element = 
+    Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
 
-  if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
+  if ((element != nullptr) && 
+      (element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR)) {
 
-        auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
+        auto Supla_Z2S_VirtualBinary = 
+          reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
         
         Supla_Z2S_VirtualBinary->Refresh();
+
+        bool state_changed = (state == Supla_Z2S_VirtualBinary->getValue()) ? false : true;
 
         if (state) Supla_Z2S_VirtualBinary->extClear(); 
         else Supla_Z2S_VirtualBinary->extSet();
               
-        if ((sendIASNotifications) && 
-            ~(z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_DISABLE_NOTIFICATIONS)) {
+        if (state_changed && sendIASNotifications && 
+            (~(z2s_channels_table[channel_number_slot].user_data_flags & 
+              USER_DATA_FLAG_DISABLE_NOTIFICATIONS))) {
 
           Supla::Notification::SendF(z2s_channels_table[channel_number_slot].Supla_channel, 
                                      z2s_channels_table[channel_number_slot].Supla_channel_name,

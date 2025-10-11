@@ -1548,6 +1548,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	. z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "lumi", .model_name = "lumi.sens",
+    .z2s_device_uid = 3205,
+	. z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_hzkeh3nv", .model_name = "TS0201",
     .z2s_device_uid = 3300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,

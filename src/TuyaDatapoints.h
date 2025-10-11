@@ -223,6 +223,8 @@
 #define TUYA_FINGERBOT_PLUS_UPPER_LIMIT_DP                          0x6A
 #define TUYA_FINGERBOT_PLUS_TOUCH_DP                                0x6B
 
+#define TUYA_ZWT_ZWT198_SENSOR_DP                                   0x6A
+#define TUYA_ZWT_ZWT198_BACKLIGHT_MODE_DP                           0x6E
 
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
