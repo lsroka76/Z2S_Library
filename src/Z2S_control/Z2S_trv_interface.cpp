@@ -90,6 +90,8 @@ void Supla::Control::Z2S_TRVInterface::
   setFixedTemperatureCalibration(int32_t trv_fixed_temperature_calibration) {
 
     _trv_fixed_temperature_calibration = trv_fixed_temperature_calibration;
+    _trv_fixed_temperature_calibration_updated = true;
+
     log_i("_trv_fixed_temperature_calibration updated to %ld,"
           "_trv_temperature_calibration %ld", 
           _trv_fixed_temperature_calibration,
@@ -820,9 +822,11 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
       if ((_trv_external_sensor_mode ==
             EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
-          (_trv_fixed_temperature_calibration != _trv_temperature_calibration)) {
+          ((_trv_fixed_temperature_calibration != _trv_temperature_calibration) ||
+          _trv_fixed_temperature_calibration_updated)) {
 
         sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
+        _trv_fixed_temperature_calibration_updated = false;
       }
     }
 
