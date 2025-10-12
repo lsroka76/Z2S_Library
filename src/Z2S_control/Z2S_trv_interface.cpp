@@ -90,6 +90,7 @@ void Supla::Control::Z2S_TRVInterface::
   setFixedTemperatureCalibration(int32_t trv_fixed_temperature_calibration) {
 
     _trv_fixed_temperature_calibration = trv_fixed_temperature_calibration;
+    log_i("_trv_fixed_temperature_calibration updated to %lu", _trv_fixed_temperature_calibration);
   }
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
