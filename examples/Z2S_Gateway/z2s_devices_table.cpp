@@ -5287,7 +5287,7 @@ void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
         z2s_channels_table[channel_number_slot].Supla_channel);
 
       if (element && 
-          (element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HVAC) {
+          (element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HVAC)) {
 
         auto Supla_Z2S_HvacInterface = 
           reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(element);
