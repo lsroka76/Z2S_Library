@@ -816,9 +816,13 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         } break;
       }
     } else {
-      log_i("_trv_fixed_temperature_calibration %ld, _trv_temperature_calibration %ld",
+      
+      log_i("\n\r_trv_fixed_temperature_calibration %ld"
+            "\n\r_trv_temperature_calibration %ld"
+            "\n\r_trv_fixed_temperature_calibration_updated %u",
              _trv_fixed_temperature_calibration,
-             _trv_temperature_calibration);
+             _trv_temperature_calibration,
+             _trv_fixed_temperature_calibration_updated);
 
       if ((_trv_external_sensor_mode ==
             EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
@@ -846,8 +850,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     if (_trv_local_temperature == INT32_MIN) {
 
-      log_i("No TRV temperature data - sending TemperatureCalibration with %ld value",
-            _trv_fixed_temperature_calibration);
+     // log_i("No TRV temperature data - sending TemperatureCalibration with %ld value",
+       //     _trv_fixed_temperature_calibration);
             
       sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
     }
