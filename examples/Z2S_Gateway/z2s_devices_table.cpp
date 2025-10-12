@@ -5290,10 +5290,13 @@ void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
           (element->getChannel()->getChannelType() == 
             SUPLA_CHANNELTYPE_HVAC)) {
 
-        auto Supla_Z2S_HvacInterface = 
-          reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(element);
-        
-        Supla_Z2S_HvacInterface->
+        auto Supla_Z2S_HvacBase = 
+          reinterpret_cast<Supla::Control::HvacBaseEE *>(element);
+    
+        auto Supla_Z2S_TRVInterface = 
+          reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(Supla_Z2S_HvacBase->getPrimaryOutputEE());
+
+        Supla_Z2S_TRVInterface->
           setFixedTemperatureCalibration(hvac_fixed_calibration_temperature);
       }
     }

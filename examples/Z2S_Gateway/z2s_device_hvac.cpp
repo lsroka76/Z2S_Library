@@ -123,8 +123,11 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     }
   }
 
-  auto Supla_Z2S_TRVInterface = new Supla::Control::Z2S_TRVInterface(gateway, device, trv_commands_set);
-  auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
+  auto Supla_Z2S_TRVInterface = 
+    new Supla::Control::Z2S_TRVInterface(gateway, device, trv_commands_set);
+
+  auto Supla_Z2S_HvacBase = 
+    new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
             
   Supla_Z2S_HvacBase->getChannel()->setChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
@@ -251,8 +254,11 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
   if ((element == nullptr) || (element->getChannel()->getChannelType() != SUPLA_CHANNELTYPE_HVAC))
     return;
   
-  auto Supla_Z2S_HvacBase = reinterpret_cast<Supla::Control::HvacBaseEE *>(element);
-  auto Supla_Z2S_TRVInterface = reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(Supla_Z2S_HvacBase->getPrimaryOutputEE());
+  auto Supla_Z2S_HvacBase = 
+    reinterpret_cast<Supla::Control::HvacBaseEE *>(element);
+    
+  auto Supla_Z2S_TRVInterface = 
+    reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(Supla_Z2S_HvacBase->getPrimaryOutputEE());
 
   switch (msg_id) {
     case TRV_HEATING_SETPOINT_MSG: {   //degrees*100
