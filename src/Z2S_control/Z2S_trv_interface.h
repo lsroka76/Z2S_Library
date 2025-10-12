@@ -921,8 +921,6 @@ protected:
 
   int32_t _trv_temperature_calibration          = 0;
   int32_t _trv_last_temperature_calibration     = 0;
-  int32_t _trv_fixed_temperature_calibration    = 0;
-  bool    _trv_temperature_calibration_updated = false;
   bool _trv_fixed_temperature_calibration_updated = false;
 
   uint8_t _trv_child_lock = 0xFF;
@@ -933,6 +931,8 @@ protected:
   int32_t _temperature_calibration_offset      = 0;
   int32_t _last_temperature_calibration_offset = 0;
   
+  int32_t _trv_fixed_temperature_calibration = 0;
+  bool  _trv_temperature_calibration_updated = false;
   //int32_t _temperature_calibration_offset_trigger = 500;
 
   //uint32_t  _temperature_calibration_update_ms      = 5 * 60 * 1000; //5 minutes
