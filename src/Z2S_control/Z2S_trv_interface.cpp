@@ -814,7 +814,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         } break;
       }
     } else {
-    
+      log_i("_trv_fixed_temperature_calibration %ld, _trv_temperature_calibration %ld",
+             _trv_fixed_temperature_calibration,
+             _trv_temperature_calibration);
+
       if ((_trv_external_sensor_mode ==
             EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
           (_trv_fixed_temperature_calibration != _trv_temperature_calibration)) {
