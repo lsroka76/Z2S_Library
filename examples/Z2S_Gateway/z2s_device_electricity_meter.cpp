@@ -2,7 +2,9 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot) {
+void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, 
+                                   zbg_device_params_t *device, 
+                                   int16_t channel_number_slot) {
   
   bool _isTuya, _active_query;
   bool _one_phase = true;
@@ -153,11 +155,17 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
                                             _active_query, 
                                             _one_phase);
 
-  Supla_Z2S_ElectricityMeter->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+  Supla_Z2S_ElectricityMeter->getChannel()->setChannelNumber(
+    z2s_channels_table[channel_number_slot].Supla_channel);
   
-  Supla_Z2S_ElectricityMeter->setKeepAliveSecs(z2s_channels_table[channel_number_slot].keep_alive_secs);
-  Supla_Z2S_ElectricityMeter->setTimeoutSecs(z2s_channels_table[channel_number_slot].timeout_secs);
-  Supla_Z2S_ElectricityMeter->setRefreshSecs(z2s_channels_table[channel_number_slot].refresh_secs);
+  Supla_Z2S_ElectricityMeter->setKeepAliveSecs(
+      z2s_channels_table[channel_number_slot].keep_alive_secs);
+
+  Supla_Z2S_ElectricityMeter->setTimeoutSecs(
+      z2s_channels_table[channel_number_slot].timeout_secs);
+
+  Supla_Z2S_ElectricityMeter->setRefreshSecs(
+      z2s_channels_table[channel_number_slot].refresh_secs);
 
 
   channel_extended_data_em_t channel_extended_data_em = {};
@@ -170,7 +178,8 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
 
     ieee_addr_to_str(ieee_addr_str, channel_extended_data_em.ieee_addr);
 
-    log_i("em ext data ieee address: %s", ieee_addr_str);
+    log_i("em ext data ieee address: %s", 
+          ieee_addr_str);
       
 
     if (memcmp(channel_extended_data_em.ieee_addr, 
@@ -214,9 +223,15 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *
   Supla_Z2S_ElectricityMeter->setEnergyDivisor(energy_divisor, false);
 }
 
-void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, zbg_device_params_t *device, 
-                                  bool isTuya, bool active_query, uint8_t free_slot,
-                                  int8_t sub_id, bool one_phase) {
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, 
+                                  zbg_device_params_t *device, 
+                                  bool isTuya, 
+                                  bool active_query, 
+                                  uint8_t free_slot,
+                                  int8_t sub_id, 
+                                  bool one_phase) {
   
   auto Supla_Z2S_ElectricityMeter = 
     new Supla::Sensor::Z2S_ElectricityMeter(gateway, 

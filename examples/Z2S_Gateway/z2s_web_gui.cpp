@@ -133,11 +133,16 @@ uint16_t channel_status_label;
 uint16_t zb_channel_info_label; 
 uint16_t zb_channel_timings_label;
 uint16_t zb_channel_flags_label;
+uint16_t zb_channel_params_label;
 uint16_t channel_name_text; //, channel_desc_number, channel_sub_id_number;
 uint16_t channel_name_save_button;
 uint16_t disable_channel_notifications_switcher;
 uint16_t trv_auto_to_schedule_switcher;
+uint16_t trv_fixed_calibration_switcher;
 uint16_t set_sorwns_on_start_switcher;
+uint16_t param_1_number;
+uint16_t param_1_desc_label;
+uint16_t param_1_save_button; 
 uint16_t keepalive_number;
 uint16_t timeout_number;
 uint16_t refresh_number;
@@ -334,10 +339,13 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG	0x4005
 #define GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG					0x4006
 #define GUI_CB_SET_SORWNS_ON_START_FLAG						0x4007
+#define GUI_CB_TRV_FIXED_CALIBRATION_FLAG					0x4008
 
 #define GUI_CB_UPDATE_KEEPALIVE_FLAG							0x4010
 #define GUI_CB_UPDATE_TIMEOUT_FLAG								0x4011
 #define GUI_CB_UPDATE_REFRESH_FLAG								0x4012
+
+#define GUI_CB_UPDATE_PARAM_1_FLAG								0x4020
 
 #define GUI_CB_ADD_AND_HANDLER_FLAG								0x4050
 #define GUI_CB_ADD_OR_HANDLER_FLAG								0x4051
@@ -1422,7 +1430,23 @@ void buildChannelsTabGUI() {
 																				 Control::Color::None, 
 																				 zb_channel_flags_label), 
 												PSTR(clearLabelStyle));
-	
+
+	trv_fixed_calibration_switcher = ESPUI.addControl(Control::Type::Switcher, 
+																									 	PSTR(empty_str), 
+																										 zero_str, 
+																										 Control::Color::Emerald, 
+																										 zb_channel_flags_label, 
+																										 editChannelFlagsCallback, 
+																									 	(void*)GUI_CB_TRV_FIXED_CALIBRATION_FLAG);
+	working_str = PSTR("&#10023; <i>TRV FIXED CALIBRATION VALUE<br>"
+										 "(IGNORES EXTERNAL SENSOR CLOUD SETTINGS</i> &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearLabelStyle));
+		
 	set_sorwns_on_start_switcher = ESPUI.addControl(Control::Type::Switcher, 
 																									PSTR(empty_str), 
 																									zero_str, 
@@ -1437,6 +1461,36 @@ void buildChannelsTabGUI() {
 																				 Control::Color::None, 
 																				 zb_channel_flags_label), 
 												PSTR(clearLabelStyle));
+
+	zb_channel_params_label = ESPUI.addControl(Control::Type::Label, 
+																						 PSTR("Channel params panel"), 
+																					 	 PSTR("Here you can change channel custom parameters -<br>"
+																								  "for some of them restart may be required!"), 
+																					 	 Control::Color::Emerald, 
+																					 	 channelstab);
+
+	param_1_number = ESPUI.addControl(Control::Type::Number, 
+																		PSTR(empty_str), 
+																		zero_str, 
+																		Control::Color::Emerald, 
+																		zb_channel_params_label, 
+																		generalCallback);
+	working_str = PSTR("Save");
+	param_1_save_button = ESPUI.addControl(Control::Type::Button, 
+																				 PSTR(empty_str),
+																				 working_str, 
+																				 Control::Color::Emerald, 
+																				 zb_channel_params_label, 
+																				 editChannelCallback, 
+																				 (void*)GUI_CB_UPDATE_PARAM_1_FLAG);
+	working_str = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
+	param_1_desc_label = 
+		ESPUI.addControl(Control::Type::Label, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::None, 
+										 zb_channel_params_label);
+	ESPUI.setElementStyle(param_1_desc_label, PSTR(clearLabelStyle));
 
 	zb_channel_timings_label = ESPUI.addControl(Control::Type::Label, 
 																							PSTR("Channel timings panel"), 
@@ -4251,18 +4305,23 @@ void enableChannelControls(bool enable) {
 	working_str = PSTR(empty_str);
 	ESPUI.updateText(channel_name_text, working_str);
 
+	ESPUI.updateNumber(param_1_number, 0);
 	ESPUI.updateNumber(keepalive_number, 0);
 	ESPUI.updateNumber(timeout_number, 0);
 	ESPUI.updateNumber(refresh_number, 0);
 	ESPUI.updateNumber(disable_channel_notifications_switcher, 0);
 	ESPUI.updateNumber(trv_auto_to_schedule_switcher, 0);
+	ESPUI.updateNumber(trv_fixed_calibration_switcher, 0);
 	ESPUI.updateNumber(set_sorwns_on_start_switcher, 0);
 	
 	enableControlStyle(channel_name_text, enable);
 	enableControlStyle(channel_name_save_button, enable);
 	enableControlStyle(disable_channel_notifications_switcher,enable);
 	enableControlStyle(trv_auto_to_schedule_switcher, enable);
+	enableControlStyle(trv_fixed_calibration_switcher, enable);
 	enableControlStyle(set_sorwns_on_start_switcher, enable);
+	enableControlStyle(param_1_number, enable);
+	enableControlStyle(param_1_save_button, enable);
 	enableControlStyle(keepalive_number, enable);
 	enableControlStyle(keepalive_save_button, enable);
 	enableControlStyle(timeout_number, enable);
@@ -4273,6 +4332,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(remove_all_channels_button, enable);
 	enableControlStyle(zb_channel_timings_label, enable);
 	enableControlStyle(zb_channel_flags_label, enable);
+	enableControlStyle(zb_channel_params_label, enable);
 	
 	enable ? controls_enabled_flags |= CHANNELS_CONTROLS_ENABLED_FLAG:
 					 controls_enabled_flags &= ~CHANNELS_CONTROLS_ENABLED_FLAG;
@@ -4316,11 +4376,19 @@ void enableChannelFlags(uint8_t flags_mask) {
 		enableControlStyle(disable_channel_notifications_switcher, false);
 	}
 
-	if (flags_mask & 2)
+	if (flags_mask & 2) {
+		
 		enableControlStyle(trv_auto_to_schedule_switcher, true);
+		enableControlStyle(trv_fixed_calibration_switcher, true);
+		
+	}
 	else {
+		
 		ESPUI.updateNumber(trv_auto_to_schedule_switcher, 0);
 		enableControlStyle(trv_auto_to_schedule_switcher, false);
+
+		ESPUI.updateNumber(trv_fixed_calibration_switcher, 0);
+		enableControlStyle(trv_fixed_calibration_switcher, false);
 	}
 
 	if (flags_mask & 4)
@@ -4330,10 +4398,34 @@ void enableChannelFlags(uint8_t flags_mask) {
 		enableControlStyle(set_sorwns_on_start_switcher, false);
 	}
 
-	if (flags_mask == 0)
+	if (flags_mask == 0) 
 		enableControlStyle(zb_channel_flags_label, false);
 	else
 		enableControlStyle(zb_channel_flags_label, true);
+}
+
+void enableChannelParams(uint8_t params_mask) {
+
+	
+	if (params_mask & 1) {
+		
+		enableControlStyle(param_1_number, true);
+		enableControlStyle(param_1_save_button, true);
+		
+	}
+	else {
+		
+		ESPUI.updateNumber(param_1_number, 0);
+		working_str = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
+		ESPUI.updateText(param_1_desc_label, working_str);
+		enableControlStyle(param_1_number, false);
+		enableControlStyle(param_1_save_button, false);
+	}
+
+	if (params_mask == 0) 
+		enableControlStyle(zb_channel_params_label, false);
+	else
+		enableControlStyle(zb_channel_params_label, true);
 }
 
 
@@ -4396,6 +4488,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 	working_str = z2s_channels_table[channel_slot].Supla_channel_name;
 	ESPUI.updateText(channel_name_text, working_str);
 	
+	enableChannelParams(0);
+
 	switch (z2s_channels_table[channel_slot].Supla_channel_type) {
 
 		case 0x0000: {
@@ -4411,25 +4505,41 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
 			enableChannelTimings(6); //timeout+debounce
-			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
-			ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+			ESPUI.updateNumber(timeout_number, 
+				z2s_channels_table[channel_slot].timeout_secs);
+
+			ESPUI.updateNumber(refresh_number, 
+				z2s_channels_table[channel_slot].refresh_secs);
 	
 			enableChannelFlags(5);
+			
 			ESPUI.updateNumber(disable_channel_notifications_switcher, 
 										 (z2s_channels_table[channel_slot].user_data_flags & 
 											USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0);
+
 			ESPUI.updateNumber(set_sorwns_on_start_switcher, 
 										 (z2s_channels_table[channel_slot].user_data_flags & 
 										 USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
-			
+
+			enableChannelParams(1);
+
+			ESPUI.updateNumber(param_1_number, 
+										 		 z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
+			working_str = PSTR("&#10023; Virtual Binary custom param<br>"
+												 "enter rain intensity treshold<br>"
+												 "currently unused for other sensors &#10023;");
+			ESPUI.updateText(param_1_desc_label, working_str);
 		} break;
 
 
 		case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
 
 			enableChannelTimings(6); //timeout + debounce 
-			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
-			ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+			ESPUI.updateNumber(timeout_number, 
+				z2s_channels_table[channel_slot].timeout_secs);
+
+			ESPUI.updateNumber(refresh_number, 
+				z2s_channels_table[channel_slot].refresh_secs);
 	
 			enableChannelFlags(0); 
 		} break;
@@ -4440,9 +4550,11 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
 			enableChannelTimings(2); //timeout only
-			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(timeout_number, 
+				z2s_channels_table[channel_slot].timeout_secs);
 	
 			enableChannelFlags(4);
+			
 			ESPUI.updateNumber(set_sorwns_on_start_switcher, 
 												 (z2s_channels_table[channel_slot].user_data_flags & 
 										 		 USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
@@ -4459,26 +4571,67 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_HVAC: {
 			
 			enableChannelTimings(2); //timeout only
-			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(timeout_number, 
+				z2s_channels_table[channel_slot].timeout_secs);
 	
 			enableChannelFlags(2);
 			ESPUI.updateNumber(trv_auto_to_schedule_switcher, 
 										 (z2s_channels_table[channel_slot].user_data_flags &
 										 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
+
+			ESPUI.updateNumber(trv_fixed_calibration_switcher, 
+										 (z2s_channels_table[channel_slot].user_data_flags &
+										 USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0);
+
+			enableChannelParams(1);
+
+			ESPUI.updateNumber(param_1_number, 
+										 		 z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
+			working_str = PSTR("&#10023; Thermostat custom param<br>"
+												 "enter calibration fixed value (temperature x100)<br>"
+												 "ie. to set correction to -1 enter -100 &#10023;");
+			ESPUI.updateText(param_1_desc_label, working_str);
 		} break;
 
 
-		case SUPLA_CHANNELTYPE_RELAY:
-		case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
-		case SUPLA_CHANNELTYPE_DIMMER:
 		case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: {
 
 			enableChannelTimings(3); //timeout + keepalive
-			ESPUI.updateNumber(keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
-			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+
+			ESPUI.updateNumber(keepalive_number, 
+				z2s_channels_table[channel_slot].keep_alive_secs);
+
+			ESPUI.updateNumber(timeout_number, 
+				z2s_channels_table[channel_slot].timeout_secs);
+
+			enableChannelParams(1);
+
+			ESPUI.updateNumber(param_1_number, 
+										 		 z2s_channels_table[channel_slot].rgb_color_mode);
+			working_str = PSTR("&#10023; RGB custom param<br>"
+												 "enter numeric value to select RGB MODE<br>"
+												 "ie. to set correction to -1 enter -100 &#10023;");
+			ESPUI.updateText(param_1_desc_label, working_str);
 
 			enableChannelFlags(0);
 		} break;
+
+		
+		case SUPLA_CHANNELTYPE_RELAY:
+		case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
+		case SUPLA_CHANNELTYPE_DIMMER: {
+
+			enableChannelTimings(3); //timeout + keepalive
+
+			ESPUI.updateNumber(keepalive_number, 
+				z2s_channels_table[channel_slot].keep_alive_secs);
+
+			ESPUI.updateNumber(timeout_number, 
+				z2s_channels_table[channel_slot].timeout_secs);
+
+			enableChannelFlags(0);
+		} break;
+
 
 		case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
@@ -5345,7 +5498,8 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 				if (Z2S_saveChannelsTable()) {
 
-					log_i("%d, %s", z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
+					log_i("%d, %s", 
+								z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
 								z2s_channels_table[channel_slot].Supla_channel_name);
 
 					//rebuildChannelsSelector();
@@ -5358,6 +5512,32 @@ void editChannelCallback(Control *sender, int type, void *param) {
 				}
 			} break;
 
+			case GUI_CB_UPDATE_PARAM_1_FLAG : {	
+
+
+				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
+
+
+					case SUPLA_CHANNELTYPE_HVAC:
+
+						updateHvacFixedCalibrationTemperature(
+							ESPUI.getControl(param_1_number)->value.toInt());
+					break;
+
+
+					default: {
+
+						z2s_channels_table[channel_slot].user_data_1 = ESPUI.getControl(param_1_number)->value.toInt();
+						
+						if (Z2S_saveChannelsTable()) {
+
+							log_i("channel user data 1 updated successfuly to %lu", 
+										z2s_channels_table[channel_slot].user_data_1);
+						}
+					} break;
+				}
+			} break;
+			
 			case GUI_CB_UPDATE_KEEPALIVE_FLAG : {	
 
 				updateTimeout(channel_slot, 0, 1, ESPUI.getControl(keepalive_number)->value.toInt());
@@ -5402,6 +5582,16 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 
 				} break;
+
+				case GUI_CB_TRV_FIXED_CALIBRATION_FLAG: {
+
+					if (type == S_ACTIVE)
+							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+						else
+							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+
+				} break;
+
 
 				case GUI_CB_SET_SORWNS_ON_START_FLAG: {
 

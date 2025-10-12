@@ -8,6 +8,8 @@
 #include <Z2S_control/hvac_base_ee.h>
 #include <Z2S_control/Z2S_trv_interface.h>
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 #define TRV_HEATING_SETPOINT_MSG        0x01
 #define TRV_SYSTEM_MODE_MSG             0x02
 #define TRV_LOCAL_TEMPERATURE_MSG       0x03
@@ -22,13 +24,27 @@
 #define TRV_SCHEDULE_MODE_MSG           0x0C
 #define TRV_TEMPERATURE_HISTERESIS_MSG  0x0D
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id);
 
-void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot);
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
-void addZ2SDeviceHvac(ZigbeeGateway * gateway, zbg_device_params_t *device, uint8_t free_slot, uint8_t trv_thermometer_slot);
+void initZ2SDeviceHvac(ZigbeeGateway *gateway, 
+                       zbg_device_params_t *device, 
+                       int16_t channel_number_slot);
 
-void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value);
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void addZ2SDeviceHvac(ZigbeeGateway *gateway, 
+                      zbg_device_params_t *device, 
+                      uint8_t free_slot, 
+                      uint8_t trv_thermometer_slot);
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void msgZ2SDeviceHvac(int16_t channel_number_slot, 
+                      uint8_t msg_id, 
+                      int32_t msg_value);
 
 #endif

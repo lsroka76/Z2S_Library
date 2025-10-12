@@ -1474,6 +1474,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
 	.z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE284_upagmta9", .model_name = "TS0601",
+    .z2s_device_uid = 905,
+	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
+	.z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_1wnh8bqp", .model_name = "TS0601",
     .z2s_device_uid = 1000,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,

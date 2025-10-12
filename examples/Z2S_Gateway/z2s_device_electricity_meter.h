@@ -5,6 +5,8 @@
 #include <Z2S_control/Z2S_virtual_relay.h>
 #include <Z2S_sensor/Z2S_ElectricityMeter.h>
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 #define Z2S_EM_VOLTAGE_A_SEL           0x0000
 #define Z2S_EM_CURRENT_A_SEL           0x0001
 #define Z2S_EM_ACTIVE_POWER_A_SEL      0x0002
@@ -41,10 +43,13 @@
 #define Z2S_EM_ACT_FWD_ENERGY_MUL_SEL  0x0048
 #define Z2S_EM_ACT_FWD_ENERGY_DIV_SEL  0x0049
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, 
                                    zbg_device_params_t *device, 
                                    int16_t channel_number_slot);
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway, 
                                   zbg_device_params_t *device, 
@@ -54,7 +59,11 @@ void addZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
                                   int8_t sub_id = -1, 
                                   bool one_phase = true);
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 void updateZ2SDeviceElectricityMeter(int16_t channel_number_slot);
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void msgZ2SDeviceElectricityMeter(int16_t channel_number_slot, 
                                   uint8_t selector, 

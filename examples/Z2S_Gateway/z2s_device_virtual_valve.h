@@ -15,7 +15,7 @@ void addZ2SDeviceVirtualValve(ZigbeeGateway *gateway,
                               zbg_device_params_t *device, 
                               uint8_t free_slot, 
                               int8_t sub_id = -1, 
-                              char *name = nullptr, 
+                              const char *name = nullptr, 
                               uint32_t func = 0);
 
 

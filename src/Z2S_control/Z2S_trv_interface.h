@@ -27,7 +27,7 @@
 #include "TuyaDatapoints.h"
 #include "hvac_base_ee.h"
 #include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>
-
+#include <Z2S_sensor/Z2S_virtual_thermometer.h>
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
@@ -59,6 +59,7 @@
 #define EXTERNAL_TEMPERATURE_SENSOR_IGNORE          0x0000
 #define EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE   0x0001
 #define EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT       0x0002
+#define EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED       0x0004
 
 typedef struct ts0601_command_set_s {
 
@@ -857,20 +858,25 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
 
-  void setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger);
-  void setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms);
+  /*void setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger);
+  void setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms);*/
+
+  void setFixedTemperatureCalibration(int32_t trv_fixed_temperature_calibration);
 
   void enableExternalSensorDetection(bool enable_external_sensor_detection, 
                                      uint8_t external_sensor_mode, 
                                      uint8_t internal_sensor_channel);
 
   void setTRVTemperatureSetpoint(int32_t trv_temperature_setpoint);
+
   void setTRVSystemMode(uint8_t trv_system_mode);
   void setTRVRunningState(uint8_t trv_running_state);
+
   void setTRVLocalTemperature(int32_t trv_local_temperature);
   void setTRVTemperatureCalibration(int32_t trv_temperature_calibration);
-  void setTRVChildLock(uint8_t trv_child_lock);
   void setTRVTemperatureHisteresis(int32_t trv_temperature_histeresis);
+
+  void setTRVChildLock(uint8_t trv_child_lock);
   void turnOffTRVScheduleMode();
 
   void setTimeoutSecs(uint32_t timeout_secs);
@@ -903,6 +909,7 @@ protected:
 
   int32_t _trv_temperature_histeresis         = INT32_MIN;
   bool    _trv_temperature_histeresis_updated = false;
+  bool    _trv_temperature_histeresis_enabled = false;
 
   int32_t _trv_external_sensor_temperature    = INT32_MIN;
   bool _trv_external_sensor_detection_enabled = false;
@@ -912,8 +919,9 @@ protected:
   uint8_t _trv_internal_sensor_channel        = 0xFF;
   uint8_t _trv_external_sensor_mode           = EXTERNAL_TEMPERATURE_SENSOR_IGNORE;
 
-  int32_t _trv_temperature_calibration         = 0;
-  int32_t _trv_last_temperature_calibration    = 0;
+  int32_t _trv_temperature_calibration          = 0;
+  int32_t _trv_last_temperature_calibration     = 0;
+  int32_t _trv_fixed_temperature_calibration    = INT32_MIN;
   bool    _trv_temperature_calibration_updated = false;
 
   uint8_t _trv_child_lock = 0xFF;
@@ -924,10 +932,10 @@ protected:
   int32_t _temperature_calibration_offset      = 0;
   int32_t _last_temperature_calibration_offset = 0;
   
-  int32_t _temperature_calibration_offset_trigger = 500;
+  //int32_t _temperature_calibration_offset_trigger = 500;
 
-  uint32_t  _temperature_calibration_update_ms      = 5 * 60 * 1000; //5 minutes
-  uint32_t  _temperature_calibration_last_update_ms = 0;
+  //uint32_t  _temperature_calibration_update_ms      = 5 * 60 * 1000; //5 minutes
+  //uint32_t  _temperature_calibration_last_update_ms = 0;
 
   uint32_t _temperature_ping_ms = 60 * 1000;
   uint32_t _last_temperature_ping_ms = 0;
@@ -944,7 +952,7 @@ protected:
   uint32_t  _timeout_ms = 0;
   uint32_t  _last_seen_ms = 0;
   uint32_t  _last_cmd_sent_ms = 0;
-  bool _timeout_enabled = false;
+  bool      _timeout_enabled = false;
 
   void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);

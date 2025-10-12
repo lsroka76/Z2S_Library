@@ -215,11 +215,11 @@ void Z2S_fillChannelsTableSlot(zbg_device_params_t *device,
                                uint8_t channel, 
                                int32_t channel_type, 
                                int8_t sub_id,
-                              char *name, 
-                              uint32_t func, 
-                              uint8_t secondary_channel,
-                              uint8_t extended_data_type,
-                              uint8_t *extended_data) {
+                               const char *name, 
+                               uint32_t func, 
+                               uint8_t secondary_channel,
+                               uint8_t extended_data_type,
+                               uint8_t *extended_data) {
 
   
   memset(&z2s_channels_table[slot], 0, sizeof(z2s_device_params_t));
@@ -629,7 +629,9 @@ void Z2S_initZbDevices(uint32_t init_ms) {
         z2s_zb_devices_table[devices_counter].last_seen_ms = init_ms;
 }
 
-bool Z2S_updateZbDeviceUidIdx(uint8_t zb_device_slot, const char *manufacturer_name, const char * model_name) {
+bool Z2S_updateZbDeviceUidIdx(uint8_t zb_device_slot, 
+                              const char *manufacturer_name, 
+                              const char * model_name) {
 
   if (zb_device_slot >= Z2S_ZB_DEVICES_MAX_NUMBER)
     return false;
@@ -676,8 +678,8 @@ bool Z2S_updateZbDeviceUidIdx(uint8_t zb_device_slot, const char *manufacturer_n
 
 uint8_t Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, 
                                  uint16_t short_addr, 
-                                 char *manufacturer_name, 
-                                 char *model_name, 
+                                 const char *manufacturer_name, 
+                                 const char *model_name, 
                                  uint8_t endpoints_count, 
                                  uint32_t desc_id, 
                                  uint8_t power_source) {
@@ -1074,18 +1076,26 @@ bool Z2S_loadZbDevicesTable() {
 
 bool Z2S_saveZbDevicesTable() {
 
-  //if (!Supla::Storage::ConfigInstance()->setBlob(Z2S_ZB_DEVICES_TABLE, (char *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
-  if (!Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
+  if (!Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
+                    (uint8_t *)z2s_zb_devices_table, 
+                    sizeof(z2s_zb_devices_table))) {
+
     log_i ("Zigbee devices table write failed!");
     return false;
   }
   else { 
-    if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
-      log_i("Zigbee devices table new size(%d) write success!", sizeof(z2s_zb_devices_table));
+    
+    if (Supla::Storage::ConfigInstance()->
+          setUInt32(Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
+
+      log_i("Zigbee devices table new size(%d) write success!", 
+            sizeof(z2s_zb_devices_table));
+
       Supla::Storage::ConfigInstance()->commit();
       return true;
     }
     else { 
+      
       log_i ("Zigbee devices table size write failed!");
       return false;
     }
@@ -1095,16 +1105,24 @@ bool Z2S_saveZbDevicesTable() {
 bool Z2S_clearZbDevicesTable() {
 
   log_i("Clear Zigbee devices table");
-  memset(z2s_zb_devices_table,0,sizeof(z2s_zb_devices_table));
+  
+  memset(z2s_zb_devices_table, 0, sizeof(z2s_zb_devices_table));
+
   return Z2S_saveZbDevicesTable();
 }
 
 bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set) {
 
-  if ((device_number_slot >= 0) && (device_number_slot < Z2S_ZB_DEVICES_MAX_NUMBER) && z2s_zb_devices_table[device_number_slot].record_id > 0) {
-    z2s_zb_devices_table[device_number_slot].user_data_flags |= flags_to_set;;
+  if ((device_number_slot >= 0) && 
+      (device_number_slot < Z2S_ZB_DEVICES_MAX_NUMBER) && 
+      (z2s_zb_devices_table[device_number_slot].record_id > 0)) {
+
+    z2s_zb_devices_table[device_number_slot].user_data_flags |= flags_to_set;
+
     if (Z2S_saveZbDevicesTable()) {
-    log_i("Device global flags set successfully to %x", z2s_zb_devices_table[device_number_slot].user_data_flags);
+    
+    log_i("Device global flags set successfully to %x", 
+          z2s_zb_devices_table[device_number_slot].user_data_flags);
       return true;
     }
     return false;
@@ -1394,8 +1412,9 @@ bool Z2S_loadActionsIndexTable() {
 
 bool Z2S_saveActionsIndexTable() {
 
-  //if (Supla::Storage::ConfigInstance()->setBlob(Z2S_CHANNELS_ACTIONS_INDEX_TABLE, (char *)z2s_actions_index_table, sizeof(z2s_actions_index_table))) {
-  if (Z2S_saveFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, (uint8_t *)z2s_actions_index_table, sizeof(z2s_actions_index_table))) {
+  if (Z2S_saveFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
+      (uint8_t *)z2s_actions_index_table, 
+      sizeof(z2s_actions_index_table))) {
 
     log_i ("Saving Zigbee<=>Supla actions index table: SUCCESS!");
     return true;
@@ -1473,16 +1492,21 @@ bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
   char file_name_buffer[50] = {};
   sprintf(file_name_buffer, Z2S_CHANNELS_ACTIONS_PPREFIX_V2, action_index);
   
-  //if (Supla::Storage::ConfigInstance()->setBlob(blob_name_buffer, (char *)&action, sizeof(z2s_channel_action_t))) {
-  if (Z2S_saveFile(file_name_buffer, (uint8_t*) &action, sizeof(z2s_channel_action_t))) {
+  if (Z2S_saveFile(file_name_buffer, 
+                   (uint8_t*) &action, 
+                   sizeof(z2s_channel_action_t))) {
 
-    log_i ("Saving Zigbee<=>Supla action in file %s: SUCCESS", file_name_buffer);
+    log_i ("Saving Zigbee<=>Supla action in file %s: SUCCESS", 
+           file_name_buffer);
+
     setActionsIndexTablePosition(action_index);
     Z2S_saveActionsIndexTable();
     return true;
   } else {
 
-    log_i ("Saving Zigbee<=>Supla action in file %s: FAILED", file_name_buffer);
+    log_i ("Saving Zigbee<=>Supla action in file %s: FAILED", 
+           file_name_buffer);
+
     return false;
   }
 }
@@ -3181,7 +3205,9 @@ void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_
   no_channel_found_error_func(ieee_addr_str);
 }
 
-bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
+bool compareBuffer(uint8_t *buffer, 
+                   uint8_t buffer_size, 
+                   char *lookup_str) {
   
   char byte_str[3];
   byte_str[2] = '\0';
@@ -3776,7 +3802,11 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   }
 }
 
-uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name, uint32_t func, char *unit) { //
+uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, 
+                         int8_t sub_id, 
+                         const char *name, 
+                         uint32_t func, 
+                         const char *unit) { 
 
   char ieee_addr_str[24] = {};
 
@@ -3789,11 +3819,13 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
                                                           sub_id);
   
   if (channel_number_slot < 0) {
+
     log_i("No channel found for address %s, adding new one!",ieee_addr_str);
     
     uint8_t first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
     
     if (first_free_slot == 0xFF) {
+        
         devices_table_full_error_func();
         return ADD_Z2S_DEVICE_STATUS_DT_FULL;
     }
@@ -3970,9 +4002,15 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3: {
 
         char button_name_function[30];
-        static constexpr char *button_function[] = {"PRESSED", "DOUBLE PRESSED","HELD"};
+
+        static constexpr char *button_function[] = {  "PRESSED", 
+                                                      "DOUBLE PRESSED",
+                                                      "HELD"  };
         
-        sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
+        sprintf(button_name_function, 
+                "BUTTON #%d %s", 
+                device->endpoint, 
+                button_function[sub_id]); 
 
         addZ2SDeviceActionTrigger(device, 
                                   first_free_slot, 
@@ -3986,9 +4024,19 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
       case Z2S_DEVICE_DESC_SMART_BUTTON_2F: {
 
         char button_name_function[30];
-        static constexpr char *button_function[] = {"PRESSED"}; //, "DOUBLE PRESSED"};
-        sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH);
+        
+        static constexpr char *button_function[] = {"PRESSED"};
+        
+        sprintf(button_name_function, 
+                "BUTTON #%d %s", 
+                device->endpoint, 
+                button_function[sub_id]); 
+
+        addZ2SDeviceActionTrigger(device, 
+                                  first_free_slot, 
+                                  sub_id, 
+                                  name, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -3997,11 +4045,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB20: 
       case Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB21: {
-
-        //char button_name_function[30];
-        //static const char button_function[][15] = {"PRESSED", "DOUBLE PRESSED","HELD"};
-        //sprintf(button_name_function, "BUTTON #%d %s", device->endpoint, button_function[sub_id]); 
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH);
+ 
+        addZ2SDeviceActionTrigger(device, 
+                                  first_free_slot, 
+                                  sub_id, 
+                                  name, 
+                                  SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 
@@ -4009,9 +4058,16 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, int8_t sub_id, char *name,
 
       case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3: {
 
-        static const char button_name_function[][30] =  {"BUTTON #1 PRESSED", "BUTTON #1 DOUBLE PRESSED","BUTTON #1 HELD",
-                                            "BUTTON #2 PRESSED", "BUTTON #2 DOUBLE PRESSED","BUTTON #2 HELD"};
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
+        static const char *button_name_function[] =  {  "BUTTON #1 PRESSED", 
+                                                        "BUTTON #1 DOUBLE PRESSED",
+                                                        "BUTTON #1 HELD",
+                                                        "BUTTON #2 PRESSED", 
+                                                        "BUTTON #2 DOUBLE PRESSED",
+                                                        "BUTTON #2 HELD"};
+
+        addZ2SDeviceActionTrigger(device, 
+                                  first_free_slot, 
+                                  sub_id, 
                                   (char *)button_name_function[sub_id], 
                                   SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
@@ -5184,7 +5240,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
 void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode) {
 
-  if (z2s_channels_table[channel_number_slot].Supla_channel_type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
+  if (z2s_channels_table[channel_number_slot].
+    Supla_channel_type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
 
     z2s_channels_table[channel_number_slot].rgb_color_mode = rgb_mode;
 
@@ -5192,11 +5249,16 @@ void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode) {
       log_i("Device(channel %d) RGB mode updated. Table saved successfully.", 
             z2s_channels_table[channel_number_slot].Supla_channel);
       
-      auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+      auto element = 
+      Supla::Element::getElementByChannelNumber(
+        z2s_channels_table[channel_number_slot].Supla_channel);
 
-      if (element != nullptr && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
+      if (element && 
+          (element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER)) {
 
-        auto Supla_Z2S_RGBInterface = reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
+        auto Supla_Z2S_RGBInterface = 
+          reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
+        
         Supla_Z2S_RGBInterface->setRGBMode(rgb_mode);
       }
     }
@@ -5204,6 +5266,42 @@ void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode) {
   else
     log_i("RGB mode update only allowed for SUPLA_CHANNELTYPE_RGBLEDCONTROLLER");
 }
+
+void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
+                                           int32_t hvac_fixed_calibration_temperature) {
+
+  if (z2s_channels_table[channel_number_slot].
+    Supla_channel_type == SUPLA_CHANNELTYPE_HVAC) {
+
+    z2s_channels_table[channel_number_slot].hvac_fixed_temperature_correction = 
+      hvac_fixed_calibration_temperature;
+
+    if (Z2S_saveChannelsTable()) {
+
+      log_i("Device(channel %d) fixed calibration temperature updated. "
+            "Table saved successfully.", 
+            z2s_channels_table[channel_number_slot].Supla_channel);
+      
+      auto element = 
+      Supla::Element::getElementByChannelNumber(
+        z2s_channels_table[channel_number_slot].Supla_channel);
+
+      if (element && 
+          (element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HVAC) {
+
+        auto Supla_Z2S_HvacInterface = 
+          reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(element);
+        
+        Supla_Z2S_HvacInterface->
+          setFixedTemperatureCalibration(hvac_fixed_calibration_temperature);
+      }
+    }
+  }
+  else
+    log_i("Fixed calibration temperature update only "
+          "allowed for SUPLA_CHANNELTYPE_HVAC");
+}
+
 
 void updateDeviceTemperature(uint8_t channel_number_slot, int32_t temperature) {
   
@@ -5218,7 +5316,7 @@ void updateDeviceTemperature(uint8_t channel_number_slot, int32_t temperature) {
     log_i("set temperature only allowed for virtual thermometer");
 }
 
-bool Z2S_add_action(char *action_name, 
+bool Z2S_add_action(const char *action_name, 
                     uint8_t src_channel_id, 
                     uint16_t Supla_action, 
                     uint8_t dst_channel_id, 

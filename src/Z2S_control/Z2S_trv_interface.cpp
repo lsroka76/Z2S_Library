@@ -27,6 +27,20 @@ Supla::Control::Z2S_TRVInterface::
       _trv_commands_set(trv_commands_set) {
 
   memcpy(&_device, device, sizeof(zbg_device_params_t));     
+
+  if ((_trv_commands_set >= saswell_cmd_set) &&
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
+
+    if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == 
+        _trv_commands_set) {
+        
+        _trv_temperature_histeresis_enabled = 
+          (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_temperature_histeresis_dp_id > 0);
+  } else
+    log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
+          ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
+          _trv_commands_set);
+  }
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -73,18 +87,26 @@ void Supla::Control::Z2S_TRVInterface::
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
 void Supla::Control::Z2S_TRVInterface::
-  setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger) {
+  setFixedTemperatureCalibration(int32_t trv_fixed_temperature_calibration) {
 
-  _temperature_calibration_offset_trigger = temperature_calibration_offset_trigger;
-}
+    _trv_fixed_temperature_calibration = trv_fixed_temperature_calibration;
+  }
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
+/*void Supla::Control::Z2S_TRVInterface::
+  setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger) {
+
+  _temperature_calibration_offset_trigger = temperature_calibration_offset_trigger;
+}*/
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+/*void Supla::Control::Z2S_TRVInterface::
   setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms) {
 
   _temperature_calibration_update_ms = temperature_calibration_update_ms;
-}
+}*/
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
@@ -129,7 +151,7 @@ void Supla::Control::Z2S_TRVInterface::
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
-              _trv_commands_set);
+              _trv_commands_set); 
     } else
 
     if (_trv_commands_set == TRVZB_CMD_SET) {
@@ -491,7 +513,7 @@ void Supla::Control::Z2S_TRVInterface::
             ts0601_cmd_set_temperature_histeresis_factor;
 
           temperature_histeresis /= 100;
-
+          
           sendTuyaRequestCmdValue32(_gateway, 
                                     &_device, 
                                     ts0601_command_sets_table[_trv_commands_set].
@@ -658,7 +680,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     _last_refresh_ms = millis();
 
-    if ((_trv_hvac) && 
+    if (_trv_hvac && 
         ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
 
       log_i("TRV child lock difference detected hvac = %d, trv = %d", 
@@ -667,7 +689,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
     }
 
-    if ((_trv_hvac) && 
+    if (_trv_temperature_histeresis_enabled &&
+        _trv_hvac && 
         (_trv_hvac->getTemperatureHisteresis() != _trv_temperature_histeresis)) {
 
       log_i("HVAC temperature histeresis difference detected hvac = %d, trv = %d", 
@@ -689,19 +712,25 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());        
     }
     
-    if ((_trv_hvac) && ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1)  != _trv_system_mode)) {
+    if (_trv_hvac && 
+        ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1)  != 
+          _trv_system_mode)) {
       
-      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - trv mode difference detected: hvac=%d, trv=%d", 
-            _trv_hvac->getMode(), _trv_system_mode);
+      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - "
+            "trv mode difference detected: hvac=%d, trv=%d", 
+            _trv_hvac->getMode(), 
+            _trv_system_mode);
       
       sendTRVSystemMode(_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1);        
     }
 
     bool external_sensor_last_state = _trv_external_sensor_present;
 
-    if (_trv_hvac && _trv_external_sensor_detection_enabled) {
+    if (_trv_hvac && 
+        _trv_external_sensor_detection_enabled) {
       
-      if (_trv_hvac->getMainThermometerChannelNo() != _trv_internal_sensor_channel)
+      if (_trv_hvac->getMainThermometerChannelNo() != 
+          _trv_internal_sensor_channel)
         _trv_external_sensor_present = true;
       else
         _trv_external_sensor_present = false;
@@ -715,17 +744,24 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     if (_trv_hvac)
         hvacLastTemperature = _trv_hvac->getPrimaryTemp();
 
-    if (_trv_external_sensor_present && (_trv_external_sensor_mode == EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE)) {  //standard calibration
+    if (_trv_external_sensor_present && 
+        (_trv_external_sensor_mode == 
+          EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE)) {  //standard calibration
 
        //_trv_hvac->getLastTemperature();
         //if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && 
         //    (hvacLastTemperature != _trv_local_temperature)) {
 
-      if ((_trv_local_temperature_updated) && ((_trv_temperature_calibration_updated) || (_trv_temperature_calibration == 0)) &&
-          (hvacLastTemperature != INT16_MIN) && (hvacLastTemperature != (_trv_local_temperature /*- _trv_temperature_calibration*/))) {
+      if ((_trv_local_temperature_updated) && 
+          ((_trv_temperature_calibration_updated) || 
+           (_trv_temperature_calibration == 0)) &&
+          (hvacLastTemperature != INT16_MIN) && 
+          (hvacLastTemperature != (_trv_local_temperature /*- _trv_temperature_calibration*/))) {
 
         _last_temperature_calibration_offset = _temperature_calibration_offset;
-        _temperature_calibration_offset = hvacLastTemperature - (_trv_local_temperature - _trv_temperature_calibration);
+
+        _temperature_calibration_offset = 
+          hvacLastTemperature - (_trv_local_temperature - _trv_temperature_calibration);
 
         log_i("trv temperature difference detected:\n\rhvac_temperature = %d,\n\rtrv_temperature = %d,\n\r"
               "trv_last_temperature = %d,\n\rtrv_calibration = %d,\n\rtrv_last_calibration = %d,\n\r"
@@ -738,7 +774,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
               _temperature_calibration_offset, 
               _last_temperature_calibration_offset);
       
-        if ((_trv_temperature_calibration_updated) && (abs(_temperature_calibration_offset - _trv_temperature_calibration) >= 100)) { 
+        if ((_trv_temperature_calibration_updated) && 
+            (abs(_temperature_calibration_offset - _trv_temperature_calibration) >= 100)) { 
 
           _trv_local_temperature_updated = false;
           _trv_temperature_calibration_updated = false;
@@ -753,17 +790,35 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         }*/        
       }
     } else 
-    if (_trv_external_sensor_present && (_trv_external_sensor_mode == EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
+    if (_trv_external_sensor_present && 
+        (_trv_external_sensor_mode == 
+          EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
       
       if ((hvacLastTemperature != INT16_MIN) && 
-          ((abs(hvacLastTemperature - _trv_local_temperature) >= 10) || (millis() - _last_external_temperature_ping_ms > _external_temperature_ping_ms))) {
-        log_i("external temperature difference detected %d vs %d",hvacLastTemperature,_trv_local_temperature);
+          ((abs(hvacLastTemperature - _trv_local_temperature) >= 10) || 
+           (millis() - _last_external_temperature_ping_ms > _external_temperature_ping_ms))) {
+
+        log_i("external temperature difference detected %d vs %d",
+              hvacLastTemperature,
+              _trv_local_temperature);
+
         _last_external_temperature_ping_ms = millis();
         sendTRVExternalSensorTemperature(hvacLastTemperature);
       }
+    } else
+    if ((_trv_external_sensor_mode ==
+          EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
+        (_trv_fixed_temperature_calibration != _trv_temperature_calibration)) {
+
+      sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
     }
-    if (_trv_external_sensor_changed && (!_trv_external_sensor_present) && (_trv_external_sensor_mode == EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
+
+    if (_trv_external_sensor_changed && 
+        (!_trv_external_sensor_present) && 
+        (_trv_external_sensor_mode == EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
+
       log_i("Switching OFF external sensor temperature input");
+
       sendTRVExternalSensorInput(_trv_external_sensor_present);
     }
   }
@@ -777,14 +832,29 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVTemperatureCalibration(0);
     }
 
-    if(_trv_hvac && _trv_external_sensor_present && (_trv_hvac->getPrimaryTemp() == INT16_MIN) && (_trv_local_temperature > INT32_MIN)) {
-      log_i("No external sensor temperature data available - temporarily using TRV local temperature value %d", _trv_local_temperature);
+    if(_trv_hvac && 
+       _trv_external_sensor_present && 
+       (_trv_hvac->getPrimaryTemp() == INT16_MIN) && 
+       (_trv_local_temperature > INT32_MIN)) {
+      
+      log_i("No external sensor temperature data available - "
+            "temporarily using TRV local temperature value %d", 
+            _trv_local_temperature);
 
-      auto element = Supla::Element::getElementByChannelNumber(_trv_hvac->getMainThermometerChannelNo());
-      if (element != nullptr) { //} && element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
+      auto element = 
+        Supla::Element::getElementByChannelNumber(_trv_hvac->getMainThermometerChannelNo());
+
+      if (element &&
+          (element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR)) {
 
         auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
-        Supla_Z2S_VirtualThermHygroMeter->setTemp((double)_trv_local_temperature/100);
+        Supla_Z2S_VirtualThermHygroMeter->setTemp((double)_trv_local_temperature / 100);
+      } else
+      if (element &&
+          (element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_THERMOMETER)) {
+
+        auto Supla_Z2S_VirtualThermometer = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
+        Supla_Z2S_VirtualThermometer->setValue((double)_trv_local_temperature / 100);
       }
     }
   }
