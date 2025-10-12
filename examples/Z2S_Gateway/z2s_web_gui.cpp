@@ -5521,6 +5521,7 @@ void editChannelCallback(Control *sender, int type, void *param) {
 					case SUPLA_CHANNELTYPE_HVAC:
 
 						updateHvacFixedCalibrationTemperature(
+							channel_slot,
 							ESPUI.getControl(param_1_number)->value.toInt());
 					break;
 
