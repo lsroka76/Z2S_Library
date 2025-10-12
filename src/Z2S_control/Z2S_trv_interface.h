@@ -921,7 +921,7 @@ protected:
 
   int32_t _trv_temperature_calibration          = 0;
   int32_t _trv_last_temperature_calibration     = 0;
-  int32_t _trv_fixed_temperature_calibration    = INT32_MIN;
+  int32_t _trv_fixed_temperature_calibration    = 0;
   bool    _trv_temperature_calibration_updated = false;
 
   uint8_t _trv_child_lock = 0xFF;

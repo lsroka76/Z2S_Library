@@ -90,7 +90,10 @@ void Supla::Control::Z2S_TRVInterface::
   setFixedTemperatureCalibration(int32_t trv_fixed_temperature_calibration) {
 
     _trv_fixed_temperature_calibration = trv_fixed_temperature_calibration;
-    log_i("_trv_fixed_temperature_calibration updated to %lu", _trv_fixed_temperature_calibration);
+    log_i("_trv_fixed_temperature_calibration updated to %ld,"
+          "_trv_temperature_calibration %ld", 
+          _trv_fixed_temperature_calibration,
+          _trv_temperature_calibration);
   }
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -745,73 +748,79 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     if (_trv_hvac)
         hvacLastTemperature = _trv_hvac->getPrimaryTemp();
 
-    if (_trv_external_sensor_present && 
-        (_trv_external_sensor_mode == 
-          EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE)) {  //standard calibration
+    if (_trv_external_sensor_present) { 
+        
+      switch (_trv_external_sensor_mode) {
+
+      
+        case EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE: {  //standard calibration
 
        //_trv_hvac->getLastTemperature();
         //if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && 
         //    (hvacLastTemperature != _trv_local_temperature)) {
 
-      if ((_trv_local_temperature_updated) && 
-          ((_trv_temperature_calibration_updated) || 
-           (_trv_temperature_calibration == 0)) &&
-          (hvacLastTemperature != INT16_MIN) && 
-          (hvacLastTemperature != (_trv_local_temperature /*- _trv_temperature_calibration*/))) {
+          if ((_trv_local_temperature_updated) && 
+              ((_trv_temperature_calibration_updated) || 
+              (_trv_temperature_calibration == 0)) &&
+              (hvacLastTemperature != INT16_MIN) && 
+              (hvacLastTemperature != (_trv_local_temperature /*- _trv_temperature_calibration*/))) {
 
-        _last_temperature_calibration_offset = _temperature_calibration_offset;
+            _last_temperature_calibration_offset = _temperature_calibration_offset;
 
-        _temperature_calibration_offset = 
-          hvacLastTemperature - (_trv_local_temperature - _trv_temperature_calibration);
+            _temperature_calibration_offset = 
+              hvacLastTemperature - (_trv_local_temperature - _trv_temperature_calibration);
 
-        log_i("trv temperature difference detected:\n\rhvac_temperature = %d,\n\rtrv_temperature = %d,\n\r"
-              "trv_last_temperature = %d,\n\rtrv_calibration = %d,\n\rtrv_last_calibration = %d,\n\r"
-              "calculated offset = %d,\n\rlast calculated offset %d", 
-              hvacLastTemperature, 
-              _trv_local_temperature,
-              _trv_last_local_temperature,
-              _trv_temperature_calibration,
-              _trv_last_temperature_calibration,
-              _temperature_calibration_offset, 
-              _last_temperature_calibration_offset);
+            log_i("trv temperature difference detected:\n\rhvac_temperature = %d,\n\rtrv_temperature = %d,\n\r"
+                  "trv_last_temperature = %d,\n\rtrv_calibration = %d,\n\rtrv_last_calibration = %d,\n\r"
+                  "calculated offset = %d,\n\rlast calculated offset %d", 
+                  hvacLastTemperature, 
+                  _trv_local_temperature,
+                  _trv_last_local_temperature,
+                  _trv_temperature_calibration,
+                  _trv_last_temperature_calibration,
+                  _temperature_calibration_offset, 
+                  _last_temperature_calibration_offset);
       
-        if ((_trv_temperature_calibration_updated) && 
-            (abs(_temperature_calibration_offset - _trv_temperature_calibration) >= 100)) { 
+            if ((_trv_temperature_calibration_updated) && 
+                (abs(_temperature_calibration_offset - _trv_temperature_calibration) >= 100)) { 
 
-          _trv_local_temperature_updated = false;
-          _trv_temperature_calibration_updated = false;
+              _trv_local_temperature_updated = false;
+              _trv_temperature_calibration_updated = false;
 
-          sendTRVTemperatureCalibration(_temperature_calibration_offset);
-        }
-        /*if ((millis() - _trv_temperature_calibration_last_update_ms > _trv_temperature_calibration_update_ms) ||
-              (abs(_trv_last_temperature_calibration_offset) > _trv_temperature_calibration_offset_trigger)) {
-            log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - _trv_temperature_calibration_last_update_ms %d", _trv_temperature_calibration_last_update_ms);
+              sendTRVTemperatureCalibration(_temperature_calibration_offset);
+            }
+            /*if ((millis() - _trv_temperature_calibration_last_update_ms > _trv_temperature_calibration_update_ms) ||
+                  (abs(_trv_last_temperature_calibration_offset) > _trv_temperature_calibration_offset_trigger)) {
+                log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - _trv_temperature_calibration_last_update_ms %d", _trv_temperature_calibration_last_update_ms);
                   _trv_temperature_calibration_last_update_ms = millis();
-            sendTRVTemperatureCalibration(_trv_temperature_calibration_offset);
-        }*/        
-      }
-    } else 
-    if (_trv_external_sensor_present && 
-        (_trv_external_sensor_mode == 
-          EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
+                sendTRVTemperatureCalibration(_trv_temperature_calibration_offset);
+            }*/        
+          }
+        } break;
+
+        case EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT: {
       
-      if ((hvacLastTemperature != INT16_MIN) && 
-          ((abs(hvacLastTemperature - _trv_local_temperature) >= 10) || 
-           (millis() - _last_external_temperature_ping_ms > _external_temperature_ping_ms))) {
+          if ((hvacLastTemperature != INT16_MIN) && 
+              ((abs(hvacLastTemperature - _trv_local_temperature) >= 10) || 
+              (millis() - _last_external_temperature_ping_ms > _external_temperature_ping_ms))) {
 
-        log_i("external temperature difference detected %d vs %d",
-              hvacLastTemperature,
-              _trv_local_temperature);
+            log_i("external temperature difference detected %d vs %d",
+                  hvacLastTemperature,
+                  _trv_local_temperature);
 
-        _last_external_temperature_ping_ms = millis();
-        sendTRVExternalSensorTemperature(hvacLastTemperature);
+            _last_external_temperature_ping_ms = millis();
+            sendTRVExternalSensorTemperature(hvacLastTemperature);
+          }
+        } break;
       }
-    } else
-    if ((_trv_external_sensor_mode ==
-          EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
-        (_trv_fixed_temperature_calibration != _trv_temperature_calibration)) {
+    } else {
+    
+      if ((_trv_external_sensor_mode ==
+            EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
+          (_trv_fixed_temperature_calibration != _trv_temperature_calibration)) {
 
-      sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
+        sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
+      }
     }
 
     if (_trv_external_sensor_changed && 
@@ -829,8 +838,11 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     _last_temperature_ping_ms = millis();
 
     if (_trv_local_temperature == INT32_MIN) {
-      log_i("No TRV temperature data - sending TemperatureCalibration with 0 value");
-      sendTRVTemperatureCalibration(0);
+
+      log_i("No TRV temperature data - sending TemperatureCalibration with %ld value",
+            _trv_fixed_temperature_calibration);
+            
+      sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
     }
 
     if(_trv_hvac && 
