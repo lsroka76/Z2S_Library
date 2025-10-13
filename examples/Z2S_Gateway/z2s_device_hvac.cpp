@@ -372,7 +372,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
                 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) {
                   
                     log_i("USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE & USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL");
-                    Supla_Z2S_HvacBase->runAction(Supla::TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES);
+                    Supla_Z2S_HvacBase->handleAction(0, Supla::TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES);
             } else {
               
               log_i("USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE");
