@@ -16,30 +16,31 @@
 #include <supla/events.h>
 #include <supla/element.h>
 
-#define Z2S_ZB_DEVICES_MAX_NUMBER 32
-#define Z2S_CHANNELS_MAX_NUMBER 128
-#define Z2S_ACTIONS_MAX_NUMBER 256
+#define Z2S_ZB_DEVICES_MAX_NUMBER  0x20  //32
+#define Z2S_CHANNELS_MAX_NUMBER    0x80  //128
+#define Z2S_ACTIONS_MAX_NUMBER     0x100 //256
 
-#define MAX_ZB_DEVICE_SUPLA_CHANNELS 16
+#define MAX_ZB_DEVICE_SUPLA_CHANNELS 0x10 //16
 
-#define ALL_SUPLA_CHANNEL_TYPES -1
+#define ALL_SUPLA_CHANNEL_TYPES   -1
 
-#define ADD_Z2S_DEVICE_STATUS_OK 0x00       //device added 100%
-#define ADD_Z2S_DEVICE_STATUS_DUN 0x01      //device unknown
+#define ADD_Z2S_DEVICE_STATUS_OK      0x00  //device added 100%
+#define ADD_Z2S_DEVICE_STATUS_DUN     0x01  //device unknown
 #define ADD_Z2S_DEVICE_STATUS_DT_FULL 0x02  //device table full = device not added
-#define ADD_Z2S_DEVICE_STATUS_DT_FWA 0x03   //device table full while adding = device added partialy
-#define ADD_Z2S_DEVICE_STATUS_DAP 0x04      //device already present
+#define ADD_Z2S_DEVICE_STATUS_DT_FWA  0x03  //device table full while adding = device added partialy
+#define ADD_Z2S_DEVICE_STATUS_DAP     0x04  //device already present
 
-#define USER_DATA_FLAG_SED_TIMEOUT              (1 << 0)  // 0x0001
-#define USER_DATA_FLAG_MSG_DISABLED             (1 << 1)  // 0x0002
+#define USER_DATA_FLAG_SED_TIMEOUT                  (1 << 0)  // 0x0001
+#define USER_DATA_FLAG_MSG_DISABLED                 (1 << 1)  // 0x0002
 
-#define USER_DATA_FLAG_CORRECTIONS_DISABLED     (1 << 2)  // 0x0004
-#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE     (1 << 3)  // 0x0008
-#define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG      (1 << 4)  // 0x0010
-#define USER_DATA_FLAG_DISABLE_NOTIFICATIONS    (1 << 5)  // 0x0020
-#define USER_DATA_FLAG_SET_SORWNS_ON_START      (1 << 6)  // 0x0040
-#define USER_DATA_FLAG_HAS_EXTENDED_DATA        (1 << 7)  // 0x0080
-#define USER_DATA_FLAG_TRV_FIXED_CORRECTION     (1 << 8)  // 0x0100
+#define USER_DATA_FLAG_CORRECTIONS_DISABLED         (1 << 2)  // 0x0004
+#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE         (1 << 3)  // 0x0008
+#define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG          (1 << 4)  // 0x0010
+#define USER_DATA_FLAG_DISABLE_NOTIFICATIONS        (1 << 5)  // 0x0020
+#define USER_DATA_FLAG_SET_SORWNS_ON_START          (1 << 6)  // 0x0040
+#define USER_DATA_FLAG_HAS_EXTENDED_DATA            (1 << 7)  // 0x0080
+#define USER_DATA_FLAG_TRV_FIXED_CORRECTION         (1 << 8)  // 0x0100
+#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL  (1 << 9)  // 0x0200
 
 
 #define ZBD_USER_DATA_FLAG_VERSION_2_0 (1 << 0)

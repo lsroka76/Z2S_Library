@@ -138,6 +138,7 @@ uint16_t channel_name_text; //, channel_desc_number, channel_sub_id_number;
 uint16_t channel_name_save_button;
 uint16_t disable_channel_notifications_switcher;
 uint16_t trv_auto_to_schedule_switcher;
+uint16_t trv_auto_to_schedule_manual_switcher;
 uint16_t trv_fixed_calibration_switcher;
 uint16_t set_sorwns_on_start_switcher;
 uint16_t param_1_number;
@@ -340,6 +341,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG					0x4006
 #define GUI_CB_SET_SORWNS_ON_START_FLAG						0x4007
 #define GUI_CB_TRV_FIXED_CALIBRATION_FLAG					0x4008
+#define GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG		0x4009
 
 #define GUI_CB_UPDATE_KEEPALIVE_FLAG							0x4010
 #define GUI_CB_UPDATE_TIMEOUT_FLAG								0x4011
@@ -408,7 +410,12 @@ static char general_purpose_gui_buffer[1024] = {};
 
 static constexpr char* disabledstyle PROGMEM = "background-color: #bbb; border-bottom: #999 3px solid;";
 const String clearLabelStyle PROGMEM = "background-color: unset; width: 100%;";
-
+const String clearFlagsLabelStyle PROGMEM = "background-color: unset; width: 50%; "
+																						"vertical-align: text-top;"
+																						//"margin-left: .3rem; margin-right: .3rem; "
+																						"font-size: 85%; font-style: normal; "
+																						"font-weight: normal;";
+//String switcherLabelStyle = "width: 60px; margin-left: .3rem; margin-right: .3rem; background-color: unset;";
 const static String zero_str PROGMEM = "0";
 const static String minus_one_str PROGMEM = "-1";
 const static String max_int_str PROGMEM = "65535";
@@ -687,13 +694,23 @@ void fillGatewayGeneralnformation(char *buf) {
 
 	if (buf) {
 		
-		char guid_buf[128] = {};
+		char Supla_GUID_str[128] = {};
+		char extended_pan_id_str[24] = {};
+		esp_zb_ieee_addr_t extended_pan_id;
 
-		generateHexString(Supla::RegisterDevice::getGUID(), guid_buf, SUPLA_GUID_SIZE);
-
-		snprintf_P(buf, 1024, PSTR("<b><i>Supla firmware:</i></b> %s<br><br><b><i>Supla GUID:</i></b> "
-															 "%s<br><br><b><i>Z2S Gateway version:</i></b> %s<br><br>"), 
-							 Supla::RegisterDevice::getSoftVer(), guid_buf, Z2S_VERSION);
+		generateHexString(Supla::RegisterDevice::getGUID(), Supla_GUID_str, SUPLA_GUID_SIZE);
+		
+		esp_zb_get_extended_pan_id(extended_pan_id);
+		ieee_addr_to_str(extended_pan_id_str, extended_pan_id);
+		
+		snprintf_P(buf, 1024, PSTR("<b><i>Supla firmware:</i></b> <i>%s</i><br><br>"
+															 "<b><i>Supla GUID:</i></b> <i>%s</i><br><br>"
+															 "<b><i>Z2S Gateway version:</i></b> <i>%s</i><br><br>"
+															 "<b><i>Network extended PAN ID:</i></b> <i>%s</i><br><br>"), 
+							 Supla::RegisterDevice::getSoftVer(), 
+							 Supla_GUID_str, 
+							 Z2S_VERSION,
+							 extended_pan_id_str);
 	
 		log_i("Device information %s", buf);
 
@@ -758,18 +775,27 @@ void buildGatewayTabGUI() {
 	auto gatewaytab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), working_str, 
 																		 Control::Color::Emerald, Control::noParent, 
 																		 generalCallback);
-	
-	fillGatewayGeneralnformation(general_purpose_gui_buffer);
 
 	working_str = PSTR(empty_str);
-	ESPUI.addControl(Control::Type::Separator, PSTR("General information"), working_str, 
-									 Control::Color::None, gatewaytab);
+	ESPUI.addControl(Control::Type::Separator, 
+									 PSTR("General information"), 
+									 working_str, 
+									 Control::Color::None, 
+									 gatewaytab);
+
+	fillGatewayGeneralnformation(general_purpose_gui_buffer);
 
 	working_str = general_purpose_gui_buffer;
-	gateway_general_info = ESPUI.addControl(Control::Type::Label, PSTR("Device information"), working_str, 
-																					Control::Color::Emerald, gatewaytab);
-	ESPUI.setElementStyle(gateway_general_info, "color:black;text-align: justify; font-family:tahoma;"
+	gateway_general_info = ESPUI.addControl(Control::Type::Label, 
+																					PSTR("Device information"), 
+																					working_str, 
+																					Control::Color::Emerald, 
+																					gatewaytab);
+
+	ESPUI.setElementStyle(gateway_general_info, 
+												"color:black;text-align: justify; font-family:tahoma;"
 												" font-size: 4 px; font-style: normal; font-weight: normal;");
+
 	ESPUI.setPanelWide(gateway_general_info, true);
 
 	fillMemoryUptimeInformation(general_purpose_gui_buffer);
@@ -1395,11 +1421,13 @@ void buildChannelsTabGUI() {
 
 	
 	zb_channel_flags_label = ESPUI.addControl(Control::Type::Label, 
-																						PSTR("Channel flags panel"), 
-																					 	PSTR("Here you can set different channel flags<br>"
+																						PSTR("CHANNEL FLAGS"), 
+																					 	PSTR("here you can set channel flags "
 																								 "(changes are saved immediately)"), 
 																					 	Control::Color::Emerald, 
 																					 	channelstab);
+
+	ESPUI.setElementStyle(zb_channel_flags_label, PSTR(clearLabelStyle));
 	working_str = PSTR(empty_str);
 	disable_channel_notifications_switcher = ESPUI.addControl(Control::Type::Switcher, 
 																														PSTR(empty_str), 
@@ -1408,7 +1436,42 @@ void buildChannelsTabGUI() {
 																													  zb_channel_flags_label, 
 																														editChannelFlagsCallback, 
 																													  (void*)GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG);
-	working_str = PSTR("&#10023; <i>DISABLE SINGLE CHANNEL NOTIFICATIONS</i> &#10023;");
+	ESPUI.setElementStyle(disable_channel_notifications_switcher, "margin: 0% 15%;");
+
+	set_sorwns_on_start_switcher = ESPUI.addControl(Control::Type::Switcher, 
+																									PSTR(empty_str), 
+																									zero_str, 
+																									Control::Color::Emerald, 
+																									zb_channel_flags_label, 
+																									editChannelFlagsCallback, 
+																									(void*)GUI_CB_SET_SORWNS_ON_START_FLAG);
+	ESPUI.setElementStyle(set_sorwns_on_start_switcher, "margin: 0% 15%;");
+	
+	working_str = PSTR("");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearLabelStyle));
+
+	working_str = PSTR("&#10023; <i>disable single channel notofications</i> &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearFlagsLabelStyle));
+
+	working_str = PSTR("&#10023; <i>sensor starts in offline state  &#10023;<br>"
+										 "(NO REMOTE WAKEUP SUPPORTED)</i>");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearFlagsLabelStyle));
+	
+	working_str = PSTR("");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str,
@@ -1423,14 +1486,8 @@ void buildChannelsTabGUI() {
 																									 zb_channel_flags_label, 
 																									 editChannelFlagsCallback, 
 																									 (void*)GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG);
-	working_str = PSTR("&#10023; <i>TRV AUTO MODE SWITCHES TO SCHEDULE</i> &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearLabelStyle));
-
+	ESPUI.setElementStyle(trv_auto_to_schedule_switcher, "margin: 0% 15%;");
+	
 	trv_fixed_calibration_switcher = ESPUI.addControl(Control::Type::Switcher, 
 																									 	PSTR(empty_str), 
 																										 zero_str, 
@@ -1438,36 +1495,78 @@ void buildChannelsTabGUI() {
 																										 zb_channel_flags_label, 
 																										 editChannelFlagsCallback, 
 																									 	(void*)GUI_CB_TRV_FIXED_CALIBRATION_FLAG);
-	working_str = PSTR("&#10023; <i>TRV FIXED CALIBRATION VALUE<br>"
-										 "(IGNORES EXTERNAL SENSOR CLOUD SETTINGS</i> &#10023;");
+	ESPUI.setElementStyle(trv_fixed_calibration_switcher, "margin: 0% 15%;");
+
+	working_str = PSTR("");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str,
 																				 Control::Color::None, 
 																				 zb_channel_flags_label), 
 												PSTR(clearLabelStyle));
-		
-	set_sorwns_on_start_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																									PSTR(empty_str), 
-																									zero_str, 
-																									Control::Color::Emerald, 
-																									zb_channel_flags_label, 
-																									editChannelFlagsCallback, 
-																									(void*)GUI_CB_SET_SORWNS_ON_START_FLAG);
-	working_str = PSTR("&#10023; <i>BINARY SENSOR STARTS IN OFFLINE STATE<br>"
-										 "(NO REMOTE WAKEUP SUPPORTED)</i> &#10023;");
+
+	working_str = PSTR("&#10023; <i>TRV AUTO mode => Supla schedule</i> &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), working_str,
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearFlagsLabelStyle));
+
+	working_str = PSTR("&#10023; <i>TRV fixed correction value &#10023;<br>"
+										 "(ignores external thermometer settings)</i>");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearFlagsLabelStyle));
+	
+	working_str = PSTR("");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
 																				 Control::Color::None, 
 																				 zb_channel_flags_label), 
 												PSTR(clearLabelStyle));
 
+	trv_auto_to_schedule_manual_switcher = 
+		ESPUI.addControl(Control::Type::Switcher, 
+										 PSTR(empty_str), 
+									   zero_str, 
+										 Control::Color::Emerald, 
+										 zb_channel_flags_label, 
+										 editChannelFlagsCallback, 	
+										 (void*)GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG);
+	ESPUI.setElementStyle(trv_auto_to_schedule_manual_switcher, 
+												"margin: 0% 15%;");
+	
+	working_str = PSTR("");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearLabelStyle));
+
+	working_str = PSTR("&#10023; <i>TRV AUTO mode =><br>"
+										 "Supla schedule/manual</i> &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearFlagsLabelStyle));
+
+												
+	
 	zb_channel_params_label = ESPUI.addControl(Control::Type::Label, 
-																						 PSTR("Channel params panel"), 
-																					 	 PSTR("Here you can change channel custom parameters -<br>"
-																								  "for some of them restart may be required!"), 
+																						 PSTR("CHANNEL CUSTOM PARAMETERS"), 
+																					 	 PSTR("here you can change channel custom parameters<br>"
+																								  "(restart may be required!)"), 
 																					 	 Control::Color::Emerald, 
 																					 	 channelstab);
+	ESPUI.setElementStyle(zb_channel_params_label, PSTR(clearLabelStyle));
 
 	param_1_number = ESPUI.addControl(Control::Type::Number, 
 																		PSTR(empty_str), 
@@ -4311,6 +4410,7 @@ void enableChannelControls(bool enable) {
 	ESPUI.updateNumber(refresh_number, 0);
 	ESPUI.updateNumber(disable_channel_notifications_switcher, 0);
 	ESPUI.updateNumber(trv_auto_to_schedule_switcher, 0);
+	ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 0);
 	ESPUI.updateNumber(trv_fixed_calibration_switcher, 0);
 	ESPUI.updateNumber(set_sorwns_on_start_switcher, 0);
 	
@@ -4318,6 +4418,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(channel_name_save_button, enable);
 	enableControlStyle(disable_channel_notifications_switcher,enable);
 	enableControlStyle(trv_auto_to_schedule_switcher, enable);
+	enableControlStyle(trv_auto_to_schedule_manual_switcher, enable);
 	enableControlStyle(trv_fixed_calibration_switcher, enable);
 	enableControlStyle(set_sorwns_on_start_switcher, enable);
 	enableControlStyle(param_1_number, enable);
@@ -4379,6 +4480,7 @@ void enableChannelFlags(uint8_t flags_mask) {
 	if (flags_mask & 2) {
 		
 		enableControlStyle(trv_auto_to_schedule_switcher, true);
+		enableControlStyle(trv_auto_to_schedule_manual_switcher, true);
 		enableControlStyle(trv_fixed_calibration_switcher, true);
 		
 	}
@@ -4386,6 +4488,9 @@ void enableChannelFlags(uint8_t flags_mask) {
 		
 		ESPUI.updateNumber(trv_auto_to_schedule_switcher, 0);
 		enableControlStyle(trv_auto_to_schedule_switcher, false);
+
+		ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 0);
+		enableControlStyle(trv_auto_to_schedule_manual_switcher, false);
 
 		ESPUI.updateNumber(trv_fixed_calibration_switcher, 0);
 		enableControlStyle(trv_fixed_calibration_switcher, false);
@@ -4583,11 +4688,15 @@ void updateChannelInfoLabel(uint8_t label_number) {
 										 (z2s_channels_table[channel_slot].user_data_flags &
 										 USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0);
 
+			ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 
+										 (z2s_channels_table[channel_slot].user_data_flags &
+										 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
+
 			enableChannelParams(1);
 
 			ESPUI.updateNumber(param_1_number, 
 										 		 z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
-			working_str = PSTR("&#10023; Thermostat custom param<br>"
+			working_str = PSTR("&#10023; Thermostat custom parameter<br>"
 												 "enter calibration fixed value (temperature x100)<br>"
 												 "ie. to set correction to -1 enter -100 &#10023;");
 			ESPUI.updateText(param_1_desc_label, working_str);
@@ -5566,14 +5675,15 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 		switch ((uint32_t)param) {
 
+
 				case GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG: {
 
 						if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 						else
 							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
-
 				} break;
+
 
 				case GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG: {
 
@@ -5584,13 +5694,22 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 				} break;
 
+
+				case GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG: {
+
+					if (type == S_ACTIVE)
+							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+						else
+							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+				} break;
+
+
 				case GUI_CB_TRV_FIXED_CALIBRATION_FLAG: {
 
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 						else
 							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
-
 				} break;
 
 

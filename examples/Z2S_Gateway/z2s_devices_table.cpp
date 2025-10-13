@@ -52,8 +52,16 @@ void no_channel_found_error_func(char *ieee_addr_str) {
 
 void ieee_addr_to_str(char *ieee_addr_str, esp_zb_ieee_addr_t ieee_addr) {
 
-  sprintf_P(ieee_addr_str, PSTR("%x:%x:%x:%x:%x:%x:%x:%x"), ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], 
-          ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
+  sprintf_P(ieee_addr_str, 
+            PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
+            ieee_addr[7], 
+            ieee_addr[6], 
+            ieee_addr[5], 
+            ieee_addr[4], 
+            ieee_addr[3], 
+            ieee_addr[2], 
+            ieee_addr[1], 
+            ieee_addr[0]);
 }
 
 void devices_table_full_error_func() {
@@ -142,19 +150,29 @@ int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr,
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, channel type 0x%x", ieee_addr_str, endpoint, channel_type);
+  log_i("%s, endpoint 0x%x, channel type 0x%x", 
+        ieee_addr_str, 
+        endpoint, 
+        channel_type);
   
   for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
 
-      if (z2s_channels_table[channels_counter].valid_record)
-        if ((memcmp(z2s_channels_table[channels_counter].ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t)) == 0) && 
-            ((endpoint < 0) || (z2s_channels_table[channels_counter].endpoint == endpoint)) &&
-            ((channel_type < 0) || (z2s_channels_table[channels_counter].Supla_channel_type == channel_type)) &&
-            ((sub_id < 0) || (z2s_channels_table[channels_counter].sub_id == sub_id))) { 
-            //&& (z2s_channels_table[channels_counter].cluster_id == cluster)) {
-            return channels_counter;
-        }
+    if (z2s_channels_table[channels_counter].valid_record) {
 
+      if ((memcmp(z2s_channels_table[channels_counter].ieee_addr, 
+                  ieee_addr, 
+                  sizeof(esp_zb_ieee_addr_t)) == 0) && 
+          ((endpoint < 0) || 
+            (z2s_channels_table[channels_counter].endpoint == endpoint)) &&
+          ((channel_type < 0) || 
+            (z2s_channels_table[channels_counter].Supla_channel_type == channel_type)) &&
+          ((sub_id < 0) || 
+            (z2s_channels_table[channels_counter].sub_id == sub_id))) { 
+          
+        return 
+          channels_counter;
+      }
+    }
   }  
   return -1;
 }
