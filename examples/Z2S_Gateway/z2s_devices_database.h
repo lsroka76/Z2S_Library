@@ -506,6 +506,18 @@
 #define TUYA_LCD_PANEL_3_RELAYS_COOL_ON_SID                 0x11
 #define TUYA_LCD_PANEL_3_RELAYS_HEAT_ON_SID                 0x12
 
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_1_SID                0x01
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_2_SID                0x02
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_3_SID                0x03
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_4_SID                0x04
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_5_SID                0x05
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_6_SID                0x06
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_7_SID                0x07
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_8_SID                0x08
+#define TUYA_8_RELAYS_CONTROLLER_STATUS_SID                 0x1B // ENUM ??
+#define TUYA_8_RELAYS_CONTROLLER_LOCK_SID                   0x1D
+
+
 
 
 [[maybe_unused]]

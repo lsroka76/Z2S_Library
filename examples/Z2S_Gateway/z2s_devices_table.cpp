@@ -3975,8 +3975,56 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
+
+      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER: {
+
+
+        switch (sub_id) {
+
+
+          case TUYA_8_RELAYS_CONTROLLER_RELAY_1_SID:
+          case TUYA_8_RELAYS_CONTROLLER_RELAY_2_SID:
+          case TUYA_8_RELAYS_CONTROLLER_RELAY_3_SID:
+          case TUYA_8_RELAYS_CONTROLLER_RELAY_4_SID:
+          case TUYA_8_RELAYS_CONTROLLER_RELAY_5_SID:
+          case TUYA_8_RELAYS_CONTROLLER_RELAY_6_SID:
+          case TUYA_8_RELAYS_CONTROLLER_RELAY_7_SID:
+          case TUYA_8_RELAYS_CONTROLLER_RELAY_8_SID:
+          //case TUYA_8_RELAYS_CONTROLLER_LOCK_SID:
+
+            addZ2SDeviceVirtualRelay(&zbGateway,
+                                     device, 
+                                     first_free_slot, 
+                                     sub_id, 
+                                     name, 
+                                     SUPLA_CHANNELFNC_POWERSWITCH);
+          break;
+
+
+          case TUYA_8_RELAYS_CONTROLLER_STATUS_SID:
+
+            addZ2SDeviceGeneralPurposeMeasurement(device, 
+                                                  first_free_slot, 
+                                                  sub_id, name, 
+                                                  func, 
+                                                  unit); 
+          break;            
+
+
+          default:
+
+            addZ2SDeviceActionTrigger(device, 
+                                      first_free_slot, 
+                                      sub_id, 
+                                      name, 
+                                      SUPLA_CHANNELFNC_POWERSWITCH);
+          break;
+        }
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/     
+
       case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
-      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
 
         addZ2SDeviceVirtualRelay(&zbGateway,
                                 device, 
@@ -5393,8 +5441,11 @@ bool Z2S_add_action(const char *action_name,
       case Supla::ON_EQUAL:
         Supla_condition = OnEqual(threshold_1); break;
     }
-    if (Supla_condition == nullptr)
+    if (Supla_condition == nullptr) {
+
+      log_i("unkown Supla condition - adding failed!");
       return false;
+    }
   }
   
   
@@ -5436,7 +5487,8 @@ bool Z2S_add_action(const char *action_name,
     case SUPLA_CHANNELTYPE_RELAY: {
       
       log_i("ah->relay action");
-      auto Supla_Z2S_ChannelActionClient = reinterpret_cast<Supla::Control::Relay *>(dst_element);
+      auto Supla_Z2S_ChannelActionClient = 
+        reinterpret_cast<Supla::Control::Relay *>(dst_element);
       
       if (condition && Supla_Z2S_ChannelActionHandler)
         Supla_Z2S_ChannelActionHandler->addAction(Supla_action, 
@@ -6087,6 +6139,46 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
+    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER: {
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_RELAY_1_SID,
+                       "RELAY 1");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_RELAY_2_SID,
+                       "RELAY 2");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_RELAY_3_SID,
+                       "RELAY 3");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_RELAY_4_SID,
+                       "RELAY 4");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_RELAY_5_SID,
+                       "RELAY 5");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_RELAY_6_SID,
+                       "RELAY 6");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_RELAY_7_SID,
+                       "RELAY 7");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_RELAY_8_SID,
+                       "RELAY 8");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_8_RELAYS_CONTROLLER_STATUS_SID,
+                       "STATUS ?");
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
       

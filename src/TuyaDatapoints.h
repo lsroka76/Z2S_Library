@@ -235,7 +235,16 @@
 #define TUYA_LCD_PANEL_3_RELAYS_COOL_ON_DP                          0x7E
 #define TUYA_LCD_PANEL_3_RELAYS_HEAT_ON_DP                          0x7F
 
-
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_1_DP                         0x01
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_2_DP                         0x02
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_3_DP                         0x03
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_4_DP                         0x04
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_5_DP                         0x05
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_6_DP                         0x06
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_7_DP                         0x07
+#define TUYA_8_RELAYS_CONTROLLER_RELAY_8_DP                         0x08
+#define TUYA_8_RELAYS_CONTROLLER_STATUS_DP                          0x1B // ENUM ??
+#define TUYA_8_RELAYS_CONTROLLER_LOCK_DP                            0x1D
 
 
 

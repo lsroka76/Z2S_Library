@@ -1029,24 +1029,6 @@ void processTuyaRelaysDataReport(int16_t channel_number_slot,
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  /*int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                            z2s_channels_table[channel_number_slot].endpoint, 
-                                                            z2s_channels_table[channel_number_slot].cluster_id, 
-                                                            SUPLA_CHANNELTYPE_RELAY, 
-                                                            TUYA_LCD_PANEL_3_RELAYS_RELAY_1_SID);
-
-  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                            z2s_channels_table[channel_number_slot].endpoint, 
-                                                            z2s_channels_table[channel_number_slot].cluster_id, 
-                                                            SUPLA_CHANNELTYPE_RELAY, 
-                                                            TUYA_LCD_PANEL_3_RELAYS_RELAY_2_SID);
-
-  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                            z2s_channels_table[channel_number_slot].endpoint, 
-                                                            z2s_channels_table[channel_number_slot].cluster_id, 
-                                                            SUPLA_CHANNELTYPE_RELAY, 
-                                                            TUYA_LCD_PANEL_3_RELAYS_RELAY_3_SID);*/
-
   for (uint8_t dps_counter = 0; dps_counter < sizeof(TUYA_LCD_PANEL_3_RELAYS_DPS); dps_counter++) {
 
     Tuya_read_dp_result = 
@@ -1081,26 +1063,52 @@ void processTuyaRelaysDataReport(int16_t channel_number_slot,
       }
     }
   }
-  /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP, 
-                                            payload_size, 
-                                            payload);
-  if (Tuya_read_dp_result.is_success) 
-    msgZ2SDeviceVirtualRelay(channel_number_slot_1,
-                             Tuya_read_dp_result.dp_value);
+}
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_LCD_PANEL_3_RELAYS_RELAY_2_DP, 
-                                            payload_size, 
-                                            payload);
-  if (Tuya_read_dp_result.is_success) 
-    msgZ2SDeviceVirtualRelay(channel_number_slot_2,
-                             Tuya_read_dp_result.dp_value);
+void processTuya8RelaysDataReport(int16_t channel_number_slot, 
+                                  uint16_t payload_size,
+                                  uint8_t *payload, 
+                                  uint32_t model_id) {
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_LCD_PANEL_3_RELAYS_RELAY_3_DP, 
-                                            payload_size, 
-                                            payload);
-  if (Tuya_read_dp_result.is_success) 
-    msgZ2SDeviceVirtualRelay(channel_number_slot_3,
-                             Tuya_read_dp_result.dp_value);*/
+  
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  for (uint8_t dps_counter = 1; dps_counter <= 8; dps_counter++) {
+
+    Tuya_read_dp_result = 
+      Z2S_readTuyaDPvalue(dps_counter, 
+                          payload_size, 
+                          payload);
+     
+    channel_number_slot = 
+      Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+                                z2s_channels_table[channel_number_slot].endpoint, 
+                                z2s_channels_table[channel_number_slot].cluster_id, 
+                                SUPLA_CHANNELTYPE_RELAY, 
+                                dps_counter);
+  
+    if (Tuya_read_dp_result.is_success) {
+      msgZ2SDeviceVirtualRelay(channel_number_slot,
+                               Tuya_read_dp_result.dp_value);
+    }
+  }
+
+  Tuya_read_dp_result = 
+    Z2S_readTuyaDPvalue(TUYA_8_RELAYS_CONTROLLER_STATUS_DP, 
+                        payload_size, 
+                        payload);
+
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
+                              z2s_channels_table[channel_number_slot].endpoint, 
+                              z2s_channels_table[channel_number_slot].cluster_id, 
+                              SUPLA_CHANNELTYPE_GENERALPURPOSEMEASUREMENT, 
+                              TUYA_8_RELAYS_CONTROLLER_STATUS_DP);
+  
+  if (Tuya_read_dp_result.is_success) {
+    msgZ2SDeviceGenralPurposeMesaurement(channel_number_slot,
+                                          Tuya_read_dp_result.dp_value););
+  }
 }
 
 
@@ -1825,6 +1833,11 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr,
     case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
 
       processTuyaRelaysDataReport(channel_number_slot, payload_size, payload, model_id); break;
+
+      
+    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
+
+      processTuya8RelaysDataReport(channel_number_slot, payload_size, payload, model_id); break;
 
 
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:

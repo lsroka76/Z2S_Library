@@ -140,6 +140,7 @@ uint16_t disable_channel_notifications_switcher;
 uint16_t trv_auto_to_schedule_switcher;
 uint16_t trv_auto_to_schedule_manual_switcher;
 uint16_t trv_fixed_calibration_switcher;
+uint16_t trv_childlock_alt_switcher;
 uint16_t set_sorwns_on_start_switcher;
 uint16_t param_1_number;
 uint16_t param_1_desc_label;
@@ -219,7 +220,7 @@ uint16_t action_source_channel_selector 			 = 0xFFFF;
 uint16_t action_destination_channel_selector	 = 0xFFFF;
 uint16_t action_event_selector;
 uint16_t action_action_selector; 
-uint16_t action_condition_selector;
+//uint16_t action_condition_selector;
 uint16_t action_condition_threshold_1_number;
 uint16_t action_condition_threshold_2_number; 
 uint16_t action_save_button;
@@ -3108,13 +3109,14 @@ const char* getSuplaActionName(Supla::Action action_id) {
 	return "Unknown";
 }
 
-const char* getSuplaEventName(Supla::Event event_id) {
+const char* getSuplaEventName(Supla::Event event_id, bool is_condition) {
 
 	uint16_t events_number = sizeof(Supla_events) / 
 													 sizeof(Supla_event_type_t);
 
 	for (uint16_t i = 0; i < events_number; i++)
-		if (Supla_events[i].Supla_event_id == event_id)
+		
+		if ((Supla_events[i].Supla_event_id == event_id) && (Supla_events[i].is_condition == is_condition))	
 			return Supla_events[i].Supla_event_name;
 	return "Unknown";	
 }
@@ -3139,7 +3141,7 @@ void sprintfAction(z2s_channel_action_t &action) {
 																			"<b>Action:</b> <i>{%s}</i> <b>on destination channel:</b> <i>[%s]</i>",
 								current_action_counter, Z2S_getActionsNumber(),
 								action.action_name, 
-								getSuplaEventName(action.src_Supla_event),
+								getSuplaEventName(action.src_Supla_event, action.is_condition),
 								z2s_channels_table[Z2S_findTableSlotByChannelNumber(action.src_Supla_channel)].Supla_channel_name, 
 								getSuplaActionName(action.dst_Supla_action),
 								z2s_channels_table[Z2S_findTableSlotByChannelNumber(action.dst_Supla_channel)].Supla_channel_name);
@@ -3160,6 +3162,9 @@ void enableActionDetails(bool enable) {
 		ESPUI.updateSelect(action_event_selector, working_str);
 		ESPUI.updateSelect(action_destination_channel_selector, working_str);
 		ESPUI.updateSelect(action_action_selector, working_str);
+		ESPUI.updateNumber(action_condition_threshold_1_number, 0);
+		ESPUI.updateNumber(action_condition_threshold_2_number, 0);
+		
 	}
 
 	enableControlStyle(action_enabled_switcher, enable);
@@ -3169,6 +3174,8 @@ void enableActionDetails(bool enable) {
 	enableControlStyle(action_event_selector, enable);
 	enableControlStyle(action_destination_channel_selector, enable);
 	enableControlStyle(action_action_selector, enable);
+	enableControlStyle(action_condition_threshold_1_number, enable);
+	enableControlStyle(action_condition_threshold_2_number, enable);
 }
 
 void enableActionControls(bool enable) {
@@ -3263,19 +3270,36 @@ void updateActionDetails(z2s_channel_action_t &action, bool empty_action = false
 	if (current_action_gui_state != VIEW_ACTION)
 		enableActionControls(false);
 
-	ESPUI.updateSwitcher(action_enabled_switcher, empty_action ? true : action.is_enabled);
+	ESPUI.updateSwitcher(action_enabled_switcher, 
+		empty_action ? true : action.is_enabled);
+	
 	working_str = empty_action ? empty_str : action.action_name;
 	ESPUI.updateText(action_name_text, working_str);
+	
 	working_str = empty_action ? empty_str : action.action_description;
 	ESPUI.updateText(action_description_text, working_str);
+	
 	working_str = empty_action ? -1 : action.src_Supla_channel;
 	ESPUI.updateSelect(action_source_channel_selector, working_str);
-	working_str = empty_action ? -1 : action.src_Supla_event;
+
+	working_str = empty_action ? 
+		-1 : action.is_condition ? 
+			(0xFFFF + action.src_Supla_event) : action.src_Supla_event;
 	ESPUI.updateSelect(action_event_selector, working_str);
+
 	working_str = empty_action ? -1 : action.dst_Supla_channel;
 	ESPUI.updateSelect(action_destination_channel_selector, working_str);
+
 	working_str = empty_action ? -1 : action.dst_Supla_action;
 	ESPUI.updateSelect(action_action_selector, working_str);
+
+	working_str = empty_action ? 
+		String(0, 2) : String(action.min_value, 2);
+	ESPUI.updateText(action_condition_threshold_1_number, working_str);
+
+	working_str = empty_action ? 
+		String(0, 2) : String(action.max_value, 2);
+	ESPUI.updateText(action_condition_threshold_2_number, working_str);
 }
 
 bool fillActionDetails(z2s_channel_action_t &action) {
@@ -3290,16 +3314,24 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 
 	strncpy(action.action_description, ESPUI.getControl(action_description_text)->value.c_str(), 127);
 
-	int16_t selector_value = ESPUI.getControl(action_source_channel_selector)->value.toInt();
+	int32_t selector_value = ESPUI.getControl(action_source_channel_selector)->value.toInt();
 	if ( selector_value >= 0)
 		action.src_Supla_channel = selector_value;
 	else
 		return false;
-
+	 
 	selector_value = ESPUI.getControl(action_event_selector)->value.toInt();
-	if ( selector_value >= 0)
-		action.src_Supla_event = (Supla::Event)selector_value;
-	else
+	if ( selector_value >= 0) {
+
+		if (selector_value >= 0xFFFF) {
+
+			action.is_condition = true;
+			action.src_Supla_event = (Supla::Event)(selector_value - 0xFFFF);	
+		} else {
+			action.is_condition = false;
+			action.src_Supla_event = (Supla::Event)selector_value;
+		}
+	} else
 		return false;
 	
 	selector_value = ESPUI.getControl(action_destination_channel_selector)->value.toInt();
@@ -3314,7 +3346,20 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 	else
 		return false;
 
-	action.is_condition = false;
+	double threshold_value = 
+		ESPUI.getControl(action_condition_threshold_1_number)->value.toDouble();
+	action.min_value = threshold_value;
+	//else
+	//	return false;
+
+	threshold_value = 
+		ESPUI.getControl(action_condition_threshold_2_number)->value.toDouble();
+	///if ( selector_value >= 0)
+	action.max_value = threshold_value;
+	//else
+	//	return false;
+
+	//action.is_condition = false;
 
 	return true;
 }
@@ -3384,7 +3429,21 @@ void buildActionsChannelSelectors(bool rebuild_options,
 																							parent_control_id, 
 																							generalCallback);
 
-		
+		action_condition_threshold_1_number = ESPUI.addControl(Control::Type::Number, //this have to be here to keep user friendly layout
+																													 PSTR(empty_str), 
+																													 minus_one_str, 
+																						 							 Control::Color::Emerald, 
+																													 parent_control_id, 
+																													 generalCallback);
+
+action_condition_threshold_2_number = ESPUI.addControl(Control::Type::Number, //this have to be here to keep user friendly layout
+																													 PSTR(empty_str), 
+																													 minus_one_str, 
+																						 							 Control::Color::Emerald, 
+																													 parent_control_id, 
+																													 generalCallback);
+
+
 		ESPUI.addControl(Control::Type::Option, 
 											PSTR("Select source channel..."), 
 											minus_one_str, 
@@ -3598,7 +3657,11 @@ void buildActionsTabGUI() {
 
 	for (uint16_t events_counter = 0; events_counter < events_number; events_counter++) {
 
-		working_str = Supla_events[events_counter].Supla_event_id;
+		working_str = 
+			Supla_events[events_counter].is_condition ? 
+				Supla_events[events_counter].Supla_event_id + 0xFFFF :
+				Supla_events[events_counter].Supla_event_id;
+
 		ESPUI.addControl(Control::Type::Option, 
 										 Supla_events[events_counter].Supla_event_name, 
 										 working_str, 
@@ -4631,7 +4694,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 			ESPUI.updateNumber(param_1_number, 
 										 		 z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
 			working_str = PSTR("&#10023; Virtual Binary custom param<br>"
-												 "enter rain intensity treshold<br>"
+												 "enter rain intensity threshold<br>"
 												 "currently unused for other sensors &#10023;");
 			ESPUI.updateText(param_1_desc_label, working_str);
 		} break;

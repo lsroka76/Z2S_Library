@@ -200,7 +200,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
         state = true;
 
-        uint8_t realy_dp_id = TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP + _z2s_function_value_U8;
+        uint8_t realy_dp_id = _z2s_function_value_U8;
 
         sendTuyaRequestCmdBool(_gateway, 
                                &_device, 
@@ -401,7 +401,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
         state = false;
 
-        uint8_t realy_dp_id = TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP + _z2s_function_value_U8;
+        uint8_t realy_dp_id = _z2s_function_value_U8;
 
         sendTuyaRequestCmdBool(_gateway, 
                                &_device, 

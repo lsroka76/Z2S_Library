@@ -54,7 +54,8 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
     switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
-      case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS: {
+      case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
+      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER: {
 
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY; 
       } break;
@@ -204,6 +205,14 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
 
 
       case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
+
+        Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
+          TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP +
+          z2s_channels_table[channel_number_slot].sub_id);
+      break;
+
+
+      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
 
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
           z2s_channels_table[channel_number_slot].sub_id);
