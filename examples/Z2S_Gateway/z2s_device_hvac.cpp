@@ -65,11 +65,15 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
       return siterwell_cmd_set;
     } break;
 
-      case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198: {
+    case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198: {
 
       return zwt198_cmd_set;
     } break;
     
+    case Z2S_DEVICE_DESC_TS0601_MOES_BHT002: {
+
+      return bht002_cmd_set;
+    } break;
     
     case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
 
@@ -213,6 +217,9 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
                                                           trv_external_sensor_mode, 
                                                           z2s_channels_table[channel_number_slot].Supla_secondary_channel); 
   }
+
+  z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+  z2s_channels_table[channel_number_slot].user_data_2 = 0;
 }
 
 /*----------------------------------------------------------------------------------------------------------------------------*/
@@ -275,22 +282,24 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
       if (z2s_channels_table[channel_number_slot].user_data_flags & 
           USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG) {
 
-        log_i("msgZ2SDeviceHvac - ignoring TRV_HEATING_SETPOINT_MSG: 0x%x", 
-              msg_value);
+        log_i("Flag set - ignoring TRV_HEATING_SETPOINT_MSG: %d\n\r"
+              "Supla_Z2S_HvacBase->getTemperatureSetpointHeat %d", 
+              msg_value,
+              Supla_Z2S_HvacBase->getTemperatureSetpointHeat());
 
-        if (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 40)
+        /*if (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 40)
           break;
         else {
 
           z2s_channels_table[channel_number_slot].user_data_flags &= 
             ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
-        } 
-        /*if (z2s_channels_table[channel_number_slot].user_data_1 == 0)
+        } */
+        if (z2s_channels_table[channel_number_slot].user_data_2 == 0)
           z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
-        else
-          z2s_channels_table[channel_number_slot].user_data_1--;*/
-
-        //break;
+        //else
+         // z2s_channels_table[channel_number_slot].user_data_1--;*/
+          Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
+        break;
       }
        //if (Supla_Z2S_HvacBase->getMode() != SUPLA_HVAC_MODE_OFF) {
       //if (Supla_Z2S_HvacBase->isThermostatDisabled()) {
@@ -338,7 +347,12 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
         case 1: 
         
           if (Supla_Z2S_HvacBase->isThermostatDisabled()) 
-            Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON); 
+            Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON);
+
+          if (z2s_channels_table[channel_number_slot].user_data_flags & 
+              USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG)
+            z2s_channels_table[channel_number_slot].user_data_2 = 0;
+            
         break;
 
 
@@ -346,6 +360,10 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
         
           if (!Supla_Z2S_HvacBase->isThermostatDisabled())
             Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, true); 
+
+          z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+          z2s_channels_table[channel_number_slot].user_data_2 = 0;
+
         break;
       }
       
@@ -363,6 +381,12 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
    
         
         //case 0: Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON); break;
+        case 0: {
+
+          if (z2s_channels_table[channel_number_slot].user_data_flags & 
+              USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG)
+            z2s_channels_table[channel_number_slot].user_data_2 = 0;
+        } break;
         case 1: {
 
           if (z2s_channels_table[channel_number_slot].user_data_flags & 
@@ -381,10 +405,12 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
             
             z2s_channels_table[channel_number_slot].user_data_flags |= 
               USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
-            //z2s_channels_table[channel_number_slot].user_data_1 = 1; now used for hvac_fixed_temperature
+            z2s_channels_table[channel_number_slot].user_data_2 = 1; //now used for hvac_fixed_temperature
             
             //Supla_Z2S_HvacBase->applyNewRuntimeSettings(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE, 0);
             Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
+            //Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(
+            //Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
 
           } else {
 

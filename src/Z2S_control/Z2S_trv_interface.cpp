@@ -392,6 +392,19 @@ void Supla::Control::Z2S_TRVInterface::
 
             schedule_mode_value = ts0601_command_sets_table[_trv_commands_set].
               ts0601_cmd_set_schedule_mode_dp_value_off;
+
+            if (schedule_mode_value == 0xFF) {
+
+              schedule_mode_dp_id = 
+                ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_on_dp_id;  //when on_off_dp == schedule_dp
+
+              schedule_mode_dp_type = 
+                ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_on_dp_type;
+
+
+              schedule_mode_value = ts0601_command_sets_table[_trv_commands_set].
+                ts0601_cmd_on_dp_value_on;              
+            }
           } break;
         }
         
@@ -648,8 +661,12 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   if (_trv_switch_schedule_off) {
 
-    _trv_switch_schedule_off = false;
+    _trv_switch_schedule_off = false;   
     sendTRVScheduleMode(0);
+
+    if (_trv_hvac)
+      sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());     
+    //sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());        
   }
 
   if (_trv_child_lock_changed) {
