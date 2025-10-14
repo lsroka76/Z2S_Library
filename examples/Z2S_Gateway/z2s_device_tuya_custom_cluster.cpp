@@ -1106,7 +1106,7 @@ void processTuya8RelaysDataReport(int16_t channel_number_slot,
                               TUYA_8_RELAYS_CONTROLLER_STATUS_DP);
   
   if (Tuya_read_dp_result.is_success) {
-    msgZ2SDeviceGeneralPurposeMesaurement(channel_number_slot,
+    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot,
                                           Tuya_read_dp_result.dp_value););
   }
 }
