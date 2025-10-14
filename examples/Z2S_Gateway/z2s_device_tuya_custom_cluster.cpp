@@ -1108,7 +1108,7 @@ void processTuya8RelaysDataReport(int16_t channel_number_slot,
   if (Tuya_read_dp_result.is_success) {
     msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot,
                                           ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                          Tuya_read_dp_result.dp_value););
+                                          Tuya_read_dp_result.dp_value);
   }
 }
 
