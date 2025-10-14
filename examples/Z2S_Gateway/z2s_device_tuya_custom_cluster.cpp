@@ -1102,11 +1102,11 @@ void processTuya8RelaysDataReport(int16_t channel_number_slot,
     Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                               z2s_channels_table[channel_number_slot].endpoint, 
                               z2s_channels_table[channel_number_slot].cluster_id, 
-                              SUPLA_CHANNELTYPE_GENERALPURPOSEMEASUREMENT, 
+                              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                               TUYA_8_RELAYS_CONTROLLER_STATUS_DP);
   
   if (Tuya_read_dp_result.is_success) {
-    msgZ2SDeviceGenralPurposeMesaurement(channel_number_slot,
+    msgZ2SDeviceGeneralPurposeMesaurement(channel_number_slot,
                                           Tuya_read_dp_result.dp_value););
   }
 }
