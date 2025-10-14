@@ -3,7 +3,6 @@
 
 #include "z2s_devices_table.h"
 
-
 #include <Z2S_control/Z2S_virtual_relay.h>
 #include <Z2S_control/Z2S_roller_shutter.h>
 
