@@ -218,7 +218,13 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
                                                           z2s_channels_table[channel_number_slot].Supla_secondary_channel); 
   }
 
-  z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+  if (z2s_channels_table[channel_number_slot].user_data_flags & 
+    USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK)
+    Supla_Z2S_TRVInterface->setCooperativeChildLock(true);
+
+  z2s_channels_table[channel_number_slot].user_data_flags &= 
+    ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+
   z2s_channels_table[channel_number_slot].user_data_2 = 0;
 }
 
