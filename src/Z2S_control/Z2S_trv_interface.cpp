@@ -670,7 +670,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
             _trv_child_lock);
             
       if (_cooperative_child_lock)
-        _trv_hvac->setLocalUILock(_trv_child_lock);
+        _trv_hvac->setLocalUILock((LocalUILock)_trv_child_lock);
       else
         sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
 
