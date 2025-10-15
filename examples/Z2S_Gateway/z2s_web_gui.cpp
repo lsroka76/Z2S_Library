@@ -3135,16 +3135,39 @@ const char* getSuplaConditionName(Supla::Conditions condition_id) {
 
 void sprintfAction(z2s_channel_action_t &action) {
 
-	sprintf(general_purpose_gui_buffer, "<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
-																			"<b>Action name:</b> <i>%s</i><br><br>"
-																			"<b>Event:</b> <i>{%s}</i> <b>from source channel:</b> <i>[%s]</i><br><br>"
-																			"<b>Action:</b> <i>{%s}</i> <b>on destination channel:</b> <i>[%s]</i>",
-								current_action_counter, Z2S_getActionsNumber(),
-								action.action_name, 
-								getSuplaEventName(action.src_Supla_event, action.is_condition),
-								z2s_channels_table[Z2S_findTableSlotByChannelNumber(action.src_Supla_channel)].Supla_channel_name, 
-								getSuplaActionName(action.dst_Supla_action),
-								z2s_channels_table[Z2S_findTableSlotByChannelNumber(action.dst_Supla_channel)].Supla_channel_name);
+	if (action.is_condition)
+		sprintf(general_purpose_gui_buffer, 
+						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
+						"<b>Action name:</b> <i>%s</i><br><br>"
+						"<b>Condition:</b> <i>{%s}</i><br>"
+						"with <b>value(s) = </b> <i>%.2f, %.2f </i><br>"
+						"<b>for source channel:</b> <i>[%s]</i><br><br>"
+						"<b>Action:</b> <i>{%s}</i> <b><br>"
+						"on destination channel:</b> <i>[%s]</i>",
+						current_action_counter, Z2S_getActionsNumber(),
+						action.action_name, 
+						getSuplaEventName(action.src_Supla_event, action.is_condition),
+						action.min_value,
+						action.max_value,
+						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
+								action.src_Supla_channel)].Supla_channel_name, 
+						getSuplaActionName(action.dst_Supla_action),
+						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
+								action.dst_Supla_channel)].Supla_channel_name);
+	else
+		sprintf(general_purpose_gui_buffer, 
+						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
+						"<b>Action name:</b> <i>%s</i><br><br>"
+						"<b>Event:</b> <i>{%s}</i> <b>from source channel:</b> <i>[%s]</i><br><br>"
+						"<b>Action:</b> <i>{%s}</i> <b>on destination channel:</b> <i>[%s]</i>",
+						current_action_counter, Z2S_getActionsNumber(),
+						action.action_name, 
+						getSuplaEventName(action.src_Supla_event, action.is_condition),
+						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
+								action.src_Supla_channel)].Supla_channel_name, 
+						getSuplaActionName(action.dst_Supla_action),
+						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
+								action.dst_Supla_channel)].Supla_channel_name);
 
 	working_str = general_purpose_gui_buffer;
 }

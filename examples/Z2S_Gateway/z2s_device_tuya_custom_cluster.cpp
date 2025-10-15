@@ -1107,12 +1107,19 @@ void processTuya8RelaysDataReport(int16_t channel_number_slot,
                           payload);
 
     if (Tuya_read_dp_result.is_success) {
-      double dp_id_type_value = (double)cnt * (double)1000000;
+      /*double dp_id_type_value = (double)cnt * (double)1000000;
       dp_id_type_value += (double)Tuya_read_dp_result.dp_type * (double)1000;
       dp_id_type_value += Tuya_read_dp_result.dp_value;
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot,
                                             ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                            dp_id_type_value); //Tuya_read_dp_result.dp_value);
+                                            dp_id_type_value); //Tuya_read_dp_result.dp_value);*/
+      log_i("\n\r8 realys controller datapoint message"
+            "\n\rdp id = %u"
+            "\n\rdp type = %u"
+            "\n\rdp value = %u",
+            cnt, 
+            Tuya_read_dp_result.dp_type,
+            Tuya_read_dp_result.dp_value);
     }
   }
 }

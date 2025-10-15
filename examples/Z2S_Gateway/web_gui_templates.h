@@ -412,31 +412,31 @@ static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 
 	{ .Supla_event_id = Supla::ON_LESS,
 		.is_condition = true,
-		.Supla_event_name =  "ON LESS [CONDITION]" },
+		.Supla_event_name =  "[CONDITION] ON LESS" },
 
 	{ .Supla_event_id = Supla::ON_LESS_EQ,
 		.is_condition = true,
-		.Supla_event_name =  "ON LESS EQ [CONDITION]" },
+		.Supla_event_name =  "[CONDITION] ON LESS EQ" },
 
 	{ .Supla_event_id = Supla::ON_GREATER,
 		.is_condition = true,
-		.Supla_event_name =  "ON GREATER [CONDITION]" },
+		.Supla_event_name =  "[CONDITION] ON GREATER" },
 
 	{ .Supla_event_id = Supla::ON_GREATER_EQ,
 		.is_condition = true,
-		.Supla_event_name =  "ON GREATER EQ [CONDITION]" },
+		.Supla_event_name =  "[CONDITION] ON GREATER EQ" },
 
 	{ .Supla_event_id = Supla::ON_BETWEEN,
 		.is_condition = true,
-		.Supla_event_name =  "ON BETWEEN [CONDITION]" },
+		.Supla_event_name =  "[CONDITION] ON BETWEEN" },
 
 	{ .Supla_event_id = Supla::ON_BETWEEN_EQ,
 		.is_condition = true,
-		.Supla_event_name =  "ON BETWEEN EQ [CONDITION]" },
+		.Supla_event_name =  "[CONDITION] ON BETWEEN EQ" },
 
 	{ .Supla_event_id = Supla::ON_EQUAL,
 		.is_condition = true,
-		.Supla_event_name =  "ON EQUAL [CONDITION]" }
+		.Supla_event_name =  "[CONDITION] ON EQUAL" }
 };
 
 static constexpr Supla_condition_type_t Supla_conditions [] PROGMEM = {
