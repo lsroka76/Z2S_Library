@@ -140,7 +140,7 @@ uint16_t disable_channel_notifications_switcher;
 uint16_t trv_auto_to_schedule_switcher;
 uint16_t trv_auto_to_schedule_manual_switcher;
 uint16_t trv_fixed_calibration_switcher;
-uint16_t trv_childlock_alt_switcher;
+uint16_t trv_cooperative_childlock_switcher;
 uint16_t set_sorwns_on_start_switcher;
 uint16_t param_1_number;
 uint16_t param_1_desc_label;
@@ -343,6 +343,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_SET_SORWNS_ON_START_FLAG						0x4007
 #define GUI_CB_TRV_FIXED_CALIBRATION_FLAG					0x4008
 #define GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG		0x4009
+#define GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG			0x4010
 
 #define GUI_CB_UPDATE_KEEPALIVE_FLAG							0x4010
 #define GUI_CB_UPDATE_TIMEOUT_FLAG								0x4011
@@ -1542,6 +1543,18 @@ void buildChannelsTabGUI() {
 	ESPUI.setElementStyle(trv_auto_to_schedule_manual_switcher, 
 												"margin: 0% 15%;");
 	
+	trv_cooperative_childlock_switcher = 
+		ESPUI.addControl(Control::Type::Switcher, 
+										 PSTR(empty_str), 
+									   zero_str, 
+										 Control::Color::Emerald, 
+										 zb_channel_flags_label, 
+										 editChannelFlagsCallback, 	
+										 (void*)GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG);
+	ESPUI.setElementStyle(trv_cooperative_childlock_switcher, 
+												"margin: 0% 15%;");
+	
+
 	working_str = PSTR("");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
@@ -1552,6 +1565,14 @@ void buildChannelsTabGUI() {
 
 	working_str = PSTR("&#10023; <i>TRV AUTO mode =><br>"
 										 "Supla schedule/manual</i> &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearFlagsLabelStyle));
+
+	working_str = PSTR("&#10023; <i>TRV cooperative childlock &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str,
@@ -3158,8 +3179,10 @@ void sprintfAction(z2s_channel_action_t &action) {
 		sprintf(general_purpose_gui_buffer, 
 						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
 						"<b>Action name:</b> <i>%s</i><br><br>"
-						"<b>Event:</b> <i>{%s}</i> <b>from source channel:</b> <i>[%s]</i><br><br>"
-						"<b>Action:</b> <i>{%s}</i> <b>on destination channel:</b> <i>[%s]</i>",
+						"<b>Event:</b> <i>{%s}</i><br>"
+						"<b>from source channel:</b> <i>[%s]</i><br><br>"
+						"<b>Action:</b> <i>{%s}</i> <b><br>"
+						"on destination channel:</b> <i>[%s]</i>",
 						current_action_counter, Z2S_getActionsNumber(),
 						action.action_name, 
 						getSuplaEventName(action.src_Supla_event, action.is_condition),
@@ -4518,6 +4541,7 @@ void enableChannelControls(bool enable) {
 	ESPUI.updateNumber(trv_auto_to_schedule_switcher, 0);
 	ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 0);
 	ESPUI.updateNumber(trv_fixed_calibration_switcher, 0);
+	ESPUI.updateNumber(trv_cooperative_childlock_switcher, 0);
 	ESPUI.updateNumber(set_sorwns_on_start_switcher, 0);
 	
 	enableControlStyle(channel_name_text, enable);
@@ -4526,6 +4550,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(trv_auto_to_schedule_switcher, enable);
 	enableControlStyle(trv_auto_to_schedule_manual_switcher, enable);
 	enableControlStyle(trv_fixed_calibration_switcher, enable);
+	enableControlStyle(trv_cooperative_childlock_switcher, enable);
 	enableControlStyle(set_sorwns_on_start_switcher, enable);
 	enableControlStyle(param_1_number, enable);
 	enableControlStyle(param_1_save_button, enable);
@@ -4588,6 +4613,7 @@ void enableChannelFlags(uint8_t flags_mask) {
 		enableControlStyle(trv_auto_to_schedule_switcher, true);
 		enableControlStyle(trv_auto_to_schedule_manual_switcher, true);
 		enableControlStyle(trv_fixed_calibration_switcher, true);
+		enableControlStyle(trv_cooperative_childlock_switcher, true);
 		
 	}
 	else {
@@ -4600,6 +4626,9 @@ void enableChannelFlags(uint8_t flags_mask) {
 
 		ESPUI.updateNumber(trv_fixed_calibration_switcher, 0);
 		enableControlStyle(trv_fixed_calibration_switcher, false);
+
+		ESPUI.updateNumber(trv_cooperative_childlock_switcher, 0);
+		enableControlStyle(trv_cooperative_childlock_switcher, false);
 	}
 
 	if (flags_mask & 4)
@@ -4791,12 +4820,20 @@ void updateChannelInfoLabel(uint8_t label_number) {
 										 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
 
 			ESPUI.updateNumber(trv_fixed_calibration_switcher, 
-										 (z2s_channels_table[channel_slot].user_data_flags &
-										 USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0);
+										 		 (z2s_channels_table[channel_slot].user_data_flags &
+										 		 USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0);
 
 			ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 
-										 (z2s_channels_table[channel_slot].user_data_flags &
-										 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
+										 		 (z2s_channels_table[channel_slot].user_data_flags &
+										 		 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
+
+			ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 
+										 		 (z2s_channels_table[channel_slot].user_data_flags &
+										 		 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
+
+			ESPUI.updateNumber(trv_cooperative_childlock_switcher, 
+										 		 (z2s_channels_table[channel_slot].user_data_flags &
+										 		 USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK) ? 1 : 0);
 
 			enableChannelParams(1);
 
@@ -5785,18 +5822,22 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 				case GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG: {
 
 						if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
+							Z2S_setChannelFlags(channel_slot, 
+								USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 						else
-							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
+							Z2S_clearChannelFlags(channel_slot, 
+								USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 				} break;
 
 
 				case GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
+							Z2S_setChannelFlags(channel_slot, 
+								USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 						else
-							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
+							Z2S_clearChannelFlags(channel_slot, 
+								USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 
 				} break;
 
@@ -5804,27 +5845,45 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 				case GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+							Z2S_setChannelFlags(channel_slot, 
+								USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
 						else
-							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+							Z2S_clearChannelFlags(channel_slot, 
+								USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
 				} break;
 
 
 				case GUI_CB_TRV_FIXED_CALIBRATION_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+							Z2S_setChannelFlags(channel_slot, 
+								USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 						else
-							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+							Z2S_clearChannelFlags(channel_slot, 
+								USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 				} break;
+
+
+				case GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG: {
+
+					if (type == S_ACTIVE)
+							Z2S_setChannelFlags(channel_slot, 
+								USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+						else
+							Z2S_clearChannelFlags(channel_slot, 
+								USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+				} break;
+
 
 
 				case GUI_CB_SET_SORWNS_ON_START_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, USER_DATA_FLAG_SET_SORWNS_ON_START);
+							Z2S_setChannelFlags(channel_slot, 
+								USER_DATA_FLAG_SET_SORWNS_ON_START);
 						else
-							Z2S_clearChannelFlags(channel_slot, USER_DATA_FLAG_SET_SORWNS_ON_START);
+							Z2S_clearChannelFlags(channel_slot, 
+								USER_DATA_FLAG_SET_SORWNS_ON_START);
 				} break;	
 		}
 	}

@@ -100,20 +100,11 @@ void Supla::Control::Z2S_TRVInterface::
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-/*void Supla::Control::Z2S_TRVInterface::
-  setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger) {
+void Supla::Control::Z2S_TRVInterface::
+  setCooperativeChildLock(bool cooperative_child_lock) {
 
-  _temperature_calibration_offset_trigger = temperature_calibration_offset_trigger;
-}*/
-
-/*---------------------------------------------------------------------------------------------------------------------------*/
-
-/*void Supla::Control::Z2S_TRVInterface::
-  setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms) {
-
-  _temperature_calibration_update_ms = temperature_calibration_update_ms;
-}*/
-
+    _cooperative_child_lock = cooperative_child_lock;
+  }
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
 void Supla::Control::Z2S_TRVInterface::
@@ -677,8 +668,12 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       log_i("TRV child lock difference detected hvac = %d, trv = %d", 
             (uint8_t)_trv_hvac->getLocalUILock(), 
             _trv_child_lock);
+            
+      if (_cooperative_child_lock)
+        _trv_hvac->setLocalUILock(_trv_child_lock);
+      else
+        sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
 
-      sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
       _trv_child_lock_changed = false;
     }
   }

@@ -945,6 +945,7 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   void setTRVTemperatureHisteresis(int32_t trv_temperature_histeresis);
 
   void setTRVChildLock(uint8_t trv_child_lock);
+  void setCooperativeChildLock(bool cooperative_child_lock);
   void turnOffTRVScheduleMode();
 
   void setTimeoutSecs(uint32_t timeout_secs);
@@ -993,6 +994,7 @@ protected:
 
   uint8_t _trv_child_lock = 0xFF;
   bool _trv_child_lock_changed = false;
+  bool _cooperative_child_lock = false;
 
   bool _trv_switch_schedule_off = false;
 

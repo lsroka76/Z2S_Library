@@ -1100,7 +1100,7 @@ void processTuya8RelaysDataReport(int16_t channel_number_slot,
                               SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                               TUYA_8_RELAYS_CONTROLLER_STATUS_DP);
 
-  for (uint8_t cnt = 9; cnt <= 255; cnt++) {
+  for (uint16_t cnt = 9; cnt <= 255; cnt++) {
     Tuya_read_dp_result = 
       Z2S_readTuyaDPvalue(cnt, //TUYA_8_RELAYS_CONTROLLER_STATUS_DP, 
                           payload_size, 
@@ -1113,7 +1113,7 @@ void processTuya8RelaysDataReport(int16_t channel_number_slot,
       msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot,
                                             ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
                                             dp_id_type_value); //Tuya_read_dp_result.dp_value);*/
-      log_i("\n\r8 realys controller datapoint message"
+      log_i("\n\r8 relays controller datapoint message"
             "\n\rdp id = %u"
             "\n\rdp type = %u"
             "\n\rdp value = %u",
