@@ -3435,13 +3435,33 @@ void buildActionsChannelSelectors(bool rebuild_options,
 																						 							 Control::Color::Emerald, 
 																													 parent_control_id, 
 																													 generalCallback);
+		
+		working_str = PSTR("&#10023; condition main threshold value (for =, >, <, ≥, ≤) &#10023;"
+											 "<br>enter number ie. 21.5 or -8.0");
+		ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																					PSTR(empty_str), 
+																					working_str, 
+																					Control::Color::None, 
+																					parent_control_id), 
+													PSTR(clearLabelStyle));
+		
 
-action_condition_threshold_2_number = ESPUI.addControl(Control::Type::Number, //this have to be here to keep user friendly layout
+		action_condition_threshold_2_number = ESPUI.addControl(Control::Type::Number, //this have to be here to keep user friendly layout
 																													 PSTR(empty_str), 
 																													 minus_one_str, 
 																						 							 Control::Color::Emerald, 
 																													 parent_control_id, 
 																													 generalCallback);
+
+		working_str = PSTR("&#10023; condition secondary threshold value (only for between) &#10023;"
+											 "<br>enter number ie. 21.5 or -8.0");
+		ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																					PSTR(empty_str), 
+																					working_str, 
+																					Control::Color::None, 
+																					parent_control_id), 
+													PSTR(clearLabelStyle));
+		
 
 
 		ESPUI.addControl(Control::Type::Option, 

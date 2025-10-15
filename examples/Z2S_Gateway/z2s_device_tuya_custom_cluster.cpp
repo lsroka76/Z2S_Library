@@ -1093,22 +1093,27 @@ void processTuya8RelaysDataReport(int16_t channel_number_slot,
     }
   }
 
-  Tuya_read_dp_result = 
-    Z2S_readTuyaDPvalue(TUYA_8_RELAYS_CONTROLLER_STATUS_DP, 
-                        payload_size, 
-                        payload);
-
   channel_number_slot = 
     Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
                               z2s_channels_table[channel_number_slot].endpoint, 
                               z2s_channels_table[channel_number_slot].cluster_id, 
                               SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
                               TUYA_8_RELAYS_CONTROLLER_STATUS_DP);
-  
-  if (Tuya_read_dp_result.is_success) {
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot,
-                                          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                          Tuya_read_dp_result.dp_value);
+
+  for (uint8_t cnt = 9; cnt <= 255; cnt++) {
+    Tuya_read_dp_result = 
+      Z2S_readTuyaDPvalue(cnt, //TUYA_8_RELAYS_CONTROLLER_STATUS_DP, 
+                          payload_size, 
+                          payload);
+
+    if (Tuya_read_dp_result.is_success) {
+      double dp_id_type_value = (double)cnt * (double)1000000;
+      dp_id_type_value += (double)Tuya_read_dp_result.dp_type * (double)1000;
+      dp_id_type_value += Tuya_read_dp_result.dp_value;
+      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot,
+                                            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+                                            dp_id_type_value); //Tuya_read_dp_result.dp_value);
+    }
   }
 }
 
