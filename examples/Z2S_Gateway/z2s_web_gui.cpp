@@ -484,6 +484,7 @@ void TuyaCustomCmdCallback(Control *sender, int type, void *param);
 void actionsTableCallback(Control *sender, int type, void *param);
 void addLocalActionHandlerCallback(Control *sender, int type, void *param);
 void addLocalVirtualRelayCallback(Control *sender, int type);
+void addLocalVirtualBinaryCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
 
@@ -1235,26 +1236,35 @@ void buildDevicesTabGUI() {
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, battery_voltage_min_number);
 	working_str = 255;
 	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, battery_voltage_min_number);
-
+	ESPUI.setElementStyle(battery_voltage_min_number, "margin: 0% 5%;");
 	working_str = PSTR("Save");
 	battery_voltage_min_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, 
 																										battery_voltage_min_number, batteryCallback, (void*)GUI_CB_BATTERY_VOLTAGE_MIN_FLAG);
-	working_str = PSTR("&#10023; V(min) x10, ie. 28 = 2,8V &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
-																				 Control::Color::None, battery_voltage_min_number), PSTR(clearLabelStyle));
 
+	
 	battery_voltage_max_number = ESPUI.addControl(Control::Type::Number, PSTR(empty_str), zero_str, 
 																								Control::Color::Emerald, battery_voltage_min_number, generalMinMaxCallback, (void*)255);
 	ESPUI.addControl(Control::Type::Min, PSTR(empty_str), zero_str, Control::Color::None, battery_voltage_max_number);
+	ESPUI.setElementStyle(battery_voltage_max_number, "margin: 0% 5%;");
+
 	working_str = 255;
 	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, battery_voltage_max_number);
 
 	working_str = PSTR("Save");
 	battery_voltage_max_save_button = ESPUI.addControl(Control::Type::Button, PSTR(empty_str), working_str, Control::Color::Emerald, 
 																										 battery_voltage_min_number, batteryCallback, (void*)GUI_CB_BATTERY_VOLTAGE_MAX_FLAG);
-	working_str = PSTR("&#10023; V(max) x10, ie. 33 = 3,3V &#10023;");
+
+	working_str = "";
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
 																				 Control::Color::None, battery_voltage_min_number), PSTR(clearLabelStyle));
+	
+	working_str = PSTR("&#10023; V(min) x10, ie. 28 = 2,8V &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
+																				 Control::Color::None, battery_voltage_min_number), PSTR(clearFlagsLabelStyle));
+	
+	working_str = PSTR("&#10023; V(max) x10, ie. 33 = 3,3V &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, PSTR(empty_str), working_str,
+																				 Control::Color::None, battery_voltage_min_number), PSTR(clearFlagsLabelStyle));
 	
 	disable_battery_percentage_msg_switcher = ESPUI.addControl(Control::Type::Switcher, PSTR(empty_str), zero_str, 
 																														 Control::Color::Emerald, 
@@ -1826,7 +1836,15 @@ void buildChannelsTabGUI() {
 									 working_str, 
 									 Control::Color::Emerald, 
 									 lah_panel, 
-									 addLocalVirtualRelayCallback);																					
+									 addLocalVirtualRelayCallback);
+
+	working_str = PSTR("Add virtual binary");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalVirtualBinaryCallback);																					
 
 	enableChannelControls(false);
 }
@@ -4218,6 +4236,19 @@ void Z2S_loopWebGUI() {
 			gui_command = 0;
 			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY, 
 																			 SUPLA_CHANNELFNC_POWERSWITCH)) {
+
+			
+				rebuildChannelsSelector(true);
+				buildActionsChannelSelectors(true);
+			}
+		} break;
+
+
+		case 67: {
+
+			gui_command = 0;
+			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY, 
+																			 SUPLA_CHANNELFNC_BINARY_SENSOR)) {
 
 			
 				rebuildChannelsSelector(true);
@@ -7162,6 +7193,14 @@ void addLocalVirtualRelayCallback(Control *sender, int type) {
 	if (type == B_UP) {
 
 		gui_command = 66;
+	}
+}
+
+void addLocalVirtualBinaryCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+
+		gui_command = 67;
 	}
 }
 

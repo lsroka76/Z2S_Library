@@ -7,10 +7,12 @@
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
 #include <supla/control/virtual_relay.h>
+#include <supla/sensor/virtual_binary.h>
 #include <Z2S_control/Z2S_local_action_handlers.h>
 
 #define LOCAL_CHANNEL_TYPE_ACTION_HANDLER 0x01
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY  0x02
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY 0x03
 
 static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
 

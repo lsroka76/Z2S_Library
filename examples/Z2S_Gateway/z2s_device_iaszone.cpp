@@ -95,7 +95,7 @@ void msgZ2SDeviceIASzone(int16_t channel_number_slot,
         
         Supla_Z2S_VirtualBinary->Refresh();
 
-        bool state_changed = (state == Supla_Z2S_VirtualBinary->getValue()) ? false : true;
+        bool state_changed = (state == !Supla_Z2S_VirtualBinary->getValue()) ? false : true;
 
         if (state) Supla_Z2S_VirtualBinary->extClear(); 
         else Supla_Z2S_VirtualBinary->extSet();

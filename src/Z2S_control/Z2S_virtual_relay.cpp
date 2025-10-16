@@ -44,13 +44,22 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
       "Relay[%d] turn ON (duration %d ms)",
       channel.getChannelNumber(),
       duration);
+
   durationMs = duration;
-  if (keepTurnOnDurationMs) {
+  
+  if (minimumAllowedDurationMs > 0 && storedTurnOnDurationMs == 0) {
+    storedTurnOnDurationMs = durationMs;
+  }
+
+  if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction()) {
     durationMs = storedTurnOnDurationMs;
   }
+
   if (durationMs != 0) {
+
     durationTimestamp = millis();
   } else {
+
     durationTimestamp = 0;
   }
 
@@ -263,16 +272,21 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
       "Relay[%d] turn OFF (duration %d ms)",
       channel.getChannelNumber(),
       duration);
+  
   durationMs = duration;
+  
   if (durationMs != 0) {
+    
     durationTimestamp = millis();
   } else {
+    
     durationTimestamp = 0;
   }
 
   if (_gateway && Zigbee.started()) { 
     
     uint8_t _z2s_function_data[MAX_COMMAND_DATA_SIZE];
+    
     switch (_z2s_function) {
 
       case Z2S_VIRTUAL_RELAY_FNC_NONE: {
@@ -488,6 +502,10 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
 
     if (on_off_state) {
       
+      if (minimumAllowedDurationMs > 0 && storedTurnOnDurationMs == 0) {
+       storedTurnOnDurationMs = durationMs;
+      }
+
       if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction()) {
         durationMs = storedTurnOnDurationMs;
       }

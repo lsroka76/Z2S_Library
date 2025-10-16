@@ -362,6 +362,9 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = Supla::DECREASE_TEMPERATURE,
 		.Supla_action_name = "DECREASE TEMPERATURE" },
 
+	{ .Supla_action_id = Supla::TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES,
+		.Supla_action_name = "TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES" },
+
 	{ .Supla_action_id = Supla::TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES,
 		.Supla_action_name = "TOGGLE_OFF/MANUAL/WEEKLY SCHEDULE MODES" },
 

@@ -6,14 +6,22 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(int16_t channel_number_slot){
 
   switch (z2s_channels_table[channel_number_slot].local_channel_type) {
 
+
     case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
       
       return "Local action handler";
     } break;
 
+
     case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY:
       
       return "Local virtual relay";
+    break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY:
+      
+      return "Local virtual binary";
     break;
 
     default:
@@ -36,6 +44,7 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(int16_t channel_numb
     } break;
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY:
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY:
       
       return "No special functions";
     break;
@@ -69,6 +78,7 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
         z2s_channels_table[channel_number_slot].keep_alive_secs);
     } break;
 
+
     case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
       
       uint8_t Supla_channel = 
@@ -77,6 +87,18 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
       auto Supla_VirtualRelay = new Supla::Control::VirtualRelay(); 
       
       Supla_VirtualRelay->getChannel()->setChannelNumber(Supla_channel);
+    }
+    break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY: {
+      
+      uint8_t Supla_channel = 
+        z2s_channels_table[channel_number_slot].Supla_channel;
+      
+      auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(); 
+      
+      Supla_VirtualBinary->getChannel()->setChannelNumber(Supla_channel);
     }
     break;
   } 
@@ -102,7 +124,9 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
     local_channel_type;
 
   memset(
-    z2s_channels_table[first_free_slot].ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
+    z2s_channels_table[first_free_slot].ieee_addr, 
+    0, 
+    sizeof(esp_zb_ieee_addr_t));
 
   z2s_channels_table[first_free_slot].short_addr = 0;
 
@@ -113,6 +137,7 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
   z2s_channels_table[first_free_slot].cluster_id = 0;
 
   switch(local_channel_type) {
+
 
     case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
 
@@ -133,6 +158,7 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
         new Supla::LocalActionHandlerWithTrigger(logic_operator);   
     } break;
 
+
     case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
 
       SuplaDevice.saveStateToStorage();
@@ -151,6 +177,29 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
 
       Supla_VirtualRelay->setDefaultFunction(local_channel_func);
     } break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY: {
+
+      auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(); 
+
+      z2s_channels_table[first_free_slot].Supla_channel = 
+        Supla_VirtualBinary->getChannelNumber();
+
+      strcpy(z2s_channels_table[first_free_slot].
+        Supla_channel_name, "LOCAL VIRTUAL BINARY");
+      
+      Supla_VirtualBinary->setInitialCaption(
+          z2s_channels_table[first_free_slot].Supla_channel_name);
+
+      Supla_VirtualBinary->setDefaultFunction(local_channel_func);
+    } break;
+
+
+    default:
+      log_i("unknown local action handler channel type 0%u", 
+            local_channel_type);
+    break;
   }
 
   z2s_channels_table[first_free_slot].Supla_secondary_channel = 0xFF;
