@@ -134,6 +134,10 @@ typedef struct z2s_device_params_s {
       uint32_t        hvac_fixed_temperature_correction;
     };
     struct {
+      uint32_t            remote_ip_address;
+      uint32_t            remote_Supla_channel:8;
+    };
+    struct {
       uint32_t        value : 24;
       uint32_t        program : 8;
       uint32_t        pause_time : 24;
@@ -144,7 +148,6 @@ typedef struct z2s_device_params_s {
       uint8_t         logic_operator;
     } local_action_handler_data;
   };
-
   uint32_t            user_data_3;
   union {
     uint32_t          user_data_4;  //reserved for WebGUI bits 0...15 for Control_Id
@@ -333,6 +336,8 @@ const static char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
 const static char Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2[] PROGMEM = "channel_ext_data_%03d_%02d.z2s";
 
 extern bool sendIASNotifications;
+
+static NetworkClient TestClient;
 
 //extern Supla::Sensor::GeneralPurposeMeasurement *Test_GeneralPurposeMeasurement;
 
@@ -653,6 +658,13 @@ void updateTimeout(uint8_t channel_number_slot,
 
 void updateRGBMode(uint8_t channel_number_slot,
                    uint8_t rgb_mode);
+
+void sendChannelAction(uint8_t Supla_channel,
+                      uint16_t channel_action);
+
+void setRemoteRelay(uint8_t Supla_channel,
+                    bool state);
+
 
 void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
                                            int32_t hvac_fixed_calibration_temperature);

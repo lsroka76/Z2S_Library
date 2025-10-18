@@ -168,6 +168,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES      0x4650
 #define Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER            0x4660
+#define Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER            0x4670
 
 #define Z2S_DEVICE_DESC_ON_OFF_VALVE_DC                     0x4700
 #define Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC                0x4705
@@ -818,6 +819,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -3369,6 +3375,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_1oft6qso", .model_name = "TS0601",
     .z2s_device_uid = 29300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_mmkbptmx", .model_name = "TS0004",
+    .z2s_device_uid = 29400,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER,
+	  .z2s_device_endpoints_count = 5,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 },
+                              { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 },
+                              { 3, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 },
+                              { 4, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 },
+                              { 5, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 };
 #endif

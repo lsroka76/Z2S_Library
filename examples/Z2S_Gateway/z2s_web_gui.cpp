@@ -145,6 +145,9 @@ uint16_t set_sorwns_on_start_switcher;
 uint16_t param_1_number;
 uint16_t param_1_desc_label;
 uint16_t param_1_save_button; 
+uint16_t param_2_number;
+uint16_t param_2_desc_label;
+uint16_t param_2_save_button; 
 uint16_t keepalive_number;
 uint16_t timeout_number;
 uint16_t refresh_number;
@@ -350,6 +353,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_UPDATE_REFRESH_FLAG								0x4012
 
 #define GUI_CB_UPDATE_PARAM_1_FLAG								0x4020
+#define GUI_CB_UPDATE_PARAM_2_FLAG								0x4021
 
 #define GUI_CB_ADD_AND_HANDLER_FLAG								0x4050
 #define GUI_CB_ADD_OR_HANDLER_FLAG								0x4051
@@ -485,6 +489,7 @@ void actionsTableCallback(Control *sender, int type, void *param);
 void addLocalActionHandlerCallback(Control *sender, int type, void *param);
 void addLocalVirtualRelayCallback(Control *sender, int type);
 void addLocalVirtualBinaryCallback(Control *sender, int type);
+void addLocalRemoteRelayCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
 
@@ -1600,7 +1605,7 @@ void buildChannelsTabGUI() {
 																					 	 channelstab);
 	ESPUI.setElementStyle(zb_channel_params_label, PSTR(clearLabelStyle));
 
-	param_1_number = ESPUI.addControl(Control::Type::Number, 
+	param_1_number = ESPUI.addControl(Control::Type::Text, //Number, 
 																		PSTR(empty_str), 
 																		zero_str, 
 																		Control::Color::Emerald, 
@@ -1622,6 +1627,30 @@ void buildChannelsTabGUI() {
 										 Control::Color::None, 
 										 zb_channel_params_label);
 	ESPUI.setElementStyle(param_1_desc_label, PSTR(clearLabelStyle));
+
+	param_2_number = ESPUI.addControl(Control::Type::Number, 
+																		PSTR(empty_str), 
+																		zero_str, 
+																		Control::Color::Emerald, 
+																		zb_channel_params_label, 
+																		generalCallback);
+	working_str = PSTR("Save");
+	param_2_save_button = ESPUI.addControl(Control::Type::Button, 
+																				 PSTR(empty_str),
+																				 working_str, 
+																				 Control::Color::Emerald, 
+																				 zb_channel_params_label, 
+																				 editChannelCallback, 
+																				 (void*)GUI_CB_UPDATE_PARAM_2_FLAG);
+	working_str = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
+	param_2_desc_label = 
+		ESPUI.addControl(Control::Type::Label, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::None, 
+										 zb_channel_params_label);
+	ESPUI.setElementStyle(param_1_desc_label, PSTR(clearLabelStyle));
+
 
 	zb_channel_timings_label = ESPUI.addControl(Control::Type::Label, 
 																							PSTR("Channel timings panel"), 
@@ -1844,7 +1873,15 @@ void buildChannelsTabGUI() {
 									 working_str, 
 									 Control::Color::Emerald, 
 									 lah_panel, 
-									 addLocalVirtualBinaryCallback);																					
+									 addLocalVirtualBinaryCallback);
+
+	working_str = PSTR("Add remote relay");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalRemoteRelayCallback);																					
 
 	enableChannelControls(false);
 }
@@ -4255,6 +4292,19 @@ void Z2S_loopWebGUI() {
 				buildActionsChannelSelectors(true);
 			}
 		} break;
+
+
+		case 68: {
+
+			gui_command = 0;
+			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_REMOTE_RELAY, 
+																			 SUPLA_CHANNELFNC_POWERSWITCH)) {
+
+			
+				rebuildChannelsSelector(true);
+				buildActionsChannelSelectors(true);
+			}
+		} break;
 	}
 }
 
@@ -4565,6 +4615,7 @@ void enableChannelControls(bool enable) {
 	ESPUI.updateText(channel_name_text, working_str);
 
 	ESPUI.updateNumber(param_1_number, 0);
+	ESPUI.updateNumber(param_2_number, 0);
 	ESPUI.updateNumber(keepalive_number, 0);
 	ESPUI.updateNumber(timeout_number, 0);
 	ESPUI.updateNumber(refresh_number, 0);
@@ -4584,7 +4635,9 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(trv_cooperative_childlock_switcher, enable);
 	enableControlStyle(set_sorwns_on_start_switcher, enable);
 	enableControlStyle(param_1_number, enable);
+	enableControlStyle(param_2_number, enable);
 	enableControlStyle(param_1_save_button, enable);
+	enableControlStyle(param_2_save_button, enable);
 	enableControlStyle(keepalive_number, enable);
 	enableControlStyle(keepalive_save_button, enable);
 	enableControlStyle(timeout_number, enable);
@@ -4693,6 +4746,21 @@ void enableChannelParams(uint8_t params_mask) {
 		enableControlStyle(param_1_save_button, false);
 	}
 
+	if (params_mask & 2) {
+		
+		enableControlStyle(param_2_number, true);
+		enableControlStyle(param_2_save_button, true);
+		
+	}
+	else {
+		
+		ESPUI.updateNumber(param_2_number, 0);
+		working_str = PSTR("&#10023; PARAM(2) - currently not used &#10023;");
+		ESPUI.updateText(param_2_desc_label, working_str);
+		enableControlStyle(param_2_number, false);
+		enableControlStyle(param_2_save_button, false);
+	}
+
 	if (params_mask == 0) 
 		enableControlStyle(zb_channel_params_label, false);
 	else
@@ -4765,11 +4833,39 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 		case 0x0000: {
 
-			enableChannelTimings(1); //keepalive
-			ESPUI.updateNumber(keepalive_number, 	z2s_channels_table[channel_slot].keep_alive_secs);
-			//ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
-	
+			enableChannelTimings(0);
 			enableChannelFlags(0);
+
+			if (z2s_channels_table[channel_slot].local_channel_type == 
+					LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
+
+				enableChannelTimings(1); //keepalive
+				ESPUI.updateNumber(keepalive_number, 	z2s_channels_table[channel_slot].keep_alive_secs);
+				//ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+	
+				//enableChannelFlags(0);
+			}
+
+			if (z2s_channels_table[channel_slot].local_channel_type == 
+					LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
+
+				enableChannelParams(3);
+
+				IPAddress ip;
+
+				
+				ESPUI.updateText(param_1_number, 
+										 			 ip.toString(z2s_channels_table[channel_slot].remote_ip_address));
+
+				working_str = PSTR("&#10023; Enter remote relay IP address &#10023;");
+				ESPUI.updateText(param_1_desc_label, working_str);
+
+				ESPUI.updateNumber(param_2_number, 
+										 			 z2s_channels_table[channel_slot].remote_Supla_channel);
+				
+				working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
+				ESPUI.updateText(param_2_desc_label, working_str);
+			}
 		} break;
 		
 
@@ -4795,7 +4891,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 			enableChannelParams(1);
 
 			ESPUI.updateNumber(param_1_number, 
-										 		 z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
+										 		 z2s_channels_table[channel_slot].rain_intensity_treshold);
 			working_str = PSTR("&#10023; Virtual Binary custom param<br>"
 												 "enter rain intensity threshold<br>"
 												 "currently unused for other sensors &#10023;");
@@ -4904,15 +5000,18 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
 		case SUPLA_CHANNELTYPE_DIMMER: {
 
-			enableChannelTimings(3); //timeout + keepalive
+			if (z2s_channels_table[channel_slot].local_channel_type == 0) {
 
-			ESPUI.updateNumber(keepalive_number, 
-				z2s_channels_table[channel_slot].keep_alive_secs);
+				enableChannelTimings(3); //timeout + keepalive
 
-			ESPUI.updateNumber(timeout_number, 
-				z2s_channels_table[channel_slot].timeout_secs);
+				ESPUI.updateNumber(keepalive_number, 
+					z2s_channels_table[channel_slot].keep_alive_secs);
 
-			enableChannelFlags(0);
+				ESPUI.updateNumber(timeout_number, 
+					z2s_channels_table[channel_slot].timeout_secs);
+
+				enableChannelFlags(0);
+			}
 		} break;
 
 
@@ -5801,6 +5900,26 @@ void editChannelCallback(Control *sender, int type, void *param) {
 				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
 
 
+					case 0x0000: {
+
+						if (z2s_channels_table[channel_slot].local_channel_type == 
+								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
+
+							IPAddress ip;
+
+							ip.fromString(ESPUI.getControl(param_1_number)->value);
+
+							z2s_channels_table[channel_slot].user_data_1 = ip;
+						
+							if (Z2S_saveChannelsTable()) {
+
+								log_i("remote relay ip address updated successfuly to %lu", 
+											z2s_channels_table[channel_slot].user_data_1);
+							}
+						}
+					} break;
+
+					
 					case SUPLA_CHANNELTYPE_HVAC:
 
 						updateHvacFixedCalibrationTemperature(
@@ -5811,12 +5930,50 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 					default: {
 
-						z2s_channels_table[channel_slot].user_data_1 = ESPUI.getControl(param_1_number)->value.toInt();
+						z2s_channels_table[channel_slot].user_data_1 = 
+							ESPUI.getControl(param_1_number)->value.toInt();
 						
 						if (Z2S_saveChannelsTable()) {
 
 							log_i("channel user data 1 updated successfuly to %lu", 
 										z2s_channels_table[channel_slot].user_data_1);
+						}
+					} break;
+				}
+			} break;
+
+			case GUI_CB_UPDATE_PARAM_2_FLAG : {	
+
+
+				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
+
+
+					case 0x0000: {
+
+						if (z2s_channels_table[channel_slot].local_channel_type == 
+								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
+
+							z2s_channels_table[channel_slot].remote_Supla_channel = 
+								ESPUI.getControl(param_2_number)->value.toInt();
+						
+							if (Z2S_saveChannelsTable()) {
+
+								log_i("remote_Supla_channel updated successfuly to %lu", 
+											z2s_channels_table[channel_slot].remote_Supla_channel);
+							}
+						}
+					} break;
+
+
+					default: {
+
+						z2s_channels_table[channel_slot].user_data_2 = 
+							ESPUI.getControl(param_2_number)->value.toInt();
+						
+						if (Z2S_saveChannelsTable()) {
+
+							log_i("channel user data 2 updated successfuly to %lu", 
+										z2s_channels_table[channel_slot].user_data_2);
 						}
 					} break;
 				}
@@ -7201,6 +7358,14 @@ void addLocalVirtualBinaryCallback(Control *sender, int type) {
 	if (type == B_UP) {
 
 		gui_command = 67;
+	}
+}
+
+void addLocalRemoteRelayCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+
+		gui_command = 68;
 	}
 }
 

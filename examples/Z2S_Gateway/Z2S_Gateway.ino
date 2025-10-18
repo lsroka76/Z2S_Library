@@ -4,6 +4,8 @@
 
 #define Z2S_GATEWAY
 
+#include <AsyncTCP.h>
+
 #include <ZigbeeGateway.h>
 
 #include "esp_coexist.h"
@@ -27,6 +29,7 @@
 #include <supla/control/button.h>
 #include <supla/device/enter_cfg_mode_after_power_cycle.h>
 #include <Z2S_control/action_handler_with_callbacks.h>
+#include <Z2S_control/Z2S_remote_relay.h>
 
 #include <supla/control/virtual_relay.h>
 #include <supla/sensor/general_purpose_measurement.h>
@@ -51,11 +54,36 @@
 
 #define TIME_CLUSTER_REFRESH_MS     60 * 1000 //miliseconds
 
+/*static char tpc_send_buffer[8] = {0};
+static size_t bufferPos = 0;
+
+static uint8_t tcp_connect_state = 0;
+
+static size_t waitingAck = 0;
+
+static AsyncClient client;*/
+
+//static constexpr char *TEST_GATEWAY_IP PROGMEM = "10.164.38.17";
+//static constexpr char *TEST_GATEWAY_IP PROGMEM = "10.164.38.210";
+//static constexpr char *TEST_GATEWAY_IP PROGMEM = "192.168.1.70";
+static String TEST_GATEWAY_IP PROGMEM = "192.168.1.36";
+//static String TEST_GATEWAY_IP PROGMEM = "192.168.1.70";
+
+static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
+
+
+static NetworkServer TestServer(1234);
+extern NetworkClient TestClient;
+static NetworkClient client2;
+//static Supla::Control::Z2S_RemoteRelay *testRemoteRelay;
+
+static bool tcp_server_started = false;
+
 ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi;
-Supla::LittleFsConfig     configSupla (4096);
+Supla::LittleFsConfig     configSupla(4096);
 
 constexpr uint8_t LED_PIN   = 8;
 constexpr uint8_t NUM_LEDS  = 1;
@@ -117,6 +145,10 @@ void supla_callback_bridge(int event, int action) {
         onTelnetCmd(Z2S_onTelnetCmd); 
 
         #endif //USE_TELNET_CONSOLE
+
+        TestServer.begin();
+        
+
         return;
       }
       if (Zigbee.started() && 
@@ -363,6 +395,13 @@ void setup() {
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
 
+  //testRemoteRelay = new Supla::Control::Z2S_RemoteRelay(&TestClient, 115);
+  //testRemoteRelay->getChannel()->setChannelNumber(115);
+  //testRemoteRelay->setInitialCaption("Test remote relay");
+  //testRemoteRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+  //testRemoteRelay->setRemoteGatewayIPAddress(TEST_GATEWAY_IP);
+  //toggleNotifications->setDefaultStateRestore();
+
   auto AHwC = new Supla::ActionHandlerWithCallbacks();
   AHwC->setActionHandlerCallback(supla_callback_bridge);
 
@@ -526,6 +565,40 @@ void setup() {
   SuplaDevice.begin();      
   
   refresh_time = millis();
+
+
+   /*client.onDisconnect([](void *arg, AsyncClient *client) {
+    Serial.printf("Disconnected.\n");
+    tcp_connect_state = 0;
+  });
+
+  // register a callback when an error occurs
+  client.onError([](void *arg, AsyncClient *client, int8_t error) {
+    Serial.printf("Error: %s\n", client->errorToString(error));
+  });
+
+  // register a callback when data arrives, to accumulate it
+  client.onData([](void *arg, AsyncClient *client, void *data, size_t len) {
+    Serial.printf("Received %u bytes...\n", len);
+    Serial.write((uint8_t *)data, len);
+  });
+
+  // register a callback when we are connected
+  client.onConnect([](void *arg, AsyncClient *client) {
+    Serial.printf("Connected!\n");
+    tcp_connect_state = 2;
+  });
+
+  client.onAck([](void *arg, AsyncClient *client, size_t len, uint32_t time) {
+    Serial.printf("Acked %u bytes in %" PRIu32 " ms\n", len, time);
+    assert(waitingAck >= len);
+    waitingAck -= len;
+  });
+
+  client.setRxTimeout(20000);
+  client.setNoDelay(true);
+*/
+
 }
 
 zbg_device_params_t *gateway_device;
@@ -573,6 +646,49 @@ void loop() {
   if (is_Telnet_server) telnet.loop();
 
 #endif //USE_TELNET_CONSOLE
+
+
+client2 = TestServer.available();
+
+if (client2 && client2.connected()) {
+     
+     String request = client2.readStringUntil('\n');
+     Serial.println(request);
+     int16_t cmd_pos = request.indexOf(Z2S_TCP_CMD);
+
+     if (cmd_pos >= 0 ) {
+
+      Serial.printf("cmd pos %u\n\r", cmd_pos);
+      String helper;
+      helper.reserve(16);
+      helper = request.substring(cmd_pos + 6, cmd_pos + 8);
+      Serial.println(helper);
+      uint8_t cmd_id = helper.toInt();
+      helper = request.substring(cmd_pos + 8, cmd_pos + 11);
+      Serial.println(helper);
+      uint8_t cmd_channel = helper.toInt();
+      helper = request.substring(cmd_pos + 11, cmd_pos + 13);
+      Serial.println(helper);
+      uint8_t cmd_value = helper.toInt();
+
+      Serial.printf("\n\rZ2S TCP command received id = %u"
+                    "\n\rchannel = %u"
+                    "\n\r value = %u\n\r",
+                    cmd_id,
+                    cmd_channel,
+                    cmd_value); 
+
+      //if (cmd_id == 1)
+        {
+          //testRemoteRelay->Z2S_setOnOff(cmd_id == 1);
+          setRemoteRelay(cmd_channel, cmd_id == 1);
+        
+        }
+        client2.print("OK\n");
+     }
+
+     client2.stop();
+   }
 
 if (GUIstarted)
       Z2S_loopWebGUI();
@@ -681,6 +797,53 @@ if (GUIstarted)
 
         //}
       }
+
+    if (refresh_cycle % 1 ==0) {
+
+      //if (!TestClient.connected())
+      //  TestClient.connect(TEST_GATEWAY_IP, 1234);
+    }
+/*
+    if (TestClient.connect(TEST_GATEWAY_IP, 1234)) {
+    
+      //TestClient.printf("request to %s\n", TEST_GATEWAY_IP);
+      TestClient.printf("Sending Z2SCMD050401 to %s\n", TEST_GATEWAY_IP);
+      String response = TestClient.readStringUntil('\n');
+      Serial.println(response);
+      TestClient.stop();
+    }*/
+
+   
+
+        /*switch (tcp_connect_state) {
+          
+          case 0: {
+            
+            Serial.printf("Connecting...\n");
+            if (!client.connect("192.168.1.36", 1234)) {
+            
+              Serial.printf("Failed to connect!\n");
+              delay(1000);  // to not flood logs
+            } else {
+              tcp_connect_state = 1;
+            } break;
+          }
+
+          case 1: {
+
+            Serial.printf("Still connecting...\n");
+            delay(500);  // to not flood logs
+          } break;
+
+          case 2: {
+
+            tpc_send_buffer[0] = 'A';
+            tpc_send_buffer[1] = 'B';
+            tpc_send_buffer[2] = 0;
+            client.write(tpc_send_buffer, 3);
+          }
+        }*/
+      //}
       if (refresh_cycle % 3 == 0) {
         //log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
         log_i( "Memory information: Flash chip real size:%u B, Free Sketch Space:%u B, "
@@ -690,11 +853,12 @@ if (GUIstarted)
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
 						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
       }
-    }
+    //}
     if (!zbGateway.getGatewayDevices().empty()) {
       refresh_time = millis();
       refresh_cycle = (refresh_cycle + 1) % 12;
     }
+  }
   }
 
   if (zbGateway.isNewDeviceJoined()) {

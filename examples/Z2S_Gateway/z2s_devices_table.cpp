@@ -11,6 +11,7 @@
 #include <Z2S_control/Z2S_virtual_relay.h>
 #include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
 #include <Z2S_control/dimmer_input_interface.h>
+#include <Z2S_control/Z2S_remote_relay.h>
 
 #include "z2s_devices_table.h"
 #include "z2s_device_iaszone.h"
@@ -4001,13 +4002,13 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
           break;
 
 
-          case TUYA_8_RELAYS_CONTROLLER_STATUS_SID:
+          /*case TUYA_8_RELAYS_CONTROLLER_STATUS_SID:
 
             addZ2SDeviceGeneralPurposeMeasurement(device, 
                                                   first_free_slot, 
                                                   sub_id, name, 
                                                   func, 
-                                                  unit); 
+                                                  unit); */
           break;            
 
 
@@ -4037,7 +4038,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
       case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1:
-      case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2: {
+      case Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2:
+      case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER: {
 
         char gang_name[30];
         sprintf(gang_name, "GANG #%d", device->endpoint);
@@ -5335,6 +5337,58 @@ void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode) {
     log_i("RGB mode update only allowed for SUPLA_CHANNELTYPE_RGBLEDCONTROLLER");
 }
 
+void sendChannelAction(uint8_t Supla_channel, uint16_t channel_action) {
+
+
+  auto element = Z2S_getSuplaElementByChannelNumber(Supla_channel);
+
+  if (element && (Supla_channel < 0x080)) {
+
+    switch (element->getChannel()->getChannelType()) {
+
+
+      case SUPLA_CHANNELTYPE_RELAY: {
+
+        auto Supla_Z2S_Relay = 
+          reinterpret_cast<Supla::Control::Relay *>(element);
+        
+        Supla_Z2S_Relay->handleAction(0, channel_action);
+      } break;
+    }
+  } else
+  log_i("TODO send channel action for logic gates");
+}
+
+void setRemoteRelay(uint8_t Supla_channel, bool state) {
+
+  log_i("setRemoteRelay channel %u, state %u", Supla_channel, state);
+  
+  auto element = Z2S_getSuplaElementByChannelNumber(Supla_channel);
+
+  if (element && (Supla_channel < 0x080)) {
+
+    log_i ("channel type %u", element->getChannel()->getChannelType());
+
+    switch (element->getChannel()->getChannelType()) {
+
+
+      case SUPLA_CHANNELTYPE_RELAY: {
+
+        auto Supla_Z2S_Relay = 
+          reinterpret_cast<Supla::Control::Z2S_RemoteRelay *>(element);
+
+        log_i("setting remote relay(%u) to %u", 
+              Supla_channel,
+              state);
+
+        Supla_Z2S_Relay->Z2S_setOnOff(state);
+      } break;
+    }
+  } else
+  log_i("TODO send channel action for logic gates");
+}
+
+
 void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
                                            int32_t hvac_fixed_calibration_temperature) {
 
@@ -5734,6 +5788,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
     case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
     case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER:
       return true;
     default:
       return false;

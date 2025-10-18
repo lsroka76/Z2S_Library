@@ -24,7 +24,15 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(int16_t channel_number_slot){
       return "Local virtual binary";
     break;
 
+
+    case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
+      
+      return "Local remote relay";
+    break;
+
+
     default:
+
     break;  
   }
 
@@ -45,6 +53,7 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(int16_t channel_numb
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY:
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY:
+    case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
       
       return "No special functions";
     break;
@@ -99,6 +108,23 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
       auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(); 
       
       Supla_VirtualBinary->getChannel()->setChannelNumber(Supla_channel);
+    }
+    break;
+
+
+    case LOCAL_CHANNEL_TYPE_REMOTE_RELAY: {
+      
+      uint8_t Supla_channel = 
+        z2s_channels_table[channel_number_slot].Supla_channel;
+      
+      auto Supla_Z2S_RemoteRelay = 
+        new Supla::Control::Z2S_RemoteRelay(&TestClient,
+          z2s_channels_table[channel_number_slot].remote_Supla_channel); 
+      
+      Supla_Z2S_RemoteRelay->getChannel()->setChannelNumber(Supla_channel);
+
+      Supla_Z2S_RemoteRelay->setRemoteGatewayIPAddress(
+        z2s_channels_table[channel_number_slot].remote_ip_address);
     }
     break;
   } 
@@ -193,6 +219,28 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
       Supla_VirtualBinary->setDefaultFunction(local_channel_func);
+    } break;
+
+
+    case LOCAL_CHANNEL_TYPE_REMOTE_RELAY: {
+
+      SuplaDevice.saveStateToStorage();
+      Supla::Storage::ConfigInstance()->commit();
+
+      auto Supla_Z2S_RemoteRelay = 
+        new Supla::Control::Z2S_RemoteRelay(&TestClient,
+          z2s_channels_table[first_free_slot].remote_Supla_channel); 
+
+      z2s_channels_table[first_free_slot].Supla_channel = 
+        Supla_Z2S_RemoteRelay->getChannelNumber();
+
+      strcpy(z2s_channels_table[first_free_slot].
+        Supla_channel_name, "LOCAL REMOTE RELAY");
+      
+      Supla_Z2S_RemoteRelay->setInitialCaption(
+          z2s_channels_table[first_free_slot].Supla_channel_name);
+
+      Supla_Z2S_RemoteRelay->setDefaultFunction(local_channel_func);
     } break;
 
 
