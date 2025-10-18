@@ -1649,7 +1649,7 @@ void buildChannelsTabGUI() {
 										 working_str, 
 										 Control::Color::None, 
 										 zb_channel_params_label);
-	ESPUI.setElementStyle(param_1_desc_label, PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(param_2_desc_label, PSTR(clearLabelStyle));
 
 
 	zb_channel_timings_label = ESPUI.addControl(Control::Type::Label, 
@@ -4851,11 +4851,9 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 				enableChannelParams(3);
 
-				IPAddress ip;
+				IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
 
-				
-				ESPUI.updateText(param_1_number, 
-										 			 ip.toString(z2s_channels_table[channel_slot].remote_ip_address));
+				ESPUI.updateText(param_1_number, ip.toString());
 
 				working_str = PSTR("&#10023; Enter remote relay IP address &#10023;");
 				ESPUI.updateText(param_1_desc_label, working_str);
