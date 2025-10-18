@@ -20,6 +20,7 @@
 #define SRC_SUPLA_CONTROL_Z2S_REMOTE_RELAY_H_
 
 #include <NetworkClient.h>
+#include <ESPmDNS.h>
 
 #include <supla/control/relay.h>
 #include "ZigbeeGateway.h"
@@ -58,6 +59,16 @@ class Z2S_RemoteRelay : public Relay {
     _remote_gateway_ip.fromString(remote_gateway_ip);
   }
 
+  void setRemoteGatewayMDNSName(char *remote_gateway_mDNS_name) {
+
+    _remote_gateway_mDNS_name = remote_gateway_mDNS_name;
+  }
+
+  void setRemoteGatewaySuplaChannel(uint8_t remote_Supla_channel) {
+
+    _remote_Supla_channel = remote_Supla_channel;
+  }
+
   //void setKeepAliveSecs(uint32_t keep_alive_secs);
   //void setTimeoutSecs(uint32_t timeout_secs);
 
@@ -69,6 +80,7 @@ class Z2S_RemoteRelay : public Relay {
   bool state = false;
   NetworkClient *_remote_gateway = nullptr;
   IPAddress _remote_gateway_ip;
+  char *_remote_gateway_mDNS_name = nullptr;
   uint8_t _remote_Supla_channel = 0xFF;
 
   //bool _keep_alive_enabled = true;
@@ -83,7 +95,5 @@ class Z2S_RemoteRelay : public Relay {
 
 };  // namespace Control
 };  // namespace Supla
-
-
 
 #endif //SRC_SUPLA_CONTROL_Z2S_REMOTE_RELAY_H_

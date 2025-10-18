@@ -39,6 +39,8 @@ z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZB_DEVICES_MAX_NUMBER] = {};
 
 uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8] = {};
 
+char GatewayMDNSLocalName[12] = "Z2S_gateway";
+
 static uint32_t Styrbar_timer = 0;
 static bool     Styrbar_ignore_button_1 = false;
 
@@ -5361,13 +5363,13 @@ void sendChannelAction(uint8_t Supla_channel, uint16_t channel_action) {
 
 void setRemoteRelay(uint8_t Supla_channel, bool state) {
 
-  log_i("setRemoteRelay channel %u, state %u", Supla_channel, state);
+  //log_i("setRemoteRelay channel %u, state %u", Supla_channel, state);
   
   auto element = Z2S_getSuplaElementByChannelNumber(Supla_channel);
 
   if (element && (Supla_channel < 0x080)) {
 
-    log_i ("channel type %u", element->getChannel()->getChannelType());
+    //log_i ("channel type %u", element->getChannel()->getChannelType());
 
     switch (element->getChannel()->getChannelType()) {
 
@@ -5388,6 +5390,56 @@ void setRemoteRelay(uint8_t Supla_channel, bool state) {
   log_i("TODO send channel action for logic gates");
 }
 
+Supla::Control::Z2S_RemoteRelay *getRemoteRelayPtr(uint8_t channel_number_slot) {
+
+  auto element = 
+    Supla::Element::getElementByChannelNumber(
+      z2s_channels_table[channel_number_slot].Supla_channel);
+
+  if (element && 
+      (element->getChannel()->getChannelType() == 
+        SUPLA_CHANNELTYPE_RELAY) &&
+      (z2s_channels_table[channel_number_slot].local_channel_type ==
+        LOCAL_CHANNEL_TYPE_REMOTE_RELAY)) {
+
+    return
+      reinterpret_cast<Supla::Control::Z2S_RemoteRelay *>(element);
+  }
+  return nullptr;
+}
+
+void updateRemoteRelayMDNSName(uint8_t channel_number_slot,
+                               char * mDNS_name) {
+
+  auto Supla_Z2S_RemoteRelay = getRemoteRelayPtr(channel_number_slot);
+
+  if (Supla_Z2S_RemoteRelay) {
+
+    Supla_Z2S_RemoteRelay->setRemoteGatewayMDNSName(mDNS_name);
+  }
+}
+
+void updateRemoteRelayIPAddress(uint8_t channel_number_slot,
+                                uint32_t remote_ip_address) {
+
+  auto Supla_Z2S_RemoteRelay = getRemoteRelayPtr(channel_number_slot);
+
+  if (Supla_Z2S_RemoteRelay) {
+
+    Supla_Z2S_RemoteRelay->setRemoteGatewayIPAddress(remote_ip_address);
+  }
+}
+
+void updateRemoteRelaySuplaChannel(uint8_t channel_number_slot,
+                                   uint8_t remote_Supla_channel) {
+
+  auto Supla_Z2S_RemoteRelay = getRemoteRelayPtr(channel_number_slot);
+
+  if (Supla_Z2S_RemoteRelay) {
+
+    Supla_Z2S_RemoteRelay->setRemoteGatewaySuplaChannel(remote_Supla_channel);
+  }
+}
 
 void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
                                            int32_t hvac_fixed_calibration_temperature) {

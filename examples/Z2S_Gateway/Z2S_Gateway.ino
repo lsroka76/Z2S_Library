@@ -1,25 +1,14 @@
-
 //#pragma once
 #pragma warning(disable: -Wmissing-field-initializers)
 
 #define Z2S_GATEWAY
 
-#include <AsyncTCP.h>
+#include <ESPmDNS.h>
+#include <esp_coexist.h>
 
 #include <ZigbeeGateway.h>
 
-#include "esp_coexist.h"
-
-#include "priv_auth_data.h"
-
-#include "z2s_web_gui.h"
-
 #include <SuplaDevice.h>
-
-#include "z2s_devices_database.h"
-#include "z2s_devices_table.h"
-#include "z2s_device_general_purpose_measurement.h"
-
 #include <supla/network/esp_wifi.h>
 #include <supla/device/supla_ca_cert.h>
 #include <supla/storage/eeprom.h>
@@ -28,14 +17,19 @@
 #include <supla/actions.h>
 #include <supla/control/button.h>
 #include <supla/device/enter_cfg_mode_after_power_cycle.h>
-#include <Z2S_control/action_handler_with_callbacks.h>
-#include <Z2S_control/Z2S_remote_relay.h>
-
 #include <supla/control/virtual_relay.h>
 #include <supla/sensor/general_purpose_measurement.h>
 #include <supla/device/status_led.h>
 
+#include <Z2S_control/action_handler_with_callbacks.h>
+#include <Z2S_control/Z2S_remote_relay.h>
+
+#include "z2s_devices_database.h"
+#include "z2s_devices_table.h"
+#include "z2s_device_general_purpose_measurement.h"
 #include "z2s_version_info.h"
+#include "priv_auth_data.h"
+#include "z2s_web_gui.h"
 
 #ifdef USE_TELNET_CONSOLE
 
@@ -66,7 +60,7 @@ static AsyncClient client;*/
 //static constexpr char *TEST_GATEWAY_IP PROGMEM = "10.164.38.17";
 //static constexpr char *TEST_GATEWAY_IP PROGMEM = "10.164.38.210";
 //static constexpr char *TEST_GATEWAY_IP PROGMEM = "192.168.1.70";
-static String TEST_GATEWAY_IP PROGMEM = "192.168.1.36";
+//static String TEST_GATEWAY_IP PROGMEM = "192.168.1.36";
 //static String TEST_GATEWAY_IP PROGMEM = "192.168.1.70";
 
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
@@ -147,7 +141,7 @@ void supla_callback_bridge(int event, int action) {
         #endif //USE_TELNET_CONSOLE
 
         TestServer.begin();
-        
+        MDNS.begin(GatewayMDNSLocalName);
 
         return;
       }
@@ -546,7 +540,17 @@ void setup() {
     log_i("Z2S_GUI_ON_START_DELAY not configured - setting to 0 s");
     _gui_start_delay = 0;
   }
-  //_gui_start_delay = 15;
+
+  //GatewayMDNSLocalName = "Z2S_gateway"
+
+  if (Supla::Storage::ConfigInstance()->
+      getString(Z2S_GATEWAY_MDNS_LOCAL_NAME, GatewayMDNSLocalName, 12)) {
+    log_i("Z2S_GATEWAY_MDNS_LOCAL_NAME = %s", GatewayMDNSLocalName);
+  } else {
+    log_i("Z2S_GATEWAY_MDNS_LOCAL_NAME not configured - using default");
+    //GatewayMDNSLocalName = "Z2S_gateway";
+  }
+  
   Supla::Storage::ConfigInstance()->getUInt8(PSTR("security_level"), &_z2s_security_level);
   
   Supla::Storage::ConfigInstance()->setUInt8(Z2S_FILES_STRUCTURE_VERSION, 2);
@@ -678,15 +682,22 @@ if (client2 && client2.connected()) {
                     cmd_channel,
                     cmd_value); 
 
-      //if (cmd_id == 1)
-        {
-          //testRemoteRelay->Z2S_setOnOff(cmd_id == 1);
-          setRemoteRelay(cmd_channel, cmd_id == 1);
-        
-        }
-        client2.print("OK\n");
-     }
+      switch (cmd_id) {
 
+
+        case 0:
+
+          setRemoteRelay(cmd_channel, false);
+        break;
+
+
+        case 1:
+        
+          setRemoteRelay(cmd_channel, true);
+        break;
+      }
+      client2.print("OK\n");
+     }
      client2.stop();
    }
 

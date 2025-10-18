@@ -67,8 +67,10 @@ void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
     durationTimestamp = 0;
   }
 
-  if (_remote_gateway) {
-     //&& _remote_gateway->connected()) {
+  if ((_remote_gateway) &&
+      (_remote_Supla_channel < 0xFF)) {
+    if (_remote_gateway_mDNS_name)
+      _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name);
 
     _remote_gateway->connect(_remote_gateway_ip, 1234);
     
@@ -107,8 +109,11 @@ void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
     durationTimestamp = 0;
   }
 
-  if (_remote_gateway) {
-     //&& _remote_gateway->connected()) {
+  if ((_remote_gateway) &&
+      (_remote_Supla_channel < 0xFF)) {
+
+    if (_remote_gateway_mDNS_name)
+      _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name);
 
     _remote_gateway->connect(_remote_gateway_ip, 1234);
 

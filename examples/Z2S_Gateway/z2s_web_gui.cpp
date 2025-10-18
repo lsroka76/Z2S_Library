@@ -40,7 +40,8 @@ uint16_t gateway_memory_info;
 uint16_t enable_gui_switcher;
 uint16_t force_config_switcher;
 uint16_t gui_start_delay_number;
-uint16_t gui_start_delay_save_button;
+//uint16_t gui_start_delay_save_button;
+uint16_t gateway_mdns_name_text;
 uint16_t rebuild_Supla_channels_switcher;
 
 uint16_t wifi_ssid_text;
@@ -301,8 +302,10 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_ENABLE_GUI_FLAG										0x0100
 #define GUI_CB_FORCE_CONFIG_FLAG									0x0101
 #define GUI_CB_GUI_DELAY_FLAG											0x0102
-#define GUI_CB_REBUILD_CHANNELS_FLAG							0x0103
-#define GUI_CB_GUI_RESTART_FLAG										0x0104
+#define GUI_CB_SAVE_MDNS_NAME_FLAG								0x0103
+#define GUI_CB_REBUILD_CHANNELS_FLAG							0x0104
+#define GUI_CB_GUI_RESTART_FLAG										0x0105
+
 
 #define GUI_CB_SAVE_FLAG													0x1000
 #define GUI_CB_RESTART_FLAG												0x1001
@@ -880,13 +883,42 @@ void buildGatewayTabGUI() {
 									 gui_start_delay_number);
 
 	working_str = PSTR("Save");
-	gui_start_delay_save_button = ESPUI.addControl(Control::Type::Button, 
-																								 PSTR(empty_str), 
-																								 working_str, 
-																								 Control::Color::Emerald, 
-																								 gui_start_delay_number, 
-																								 gatewayCallback, 
-																								 (void*)GUI_CB_GUI_DELAY_FLAG);
+	auto gui_start_delay_save_button = 
+		ESPUI.addControl(Control::Type::Button, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 gui_start_delay_number, 
+										 gatewayCallback, 
+										 (void*)GUI_CB_GUI_DELAY_FLAG);
+
+
+	gateway_mdns_name_text = 
+		ESPUI.addControl(Control::Type::Text, 
+										 PSTR("Gateway local mDNS name"), 
+									   empty_str, 
+										 Control::Color::Emerald, 
+										 gatewaytab, 
+										 generalCallback);
+
+	working_str = PSTR("Save");
+	auto gateway_mdns_name_save_button = 
+		ESPUI.addControl(Control::Type::Button, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 gateway_mdns_name_text, 
+										 gatewayCallback, 
+										 (void*)GUI_CB_SAVE_MDNS_NAME_FLAG);
+
+	working_str = PSTR("(max. 11 characters, no spaces!!!)");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), working_str, 
+																				 Control::Color::None, 
+																				 gateway_mdns_name_text), 
+												PSTR(clearLabelStyle));
+
+
 
 	force_config_switcher = ESPUI.addControl(Control::Type::Switcher, 
 																					 PSTR("Force config mode on next startup"), 
@@ -937,6 +969,8 @@ void buildGatewayTabGUI() {
 	working_str = _enable_gui_on_start;
 	ESPUI.updateSelect(gui_mode_selector, working_str);
 	ESPUI.updateNumber(gui_start_delay_number, _gui_start_delay);
+	working_str = GatewayMDNSLocalName;
+	ESPUI.updateText(gateway_mdns_name_text, working_str);
 	ESPUI.updateNumber(force_config_switcher, _force_config_on_start);
 	ESPUI.updateNumber(rebuild_Supla_channels_switcher, _rebuild_Supla_channels_on_start);
 }
@@ -4109,13 +4143,14 @@ void Z2S_startWebGUIConfig() {
 									 gui_start_delay_number);
 
 	working_str = PSTR("Save");
-	gui_start_delay_save_button = ESPUI.addControl(Control::Type::Button, 
-																								 PSTR(empty_str), 
-																								 working_str, 
-																								 Control::Color::Emerald, 
-																								 gui_start_delay_number, 
-																								 gatewayCallback, 
-																								 (void*)GUI_CB_GUI_DELAY_FLAG);
+	auto gui_start_delay_save_button = 
+		ESPUI.addControl(Control::Type::Button, 
+						  			 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 gui_start_delay_number, 
+										 gatewayCallback, 
+										 (void*)GUI_CB_GUI_DELAY_FLAG);
 
 	save_button = ESPUI.addControl(Control::Type::Button, 
 																 PSTR("Save"), 
@@ -4851,16 +4886,34 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 				enableChannelParams(3);
 
-				IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
+				if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type == 
+						REMOTE_RELAY_ADDRESS_TYPE_IP4) {
 
-				ESPUI.updateText(param_1_number, ip.toString());
+					IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
 
-				working_str = PSTR("&#10023; Enter remote relay IP address &#10023;");
+					ESPUI.updateText(param_1_number, ip.toString());
+
+					ESPUI.updateNumber(param_2_number, 
+						z2s_channels_table[channel_slot].remote_Supla_channel);
+				} else
+				if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type ==
+						REMOTE_RELAY_ADDRESS_TYPE_MDNS) {
+
+					sprintf(general_purpose_gui_buffer, 
+									"mdns://%s",
+									z2s_channels_table[channel_slot].remote_relay_data.mDNS_name);
+					working_str = general_purpose_gui_buffer;
+					ESPUI.updateText(param_1_number, working_str);
+				
+
+					ESPUI.updateNumber(param_2_number, 
+						z2s_channels_table[channel_slot].remote_relay_data.remote_Supla_channel_2);
+				}
+
+				working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
+													 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
 				ESPUI.updateText(param_1_desc_label, working_str);
 
-				ESPUI.updateNumber(param_2_number, 
-										 			 z2s_channels_table[channel_slot].remote_Supla_channel);
-				
 				working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
 				ESPUI.updateText(param_2_desc_label, working_str);
 			}
@@ -5903,16 +5956,50 @@ void editChannelCallback(Control *sender, int type, void *param) {
 						if (z2s_channels_table[channel_slot].local_channel_type == 
 								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
 
-							IPAddress ip;
+							working_str = ESPUI.getControl(param_1_number)->value;
 
-							ip.fromString(ESPUI.getControl(param_1_number)->value);
+							int8_t prefix_pos = working_str.indexOf("mdns://");
 
-							z2s_channels_table[channel_slot].user_data_1 = ip;
-						
+							if (prefix_pos >= 0) {
+
+								if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type == 
+										REMOTE_RELAY_ADDRESS_TYPE_IP4)
+									z2s_channels_table[channel_slot].remote_relay_data.remote_Supla_channel_2 =
+										z2s_channels_table[channel_slot].remote_Supla_channel;
+
+								z2s_channels_table[channel_slot].remote_relay_data.remote_address_type = 
+									REMOTE_RELAY_ADDRESS_TYPE_MDNS;
+
+								memcpy(z2s_channels_table[channel_slot].remote_relay_data.mDNS_name,
+											working_str.c_str() + 7, 11);
+								
+								z2s_channels_table[channel_slot].remote_relay_data.mDNS_name[11] = '\0';
+
+								updateRemoteRelayMDNSName(channel_slot,
+									z2s_channels_table[channel_slot].remote_relay_data.mDNS_name);
+							} else {
+
+								IPAddress ip;
+								ip.fromString(working_str);
+
+								if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type == 
+										REMOTE_RELAY_ADDRESS_TYPE_MDNS)
+									z2s_channels_table[channel_slot].remote_Supla_channel =
+										z2s_channels_table[channel_slot].remote_relay_data.remote_Supla_channel_2; 
+
+
+								z2s_channels_table[channel_slot].remote_relay_data.remote_address_type = 
+									REMOTE_RELAY_ADDRESS_TYPE_IP4;
+
+								z2s_channels_table[channel_slot].remote_ip_address = ip;
+
+								updateRemoteRelayIPAddress(channel_slot, ip);
+							}
+							
 							if (Z2S_saveChannelsTable()) {
 
-								log_i("remote relay ip address updated successfuly to %lu", 
-											z2s_channels_table[channel_slot].user_data_1);
+								//log_i("remote relay ip address updated successfuly to %lu", 
+									//		z2s_channels_table[channel_slot].user_data_1);
 							}
 						}
 					} break;
@@ -5951,13 +6038,25 @@ void editChannelCallback(Control *sender, int type, void *param) {
 						if (z2s_channels_table[channel_slot].local_channel_type == 
 								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
 
-							z2s_channels_table[channel_slot].remote_Supla_channel = 
+							uint8_t remote_Supla_channel = 
 								ESPUI.getControl(param_2_number)->value.toInt();
+
+							if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type ==
+									REMOTE_RELAY_ADDRESS_TYPE_IP4)
+								z2s_channels_table[channel_slot].remote_Supla_channel = 
+									remote_Supla_channel;
+							
+							if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type ==
+								REMOTE_RELAY_ADDRESS_TYPE_MDNS)
+								z2s_channels_table[channel_slot].remote_relay_data.remote_Supla_channel_2 =
+									remote_Supla_channel;								
 						
+							updateRemoteRelaySuplaChannel(channel_slot, remote_Supla_channel);
+
 							if (Z2S_saveChannelsTable()) {
 
 								log_i("remote_Supla_channel updated successfuly to %lu", 
-											z2s_channels_table[channel_slot].remote_Supla_channel);
+											remote_Supla_channel);
 							}
 						}
 					} break;
@@ -6374,6 +6473,14 @@ void gatewayCallback(Control *sender, int type, void *param) {
 
 			if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_GUI_ON_START_DELAY, 
 					ESPUI.getControl(gui_start_delay_number)->value.toInt()))
+      	Supla::Storage::ConfigInstance()->commit();
+		} break;
+
+
+		case GUI_CB_SAVE_MDNS_NAME_FLAG: {
+
+			if (Supla::Storage::ConfigInstance()->setString(Z2S_GATEWAY_MDNS_LOCAL_NAME, 
+					ESPUI.getControl(gateway_mdns_name_text)->value.c_str()))
       	Supla::Storage::ConfigInstance()->commit();
 		} break;
 

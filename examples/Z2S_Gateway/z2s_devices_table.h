@@ -116,13 +116,24 @@ typedef struct z2s_device_params_s {
   uint32_t            Supla_channel_func;
   int8_t              sub_id;
   uint8_t             reserved_4;
-  uint8_t             reserved_5;
-  uint8_t             reserved_6;
+
+  union {
+    struct {
+      uint8_t         reserved_5;
+      uint8_t         reserved_6;
+    };
+    struct {
+      uint16_t        gui_control_id; 
+    } gui_control_data;
+  };
   
   union {
     struct {
       uint32_t        user_data_1;  //Tuya Rain Sensor rain_intensity, RGB mode, HVAC - probably unused
       uint32_t        user_data_2;
+      uint32_t        user_data_3;
+      uint32_t        user_data_4; 
+  
     };
     struct {
       uint32_t        rain_intensity_treshold;
@@ -134,8 +145,8 @@ typedef struct z2s_device_params_s {
       uint32_t        hvac_fixed_temperature_correction;
     };
     struct {
-      uint32_t            remote_ip_address;
-      uint32_t            remote_Supla_channel:8;
+      uint32_t        remote_ip_address;
+      uint32_t        remote_Supla_channel:8;
     };
     struct {
       uint32_t        value : 24;
@@ -147,15 +158,13 @@ typedef struct z2s_device_params_s {
       Supla::Element  *Supla_element;
       uint8_t         logic_operator;
     } local_action_handler_data;
-  };
-  uint32_t            user_data_3;
-  union {
-    uint32_t          user_data_4;  //reserved for WebGUI bits 0...15 for Control_Id
     struct {
-      uint32_t        gui_control_id : 16;
-      uint32_t        gui_reserved : 16;
-    }  gui_control_data;
+      char            mDNS_name[12];
+      uint8_t         remote_Supla_channel_2;
+      uint8_t         remote_address_type;
+    } remote_relay_data;
   };
+  
   uint32_t            user_data_flags;
   uint32_t            timeout_secs;
   uint32_t            keep_alive_secs;
@@ -331,6 +340,7 @@ const static char Z2S_CHANNELS_ACTIONS_PPREFIX[] PROGMEM = "Z2S_an_";
 const static char Z2S_CHANNELS_ACTIONS_PPREFIX_V2[] PROGMEM = "action_%04d.z2s";
 const static char Z2S_CHANNELS_ACTIONS_NUMBER[] PROGMEM = "Z2S_actions_n";
 
+
 const static char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
 
 const static char Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2[] PROGMEM = "channel_ext_data_%03d_%02d.z2s";
@@ -338,6 +348,8 @@ const static char Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2[] PROGMEM = "channel_ext
 extern bool sendIASNotifications;
 
 static NetworkClient TestClient;
+
+extern char GatewayMDNSLocalName[12];
 
 //extern Supla::Sensor::GeneralPurposeMeasurement *Test_GeneralPurposeMeasurement;
 
@@ -347,6 +359,7 @@ const static char Z2S_ENABLE_GUI_ON_START[] PROGMEM = "Z2S_enable_gui";
 const static char Z2S_GUI_ON_START_DELAY[] PROGMEM = "Z2S_gui_delay";
 const static char Z2S_FORCE_CONFIG_ON_START[] PROGMEM = "Z2S_force_cfg";
 const static char Z2S_REBUILD_CHANNELS_ON_START[] PROGMEM = "Z2S_rebuild";
+const static char Z2S_GATEWAY_MDNS_LOCAL_NAME[] PROGMEM = "Z2S_mdns_name";
 
 namespace Supla {
 enum Conditions {
@@ -665,6 +678,14 @@ void sendChannelAction(uint8_t Supla_channel,
 void setRemoteRelay(uint8_t Supla_channel,
                     bool state);
 
+void updateRemoteRelayMDNSName(uint8_t channel_number_slot,
+                               char * mDNS_name);
+
+void updateRemoteRelayIPAddress(uint8_t channel_number_slot,
+                                uint32_t remote_ip_address);
+
+void updateRemoteRelaySuplaChannel(uint8_t channel_number_slot,
+                                   uint8_t remote_Supla_channel);
 
 void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
                                            int32_t hvac_fixed_calibration_temperature);
