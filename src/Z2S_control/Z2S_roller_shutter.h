@@ -26,14 +26,17 @@
 #define Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT 0x02
 
 #define Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR     0x10
+#define Z2S_ROLLER_SHUTTER_FNC_MOES_COVER                  0x11
 
 namespace Supla {
 namespace Control {
 class Z2S_RollerShutter : public RollerShutterInterface {
  public:
-  Z2S_RollerShutter(ZigbeeGateway *gateway, 
-                    zbg_device_params_t *device, 
-                    uint8_t z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
+  Z2S_RollerShutter(
+    ZigbeeGateway *gateway, 
+    zbg_device_params_t *device, 
+    uint8_t z2s_function = 
+      Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
 
   void onInit() override;
   void onTimer() override;
@@ -63,7 +66,8 @@ class Z2S_RollerShutter : public RollerShutterInterface {
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
 
-  uint8_t _z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
+  uint8_t _z2s_function = 
+    Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
 
   uint8_t _rs_moving_direction = 1;
   uint8_t _rs_current_position = 0xFF;

@@ -27,6 +27,11 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
         
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; 
       break;
+
+
+      case Z2S_DEVICE_DESC_MOES_COVER:
+
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_MOES_COVER
     }
     
 

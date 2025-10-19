@@ -1803,7 +1803,37 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Backlight intensity",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
-																	"0 => off, 1 => low, 2 => medium, 3 => high" }
+																	"0 => off, 1 => low, 2 => medium, 3 => high" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_COVER,
+    .Tuya_datapoint_id 		 			= MOES_COVER_STATE_COVER_POSITION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Cover position (%)",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 100%" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_COVER,
+    .Tuya_datapoint_id 		 			= MOES_COVER_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Cover calibration",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set calibration OFF<br>"
+																	"1 => set calibration ON" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_COVER,
+    .Tuya_datapoint_id 		 			= MOES_COVER_STATE_MOTOR_REVERSAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Motor reversal",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set motor reversal OFF<br>"
+																	"1 => set motor reversal ON" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_COVER,
+    .Tuya_datapoint_id 		 			= MOES_COVER_BACKLIGHT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Backlight",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set backlight OFF<br>"
+																	"1 => set backlight ON" }
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

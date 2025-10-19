@@ -179,6 +179,11 @@
 
 #define TUYA_COVER_MOTOR_BATTERY_LEVEL_DP                           0x0D
 
+#define MOES_COVER_STATE_COVER_POSITION_DP                          0x02
+#define MOES_COVER_CALIBRATION_DP                                   0x03
+#define MOES_COVER_BACKLIGHT_DP                                     0x07
+#define MOES_COVER_STATE_MOTOR_REVERSAL_DP                          0x08
+
 #define TUYA_VIBRATION_SENSOR_VIBRATION_DP                          0x01
 #define TUYA_VIBRATION_SENSOR_CONTACT_DP                            0x65
 #define TUYA_VIBRATION_SENSOR_BATTERY_DP                            0x04

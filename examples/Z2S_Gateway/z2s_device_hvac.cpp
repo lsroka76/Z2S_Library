@@ -65,6 +65,11 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
       return siterwell_cmd_set;
     } break;
 
+    case Z2S_DEVICE_DESC_TS0601_TRV_TRV16: {
+
+      return trv16_cmd_set;
+    } break;
+
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198: {
 
       return zwt198_cmd_set;
@@ -206,16 +211,19 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   if (z2s_channels_table[channel_number_slot].user_data_flags & 
       USER_DATA_FLAG_TRV_FIXED_CORRECTION) {
 
-    Supla_Z2S_TRVInterface->enableExternalSensorDetection(false, 
-                                                        EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED, 
-                                                        z2s_channels_table[channel_number_slot].Supla_secondary_channel);  
+    Supla_Z2S_TRVInterface->enableExternalSensorDetection(
+      false, 
+      EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED, 
+      z2s_channels_table[channel_number_slot].Supla_secondary_channel);  
+
     Supla_Z2S_TRVInterface->setFixedTemperatureCalibration(
       z2s_channels_table[channel_number_slot].hvac_fixed_temperature_correction);
   } else {
 
-    Supla_Z2S_TRVInterface->enableExternalSensorDetection(true, 
-                                                          trv_external_sensor_mode, 
-                                                          z2s_channels_table[channel_number_slot].Supla_secondary_channel); 
+    Supla_Z2S_TRVInterface->enableExternalSensorDetection(
+      true, 
+      trv_external_sensor_mode, 
+      z2s_channels_table[channel_number_slot].Supla_secondary_channel); 
   }
 
   if (z2s_channels_table[channel_number_slot].user_data_flags & 

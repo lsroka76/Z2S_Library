@@ -1477,44 +1477,75 @@ void processMoesShadesDriveMotorDataReport(int16_t channel_number_slot,
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success)
-    log_i("state = %u", Tuya_read_dp_result.dp_value);
+  Tuya_read_dp_result = 
+    Z2S_readTuyaDPvalue(
+      MOES_SHADES_DRIVE_MOTOR_STATE_DP, 
+      payload_size, 
+      payload);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP, 
-                                            payload_size, 
-                                            payload);
+  if (Tuya_read_dp_result.is_success)
+    log_i("state = %u", 
+          Tuya_read_dp_result.dp_value);
+
+  Tuya_read_dp_result = 
+    Z2S_readTuyaDPvalue(
+      MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP, 
+      payload_size, 
+      payload);
+
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("position(%) = %u", Tuya_read_dp_result.dp_value);
+    log_i("position(%) = %u", 
+          Tuya_read_dp_result.dp_value);
   
-    msgZ2SDeviceRollerShutter(channel_number_slot, 
-                              RS_MOVING_DIRECTION_MSG, 
-                              0);
-    msgZ2SDeviceRollerShutter(channel_number_slot, 
-                              RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
-                              100 - Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceRollerShutter(
+      channel_number_slot, 
+      RS_MOVING_DIRECTION_MSG, 
+      0);
+
+    msgZ2SDeviceRollerShutter(
+      channel_number_slot, 
+      RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
+      100 - Tuya_read_dp_result.dp_value);
   }
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, 
-                                            payload_size, payload);
+  Tuya_read_dp_result = 
+    Z2S_readTuyaDPvalue(
+      MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, 
+      payload_size, 
+      payload);
+
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("position = %u", Tuya_read_dp_result.dp_value);
+    log_i("position = %u", 
+          Tuya_read_dp_result.dp_value);
     
-    msgZ2SDeviceRollerShutter(channel_number_slot, 
-                              RS_MOVING_DIRECTION_MSG, 
-                              0);
-    msgZ2SDeviceRollerShutter(channel_number_slot, 
-                              RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
-                              100 - Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceRollerShutter(
+      channel_number_slot, 
+      RS_MOVING_DIRECTION_MSG, 
+      0);
+
+    msgZ2SDeviceRollerShutter(
+      channel_number_slot, 
+      RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
+      100 - Tuya_read_dp_result.dp_value);
   } 
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_COVER_MOTOR_BATTERY_LEVEL_DP, payload_size, payload);
+  Tuya_read_dp_result = 
+    Z2S_readTuyaDPvalue(
+      TUYA_COVER_MOTOR_BATTERY_LEVEL_DP, 
+      payload_size, 
+      payload);
+
   if (Tuya_read_dp_result.is_success) {
     
-    log_i("battery level = %u", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
+    log_i("battery level = %u", 
+      Tuya_read_dp_result.dp_value);
+
+    updateSuplaBatteryLevel(
+      channel_number_slot, 
+      ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);
   }
 }
 
@@ -2057,6 +2088,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr,
     
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
+    case Z2S_DEVICE_DESC_MOES_COVER:
 
       processMoesShadesDriveMotorDataReport(
         channel_number_slot, 
