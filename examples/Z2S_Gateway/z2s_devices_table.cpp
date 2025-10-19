@@ -3116,108 +3116,156 @@ void Z2S_onBatteryReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint1
 
     case ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID:
 
-      updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_PERCENTAGE_MSG, battery_remaining, false); break;
+      updateSuplaBatteryLevel(
+        channel_number_slot, 
+        ZBD_BATTERY_PERCENTAGE_MSG, 
+        battery_remaining, 
+        false); 
+    break;
 
 
     case ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID:
 
-      updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, battery_remaining, false); break;
+      updateSuplaBatteryLevel(
+        channel_number_slot, 
+        ZBD_BATTERY_VOLTAGE_MSG, 
+        battery_remaining, 
+        false); 
+    break;
   }
 }
 
-void Z2S_onIASzoneStatusChangeNotification(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, int iaszone_status) {
+void Z2S_onIASzoneStatusChangeNotification(
+    esp_zb_ieee_addr_t ieee_addr, 
+    uint16_t endpoint, 
+    uint16_t cluster, 
+    int iaszone_status) {
   
   char ieee_addr_str[24] = {};
+  bool skip_generic_check = false;
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, cluster 0x%x, zone status 0x%x", ieee_addr_str, endpoint, cluster, iaszone_status);
+  log_i("%s, endpoint 0x%x, cluster 0x%x, zone status 0x%x", 
+        ieee_addr_str, endpoint, cluster, iaszone_status);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                          endpoint, 
-                                                          cluster, 
-                                                          SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                          TUYA_VIBRATION_SENSOR_CONTACT_SID);
+  int16_t channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      TUYA_VIBRATION_SENSOR_CONTACT_SID);
   
   if (channel_number_slot >= 0) {
 
     log_i("IASZONE - TUYA_VIBRATION_SENSOR_CONTACT_SID channel:%x, status: %x", 
-          channel_number_slot, iaszone_status);
+          channel_number_slot, 
+          iaszone_status);
 
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1));
     return;
   }
   
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                  endpoint, 
-                                                  cluster, 
-                                                  SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                  IAS_ZONE_ALARM_1_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      IAS_ZONE_ALARM_1_SID);
 
   if (channel_number_slot >= 0) {
 
     log_i("IASZONE - IAS_ZONE_ALARM_1_SID channel:%x, status: %x", 
-          channel_number_slot, iaszone_status);
+          channel_number_slot, 
+          iaszone_status);
     
     if (iaszone_status < 0x0400)
       msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1));
     else
       msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 0x0400));
+
+    skip_generic_check = true;
   }
 
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                  endpoint, 
-                                                  cluster, 
-                                                  SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                  IAS_ZONE_ALARM_2_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      IAS_ZONE_ALARM_2_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - IAS_ZONE_ALARM_2_SID channel:%x, status: %x", 
-          channel_number_slot, iaszone_status);
+    log_i("IASZONE - IAS_ZONE_ALARM_2_SID: "
+          "channel:%x, status: %x", 
+          channel_number_slot, 
+          iaszone_status);
 
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 2));
+
+    skip_generic_check = true;
   }
 
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                  endpoint, 
-                                                  cluster, 
-                                                  SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                  IAS_ZONE_TAMPER_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      IAS_ZONE_TAMPER_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - IAS_ZONE_TAMPER_SID channel:%x, status: %x", 
-          channel_number_slot, iaszone_status);
+    log_i("IASZONE - IAS_ZONE_TAMPER_SID "
+          "channel:%x, status: %x", 
+          channel_number_slot, 
+          iaszone_status);
 
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 4));
+
+    skip_generic_check = true;
   }
   
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                  endpoint, 
-                                                  cluster, 
-                                                  SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                  IAS_ZONE_LOW_BATTERY_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      IAS_ZONE_LOW_BATTERY_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - IAS_ZONE_LOW_BATTERY_SID channel:%x, status: %x", 
-          channel_number_slot, iaszone_status);
+    log_i("IASZONE - IAS_ZONE_LOW_BATTERY_SID "
+          "channel:%x, status: %x", 
+          channel_number_slot, 
+          iaszone_status);
 
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 8));
-    return;
+
+    skip_generic_check = true;
   }
+
+  if (skip_generic_check)
+    return;
   
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                  endpoint, 
-                                                  cluster, 
-                                                  SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                  NO_CUSTOM_CMD_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - NO_CUSTOM_CMD_SID channel:%x, status: %x", 
-          channel_number_slot, iaszone_status);
+    log_i("IASZONE - NO_CUSTOM_CMD_SID "
+          "channel:%x, status: %x", 
+          channel_number_slot, 
+          iaszone_status);
     
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1));
     return;
