@@ -2698,52 +2698,117 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
   }
 }
 
-void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, bool state) {
+void Z2S_onOnOffReceive(
+  esp_zb_ieee_addr_t ieee_addr, 
+  uint16_t endpoint, 
+  uint16_t cluster, 
+  bool state) {
 
   char ieee_addr_str[24] = {};
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, state 0x%x", ieee_addr_str, endpoint, state);
+  log_i("%s, endpoint 0x%x, state 0x%x", 
+        ieee_addr_str, 
+        endpoint, 
+        state);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_RELAY, 
+      NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceVirtualRelay(channel_number_slot, state); //default On/Off channel
+
+    msgZ2SDeviceVirtualRelay(
+      channel_number_slot, 
+      state); //default On/Off channel
     return;
   }
 
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      NO_CUSTOM_CMD_SID);
+
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceIASzone(channel_number_slot, state); //AQARA magnet
+    
+    if (z2s_channels_table[channel_number_slot].model_id == 
+        Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR)
+
+      msgZ2SDeviceIASzone(
+        channel_number_slot, 
+        !state); //AQARA magnet
+    else
+
+      msgZ2SDeviceIASzone(
+        channel_number_slot, 
+        state); //anything?
     return;
   }
 
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, NO_CUSTOM_CMD_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_DIMMER, 
+      NO_CUSTOM_CMD_SID);
+
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceDimmer(channel_number_slot, -1, state);
+    msgZ2SDeviceDimmer(
+      channel_number_slot, 
+      -1, 
+      state);
     return;
   }
   
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, NO_CUSTOM_CMD_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
+      NO_CUSTOM_CMD_SID);
+
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGB(z2s_channels_table[channel_number_slot].model_id, z2s_channels_table[channel_number_slot].Supla_channel, 0xFF, 0xFF, state);
+    msgZ2SDeviceRGB(
+      z2s_channels_table[channel_number_slot].model_id, 
+      z2s_channels_table[channel_number_slot].Supla_channel, 
+      0xFF, 
+      0xFF, 
+      state);
     return;
   }
 
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, NO_CUSTOM_CMD_SID);
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, 
+      NO_CUSTOM_CMD_SID);
+
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceVirtualValve(z2s_channels_table[channel_number_slot].Supla_channel, state);
+    msgZ2SDeviceVirtualValve(
+      z2s_channels_table[channel_number_slot].Supla_channel, 
+      state);
     return;
   } 
   
-  //channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, NO_CUSTOM_CMD_SID);
-  //if (channel_number_slot >= 0) {
-    //msgZ2SDeviceRGBW(z2s_channels_table[channel_number_slot].model_id, z2s_channels_table[channel_number_slot].Supla_channel, 0xFF, 0xFF, 0xFFFF, state);
-    //return;
- // }
+  channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+      NO_CUSTOM_CMD_SID);
 
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ACTIONTRIGGER, NO_CUSTOM_CMD_SID);
   if (channel_number_slot >= 0) {
     if (state)
       msgZ2SDeviceActionTrigger(channel_number_slot);
@@ -3969,11 +4034,12 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B:
 
-        addZ2SDeviceIASzone(device, 
-                            first_free_slot, 
-                            sub_id, 
-                            name, 
-                            func); 
+        addZ2SDeviceIASzone(
+          device, 
+          first_free_slot, 
+          sub_id, 
+          name, 
+          func); 
       break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -5044,9 +5110,16 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
 
       case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
       case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
+      case Z2S_DEVICE_DESC_MOES_COVER:
 
-        addZ2SDeviceVirtualRelay(&zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
-                                "ROLLER SHUTTER", SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER); break;
+        addZ2SDeviceVirtualRelay(
+          &zbGateway, 
+          device, 
+          first_free_slot, 
+          NO_CUSTOM_CMD_SID, 
+          "ROLLER SHUTTER", 
+          SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER); 
+      break;
 
         
       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
@@ -5883,6 +5956,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
     case Z2S_DEVICE_DESC_MOES_ALARM:
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
+    case Z2S_DEVICE_DESC_MOES_COVER:
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
