@@ -243,6 +243,7 @@
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z                  0x6017
 #define Z2S_DEVICE_DESC_TS0601_TRV_TV02                     0x6018
 #define Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL                0x6019
+#define Z2S_DEVICE_DESC_TS0601_TRV_TRV16                    0x6020
 
 #define Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198                   0x6200
 #define Z2S_DEVICE_DESC_TS0601_MOES_BHT002                  0x6201
@@ -1068,6 +1069,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV16,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -2678,6 +2684,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE204_vjpaih9f", .model_name = "TS0601",
+   .z2s_device_uid = 17750,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV16,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_ymldrmzx", .model_name = "TS0601",
    .z2s_device_uid = 17800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV603,
@@ -3377,7 +3388,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER,
     .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "_TZ3000_mmkbptmx", .model_name = "TS0004",
+  {	.manufacturer_name = "_TZ3000_j0ktmul1", .model_name = "TS011F",
     .z2s_device_uid = 29400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER,
 	  .z2s_device_endpoints_count = 5,

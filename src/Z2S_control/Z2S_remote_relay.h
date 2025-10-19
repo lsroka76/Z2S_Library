@@ -79,9 +79,17 @@ class Z2S_RemoteRelay : public Relay {
 
   bool state = false;
   NetworkClient *_remote_gateway = nullptr;
-  IPAddress _remote_gateway_ip;
+  IPAddress _remote_gateway_ip = INADDR_NONE;
   char *_remote_gateway_mDNS_name = nullptr;
   uint8_t _remote_Supla_channel = 0xFF;
+
+
+  uint8_t _retries_number = 3;
+  uint8_t _current_retry = 0;
+  bool _pending_state = false;
+  
+  uint32_t _retry_pause_ms = 30000;
+  uint32_t  _retry_time_ms = 0;
 
   //bool _keep_alive_enabled = true;
   //bool _timeout_enabled    = true;
@@ -90,6 +98,9 @@ class Z2S_RemoteRelay : public Relay {
   //uint32_t _timeout_ms    = 60000;
   //uint32_t _last_ping_ms  = 0;
   //uint32_t _last_seen_ms  = 0;
+
+  bool connectRemoteGateway();
+  void postponeTurnOnOff(bool pending_state);
  
 };
 

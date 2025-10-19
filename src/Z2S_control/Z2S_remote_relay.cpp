@@ -42,6 +42,48 @@ void Supla::Control::Z2S_RemoteRelay::onInit() {
   //channel.setStateOffline();
 }
 
+bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
+
+  if ((_remote_gateway) &&
+      (_remote_Supla_channel < 0xFF)) {
+
+    if(_remote_gateway_ip == INADDR_NONE) {
+
+      if (_remote_gateway_mDNS_name)
+        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name);
+      else
+        return false;
+
+      if(_remote_gateway_ip == INADDR_NONE)
+        return false;
+    }
+
+    if (!_remote_gateway->connect(_remote_gateway_ip, 1234)) {
+
+      if (_remote_gateway_mDNS_name)
+        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name);
+      else
+        return false;
+
+      if (!_remote_gateway->connect(_remote_gateway_ip, 1234))
+      return false;
+    } else   
+      return true;
+  }
+  return false;
+}
+
+void Supla::Control::Z2S_RemoteRelay::postponeTurnOnOff(bool pending_state) {
+
+  if ((_retries_number > 0) &&
+      (_current_retry == 0)) {
+
+    _current_retry = _retries_number;
+    _retry_time_ms = millis();
+    _pending_state = pending_state;
+  }
+}
+
 void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
   
   SUPLA_LOG_INFO(
@@ -67,13 +109,8 @@ void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
     durationTimestamp = 0;
   }
 
-  if ((_remote_gateway) &&
-      (_remote_Supla_channel < 0xFF)) {
-    if (_remote_gateway_mDNS_name)
-      _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name);
+  if (connectRemoteGateway()) {
 
-    _remote_gateway->connect(_remote_gateway_ip, 1234);
-    
     _remote_gateway->printf("Z2SCMD%02u%03u%02u\n", 
                             REMOTE_CMD_TURN_ON, 
                             _remote_Supla_channel,
@@ -83,13 +120,18 @@ void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
     
     if (response == "OK") {
 
+      _current_retry = 0;
       state = true;
       channel.setNewValue(state);
       // Schedule save in 5 s after state change
       Supla::Storage::ScheduleSave(5000);
-    }
+
+      _remote_gateway->stop();
+      return;
+    } 
     _remote_gateway->stop();
-  } 
+  }
+  postponeTurnOnOff(true); 
 }
 
 void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
@@ -109,13 +151,7 @@ void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
     durationTimestamp = 0;
   }
 
-  if ((_remote_gateway) &&
-      (_remote_Supla_channel < 0xFF)) {
-
-    if (_remote_gateway_mDNS_name)
-      _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name);
-
-    _remote_gateway->connect(_remote_gateway_ip, 1234);
+  if (connectRemoteGateway()) {
 
     _remote_gateway->printf("Z2SCMD%02u%03u%02u\n", 
                             REMOTE_CMD_TURN_OFF, 
@@ -126,13 +162,18 @@ void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
     
     if (response == "OK") {
 
+      _current_retry = 0;
       state = false;
       channel.setNewValue(state);
       // Schedule save in 5 s after state change
       Supla::Storage::ScheduleSave(5000);
+
+      _remote_gateway->stop();
+      return;
     }
-    _remote_gateway->stop();
+    _remote_gateway->stop(); 
   }
+  postponeTurnOnOff(false);
 }
 
 void Supla::Control::Z2S_RemoteRelay::ping() {
@@ -150,9 +191,25 @@ void Supla::Control::Z2S_RemoteRelay::iterateAlways() {
     if (!channel.isStateOnline()) 
 	  channel.setStateOnline();
   } else {
-
     channel.setStateOffline();
   }*/
+
+  uint32_t millis_ms = millis();
+
+  if ((_current_retry > 0) &&
+      (millis_ms - _retry_time_ms > _retry_pause_ms)) {
+
+    log_i("_current_retry %u, _retry_time_ms %lu, millis_ms %lu",
+          _current_retry, _retry_time_ms, millis_ms);
+
+    _retry_time_ms = millis_ms;
+    _current_retry--;
+    
+    if (_pending_state)
+      turnOn();
+    else 
+      turnOff();
+    }
 }
 
 bool Supla::Control::Z2S_RemoteRelay::isOn() {
