@@ -1597,42 +1597,69 @@ void processMoesAlarmDataReport(int16_t channel_number_slot, uint16_t payload_si
   }  
 }
 
-void processTuyaVibrationSensorDataReport(int16_t channel_number_slot, 
-                                          uint16_t payload_size,
-                                          uint8_t *payload, 
-                                          uint32_t model_id) {
+void processTuyaVibrationSensorDataReport(
+  int16_t channel_number_slot, 
+  uint16_t payload_size,
+  uint8_t *payload, 
+  uint32_t model_id) {
 
   int16_t channel_number_slot_1, channel_number_slot_2;
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                    z2s_channels_table[channel_number_slot].endpoint, 
-                                                    z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                    TUYA_VIBRATION_SENSOR_VIBRATION_SID);
+  channel_number_slot_1 = 
+    Z2S_findChannelNumberSlot(
+      z2s_channels_table[channel_number_slot].ieee_addr, 
+      z2s_channels_table[channel_number_slot].endpoint, 
+      z2s_channels_table[channel_number_slot].cluster_id, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      TUYA_VIBRATION_SENSOR_VIBRATION_SID);
 
-  channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                    z2s_channels_table[channel_number_slot].endpoint, 
-                                                    z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                    TUYA_VIBRATION_SENSOR_CONTACT_SID);
+  channel_number_slot_2 = 
+    Z2S_findChannelNumberSlot(
+      z2s_channels_table[channel_number_slot].ieee_addr, 
+      z2s_channels_table[channel_number_slot].endpoint, 
+      z2s_channels_table[channel_number_slot].cluster_id, 
+      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      TUYA_VIBRATION_SENSOR_CONTACT_SID);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_VIBRATION_SENSOR_VIBRATION_DP, payload_size, payload);
+  Tuya_read_dp_result = 
+    Z2S_readTuyaDPvalue(
+      TUYA_VIBRATION_SENSOR_VIBRATION_DP, 
+      payload_size, 
+      payload);
+
   if (Tuya_read_dp_result.is_success) {
 
-    msgZ2SDeviceIASzone(channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1));
+    msgZ2SDeviceIASzone(
+        channel_number_slot_1, 
+        (Tuya_read_dp_result.dp_value == 0));
   }
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_VIBRATION_SENSOR_CONTACT_DP, payload_size, payload);
+  Tuya_read_dp_result = 
+    Z2S_readTuyaDPvalue(
+      TUYA_VIBRATION_SENSOR_CONTACT_DP, 
+      payload_size, 
+      payload);
+
   if (Tuya_read_dp_result.is_success) {
 
-    msgZ2SDeviceIASzone(channel_number_slot_2, (Tuya_read_dp_result.dp_value == 1));
+    msgZ2SDeviceIASzone(
+      channel_number_slot_2, 
+      (Tuya_read_dp_result.dp_value == 0));
   }
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_VIBRATION_SENSOR_BATTERY_DP, payload_size, payload);
+  Tuya_read_dp_result = 
+    Z2S_readTuyaDPvalue(
+      TUYA_VIBRATION_SENSOR_BATTERY_DP, 
+      payload_size, 
+      payload);
+
   if (Tuya_read_dp_result.is_success) {
 
-    updateSuplaBatteryLevel(channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
+    updateSuplaBatteryLevel(
+      channel_number_slot_1, 
+      ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);
   }  
 }
 
@@ -1845,16 +1872,25 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr,
                            uint16_t payload_size, 
                            uint8_t *payload) {
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
-                                                          ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); //first find anything to recognize model_id
+  int16_t channel_number_slot = 
+    Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      TUYA_PRIVATE_CLUSTER_EF00, 
+      ALL_SUPLA_CHANNEL_TYPES, 
+      NO_CUSTOM_CMD_SID); //first find anything to recognize model_id
+
   if (channel_number_slot < 0) {
+
     log_i("failed - no Supla channel for that device");
     return;
   }
+
   uint32_t model_id = z2s_channels_table[channel_number_slot].model_id;
 
   switch (model_id) {
     
+
     case Z2S_DEVICE_DESC_TUYA_HVAC_6567C: 
     case Z2S_DEVICE_DESC_TUYA_HVAC_23457:
     case Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY:
@@ -1872,50 +1908,92 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr,
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
 
-      processTuyaHvacDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuyaHvacDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: 
 
-      processTuyaDoubleDimmerSwitchDataReport(channel_number_slot, payload_size, payload); break;
+      processTuyaDoubleDimmerSwitchDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
 
-      processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, 10); break;
+      processTuyaSoilTempHumiditySensorReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        10); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
 
-      processTuyaSoilTempHumiditySensorReport(channel_number_slot, payload_size, payload, 1); break;
+      processTuyaSoilTempHumiditySensorReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        1); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR: 
 
-      processTuyaTempHumiditySensorDataReport(channel_number_slot, payload_size, payload); break;
+      processTuyaTempHumiditySensorDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
 
-      processTuyaIlluminanceSensorDataReport(channel_number_slot, payload_size, payload); break;
+      processTuyaIlluminanceSensorDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
 
-      processTuyaSmokeDetectorReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuyaSmokeDetectorReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
 
-      processTuyaCOGasDetectorReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuyaCOGasDetectorReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
 
-      processTuyaAirQualitySensorReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuyaAirQualitySensorReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: 
@@ -1934,105 +2012,210 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr,
 
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
 
-      processTuyaEF00Switch2x3DataReport(channel_number_slot, payload_size, payload); break;
+      processTuyaEF00Switch2x3DataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
 
-      processTuyaRainSensorDataReport(channel_number_slot, payload_size, payload); break;
+      processTuyaRainSensorDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2:
 
-      processTuyaRainSensor2DataReport(channel_number_slot, payload_size, payload); break;
+      processTuyaRainSensor2DataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
 
-      processTuya3PhasesElectricityMeterDataReport(channel_number_slot, payload_size, payload); break;
+      processTuya3PhasesElectricityMeterDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
 
-      processTuya1PhaseElectricityMeterDataReport(channel_number_slot, payload_size, payload); break;
+      processTuya1PhaseElectricityMeterDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload); 
+    break;
 
     
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
 
-      processMoesShadesDriveMotorDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processMoesShadesDriveMotorDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_MOES_ALARM:
 
-      processMoesAlarmDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processMoesAlarmDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
 
-      processTuyaRelaysDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuyaRelaysDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
       
     case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
 
-      processTuya8RelaysDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuya8RelaysDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
 
-      processTuyaVibrationSensorDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuyaVibrationSensorDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
+
 
     case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
 
-      processTuyaPIRIlluminanceSensorDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuyaPIRIlluminanceSensorDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
 
-      processTuyaOnOffValveBatteryDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processTuyaOnOffValveBatteryDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
 
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
 
-      processGiexSmartValveDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processGiexSmartValveDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
+
 
     case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
 
-      processFingerbotPlusDataReport(channel_number_slot, payload_size, payload, model_id); break;
+      processFingerbotPlusDataReport(
+        channel_number_slot, 
+        payload_size, 
+        payload, 
+        model_id); 
+    break;
 
       
     default: 
-      log_i("Unknown device model id 0x%x", z2s_channels_table[channel_number_slot].model_id); break;
+      
+      log_i("Unknown device model id 0x%x", 
+            z2s_channels_table[channel_number_slot].model_id); 
+    break;
   }
 }
 
-void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, uint16_t payload_size, uint8_t *payload) {
-  log_i("processing Tuya custom cluster 0xEF00, command id 0x%x", command_id);
+void processTuyaCustomCluster(
+  esp_zb_ieee_addr_t ieee_addr, 
+  uint16_t endpoint, 
+  uint8_t command_id, 
+  uint16_t payload_size, 
+  uint8_t *payload) {
+
+  log_i("processing Tuya custom cluster 0xEF00, command id 0x%x", 
+        command_id);
+
   switch (command_id) {
     
+
     case TUYA_DATA_REPORT_CMD:
     case 0x01:
     case 0x06:
-       processTuyaDataReport(ieee_addr, endpoint, payload_size, payload); break;
+      
+      processTuyaDataReport(
+        ieee_addr, 
+        endpoint, 
+        payload_size, 
+        payload); 
+    break;
+
 
     case TUYA_MCU_SYNC_TIME: {
+
       uint8_t time_sync[10];
       struct tm *tptr;
       time_t secs, local_secs, gmt_secs;
       zbg_device_params_t device = {};
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
-                                                              ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+      int16_t channel_number_slot = 
+        Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, 
+          TUYA_PRIVATE_CLUSTER_EF00, 
+          ALL_SUPLA_CHANNEL_TYPES, 
+          NO_CUSTOM_CMD_SID); 
+
       if (channel_number_slot < 0) {
-        log_i("TUYA_MCU_SYNC_TIME failed - no Supla channel for that device");
+
+        log_i("TUYA_MCU_SYNC_TIME failed - "
+              "no Supla channel for that device");
         return;
       }
 
-      device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
-      device.cluster_id = z2s_channels_table[channel_number_slot].cluster_id;
-      memcpy(device.ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr, 8);
-      device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
-      device.model_id = z2s_channels_table[channel_number_slot].model_id;
+      device.endpoint = 
+        z2s_channels_table[channel_number_slot].endpoint;
+
+      device.cluster_id = 
+        z2s_channels_table[channel_number_slot].cluster_id;
+
+      memcpy(
+        device.ieee_addr, 
+        z2s_channels_table[channel_number_slot].ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
+
+      device.short_addr = 
+        z2s_channels_table[channel_number_slot].short_addr;
+
+      device.model_id = 
+        z2s_channels_table[channel_number_slot].model_id;
   
 
       time_sync[0] = *payload;
@@ -2046,7 +2229,8 @@ void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
       if (!tptr) log_e("gmtime not supported\n\r");
       gmt_secs = mktime( tptr );
       long diff_secs = long(local_secs - gmt_secs);
-      log_i("local secs: %llu, gmt_secs: %llu, diff: %llu\n\r", local_secs, gmt_secs, diff_secs);
+      log_i("local secs: %llu, gmt_secs: %llu, diff: %llu\n\r", 
+            local_secs, gmt_secs, diff_secs);
 
       time_sync[2] = uint8_t(gmt_secs>>24); 
       time_sync[3] = uint8_t(gmt_secs>>16); 
@@ -2061,9 +2245,17 @@ void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
       log_i("TUYA_MCU_SYNC_TIME response payload: %X%X:%X%X%X%X:%X%X%X%X",
             time_sync[0], time_sync[1], time_sync[2],time_sync[3], time_sync[4], 
             time_sync[5], time_sync[6], time_sync[7], time_sync[8], time_sync[9]);
-      zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_SYNC_TIME, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, time_sync, false);
 
+      zbGateway.sendCustomClusterCmd(
+        &device, 
+        TUYA_PRIVATE_CLUSTER_EF00, 
+        TUYA_MCU_SYNC_TIME, 
+        ESP_ZB_ZCL_ATTR_TYPE_SET, 
+        10, 
+        time_sync, 
+        false);
     } break;
+
 
     case TUYA_MCU_VERSION_RESPONSE: {
 
@@ -2071,28 +2263,56 @@ void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, u
     
       zbg_device_params_t device = {};
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
-                                                              ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+      int16_t channel_number_slot = 
+        Z2S_findChannelNumberSlot(
+          ieee_addr, 
+          endpoint, 
+          TUYA_PRIVATE_CLUSTER_EF00, 
+          ALL_SUPLA_CHANNEL_TYPES, 
+          NO_CUSTOM_CMD_SID); 
+
       if (channel_number_slot < 0) {
-        log_i("TUYA_MCU_VERSION_REQUEST failed - no Supla channel for that device");
+
+        log_i("TUYA_MCU_VERSION_REQUEST failed - "
+              "no Supla channel for that device");
         return;
       }
 
-      device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
-      device.cluster_id = z2s_channels_table[channel_number_slot].cluster_id;
-      memcpy(device.ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr, 8);
-      device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
-      device.model_id = z2s_channels_table[channel_number_slot].model_id;
-  
+      device.endpoint = 
+        z2s_channels_table[channel_number_slot].endpoint;
 
+      device.cluster_id = 
+        z2s_channels_table[channel_number_slot].cluster_id;
+
+      memcpy(
+        device.ieee_addr, 
+        z2s_channels_table[channel_number_slot].ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
+
+      device.short_addr = 
+        z2s_channels_table[channel_number_slot].short_addr;
+
+      device.model_id = 
+        z2s_channels_table[channel_number_slot].model_id;
+  
       seq[0] = 00;
       seq[1] = 02;
 
       log_i("Sending TUYA_VERSION_REQUEST");
-      zbGateway.sendCustomClusterCmd(&device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_VERSION_REQUEST, ESP_ZB_ZCL_ATTR_TYPE_SET, 2, seq, false);
+      zbGateway.sendCustomClusterCmd(
+        &device, 
+        TUYA_PRIVATE_CLUSTER_EF00, 
+        TUYA_MCU_VERSION_REQUEST, 
+        ESP_ZB_ZCL_ATTR_TYPE_SET, 
+        2, 
+        seq, 
+        false);
     } break;
     
-    default: log_i("Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", command_id); break;
+
+    default: log_i("Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", 
+                   command_id); 
+    break;
   }
 }
 
