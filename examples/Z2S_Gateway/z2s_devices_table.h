@@ -715,4 +715,6 @@ void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id,
                                                  uint16_t payload_size, 
                                                  uint8_t *payload_data));
 
+
+void printSizeOfClasses();
 #endif

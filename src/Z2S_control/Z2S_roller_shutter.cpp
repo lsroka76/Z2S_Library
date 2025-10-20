@@ -78,11 +78,11 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
         uint8_t lift_percentage = 0;
 
-        sendTuyaRequestCmdValue32(
+        sendTuyaRequestCmdEnum8( //Value32(
           _gateway, 
           &_device, 
-          MOES_COVER_STATE_COVER_POSITION_DP, 
-          lift_percentage);
+          MOES_COVER_STATE_DP, //MOES_COVER_STATE_COVER_POSITION_DP, 
+          0x02); //lift_percentage);
         
       } break;
     }
@@ -130,11 +130,11 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
 
         uint8_t lift_percentage = 100;
 
-        sendTuyaRequestCmdValue32(
+        sendTuyaRequestCmdEnum8(  //Value32
           _gateway, 
           &_device, 
-          MOES_COVER_STATE_COVER_POSITION_DP, 
-          lift_percentage);
+          MOES_COVER_STATE_DP, //MOES_COVER_STATE_COVER_POSITION_DP, 
+          0x00); //lift_percentage);
       } break;
     }
   }
@@ -162,6 +162,14 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
         sendTuyaRequestCmdEnum8(
           _gateway, &_device, 
           MOES_SHADES_DRIVE_MOTOR_STATE_DP, 
+          0x01);
+      } break;
+
+      case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER: {
+        
+        sendTuyaRequestCmdEnum8(
+          _gateway, &_device, 
+          MOES_COVER_STATE_DP, 
           0x01);
       } break;
     }

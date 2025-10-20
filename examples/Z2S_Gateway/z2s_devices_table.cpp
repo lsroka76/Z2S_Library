@@ -7067,3 +7067,17 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
                               NO_CUSTOM_CMD_SID);
   }
 }
+
+void printSizeOfClasses() {
+
+  log_i("\n\rRelay %u - VirtualRelay %u - Z2S_VirtualRelay %u"
+        "\n\rHvacBase %u - HvacBaseEE %u - Z2S_trv_interface %u"
+        "\n\rVirtualSceneSwitch %u",
+        sizeof(Supla::Control::Relay),
+        sizeof(Supla::Control::VirtualRelay),
+        sizeof(Supla::Control::Z2S_VirtualRelay),
+        sizeof(Supla::Control::HvacBase),
+        sizeof(Supla::Control::HvacBaseEE),
+        sizeof(Supla::Control::Z2S_TRVInterface),
+        sizeof(Supla::Control::VirtualRelaySceneSwitch));
+}

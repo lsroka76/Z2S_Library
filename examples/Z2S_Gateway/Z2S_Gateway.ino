@@ -5,6 +5,7 @@
 
 #include <ESPmDNS.h>
 #include <esp_coexist.h>
+#include <esp_heap_caps.h>
 
 #include <ZigbeeGateway.h>
 
@@ -769,6 +770,8 @@ if (GUIstarted)
       Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
+    //heap_caps_print_heap_info(0);
+    //printSizeOfClasses();
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
@@ -809,23 +812,13 @@ if (GUIstarted)
         //}
       }
 
-    if (refresh_cycle % 1 ==0) {
+    if (refresh_cycle % 12 == 0) {
 
-      //if (!TestClient.connected())
-      //  TestClient.connect(TEST_GATEWAY_IP, 1234);
+      //heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
+      //heap_caps_dump_all();
+  
     }
-/*
-    if (TestClient.connect(TEST_GATEWAY_IP, 1234)) {
-    
-      //TestClient.printf("request to %s\n", TEST_GATEWAY_IP);
-      TestClient.printf("Sending Z2SCMD050401 to %s\n", TEST_GATEWAY_IP);
-      String response = TestClient.readStringUntil('\n');
-      Serial.println(response);
-      TestClient.stop();
-    }*/
-
    
-
         /*switch (tcp_connect_state) {
           
           case 0: {
