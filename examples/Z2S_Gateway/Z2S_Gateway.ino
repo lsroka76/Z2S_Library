@@ -350,6 +350,8 @@ void setup() {
 
   log_i("setup start");
 
+  printSizeOfClasses();
+
   //log_d("Total PSRAM: %d", ESP.getPsramSize());
   //log_d("Free PSRAM: %d", ESP.getFreePsram());
 

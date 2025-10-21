@@ -122,7 +122,7 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
 
       Supla_Z2S_RemoteRelay->getChannel()->setChannelNumber(Supla_channel);
 
-      switch (z2s_channels_table[channel_number_slot].remote_relay_data.remote_address_type) {
+      switch (z2s_channels_table[channel_number_slot].remote_channel_data.remote_address_type) {
 
 
         case REMOTE_RELAY_ADDRESS_TYPE_IP4: {
@@ -138,10 +138,10 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
         case REMOTE_RELAY_ADDRESS_TYPE_MDNS: {
 
           Supla_Z2S_RemoteRelay->setRemoteGatewayMDNSName(
-            z2s_channels_table[channel_number_slot].remote_relay_data.mDNS_name);
+            z2s_channels_table[channel_number_slot].remote_channel_data.mDNS_name);
 
           Supla_Z2S_RemoteRelay->setRemoteGatewaySuplaChannel(
-            z2s_channels_table[channel_number_slot].remote_relay_data.remote_Supla_channel_2);
+            z2s_channels_table[channel_number_slot].remote_channel_data.remote_Supla_channel_2);
         }
       }      
     }
@@ -253,7 +253,7 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
       z2s_channels_table[first_free_slot].Supla_channel = 
         Supla_Z2S_RemoteRelay->getChannelNumber();
 
-      z2s_channels_table[first_free_slot].remote_relay_data.remote_address_type = 0;
+      z2s_channels_table[first_free_slot].remote_channel_data.remote_address_type = 0;
 
       strcpy(z2s_channels_table[first_free_slot].
         Supla_channel_name, "LOCAL REMOTE RELAY");

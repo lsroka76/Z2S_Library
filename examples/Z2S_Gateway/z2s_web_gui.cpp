@@ -1390,7 +1390,7 @@ void rebuildChannelsSelector(bool rebuild_channels_list, uint16_t channelstab = 
     if (z2s_channels_table[channels_counter].valid_record) {
       
 			working_str = channels_counter;
-			//z2s_channels_table[channels_counter].gui_control_data.gui_control_id  = 
+			//z2s_channels_table[channels_counter].gui_control_id  = 
 			current_option_id =
 				ESPUI.addControl(Control::Type::Option, 
 												 z2s_channels_table[channels_counter].Supla_channel_name, 
@@ -1407,7 +1407,7 @@ void rebuildChannelsSelector(bool rebuild_channels_list, uint16_t channelstab = 
 						current_option_id,
 						channel_selector_first_option_id);
 
-			z2s_channels_table[channels_counter].gui_control_data.gui_control_id = current_option_id; //for channel name update
+			z2s_channels_table[channels_counter].gui_control_id = current_option_id; //for channel name update
 		}
 	}
 	
@@ -4855,7 +4855,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 						(z2s_channels_table[channel_slot].local_channel_type == 0) ?
 						Z2S_getZbDeviceModelName(z2s_channels_table[channel_slot].ZB_device_id):
 						getZ2SDeviceLocalActionHandlerLogicOperatorName(channel_slot),
-						z2s_channels_table[channel_slot].gui_control_data.gui_control_id);
+						z2s_channels_table[channel_slot].gui_control_id);
 	
 	updateLabel_P(zb_channel_info_label, general_purpose_gui_buffer);
 	
@@ -4886,7 +4886,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 				enableChannelParams(3);
 
-				if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type == 
+				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
 						REMOTE_RELAY_ADDRESS_TYPE_IP4) {
 
 					IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
@@ -4896,18 +4896,18 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					ESPUI.updateNumber(param_2_number, 
 						z2s_channels_table[channel_slot].remote_Supla_channel);
 				} else
-				if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type ==
+				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
 						REMOTE_RELAY_ADDRESS_TYPE_MDNS) {
 
 					sprintf(general_purpose_gui_buffer, 
 									"mdns://%s",
-									z2s_channels_table[channel_slot].remote_relay_data.mDNS_name);
+									z2s_channels_table[channel_slot].remote_channel_data.mDNS_name);
 					working_str = general_purpose_gui_buffer;
 					ESPUI.updateText(param_1_number, working_str);
 				
 
 					ESPUI.updateNumber(param_2_number, 
-						z2s_channels_table[channel_slot].remote_relay_data.remote_Supla_channel_2);
+						z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2);
 				}
 
 				working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
@@ -5932,11 +5932,11 @@ void editChannelCallback(Control *sender, int type, void *param) {
 				if (Z2S_saveChannelsTable()) {
 
 					log_i("%d, %s", 
-								z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
+								z2s_channels_table[channel_slot].gui_control_id, 
 								z2s_channels_table[channel_slot].Supla_channel_name);
 
 					//rebuildChannelsSelector();
-					ESPUI.updateControlLabel(z2s_channels_table[channel_slot].gui_control_data.gui_control_id, 
+					ESPUI.updateControlLabel(z2s_channels_table[channel_slot].gui_control_id, 
 																	 z2s_channels_table[channel_slot].Supla_channel_name);
 					//working_str = channel_slot;
 					//ESPUI.updateControlValue(channel_selector, working_str);
@@ -5962,33 +5962,33 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 							if (prefix_pos >= 0) {
 
-								if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type == 
+								if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
 										REMOTE_RELAY_ADDRESS_TYPE_IP4)
-									z2s_channels_table[channel_slot].remote_relay_data.remote_Supla_channel_2 =
+									z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
 										z2s_channels_table[channel_slot].remote_Supla_channel;
 
-								z2s_channels_table[channel_slot].remote_relay_data.remote_address_type = 
+								z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
 									REMOTE_RELAY_ADDRESS_TYPE_MDNS;
 
-								memcpy(z2s_channels_table[channel_slot].remote_relay_data.mDNS_name,
+								memcpy(z2s_channels_table[channel_slot].remote_channel_data.mDNS_name,
 											working_str.c_str() + 7, 11);
 								
-								z2s_channels_table[channel_slot].remote_relay_data.mDNS_name[11] = '\0';
+								z2s_channels_table[channel_slot].remote_channel_data.mDNS_name[11] = '\0';
 
 								updateRemoteRelayMDNSName(channel_slot,
-									z2s_channels_table[channel_slot].remote_relay_data.mDNS_name);
+									z2s_channels_table[channel_slot].remote_channel_data.mDNS_name);
 							} else {
 
 								IPAddress ip;
 								ip.fromString(working_str);
 
-								if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type == 
+								if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
 										REMOTE_RELAY_ADDRESS_TYPE_MDNS)
 									z2s_channels_table[channel_slot].remote_Supla_channel =
-										z2s_channels_table[channel_slot].remote_relay_data.remote_Supla_channel_2; 
+										z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2; 
 
 
-								z2s_channels_table[channel_slot].remote_relay_data.remote_address_type = 
+								z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
 									REMOTE_RELAY_ADDRESS_TYPE_IP4;
 
 								z2s_channels_table[channel_slot].remote_ip_address = ip;
@@ -6041,14 +6041,14 @@ void editChannelCallback(Control *sender, int type, void *param) {
 							uint8_t remote_Supla_channel = 
 								ESPUI.getControl(param_2_number)->value.toInt();
 
-							if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type ==
+							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
 									REMOTE_RELAY_ADDRESS_TYPE_IP4)
 								z2s_channels_table[channel_slot].remote_Supla_channel = 
 									remote_Supla_channel;
 							
-							if (z2s_channels_table[channel_slot].remote_relay_data.remote_address_type ==
+							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
 								REMOTE_RELAY_ADDRESS_TYPE_MDNS)
-								z2s_channels_table[channel_slot].remote_relay_data.remote_Supla_channel_2 =
+								z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
 									remote_Supla_channel;								
 						
 							updateRemoteRelaySuplaChannel(channel_slot, remote_Supla_channel);

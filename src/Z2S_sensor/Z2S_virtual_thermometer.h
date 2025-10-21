@@ -55,7 +55,8 @@ public:
       channel.setNewValue(getTemp());
     }
 
-    if ((_timeout_ms > 0) && (millis() - _last_timeout_ms > _timeout_ms)) {
+    if ((_timeout_ms > 0) && 
+        (millis() - _last_timeout_ms > _timeout_ms)) {
       
       _last_timeout_ms = millis();
 

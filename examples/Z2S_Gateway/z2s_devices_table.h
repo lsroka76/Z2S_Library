@@ -116,16 +116,7 @@ typedef struct z2s_device_params_s {
   uint32_t            Supla_channel_func;
   int8_t              sub_id;
   uint8_t             reserved_4;
-
-  union {
-    struct {
-      uint8_t         reserved_5;
-      uint8_t         reserved_6;
-    };
-    struct {
-      uint16_t        gui_control_id; 
-    } gui_control_data;
-  };
+  uint16_t            gui_control_id;
   
   union {
     struct {
@@ -162,14 +153,27 @@ typedef struct z2s_device_params_s {
       char            mDNS_name[12];
       uint8_t         remote_Supla_channel_2;
       uint8_t         remote_address_type;
-    } remote_relay_data;
+    } remote_channel_data;
+    struct {
+      uint32_t         temperature_calculated_value;
+      uint8_t          temperature_sources_number;
+      uint8_t          temperature_source_key;
+      uint8_t          temperature_calculation_mode;
+    } remote_thermometer_data;
   };
   
   uint32_t            user_data_flags;
   uint32_t            timeout_secs;
   uint32_t            keep_alive_secs;
   uint32_t            refresh_secs;
-  uint64_t            data_counter;
+union {
+  struct {
+    uint64_t          data_counter;
+  };
+  struct {
+      uint32_t        last_temperature_measurement;//TEMP*100
+    };
+};
   uint8_t             ZB_device_id;
   uint8_t             reserved_7;
   uint8_t             reserved_8;
