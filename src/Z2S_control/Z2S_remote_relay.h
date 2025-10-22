@@ -28,6 +28,11 @@
 #define REMOTE_CMD_TURN_OFF       0x00
 #define REMOTE_CMD_TURN_ON        0x01
 
+#define REMOTE_RELAY_PORT         1234 //0x0800
+
+extern NetworkClient Z2S_NetworkClient;
+extern IPAddress     Z2S_IPAddress;
+
 
 namespace Supla {
 namespace Control {
@@ -49,14 +54,14 @@ class Z2S_RemoteRelay : public Relay {
 
   void ping();
 
-  void setRemoteGatewayIPAddress(IPAddress remote_gateway_ip) {
+  void setRemoteGatewayIPAddress(uint32_t remote_gateway_ip) {
 
     _remote_gateway_ip = remote_gateway_ip;
   }
 
   void setRemoteGatewayIPAddress(String remote_gateway_ip) {
 
-    _remote_gateway_ip.fromString(remote_gateway_ip);
+    _remote_gateway_ip = Z2S_IPAddress.fromString(remote_gateway_ip);
   }
 
   void setRemoteGatewayMDNSName(char *remote_gateway_mDNS_name) {
@@ -78,8 +83,9 @@ class Z2S_RemoteRelay : public Relay {
  protected:
 
   bool state = false;
-  NetworkClient *_remote_gateway = nullptr;
-  IPAddress _remote_gateway_ip = INADDR_NONE;
+  //NetworkClient *_remote_gateway = nullptr;
+  //IPAddress _remote_gateway_ip = INADDR_NONE;
+  uint32_t _remote_gateway_ip = 0;
   char *_remote_gateway_mDNS_name = nullptr;
   uint8_t _remote_Supla_channel = 0xFF;
 

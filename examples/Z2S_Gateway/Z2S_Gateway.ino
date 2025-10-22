@@ -67,10 +67,12 @@ static AsyncClient client;*/
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
 
 
-static NetworkServer TestServer(1234);
-extern NetworkClient TestClient;
+static NetworkServer TestServer(REMOTE_RELAY_PORT);
+//static NetworkServer ThermometerServer(REMOTE_RELAY_PORT);
+static NetworkClient TestClient;
 static NetworkClient client2;
 //static Supla::Control::Z2S_RemoteRelay *testRemoteRelay;
+//Supla::Sensor::VirtualThermometer *TEST_VT;
 
 static bool tcp_server_started = false;
 
@@ -392,12 +394,26 @@ void setup() {
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
 
-  //testRemoteRelay = new Supla::Control::Z2S_RemoteRelay(&TestClient, 115);
-  //testRemoteRelay->getChannel()->setChannelNumber(115);
-  //testRemoteRelay->setInitialCaption("Test remote relay");
-  //testRemoteRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
-  //testRemoteRelay->setRemoteGatewayIPAddress(TEST_GATEWAY_IP);
-  //toggleNotifications->setDefaultStateRestore();
+  //TEST_VT = new Supla::Control::VirtualThermometer();
+  //TEST_VT->getChannel()->setChannelNumber(112);
+
+  /*auto at1 = new Supla::Control::ActionTrigger();
+  at1->getChannel()->setChannelNumber(111);
+  at1->setInitialCaption("TEST AT");
+  at1->getChannel()->setActionTriggerCaps(
+    SUPLA_ACTION_CAP_TURN_ON |
+    SUPLA_ACTION_CAP_TURN_OFF |
+    SUPLA_ACTION_CAP_TOGGLE_x1 |
+    SUPLA_ACTION_CAP_TOGGLE_x2 |
+    SUPLA_ACTION_CAP_TOGGLE_x3 |
+    SUPLA_ACTION_CAP_TOGGLE_x4 |
+    SUPLA_ACTION_CAP_TOGGLE_x5 |
+    SUPLA_ACTION_CAP_HOLD |
+    SUPLA_ACTION_CAP_SHORT_PRESS_x1 |
+    SUPLA_ACTION_CAP_SHORT_PRESS_x2 |
+    SUPLA_ACTION_CAP_SHORT_PRESS_x3 |
+    SUPLA_ACTION_CAP_SHORT_PRESS_x4 |
+    SUPLA_ACTION_CAP_SHORT_PRESS_x5);*/
 
   auto AHwC = new Supla::ActionHandlerWithCallbacks();
   AHwC->setActionHandlerCallback(supla_callback_bridge);
@@ -508,7 +524,8 @@ void setup() {
   zbGateway.setManufacturerAndModel("Supla", "Z2SGateway");
   zbGateway.allowMultipleBinding(true);
 
-  Zigbee.addGatewayEndpoint(&zbGateway);
+  //Zigbee.addGatewayEndpoint(&zbGateway);
+  Zigbee.addEndpoint(&zbGateway); //???
 
   uint32_t zb_primary_channel_mask;
 
@@ -663,42 +680,60 @@ if (client2 && client2.connected()) {
      Serial.println(request);
      int16_t cmd_pos = request.indexOf(Z2S_TCP_CMD);
 
+
      if (cmd_pos >= 0 ) {
 
       Serial.printf("cmd pos %u\n\r", cmd_pos);
       String helper;
-      helper.reserve(16);
+      helper.reserve(64);
+      
       helper = request.substring(cmd_pos + 6, cmd_pos + 8);
-      Serial.println(helper);
+      //Serial.println(helper);
       uint8_t cmd_id = helper.toInt();
+      
       helper = request.substring(cmd_pos + 8, cmd_pos + 11);
-      Serial.println(helper);
-      uint8_t cmd_channel = helper.toInt();
-      helper = request.substring(cmd_pos + 11, cmd_pos + 13);
-      Serial.println(helper);
-      uint8_t cmd_value = helper.toInt();
-
-      Serial.printf("\n\rZ2S TCP command received id = %u"
-                    "\n\rchannel = %u"
-                    "\n\r value = %u\n\r",
-                    cmd_id,
-                    cmd_channel,
-                    cmd_value); 
-
+      uint8_t cmd_dst_channel = helper.toInt();      
+    
       switch (cmd_id) {
 
 
-        case 0:
+        case 0x00:
+        case 0x01: { //Relay On/Off
 
-          setRemoteRelay(cmd_channel, false);
-        break;
+          log_i("\n\rZ2S TCP ON/OFF command received id = %u"
+                "\n\rfor channel = %u",
+                cmd_id,
+                cmd_dst_channel);
+
+          setRemoteRelay(cmd_dst_channel, cmd_id);
+        } break;
 
 
-        case 1:
-        
-          setRemoteRelay(cmd_channel, true);
-        break;
-      }
+        case  0x10: { //remote thermometer
+
+          helper = request.substring(cmd_pos + 11, cmd_pos + 14);
+          uint32_t cmd_src_channel = helper.toInt();
+          
+          helper = request.substring(cmd_pos + 14, cmd_pos + 22);
+          int32_t cmd_thermometer_value = helper.toInt();
+
+          log_i("\n\rZ2S TCP thermometer command received id = %u"
+                "\n\rremote IP = %s"
+                "\n\rfrom channel = %u"
+                "\n\rto local channel = %u"
+                "\n\rwith value = %lu",
+                cmd_id,
+                client2.remoteIP().toString(),
+                cmd_src_channel,
+                cmd_dst_channel,
+                cmd_thermometer_value);
+
+          updateRemoteThermometer(cmd_dst_channel, 
+                                  client2.remoteIP(), 
+                                  cmd_src_channel,
+                                  cmd_thermometer_value);
+        } break;
+      }      
       client2.print("OK\n");
      }
      client2.stop();
@@ -772,8 +807,22 @@ if (GUIstarted)
       Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
-    //heap_caps_print_heap_info(0);
-    //printSizeOfClasses();
+    
+    log_i("\n\rMemory information:"
+          "\n\rFlash chip real size: %u B"
+          "\n\rFree Sketch Space: %u B"
+					"\n\rFree Heap: %u B"
+          "\n\rMinimal Free Heap: %u B"
+					"\n\rHeapSize: %u B"
+          "\n\rMaxAllocHeap: %u B"
+					"\n\rSupla uptime: %lu s", 
+					ESP.getFlashChipSize(), 
+          ESP.getFreeSketchSpace(), 
+          ESP.getFreeHeap(), 
+          ESP.getMinFreeHeap(), 
+          ESP.getHeapSize(),
+					ESP.getMaxAllocHeap(), 
+          SuplaDevice.uptime.getUptime());
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
@@ -852,12 +901,23 @@ if (GUIstarted)
       //}
       if (refresh_cycle % 3 == 0) {
         //log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
-        log_i( "Memory information: Flash chip real size:%u B, Free Sketch Space:%u B, "
-						"Free Heap:%u, Minimal Free Heap:%u B, "
-						"HeapSize:%u B, MaxAllocHeap:%u B, "
-						"Supla uptime:%lu s", 
-						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
-						ESP.getMaxAllocHeap(), SuplaDevice.uptime.getUptime());
+        /*uint32_t random_temperature = (21 + random(-5, 5)) * 100;
+        uint8_t random_src_channel = 1 + random(0,127);
+        if (TestClient.connect(MDNS.queryHost("bramka_36"), 1234)) {
+
+          TestClient.printf("Z2SCMD%02u%03u%03u%08ld\n", 
+                            0x10, 
+                            5,
+                            random_src_channel,
+                            random_temperature);
+    
+    
+          String response = TestClient.readStringUntil('\n');
+          if (response == "OK") 
+            log_i("Temperature sent");
+        
+          TestClient.stop();
+        }*/
       }
     //}
     if (!zbGateway.getGatewayDevices().empty()) {

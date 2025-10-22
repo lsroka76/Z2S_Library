@@ -19,9 +19,16 @@
 #ifndef Z2S_VIRTUAL_THERMOMETER_H_
 #define Z2S_VIRTUAL_THERMOMETER_H_
 
+#include <NetworkClient.h>
+#include <ESPmDNS.h>
+
 #include <supla/sensor/virtual_thermometer.h>
 
 #define MSINHOUR (60*60*1000)
+
+extern NetworkClient Z2S_NetworkClient;
+extern IPAddress     Z2S_IPAddress;
+
 
 namespace Supla {
 namespace Sensor {
@@ -69,6 +76,7 @@ public:
     
  protected:
   bool     _rwns_flag;
+
   uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;
 };

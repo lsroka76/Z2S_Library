@@ -143,6 +143,7 @@ uint16_t trv_auto_to_schedule_manual_switcher;
 uint16_t trv_fixed_calibration_switcher;
 uint16_t trv_cooperative_childlock_switcher;
 uint16_t set_sorwns_on_start_switcher;
+uint16_t enable_resend_temperature_switcher;
 uint16_t param_1_number;
 uint16_t param_1_desc_label;
 uint16_t param_1_save_button; 
@@ -350,13 +351,14 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_TRV_FIXED_CALIBRATION_FLAG					0x4008
 #define GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG		0x4009
 #define GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG			0x4010
+#define GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG			0x4011
 
-#define GUI_CB_UPDATE_KEEPALIVE_FLAG							0x4010
-#define GUI_CB_UPDATE_TIMEOUT_FLAG								0x4011
-#define GUI_CB_UPDATE_REFRESH_FLAG								0x4012
+#define GUI_CB_UPDATE_KEEPALIVE_FLAG							0x4020
+#define GUI_CB_UPDATE_TIMEOUT_FLAG								0x4021
+#define GUI_CB_UPDATE_REFRESH_FLAG								0x4022
 
-#define GUI_CB_UPDATE_PARAM_1_FLAG								0x4020
-#define GUI_CB_UPDATE_PARAM_2_FLAG								0x4021
+#define GUI_CB_UPDATE_PARAM_1_FLAG								0x4030
+#define GUI_CB_UPDATE_PARAM_2_FLAG								0x4031
 
 #define GUI_CB_ADD_AND_HANDLER_FLAG								0x4050
 #define GUI_CB_ADD_OR_HANDLER_FLAG								0x4051
@@ -493,6 +495,7 @@ void addLocalActionHandlerCallback(Control *sender, int type, void *param);
 void addLocalVirtualRelayCallback(Control *sender, int type);
 void addLocalVirtualBinaryCallback(Control *sender, int type);
 void addLocalRemoteRelayCallback(Control *sender, int type);
+void addLocalRemoteThermometerCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
 
@@ -1629,6 +1632,42 @@ void buildChannelsTabGUI() {
 																				 zb_channel_flags_label), 
 												PSTR(clearFlagsLabelStyle));
 
+	working_str = PSTR("");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearLabelStyle));
+
+	enable_resend_temperature_switcher = 
+		ESPUI.addControl(Control::Type::Switcher, 
+										 PSTR(empty_str), 
+									   zero_str, 
+										 Control::Color::Emerald, 
+										 zb_channel_flags_label, 
+										 editChannelFlagsCallback, 	
+										 (void*)GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG);
+	ESPUI.setElementStyle(enable_resend_temperature_switcher, 
+												"margin: 0% 15%;");
+
+	working_str = PSTR("");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearLabelStyle));
+
+	working_str = PSTR("&#10023; <i>Enable temperature forwarding<br>"
+										 "to remote or local thermometer</i> &#10023;");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str,
+																				 Control::Color::None, 
+																				 zb_channel_flags_label), 
+												PSTR(clearFlagsLabelStyle));
+
 												
 	
 	zb_channel_params_label = ESPUI.addControl(Control::Type::Label, 
@@ -1916,6 +1955,15 @@ void buildChannelsTabGUI() {
 									 Control::Color::Emerald, 
 									 lah_panel, 
 									 addLocalRemoteRelayCallback);																					
+
+	working_str = PSTR("Add remote thermometer");
+	ESPUI.addControl(Control::Type::Button, 
+								   PSTR(empty_str), 
+									 working_str, 
+									 Control::Color::Emerald, 
+									 lah_panel, 
+									 addLocalRemoteThermometerCallback);																					
+
 
 	enableChannelControls(false);
 }
@@ -4340,6 +4388,19 @@ void Z2S_loopWebGUI() {
 				buildActionsChannelSelectors(true);
 			}
 		} break;
+
+
+		case 69: {
+
+			gui_command = 0;
+			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER, 
+																			 SUPLA_CHANNELFNC_THERMOMETER)) {
+
+			
+				rebuildChannelsSelector(true);
+				buildActionsChannelSelectors(true);
+			}
+		} break;
 	}
 }
 
@@ -4757,6 +4818,14 @@ void enableChannelFlags(uint8_t flags_mask) {
 		enableControlStyle(set_sorwns_on_start_switcher, false);
 	}
 
+	if (flags_mask & 8)
+		enableControlStyle(
+			enable_resend_temperature_switcher, true);
+	else {
+		ESPUI.updateNumber(enable_resend_temperature_switcher, 0);
+		enableControlStyle(enable_resend_temperature_switcher, false);
+	}
+
 	if (flags_mask == 0) 
 		enableControlStyle(zb_channel_flags_label, false);
 	else
@@ -4887,7 +4956,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				enableChannelParams(3);
 
 				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-						REMOTE_RELAY_ADDRESS_TYPE_IP4) {
+						REMOTE_ADDRESS_TYPE_IP4) {
 
 					IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
 
@@ -4897,7 +4966,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 						z2s_channels_table[channel_slot].remote_Supla_channel);
 				} else
 				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-						REMOTE_RELAY_ADDRESS_TYPE_MDNS) {
+						REMOTE_ADDRESS_TYPE_MDNS) {
 
 					sprintf(general_purpose_gui_buffer, 
 									"mdns://%s",
@@ -4971,11 +5040,55 @@ void updateChannelInfoLabel(uint8_t label_number) {
 			ESPUI.updateNumber(timeout_number, 
 				z2s_channels_table[channel_slot].timeout_secs);
 	
-			enableChannelFlags(4);
+			enableChannelFlags(4+8);
 			
 			ESPUI.updateNumber(set_sorwns_on_start_switcher, 
 												 (z2s_channels_table[channel_slot].user_data_flags & 
 										 		 USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
+
+			uint8_t enable_resend_temperature_flag = 
+				(z2s_channels_table[channel_slot].user_data_flags &
+				 USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) ? 1 : 0;
+
+			ESPUI.updateNumber(enable_resend_temperature_switcher, enable_resend_temperature_flag); 
+		
+			if (enable_resend_temperature_flag) {
+
+				enableChannelParams(3);
+
+				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
+						REMOTE_ADDRESS_TYPE_IP4) {
+
+					IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
+
+					ESPUI.updateText(param_1_number, ip.toString());
+
+					ESPUI.updateNumber(param_2_number, 
+						z2s_channels_table[channel_slot].remote_Supla_channel);
+				} else
+				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
+						REMOTE_ADDRESS_TYPE_MDNS) {
+
+					sprintf(general_purpose_gui_buffer, 
+									"mdns://%s",
+									z2s_channels_table[channel_slot].remote_channel_data.mDNS_name);
+					working_str = general_purpose_gui_buffer;
+					ESPUI.updateText(param_1_number, working_str);
+				
+					ESPUI.updateNumber(param_2_number, 
+						z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2);
+				}
+
+				working_str = PSTR("&#10023; Enter remote thermometer IP address or mDNS name &#10023;<br>"
+													 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway<br>"
+													 "or enter 0 for local temperature forwarding");
+
+				ESPUI.updateText(param_1_desc_label, working_str);
+
+				working_str = PSTR("&#10023; Enter destination thermometer channel # &#10023;");
+				ESPUI.updateText(param_2_desc_label, working_str);
+			} else
+				enableChannelParams(0);
 		} break;
 
 
@@ -5963,12 +6076,12 @@ void editChannelCallback(Control *sender, int type, void *param) {
 							if (prefix_pos >= 0) {
 
 								if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-										REMOTE_RELAY_ADDRESS_TYPE_IP4)
+										REMOTE_ADDRESS_TYPE_IP4)
 									z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
 										z2s_channels_table[channel_slot].remote_Supla_channel;
 
 								z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
-									REMOTE_RELAY_ADDRESS_TYPE_MDNS;
+									REMOTE_ADDRESS_TYPE_MDNS;
 
 								memcpy(z2s_channels_table[channel_slot].remote_channel_data.mDNS_name,
 											working_str.c_str() + 7, 11);
@@ -5983,13 +6096,13 @@ void editChannelCallback(Control *sender, int type, void *param) {
 								ip.fromString(working_str);
 
 								if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-										REMOTE_RELAY_ADDRESS_TYPE_MDNS)
+										REMOTE_ADDRESS_TYPE_MDNS)
 									z2s_channels_table[channel_slot].remote_Supla_channel =
 										z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2; 
 
 
 								z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
-									REMOTE_RELAY_ADDRESS_TYPE_IP4;
+									REMOTE_ADDRESS_TYPE_IP4;
 
 								z2s_channels_table[channel_slot].remote_ip_address = ip;
 
@@ -6042,12 +6155,12 @@ void editChannelCallback(Control *sender, int type, void *param) {
 								ESPUI.getControl(param_2_number)->value.toInt();
 
 							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-									REMOTE_RELAY_ADDRESS_TYPE_IP4)
+									REMOTE_ADDRESS_TYPE_IP4)
 								z2s_channels_table[channel_slot].remote_Supla_channel = 
 									remote_Supla_channel;
 							
 							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-								REMOTE_RELAY_ADDRESS_TYPE_MDNS)
+								REMOTE_ADDRESS_TYPE_MDNS)
 								z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
 									remote_Supla_channel;								
 						
@@ -6157,6 +6270,19 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 						else
 							Z2S_clearChannelFlags(channel_slot, 
 								USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+				} break;
+
+
+				case GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG: {
+
+					if (type == S_ACTIVE)
+							Z2S_setChannelFlags(channel_slot, 
+								USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
+						else
+							Z2S_clearChannelFlags(channel_slot, 
+								USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
+
+					updateChannelInfoLabel(1);
 				} break;
 
 
@@ -7471,6 +7597,14 @@ void addLocalRemoteRelayCallback(Control *sender, int type) {
 	if (type == B_UP) {
 
 		gui_command = 68;
+	}
+}
+
+void addLocalRemoteThermometerCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+
+		gui_command = 69;
 	}
 }
 

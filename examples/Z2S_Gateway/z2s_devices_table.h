@@ -42,6 +42,7 @@
 #define USER_DATA_FLAG_TRV_FIXED_CORRECTION         (1 << 8)  // 0x0100
 #define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL  (1 << 9)  // 0x0200
 #define USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK    (1 << 10) // 0x0400
+#define USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE    (1 << 11) // 0x0800
 
 #define ZBD_USER_DATA_FLAG_VERSION_2_0 (1 << 0)
 #define ZBD_USER_DATA_FLAG_RESERVED_1 (1 << 1)
@@ -351,7 +352,7 @@ const static char Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2[] PROGMEM = "channel_ext
 
 extern bool sendIASNotifications;
 
-static NetworkClient TestClient;
+//static NetworkClient Z2S_NetworkClient;
 
 extern char GatewayMDNSLocalName[12];
 
@@ -473,8 +474,10 @@ uint16_t Z2S_getActionsNumber();
 int16_t Z2S_getActionCounter(uint16_t action_position);
 
 int16_t Z2S_findFreeActionIndex();
-int16_t Z2S_findNextActionPosition(uint16_t action_position = 0);
-int16_t Z2S_findPrevActionPosition(uint16_t action_position = Z2S_ACTIONS_MAX_NUMBER);
+int16_t Z2S_findNextActionPosition(
+  uint16_t action_position = 0);
+int16_t Z2S_findPrevActionPosition(
+  uint16_t action_position = Z2S_ACTIONS_MAX_NUMBER);
 
 bool Z2S_saveAction(uint16_t action_index, 
                     z2s_channel_action_t &action);
@@ -488,20 +491,24 @@ void Z2S_initSuplaActions();
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-uint16_t Z2S_getChannelExtendedDataTypeSize(uint8_t extended_data_type);
+uint16_t Z2S_getChannelExtendedDataTypeSize(
+  uint8_t extended_data_type);
 
-bool Z2S_saveChannelExtendedData(int16_t channel_number_slot,
-                                 uint8_t extended_data_type,
-                                 uint8_t *extended_data,
-                                 bool save_table = true);
+bool Z2S_saveChannelExtendedData(
+  int16_t channel_number_slot,
+  uint8_t extended_data_type,
+  uint8_t *extended_data,
+  bool save_table = true);
 
-bool Z2S_removeChannelExtendedData(int16_t channel_number_slot,
-                                   uint8_t extended_data_type,
-                                   bool save_table = true);
+bool Z2S_removeChannelExtendedData(
+  int16_t channel_number_slot,
+  uint8_t extended_data_type,
+  bool save_table = true);
 
-bool Z2S_loadChannelExtendedData(int16_t channel_number_slot,
-                                 uint8_t extended_data_type,
-                                 uint8_t *extended_data);
+bool Z2S_loadChannelExtendedData(
+  int16_t channel_number_slot,
+  uint8_t extended_data_type,
+  uint8_t *extended_data);
 
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -690,6 +697,12 @@ void updateRemoteRelayIPAddress(uint8_t channel_number_slot,
 
 void updateRemoteRelaySuplaChannel(uint8_t channel_number_slot,
                                    uint8_t remote_Supla_channel);
+
+void updateRemoteThermometer(uint8_t Supla_channel,
+                             uint32_t connected_thermometer_ip_address,
+                             uint32_t connected_thermometer_channel,
+                             int32_t connected_thermometer_temperature);
+
 
 void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
                                            int32_t hvac_fixed_calibration_temperature);

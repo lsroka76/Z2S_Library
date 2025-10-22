@@ -298,7 +298,8 @@
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID 0x00
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID  0x01
 
-#define TUYA_PRESENCE_SENSOR_PRESENCE_SID                   0x01
+#define TUYA_PRESENCE_SENSOR_PRESENCE_SID                   0x00
+//#define TUYA_PRESENCE_SENSOR_PRESENCE_SID                   0x01
 #define TUYA_PRESENCE_SENSOR_MOTION_STATE_SID               0x02
 #define TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID                0x03
 #define TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID               0x04
@@ -2096,6 +2097,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "eWeLink", .model_name = "SWITCH-ZR03-1",
     .z2s_device_uid = 10600,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "OSRAM", .model_name = "Plug 01",
+    .z2s_device_uid = 10605,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
 	  .z2s_device_endpoints_count = 1},
 

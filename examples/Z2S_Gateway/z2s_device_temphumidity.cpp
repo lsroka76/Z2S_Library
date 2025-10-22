@@ -1,5 +1,15 @@
+#include <NetworkClient.h>
+#include <ESPmDNS.h>
+
 #include "z2s_device_temphumidity.h"
 
+#define REMOTE_ADDRESS_TYPE_LOCAL               0x00
+#define REMOTE_ADDRESS_TYPE_IP4                 0x01
+#define REMOTE_ADDRESS_TYPE_MDNS                0x02
+
+
+NetworkClient RemoteThermometer;
+IPAddress ip_address;
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
 void initZ2SDeviceTempHumidity(int16_t channel_number_slot, 
@@ -175,6 +185,68 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
       Supla_Z2S_VirtualThermometer->setValue(temp);
       Supla_Z2S_VirtualThermometer->Refresh();
     } break;
+  }
+
+  if (z2s_channels_table[channel_number_slot].user_data_flags &
+			USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) {
+
+    uint8_t remote_Supla_channel;
+
+    switch(z2s_channels_table[channel_number_slot].
+        remote_channel_data.remote_address_type) {
+
+
+      case REMOTE_ADDRESS_TYPE_LOCAL:
+
+        updateRemoteThermometer(
+          z2s_channels_table[channel_number_slot].remote_Supla_channel,
+          0,
+          z2s_channels_table[channel_number_slot].Supla_channel,
+          (int32_t)(temp*100));
+
+        return;
+      break;
+
+
+      case REMOTE_ADDRESS_TYPE_IP4: {
+
+        ip_address = 
+          z2s_channels_table[channel_number_slot].remote_ip_address;
+
+        remote_Supla_channel = 
+          z2s_channels_table[channel_number_slot].remote_Supla_channel;
+      }
+      break;
+
+      case REMOTE_ADDRESS_TYPE_MDNS: {
+
+        ip_address = MDNS.queryHost(
+          z2s_channels_table[channel_number_slot]. \
+          remote_channel_data.mDNS_name);
+
+        remote_Supla_channel = 
+          z2s_channels_table[channel_number_slot].
+          remote_channel_data.remote_Supla_channel_2;
+      } break;
+    }
+
+    if (RemoteThermometer.connect(ip_address, 1234)) {
+
+      RemoteThermometer.printf("Z2SCMD%02u%03u%03u%08ld\n", 
+                            0x10, 
+                            remote_Supla_channel,
+                            z2s_channels_table[channel_number_slot].Supla_channel,
+                            (int32_t)(temp*100));
+    
+    
+      String response = RemoteThermometer.readStringUntil('\n');
+      
+      if (response == "OK") 
+        log_i("Temperature forwarded");
+        
+      RemoteThermometer.stop();
+    } else
+      log_e("Temperature forwarding FAILED - no connection to remote thremometer"); 
   }
 }
 

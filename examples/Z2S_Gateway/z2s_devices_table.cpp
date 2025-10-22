@@ -12,6 +12,7 @@
 #include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
 #include <Z2S_control/dimmer_input_interface.h>
 #include <Z2S_control/Z2S_remote_relay.h>
+#include <Z2S_sensor/Z2S_remote_thermometer.h>
 
 #include "z2s_devices_table.h"
 #include "z2s_device_iaszone.h"
@@ -518,7 +519,14 @@ bool Z2S_loadChannelsTable() {
                 z2s_channels_table[channels_counter].ZB_device_id = new_ZB_device_id;
                 channels_table_save_required = true;
               }
-            }
+              if ((z2s_channels_table[channels_counter].model_id >= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) &&
+                  (z2s_channels_table[channels_counter].model_id <= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY) &&
+                  (z2s_channels_table[channels_counter].sub_id == 0x01)) {
+
+                    z2s_channels_table[channels_counter].sub_id = 0x00;
+                    channels_table_save_required = true;
+                  }
+            }     
           }
           if (channels_table_save_required) 
             Z2S_saveChannelsTable();
@@ -1365,7 +1373,8 @@ void Z2S_initSuplaChannels() {
 
       if (channel_created) {
         
-        uint8_t zb_device_number_slot = Z2S_findZbDeviceTableSlot(z2s_channels_table[channels_counter].ieee_addr);
+        uint8_t zb_device_number_slot = Z2S_findZbDeviceTableSlot(
+          z2s_channels_table[channels_counter].ieee_addr);
       }
     }
   }
@@ -5483,35 +5492,6 @@ void sendChannelAction(uint8_t Supla_channel, uint16_t channel_action) {
   log_i("TODO send channel action for logic gates");
 }
 
-void setRemoteRelay(uint8_t Supla_channel, bool state) {
-
-  //log_i("setRemoteRelay channel %u, state %u", Supla_channel, state);
-  
-  auto element = Z2S_getSuplaElementByChannelNumber(Supla_channel);
-
-  if (element && (Supla_channel < 0x080)) {
-
-    //log_i ("channel type %u", element->getChannel()->getChannelType());
-
-    switch (element->getChannel()->getChannelType()) {
-
-
-      case SUPLA_CHANNELTYPE_RELAY: {
-
-        auto Supla_Z2S_Relay = 
-          reinterpret_cast<Supla::Control::Z2S_RemoteRelay *>(element);
-
-        log_i("setting remote relay(%u) to %u", 
-              Supla_channel,
-              state);
-
-        Supla_Z2S_Relay->Z2S_setOnOff(state);
-      } break;
-    }
-  } else
-  log_i("TODO send channel action for logic gates");
-}
-
 Supla::Control::Z2S_RemoteRelay *getRemoteRelayPtr(uint8_t channel_number_slot) {
 
   auto element = 
@@ -5528,6 +5508,25 @@ Supla::Control::Z2S_RemoteRelay *getRemoteRelayPtr(uint8_t channel_number_slot) 
       reinterpret_cast<Supla::Control::Z2S_RemoteRelay *>(element);
   }
   return nullptr;
+}
+
+
+void setRemoteRelay(uint8_t Supla_channel, bool state) {
+
+  //log_i("setRemoteRelay channel %u, state %u", Supla_channel, state);
+
+  auto Supla_Z2S_RemoteRelay = 
+    getRemoteRelayPtr(Z2S_findTableSlotByChannelNumber(Supla_channel));
+
+  if (Supla_Z2S_RemoteRelay) {
+
+    log_i("setting remote relay(%u) to %u", 
+          Supla_channel,
+          state);
+
+    Supla_Z2S_RemoteRelay->Z2S_setOnOff(state);
+  } else
+  log_i("No valid remote relay channel");
 }
 
 void updateRemoteRelayMDNSName(uint8_t channel_number_slot,
@@ -5562,6 +5561,37 @@ void updateRemoteRelaySuplaChannel(uint8_t channel_number_slot,
     Supla_Z2S_RemoteRelay->setRemoteGatewaySuplaChannel(remote_Supla_channel);
   }
 }
+
+void updateRemoteThermometer(uint8_t Supla_channel,
+                             uint32_t connected_thermometer_ip_address,
+                             uint32_t connected_thermometer_channel,
+                             int32_t connected_thermometer_temperature) {
+
+  int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(Supla_channel);
+
+  if (channel_number_slot < 0)
+    return;
+
+  auto element = 
+    Supla::Element::getElementByChannelNumber(Supla_channel);
+
+  if (element && 
+      (element->getChannel()->getChannelType() == 
+        SUPLA_CHANNELTYPE_THERMOMETER) &&
+      (z2s_channels_table[channel_number_slot].local_channel_type ==
+        LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER)) {
+
+    auto Z2S_RemoteThermometer = 
+      reinterpret_cast<Supla::Sensor::Z2S_RemoteThermometer *>(element);
+
+      Z2S_RemoteThermometer->setConnectedThermometerTemperature(
+        connected_thermometer_ip_address,
+        connected_thermometer_channel,
+        connected_thermometer_temperature
+      );      
+  }
+}
+
 
 void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
                                            int32_t hvac_fixed_calibration_temperature) {
@@ -7073,7 +7103,9 @@ void printSizeOfClasses() {
   log_i("\n\rRelay %u - VirtualRelay %u - Z2S_VirtualRelay %u"
         "\n\rHvacBase %u - HvacBaseEE %u - Z2S_trv_interface %u"
         "\n\rVirtualSceneSwitch %u"
-        "\n\rIPAddress %u",
+        "\n\rIPAddress %u"
+        "\n\rNetworkServer %u"
+        "\n\rNetworkClient %u",
         sizeof(Supla::Control::Relay),
         sizeof(Supla::Control::VirtualRelay),
         sizeof(Supla::Control::Z2S_VirtualRelay),
@@ -7081,5 +7113,7 @@ void printSizeOfClasses() {
         sizeof(Supla::Control::HvacBaseEE),
         sizeof(Supla::Control::Z2S_TRVInterface),
         sizeof(Supla::Control::VirtualRelaySceneSwitch),
-        sizeof(IPAddress));
+        sizeof(IPAddress),
+        sizeof(NetworkServer),
+        sizeof(NetworkClient));
 }
