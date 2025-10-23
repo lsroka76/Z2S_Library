@@ -346,6 +346,8 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
 
 Supla::Device::StatusLed statusLed(RGB_BUILTIN, true);
 
+//uint32_t check_uids[500] = {};
+
 void setup() {
   
   //esp_log_set_vprintf(&spiffs_log_vprintf);
@@ -353,7 +355,26 @@ void setup() {
   log_i("setup start");
 
   printSizeOfClasses();
+  uint32_t sanity_check_time_ms = millis();
+  uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
+  uint8_t match = 0;
 
+  for(uint16_t i = 0; i < devices_list_table_size; i++) {
+    match = 0;
+    for (uint16_t j = 0; j < devices_list_table_size; j++) {
+      
+      if ((Z2S_DEVICES_LIST[i].z2s_device_uid > 0) &&
+          (Z2S_DEVICES_LIST[i].z2s_device_uid == Z2S_DEVICES_LIST[j].z2s_device_uid))
+        match++;
+      if (match > 1) {
+
+        log_e("Critical! Duplicate found %s", Z2S_DEVICES_LIST[i].manufacturer_name);
+        break;
+      }
+    }
+  }
+  sanity_check_time_ms = millis() - sanity_check_time_ms;
+  log_i("Sanity check time %lu", sanity_check_time_ms);
   //log_d("Total PSRAM: %d", ESP.getPsramSize());
   //log_d("Free PSRAM: %d", ESP.getFreePsram());
 
@@ -524,8 +545,8 @@ void setup() {
   zbGateway.setManufacturerAndModel("Supla", "Z2SGateway");
   zbGateway.allowMultipleBinding(true);
 
-  //Zigbee.addGatewayEndpoint(&zbGateway);
-  Zigbee.addEndpoint(&zbGateway); //???
+  Zigbee.addGatewayEndpoint(&zbGateway);
+  //Zigbee.addEndpoint(&zbGateway); //???
 
   uint32_t zb_primary_channel_mask;
 
