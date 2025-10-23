@@ -43,6 +43,7 @@
 #define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL  (1 << 9)  // 0x0200
 #define USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK    (1 << 10) // 0x0400
 #define USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE    (1 << 11) // 0x0800
+#define USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS     (1 << 12) // 0x1000
 
 #define ZBD_USER_DATA_FLAG_VERSION_2_0 (1 << 0)
 #define ZBD_USER_DATA_FLAG_RESERVED_1 (1 << 1)
@@ -121,7 +122,7 @@ typedef struct z2s_device_params_s {
   
   union {
     struct {
-      uint32_t        user_data_1;  //Tuya Rain Sensor rain_intensity, RGB mode, HVAC - probably unused
+      uint32_t        user_data_1; 
       uint32_t        user_data_2;
       uint32_t        user_data_3;
       uint32_t        user_data_4; 
@@ -152,15 +153,11 @@ typedef struct z2s_device_params_s {
     } local_action_handler_data;
     struct {
       char            mDNS_name[12];
+      //uint32_t        remote_ip_address;
       uint8_t         remote_Supla_channel_2;
       uint8_t         remote_address_type;
+
     } remote_channel_data;
-    struct {
-      uint32_t         temperature_calculated_value;
-      uint8_t          temperature_sources_number;
-      uint8_t          temperature_source_key;
-      uint8_t          temperature_calculation_mode;
-    } remote_thermometer_data;
   };
   
   uint32_t            user_data_flags;

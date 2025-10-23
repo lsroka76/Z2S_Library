@@ -4897,7 +4897,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 						"<b>| <i>secondary channel</i></b> #%u<br><b><i>Type</b></i> %s "
 						"<b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
 						"<b><i>Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X "
-						"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
+						"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>ud(3)</b></i> 0x%08X "
+						"<b>| <i>ud(4)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
 						"<b><i>ZB device</b></i> %s (%s::%s)<br>"
 						"<b><i>GUI id</b></i> %u "),
 						ieee_addr_str,
@@ -4916,6 +4917,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 						z2s_channels_table[channel_slot].user_data_flags,
 						z2s_channels_table[channel_slot].user_data_1,
 						z2s_channels_table[channel_slot].user_data_2,
+						z2s_channels_table[channel_slot].user_data_3,
+						z2s_channels_table[channel_slot].user_data_4,
 						z2s_channels_table[channel_slot].extended_data_type,
 						Z2S_getZbDeviceLocalName(z2s_channels_table[channel_slot].ZB_device_id),
 						(z2s_channels_table[channel_slot].local_channel_type == 0) ?
@@ -5055,6 +5058,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 			if (enable_resend_temperature_flag) {
 
 				enableChannelParams(3);
+				log_i("remote address type = %u",
+							z2s_channels_table[channel_slot].remote_channel_data.remote_address_type);
 
 				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
 						REMOTE_ADDRESS_TYPE_IP4) {
@@ -6220,6 +6225,31 @@ void editChannelCallback(Control *sender, int type, void *param) {
 					} break;
 
 
+					case SUPLA_CHANNELTYPE_THERMOMETER:
+					case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
+
+						
+						uint8_t remote_Supla_channel = 
+							ESPUI.getControl(param_2_number)->value.toInt();
+
+						if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
+									REMOTE_ADDRESS_TYPE_IP4)
+							z2s_channels_table[channel_slot].remote_Supla_channel = 
+								remote_Supla_channel;
+							
+						if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
+							REMOTE_ADDRESS_TYPE_MDNS)
+							z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
+								remote_Supla_channel;								
+
+						if (Z2S_saveChannelsTable()) {
+
+							log_i("remote_Supla_channel updated successfuly to %lu", 
+										 remote_Supla_channel);
+						}
+					} break;
+
+
 					default: {
 
 						z2s_channels_table[channel_slot].user_data_2 = 
@@ -6323,13 +6353,15 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
 								USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
-						else
+						else {
 							Z2S_clearChannelFlags(channel_slot, 
 								USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
+							z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 0;
+						}
+							
 
 					updateChannelInfoLabel(1);
 				} break;
-
 
 
 				case GUI_CB_SET_SORWNS_ON_START_FLAG: {
