@@ -344,11 +344,24 @@ void ZigbeeGateway::find_Cb(esp_zb_zdp_status_t zdo_status,
     esp_zb_zdo_bind_req_param_t bind_req = {};
     
     zbg_device_params_t *sensor = (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
-    sensor->endpoint = endpoint;
-    sensor->short_addr = addr;
+
+    if (addr == 0xFFFF) {
+
+      sensor->endpoint = 0xFF;
+      sensor->short_addr = ((findcb_userdata_t*)(user_ctx))->_device_address;
+
+      log_d("Broadcast short address returned - trying to retour\n\r"
+            "short address(0x%x), endpoint(%d)", 
+            sensor->short_addr, sensor->endpoint);
+    } else {
+
+      sensor->endpoint = endpoint;
+      sensor->short_addr = addr;
+
+      log_d("BASIC cluster found: short address(0x%x), endpoint(%d)", 
+            sensor->short_addr, sensor->endpoint);
+    }
     esp_zb_ieee_address_by_short(sensor->short_addr, sensor->ieee_addr);
-    log_d("BASIC cluster found: short address(0x%x), endpoint(%d)", 
-          sensor->short_addr, sensor->endpoint);
 
     _new_device_joined = true;
     _instance->_joined_devices.push_back(sensor); 
@@ -867,6 +880,8 @@ void ZigbeeGateway::findEndpoint(esp_zb_zdo_match_desc_req_param_t *param) {
   param->cluster_list = cluster_list;
   findcb_userdata._endpoint = _endpoint;
   findcb_userdata._cluster_id = ESP_ZB_ZCL_CLUSTER_ID_BASIC;
+  findcb_userdata._device_address = param->addr_of_interest;
+  //findcb_userdata._device_endpoint
   
   esp_zb_zdo_match_cluster(param, find_Cb, &findcb_userdata);
 }

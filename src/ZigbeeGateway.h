@@ -119,6 +119,8 @@
 
 typedef struct findcb_userdata_s {
   uint8_t   _endpoint;
+  uint8_t   _device_endpoint;
+  uint16_t  _device_address;
   uint16_t  _cluster_id;
 } findcb_userdata_t;
 
