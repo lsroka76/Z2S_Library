@@ -6118,6 +6118,51 @@ void editChannelCallback(Control *sender, int type, void *param) {
 					} break;
 
 					
+					case SUPLA_CHANNELTYPE_THERMOMETER:
+					case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
+
+						working_str = ESPUI.getControl(param_1_number)->value;
+
+						int8_t prefix_pos = working_str.indexOf("mdns://");
+
+						if (prefix_pos >= 0) {
+
+							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
+									REMOTE_ADDRESS_TYPE_IP4)
+								z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
+									z2s_channels_table[channel_slot].remote_Supla_channel;
+
+							z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
+								REMOTE_ADDRESS_TYPE_MDNS;
+
+							memcpy(z2s_channels_table[channel_slot].remote_channel_data.mDNS_name,
+								  	 working_str.c_str() + 7, 11);
+								
+							z2s_channels_table[channel_slot].remote_channel_data.mDNS_name[11] = '\0';
+						} else {
+
+							IPAddress ip;
+							ip.fromString(working_str);
+
+							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
+									REMOTE_ADDRESS_TYPE_MDNS)
+								z2s_channels_table[channel_slot].remote_Supla_channel =
+									z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2; 
+
+								z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
+									REMOTE_ADDRESS_TYPE_IP4;
+
+								z2s_channels_table[channel_slot].remote_ip_address = ip;
+						}
+							
+						if (Z2S_saveChannelsTable()) {
+
+								//log_i("remote relay ip address updated successfuly to %lu", 
+									//		z2s_channels_table[channel_slot].user_data_1);
+						}
+					} break;
+
+
 					case SUPLA_CHANNELTYPE_HVAC:
 
 						updateHvacFixedCalibrationTemperature(

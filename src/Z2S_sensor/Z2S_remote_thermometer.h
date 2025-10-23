@@ -207,7 +207,7 @@ public:
       }
     }
     if (connected_thermometers_number > 0) 
-      setValue(connected_thermometers_calculated_temperature / 
+      setValue((double)(connected_thermometers_calculated_temperature) / 
                (connected_thermometers_number * 100));
   }
     

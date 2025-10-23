@@ -201,7 +201,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     }
   }
   // Register Zigbee action handler
-  set_zb_broadcast_ep_handler2();
+  //set_zb_broadcast_ep_handler2();
   
   esp_zb_raw_command_handler_register(zb_raw_cmd_handler);
   esp_zb_core_action_handler_register(zb_action_handler);

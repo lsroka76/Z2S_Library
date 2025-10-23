@@ -30,8 +30,8 @@ static esp_err_t zb_core_cmd_disc_attr_resp_handler(esp_zb_zcl_cmd_discover_attr
 static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_command_message_t *message);
 static esp_err_t zb_zcl_group_operation_resp(esp_zb_zcl_groups_operate_group_resp_message_t message);
 static bool zb_raw_cmd_handler(uint8_t bufid); 
-static uint8_t zb_broadcast_ep_handler(uint8_t bufid); 
-static void set_zb_broadcast_ep_handler2();
+//static uint8_t zb_broadcast_ep_handler(uint8_t bufid); 
+//static void set_zb_broadcast_ep_handler2();
 
 // Zigbee action handlers
 [[maybe_unused]]
@@ -117,7 +117,7 @@ static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id,
   return ret;
 }
 
-static void set_zb_broadcast_ep_handler2() {
+/*static void set_zb_broadcast_ep_handler2() {
 
   ZB_ZCL_SET_BROADCAST_EP_CB(zb_broadcast_ep_handler);
 }
@@ -127,7 +127,7 @@ static uint8_t zb_broadcast_ep_handler(uint8_t bufid) {
   log_i("broadcast !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1");
   return false;
 
-}
+}*/
 
 static bool zb_raw_cmd_handler(uint8_t bufid) {
     
