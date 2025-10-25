@@ -136,8 +136,20 @@ void initZ2SDeviceLocalActionHandler(
         new Supla::Sensor::Z2S_RemoteThermometer();
 
       Supla_Z2S_RemoteThermometer->getChannel()->setChannelNumber(
-        z2s_channels_table[channel_number_slot].Supla_channel
-      );
+          z2s_channels_table[channel_number_slot].Supla_channel);
+
+      uint8_t local_channel_func = 
+        z2s_channels_table[channel_number_slot].local_channel_func;
+
+      if (local_channel_func > 0)
+        Supla_Z2S_RemoteThermometer->setConnectedThermometersFunction(
+            local_channel_func);
+      
+      Supla_Z2S_RemoteThermometer->setTimeoutSecs(
+          z2s_channels_table[channel_number_slot].timeout_secs);
+      
+      Supla_Z2S_RemoteThermometer->setConnectedThermometerSecs(
+          z2s_channels_table[channel_number_slot].refresh_secs);
     } break; 
 
 

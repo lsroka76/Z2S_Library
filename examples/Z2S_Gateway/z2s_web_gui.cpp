@@ -1821,7 +1821,8 @@ void buildChannelsTabGUI() {
 																				 (void*)GUI_CB_UPDATE_REFRESH_FLAG); 
 	working_str = PSTR("&#10023; refresh(s) [ElectricityMeter] &#10023; "
 										 "autoset(s) [VirtualBinary] &#10023;"
-										 "<br>&#10023; debounce(ms) [VirtualSceneSwitch] &#10023;");
+										 "<br>&#10023; debounce(ms) [VirtualSceneSwitch] <br>"
+										 "connected thermometer timeout(s) &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str, 
@@ -5075,12 +5076,6 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_THERMOMETER:
 		case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
 		case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
-
-			enableChannelTimings(2); //timeout only
-			ESPUI.updateNumber(
-				timeout_number, 
-				z2s_channels_table[channel_slot].\
-					timeout_secs);
 	
 			enableChannelFlags(4+8);
 			
@@ -5101,6 +5096,12 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		
 			if (enable_resend_temperature_flag) {
 
+				enableChannelTimings(2+4); //timeout, refresh = connected thermometer timeout
+				ESPUI.updateNumber(timeout_number, 
+													 z2s_channels_table[channel_slot].timeout_secs);
+				ESPUI.updateNumber(refresh_number, 
+													 z2s_channels_table[channel_slot].refresh_secs);
+
 				enableChannelParams(3);
 
 				log_i("remote address type = %s",
@@ -5112,13 +5113,19 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 				working_str = PSTR("&#10023; Enter remote thermometer IP address or mDNS name &#10023;<br>"
 													 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway<br>"
-													 "or enter 0 for local temperature forwarding");
+													 "or enter 0.0.0.0 for local temperature forwarding");
 				ESPUI.updateText(param_1_desc_label, working_str);
 
 				working_str = PSTR("&#10023; Enter destination thermometer channel # &#10023;");
 				ESPUI.updateText(param_2_desc_label, working_str);
-			} else
+			} else {
+
+				enableChannelTimings(2); //timeout only
+				ESPUI.updateNumber(timeout_number, 
+													 z2s_channels_table[channel_slot].timeout_secs);
+
 				enableChannelParams(0);
+			}
 		} break;
 
 

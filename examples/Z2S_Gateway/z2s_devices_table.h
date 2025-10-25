@@ -105,7 +105,7 @@ typedef struct z2s_device_params_s {
   bool                valid_record;
   uint8_t             extended_data_type;
   uint8_t             local_channel_type;
-  uint8_t             reserved_3;
+  uint8_t             local_channel_func;
   uint32_t            model_id;
   esp_zb_ieee_addr_t  ieee_addr;
   uint8_t             endpoint;
@@ -140,10 +140,6 @@ union {
     struct {
       uint32_t        hvac_fixed_temperature_correction;
     };
-    //struct {
-      //uint32_t        remote_ip_address;
-      //uint32_t        remote_Supla_channel:8;
-    //};
     struct {
       uint32_t        value : 24;
       uint32_t        program : 8;
@@ -157,8 +153,6 @@ union {
     struct {
       char            mDNS_name[12];
       uint32_t        remote_ip_address;
-      //uint8_t         remote_Supla_channel_2;
-      //uint8_t         remote_address_type;
     } remote_channel_data;
   };
   uint32_t            user_data_flags;

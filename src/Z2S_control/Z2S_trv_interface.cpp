@@ -925,7 +925,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
      // log_i("No TRV temperature data - sending ",
        //     _trv_fixed_temperature_calibration);
             
-      readTRVLocalTemperature(INT32_MIN); //???? TODO
+      readTRVLocalTemperature(-27500); //???? TODO
     }
 
     /*if ((_trv_last_temperature_calibration == INT32_MIN) {
