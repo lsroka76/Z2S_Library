@@ -3170,6 +3170,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE284_1lvln0x6", .model_name = "TS0601",
+    .z2s_device_uid = 23755,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE204_ex3rcdha", .model_name = "TS0601",
     .z2s_device_uid = 23800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5,
