@@ -310,7 +310,8 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
             ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
         } */
         if (z2s_channels_table[channel_number_slot].user_data_2 == 0)
-          z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+          z2s_channels_table[channel_number_slot].user_data_flags &= 
+            ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
         //else
          // z2s_channels_table[channel_number_slot].user_data_1--;*/
           Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
@@ -376,7 +377,8 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
           if (!Supla_Z2S_HvacBase->isThermostatDisabled())
             Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, true); 
 
-          z2s_channels_table[channel_number_slot].user_data_flags &= ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+          z2s_channels_table[channel_number_slot].user_data_flags &= 
+            ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
           z2s_channels_table[channel_number_slot].user_data_2 = 0;
 
         break;
@@ -460,10 +462,19 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
 
     case TRV_TEMPERATURE_CALIBRATION_MSG: { //degrees*100
 
-      log_i("msgZ2SDeviceHvac - TRV_TEMPERATURE_CALIBRATION_MSG: 0x%x", 
+      log_i("msgZ2SDeviceHvac - TRV_TEMPERATURE_CALIBRATION_MSG: %04d", 
             msg_value);
 
       Supla_Z2S_TRVInterface->setTRVTemperatureCalibration(msg_value);
+
+      if (Z2S_checkChannelFlags(channel_number_slot, 
+                                USER_DATA_FLAG_TRV_FIXED_CORRECTION)) {
+
+        updateHvacFixedCalibrationTemperature(channel_number_slot, 
+                                              msg_value,
+                                              false);
+        Supla_Z2S_TRVInterface->setFixedTemperatureCalibration(msg_value);
+      }  
     } break; 
 
 

@@ -263,6 +263,7 @@
 #define TUYA_FINGERBOT_PLUS_UPPER_LIMIT_DP                          0x6A
 #define TUYA_FINGERBOT_PLUS_TOUCH_DP                                0x6B
 
+#define TUYA_ZWT_ZWT198_TEMPERATURE_CALIBRATION_DP                  0x13
 #define TUYA_ZWT_ZWT198_SENSOR_DP                                   0x6A
 #define TUYA_ZWT_ZWT198_BACKLIGHT_MODE_DP                           0x6E
 

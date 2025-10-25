@@ -88,8 +88,11 @@ public:
     void setConnectedThermometerTimeoutSecs(
       uint32_t connected_thermometer_timeout_secs) {
 
-      _connected_thermometer_timeout_ms = 
-        connected_thermometer_timeout_secs * 1000;
+      if (connected_thermometer_timeout_secs > 0)
+        _connected_thermometer_timeout_ms = 
+          connected_thermometer_timeout_secs * 1000;
+      else
+        _connected_thermometer_timeout_ms = MINUTES_30;
     }
 
   void setConnectedThermometerTemperature(

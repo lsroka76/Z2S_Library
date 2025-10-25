@@ -1805,6 +1805,13 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => off, 1 => low, 2 => medium, 3 => high" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
+    .Tuya_datapoint_id 		 			= TUYA_ZWT_ZWT198_TEMPERATURE_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature correction",
+    .Tuya_datapoint_description = "Enter numeric value between -99 and 99 "
+																	"1 = 0.1°C" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_COVER,
     .Tuya_datapoint_id 		 			= MOES_COVER_STATE_COVER_POSITION_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,

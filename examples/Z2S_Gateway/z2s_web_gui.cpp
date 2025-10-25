@@ -137,6 +137,7 @@ uint16_t zb_channel_flags_label;
 uint16_t zb_channel_params_label;
 uint16_t channel_name_text; //, channel_desc_number, channel_sub_id_number;
 uint16_t channel_name_save_button;
+uint16_t channel_local_function;
 uint16_t disable_channel_notifications_switcher;
 uint16_t trv_auto_to_schedule_switcher;
 uint16_t trv_auto_to_schedule_manual_switcher;
@@ -345,6 +346,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_UPDATE_CHANNEL_DESC_FLAG						0x4001
 #define GUI_CB_UPDATE_CHANNEL_SUB_ID_FLAG					0x4002
 #define GUI_CB_UPDATE_CHANNEL_FUNC_FLAG						0x4003
+#define GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG	0x4004
 #define GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG	0x4005
 #define GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG					0x4006
 #define GUI_CB_SET_SORWNS_ON_START_FLAG						0x4007
@@ -1473,6 +1475,14 @@ void buildChannelsTabGUI() {
 																				  		editChannelCallback, 
 																							(void*)GUI_CB_UPDATE_CHANNEL_NAME_FLAG);
 
+	channel_local_function = 
+		ESPUI.addControl(Control::Type::Select, 
+										 PSTR(empty_str), working_str, 
+										 Control::Color::Emerald, 
+										 channel_name_text, 
+										 editChannelCallback, 
+										 (void*)GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG);
+
 	
 	zb_channel_flags_label = ESPUI.addControl(Control::Type::Label, 
 																						PSTR("CHANNEL FLAGS"), 
@@ -1819,10 +1829,10 @@ void buildChannelsTabGUI() {
 																				 zb_channel_timings_label, 
 																				 editChannelCallback, 
 																				 (void*)GUI_CB_UPDATE_REFRESH_FLAG); 
-	working_str = PSTR("&#10023; refresh(s) [ElectricityMeter] &#10023; "
-										 "autoset(s) [VirtualBinary] &#10023;"
-										 "<br>&#10023; debounce(ms) [VirtualSceneSwitch] <br>"
-										 "connected thermometer timeout(s) &#10023;");
+	working_str = PSTR("&#10023; refresh(s) [ElectricityMeter] &#10023;<br>"
+										 "&#10023; autoset(s) [VirtualBinary] &#10023<br>;"
+										 "&#10023; debounce(ms) [VirtualSceneSwitch] &#10023; <br>"
+										 "&#10023; connected thermometer timeout(s) &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str, 
@@ -4990,7 +5000,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 		case 0x0000: {
 
-			enableChannelTimings(0);
+			
 			enableChannelFlags(0);
 
 			if (z2s_channels_table[channel_slot].local_channel_type == 
@@ -5001,11 +5011,13 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				//ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
 	
 				//enableChannelFlags(0);
+				enableChannelTimings(0);
 			}
 
 			if (z2s_channels_table[channel_slot].local_channel_type == 
 					LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
 
+				enableChannelTimings(0);
 				enableChannelParams(3);
 				fillRemoteAddressData(channel_slot);
 
@@ -5015,6 +5027,21 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 				working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
 				ESPUI.updateText(param_2_desc_label, working_str);
+			}
+
+			if (z2s_channels_table[channel_slot].local_channel_type == 
+					LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
+
+				enableChannelTimings(2+4);
+				/*enableChannelParams(3);
+				fillRemoteAddressData(channel_slot);
+
+				working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
+										 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
+				ESPUI.updateText(param_1_desc_label, working_str);
+
+				working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
+				ESPUI.updateText(param_2_desc_label, working_str);*/
 			}
 		} break;
 		
@@ -6171,6 +6198,13 @@ void editChannelCallback(Control *sender, int type, void *param) {
 					//json_reload_required = true;
 				}
 			} break;
+
+
+			case GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG: {
+
+
+			} break;
+
 
 			case GUI_CB_UPDATE_PARAM_1_FLAG : {	
 

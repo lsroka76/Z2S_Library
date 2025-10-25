@@ -169,7 +169,10 @@ Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_s
 
 // HVAC data reporting                         //
 
-void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, uint32_t model_id) {
+void processTuyaHvacDataReport(int16_t channel_number_slot, 
+                              uint16_t payload_size, 
+                              uint8_t *payload, 
+                              uint32_t model_id) {
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
@@ -418,7 +421,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot, uint16_t payload_siz
 
       msgZ2SDeviceHvac(channel_number_slot_2, 
                        TRV_TEMPERATURE_CALIBRATION_MSG, 
-                       (Tuya_read_dp_result.dp_value * 100) / 
+                       (((int32_t)Tuya_read_dp_result.dp_value) * 100) / 
                        temperature_calibration_factor);
     }
   }

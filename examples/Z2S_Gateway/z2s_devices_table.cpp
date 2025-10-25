@@ -2044,7 +2044,7 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
           msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1); 
         break;
         
-        
+
         case 1: 
           
           msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 1); 
@@ -5313,7 +5313,10 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
   }
 }
 
-void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selector, uint32_t timings_secs) {
+void updateTimeout(uint8_t channel_number_slot, 
+                   uint8_t timeout, 
+                   uint8_t selector, 
+                   uint32_t timings_secs) {
   
   if (timeout > 0) {
 
@@ -5337,14 +5340,16 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
     if (z2s_channels_table[channel_number_slot].local_channel_type == 
        LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
 
-      auto Supla_LocalActionHandlerWithTrigger = reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>
-        (z2s_channels_table[channel_number_slot].local_action_handler_data.Supla_element); 
+      auto Supla_LocalActionHandlerWithTrigger = 
+        reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>
+          (z2s_channels_table[channel_number_slot].local_action_handler_data.Supla_element); 
 
       Supla_LocalActionHandlerWithTrigger->setPostponedTurnOnSecs(timings_secs);
       return;
-    } 
-
-    auto element = Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+    }
+ 
+    auto element = Supla::Element::getElementByChannelNumber(
+        z2s_channels_table[channel_number_slot].Supla_channel);
 
     if (element == nullptr)
       return;
@@ -5354,7 +5359,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
-        auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
+        auto Supla_Z2S_VirtualBinary = 
+          reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
         
         if (selector & 2)
           Supla_Z2S_VirtualBinary->setTimeoutSecs(timings_secs);
@@ -5366,7 +5372,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
-        auto Supla_Z2S_VirtualThermHygroMeter = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+        auto Supla_Z2S_VirtualThermHygroMeter = 
+          reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
 
         if (selector & 2)
           Supla_Z2S_VirtualThermHygroMeter->setTimeoutSecs(timings_secs);
@@ -5375,7 +5382,24 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_THERMOMETER: {
 
-        auto Supla_Z2S_VirtualThermometer = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
+        if (z2s_channels_table[channel_number_slot].local_channel_type ==
+            LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
+
+          auto Supla_Z2S_RemoteThermometer = 
+            reinterpret_cast<Supla::Sensor::Z2S_RemoteThermometer *>(element);
+
+          if (selector & 2)
+          Supla_Z2S_RemoteThermometer->setTimeoutSecs(timings_secs);
+
+          if (selector & 4)
+            Supla_Z2S_RemoteThermometer->setConnectedThermometerTimeoutSecs(
+                timings_secs);
+      
+          return;
+        }
+
+        auto Supla_Z2S_VirtualThermometer = 
+          reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
 
         if (selector & 2)
           Supla_Z2S_VirtualThermometer->setTimeoutSecs(timings_secs);
@@ -5383,7 +5407,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
-        auto Supla_Z2S_VirtualThermometer = reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
+        auto Supla_Z2S_VirtualThermometer = 
+          reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
 
         if (selector & 2)
           Supla_Z2S_VirtualThermometer->setTimeoutSecs(timings_secs);
@@ -5394,7 +5419,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
         if (element->getChannel()->isRollerShutterRelayType()) {
 
-          auto Supla_Z2S_RollerShutter = reinterpret_cast<Supla::Control::Z2S_RollerShutter *>(element);
+          auto Supla_Z2S_RollerShutter = 
+            reinterpret_cast<Supla::Control::Z2S_RollerShutter *>(element);
 
           if (selector & 1)
             Supla_Z2S_RollerShutter->setKeepAliveSecs(timings_secs);
@@ -5404,7 +5430,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
         } else {
 
-          auto Supla_Z2S_VirtualRelay = reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
+          auto Supla_Z2S_VirtualRelay = 
+            reinterpret_cast<Supla::Control::Z2S_VirtualRelay *>(element);
 
           if (selector & 1)
             Supla_Z2S_VirtualRelay->setKeepAliveSecs(timings_secs);
@@ -5413,12 +5440,12 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
             Supla_Z2S_VirtualRelay->setTimeoutSecs(timings_secs);
         }
       } break;
-
       
 
       case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
-        auto Supla_Z2S_ElectricityMeter = reinterpret_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);
+        auto Supla_Z2S_ElectricityMeter = 
+          reinterpret_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);
 
         if (selector & 1)
           Supla_Z2S_ElectricityMeter->setKeepAliveSecs(timings_secs);
@@ -5433,7 +5460,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_DIMMER: {
 
-        auto Supla_Z2S_DimmerInterface = reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
+        auto Supla_Z2S_DimmerInterface = 
+          reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
 
         if (selector & 1)
           Supla_Z2S_DimmerInterface->setKeepAliveSecs(timings_secs);
@@ -5445,7 +5473,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: {
 
-        auto Supla_Z2S_RGBInterface = reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
+        auto Supla_Z2S_RGBInterface = 
+          reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
         
         if (selector & 1)
           Supla_Z2S_RGBInterface->setKeepAliveSecs(timings_secs);
@@ -5456,9 +5485,12 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_HVAC: {
 
-        auto Supla_Z2S_HvacBaseEE = reinterpret_cast<Supla::Control::HvacBaseEE*>(element);
+        auto Supla_Z2S_HvacBaseEE = 
+          reinterpret_cast<Supla::Control::HvacBaseEE*>(element);
+
         auto Supla_Z2S_TRVInterface = 
-          reinterpret_cast<Supla::Control::Z2S_TRVInterface*>(Supla_Z2S_HvacBaseEE->getPrimaryOutputEE());
+          reinterpret_cast<Supla::Control::Z2S_TRVInterface*>(
+            Supla_Z2S_HvacBaseEE->getPrimaryOutputEE());
         
         if (Supla_Z2S_TRVInterface && (selector & 2))
         Supla_Z2S_TRVInterface->setTimeoutSecs(timings_secs);
@@ -5466,7 +5498,8 @@ void updateTimeout(uint8_t channel_number_slot, uint8_t timeout, uint8_t selecto
 
       case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
 
-        auto Supla_Z2S_ActionTrigger = reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
+        auto Supla_Z2S_ActionTrigger = 
+          reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
      
       if (Supla_Z2S_ActionTrigger && (selector & 4))
         Supla_Z2S_ActionTrigger->setDebounceTimeMs(timings_secs);
@@ -5621,15 +5654,15 @@ void updateRemoteThermometer(uint8_t Supla_channel,
       Z2S_RemoteThermometer->setConnectedThermometerTemperature(
         connected_thermometer_ip_address,
         connected_thermometer_channel,
-        connected_thermometer_temperature
-      );      
+        connected_thermometer_temperature);      
   }
 }
 
 
 void updateHvacFixedCalibrationTemperature(
   uint8_t channel_number_slot,
-  int32_t hvac_fixed_calibration_temperature) {
+  int32_t hvac_fixed_calibration_temperature,
+  bool set_trv_interface) {
 
   if (z2s_channels_table[channel_number_slot].
     Supla_channel_type == SUPLA_CHANNELTYPE_HVAC) {
@@ -5643,25 +5676,28 @@ void updateHvacFixedCalibrationTemperature(
       log_i("Device(channel %d) fixed calibration temperature updated. "
             "Table saved successfully.", 
             z2s_channels_table[channel_number_slot].Supla_channel);
-      
-      auto element = 
-      Supla::Element::getElementByChannelNumber(
-        z2s_channels_table[channel_number_slot].Supla_channel);
 
-      if (element && 
-          (element->getChannel()->getChannelType() == 
-            SUPLA_CHANNELTYPE_HVAC)) {
+      if (set_trv_interface) {
 
-        auto Supla_Z2S_HvacBase = 
-          reinterpret_cast<Supla::Control::HvacBaseEE *>(element);
+        auto element = 
+        Supla::Element::getElementByChannelNumber(
+         z2s_channels_table[channel_number_slot].Supla_channel);
+
+        if (element && 
+            (element->getChannel()->getChannelType() == 
+              SUPLA_CHANNELTYPE_HVAC)) {
+
+          auto Supla_Z2S_HvacBase = 
+            reinterpret_cast<Supla::Control::HvacBaseEE *>(element);
     
-        auto Supla_Z2S_TRVInterface = 
-          reinterpret_cast<Supla::Control::Z2S_TRVInterface *>
-            (Supla_Z2S_HvacBase->getPrimaryOutputEE());
+          auto Supla_Z2S_TRVInterface = 
+            reinterpret_cast<Supla::Control::Z2S_TRVInterface *>
+              (Supla_Z2S_HvacBase->getPrimaryOutputEE());
 
-        Supla_Z2S_TRVInterface->
-          setFixedTemperatureCalibration(
-            hvac_fixed_calibration_temperature);
+          Supla_Z2S_TRVInterface->
+            setFixedTemperatureCalibration(
+              hvac_fixed_calibration_temperature);
+        }
       }
     }
   }

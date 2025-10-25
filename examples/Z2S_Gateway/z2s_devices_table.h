@@ -138,7 +138,7 @@ union {
       uint32_t        rgb_color_mode;
     };
     struct {
-      uint32_t        hvac_fixed_temperature_correction;
+      int32_t        hvac_fixed_temperature_correction;
     };
     struct {
       uint32_t        value : 24;
@@ -701,7 +701,8 @@ void updateRemoteThermometer(uint8_t Supla_channel,
 
 
 void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
-                                           int32_t hvac_fixed_calibration_temperature);
+                                           int32_t hvac_fixed_calibration_temperature,
+                                           bool set_trv_interface = true);
 
 void updateDeviceTemperature(uint8_t channel_number_slot,
                              int32_t temperature);

@@ -89,10 +89,13 @@ void Supla::Control::Z2S_TRVInterface::
 void Supla::Control::Z2S_TRVInterface::setFixedTemperatureCalibration(
     int32_t trv_fixed_temperature_calibration) {
 
-    /*if (_trv_fixed_temperature_calibration == 
-        trv_fixed_temperature_calibration) 
-      return;*/
+    if (abs(trv_fixed_temperature_calibration - 
+                _trv_temperature_calibration) <= 10) {
 
+      _trv_fixed_temperature_calibration = _trv_temperature_calibration;
+      return;
+    }
+    
     _trv_fixed_temperature_calibration = trv_fixed_temperature_calibration;
     _trv_fixed_temperature_calibration_updated = true;
 
@@ -633,30 +636,32 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
   }
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(int32_t trv_temperature_setpoint) {
+void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
+    int32_t trv_temperature_setpoint) {
 
   _trv_temperature_setpoint = trv_temperature_setpoint;
   _trv_temperature_setpoint_updated = true;
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVSystemMode(uint8_t trv_system_mode) {
+void Supla::Control::Z2S_TRVInterface::setTRVSystemMode(
+    uint8_t trv_system_mode) {
 
   _trv_system_mode = trv_system_mode;
   _trv_system_mode_updated = true;
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::
-  setTRVRunningState(uint8_t trv_running_state) {
+void Supla::Control::Z2S_TRVInterface::setTRVRunningState(
+    uint8_t trv_running_state) {
 
   _trv_running_state = trv_running_state;
   _trv_running_state_updated = true;
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::
-  setTRVLocalTemperature(int32_t trv_local_temperature) {
+void Supla::Control::Z2S_TRVInterface::setTRVLocalTemperature(
+    int32_t trv_local_temperature) {
   
   _trv_last_local_temperature = _trv_local_temperature;
   _trv_local_temperature = trv_local_temperature;
@@ -664,8 +669,8 @@ void Supla::Control::Z2S_TRVInterface::
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::
-  setTRVTemperatureCalibration(int32_t trv_temperature_calibration) {
+void Supla::Control::Z2S_TRVInterface::setTRVTemperatureCalibration(
+    int32_t trv_temperature_calibration) {
   
   _trv_last_temperature_calibration = _trv_temperature_calibration;
   _trv_temperature_calibration = trv_temperature_calibration;
@@ -673,8 +678,8 @@ void Supla::Control::Z2S_TRVInterface::
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::
-  setTRVChildLock(uint8_t trv_child_lock) {
+void Supla::Control::Z2S_TRVInterface::setTRVChildLock(
+    uint8_t trv_child_lock) {
   
   if (_trv_child_lock != trv_child_lock)
     _trv_child_lock_changed = true;
@@ -682,16 +687,15 @@ void Supla::Control::Z2S_TRVInterface::
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::
-  setTRVTemperatureHisteresis(int32_t trv_temperature_histeresis) {
+void Supla::Control::Z2S_TRVInterface::setTRVTemperatureHisteresis(
+    int32_t trv_temperature_histeresis) {
 
     _trv_temperature_histeresis = trv_temperature_histeresis;
     _trv_temperature_histeresis_updated = true;
     refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::
-  turnOffTRVScheduleMode() {
+void Supla::Control::Z2S_TRVInterface::turnOffTRVScheduleMode() {
 
   _trv_switch_schedule_off = true;
 }
@@ -814,6 +818,11 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     if (_trv_hvac)
         hvacLastTemperature = _trv_hvac->getPrimaryTemp();
 
+    log_i("_trv_external_sensor_detection_enabled = %u\n\r"
+          "_trv_external_sensor_present = %u\n\r",
+          _trv_external_sensor_detection_enabled,
+          _trv_external_sensor_present);
+
     if (_trv_external_sensor_present) { 
         
       switch (_trv_external_sensor_mode) {
@@ -897,9 +906,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
       if ((_trv_external_sensor_mode ==
             EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
-          (abs(_trv_fixed_temperature_calibration - 
+          /*((abs(_trv_fixed_temperature_calibration - 
                 _trv_temperature_calibration) > 10) ||
-          _trv_fixed_temperature_calibration_updated) {
+          */_trv_fixed_temperature_calibration_updated) { //}) {
 
         sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
         _trv_fixed_temperature_calibration_updated = false;

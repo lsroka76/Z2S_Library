@@ -2709,12 +2709,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE200_rxntag7i", .model_name = "TS0601",
-   .z2s_device_uid = 17700,
+    .z2s_device_uid = 17700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE204_vjpaih9f", .model_name = "TS0601",
-   .z2s_device_uid = 17750,
+    .z2s_device_uid = 17750,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV16,
 	  .z2s_device_endpoints_count = 1},
 
@@ -2898,6 +2898,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZB210_jogusbq1", .model_name = "TS0505B",
+    .z2s_device_uid = 19910,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3210_3lbtuxgp", .model_name = "TS0505B",
     .z2s_device_uid = 20000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
@@ -3048,6 +3053,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_vzopcetz", .model_name = "TS011F",
     .z2s_device_uid = 22005,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH,
+	  .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 3, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  {	.manufacturer_name = "_TZ3000_qewo8dlz", .model_name = "TS0013",
+    .z2s_device_uid = 22010,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH,
 	  .z2s_device_endpoints_count = 3,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
