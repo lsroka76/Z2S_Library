@@ -112,7 +112,10 @@ typedef struct z2s_device_params_s {
   uint16_t            cluster_id;
   uint16_t            short_addr;
   uint8_t             Supla_channel;
+union {
   uint8_t             Supla_secondary_channel;
+  uint8_t             Supla_remote_channel;
+};
   int32_t             Supla_channel_type;
   char                Supla_channel_name[32];
   uint32_t            Supla_channel_func;
@@ -137,10 +140,10 @@ typedef struct z2s_device_params_s {
     struct {
       uint32_t        hvac_fixed_temperature_correction;
     };
-    struct {
-      uint32_t        remote_ip_address;
-      uint32_t        remote_Supla_channel:8;
-    };
+    //struct {
+      //uint32_t        remote_ip_address;
+      //uint32_t        remote_Supla_channel:8;
+    //};
     struct {
       uint32_t        value : 24;
       uint32_t        program : 8;
@@ -153,13 +156,11 @@ typedef struct z2s_device_params_s {
     } local_action_handler_data;
     struct {
       char            mDNS_name[12];
-      //uint32_t        remote_ip_address;
-      uint8_t         remote_Supla_channel_2;
-      uint8_t         remote_address_type;
-
+      uint32_t        remote_ip_address;
+      //uint8_t         remote_Supla_channel_2;
+      //uint8_t         remote_address_type;
     } remote_channel_data;
   };
-  
   uint32_t            user_data_flags;
   uint32_t            timeout_secs;
   uint32_t            keep_alive_secs;
@@ -434,9 +435,13 @@ void Z2S_fillChannelsTableSlot(zbg_device_params_t *device,
                                uint8_t *extended_data = nullptr);
 
 bool Z2S_setChannelFlags(int16_t channel_number_slot, 
-                         uint32_t flags_to_set);
+                         uint32_t flags_to_set,
+                         bool save_table = true);
 bool Z2S_clearChannelFlags(int16_t channel_number_slot, 
-                           uint32_t flags_to_clear);
+                           uint32_t flags_to_clear,
+                           bool save_table = true);
+bool Z2S_checkChannelFlags(int16_t channel_number_slot, 
+                           uint32_t flags_to_check);
 
 bool Z2S_setZbDeviceFlags(int8_t device_number_slot, 
                           uint32_t flags_to_set);

@@ -26,6 +26,7 @@
 
 #define MSINHOUR (60*60*1000)
 #define MINUTES_30 1800000
+//#define MINUTES_30
 
 #define CONNECTED_THERMOMETERS_FNC_MIN  0x01
 #define CONNECTED_THERMOMETERS_FNC_AVG  0x02
@@ -77,10 +78,16 @@ public:
     _timeout_ms = timeout_secs * 1000;
   }
 
-  void setsetConnectedThermometerFunction(
+  void setsetConnectedThermometersFunction(
     uint32_t connected_thermometers_function) {
 
       _connected_thermometers_function = connected_thermometers_function;
+    }
+    
+    void setsetConnectedThermometerTimeoutSecs(
+      uint32_t connected_thermometer_timeout) {
+
+      _connected_thermometer_timeout = connected_thermometer_timeout;
     }
 
   void setConnectedThermometerTemperature(
@@ -193,8 +200,9 @@ public:
       if (_connected_thermometers[connected_thermometers_counter].
            connected_thermometer_channel < 0xFF) {
 
-        if ((millis_ms - _connected_thermometers[connected_thermometers_counter].
-           connected_thermometer_last_seen_ms) > 30000) { //MINUTES_30) { //unregister connected thermometer
+        if ((millis_ms - _connected_thermometers[connected_thermometers_counter].\
+                           connected_thermometer_last_seen_ms) > 
+            _connected_thermometer_timeout) { //unregister connected thermometer
 
           log_i("unregistering connected thermometer from IP %s, channel %u",
                 IPAddress(_connected_thermometers[connected_thermometers_counter].
@@ -275,7 +283,9 @@ public:
   uint32_t  _connected_thermometers_function = CONNECTED_THERMOMETERS_FNC_AVG;
   connected_thermometers_t _connected_thermometers[MAX_CONNECTED_THERMOMETERS];  
 
-  uint32_t _timeout_ms = 0;
+  uint32_t _connected_thermometer_timeout = MINUTES_30; //-> channel refresh?
+
+  uint32_t _timeout_ms = 0; //-> channel timeout
   uint32_t _last_timeout_ms = 0;
 };
 };  // namespace Sensor

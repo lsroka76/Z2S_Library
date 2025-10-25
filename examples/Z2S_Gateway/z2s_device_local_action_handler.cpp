@@ -151,16 +151,21 @@ void initZ2SDeviceLocalActionHandler(
 
       Supla_Z2S_RemoteRelay->getChannel()->setChannelNumber(Supla_channel);
 
-      switch (z2s_channels_table[channel_number_slot].remote_channel_data.remote_address_type) {
-
+      uint8_t remote_address_type = 
+        Z2S_checkChannelFlags(channel_number_slot, 
+                              USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
+        REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
+      
+      switch (remote_address_type) {
 
         case REMOTE_ADDRESS_TYPE_IP4: {
 
           Supla_Z2S_RemoteRelay->setRemoteGatewayIPAddress(
-            z2s_channels_table[channel_number_slot].remote_ip_address);
+            z2s_channels_table[channel_number_slot].\
+              remote_channel_data.remote_ip_address);
           
           Supla_Z2S_RemoteRelay->setRemoteGatewaySuplaChannel(
-            z2s_channels_table[channel_number_slot].remote_Supla_channel);
+            z2s_channels_table[channel_number_slot].Supla_remote_channel);
         } break;
 
 
@@ -171,8 +176,7 @@ void initZ2SDeviceLocalActionHandler(
             remote_channel_data.mDNS_name);
 
           Supla_Z2S_RemoteRelay->setRemoteGatewaySuplaChannel(
-            z2s_channels_table[channel_number_slot].
-            remote_channel_data.remote_Supla_channel_2);
+            z2s_channels_table[channel_number_slot].Supla_remote_channel);
         }
       }      
     }
@@ -279,12 +283,14 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
 
       auto Supla_Z2S_RemoteRelay = 
         new Supla::Control::Z2S_RemoteRelay(&Z2S_NetworkClient,
-          z2s_channels_table[first_free_slot].remote_Supla_channel); 
+          z2s_channels_table[first_free_slot].Supla_remote_channel); 
 
       z2s_channels_table[first_free_slot].Supla_channel = 
         Supla_Z2S_RemoteRelay->getChannelNumber();
 
-      z2s_channels_table[first_free_slot].remote_channel_data.remote_address_type = 0;
+      Z2S_clearChannelFlags(first_free_slot, 
+                            USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS,
+                            false);
 
       strcpy(z2s_channels_table[first_free_slot].
         Supla_channel_name, "LOCAL REMOTE RELAY");

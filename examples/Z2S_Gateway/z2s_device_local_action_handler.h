@@ -22,7 +22,7 @@
 
 #define REMOTE_ADDRESS_TYPE_LOCAL               0x00
 #define REMOTE_ADDRESS_TYPE_IP4                 0x01
-#define REMOTE_ADDRESS_TYPE_MDNS          0x02
+#define REMOTE_ADDRESS_TYPE_MDNS                0x02
 
 static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
 

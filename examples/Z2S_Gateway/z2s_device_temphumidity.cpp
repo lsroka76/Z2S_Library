@@ -190,35 +190,26 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
   if (z2s_channels_table[channel_number_slot].user_data_flags &
 			USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) {
 
-    uint8_t remote_Supla_channel;
+    uint8_t remote_Supla_channel =
+      z2s_channels_table[channel_number_slot].Supla_remote_channel;
+    
+    uint8_t remote_address_type = 
+      Z2S_checkChannelFlags(channel_number_slot, 
+                            USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
+      REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
 
-    log_i("Resending temperature, address type = %u",
-        z2s_channels_table[channel_number_slot].
-        remote_channel_data.remote_address_type);
+    log_i("Resending temperature, address flag = %s",
+          (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) ?
+          "MDNS" : "IP4");
 
-    switch(z2s_channels_table[channel_number_slot].
-        remote_channel_data.remote_address_type) {
-
-
-      /*case REMOTE_ADDRESS_TYPE_LOCAL:
-
-        updateRemoteThermometer(
-          z2s_channels_table[channel_number_slot].remote_Supla_channel,
-          0,
-          z2s_channels_table[channel_number_slot].Supla_channel,
-          (int32_t)(temp*100));
-
-        return;
-      break;*/
+    switch(remote_address_type) {
 
 
       case REMOTE_ADDRESS_TYPE_IP4: {
 
         ip_address = 
-          z2s_channels_table[channel_number_slot].remote_ip_address;
-
-        remote_Supla_channel = 
-          z2s_channels_table[channel_number_slot].remote_Supla_channel;
+          z2s_channels_table[channel_number_slot].\
+            remote_channel_data.remote_ip_address;
       }
       break;
 
@@ -226,16 +217,16 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
       case REMOTE_ADDRESS_TYPE_MDNS: {
 
         ip_address = MDNS.queryHost(
-          z2s_channels_table[channel_number_slot]. \
+          z2s_channels_table[channel_number_slot].\
           remote_channel_data.mDNS_name);
 
-        remote_Supla_channel = 
-          z2s_channels_table[channel_number_slot].
-          remote_channel_data.remote_Supla_channel_2;
+        z2s_channels_table[channel_number_slot].\
+            remote_channel_data.remote_ip_address = ip_address;
       } break;
     }
 
-    if (z2s_channels_table[channel_number_slot].remote_ip_address== 0) {
+    if (z2s_channels_table[channel_number_slot].
+        remote_channel_data.remote_ip_address == 0) {
 
         updateRemoteThermometer(
           remote_Supla_channel,

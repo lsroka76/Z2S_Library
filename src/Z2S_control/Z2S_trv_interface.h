@@ -1097,6 +1097,7 @@ protected:
 
   void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);
+  void readTRVLocalTemperature(int32_t local_temperature);
   void sendTRVTemperatureCalibration(int32_t temperature_calibration);
   void sendTRVExternalSensorTemperature(int32_t external_sensor_temperature);
   void sendTRVExternalSensorInput(bool trv_external_sensor_present);

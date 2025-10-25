@@ -86,8 +86,12 @@ void Supla::Control::Z2S_TRVInterface::
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  setFixedTemperatureCalibration(int32_t trv_fixed_temperature_calibration) {
+void Supla::Control::Z2S_TRVInterface::setFixedTemperatureCalibration(
+    int32_t trv_fixed_temperature_calibration) {
+
+    /*if (_trv_fixed_temperature_calibration == 
+        trv_fixed_temperature_calibration) 
+      return;*/
 
     _trv_fixed_temperature_calibration = trv_fixed_temperature_calibration;
     _trv_fixed_temperature_calibration_updated = true;
@@ -107,10 +111,10 @@ void Supla::Control::Z2S_TRVInterface::
   }
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  enableExternalSensorDetection(bool enable_external_sensor_detection, 
-                                uint8_t external_sensor_mode, 
-                                uint8_t internal_sensor_channel) {
+void Supla::Control::Z2S_TRVInterface::enableExternalSensorDetection(
+    bool enable_external_sensor_detection, 
+    uint8_t external_sensor_mode, 
+    uint8_t internal_sensor_channel) {
   
   _trv_external_sensor_detection_enabled = enable_external_sensor_detection;
   _trv_internal_sensor_channel = internal_sensor_channel;
@@ -119,8 +123,8 @@ void Supla::Control::Z2S_TRVInterface::
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  sendTRVTemperatureSetpoint(int32_t temperature_setpoint) {
+void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
+    int32_t temperature_setpoint) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -159,6 +163,54 @@ void Supla::Control::Z2S_TRVInterface::
                                    ESP_ZB_ZCL_ATTR_TYPE_S16,
                                    2, 
                                    &temperature_setpoint);
+    }
+
+    if (_last_cmd_sent_ms == 0)
+      _last_cmd_sent_ms = millis();
+  }
+}
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
+    int32_t local_temperature) {
+
+  if (_gateway && Zigbee.started()) {
+
+    log_i("Z2S_TRVInterface::sendTRVLocalTemperature = %d", 
+          local_temperature);
+
+    if ((_trv_commands_set >= saswell_cmd_set) &&
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
+
+      if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == 
+          _trv_commands_set) {
+        
+        if (ts0601_command_sets_table[_trv_commands_set].
+              ts0601_cmd_set_local_temperature_dp_type == 
+            TUYA_DP_TYPE_VALUE) {
+
+          local_temperature *= ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_local_temperature_factor;
+          local_temperature /= 100;
+
+          sendTuyaRequestCmdValue32(_gateway, 
+                                    &_device, 
+                                    ts0601_command_sets_table[_trv_commands_set].
+                                      ts0601_cmd_set_local_temperature_dp_id,
+                                    local_temperature);
+        }
+      } else
+        log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
+              ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
+              _trv_commands_set); 
+    } else
+
+    if (_trv_commands_set == TRVZB_CMD_SET) {
+
+      _gateway->sendAttributeRead(&_device, 
+                                  ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -845,7 +897,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
       if ((_trv_external_sensor_mode ==
             EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
-          ((_trv_fixed_temperature_calibration != _trv_temperature_calibration) ||
+          (abs(_trv_fixed_temperature_calibration - 
+                _trv_temperature_calibration) > 10) ||
           _trv_fixed_temperature_calibration_updated)) {
 
         sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
@@ -869,10 +922,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     if (_trv_local_temperature == INT32_MIN) {
 
-     // log_i("No TRV temperature data - sending TemperatureCalibration with %ld value",
+     // log_i("No TRV temperature data - sending ",
        //     _trv_fixed_temperature_calibration);
             
-      //sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration); //???? TODO
+      readTRVLocalTemperature(INT32_MIN); //???? TODO
     }
 
     /*if ((_trv_last_temperature_calibration == INT32_MIN) {
