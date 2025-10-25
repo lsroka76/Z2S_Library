@@ -773,6 +773,13 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         //if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && 
         //    (hvacLastTemperature != _trv_local_temperature)) {
 
+          if ((_trv_last_temperature_calibration == INT32_MIN) {
+
+            log_i("EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE present - reseting calibration to 0");
+            
+            sendTRVTemperatureCalibration(0);
+          }
+          
           if ((_trv_local_temperature_updated) && 
               ((_trv_temperature_calibration_updated) || 
               (_trv_temperature_calibration == 0)) &&
@@ -865,8 +872,17 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
      // log_i("No TRV temperature data - sending TemperatureCalibration with %ld value",
        //     _trv_fixed_temperature_calibration);
             
-      sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
+      //sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration); //???? TODO
     }
+
+    /*if ((_trv_last_temperature_calibration == INT32_MIN) {
+
+      log_i("No TRV temperature calibration data - sending TemperatureCalibration with %ld value",
+            _trv_fixed_temperature_calibration);
+            
+      sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
+    }*/
+        
 
     if(_trv_hvac && 
        _trv_external_sensor_present && 

@@ -2118,7 +2118,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "OSRAM", .model_name = "Plug 01",
     .z2s_device_uid = 10605,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 3, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 1, Z2S_DEVICE_DESC_NULL }}},
 
   {	.manufacturer_name = "SONOFF", .model_name = "S26R2ZB",
     .z2s_device_uid = 10700,

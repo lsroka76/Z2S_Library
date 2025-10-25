@@ -5593,14 +5593,16 @@ void updateRemoteThermometer(uint8_t Supla_channel,
 }
 
 
-void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
-                                           int32_t hvac_fixed_calibration_temperature) {
+void updateHvacFixedCalibrationTemperature(
+  uint8_t channel_number_slot,
+  int32_t hvac_fixed_calibration_temperature) {
 
   if (z2s_channels_table[channel_number_slot].
     Supla_channel_type == SUPLA_CHANNELTYPE_HVAC) {
 
-    z2s_channels_table[channel_number_slot].hvac_fixed_temperature_correction = 
-      hvac_fixed_calibration_temperature;
+    z2s_channels_table[channel_number_slot].
+      hvac_fixed_temperature_correction = 
+        hvac_fixed_calibration_temperature;
 
     if (Z2S_saveChannelsTable()) {
 
@@ -5620,10 +5622,12 @@ void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
           reinterpret_cast<Supla::Control::HvacBaseEE *>(element);
     
         auto Supla_Z2S_TRVInterface = 
-          reinterpret_cast<Supla::Control::Z2S_TRVInterface *>(Supla_Z2S_HvacBase->getPrimaryOutputEE());
+          reinterpret_cast<Supla::Control::Z2S_TRVInterface *>
+            (Supla_Z2S_HvacBase->getPrimaryOutputEE());
 
         Supla_Z2S_TRVInterface->
-          setFixedTemperatureCalibration(hvac_fixed_calibration_temperature);
+          setFixedTemperatureCalibration(
+            hvac_fixed_calibration_temperature);
       }
     }
   }

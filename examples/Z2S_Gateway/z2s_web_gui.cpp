@@ -4871,6 +4871,51 @@ void enableChannelParams(uint8_t params_mask) {
 		enableControlStyle(zb_channel_params_label, true);
 }
 
+void fillRemoteAddressData(uint8_t channel_slot) {
+
+	if (z2s_channels_table[channel_slot].\
+				remote_channel_data.remote_address_type ==\ 
+					REMOTE_ADDRESS_TYPE_IP4) {
+
+		IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
+
+		ESPUI.updateText(param_1_number, ip.toString());
+
+		ESPUI.updateNumber(
+			param_2_number, 
+			z2s_channels_table[channel_slot].remote_Supla_channel
+		);
+	} else
+	if (z2s_channels_table[channel_slot].\
+				remote_channel_data.remote_address_type ==\
+					REMOTE_ADDRESS_TYPE_MDNS) {
+
+		sprintf(general_purpose_gui_buffer, 
+						"mdns://%s",
+						z2s_channels_table[channel_slot].\
+							remote_channel_data.mDNS_name
+					 );
+				 
+		working_str = general_purpose_gui_buffer;
+		ESPUI.updateText(param_1_number, working_str);
+				
+		ESPUI.updateNumber(
+			param_2_number, 
+			z2s_channels_table[channel_slot].\
+				remote_channel_data.\
+					remote_Supla_channel_2);
+	}
+}
+
+/*
+working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
+										 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
+	ESPUI.updateText(param_1_desc_label, working_str);
+
+	working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
+	ESPUI.updateText(param_2_desc_label, working_str);
+*/
+
 
 void updateChannelInfoLabel(uint8_t label_number) {
 
@@ -4929,14 +4974,18 @@ void updateChannelInfoLabel(uint8_t label_number) {
 						getZ2SDeviceLocalActionHandlerLogicOperatorName(channel_slot),
 						z2s_channels_table[channel_slot].gui_control_id);
 	
-	updateLabel_P(zb_channel_info_label, general_purpose_gui_buffer);
+	updateLabel_P(
+		zb_channel_info_label, general_purpose_gui_buffer);
 	
-	working_str = z2s_channels_table[channel_slot].Supla_channel_name;
+	working_str = z2s_channels_table[channel_slot].\
+		Supla_channel_name;
+
 	ESPUI.updateText(channel_name_text, working_str);
 	
 	enableChannelParams(0);
 
-	switch (z2s_channels_table[channel_slot].Supla_channel_type) {
+	switch (z2s_channels_table[channel_slot].\
+						Supla_channel_type) {
 
 		case 0x0000: {
 
@@ -4957,33 +5006,10 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
 
 				enableChannelParams(3);
-
-				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-						REMOTE_ADDRESS_TYPE_IP4) {
-
-					IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
-
-					ESPUI.updateText(param_1_number, ip.toString());
-
-					ESPUI.updateNumber(param_2_number, 
-						z2s_channels_table[channel_slot].remote_Supla_channel);
-				} else
-				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-						REMOTE_ADDRESS_TYPE_MDNS) {
-
-					sprintf(general_purpose_gui_buffer, 
-									"mdns://%s",
-									z2s_channels_table[channel_slot].remote_channel_data.mDNS_name);
-					working_str = general_purpose_gui_buffer;
-					ESPUI.updateText(param_1_number, working_str);
-				
-
-					ESPUI.updateNumber(param_2_number, 
-						z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2);
-				}
+				fillRemoteAddressData(channel_slot);
 
 				working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
-													 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
+										 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
 				ESPUI.updateText(param_1_desc_label, working_str);
 
 				working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
@@ -4995,26 +5021,37 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
 			enableChannelTimings(6); //timeout+debounce
-			ESPUI.updateNumber(timeout_number, 
-				z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(
+				timeout_number, 
+				z2s_channels_table[channel_slot].timeout_secs
+			);
 
-			ESPUI.updateNumber(refresh_number, 
-				z2s_channels_table[channel_slot].refresh_secs);
+			ESPUI.updateNumber(
+				refresh_number, 
+				z2s_channels_table[channel_slot].refresh_secs
+			);
 	
 			enableChannelFlags(5);
 			
-			ESPUI.updateNumber(disable_channel_notifications_switcher, 
-										 (z2s_channels_table[channel_slot].user_data_flags & 
-											USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0);
+			ESPUI.updateNumber(
+				disable_channel_notifications_switcher, 
+				(z2s_channels_table[channel_slot].user_data_flags & 
+				USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0
+			);
 
-			ESPUI.updateNumber(set_sorwns_on_start_switcher, 
-										 (z2s_channels_table[channel_slot].user_data_flags & 
-										 USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
+			ESPUI.updateNumber(
+				set_sorwns_on_start_switcher, 
+				(z2s_channels_table[channel_slot].user_data_flags & 
+				USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0
+			);
 
 			enableChannelParams(1);
 
-			ESPUI.updateNumber(param_1_number, 
-										 		 z2s_channels_table[channel_slot].rain_intensity_treshold);
+			ESPUI.updateNumber(
+				param_1_number, 
+				z2s_channels_table[channel_slot].\
+				rain_intensity_treshold
+			);
 			working_str = PSTR("&#10023; Virtual Binary custom param<br>"
 												 "enter rain intensity threshold<br>"
 												 "currently unused for other sensors &#10023;");
@@ -5040,54 +5077,42 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
 			enableChannelTimings(2); //timeout only
-			ESPUI.updateNumber(timeout_number, 
-				z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(
+				timeout_number, 
+				z2s_channels_table[channel_slot].\
+					timeout_secs);
 	
 			enableChannelFlags(4+8);
 			
-			ESPUI.updateNumber(set_sorwns_on_start_switcher, 
-												 (z2s_channels_table[channel_slot].user_data_flags & 
-										 		 USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
+			ESPUI.updateNumber(
+				set_sorwns_on_start_switcher, 
+				(z2s_channels_table[channel_slot].user_data_flags & 
+				USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0
+			);
 
 			uint8_t enable_resend_temperature_flag = 
 				(z2s_channels_table[channel_slot].user_data_flags &
 				 USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) ? 1 : 0;
 
-			ESPUI.updateNumber(enable_resend_temperature_switcher, enable_resend_temperature_flag); 
+			ESPUI.updateNumber(
+				enable_resend_temperature_switcher, 
+				enable_resend_temperature_flag
+			); 
 		
 			if (enable_resend_temperature_flag) {
 
 				enableChannelParams(3);
+
 				log_i("remote address type = %u",
-							z2s_channels_table[channel_slot].remote_channel_data.remote_address_type);
+							z2s_channels_table[channel_slot].\
+								remote_channel_data.\
+									remote_address_type);
 
-				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-						REMOTE_ADDRESS_TYPE_IP4) {
-
-					IPAddress ip(z2s_channels_table[channel_slot].remote_ip_address);
-
-					ESPUI.updateText(param_1_number, ip.toString());
-
-					ESPUI.updateNumber(param_2_number, 
-						z2s_channels_table[channel_slot].remote_Supla_channel);
-				} else
-				if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-						REMOTE_ADDRESS_TYPE_MDNS) {
-
-					sprintf(general_purpose_gui_buffer, 
-									"mdns://%s",
-									z2s_channels_table[channel_slot].remote_channel_data.mDNS_name);
-					working_str = general_purpose_gui_buffer;
-					ESPUI.updateText(param_1_number, working_str);
-				
-					ESPUI.updateNumber(param_2_number, 
-						z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2);
-				}
+				fillRemoteAddressData(channel_slot);
 
 				working_str = PSTR("&#10023; Enter remote thermometer IP address or mDNS name &#10023;<br>"
 													 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway<br>"
 													 "or enter 0 for local temperature forwarding");
-
 				ESPUI.updateText(param_1_desc_label, working_str);
 
 				working_str = PSTR("&#10023; Enter destination thermometer channel # &#10023;");
@@ -5115,9 +5140,11 @@ void updateChannelInfoLabel(uint8_t label_number) {
 										 (z2s_channels_table[channel_slot].user_data_flags &
 										 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
 
-			ESPUI.updateNumber(trv_fixed_calibration_switcher, 
-										 		 (z2s_channels_table[channel_slot].user_data_flags &
-										 		 USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0);
+			uint8_t fixed_correction_flag = 
+				(z2s_channels_table[channel_slot].user_data_flags &
+				USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0;
+
+			ESPUI.updateNumber(trv_fixed_calibration_switcher, fixed_correction_flag);
 
 			ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 
 										 		 (z2s_channels_table[channel_slot].user_data_flags &
@@ -5131,14 +5158,20 @@ void updateChannelInfoLabel(uint8_t label_number) {
 										 		 (z2s_channels_table[channel_slot].user_data_flags &
 										 		 USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK) ? 1 : 0);
 
-			enableChannelParams(1);
+			if (fixed_correction_flag) {
 
-			ESPUI.updateNumber(param_1_number, 
-										 		 z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
-			working_str = PSTR("&#10023; Thermostat custom parameter<br>"
-												 "enter calibration fixed value (temperature x100)<br>"
-												 "ie. to set correction to -1 enter -100 &#10023;");
-			ESPUI.updateText(param_1_desc_label, working_str);
+				enableChannelParams(1);
+
+				ESPUI.updateNumber(
+					param_1_number, 
+					z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
+
+				working_str = PSTR("&#10023; Thermostat custom parameter<br>"
+												 	 "enter calibration fixed value (temperature x100)<br>"
+												   "ie. to set correction to -1 enter -100 &#10023;");
+				ESPUI.updateText(param_1_desc_label, working_str);
+			} else
+				enableChannelParams(0);
 		} break;
 
 
@@ -6033,6 +6066,92 @@ void editDeviceCallback(Control *sender, int type, void *param) {
 	}
 }
 
+uint32_t saveRemoteAddressData(uint8_t channel_slot) {
+
+	working_str = ESPUI.getControl(param_1_number)->value;
+
+	int8_t prefix_pos = working_str.indexOf("mdns://");
+
+	if (prefix_pos >= 0) {
+
+		if (z2s_channels_table[channel_slot].\
+				remote_channel_data.remote_address_type == \
+					REMOTE_ADDRESS_TYPE_IP4)
+			z2s_channels_table[channel_slot].\
+				remote_channel_data.remote_Supla_channel_2 =\
+					z2s_channels_table[channel_slot].remote_Supla_channel;
+
+		z2s_channels_table[channel_slot].\
+			remote_channel_data.remote_address_type = \
+				REMOTE_ADDRESS_TYPE_MDNS;
+
+		memcpy(\
+			z2s_channels_table[channel_slot].\
+				remote_channel_data.mDNS_name,\
+				working_str.c_str() + 7, 
+				11); // cut "mdns://" before save
+			
+		z2s_channels_table[channel_slot].\
+			remote_channel_data.mDNS_name[11] = '\0';
+	} else {
+
+		IPAddress ip;
+		ip.fromString(working_str);
+
+		if (z2s_channels_table[channel_slot].\
+					remote_channel_data.remote_address_type ==\
+						REMOTE_ADDRESS_TYPE_MDNS)
+			z2s_channels_table[channel_slot].\
+				remote_Supla_channel =\
+					z2s_channels_table[channel_slot].\
+						remote_channel_data.remote_Supla_channel_2; 
+
+			z2s_channels_table[channel_slot].\
+				remote_channel_data.remote_address_type =\ 
+					REMOTE_ADDRESS_TYPE_IP4;
+
+			z2s_channels_table[channel_slot].\
+				remote_ip_address = ip;
+	}
+		
+	if (Z2S_saveChannelsTable()) {
+
+		log_i("remote channel mDNS/IP address saved successfuly!");
+				//		z2s_channels_table[channel_slot].user_data_1);
+	}
+
+	return
+		z2s_channels_table[channel_slot].\
+			remote_channel_data.remote_address_type;
+}
+
+uint8_t	saveRemoteChannelData(uint8_t channel_slot){
+
+	uint8_t remote_Supla_channel = 
+		ESPUI.getControl(param_2_number)->value.toInt();
+
+	if (z2s_channels_table[channel_slot].\
+				remote_channel_data.remote_address_type ==\
+					REMOTE_ADDRESS_TYPE_IP4)
+		z2s_channels_table[channel_slot].remote_Supla_channel = \
+			remote_Supla_channel;
+							
+	if (z2s_channels_table[channel_slot].\
+				remote_channel_data.remote_address_type ==\
+					REMOTE_ADDRESS_TYPE_MDNS)
+		z2s_channels_table[channel_slot].\
+			remote_channel_data.remote_Supla_channel_2 =\
+				remote_Supla_channel;								
+
+	if (Z2S_saveChannelsTable()) {
+
+		log_i("remote_Supla_channel saved successfuly to %lu", 
+					remote_Supla_channel);
+	}
+	return 
+		remote_Supla_channel;
+}
+
 void editChannelCallback(Control *sender, int type, void *param) {
 
 	if ((type == B_UP) && (ESPUI.getControl(channel_selector)->value.toInt() >= 0)) {
@@ -6043,19 +6162,26 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_UPDATE_CHANNEL_NAME_FLAG : {	
 
-				strncpy(z2s_channels_table[channel_slot].Supla_channel_name, 
-								ESPUI.getControl(channel_name_text)->value.c_str(), 32);
-				z2s_channels_table[channel_slot].Supla_channel_name[32] = '\0';
+				strncpy(
+					z2s_channels_table[channel_slot].Supla_channel_name, 
+					ESPUI.getControl(channel_name_text)->value.c_str(), 
+					32
+				);
+
+				z2s_channels_table[channel_slot].\
+					Supla_channel_name[32] = '\0';
 
 				if (Z2S_saveChannelsTable()) {
 
-					log_i("%d, %s", 
-								z2s_channels_table[channel_slot].gui_control_id, 
-								z2s_channels_table[channel_slot].Supla_channel_name);
+					log_i(
+						"%d, %s", 
+						z2s_channels_table[channel_slot].gui_control_id, 
+						z2s_channels_table[channel_slot].Supla_channel_name);
 
 					//rebuildChannelsSelector();
-					ESPUI.updateControlLabel(z2s_channels_table[channel_slot].gui_control_id, 
-																	 z2s_channels_table[channel_slot].Supla_channel_name);
+					ESPUI.updateControlLabel(
+						z2s_channels_table[channel_slot].gui_control_id, 
+						z2s_channels_table[channel_slot].Supla_channel_name);
 					//working_str = channel_slot;
 					//ESPUI.updateControlValue(channel_selector, working_str);
 					ESPUI.jsonDom(0);
@@ -6066,59 +6192,29 @@ void editChannelCallback(Control *sender, int type, void *param) {
 			case GUI_CB_UPDATE_PARAM_1_FLAG : {	
 
 
-				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
+				switch (z2s_channels_table[channel_slot].\
+									Supla_channel_type) {
 
 
 					case 0x0000: {
 
-						if (z2s_channels_table[channel_slot].local_channel_type == 
-								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
+						if (z2s_channels_table[channel_slot].\
+									local_channel_type ==\
+										LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
 
-							working_str = ESPUI.getControl(param_1_number)->value;
-
-							int8_t prefix_pos = working_str.indexOf("mdns://");
-
-							if (prefix_pos >= 0) {
-
-								if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-										REMOTE_ADDRESS_TYPE_IP4)
-									z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
-										z2s_channels_table[channel_slot].remote_Supla_channel;
-
-								z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
-									REMOTE_ADDRESS_TYPE_MDNS;
-
-								memcpy(z2s_channels_table[channel_slot].remote_channel_data.mDNS_name,
-											working_str.c_str() + 7, 11);
-								
-								z2s_channels_table[channel_slot].remote_channel_data.mDNS_name[11] = '\0';
-
-								updateRemoteRelayMDNSName(channel_slot,
-									z2s_channels_table[channel_slot].remote_channel_data.mDNS_name);
-							} else {
-
-								IPAddress ip;
-								ip.fromString(working_str);
-
-								if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-										REMOTE_ADDRESS_TYPE_MDNS)
-									z2s_channels_table[channel_slot].remote_Supla_channel =
-										z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2; 
-
-
-								z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
-									REMOTE_ADDRESS_TYPE_IP4;
-
-								z2s_channels_table[channel_slot].remote_ip_address = ip;
-
-								updateRemoteRelayIPAddress(channel_slot, ip);
-							}
-							
-							if (Z2S_saveChannelsTable()) {
-
-								//log_i("remote relay ip address updated successfuly to %lu", 
-									//		z2s_channels_table[channel_slot].user_data_1);
-							}
+							if (saveRemoteAddressData(channel_slot) ==\
+									REMOTE_ADDRESS_TYPE_MDNS)
+								updateRemoteRelayMDNSName(\
+									channel_slot,\
+									z2s_channels_table[channel_slot].\
+									remote_channel_data.mDNS_name\
+								);
+							else
+								updateRemoteRelayIPAddress(\
+									channel_slot,\
+									z2s_channels_table[channel_slot].\
+										remote_ip_address\
+								);
 						}
 					} break;
 
@@ -6126,53 +6222,16 @@ void editChannelCallback(Control *sender, int type, void *param) {
 					case SUPLA_CHANNELTYPE_THERMOMETER:
 					case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
-						working_str = ESPUI.getControl(param_1_number)->value;
-
-						int8_t prefix_pos = working_str.indexOf("mdns://");
-
-						if (prefix_pos >= 0) {
-
-							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-									REMOTE_ADDRESS_TYPE_IP4)
-								z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
-									z2s_channels_table[channel_slot].remote_Supla_channel;
-
-							z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
-								REMOTE_ADDRESS_TYPE_MDNS;
-
-							memcpy(z2s_channels_table[channel_slot].remote_channel_data.mDNS_name,
-								  	 working_str.c_str() + 7, 11);
-								
-							z2s_channels_table[channel_slot].remote_channel_data.mDNS_name[11] = '\0';
-						} else {
-
-							IPAddress ip;
-							ip.fromString(working_str);
-
-							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type == 
-									REMOTE_ADDRESS_TYPE_MDNS)
-								z2s_channels_table[channel_slot].remote_Supla_channel =
-									z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2; 
-
-								z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 
-									REMOTE_ADDRESS_TYPE_IP4;
-
-								z2s_channels_table[channel_slot].remote_ip_address = ip;
-						}
-							
-						if (Z2S_saveChannelsTable()) {
-
-								//log_i("remote relay ip address updated successfuly to %lu", 
-									//		z2s_channels_table[channel_slot].user_data_1);
-						}
+						saveRemoteAddressData(channel_slot);
 					} break;
 
 
 					case SUPLA_CHANNELTYPE_HVAC:
 
-						updateHvacFixedCalibrationTemperature(
-							channel_slot,
-							ESPUI.getControl(param_1_number)->value.toInt());
+						updateHvacFixedCalibrationTemperature(\
+							channel_slot,\
+							ESPUI.getControl(param_1_number)->value.toInt()\
+						);
 					break;
 
 
@@ -6193,60 +6252,23 @@ void editChannelCallback(Control *sender, int type, void *param) {
 			case GUI_CB_UPDATE_PARAM_2_FLAG : {	
 
 
-				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
+				switch (z2s_channels_table[channel_slot].\
+									Supla_channel_type) {
 
 
 					case 0x0000: {
 
-						if (z2s_channels_table[channel_slot].local_channel_type == 
-								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
-
-							uint8_t remote_Supla_channel = 
-								ESPUI.getControl(param_2_number)->value.toInt();
-
-							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-									REMOTE_ADDRESS_TYPE_IP4)
-								z2s_channels_table[channel_slot].remote_Supla_channel = 
-									remote_Supla_channel;
-							
-							if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-								REMOTE_ADDRESS_TYPE_MDNS)
-								z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
-									remote_Supla_channel;								
-						
-							updateRemoteRelaySuplaChannel(channel_slot, remote_Supla_channel);
-
-							if (Z2S_saveChannelsTable()) {
-
-								log_i("remote_Supla_channel updated successfuly to %lu", 
-											remote_Supla_channel);
-							}
-						}
+						updateRemoteRelaySuplaChannel(\
+							channel_slot,\
+							saveRemoteChannelData(channel_slot)\
+						);
 					} break;
 
 
 					case SUPLA_CHANNELTYPE_THERMOMETER:
 					case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
-						
-						uint8_t remote_Supla_channel = 
-							ESPUI.getControl(param_2_number)->value.toInt();
-
-						if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-									REMOTE_ADDRESS_TYPE_IP4)
-							z2s_channels_table[channel_slot].remote_Supla_channel = 
-								remote_Supla_channel;
-							
-						if (z2s_channels_table[channel_slot].remote_channel_data.remote_address_type ==
-							REMOTE_ADDRESS_TYPE_MDNS)
-							z2s_channels_table[channel_slot].remote_channel_data.remote_Supla_channel_2 =
-								remote_Supla_channel;								
-
-						if (Z2S_saveChannelsTable()) {
-
-							log_i("remote_Supla_channel updated successfuly to %lu", 
-										 remote_Supla_channel);
-						}
+						saveRemoteChannelData(channel_slot);
 					} break;
 
 
@@ -6266,18 +6288,31 @@ void editChannelCallback(Control *sender, int type, void *param) {
 			
 			case GUI_CB_UPDATE_KEEPALIVE_FLAG : {	
 
-				updateTimeout(channel_slot, 0, 1, ESPUI.getControl(keepalive_number)->value.toInt());
+				updateTimeout(channel_slot, 
+					0, 
+					1, 
+					ESPUI.getControl(keepalive_number)->value.toInt()
+				);
 			} break;
 
 
 			case GUI_CB_UPDATE_TIMEOUT_FLAG : {		
-				updateTimeout(channel_slot, 0, 2, ESPUI.getControl(timeout_number)->value.toInt());
+
+				updateTimeout(channel_slot, 
+					0, 
+					2, 
+					ESPUI.getControl(timeout_number)->value.toInt()
+				);
 			} break;
 
 
 			case GUI_CB_UPDATE_REFRESH_FLAG : {		
 
-				updateTimeout(channel_slot,0, 4, ESPUI.getControl(refresh_number)->value.toInt());
+				updateTimeout(channel_slot,
+					0, 
+					4, 
+					ESPUI.getControl(refresh_number)->value.toInt()
+				);
 			} break;	
 		}
 	}
@@ -6331,9 +6366,16 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
 								USER_DATA_FLAG_TRV_FIXED_CORRECTION);
-						else
+						else {
 							Z2S_clearChannelFlags(channel_slot, 
 								USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+
+							updateHvacFixedCalibrationTemperature(
+								channel_slot,
+								0);
+						}
+
+						updateChannelInfoLabel(1);
 				} break;
 
 
@@ -6357,9 +6399,8 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 							Z2S_clearChannelFlags(channel_slot, 
 								USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
 							z2s_channels_table[channel_slot].remote_channel_data.remote_address_type = 0;
-						}
-							
-
+						}	
+					
 					updateChannelInfoLabel(1);
 				} break;
 

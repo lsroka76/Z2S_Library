@@ -192,11 +192,15 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
 
     uint8_t remote_Supla_channel;
 
+    log_i("Resending temperature, address type = %u",
+        z2s_channels_table[channel_number_slot].
+        remote_channel_data.remote_address_type);
+
     switch(z2s_channels_table[channel_number_slot].
         remote_channel_data.remote_address_type) {
 
 
-      case REMOTE_ADDRESS_TYPE_LOCAL:
+      /*case REMOTE_ADDRESS_TYPE_LOCAL:
 
         updateRemoteThermometer(
           z2s_channels_table[channel_number_slot].remote_Supla_channel,
@@ -205,7 +209,7 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
           (int32_t)(temp*100));
 
         return;
-      break;
+      break;*/
 
 
       case REMOTE_ADDRESS_TYPE_IP4: {
@@ -218,6 +222,7 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
       }
       break;
 
+
       case REMOTE_ADDRESS_TYPE_MDNS: {
 
         ip_address = MDNS.queryHost(
@@ -229,6 +234,17 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
           remote_channel_data.remote_Supla_channel_2;
       } break;
     }
+
+    if (z2s_channels_table[channel_number_slot].remote_ip_address== 0) {
+
+        updateRemoteThermometer(
+          remote_Supla_channel,
+          ip_address,
+          z2s_channels_table[channel_number_slot].Supla_channel,
+          (int32_t)(temp*100));
+
+        return;
+      }
 
     if (RemoteThermometer.connect(ip_address, 1234)) {
 

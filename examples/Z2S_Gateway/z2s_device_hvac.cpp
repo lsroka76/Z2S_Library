@@ -224,6 +224,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
       true, 
       trv_external_sensor_mode, 
       z2s_channels_table[channel_number_slot].Supla_secondary_channel); 
+      //Supla_Z2S_TRVInterface->setTRVTemperatureCalibration(0);
   }
 
   if (z2s_channels_table[channel_number_slot].user_data_flags & 
