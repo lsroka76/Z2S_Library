@@ -148,7 +148,7 @@ void initZ2SDeviceLocalActionHandler(
       Supla_Z2S_RemoteThermometer->setTimeoutSecs(
           z2s_channels_table[channel_number_slot].timeout_secs);
       
-      Supla_Z2S_RemoteThermometer->setConnectedThermometerSecs(
+      Supla_Z2S_RemoteThermometer->setConnectedThermometerTimeoutSecs(
           z2s_channels_table[channel_number_slot].refresh_secs);
     } break; 
 
