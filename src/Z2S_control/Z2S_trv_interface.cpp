@@ -899,7 +899,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
             EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED) &&
           (abs(_trv_fixed_temperature_calibration - 
                 _trv_temperature_calibration) > 10) ||
-          _trv_fixed_temperature_calibration_updated)) {
+          _trv_fixed_temperature_calibration_updated) {
 
         sendTRVTemperatureCalibration(_trv_fixed_temperature_calibration);
         _trv_fixed_temperature_calibration_updated = false;
