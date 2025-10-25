@@ -773,13 +773,13 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         //if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && 
         //    (hvacLastTemperature != _trv_local_temperature)) {
 
-          if ((_trv_last_temperature_calibration == INT32_MIN) {
+          if (_trv_last_temperature_calibration == INT32_MIN) {
 
             log_i("EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE present - reseting calibration to 0");
             
             sendTRVTemperatureCalibration(0);
           }
-          
+
           if ((_trv_local_temperature_updated) && 
               ((_trv_temperature_calibration_updated) || 
               (_trv_temperature_calibration == 0)) &&
