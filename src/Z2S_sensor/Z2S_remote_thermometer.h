@@ -231,9 +231,10 @@ public:
 
             connected_thermometers_number = 1;
 
-            if (_connected_thermometers[connected_thermometers_counter].
+            if ((connected_thermometers_calculated_temperature == INT32_MIN) ||
+                (_connected_thermometers[connected_thermometers_counter].
                 connected_thermometer_temperature < 
-                connected_thermometers_calculated_temperature)
+                connected_thermometers_calculated_temperature))
 
               connected_thermometers_calculated_temperature = 
                 _connected_thermometers[connected_thermometers_counter].

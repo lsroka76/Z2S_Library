@@ -1484,11 +1484,17 @@ void buildChannelsTabGUI() {
 										 editChannelCallback, 
 										 (void*)GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG);
 		
-		for (uint8_t ctf = 0; ctf < 3; ctf++ ) {
+		ESPUI.addControl(Control::Type::Option, 
+										 PSTR("Select channel local function"), 
+										 minus_one_str, 
+										 Control::Color::None, 
+										 channel_local_function);
 
-			working_str = ctf + 1;
+		for (uint8_t ctf = 1; ctf < 4; ctf++ ) {
+
+			working_str = ctf;
 			ESPUI.addControl(Control::Type::Option, 
-										 CONNECTED_THERMOMETERS_FUNCTION_NAMES[ctf], 
+										 CONNECTED_THERMOMETERS_FUNCTION_NAMES[ctf - 1], 
 										 working_str, 
 										 Control::Color::None, 
 										 channel_local_function);
@@ -4743,6 +4749,8 @@ void enableChannelControls(bool enable) {
 	ESPUI.updateNumber(trv_fixed_calibration_switcher, 0);
 	ESPUI.updateNumber(trv_cooperative_childlock_switcher, 0);
 	ESPUI.updateNumber(set_sorwns_on_start_switcher, 0);
+	ESPUI.updateNumber(enable_resend_temperature_switcher, 0);
+	ESPUI.updateSelect(channel_local_function, minus_one_str);
 	
 	enableControlStyle(channel_name_text, enable);
 	enableControlStyle(channel_name_save_button, enable);
@@ -4752,6 +4760,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(trv_fixed_calibration_switcher, enable);
 	enableControlStyle(trv_cooperative_childlock_switcher, enable);
 	enableControlStyle(set_sorwns_on_start_switcher, enable);
+	enableControlStyle(enable_resend_temperature_switcher, enable);
 	enableControlStyle(param_1_number, enable);
 	enableControlStyle(param_2_number, enable);
 	enableControlStyle(param_1_save_button, enable);
@@ -4767,6 +4776,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(zb_channel_timings_label, enable);
 	enableControlStyle(zb_channel_flags_label, enable);
 	enableControlStyle(zb_channel_params_label, enable);
+	enableControlStyle(channel_local_function, enable);
 	
 	enable ? controls_enabled_flags |= CHANNELS_CONTROLS_ENABLED_FLAG:
 					 controls_enabled_flags &= ~CHANNELS_CONTROLS_ENABLED_FLAG;
@@ -5006,6 +5016,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 	
 	enableChannelParams(0);
 
+	ESPUI.updateSelect(channel_local_function, minus_one_str);
 	enableControlStyle(channel_local_function, false);
 
 	switch (z2s_channels_table[channel_slot].\
@@ -5046,6 +5057,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
 
 				enableChannelTimings(2+4);
+
 				enableControlStyle(channel_local_function, true);
 				working_str = z2s_channels_table[channel_slot].local_channel_func;
 				ESPUI.updateSelect(channel_local_function, working_str);
@@ -5122,7 +5134,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 	
 			enableChannelFlags(4+8);
-			
+			enableChannelTimings(2); //timeout only
+
 			ESPUI.updateNumber(
 				set_sorwns_on_start_switcher, 
 				(z2s_channels_table[channel_slot].user_data_flags & 
@@ -5137,15 +5150,12 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				enable_resend_temperature_switcher, 
 				enable_resend_temperature_flag
 			); 
+
+			ESPUI.updateNumber(timeout_number, 
+													 z2s_channels_table[channel_slot].timeout_secs);
 		
 			if (enable_resend_temperature_flag) {
-
-				enableChannelTimings(2+4); //timeout, refresh = connected thermometer timeout
-				ESPUI.updateNumber(timeout_number, 
-													 z2s_channels_table[channel_slot].timeout_secs);
-				ESPUI.updateNumber(refresh_number, 
-													 z2s_channels_table[channel_slot].refresh_secs);
-
+				
 				enableChannelParams(3);
 
 				log_i("remote address type = %s",
@@ -5163,10 +5173,6 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				working_str = PSTR("&#10023; Enter destination thermometer channel # &#10023;");
 				ESPUI.updateText(param_2_desc_label, working_str);
 			} else {
-
-				enableChannelTimings(2); //timeout only
-				ESPUI.updateNumber(timeout_number, 
-													 z2s_channels_table[channel_slot].timeout_secs);
 
 				enableChannelParams(0);
 			}
@@ -6219,11 +6225,12 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG: {
 
-				uint8_t connected_thermometers_function = 
+				int16_t connected_thermometers_function = 
 					ESPUI.getControl(channel_local_function)->value.toInt();
-
-				setRemoteThermometerFunction(channel_slot, 
-																		 connected_thermometers_function);
+				
+				if (connected_thermometers_function > 0)
+					setRemoteThermometerFunction(channel_slot, 
+																			 connected_thermometers_function);
 			} break;
 
 
