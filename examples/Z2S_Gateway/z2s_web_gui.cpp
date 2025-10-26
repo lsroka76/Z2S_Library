@@ -251,6 +251,7 @@ volatile bool data_ready = false;
 
 volatile uint8_t gui_command = 0;
 
+volatile uint32_t gui_callback_reentry_number = 0;
 
 #define GUI_COMMAND_DEVICE_NAME_CHANGE		10
 #define GUI_COMMAND_CHANNEL_NAME_CHANGE		11
@@ -352,8 +353,8 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_SET_SORWNS_ON_START_FLAG						0x4007
 #define GUI_CB_TRV_FIXED_CALIBRATION_FLAG					0x4008
 #define GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG		0x4009
-#define GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG			0x4010
-#define GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG			0x4011
+#define GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG			0x400A
+#define GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG			0x400B
 
 #define GUI_CB_UPDATE_KEEPALIVE_FLAG							0x4020
 #define GUI_CB_UPDATE_TIMEOUT_FLAG								0x4021
@@ -1482,6 +1483,16 @@ void buildChannelsTabGUI() {
 										 channel_name_text, 
 										 editChannelCallback, 
 										 (void*)GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG);
+		
+		for (uint8_t ctf = 0; ctf < 3; ctf++ ) {
+
+			working_str = ctf + 1;
+			ESPUI.addControl(Control::Type::Option, 
+										 CONNECTED_THERMOMETERS_FUNCTION_NAMES[ctf], 
+										 working_str, 
+										 Control::Color::None, 
+										 channel_local_function);
+		}
 
 	
 	zb_channel_flags_label = ESPUI.addControl(Control::Type::Label, 
@@ -4995,6 +5006,8 @@ void updateChannelInfoLabel(uint8_t label_number) {
 	
 	enableChannelParams(0);
 
+	enableControlStyle(channel_local_function, false);
+
 	switch (z2s_channels_table[channel_slot].\
 						Supla_channel_type) {
 
@@ -5033,6 +5046,10 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
 
 				enableChannelTimings(2+4);
+				enableControlStyle(channel_local_function, true);
+				working_str = z2s_channels_table[channel_slot].local_channel_func;
+				ESPUI.updateSelect(channel_local_function, working_str);
+
 				/*enableChannelParams(3);
 				fillRemoteAddressData(channel_slot);
 
@@ -6164,22 +6181,25 @@ uint8_t	saveRemoteChannelData(uint8_t channel_slot){
 
 void editChannelCallback(Control *sender, int type, void *param) {
 
-	if ((type == B_UP) && (ESPUI.getControl(channel_selector)->value.toInt() >= 0)) {
+	log_i("type = %u, param %lu", type, (uint32_t)param);
 
-		uint8_t channel_slot = ESPUI.getControl(channel_selector)->value.toInt();
+	if (((type == B_UP) || (type == S_VALUE)) && 
+			(ESPUI.getControl(channel_selector)->value.toInt() >= 0)) {
+		
+		if (gui_callback_reentry_number > 0) return;
+		else gui_callback_reentry_number++;
+
+		uint8_t channel_slot = 
+			ESPUI.getControl(channel_selector)->value.toInt();
 
 		switch ((uint32_t)param) {
 
 			case GUI_CB_UPDATE_CHANNEL_NAME_FLAG : {	
 
-				strncpy(
-					z2s_channels_table[channel_slot].Supla_channel_name, 
-					ESPUI.getControl(channel_name_text)->value.c_str(), 
-					32
-				);
+				strncpy(z2s_channels_table[channel_slot].Supla_channel_name, 
+								ESPUI.getControl(channel_name_text)->value.c_str(), 32);
 
-				z2s_channels_table[channel_slot].\
-					Supla_channel_name[32] = '\0';
+				z2s_channels_table[channel_slot].Supla_channel_name[32] = '\0';
 
 				if (Z2S_saveChannelsTable()) {
 
@@ -6188,46 +6208,45 @@ void editChannelCallback(Control *sender, int type, void *param) {
 						z2s_channels_table[channel_slot].gui_control_id, 
 						z2s_channels_table[channel_slot].Supla_channel_name);
 
-					//rebuildChannelsSelector();
 					ESPUI.updateControlLabel(
 						z2s_channels_table[channel_slot].gui_control_id, 
 						z2s_channels_table[channel_slot].Supla_channel_name);
-					//working_str = channel_slot;
-					//ESPUI.updateControlValue(channel_selector, working_str);
+					
 					ESPUI.jsonDom(0);
-					//json_reload_required = true;
 				}
 			} break;
 
 
 			case GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG: {
 
+				uint8_t connected_thermometers_function = 
+					ESPUI.getControl(channel_local_function)->value.toInt();
 
+				setRemoteThermometerFunction(channel_slot, 
+																		 connected_thermometers_function);
 			} break;
 
 
 			case GUI_CB_UPDATE_PARAM_1_FLAG : {	
 
 
-				switch (z2s_channels_table[channel_slot].\
-									Supla_channel_type) {
+				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
 
 
 					case 0x0000: {
 
-						if (z2s_channels_table[channel_slot].\
-									local_channel_type ==\
-										LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
+						if (z2s_channels_table[channel_slot].local_channel_type ==
+								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
 
-							if (saveRemoteAddressData(channel_slot) ==\
+							if (saveRemoteAddressData(channel_slot) ==
 									REMOTE_ADDRESS_TYPE_MDNS)
-								updateRemoteRelayMDNSName(\
-									channel_slot,\
+								updateRemoteRelayMDNSName(
+									channel_slot,
 									z2s_channels_table[channel_slot].\
 									remote_channel_data.mDNS_name);
 							else
-								updateRemoteRelayIPAddress(\
-									channel_slot,\
+								updateRemoteRelayIPAddress(
+									channel_slot,
 									z2s_channels_table[channel_slot].\
 										remote_channel_data.remote_ip_address);
 						}
@@ -6243,10 +6262,9 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 					case SUPLA_CHANNELTYPE_HVAC:
 
-						updateHvacFixedCalibrationTemperature(\
-							channel_slot,\
-							ESPUI.getControl(param_1_number)->value.toInt()\
-						);
+						updateHvacFixedCalibrationTemperature(
+							channel_slot,
+							ESPUI.getControl(param_1_number)->value.toInt());
 					break;
 
 
@@ -6267,16 +6285,13 @@ void editChannelCallback(Control *sender, int type, void *param) {
 			case GUI_CB_UPDATE_PARAM_2_FLAG : {	
 
 
-				switch (z2s_channels_table[channel_slot].\
-									Supla_channel_type) {
+				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
 
 
 					case 0x0000: {
 
-						updateRemoteRelaySuplaChannel(\
-							channel_slot,\
-							saveRemoteChannelData(channel_slot)\
-						);
+						updateRemoteRelaySuplaChannel(channel_slot,
+																					saveRemoteChannelData(channel_slot));
 					} break;
 
 
@@ -6303,33 +6318,25 @@ void editChannelCallback(Control *sender, int type, void *param) {
 			
 			case GUI_CB_UPDATE_KEEPALIVE_FLAG : {	
 
-				updateTimeout(channel_slot, 
-					0, 
-					1, 
-					ESPUI.getControl(keepalive_number)->value.toInt()
-				);
+				updateTimeout(channel_slot, 0, 1, 
+											ESPUI.getControl(keepalive_number)->value.toInt());
 			} break;
 
 
 			case GUI_CB_UPDATE_TIMEOUT_FLAG : {		
 
-				updateTimeout(channel_slot, 
-					0, 
-					2, 
-					ESPUI.getControl(timeout_number)->value.toInt()
-				);
+				updateTimeout(channel_slot, 0, 2, 
+											ESPUI.getControl(timeout_number)->value.toInt());
 			} break;
 
 
 			case GUI_CB_UPDATE_REFRESH_FLAG : {		
 
-				updateTimeout(channel_slot,
-					0, 
-					4, 
-					ESPUI.getControl(refresh_number)->value.toInt()
-				);
+				updateTimeout(channel_slot, 0, 4, 
+											ESPUI.getControl(refresh_number)->value.toInt());
 			} break;	
 		}
+		gui_callback_reentry_number--;
 	}
 }
 
@@ -6346,10 +6353,10 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 						if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
-								USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
+																	USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 						else
 							Z2S_clearChannelFlags(channel_slot, 
-								USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
+																		USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 				} break;
 
 
@@ -6357,11 +6364,10 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
-								USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
+																	USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 						else
 							Z2S_clearChannelFlags(channel_slot, 
-								USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
-
+																		USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 				} break;
 
 
@@ -6369,10 +6375,10 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
-								USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+																	USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
 						else
 							Z2S_clearChannelFlags(channel_slot, 
-								USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+																		USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
 				} break;
 
 
@@ -6380,14 +6386,12 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
-								USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+																	USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 						else {
 							Z2S_clearChannelFlags(channel_slot, 
-								USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+																		USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 
-							updateHvacFixedCalibrationTemperature(
-								channel_slot,
-								0);
+							updateHvacFixedCalibrationTemperature(channel_slot, 0);
 						}
 
 						updateChannelInfoLabel(1);
@@ -6398,10 +6402,10 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
-								USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+																	USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
 						else
 							Z2S_clearChannelFlags(channel_slot, 
-								USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+																		USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
 				} break;
 
 
@@ -6409,7 +6413,7 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
-								USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
+																	USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
 						else {
 
 							z2s_channels_table[channel_slot].\
@@ -6430,10 +6434,10 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(channel_slot, 
-								USER_DATA_FLAG_SET_SORWNS_ON_START);
+																	USER_DATA_FLAG_SET_SORWNS_ON_START);
 						else
 							Z2S_clearChannelFlags(channel_slot, 
-								USER_DATA_FLAG_SET_SORWNS_ON_START);
+																		USER_DATA_FLAG_SET_SORWNS_ON_START);
 				} break;	
 		}
 	}
@@ -6441,19 +6445,28 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 void batteryCallback(Control *sender, int type, void *param) {
 
-	if ((type == B_UP) && (ESPUI.getControl(device_selector)->value.toInt() >= 0)) {
+	if ((type == B_UP) && 
+			(ESPUI.getControl(device_selector)->value.toInt() >= 0)) {
 
 		uint8_t channel_slot = ESPUI.getControl(device_selector)->value.toInt();
 
 		switch ((uint32_t)param) {
 
+
 			case GUI_CB_BATTERY_VOLTAGE_MIN_FLAG : {		
-				z2s_zb_devices_table[channel_slot].battery_voltage_min = ESPUI.getControl(battery_voltage_min_number)->value.toInt();
+
+				z2s_zb_devices_table[channel_slot].battery_voltage_min = 
+					ESPUI.getControl(battery_voltage_min_number)->value.toInt();
+				
 				Z2S_saveZbDevicesTable();
 			} break;
 
+
 			case GUI_CB_BATTERY_VOLTAGE_MAX_FLAG : {		
-				z2s_zb_devices_table[channel_slot].battery_voltage_max = ESPUI.getControl(battery_voltage_max_number)->value.toInt();
+
+				z2s_zb_devices_table[channel_slot].battery_voltage_max = 
+					ESPUI.getControl(battery_voltage_max_number)->value.toInt();
+
 				Z2S_saveZbDevicesTable();
 			} break;	
 		}
@@ -6496,52 +6509,66 @@ void batterySwitcherCallback(Control *sender, int type, void *param) {
 void datatypeCallback(Control *sender, int type) {
 
 	int8_t device_attribute_type_selector_value =  
-		ESPUI.getControl(clusters_attributes_table[device_attribute_type_selector])->value.toInt();
+		ESPUI.getControl(
+			clusters_attributes_table[device_attribute_type_selector])->value.toInt();
 
 	if (device_attribute_type_selector_value >= 0)
-		ESPUI.updateNumber(clusters_attributes_table[device_attribute_size_number], 
-											 zigbee_datatypes[device_attribute_type_selector_value].zigbee_datatype_size);
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_size_number], 
+			zigbee_datatypes[device_attribute_type_selector_value].zigbee_datatype_size);
 }
 
 void TuyaDatapointIdSelectorCallback(Control *sender, int type) {
 
 	int8_t Tuya_datapoint_id_selector_value = 
-		ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector])->value.toInt();
+		ESPUI.getControl(
+			Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector])->value.toInt();
 
 	if (Tuya_datapoint_id_selector_value >= 0) {
 
-		//working_str = 
-		ESPUI.updateNumber(Tuya_devices_tab_controls_table[Tuya_datapoint_id_number], 
-										 	 Tuya_datapoints[Tuya_datapoint_id_selector_value].Tuya_datapoint_id);
 		
-		working_str = Tuya_datapoints[Tuya_datapoint_id_selector_value].Tuya_datapoint_type;
-		ESPUI.updateSelect(Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector], 
-											 working_str);
+		ESPUI.updateNumber(
+			Tuya_devices_tab_controls_table[Tuya_datapoint_id_number], 
+			Tuya_datapoints[Tuya_datapoint_id_selector_value].Tuya_datapoint_id);
 		
-		//this is bit tricky as it assumes that type value = table index, which shuold OK, since we have fixed number of positions
-		uint8_t datapoint_type_slot = Tuya_datapoints[Tuya_datapoint_id_selector_value].Tuya_datapoint_type;
+		working_str = 
+			Tuya_datapoints[Tuya_datapoint_id_selector_value].Tuya_datapoint_type;
+		ESPUI.updateSelect(
+			Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector], 
+			working_str);
+		
+		//this is bit tricky as it assumes that type value = table index, 
+		//which should be OK, since we have fixed number of positions
+		uint8_t datapoint_type_slot = 
+			Tuya_datapoints[Tuya_datapoint_id_selector_value].Tuya_datapoint_type;
 
-		ESPUI.updateNumber(Tuya_devices_tab_controls_table[Tuya_datapoint_length_number], 
-											 Tuya_datapoint_types[datapoint_type_slot].Tuya_datapoint_type_length);
+		ESPUI.updateNumber(
+			Tuya_devices_tab_controls_table[Tuya_datapoint_length_number], 
+			Tuya_datapoint_types[datapoint_type_slot].Tuya_datapoint_type_length);
 
-		working_str = Tuya_datapoints[Tuya_datapoint_id_selector_value].Tuya_datapoint_description;
-		ESPUI.updateLabel(Tuya_devices_tab_controls_table[Tuya_datapoint_description_label], 
-											 working_str);
+		working_str = 
+			Tuya_datapoints[Tuya_datapoint_id_selector_value].Tuya_datapoint_description;
+		ESPUI.updateLabel(
+			Tuya_devices_tab_controls_table[Tuya_datapoint_description_label], 
+			working_str);
 	}
 	else
-		ESPUI.updateSelect(Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector],
-											 minus_one_str);
+		ESPUI.updateSelect(
+			Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector],
+			minus_one_str);
 }
 
 
 void TuyaDatapointTypeSelectorCallback(Control *sender, int type) {
 
 	int8_t Tuya_datapoint_type_selector_value = 
-		ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector])->value.toInt();
+		ESPUI.getControl(
+			Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector])->value.toInt();
 
 	if (Tuya_datapoint_type_selector_value >= 0)
-		ESPUI.updateNumber(Tuya_devices_tab_controls_table[Tuya_datapoint_length_number], 
-											 Tuya_datapoint_types[Tuya_datapoint_type_selector_value].Tuya_datapoint_type_length);
+		ESPUI.updateNumber(
+			Tuya_devices_tab_controls_table[Tuya_datapoint_length_number], 
+			Tuya_datapoint_types[Tuya_datapoint_type_selector_value].Tuya_datapoint_type_length);
 }
 
 void clearAttributeIdSelect() {

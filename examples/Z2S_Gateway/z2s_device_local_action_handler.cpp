@@ -328,7 +328,10 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
       Supla_Z2S_RemoteThermometer->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
-      //Supla_Z2S_RemoteThermometer->setDefaultFunction(local_channel_func);
+      Supla_Z2S_RemoteThermometer->setConnectedThermometersFunction(
+        CONNECTED_THERMOMETERS_FNC_AVG);
+      Supla_Z2S_RemoteThermometer->setConnectedThermometerTimeoutSecs(
+        MINUTES_30);
     } break;
 
 

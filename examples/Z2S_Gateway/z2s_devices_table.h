@@ -699,6 +699,8 @@ void updateRemoteThermometer(uint8_t Supla_channel,
                              uint32_t connected_thermometer_channel,
                              int32_t connected_thermometer_temperature);
 
+void setRemoteThermometerFunction(uint8_t Supla_channel,
+                                  uint32_t connected_thermometers_function);
 
 void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
                                            int32_t hvac_fixed_calibration_temperature,

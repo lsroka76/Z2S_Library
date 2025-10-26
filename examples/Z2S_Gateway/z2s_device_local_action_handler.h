@@ -37,6 +37,13 @@ static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
   "OR GATE (3 INPUTS)"
 };
 
+static constexpr char* CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {
+
+"CONNECTED_THERMOMETERS_FNC_MINIMUM",
+"CONNECTED_THERMOMETERS_FNC_AVERAGE",
+"CONNECTED_THERMOMETERS_FNC_MAXIMUM"
+};
+
 const char* getZ2SDeviceLocalActionHandlerTypeName(int16_t channel_number_slot);
 
 const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(int16_t channel_number_slot);

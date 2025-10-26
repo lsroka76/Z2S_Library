@@ -47,6 +47,8 @@ static bool     Styrbar_ignore_button_1 = false;
 
 static int8_t cmd_dir = -1;
 
+//static uint32_t save_mutex = 0;
+
 void (*_on_Tuya_custom_cluster_receive)(uint8_t command_id, uint16_t payload_size, uint8_t * payload_data) = nullptr;
 
 void no_channel_found_error_func(char *ieee_addr_str) {
@@ -264,7 +266,9 @@ void Z2S_fillChannelsTableSlot(zbg_device_params_t *device,
 
   if (extended_data_type != CHANNEL_EXTENDED_DATA_TYPE_NULL) {
 
-      if (Z2S_saveChannelExtendedData(slot, extended_data_type, extended_data, false)) {
+      if (Z2S_saveChannelExtendedData(
+            slot, 
+            extended_data_type, extended_data, false)) {
       }
   }
   
@@ -562,7 +566,10 @@ bool Z2S_loadChannelsTable() {
 
 bool Z2S_saveChannelsTable() {
 
-  
+  /*if (save_mutex == 1) return false;
+
+  save_mutex = 1;*/
+
   bool save_result = Z2S_saveFile(Z2S_CHANNELS_TABLE_ID_V2, 
                                       (uint8_t *)z2s_channels_table, 
                                       sizeof(z2s_channels_table));
@@ -574,18 +581,26 @@ bool Z2S_saveChannelsTable() {
   if (!(save_result || backup_result)) {
 
     log_i("Channels table write failed!");
+    /*save_mutex = 0; */
     return false;
   } else { 
     
-    if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_CHANNELS_TABLE_SIZE_ID, sizeof(z2s_channels_table))) {
+    if (Supla::Storage::ConfigInstance()->setUInt32(
+          Z2S_CHANNELS_TABLE_SIZE_ID, 
+          sizeof(z2s_channels_table))) {
 
-      log_i("Channels table new size(%d) write success!", sizeof(z2s_channels_table));
+      log_i("Channels table new size(%d) write success!", 
+            sizeof(z2s_channels_table));
+
       Supla::Storage::ConfigInstance()->commit();
+
+      /*save_mutex = 0; */
       return true;
 
     } else { 
 
       log_i("Channels table size write failed!");
+      /*save_mutex = 0; */
       return false;
     }
   }
@@ -593,14 +608,17 @@ bool Z2S_saveChannelsTable() {
 
 bool Z2S_removeAllChannels() {
 
-  for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+  for (uint8_t channels_counter = 0; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; 
+       channels_counter++) {
 
     if (z2s_channels_table[channels_counter].valid_record) {
 
     if (z2s_channels_table[channels_counter].user_data_flags & 
         USER_DATA_FLAG_HAS_EXTENDED_DATA) 
-      Z2S_removeChannelExtendedData(z2s_channels_table[channels_counter].Supla_channel,
-                                    z2s_channels_table[channels_counter].extended_data_type, false);
+      Z2S_removeChannelExtendedData(
+        z2s_channels_table[channels_counter].Supla_channel,
+        z2s_channels_table[channels_counter].extended_data_type, false);
     } 
   }  
 
@@ -885,29 +903,43 @@ bool Z2S_loadZbDevicesTable() {
 
   uint32_t z2s_zb_devices_table_size =  Z2S_getZbDevicesTableSize(); 
 
-  log_i("Z2S_getZbDevicesTableSize %d, sizeof(z2s_zb_devices_table) %d, sizeof(z2s_zb_device_params_t) %d, sizeof(bool)%d",
-        z2s_zb_devices_table_size, sizeof(z2s_zb_devices_table), sizeof(z2s_zb_device_params_t), sizeof(bool));
+  log_i("\n\rZ2S_getZbDevicesTableSize %d\n\r"
+        "sizeof(z2s_zb_devices_table) %d\n\r"
+        "sizeof(z2s_zb_device_params_t) %d\n\r"
+        "sizeof(bool)%d",
+        z2s_zb_devices_table_size, 
+        sizeof(z2s_zb_devices_table), 
+        sizeof(z2s_zb_device_params_t), 
+        sizeof(bool));
 
   if (z2s_zb_devices_table_size == 0) {
 
-      log_i(" No Zigbee devices table found, writing empty one with size %d", sizeof(z2s_zb_devices_table));
+      log_i("No Zigbee devices table found, writing empty one with size %d", 
+            sizeof(z2s_zb_devices_table));
       
       memset(z2s_zb_devices_table, 0, sizeof(z2s_zb_devices_table));
               
-      if (!Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
+      if (!Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
+          (uint8_t *)z2s_zb_devices_table, 
+          sizeof(z2s_zb_devices_table))) {
 
         log_i ("Zigbee devices table write failed!");
         return false;
       } else { 
-        if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
+        if (Supla::Storage::ConfigInstance()->setUInt32(
+              Z2S_ZB_DEVICES_TABLE_SIZE, 
+              sizeof(z2s_zb_devices_table))) {
+
           Supla::Storage::ConfigInstance()->commit();
           return true;
-        } else { 
+        } else {
+
           log_i ("Zigbee devices table size write failed!");
           return false;
         }
       }
   } else {
+
     if (z2s_zb_devices_table_size != sizeof(z2s_zb_devices_table)) {
 
       memset(z2s_zb_devices_table, 0, sizeof(z2s_zb_devices_table));
@@ -918,7 +950,8 @@ bool Z2S_loadZbDevicesTable() {
 
           log_i("Previous version of Zigbee devices table detected with size 0x%x, trying to upgrade", z2s_zb_devices_table_size);
 
-          z2s_legacy_zb_device_params_t *z2s_zb_devices_legacy_table = (z2s_legacy_zb_device_params_t *)malloc(z2s_zb_devices_table_size);
+          z2s_legacy_zb_device_params_t *z2s_zb_devices_legacy_table = 
+            (z2s_legacy_zb_device_params_t *)malloc(z2s_zb_devices_table_size);
 
           if (z2s_zb_devices_legacy_table == nullptr) {
 
@@ -1128,11 +1161,17 @@ bool Z2S_loadZbDevicesTable() {
 
 bool Z2S_saveZbDevicesTable() {
 
+  /*if (save_mutex == 1) return false;
+
+  save_mutex = 1;*/
+
   if (!Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
                     (uint8_t *)z2s_zb_devices_table, 
                     sizeof(z2s_zb_devices_table))) {
 
     log_i ("Zigbee devices table write failed!");
+
+    /*save_mutex = 0; */
     return false;
   }
   else { 
@@ -1144,11 +1183,15 @@ bool Z2S_saveZbDevicesTable() {
             sizeof(z2s_zb_devices_table));
 
       Supla::Storage::ConfigInstance()->commit();
+
+      /*save_mutex = 0; */
       return true;
     }
     else { 
       
       log_i ("Zigbee devices table size write failed!");
+
+      //save mutex = 0;
       return false;
     }
   }
@@ -1445,13 +1488,17 @@ bool Z2S_loadActionsIndexTable() {
 
   memset(z2s_actions_index_table, 0, sizeof(z2s_actions_index_table));
 
-  if (Z2S_loadFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, (uint8_t *)z2s_actions_index_table, sizeof(z2s_actions_index_table))) {
+  if (Z2S_loadFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
+      (uint8_t *)z2s_actions_index_table, 
+      sizeof(z2s_actions_index_table))) {
 
     log_i ("Zigbee<=>Supla actions index table load SUCCESS!");
     return true;
 
   } else
-  if (Z2S_saveFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, (uint8_t *)z2s_actions_index_table, sizeof(z2s_actions_index_table))) {
+  if (Z2S_saveFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
+      (uint8_t *)z2s_actions_index_table, 
+      sizeof(z2s_actions_index_table))) {
 
     log_i ("Zigbee<=>Supla actions index table not found - writing new one: SUCCESS!");
     return true;
@@ -1465,16 +1512,24 @@ bool Z2S_loadActionsIndexTable() {
 
 bool Z2S_saveActionsIndexTable() {
 
+  /*if (save_mutex == 1) return false;
+
+  save_mutex = 1;*/
+
   if (Z2S_saveFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
-      (uint8_t *)z2s_actions_index_table, 
-      sizeof(z2s_actions_index_table))) {
+                   (uint8_t *)z2s_actions_index_table, 
+                    sizeof(z2s_actions_index_table))) {
 
     log_i ("Saving Zigbee<=>Supla actions index table: SUCCESS!");
+
+    /*save_mutex = 0; */
     return true;
 
   } else {
     
     log_i ("Saving Zigbee<=>Supla actions index table: FAILED!");
+
+    /*save_mutex = 0; */
     return false;
   }
 }
@@ -1539,6 +1594,11 @@ for (uint16_t index = action_position; index >= 0; index--)
 
 bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
 
+  
+  /*if (save_mutex == 1) return false;
+
+  save_mutex = 1;*/
+
   if (action_index >= Z2S_ACTIONS_MAX_NUMBER)
     return false;
 
@@ -1552,6 +1612,8 @@ bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
     log_i ("Saving Zigbee<=>Supla action in file %s: SUCCESS", 
            file_name_buffer);
 
+    /*save_mutex = 0; */
+
     setActionsIndexTablePosition(action_index);
     Z2S_saveActionsIndexTable();
     return true;
@@ -1560,6 +1622,7 @@ bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
     log_i ("Saving Zigbee<=>Supla action in file %s: FAILED", 
            file_name_buffer);
 
+    /*save_mutex = 0; */
     return false;
   }
 }
@@ -1680,6 +1743,10 @@ bool Z2S_saveChannelExtendedData(int16_t channel_number_slot,
                                  uint8_t *extended_data,
                                  bool save_table) {
 
+  /*if (save_mutex == 1) return false;
+
+  save_mutex = 1;*/
+
   if (Z2S_getChannelExtendedDataTypeSize(extended_data_type) == 0) {
 
     log_e("Unknown channel extended data type");
@@ -1688,15 +1755,25 @@ bool Z2S_saveChannelExtendedData(int16_t channel_number_slot,
   
   char file_name_buffer[50] = {};
   
-  sprintf(file_name_buffer, Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2, channel_number_slot, extended_data_type);
+  sprintf(file_name_buffer, 
+          Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2, 
+          channel_number_slot, 
+          extended_data_type);
   
-  if (Z2S_saveFile(file_name_buffer, extended_data, Z2S_getChannelExtendedDataTypeSize(extended_data_type))) {
+  if (Z2S_saveFile(file_name_buffer, 
+      extended_data, 
+      Z2S_getChannelExtendedDataTypeSize(extended_data_type))) {
 
-    log_i ("Saving Zigbee<=>Supla channel extended data in file %s: SUCCESS", file_name_buffer);
+    log_i ("Saving Zigbee<=>Supla channel extended data in file %s: SUCCESS", 
+           file_name_buffer);
     
-    z2s_channels_table[channel_number_slot].extended_data_type = extended_data_type;
-    z2s_channels_table[channel_number_slot].user_data_flags |= USER_DATA_FLAG_HAS_EXTENDED_DATA;
+    z2s_channels_table[channel_number_slot].extended_data_type = 
+      extended_data_type;
+      
+    z2s_channels_table[channel_number_slot].user_data_flags |= 
+      USER_DATA_FLAG_HAS_EXTENDED_DATA;
 
+    /*save_mutex = 0; */
     if (save_table)
       return Z2S_saveChannelsTable();
 
@@ -5658,6 +5735,37 @@ void updateRemoteThermometer(uint8_t Supla_channel,
   }
 }
 
+void setRemoteThermometerFunction(uint8_t channel_number_slot,
+                                  uint32_t connected_thermometers_function) {
+
+  auto element = 
+    Supla::Element::getElementByChannelNumber(
+      z2s_channels_table[channel_number_slot].Supla_channel);
+
+  if (element && 
+      (element->getChannel()->getChannelType() == 
+        SUPLA_CHANNELTYPE_THERMOMETER) &&
+      (z2s_channels_table[channel_number_slot].local_channel_type ==
+        LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER)) {
+
+    auto Z2S_RemoteThermometer = 
+      reinterpret_cast<Supla::Sensor::Z2S_RemoteThermometer *>(element);
+
+    Z2S_RemoteThermometer->setConnectedThermometersFunction(
+      connected_thermometers_function);     
+    
+    z2s_channels_table[channel_number_slot].local_channel_func =
+      connected_thermometers_function;
+
+    if (Z2S_saveChannelsTable()) {
+
+      log_i("Device(channel %d) connected thermometers function updated to %u.\n\r"
+            "Table saved successfully.", 
+            z2s_channels_table[channel_number_slot].Supla_channel,
+            z2s_channels_table[channel_number_slot].local_channel_func);
+    }
+  }
+}
 
 void updateHvacFixedCalibrationTemperature(
   uint8_t channel_number_slot,
