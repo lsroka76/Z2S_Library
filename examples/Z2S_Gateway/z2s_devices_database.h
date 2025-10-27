@@ -1350,6 +1350,15 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
                              DEVELCO_CUSTOM_CLUSTER }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR,
+    .z2s_device_clusters_count = 4,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_PM2_5_MEASUREMENT,
+                             IKEA_CUSTOM_CLUSTER_FC7E }},
+
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
