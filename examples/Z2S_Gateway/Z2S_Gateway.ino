@@ -253,6 +253,7 @@ void enableZ2SNotifications() {
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
   zbGateway.onHumidityReceive(Z2S_onHumidityReceive);
   zbGateway.onPressureReceive(Z2S_onPressureReceive);
+  zbGateway.onPM25Receive(Z2S_onPM25Receive);
   zbGateway.onIlluminanceReceive(Z2S_onIlluminanceReceive);
   zbGateway.onFlowReceive(Z2S_onFlowReceive);
   zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
@@ -271,6 +272,7 @@ void enableZ2SNotifications() {
   zbGateway.onSonoffCustomClusterReceive(Z2S_onSonoffCustomClusterReceive);
   zbGateway.onDevelcoCustomClusterReceive(Z2S_onDevelcoCustomClusterReceive);
   zbGateway.onLumiCustomClusterReceive(Z2S_onLumiCustomClusterReceive);
+  zbGateway.onIkeaCustomClusterReceive(Z2S_onIkeaCustomClusterReceive);
   zbGateway.onBatteryReceive(Z2S_onBatteryReceive);
   zbGateway.onCustomCmdReceive(Z2S_onCustomCmdReceive);
   zbGateway.onCmdCustomClusterReceive(Z2S_onCmdCustomClusterReceive);
@@ -290,6 +292,7 @@ void disableZ2SNotifications() {
   zbGateway.onTemperatureReceive(nullptr);
   zbGateway.onHumidityReceive(nullptr);
   zbGateway.onPressureReceive(nullptr);
+  zbGateway.onPM25Receive(nullptr);
   zbGateway.onIlluminanceReceive(nullptr);
   zbGateway.onFlowReceive(nullptr);
   zbGateway.onOccupancyReceive(nullptr);
@@ -308,6 +311,7 @@ void disableZ2SNotifications() {
   zbGateway.onSonoffCustomClusterReceive(nullptr);
   zbGateway.onDevelcoCustomClusterReceive(nullptr);
   zbGateway.onLumiCustomClusterReceive(nullptr);
+  zbGateway.onIkeaCustomClusterReceive(nullptr);
   zbGateway.onBatteryReceive(nullptr);
   zbGateway.onCustomCmdReceive(nullptr);
   zbGateway.onCmdCustomClusterReceive(nullptr);

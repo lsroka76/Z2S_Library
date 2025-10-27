@@ -10,6 +10,8 @@
 #define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE  0x01
 #define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_MOTION_STATE 0x02
 #define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM          0x03
+#define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PM25         0x06
+#define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_VOC          0x07
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

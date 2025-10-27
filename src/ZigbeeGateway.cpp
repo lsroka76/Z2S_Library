@@ -116,183 +116,313 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   
 
   _cluster_list = esp_zb_zcl_cluster_list_create();
-  esp_zb_attribute_list_t *basic_cluster = esp_zb_basic_cluster_create(&(gateway_cfg.basic_cfg));
-  esp_zb_cluster_list_add_basic_cluster(_cluster_list, basic_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_cluster_list_add_basic_cluster(_cluster_list, esp_zb_basic_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_identify_cluster(_cluster_list, esp_zb_identify_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_identify_cluster(_cluster_list, esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_cluster_list_add_power_config_cluster(_cluster_list, esp_zb_power_config_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_scenes_cluster(_cluster_list, esp_zb_scenes_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_groups_cluster(_cluster_list, esp_zb_groups_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_scenes_cluster(_cluster_list, esp_zb_scenes_cluster_create(&scenes_cfg), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_cluster_list_add_groups_cluster(_cluster_list, esp_zb_groups_cluster_create(&groups_cfg), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_cluster_list_add_level_cluster(_cluster_list, esp_zb_level_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_level_cluster(_cluster_list, esp_zb_level_cluster_create(&level_cfg), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_cluster_list_add_color_control_cluster(_cluster_list, esp_zb_color_control_cluster_create(NULL), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
-  esp_zb_cluster_list_add_color_control_cluster(_cluster_list, esp_zb_color_control_cluster_create(&color_control_cfg), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  //esp_zb_cluster_list_add_time_cluster(_cluster_list, esp_zb_time_cluster_create(&time_cfg), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_attribute_list_t *basic_cluster = 
+  esp_zb_basic_cluster_create(&(gateway_cfg.basic_cfg));
 
-time_t utc_time = 798653565;
-uint8_t time_status = 0x02;
-int32_t time_zone = ESP_ZB_ZCL_TIME_TIME_ZONE_DEFAULT_VALUE;
-time_t local_time = 798653565;
-uint32_t dst_start = ESP_ZB_ZCL_TIME_DST_START_DEFAULT_VALUE;
-uint32_t dst_end = ESP_ZB_ZCL_TIME_DST_END_DEFAULT_VALUE;
+  esp_zb_cluster_list_add_basic_cluster(
+    _cluster_list, basic_cluster, 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
- esp_zb_attribute_list_t *time_cluster_server = esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_TIME);
+  esp_zb_cluster_list_add_basic_cluster(
+    _cluster_list, 
+    esp_zb_basic_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-   esp_err_t ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, (void *)&time_zone);
+  esp_zb_cluster_list_add_identify_cluster(
+    _cluster_list, 
+    esp_zb_identify_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_identify_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_IDENTIFY), 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_power_config_cluster(
+    _cluster_list, 
+    esp_zb_power_config_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_scenes_cluster(
+    _cluster_list, 
+    esp_zb_scenes_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_groups_cluster(
+    _cluster_list, 
+    esp_zb_groups_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_scenes_cluster(
+    _cluster_list, 
+    esp_zb_scenes_cluster_create(&scenes_cfg), 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_groups_cluster(
+    _cluster_list, 
+    esp_zb_groups_cluster_create(&groups_cfg), 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_level_cluster(
+    _cluster_list, 
+    esp_zb_level_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_level_cluster(
+    _cluster_list, 
+    esp_zb_level_cluster_create(&level_cfg), 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_color_control_cluster(
+    _cluster_list, 
+    esp_zb_color_control_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_color_control_cluster(
+    _cluster_list, 
+    esp_zb_color_control_cluster_create(&color_control_cfg), 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+
+  time_t utc_time = 798653565;
+  uint8_t time_status = 0x02;
+  int32_t time_zone = ESP_ZB_ZCL_TIME_TIME_ZONE_DEFAULT_VALUE;
+  time_t local_time = 798653565;
+  uint32_t dst_start = ESP_ZB_ZCL_TIME_DST_START_DEFAULT_VALUE;
+  uint32_t dst_end = ESP_ZB_ZCL_TIME_DST_END_DEFAULT_VALUE;
+
+  esp_zb_attribute_list_t *time_cluster_server = 
+    esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_TIME);
+
+  esp_err_t ret = esp_zb_time_cluster_add_attr(
+    time_cluster_server, 
+    ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, 
+    (void *)&time_zone);
+
    if (ret != ESP_OK) {
-     log_e("Failed to add time zone attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+     log_e("Failed to add time zone attribute: 0x%x: %s", 
+           ret, esp_err_to_name(ret));
    }
-  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, (void *)&utc_time);
+  ret = esp_zb_time_cluster_add_attr(
+    time_cluster_server, 
+    ESP_ZB_ZCL_ATTR_TIME_TIME_ID, 
+    (void *)&utc_time);
+
   if (ret != ESP_OK) {
-    log_e("Failed to add time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+    log_e("Failed to add time attribute: 0x%x: %s", 
+          ret, esp_err_to_name(ret));
   }
-  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, (void *)&time_status);
+
+  ret = esp_zb_time_cluster_add_attr(
+    time_cluster_server, 
+    ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, 
+    (void *)&time_status);
+
   if (ret != ESP_OK) {
-    log_e("Failed to add time status attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+    log_e("Failed to add time status attribute: 0x%x: %s", 
+          ret, esp_err_to_name(ret));
   }
-  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, (void *)&local_time);
+
+  ret = esp_zb_time_cluster_add_attr(
+    time_cluster_server, 
+    ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, 
+    (void *)&local_time);
+
   if (ret != ESP_OK) {
-    log_e("Failed to add time local time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+    log_e("Failed to add time local time attribute: 0x%x: %s", 
+          ret, esp_err_to_name(ret));
   }
-  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_DST_START_ID, (void *)&dst_start);
+  ret = esp_zb_time_cluster_add_attr(
+    time_cluster_server, 
+    ESP_ZB_ZCL_ATTR_TIME_DST_START_ID, 
+    (void *)&dst_start);
+
   if (ret != ESP_OK) {
-    log_e("Failed to add time local time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+    log_e("Failed to add time local time attribute: 0x%x: %s",
+          ret, esp_err_to_name(ret));
   }
-  ret = esp_zb_time_cluster_add_attr(time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_DST_END_ID, (void *)&dst_end);
+
+  ret = esp_zb_time_cluster_add_attr(
+    time_cluster_server, 
+    ESP_ZB_ZCL_ATTR_TIME_DST_END_ID, 
+    (void *)&dst_end);
+
   if (ret != ESP_OK) {
-    log_e("Failed to add time local time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
+    log_e("Failed to add time local time attribute: 0x%x: %s", 
+          ret, esp_err_to_name(ret));
   }
   // Add time clusters to cluster list
-  ret = esp_zb_cluster_list_add_time_cluster(_cluster_list, time_cluster_server, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  ret = esp_zb_cluster_list_add_time_cluster(
+    _cluster_list, 
+    time_cluster_server, 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  
   if (ret != ESP_OK) {
-    log_e("Failed to add time cluster (server role): 0x%x: %s", ret, esp_err_to_name(ret));
+    log_e("Failed to add time cluster (server role): 0x%x: %s", 
+          ret, esp_err_to_name(ret));
   }
 
+  esp_zb_cluster_list_add_ias_zone_cluster(
+    _cluster_list, 
+    esp_zb_ias_zone_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_ias_zone_cluster(_cluster_list, 
-                                           esp_zb_ias_zone_cluster_create(NULL), 
-                                           ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_temperature_meas_cluster(
+    _cluster_list, 
+    esp_zb_temperature_meas_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_temperature_meas_cluster(_cluster_list, 
-                                                    esp_zb_temperature_meas_cluster_create(NULL), 
-                                                    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_humidity_meas_cluster(
+    _cluster_list, 
+    esp_zb_humidity_meas_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_humidity_meas_cluster(_cluster_list, 
-                                                esp_zb_humidity_meas_cluster_create(NULL), 
-                                                ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_pressure_meas_cluster(
+    _cluster_list, 
+    esp_zb_pressure_meas_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_pressure_meas_cluster(_cluster_list, 
-                                                esp_zb_pressure_meas_cluster_create(NULL), 
-                                                ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_pm2_5_measurement_cluster(
+    _cluster_list, 
+    esp_zb_pm2_5_measurement_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_on_off_cluster(_cluster_list, 
-                                         esp_zb_on_off_cluster_create(&on_off_cfg), 
-                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_on_off_cluster(
+    _cluster_list, 
+    esp_zb_on_off_cluster_create(&on_off_cfg), 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  esp_zb_cluster_list_add_on_off_cluster(_cluster_list, 
-                                         esp_zb_on_off_cluster_create(NULL), 
-                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_on_off_cluster(
+    _cluster_list, 
+    esp_zb_on_off_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_on_off_switch_config_cluster(_cluster_list, 
-                                                       esp_zb_on_off_switch_config_cluster_create(NULL), 
-                                                       ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_on_off_switch_config_cluster(
+    _cluster_list, 
+    esp_zb_on_off_switch_config_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_electrical_meas_cluster(_cluster_list, 
-                                                  esp_zb_electrical_meas_cluster_create(NULL), 
-                                                  ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_electrical_meas_cluster(
+    _cluster_list, 
+    esp_zb_electrical_meas_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_flow_meas_cluster(_cluster_list, 
-                                            esp_zb_flow_meas_cluster_create(NULL), 
-                                            ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_flow_meas_cluster(
+    _cluster_list, 
+    esp_zb_flow_meas_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_metering_cluster(_cluster_list, 
-                                           esp_zb_metering_cluster_create(NULL), 
-                                           ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_metering_cluster(
+    _cluster_list, 
+    esp_zb_metering_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_illuminance_meas_cluster(_cluster_list, 
-                                                   esp_zb_illuminance_meas_cluster_create(NULL), 
-                                                   ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_illuminance_meas_cluster(
+    _cluster_list, 
+    esp_zb_illuminance_meas_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_occupancy_sensing_cluster(_cluster_list, 
-                                                    esp_zb_occupancy_sensing_cluster_create(NULL), 
-                                                    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_occupancy_sensing_cluster(
+    _cluster_list, 
+    esp_zb_occupancy_sensing_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_thermostat_cluster(_cluster_list, 
-                                             esp_zb_thermostat_cluster_create(NULL), 
-                                             ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_thermostat_cluster(
+    _cluster_list, 
+    esp_zb_thermostat_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_window_covering_cluster(_cluster_list, 
-                                                  esp_zb_window_covering_cluster_create(NULL), 
-                                                  ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_window_covering_cluster(
+    _cluster_list, 
+    esp_zb_window_covering_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_ias_ace_cluster(_cluster_list, 
-                                          esp_zb_ias_ace_cluster_create(NULL), 
-                                          ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_ias_ace_cluster(
+    _cluster_list, 
+    esp_zb_ias_ace_cluster_create(NULL), 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                        esp_zb_zcl_attr_list_create(0x0020), 
-                                        ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(0x0020), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                          esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
-                                          ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
-                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
-                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
-                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
-                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
-                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(0xFC80),
-                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(0xFC80),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(0xFC80),
-                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(0xFC80),
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                        esp_zb_zcl_attr_list_create(PHILIPS_CUSTOM_CLUSTER),
-                                        ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(PHILIPS_CUSTOM_CLUSTER),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                        esp_zb_zcl_attr_list_create(0xFC7F),
-                                        ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(0xFC7F),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(0xFC7F),
-                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(0xFC7F),
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
-                                         ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(IKEA_CUSTOM_CLUSTER_FC7E),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_cluster_list_add_custom_cluster(_cluster_list, 
-                                         esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
-                                         ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
-  esp_zb_attribute_list_t *tyua_on_off_cluster = 
-    esp_zb_cluster_list_get_cluster(_cluster_list, 
-                                    ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
+    esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
+    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  /*esp_zb_attribute_list_t *tyua_on_off_cluster = 
+    esp_zb_cluster_list_get_cluster(
+      _cluster_list, 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+      ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);*/ //MFR
   
   _ep_config = {.endpoint = _endpoint, 
                 .app_profile_id = ESP_ZB_AF_HA_PROFILE_ID, 
@@ -957,10 +1087,11 @@ void ZigbeeGateway::updateZbgDeviceUnitLastRssi(uint16_t short_addr,
   }
 }
 
-void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address, 
-                                         uint16_t src_endpoint, 
-                                         uint16_t cluster_id, 
-                                         const esp_zb_zcl_attribute_t *attribute) {
+void ZigbeeGateway::zbAttributeReporting(
+  esp_zb_zcl_addr_t src_address, 
+  uint16_t src_endpoint, 
+  uint16_t cluster_id, 
+  const esp_zb_zcl_attribute_t *attribute) {
   
   uint16_t short_addr = src_address.u.short_addr;
   //log_i(" zbAttributeReporting with short address 0x%x", short_addr);
@@ -973,44 +1104,76 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address,
     if ((attribute->id == ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID) && 
         (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_S16)) {
 
-      int16_t value = attribute->data.value ? *(int16_t *)attribute->data.value : 0;
+      int16_t value = attribute->data.value ? 
+        *(int16_t *)attribute->data.value : 0;
 
       log_i("temperature measurement %f",((float)value)/100);
       
       if (_on_temperature_receive)
-        _on_temperature_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, ((float)value)/100);
-    } else 
-        log_i("temperature cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
-              cluster_id, attribute->id, attribute->data.type);
-    } else
-  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT) {
+        _on_temperature_receive(src_address.u.ieee_addr, 
+                                src_endpoint, 
+                                cluster_id, 
+                                ((float)value)/100);
+    } else log_i("\n\rtemperature cluster (0x%x)"
+                 "\n\rattribute id (0x%x)"
+                "\n\rattribute data type (0x%x)", 
+                cluster_id, attribute->id,  attribute->data.type);
 
-    if ((attribute->id == ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_ID) && 
+    } else if (cluster_id == 
+               ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT) {
+
+    if ((attribute->id == 
+         ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_ID) && 
         (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16)) {
 
-      uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+      uint16_t value = attribute->data.value ? 
+        *(uint16_t *)attribute->data.value : 0;
       
       log_i("humidity measurement %f",((float)value)/100);
       
       if (_on_humidity_receive)
-        _on_humidity_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, ((float)value)/100);
-    } else 
-        log_i("humidity cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
-              cluster_id, attribute->id, attribute->data.type);
-  } else 
-  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT) {
+        _on_humidity_receive(src_address.u.ieee_addr, 
+                             src_endpoint, cluster_id, 
+                             ((float)value)/100);
+    } else log_i("\n\rhumidity cluster (0x%x)"
+                "\n\rattribute id (0x%x)"
+                "\n\rattribute data type (0x%x)", 
+                cluster_id, attribute->id, attribute->data.type);
+  } else if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT) {
 
     if ((attribute->id == ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID) &&
         (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_S16)) {
 
-      int16_t value = attribute->data.value ? *(int16_t *)attribute->data.value : 0;
+      int16_t value = attribute->data.value ? 
+        *(int16_t *)attribute->data.value : 0;
 
       log_i("pressure measurement %f",((float)value));
       
       if (_on_pressure_receive)
-        _on_pressure_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, ((float)value));
+        _on_pressure_receive(src_address.u.ieee_addr, 
+                             src_endpoint, 
+                             cluster_id, 
+                             ((float)value));
     } else 
         log_i("humidity cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+              cluster_id, attribute->id, attribute->data.type);
+    } else if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_PM2_5_MEASUREMENT) {
+
+    if ((attribute->id == 
+         ESP_ZB_ZCL_ATTR_PM2_5_MEASUREMENT_MEASURED_VALUE_ID) &&
+        (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_SINGLE)) {
+
+      float value = attribute->data.value ? 
+        *(float *)attribute->data.value : 0;
+
+      log_i("PM 2.5 measurement %f", value);
+      
+      if (_on_pm25_receive)
+        _on_pm25_receive(src_address.u.ieee_addr, 
+                         src_endpoint, 
+                         cluster_id, 
+                         value);
+    } else log_i("PM 2.5 cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
               cluster_id, attribute->id, attribute->data.type);
   } else 
   if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT) {
@@ -1103,12 +1266,26 @@ void ZigbeeGateway::zbAttributeReporting(esp_zb_zcl_addr_t src_address,
     } else
     if (cluster_id == LUMI_CUSTOM_CLUSTER) {      
 
-      log_i("LUMI custom cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+      log_i("LUMI custom cluster (0x%x), attribute id (0x%x), "
+            "attribute data type (0x%x)", 
             cluster_id, attribute->id, attribute->data.type);
+
       if ((attribute->id == 0x148) || (attribute->id == 0x149))
         log_i("value = %u", *(uint8_t *)attribute->data.value);
+
       if (_on_lumi_custom_cluster_receive)
-        _on_lumi_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute);
+        _on_lumi_custom_cluster_receive(src_address.u.ieee_addr, 
+                                        src_endpoint, cluster_id, attribute);
+    } else
+    if (cluster_id == IKEA_CUSTOM_CLUSTER_FC7E) {      
+
+      log_i("Ikea custom cluster (0x%x), attribute id (0x%x), "
+            "attribute data type (0x%x)", 
+            cluster_id, attribute->id, attribute->data.type);
+
+      if (_on_ikea_custom_cluster_receive)
+        _on_ikea_custom_cluster_receive(src_address.u.ieee_addr, 
+                                        src_endpoint, cluster_id, attribute);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_METERING) {
 

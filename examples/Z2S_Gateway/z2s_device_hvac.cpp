@@ -85,6 +85,11 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
       return  TRVZB_CMD_SET;
     } break;
 
+    case Z2S_DEVICE_DESC_BOSCH_BTHRA: {
+
+      return  BOSCH_CMD_SET;
+    } break;
+
     default:
       return 0xFF; break;
   }  
@@ -128,6 +133,13 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
         trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
         hvac_room_temperature_min = TRVZB_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = TRVZB_CMD_SET_HEATSETPOINT_MAX;
+      } break;
+
+      case BOSCH_CMD_SET: {
+
+        //trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
+        hvac_room_temperature_min = BOSCH_CMD_SET_HEATSETPOINT_MIN;
+        hvac_room_temperature_max = BOSCH_CMD_SET_HEATSETPOINT_MAX;
       } break;
     }
   }

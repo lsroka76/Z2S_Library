@@ -86,13 +86,13 @@
 #define Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR             0x2230
 #define Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR          0x2250
 #define Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR             0x2260
+#define Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR             0x2270
 
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR                0x2300
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1              0x2301
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5              0x2305
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1           0x2310
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY          0x2315
-
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
@@ -234,6 +234,7 @@
 #define Z2S_DEVICE_DESC_TUYA_HVAC_LEGACY                    0x6003
 
 #define Z2S_DEVICE_DESC_SONOFF_TRVZB                        0x6005
+#define Z2S_DEVICE_DESC_BOSCH_BTHRA                         0x6006
 
 #define Z2S_DEVICE_DESC_TS0601_TRV_SASWELL                  0x6010
 #define Z2S_DEVICE_DESC_TS0601_TRV_ME167                    0x6011
@@ -332,11 +333,14 @@
 #define LUMI_AIR_QUALITY_SENSOR_VOC_SID                     0x01
 #define LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID             0x02
 
-
 #define TUYA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID            0x00
 #define TUYA_AIR_QUALITY_SENSOR_CO2_SID                     0x01
 #define TUYA_AIR_QUALITY_SENSOR_VOC_SID                     0x02
 #define TUYA_AIR_QUALITY_SENSOR_FA_SID                      0x03 //formaldehyde
+
+#define IKEA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID            0x00
+#define IKEA_AIR_QUALITY_SENSOR_PM25_SID                    0x01
+#define IKEA_AIR_QUALITY_SENSOR_VOC_SID                     0x02
 
 
 #define TUYA_RAIN_SENSOR_RAIN_SID                           0x01
@@ -1023,6 +1027,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
                              ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
                              SONOFF_CUSTOM_CLUSTER }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_BTHRA,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
     .z2s_device_clusters_count = 1,
@@ -3592,6 +3602,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 29600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "BOSCH", .model_name = "RBSH-TRV0-ZB-EU",
+    .z2s_device_uid = 29700,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_BTHRA,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "IKEA of Sweden", .model_name = "VINDSTYRKA",
+    .z2s_device_uid = 29800,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR,
+    .z2s_device_endpoints_count = 1}
 
 };
 #endif

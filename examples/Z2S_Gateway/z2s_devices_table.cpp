@@ -1890,7 +1890,10 @@ void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     msgZ2SDeviceTempHumidityHumi(channel_number_slot, humidity);
 }
 
-void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, float pressure) {
+void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, 
+                           uint16_t endpoint, 
+                           uint16_t cluster, 
+                           float pressure) {
 
   char ieee_addr_str[24] = {};
 
@@ -1899,10 +1902,11 @@ void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
   log_i("%s, endpoint 0x%x, pressure %f", 
         ieee_addr_str, endpoint, pressure);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                          endpoint, cluster, 
-                                                          SUPLA_CHANNELTYPE_PRESSURESENSOR, 
-                                                          NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = 
+    Z2S_findChannelNumberSlot(ieee_addr, 
+                              endpoint, cluster, 
+                              SUPLA_CHANNELTYPE_PRESSURESENSOR, 
+                              NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0)
     no_channel_found_error_func(ieee_addr_str);
@@ -1910,37 +1914,69 @@ void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
     msgZ2SDevicePressure(channel_number_slot, pressure);
 }
 
-void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t illuminance) {
+void Z2S_onPM25Receive(esp_zb_ieee_addr_t ieee_addr, 
+                       uint16_t endpoint, 
+                       uint16_t cluster, 
+                       float pm25) {
 
   char ieee_addr_str[24] = {};
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, illuminance %u", ieee_addr_str, endpoint, illuminance);
+  log_i("%s, endpoint 0x%x, PM 2.5 %f", 
+        ieee_addr_str, endpoint, pm25);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                          endpoint, 
-                                                          cluster, 
-                                                          SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                          TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, cluster, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    IKEA_AIR_QUALITY_SENSOR_PM25_SID);
+  
+  if (channel_number_slot < 0)
+    no_channel_found_error_func(ieee_addr_str);
+  else
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot, 
+      ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PM25,
+      pm25);
+}
+
+void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, 
+                              uint16_t endpoint, 
+                              uint16_t cluster, 
+                              uint16_t illuminance) {
+
+  char ieee_addr_str[24] = {};
+
+  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  log_i("%s, endpoint 0x%x, illuminance %u", 
+        ieee_addr_str, endpoint, illuminance);
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, 
+    endpoint, 
+    cluster, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
 
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
-                                          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, 
-                                          illuminance/10); 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot, 
+      ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, 
+      illuminance/10); 
     return;
   }
   
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                  endpoint, 
-                                                  cluster, 
-                                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                  NO_CUSTOM_CMD_SID);
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, cluster, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {                         
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot,
-                                          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, 
-                                          illuminance); 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot,
+      ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, 
+      illuminance); 
     return;
   }
   
@@ -2326,15 +2362,20 @@ uint8_t scanLumiPayload(uint8_t lumi_attribute_id,
   return 0;
 }
 
-void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, 
+                                    uint16_t endpoint, 
+                                    uint16_t cluster, 
                                     const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint,attribute->id, attribute->data.size);
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
+        ieee_addr_str, 
+        endpoint,
+        attribute->id, 
+        attribute->data.size);
 
   switch (attribute->id) {
 
@@ -2461,6 +2502,42 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
                                                 *(uint8_t *)attribute->data.value);
 
       log_i("air quality = %u", *(uint8_t*)attribute->data.value);
+    } break;
+  }
+}
+
+void Z2S_onIkeaCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, 
+                                    uint16_t endpoint, 
+                                    uint16_t cluster, 
+                                    const esp_zb_zcl_attribute_t *attribute) {
+
+  char ieee_addr_str[24] = {};
+
+  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
+        ieee_addr_str, 
+        endpoint,
+        attribute->id, 
+        attribute->data.size);
+
+  switch (attribute->id) {
+
+
+    case IKEA_CUSTOM_CLUSTER_VOC_MEASUREMENT_ID: {
+    
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        IKEA_AIR_QUALITY_SENSOR_VOC_SID);
+  
+      if (channel_number_slot < 0)
+        no_channel_found_error_func(ieee_addr_str);
+      else
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot, 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_VOC,
+          *(float*)attribute->data.value);
     } break;
   }
 }
@@ -4580,7 +4657,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
       case Z2S_DEVICE_DESC_TS0601_TRV_TRV16:
       case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
       case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
-      case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
+      case Z2S_DEVICE_DESC_SONOFF_TRVZB:
+      case Z2S_DEVICE_DESC_BOSCH_BTHRA: {
       
         addZ2SDeviceTempHumidity(device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
         
@@ -5185,6 +5263,34 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
           case DEVELCO_AIR_QUALITY_SENSOR_VOC_SID:
           
             addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+        }
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/     
+
+      case Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR: {
+
+        switch (sub_id) {
+          
+          case IKEA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID:
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func); 
+          break;
+
+
+          case IKEA_AIR_QUALITY_SENSOR_PM25_SID:
+          
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+
+
+          case IKEA_AIR_QUALITY_SENSOR_VOC_SID:
+          
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
         }
       } break;
 
@@ -7293,6 +7399,25 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
                        "VOC", 
                        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
                        "ppb");
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+    case Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR: {
+      
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
+                       "TEMPHUMIDITY");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_AIR_QUALITY_SENSOR_PM25_SID, 
+                       "PM 2.5", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       IKEA_AIR_QUALITY_SENSOR_VOC_SID, 
+                       "VOC", 
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

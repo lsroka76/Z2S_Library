@@ -523,6 +523,12 @@ void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr,
                            uint16_t cluster, 
                            float pressure);
 
+void Z2S_onPM25Receive(esp_zb_ieee_addr_t ieee_addr, 
+                       uint16_t endpoint, 
+                       uint16_t cluster, 
+                       float pm25);
+
+
 void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, 
                               uint16_t endpoint, 
                               uint16_t cluster, 
@@ -612,6 +618,11 @@ void Z2S_onDevelcoCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
                                        const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, 
+                                    uint16_t endpoint, 
+                                    uint16_t cluster,
+                                    const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onIkeaCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, 
                                     uint16_t endpoint, 
                                     uint16_t cluster,
                                     const esp_zb_zcl_attribute_t *attribute);

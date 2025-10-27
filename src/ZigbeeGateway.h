@@ -34,6 +34,9 @@
 
 #define IKEA_PRIVATE_CLUSTER                                  0xFC7F
 #define IKEA_PRIVATE_CLUSTER_2                                0xFC80
+#define IKEA_CUSTOM_CLUSTER_FC7E                              0xFC7E
+
+#define IKEA_CUSTOM_CLUSTER_VOC_MEASUREMENT_ID                0x0000 //SINGLE
 
 #define SONOFF_CUSTOM_CLUSTER                                 0xFC11
 /*TRVZB attributes*/
@@ -105,6 +108,8 @@
 #define DEVELCO_CUSTOM_CLUSTER_MIN_MEASURED_VALUE_ID          0x0001
 #define DEVELCO_CUSTOM_CLUSTER_MAX_MEASURED_VALUE_ID          0x0002
 #define DEVELCO_CUSTOM_CLUSTER_RESOLUTION_ID                  0x0003
+
+#define BOSCH_MANUFACTURER_CODE                               0x1209
 
 #define CUSTOM_CMD_SYNC                                       true
 #define CUSTOM_CMD_ASYNC                                      false
@@ -387,6 +392,9 @@ static void bindDeviceCluster2(zbg_device_params_t *,
   void onPressureReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float)) {
     _on_pressure_receive = callback;
   }
+  void onPM25Receive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float)) {
+    _on_pm25_receive = callback; 
+  }
   void onIlluminanceReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t)) {
     _on_illuminance_receive = callback;
   }
@@ -452,9 +460,23 @@ static void bindDeviceCluster2(zbg_device_params_t *,
   void onDevelcoCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *)) {
     _on_develco_custom_cluster_receive = callback;
   }
-  void onLumiCustomClusterReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *)) {
+  void onLumiCustomClusterReceive(
+    void (*callback)(esp_zb_ieee_addr_t ieee_addr, 
+                    uint16_t, uint16_t, 
+                    const esp_zb_zcl_attribute_t *)) {
+
     _on_lumi_custom_cluster_receive = callback;
   }
+
+  void onIkeaCustomClusterReceive(
+    void (*callback)(esp_zb_ieee_addr_t ieee_addr, 
+                     uint16_t endpoint_id, 
+                     uint16_t cluster_id, 
+                     const esp_zb_zcl_attribute_t *)) {
+
+    _on_ikea_custom_cluster_receive = callback;
+  }
+
   void onOnOffCustomCmdReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t)) {
     _on_on_off_custom_cmd_receive = callback;
   }
@@ -539,6 +561,7 @@ private:
   void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
   void (*_on_humidity_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
   void (*_on_pressure_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
+  void (*_on_pm25_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
   void (*_on_illuminance_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_flow_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_occupancy_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
@@ -560,6 +583,7 @@ private:
   void (*_on_sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_develco_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_lumi_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_ikea_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_on_off_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint8_t, uint8_t);
   bool (*_on_custom_cmd_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
 

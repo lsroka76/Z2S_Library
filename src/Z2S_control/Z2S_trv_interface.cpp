@@ -158,7 +158,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
               _trv_commands_set); 
     } else
 
-    if (_trv_commands_set == TRVZB_CMD_SET) {
+    if ((_trv_commands_set == TRVZB_CMD_SET) ||
+        (_trv_commands_set == BOSCH_CMD_SET)) {
 
       _gateway->sendAttributeWrite(&_device, 
                                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
@@ -209,7 +210,8 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
               _trv_commands_set); 
     } else
 
-    if (_trv_commands_set == TRVZB_CMD_SET) {
+    if ((_trv_commands_set == TRVZB_CMD_SET) ||
+        (_trv_commands_set == BOSCH_CMD_SET)) {
 
       _gateway->sendAttributeRead(&_device, 
                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
@@ -257,7 +259,9 @@ void Supla::Control::Z2S_TRVInterface::
               _trv_commands_set);
     } else 
 
-    if (_trv_commands_set == TRVZB_CMD_SET) {
+    if ((_trv_commands_set == TRVZB_CMD_SET) ||
+        (_trv_commands_set == BOSCH_CMD_SET)) {
+
       
       temperature_calibration = temperature_calibration / 10;
       _gateway->sendAttributeWrite(&_device, 
@@ -385,7 +389,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
     } else 
-    if (_trv_commands_set == TRVZB_CMD_SET) {
+    if ((_trv_commands_set == TRVZB_CMD_SET) ||
+        (_trv_commands_set == BOSCH_CMD_SET)) {
       
       trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
@@ -466,7 +471,8 @@ void Supla::Control::Z2S_TRVInterface::
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
     } else 
-    if (_trv_commands_set == TRVZB_CMD_SET) {
+    if ((_trv_commands_set == TRVZB_CMD_SET) ||
+        (_trv_commands_set == BOSCH_CMD_SET)) {
 
       trv_schedule_mode = (trv_schedule_mode == 0) ? 4 : 1; //
 
@@ -555,8 +561,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) 
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  sendTRVTemperatureHisteresis(int32_t temperature_histeresis) {
+void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
+  int32_t temperature_histeresis) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -620,7 +626,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 
     log_i("Z2S_TRVInterface::sendTRVPing");
  
-    if (_trv_commands_set == TRVZB_CMD_SET) {
+    if ((_trv_commands_set == TRVZB_CMD_SET) ||
+        (_trv_commands_set == BOSCH_CMD_SET)) {
 
       uint16_t attributes[5] = { ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
