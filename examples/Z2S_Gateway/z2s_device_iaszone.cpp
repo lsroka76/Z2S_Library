@@ -76,26 +76,31 @@ void msgZ2SDeviceIASzone(int16_t channel_number_slot,
   }
 
   if (check_flags && 
-     (z2s_channels_table[channel_number_slot].user_data_flags & USER_DATA_FLAG_MSG_DISABLED)) {
+     (z2s_channels_table[channel_number_slot].user_data_flags & 
+      USER_DATA_FLAG_MSG_DISABLED)) {
 
     log_i("Warning: USER_DATA_FLAG_MSG_DISABLED set, no message is sent");
     return;
   }
 
-  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(
+    z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
   auto element = 
-    Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+    Supla::Element::getElementByChannelNumber(
+      z2s_channels_table[channel_number_slot].Supla_channel);
 
   if ((element != nullptr) && 
-      (element->getChannel()->getChannelType() == SUPLA_CHANNELTYPE_BINARYSENSOR)) {
+      (element->getChannel()->getChannelType() == 
+       SUPLA_CHANNELTYPE_BINARYSENSOR)) {
 
         auto Supla_Z2S_VirtualBinary = 
           reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
         
         Supla_Z2S_VirtualBinary->Refresh();
 
-        bool state_changed = (state == !Supla_Z2S_VirtualBinary->getValue()) ? false : true;
+        bool state_changed = 
+          (state == !Supla_Z2S_VirtualBinary->getValue()) ? false : true;
 
         if (state) Supla_Z2S_VirtualBinary->extClear(); 
         else Supla_Z2S_VirtualBinary->extSet();

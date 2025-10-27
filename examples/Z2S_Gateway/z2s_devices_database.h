@@ -147,6 +147,7 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER      0x4200
 #define Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER     0x4300
+#define Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER       0x4400
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER        0x4500
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1      0x4501
@@ -856,6 +857,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              SONOFF_CUSTOM_CLUSTER }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_METERING }},
 
    {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER,
      .z2s_device_clusters_count = 3,
@@ -3288,6 +3296,21 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE200_uli8wasj", .model_name = "TS0601",
+    .z2s_device_uid = 23905,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_grgol3xp", .model_name = "TS0601",
+    .z2s_device_uid = 23910,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_y8jijhba", .model_name = "TS0601",
+    .z2s_device_uid = 23915,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-204ZV",
     .z2s_device_uid = 24000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
@@ -3560,9 +3583,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 4, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 },
                               { 5, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
-    { .manufacturer_name = "_TZE204_5slehgeo", .model_name = "TS0601",
+  { .manufacturer_name = "_TZE204_5slehgeo", .model_name = "TS0601",
     .z2s_device_uid = 29500,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_COVER,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "BOSCH", .model_name = "RBSH-SP-ZB-EU",
+    .z2s_device_uid = 29600,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1},
+
 };
 #endif

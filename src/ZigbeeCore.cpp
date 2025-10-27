@@ -193,8 +193,13 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
 
     //print the list of Zigbee EPs from ep_objects
     log_i("List of registered Zigbee EPs:");
+    
     for (std::list<ZigbeeEP *>::iterator it = ep_objects.begin(); it != ep_objects.end(); ++it) {
-      log_i("Device type: %s, Endpoint: %d, Device ID: 0x%04x", getDeviceTypeString((*it)->_device_id), (*it)->_endpoint, (*it)->_device_id);
+
+      log_i("Device type: %s, Endpoint: %d, Device ID: 0x%04x", 
+            getDeviceTypeString((*it)->_device_id), 
+            (*it)->_endpoint, (*it)->_device_id);
+
       if ((*it)->_power_source == ZB_POWER_SOURCE_BATTERY) {
         edBatteryPowered = true;
       }
@@ -207,6 +212,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
   esp_zb_core_action_handler_register(zb_action_handler);
   
   zb_bdb_set_legacy_device_support(1);
+
   err = esp_zb_set_primary_network_channel_set(_primary_channel_mask);
   if (err != ESP_OK) {
     log_e("Failed to set primary network channel mask");
@@ -467,9 +473,16 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
     } break;
 
      case ESP_ZB_NLME_STATUS_INDICATION: {
-        printf("%s, status: 0x%x\n", esp_zb_zdo_signal_to_string(sig_type), *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
+        printf("%s, status: 0x%x\n", 
+               esp_zb_zdo_signal_to_string(sig_type), 
+               *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
     } break;
-    default: log_v("ZDO signal: %s (0x%x), status: %s", esp_zb_zdo_signal_to_string(sig_type), sig_type, esp_err_to_name(err_status)); break;
+
+    default: log_v("ZDO signal: %s (0x%x), status: %s", 
+                   esp_zb_zdo_signal_to_string(sig_type), 
+                   sig_type, 
+                   esp_err_to_name(err_status)); 
+    break;
   }
 }
 

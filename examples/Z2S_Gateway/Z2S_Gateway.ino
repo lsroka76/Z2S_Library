@@ -66,6 +66,16 @@ static AsyncClient client;*/
 
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
 
+/*static uint8_t test_device_ieee_address[8] = 
+  {0x84, 0x71, 0x27, 0xFF, 0xFE, 0x98, 0x0E, 0x00};
+
+static uint8_t test_device_ieee_address_2[8] = 
+  {0x00, 0x0E, 0x98, 0xFE, 0xFF, 0x27, 0x71, 0x84};
+
+static uint8_t test_device_install_code[18] = 
+  {0x08, 0x0A, 0x84, 0x0E, 0xD6, 0x64,
+   0x22, 0xD1, 0xC8, 0xB2, 0x39, 0x11,
+   0x38, 0x2E, 0x1A, 0x74, 0x4F, 0xDB};*/
 
 static NetworkServer TestServer(REMOTE_RELAY_PORT);
 //static NetworkServer ThermometerServer(REMOTE_RELAY_PORT);
@@ -134,6 +144,13 @@ void supla_callback_bridge(int event, int action) {
           SuplaDevice.scheduleSoftRestart(1000);
         }
       
+        /*esp_zb_secur_ic_add(test_device_ieee_address, 
+                            ESP_ZB_IC_TYPE_128, 
+                            test_device_install_code);*/
+
+        /*esp_zb_secur_ic_add(test_device_ieee_address_2, 
+                            ESP_ZB_IC_TYPE_128, 
+                            test_device_install_code);*/
         refresh_time = 0;
         
         #ifdef USE_TELNET_CONSOLE
@@ -973,12 +990,15 @@ if (GUIstarted)
       
       bool _basic_cluster_query_success = false;
 
-      if ((strlen(zbGateway.getQueryBasicClusterData()->zcl_model_name) == 0) ||
-          (strlen(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name) == 0)) {
+      if ((strlen(
+            zbGateway.getQueryBasicClusterData()->zcl_model_name) == 0) ||
+          (strlen(
+            zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name) == 0)) {
       
         for (uint8_t query_idx = 0; query_idx < 5; query_idx++) {
 
-          _basic_cluster_query_success =  zbGateway.zbQueryDeviceBasicCluster(joined_device);
+          _basic_cluster_query_success =  
+            zbGateway.zbQueryDeviceBasicCluster(joined_device);
           if (_basic_cluster_query_success)
             break; 
         }
@@ -987,7 +1007,8 @@ if (GUIstarted)
 
       if (!_basic_cluster_query_success) {
         
-          log_i("Error while pairing - cann't read manufacturer id (5x). Gateway will restart, try to pair device once again!");
+          log_i("Error while pairing - cann't read manufacturer id (5x). "
+                "Gateway will restart, try to pair device once again!");
           SuplaDevice.scheduleSoftRestart(1000);
         } 
       //write_mask = 0x13;
@@ -995,45 +1016,73 @@ if (GUIstarted)
       //write_mask = 0x1;
       //zbGateway.sendAttributeWrite(joined_device, 0xfcc0, 0x0009, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, 1, 0x115F); //Lumi magic
 
-      uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
-      uint16_t devices_desc_table_size = sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
+      uint16_t devices_list_table_size = 
+        sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
+
+      uint16_t devices_desc_table_size = 
+        sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
+
       bool device_recognized = false;
 
-          for (int devices_list_counter = 0; devices_list_counter < devices_list_table_size; devices_list_counter++) { 
+          for (int devices_list_counter = 0; 
+               devices_list_counter < devices_list_table_size; 
+               devices_list_counter++) { 
             
             if ((strcmp(zbGateway.getQueryBasicClusterData()->zcl_model_name, 
-                        Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
-            (strcmp(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name, 
-                    Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
+                  Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
+                (strcmp(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name, 
+                  Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
 
-              log_i("LIST matched %s::%s, entry # %d, endpoints # %d, endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
+              log_i("LIST matched %s::%s, entry # %d, endpoints # %d, "
+                    "endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
                     Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, 
                     Z2S_DEVICES_LIST[devices_list_counter].model_name, 
                     devices_list_counter, 
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count,
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[0].endpoint_id, 
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[0].z2s_device_desc_id,
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[1].endpoint_id, 
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[1].z2s_device_desc_id,
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[2].endpoint_id, 
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[2].z2s_device_desc_id,
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[3].endpoint_id, 
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[3].z2s_device_desc_id);
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints_count,
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[0].endpoint_id, 
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[0].z2s_device_desc_id,
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[1].endpoint_id, 
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[1].z2s_device_desc_id,
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[2].endpoint_id, 
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[2].z2s_device_desc_id,
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[3].endpoint_id, 
+                    Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[3].z2s_device_desc_id);
   
               for (int endpoint_counter = 0; 
-                   endpoint_counter < Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count; 
+                   endpoint_counter < Z2S_DEVICES_LIST[devices_list_counter].\
+                    z2s_device_endpoints_count; 
                    endpoint_counter++) {
               
-                uint8_t endpoint_id = (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count == 1) ? 
-                                       1 : Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[endpoint_counter].endpoint_id; 
+                uint8_t endpoint_id = 
+                  (Z2S_DEVICES_LIST[devices_list_counter].\
+                    z2s_device_endpoints_count == 1) ? 
+                  1 : Z2S_DEVICES_LIST[devices_list_counter].\
+                    z2s_device_endpoints[endpoint_counter].endpoint_id; 
                                         
-                uint32_t z2s_device_desc_id = (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count == 1) ?
-                                              Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id :
-                                              Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[endpoint_counter].z2s_device_desc_id; 
+                uint32_t z2s_device_desc_id = 
+                  (Z2S_DEVICES_LIST[devices_list_counter].\
+                    z2s_device_endpoints_count == 1) ?
+                  Z2S_DEVICES_LIST[devices_list_counter].\
+                    z2s_device_desc_id :
+                  Z2S_DEVICES_LIST[devices_list_counter].\
+                  z2s_device_endpoints[endpoint_counter].z2s_device_desc_id; 
 
-                for (int devices_desc_counter = 0; devices_desc_counter < devices_desc_table_size; devices_desc_counter++) {
+                for (int devices_desc_counter = 0; 
+                     devices_desc_counter < devices_desc_table_size; 
+                     devices_desc_counter++) {
 
-                  if ( z2s_device_desc_id == Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id) {
+                  if (z2s_device_desc_id == 
+                        Z2S_DEVICES_DESC[devices_desc_counter].\
+                          z2s_device_desc_id) {
                     log_i("DESC matched 0x%x, %d, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, endpoint 0x%x ",
                           Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id,   
                           Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count,

@@ -54,14 +54,16 @@ uint16_t save_label;
 
 uint16_t pairing_mode_switcher = 0xFFFF;
 uint16_t zigbee_tx_power_text;
-uint16_t zigbee_get_tx_power_button;
-uint16_t zigbee_set_tx_power_button;
+//uint16_t zigbee_get_tx_power_button;
+//uint16_t zigbee_set_tx_power_button;
 uint16_t zigbee_primary_channel_text;
-uint16_t zigbee_get_primary_channel_button;
-uint16_t zigbee_set_primary_channel_button;
+//uint16_t zigbee_get_primary_channel_button;
+//uint16_t zigbee_set_primary_channel_button;
 uint16_t zigbee_last_binding_result_label;
+uint16_t zigbee_installation_code_str;
+uint16_t zigbee_installation_code_ieee_address;
 uint16_t factory_reset_switcher;
-uint16_t factory_reset_button;
+//uint16_t factory_reset_button;
 uint16_t factory_reset_label;
 
 uint16_t devicestab;
@@ -319,6 +321,8 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_SET_TX_FLAG												0x2004
 #define GUI_CB_GET_PC_FLAG												0x2005
 #define GUI_CB_SET_PC_FLAG												0x2006
+#define GUI_CB_SET_INSTALLATION_CODE_FLAG					0x2007
+#define GUI_CB_CLEAR_INSTALLATION_CODES_FLAG			0x2008
 
 #define GUI_CB_BATTERY_VOLTAGE_MIN_FLAG						0x3000
 #define GUI_CB_BATTERY_VOLTAGE_MAX_FLAG						0x3001
@@ -415,20 +419,35 @@ static constexpr char* Tuya_device_payload_size_error_str 		PROGMEM = "Error - T
 static constexpr char* device_query_attr_size_mismatch_str 		PROGMEM = "Error - attribute size and attribute value length mismatch";
 static constexpr char* Tuya_device_payload_size_mismatch_str	PROGMEM = "Error - Tuya payload type length and payload value length mismatch";
 
-static constexpr char* factory_reset_enabled_str PROGMEM = "Zigbee stack factory reset enabled";
-static constexpr char* factory_reset_disabled_str PROGMEM = "Zigbee stack factory reset disabled";
-static constexpr char* zigbee_tx_power_text_str PROGMEM = "Press Read to get current value or enter value between -24 and 20 and press Update";
-static constexpr char* zigbee_primary_channel_text_str PROGMEM = "Press Read to get current value or enter value between 11 and 26 and press Update";
+static constexpr char* factory_reset_enabled_str PROGMEM = 
+	"Zigbee stack factory reset enabled";
+
+static constexpr char* factory_reset_disabled_str PROGMEM = 
+	"Zigbee stack factory reset disabled";
+
+static constexpr char* zigbee_tx_power_text_str PROGMEM = 
+	"Press Read to get current value or enter value between "
+	"-24 and 20 and press Update";
+
+static constexpr char* zigbee_primary_channel_text_str PROGMEM = 
+	"Press Read to get current value or enter value between "
+	"11 and 26 and press Update";
 
 static char general_purpose_gui_buffer[1024] = {};
 
-static constexpr char* disabledstyle PROGMEM = "background-color: #bbb; border-bottom: #999 3px solid;";
-const String clearLabelStyle PROGMEM = "background-color: unset; width: 100%;";
-const String clearFlagsLabelStyle PROGMEM = "background-color: unset; width: 50%; "
-																						"vertical-align: text-top;"
-																						//"margin-left: .3rem; margin-right: .3rem; "
-																						"font-size: 85%; font-style: normal; "
-																						"font-weight: normal;";
+static constexpr char* disabledstyle PROGMEM = 
+	"background-color: #bbb; border-bottom: #999 3px solid;";
+
+const String clearLabelStyle PROGMEM = 
+	"background-color: unset; width: 100%;";
+
+const String clearFlagsLabelStyle PROGMEM = 
+	"background-color: unset; width: 50%; "
+	"vertical-align: text-top;"
+//"margin-left: .3rem; margin-right: .3rem; "
+	"font-size: 85%; font-style: normal; "
+	"font-weight: normal;";
+
 //String switcherLabelStyle = "width: 60px; margin-left: .3rem; margin-right: .3rem; background-color: unset;";
 const static String zero_str PROGMEM = "0";
 const static String minus_one_str PROGMEM = "-1";
@@ -1043,77 +1062,125 @@ void buildCredentialsGUI() {
 void buildZigbeeTabGUI() {
 
 	working_str = PSTR("Zigbee settings");
-	auto zigbeetab = ESPUI.addControl(Control::Type::Tab, 
-																		PSTR(empty_str), 
-																		working_str, 
-																		Control::Color::Emerald, 
-																		Control::noParent, 
-																		onZigbeeTabCallback);
-	//return;// test
+	auto zigbeetab = 
+		ESPUI.addControl(Control::Type::Tab, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 Control::noParent, 
+										 onZigbeeTabCallback);
+	
 	working_str = PSTR("Pairing mode");
-	pairing_mode_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																					 PSTR("Pairing mode"), 
-																					 working_str, 
-																					 Control::Color::Emerald, 
-																					 zigbeetab, 
-																					 pairingSwitcherCallback,
-																					 (void*)GUI_CB_PAIRING_FLAG);
+	pairing_mode_switcher = 
+		ESPUI.addControl(Control::Type::Switcher, 
+										 PSTR("Pairing mode"), 
+									   working_str, 
+										 Control::Color::Emerald, 
+										 zigbeetab, 
+										 pairingSwitcherCallback,
+										 (void*)GUI_CB_PAIRING_FLAG);
 
 	working_str = zigbee_tx_power_text_str;
-	zigbee_tx_power_text = ESPUI.addControl(Control::Type::Text, 
-																					PSTR("Zigbee TX power"), 
-																					working_str, 
-																					Control::Color::Emerald, 
-																					zigbeetab, 
-																					generalCallback);
+	zigbee_tx_power_text = 
+		ESPUI.addControl(Control::Type::Text, 
+										 PSTR("Zigbee TX power"), 
+													working_str, 
+												  Control::Color::Emerald, 
+													zigbeetab, 
+													generalCallback);
 
 	working_str = zigbee_primary_channel_text_str;
-	zigbee_primary_channel_text = ESPUI.addControl(Control::Type::Text, 
-																								 PSTR("Zigbee primary channel"), 
-																								 working_str, 
-																								 Control::Color::Emerald, 
-																								 zigbeetab, 
-																								 generalCallback);
+	zigbee_primary_channel_text = 
+		ESPUI.addControl(Control::Type::Text, 
+		PSTR("Zigbee primary channel"), 
+		working_str, 
+		Control::Color::Emerald, 
+		zigbeetab, 
+		generalCallback);
 	
 	working_str = PSTR("Read");
-	zigbee_get_tx_power_button = ESPUI.addControl(Control::Type::Button, 
-																								PSTR(empty_str), 
-																								working_str, 
-																								Control::Color::Emerald, 
-																								zigbee_tx_power_text, 
-																								generalZigbeeCallback,
-																								(void*)GUI_CB_GET_TX_FLAG);
+	auto zigbee_get_tx_power_button = 
+		ESPUI.addControl(Control::Type::Button, 
+									   PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 zigbee_tx_power_text, 
+										 generalZigbeeCallback,
+										 (void*)GUI_CB_GET_TX_FLAG);
 
-	zigbee_get_primary_channel_button = ESPUI.addControl(Control::Type::Button, 
-																											 PSTR(empty_str), 
-																											 working_str, 
-																											 Control::Color::Emerald, 
-																											 zigbee_primary_channel_text, 
-																											 generalZigbeeCallback,
-																											 (void*)GUI_CB_GET_PC_FLAG);
+	auto zigbee_get_primary_channel_button = 
+		ESPUI.addControl(Control::Type::Button, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 zigbee_primary_channel_text, 
+										 generalZigbeeCallback,
+										 (void*)GUI_CB_GET_PC_FLAG);
 
 	working_str = PSTR("Update");
-	zigbee_set_tx_power_button = ESPUI.addControl(Control::Type::Button, 
-																								PSTR(empty_str), 
-																								working_str, 
-																								Control::Color::Emerald, 
-																								zigbee_tx_power_text, 
-																								generalZigbeeCallback,
-																								(void*)GUI_CB_SET_TX_FLAG);
+	auto zigbee_set_tx_power_button = 
+		ESPUI.addControl(Control::Type::Button, 
+	  PSTR(empty_str), 
+		working_str, 
+		Control::Color::Emerald, 
+		zigbee_tx_power_text, 
+		generalZigbeeCallback,
+		(void*)GUI_CB_SET_TX_FLAG);
 
-	zigbee_set_primary_channel_button = ESPUI.addControl(Control::Type::Button, 
-																											 PSTR(empty_str), 
-																											 working_str, 
-																											 Control::Color::Emerald, 
-																											 zigbee_primary_channel_text, 
-																											 generalZigbeeCallback,
-																											 (void*)GUI_CB_SET_PC_FLAG);
+	auto zigbee_set_primary_channel_button = 
+		ESPUI.addControl(Control::Type::Button, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 zigbee_primary_channel_text, 
+										 generalZigbeeCallback,
+										 (void*)GUI_CB_SET_PC_FLAG);
 	
-	zigbee_last_binding_result_label = ESPUI.addControl(Control::Type::Label, 
-																											PSTR("Last binding result"), 
-																											three_dots_str, 
-																											Control::Color::Emerald, 
-																											zigbeetab);
+	zigbee_last_binding_result_label = 
+		ESPUI.addControl(Control::Type::Label, 
+										 PSTR("Last binding result"), 
+										 three_dots_str, 
+										 Control::Color::Emerald, 
+										 zigbeetab);
+
+	working_str = PSTR("Enter device IEEE address");
+	zigbee_installation_code_ieee_address = 
+		ESPUI.addControl(Control::Type::Text, 
+										 PSTR("Installation code"), 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 zigbeetab,
+										 generalCallback);
+
+	working_str = PSTR("Enter device installation code");
+	zigbee_installation_code_str = 
+		ESPUI.addControl(Control::Type::Text, 
+										 empty_str, 
+										 working_str, 
+										 Control::Color::Emerald, 
+										 zigbee_installation_code_ieee_address,
+										 generalCallback);
+										
+	working_str = PSTR("Save installation code for single device");
+	auto zigbee_set_installation_code = 
+		ESPUI.addControl(Control::Type::Button, 
+	  PSTR(empty_str), 
+		working_str, 
+		Control::Color::Emerald, 
+		zigbee_installation_code_ieee_address, 
+		generalZigbeeCallback,
+		(void*)GUI_CB_SET_INSTALLATION_CODE_FLAG);
+
+	working_str = PSTR("Clear all saved installation codes");
+	auto zigbee_clear_installation_codes = 
+		ESPUI.addControl(Control::Type::Button, 
+	  PSTR(empty_str), 
+		working_str, 
+		Control::Color::Emerald, 
+		zigbee_installation_code_ieee_address, 
+		generalZigbeeCallback,
+		(void*)GUI_CB_CLEAR_INSTALLATION_CODES_FLAG);
+
 
 	working_str = PSTR(empty_str);
 	ESPUI.addControl(Control::Type::Separator, 
@@ -1122,55 +1189,65 @@ void buildZigbeeTabGUI() {
 									 Control::Color::None, 
 									 zigbeetab);
 
-	factory_reset_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																						PSTR("Enable Zigbee stack factory reset"), 
-																						zero_str, 
-																						Control::Color::Alizarin, 
-																						zigbeetab, 
-																						switchCallback);
+	factory_reset_switcher = 
+		ESPUI.addControl(Control::Type::Switcher, 
+										 PSTR("Enable Zigbee stack factory reset"), 
+													zero_str, 
+													Control::Color::Alizarin, 
+													zigbeetab, 
+													switchCallback);
 
 	working_str = factory_reset_disabled_str;
-	factory_reset_label = ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::Wetasphalt, 
-																				 factory_reset_switcher);
+	factory_reset_label = 
+		ESPUI.addControl(Control::Type::Label, 
+										 PSTR(empty_str), 
+										 working_str, 
+										 Control::Color::Wetasphalt, 
+										 factory_reset_switcher);
 
 	working_str = PSTR("FACTORY RESET!");
-	factory_reset_button = ESPUI.addControl(Control::Type::Button, 
-																					PSTR("FACTORY RESET!"), 
-																					working_str, 
-																					Control::Color::Alizarin, 
-																					zigbeetab, 
-																					generalZigbeeCallback,
-																					(void*)GUI_CB_FACTORY_FLAG); 
+	auto factory_reset_button = 
+		ESPUI.addControl(Control::Type::Button, 
+										 PSTR("FACTORY RESET!"), 
+										 working_str, 
+										 Control::Color::Alizarin, 
+										 zigbeetab, 
+										 generalZigbeeCallback,
+										 (void*)GUI_CB_FACTORY_FLAG); 
 
-	ESPUI.updateNumber(pairing_mode_switcher, Zigbee.isNetworkOpen() ? 1 : 0);
+	ESPUI.updateNumber(pairing_mode_switcher, 
+										 Zigbee.isNetworkOpen() ? 1 : 0);
 }
 
 void rebuildDevicesSelector() {
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+	for (uint8_t devices_counter = 0; 
+			 devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; 
+			 devices_counter++) {
 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
-			ESPUI.removeControl(z2s_zb_devices_table[devices_counter].device_gui_id, false);
+			ESPUI.removeControl(z2s_zb_devices_table[devices_counter].device_gui_id, 
+													false);
 		}
 	}
 
 	ESPUI.updateControlValue(device_selector, minus_one_str);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+	for (uint8_t devices_counter = 0; 
+			 devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; 
+			 devices_counter++) {
 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
 			working_str = devices_counter;
 			z2s_zb_devices_table[devices_counter].device_gui_id =  
-				ESPUI.addControl(Control::Type::Option, 
-												 z2s_zb_devices_table[devices_counter].device_local_name, 
-												 working_str, 
-												 Control::Color::None, 
-												 device_selector);
+				ESPUI.addControl(
+					Control::Type::Option, 
+					z2s_zb_devices_table[devices_counter].device_local_name, 
+					working_str, 
+					Control::Color::None, 
+					device_selector);
 		}
 	}
 }
@@ -1695,8 +1772,6 @@ void buildChannelsTabGUI() {
 																				 zb_channel_flags_label), 
 												PSTR(clearFlagsLabelStyle));
 
-												
-	
 	zb_channel_params_label = ESPUI.addControl(Control::Type::Label, 
 																						 PSTR("CHANNEL CUSTOM PARAMETERS"), 
 																					 	 PSTR("here you can change channel custom parameters<br>"
@@ -6029,15 +6104,18 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 		switch ((uint32_t)param) {
 
 			case GUI_CB_PAIRING_FLAG : {		//open network
+
 				Zigbee.openNetwork(180); 
 			} break;
 
 			case GUI_CB_FACTORY_FLAG : {	//factory reset
+			
 				if (ESPUI.getControl(factory_reset_switcher)->value.toInt() > 0)
 					Zigbee.factoryReset(); 
 			} break;
 
 			case GUI_CB_GET_TX_FLAG : { //read TX power
+
 				int8_t zb_tx_power;
     		esp_zb_get_tx_power(&zb_tx_power);
 				log_i("get tx power %d", zb_tx_power);
@@ -6046,17 +6124,21 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 			} break;
 
 			case GUI_CB_SET_TX_FLAG: {//update TX power
+
 				if (isNumber(ESPUI.getControl(zigbee_tx_power_text)->value) &&
 						(ESPUI.getControl(zigbee_tx_power_text)->value.toInt() >= -24) &&
 						(ESPUI.getControl(zigbee_tx_power_text)->value.toInt() <= 20))
-							esp_zb_set_tx_power(ESPUI.getControl(zigbee_tx_power_text)->value.toInt());
+					esp_zb_set_tx_power(
+						ESPUI.getControl(zigbee_tx_power_text)->value.toInt());
 				else
 					ESPUI.updateText(zigbee_tx_power_text, zigbee_tx_power_text_str);
-
 			} break;
 
 			case GUI_CB_GET_PC_FLAG : { //read primary channel
-				uint32_t zb_primary_channel = esp_zb_get_primary_network_channel_set();
+
+				uint32_t zb_primary_channel = 
+					esp_zb_get_primary_network_channel_set();
+
     		for (uint8_t i = 11; i <= 26; i++) {
       		if (zb_primary_channel & (1 << i)) {
 
@@ -6068,20 +6150,86 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 
 			case GUI_CB_SET_PC_FLAG : { //write primary channel
 					
-					if (isNumber(ESPUI.getControl(zigbee_primary_channel_text)->value) &&
-						(ESPUI.getControl(zigbee_primary_channel_text)->value.toInt() >= 11) &&
-						(ESPUI.getControl(zigbee_primary_channel_text)->value.toInt() <= 26)) {
-							uint32_t zb_primary_channel = ESPUI.getControl(zigbee_primary_channel_text)->value.toInt();
+					if (isNumber(
+								ESPUI.getControl(zigbee_primary_channel_text)->value) &&
+						(ESPUI.getControl(
+								zigbee_primary_channel_text)->value.toInt() >= 11) &&
+						(ESPUI.getControl(
+								zigbee_primary_channel_text)->value.toInt() <= 26)) {
 
-							if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_ZIGBEE_PRIMARY_CHANNEL, (1 << zb_primary_channel))) {
-        				ESPUI.updateText(zigbee_primary_channel_text, "New Zigbee primary channel write success! Restarting...");
+							uint32_t zb_primary_channel = 
+								ESPUI.getControl(zigbee_primary_channel_text)->value.toInt();
+
+							if (Supla::Storage::ConfigInstance()->setUInt32(
+										Z2S_ZIGBEE_PRIMARY_CHANNEL, (1 << zb_primary_channel))) {
+
+        				ESPUI.updateText(zigbee_primary_channel_text, 
+									"New Zigbee primary channel write success! Restarting...");
    				     	Supla::Storage::ConfigInstance()->commit();
         				SuplaDevice.scheduleSoftRestart(1000);
 							}
 						}
 				else
-					ESPUI.updateText(zigbee_primary_channel_text, zigbee_primary_channel_text_str);
+					ESPUI.updateText(zigbee_primary_channel_text, 
+													 zigbee_primary_channel_text_str);
 			} break;
+
+			case GUI_CB_SET_INSTALLATION_CODE_FLAG: {
+
+				if (ESPUI.getControl(
+							zigbee_installation_code_ieee_address)->value.length() != 16) {
+				
+				  working_str = 
+						PSTR("Enter device IEEE address (16 characters), "
+								 "ie. 56AB23BE90004560");
+					ESPUI.updateText(zigbee_installation_code_ieee_address, working_str);
+					return;			
+				}
+				
+				if (ESPUI.getControl(
+							zigbee_installation_code_str)->value.length() != 36) {
+				
+				  working_str = 
+						PSTR("Enter device installation code (36 characters), "
+								 "ie. BC2356...");
+					ESPUI.updateText(zigbee_installation_code_str, working_str);
+					return;
+				}	
+				uint8_t device_ieee_addr[8];
+				uint8_t device_installation_code[18];
+
+				for (uint8_t i = 0; i < 8; i++) {
+
+					working_str = 
+						ESPUI.getControl(
+							zigbee_installation_code_ieee_address)->value.substring(2*i, 2+ 2*i);
+
+					device_ieee_addr[7 - i] = strtoul(working_str.c_str(), nullptr, 16);
+					log_i("device_ieee_addr[%u] = %02X", 7 - i, device_ieee_addr[7 - i]);
+				}
+
+				for (uint8_t i = 0; i < 18; i++) {
+
+					working_str = 
+						ESPUI.getControl(
+							zigbee_installation_code_str)->value.substring(
+								2*i, 2+ 2*i);
+					
+					device_installation_code[i] = strtoul(working_str.c_str(), nullptr, 16);
+					log_i("device_installation_code[%u] = %02X", 
+								i, device_installation_code[i]);
+				}
+
+				esp_zb_secur_ic_add(device_ieee_addr, 
+                            ESP_ZB_IC_TYPE_128, 
+                            device_installation_code);
+
+			} break;
+
+			case GUI_CB_CLEAR_INSTALLATION_CODES_FLAG:
+
+				esp_zb_secur_ic_remove_all_req();
+			break;
 		}
 	}
 }
