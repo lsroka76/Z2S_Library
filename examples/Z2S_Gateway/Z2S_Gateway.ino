@@ -1524,7 +1524,7 @@ if (GUIstarted)
                     ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     BOSCH_HEATING_DEMAND_ID,
                     ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    0, 65000, 0, false
+                    0, 65000, 0, false,
                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                     1, 1, BOSCH_MANUFACTURER_CODE);                 
                 } break;
