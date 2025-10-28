@@ -5469,12 +5469,11 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 			ESPUI.getControl(
 				clusters_attributes_table[device_async_switcher])->value.toInt() == 0;
 
-		uint8_t manuf_specific = 
-			(ESPUI.getControl(
-				clusters_attributes_table[manufacturer_code_switcher])->value.toInt() == 0) ? 0 : 1;
+		uint8_t manuf_specific = (ESPUI.getControl(
+			clusters_attributes_table[manufacturer_code_switcher])->value.toInt() == 0) ? 0 : 1;
 		
-		uint16_t manuf_code = 
-			(ESPUI.getControl(clusters_attributes_table[manufacturer_code_selector])->value.toInt() > 0) ? 
+		uint16_t manuf_code = (ESPUI.getControl(
+			clusters_attributes_table[manufacturer_code_selector])->value.toInt() > 0) ? 
 			ESPUI.getControl(clusters_attributes_table[manufacturer_code_selector])->value.toInt() : 0;
 
 		switch ((uint32_t)param) {
@@ -5482,170 +5481,182 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 
 			case GUI_CB_READ_ATTR_FLAG : { //read attribute
 					
-					bool result = zbGateway.sendAttributeRead(&device, 
-																										cluster_id, 
-																										attribute_id, 
-																										sync_cmd,
-																										ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-																										1, 
-																										manuf_specific, 
-																										manuf_code);
-					if (result) {
-						if (*zbGateway.getReadAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
+				bool result = zbGateway.sendAttributeRead(&device, 
+																									cluster_id, 
+																									attribute_id, 
+																									sync_cmd,
+																									ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+																									1, 
+																									manuf_specific, 
+																									manuf_code);
+				if (result) {
+					if (*zbGateway.getReadAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-							uint64_t readAttrValue;
-							esp_zb_uint48_t readAttrValue48;
-							esp_zb_uint24_t readAttrValue24;
+						uint64_t readAttrValue;
+						esp_zb_uint48_t readAttrValue48;
+						esp_zb_uint24_t readAttrValue24;
 
-							switch (zbGateway.getReadAttrLastResult()->data.size) {
+						switch (zbGateway.getReadAttrLastResult()->data.size) {
 
 
-								case 1: 
-									
-									readAttrValue = 
-										*(uint8_t *)zbGateway.getReadAttrLastResult()->data.value; 
-								break;
+							case 1: 
 								
+								readAttrValue = 
+									*(uint8_t *)zbGateway.getReadAttrLastResult()->data.value; 
+							break;
+							
 
-								case 2: 
-									readAttrValue = 
-										*(uint16_t *)zbGateway.getReadAttrLastResult()->data.value; 
-								break;
+							case 2: 
+								readAttrValue = 
+									*(uint16_t *)zbGateway.getReadAttrLastResult()->data.value; 
+							break;
+							
+
+							case 3: {
 								
+									readAttrValue24 = 
+										*(esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value; 
 
-								case 3: {
-									
-										readAttrValue24 = 
-											*(esp_zb_uint24_t *)zbGateway.getReadAttrLastResult()->data.value; 
-
-										readAttrValue = 
-											(((uint64_t)readAttrValue24.high) << 16) + readAttrValue24.low;
-								} break;
-								
-								case 4: 
 									readAttrValue = 
-										*(uint32_t *)zbGateway.getReadAttrLastResult()->data.value; 
-								break;
-								
-								case 6: {
+										(((uint64_t)readAttrValue24.high) << 16) + readAttrValue24.low;
+							} break;
+							
+							case 4: 
+								readAttrValue = 
+									*(uint32_t *)zbGateway.getReadAttrLastResult()->data.value; 
+							break;
+							
+							case 6: {
 
-									readAttrValue48 = 
-										*(esp_zb_uint48_t *)zbGateway.getReadAttrLastResult()->data.value; 
-									readAttrValue = 
-										(((uint64_t)readAttrValue48.high) << 32) + readAttrValue48.low;
-								} break;
-								
-								case 8: 
-									readAttrValue = 
-										*(uint64_t *)zbGateway.getReadAttrLastResult()->data.value; 
-								break;
-							}
-						
-							sprintf_P(general_purpose_gui_buffer, 
-												PSTR("Reading attribute successful!<br>Data value is %llu(0x%llX)"
-														 "<br>Data type is %s(0x%X)<br>Data size is 0x%X"), 
-                      readAttrValue, 
-											readAttrValue, 
-											getZigbeeDataTypeName(zbGateway.getReadAttrLastResult()->data.type), 
-											zbGateway.getReadAttrLastResult()->data.type,
-							 		  	zbGateway.getReadAttrLastResult()->data.size);
-
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														general_purpose_gui_buffer);
-						} else {
-
-							sprintf_P(general_purpose_gui_buffer, 
-												PSTR("Reading attribute failed!<br>"
-												"Status = %s(0x%02X)<br>"
-												"Attribute id = 0x%04X"),
-												esp_zb_zcl_status_to_name(*zbGateway.getReadAttrStatusLastResult()),
-											*zbGateway.getReadAttrStatusLastResult(),
-											zbGateway.getReadAttrLastResult()->id);
-
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														general_purpose_gui_buffer);
+								readAttrValue48 = 
+									*(esp_zb_uint48_t *)zbGateway.getReadAttrLastResult()->data.value; 
+								readAttrValue = 
+									(((uint64_t)readAttrValue48.high) << 32) + readAttrValue48.low;
+							} break;
+							
+							case 8: 
+								readAttrValue = 
+									*(uint64_t *)zbGateway.getReadAttrLastResult()->data.value; 
+							break;
 						}
+					
+						sprintf_P(general_purpose_gui_buffer, 
+											PSTR("Reading attribute successful!<br>Data value is %llu(0x%llX)"
+														"<br>Data type is %s(0x%X)<br>Data size is 0x%X"), 
+										readAttrValue, 
+										readAttrValue, 
+										getZigbeeDataTypeName(zbGateway.getReadAttrLastResult()->data.type), 
+										zbGateway.getReadAttrLastResult()->data.type,
+										zbGateway.getReadAttrLastResult()->data.size);
+
+						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
+													general_purpose_gui_buffer);
 					} else {
-						if (sync_cmd)
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														device_query_failed_str);
-						else
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														device_async_query_str);
-					} 
+
+						sprintf_P(general_purpose_gui_buffer, 
+											PSTR("Reading attribute failed!<br>"
+											"Status = %s(0x%02X)<br>"
+											"Attribute id = 0x%04X"),
+											esp_zb_zcl_status_to_name(*zbGateway.getReadAttrStatusLastResult()),
+										*zbGateway.getReadAttrStatusLastResult(),
+										zbGateway.getReadAttrLastResult()->id);
+
+						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
+													general_purpose_gui_buffer);
+					}
+				} else {
+					if (sync_cmd)
+						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
+													device_query_failed_str);
+					else
+						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
+													device_async_query_str);
+				} 
 			} break;
 
 			case GUI_CB_READ_CONFIG_FLAG : { //read attribute config report
 
-					bool result = zbGateway.readClusterReportCfgCmd(&device, 
-																													cluster_id, 
-																													attribute_id, 
-																													sync_cmd);
+				bool result = zbGateway.readClusterReportCfgCmd(
+					&device, 
+					cluster_id, 
+					attribute_id, 
+					sync_cmd,
+					ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+					1, 
+					manuf_specific, 
+					manuf_code);
 
-					if (result) {
+				if (result) {
 
-						if (zbGateway.getReportConfigRespVariableLastResult()->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
+					if (zbGateway.getReportConfigRespVariableLastResult()->status == 
+							ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-							sprintf_P(general_purpose_gui_buffer, 
-												PSTR("Reading attribute config report successful! <br>"
-												"Attribute id is 0x%X<br>Data type is %s(0x%X)<br>"
-												"Min interval is %u(0x%x)<br>Max interval is %u(0x%X)<br>"
-												"Delta is %u(0x%X)"), 
-                  	  	zbGateway.getReportConfigRespVariableLastResult()->attribute_id,
-												getZigbeeDataTypeName(zbGateway.getReportConfigRespVariableLastResult()->client.attr_type),
-												zbGateway.getReportConfigRespVariableLastResult()->client.attr_type,
-												zbGateway.getReportConfigRespVariableLastResult()->client.min_interval,
-												zbGateway.getReportConfigRespVariableLastResult()->client.min_interval,
-												zbGateway.getReportConfigRespVariableLastResult()->client.max_interval,
-												zbGateway.getReportConfigRespVariableLastResult()->client.max_interval,
-												zbGateway.getReportConfigRespVariableLastResult()->client.delta[0],
-												zbGateway.getReportConfigRespVariableLastResult()->client.delta[0]);
+						sprintf_P(general_purpose_gui_buffer, 
+											PSTR("Reading attribute config report successful! <br>"
+											"Attribute id is 0x%X<br>Data type is %s(0x%X)<br>"
+											"Min interval is %u(0x%x)<br>Max interval is %u(0x%X)<br>"
+											"Delta is %u(0x%X)"), 
+											zbGateway.getReportConfigRespVariableLastResult()->attribute_id,
+											getZigbeeDataTypeName(zbGateway.getReportConfigRespVariableLastResult()->client.attr_type),
+											zbGateway.getReportConfigRespVariableLastResult()->client.attr_type,
+											zbGateway.getReportConfigRespVariableLastResult()->client.min_interval,
+											zbGateway.getReportConfigRespVariableLastResult()->client.min_interval,
+											zbGateway.getReportConfigRespVariableLastResult()->client.max_interval,
+											zbGateway.getReportConfigRespVariableLastResult()->client.max_interval,
+											zbGateway.getReportConfigRespVariableLastResult()->client.delta[0],
+											zbGateway.getReportConfigRespVariableLastResult()->client.delta[0]);
 
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														general_purpose_gui_buffer);
-						} else {
-
-							sprintf_P(general_purpose_gui_buffer, 
-											PSTR("Reading attribute config report failed!<br>"
-											"Status = %s(0x%02X)<br>"
-											"Attribute id = 0x%04X<br>"),
-											esp_zb_zcl_status_to_name(zbGateway.getReportConfigRespVariableLastResult()->status),
-											zbGateway.getReportConfigRespVariableLastResult()->status,
-											zbGateway.getReportConfigRespVariableLastResult()->status,
-      		       		  zbGateway.getReportConfigRespVariableLastResult()->attribute_id);
-
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														general_purpose_gui_buffer);
-						}
+						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
+													general_purpose_gui_buffer);
 					} else {
-						if (sync_cmd)
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														device_query_failed_str);
-						else
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														device_async_query_str);
+
+						sprintf_P(general_purpose_gui_buffer, 
+										PSTR("Reading attribute config report failed!<br>"
+										"Status = %s(0x%02X)<br>"
+										"Attribute id = 0x%04X<br>"),
+										esp_zb_zcl_status_to_name(zbGateway.getReportConfigRespVariableLastResult()->status),
+										zbGateway.getReportConfigRespVariableLastResult()->status,
+										zbGateway.getReportConfigRespVariableLastResult()->status,
+										zbGateway.getReportConfigRespVariableLastResult()->attribute_id);
+
+						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
+													general_purpose_gui_buffer);
 					}
+				} else {
+					if (sync_cmd)
+						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
+													device_query_failed_str);
+					else
+						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
+													device_async_query_str);
+				}
 			} break;
 
 			case GUI_CB_CONFIG_REPORT_FLAG : {	//configure reporting
 					
-				uint16_t min_interval = 
-					ESPUI.getControl(clusters_attributes_table[device_config_min_number])->value.toInt();
+				uint16_t min_interval = ESPUI.getControl(
+					clusters_attributes_table[device_config_min_number])->value.toInt();
 
-				uint16_t max_interval = 
-					ESPUI.getControl(clusters_attributes_table[device_config_max_number])->value.toInt();
+				uint16_t max_interval = ESPUI.getControl(
+					clusters_attributes_table[device_config_max_number])->value.toInt();
 
-				uint16_t delta = 
-					ESPUI.getControl(clusters_attributes_table[device_config_delta_number])->value.toInt();
+				uint16_t delta = ESPUI.getControl(
+					clusters_attributes_table[device_config_delta_number])->value.toInt();
 
-				bool result = zbGateway.setClusterReporting(&device, 
-																										cluster_id, 
-																										attribute_id, 
-																										attribute_type, 
-																										min_interval, 
-																										max_interval, 
-																										delta, 
-																										sync_cmd);
+				bool result = zbGateway.setClusterReporting(
+					&device, 
+					cluster_id, 
+					attribute_id, 
+					attribute_type, 
+					min_interval, 
+					max_interval, 
+					delta, 
+					sync_cmd,
+					ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+					1, 
+					manuf_specific, 
+					manuf_code);
+					
 				if (result) {
 					if (*zbGateway.getConfigReportStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 

@@ -109,7 +109,9 @@
 #define DEVELCO_CUSTOM_CLUSTER_MAX_MEASURED_VALUE_ID          0x0002
 #define DEVELCO_CUSTOM_CLUSTER_RESOLUTION_ID                  0x0003
 
+#define BOSCH_CMD_SET_EXTERNAL_TEMPERATURE_INPUT_ID           0x4040 //S16
 #define BOSCH_MANUFACTURER_CODE                               0x1209
+#define BOSCH_HEATING_DEMAND_ID                               0x4020
 
 #define CUSTOM_CMD_SYNC                                       true
 #define CUSTOM_CMD_ASYNC                                      false
@@ -265,23 +267,35 @@ static void bindDeviceCluster2(zbg_device_params_t *,
                           uint16_t cluster_id, 
                           esp_zb_zcl_attribute_t *attribute) override;
 
-  bool setClusterReporting(zbg_device_params_t * device, 
-                           uint16_t cluster_id, 
-                           uint16_t attribute_id, 
-                           uint8_t attribute_type,
-                           uint16_t min_interval, 
-                           uint16_t max_interval, 
-                           uint16_t delta, bool ack);
+  bool setClusterReporting(
+    zbg_device_params_t * device, uint16_t cluster_id, 
+    uint16_t attribute_id, uint8_t attribute_type,
+    uint16_t min_interval, uint16_t max_interval, uint16_t delta, 
+    bool ack,
+    uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+    uint8_t disable_default_response = 1, 
+    uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0);
 
-  void readClusterReportCmd(zbg_device_params_t * device, 
-                            uint16_t cluster_id, 
-                            uint16_t attribute_id, 
-                            bool ack);
+  void readClusterReportCmd(
+    zbg_device_params_t * device, 
+    uint16_t cluster_id, 
+    uint16_t attribute_id, 
+    bool ack,
+    uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+    uint8_t disable_default_response = 1, 
+    uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0);
 
-  bool readClusterReportCfgCmd(zbg_device_params_t * device, 
-                               uint16_t cluster_id, 
-                               uint16_t attribute_id, 
-                               bool ack);
+  bool readClusterReportCfgCmd(
+    zbg_device_params_t * device, 
+    uint16_t cluster_id, 
+    uint16_t attribute_id, 
+    bool ack,
+    uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+    uint8_t disable_default_response = 1, 
+    uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0);
 
   bool sendAttributeRead(zbg_device_params_t * device, 
                          int16_t cluster_id, 

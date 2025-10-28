@@ -2920,6 +2920,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb GU10 CWS 345lm",
+    .z2s_device_uid = 18805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
     .z2s_device_uid = 18900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,

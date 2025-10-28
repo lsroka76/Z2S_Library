@@ -137,7 +137,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
 
       case BOSCH_CMD_SET: {
 
-        //trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
+        trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
         hvac_room_temperature_min = BOSCH_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = BOSCH_CMD_SET_HEATSETPOINT_MAX;
       } break;

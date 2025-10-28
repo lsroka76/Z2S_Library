@@ -342,10 +342,13 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
       Serial.print(file.name());
       time_t t = file.getLastWrite();
       struct tm *tmstruct = localtime(&t);
+      
       Serial.printf(
-        "  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour,
-        tmstruct->tm_min, tmstruct->tm_sec
-      );
+        "LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", 
+        (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
+        tmstruct->tm_mday, tmstruct->tm_hour,
+        tmstruct->tm_min, tmstruct->tm_sec);
+
       if (levels) {
         listDir(fs, file.path(), levels - 1);
       }
@@ -357,17 +360,16 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
       time_t t = file.getLastWrite();
       struct tm *tmstruct = localtime(&t);
       Serial.printf(
-        "  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour,
-        tmstruct->tm_min, tmstruct->tm_sec
-      );
+        "LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", 
+          (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
+          tmstruct->tm_mday, tmstruct->tm_hour,
+        tmstruct->tm_min, tmstruct->tm_sec);
     }
     file = root.openNextFile();
   }
 }
 
 Supla::Device::StatusLed statusLed(RGB_BUILTIN, true);
-
-//uint32_t check_uids[500] = {};
 
 void setup() {
   
@@ -1485,28 +1487,48 @@ if (GUIstarted)
                                                1, 
                                                &write_mask); //Tuya special
 
-                  zbGateway.setClusterReporting(joined_device, 
-                                                ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
-                                                ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
-                                                0, 
-                                                300, 
-                                                1, 
-                                                false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
+                    0, 300, 1, false);
                 } break;
                    
                 case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
                   
-                  zbGateway.setClusterReporting(joined_device, 
-                                                ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-                                                ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
-                                                ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                                                0, 
-                                                1200, 
-                                                10, 
-                                                false);                 
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    0, 1200, 10, false);                 
                 } break;
                 
+                case Z2S_DEVICE_DESC_BOSCH_BTHRA: {  //no data from thermostat without reporting
+                  
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    30, 900, 20, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    0, 65000, 1, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    BOSCH_HEATING_DEMAND_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    0, 65000, 0, false
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                    1, 1, BOSCH_MANUFACTURER_CODE);                 
+                } break;
+
                 case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH: {
 
                   

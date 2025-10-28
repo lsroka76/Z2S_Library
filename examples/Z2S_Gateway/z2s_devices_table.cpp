@@ -2053,24 +2053,27 @@ void Z2S_onThermostatTemperaturesReceive(esp_zb_ieee_addr_t ieee_addr,
   log_i("%s, endpoint 0x%x, attribute id 0x%x, temperature %d", 
         ieee_addr, endpoint, id, temperature);
 
-  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                            endpoint, 
-                                                            cluster, 
-                                                            SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
-                                                            NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    ieee_addr, 
+    endpoint, 
+    cluster, 
+    SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot_1 < 0)
-    channel_number_slot_1 = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                      endpoint, 
-                                                      cluster, 
-                                                      SUPLA_CHANNELTYPE_THERMOMETER, 
-                                                      NO_CUSTOM_CMD_SID);
+    channel_number_slot_1 = Z2S_findChannelNumberSlot(
+      ieee_addr, 
+      endpoint, 
+      cluster, 
+      SUPLA_CHANNELTYPE_THERMOMETER, 
+      NO_CUSTOM_CMD_SID);
 
-  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                            endpoint, 
-                                                            cluster, 
-                                                            SUPLA_CHANNELTYPE_HVAC, 
-                                                            NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    ieee_addr, 
+    endpoint, 
+    cluster, 
+    SUPLA_CHANNELTYPE_HVAC, 
+    NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot_2 < 0) {
 
@@ -2084,23 +2087,30 @@ void Z2S_onThermostatTemperaturesReceive(esp_zb_ieee_addr_t ieee_addr,
     case ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID: {
 
       if (channel_number_slot_1 >= 0)
-        msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, (float)temperature / 100);
+        msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, 
+                                     (float)temperature / 100);
 
       else log_e("Missing thermometer channel for thermostat device!");
 
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_LOCAL_TEMPERATURE_MSG, temperature);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_LOCAL_TEMPERATURE_MSG, 
+                       temperature);
     } break;
 
 
     case ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID: {
 
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_HEATING_SETPOINT_MSG, temperature);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_HEATING_SETPOINT_MSG, 
+                       temperature);
     } break;
 
 
     case ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID: {
 
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_TEMPERATURE_CALIBRATION_MSG, temperature * 10);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_TEMPERATURE_CALIBRATION_MSG, 
+                       temperature * 10);
     } break;
   }
 }
@@ -2118,18 +2128,26 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
   log_i("%s, endpoint 0x%x, attribute id 0x%x, mode %u", 
         ieee_addr, endpoint, id, mode);
 
-  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                            endpoint, 
-                                                            cluster,
-                                                            SUPLA_CHANNELTYPE_HVAC, 
-                                                            NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    ieee_addr, 
+    endpoint, 
+    cluster,
+    SUPLA_CHANNELTYPE_HVAC, 
+    NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot_2 < 0) {
 
     log_i("no thermostat channel found for address %s", ieee_addr);
     return;
   }
-  
+  if ((cluster == ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG) &&
+      (id == ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID)) {
+
+    msgZ2SDeviceHvac(channel_number_slot, 
+                       TRV_CHILD_LOCK_MSG, 
+                       *(uint8_t*)attribute->data.value);
+  }
+
   switch (id) {
 
 
@@ -2137,7 +2155,19 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
 
       uint8_t running_mode = mode & 1;
       
-      msgZ2SDeviceHvac(channel_number_slot_2, TRV_RUNNING_STATE_MSG, running_mode);
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_RUNNING_STATE_MSG, 
+                       running_mode);
+    } break;
+
+
+    case BOSCH_HEATING_DEMAND_ID: {
+
+      uint8_t running_mode = (mode > 0) ? 1 : 0;
+      
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_RUNNING_STATE_MSG, 
+                       running_mode);
     } break;
 
 
@@ -2148,23 +2178,24 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
 
         case 0: 
           
-          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0); 
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                           TRV_SYSTEM_MODE_MSG, 0); 
         break;
 
 
         case 4: 
           
-          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1); 
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                           TRV_SYSTEM_MODE_MSG, 1); 
         break;
         
 
         case 1: 
           
-          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 1); 
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                           TRV_SCHEDULE_MODE_MSG, 1); 
         break;
       }
-      //uint8_t system_mode = (mode == 0) ? 0 : 1;
-      //msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, system_mode);
     } break;
   }
 }
@@ -2653,30 +2684,36 @@ void Z2S_onSonoffCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t end
 
     case SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
-                                                              NO_CUSTOM_CMD_SID);
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_HVAC, 
+        NO_CUSTOM_CMD_SID);
 
       if (channel_number_slot < 0) {
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
       
-      msgZ2SDeviceHvac(channel_number_slot, TRV_CHILD_LOCK_MSG, *(uint8_t*)attribute->data.value);
+      msgZ2SDeviceHvac(channel_number_slot, 
+                       TRV_CHILD_LOCK_MSG, 
+                       *(uint8_t*)attribute->data.value);
     } break;
 
     case SONOFF_CUSTOM_CLUSTER_TAMPER_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                              endpoint, 
-                                                              cluster, 
-                                                              SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                              SONOFF_CUSTOM_CLUSTER_TAMPER_SID);
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, 
+        endpoint, 
+        cluster, 
+        SUPLA_CHANNELTYPE_BINARYSENSOR, 
+        SONOFF_CUSTOM_CLUSTER_TAMPER_SID);
       
       if (channel_number_slot < 0) {
         no_channel_found_error_func(ieee_addr_str);
         return;
       }
-      msgZ2SDeviceIASzone(channel_number_slot, *(uint8_t*)attribute->data.value);      
+      msgZ2SDeviceIASzone(channel_number_slot, 
+                          *(uint8_t*)attribute->data.value);      
     } break;
 
     case SONOFF_CUSTOM_CLUSTER_ILLUMINATION_ID: {

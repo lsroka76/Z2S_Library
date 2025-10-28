@@ -315,7 +315,10 @@ static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM 
 	 	 .manufacturer_name = "DEVELCO" },
 
 	 { .manufacturer_code = 0x1286,										
-	 	 .manufacturer_name = "SHENZHEN_COOLKIT_TECHNOLOGY_CO_LTD" }
+	 	 .manufacturer_name = "SHENZHEN_COOLKIT_TECHNOLOGY_CO_LTD" },
+
+		{ .manufacturer_code = BOSCH_MANUFACTURER_CODE,										
+	 	 .manufacturer_name = "BOSCH" }
 	};
 
 static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {

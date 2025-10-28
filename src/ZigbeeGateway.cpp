@@ -1466,6 +1466,17 @@ void ZigbeeGateway::zbAttributeReporting(
         
         if (_on_thermostat_modes_receive)
           _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value);
+      
+      } else
+      if ((attribute->id == BOSCH_HEATING_DEMAND_ID) && 
+            (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM)) {
+
+        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+          
+        log_i("BOSCH thermostat heating demand %d",value);
+          
+        if (_on_thermostat_modes_receive)
+          _on_thermostat_modes_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value);
       } else 
         log_i("thermostat cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
               cluster_id, attribute->id, attribute->data.type);
@@ -1745,10 +1756,15 @@ bool ZigbeeGateway::isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
 	return false;	
 }
 
-bool ZigbeeGateway::setClusterReporting(zbg_device_params_t * device, uint16_t cluster_id, 
-                                        uint16_t attribute_id, uint8_t attribute_type,
-                                        uint16_t min_interval, uint16_t max_interval, 
-                                        uint16_t delta, bool ack) {
+bool ZigbeeGateway::setClusterReporting(
+  zbg_device_params_t * device, uint16_t cluster_id, 
+  uint16_t attribute_id, uint8_t attribute_type,
+  uint16_t min_interval, uint16_t max_interval, uint16_t delta, 
+  bool ack,
+  uint8_t direction,
+  uint8_t disable_default_response, 
+  uint8_t manuf_specific, 
+  uint16_t manuf_code) {
   
   esp_zb_zcl_config_report_cmd_t report_cmd = {};
   
@@ -1757,7 +1773,9 @@ bool ZigbeeGateway::setClusterReporting(zbg_device_params_t * device, uint16_t c
       report_cmd.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
     } else {
       report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
-      memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+      memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, 
+             device->ieee_addr, 
+             sizeof(esp_zb_ieee_addr_t));
   }
   //report_cmd.dis_default_resp = 0;   
   report_cmd.zcl_basic_cmd.dst_endpoint = device->endpoint;
@@ -1778,11 +1796,10 @@ bool ZigbeeGateway::setClusterReporting(zbg_device_params_t * device, uint16_t c
   report_cmd.record_number = 1;//ZB_ARRAY_LENTH(records);
   report_cmd.record_field = &records[0];
 
-  report_cmd.manuf_specific = 0;
-  report_cmd.dis_default_resp = 0;
-  report_cmd.direction = 0;
-  report_cmd.manuf_code = 0;
-
+  report_cmd.manuf_specific = manuf_specific;
+  report_cmd.dis_default_resp = disable_default_response;
+  report_cmd.direction = direction;
+  report_cmd.manuf_code = manuf_code;
 
   esp_zb_lock_acquire(portMAX_DELAY);
   _set_config_last_tsn = esp_zb_zcl_config_report_cmd_req(&report_cmd);
@@ -1800,18 +1817,24 @@ bool ZigbeeGateway::setClusterReporting(zbg_device_params_t * device, uint16_t c
 
 
   if (ack && xSemaphoreTake(gt_lock, pdMS_TO_TICKS(2000)) != pdTRUE) {
-      log_e("Semaphore timeout configuring attribute reporting 0x%x - device 0x%x, endpoint 0x%x, cluster 0x%x", 
+      log_e("Semaphore timeout configuring attribute reporting 0x%x - "
+            "device 0x%x, endpoint 0x%x, cluster 0x%x", 
             attribute_id, device->short_addr, device->endpoint, cluster_id);
 
       return false;
     }
-  
   return ack;
 }
 
-void ZigbeeGateway::readClusterReportCmd(zbg_device_params_t * device, 
-                                         uint16_t cluster_id, 
-                                         uint16_t attribute_id, bool ack) {
+void ZigbeeGateway::readClusterReportCmd(
+  zbg_device_params_t * device, 
+  uint16_t cluster_id, 
+  uint16_t attribute_id, 
+  bool ack,
+  uint8_t direction,
+  uint8_t disable_default_response, 
+  uint8_t manuf_specific, 
+  uint16_t manuf_code) {
   
   esp_zb_zcl_report_attr_cmd_t report_cmd = {};
 
@@ -1820,7 +1843,9 @@ void ZigbeeGateway::readClusterReportCmd(zbg_device_params_t * device,
       report_cmd.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
     } else {
       report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
-      memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+      memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, 
+             device->ieee_addr, 
+             sizeof(esp_zb_ieee_addr_t));
   }
   //report_cmd.dis_default_resp = 0;   
   report_cmd.zcl_basic_cmd.dst_endpoint = device->endpoint;
@@ -1828,10 +1853,10 @@ void ZigbeeGateway::readClusterReportCmd(zbg_device_params_t * device,
   report_cmd.clusterID = cluster_id;
   report_cmd.attributeID = attribute_id;
 
-  report_cmd.manuf_specific = 0;
-  report_cmd.dis_default_resp = 0;
-  report_cmd.direction = 0;
-  report_cmd.manuf_code = 0;
+  report_cmd.manuf_specific = manuf_specific;
+  report_cmd.dis_default_resp = disable_default_response;
+  report_cmd.direction = direction;
+  report_cmd.manuf_code = manuf_code;
 
   esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_zcl_report_attr_cmd_req(&report_cmd);
@@ -1846,26 +1871,34 @@ void ZigbeeGateway::readClusterReportCmd(zbg_device_params_t * device,
 bool ZigbeeGateway::readClusterReportCfgCmd(zbg_device_params_t * device, 
                                             uint16_t cluster_id, 
                                             uint16_t attribute_id, 
-                                            bool ack) {
+                                            bool ack,
+                                            uint8_t direction,
+                                            uint8_t disable_default_response, 
+                                            uint8_t manuf_specific, 
+                                            uint16_t manuf_code) {
   
   esp_zb_zcl_read_report_config_cmd_t report_cmd = {};
   
   if (device->short_addr != 0) {
-      report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
-      report_cmd.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
+
+    report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+    report_cmd.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;
     } else {
-      report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
-      memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+
+    report_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
+    memcpy(report_cmd.zcl_basic_cmd.dst_addr_u.addr_long, 
+           device->ieee_addr, 
+           sizeof(esp_zb_ieee_addr_t));
   }
-  //report_cmd.dis_default_resp = 0;   
+   
   report_cmd.zcl_basic_cmd.dst_endpoint = device->endpoint;
   report_cmd.zcl_basic_cmd.src_endpoint = _endpoint;
   report_cmd.clusterID = cluster_id;
 
-  report_cmd.manuf_specific = 0;
-  report_cmd.dis_default_resp = 0;
-  report_cmd.direction = 0;
-  report_cmd.manuf_code = 0;
+  report_cmd.manuf_specific = manuf_specific;
+  report_cmd.dis_default_resp = disable_default_response;
+  report_cmd.direction = direction;
+  report_cmd.manuf_code = manuf_code;
 
   esp_zb_zcl_attribute_record_t records[1];
   

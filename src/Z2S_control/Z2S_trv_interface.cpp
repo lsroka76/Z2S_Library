@@ -18,13 +18,13 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-Supla::Control::Z2S_TRVInterface::
-  Z2S_TRVInterface(ZigbeeGateway *gateway, 
-                   zbg_device_params_t *device, 
-                   uint8_t trv_commands_set) 
-    : RemoteOutputInterface(true), 
-      _gateway(gateway), 
-      _trv_commands_set(trv_commands_set) {
+Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
+  ZigbeeGateway *gateway, 
+  zbg_device_params_t *device, 
+  uint8_t trv_commands_set) 
+  : RemoteOutputInterface(true), 
+  _gateway(gateway), 
+  _trv_commands_set(trv_commands_set) {
 
   memcpy(&_device, device, sizeof(zbg_device_params_t));     
 
@@ -52,16 +52,16 @@ Supla::Control::HvacBaseEE *Supla::Control::Z2S_TRVInterface::getTRVHvac(){
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  setTRVHvac(Supla::Control::HvacBaseEE * trv_hvac) {
+void Supla::Control::Z2S_TRVInterface::setTRVHvac(
+  Supla::Control::HvacBaseEE * trv_hvac) {
 
   _trv_hvac = trv_hvac;
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  setTimeoutSecs(uint32_t timeout_secs) {
+void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(
+  uint32_t timeout_secs) {
 
   _timeout_ms = timeout_secs * 1000;
   if (_timeout_ms == 0) {
@@ -75,8 +75,7 @@ void Supla::Control::Z2S_TRVInterface::
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  refreshTimeout() {
+void Supla::Control::Z2S_TRVInterface::refreshTimeout() {
 
   _last_seen_ms = millis();
   _last_cmd_sent_ms = 0;
@@ -107,8 +106,8 @@ void Supla::Control::Z2S_TRVInterface::setFixedTemperatureCalibration(
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  setCooperativeChildLock(bool cooperative_child_lock) {
+void Supla::Control::Z2S_TRVInterface::setCooperativeChildLock(
+  bool cooperative_child_lock) {
 
     _cooperative_child_lock = cooperative_child_lock;
   }
@@ -225,8 +224,8 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  sendTRVTemperatureCalibration(int32_t temperature_calibration) {
+void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
+  int32_t temperature_calibration) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -279,7 +278,8 @@ void Supla::Control::Z2S_TRVInterface::
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(int32_t external_sensor_temperature) {
+void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
+  int32_t external_sensor_temperature) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -303,6 +303,19 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(int32_t 
                                    2, 
                                    &external_sensor_temperature);
     }
+
+    if (_trv_commands_set == BOSCH_CMD_SET) {
+      
+    
+      _gateway->sendAttributeWrite(&_device, 
+                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                                   BOSCH_CMD_SET_EXTERNAL_TEMPERATURE_INPUT_ID, 
+                                   ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                                   2, &external_sensor_temperature,
+                                   false,
+                                   1, BOSCH_MANUFACTURER_CODE);
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -310,7 +323,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(int32_t 
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(bool trv_external_sensor_present) {
+void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
+  bool trv_external_sensor_present) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -334,7 +348,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(bool trv_exter
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode) {
+void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
+  uint8_t trv_system_mode) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -379,7 +394,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
         }
             
         sendTuyaRequestCmdData(_gateway, 
-                                &_device, 
+                               &_device, 
                                system_mode_dp_id,
                                system_mode_dp_type,
                                system_mode_value); 
@@ -409,8 +424,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(uint8_t trv_system_mode
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::
-  sendTRVScheduleMode(uint8_t trv_schedule_mode) {
+void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
+  uint8_t trv_schedule_mode) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -490,7 +505,8 @@ void Supla::Control::Z2S_TRVInterface::
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) {
+void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
+  uint8_t trv_child_lock) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -551,6 +567,21 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(uint8_t trv_child_lock) 
       _gateway->sendAttributeRead(&_device, 
                                   SONOFF_CUSTOM_CLUSTER, 
                                   SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+                                  false);
+    }
+    if (_trv_commands_set == BOSCH_CMD_SET) {
+
+      _gateway->sendAttributeWrite(&_device, 
+                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+                                   ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
+                                   ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
+                                   1, 
+                                   &trv_child_lock);
+      delay(200);
+
+      _gateway->sendAttributeRead(&_device, 
+                                  ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
                                   false);
     }
 
