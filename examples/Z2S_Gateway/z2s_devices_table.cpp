@@ -2143,9 +2143,9 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
   if ((cluster == ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG) &&
       (id == ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID)) {
 
-    msgZ2SDeviceHvac(channel_number_slot, 
-                       TRV_CHILD_LOCK_MSG, 
-                       *(uint8_t*)attribute->data.value);
+    msgZ2SDeviceHvac(channel_number_slot_2, 
+                     TRV_CHILD_LOCK_MSG, 
+                     mode);
   }
 
   switch (id) {
