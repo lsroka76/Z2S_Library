@@ -1486,7 +1486,7 @@ void ZigbeeGateway::zbAttributeReporting(
       if ((attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM)) {
 
-        uint8_t value = attribute->data.value ? *(uint8_t) *)attribute->data.value : 0;
+        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
         
         log_i("thermostat UI keypad lockout %d",value);
                   
