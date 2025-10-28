@@ -1521,9 +1521,15 @@ if (GUIstarted)
                     0, 65000, 1, false);
                   zbGateway.setClusterReporting(
                     joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
+                    0, 65000, 0, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
                     ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     BOSCH_HEATING_DEMAND_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
                     0, 65000, 0, false,
                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                     1, 1, BOSCH_MANUFACTURER_CODE);                 
