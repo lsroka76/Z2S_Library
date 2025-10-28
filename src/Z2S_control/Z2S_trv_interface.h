@@ -999,7 +999,10 @@ namespace Supla {
 namespace Control {
 class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, public Element {
  public:
-  Z2S_TRVInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t trv_commands_set);
+  Z2S_TRVInterface(ZigbeeGateway *gateway, 
+                   zbg_device_params_t *device, 
+                   uint8_t trv_commands_set,
+                   bool onOffOnly = true);
 
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);

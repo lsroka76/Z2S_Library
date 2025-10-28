@@ -21,8 +21,9 @@
 Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
   ZigbeeGateway *gateway, 
   zbg_device_params_t *device, 
-  uint8_t trv_commands_set) 
-  : RemoteOutputInterface(true), 
+  uint8_t trv_commands_set,
+  bool onOffOnly) 
+  : RemoteOutputInterface(onOffOnly), 
   _gateway(gateway), 
   _trv_commands_set(trv_commands_set) {
 
@@ -816,8 +817,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     if ((_trv_hvac) && (_trv_hvac->getMode() != SUPLA_HVAC_MODE_OFF) && 
         (_trv_hvac->getTemperatureSetpointHeat() != _trv_temperature_setpoint)) { //??
       
-      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - "
-            "setpoint difference detected: hvac = %d, trv = %d", 
+      log_i("setpoint difference detected: hvac = %d, trv = %d", 
             _trv_hvac->getTemperatureSetpointHeat(), 
             _trv_temperature_setpoint);
 
@@ -828,8 +828,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
         ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1)  != 
           _trv_system_mode)) {
       
-      log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - "
-            "trv mode difference detected: hvac=%d, trv=%d", 
+      log_i("trv mode difference detected: hvac=%d, trv=%d", 
             _trv_hvac->getMode(), 
             _trv_system_mode);
       

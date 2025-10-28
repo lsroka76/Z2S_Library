@@ -2167,7 +2167,7 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
       
       msgZ2SDeviceHvac(channel_number_slot_2, 
                        TRV_RUNNING_STATE_MSG, 
-                       running_mode);
+                       mode); //running_mode); 0-100%
     } break;
 
 

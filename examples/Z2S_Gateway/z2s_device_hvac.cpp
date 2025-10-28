@@ -103,7 +103,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   uint8_t trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_IGNORE;
   int16_t hvac_room_temperature_min = 500;
   int16_t hvac_room_temperature_max = 3000;
-
+  bool onOffOnly = true;
   
   trv_commands_set = getZ2SDeviceHvacCmdSet(z2s_channels_table[channel_number_slot].model_id);
 
@@ -140,12 +140,19 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
         trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
         hvac_room_temperature_min = BOSCH_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = BOSCH_CMD_SET_HEATSETPOINT_MAX;
+        onOffOnly = false;
       } break;
     }
   }
 
+  if (trv_commands_set == moes_cmd_set)
+    onOffOnly = false;
+  
   auto Supla_Z2S_TRVInterface = 
-    new Supla::Control::Z2S_TRVInterface(gateway, device, trv_commands_set);
+    new Supla::Control::Z2S_TRVInterface(gateway, 
+                                         device, 
+                                         trv_commands_set,
+                                         onOffOnly);
 
   auto Supla_Z2S_HvacBase = 
     new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
@@ -458,8 +465,11 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
             msg_value);
       
       Supla_Z2S_TRVInterface->setTRVRunningState(msg_value);
-
-      Supla_Z2S_TRVInterface->setOutputValueFromRemote(msg_value * 100);
+      
+      if (Supla_Z2S_TRVInterface->isOnOffOnly())
+        Supla_Z2S_TRVInterface->setOutputValueFromRemote(msg_value * 100);
+      else 
+        Supla_Z2S_TRVInterface->setOutputValueFromRemote(msg_value);
     } break;
 
 
