@@ -1481,6 +1481,24 @@ void ZigbeeGateway::zbAttributeReporting(
         log_i("thermostat cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
               cluster_id, attribute->id, attribute->data.type);
     } else
+    if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG) {
+
+      if ((attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID) && 
+          (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM)) {
+
+        uint8_t value = attribute->data.value ? *(uint8_t) *)attribute->data.value : 0;
+        
+        log_i("thermostat UI keypad lockout %d",value);
+                  
+        if (_on_thermostat_modes_receive)
+          _on_thermostat_modes_receive(src_address.u.ieee_addr, 
+                                       src_endpoint, 
+                                       cluster_id, 
+                                       attribute->id, value);
+      } else 
+        log_i("thermostat UI cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+              cluster_id, attribute->id, attribute->data.type);
+    } else
     if (cluster_id == SONOFF_CUSTOM_CLUSTER) {
 
       log_i("SONOFF_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
