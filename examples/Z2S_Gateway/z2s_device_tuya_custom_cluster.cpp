@@ -428,7 +428,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
 
   if (pi_heating_demand_dp_id) {
     
-    Tuya_read_dp_result = Z2S_readTuyaDPvalue(running_state_dp_id, 
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(pi_heating_demand_dp_id, 
                                               payload_size, 
                                               payload);
     
