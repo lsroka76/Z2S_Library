@@ -185,6 +185,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
   uint8_t running_state_dp_id            = 0x00;
   uint8_t running_state_value_idle       = 0xFF;
   uint8_t running_state_value_heat       = 0xFF;
+  bool    onOffOnly                      = true;
 
   uint8_t temperature_calibration_dp_id  = 0x00;
 
@@ -210,6 +211,7 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
   int32_t target_heatsetpoint_factor     = 1;
   int32_t temperature_calibration_factor = 1;
   int32_t temperature_histeresis_factor  = 1;
+
 
   int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, //legacy compatibility
                                                             z2s_channels_table[channel_number_slot].endpoint, 
@@ -256,6 +258,10 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_value_idle;
       running_state_value_heat=  
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_running_state_dp_value_heat;
+
+      if ((running_state_value_idle == 0) &&
+          (running_state_value_heat == 100))
+        onOffOnly = false; //valve 0-100%
 
       temperature_calibration_dp_id  =  
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_calibration_dp_id;
@@ -400,14 +406,18 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
     
     if (Tuya_read_dp_result.is_success) {
       
-      if (Tuya_read_dp_result.dp_value == running_state_value_idle)
-        msgZ2SDeviceHvac(channel_number_slot_2, 
-                        TRV_RUNNING_STATE_MSG, 
-                        0);
+      if (onOffOnly) {
+        if (Tuya_read_dp_result.dp_value == running_state_value_idle)
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                          TRV_RUNNING_STATE_MSG, 0);
+        else
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                          TRV_RUNNING_STATE_MSG, 1);
+      }
       else
         msgZ2SDeviceHvac(channel_number_slot_2, 
-                         TRV_RUNNING_STATE_MSG, 
-                         1);
+                          TRV_RUNNING_STATE_MSG, 
+                          Tuya_read_dp_result.dp_value);
     }
   }
 
