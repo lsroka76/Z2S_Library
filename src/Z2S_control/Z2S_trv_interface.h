@@ -137,6 +137,7 @@ typedef struct ts0601_command_set_s {
   uint8_t ts0601_cmd_set_temperature_histeresis_dp_type;
   uint16_t ts0601_cmd_set_temperature_histeresis_factor;
 
+  uint8_t ts0601_cmd_set_pi_heating_demand_dp_id;
 } ts0601_command_set_t;
 
 enum ts0601_cmd_sets {
@@ -220,7 +221,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8 }, //3000
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8, //3000
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -284,7 +287,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC }, //3500
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
+
+    ..ts0601_cmd_set_pi_heating_demand_dp_id          =  0x65 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -348,7 +353,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC }, //3500
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -412,7 +419,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8 }, //3000
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8, //3000
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -475,7 +484,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC }, //3500
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -512,7 +523,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_window_detect_dp_id             =  0x08,
+    .ts0601_cmd_set_window_detect_dp_id             =   0x08,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL, //7 open/close
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01, 
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -538,7 +549,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC }, //3500
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -601,7 +614,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0FA0 }, //4000
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0FA0, //4000
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -664,7 +679,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC }, //3500
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -727,7 +744,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8 }, //3000
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8, //3000
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -790,7 +809,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8 }, //3000
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8, //3000
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
   /*---------------------------------------------------------------------------------------*/
 
@@ -854,7 +875,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC }, //3500
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -925,7 +948,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
     .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x6B,
     .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A }, 
+    .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A,
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 }, 
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -992,7 +1017,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
     .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x14,
     .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0x01 }
+    .ts0601_cmd_set_temperature_histeresis_factor    =  0x01,
+
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 };
 
 namespace Supla {
