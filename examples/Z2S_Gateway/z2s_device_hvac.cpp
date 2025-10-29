@@ -145,7 +145,8 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     }
   }
 
-  if (trv_commands_set == moes_cmd_set)
+  if ((trv_commands_set == moes_cmd_set) ||
+      (trv_commands_set == me167_cmd_set))
     onOffOnly = false;
   
   auto Supla_Z2S_TRVInterface = 

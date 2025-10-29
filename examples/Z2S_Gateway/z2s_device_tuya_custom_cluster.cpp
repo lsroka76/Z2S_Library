@@ -207,6 +207,8 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
 
   uint8_t temperature_histeresis_dp_id   = 0x00;
 
+  uint8_t pi_heating_demand_dp_id        = 0x00;
+
   int32_t local_temperature_factor       = 1;
   int32_t target_heatsetpoint_factor     = 1;
   int32_t temperature_calibration_factor = 1;
@@ -298,6 +300,9 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_histeresis_dp_id;
       temperature_histeresis_factor  =
         ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_temperature_histeresis_factor;
+
+      pi_heating_demand_dp_id   =              
+        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_pi_heating_demand_dp_id;
     } else
       log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
             ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id,
@@ -416,8 +421,22 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
       }
       else
         msgZ2SDeviceHvac(channel_number_slot_2, 
-                          TRV_RUNNING_STATE_MSG, 
-                          Tuya_read_dp_result.dp_value);
+                         TRV_RUNNING_STATE_MSG, 
+                         Tuya_read_dp_result.dp_value);
+    }
+  }
+
+  if (pi_heating_demand_dp_id) {
+    
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(running_state_dp_id, 
+                                              payload_size, 
+                                              payload);
+    
+    if (Tuya_read_dp_result.is_success) {
+      
+      msgZ2SDeviceHvac(channel_number_slot_2, 
+                       TRV_RUNNING_STATE_MSG, 
+                       Tuya_read_dp_result.dp_value);
     }
   }
 
