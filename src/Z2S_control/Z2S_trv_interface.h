@@ -62,9 +62,15 @@
 #define BOSCH_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
 #define BOSCH_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
 
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
+#define EUROTRONIC_CMD_SET 0x42
+
+#define EUROTRONIC_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define EUROTRONIC_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
+
 #define EXTERNAL_TEMPERATURE_SENSOR_IGNORE          0x0000
 #define EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE   0x0001
 #define EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT       0x0002

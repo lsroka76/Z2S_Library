@@ -82,12 +82,17 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
     
     case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
 
-      return  TRVZB_CMD_SET;
+      return TRVZB_CMD_SET;
     } break;
 
     case Z2S_DEVICE_DESC_BOSCH_BTHRA: {
 
-      return  BOSCH_CMD_SET;
+      return BOSCH_CMD_SET;
+    } break;
+
+    case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001: {
+
+      return EUROTRONIC_CMD_SET;
     } break;
 
     default:

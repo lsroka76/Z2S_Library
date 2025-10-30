@@ -2119,7 +2119,7 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
                                   uint16_t endpoint, 
                                   uint16_t cluster, 
                                   uint16_t id, 
-                                  uint8_t mode) {
+                                  uint16_t mode) {
   
   char ieee_addr_str[24] = {};
 
@@ -2146,6 +2146,7 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
     msgZ2SDeviceHvac(channel_number_slot_2, 
                      TRV_CHILD_LOCK_MSG, 
                      mode);
+    return;
   }
 
   switch (id) {
@@ -2196,6 +2197,26 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
                            TRV_SCHEDULE_MODE_MSG, 1); 
         break;
       }
+    } break;
+
+    
+    case EUROTRONIC_HOST_FLAGS_ID: {
+
+      if (mode & 0x20)
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_SYSTEM_MODE_MSG, 0);
+      if (mode & 0x04)
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_SYSTEM_MODE_MSG, 1);
+      if (mode & 0x10)
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_SCHEDULE_MODE_MSG, 1);
+      if (mode & 0x80)
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_CHILD_LOCK_MSG, 1);
+      else
+        msgZ2SDeviceHvac(channel_number_slot_2, 
+                         TRV_CHILD_LOCK_MSG, 0);
     } break;
   }
 }
@@ -4695,7 +4716,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
       case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
       case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
       case Z2S_DEVICE_DESC_SONOFF_TRVZB:
-      case Z2S_DEVICE_DESC_BOSCH_BTHRA: {
+      case Z2S_DEVICE_DESC_BOSCH_BTHRA:
+      case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001: {
       
         addZ2SDeviceTempHumidity(device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
         

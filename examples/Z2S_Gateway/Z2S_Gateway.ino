@@ -1535,6 +1535,44 @@ if (GUIstarted)
                     1, 1, BOSCH_MANUFACTURER_CODE);                 
                 } break;
 
+                case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001: {  
+                  
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    0, 3600, 10, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    0, 3600, 10, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
+                    0, 3600, 10, false);       
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    EUROTRONIC_HOST_FLAGS_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_U24, 
+                    0, 3600, 1, false,
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                    1, 1, EUROTRONIC_MANUFACTURER_CODE);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    EUROTRONIC_CURRENT_HEATING_SETPOINT_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    0, 3600, 25, false,
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                    1, 1, EUROTRONIC_MANUFACTURER_CODE);                           
+                } break;
+
                 case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH: {
 
                   

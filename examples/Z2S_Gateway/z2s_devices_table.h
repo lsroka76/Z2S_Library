@@ -599,7 +599,7 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
                                   uint16_t endpoint, 
                                   uint16_t cluster, 
                                   uint16_t id, 
-                                  uint8_t mode);
+                                  uint16_t mode);
 
 void Z2S_onWindowCoveringReceive(esp_zb_ieee_addr_t ieee_addr, 
                                  uint16_t endpoint, 

@@ -161,12 +161,21 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET)) {
 
-      _gateway->sendAttributeWrite(&_device, 
-                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-                                   ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_S16,
-                                   2, 
-                                   &temperature_setpoint);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &temperature_setpoint);
+    }
+
+    if (_trv_commands_set == EUROTRONIC_CMD_SET) {
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        EUROTRONIC_CURRENT_HEATING_SETPOINT_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &temperature_setpoint,
+        false, 1, EUROTRONIC_MANUFACTURER_CODE);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -211,7 +220,8 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
     } else
 
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
-        (_trv_commands_set == BOSCH_CMD_SET)) {
+        (_trv_commands_set == BOSCH_CMD_SET) ||
+        (_trv_commands_set == EUROTRONIC_CMD_SET)) {
 
       _gateway->sendAttributeRead(&_device, 
                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
@@ -260,16 +270,16 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
     } else 
 
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
-        (_trv_commands_set == BOSCH_CMD_SET)) {
+        (_trv_commands_set == BOSCH_CMD_SET) ||
+        (_trv_commands_set == EUROTRONIC_CMD_SET)) {
 
       
       temperature_calibration = temperature_calibration / 10;
-      _gateway->sendAttributeWrite(&_device, 
-                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-                                   ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_S8,
-                                   1,
-                                  &temperature_calibration);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_S8, 1, &temperature_calibration);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -410,12 +420,29 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
       
       trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
-      _gateway->sendAttributeWrite(&_device, 
-                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-                                   ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                                   1, 
-                                   &trv_system_mode);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);
+    }
+
+    if (_trv_commands_set == EUROTRONIC_CMD_SET) {
+
+      esp_zb_uint24_t eurotronic_host_flags;
+     
+      eurotronic_host_flags.low = (1 << 0) |
+                                  (1 << ((trv_system_mode == 0) ? 5 : 2)) |
+                                  (1 << ((_trv_child_lock == 1) ? 7 : 0));
+
+      log_i("EUROTRONIC host flags = 0x%04X", eurotronic_host_flags.low);
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U24, 3, &eurotronic_host_flags,
+        false, 1, EUROTRONIC_MANUFACTURER_CODE);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -499,6 +526,26 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
                                    1, 
                                    &trv_schedule_mode);
     }
+
+    if (_trv_commands_set == EUROTRONIC_CMD_SET) {
+
+      esp_zb_uint24_t eurotronic_host_flags;
+
+      eurotronic_host_flags.low = (1 << 0) |
+                                  //(1 << ((trv_system_mode == 0) ? 5 : 2)) |
+                                  (1 << ((trv_schedule_mode == 0) ? 2 : 4)) |
+                                  (1 << ((_trv_child_lock == 1) ? 7 : 0));
+
+      log_i("EUROTRONIC host flags = 0x%04X", eurotronic_host_flags.low);
+      
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U24, 3, &eurotronic_host_flags,
+        false, 1, EUROTRONIC_MANUFACTURER_CODE);
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -557,35 +604,55 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
 
     if (_trv_commands_set == TRVZB_CMD_SET) {
 
-      _gateway->sendAttributeWrite(&_device, 
-                                   SONOFF_CUSTOM_CLUSTER, 
-                                   SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
-                                   1, 
-                                   &trv_child_lock);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        SONOFF_CUSTOM_CLUSTER, 
+        SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &trv_child_lock);
       delay(200);
 
-      _gateway->sendAttributeRead(&_device, 
-                                  SONOFF_CUSTOM_CLUSTER, 
-                                  SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
-                                  false);
+      _gateway->sendAttributeRead(
+        &_device, 
+        SONOFF_CUSTOM_CLUSTER, 
+        SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+        false);
     }
     if (_trv_commands_set == BOSCH_CMD_SET) {
 
-      _gateway->sendAttributeWrite(&_device, 
-                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
-                                   ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                                   1, 
-                                   &trv_child_lock);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_child_lock);
       delay(200);
 
-      _gateway->sendAttributeRead(&_device, 
-                                  ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
-                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
-                                  false);
+      _gateway->sendAttributeRead(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
+        false);
     }
 
+    if (_trv_commands_set == EUROTRONIC_CMD_SET) {
+
+      esp_zb_uint24_t eurotronic_host_flags;
+
+      eurotronic_host_flags.low = (1 << 0) |
+                                  (1 << ((_trv_system_mode == 0) ? 5 : 2)) |
+                                  //(1 << ((trv_schedule_mode == 0) ? 2 : 4) |
+                                  (1 << ((_trv_child_lock == 1) ? 7 : 0));
+
+      log_i("EUROTRONIC host flags = 0x%04X", eurotronic_host_flags.low);
+      
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U24, 3, &eurotronic_host_flags,
+        false, 1, EUROTRONIC_MANUFACTURER_CODE);
+    }
+
+    
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -659,7 +726,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
     log_i("Z2S_TRVInterface::sendTRVPing");
  
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
-        (_trv_commands_set == BOSCH_CMD_SET)) {
+        (_trv_commands_set == BOSCH_CMD_SET) ||
+        (_trv_commands_set == EUROTRONIC_CMD_SET)) {
 
       uint16_t attributes[5] = { ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,

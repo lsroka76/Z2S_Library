@@ -318,7 +318,10 @@ static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM 
 	 	 .manufacturer_name = "SHENZHEN_COOLKIT_TECHNOLOGY_CO_LTD" },
 
 		{ .manufacturer_code = BOSCH_MANUFACTURER_CODE,										
-	 	 .manufacturer_name = "BOSCH" }
+	 	 .manufacturer_name = "BOSCH" },
+
+		{ .manufacturer_code = EUROTRONIC_MANUFACTURER_CODE,										
+	 	 .manufacturer_name = "EUROTRONIC" }
 	};
 
 static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {

@@ -113,6 +113,11 @@
 #define BOSCH_MANUFACTURER_CODE                               0x1209
 #define BOSCH_HEATING_DEMAND_ID                               0x4020
 
+#define EUROTRONIC_MANUFACTURER_CODE                          0x1037
+#define EUROTRONIC_CURRENT_HEATING_SETPOINT_ID                0x4003 //S16
+#define EUROTRONIC_VALVE_POSITION_ID                          0x4001 //U8 
+#define EUROTRONIC_HOST_FLAGS_ID                              0x4008 //U24 bit 0 =1, bit 1=1 OFF, bit 2=1 HEAT, CHILD LOCK bit3
+
 #define CUSTOM_CMD_SYNC                                       true
 #define CUSTOM_CMD_ASYNC                                      false
 
@@ -462,7 +467,7 @@ static void bindDeviceCluster2(zbg_device_params_t *,
   void onThermostatTemperaturesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t)) {
     _on_thermostat_temperatures_receive = callback;
   }
-  void onThermostatModesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t)) {
+  void onThermostatModesReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t)) {
     _on_thermostat_modes_receive = callback;
   }
   void onWindowCoveringReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t)) {
@@ -592,7 +597,7 @@ private:
   void (*_on_color_saturation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t);
   void (*_on_color_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_thermostat_temperatures_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, int16_t);
-  void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
+  void (*_on_thermostat_modes_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t);
   void (*_on_window_covering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint16_t);
   void (*_on_sonoff_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_develco_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);

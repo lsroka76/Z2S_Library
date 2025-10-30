@@ -235,6 +235,7 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_TRVZB                        0x6005
 #define Z2S_DEVICE_DESC_BOSCH_BTHRA                         0x6006
+#define Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001                 0x6007
 
 #define Z2S_DEVICE_DESC_TS0601_TRV_SASWELL                  0x6010
 #define Z2S_DEVICE_DESC_TS0601_TRV_ME167                    0x6011
@@ -1029,6 +1030,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              SONOFF_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_BTHRA,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -3630,6 +3637,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "IKEA of Sweden", .model_name = "VINDSTYRKA",
     .z2s_device_uid = 29800,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Eurotronic", .model_name = "SPZB0001",
+    .z2s_device_uid = 29900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001,
     .z2s_device_endpoints_count = 1}
 
 };
