@@ -2595,7 +2595,7 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
         case LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID: {
 
           msgZ2SDeviceHvac(channel_number_slot, 
-                          TRV_CILD_LOCK_MSG, lumi_mode == 0 ? 0 : 1);
+                          TRV_CHILD_LOCK_MSG, lumi_mode == 0 ? 0 : 1);
         } break;
         
         
