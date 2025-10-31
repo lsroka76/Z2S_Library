@@ -159,7 +159,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
     } else
 
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
-        (_trv_commands_set == BOSCH_CMD_SET)) {
+        (_trv_commands_set == BOSCH_CMD_SET) ||
+        (_trv_commands_set == LUMI_CMD_SET)) {
 
       _gateway->sendAttributeWrite(
         &_device, 
@@ -199,19 +200,20 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
       if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == 
           _trv_commands_set) {
         
-        if (ts0601_command_sets_table[_trv_commands_set].
+        if (ts0601_command_sets_table[_trv_commands_set].\
               ts0601_cmd_set_local_temperature_dp_type == 
             TUYA_DP_TYPE_VALUE) {
 
-          local_temperature *= ts0601_command_sets_table[_trv_commands_set].
+          local_temperature *= ts0601_command_sets_table[_trv_commands_set].\
             ts0601_cmd_set_local_temperature_factor;
           local_temperature /= 100;
 
-          sendTuyaRequestCmdValue32(_gateway, 
-                                    &_device, 
-                                    ts0601_command_sets_table[_trv_commands_set].
-                                      ts0601_cmd_set_local_temperature_dp_id,
-                                    local_temperature);
+          sendTuyaRequestCmdValue32(
+            _gateway, 
+            &_device, 
+            ts0601_command_sets_table[_trv_commands_set].\
+              ts0601_cmd_set_local_temperature_dp_id,
+            local_temperature);
         }
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
@@ -221,7 +223,8 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
 
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
-        (_trv_commands_set == EUROTRONIC_CMD_SET)) {
+        (_trv_commands_set == EUROTRONIC_CMD_SET) ||
+        (_trv_commands_set == LUMI_CMD_SET)) {
 
       _gateway->sendAttributeRead(&_device, 
                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
@@ -271,7 +274,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
 
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
-        (_trv_commands_set == EUROTRONIC_CMD_SET)) {
+        (_trv_commands_set == EUROTRONIC_CMD_SET) ||
+        (_trv_commands_set == LUMI_CMD_SET)) {
 
       
       temperature_calibration = temperature_calibration / 10;
@@ -445,6 +449,18 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
         false, 1, EUROTRONIC_MANUFACTURER_CODE);
     }
 
+    if (_trv_commands_set == LUMI_CMD_SET) {
+      
+      trv_system_mode = (trv_system_mode == 0) ? 0 : 1; //
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        LUMI_CUSTOM_CLUSTER, 
+        LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_system_mode,
+        false, 1, LUMI_MANUFACTURER_CODE);
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -546,6 +562,18 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
         false, 1, EUROTRONIC_MANUFACTURER_CODE);
     }
 
+    if (_trv_commands_set == LUMI_CMD_SET) {
+      
+      trv_schedule_mode = (trv_schedule_mode == 0) ? 0 : 1; //
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        LUMI_CUSTOM_CLUSTER, 
+        LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_schedule_mode,
+        false, 1, LUMI_MANUFACTURER_CODE);
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -568,10 +596,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
             ts0601_cmd_set_id == _trv_commands_set) {
 
         uint8_t child_lock_dp_id = 
-          ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_child_lock_dp_id;
+          ts0601_command_sets_table[_trv_commands_set].\  
+            ts0601_cmd_set_child_lock_dp_id;
 
         uint8_t child_lock_dp_type = 
-          ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_child_lock_dp_type;
+          ts0601_command_sets_table[_trv_commands_set].\
+            ts0601_cmd_set_child_lock_dp_type;
 
         uint8_t child_lock_value;
 
@@ -579,7 +609,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
 
           case 1: {
 
-            child_lock_value = ts0601_command_sets_table[_trv_commands_set].
+            child_lock_value = ts0601_command_sets_table[_trv_commands_set].\
               ts0601_cmd_set_child_lock_dp_value_on;
           } break;
 
@@ -652,6 +682,16 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
         false, 1, EUROTRONIC_MANUFACTURER_CODE);
     }
 
+    if (_trv_commands_set == LUMI_CMD_SET) {
+      
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        LUMI_CUSTOM_CLUSTER, 
+        LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_child_lock,
+        false, 1, LUMI_MANUFACTURER_CODE);
+    }
     
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();

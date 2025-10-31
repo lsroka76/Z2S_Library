@@ -2162,7 +2162,8 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
     } break;
 
 
-    case BOSCH_HEATING_DEMAND_ID: {
+    case BOSCH_HEATING_DEMAND_ID:
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID: {
 
       uint8_t running_mode = (mode > 0) ? 1 : 0;
       
@@ -2521,6 +2522,7 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
       }
     } break;
 
+
     case LUMI_CUSTOM_CLUSTER_ILLUMINANCE_ID: {
 
       /*int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
@@ -2535,16 +2537,20 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
                                             *(uint16_t*)attribute->data.value);*/
     } break;
 
+
     case LUMI_CUSTOM_CLUSTER_DISPLAY_UNIT_ID: {
 
       log_i("display unit = %u", *(uint8_t*)attribute->data.value);
     } break;
 
+
     case LUMI_CUSTOM_CLUSTER_AIR_QUALITY_ID: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
-                                                              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                              LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
+      int16_t channel_number_slot = 
+        Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+                                  LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
+
       if (channel_number_slot < 0) {
     
         log_e("no GPM channel found for address %s", ieee_addr_str);
@@ -2554,6 +2560,57 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
                                                 *(uint8_t *)attribute->data.value);
 
       log_i("air quality = %u", *(uint8_t*)attribute->data.value);
+    } break;
+
+
+    case LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID:
+    case LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID:
+    case LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID:
+    case LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID: {
+
+      int16_t channel_number_slot = 
+        Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
+                                  SUPLA_CHANNELTYPE_HVAC, 
+                                  NO_CUSTOM_CMD_SID);    
+                                  
+      if (channel_number_slot < 0) {
+    
+        log_e("no Hvac channel found for address %s", ieee_addr_str);
+        return;
+      }
+      uibt8_t lumi_mode = *(uint8_t *)attribute->data.value;
+
+      switch (attribute->id) {
+
+
+        case LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID: {
+
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                          TRV_SYSTEM_MODE_MSG, lumi_mode == 0 ? 0 : 1);
+        } break;
+
+        //case LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID:
+        
+        
+        case LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID: {
+
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                          TRV_CILD_LOCK_MSG, lumi_mode == 0 ? 0 : 1);
+        } break;
+        
+        
+        case LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID: {
+
+          log_i("lumi trv battery %u", lumi_mode);
+        } break;
+        
+        
+        case LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID: {
+
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                          TRV_SCHEDULE_MODE_MSG, lumi_mode == 0 ? 0 : 1);
+        } break;
+      }
     } break;
   }
 }
@@ -4717,7 +4774,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
       case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
       case Z2S_DEVICE_DESC_SONOFF_TRVZB:
       case Z2S_DEVICE_DESC_BOSCH_BTHRA:
-      case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001: {
+      case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001:
+      case Z2s_DEVICE_DESC_LUMI_TRV: {
       
         addZ2SDeviceTempHumidity(device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
         

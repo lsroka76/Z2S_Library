@@ -236,7 +236,15 @@
 #define Z2S_DEVICE_DESC_SONOFF_TRVZB                        0x6005
 #define Z2S_DEVICE_DESC_BOSCH_BTHRA                         0x6006
 #define Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001                 0x6007
-
+#define Z2s_DEVICE_DESC_LUMI_TRV                            0x6008
+                                                            //0x6009
+                                                            //0x600A
+                                                            //0x600B
+                                                            //0x600C
+                                                            //0x600D
+                                                            //0x600E
+                                                            //0x600F
+                                                            
 #define Z2S_DEVICE_DESC_TS0601_TRV_SASWELL                  0x6010
 #define Z2S_DEVICE_DESC_TS0601_TRV_ME167                    0x6011
 #define Z2S_DEVICE_DESC_TS0601_TRV_BECA                     0x6012
@@ -1044,6 +1052,14 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
+
+  {	.z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+                             LUMI_CUSTOM_CLUSTER }},
+
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
     .z2s_device_clusters_count = 1,
@@ -2533,6 +2549,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
+  {	.manufacturer_name = "_TZ3000_tzvbimpq", .model_name = "TS0042",
+    .z2s_device_uid = 13950,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
   {	.manufacturer_name = "_TZ3000_yj6k7vfo", .model_name = "TS0041",
     .z2s_device_uid = 14000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F,
@@ -3648,7 +3671,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "Eurotronic", .model_name = "SPZB0001",
     .z2s_device_uid = 29900,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.airrtc.agl001",
+    .z2s_device_uid = 29900,
+    .z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
     .z2s_device_endpoints_count = 1}
+
+  
 
 };
 #endif

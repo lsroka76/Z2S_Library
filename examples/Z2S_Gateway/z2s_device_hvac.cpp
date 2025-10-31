@@ -95,6 +95,11 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
       return EUROTRONIC_CMD_SET;
     } break;
 
+    case Z2s_DEVICE_DESC_LUMI_TRV: {
+
+      return LUMI_CMD_SET;
+    } break;
+
     default:
       return 0xFF; break;
   }  
@@ -145,6 +150,22 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
         trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
         hvac_room_temperature_min = BOSCH_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = BOSCH_CMD_SET_HEATSETPOINT_MAX;
+        onOffOnly = false;
+      } break;
+
+      case EUROTRONIC_CMD_SET: {
+
+        trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
+        hvac_room_temperature_min = EUROTRONIC_CMD_SET_HEATSETPOINT_MIN;
+        hvac_room_temperature_max = EUROTRONIC_CMD_SET_HEATSETPOINT_MAX;
+        onOffOnly = false;
+      } break;
+
+      case LUMI_CMD_SET: {
+
+        trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
+        hvac_room_temperature_min = LUMI_CMD_SET_HEATSETPOINT_MIN;
+        hvac_room_temperature_max = LUMI_CMD_SET_HEATSETPOINT_MAX;
         onOffOnly = false;
       } break;
     }

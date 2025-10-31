@@ -92,6 +92,13 @@
 #define LUMI_CUSTOM_CLUSTER_DISPLAY_UNIT_ID                   0x0114 //U8
 #define LUMI_CUSTOM_CLUSTER_AIR_QUALITY_ID                    0x0129 //U8
 
+#define LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID                0x0271 //U8
+#define LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID                     0x0272 //U8 manual: 0, auto: 1, away: 2
+#define LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID                 0x0277 //U8
+#define LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID                0x027E //
+#define LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID                    0x040A //
+#define LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID              0x027D //U8
+
 #define LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID                  0x0200 //U8
 
 #define LUMI_ATTRIBUTE_BATTERY_ID                             0x01 //ESP_ZB_ZCL_ATTR_TYPE_U16
