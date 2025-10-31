@@ -1262,6 +1262,15 @@ void processTuyaPresenceSensorDataReport(
 
       presence_value_on = 0x00;
     } break;
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO: {
+
+      presence_dp_id = TUYA_PRESENCE_SENSOR_PRESENCE_DP;
+      motion_state_dp_id = TUYA_PRESENCE_SENSOR_NEO_HUMAN_MOTION_STATE_DP;
+      distance_dp_id = TUYA_PRESENCE_SENSOR_NEO_CURRENT_DISTANCE_DP;
+
+      presence_value_on = 0x00;
+    } break;
   }
   
   if (presence_dp_id) {
@@ -2069,6 +2078,7 @@ void processTuyaDataReport(esp_zb_ieee_addr_t ieee_addr,
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
 
       processTuyaPresenceSensorDataReport(
         channel_number_slot, 

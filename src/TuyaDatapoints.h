@@ -106,6 +106,13 @@
 #define TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_DP                  0x73
 #define TUYA_PRESENCE_SENSOR_RELAY_ILLUMINANCE_THRESHOLD_DP         0x6E
 
+#define TUYA_PRESENCE_SENSOR_NEO_HUMAN_MOTION_STATE_DP              0x0B
+#define TUYA_PRESENCE_SENSOR_NEO_DEPARTURE_DELAY_DP                 0x0C
+#define TUYA_PRESENCE_SENSOR_NEO_RADAR_RANGE_DP                     0x0D
+#define TUYA_PRESENCE_SENSOR_NEO_RADAR_SENSITIVITY_DP               0x0F
+#define TUYA_PRESENCE_SENSOR_NEO_PRESENCE_SENSITIVITY_DP            0x10
+#define TUYA_PRESENCE_SENSOR_NEO_CURRENT_DISTANCE_DP                0x13
+
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_DP                             0x65
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_DP                  0x66
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_DP                   0x67
@@ -251,9 +258,6 @@
 #define TUYA_8_RELAYS_CONTROLLER_RELAY_8_DP                         0x08
 #define TUYA_8_RELAYS_CONTROLLER_STATUS_DP                          0x1B // ENUM ??
 #define TUYA_8_RELAYS_CONTROLLER_LOCK_DP                            0x1D
-
-
-
 
 #define TUYA_FINGERBOT_PLUS_MODE_DP                                 0x65
 #define TUYA_FINGERBOT_PLUS_LOWER_LIMIT_DP                          0x66

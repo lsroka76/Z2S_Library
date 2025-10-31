@@ -93,6 +93,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5              0x2305
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1           0x2310
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY          0x2315
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO            0x2320
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
@@ -1412,6 +1413,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -3561,6 +3567,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR ,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE200_qxyh4r7g", .model_name = "TS0601",
+    .z2s_device_uid = 26910,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR ,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "LUMI", .model_name = "lumi.airmonitor.acn01",
     .z2s_device_uid = 27000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR,
@@ -3676,8 +3687,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "LUMI", .model_name = "lumi.airrtc.agl001",
     .z2s_device_uid = 29900,
     .z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE204_kyhbrfyl", .model_name = "TS0601",
+    .z2s_device_uid = 30000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO,
+    .z2s_device_endpoints_count = 1},
   
 
 };

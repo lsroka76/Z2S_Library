@@ -5057,10 +5057,11 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, 
-                                              "ILLUMINANCE.", 
-                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                                              "lx");
+        addZ2SDeviceGeneralPurposeMeasurement(
+          device, first_free_slot, -1, 
+          "ILLUMINANCE.", 
+          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+          "lx");
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -5125,24 +5126,60 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO: {
+        
+        switch (sub_id) {
+
+          case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
+
+            addZ2SDeviceIASzone(
+              device, 
+              first_free_slot, 
+              sub_id, 
+              "PRESENCE", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
+          break;
+
+
+          case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
+          case TUYA_PRESENCE_SENSOR_DISTANCE_SID:
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, 
+              first_free_slot, 
+              sub_id,
+              name, 
+              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+              unit); 
+          break;
+        }
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/     
+
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1: {
         
         switch (sub_id) {
           
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
-            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); break;
+            addZ2SDeviceIASzone(
+              device, first_free_slot, sub_id, name, func); 
+          break;
 
 
           case TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID: 
 
-            addZ2SDeviceTempHumidity(device, first_free_slot, sub_id, name, func); break;
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func); 
+          break;
 
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, 
-                                                  sub_id, name, func, unit); break;
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
         }
       } break;
 
@@ -5154,17 +5191,25 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
           
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
-            addZ2SDeviceIASzone(device, first_free_slot, sub_id, 
-                                "PRESENCE", 
-                                SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+            addZ2SDeviceIASzone(
+              device, 
+              first_free_slot, 
+              sub_id, 
+              "PRESENCE", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
+          break;
 
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, 
-                                                  "ILLUMINANCE",
-                                                  SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                                                  "lx"); break;
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, 
+              first_free_slot, 
+              sub_id, 
+              "ILLUMINANCE",
+              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+              "lx"); 
+          break;
         }
       } break;
 
@@ -5550,7 +5595,9 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID:
           case TUYA_PRESENCE_SENSOR_DISTANCE_SID:
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func); break;
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func); 
+          break;
           
           case TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID:
           case TUYA_PRESENCE_SENSOR_RELAY_MODE_SID:
@@ -6421,6 +6468,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
@@ -7008,6 +7056,29 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
                        TUYA_PRESENCE_SENSOR_RELAY_MODE_SID, 
                        "SWITCH AUTO MODE",
                        SUPLA_CHANNELFNC_POWERSWITCH);
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/                                         
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO: {
+      
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_PRESENCE_SID, 
+                       "PRESENCE", 
+                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_MOTION_STATE_SID, 
+                       "MOTION STATE",
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "[0..2]");
+
+      Z2S_addZ2SDevice(joined_device, 
+                       TUYA_PRESENCE_SENSOR_DISTANCE_SID, 
+                       "DISTANCE",
+                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+                       "cm");
+
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
