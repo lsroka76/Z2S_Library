@@ -531,48 +531,52 @@
 
 
 [[maybe_unused]]
-static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { "ON PRESSED", 
-                                                      "ON HELD", 
-                                                      "OFF PRESSED", 
-                                                      "OFF HELD", 
-                                                      "LEFT PRESSED", 
-                                                      "LEFT HELD", 
-                                                      "RIGHT PRESSED", 
-                                                      "RIGHT HELD" };
+static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
+    "ON PRESSED", 
+    "ON HELD", 
+    "OFF PRESSED", 
+    "OFF HELD", 
+    "LEFT PRESSED", 
+    "LEFT HELD", 
+    "RIGHT PRESSED", 
+    "RIGHT HELD" };
 
 [[maybe_unused]]
-static const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = { "PLAY", 
-                                                        "VOLUME UP", 
-                                                        "VOLUME DOWN", 
-                                                        "NEXT TRACK ", 
-                                                        "PREV TRACK",
-                                                        "DOT PRESSED", 
-                                                        "DOT SHORT RELEASE", 
-                                                        "DOT HELD", 
-                                                        "DOT LONG RELEASED", 
-                                                        "DOT DOUBLE PRESSED",
-                                                        "DOTS PRESSED", 
-                                                        "DOTS SHORT RELEASE", 
-                                                        "DOTS HELD", 
-                                                        "DOTS LONG RELEASED", 
-                                                        "DOTS DOUBLE PRESSED" };
+static const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = { 
+    "PLAY", 
+    "VOLUME UP", 
+    "VOLUME DOWN", 
+    "NEXT TRACK ", 
+    "PREV TRACK",
+    "DOT PRESSED", 
+    "DOT SHORT RELEASE", 
+    "DOT HELD", 
+    "DOT LONG RELEASED", 
+    "DOT DOUBLE PRESSED",
+    "DOTS PRESSED", 
+    "DOTS SHORT RELEASE", 
+    "DOTS HELD", 
+    "DOTS LONG RELEASED", 
+    "DOTS DOUBLE PRESSED" };
+
 [[maybe_unused]]
-static const char *PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[] PROGMEM = {  "ON_PRESS", 
-                                                                     "ON_PRESS_RELEASE", 
-                                                                    "ON_HOLD", 
-                                                                    "ON_HOLD_RELEASE",
-                                                                    "UP_PRESS", 
-                                                                    "UP_PRESS_RELEASE", 
-                                                                    "UP_HOLD", 
-                                                                    "UP_HOLD_RELEASE",
-                                                                    "DOWN_PRESS", 
-                                                                    "DOWN_PRESS_RELEASE", 
-                                                                    "DOWN_HOLD", 
-                                                                    "DOWN_HOLD_RELEASE",
-                                                                    "OFF_PRESS", 
-                                                                    "OFF_PRESS_RELEASE", 
-                                                                    "OFF_HOLD",
-                                                                    "OFF_HOLD_RELEASE" };
+static const char *PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[] PROGMEM = {  
+    "ON_PRESS", 
+    "ON_PRESS_RELEASE", 
+    "ON_HOLD", 
+    "ON_HOLD_RELEASE",
+    "UP_PRESS", 
+    "UP_PRESS_RELEASE", 
+    "UP_HOLD", 
+    "UP_HOLD_RELEASE",
+    "DOWN_PRESS", 
+    "DOWN_PRESS_RELEASE", 
+    "DOWN_HOLD", 
+    "DOWN_HOLD_RELEASE",
+    "OFF_PRESS", 
+    "OFF_PRESS_RELEASE", 
+    "OFF_HOLD",
+    "OFF_HOLD_RELEASE" };
 
 typedef struct z2s_device_desc_s {
   uint32_t z2s_device_desc_id;
@@ -1058,10 +1062,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
+    .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_BECA,
+    .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
@@ -1438,9 +1444,9 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT }},
 
-   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_GIEX_SMART_VALVE,
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_GIEX_SMART_VALVE,
     .z2s_device_clusters_count = 1,
-      .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR,

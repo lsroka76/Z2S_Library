@@ -716,6 +716,12 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
 		.zigbee_attribute_name = "TEMPERATURE UNITS"
 	},
+	{
+		.zigbee_attribute_id  = 0x0107, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "MEASUREMENT INTERVAL(3-30 S)"
+	},
   //COLOR CONTROL
   {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_HUE_ID, 
