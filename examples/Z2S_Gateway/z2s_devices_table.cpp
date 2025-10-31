@@ -2578,7 +2578,7 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
         log_e("no Hvac channel found for address %s", ieee_addr_str);
         return;
       }
-      uibt8_t lumi_mode = *(uint8_t *)attribute->data.value;
+      uint8_t lumi_mode = *(uint8_t *)attribute->data.value;
 
       switch (attribute->id) {
 
