@@ -4834,7 +4834,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
-      case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB: {
+      case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
+      case Z2S_DEVICE_DESC_DIMMER_CT_BULB: {
 
         switch (sub_id) {
 
@@ -7648,7 +7649,8 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-    case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB: {
+    case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
+    case Z2S_DEVICE_DESC_DIMMER_CT_BULB: {
 
       Z2S_addZ2SDevice(joined_device, 
                        DIMMER_ON_OFF_SWITCH_SID,

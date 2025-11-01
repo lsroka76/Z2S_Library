@@ -71,10 +71,75 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
+
+
 #define LUMI_CMD_SET 0x43
 
 #define LUMI_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
 #define LUMI_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+
+#define LUMI_HEADER_
+
+typedef struct lumi_fff2_cmd_header_s {
+
+  uint8_t cmd_start;
+  uint8_t cmd_category;
+  uint8_t cmd_size;
+  uint8_t cmd_type;
+  uint8_t counter;
+  uint8_t integrity;
+  uint8_t cmd_action;
+  uint8_t data_type;
+  uint8_t params_size;
+} __attribute__((packed)) lumi_fff2_cmd_header_t;
+
+typedef struct lumi_sensor_link_params_1_s {
+
+  uint32_t timestamp;
+  uint8_t  const_value_3d;
+  uint8_t  link_id;
+  esp_zb_ieee_addr_t device_address;
+  esp_zb_ieee_addr_t sensor_address;
+  uint8_t shared_const_value[4];
+  uint8_t const_value_link_1[11];
+  uint8_t const_common_value[7];
+  uint8_t const_value_64;
+  uint8_t const_end_65;
+} __attribute__((packed)) lumi_sensor_link_params_1_t;
+
+static constexpr lumi_fff2_cmd_header_t lumi_fff2_cmd_header PROGMEM = {
+  
+    .cmd_start    = 0xAA, 
+    .cmd_category = 0x71, 
+    .cmd_size     = 0x31, 
+    .cmd_type     = 0x44, 
+    .counter      = 0x10, 
+    .integrity    = 0x60, //512 - sum(cmd_start..counter)
+    .cmd_action   = 0x02, 
+    .data_type    = 0x41, 
+    .params_size  = 0x2E
+};
+
+static constexpr lumi_sensor_link_params_1_t lumi_sensor_link_params_1 PROGMEM = {
+
+  .timestamp          = 0x00000000,
+  .const_value_3d     = 0x3D,
+  .link_id            = 00,
+  .device_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+  .sensor_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+  .shared_const_value = {0x00, 0x01, 0x00, 0x55},
+  .const_value_link_1 = {0x13, 0x0A, 0x02, 0x00, 0x00, 0x64,
+                         0x04, 0xCE, 0xC2, 0xB6, 0xC8},
+  .const_common_value = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x3D},
+  .const_value_64     = 0x64,
+  .const_end_65       = 0x65,
+};
+
+
+static constexpr uint8_t lumi_link_cmd_1[] PROGMEM =
+{
+
+};
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

@@ -124,6 +124,7 @@
 #define Z2S_DEVICE_DESC_IKEA_WW_BULB                        0x3220
 #define Z2S_DEVICE_DESC_PHILIPS_WW_BULB                     0x3225
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER                     0x3230
+#define Z2S_DEVICE_DESC_DIMMER_CT_BULB                      0x3235
 
 #define Z2S_DEVICE_DESC_RGBW_END                            0x3299
 
@@ -2127,6 +2128,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "eWeLink", .model_name = "SNZB-05",
+    .z2s_device_uid = 9605,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-204Z",
     .z2s_device_uid = 9700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
@@ -3692,6 +3698,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_kyhbrfyl", .model_name = "TS0601",
     .z2s_device_uid = 30000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "AwoX", .model_name = "TLSR82xx",
+    .z2s_device_uid = 30100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB,
     .z2s_device_endpoints_count = 1},
   
 
