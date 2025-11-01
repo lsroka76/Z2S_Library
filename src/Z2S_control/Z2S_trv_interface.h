@@ -107,6 +107,36 @@ typedef struct lumi_sensor_link_params_1_s {
   uint8_t const_end_65;
 } __attribute__((packed)) lumi_sensor_link_params_1_t;
 
+typedef struct lumi_sensor_link_params_2_s {
+
+  uint32_t timestamp;
+  uint8_t  const_value_3d;
+  uint8_t  link_id;
+  esp_zb_ieee_addr_t device_address;
+  uint8_t sensor_address[12];
+  uint8_t const_value_link_2[18];
+  uint8_t const_common_value[7];
+  uint8_t const_value_04;
+  uint8_t const_end_65;
+} __attribute__((packed)) lumi_sensor_link_params_2_t;
+
+typedef struct lumi_sensor_unlink_params_s {
+
+  uint32_t timestamp;
+  uint8_t  const_value_3d;
+  uint8_t  link_id;
+  esp_zb_ieee_addr_t device_address;
+  uint8_t sensor_address[12];
+} __attribute__((packed)) lumi_sensor_unlink_params_t;
+
+typedef struct lumi_sensor_send_temperature_params_s {
+
+  esp_zb_ieee_addr_t sensor_address;
+  uint8_t const_value[4];
+  float temperature_value;
+} __attribute__((packed)) lumi_sensor_send_temperature_params_t;
+
+
 static constexpr lumi_fff2_cmd_header_t lumi_fff2_cmd_header PROGMEM = {
   
     .cmd_start    = 0xAA, 
@@ -124,7 +154,7 @@ static constexpr lumi_sensor_link_params_1_t lumi_sensor_link_params_1 PROGMEM =
 
   .timestamp          = 0x00000000,
   .const_value_3d     = 0x3D,
-  .link_id            = 00,
+  .link_id            = 04,
   .device_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
   .sensor_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
   .shared_const_value = {0x00, 0x01, 0x00, 0x55},
@@ -134,6 +164,50 @@ static constexpr lumi_sensor_link_params_1_t lumi_sensor_link_params_1 PROGMEM =
   .const_value_64     = 0x64,
   .const_end_65       = 0x65,
 };
+
+static constexpr lumi_sensor_link_params_2_t lumi_sensor_link_params_2 PROGMEM = {
+
+  .timestamp          = 0x00000000,
+  .const_value_3d     = 0x3D,
+  .link_id            = 05,
+  .device_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+  .sensor_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                         0x00, 0x00, 0x00, 0x0},
+  .const_value_link_2 = {0x08, 0x00, 0x07, 0xFD, 0x16, 0x0A, 0x02, 0x0A, 0xC9,
+                         0xE8, 0xB1, 0xB8, 0xD4, 0xDA, 0xCF, 0xDF, 0xC0, 0xEB},	
+  .const_common_value = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x3D},
+  .const_value_04     = 0x04,
+  .const_end_65       = 0x65,
+};
+
+static constexpr lumi_sensor_unlink_params_t lumi_sensor_unlink_params_1 PROGMEM = {
+
+  .timestamp          = 0x00000000,
+  .const_value_3d     = 0x3D,
+  .link_id            = 05,
+  .device_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+  .sensor_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                         0x00, 0x00, 0x00, 0x0}
+};
+
+static constexpr lumi_sensor_unlink_params_t lumi_sensor_unlink_params_2 PROGMEM = {
+
+  .timestamp          = 0x00000000,
+  .const_value_3d     = 0x3D,
+  .link_id            = 04,
+  .device_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+  .sensor_address     = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                         0x00, 0x00, 0x00, 0x0}
+};
+
+static constexpr lumi_sensor_send_temperature_params_t 
+  lumi_sensor_send_temperature_params PROGMEM = {
+
+  .sensor_address    = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+  .const_value       = {0x00, 0x01, 0x00, 0x55},
+  .temperature_value = -27500;
+};
+
 
 
 static constexpr uint8_t lumi_link_cmd_1[] PROGMEM =
