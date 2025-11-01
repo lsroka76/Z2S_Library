@@ -304,31 +304,35 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
       
       uint8_t temperature_selector = 1;
 
-      _gateway->sendAttributeWrite(&_device, 
-                                   SONOFF_CUSTOM_CLUSTER, 
-                                   TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_U8, 
-                                   1, 
-                                   &temperature_selector);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        SONOFF_CUSTOM_CLUSTER, 
+        TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
 
-      _gateway->sendAttributeWrite(&_device, 
-                                   SONOFF_CUSTOM_CLUSTER, 
-                                   TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                                   2, 
-                                   &external_sensor_temperature);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        SONOFF_CUSTOM_CLUSTER, 
+        TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT, 
+        ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &external_sensor_temperature);
     }
 
     if (_trv_commands_set == BOSCH_CMD_SET) {
       
     
-      _gateway->sendAttributeWrite(&_device, 
-                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-                                   BOSCH_CMD_SET_EXTERNAL_TEMPERATURE_INPUT_ID, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                                   2, &external_sensor_temperature,
-                                   false,
-                                   1, BOSCH_MANUFACTURER_CODE);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        BOSCH_CMD_SET_EXTERNAL_TEMPERATURE_INPUT_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_S16, 
+        2, &external_sensor_temperature,
+        false,
+        1, BOSCH_MANUFACTURER_CODE);
+    }
+
+    if (_trv_commands_set == LUMI_CMD_SET) {
+
+
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -343,18 +347,18 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVExternalSensorInput = %d", trv_external_sensor_present);
+    log_i("Z2S_TRVInterface::sendTRVExternalSensorInput = %d", 
+          trv_external_sensor_present);
  
     if (_trv_commands_set == TRVZB_CMD_SET) {
 
       uint8_t temperature_selector = trv_external_sensor_present ? 1 : 0;
 
-      _gateway->sendAttributeWrite(&_device, 
-                                   SONOFF_CUSTOM_CLUSTER, 
-                                   TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_U8, 
-                                   1, 
-                                   &temperature_selector);
+      _gateway->sendAttributeWrite(
+        &_device, 
+        SONOFF_CUSTOM_CLUSTER, 
+        TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
     }
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
