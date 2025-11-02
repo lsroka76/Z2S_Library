@@ -166,7 +166,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
         trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
         hvac_room_temperature_min = LUMI_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = LUMI_CMD_SET_HEATSETPOINT_MAX;
-        onOffOnly = false;
+        onOffOnly = true;
       } break;
     }
   }

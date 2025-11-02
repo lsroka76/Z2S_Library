@@ -14,6 +14,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <time.h>
+
 #include "Z2S_trv_interface.h"
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -293,12 +295,153 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
+void buildLumiFFF2CmdHeader(uint8_t* fff2_cmd_data_buffer,
+                            uint8_t counter,
+                            uint8_t action,
+                            uint8_t params_size) {
+
+  memset(fff2_cmd_data_buffer, 0 , 0xAA);
+
+  uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
+  
+  memcpy(fff2_cmd_data_buffer, 
+         &lumi_fff2_cmd_header_template,
+         fff2_header_size);
+
+  lumi_fff2_cmd_header_t *lumi_fff2_cmd_header = 
+    (lumi_fff2_cmd_header_t *)fff2_cmd_data_buffer;
+
+  lumi_fff2_cmd_header->cmd_size = params_size + 3;
+  lumi_fff2_cmd_header->counter = counter;
+  lumi_fff2_cmd_header->cmd_action = action;
+  lumi_fff2_cmd_header->params_size = params_size;
+
+  uint16_t integrity = lumi_fff2_cmd_header->cmd_start +
+                       lumi_fff2_cmd_header->cmd_category +
+                       lumi_fff2_cmd_header->cmd_size +
+                       lumi_fff2_cmd_header->cmd_type +
+                       lumi_fff2_cmd_header->counter;
+  integrity = 512 - integrity;
+  lumi_fff2_cmd_header->integrity = integrity;
+}
+
+void buildLumiFFF2CmdLinkParams1(uint8_t* fff2_cmd_data_buffer,
+                                 uint8_t counter,
+                                 time_t timestamp,
+                                 esp_zb_ieee_addr_t ieee_addr) {
+  
+  uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
+  uint8_t lumi_sensor_link_params_1_size = 
+    sizeof(lumi_sensor_link_params_1_t);
+
+  buildLumiFFF2CmdHeader(fff2_cmd_data_buffer,
+                         counter, 
+                         LUMI_FFF2_CMD_ACTION_LINK_SENSOR,
+                         lumi_sensor_link_params_1_size);
+    
+  memcpy(fff2_cmd_data_buffer + fff2_header_size, 
+         &lumi_sensor_link_params_1_template,
+         lumi_sensor_link_params_1_size);
+
+  lumi_sensor_link_params_1_t *lumi_sensor_link_params_1 = 
+    (lumi_sensor_link_params_1_t*)(fff2_cmd_data_buffer + fff2_header_size);
+      
+  lumi_sensor_link_params_1->timestamp  = timestamp;
+
+  memcpy(lumi_sensor_link_params_1->device_address,
+        ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
+}
+
+void buildLumiFFF2CmdLinkParams2(uint8_t* fff2_cmd_data_buffer,
+                                 uint8_t counter,
+                                 time_t timestamp,
+                                 esp_zb_ieee_addr_t ieee_addr) {
+
+  uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
+  uint8_t lumi_sensor_link_params_2_size = 
+    sizeof(lumi_sensor_link_params_2_t);
+
+  buildLumiFFF2CmdHeader(fff2_cmd_data_buffer, 
+                         counter, 
+                         LUMI_FFF2_CMD_ACTION_LINK_SENSOR,
+                         lumi_sensor_link_params_2_size);
+    
+  memcpy(fff2_cmd_data_buffer + fff2_header_size, 
+         &lumi_sensor_link_params_2_template,
+         lumi_sensor_link_params_2_size);
+
+  lumi_sensor_link_params_2_t *lumi_sensor_link_params_2 = 
+    (lumi_sensor_link_params_2_t*)(fff2_cmd_data_buffer + fff2_header_size);
+      
+  lumi_sensor_link_params_2->timestamp  = timestamp;
+
+  memcpy(lumi_sensor_link_params_2->device_address,
+        ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
+}
+
+void buildLumiFFF2CmdUnlinkParams(uint8_t* fff2_cmd_data_buffer,
+                                  uint8_t counter,
+                                  time_t timestamp,
+                                  uint8_t link_id,
+                                  esp_zb_ieee_addr_t ieee_addr) {
+
+  uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
+  uint8_t lumi_sensor_unlink_params_size = 
+    sizeof(lumi_sensor_unlink_params_t);
+
+  buildLumiFFF2CmdHeader(fff2_cmd_data_buffer, 
+                         counter, 
+                         LUMI_FFF2_CMD_ACTION_UNLINK_SENSOR,
+                         lumi_sensor_unlink_params_size);
+    
+  memcpy(fff2_cmd_data_buffer + fff2_header_size, 
+         &lumi_sensor_unlink_params_template,
+         lumi_sensor_unlink_params_size);
+
+  lumi_sensor_unlink_params_t *lumi_sensor_unlink_params = 
+    (lumi_sensor_unlink_params_t*)(fff2_cmd_data_buffer + fff2_header_size);
+      
+  lumi_sensor_unlink_params->timestamp  = timestamp;
+  lumi_sensor_unlink_params->link_id    = link_id;
+
+  memcpy(lumi_sensor_unlink_params->device_address,
+        ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
+}
+
+void buildLumiFFF2CmdSendTemperatureParams(uint8_t* fff2_cmd_data_buffer,
+                                           float temperature_100) {
+  
+  uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
+  uint8_t lumi_sensor_send_temperature_params_size = 
+    sizeof(lumi_sensor_send_temperature_params_t);
+
+  buildLumiFFF2CmdHeader(fff2_cmd_data_buffer, 0x10, 
+                         LUMI_FFF2_CMD_ACTION_SEND_TEMPERATURE,
+                         lumi_sensor_send_temperature_params_size);
+    
+  memcpy(fff2_cmd_data_buffer + fff2_header_size, 
+         &lumi_sensor_send_temperature_params_template,
+         lumi_sensor_send_temperature_params_size);
+
+  lumi_sensor_send_temperature_params_t *lumi_sensor_send_temperature_params = 
+    (lumi_sensor_send_temperature_params_t*)(fff2_cmd_data_buffer + 
+      fff2_header_size);
+      
+  lumi_sensor_send_temperature_params->temperature_100  = temperature_100;
+}
+
+/*---------------------------------------------------------------------------*/
+
 void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
   int32_t external_sensor_temperature) {
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVExternalSensorTemperature = %d", external_sensor_temperature);
+    log_i("external_sensor_temperature = %d", 
+          external_sensor_temperature);
  
     if (_trv_commands_set == TRVZB_CMD_SET) {
       
@@ -326,13 +469,27 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
         BOSCH_CMD_SET_EXTERNAL_TEMPERATURE_INPUT_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_S16, 
         2, &external_sensor_temperature,
-        false,
+        true,
         1, BOSCH_MANUFACTURER_CODE);
     }
 
     if (_trv_commands_set == LUMI_CMD_SET) {
 
+      uint8_t fff2_cmd_data_buffer[0xAA];
 
+      time_t timestamp = time(nullptr);
+      
+      buildLumiFFF2CmdSendTemperatureParams(fff2_cmd_data_buffer, 
+                                            external_sensor_temperature);
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        LUMI_CUSTOM_CLUSTER, 
+        LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+        0xAA, &fff2_cmd_data_buffer,
+        true,
+        1, LUMI_MANUFACTURER_CODE);  
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -347,7 +504,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVExternalSensorInput = %d", 
+    log_i("trv_external_sensor_present = %d", 
           trv_external_sensor_present);
  
     if (_trv_commands_set == TRVZB_CMD_SET) {
@@ -360,6 +517,76 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
         TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
     }
+
+    if (_trv_commands_set == LUMI_CMD_SET) {
+      
+      uint8_t fff2_cmd_data_buffer[0xAA];
+
+      time_t timestamp = time(nullptr);
+
+      if (trv_external_sensor_present) {
+      
+        buildLumiFFF2CmdLinkParams1(fff2_cmd_data_buffer,
+                                    0x12, 
+                                    timestamp, 
+                                    _device.ieee_addr);
+
+        _gateway->sendAttributeWrite(
+          &_device, 
+          LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+          0xAA, &fff2_cmd_data_buffer,
+          true,
+          1, LUMI_MANUFACTURER_CODE);
+
+        buildLumiFFF2CmdLinkParams2(fff2_cmd_data_buffer, 
+                                    0x13,
+                                    timestamp, 
+                                    _device.ieee_addr);
+
+        _gateway->sendAttributeWrite(
+          &_device, 
+          LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+          0xAA, &fff2_cmd_data_buffer,
+          true,
+          1, LUMI_MANUFACTURER_CODE);
+      } else {
+
+        buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
+                                     0x12,
+                                     timestamp, 
+                                     0x05,
+                                     _device.ieee_addr);
+
+        _gateway->sendAttributeWrite(
+          &_device, 
+          LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+          0xAA, &fff2_cmd_data_buffer,
+          true,
+          1, LUMI_MANUFACTURER_CODE);
+
+        buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
+                                     0x13,
+                                     timestamp, 
+                                     0x04,
+                                     _device.ieee_addr);
+
+        _gateway->sendAttributeWrite(
+          &_device, 
+          LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+          0xAA, &fff2_cmd_data_buffer,
+          true,
+          1, LUMI_MANUFACTURER_CODE);
+      } 
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -1033,7 +1260,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       
           if ((hvacLastTemperature != INT16_MIN) && 
               ((abs(hvacLastTemperature - _trv_local_temperature) >= 10) || 
-              (millis() - _last_external_temperature_ping_ms > _external_temperature_ping_ms))) {
+              ((millis() - _last_external_temperature_ping_ms) > 
+               _external_temperature_ping_ms))) {
 
             log_i("external temperature difference detected %d vs %d",
                   hvacLastTemperature,
@@ -1065,10 +1293,11 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     }
 
     if (_trv_external_sensor_changed && 
-        (!_trv_external_sensor_present) && 
+        //(!_trv_external_sensor_present) && 
         (_trv_external_sensor_mode == EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
 
-      log_i("Switching OFF external sensor temperature input");
+      log_i("Switching external sensor temperature input: %s", 
+            _trv_external_sensor_present ? "ON" : "OFF");
 
       sendTRVExternalSensorInput(_trv_external_sensor_present);
     }

@@ -99,6 +99,8 @@
 #define LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID                    0x040A //
 #define LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID              0x027D //U8
 
+#define LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID                       0xFFF2 //0x41
+
 #define LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID                  0x0200 //U8
 
 #define LUMI_ATTRIBUTE_BATTERY_ID                             0x01 //ESP_ZB_ZCL_ATTR_TYPE_U16
