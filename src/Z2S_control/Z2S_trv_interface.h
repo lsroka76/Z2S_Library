@@ -208,7 +208,10 @@ static constexpr lumi_sensor_send_temperature_params_t
   .temperature_value = -27500
 };
 
+static constexpr uint8_t lumi_sensor_static_address[8] PROGMEM = {
 
+    0x00, 0x15, 0x8D, 0x00, 0x01, 0x9D, 0x1B, 0x98
+};
 static constexpr uint8_t lumi_link_cmd_1[] PROGMEM =
 {
 
