@@ -479,6 +479,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
       uint8_t fff2_cmd_data_buffer[0xAA];
 
       time_t timestamp = time(nullptr);
+
+      sendTRVExternalSensorInput(true);
       
       buildLumiFFF2CmdSendTemperatureParams(fff2_cmd_data_buffer, 
                                             external_sensor_temperature);
