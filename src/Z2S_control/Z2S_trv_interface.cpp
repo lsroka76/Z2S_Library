@@ -228,9 +228,10 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
         (_trv_commands_set == LUMI_CMD_SET)) {
 
-      _gateway->sendAttributeRead(&_device, 
-                                  ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID);
+      _gateway->sendAttributeRead(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -490,6 +491,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
         0xAA, &fff2_cmd_data_buffer,
         true,
         1, LUMI_MANUFACTURER_CODE);  
+
+      _gateway->sendAttributeRead(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+        true);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -553,6 +560,13 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
           0xAA, &fff2_cmd_data_buffer,
           true,
           1, LUMI_MANUFACTURER_CODE);
+
+        _gateway->sendAttributeRead(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+        true);
+
       } else {
 
         buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
@@ -584,6 +598,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
           0xAA, &fff2_cmd_data_buffer,
           true,
           1, LUMI_MANUFACTURER_CODE);
+
+        _gateway->sendAttributeRead(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+        true);
       } 
     }
 
@@ -998,7 +1018,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
  
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
-        (_trv_commands_set == EUROTRONIC_CMD_SET)) {
+        (_trv_commands_set == EUROTRONIC_CMD_SET) ||
+        )_trv_commands_set == LUMI_CMD_SET) {
 
       uint16_t attributes[5] = { ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
