@@ -3095,6 +3095,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZB210_rs0ufzwg", .model_name = "TS0505B",
+    .z2s_device_uid = 19915,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3210_3lbtuxgp", .model_name = "TS0505B",
     .z2s_device_uid = 20000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,

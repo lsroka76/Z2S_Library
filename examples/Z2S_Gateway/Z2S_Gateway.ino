@@ -801,7 +801,8 @@ if (GUIstarted)
     esp_zb_lock_acquire(portMAX_DELAY);
 
     esp_zb_zcl_set_attribute_val(1, 
-                                 ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+                                 ESP_ZB_ZCL_CLUSTER_ID_TIME, 
+                                 ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
                                  ESP_ZB_ZCL_ATTR_TIME_TIME_ID, 
                                  &new_utc_time, 
                                  false);
@@ -822,23 +823,23 @@ if (GUIstarted)
 
     esp_zb_lock_release();
     
-    uint32_t utc_time_attribute = 
-      (*(uint32_t *)esp_zb_zcl_get_attribute(1, 
-                                             ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-                                             ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
-                                             ESP_ZB_ZCL_ATTR_TIME_TIME_ID)->data_p);
+    uint32_t utc_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(
+      1, 
+      ESP_ZB_ZCL_CLUSTER_ID_TIME, 
+      ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      ESP_ZB_ZCL_ATTR_TIME_TIME_ID)->data_p);
 
-    uint32_t local_time_attribute = 
-      (*(uint32_t *)esp_zb_zcl_get_attribute(1, 
-                                             ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-                                             ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
-                                             ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)->data_p);
+    uint32_t local_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(
+      1, 
+      ESP_ZB_ZCL_CLUSTER_ID_TIME, 
+      ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)->data_p);
 
-    uint8_t time_status_attribute = 
-      (*(uint8_t *)esp_zb_zcl_get_attribute(1, 
-                                            ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-                                            ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
-                                            ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID)->data_p);
+    uint8_t time_status_attribute = (*(uint8_t *)esp_zb_zcl_get_attribute(
+      1, 
+      ESP_ZB_ZCL_CLUSTER_ID_TIME, 
+      ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID)->data_p);
 
     log_i("\n\rLocal Time Cluster Time status attribute %u"
           "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
@@ -1114,13 +1115,18 @@ if (GUIstarted)
 
                         log_i("Tuya magic");
 
-                        uint16_t tuya_init_attributes[6] = { ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,
-                                                             ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
-                                                             ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, 
-                                                             ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,
-                                                             ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
-                                                             0xFFFE };
-                        zbGateway.sendAttributesRead(joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 6, tuya_init_attributes);  
+                        uint16_t tuya_init_attributes[6] = { 
+                          ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,
+                          ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
+                          ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, 
+                          ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,
+                          ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
+                          0xFFFE };
+
+                        zbGateway.sendAttributesRead(
+                          joined_device, 
+                          ESP_ZB_ZCL_CLUSTER_ID_BASIC, 
+                          6, tuya_init_attributes);  
                       }
 
                       if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
@@ -1190,29 +1196,38 @@ if (GUIstarted)
                          clusters_bind_counter < Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count; 
                          clusters_bind_counter++) {
                       
-                      if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags &
+                      if (Z2S_DEVICES_DESC[devices_desc_counter].\
+                            z2s_device_config_flags &
                           Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_5)
-                        zbGateway.bindDeviceCluster(joined_device, 
-                                                    Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[clusters_bind_counter], 3);  
+                        zbGateway.bindDeviceCluster(
+                          joined_device, 
+                          Z2S_DEVICES_DESC[devices_desc_counter].\
+                            z2s_device_clusters[clusters_bind_counter], 3);  
                       
-                      zbGateway.bindDeviceCluster(joined_device, 
-                                                  Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[clusters_bind_counter]);
+                      zbGateway.bindDeviceCluster(
+                        joined_device, 
+                        Z2S_DEVICES_DESC[devices_desc_counter].\
+                          z2s_device_clusters[clusters_bind_counter]);
                     }
 
                     if (endpoint_counter == 0) {//(endpoint_id == 1)
                           
-                      uint8_t zb_device_slot = Z2S_addZbDeviceTableSlot(joined_device->ieee_addr,
-                                                                        joined_device->short_addr,
-                                                                        zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-                                                                        zbGateway.getQueryBasicClusterData()->zcl_model_name,
-                                                                        Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count,
-                                                                        Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id,
-                                                                        zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
+                      uint8_t zb_device_slot = Z2S_addZbDeviceTableSlot(
+                        joined_device->ieee_addr,
+                        joined_device->short_addr,
+                        zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+                        zbGateway.getQueryBasicClusterData()->zcl_model_name,
+                        Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count,
+                        Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id,
+                        zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
+
                       if ((zb_device_slot < 0xFF) &&
-                          (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
+                          (Z2S_DEVICES_DESC[devices_desc_counter].\
+                            z2s_device_config_flags & 
                           Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY))
-                            Z2S_setZbDeviceFlags(zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
-                          
+                            Z2S_setZbDeviceFlags(
+                              zb_device_slot, 
+                              ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
                     }
 
                     Z2S_buildSuplaChannels(joined_device, endpoint_counter);
@@ -1494,7 +1509,8 @@ if (GUIstarted)
                     ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
                     0, 300, 1, false);
                 } break;
-                   
+
+
                 case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
                   
                   zbGateway.setClusterReporting(
@@ -1505,6 +1521,7 @@ if (GUIstarted)
                     0, 1200, 10, false);                 
                 } break;
                 
+
                 case Z2S_DEVICE_DESC_BOSCH_BTHRA: {  //no data from thermostat without reporting
                   
                   zbGateway.setClusterReporting(
@@ -1534,6 +1551,7 @@ if (GUIstarted)
                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                     1, 1, BOSCH_MANUFACTURER_CODE);                 
                 } break;
+
 
                 case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001: {  
                   
@@ -1572,6 +1590,42 @@ if (GUIstarted)
                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                     1, 1, EUROTRONIC_MANUFACTURER_CODE);                           
                 } break;
+
+
+                case Z2s_DEVICE_DESC_LUMI_TRV: {  
+                  
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    0, 3600, 10, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
+                    0, 3600, 10, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
+                    10, 3600, 0, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
+                    0, 3600, 0, false);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_U8, 
+                    10, 3600, 10, false);
+                } break;
+
 
                 case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH: {
 

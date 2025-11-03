@@ -2439,9 +2439,11 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
               *((uint8_t*)(attribute->data.value + i)), 
               *((uint8_t*)(attribute->data.value + i)));
       
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
-                                                              SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
-                                                              LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID);    
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+        LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID);
+
       if (channel_number_slot < 0) {
     
         log_e("no T/H channel found for address %s", ieee_addr_str);
@@ -6431,7 +6433,8 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot,
 
           case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
-            auto Supla_Z2S_VirtualPressure = reinterpret_cast<Supla::Sensor::Z2S_VirtualPressure *>(element);
+            auto Supla_Z2S_VirtualPressure = 
+              reinterpret_cast<Supla::Sensor::Z2S_VirtualPressure *>(element);
 
             Supla_Z2S_VirtualPressure->Refresh();
           } break;
@@ -6439,7 +6442,8 @@ void updateSuplaBatteryLevel(int16_t channel_number_slot,
 
           case SUPLA_CHANNELTYPE_BINARYSENSOR:{
 
-            auto Supla_Z2S_VirtualBinary = reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
+            auto Supla_Z2S_VirtualBinary = 
+              reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
 
             Supla_Z2S_VirtualBinary->Refresh();
           } break;
