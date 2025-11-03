@@ -1019,7 +1019,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
-        )_trv_commands_set == LUMI_CMD_SET) {
+        (_trv_commands_set == LUMI_CMD_SET) {
 
       uint16_t attributes[5] = { ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
                                  ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
