@@ -2045,7 +2045,7 @@ void buildChannelsTabGUI() {
 	working_str = PSTR("&#10023; refresh(s) [ElectricityMeter] &#10023;<br>"
 										 "&#10023; autoset(s) [VirtualBinary] &#10023<br>;"
 										 "&#10023; debounce(ms) [VirtualSceneSwitch] &#10023; <br>"
-										 "&#10023; connected thermometer timeout(s) &#10023;");
+										 "&#10023; thermometers timeout(s) [Remote Thermometer] &#10023;");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str, 
@@ -5258,6 +5258,14 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				working_str = z2s_channels_table[channel_slot].local_channel_func;
 				ESPUI.updateSelect(channel_local_function, working_str);
 
+				ESPUI.updateNumber(
+					timeout_number, 
+					z2s_channels_table[channel_slot].timeout_secs);
+
+				ESPUI.updateNumber(
+					refresh_number, 
+					z2s_channels_table[channel_slot].refresh_secs);
+
 				/*enableChannelParams(3);
 				fillRemoteAddressData(channel_slot);
 
@@ -5276,35 +5284,31 @@ void updateChannelInfoLabel(uint8_t label_number) {
 			enableChannelTimings(6); //timeout+debounce
 			ESPUI.updateNumber(
 				timeout_number, 
-				z2s_channels_table[channel_slot].timeout_secs
-			);
+				z2s_channels_table[channel_slot].timeout_secs);
 
 			ESPUI.updateNumber(
 				refresh_number, 
-				z2s_channels_table[channel_slot].refresh_secs
-			);
+				z2s_channels_table[channel_slot].refresh_secs);
 	
 			enableChannelFlags(5);
 			
 			ESPUI.updateNumber(
 				disable_channel_notifications_switcher, 
 				(z2s_channels_table[channel_slot].user_data_flags & 
-				USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0
-			);
+				USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0);
 
 			ESPUI.updateNumber(
 				set_sorwns_on_start_switcher, 
 				(z2s_channels_table[channel_slot].user_data_flags & 
-				USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0
-			);
+				USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
 
 			enableChannelParams(1);
 
 			ESPUI.updateNumber(
 				param_1_number, 
 				z2s_channels_table[channel_slot].\
-				rain_intensity_treshold
-			);
+				rain_intensity_treshold);
+
 			working_str = PSTR("&#10023; Virtual Binary custom param<br>"
 												 "enter rain intensity threshold<br>"
 												 "currently unused for other sensors &#10023;");

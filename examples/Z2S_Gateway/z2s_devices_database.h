@@ -3719,11 +3719,6 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001,
     .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "LUMI", .model_name = "lumi.airrtc.agl001",
-    .z2s_device_uid = 29900,
-    .z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
-    .z2s_device_endpoints_count = 1},
-
   { .manufacturer_name = "_TZE204_kyhbrfyl", .model_name = "TS0601",
     .z2s_device_uid = 30000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO,
@@ -3732,6 +3727,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "AwoX", .model_name = "TLSR82xx",
     .z2s_device_uid = 30100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.airrtc.agl001",
+    .z2s_device_uid = 30200,
+    .z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
     .z2s_device_endpoints_count = 1},
   
 

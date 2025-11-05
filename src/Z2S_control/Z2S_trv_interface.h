@@ -454,7 +454,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
     .ts0601_cmd_set_target_heatsetpoint_dp_id        =  0x04,
     .ts0601_cmd_set_target_heatsetpoint_dp_type      =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_calibration_dp_id    =  0x2F,
+    .ts0601_cmd_set_temperature_calibration_dp_id    =  0x72, //0x2F,
     .ts0601_cmd_set_temperature_calibration_dp_type  =  TUYA_DP_TYPE_VALUE,
 
     .ts0601_cmd_set_local_temperature_dp_id          =  0x05,
@@ -1260,6 +1260,8 @@ protected:
   
   int32_t _trv_fixed_temperature_calibration = 0;
   bool  _trv_temperature_calibration_updated = false;
+
+  uint8_t _trv_temperature_calibration_trigger = 100;
   
   //int32_t _temperature_calibration_offset_trigger = 500;
 
@@ -1282,6 +1284,8 @@ protected:
   uint32_t  _last_seen_ms = 0;
   uint32_t  _last_cmd_sent_ms = 0;
   bool      _timeout_enabled = false;
+
+  bool isForcedTemperatureSet();
 
   void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);

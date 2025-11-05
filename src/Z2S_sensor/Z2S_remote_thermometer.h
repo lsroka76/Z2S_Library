@@ -22,7 +22,7 @@
 #include <NetworkClient.h>
 #include <ESPmDNS.h>
 
-#include <supla/sensor/virtual_thermometer.h>
+#include "Z2S_virtual_thermometer.h"
 
 #define MSINHOUR (60*60*1000)
 #define MINUTES_30 1800000
@@ -49,7 +49,7 @@ extern IPAddress     Z2S_IPAddress;
 namespace Supla {
 namespace Sensor {
 class Z2S_RemoteThermometer : 
-  public Supla::Sensor::VirtualThermometer {
+  public Supla::Sensor::Z2S_VirtualThermometer {
   
 public:
     
@@ -65,8 +65,8 @@ public:
   
   void onInit() override {
 
+    channel.setNewValue(getTemp());
   }
-
 
   void setRWNSFlag(bool rwns_flag) {
 
@@ -77,6 +77,30 @@ public:
     
     _timeout_ms = timeout_secs * 1000;
   }
+
+
+  void setRawValue(double val) {
+
+    log_i("setRawValue");
+    temperature = val;
+  }
+
+  /*void setTemperature(double val) {
+    
+    log_i("temperature = %f4.2", val);
+    _forced_temperature = false;
+    temperature = val;
+    Refresh();
+  }
+
+  void setForcedTemperature(double val) {
+    
+    log_i("temperature = %f4.2", val);
+    _forced_temperature = true;
+    temperature = val;
+    Refresh();
+  }*/
+
 
   void setConnectedThermometersFunction(
     uint32_t connected_thermometers_function) {
@@ -172,38 +196,40 @@ public:
     channel.setStateOnline();
   }
 
-  void iterateAlways() override {
-    
-    uint32_t millis_ms = millis();
-    
-    if (millis_ms - lastReadTime > refreshIntervalMs) {
-      
-      lastReadTime = millis_ms;
-      channel.setNewValue(getTemp());
-
-    }
-
-    if ((_timeout_ms > 0) && 
-        (millis_ms - _last_timeout_ms > _timeout_ms)) {
-      
-      _last_timeout_ms = millis_ms;
-
-      if (_rwns_flag) 
-        channel.setStateOfflineRemoteWakeupNotSupported();
-      else
-        channel.setStateOffline();
-    }
+  void scanConnectedThermometers(uint32_t millis_ms) {
 
     int32_t connected_thermometers_calculated_temperature = INT32_MIN;
+    int32_t special_thermometer_calculated_temperature = INT32_MIN;
 
     uint8_t connected_thermometers_number = 0; 
+    uint8_t connected_thermometer_channel = 0xFF;
 
     for(uint8_t connected_thermometers_counter = 0; 
         connected_thermometers_counter < MAX_CONNECTED_THERMOMETERS;
-        connected_thermometers_counter++) {
+        connected_thermometers_counter++) {      
 
-      if (_connected_thermometers[connected_thermometers_counter].
-           connected_thermometer_channel < 0xFF) {
+      connected_thermometer_channel =
+        _connected_thermometers[connected_thermometers_counter].\
+          connected_thermometer_channel;
+
+      log_i("\n\rcounter = %d"
+            "\n\rchannel = %d"
+            "\n\rtemperature = %d",
+            connected_thermometers_counter,
+            connected_thermometer_channel,
+            _connected_thermometers[connected_thermometers_counter].\
+              connected_thermometer_temperature);
+
+      if ((connected_thermometer_channel > 0x7F) &&
+          (connected_thermometer_channel < 0xFF)) {
+
+        special_thermometer_calculated_temperature = 
+          _connected_thermometers[connected_thermometers_counter].\
+            connected_thermometer_temperature;
+        break;
+      }
+
+      if (connected_thermometer_channel < 0x7F) {
 
         if ((millis_ms - _connected_thermometers[connected_thermometers_counter].\
                            connected_thermometer_last_seen_ms) > 
@@ -212,7 +238,6 @@ public:
           log_i("unregistering connected thermometer from IP %s, channel %u",
                 IPAddress(_connected_thermometers[connected_thermometers_counter].
                 connected_thermometer_ip_address).toString(),
-                _connected_thermometers[connected_thermometers_counter].
                 connected_thermometer_channel
               );
 
@@ -268,15 +293,53 @@ public:
               connected_thermometers_calculated_temperature = 
                 _connected_thermometers[connected_thermometers_counter].
                   connected_thermometer_temperature;
-          }
-        }
+          } break;
+        } //switch (_connected_thermometers_function)
       }
     }
-    if (connected_thermometers_number > 0) 
-      setValue((double)(connected_thermometers_calculated_temperature) / 
+    if (connected_thermometers_number > 0) {
+      
+      setTemperature((double)(connected_thermometers_calculated_temperature) / 
                (connected_thermometers_number * 100));
-    else 
-      setValue(TEMPERATURE_NOT_AVAILABLE);
+      _connected_thermometers_updated = true;
+    } else {
+      
+      if (_connected_thermometers_updated) {
+
+        _connected_thermometers_updated = false;
+        setForcedTemperature(TEMPERATURE_NOT_AVAILABLE);
+      } else
+      setForcedTemperature(temperature);
+      //if (temperature > TEMPERATURE_NOT_AVAILABLE)//(special_thermometer_calculated_temperature > INT32_MIN)
+      //setRawValue(temperature); //setRawValue((double)(special_thermometer_calculated_temperature) / 100);
+    }
+    //else
+      //setRawValue(TEMPERATURE_NOT_AVAILABLE);
+  }
+
+  void iterateAlways() override {
+    
+    uint32_t millis_ms = millis();
+    
+    if (millis_ms - lastReadTime > refreshIntervalMs) {
+      
+      scanConnectedThermometers(millis_ms);    
+      
+      lastReadTime = millis_ms;
+      channel.setNewValue(getTemp());
+
+    }
+
+    if ((_timeout_ms > 0) && 
+        (millis_ms - _last_timeout_ms > _timeout_ms)) {
+      
+      _last_timeout_ms = millis_ms;
+
+      if (_rwns_flag) 
+        channel.setStateOfflineRemoteWakeupNotSupported();
+      else
+        channel.setStateOffline();
+    }
   }
     
  protected:
@@ -288,6 +351,8 @@ public:
 
   uint32_t  _connected_thermometers_function = CONNECTED_THERMOMETERS_FNC_AVG;
   connected_thermometers_t _connected_thermometers[MAX_CONNECTED_THERMOMETERS];  
+
+  bool _connected_thermometers_updated = false;
 
   uint32_t _connected_thermometer_timeout_ms = MINUTES_30; //-> channel refresh?
 

@@ -27,7 +27,9 @@ class Z2S_VirtualThermHygroMeter : public Supla::Sensor::VirtualThermHygroMeter 
   
 public:
     
-  Z2S_VirtualThermHygroMeter(bool rwns_flag = false) : _rwns_flag(rwns_flag) {}
+  Z2S_VirtualThermHygroMeter(bool rwns_flag = false) 
+  : _rwns_flag(rwns_flag) {}
+
 
   void setRWNSFlag(bool rwns_flag) {
 
@@ -42,6 +44,27 @@ public:
   void Refresh() {
     _last_timeout_ms = millis();
     channel.setStateOnline();
+  }
+
+  void setTemperature(double val) {
+    
+    log_i("temperature = %f4.2", val);
+    _forced_temperature = false;
+    temperature = val;
+    Refresh();
+  }
+
+  void setForcedTemperature(double val) {
+    
+    log_i("temperature = %f4.2", val);
+    _forced_temperature = true;
+    temperature = val;
+    Refresh();
+  }
+
+  bool isForcedTemperature() {
+
+    return _forced_temperature;
   }
 
   void iterateAlways() override {
@@ -66,6 +89,8 @@ public:
     
  protected:
   bool     _rwns_flag;
+  bool     _forced_temperature = false;
+
   uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;
 };

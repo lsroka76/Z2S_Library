@@ -5985,7 +5985,14 @@ void updateRemoteThermometer(uint8_t Supla_channel,
                              uint32_t connected_thermometer_channel,
                              int32_t connected_thermometer_temperature) {
 
-  int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(Supla_channel);
+  if (Supla_channel > 0x7F) {
+
+    Supla_channel -= 0x80;
+    connected_thermometer_channel += 0x80;
+  }
+  
+  int16_t channel_number_slot = 
+    Z2S_findTableSlotByChannelNumber(Supla_channel);
 
   if (channel_number_slot < 0)
     return;

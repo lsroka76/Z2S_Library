@@ -26,8 +26,8 @@
 
 #define MSINHOUR (60*60*1000)
 
-extern NetworkClient Z2S_NetworkClient;
-extern IPAddress     Z2S_IPAddress;
+//extern NetworkClient Z2S_NetworkClient;
+//extern IPAddress     Z2S_IPAddress;
 
 
 namespace Supla {
@@ -54,6 +54,27 @@ public:
     channel.setStateOnline();
   }
 
+  void setTemperature(double val) {
+    
+    log_i("temperature = %f4.2", val);
+    _forced_temperature = false;
+    temperature = val;
+    Refresh();
+  }
+
+  void setForcedTemperature(double val) {
+    
+    log_i("temperature = %f4.2", val);
+    _forced_temperature = true;
+    temperature = val;
+    Refresh();
+  }
+
+  bool isForcedTemperature() {
+
+    return _forced_temperature;
+  }
+
   void iterateAlways() override {
     
     if (millis() - lastReadTime > refreshIntervalMs) {
@@ -76,6 +97,7 @@ public:
     
  protected:
   bool     _rwns_flag;
+  bool     _forced_temperature = false;
 
   uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;

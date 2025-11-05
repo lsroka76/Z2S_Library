@@ -172,8 +172,8 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
       auto Supla_Z2S_VirtualThermHygroMeter = 
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
     
-      Supla_Z2S_VirtualThermHygroMeter->setTemp(temp);
-      Supla_Z2S_VirtualThermHygroMeter->Refresh();
+      Supla_Z2S_VirtualThermHygroMeter->setTemperature(temp);
+      //Supla_Z2S_VirtualThermHygroMeter->Refresh();
     } break;
 
 
@@ -182,8 +182,9 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
       auto Supla_Z2S_VirtualThermometer = 
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
     
-      Supla_Z2S_VirtualThermometer->setValue(temp);
-      Supla_Z2S_VirtualThermometer->Refresh();
+      //Supla_Z2S_VirtualThermometer->setValue(temp);
+      //Supla_Z2S_VirtualThermometer->Refresh();
+      Supla_Z2S_VirtualThermometer->setTemperature(temp);
     } break;
   }
 
@@ -198,9 +199,9 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
                             USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
       REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
 
-    log_i("Resending temperature, address flag = %s",
+    log_i("Resending temperature, address flag = %s, channel = %u",
           (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) ?
-          "MDNS" : "IP4");
+          "MDNS" : "IP4", remote_Supla_channel);
 
     switch(remote_address_type) {
 
