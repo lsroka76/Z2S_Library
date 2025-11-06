@@ -24,6 +24,8 @@ ESPAsyncHTTPUpdateServer updateServer;
 
 extern ZigbeeGateway zbGateway;
 
+extern bool force_leave_global_flag;
+
 extern uint8_t  _enable_gui_on_start;
 extern uint8_t	_force_config_on_start;
 extern uint32_t _gui_start_delay;
@@ -53,6 +55,7 @@ uint16_t save_button;
 uint16_t save_label;
 
 uint16_t pairing_mode_switcher = 0xFFFF;
+uint16_t force_leave_switcher;
 uint16_t zigbee_tx_power_text;
 //uint16_t zigbee_get_tx_power_button;
 //uint16_t zigbee_set_tx_power_button;
@@ -316,13 +319,14 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_RESTART_FLAG												0x1001
 
 #define GUI_CB_PAIRING_FLAG												0x2001
-#define GUI_CB_FACTORY_FLAG												0x2002
-#define GUI_CB_GET_TX_FLAG												0x2003
-#define GUI_CB_SET_TX_FLAG												0x2004
-#define GUI_CB_GET_PC_FLAG												0x2005
-#define GUI_CB_SET_PC_FLAG												0x2006
-#define GUI_CB_SET_INSTALLATION_CODE_FLAG					0x2007
-#define GUI_CB_CLEAR_INSTALLATION_CODES_FLAG			0x2008
+#define GUI_CB_FORCE_LEAVE_FLAG										0x2002
+#define GUI_CB_FACTORY_FLAG												0x2003
+#define GUI_CB_GET_TX_FLAG												0x2004
+#define GUI_CB_SET_TX_FLAG												0x2005
+#define GUI_CB_GET_PC_FLAG												0x2006
+#define GUI_CB_SET_PC_FLAG												0x2007
+#define GUI_CB_SET_INSTALLATION_CODE_FLAG					0x2008
+#define GUI_CB_CLEAR_INSTALLATION_CODES_FLAG			0x2009
 
 #define GUI_CB_BATTERY_VOLTAGE_MIN_FLAG						0x3000
 #define GUI_CB_BATTERY_VOLTAGE_MAX_FLAG						0x3001
@@ -1080,6 +1084,32 @@ void buildZigbeeTabGUI() {
 										 pairingSwitcherCallback,
 										 (void*)GUI_CB_PAIRING_FLAG);
 
+	working_str = PSTR("enable/disable pairing mode (180 s)");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str, 
+																				 Control::Color::None, 
+																				 pairing_mode_switcher), 
+												PSTR(clearLabelStyle));
+
+	working_str = empty_str;
+	force_leave_switcher = 
+		ESPUI.addControl(Control::Type::Switcher, 
+										 PSTR(""), 
+									   working_str, 
+										 Control::Color::Emerald, 
+										 pairing_mode_switcher, 
+										 pairingSwitcherCallback,
+										 (void*)GUI_CB_FORCE_LEAVE_FLAG);
+	working_str = PSTR("force joined device to leave network and perform full join");
+	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
+																				 PSTR(empty_str), 
+																				 working_str, 
+																				 Control::Color::None, 
+																				 pairing_mode_switcher), 
+												PSTR(clearLabelStyle));
+
+
 	working_str = zigbee_tx_power_text_str;
 	zigbee_tx_power_text = 
 		ESPUI.addControl(Control::Type::Text, 
@@ -1217,6 +1247,8 @@ void buildZigbeeTabGUI() {
 
 	ESPUI.updateNumber(pairing_mode_switcher, 
 										 Zigbee.isNetworkOpen() ? 1 : 0);
+	ESPUI.updateNumber(force_leave_switcher, 
+										 force_leave_global_flag ? 1 : 0);
 }
 
 void rebuildDevicesSelector() {
@@ -4692,7 +4724,8 @@ void onZigbeeTabCallback(Control *sender, int type) {
 	Serial.print("' = ");
 	Serial.println(sender->value);
 
-	ESPUI.updateNumber(pairing_mode_switcher, Zigbee.isNetworkOpen() ? 1 : 0);	
+	ESPUI.updateNumber(pairing_mode_switcher, Zigbee.isNetworkOpen() ? 1 : 0);
+	ESPUI.updateNumber(force_leave_switcher, force_leave_global_flag ? 1 : 0);	
 }
 
 void onChannelsTabCallback(Control *sender, int type) {
@@ -6229,6 +6262,15 @@ void pairingSwitcherCallback(Control *sender, int type, void *param){
     if (Zigbee.isNetworkOpen())
 			Zigbee.openNetwork(0);//ESPUI.updateNumber(pairing_mode_switcher, 1);
 			}
+		} break;
+
+
+		case GUI_CB_FORCE_LEAVE_FLAG : {		
+
+			if (type == S_ACTIVE) 
+				force_leave_global_flag = true; 
+			else 
+				force_leave_global_flag = false;
 		} break;
 	}
 }

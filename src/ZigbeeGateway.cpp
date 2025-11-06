@@ -2503,7 +2503,9 @@ void ZigbeeGateway::sendColorMoveToColorTemperatureCmd(zbg_device_params_t *devi
   delay(200);
 }
 
-void ZigbeeGateway::ieee_Cb(esp_zb_zdp_status_t zdo_status, esp_zb_zdo_ieee_addr_rsp_t *resp, void *user_ctx) {
+void ZigbeeGateway::ieee_Cb(esp_zb_zdp_status_t zdo_status, 
+                            esp_zb_zdo_ieee_addr_rsp_t *resp, 
+                            void *user_ctx) {
   log_i("IEEE Callback");
 }
 
@@ -2538,6 +2540,31 @@ void ZigbeeGateway::sendIEEEAddrReqCmd(zbg_device_params_t *device, bool ack) {
   //if (ack && xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
     log_e("Semaphore timeout while sending IEEE address request");
   }*/
+}
+
+void ZigbeeGateway::leave_Cb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
+
+  log_i("status = %02X", zdo_status);
+}
+
+void ZigbeeGateway::sendDeviceLeaveRequest(
+  esp_zb_ieee_addr_t ieee_addr,
+  uint16_t short_addr,
+  bool remove_children,
+  bool rejoin) {
+  
+  esp_zb_zdo_mgmt_leave_req_param_t cmd_req = {};
+
+  cmd_req.dst_nwk_addr = short_addr;
+  memcpy(cmd_req.device_address, ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  cmd_req.remove_children = remove_children ? 1 : 0;
+  cmd_req.rejoin = rejoin ? 1 : 0;
+
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zdo_device_leave_req(&cmd_req, leave_Cb, nullptr);
+  esp_zb_lock_release();
+
+  delay(200);
 }
 
 void ZigbeeGateway::sendDeviceFactoryReset(zbg_device_params_t *device, bool isTuya) {

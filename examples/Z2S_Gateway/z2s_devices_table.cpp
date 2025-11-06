@@ -42,6 +42,8 @@ uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8] = {};
 
 char GatewayMDNSLocalName[12] = "Z2S_gateway";
 
+bool force_leave_global_flag = false;
+
 static uint32_t Styrbar_timer = 0;
 static bool     Styrbar_ignore_button_1 = false;
 
@@ -4219,9 +4221,22 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
   uint8_t device_number_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
+  if (force_leave_global_flag) {
+
+    log_i("Forcing device %s(0x04%X) to leave network and rejoin!",
+          ieee_addr_str, short_addr);
+
+    zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, true);
+    return;
+  }
+
   if (device_number_slot == 0xFF) {
     
     log_e("No Zigbee device found for address %s!",ieee_addr_str);
+    log_i("Forcing device %s(0x04%X) to leave network and rejoin!",
+          ieee_addr_str, short_addr);
+
+    zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, true);
     return;
   }
 
