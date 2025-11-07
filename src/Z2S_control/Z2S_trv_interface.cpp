@@ -481,7 +481,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
       _gateway->sendAttributeWrite(
         &_device, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        BOSCH_CMD_SET_EXTERNAL_TEMPERATURE_INPUT_ID, 
+        BOSCH_TRV_EXTERNAL_TEMPERATURE_INPUT_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_S16, 
         2, &external_sensor_temperature,
         true,
@@ -686,8 +686,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
     } else 
-    if ((_trv_commands_set == TRVZB_CMD_SET) ||
-        (_trv_commands_set == BOSCH_CMD_SET)) {
+    if (_trv_commands_set == TRVZB_CMD_SET) {
       
       trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
@@ -696,6 +695,18 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);
+    }
+
+    if (_trv_commands_set == BOSCH_CMD_SET) {
+      
+      trv_system_mode = (trv_system_mode == 0) ? 5 : 1; //
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        BOSCH_TRV_OPERATING_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode,
+        false, 1, BOSCH_MANUFACTURER_CODE);
     }
 
     if (_trv_commands_set == EUROTRONIC_CMD_SET) {
@@ -797,8 +808,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
     } else 
-    if ((_trv_commands_set == TRVZB_CMD_SET) ||
-        (_trv_commands_set == BOSCH_CMD_SET)) {
+    if (_trv_commands_set == TRVZB_CMD_SET) {
 
       trv_schedule_mode = (trv_schedule_mode == 0) ? 4 : 1; //
 
@@ -809,6 +819,19 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
                                    1, 
                                    &trv_schedule_mode);
     }
+
+    if (_trv_commands_set == BOSCH_CMD_SET) {
+      
+      trv_schedule_mode = (trv_schedule_mode == 0) ? 1 : 0; //
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        BOSCH_TRV_OPERATING_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_schedule_mode,
+        false, 1, BOSCH_MANUFACTURER_CODE);
+    }
+
 
     if (_trv_commands_set == EUROTRONIC_CMD_SET) {
 

@@ -118,7 +118,8 @@
 #define DEVELCO_CUSTOM_CLUSTER_MAX_MEASURED_VALUE_ID          0x0002
 #define DEVELCO_CUSTOM_CLUSTER_RESOLUTION_ID                  0x0003
 
-#define BOSCH_CMD_SET_EXTERNAL_TEMPERATURE_INPUT_ID           0x4040 //S16
+#define BOSCH_TRV_OPERATING_MODE_ID                           0x4007 //ENUM8 
+#define BOSCH_TRV_EXTERNAL_TEMPERATURE_INPUT_ID               0x4040 //S16
 #define BOSCH_MANUFACTURER_CODE                               0x1209
 #define BOSCH_HEATING_DEMAND_ID                               0x4020
 

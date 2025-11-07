@@ -1742,6 +1742,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_isw9u95y", .model_name = "TS0201",
+    .z2s_device_uid = 3405,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_ywagc4rj", .model_name = "TS0201",
+    .z2s_device_uid = 3410,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_aao3yzhs", .model_name = "TS0601",
     .z2s_device_uid = 3500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR,
@@ -3072,6 +3082,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3210_i680rtja", .model_name = "TS0501B",
     .z2s_device_uid = 19805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_mgusv51k", .model_name = "TS0052",
+    .z2s_device_uid = 19810,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER,
 	  .z2s_device_endpoints_count = 1},
 
