@@ -2202,6 +2202,34 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
       }
     } break;
 
+
+    case BOSCH_TRV_OPERATING_MODE_ID: {
+
+      switch (mode) {
+
+
+        case 5: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                           TRV_SYSTEM_MODE_MSG, 0); 
+        break;
+
+
+        case 1: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                           TRV_SYSTEM_MODE_MSG, 1); 
+        break;
+        
+
+        case 0: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, 
+                           TRV_SCHEDULE_MODE_MSG, 1); 
+        break;
+      }
+    } break;
+
     
     case EUROTRONIC_HOST_FLAGS_ID: {
 

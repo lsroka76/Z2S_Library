@@ -1509,6 +1509,20 @@ void ZigbeeGateway::zbAttributeReporting(
                                        attribute->id, 
                                        value);
       } else
+      if ((attribute->id == BOSCH_TRV_OPERATING_MODE_ID) && 
+          (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM)) {
+
+        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+          
+        log_i("BOSCH thermostat operating mode %d",value);
+          
+        if (_on_thermostat_modes_receive)
+          _on_thermostat_modes_receive(src_address.u.ieee_addr, 
+                                       src_endpoint, 
+                                       cluster_id, 
+                                       attribute->id, 
+                                       value);
+      } else
       if ((attribute->id == 
             ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8)) {
