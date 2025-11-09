@@ -340,10 +340,10 @@ void buildLumiFFF2CmdHeader(uint8_t* fff2_cmd_data_buffer,
   lumi_fff2_cmd_header->integrity = integrity;
 }
 
-void buildLumiFFF2CmdLinkParams1(uint8_t* fff2_cmd_data_buffer,
-                                 uint8_t counter,
-                                 time_t timestamp,
-                                 esp_zb_ieee_addr_t ieee_addr) {
+uint8_t buildLumiFFF2CmdLinkParams1(uint8_t* fff2_cmd_data_buffer,
+                                    uint8_t counter,
+                                    time_t timestamp,
+                                    esp_zb_ieee_addr_t ieee_addr) {
   
   uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
   uint8_t lumi_sensor_link_params_1_size = 
@@ -366,12 +366,14 @@ void buildLumiFFF2CmdLinkParams1(uint8_t* fff2_cmd_data_buffer,
   memcpy(lumi_sensor_link_params_1->device_address,
         ieee_addr, 
         sizeof(esp_zb_ieee_addr_t));
+
+  return fff2_header_size + lumi_sensor_link_params_1_size;
 }
 
-void buildLumiFFF2CmdLinkParams2(uint8_t* fff2_cmd_data_buffer,
-                                 uint8_t counter,
-                                 time_t timestamp,
-                                 esp_zb_ieee_addr_t ieee_addr) {
+uint8_t buildLumiFFF2CmdLinkParams2(uint8_t* fff2_cmd_data_buffer,
+                                    uint8_t counter,
+                                    time_t timestamp,
+                                    esp_zb_ieee_addr_t ieee_addr) {
 
   uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
   uint8_t lumi_sensor_link_params_2_size = 
@@ -394,13 +396,15 @@ void buildLumiFFF2CmdLinkParams2(uint8_t* fff2_cmd_data_buffer,
   memcpy(lumi_sensor_link_params_2->device_address,
         ieee_addr, 
         sizeof(esp_zb_ieee_addr_t));
+  
+  return fff2_header_size + lumi_sensor_link_params_2_size;
 }
 
-void buildLumiFFF2CmdUnlinkParams(uint8_t* fff2_cmd_data_buffer,
-                                  uint8_t counter,
-                                  time_t timestamp,
-                                  uint8_t link_id,
-                                  esp_zb_ieee_addr_t ieee_addr) {
+uint8_t buildLumiFFF2CmdUnlinkParams(uint8_t* fff2_cmd_data_buffer,
+                                     uint8_t counter,
+                                     time_t timestamp,
+                                     uint8_t link_id,
+                                     esp_zb_ieee_addr_t ieee_addr) {
 
   uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
   uint8_t lumi_sensor_unlink_params_size = 
@@ -424,10 +428,12 @@ void buildLumiFFF2CmdUnlinkParams(uint8_t* fff2_cmd_data_buffer,
   memcpy(lumi_sensor_unlink_params->device_address,
         ieee_addr, 
         sizeof(esp_zb_ieee_addr_t));
+
+  return fff2_header_size + lumi_sensor_unlink_params_size;
 }
 
-void buildLumiFFF2CmdSendTemperatureParams(uint8_t* fff2_cmd_data_buffer,
-                                           float temperature_100) {
+uint8_t buildLumiFFF2CmdSendTemperatureParams(uint8_t* fff2_cmd_data_buffer,
+                                              float temperature_100) {
   
   uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
   uint8_t lumi_sensor_send_temperature_params_size = 
@@ -446,6 +452,8 @@ void buildLumiFFF2CmdSendTemperatureParams(uint8_t* fff2_cmd_data_buffer,
       fff2_header_size);
       
   lumi_sensor_send_temperature_params->temperature_100  = temperature_100;
+
+  return fff2_header_size + lumi_sensor_send_temperature_params_size;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -496,15 +504,16 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
 
       sendTRVExternalSensorInput(true);
       
-      buildLumiFFF2CmdSendTemperatureParams(fff2_cmd_data_buffer, 
-                                            external_sensor_temperature);
+      uint8_t buffer_size = 
+        buildLumiFFF2CmdSendTemperatureParams(fff2_cmd_data_buffer, 
+                                              external_sensor_temperature);
 
       _gateway->sendAttributeWrite(
         &_device, 
         LUMI_CUSTOM_CLUSTER, 
         LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-        0xAA, &fff2_cmd_data_buffer,
+        buffer_size, &fff2_cmd_data_buffer,
         true,
         1, LUMI_MANUFACTURER_CODE);  
 
@@ -549,31 +558,33 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
 
       if (trv_external_sensor_present) {
       
-        buildLumiFFF2CmdLinkParams1(fff2_cmd_data_buffer,
-                                    0x12, 
-                                    timestamp, 
-                                    _device.ieee_addr);
+        uint8_t buffer_size =
+          buildLumiFFF2CmdLinkParams1(fff2_cmd_data_buffer,
+                                      0x12, 
+                                      timestamp, 
+                                      _device.ieee_addr);
 
         _gateway->sendAttributeWrite(
           &_device, 
           LUMI_CUSTOM_CLUSTER, 
           LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-          0xAA, &fff2_cmd_data_buffer,
+          buffer_size, &fff2_cmd_data_buffer,
           true,
           1, LUMI_MANUFACTURER_CODE);
 
-        buildLumiFFF2CmdLinkParams2(fff2_cmd_data_buffer, 
-                                    0x13,
-                                    timestamp, 
-                                    _device.ieee_addr);
+        buffer_size =
+          buildLumiFFF2CmdLinkParams2(fff2_cmd_data_buffer, 
+                                      0x13,
+                                      timestamp, 
+                                      _device.ieee_addr);
 
         _gateway->sendAttributeWrite(
           &_device, 
           LUMI_CUSTOM_CLUSTER, 
           LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-          0xAA, &fff2_cmd_data_buffer,
+          buffer_size, &fff2_cmd_data_buffer,
           true,
           1, LUMI_MANUFACTURER_CODE);
 
@@ -585,33 +596,35 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
 
       } else {
 
-        buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
-                                     0x12,
-                                     timestamp, 
-                                     0x05,
-                                     _device.ieee_addr);
+        uint8_t buffer_size =
+          buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
+                                       0x12,
+                                       timestamp, 
+                                       0x05,
+                                       _device.ieee_addr);
 
         _gateway->sendAttributeWrite(
           &_device, 
           LUMI_CUSTOM_CLUSTER, 
           LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-          0xAA, &fff2_cmd_data_buffer,
+          buffer_size, &fff2_cmd_data_buffer,
           true,
           1, LUMI_MANUFACTURER_CODE);
 
-        buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
-                                     0x13,
-                                     timestamp, 
-                                     0x04,
-                                     _device.ieee_addr);
+        buffer_size =
+          buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
+                                       0x13,
+                                       timestamp, 
+                                       0x04,
+                                       _device.ieee_addr);
 
         _gateway->sendAttributeWrite(
           &_device, 
           LUMI_CUSTOM_CLUSTER, 
           LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-          0xAA, &fff2_cmd_data_buffer,
+          buffer_size, &fff2_cmd_data_buffer,
           true,
           1, LUMI_MANUFACTURER_CODE);
 

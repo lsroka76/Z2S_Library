@@ -20,21 +20,24 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway,
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
 
       Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_TUYA_COLOR_HS_RGB);
+        new Supla::Control::Z2S_RGBInterface(
+          gateway, device, Z2S_TUYA_COLOR_HS_RGB);
     break;
 
 
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
 
       Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_TUYA_COLOR_XY_RGB); 
+        new Supla::Control::Z2S_RGBInterface(
+          gateway, device, Z2S_TUYA_COLOR_XY_RGB); 
     break;
 
 
     case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
 
       Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_COLOR_HS_RGB); 
+        new Supla::Control::Z2S_RGBInterface(
+          gateway, device, Z2S_COLOR_HS_RGB); 
       break;
 
 
@@ -42,20 +45,23 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway,
     case Z2S_DEVICE_DESC_RGBW_BULB_XY:
 
       Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_COLOR_XY_RGB); 
+        new Supla::Control::Z2S_RGBInterface(
+          gateway, device, Z2S_COLOR_XY_RGB); 
     break;
 
 
     case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
 
       Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(gateway, device, Z2S_PHILIPS_COLOR_XY_RGB); 
+        new Supla::Control::Z2S_RGBInterface(
+          gateway, device, Z2S_PHILIPS_COLOR_XY_RGB); 
     break;
   }
 
   if (Supla_Z2S_RGBInterface) {
 
-    Supla_Z2S_RGBInterface->getChannel()->setChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+    Supla_Z2S_RGBInterface->getChannel()->setChannelNumber(
+      z2s_channels_table[channel_number_slot].Supla_channel);
    
     if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
       Supla_Z2S_RGBInterface->setInitialCaption(
@@ -115,7 +121,8 @@ void addZ2SDeviceRGB(ZigbeeGateway *gateway,
     break;
     
   }
-  channel_element = new Supla::Control::Z2S_RGBInterface(gateway, device, sub_id);
+  channel_element = 
+    new Supla::Control::Z2S_RGBInterface(gateway, device, sub_id);
 
   if (channel_element)
     Z2S_fillChannelsTableSlot(device, 

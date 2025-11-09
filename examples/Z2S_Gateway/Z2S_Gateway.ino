@@ -1524,6 +1524,15 @@ if (GUIstarted)
 
                 case Z2S_DEVICE_DESC_BOSCH_BTHRA: {  //no data from thermostat without reporting
                   
+                  uint32_t write_mask_32 = 1200;
+                  zbGateway.sendAttributeWrite(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL, 
+                    0x0000, 
+                    ESP_ZB_ZCL_ATTR_TYPE_U32, 
+                    4, 
+                    &write_mask_32);
+
                   zbGateway.setClusterReporting(
                     joined_device, 
                     ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
@@ -1550,6 +1559,14 @@ if (GUIstarted)
                     0, 65000, 0, false,
                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                     1, 1, BOSCH_MANUFACTURER_CODE);                 
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    BOSCH_TRV_OPERATING_MODE_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
+                    0, 65000, 0, false,
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                    1, 1, BOSCH_MANUFACTURER_CODE);
                 } break;
 
 
@@ -1662,7 +1679,7 @@ if (GUIstarted)
                                               LUMI_MANUFACTURER_CODE);
                 } break;
               }
-              SuplaDevice.scheduleSoftRestart(5000);
+              SuplaDevice.scheduleSoftRestart(30000);
               break;
             }   
             /*else log_i("LIST checking %s::%s, entry # %d",

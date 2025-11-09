@@ -115,17 +115,22 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   int16_t hvac_room_temperature_max = 3000;
   bool onOffOnly = true;
   
-  trv_commands_set = getZ2SDeviceHvacCmdSet(z2s_channels_table[channel_number_slot].model_id);
+  trv_commands_set = 
+    getZ2SDeviceHvacCmdSet(z2s_channels_table[channel_number_slot].model_id);
 
-  if ((trv_commands_set >= saswell_cmd_set) && (trv_commands_set < ts0601_cmd_sets_number)) {
+  if ((trv_commands_set >= saswell_cmd_set) && 
+      (trv_commands_set < ts0601_cmd_sets_number)) {
 
-    if (ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id == trv_commands_set) {
+    if (ts0601_command_sets_table[trv_commands_set].\
+          ts0601_cmd_set_id == trv_commands_set) {
 
       trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
       hvac_room_temperature_min = 
-        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_min;
+        ts0601_command_sets_table[trv_commands_set].\
+          ts0601_cmd_set_target_heatsetpoint_min;
       hvac_room_temperature_max = 
-        ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_target_heatsetpoint_max;
+        ts0601_command_sets_table[trv_commands_set].\
+          ts0601_cmd_set_target_heatsetpoint_max;
     } else {
 
       log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 

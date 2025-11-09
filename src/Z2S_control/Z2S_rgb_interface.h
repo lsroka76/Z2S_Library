@@ -46,11 +46,11 @@ public:
   Z2S_RGBInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t rgb_mode = Z2S_COLOR_HS_RGB);
 
   void setDimmerChannel(uint8_t dimmer_channel) {
-    _dimmer_channel = dimmer_channel;
+    /*_dimmer_channel = dimmer_channel;
     if (_dimmer_channel < 0xFF) {
       _dimmer = Supla::Element::getElementByChannelNumber(_dimmer_channel);
     }
-    else _dimmer = nullptr;
+    else _dimmer = nullptr;*/
   }
 
   int32_t handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue) override;
@@ -98,7 +98,8 @@ protected:
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
 
-  uint8_t _dimmer_channel = 0xFF;
+  //uint8_t _dimmer_channel = 0xFF;
+  uint8_t turnOnOff = 0xFF;
   bool _turn_dimmer_off = false;
   Element *_dimmer = nullptr;
 
