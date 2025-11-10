@@ -1238,6 +1238,36 @@ bool Supla::Control::Z2S_TRVInterface::isForcedTemperatureSet() {
   return is_forced_temperature_set;
 }
 
+void Supla::Control::Z2S_TRVInterface::forceTRVTemperature() {
+
+  auto element = 
+    Supla::Element::getElementByChannelNumber(
+      _trv_hvac->getMainThermometerChannelNo());
+
+  if (element &&
+      (element->getChannel()->getChannelType() == 
+        SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR)) {
+
+    auto Supla_Z2S_VirtualThermHygroMeter = 
+      reinterpret_cast\
+        <Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+
+    Supla_Z2S_VirtualThermHygroMeter->setForcedTemperature(
+      (double)_trv_local_temperature / 100);
+  } else
+    if (element &&
+        (element->getChannel()->getChannelType() == 
+          SUPLA_CHANNELTYPE_THERMOMETER)) {
+
+      auto Supla_Z2S_VirtualThermometer = 
+        reinterpret_cast
+          <Supla::Sensor::Z2S_VirtualThermometer *>(element);
+
+      Supla_Z2S_VirtualThermometer->setForcedTemperature(
+        (double)_trv_local_temperature / 100);
+    }
+}
+
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
@@ -1499,6 +1529,16 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     }*/
         
     
+    if(_trv_hvac && 
+       _trv_external_sensor_present && 
+       ((_trv_hvac->getPrimaryTemp() == INT16_MIN) ||
+        isForcedTemperatureSet()) && 
+       (_trv_local_temperature > INT32_MIN) &&
+       (_trv_external_sensor_mode == 
+          EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT)) {
+
+        forceTRVTemperature();
+      }      
 
     if(_trv_hvac && 
        _trv_external_sensor_present && 
@@ -1522,33 +1562,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
               "temporarily using TRV local temperature value %d", 
               _trv_local_temperature);
 
-        auto element = 
-          Supla::Element::getElementByChannelNumber(
-            _trv_hvac->getMainThermometerChannelNo());
-
-        if (element &&
-           (element->getChannel()->getChannelType() == 
-              SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR)) {
-
-          auto Supla_Z2S_VirtualThermHygroMeter = 
-            reinterpret_cast<
-              Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
-
-          Supla_Z2S_VirtualThermHygroMeter->setForcedTemperature(
-            (double)_trv_local_temperature / 100);
-        } else
-        if (element &&
-          (element->getChannel()->getChannelType() == 
-            SUPLA_CHANNELTYPE_THERMOMETER)) {
-
-          auto Supla_Z2S_VirtualThermometer = 
-            reinterpret_cast<
-              Supla::Sensor::Z2S_VirtualThermometer *>(element);
-
-          //Supla_Z2S_VirtualThermometer->setValue(
-          Supla_Z2S_VirtualThermometer->setForcedTemperature(
-            (double)_trv_local_temperature / 100);
-        }
+        forceTRVTemperature();
       }
     }
   }

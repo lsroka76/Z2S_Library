@@ -1288,6 +1288,7 @@ protected:
   bool      _timeout_enabled = false;
 
   bool isForcedTemperatureSet();
+  void forceTRVTemperature();
 
   void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);
