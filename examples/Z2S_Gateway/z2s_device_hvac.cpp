@@ -569,12 +569,21 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     } break;
 
 
-  case TRV_TEMPERATURE_HISTERESIS_MSG: { 
+    case TRV_TEMPERATURE_HISTERESIS_MSG: { 
       
       log_i("msgZ2SDeviceHvac - TRV_TEMPERATURE_HISTERESIS_MSG: 0x%x", 
             msg_value);
 
       Supla_Z2S_TRVInterface->setTRVTemperatureHisteresis(msg_value);
+    } break;
+
+
+    case TRV_SENSOR_TYPE_MSG: {
+
+      log_i("msgZ2SDeviceHvac - TRV_SENSOR_TYPE_MSG: 0x%x", 
+            msg_value);
+
+      Supla_Z2S_TRVInterface->setTRVTemperatureSensorType(msg_value);
     } break;
 
 

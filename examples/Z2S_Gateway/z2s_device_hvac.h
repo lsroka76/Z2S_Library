@@ -23,6 +23,7 @@
 #define TRV_LIMESCALE_PROTECT_MSG       0x0B
 #define TRV_SCHEDULE_MODE_MSG           0x0C
 #define TRV_TEMPERATURE_HISTERESIS_MSG  0x0D
+#define TRV_SENSOR_TYPE_MSG             0x0E
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

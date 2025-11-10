@@ -2480,77 +2480,99 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
         return;
       }
 
-      uint8_t lumi_battery_position = scanLumiPayload(LUMI_ATTRIBUTE_BATTERY_ID, 
-                                                      ESP_ZB_ZCL_ATTR_TYPE_U16,
-                                                      attribute->data.size, 
-                                                      (uint8_t*)attribute->data.value);
+      uint8_t lumi_battery_position = scanLumiPayload(
+        LUMI_ATTRIBUTE_BATTERY_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U16,
+        attribute->data.size, 
+        (uint8_t*)attribute->data.value);
+
       if (lumi_battery_position > 0) {
 
-        uint16_t lumi_battery = (*(uint16_t*)(attribute->data.value + lumi_battery_position)) / 100;
+        uint16_t lumi_battery = 
+          (*(uint16_t*)(attribute->data.value + lumi_battery_position)) / 100;
 
-        updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, lumi_battery);
+        updateSuplaBatteryLevel(
+          channel_number_slot, 
+          ZBD_BATTERY_VOLTAGE_MSG, 
+          lumi_battery);
       }
 
-      uint8_t lumi_temperature_position = scanLumiPayload(LUMI_ATTRIBUTE_TEMPERATURE_ID,
-                                                          ESP_ZB_ZCL_ATTR_TYPE_S16,
-                                                          attribute->data.size, 
-                                                          (uint8_t*)attribute->data.value);
+      uint8_t lumi_temperature_position = scanLumiPayload(
+        LUMI_ATTRIBUTE_TEMPERATURE_ID,
+        ESP_ZB_ZCL_ATTR_TYPE_S16,
+        attribute->data.size, 
+        (uint8_t*)attribute->data.value);
+
       if (lumi_temperature_position > 0) {
 
-        float lumi_temperature = (*(int16_t*)(attribute->data.value + lumi_temperature_position)) / 100;
+        float lumi_temperature = 
+          (*(int16_t*)(attribute->data.value + lumi_temperature_position)) / 100;
 
         msgZ2SDeviceTempHumidityTemp(channel_number_slot, lumi_temperature);
       }
-      uint8_t lumi_humidity_position = scanLumiPayload(LUMI_ATTRIBUTE_HUMIDITY_ID,
-                                                       ESP_ZB_ZCL_ATTR_TYPE_U16, 
-                                                       attribute->data.size, 
-                                                       (uint8_t*)attribute->data.value);
+      uint8_t lumi_humidity_position = scanLumiPayload(
+        LUMI_ATTRIBUTE_HUMIDITY_ID,
+        ESP_ZB_ZCL_ATTR_TYPE_U16, 
+        attribute->data.size, 
+        (uint8_t*)attribute->data.value);
+
       if (lumi_humidity_position > 0) {
 
-        float lumi_humidity = (*(uint16_t*)(attribute->data.value + lumi_humidity_position)) / 100;
+        float lumi_humidity = 
+          (*(uint16_t*)(attribute->data.value + lumi_humidity_position)) / 100;
 
         msgZ2SDeviceTempHumidityHumi(channel_number_slot, lumi_humidity);
       }
 
-      channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
-                                                      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                      LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
+      channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
+
       if (channel_number_slot < 0) {
     
         log_e("no GPM channel found for address %s", ieee_addr_str);
         return;
       }       
 
-      uint8_t lumi_air_quality_position = scanLumiPayload(LUMI_ATTRIBUTE_AIR_QUALITY_ID, 
-                                                          ESP_ZB_ZCL_ATTR_TYPE_U8,
-                                                          attribute->data.size, 
-                                                          (uint8_t*)attribute->data.value);
+      uint8_t lumi_air_quality_position = scanLumiPayload(
+        LUMI_ATTRIBUTE_AIR_QUALITY_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8,
+        attribute->data.size, 
+        (uint8_t*)attribute->data.value);
+
       if (lumi_air_quality_position > 0) {
 
-        msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
-                                              ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                              *(uint8_t*)(attribute->data.value + lumi_air_quality_position));
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot, 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+          *(uint8_t*)(attribute->data.value + lumi_air_quality_position));
       }
 
       
-      channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
-                                                      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                      LUMI_AIR_QUALITY_SENSOR_VOC_SID);    
+      channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        LUMI_AIR_QUALITY_SENSOR_VOC_SID);    
+
       if (channel_number_slot < 0) {
     
         log_e("no GPM channel found for address %s", ieee_addr_str);
         return;
       }       
 
-      uint8_t lumi_voc_position = scanLumiPayload(LUMI_ATTRIBUTE_VOC_ID, 
-                                                  ESP_ZB_ZCL_ATTR_TYPE_U16,
-                                                  attribute->data.size, 
-                                                  (uint8_t*)attribute->data.value);
+      uint8_t lumi_voc_position = scanLumiPayload(
+        LUMI_ATTRIBUTE_VOC_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U16,
+        attribute->data.size, 
+        (uint8_t*)attribute->data.value);
+
       if (lumi_voc_position > 0) {
 
-        msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
-                                              ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                              *(uint16_t*)(attribute->data.value + lumi_voc_position));
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot, 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+          *(uint16_t*)(attribute->data.value + lumi_voc_position));
       }
     } break;
 
@@ -2579,17 +2601,20 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
     case LUMI_CUSTOM_CLUSTER_AIR_QUALITY_ID: {
 
       int16_t channel_number_slot = 
-        Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
-                                  SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                  LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
+        Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, 
+          SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+          LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
 
       if (channel_number_slot < 0) {
     
         log_e("no GPM channel found for address %s", ieee_addr_str);
         return;
       }       
-      msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                                *(uint8_t *)attribute->data.value);
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot, 
+        ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+        *(uint8_t *)attribute->data.value);
 
       log_i("air quality = %u", *(uint8_t*)attribute->data.value);
     } break;
@@ -2598,7 +2623,8 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
     case LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID:
     case LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID:
     case LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID:
-    case LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID: {
+    case LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID:
+    case LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID: {
 
       int16_t channel_number_slot = 
         Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
@@ -2618,7 +2644,8 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
         case LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID: {
 
           msgZ2SDeviceHvac(channel_number_slot, 
-                          TRV_SYSTEM_MODE_MSG, lumi_mode == 0 ? 0 : 1);
+                          TRV_SYSTEM_MODE_MSG, 
+                          lumi_mode == 0 ? 0 : 1);
         } break;
 
         //case LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID:
@@ -2627,21 +2654,38 @@ void Z2S_onLumiCustomClusterReceive(esp_zb_ieee_addr_t ieee_addr,
         case LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID: {
 
           msgZ2SDeviceHvac(channel_number_slot, 
-                          TRV_CHILD_LOCK_MSG, lumi_mode == 0 ? 0 : 1);
+                          TRV_CHILD_LOCK_MSG, 
+                          lumi_mode == 0 ? 0 : 1);
         } break;
         
         
         case LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID: {
 
           log_i("lumi trv battery %u", lumi_mode);
+
+          updateSuplaBatteryLevel(
+          channel_number_slot, 
+          ZBD_BATTERY_LEVEL_MSG, 
+          lumi_mode);
         } break;
         
         
         case LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID: {
 
           msgZ2SDeviceHvac(channel_number_slot, 
-                          TRV_SCHEDULE_MODE_MSG, lumi_mode == 0 ? 0 : 1);
+                          TRV_SCHEDULE_MODE_MSG, 
+                          lumi_mode == 0 ? 0 : 1);
         } break;
+
+
+        case LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID: {
+
+          log_i("lumi trv sensor type %u", lumi_mode);
+
+          msgZ2SDeviceHvac(channel_number_slot, 
+                          TRV_SENSOR_TYPE_MSG, 
+                          lumi_mode);
+        }
       }
     } break;
   }

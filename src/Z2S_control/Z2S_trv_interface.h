@@ -1201,6 +1201,8 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   void setTRVTemperatureCalibration(int32_t trv_temperature_calibration);
   void setTRVTemperatureHisteresis(int32_t trv_temperature_histeresis);
 
+  void setTRVTemperatureSensorType(uint8_t trv_temperature_sensor_type);
+
   void setTRVChildLock(uint8_t trv_child_lock);
   void setCooperativeChildLock(bool cooperative_child_lock);
   void turnOffTRVScheduleMode();
@@ -1241,7 +1243,7 @@ protected:
   bool _trv_external_sensor_detection_enabled = false;
   bool _trv_external_sensor_present           = false;
   bool _trv_external_sensor_changed           = false;       
-  bool _trv_external_sensor_status            = 0xFF;
+  uint8_t _trv_temperature_sensor_type        = 0xFF;
   uint8_t _trv_internal_sensor_channel        = 0xFF;
   uint8_t _trv_external_sensor_mode           = EXTERNAL_TEMPERATURE_SENSOR_IGNORE;
 
