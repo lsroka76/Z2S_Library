@@ -315,42 +315,22 @@ void setRvrActEnergy2(int phase, unsigned _supla_int64_t energy) {
 }
 
 void onInit() override {
-  //readValuesFromDevice();
-  //updateChannelValues();
+  
   if (_timeout_enabled)
     getChannel()->setStateOffline();
 }
 
 virtual void readValuesFromDevice() {
 
-  return; //rest is invalid for now
-  
-  //if (_gateway && Zigbee.started()) {
-  //  if ((_active_query || 0 /*(emValue.m[0].voltage[0] == 0)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,      			ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, true))
-  //       setVoltage(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value) * 100);
-  //  if ((_active_query || 0/*(!currentMeasurementAvailable)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 		ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID, true))
-  //       setCurrent(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value) * 1);
-  //  if ((_active_query || 0/*(!powerActiveMeasurementAvailable)*/) && _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 	ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID, true))
-  //       setPowerActive(0, (*(uint16_t *)_gateway->getReadAttrLastResult()->data.value)*100000*_active_power_multiplier);
-  //     
-  //  if (_active_query && _gateway->sendAttributeRead(&_device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, true)) {
-  //    esp_zb_uint48_t *value = (esp_zb_uint48_t *)_gateway->getReadAttrLastResult()->data.value;
-  //    _supla_int64_t energy = ((_supla_int64_t)value->high << 32) + value->low;
-  //    setFwdActEnergy(0, energy * 1000);
-  //  }
-  //}
 }
 
 void resetStorage() {
-    //if (_gateway && Zigbee.started()) {
-
-      //_gateway->sendDeviceFactoryReset(&_device, _isTuya);
-      //_gateway->sendAttributeRead(&_device,ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, false); // ) {
-     //}
 
   channel_extended_data_em_t channel_extended_data_em = {};
 
-  memcpy(channel_extended_data_em.ieee_addr, _device.ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  memcpy(channel_extended_data_em.ieee_addr, 
+         _device.ieee_addr, 
+         sizeof(esp_zb_ieee_addr_t));
 
   for (uint8_t i = 0; i <3; i++) {
   
@@ -376,11 +356,15 @@ void resetStorage() {
 
   }
 
-  total_forward_active_energy_balanced_counter = emValue.total_forward_active_energy_balanced;
-  channel_extended_data_em.total_forward_active_energy_balanced_counter = total_forward_active_energy_balanced_counter;
+  total_forward_active_energy_balanced_counter = 
+    emValue.total_forward_active_energy_balanced;
+  channel_extended_data_em.total_forward_active_energy_balanced_counter = 
+    total_forward_active_energy_balanced_counter;
 
-  total_reverse_active_energy_balanced_counter = emValue.total_reverse_active_energy_balanced;
-  channel_extended_data_em.total_reverse_active_energy_balanced_counter = total_reverse_active_energy_balanced_counter;
+  total_reverse_active_energy_balanced_counter = 
+    emValue.total_reverse_active_energy_balanced;
+  channel_extended_data_em.total_reverse_active_energy_balanced_counter = 
+    total_reverse_active_energy_balanced_counter;
 
   _gateway->requestDataSave(getChannelNumber(), 
                             16, 
@@ -401,69 +385,54 @@ void resetStorage() {
 	
     if (_gateway && Zigbee.started()) {
       
-      uint16_t em_attributes[8] = { ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, 
-                                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID,
-                                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID, 
-                                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID,
-                                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID, 
-                                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID,
-                                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_MULTIPLIER_ID, 
-                                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_DIVISOR_ID };
+      uint16_t em_attributes[8] = { 
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, 
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID,
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID, 
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID,
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID, 
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID,
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_MULTIPLIER_ID, 
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_DIVISOR_ID };
 
       uint16_t sm_attributes[2] = { ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID, 
                                     ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID };
                                   
 
-      _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 8, &em_attributes[0]);
-      _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 2, &sm_attributes[0]);
+      _gateway->sendAttributesRead(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+        8, &em_attributes[0]);
+
+      _gateway->sendAttributesRead(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+        2, &sm_attributes[0]);
       
       if (_init_ms < 3600000)
         _init_ms *= 2;
-      
-      /*for (uint8_t em_idx  = 0; em_idx < 8; em_idx++) {
-
-        uint8_t idx_mask = 1 << em_idx;
-        
-        if ((_em_scaling_mask & idx_mask) == idx_mask) {
-          
-          
-          if (_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, em_attributes[em_idx], false)) {
-            
-            //_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, em_attributes[em_idx], false);
-            _em_scaling_mask &= ~idx_mask;
-          }
-        }
-      }
-
-      for (uint8_t sm_idx  = 0; sm_idx < 2; sm_idx++) {
-
-        uint8_t idx_mask = 1 << sm_idx;
-        
-        if ((_sm_scaling_mask & idx_mask) == idx_mask) {
-          
-          if (_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, sm_attributes[sm_idx], false)) {
-
-            //_gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, sm_attributes[sm_idx], false);
-            _sm_scaling_mask &= ~idx_mask;
-          }
-        }
-      }
-      if ((_em_scaling_mask == 0) && (_sm_scaling_mask ==0))
-        _fresh_start = false;*/
     }
   }
 
   void ping() {
 
-  uint16_t attributes[3] = {  ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, 
-                              ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
-                              ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID  };
+  uint16_t attributes[3] = {  
+    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID, 
+    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
+    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID  };
 
   if (_gateway && Zigbee.started()) {
 
-    _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 3, &attributes[0]);
+    _gateway->sendAttributesRead(
+      &_device, 
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+      3, &attributes[0]);
 
-    _gateway->sendAttributeRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, false);
+    _gateway->sendAttributeRead(
+      &_device, 
+      ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+      ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, 
+      false);
   }
 
 
@@ -509,11 +478,14 @@ void setRefreshSecs(uint32_t refresh_secs) {
  
 }
 
-void setEnergyInitialCounters(channel_extended_data_em_t *channel_extended_data_em) {
+void setEnergyInitialCounters(
+  channel_extended_data_em_t *channel_extended_data_em) {
 
   for (uint8_t i = 0; i <3; i++) {
   
-    total_forward_active_energy_counter[i] = channel_extended_data_em->total_forward_active_energy_counter[i];
+    total_forward_active_energy_counter[i] = 
+      channel_extended_data_em->total_forward_active_energy_counter[i];
+
     log_i("total_forward_active_energy_counter[%u] = %llu, " 
           "channel_extended_data_em->total_forward_active_energy_counter[%u] = %llu",
           i,
@@ -521,13 +493,21 @@ void setEnergyInitialCounters(channel_extended_data_em_t *channel_extended_data_
           i,
           channel_extended_data_em->total_forward_active_energy_counter[i]);
 
-    total_reverse_active_energy_counter[i] = channel_extended_data_em->total_reverse_active_energy_counter[i];
-    total_forward_reactive_energy_counter[i] = channel_extended_data_em->total_forward_reactive_energy_counter[i];
-    total_reverse_reactive_energy_counter[i] = channel_extended_data_em->total_reverse_reactive_energy_counter[i];
+    total_reverse_active_energy_counter[i] = 
+      channel_extended_data_em->total_reverse_active_energy_counter[i];
+
+    total_forward_reactive_energy_counter[i] = 
+      channel_extended_data_em->total_forward_reactive_energy_counter[i];
+
+    total_reverse_reactive_energy_counter[i] = 
+      channel_extended_data_em->total_reverse_reactive_energy_counter[i];
   }
   
-  total_forward_active_energy_balanced_counter = channel_extended_data_em->total_forward_active_energy_balanced_counter;
-  total_reverse_active_energy_balanced_counter = channel_extended_data_em->total_reverse_active_energy_balanced_counter;
+  total_forward_active_energy_balanced_counter = 
+    channel_extended_data_em->total_forward_active_energy_balanced_counter;
+
+  total_reverse_active_energy_balanced_counter = 
+    channel_extended_data_em->total_reverse_active_energy_balanced_counter;
 }
 
 uint32_t getKeepAliveSecs() {

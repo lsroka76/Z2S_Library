@@ -42,6 +42,16 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
 
       _isTuya = true; 
       _active_query = false;
+
+      if (strcmp(Z2S_getZbDeviceManufacturerName(
+                  z2s_channels_table[channel_number_slot].ZB_device_id),
+                  "_TZ3000_ww6drja5") == 0) {
+
+        energy_multiplier = 1;
+        energy_divisor  = 10000;
+      
+        ignore_zigbee_scaling = true;
+      }
     } break;
 
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
@@ -88,6 +98,13 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
 
       ignore_zigbee_scaling = true;
 
+      if (strcmp(Z2S_getZbDeviceManufacturerName(
+                  z2s_channels_table[channel_number_slot].ZB_device_id),
+                  "_TZ3000_kqvb5akv") == 0) {
+
+        energy_multiplier = 1;
+        energy_divisor  = 10000;
+      }
     } break;
 
 
