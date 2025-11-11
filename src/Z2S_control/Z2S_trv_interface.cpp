@@ -1079,11 +1079,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
 
           temperature_histeresis /= 100;
           
-          sendTuyaRequestCmdValue32(_gateway, 
-                                    &_device, 
-                                    ts0601_command_sets_table[_trv_commands_set].
-                                      ts0601_cmd_set_temperature_histeresis_dp_id,
-                                    temperature_histeresis);
+          sendTuyaRequestCmdValue32(
+            _gateway, 
+            &_device, 
+            ts0601_command_sets_table[_trv_commands_set].\
+              ts0601_cmd_set_temperature_histeresis_dp_id,
+            temperature_histeresis);
         }
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
