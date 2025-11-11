@@ -168,9 +168,23 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
   auto Supla_Z2S_ElectricityMeter = 
     new Supla::Sensor::Z2S_ElectricityMeter(gateway, 
                                             device, 
-                                            _isTuya, 
-                                            _active_query, 
+                                            _isTuya,
+  _active_query, 
                                             _one_phase);
+     
+
+      if (strcmp(Z2S_getZbDeviceManufacturerName(
+                  z2s_channels_table[channel_number_slot].ZB_device_id),
+                  "_TZ3000_kqvb5akv") == 0) {
+
+        current_multiplier = 1;
+      current_divisor    = 1000;
+
+      energy_multiplier = 1;
+      energy_divisor  = 100;
+
+      ignore_zigbee_scaling = true;
+      }                                         
 
   Supla_Z2S_ElectricityMeter->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
