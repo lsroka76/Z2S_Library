@@ -1667,6 +1667,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
 	.z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "TELINK", .model_name = "TLSR82xx",
+    .z2s_device_uid = 1905,
+	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
+	.z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-02D",
     .z2s_device_uid = 2000,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL,
@@ -3467,12 +3472,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "TELINK", .model_name = "TLSR82xx",
+  /*{	.manufacturer_name = "TELINK", .model_name = "TLSR82xx",
     .z2s_device_uid = 24305,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SMART_BUTTON_2F,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_SMART_BUTTON_2F },
-                              { 2, Z2S_DEVICE_DESC_SMART_BUTTON_2F }}},
+                              { 2, Z2S_DEVICE_DESC_SMART_BUTTON_2F }}},*/
 
   //{	.manufacturer_name = "_TZE200_nojsjtj2", .model_name = "TS0601",
   // .z2s_device_uid = 24400,
