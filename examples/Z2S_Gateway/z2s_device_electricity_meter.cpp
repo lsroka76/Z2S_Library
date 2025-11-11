@@ -48,7 +48,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
                   "_TZ3000_ww6drja5") == 0) {
 
         energy_multiplier = 1;
-        energy_divisor  = 10000;
+        energy_divisor  = 100;
       
         ignore_zigbee_scaling = true;
       }
