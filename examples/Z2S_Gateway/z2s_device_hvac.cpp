@@ -179,6 +179,11 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   if ((trv_commands_set == moes_cmd_set) ||
       (trv_commands_set == me167_cmd_set))
     onOffOnly = false;
+
+  if (strcmp(Z2S_getZbDeviceManufacturerName(
+               z2s_channels_table[channel_number_slot].ZB_device_id),
+             "_TZE200_9xfjixap") == 0) 
+    onOffOnly = true;
   
   auto Supla_Z2S_TRVInterface = 
     new Supla::Control::Z2S_TRVInterface(gateway, 
