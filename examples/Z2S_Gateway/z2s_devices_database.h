@@ -1511,7 +1511,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 };
 
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
-
+//DEVICES_START
   {	.manufacturer_name = "Unknown", .model_name = "Unknown",
     .z2s_device_uid = 0,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_NULL,
@@ -3763,7 +3763,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 30200,
     .z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
     .z2s_device_endpoints_count = 1},
-  
+//DEVICES_END
 
 };
 #endif

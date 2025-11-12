@@ -1,85 +1,420 @@
-# List of currently supported devices 
+# List of current supported devices.
 
-State for version: 0.7.75
+State for version: 0.9.139-07/11/2025
 
-| **Model Name**                   | **Manufacturer Name(s)**                                                                                                                                         | **Z2S Device Desc ID**                          |
-|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
-| TS0201                           | _TZ3000_akqdg6g7, _TZ3000_dowj6gyi, _TZ3000_rdhukkmi, _TZ3000_fllyghyj, _TZ3000_v1w2k9dd, _TZ3000_xr3htd96, _TZ3000_bguser20, _TZ3000_yujem9ee, _TZ3000_hzkeh3nv | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             |
-| TS0201                           | _TZ3210_ncw88jfq                                                                                                                                                 | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10     |
-| LYWSD03MMC-z                     | Xiaomi                                                                                                                                                           | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1           |
-| LYWSD03MMC                       | Xiaomi                                                                                                                                                           | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1           |
-| TS0601                           | _TZE204_upagmta9                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR        |
-| TS0601                           | _TZE200_a8sdabtg, _TZE200_vs0skpuc                                                                                                                               | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             |
-| TS0601                           | _TZE284_aao3yzhs                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR   |
-| TS0601                           | _TZE284_myd45weu                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1 |
-| TS0601                           | _TZE200_bh3n6gk8, _TZE200_pay2byax, _TZE200_n8dljorx                                                                                                             | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| TS0601                           | _TZE200_0dvm9mva, _TZE284_fqm2sfpe                                                                                                                               | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL              |
-| TS0601                           | _TZE284_o3x45p96, _TZE200_9xfjixap                                                                                                                               | Z2S_DEVICE_DESC_TS0601_TRV_ME167                |
-| TS0601                           | _TZE284_ymldrmzx                                                                                                                                                 | Z2S_DEVICE_DESC_TS0601_TRV_TRV603               |
-| TS0601                           | _TZE200_cpmgn2cf                                                                                                                                                 | Z2S_DEVICE_DESC_TS0601_TRV_MOES                 |
-| TS0601                           | _TZE200_b6wax7g0                                                                                                                                                 | Z2S_DEVICE_DESC_TS0601_TRV_BECA                 |
-| TS0601                           | _TZE204_rtrmfadk                                                                                                                                                 | Z2S_DEVICE_DESC_TS0601_TRV_TRV601               |
-| TS0601                           | _TZE204_jtbgusdc                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH       |
-| TS0601                           | _TZE200_rccxox8p                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR             |
-| TS0601                           | _TZE204_ntcy3xu1                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1           |
-| TS0601                           | _TZE284_rjxqso4a                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_CO_DETECTOR                |
-| TS0601                           | _TZE200_kb5noeto                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR            |
-| TS0601                           | _TZE204_ex3rcdha                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5          |
-| TS0601                           | _TZE284_dikb3dp6                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER  |
-| SNZB-02D                         | SONOFF                                                                                                                                                           | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL        |
-| SNZB-02P                         | eWeLink                                                                                                                                                          | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL        |
-| TY0201                           | _TZ3000_bjawzodf                                                                                                                                                 | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             |
-| SNZB-02                          | _TZ3000_fllyghyj                                                                                                                                                 | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             |
-| TH01                             | eWeLink                                                                                                                                                          | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             |
-| lumi.weather                     | LUMI                                                                                                                                                             | Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR         |
-| lumi.sens                        | LUMI                                                                                                                                                             | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR             |
-| TS0203                           | _TZ3000_0hkmcrza, _TZ3000_26fmupbb, _TZ3000_rcuyhwe3, _TZ3000_2mbfxlzr, _TZ3000_decxrtwa, _TZ3000_yxqnffam, _TZ3000_1bwpjvlz, _TZ3000_6zvw8ham, _TZ3000_bpkijo14 | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| TS0202                           | TEST1, _TZ3000_mcxw5ehu, _TZ3000_lf56vpxj, _TZ3000_c8ozah8n, _TZ3040_bb6xaihh, _TZ3000_6ygjfyll                                                                  | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| TS0205                           | TEST1, _TZ3210_up3pngle                                                                                                                                          | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| TS0210                           | _TZ3000_lqpt3mvr                                                                                                                                                 | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| TS0210                           | _TZ3000_lzdjjfss                                                                                                                                                 | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T           |
-| ZB-DoorSensor-D0007              | ADEO                                                                                                                                                             | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B           |
-| SNZB-05P                         | SONOFF                                                                                                                                                           | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B             |
-| ZB-SMART-PIRTH-V3                | ADEO                                                                                                                                                             | Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR         |
-| TS000F                           | _TZ3000_skueekg3                                                                                                                                                 | Z2S_DEVICE_DESC_RELAY_1                         |
-| TS0505                           | zbeacon                                                                                                                                                          | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A          |
-| TS0501B                          | _TZ3210_ctv0gump                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0           |
-| TS0505B                          | _TZ3210_bfwvfyx1, _TZ3210_3lbtuxgp, _TZ3210_wbsgmojq, _TZ3210_ljoasixl                                                                                           | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B          |
-| TS0503B                          | _TZ3210_0zabbfax                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY      |
-| CK-BL702-AL-01(7009_Z102LG03-1)  | eWeLink                                                                                                                                                          | Z2S_DEVICE_DESC_RGBW_BULB_XY                    |
-| ZB-CL01                          | eWeLight                                                                                                                                                         | Z2S_DEVICE_DESC_RGBW_BULB_XY                    |
-| PARASOLL Door/Window Sensor      | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR            |
-| BADRING Water Leakage Sensor     | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| DS01                             | eWeLink                                                                                                                                                          | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| lumi.magnet.ac01                 | LUMI                                                                                                                                                             | Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR              |
-| lumi.magnet.agl02                | LUMI                                                                                                                                                             | Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR              |
-| lumi.sensor_magnet.aq2           | LUMI                                                                                                                                                             | Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR              |
-| lumi.sensor_motion.aq2           | LUMI                                                                                                                                                             | Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR              |
-| SMOK_V16                         | Heiman                                                                                                                                                           | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| GAS_V15                          | Heiman                                                                                                                                                           | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| Remote Control N2                | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_SMART_BUTTON               |
-| SYMFONISK sound remote gen2      | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1          |
-| SYMFONISK Sound Controller       | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1            |
-| RODRET Dimmer                    | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F            |
-| SOMRIG shortcut button           | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON              |
-| VALLHORN Wireless Motion Sensor  | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_VALLHORN_1                 |
-| SWITCH-ZR03-1                    | eWeLink                                                                                                                                                          | Z2S_DEVICE_DESC_RELAY_1                         |
-| S26R2ZB                          | SONOFF                                                                                                                                                           | Z2S_DEVICE_DESC_RELAY_1                         |
-| lumi.switch.b1lc04               | LUMI                                                                                                                                                             | Z2S_DEVICE_DESC_RELAY_1                         |
-| TRADFRI control outlet           | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_RELAY_1                         |
-| LDSENK02F                        | ADEO                                                                                                                                                             | Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER         |
-| LDSENK08                         | ADEO                                                                                                                                                             | Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR   |
-| SWV                              | SONOFF                                                                                                                                                           | Z2S_DEVICE_DESC_SONOFF_FLOW_VALVE_SENSOR        |
-| TRADFRI bulb E27 CWS globe 806lm | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_RGBW_BULB                  |
-| TRADFRI bulb E14 CWS globe 806lm | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_RGBW_BULB                  |
-| TRADFRI bulb GU10 WW 345lm8      | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_WW_BULB                    |
-| TS0505A                          | _TZ3000_keabpigv                                                                                                                                                 | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A          |
-| TS1201                           | _TZ3290_7v1k4vufotpowp9z                                                                                                                                         | Z2S_DEVICE_DESC_IR_REMOTE_CONTROL               |
-| TRADFRI bulb GU10 WW 380lm       | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_WW_BULB                    |
-| TRADFRI on/off switch            | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F            |
-| SNZB-05                          | _TZ3000_upgcbody                                                                                                                                                 | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| SmokeSensor-EF-3.0               | HEIMAN                                                                                                                                                           | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR                 |
-| TRADFRI bulb GU10 WW 345lm       | IKEA of Sweden                                                                                                                                                   | Z2S_DEVICE_DESC_IKEA_WW_BULB                    |
-| ZBMINIL2                         | SONOFF                                                                                                                                                           | Z2S_DEVICE_DESC_RELAY_1                         |
-| ZBMINIR2                         | SONOFF                                                                                                                                                           | Z2S_DEVICE_DESC_RELAY_1                         |
-| 01MINIZB                         | SONOFF                                                                                                                                                           | Z2S_DEVICE_DESC_RELAY_1                         |
+When Model name is empty it is how device reports its name. 
+
+| **Model name** | **Manufacturer_ name** | **Z2S Device Desc ID** |
+|------------|------------|-----------|
+| TS0201 | _TZ3000_akqdg6g7 | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3000_5nrcorgu | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3000_i8jfiezr | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3000_bgsigers | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+|  | _TZ3000_zl1kmjqx | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | Zbeacon | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0202 | Zbeacon | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0203 | Zbeacon | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+|  | _TZ3000_bgsigers | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3000_dowj6gyi | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| LYWSD03MMC-z | Xiaomi | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1 | 
+| LYWSD03MMC | Xiaomi | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1 | 
+| TS0201 | _TZ3000_rdhukkmi | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3000_fllyghyj | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3000_v1w2k9dd | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| RH3052 | TUYATEC-yg5dcbfu | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0601 | _TZE204_upagmta9 | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0601 | _TZE284_upagmta9 | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0601 | _TZE284_1wnh8bqp | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0601 | _TZE204_d7lpruvi | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0601 | _TZE200_9yapgbuv | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0601 | _TZE204_cirvgep4 | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0601 | _TZE200_cirvgep4 | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0601 | _TZE284_d7lpruvi | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0601 | _TZE200_vaarscrt | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| ZG-227Z | HOBEIAN | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR | 
+| TS0201 | _TZ3000_xr3htd96 | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TH01 | Zbeacon | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| SNZB-02 | eWeLink | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR | 
+| SNZB-02D | SONOFF | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL | 
+| SNZB-02P | eWeLink | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL | 
+| SNZB-02WD | SONOFF | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL | 
+| SNZB-02LD | SONOFF | Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_POLL | 
+| TY0201 | _TZ3000_bjawzodf | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0601 | _TZE200_a8sdabtg | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0601 | _TZE200_vs0skpuc | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| SNZB-02 | _TZ3000_fllyghyj | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR | 
+| TH01 | eWeLink | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR | 
+| lumi.weather | LUMI | Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR | 
+| TS0201 | _TZ3000_bguser20 | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3000_yujem9ee | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3000_hzkeh3nv | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| TS0201 | _TZ3210_ncw88jfq | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10 | 
+| TS0201 | _TZ3000_isw9u95y | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10 | 
+| TS0201 | _TZ3000_ywagc4rj | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10 | 
+| TS0601 | _TZE284_aao3yzhs | Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR | 
+| TS0601 | _TZE284_awepdiwi | Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR | 
+| TS0601 | _TZE284_myd45weu | Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1 | 
+| TS0203 | _TZ3000_0hkmcrza | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_zz6u0auj | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| SNZB-03 | _TZ3000 | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_996rpfy6 | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_yihvt3gp | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TZ3000_mcxw5ehu | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TYZB01_jytabjkb | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TZ3000_lltemgsf | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TYZB01_5nr7ncpl | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TZ3000_mg4dy6z6 | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TZ3000_bsvqrxru | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_26fmupbb | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_rcuyhwe3 | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_2mbfxlzr | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_x8q36xwf | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_zutizvyk | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0601 | _TZE200_bh3n6gk8 | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0207 | _TZ3000_k4ej3ww2 | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0207 | _TZ3000_qhozxs2b | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0207 | _TZ3000_rr1cqjwu | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0207 | _TZ3000_ww9i3e0y | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0207 | _TZ3000_85czd6fy | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0207 | _TZ3000_upgcbody | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0207 | _TZ3000_wuep9zng | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0207 | _TZ3000_otwpdq1d | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| SNZB-05 | _TZ3000_upgcbody | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TZ3000_lf56vpxj | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_decxrtwa | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_yxqnffam | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0210 | _TZ3000_lqpt3mvr | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| PARASOLL Door/Window Sensor | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR | 
+| BADRING Water Leakage Sensor | IKEA of Sweden | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| TS0601 | _TZE200_3towulqd | Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR | 
+| TS0203 | _TZ3000_1bwpjvlz | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| SNZB-04 | eWeLink | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| CK-TLSR8656-SS5-01(7003) | eWeLink | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_au1rjicn | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| SNZB-03 | _TZ3000_bb6xaihh | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| CK-TLSR8656-SS5-01(7002) | eWeLink | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| SNZB-03 | eWeLink | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| MS01 | eWeLink | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| DS01 | eWeLink | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| SNZB-04 | _TZ3000_n2egfsli | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0601 | _TZE200_pay2byax | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0601 | _TZE200_n8dljorx | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0205 | _TZ3210_up3pngle | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TZ3000_c8ozah8n | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_6zvw8ham | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TZ3040_bb6xaihh | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| lumi.magnet.ac01 | LUMI | Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR | 
+| lumi.magnet.agl02 | LUMI | Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR | 
+| lumi.sensor_magnet.aq2 | LUMI | Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR | 
+| lumi.sensor_motion.aq2 | LUMI | Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR | 
+| TS0207 | _TZ3210_tgvtvdoc | Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR | 
+| TS0207 | _TZ3210_p68kms0l | Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR | 
+| TS0601 | _TZE200_u6x1zyv2 | Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2 | 
+| SMOK_V16 | Heiman | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| GAS_V15 | Heiman | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| TS0601 | _TZE200_iba1ckek | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0202 | _TZ3000_6ygjfyll | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_7d8yme6f | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_bpkijo14 | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| TS0203 | _TZ3000_oxslv1c9 | Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR | 
+| SmokeSensor-EF-3.0 | HEIMAN | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR | 
+| TS0210 | _TZ3000_lzdjjfss | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T | 
+| ZB-DoorSensor-D0007 | ADEO | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B | 
+| TS0203 | _TZ3000_d93wtje5 | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B | 
+| TS0203 | _TZ3000_8yhypbo7 | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B | 
+| ZG-222Z | HOBEIAN | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B | 
+| ZG-102Z | HOBEIAN | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B | 
+| WISZB-120 | Develco Products A/S | Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR | 
+| SPLZB-132 | Develco Products A/S | Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER | 
+| AQSZB-110 | Develco Products A/S | Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR | 
+| SNZB-05P | SONOFF | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B | 
+| SNZB-05 | eWeLink | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B | 
+| ZG-204Z | HOBEIAN | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B | 
+| SNZB-04P | eWeLink | Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B | 
+| ZB-SMART-PIRTH-V3 | ADEO | Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR | 
+| SNZB-03P | eWeLink | Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR | 
+| TS0001 | _TZ3000_prits6g4 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_iutkth2a | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_skueekg3 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| ZG-301Z | HOBEIAN | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_hktqahrq | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_npzfdcof | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_5ng23zjs | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_rmjr4ufz | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_v7gnj3ad | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_3a9beq8a | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_ark8nv4y | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_mx3vgyea | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_qsp2pwtf | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_kycczpw8 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_46t1rvdu | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_bhcpnvud | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS000F | _TZ3000_skueekg3 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS000F | _TZ3000_hktqahrq | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS000F | _TZ3000_m9af2l6g | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS000F | _TZ3000_mx3vgyea | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS000F | _TZ3000_dlhhrhs8 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS000F | _TZ3000_fdxihpp7 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS000F | _TZ3000_hdc8bbha | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS000F | _TZ3218_hdc8bbha | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_q6a3tepg | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0001 | _TZ3000_tqlv4ug4 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| SWITCH-ZR03-1 | eWeLink | Z2S_DEVICE_DESC_RELAY_1 | 
+| Plug 01 | OSRAM | Z2S_DEVICE_DESC_RELAY_1 | 
+| S26R2ZB | SONOFF | Z2S_DEVICE_DESC_RELAY_1 | 
+| TS0001 | _TZ3000_cmcjbqup | Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC | 
+| lumi.valve.agl001 | Aqara | Z2S_DEVICE_DESC_ON_OFF_VALVE_DC | 
+| TS0011 | _TZ3000_ahxwesag | Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC | 
+| TS0001 | _TZ3000_8n7lqbm0 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| lumi.switch.b1lc04 | LUMI | Z2S_DEVICE_DESC_LUMI_SWITCH | 
+| lumi.switch.l2aeu1 | LUMI | Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH | 
+| TRADFRI control outlet | IKEA of Sweden | Z2S_DEVICE_DESC_RELAY_1 | 
+| TRETAKT Smart plug | IKEA of Sweden | Z2S_DEVICE_DESC_RELAY_1 | 
+| LDSENK01F | ADEO | Z2S_DEVICE_DESC_RELAY_1 | 
+| TS0004 | _TZ3000_mmkbptmx | Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH | 
+| TS011F | _TZ3000_cehuw1lw | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A | 
+| TS011F | _TZ3000_okaz9tjs | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1 | 
+| TS011F | _TZ3210_fgwhjm9j | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1 | 
+| TS011F | _TZ3000_5f43h46b | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2 | 
+| TS011F | _TZ3000_w0qqde0g | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2 | 
+| TS011F | _TZ3000_ww6drja5 | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS011F | _TZ3000_wzmuk9ai | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS011F | _TZ3000_gjnozsaz | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| lumi.plug.mmeu01 | LUMI | Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER | 
+| TS011F | _TZ3000_2putqrmw | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS011F | Zbeacon | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS011F | _TZ3000_2uollq9d | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS011F | _TZ3210_2uollq9d | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS011F | _TZ3000_qeuvnohg | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS011F | _TZ3000_fukaa7nc | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS011F | _TZ3210_5ct6e7ye | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER | 
+| TS0001 | _TZ3000_kqvb5akv | Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A | 
+| TS011F | _TZ3000_zrm3oxsh | Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP | 
+| LDSENK02F | ADEO | Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER | 
+| INSPELNING Smart plug | IKEA of Sweden | Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER | 
+| TS0044 | _TZ3000_wkai4ga5 | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_mh9px7cq | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_j61x9rxn | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_a4xycprs | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_dziaict4 | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_u3nv1jwk | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_bgtzm4ny | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_ee8nrt2l | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | HOBEIAN | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_kfu8zapd | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0044 | _TZ3000_zgyzgdua | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0043 | _TZ3000_famkxci2 | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0043 | _TZ3000_sj7jbgks | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0042 | _TZ3000_tzvbimpq | Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 | 
+| TS0041 | _TZ3000_yj6k7vfo | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS004F | _TZ3000_4fjiwweb | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F | 
+| TS004F | _TZ3000_uri7ongn | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F | 
+| TS004F | _TZ3000_ixla93vd | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F | 
+| TS004F | _TZ3000_qja6nq5z | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F | 
+| TS004F | _TZ3000_abrsvsou | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F | 
+| TS004F | _TZ3000_402vrq2i | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F | 
+| TS004F | _TZ3000_ja5osu5g | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS004F | _TZ3000_kjfzuycl | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS004F | _TZ3000_egvb1p2g | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS004F | _TZ3000_kaflzta4 | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS004F | _TZ3000_lrfvzq1e | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS0041 | _TZ3000_mrpevh8p | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS0041 | _TZ3000_8rppvwda | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS0041 | _TZ3000_5bpeda8u | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| TS1001 | _TYZB01_bngwdjsr | Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB20 | 
+| TS1001 | _TYZB01_hww2py6b | Z2S_DEVICE_DESC_LIVARNO_DIMMER_SWITCH_FB21 | 
+| ZG-101ZL | HOBEIAN | Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F | 
+| SNZB-01P | eWeLink | Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F | 
+| SNZB-01 | eWeLink | Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F | 
+| CK-TLSR8656-SS5-01(7000) | eWeLink | Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F | 
+| lumi.sensor_86sw1 | LUMI | Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F | 
+| Remote Control N2 | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_SMART_BUTTON | 
+| SYMFONISK sound remote gen2 | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1 | 
+| SYMFONISK Sound Controller | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1 | 
+| TRADFRI on/off switch | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F | 
+| RODRET Dimmer | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F | 
+| SOMRIG shortcut button | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON | 
+| VALLHORN Wireless Motion Sensor | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_VALLHORN_1 | 
+| RWL021 | Philips | Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH | 
+| TS0001 | _TZ3000_gjrubzje | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| ZBMINIL2 | SONOFF | Z2S_DEVICE_DESC_RELAY_1 | 
+| ZBMicro | SONOFF | Z2S_DEVICE_DESC_RELAY_1 | 
+| ZBMINI-L | SONOFF | Z2S_DEVICE_DESC_RELAY_1 | 
+| ZBMINIR2 | SONOFF | Z2S_DEVICE_DESC_RELAY_1 | 
+| 01MINIZB | SONOFF | Z2S_DEVICE_DESC_RELAY_1 | 
+| TS0001 | _TZ3000_fdxihpp7 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0601 | _TZE200_0dvm9mva | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE284_fqm2sfpe | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_9gvruqf5 | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_zr9c0day | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_c88teujp | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_yw7cahqs | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_azqp6ssj | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_zuhszj9s | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_h4cgnbzg | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_gd4rvykv | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_exfrnlow | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_9m4kmbfu | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_3yp57tby | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE200_7p8ugv8d | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE284_3yp57tby | Z2S_DEVICE_DESC_TS0601_TRV_SASWELL | 
+| TS0601 | _TZE284_o3x45p96 | Z2S_DEVICE_DESC_TS0601_TRV_ME167 | 
+| TS0601 | _TZE200_ybsqljjg | Z2S_DEVICE_DESC_TS0601_TRV_ME167 | 
+| TS0601 | _TZE200_9xfjixap | Z2S_DEVICE_DESC_TS0601_TRV_ME167 | 
+| TS0601 | _TZE200_rxq4iti9 | Z2S_DEVICE_DESC_TS0601_TRV_ME167 | 
+| TS0601 | _TZE200_bvu2wnxz | Z2S_DEVICE_DESC_TS0601_TRV_ME167 | 
+| TS0601 | _TZE200_6rdj8dzm | Z2S_DEVICE_DESC_TS0601_TRV_ME167 | 
+| TS0601 | _TZE200_p3dbf6qs | Z2S_DEVICE_DESC_TS0601_TRV_ME167 | 
+| TS0601 | _TZE200_rxntag7i | Z2S_DEVICE_DESC_TS0601_TRV_ME167 | 
+| TS0601 | _TZE204_vjpaih9f | Z2S_DEVICE_DESC_TS0601_TRV_TRV16 | 
+| TS0601 | _TZE284_ymldrmzx | Z2S_DEVICE_DESC_TS0601_TRV_TRV603 | 
+| TS0601 | _TZE200_cpmgn2cf | Z2S_DEVICE_DESC_TS0601_TRV_MOES | 
+| TS0601 | _TZE200_b6wax7g0 | Z2S_DEVICE_DESC_TS0601_TRV_BECA | 
+| TS0601 | _TZE204_rtrmfadk | Z2S_DEVICE_DESC_TS0601_TRV_TRV601 | 
+| TS0601 | _TZE200_rtrmfadk | Z2S_DEVICE_DESC_TS0601_TRV_TRV601 | 
+| TS0601 | _TZE200_dv8abrrz | Z2S_DEVICE_DESC_TS0601_TRV_TRV601 | 
+| TS0601 | _TZE200_pbo8cj0z | Z2S_DEVICE_DESC_TS0601_TRV_GTZ10 | 
+| TS0601 | _TZE200_ps5v5jor | Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL | 
+| TS0601 | _TZE204_ltwbm23f | Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z | 
+| TS0601 | _TZE200_mudxchsu | Z2S_DEVICE_DESC_TS0601_TRV_TV02 | 
+| TRVZB | SONOFF | Z2S_DEVICE_DESC_SONOFF_TRVZB | 
+| TS0505A | _TZ3000_keabpigv | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A | 
+| TS0505 | zbeacon | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A | 
+| TS0505A | _TZ3000_riwp3k79 | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A | 
+| TS0502A | _TZ3000_8uaoilu9 | Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB | 
+| TS0502B | _TZB210_ue01a0s2 | Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB | 
+| TRADFRI bulb E27 CWS globe 806lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_RGBW_BULB | 
+| TRADFRI bulb GU10 CWS 345lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_RGBW_BULB | 
+| TRADFRI bulb E14 CWS globe 806lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_RGBW_BULB | 
+| TRADFRI bulb E14 CWS globe 806lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_RGBW_BULB | 
+| LCA006 | Philips | Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB | 
+| \u001aTRADFRI bulb GU10 WW 345lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| TRADFRI bulb E27 WW globe 806lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| TRADFRI bulb E27 WW G95 CL 470lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| TRADFRI bulb GU10 WW 345lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| \\u001TRADFRI bulb GU10 WW 345lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| \u001aTRADFRI bulb GU10 WW 345lm8 | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| TRADFRI bulb GU10 WW 380lm | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| TRADFRI Driver 10W | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| TRADFRI Driver 30W | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_WW_BULB | 
+| LWW003 | Philips | Z2S_DEVICE_DESC_PHILIPS_WW_BULB | 
+| LWF003 | Philips | Z2S_DEVICE_DESC_PHILIPS_WW_BULB | 
+| TS0501B | _TZ3210_ctv0gump | Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0 | 
+| TS0501B | _TZ3210_i680rtja | Z2S_DEVICE_DESC_TUYA_LED_DIMMER | 
+| TS0052 | _TZ3000_mgusv51k | Z2S_DEVICE_DESC_TUYA_LED_DIMMER | 
+| ZB-DL01 | eWeLight | Z2S_DEVICE_DESC_LED_DIMMER | 
+| TS0505B | _TZ3210_bfwvfyx1 | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B | 
+| TS0505B | Zbeacon | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B | 
+| TS0505B | _TZB210_jogusbq1 | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B | 
+| TS0505B | _TZB210_rs0ufzwg | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B | 
+| TS0505B | _TZ3210_3lbtuxgp | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B | 
+| TS0505B | _TZ3210_wbsgmojq | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B | 
+| TS0505B | _TZ3210_ljoasixl | Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B | 
+| TS0503B | _TZ3210_0zabbfax | Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY | 
+| TS0503B | _TZ3210_f0byevky | Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY | 
+| CK-BL702-AL-01(7009_Z102LG03-1) | eWeLink | Z2S_DEVICE_DESC_RGBW_BULB_XY | 
+| ZB-CL01 | eWeLight | Z2S_DEVICE_DESC_RGBW_BULB_XY | 
+| TS0011 | _TZ3000_hhiodade | Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 | 
+| TS0011 | _TZ3000_ji4araar | Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 | 
+| TS0011 | _TZ3000_aetquff4 | Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 | 
+| TS0011 | TZ3000_hafsqare | Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 | 
+| TS0002 | _TZ3000_c7xsiexw | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0002 | _TZ3000_nuenzetq | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0002 | _TZ3000_mtnpt6ws | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS000F | _TZ3000_m8f3z8ju | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0002 | _TZ3000_criiahcg | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0002 | _TZ3000_zmy4lslw | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0012 | _TZ3000_p8alo7qa | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0012 | _TZ3000_jl7qyupf | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0012 | _TZ3000_ljhbw1c9 | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0012 | _TZ3000_xk5udnd6 | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0012 | _TZ3000_18ejxno0 | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0012 | _TZ3000_zmlunnhy | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0012 | _TZ3000_e98krvvk | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0013 | _TZ3000_aezbqpcu | Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH | 
+| TS011F | _TZ3000_vzopcetz | Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH | 
+| TS0013 | _TZ3000_qewo8dlz | Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH | 
+| TS0002 | _TZ3000_ltgngnqz | Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH | 
+| TS0003 | _TZ3000_sueu2ppq | Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH | 
+| TS0003 | _TZ3000_hbic3ka3 | Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH | 
+| TS0003 | _TZ3000_mw1pqqqt | Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH | 
+| TS0004 | _TZ3000_imaccztn | Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH | 
+| TS0002 | _TZ3000_h1ipgkwn | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0004 | _TZ3000_5ajpkyq6 | Z2S_DEVICE_DESC_TUYA_RELAY | 
+| TS0601 | _TZE204_jtbgusdc | Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH | 
+| TS0601 | _TZE200_rccxox8p | Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR | 
+| TS0601 | _TZE284_rccxox8p | Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR | 
+| TS0601 | _TZE204_ntcy3xu1 | Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1 | 
+| TS0601 | _TZE204_ai4rqhky | Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1 | 
+| TS0601 | _TZE284_n4ttsck2 | Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2 | 
+| TS0601 | _TZE284_rjxqso4a | Z2S_DEVICE_DESC_TUYA_CO_DETECTOR | 
+| TS0601 | _TZE284_chbyv06x | Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR | 
+| TS0601 | _TZE200_mja3fuja | Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR | 
+| TS0225 | _TZE200_2aaelwxk | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR | 
+| TS0601 | _TZE200_kb5noeto | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR | 
+| TS0601 | _TZE284_debczeci | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1 | 
+| TS0601 | _TZE284_1lvln0x6 | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1 | 
+| TS0601 | _TZE204_ex3rcdha | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5 | 
+| TS0601 | _TZE200_rhgsbacq | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1 | 
+| TS0601 | _TZE200_uli8wasj | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1 | 
+| TS0601 | _TZE200_grgol3xp | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1 | 
+| TS0601 | _TZE200_y8jijhba | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1 | 
+| ZG-204ZV | HOBEIAN | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1 | 
+| TS0601 | _TZE204_mtoaryre | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY | 
+| TS0222 | _TZ3000_9kbbfeho | Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR | 
+| TS0222 | _TZ3000_hy6ncvmw | Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR | 
+| TS0021 | _TZ3210_3ulg9kpo | Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3 | 
+| TLSR82xx | TELINK | Z2S_DEVICE_DESC_SMART_BUTTON_2F | 
+| TS0601 | _TZE200_nojsjtj2 | Z2S_DEVICE_DESC_TUYA_SOS_BUTTON | 
+| TS0601 | _TZE284_dikb3dp6 | Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER | 
+| TS0601 | _TZE284_iwn0gpzz | Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER | 
+| SWV | SONOFF | Z2S_DEVICE_DESC_SONOFF_SMART_VALVE | 
+| TS0601 | _TZE204_a7sghmms | Z2S_DEVICE_DESC_GIEX_SMART_VALVE | 
+| TS1201 | _TZ3290_7v1k4vufotpowp9z | Z2S_DEVICE_DESC_IR_REMOTE_CONTROL | 
+| TS130F | _TZ3210_ol1uhvza | Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE | 
+| TS130F | _TZ3210_1ptgp0az | Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE | 
+| TS130F | _TZ3000_fccpjz5z | Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE | 
+| TS130F | _TZ3000_femsaaua | Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE | 
+| TS130F | _TZ3210_dwytrmda | Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE | 
+| TS130F | _TZ3000_5iixzdo7 | Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE | 
+| TS0224 | _TZ3000_c2yscrj8 | Z2S_DEVICE_DESC_TUYA_SIREN_ALARM | 
+| TS0224 | _TZ3000_cipibmnp | Z2S_DEVICE_DESC_TUYA_SIREN_ALARM | 
+| ZB-Remote-D0001 | ADEO | Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F | 
+| LDSENK08 | ADEO | Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR | 
+| LDSENK09 | ADEO | Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F | 
+| TS0601 | _TZE200_icka1clh | Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR | 
+| TS0601 | _TZE200_68nvbio9 | Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR | 
+| TS0601 | _TZE204_t1blo2bj | Z2S_DEVICE_DESC_MOES_ALARM | 
+| TS0601 | _TZE200_wzk0x7fq | Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR | 
+| ZG-102ZM | HOBEIAN | Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR | 
+| TS0001 | _TZ3000_n0lphcok | Z2S_DEVICE_DESC_TUYA_REPEATER | 
+| TS0601 | _TZE284_zm8zpwas | Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY | 
+| lumi.remote.cagl02 | LUMI | Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO | 
+| S60ZBTPF | SONOFF | Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER | 
+| CK-BL702-SWP-01(7020) | eWeLink | Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER | 
+| TS0222 | _TZ3000_7kscdesh | Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR | 
+| ZG-204ZL | HOBEIAN | Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR | 
+| TS0601 | _TZE200_qxyh4r7g | Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR | 
+| lumi.airmonitor.acn01 | LUMI | Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR | 
+| TS0201 | _TZ3000_utwgoauk | Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR | 
+| lumi.sensor_ht | LUMI | Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR | 
+| TS0601 | _TZE200_mua6ucdj | Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS | 
+| TS0601 | _TZE200_oahqgdig | Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES | 
+| TS0601 | _TZE200_oahqgdig | Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES | 
+| TS0001 | _TZ3210_j4pdtz9v | Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS | 
+| TS0601 | _TZE284_aaeaifez | Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198 | 
+| TS0601 | _TZE204_lzriup1j | Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198 | 
+| TS0601 | _TZE204_gops3slb | Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198 | 
+| TS0601 | _TZE284_gops3slb | Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198 | 
+| TS0601 | _TZE284_ye5jkfsb | Z2S_DEVICE_DESC_TS0601_MOES_BHT002 | 
+| TS0601 | _TZE204_1oft6qso | Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER | 
+| TS011F | _TZ3000_j0ktmul1 | Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER | 
+| TS0601 | _TZE204_5slehgeo | Z2S_DEVICE_DESC_MOES_COVER | 
+| RBSH-SP-ZB-EU | BOSCH | Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER | 
+| RBSH-TRV0-ZB-EU | BOSCH | Z2S_DEVICE_DESC_BOSCH_BTHRA | 
+| VINDSTYRKA | IKEA of Sweden | Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR | 
+| SPZB0001 | Eurotronic | Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001 | 
+| TS0601 | _TZE204_kyhbrfyl | Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO | 
+| TLSR82xx | AwoX | Z2S_DEVICE_DESC_DIMMER_CT_BULB | 
+| lumi.airrtc.agl001 | LUMI | Z2s_DEVICE_DESC_LUMI_TRV | 
+
