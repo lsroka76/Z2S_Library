@@ -1,9 +1,9 @@
 #include "z2s_device_hvac.h"
 
 /*----------------------------------------------------------------------------------------------------------------------------*/
-uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
+uint8_t getZ2SDeviceHvacCmdSet(int16_t channel_number_slot) {
 
-  switch (model_id) {
+  switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL: {  
@@ -13,8 +13,13 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id) {
 
 
     case Z2S_DEVICE_DESC_TS0601_TRV_ME167: {
-      
-      return me167_cmd_set;
+
+      if (strcmp(Z2S_getZbDeviceManufacturerName(
+               z2s_channels_table[channel_number_slot].ZB_device_id),
+             "_TZE200_9xfjixap") == 0) 
+        return me167_no_pi_cmd_set;
+      else
+        return me167_cmd_set;
     } break;
 
 
@@ -116,7 +121,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   bool onOffOnly = true;
   
   trv_commands_set = 
-    getZ2SDeviceHvacCmdSet(z2s_channels_table[channel_number_slot].model_id);
+    getZ2SDeviceHvacCmdSet(channel_number_slot);
 
   if ((trv_commands_set >= saswell_cmd_set) && 
       (trv_commands_set < ts0601_cmd_sets_number)) {
@@ -180,11 +185,6 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
       (trv_commands_set == me167_cmd_set))
     onOffOnly = false;
 
-  if (strcmp(Z2S_getZbDeviceManufacturerName(
-               z2s_channels_table[channel_number_slot].ZB_device_id),
-             "_TZE200_9xfjixap") == 0) 
-    onOffOnly = true;
-  
   auto Supla_Z2S_TRVInterface = 
     new Supla::Control::Z2S_TRVInterface(gateway, 
                                          device, 

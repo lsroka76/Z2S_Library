@@ -24,10 +24,11 @@
 #define TRV_SCHEDULE_MODE_MSG           0x0C
 #define TRV_TEMPERATURE_HISTERESIS_MSG  0x0D
 #define TRV_SENSOR_TYPE_MSG             0x0E
+#define TRV_PI_HEATING_DEMAND_MSG       0x0F
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id);
+uint8_t getZ2SDeviceHvacCmdSet(int16_t channel_number_slot);
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

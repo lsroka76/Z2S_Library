@@ -215,28 +215,32 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
   int32_t temperature_histeresis_factor  = 1;
 
 
-  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, //legacy compatibility
-                                                            z2s_channels_table[channel_number_slot].endpoint, 
-                                                            z2s_channels_table[channel_number_slot].cluster_id, 
-                                                            SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
-                                                            NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, //legacy compatibility
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    NO_CUSTOM_CMD_SID);
                                                             
   if (channel_number_slot_1 < 0)
-    channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                      z2s_channels_table[channel_number_slot].endpoint, 
-                                                      z2s_channels_table[channel_number_slot].cluster_id, 
-                                                      SUPLA_CHANNELTYPE_THERMOMETER, 
-                                                      NO_CUSTOM_CMD_SID);
+    channel_number_slot_1 = Z2S_findChannelNumberSlot(
+      z2s_channels_table[channel_number_slot].ieee_addr, 
+      z2s_channels_table[channel_number_slot].endpoint, 
+      z2s_channels_table[channel_number_slot].cluster_id, 
+      SUPLA_CHANNELTYPE_THERMOMETER, 
+      NO_CUSTOM_CMD_SID);
 
-  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                            z2s_channels_table[channel_number_slot].endpoint, 
-                                                            z2s_channels_table[channel_number_slot].cluster_id, 
-                                                            SUPLA_CHANNELTYPE_HVAC, 
-                                                            NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_HVAC, 
+    NO_CUSTOM_CMD_SID);
 
-  uint8_t trv_commands_set = getZ2SDeviceHvacCmdSet(model_id);
+  uint8_t trv_commands_set = getZ2SDeviceHvacCmdSet(channel_number_slot);
 
-  if ((trv_commands_set >= saswell_cmd_set) && (trv_commands_set < ts0601_cmd_sets_number)) {
+  if ((trv_commands_set >= saswell_cmd_set) && 
+      (trv_commands_set < ts0601_cmd_sets_number)) {
 
     if (ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id == trv_commands_set) {
 
