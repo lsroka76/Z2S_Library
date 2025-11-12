@@ -1237,7 +1237,6 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_temperature_histeresis_factor    =  0x01,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
-};
 
 /*---------------------------------------------------------------------------------------*/
 
@@ -1306,7 +1305,8 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
     .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A,
 
-    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 }, 
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 }
+}; 
 
 /*---------------------------------------------------------------------------------------*/
 
