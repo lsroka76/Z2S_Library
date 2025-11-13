@@ -271,6 +271,10 @@
 #define TUYA_ZWT_ZWT198_SENSOR_DP                                   0x6A
 #define TUYA_ZWT_ZWT198_BACKLIGHT_MODE_DP                           0x6E
 
+#define TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TEMPERATURE_DP           0x02 //x10
+#define TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_HUMIDITY_DP              0x03 //x10
+#define TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMPERATURE_DP           0x04 //x10
+
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_8   0x07 //8 bit value /7 bytes/

@@ -44,6 +44,7 @@
 #define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR       0x1100
 #define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1     0x1101
 
+#define Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE           0x1150
 
 #define Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR             0x1200
 #define Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR                0x1205
@@ -537,7 +538,8 @@
 #define TUYA_8_RELAYS_CONTROLLER_STATUS_SID                 0x1B // ENUM ??
 #define TUYA_8_RELAYS_CONTROLLER_LOCK_SID                   0x1D
 
-
+#define TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TH_SID           0x00
+#define TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMP_SID         0x01
 
 
 [[maybe_unused]]
@@ -3768,6 +3770,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 30200,
     .z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_hodyryli", .model_name = "TS0601",
+    .z2s_device_uid = 30300,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE,
+    .z2s_device_endpoints_count = 1},
+  
 //DEVICES_END
 
 };

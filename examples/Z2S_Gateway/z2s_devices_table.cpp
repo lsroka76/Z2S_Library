@@ -4424,7 +4424,36 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
                              first_free_slot);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/     
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+      case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE: {
+
+        switch (sub_id) {
+
+
+          case TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TH_SID:
+
+            addZ2SDeviceTempHumidity(device, 
+                                     first_free_slot, 
+                                     sub_id, 
+                                     name, 
+                                     func); 
+          break;
+
+
+          case TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMP_SID:
+
+            addZ2SDeviceTempHumidity(device, 
+                                     first_free_slot, 
+                                     sub_id, 
+                                     name, 
+                                     func,
+                                     false); //thermometer only
+          break;
+        }
+      } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: 
       case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR: 
@@ -6602,6 +6631,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
     case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
       return true;
     default:
       return false;
@@ -7765,6 +7795,19 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
                        "COLOR TEMPERATURE",
                        SUPLA_CHANNELFNC_DIMMER);
     } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE: {
+            
+      Z2S_addZ2SDevice(joined_device,
+                       TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TH_SID,
+                       "INTERNAL T/H");
+
+      Z2S_addZ2SDevice(joined_device,
+                       TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMP_SID,
+                       "TEMPERATURE PROBE");
+    } break;
+
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
