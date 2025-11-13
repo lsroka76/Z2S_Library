@@ -184,6 +184,7 @@
 #define Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR        0x4821
 #define Z2S_DEVICE_DESC_MOES_COVER                          0x4822
 #define Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE      0x4830
+#define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER                 0x4850
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_VALVE                  0x4900
 #define Z2S_DEVICE_DESC_GIEX_SMART_VALVE                    0x4910
@@ -1342,6 +1343,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR,
@@ -3774,6 +3780,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE284_hodyryli", .model_name = "TS0601",
     .z2s_device_uid = 30300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.curtain.agl001",
+    .z2s_device_uid = 30400,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER,
     .z2s_device_endpoints_count = 1},
   
 //DEVICES_END

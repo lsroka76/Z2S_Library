@@ -24,6 +24,7 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
       
 
       case Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE: 
+      case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER:
         
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; 
       break;
