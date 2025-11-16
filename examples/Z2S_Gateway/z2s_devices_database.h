@@ -115,6 +115,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A              0x3110
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B              0x3111
+#define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT                0x3112
+
 #define Z2S_DEVICE_DESC_IKEA_RGBW_BULB                      0x3120
 #define Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB                   0x3130
 
@@ -1249,6 +1251,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
                              ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+                             ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
@@ -1317,7 +1326,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
     .z2s_device_clusters_count = 1,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY,
@@ -2903,6 +2918,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE200_hvaxb2tc", .model_name = "TS0601",
+    .z2s_device_uid = 17115,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE200_9xfjixap", .model_name = "TS0601",
     .z2s_device_uid = 17200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
@@ -3785,6 +3805,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "LUMI", .model_name = "lumi.curtain.agl001",
     .z2s_device_uid = 30400,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_y5rtzkmc", .model_name = "TS0504B",
+    .z2s_device_uid = 30500,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT,
     .z2s_device_endpoints_count = 1},
   
 //DEVICES_END

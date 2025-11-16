@@ -1973,7 +1973,7 @@ void processTuyaTempHumidityTempProbeSensorDataReport(
   if (Tuya_read_dp_result.is_success) {
 
     msgZ2SDeviceTempHumidityHumi(
-      channel_number_slot_1, (float)Tuya_read_dp_result.dp_value / 10);
+      channel_number_slot_1, (float)Tuya_read_dp_result.dp_value);
   }
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(
@@ -1985,15 +1985,16 @@ void processTuyaTempHumidityTempProbeSensorDataReport(
       channel_number_slot_2, (float)Tuya_read_dp_result.dp_value / 10);
   }
 
-  /*Tuya_read_dp_result = Z2S_readTuyaDPvalue(
-    TUYA_VIBRATION_SENSOR_BATTERY_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_TH_SENSOR_TEMP_PROBE_BATTERY_STATE_DP, payload_size, payload);
 
   if (Tuya_read_dp_result.is_success) {
 
     updateSuplaBatteryLevel(
       channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
-      Tuya_read_dp_result.dp_value);
-  }  */
+      Tuya_read_dp_result.dp_value == 0 ? 10 : 
+      Tuya_read_dp_result.dp_value == 1 ? 50 : 100);
+  }  
 }
 
 /*******************************************************************************/

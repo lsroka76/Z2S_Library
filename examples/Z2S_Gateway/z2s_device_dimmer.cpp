@@ -41,6 +41,7 @@ void initZ2SDeviceDimmer(ZigbeeGateway *gateway,
 
         case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
         case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
+        case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
         case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
         case Z2S_DEVICE_DESC_IKEA_WW_BULB:
         case Z2S_DEVICE_DESC_RGBW_BULB_XY:
@@ -142,6 +143,7 @@ void addZ2SDeviceDimmer(ZigbeeGateway *gateway,
     case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
+    case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
     case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
     case Z2S_DEVICE_DESC_IKEA_WW_BULB:
     case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
@@ -203,6 +205,7 @@ void msgZ2SDeviceDimmer(int16_t channel_number_slot, int16_t level, bool state) 
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       case Z2S_DEVICE_DESC_IKEA_WW_BULB:
       case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:

@@ -4106,13 +4106,15 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
   return false;
 }
 
-void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t command_id,
-                                     uint16_t payload_size, uint8_t *payload) {
+void Z2S_onCmdCustomClusterReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint8_t command_id, uint16_t payload_size, uint8_t *payload) {
 
   switch (cluster) {
     case TUYA_PRIVATE_CLUSTER_EF00: {
 
-      processTuyaCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload); 
+      processTuyaCustomCluster(
+        ieee_addr, endpoint, command_id, payload_size, payload); 
       
       if (_on_Tuya_custom_cluster_receive) 
         _on_Tuya_custom_cluster_receive(command_id, payload_size, payload);
@@ -4120,22 +4122,29 @@ void Z2S_onCmdCustomClusterReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpo
 
     case ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER:
       
-      processZosungCustomCluster(ieee_addr, endpoint, command_id, payload_size, payload); break;
+      processZosungCustomCluster(
+        ieee_addr, endpoint, command_id, payload_size, payload); break;
     
     case IKEA_PRIVATE_CLUSTER:
     case IKEA_PRIVATE_CLUSTER_2: {
       
-      log_i("IKEA custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", cluster, endpoint, command_id);
-      processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster, command_id, payload_size, payload);
+      log_i("IKEA custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", 
+            cluster, endpoint, command_id);
+      processIkeaSymfoniskCommands(
+        ieee_addr, endpoint, cluster, command_id, payload_size, payload);
      } break;
 
      case PHILIPS_CUSTOM_CLUSTER: {
       
-      log_i("Philips custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", cluster, endpoint, command_id);
-      processPhilipsCommands(ieee_addr, endpoint, cluster, command_id, payload_size, payload);
+      log_i("Philips custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", 
+            cluster, endpoint, command_id);
+      processPhilipsCommands(
+        ieee_addr, endpoint, cluster, command_id, payload_size, payload);
      } break;
     
-    default: log_i("Unknown custom cluster(0x%x) command(0x%x)", cluster, command_id); break;
+    default: log_i("Unknown custom cluster(0x%x) command(0x%x)", 
+                   cluster, command_id); 
+    break;
   }
 }
 
@@ -4144,11 +4153,15 @@ void Z2S_rebuildZbDeviceSuplaChannels(uint8_t device_number_slot) {
   zbg_device_params_t device = {};
 
   device.cluster_id = ESP_ZB_ZCL_CLUSTER_ID_BASIC;
-  memcpy(device.ieee_addr, z2s_zb_devices_table[device_number_slot].ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  memcpy(
+    device.ieee_addr, z2s_zb_devices_table[device_number_slot].ieee_addr, 
+    sizeof(esp_zb_ieee_addr_t));
+
   //device.short_addr = short_addr;
   //device.model_id = z2s_zb_devices_table[device_number_slot].desc_id;
 
-  uint32_t devices_list_idx = z2s_zb_devices_table[device_number_slot].devices_list_idx;
+  uint32_t devices_list_idx = 
+    z2s_zb_devices_table[device_number_slot].devices_list_idx;
 
   for (int endpoint_counter = 0; 
        endpoint_counter < Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count; 
@@ -4217,11 +4230,9 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device, uint8_t count, uint8_t po
         device->short_addr, device->endpoint, device->cluster_id);
   
   
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, 
-                                                          device->endpoint, 
-                                                          device->cluster_id, 
-                                                          ALL_SUPLA_CHANNEL_TYPES, 
-                                                          NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    device->ieee_addr, device->endpoint, device->cluster_id, 
+    ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0)
     //log_i(_no_channel_found_str, device->ieee_addr);
@@ -4234,12 +4245,10 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device, uint8_t count, uint8_t po
 
       z2s_channels_table[channel_number_slot].short_addr = device->short_addr;
 
-      channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, 
-                                                          device->ieee_addr, 
-                                                          device->endpoint, 
-                                                          device->cluster_id, 
-                                                          ALL_SUPLA_CHANNEL_TYPES, 
-                                                          NO_CUSTOM_CMD_SID);
+      channel_number_slot = Z2S_findChannelNumberNextSlot(
+        channel_number_slot, 
+        device->ieee_addr, device->endpoint, device->cluster_id, 
+        ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
     } 
 }
 
@@ -4292,30 +4301,24 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
       ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN)) {
     
     log_i("Tuya query after rejoin");
-    zbGateway.sendCustomClusterCmd(&device, 
-                                   TUYA_PRIVATE_CLUSTER_EF00, 
-                                   TUYA_QUERY_CMD, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_NULL, 
-                                   0, 
-                                   nullptr); 
+    zbGateway.sendCustomClusterCmd(
+      &device, 
+      TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
+      ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr); 
   }
 }
 
-uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device, 
-                         int8_t sub_id, 
-                         const char *name, 
-                         uint32_t func, 
-                         const char *unit) { 
+uint8_t Z2S_addZ2SDevice(
+  zbg_device_params_t *device, int8_t sub_id, 
+  const char *name, uint32_t func, const char *unit) { 
 
   char ieee_addr_str[24] = {};
 
   ieee_addr_to_str(ieee_addr_str, device->ieee_addr);
   
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(device->ieee_addr, 
-                                                          device->endpoint, 
-                                                          device->cluster_id, 
-                                                          ALL_SUPLA_CHANNEL_TYPES, 
-                                                          sub_id);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    device->ieee_addr, device->endpoint, device->cluster_id, 
+    ALL_SUPLA_CHANNEL_TYPES, sub_id);
   
   if (channel_number_slot < 0) {
 
@@ -4328,7 +4331,8 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
         devices_table_full_error_func();
         return ADD_Z2S_DEVICE_STATUS_DT_FULL;
     }
-    log_i("model id %d, first free slot %d", device->model_id, first_free_slot);
+    log_i("model id %d, first free slot %d", 
+          device->model_id, first_free_slot);
     
     switch (device->model_id) {
       
@@ -4958,16 +4962,14 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       case Z2S_DEVICE_DESC_RGBW_BULB_XY:
       case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB: {
         
-        addZ2SDeviceVirtualRelay(&zbGateway,
-                                 device, 
-                                 first_free_slot, 
-                                 NO_CUSTOM_CMD_SID, 
-                                 "RGBW SWITCH", 
-                                 SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay(
+          &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
+          "RGBW SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
@@ -4977,27 +4979,25 @@ uint8_t Z2S_addZ2SDevice(zbg_device_params_t *device,
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDeviceDimmer(&zbGateway,
-                           device, 
-                           first_free_slot, 
-                           DIMMER_FUNC_BRIGHTNESS_SID, 
-                           "BRIGHTNESS", 
-                           SUPLA_CHANNELFNC_DIMMER);
+        addZ2SDeviceDimmer(
+          &zbGateway, device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, 
+          "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
 
-        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+        if (device->model_id != Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT) {
 
-        if (first_free_slot == 0xFF) {
+          first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
+          if (first_free_slot == 0xFF) {
           
-          devices_table_full_error_func();
-          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
-        }
+            devices_table_full_error_func();
+            return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+          }
 
-        addZ2SDeviceDimmer(&zbGateway,
-                           device, 
-                           first_free_slot, 
-                           DIMMER_FUNC_COLOR_TEMPERATURE_SID, 
-                           "COLOR TEMPERATURE", 
-                           SUPLA_CHANNELFNC_DIMMER);
+          addZ2SDeviceDimmer(
+            &zbGateway, device, first_free_slot, 
+            DIMMER_FUNC_COLOR_TEMPERATURE_SID, 
+            "COLOR TEMPERATURE", SUPLA_CHANNELFNC_DIMMER);
+        }
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
