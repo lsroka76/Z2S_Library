@@ -1952,6 +1952,36 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Breath sensitivity",
     .Tuya_datapoint_description = "Enter numeric value: 0 - 10" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM100S2_RADAR_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Radar sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 9" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM100S2_MINIMUM_RANGE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Minimal range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 950 [cm]/step 15 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM100S2_MAXIMUM_RANGE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Maximal range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 950 [cm]/step 15 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM100S2_DETECTION_DELAY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Detection delay",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 100/1 = 0.1 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM100S2_FADING_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Fading time",
+    .Tuya_datapoint_description = "Enter numeric value: 5 - 1500/1 = 0.1 [s]" },
 		
 };
 

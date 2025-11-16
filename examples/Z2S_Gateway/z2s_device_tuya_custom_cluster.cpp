@@ -1471,6 +1471,15 @@ void processTuyaPresenceSensorDataReport(
       distance_dp_id = TUYA_PRESENCE_SENSOR_ZG205Z_TARGET_DISTANCE_DP;
       illuminance_dp_id = TUYA_PRESENCE_SENSOR_ZG205Z_ILLUMINANCE_DP;
     } break;
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2: {
+
+      presence_dp_id = TUYA_PRESENCE_SENSOR_ZYM100S2_PRESENCE_DP;
+      distance_dp_id = TUYA_PRESENCE_SENSOR_ZYM100S2_TARGET_DISTANCE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_ZYM100S2_ILLUMINANCE_DP;
+
+      presence_value_on = 0x01;
+    } break;
   }
   
   if (presence_dp_id) {
@@ -2292,6 +2301,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
 
       processTuyaPresenceSensorDataReport(
         channel_number_slot, payload_size, payload, model_id); 
