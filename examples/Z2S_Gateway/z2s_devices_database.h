@@ -2206,6 +2206,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "LUMI", .model_name = "lumi.sensor_wleak.aq1",
+    .z2s_device_uid = 9705,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-04P",
     .z2s_device_uid = 9800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B,
