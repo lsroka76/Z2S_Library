@@ -1334,8 +1334,7 @@ void processTuya8RelaysDataReport(
 
 void processTuyaPresenceSensorDataReport(
   int16_t channel_number_slot, 
-  uint16_t payload_size,
-  uint8_t *payload, 
+  uint16_t payload_size, uint8_t *payload, 
   uint32_t model_id) {
 
   int16_t channel_number_slot_1; 
@@ -1360,61 +1359,51 @@ void processTuyaPresenceSensorDataReport(
   
   uint8_t presence_value_on   = 0x01; 
 
-  channel_number_slot_1 = 
-    Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, 
-      TUYA_PRESENCE_SENSOR_PRESENCE_SID);
+  channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
 
-  channel_number_slot_2 = 
-    Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-      TUYA_PRESENCE_SENSOR_MOTION_STATE_SID);
+  channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_PRESENCE_SENSOR_MOTION_STATE_SID);
   
-  channel_number_slot_3 = 
-    Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-      TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+  channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
 
-  channel_number_slot_4 = 
-    Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
-      TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID);
+  channel_number_slot_4 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID);
   
-  channel_number_slot_5 = 
-    Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-      TUYA_PRESENCE_SENSOR_DISTANCE_SID);
+  channel_number_slot_5 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_PRESENCE_SENSOR_DISTANCE_SID);
 
-  channel_number_slot_6 = 
-    Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_RELAY, 
-      TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID);
+  channel_number_slot_6 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_RELAY, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID);
 
-  channel_number_slot_7 = 
-    Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_RELAY, 
-      TUYA_PRESENCE_SENSOR_RELAY_MODE_SID);
+  channel_number_slot_7 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_RELAY, TUYA_PRESENCE_SENSOR_RELAY_MODE_SID);
 
   switch(model_id) {
 
@@ -1475,15 +1464,19 @@ void processTuyaPresenceSensorDataReport(
 
       presence_value_on = 0x00;
     } break;
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z: {
+
+      motion_state_dp_id = TUYA_PRESENCE_SENSOR_ZG205Z_PRESENCE_DP;//ENUM
+      distance_dp_id = TUYA_PRESENCE_SENSOR_ZG205Z_TARGET_DISTANCE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_ZG205Z_ILLUMINANCE_DP;
+    } break;
   }
   
   if (presence_dp_id) {
     
-    Tuya_read_dp_result = 
-      Z2S_readTuyaDPvalue(
-        presence_dp_id, 
-        payload_size, 
-        payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      presence_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceIASzone(
@@ -1493,11 +1486,8 @@ void processTuyaPresenceSensorDataReport(
 
   if (motion_state_dp_id) {
 
-    Tuya_read_dp_result = 
-      Z2S_readTuyaDPvalue(
-        motion_state_dp_id, 
-        payload_size, 
-        payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      motion_state_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) { 
       log_i("MOTION STATE CHECK int %d, float %f", 
@@ -1513,11 +1503,8 @@ void processTuyaPresenceSensorDataReport(
 
   if (illuminance_dp_id) {
 
-    Tuya_read_dp_result = 
-      Z2S_readTuyaDPvalue(
-        illuminance_dp_id, 
-        payload_size, 
-        payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      illuminance_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceGeneralPurposeMeasurement(
@@ -1528,39 +1515,28 @@ void processTuyaPresenceSensorDataReport(
   
   if (temperature_dp_id) {
 
-    Tuya_read_dp_result = 
-      Z2S_readTuyaDPvalue(
-        temperature_dp_id, 
-        payload_size, 
-        payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      temperature_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceTempHumidityTemp(
-        channel_number_slot_4, 
-        (float)Tuya_read_dp_result.dp_value/10);
+        channel_number_slot_4, (float)Tuya_read_dp_result.dp_value/10);
   }
 
   if (humidity_dp_id) {
 
-    Tuya_read_dp_result = 
-      Z2S_readTuyaDPvalue(
-        humidity_dp_id, 
-        payload_size, 
-        payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      humidity_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceTempHumidityHumi(
-        channel_number_slot_4, 
-        (float)Tuya_read_dp_result.dp_value);
+        channel_number_slot_4, (float)Tuya_read_dp_result.dp_value);
   }
 
   if (distance_dp_id) {
 
-    Tuya_read_dp_result = 
-      Z2S_readTuyaDPvalue(
-        distance_dp_id, 
-        payload_size, 
-        payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      distance_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceGeneralPurposeMeasurement(
@@ -1571,39 +1547,28 @@ void processTuyaPresenceSensorDataReport(
 
   if (relay_state_dp_id) {
 
-    Tuya_read_dp_result = 
-      Z2S_readTuyaDPvalue(
-        relay_state_dp_id, 
-        payload_size, 
-        payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      relay_state_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceVirtualRelay(
-        channel_number_slot_6,
-        Tuya_read_dp_result.dp_value);
+        channel_number_slot_6, Tuya_read_dp_result.dp_value);
   }
 
   if (relay_mode_dp_id) {
 
-    Tuya_read_dp_result = 
-      Z2S_readTuyaDPvalue(
-        relay_mode_dp_id, 
-        payload_size, 
-        payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      relay_mode_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceVirtualRelay(
-        channel_number_slot_7,
-        Tuya_read_dp_result.dp_value);
+        channel_number_slot_7, Tuya_read_dp_result.dp_value);
   }
 
   if (battery_dp_id) {
 
-    Tuya_read_dp_result = 
-    Z2S_readTuyaDPvalue(
-      battery_dp_id, 
-      payload_size, 
-      payload);
+    Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      battery_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) { 
 
@@ -1611,14 +1576,14 @@ void processTuyaPresenceSensorDataReport(
             Tuya_read_dp_result.dp_value);
 
       updateSuplaBatteryLevel(
-        channel_number_slot_1, 
-        ZBD_BATTERY_LEVEL_MSG, 
+        channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
         Tuya_read_dp_result.dp_value);
     }
   }
 }
 
-void processTuyaRainSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload) {
+void processTuyaRainSensorDataReport(
+  int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload) {
 
   int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4, channel_number_slot_5;
   Tuya_read_dp_result_t Tuya_read_dp_result;
@@ -2197,6 +2162,25 @@ void processFingerbotPlusDataReport(
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
+void processTuyaZM35HQBattery(
+  int16_t channel_number_slot, 
+  uint16_t payload_size, uint8_t *payload, 
+  uint32_t model_id) {
+                                      
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+      TUYA_ZM35HQ_BATTERY_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    updateSuplaBatteryLevel(
+      channel_number_slot, ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);
+  } 
+}
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
 
 void processTuyaDataReport(
   esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, 
@@ -2307,6 +2291,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
 
       processTuyaPresenceSensorDataReport(
         channel_number_slot, payload_size, payload, model_id); 
@@ -2417,8 +2402,16 @@ void processTuyaDataReport(
 
       processTuyaTempHumidityTempProbeSensorDataReport(
         channel_number_slot, payload_size, payload, model_id);
+    break;
 
-      
+
+    case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR:
+
+      processTuyaZM35HQBattery(
+        channel_number_slot, payload_size, payload, model_id);
+    break;
+
     default: 
       
       log_i("Unknown device model id 0x%x", 

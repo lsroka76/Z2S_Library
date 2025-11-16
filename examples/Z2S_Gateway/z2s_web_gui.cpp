@@ -680,6 +680,7 @@ const char* getZ2SDeviceDescName(uint32_t modelID)  {
 		case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
 			return "IAS Zone sensor: ALARM1, TAMPER, LOW BATTERY(0x500)";
 		case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
+		case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR:
 			return "IAS Zone sensor: ALARM1, LOW BATTERY(0x500)";
 		case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR:
 			return "IKEA IAS Zone sensor(0x6, 0x500)";

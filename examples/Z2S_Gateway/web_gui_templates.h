@@ -918,6 +918,12 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "SENSITIVITY LEVEL"
 	},
+	{
+		.zigbee_attribute_id  = 0xF001, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "TUYA KEEP TIME (0: 30, 1: 60, 2: 120)"
+	},
   //IAS WD
   {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_IAS_WD_MAX_DURATION_ID, 
@@ -1878,7 +1884,75 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Motionless detection sensitivity",
     .Tuya_datapoint_description = "Enter numeric value: 0 - 7" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_NONE_DELAY_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Hold delay time",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 28800 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_INDICATOR_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "LED indicator",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set indicator OFF<br>"
+																	"1 => set indicator ON" },
 	
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_MOVE_DETECTION_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Move detection maximal distance",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 1000 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_MOVE_DETECTION_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Move detection minimal distance",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 1000 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_SMALL_MOVE_DETECTION_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Small move detection maximal distance",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_SMALL_MOVE_DETECTION_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Small move detection minimal distance",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_BREATH_DETECTION_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Breath detection maximal distance",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_BREATH_DETECTION_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Breath detection minimal distance",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_MOVE_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Move sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_SMALL_MOVE_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Small move sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG205Z_BREATH_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Breath sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10" },
+		
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

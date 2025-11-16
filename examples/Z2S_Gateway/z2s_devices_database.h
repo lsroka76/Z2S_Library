@@ -73,6 +73,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR               0x2030
 #define Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR                0x2040   
+#define Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR            0x2041
 #define Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR        0x2050
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR         0x2060
 
@@ -95,6 +96,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1           0x2310
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY          0x2315
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO            0x2320
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z         0x2325
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
@@ -743,6 +745,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
     {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+    
+    {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -1453,6 +1461,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -1853,6 +1866,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_bsvqrxru", .model_name = "TS0202",
    .z2s_device_uid = 3925,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3040_fuhjqokx", .model_name = "TS0202",
+   .z2s_device_uid = 3930,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_26fmupbb", .model_name = "TS0203",
@@ -3810,6 +3828,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZ3210_y5rtzkmc", .model_name = "TS0504B",
     .z2s_device_uid = 30500,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_dapwryy7", .model_name = "TS0601",
+    .z2s_device_uid = 30600,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z,
     .z2s_device_endpoints_count = 1},
   
 //DEVICES_END

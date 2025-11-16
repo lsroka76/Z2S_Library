@@ -1955,9 +1955,7 @@ void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr,
         ieee_addr_str, endpoint, illuminance);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, 
-    endpoint, 
-    cluster, 
+    ieee_addr, endpoint, cluster, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
 
@@ -4425,6 +4423,7 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR: 
       case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR: 
+      case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR:
       case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR: 
       case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
@@ -4433,11 +4432,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B:
 
         addZ2SDeviceIASzone(
-          device, 
-          first_free_slot, 
-          sub_id, 
-          name, 
-          func); 
+          device, first_free_slot, sub_id, name, func); 
       break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -5207,7 +5202,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO: {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z: {
         
         switch (sub_id) {
 
@@ -5221,6 +5217,7 @@ uint8_t Z2S_addZ2SDevice(
 
           case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
           case TUYA_PRESENCE_SENSOR_DISTANCE_SID:
+          case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID:
 
             addZ2SDeviceGeneralPurposeMeasurement(
               device, first_free_slot, sub_id, name, 
@@ -6652,6 +6649,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
@@ -7265,6 +7263,27 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
     } break;
 
+/*---------------------------------------------------------------------------------------------------------------------------*/                                         
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, 
+        TUYA_PRESENCE_SENSOR_MOTION_STATE_SID, "MOTION STATE", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..4]");
+
+      Z2S_addZ2SDevice(
+        joined_device, 
+        TUYA_PRESENCE_SENSOR_DISTANCE_SID, "DISTANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "cm");
+      
+      Z2S_addZ2SDevice(
+        joined_device, 
+        TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+    } break;
+
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
@@ -7503,17 +7522,16 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-    case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B: {
+    case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
+    case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       IAS_ZONE_ALARM_1_SID, 
-                       "ALARM1", 
-                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_ALARM_1_SID, "ALARM1", 
+        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       IAS_ZONE_LOW_BATTERY_SID,  
-                       "LOW BATTERY", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_LOW_BATTERY_SID,  "LOW BATTERY", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

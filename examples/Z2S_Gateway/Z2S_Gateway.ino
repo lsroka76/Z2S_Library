@@ -1252,6 +1252,7 @@ if (GUIstarted)
                 case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR:
                 case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR: 
+                case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR:
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
                 case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
