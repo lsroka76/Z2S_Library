@@ -900,7 +900,7 @@ void buildGatewayTabGUI() {
 																						generalMinMaxCallback, 
 																						(void*)3600);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -910,7 +910,7 @@ void buildGatewayTabGUI() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 gui_start_delay_number);
+									 gui_start_delay_number);*/
 
 	working_str = PSTR("Save");
 	auto gui_start_delay_save_button = 
@@ -1395,7 +1395,7 @@ void buildDevicesTabGUI() {
 										 generalMinMaxCallback, 
 										 (void*)255);
 
-	ESPUI.addControl(
+	/*ESPUI.addControl(
 		Control::Type::Min, 
 		PSTR(empty_str), 
 		zero_str, 
@@ -1407,7 +1407,7 @@ void buildDevicesTabGUI() {
 									 PSTR(empty_str), 
 									 working_str, 
 									 Control::Color::None, 
-									 battery_voltage_min_number);
+									 battery_voltage_min_number);*/
 
 	ESPUI.setElementStyle(battery_voltage_min_number, 
 												"color:black; margin: 0% 5%;");
@@ -1432,21 +1432,21 @@ void buildDevicesTabGUI() {
 										 generalMinMaxCallback, 
 										 (void*)255);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
-									 battery_voltage_max_number);
+									 battery_voltage_max_number);*/
 
 	ESPUI.setElementStyle(battery_voltage_max_number, 
 												"color:black; margin: 0% 5%;");
 
-	working_str = 255;
+	/*working_str = 255;
 	ESPUI.addControl(Control::Type::Max, 
 									 PSTR(empty_str), 
 									 working_str, 
 									 Control::Color::None, 
-									 battery_voltage_max_number);
+									 battery_voltage_max_number);*/
 
 	working_str = PSTR("Save");
 	battery_voltage_max_save_button = 
@@ -1993,7 +1993,7 @@ void buildChannelsTabGUI() {
 																			Control::Color::Emerald, 
 																			zb_channel_timings_label, 
 																			generalCallback);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2002,7 +2002,7 @@ void buildChannelsTabGUI() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 keepalive_number);
+									 keepalive_number);*/
 	working_str = PSTR("Save");
 	keepalive_save_button = ESPUI.addControl(Control::Type::Button, 
 																					 PSTR(empty_str),
@@ -2026,7 +2026,7 @@ void buildChannelsTabGUI() {
 																		Control::Color::Emerald, 
 																		zb_channel_timings_label, 
 																		generalCallback);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2035,7 +2035,7 @@ void buildChannelsTabGUI() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 timeout_number);
+									 timeout_number);*/
 	working_str = PSTR("Save");
 	timeout_save_button = ESPUI.addControl(Control::Type::Button, 
 																				 PSTR(empty_str), 
@@ -2057,7 +2057,7 @@ void buildChannelsTabGUI() {
 																		Control::Color::Emerald, 
 																		zb_channel_timings_label, 
 																		generalCallback);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2066,7 +2066,7 @@ void buildChannelsTabGUI() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 refresh_number);
+									 refresh_number);*/
 	working_str = PSTR("Save");
 	refresh_save_button = ESPUI.addControl(Control::Type::Button, 
 																				 PSTR(empty_str), 
@@ -2280,7 +2280,7 @@ void buildClustersAttributesTab() {
 										 clusters_attributes_table[clusters_attributes_tab], 
 										 endpointCallback);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 working_str, 
 									 Control::Color::None, 
@@ -2291,7 +2291,7 @@ void buildClustersAttributesTab() {
 									 PSTR(empty_str), 
 									 working_str, 
 									 Control::Color::None, 
-									 clusters_attributes_table[device_endpoint_number]);
+									 clusters_attributes_table[device_endpoint_number]);*/
 
 	working_str = PSTR("Endpoint id");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
@@ -2357,7 +2357,7 @@ void buildClustersAttributesTab() {
 										 clusters_attributes_table[device_endpoint_number], 
 										 generalMinMaxCallback, (void*)255);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2366,7 +2366,7 @@ void buildClustersAttributesTab() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 clusters_attributes_table[device_attribute_size_number]);
+									 clusters_attributes_table[device_attribute_size_number]);*/
 
 	working_str = PSTR("Select or enter attribute/custom command payload size"
 										 "<br>(use 0x for hexadecimal values)");
@@ -2411,7 +2411,7 @@ void buildClustersAttributesTab() {
 										 generalMinMaxCallback, 
 										 (void*)65535);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2420,7 +2420,7 @@ void buildClustersAttributesTab() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 clusters_attributes_table[device_config_min_number]);
+									 clusters_attributes_table[device_config_min_number]);*/
 
 	working_str = PSTR("Min interval");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
@@ -2439,7 +2439,7 @@ void buildClustersAttributesTab() {
 										 generalMinMaxCallback, 
 										 (void*)65535);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2448,7 +2448,7 @@ void buildClustersAttributesTab() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 clusters_attributes_table[device_config_max_number]);
+									 clusters_attributes_table[device_config_max_number]);*/
 	working_str = PSTR("Max interval");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
@@ -2466,7 +2466,7 @@ void buildClustersAttributesTab() {
 										 generalMinMaxCallback, 
 										 (void*)65535);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2475,7 +2475,7 @@ void buildClustersAttributesTab() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 clusters_attributes_table[device_config_delta_number]);
+									 clusters_attributes_table[device_config_delta_number]);*/
 
 	working_str = PSTR("Delta");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
@@ -2717,7 +2717,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 																				 valve_program_selector, 
 																				 generalMinMaxCallback, 
 																				 (void*)100);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2727,7 +2727,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 									 PSTR(empty_str), 
 									 working_str, 
 									 Control::Color::None, 
-									 valve_cycles_number);
+									 valve_cycles_number);*/
 	working_str = PSTR("Valve cycles count (0-100)");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
@@ -2744,7 +2744,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 																					 valve_program_selector, 
 																					 generalMinMaxCallback, 
 																					 (void*)86400);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2753,7 +2753,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 									 PSTR(empty_str), 
 									 "86400", 
 									 Control::Color::None, 
-									 valve_worktime_number);
+									 valve_worktime_number);*/
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 "Valve cycle worktime (0 s - 86400 s)", 
@@ -2768,7 +2768,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 																				 valve_program_selector, 
 																				 generalMinMaxCallback, 
 																				 (void*)6500);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2777,7 +2777,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 									 PSTR(empty_str), 
 									 "6500", 
 									 Control::Color::None, 
-									 valve_volume_number);
+									 valve_volume_number);*/
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 "Valve cycle volume (0 L - 6500 L)", 
@@ -2792,7 +2792,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 																				 valve_program_selector, 
 																				 generalMinMaxCallback, 
 																				 (void*)86400);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2801,7 +2801,7 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 									 PSTR(empty_str), 
 									 "86400", 
 									 Control::Color::None, 
-									 valve_pause_number);
+									 valve_pause_number);*/
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 "Valve cycle pause (0 s - 86400 s)", 
@@ -2934,7 +2934,7 @@ void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
 																					 gas_alarm_ringtone_selector, 
 																					 generalMinMaxCallback, 
 																					 (void*)180);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -2943,7 +2943,7 @@ void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
 									 PSTR(empty_str), 
 									 "180", 
 									 Control::Color::None, 
-									 gas_alarm_time_number);
+									 gas_alarm_time_number);*/
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 "Alarm duration (0-180 s)", 
@@ -3069,7 +3069,7 @@ void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 																								 moes_alarm_melody_selector, 
 																								 generalMinMaxCallback, 
 																								 (void*)1800);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -3078,7 +3078,7 @@ void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 									 PSTR(empty_str), 
 									 "1800", 
 									 Control::Color::None, 
-									 moes_alarm_duration_number);
+									 moes_alarm_duration_number);*/
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 "Alarm duration (0 - 1800 s)", 
@@ -3093,7 +3093,7 @@ void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 																							 moes_alarm_melody_selector, 
 																							 generalMinMaxCallback, 
 																							 (void*)2);
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -3102,7 +3102,7 @@ void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 									 PSTR(empty_str), 
 									 "2", 
 									 Control::Color::None, 
-									 moes_alarm_volume_number);
+									 moes_alarm_volume_number);*/
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 "Alarm volume (0 - 2)", 
@@ -3277,7 +3277,7 @@ void buildTuyaCustomClusterTabGUI() {
 										 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], 
 										 generalMinMaxCallback, (void*)255);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -3287,7 +3287,7 @@ void buildTuyaCustomClusterTabGUI() {
 									 PSTR(empty_str), 
 									 working_str, 
 									 Control::Color::None, 
-									 Tuya_devices_tab_controls_table[Tuya_datapoint_id_number]);
+									 Tuya_devices_tab_controls_table[Tuya_datapoint_id_number]);*/
 	working_str = "Datapoint id (1 - 255)";
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
@@ -3329,7 +3329,7 @@ void buildTuyaCustomClusterTabGUI() {
 										 generalMinMaxCallback, 
 										 (void*)58);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -3339,7 +3339,7 @@ void buildTuyaCustomClusterTabGUI() {
 									 PSTR(empty_str), 
 									 working_str, 
 									 Control::Color::None, 
-									 Tuya_devices_tab_controls_table[Tuya_datapoint_length_number]);
+									 Tuya_devices_tab_controls_table[Tuya_datapoint_length_number]);*/
 	working_str = "Datapoint type length (1-58)";
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
@@ -4435,7 +4435,7 @@ void Z2S_startWebGUIConfig() {
 																						generalMinMaxCallback, 
 																						(void*)3600);
 
-	ESPUI.addControl(Control::Type::Min, 
+	/*ESPUI.addControl(Control::Type::Min, 
 									 PSTR(empty_str), 
 									 zero_str, 
 									 Control::Color::None, 
@@ -4445,7 +4445,7 @@ void Z2S_startWebGUIConfig() {
 									 PSTR(empty_str), 
 									 max_int_str, 
 									 Control::Color::None, 
-									 gui_start_delay_number);
+									 gui_start_delay_number);*/
 
 	working_str = PSTR("Save");
 	auto gui_start_delay_save_button = 

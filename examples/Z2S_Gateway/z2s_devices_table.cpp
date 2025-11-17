@@ -4337,7 +4337,10 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_NULL: break;
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
-      case Z2S_DEVICE_DESC_TUYA_REPEATER: break;
+      case Z2S_DEVICE_DESC_TUYA_REPEATER: 
+      case Z2S_DEVICE_DESC_REPEATER:
+
+      break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 

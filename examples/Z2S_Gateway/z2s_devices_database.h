@@ -279,6 +279,7 @@
 #define Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS                 0x6700
 
 #define Z2S_DEVICE_DESC_TUYA_REPEATER                       0x7000
+#define Z2S_DEVICE_DESC_REPEATER                            0x7001
 
 #define Z2S_DEVICE_DESC_ON_OFF                              0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                            0x8001
@@ -1082,6 +1083,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM,
     .z2s_device_clusters_count = 2,
@@ -3656,6 +3662,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_n0lphcok", .model_name = "TS0001",
     .z2s_device_uid = 26400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_piuensvr", .model_name = "CK-BL702-ROUTER-01(7018)",
+    .z2s_device_uid = 26405,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
