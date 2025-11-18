@@ -115,12 +115,9 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device, 
-                                           uint8_t free_slot, 
-                                           int8_t sub_id, 
-                                           const char *name, 
-                                           uint32_t func, 
-                                           const char *unit) {
+void addZ2SDeviceGeneralPurposeMeasurement(
+  zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
+  const char *name, uint32_t func, const char *unit) {
   
   auto Supla_GeneralPurposeMeasurement = 
     new Supla::Sensor::GeneralPurposeMeasurement();
@@ -128,13 +125,9 @@ void addZ2SDeviceGeneralPurposeMeasurement(zbg_device_params_t *device,
   if (name == nullptr)
     name = (char*)default_gpm_name;
 
-  Z2S_fillChannelsTableSlot(device, 
-                            free_slot, 
-                            Supla_GeneralPurposeMeasurement->getChannelNumber(), 
-                            SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                            sub_id, 
-                            name, 
-                            func);
+  Z2S_fillChannelsTableSlot(
+    device, free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id, name, func);
   
   Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
 }

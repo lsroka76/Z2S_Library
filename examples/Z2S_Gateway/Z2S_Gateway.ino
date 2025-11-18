@@ -379,7 +379,9 @@ void setup() {
 
   printSizeOfClasses();
   uint32_t sanity_check_time_ms = millis();
-  uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
+  uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/
+    sizeof(Z2S_DEVICES_LIST[0]);
+  
   uint8_t match = 0;
 
   for(uint16_t i = 0; i < devices_list_table_size; i++) {
@@ -438,6 +440,15 @@ void setup() {
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
 
+  /*auto gpm_1 = new Supla::Sensor::GeneralPurposeMeasurement();
+  gpm_1->getChannel()->setChannelNumber(109);
+  
+  auto gpm_2 = new Supla::Sensor::GeneralPurposeMeasurement();
+  gpm_2->getChannel()->setChannelNumber(108);
+  
+  auto gpm_3 = new Supla::Sensor::GeneralPurposeMeasurement();
+  gpm_3->getChannel()->setChannelNumber(107);*/
+  
   //TEST_VT = new Supla::Control::VirtualThermometer();
   //TEST_VT->getChannel()->setChannelNumber(112);
 
@@ -1447,20 +1458,16 @@ if (GUIstarted)
                   
                   joined_device->endpoint = 0x01;
                   write_mask = 0xFF;
-                  zbGateway.sendAttributeWrite(joined_device, 
-                                               ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                               ESP_ZB_ZCL_ATTR_ON_OFF_START_UP_ON_OFF, 
-                                               ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                                               1, 
-                                               &write_mask);
+                  zbGateway.sendAttributeWrite(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    ESP_ZB_ZCL_ATTR_ON_OFF_START_UP_ON_OFF, 
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
 
                   write_mask = 0x02;
-                  zbGateway.sendAttributeWrite(joined_device, 
-                                               ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                               0x8002, 
-                                               ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                                               1, 
-                                               &write_mask); //Tuya special
+                  zbGateway.sendAttributeWrite(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    0x8002, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); 
+                    //Tuya special
 
                   for(int n = 0; 
                       n < Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count; 
@@ -1473,14 +1480,10 @@ if (GUIstarted)
                       //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD010, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); 
                       //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD030, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
                   }
-                  zbGateway.setClusterReporting(joined_device,
-                                                ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
-                                                ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
-                                                0, 
-                                                300, 
-                                                1, 
-                                                false);
+                  zbGateway.setClusterReporting(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, false);
                 } break;
 
                 case Z2S_DEVICE_DESC_RELAY_1:
@@ -1488,38 +1491,30 @@ if (GUIstarted)
                     
                   joined_device->endpoint = 0x01;
                   write_mask = 0xFF;
-                  zbGateway.sendAttributeWrite(joined_device, 
-                                               ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                               ESP_ZB_ZCL_ATTR_ON_OFF_START_UP_ON_OFF, 
-                                               ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                                               1, 
-                                               &write_mask);
+                  zbGateway.sendAttributeWrite(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    ESP_ZB_ZCL_ATTR_ON_OFF_START_UP_ON_OFF, 
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
 
                   write_mask = 0x02;
-                  zbGateway.sendAttributeWrite(joined_device, 
-                                               ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                               0x8002, 
-                                               ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                                               1, 
-                                               &write_mask); //Tuya special
+                  zbGateway.sendAttributeWrite(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    0x8002, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); 
+                    //Tuya special
 
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                     ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
-                    0, 300, 1, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, false);
                 } break;
 
 
                 case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
                   
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    0, 1200, 10, false);                 
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 1200, 10, false);                 
                 } break;
                 
 
@@ -1527,121 +1522,106 @@ if (GUIstarted)
                   
                   uint32_t write_mask_32 = 1200;
                   zbGateway.sendAttributeWrite(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL, 
-                    0x0000, 
-                    ESP_ZB_ZCL_ATTR_TYPE_U32, 
-                    4, 
-                    &write_mask_32);
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
+                    0x0000, ESP_ZB_ZCL_ATTR_TYPE_U32, 4, &write_mask_32);
 
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    30, 900, 20, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 30, 900, 20, false);
+
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    0, 65000, 1, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 65000, 1, false);
+                  
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                    0, 65000, 0, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 0, 65000, 0, false);
+                  
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     BOSCH_HEATING_DEMAND_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                    0, 65000, 0, false,
-                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-                    1, 1, BOSCH_MANUFACTURER_CODE);                 
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 0, 65000, 0, false,
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 
+                    BOSCH_MANUFACTURER_CODE);               
+
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     BOSCH_TRV_OPERATING_MODE_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                    0, 65000, 0, false,
-                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-                    1, 1, BOSCH_MANUFACTURER_CODE);
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 0, 65000, 0, false,
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 
+                    BOSCH_MANUFACTURER_CODE);
                 } break;
 
 
                 case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001: {  
                   
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    0, 3600, 10, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 3600, 10, false);
+                  
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    0, 3600, 10, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 3600, 10, false);
+                  
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                    0, 3600, 10, false);       
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 0, 3600, 10, false);      
+                  
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     EUROTRONIC_HOST_FLAGS_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_U24, 
-                    0, 3600, 1, false,
-                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-                    1, 1, EUROTRONIC_MANUFACTURER_CODE);
+                    ESP_ZB_ZCL_ATTR_TYPE_U24, 0, 3600, 1, false,
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 
+                    EUROTRONIC_MANUFACTURER_CODE);
+
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     EUROTRONIC_CURRENT_HEATING_SETPOINT_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    0, 3600, 25, false,
-                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-                    1, 1, EUROTRONIC_MANUFACTURER_CODE);                           
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 3600, 25, false,
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 
+                    EUROTRONIC_MANUFACTURER_CODE);         
                 } break;
 
 
                 case Z2s_DEVICE_DESC_LUMI_TRV: {  
                   
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    0, 3600, 10, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 3600, 10, false);
+
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                    0, 3600, 10, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 3600, 10, false);
+
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                    10, 3600, 0, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 10, 3600, 0, false);
+
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
-                    0, 3600, 0, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 0, 3600, 0, false);
+
                   zbGateway.setClusterReporting(
-                    joined_device, 
-                    ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
                     ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_U8, 
-                    10, 3600, 10, false);
+                    ESP_ZB_ZCL_ATTR_TYPE_U8, 10, 3600, 10, false);
+
+                  write_mask = 0;
+                  zbGateway.sendAttributeWrite(
+                    joined_device, LUMI_CUSTOM_CLUSTER,
+                    LUMI_CUSTOM_CLUSTER_TRV_WINDOW_DETECTION_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, false, 1, 
+                    LUMI_MANUFACTURER_CODE);
                 } break;
 
 
@@ -1652,6 +1632,7 @@ if (GUIstarted)
 
                 case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
+                case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2:
                 case Z2S_DEVICE_DESC_LUMI_SWITCH:
                 case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH:
                 case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO:
@@ -1660,15 +1641,10 @@ if (GUIstarted)
 
                   write_mask = 0x01;
                   joined_device->endpoint = 1;
-                  zbGateway.sendAttributeWrite(joined_device, 
-                                               LUMI_CUSTOM_CLUSTER, 
-                                               LUMI_CUSTOM_CLUSTER_MODE_ID, 
-                                               ESP_ZB_ZCL_ATTR_TYPE_U8, 
-                                               1, 
-                                               &write_mask, 
-                                               true, 
-                                               1, 
-                                               LUMI_MANUFACTURER_CODE);
+                  zbGateway.sendAttributeWrite(
+                    joined_device, LUMI_CUSTOM_CLUSTER, 
+                    LUMI_CUSTOM_CLUSTER_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_U8, 
+                    1, &write_mask, true, 1, LUMI_MANUFACTURER_CODE);
 
                   zbGateway.sendAttributeRead(joined_device, 
                                               LUMI_CUSTOM_CLUSTER, 

@@ -68,6 +68,7 @@
 
 #define Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR                  0x2010
 #define Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR                  0x2011
+#define Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2                0x2012 
 
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B        0x2020
 
@@ -829,6 +830,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                            ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING,
                            ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                           ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY,
     .z2s_device_clusters_count = 3,
@@ -2080,6 +2087,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "LUMI", .model_name = "lumi.magnet.ac01",
     .z2s_device_uid = 7300,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "LUMI", .model_name = "lumi.sensor_magnet",
+    .z2s_device_uid = 7305,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
@@ -3583,6 +3595,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3218_zhg356le", .model_name = "TS130F",
+    .z2s_device_uid = 25110,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
+	  .z2s_device_endpoints_count = 1},
+
    {	.manufacturer_name = "_TZ3000_fccpjz5z", .model_name = "TS130F",
     .z2s_device_uid = 25200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
@@ -3861,6 +3878,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE284_iadro9bf", .model_name = "TS0601",
     .z2s_device_uid = 30700,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_iadro9bf", .model_name = "TS0601",
+    .z2s_device_uid = 30800,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2,
     .z2s_device_endpoints_count = 1},
   
 //DEVICES_END

@@ -1364,7 +1364,8 @@ void Z2S_initSuplaChannels() {
   zbg_device_params_t device = {};
   //zbg_device_params_t *device = (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
 
-  for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+  for (uint8_t channels_counter = 0; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
       
     if (z2s_channels_table[channels_counter].valid_record) {
 
@@ -5420,7 +5421,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
-      case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR: {
+      case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
+      case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2: {
         
         switch (sub_id) {
           
@@ -7608,6 +7610,15 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
+    case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_MOTION_SENSOR_OCCUPANCY_SID,
+        "OCCUPANCY", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
     case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, 
@@ -7919,6 +7930,7 @@ void printSizeOfClasses() {
   log_i("\n\rRelay %u - VirtualRelay %u - Z2S_VirtualRelay %u"
         "\n\rHvacBase %u - HvacBaseEE %u - Z2S_trv_interface %u"
         "\n\rVirtualSceneSwitch %u"
+        "\n\rGPM %u"
         "\n\rIPAddress %u"
         "\n\rNetworkServer %u"
         "\n\rNetworkClient %u",
@@ -7929,6 +7941,7 @@ void printSizeOfClasses() {
         sizeof(Supla::Control::HvacBaseEE),
         sizeof(Supla::Control::Z2S_TRVInterface),
         sizeof(Supla::Control::VirtualRelaySceneSwitch),
+        sizeof(Supla::Sensor::GeneralPurposeMeasurement),
         sizeof(IPAddress),
         sizeof(NetworkServer),
         sizeof(NetworkClient));

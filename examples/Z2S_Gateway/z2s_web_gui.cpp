@@ -4199,6 +4199,7 @@ void Z2S_buildWebGUI(gui_modes_t mode) {
 	
 	ESPUI.sliderContinuous = true;
 	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
+	ESPUI.captivePortal = false;
 
 	working_str.reserve(1056);
 
