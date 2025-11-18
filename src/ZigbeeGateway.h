@@ -94,6 +94,7 @@
 
 #define LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID                0x0271 //U8
 #define LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID                     0x0272 //U8 manual: 0, auto: 1, away: 2
+#define LUMI_CUSTOM_CLUSTER_TRV_WINDOW_DETECTION_ID           0x0273 //U8
 #define LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID                 0x0277 //U8
 #define LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID                0x027E //
 #define LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID                    0x040A //
