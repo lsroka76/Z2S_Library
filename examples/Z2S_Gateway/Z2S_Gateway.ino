@@ -1312,18 +1312,15 @@ if (GUIstarted)
                 case Z2S_DEVICE_DESC_DIMMER_BULB:
                 case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
                 case Z2S_DEVICE_DESC_IKEA_WW_BULB:
+                case Z2S_DEVICE_DESC_IKEA_WS_BULB:
                 case Z2S_DEVICE_DESC_PHILIPS_WW_BULB:
                 case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY:
                 case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB: {
 
-                  zbGateway.setClusterReporting(joined_device, 
-                                                ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
-                                                ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
-                                                0, 
-                                                300, 
-                                                1, 
-                                                false);
+                  zbGateway.setClusterReporting(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, false);
                 } break;
 
 

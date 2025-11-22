@@ -4920,30 +4920,23 @@ uint8_t Z2S_addZ2SDevice(
 /*---------------------------------------------------------------------------------------------------------------------------*/     
 
       case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
-      case Z2S_DEVICE_DESC_DIMMER_CT_BULB: {
+      case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
+      case Z2S_DEVICE_DESC_IKEA_WS_BULB: {
 
         switch (sub_id) {
 
 
           case DIMMER_ON_OFF_SWITCH_SID: {
 
-            addZ2SDeviceVirtualRelay(&zbGateway,
-                                     device, 
-                                     first_free_slot, 
-                                     sub_id, 
-                                     name, 
-                                     func);
+            addZ2SDeviceVirtualRelay(
+              &zbGateway, device, first_free_slot, sub_id, name, func);
           } break;
 
           case DIMMER_FUNC_BRIGHTNESS_SID:
           case DIMMER_FUNC_COLOR_TEMPERATURE_SID: {
 
-            addZ2SDeviceDimmer(&zbGateway,
-                               device, 
-                               first_free_slot, 
-                               sub_id,
-                               name,
-                               func);
+            addZ2SDeviceDimmer(
+              &zbGateway, device, first_free_slot, sub_id, name, func);
           } break;
         }
       } break; 
@@ -4952,9 +4945,9 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_RGB_BULB: {
 
-        addZ2SDeviceRGB(&zbGateway,device, first_free_slot, 
-                        "RGB BULB", 
-                        SUPLA_CHANNELFNC_RGBLIGHTING);
+        addZ2SDeviceRGB(
+          &zbGateway,device, first_free_slot, "RGB BULB", 
+          SUPLA_CHANNELFNC_RGBLIGHTING);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -4994,8 +4987,8 @@ uint8_t Z2S_addZ2SDevice(
 
           addZ2SDeviceDimmer(
             &zbGateway, device, first_free_slot, 
-            DIMMER_FUNC_COLOR_TEMPERATURE_SID, 
-            "COLOR TEMPERATURE", SUPLA_CHANNELFNC_DIMMER);
+            DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE",
+            SUPLA_CHANNELFNC_DIMMER);
         }
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
@@ -5006,11 +4999,9 @@ uint8_t Z2S_addZ2SDevice(
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDeviceRGB(&zbGateway,
-                        device, 
-                        first_free_slot, 
-                        "RGB", 
-                        SUPLA_CHANNELFNC_RGBLIGHTING); 
+        addZ2SDeviceRGB(
+          &zbGateway, device, first_free_slot, "RGB", 
+          SUPLA_CHANNELFNC_RGBLIGHTING); 
       } break; 
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -7887,22 +7878,20 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
-    case Z2S_DEVICE_DESC_DIMMER_CT_BULB: {
+    case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
+    case Z2S_DEVICE_DESC_IKEA_WS_BULB: {
 
-      Z2S_addZ2SDevice(joined_device, 
-                       DIMMER_ON_OFF_SWITCH_SID,
-                       "DIMMER SWITCH",
-                       SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, DIMMER_ON_OFF_SWITCH_SID, "DIMMER SWITCH",
+        SUPLA_CHANNELFNC_POWERSWITCH);
       
-      Z2S_addZ2SDevice(joined_device, 
-                       DIMMER_FUNC_BRIGHTNESS_SID,
-                       "BRIGHTNESS",
-                       SUPLA_CHANNELFNC_DIMMER);
+      Z2S_addZ2SDevice(
+        joined_device, DIMMER_FUNC_BRIGHTNESS_SID, "BRIGHTNESS",
+        SUPLA_CHANNELFNC_DIMMER);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       DIMMER_FUNC_COLOR_TEMPERATURE_SID,
-                       "COLOR TEMPERATURE",
-                       SUPLA_CHANNELFNC_DIMMER);
+      Z2S_addZ2SDevice(
+        joined_device, DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE",
+        SUPLA_CHANNELFNC_DIMMER);
     } break;
 
 

@@ -129,7 +129,10 @@
 #define Z2S_DEVICE_DESC_LED_DIMMER                          0x3201
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB                 0x3205
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0               0x3210
+
 #define Z2S_DEVICE_DESC_IKEA_WW_BULB                        0x3220
+#define Z2S_DEVICE_DESC_IKEA_WS_BULB                        0x3221
+
 #define Z2S_DEVICE_DESC_PHILIPS_WW_BULB                     0x3225
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER                     0x3230
 #define Z2S_DEVICE_DESC_DIMMER_CT_BULB                      0x3235
@@ -187,6 +190,7 @@
 
 #define Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE              0x4800
 #define Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE         0x4810
+#define Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_DOUBLE         0x4815
 #define Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR             0x4820
 #define Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR        0x4821
 #define Z2S_DEVICE_DESC_MOES_COVER                          0x4822
@@ -1296,6 +1300,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -2971,6 +2981,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE284_c6wv4xyo", .model_name = "TS0601",
+    .z2s_device_uid = 17120,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE200_9xfjixap", .model_name = "TS0601",
     .z2s_device_uid = 17200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
@@ -3149,6 +3164,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI Driver 10W",
     .z2s_device_uid = 19600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E27 WS globe 1055lm",
+    .z2s_device_uid = 19650,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
 	  .z2s_device_endpoints_count = 1},
 
    {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI Driver 30W",
@@ -3600,17 +3620,23 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 1},
 
-   {	.manufacturer_name = "_TZ3000_fccpjz5z", .model_name = "TS130F",
+  {	.manufacturer_name = "_TZ3000_fccpjz5z", .model_name = "TS130F",
     .z2s_device_uid = 25200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_j1xl73iw", .model_name = "TS130F",
+    .z2s_device_uid = 25250,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_DOUBLE,
+	  .z2s_device_endpoints = {{ 1, Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE},
+                             { 2, Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE }}},
 
   {	.manufacturer_name = "_TZ3000_femsaaua", .model_name = "TS130F",
     .z2s_device_uid = 25300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 2,
-    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE},
-                              { 2, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE }}},
+    .z2s_device_endpoints = {{ 1, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE},
+                             { 2, Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE }}},
 
   {	.manufacturer_name = "_TZ3210_dwytrmda", .model_name = "TS130F",
     .z2s_device_uid = 25305,
