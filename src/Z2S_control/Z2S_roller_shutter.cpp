@@ -269,10 +269,10 @@ void Supla::Control::Z2S_RollerShutter::ping() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT:
 
-        if (_gateway->sendAttributeRead(&_device, 
-                                    ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, 
-                                    ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID, 
-                                    false)) { /*true))
+        if (_gateway->sendAttributeRead(
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, 
+          ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID, 
+          false)) { /*true))
           if (*(esp_zb_zcl_status_t *)_gateway->getReadAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
             
             _rs_current_position = *(uint8_t *)_gateway->getReadAttrLastResult()->data.value;

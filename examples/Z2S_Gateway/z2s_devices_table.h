@@ -30,33 +30,34 @@
 #define ADD_Z2S_DEVICE_STATUS_DT_FWA  0x03  //device table full while adding = device added partialy
 #define ADD_Z2S_DEVICE_STATUS_DAP     0x04  //device already present
 
-#define USER_DATA_FLAG_SED_TIMEOUT                  (1 << 0)  // 0x0001
-#define USER_DATA_FLAG_MSG_DISABLED                 (1 << 1)  // 0x0002
+#define USER_DATA_FLAG_SED_TIMEOUT                              (1 << 0)  // 0x0001
+#define USER_DATA_FLAG_MSG_DISABLED                             (1 << 1)  // 0x0002
 
-#define USER_DATA_FLAG_CORRECTIONS_DISABLED         (1 << 2)  // 0x0004
-#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE         (1 << 3)  // 0x0008
-#define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG          (1 << 4)  // 0x0010
-#define USER_DATA_FLAG_DISABLE_NOTIFICATIONS        (1 << 5)  // 0x0020
-#define USER_DATA_FLAG_SET_SORWNS_ON_START          (1 << 6)  // 0x0040
-#define USER_DATA_FLAG_HAS_EXTENDED_DATA            (1 << 7)  // 0x0080
-#define USER_DATA_FLAG_TRV_FIXED_CORRECTION         (1 << 8)  // 0x0100
-#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL  (1 << 9)  // 0x0200
-#define USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK    (1 << 10) // 0x0400
-#define USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE    (1 << 11) // 0x0800
-#define USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS     (1 << 12) // 0x1000
+#define USER_DATA_FLAG_CORRECTIONS_DISABLED                     (1 << 2)  // 0x0004
+#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE                     (1 << 3)  // 0x0008
+#define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG                      (1 << 4)  // 0x0010
+#define USER_DATA_FLAG_DISABLE_NOTIFICATIONS                    (1 << 5)  // 0x0020
+#define USER_DATA_FLAG_SET_SORWNS_ON_START                      (1 << 6)  // 0x0040
+#define USER_DATA_FLAG_HAS_EXTENDED_DATA                        (1 << 7)  // 0x0080
+#define USER_DATA_FLAG_TRV_FIXED_CORRECTION                     (1 << 8)  // 0x0100
+#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL              (1 << 9)  // 0x0200
+#define USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK                (1 << 10) // 0x0400
+#define USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE                (1 << 11) // 0x0800
+#define USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS                 (1 << 12) // 0x1000
 
-#define ZBD_USER_DATA_FLAG_VERSION_2_0                    (1 << 0)
-#define ZBD_USER_DATA_FLAG_RESERVED_1                     (1 << 1)
-#define ZBD_USER_DATA_FLAG_RESERVED_2                     (1 << 2)
-#define ZBD_USER_DATA_FLAG_RESERVED_3                     (1 << 3)
-#define ZBD_USER_DATA_FLAG_RESERVED_4                     (1 << 4)
-#define ZBD_USER_DATA_FLAG_RESERVED_5                     (1 << 5)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG            (1 << 6)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG (1 << 7)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG    (1 << 8)
+#define ZBD_USER_DATA_FLAG_VERSION_2_0                          (1 << 0)
+#define ZBD_USER_DATA_FLAG_RESERVED_1                           (1 << 1)
+#define ZBD_USER_DATA_FLAG_RESERVED_2                           (1 << 2)
+#define ZBD_USER_DATA_FLAG_RESERVED_3                           (1 << 3)
+#define ZBD_USER_DATA_FLAG_RESERVED_4                           (1 << 4)
+#define ZBD_USER_DATA_FLAG_RESERVED_5                           (1 << 5)
+#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG                  (1 << 6)
+#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG       (1 << 7)
+#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG          (1 << 8)
 
-#define ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN        (1 << 16)
-
+#define ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN              (1 << 16)
+#define ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN   (1 << 17)
+#define ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN      (1 << 18)
 #define ZBD_BATTERY_PERCENTAGE_MSG 0x01
 #define ZBD_BATTERY_VOLTAGE_MSG    0x02
 #define ZBD_BATTERY_LEVEL_MSG      0x03

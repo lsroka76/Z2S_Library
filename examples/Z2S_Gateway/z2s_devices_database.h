@@ -2469,6 +2469,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
 	  .z2s_device_endpoints_count = 1}, //A*1000
 
+  {	.manufacturer_name = "_TZ3000_xzhnra8x", .model_name = "TS011F",
+    .z2s_device_uid = 11705,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
+	  .z2s_device_endpoints_count = 1}, //A*1000
+
   {	.manufacturer_name = "_TZ3000_okaz9tjs", .model_name = "TS011F",
     .z2s_device_uid = 11800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
@@ -2693,6 +2698,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_4fjiwweb", .model_name = "TS004F",
     .z2s_device_uid = 14100,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_gwkzibhs", .model_name = "TS004F",
+    .z2s_device_uid = 14105,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F,
 	  .z2s_device_endpoints_count = 1},
 
@@ -3819,6 +3829,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_cvub6xbb", .model_name = "TS0601",
     .z2s_device_uid = 29120,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_xnbkhhdr", .model_name = "TS0601",
+    .z2s_device_uid = 29125,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
     .z2s_device_endpoints_count = 1},
 

@@ -696,14 +696,15 @@ bool Z2S_removeZbDeviceWithAllChannels(uint8_t zb_device_slot) {
 
 void Z2S_initZbDevices(uint32_t init_ms) {
 
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
-      if (z2s_zb_devices_table[devices_counter].record_id > 0)
-        z2s_zb_devices_table[devices_counter].last_seen_ms = init_ms;
+  for (uint8_t devices_counter = 0; 
+       devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
+    if (z2s_zb_devices_table[devices_counter].record_id > 0)
+      z2s_zb_devices_table[devices_counter].last_seen_ms = init_ms;
 }
 
-bool Z2S_updateZbDeviceUidIdx(uint8_t zb_device_slot, 
-                              const char *manufacturer_name, 
-                              const char * model_name) {
+bool Z2S_updateZbDeviceUidIdx(
+  uint8_t zb_device_slot, const char *manufacturer_name, 
+  const char * model_name) {
 
   if (zb_device_slot >= Z2S_ZB_DEVICES_MAX_NUMBER)
     return false;
@@ -713,15 +714,22 @@ bool Z2S_updateZbDeviceUidIdx(uint8_t zb_device_slot,
   if ((manufacturer_name == nullptr) || (model_name == nullptr))
     idx_scan = true;
 
-  uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
-  uint16_t devices_desc_table_size = sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
+  uint16_t devices_list_table_size = 
+    sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
 
-  for (int devices_list_counter = 0; devices_list_counter < devices_list_table_size; devices_list_counter++) {
+  uint16_t devices_desc_table_size = 
+    sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
+
+  for (int devices_list_counter = 0; 
+       devices_list_counter < devices_list_table_size; 
+       devices_list_counter++) {
 
     if (idx_scan) {
-      if (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid == z2s_zb_devices_table[zb_device_slot].device_uid) {
+      if (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid == 
+          z2s_zb_devices_table[zb_device_slot].device_uid) {
 
-        z2s_zb_devices_table[zb_device_slot].devices_list_idx = devices_list_counter;
+        z2s_zb_devices_table[zb_device_slot].devices_list_idx = 
+          devices_list_counter;
 
         log_i("device uid = %lu, devices list index = %lu", 
               z2s_zb_devices_table[zb_device_slot].device_uid,
@@ -748,20 +756,21 @@ bool Z2S_updateZbDeviceUidIdx(uint8_t zb_device_slot,
   return false;
 }
 
-uint8_t Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr, 
-                                 uint16_t short_addr, 
-                                 const char *manufacturer_name, 
-                                 const char *model_name, 
-                                 uint8_t endpoints_count, 
-                                 uint32_t desc_id, 
-                                 uint8_t power_source) {
+uint8_t Z2S_addZbDeviceTableSlot(
+  esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, 
+  const char *manufacturer_name, const char *model_name, 
+  uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source) {
 
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
   if (zb_device_slot == 0xFF) {
+
     log_i("New ZB device - adding to the ZB devices table");
+    
     zb_device_slot = Z2S_findFirstFreeZbDevicesTableSlot();
+    
     if (zb_device_slot == 0xFF) {
+      
       log_e("ZB devices full - can't add new one!");
       return zb_device_slot;
     } else {
@@ -770,9 +779,8 @@ uint8_t Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr,
       z2s_zb_devices_table[zb_device_slot].record_id = 3; //V2
       memcpy(z2s_zb_devices_table[zb_device_slot].ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t));
 
-      if (!Z2S_updateZbDeviceUidIdx(zb_device_slot,
-                                    manufacturer_name, 
-                                    model_name)) {
+      if (!Z2S_updateZbDeviceUidIdx(
+            zb_device_slot, manufacturer_name, model_name)) {
 
         log_e("Critical error - couldn't get device uid!");
         return 0xFF;
@@ -798,9 +806,8 @@ uint8_t Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr,
 
     if (z2s_zb_devices_table[zb_device_slot].user_data_flags | ZBD_USER_DATA_FLAG_VERSION_2_0) {
       
-      if (!Z2S_updateZbDeviceUidIdx(zb_device_slot,
-                                    nullptr, 
-                                    nullptr)) {
+      if (!Z2S_updateZbDeviceUidIdx(
+        zb_device_slot, nullptr, nullptr)) {
 
         log_e("Critical error - couldn't get devices list idx!");
         return 0xFF;
@@ -809,9 +816,8 @@ uint8_t Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr,
         if (z2s_zb_devices_table[zb_device_slot].device_uid == 0) {
 
           log_i("Updating unknown device");
-          if (!Z2S_updateZbDeviceUidIdx(zb_device_slot,
-                                        manufacturer_name, 
-                                        model_name)) {
+          if (!Z2S_updateZbDeviceUidIdx(
+                zb_device_slot, manufacturer_name, model_name)) {
 
             log_e("Critical error - couldn't get device uid!");
             return 0xFF;
@@ -922,15 +928,13 @@ bool Z2S_loadZbDevicesTable() {
       memset(z2s_zb_devices_table, 0, sizeof(z2s_zb_devices_table));
               
       if (!Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
-          (uint8_t *)z2s_zb_devices_table, 
-          sizeof(z2s_zb_devices_table))) {
+          (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
 
         log_i ("Zigbee devices table write failed!");
         return false;
       } else { 
         if (Supla::Storage::ConfigInstance()->setUInt32(
-              Z2S_ZB_DEVICES_TABLE_SIZE, 
-              sizeof(z2s_zb_devices_table))) {
+              Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
 
           Supla::Storage::ConfigInstance()->commit();
           return true;
@@ -950,24 +954,31 @@ bool Z2S_loadZbDevicesTable() {
 
         case 0x1100: { //legacy 0.7.10
 
-          log_i("Previous version of Zigbee devices table detected with size 0x%x, trying to upgrade", z2s_zb_devices_table_size);
+          log_i(
+            "Previous version of Zigbee devices table detected "
+            "with size 0x%x, trying to upgrade", z2s_zb_devices_table_size);
 
           z2s_legacy_zb_device_params_t *z2s_zb_devices_legacy_table = 
             (z2s_legacy_zb_device_params_t *)malloc(z2s_zb_devices_table_size);
 
           if (z2s_zb_devices_legacy_table == nullptr) {
 
-            log_e("Error while allocating memory for Zigbee devices legacy table copying");
+            log_e(
+              "Error while allocating memory for Zigbee devices legacy table copying");
             return false;
           } 
           
-          if (!Z2S_loadFile(Z2S_ZB_DEVICES_TABLE_ID_V2, (uint8_t *)z2s_zb_devices_legacy_table, z2s_zb_devices_table_size)) {  
+          if (!Z2S_loadFile(
+                Z2S_ZB_DEVICES_TABLE_ID_V2, 
+                (uint8_t *)z2s_zb_devices_legacy_table, 
+                z2s_zb_devices_table_size)) {  
 
             log_i ("Zigbee devices legacy table load failed!");
             return false;
           }
 
-          for (uint8_t table_index = 0; table_index < Z2S_ZB_DEVICES_MAX_NUMBER; table_index++) {
+          for (uint8_t table_index = 0; 
+               table_index < Z2S_ZB_DEVICES_MAX_NUMBER; table_index++) {
 
             switch ((z2s_zb_devices_legacy_table + table_index)->record_id) {
 
@@ -1024,9 +1035,11 @@ bool Z2S_loadZbDevicesTable() {
 
         case 0x1300: { //legacy 0.9.30
 
-          log_i("Previous version of Zigbee devices table detected with size 0x%x, trying to upgrade", z2s_zb_devices_table_size);
+          log_i("Previous version of Zigbee devices table detected with size"
+                " 0x%x, trying to upgrade", z2s_zb_devices_table_size);
 
-          z2s_legacy_2_zb_device_params_t *z2s_zb_devices_legacy_2_table = (z2s_legacy_2_zb_device_params_t *)malloc(z2s_zb_devices_table_size);
+          z2s_legacy_2_zb_device_params_t *z2s_zb_devices_legacy_2_table = 
+            (z2s_legacy_2_zb_device_params_t *)malloc(z2s_zb_devices_table_size);
 
           if (z2s_zb_devices_legacy_2_table == nullptr) {
 
@@ -1034,13 +1047,17 @@ bool Z2S_loadZbDevicesTable() {
             return false;
           } 
           
-          if (!Z2S_loadFile(Z2S_ZB_DEVICES_TABLE_ID_V2, (uint8_t *)z2s_zb_devices_legacy_2_table, z2s_zb_devices_table_size)) {  
+          if (!Z2S_loadFile(
+                Z2S_ZB_DEVICES_TABLE_ID_V2, 
+                (uint8_t *)z2s_zb_devices_legacy_2_table, 
+                z2s_zb_devices_table_size)) {  
 
             log_i ("Zigbee devices legacy table load failed!");
             return false;
           }
             
-          for (uint8_t table_index = 0; table_index < Z2S_ZB_DEVICES_MAX_NUMBER; table_index++) {
+          for (uint8_t table_index = 0; 
+               table_index < Z2S_ZB_DEVICES_MAX_NUMBER; table_index++) {
 
             switch ((z2s_zb_devices_legacy_2_table + table_index)->record_id) {
 
@@ -1054,29 +1071,33 @@ bool Z2S_loadZbDevicesTable() {
 
                 z2s_zb_devices_table[table_index].record_id = 3;
 
-                Z2S_updateZbDeviceUidIdx(table_index, 
-                                         (z2s_zb_devices_legacy_2_table + table_index)->manufacturer_name,
-                                         (z2s_zb_devices_legacy_2_table + table_index)->model_name); 
+                Z2S_updateZbDeviceUidIdx(
+                  table_index, 
+                  (z2s_zb_devices_legacy_2_table + table_index)->manufacturer_name,
+                  (z2s_zb_devices_legacy_2_table + table_index)->model_name); 
+
                 char device_name[36];
                 sprintf(device_name, "Device #%02u", table_index);
-                memcpy(z2s_zb_devices_table[table_index].device_local_name, device_name, sizeof(device_name)); 
+                memcpy(z2s_zb_devices_table[table_index].device_local_name,
+                       device_name, sizeof(device_name)); 
               } break;
 
               case 2: { 
                 
                 z2s_zb_devices_table[table_index].record_id = 3;
 
-                memcpy(&z2s_zb_devices_table[table_index].device_uid, 
-                       (z2s_zb_devices_legacy_2_table + table_index)->v2_params.device_uid, 
-                       sizeof(uint32_t));
+                memcpy(
+                  &z2s_zb_devices_table[table_index].device_uid, 
+                  (z2s_zb_devices_legacy_2_table + table_index)->v2_params.device_uid, 
+                  sizeof(uint32_t));
 
-                Z2S_updateZbDeviceUidIdx(table_index, 
-                                         nullptr,
-                                         nullptr);
+                Z2S_updateZbDeviceUidIdx(
+                  table_index, nullptr, nullptr);
 
-                memcpy(z2s_zb_devices_table[table_index].device_local_name, 
-                       (z2s_zb_devices_legacy_2_table + table_index)->device_local_name, 
-                       sizeof(z2s_zb_devices_table[table_index].device_local_name));                          
+                memcpy(
+                  z2s_zb_devices_table[table_index].device_local_name, 
+                  (z2s_zb_devices_legacy_2_table + table_index)->device_local_name, 
+                  sizeof(z2s_zb_devices_table[table_index].device_local_name));                          
               } break;
 
               default: {
@@ -1130,7 +1151,8 @@ bool Z2S_loadZbDevicesTable() {
         } else {
           log_i("Zigbee devices table load success!");
 
-          for (uint8_t table_index = 0; table_index < Z2S_ZB_DEVICES_MAX_NUMBER; table_index++) {
+          for (uint8_t table_index = 0; 
+               table_index < Z2S_ZB_DEVICES_MAX_NUMBER; table_index++) {
             
             switch (z2s_zb_devices_table[table_index].record_id) {
 
@@ -1143,9 +1165,8 @@ bool Z2S_loadZbDevicesTable() {
 
               case 3: {
 
-                if (!Z2S_updateZbDeviceUidIdx(table_index,
-                                              nullptr, 
-                                              nullptr)) {
+                if (!Z2S_updateZbDeviceUidIdx(
+                  table_index, nullptr, nullptr)) {
 
                   log_e("Critical error - couldn't get devices list idx!");
                   continue;
@@ -2470,13 +2491,11 @@ void Z2S_onLumiCustomClusterReceive(
               *((uint8_t*)(attribute->data.value + i)));
       
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
-        SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
-        LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID);
+        ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
       if (channel_number_slot < 0) {
     
-        log_e("no T/H channel found for address %s", ieee_addr_str);
+        log_e("no channel found for address %s", ieee_addr_str);
         return;
       }
 
@@ -2491,6 +2510,16 @@ void Z2S_onLumiCustomClusterReceive(
 
         updateSuplaBatteryLevel(
           channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, lumi_battery);
+      }
+
+      channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+        LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID);
+
+      if (channel_number_slot < 0) {
+    
+        log_e("no T/H channel found for address %s", ieee_addr_str);
+        return;
       }
 
       uint8_t lumi_temperature_position = scanLumiPayload(
@@ -3511,15 +3540,19 @@ void Z2S_onColorTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
 }
 
 
-void Z2S_onBatteryReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, uint8_t battery_remaining) {
+void Z2S_onBatteryReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t id, uint8_t battery_remaining) {
 
   char ieee_addr_str[24] = {};
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, cluster 0x%x, battery 0x%x", ieee_addr_str, endpoint, cluster, battery_remaining);
+  log_i("%s, endpoint 0x%x, cluster 0x%x, battery 0x%x", 
+        ieee_addr_str, endpoint, cluster, battery_remaining);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, -1, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, -1, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0) {
     //log_i(_no_channel_found_str, ieee_addr);
@@ -3533,9 +3566,7 @@ void Z2S_onBatteryReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint1
     case ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID:
 
       updateSuplaBatteryLevel(
-        channel_number_slot, 
-        ZBD_BATTERY_PERCENTAGE_MSG, 
-        battery_remaining, 
+        channel_number_slot, ZBD_BATTERY_PERCENTAGE_MSG, battery_remaining, 
         false); 
     break;
 
@@ -3543,18 +3574,14 @@ void Z2S_onBatteryReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint1
     case ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID:
 
       updateSuplaBatteryLevel(
-        channel_number_slot, 
-        ZBD_BATTERY_VOLTAGE_MSG, 
-        battery_remaining, 
+        channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, battery_remaining, 
         false); 
     break;
   }
 }
 
 void Z2S_onIASzoneStatusChangeNotification(
-    esp_zb_ieee_addr_t ieee_addr, 
-    uint16_t endpoint, 
-    uint16_t cluster, 
+    esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
     int iaszone_status) {
   
   char ieee_addr_str[24] = {};
@@ -3567,17 +3594,13 @@ void Z2S_onIASzoneStatusChangeNotification(
 
   int16_t channel_number_slot = 
     Z2S_findChannelNumberSlot(
-      ieee_addr, 
-      endpoint, 
-      cluster, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, 
+      ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
       TUYA_VIBRATION_SENSOR_CONTACT_SID);
   
   if (channel_number_slot >= 0) {
 
     log_i("IASZONE - TUYA_VIBRATION_SENSOR_CONTACT_SID channel:%x, status: %x", 
-          channel_number_slot, 
-          iaszone_status);
+          channel_number_slot, iaszone_status);
 
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1));
     return;
@@ -4296,13 +4319,35 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
         ieee_addr_str,device_number_slot, 
         z2s_zb_devices_table[device_number_slot].user_data_flags);  
 
+ // if (Z2S_checkZbDeviceFlags(device_number_slot, 
+   //   ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN)) {
+    
+    log_i("IAS zone status query after rejoin");
+  
+    zbGateway.sendAttributeRead(
+      &device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+      ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, false);
+  //}
+
+  //if (Z2S_checkZbDeviceFlags(device_number_slot, 
+   //   ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN)) {
+    
+    log_i("On/Off state query after rejoin");
+  
+    zbGateway.sendAttributeRead(
+      &device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+      ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+  //}
+
   if (Z2S_checkZbDeviceFlags(device_number_slot, 
       ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN)) {
     
     log_i("Tuya query after rejoin");
+    
+    device.cluster_id = TUYA_PRIVATE_CLUSTER_EF00;
+
     zbGateway.sendCustomClusterCmd(
-      &device, 
-      TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
+      &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
       ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr); 
   }
 }

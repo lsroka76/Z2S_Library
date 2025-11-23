@@ -10,11 +10,12 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
   esp_zb_nwk_neighbor_info_t nwk_neighbour;
   esp_zb_nwk_info_iterator_t nwk_iterator = 0;
 
-  esp_err_t scan_result = esp_zb_nwk_get_next_neighbor(&nwk_iterator, 
-                                                       &nwk_neighbour);
+  esp_err_t scan_result = esp_zb_nwk_get_next_neighbor(
+    &nwk_iterator, &nwk_neighbour);
   
   if (scan_result == ESP_ERR_NOT_FOUND)
-    log_i_telnet2("\033[1mZ2S_nwk_scan_neighbourhood scan empty :-(  \033[22m");
+    log_i_telnet2(
+      "\033[1mZ2S_nwk_scan_neighbourhood scan empty :-(  \033[22m");
 
   while (scan_result == ESP_OK) {
     
@@ -46,17 +47,17 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
 
     log_i_telnet2(log_line, toTelnet);
     
-    int16_t channel_number_slot = Z2S_findChannelNumberSlot(nwk_neighbour.ieee_addr, 
-                                                            -1, 
-                                                            0, 
-                                                            ALL_SUPLA_CHANNEL_TYPES, 
-                                                            NO_CUSTOM_CMD_SID);
+    int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+      nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, 
+      NO_CUSTOM_CMD_SID);
     
     if (channel_number_slot < 0) {
       
-      sprintf(log_line, 
-              PSTR("Z2S_nwk_scan_neighbourhood - no channel found for address 0x%x"), 
-              nwk_neighbour.short_addr);
+      sprintf(
+        log_line, 
+        PSTR("Z2S_nwk_scan_neighbourhood - "
+             "no channel found for address 0x%x"),
+        nwk_neighbour.short_addr);
 
       log_i_telnet2(log_line, toTelnet);
     } else {
@@ -68,12 +69,9 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
       if (element) 
         element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(nwk_neighbour.rssi));
         
-      channel_number_slot = Z2S_findChannelNumberNextSlot(channel_number_slot, 
-                                                          nwk_neighbour.ieee_addr, 
-                                                          -1, 
-                                                          0, 
-                                                          ALL_SUPLA_CHANNEL_TYPES, 
-                                                          NO_CUSTOM_CMD_SID);
+      channel_number_slot = Z2S_findChannelNumberNextSlot(
+        channel_number_slot, nwk_neighbour.ieee_addr, -1, 0, 
+        ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
       }
     }  
     
@@ -89,7 +87,83 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
                   toTelnet);
 }
 
+void remoteNeighbourhoodTableCb(
+  const esp_zb_zdo_mgmt_lqi_rsp_t *rsp, void *user_ctx) {
 
+  char log_line[384];
+
+  esp_zb_zdo_mgmt_lqi_req_param_t *req = 
+    (esp_zb_zdo_mgmt_lqi_req_param_t *)user_ctx;
+
+  esp_zb_zdp_status_t zdo_status = (esp_zb_zdp_status_t)rsp->status;
+  
+  log_d(
+    "Remote neighbourhood table callback for address 0x%04x with status %d", 
+     req->dst_addr, zdo_status);
+
+  if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
+  
+    log_d("Remote neighbourhood table info: total %d, index %d, count %d", 
+          rsp->neighbor_table_entries, 
+          rsp->start_index, 
+          rsp->neighbor_table_list_count);
+
+    if (rsp->neighbor_table_entries == 0) {
+      log_d("No remote neighbourhood table entries found");
+      return;
+    }
+
+    esp_zb_zdo_neighbor_table_list_record_t *nwk_neighbour = 
+      rsp->neighbor_table_list;
+
+    for (int i = 0; i < rsp->neighbor_table_list_count; i++) {
+    
+      sprintf_P(log_line, 
+              PSTR("Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t"
+                  "%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n\r"
+                  "DEVICE TYPE\t\t0x%x\n\rDEPTH\t\t\t0x%x\n\rRX_ON_WHEN_IDLE"
+                  "\t\t0x%x\n\rRELATIONSHIP\t\t0x%x\n\rLQI\t\t\t%d\n\r"), 
+        rsp->start_index + rsp->neighbor_table_list_count, 
+        nwk_neighbour->extended_addr[7], 
+        nwk_neighbour->extended_addr[6], 
+        nwk_neighbour->extended_addr[5], 
+        nwk_neighbour->extended_addr[4], 
+        nwk_neighbour->extended_addr[3], 
+        nwk_neighbour->extended_addr[2], 
+        nwk_neighbour->extended_addr[1], 
+        nwk_neighbour->extended_addr[0],
+        nwk_neighbour->network_addr, 
+        nwk_neighbour->device_type,
+        nwk_neighbour->depth, 
+        nwk_neighbour->rx_when_idle, 
+        nwk_neighbour->relationship,
+        nwk_neighbour->lqi);
+
+    log_i_telnet2(log_line, true); //toTelnet);  
+
+      nwk_neighbour++;
+    }
+
+    if (rsp->start_index + rsp->neighbor_table_list_count < 
+        rsp->neighbor_table_entries) {
+
+      req->start_index = rsp->start_index + rsp->neighbor_table_list_count;
+      esp_zb_zdo_mgmt_lqi_req(req, remoteNeighbourhoodTableCb, req);
+    }
+  }
+}
+
+
+void Z2S_scanRemoteNeighbourhoodTable(
+  uint16_t short_address, bool toTelnet = false) {
+
+  esp_zb_zdo_mgmt_lqi_req_param_t req;
+
+  req.start_index = 0;
+  req.dst_addr = short_address;
+
+  esp_zb_zdo_mgmt_lqi_req(&req, remoteNeighbourhoodTableCb, (void *)&req);
+}
 
 bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
 
@@ -808,8 +882,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     return;
   } else
   if (strcmp(cmd,"NWK-SCAN")== 0) {
-  
-    Z2S_nwk_scan_neighbourhood(true);
+    if (params_number < 1)
+      Z2S_nwk_scan_neighbourhood(true);
+    else 
+      Z2S_scanRemoteNeighbourhoodTable(strtoul(*(param), nullptr, 0));
     return;
   } else
   if (strcmp(cmd,"READ-ATTRIBUTE")== 0) {
@@ -846,7 +922,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
       telnet.printf(">read-attribute %u %u %u\n\r>", channel_id, cluster_id, attribute_id);
       if (sync) {
-        bool result = zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, true, direction, disable_default_response, manuf_specific, manuf_code); 
+        bool result = zbGateway.sendAttributeRead(
+          &device, cluster_id, attribute_id, true, direction, 
+          disable_default_response, manuf_specific, manuf_code); 
         if (result) {
           if (zbGateway.getReadAttrLastResult()->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) {
             /*zbstring_t *zbstr = (zbstring_t *)zbGateway.getReadAttrLastResult()->data.value;

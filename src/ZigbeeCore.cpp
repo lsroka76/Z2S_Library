@@ -584,7 +584,7 @@ void ZigbeeCore::bindingTableCb(const esp_zb_zdo_binding_table_info_t *table_inf
 
     if (table_info->total == 0) {
       log_d("No binding table entries found");
-      free(req);
+      free(req); 
       return;
     }
 
