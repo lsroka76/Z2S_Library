@@ -221,6 +221,12 @@
 #define TUYA_VIBRATION_SENSOR_BATTERY_DP                            0x04
 #define TUYA_VIBRATION_SENSOR_SENSITIVITY_DP                        0x09
 
+#define TUYA_VIBRATION_SENSOR_2_X_POSITION_DP                       0x65
+#define TUYA_VIBRATION_SENSOR_2_Y_POSITION_DP                       0x66
+#define TUYA_VIBRATION_SENSOR_2_Z_POSITION_DP                       0x67
+#define TUYA_VIBRATION_SENSOR_2_VIBRATION_STATE_DP                  0x68
+#define TUYA_VIBRATION_SENSOR_2_SENSITIVITY_DP                      0x69
+
 #define TUYA_ON_OFF_BATTERY_VALVE_SWITCH_DP                         0x01
 #define TUYA_ON_OFF_BATTERY_VALVE_STATE_DP                          0x08
 #define TUYA_ON_OFF_BATTERY_VALVE_BATTERY_LEVEL_DP                  0x65

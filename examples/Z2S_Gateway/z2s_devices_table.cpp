@@ -5504,6 +5504,18 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
+      case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2:
+
+        if (sub_id == TUYA_VIBRATION_SENSOR_VIBRATION_SID)
+          addZ2SDeviceIASzone(
+            device, first_free_slot, sub_id, name, func); 
+        else
+          addZ2SDeviceGeneralPurposeMeasurement(
+            device, first_free_slot, sub_id, name, func, unit);
+      break;
+
+/******************************************************************************/     
+
       case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
 
         switch (sub_id) {
@@ -6716,6 +6728,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
     case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2:
     case Z2S_DEVICE_DESC_MOES_ALARM:
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_MOES_COVER:
@@ -7601,15 +7614,30 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_VIBRATION_SENSOR_VIBRATION_SID, 
-                       "VIBRATION", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_VIBRATION_SENSOR_VIBRATION_SID, "VIBRATION", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_VIBRATION_SENSOR_CONTACT_SID,  
-                       "CONTACT", 
-                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_VIBRATION_SENSOR_CONTACT_SID, "CONTACT", 
+        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+    case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_VIBRATION_SENSOR_VIBRATION_SID, "VIBRATION", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_VIBRATION_SENSOR_X_Y_Z_POSITION_SID, 
+        "X-Y-Z", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_VIBRATION_SENSOR_VIBRATION_STATE_SID, 
+        "STATE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

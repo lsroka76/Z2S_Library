@@ -76,6 +76,8 @@
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B        0x2020
 
 #define Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR               0x2030
+#define Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2             0x2031
+
 #define Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR                0x2040   
 #define Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR            0x2041
 #define Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR        0x2050
@@ -514,6 +516,8 @@
 
 #define TUYA_VIBRATION_SENSOR_VIBRATION_SID                 0x10
 #define TUYA_VIBRATION_SENSOR_CONTACT_SID                   0x11
+#define TUYA_VIBRATION_SENSOR_X_Y_Z_POSITION_SID            0x12
+#define TUYA_VIBRATION_SENSOR_VIBRATION_STATE_SID           0x13
 
 #define TUYA_SOS_BUTTON_SOS_SID                             0x00
 #define TUYA_SOS_BUTTON_EMERGENCY_SID                       0x01
@@ -1571,6 +1575,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -3935,6 +3944,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_motion",
     .z2s_device_uid = 30800,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ32101000000_5oy7cysk", .model_name = "TS0210",
+    .z2s_device_uid = 30900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2,
     .z2s_device_endpoints_count = 1},
   
 //DEVICES_END
