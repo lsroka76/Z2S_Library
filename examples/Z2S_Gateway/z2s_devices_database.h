@@ -21,6 +21,9 @@
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL_1       (1 << 16)
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL_2       (1 << 17)
 
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY   (1 << 20)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_ON_OFF_REJOIN_QUERY     (1 << 21)
+
 #define Z2S_DEVICE_DESC_NULL                                0x0000
 
 #define Z2S_DEVICE_DESC_LOCAL_ACTION_HANDLER                0x0100
@@ -748,56 +751,58 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
     {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT ||
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
     
     {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT ||
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1,
     .z2s_device_clusters_count = 3,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_SCENES,
                              ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2,
     .z2s_device_clusters_count = 1,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_1,
@@ -824,7 +829,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_ON_OFF_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                            ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
@@ -3834,6 +3839,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_xnbkhhdr", .model_name = "TS0601",
     .z2s_device_uid = 29125,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_xnbkhhdr", .model_name = "",
+    .z2s_device_uid = 29130,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
     .z2s_device_endpoints_count = 1},
 
