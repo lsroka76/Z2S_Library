@@ -15,7 +15,10 @@ typedef struct Tuya_read_dp_result_s {
   uint8_t  dp_id;
   uint8_t  dp_type;
   uint16_t dp_size;
+union {
   uint32_t dp_value;
+  int32_t  dp_value_signed;
+};
   uint8_t  dp_raw_value_8[8];
 } Tuya_read_dp_result_t;
 
