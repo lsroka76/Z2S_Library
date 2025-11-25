@@ -755,10 +755,10 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_limescale_protect_dp_value_on    =  0x01,
     .ts0601_cmd_set_limescale_protect_dp_value_off   =  0x00,
 
-    .ts0601_cmd_set_battery_level_dp_id              =  0x00,
-    .ts0601_cmd_set_battery_level_dp_type            =  0xFF,
-    .ts0601_cmd_set_low_battery_dp_id                =  0x0D,
-    .ts0601_cmd_set_low_battery_dp_type              =  TUYA_DP_TYPE_BITMAP,
+    .ts0601_cmd_set_battery_level_dp_id              =  0x0D,
+    .ts0601_cmd_set_battery_level_dp_type            =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_low_battery_dp_id                =  0x00,
+    .ts0601_cmd_set_low_battery_dp_type              =  0xFF,
 
     .ts0601_cmd_set_target_heatsetpoint_factor       =  0x0A,
     .ts0601_cmd_set_local_temperature_factor         =  0x0A,
