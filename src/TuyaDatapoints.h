@@ -28,6 +28,11 @@
 #define TUYA_TH_SENSOR_BATTERY_STATE_DP                             0x03
 #define TUYA_TH_SENSOR_BATTERY_LEVEL_DP                             0x04
 #define TUYA_TH_SENSOR_TEMPERATURE_UNIT_DP                          0x09
+#define TUYA_TH_SENSOR_TEMPERATURE_REPORT_INTERVAL_DP               0x11
+#define TUYA_TH_SENSOR_HUMIDITY_REPORT_INTERVAL_DP                  0x12
+#define TUYA_TH_SENSOR_TEMPERATURE_SENSITIVITY_DP                   0x13
+#define TUYA_TH_SENSOR_HUMIDITY_SENSITIVITY_DP                      0x14
+
 
 #define TUYA_SMOKE_DETECTOR_SMOKE_DP                                0x01
 #define TUYA_SMOKE_DETECTOR_PPM_DP                                  0x02
