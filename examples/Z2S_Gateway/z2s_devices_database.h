@@ -3958,6 +3958,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 30900,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "", .model_name = "TS0601",
+    .z2s_device_uid = 31000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
+    .z2s_device_endpoints_count = 1},
   
 //DEVICES_END
 
