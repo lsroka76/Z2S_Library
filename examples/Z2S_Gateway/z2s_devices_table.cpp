@@ -4408,15 +4408,13 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL:
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
-      case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR: 
+      case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
+      case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
 
-        addZ2SDeviceTempHumidity(device, 
-                                 first_free_slot, 
-                                 sub_id, 
-                                 name, 
-                                 func); 
+        addZ2SDeviceTempHumidity(
+          device, first_free_slot, sub_id, name, func); 
       break;
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: 
@@ -6697,6 +6695,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
