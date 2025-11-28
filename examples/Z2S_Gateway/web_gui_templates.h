@@ -1637,8 +1637,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_REFRESH_FREQUENCY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Measurement update frequency",
-    .Tuya_datapoint_description = "Enter numeric value between 5 and 60: <br>"
-																	"5 => 5 [min], 60 => 60 [min]" },
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 60: <br>"																	"5 => 5 [min], 60 => 60 [min]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_4IN1_MOTION_DETECTION_SENSITIVITY_DP,
@@ -1706,13 +1705,45 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Sensitivity",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => low, 1 => medium, 2 => high sensitivity" },
-
-	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
+  
+  { .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_TH_SENSOR_TEMPERATURE_UNIT_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Temperature unit",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => Celsius, 1 => Fahrenheit" },
+
+  { .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
+    .Tuya_datapoint_id 		 			= TUYA_TH_SENSOR_TEMPERATURE_UNIT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Temperature unit",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => Celsius, 1 => Fahrenheit" },
+
+  { .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
+    .Tuya_datapoint_id 		 			= TUYA_TH_SENSOR_TEMPERATURE_REPORT_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature reporting interval",
+    .Tuya_datapoint_description = "Enter numeric value between 1 and 120 [min]" },
+
+  { .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
+    .Tuya_datapoint_id 		 			= TUYA_TH_SENSOR_HUMIDITY_REPORT_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Humidity reporting interval",
+    .Tuya_datapoint_description = "Enter numeric value between 1 and 120 [min]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
+    .Tuya_datapoint_id 		 			= TUYA_TH_SENSOR_TEMPERATURE_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value between 3 and 10<br>"
+																	"1 = 0.1°C" },
+
+  { .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
+    .Tuya_datapoint_id 		 			= TUYA_TH_SENSOR_HUMIDITY_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Humidity sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value between 3 and 10 [%]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_1_PIR_SENSITIVITY_DP,
