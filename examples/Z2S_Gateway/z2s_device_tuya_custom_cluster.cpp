@@ -617,42 +617,64 @@ void processTuyaSoilTempHumiditySensorReport(int16_t channel_number_slot, uint16
   }
 }
 
-void processTuyaTempHumiditySensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload){
+void processTuyaTempHumiditySensorDataReport(
+  int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload){
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_TEMPERATURE_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_TH_SENSOR_TEMPERATURE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value_signed/10);
+    msgZ2SDeviceTempHumidityTemp(
+      channel_number_slot, (float)Tuya_read_dp_result.dp_value_signed/10);
             
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceTempHumidityHumi(channel_number_slot, (float)Tuya_read_dp_result.dp_value);  
+    msgZ2SDeviceTempHumidityHumi(
+      channel_number_slot, (float)Tuya_read_dp_result.dp_value);  
             
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
+
     log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot,ZBD_BATTERY_STATE_MSG, Tuya_read_dp_result.dp_value * 50);  
+
+    updateSuplaBatteryLevel(
+      channel_number_slot,ZBD_BATTERY_STATE_MSG, 
+      Tuya_read_dp_result.dp_value * 50);  
   }
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_TH_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) { 
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_TH_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) {
+
     log_i("Battery level is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value );  
+    
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);  
   }
 }
 
-void processTuyaIlluminanceSensorDataReport(int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload){
+void processTuyaIlluminanceSensorDataReport(
+  int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload){
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_ILLUMINANCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_ILLUMINANCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceGeneralPurposeMeasurement(
+  channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+    Tuya_read_dp_result.dp_value);
             
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_ILLUMINANCE_SENSOR_BATTERY_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_ILLUMINANCE_SENSOR_BATTERY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success) { 
+
     log_i("Battery level is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value );  
+    
+    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value );  
   }
 }
 
@@ -2228,6 +2250,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL:
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV16:
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
+    case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
 
       processTuyaHvacDataReport(

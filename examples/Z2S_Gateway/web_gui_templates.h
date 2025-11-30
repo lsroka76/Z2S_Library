@@ -1637,7 +1637,8 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_REFRESH_FREQUENCY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Measurement update frequency",
-    .Tuya_datapoint_description = "Enter numeric value between 5 and 60: <br>"																	"5 => 5 [min], 60 => 60 [min]" },
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 60: <br>"																	
+																	"5 => 5 [min], 60 => 60 [min]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_4IN1_MOTION_DETECTION_SENSITIVITY_DP,

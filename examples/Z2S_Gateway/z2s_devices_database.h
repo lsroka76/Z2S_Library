@@ -280,6 +280,7 @@
 
 #define Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198                   0x6200
 #define Z2S_DEVICE_DESC_TS0601_MOES_BHT002                  0x6201
+#define Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR                   0x6202
 
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
 
@@ -1177,6 +1178,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_MOES_BHT002,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -2209,6 +2215,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_d93wtje5", .model_name = "TS0203",
     .z2s_device_uid = 8900,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_uw3dadam", .model_name = "TS0202",
+    .z2s_device_uid = 8905,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1},
 
@@ -3962,6 +3973,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE284_vvmbj46n", .model_name = "TS0601",
     .z2s_device_uid = 31000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_lpedvtvr", .model_name = "TS0601",
+    .z2s_device_uid = 31100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR,
     .z2s_device_endpoints_count = 1},
   
 //DEVICES_END
