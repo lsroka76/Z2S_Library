@@ -3249,6 +3249,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LED_DIMMER,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "Trust International B.V.", .model_name = "ZLL-DimmableLigh",
+    .z2s_device_uid = 19855,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LED_DIMMER,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3210_bfwvfyx1", .model_name = "TS0505B",
     .z2s_device_uid = 19900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
