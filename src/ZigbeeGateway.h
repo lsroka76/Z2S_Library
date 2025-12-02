@@ -105,6 +105,7 @@
 #define LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID                  0x0200 //U8
 
 #define LUMI_ATTRIBUTE_BATTERY_ID                             0x01 //ESP_ZB_ZCL_ATTR_TYPE_U16
+#define LUMI_ATTRIBUTE_CONTACT_ID                             0x64 //ESP_ZB_ZCL_ATTR_TYPE_BOOL
 #define LUMI_ATTRIBUTE_TEMPERATURE_ID                         0x64 //ESP_ZB_ZCL_ATTR_TYPE_S16
 #define LUMI_ATTRIBUTE_HUMIDITY_ID                            0x65 //ESP_ZB_ZCL_ATTR_TYPE_U16
 #define LUMI_ATTRIBUTE_PRESSURE_ID                            0x66 //ESP_ZB_ZCL_ATTR_TYPE_S32

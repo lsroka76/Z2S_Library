@@ -2513,6 +2513,29 @@ void Z2S_onLumiCustomClusterReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR,
+        NO_CUSTOM_CMD_SID);  
+
+      if (channel_number_slot < 0) {
+    
+        log_e("no binary channel found for address %s", ieee_addr_str);
+      
+      } else {
+
+        uint8_t lumi_contact_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_CONTACT_ID, ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+        if (lumi_contact_position > 0) {
+
+          bool lumi_contact = 
+            *(bool*)(attribute->data.value + lumi_contact_position);
+
+          msgZ2SDeviceIASzone(channel_number_slot, lumi_contact);
+        }
+      }
+
+      channel_number_slot = Z2S_findChannelNumberSlot(
         ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
         LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID);
 
@@ -2749,8 +2772,9 @@ void Z2S_onBasicReceive(
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
-        ieee_addr_str, endpoint,attribute->id, attribute->data.size);
+  log_i("%s, short address 0x%x endpoint 0x%x, attribute id 0x%x, size %u", 
+        ieee_addr_str, short_addr, endpoint,attribute->id, 
+        attribute->data.size);
 
   switch (attribute->id) {
 
@@ -2761,15 +2785,6 @@ void Z2S_onBasicReceive(
               *((uint8_t*)(attribute->data.value + i)), 
               *((uint8_t*)(attribute->data.value + i)));
       
-      zbg_device_params_t device = {};
-
-      device.endpoint = endpoint;
-      memcpy(device.ieee_addr, ieee_addr, 8);
-      device.short_addr = short_addr;
-
-      zbGateway.sendAttributeRead(
-        &device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-        ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
         ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
@@ -2794,6 +2809,28 @@ void Z2S_onBasicReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR,
+        NO_CUSTOM_CMD_SID);  
+
+      if (channel_number_slot < 0) {
+    
+        log_e("no binary channel found for address %s", ieee_addr_str);
+      } else {
+
+        uint8_t lumi_contact_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_CONTACT_ID, ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+        if (lumi_contact_position > 0) {
+
+          bool lumi_contact = 
+            *(bool*)(attribute->data.value + lumi_contact_position);
+
+          msgZ2SDeviceIASzone(channel_number_slot, lumi_contact);
+        }
+      }
+
+      channel_number_slot = Z2S_findChannelNumberSlot(
         ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
         NO_CUSTOM_CMD_SID);  
 
@@ -2814,6 +2851,7 @@ void Z2S_onBasicReceive(
 
         msgZ2SDeviceTempHumidityTemp(channel_number_slot, lumi_temperature);
       }
+
       uint8_t lumi_humidity_position = scanLumiPayload(
         LUMI_ATTRIBUTE_HUMIDITY_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 
         attribute->data.size, (uint8_t*)attribute->data.value);
@@ -4918,6 +4956,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL:
       case Z2S_DEVICE_DESC_TS0601_TRV_TRV16:
       case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
+      case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100:
       case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
       case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
       case Z2S_DEVICE_DESC_SONOFF_TRVZB:
@@ -6738,6 +6777,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL:
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV16:
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
+    case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100:
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
     case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
     case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:

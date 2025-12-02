@@ -82,6 +82,11 @@ uint8_t getZ2SDeviceHvacCmdSet(int16_t channel_number_slot) {
 
       return zwt198_cmd_set;
     } break;
+
+    case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100: {
+
+      return zwt100_cmd_set;
+    } break;
     
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002: {
 
