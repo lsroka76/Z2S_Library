@@ -458,8 +458,9 @@ static void bindDeviceCluster2(zbg_device_params_t *,
                          const esp_zb_zcl_attribute_t *)) {
     _on_metering_receive = callback;
   }
-  void onBasicReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
-                         const esp_zb_zcl_attribute_t *)) {
+  void onBasicReceive(
+    void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, 
+                     uint16_t, const esp_zb_zcl_attribute_t *)) {
     _on_basic_receive = callback;
   }
   void onCurrentSummationReceive(void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t)) {
@@ -605,7 +606,7 @@ private:
   void (*_on_multistate_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_analog_input_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_metering_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
-  void (*_on_basic_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_basic_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_current_summation_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint64_t);
   void (*_on_battery_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t);
   void (*_on_current_level_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t);

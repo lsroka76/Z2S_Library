@@ -669,10 +669,10 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device,
   return true; 
 }
 
-void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address, 
-                                       uint16_t src_endpoint, 
-                                       uint16_t cluster_id, 
-                                       esp_zb_zcl_attribute_t *attribute) {
+void ZigbeeGateway::zbReadBasicCluster(
+  esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+  esp_zb_zcl_attribute_t *attribute) {
+
   /* Basic cluster attributes */
   if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) &&
        (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
@@ -737,6 +737,7 @@ void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address,
   } else {
 
     uint16_t short_addr = src_address.u.short_addr;
+
     if (src_address.addr_type == ESP_ZB_ZCL_ADDR_TYPE_SHORT) {
 
       log_i("attribute reporting with short address(0x%02X), updating IEEE address", short_addr);
@@ -746,8 +747,12 @@ void ZigbeeGateway::zbReadBasicCluster(esp_zb_zcl_addr_t src_address,
     log_i("Basic cluster: attribute(0x%02X), type (0x%02X), size (0x%02X)",
           attribute->id, attribute->data.type, attribute->data.size);
     
+    _instance->updateZbgDeviceUnitLastSeenMs(short_addr);
+    
     if (_on_basic_receive)
-      _on_basic_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute);
+      _on_basic_receive(
+        src_address.u.ieee_addr, short_addr, src_endpoint, cluster_id, 
+        attribute);
   }
 }
 

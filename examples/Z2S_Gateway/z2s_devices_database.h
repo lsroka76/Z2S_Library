@@ -281,6 +281,7 @@
 #define Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198                   0x6200
 #define Z2S_DEVICE_DESC_TS0601_MOES_BHT002                  0x6201
 #define Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR                   0x6202
+#define Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100                   0x6203
 
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
 
@@ -1177,6 +1178,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_MOES_BHT002,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -1928,6 +1934,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3040_fuhjqokx", .model_name = "TS0202",
    .z2s_device_uid = 3930,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_n2egfsli ", .model_name = "TS0203",
+   .z2s_device_uid = 3935,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
@@ -3862,7 +3873,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_gops3slb", .model_name = "TS0601",
     .z2s_device_uid = 29115,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_cvub6xbb", .model_name = "TS0601",
@@ -3872,12 +3883,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_xnbkhhdr", .model_name = "TS0601",
     .z2s_device_uid = 29125,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_xnbkhhdr", .model_name = "",
     .z2s_device_uid = 29130,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_ye5jkfsb", .model_name = "TS0601",

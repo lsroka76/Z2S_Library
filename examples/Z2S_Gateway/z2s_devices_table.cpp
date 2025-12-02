@@ -2741,8 +2741,8 @@ void Z2S_onIkeaCustomClusterReceive(
 }
 
 void Z2S_onBasicReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-  const esp_zb_zcl_attribute_t *attribute) {
+  esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, uint16_t endpoint, 
+  uint16_t cluster, const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
@@ -2761,13 +2761,22 @@ void Z2S_onBasicReceive(
               *((uint8_t*)(attribute->data.value + i)), 
               *((uint8_t*)(attribute->data.value + i)));
       
+      zbg_device_params_t device = {};
+
+      device.endpoint = endpoint;
+      memcpy(device.ieee_addr, ieee_addr, 8);
+      device.short_addr = short_addr;
+
+      zbGateway.sendAttributeRead(
+        &device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+        ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
-        SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);  
+        ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
       if (channel_number_slot < 0) {
     
-        log_e("no T/H channel found for address %s", ieee_addr_str);
+        log_e("no channel found for address %s", ieee_addr_str);
         return;
       }
 
@@ -2782,6 +2791,16 @@ void Z2S_onBasicReceive(
 
         updateSuplaBatteryLevel(
           channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, lumi_battery);
+      }
+
+      channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+        NO_CUSTOM_CMD_SID);  
+
+      if (channel_number_slot < 0) {
+    
+        log_e("no T/H channel found for address %s", ieee_addr_str);
+        return;
       }
 
       uint8_t lumi_temperature_position = scanLumiPayload(
