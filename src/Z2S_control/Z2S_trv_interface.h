@@ -843,11 +843,11 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
     .ts0601_cmd_on_dp_id                             =  0x02,
     .ts0601_cmd_on_dp_type                           =  TUYA_DP_TYPE_ENUM,
-    .ts0601_cmd_on_dp_value_on                       =  0x00,
+    .ts0601_cmd_on_dp_value_on                       =  0x05,
 
     .ts0601_cmd_off_dp_id                            =  0x02,
     .ts0601_cmd_off_dp_type                          =  TUYA_DP_TYPE_ENUM,
-    .ts0601_cmd_off_dp_value_off                     =  0x05,
+    .ts0601_cmd_off_dp_value_off                     =  0x00,
     
     .ts0601_cmd_set_target_heatsetpoint_dp_id        =  0x04,
     .ts0601_cmd_set_target_heatsetpoint_dp_type      =  TUYA_DP_TYPE_VALUE,
@@ -864,7 +864,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_schedule_mode_dp_id              =  0x02,
     .ts0601_cmd_set_schedule_mode_dp_type            =  TUYA_DP_TYPE_ENUM,
-    .ts0601_cmd_set_schedule_mode_dp_value_on        =  0x01,
+    .ts0601_cmd_set_schedule_mode_dp_value_on        =  0x04,
     .ts0601_cmd_set_schedule_mode_dp_value_off       =  0xFF,
 
     .ts0601_cmd_set_child_lock_dp_id                 =  0x07,
@@ -872,17 +872,17 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_window_detect_dp_id             =  0x0E,
+    .ts0601_cmd_set_window_detect_dp_id              =  0x0E,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL, //0x0F open/close
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
     
-    .ts0601_cmd_set_anti_freeze_protect_dp_id        =  0x24,
+    .ts0601_cmd_set_anti_freeze_protect_dp_id        =  0x7A,
     .ts0601_cmd_set_anti_freeze_protect_dp_type      =  TUYA_DP_TYPE_BOOL,
     .ts0601_cmd_set_anti_freeze_protect_dp_value_on  =  0x01,
     .ts0601_cmd_set_anti_freeze_protect_dp_value_off =  0x00,
 
-    .ts0601_cmd_set_limescale_protect_dp_id          =  0x27,
+    .ts0601_cmd_set_limescale_protect_dp_id          =  0x00,
     .ts0601_cmd_set_limescale_protect_dp_type        =  TUYA_DP_TYPE_BOOL,
     .ts0601_cmd_set_limescale_protect_dp_value_on    =  0x01,
     .ts0601_cmd_set_limescale_protect_dp_value_off   =  0x00,
@@ -900,7 +900,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
 
-    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
+    .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x72 },
 
 /*---------------------------------------------------------------------------------------*/
 

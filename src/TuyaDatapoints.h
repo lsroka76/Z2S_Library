@@ -32,6 +32,8 @@
 #define TUYA_TH_SENSOR_HUMIDITY_REPORT_INTERVAL_DP                  0x12
 #define TUYA_TH_SENSOR_TEMPERATURE_SENSITIVITY_DP                   0x13
 #define TUYA_TH_SENSOR_HUMIDITY_SENSITIVITY_DP                      0x14
+#define TUYA_TH_SENSOR_TEMPERATURE_CALIBRATION_DP                   0x17
+#define TUYA_TH_SENSOR_HUMIDITY_CALIBRATION_DP                      0x18
 
 
 #define TUYA_SMOKE_DETECTOR_SMOKE_DP                                0x01

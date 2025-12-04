@@ -39,6 +39,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR       0x1010
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1     0x1011
+#define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2     0x1012
 
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10         0x1020
 
@@ -1411,6 +1412,10 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 	  
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE,
     .z2s_device_clusters_count = 1,
@@ -2570,6 +2575,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3210_fgwhjm9j", .model_name = "TS011F",
     .z2s_device_uid = 11805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3210_w0qqde0g", .model_name = "TS011F",
+    .z2s_device_uid = 11810,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
 	  .z2s_device_endpoints_count = 1},
 
@@ -4068,6 +4078,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 31300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_ehhrv2e3", .model_name = "TS0601",
+    .z2s_device_uid = 31400,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2,
+    .z2s_device_endpoints_count = 1}
   
 //DEVICES_END
 

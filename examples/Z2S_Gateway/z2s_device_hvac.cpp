@@ -143,9 +143,11 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
           ts0601_cmd_set_id == trv_commands_set) {
 
       trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
+      
       hvac_room_temperature_min = 
         ts0601_command_sets_table[trv_commands_set].\
           ts0601_cmd_set_target_heatsetpoint_min;
+      
       hvac_room_temperature_max = 
         ts0601_command_sets_table[trv_commands_set].\
           ts0601_cmd_set_target_heatsetpoint_max;
@@ -195,14 +197,13 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   }
 
   if ((trv_commands_set == moes_cmd_set) ||
-      (trv_commands_set == me167_cmd_set))
+      (trv_commands_set == me167_cmd_set) ||
+      (trv_commands_set == trv602z_cmd_set))
     onOffOnly = false;
 
   auto Supla_Z2S_TRVInterface = 
-    new Supla::Control::Z2S_TRVInterface(gateway, 
-                                         device, 
-                                         trv_commands_set,
-                                         onOffOnly);
+    new Supla::Control::Z2S_TRVInterface(
+      gateway, device, trv_commands_set, onOffOnly);
 
   auto Supla_Z2S_HvacBase = 
     new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
