@@ -2447,6 +2447,10 @@ void processTuyaDataReport(
         channel_number_slot, payload_size, payload, model_id);
     break;
 
+    case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
+
+    break;
+
     default: 
       
       log_i("Unknown device model id 0x%x", 

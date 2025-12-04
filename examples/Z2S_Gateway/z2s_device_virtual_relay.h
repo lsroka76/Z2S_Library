@@ -11,10 +11,10 @@
 #define RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG 0x01
 #define RS_MOVING_DIRECTION_MSG                 0x02
 
-#define VRV_U8_ID  0x01
-#define VRV_S8_ID  0x02
-#define VRV_U32_ID 0x03
-#define VRV_S32_ID 0x04
+#define VRV_U8_ID                               0x01
+#define VRV_S8_ID                               0x02
+#define VRV_U32_ID                              0x03
+#define VRV_S32_ID                              0x04
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
@@ -23,9 +23,9 @@ static const char *default_rs_name = "Roller shutter";
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, 
-                              zbg_device_params_t *device, 
-                              int16_t channel_number_slot);
+void initZ2SDeviceVirtualRelay(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, 
+  int16_t channel_number_slot);
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

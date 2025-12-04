@@ -195,10 +195,8 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
         state = true;
 
-        sendTuyaRequestCmdBool(_gateway, 
-                               &_device, 
-                               GIEX_WATER_VALVE_STATE_DP, 
-                               state);
+        sendTuyaRequestCmdBool(
+          _gateway, &_device, GIEX_WATER_VALVE_STATE_DP, state);
         
         channel.setNewValue(state);
       } break;
@@ -211,10 +209,8 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
         uint8_t realy_dp_id = _z2s_function_value_U8;
 
-        sendTuyaRequestCmdBool(_gateway, 
-                               &_device, 
-                               realy_dp_id, 
-                               state);
+        sendTuyaRequestCmdBool(
+          _gateway, &_device, realy_dp_id, state);
         
         channel.setNewValue(state);
       } break;

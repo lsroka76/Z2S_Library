@@ -12,7 +12,6 @@ void initZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
 
     uint8_t z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
 
-
     switch (z2s_channels_table[channel_number_slot].model_id) {
 
 

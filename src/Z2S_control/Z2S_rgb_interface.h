@@ -36,6 +36,8 @@
 #define Z2S_PHILIPS_COLOR_HS_XY_RGB 0x22
 #define Z2S_PHILIPS_COLOR_XY_RGB    0x23
 
+#define Z2S_TUYA_DATAPOINT
+
 
 namespace Supla {
 namespace Control {
@@ -60,15 +62,11 @@ public:
 
   virtual void handleAction(int event, int action) override {};
 
-  virtual void sendValueToDevice(uint8_t red,
-                                 uint8_t green,
-                                 uint8_t blue,
-                                 uint8_t colorBrightness);
+  virtual void sendValueToDevice(
+    uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness);
 
-  virtual void setValueOnServer(uint8_t red,
-                                uint8_t green,
-                                uint8_t blue,
-                                uint8_t colorBrightness);
+  virtual void setValueOnServer(
+    uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness);
 
   void setRGBMode(uint8_t rgb_mode);
   uint8_t getRGBMode();

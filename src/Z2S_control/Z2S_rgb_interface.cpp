@@ -196,10 +196,8 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
       case Z2S_TUYA_COLOR_HS_RGB: {
         
         _gateway->sendCustomClusterCmd(
-          &_device, 
-          ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
-          0xF0, 
-          ESP_ZB_ZCL_ATTR_TYPE_U8, 1,&light_mode , false);
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
+          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode ,false);
 
         _gateway->sendColorMoveToHueAndSaturationCmd(
           &_device, _hue, _saturation, 1);
@@ -209,11 +207,8 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
       case Z2S_TUYA_COLOR_XY_RGB: {
         
         _gateway->sendCustomClusterCmd(
-          &_device, 
-          ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
-          0xF0, 
-          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode, 
-          false);
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
+          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode, false);
 
         espXyColor_t xy_color = espRgbToXYColor(red, green, blue);
         xy_color.x = map(xy_color.x, 0 ,0xFFFF, 0, 0xFEFF);
@@ -221,7 +216,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
 
         log_i("Tuya XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
         
-        _gateway->sendColorMoveToColorCmd(\
+        _gateway->sendColorMoveToColorCmd(
           &_device, xy_color.x, xy_color.y, 1);
       } break;
     }
@@ -234,10 +229,8 @@ void Supla::Control::Z2S_RGBInterface::ping() {
   if (_gateway && Zigbee.started()) {
     _fresh_start = false;
     _gateway->sendAttributeRead(
-      &_device, 
-      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-      ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, 
-      false);
+      &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+      ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
   }
 }
 

@@ -129,6 +129,7 @@
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A              0x3110
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B              0x3111
 #define Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT                0x3112
+#define Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00                0x3113
 
 #define Z2S_DEVICE_DESC_IKEA_RGBW_BULB                      0x3120
 #define Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB                   0x3130
@@ -1319,6 +1320,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
                              ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+                             
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
@@ -2751,6 +2757,17 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 4, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
+  {	.manufacturer_name = "_TZ3000_iszegwpd", .model_name = "TS0046",
+    .z2s_device_uid = 13750,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+	  .z2s_device_endpoints_count = 6,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 4, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 5, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 6, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
   {	.manufacturer_name = "_TZ3000_famkxci2", .model_name = "TS0043",
     .z2s_device_uid = 13800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
@@ -4045,6 +4062,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "Aqara", .model_name = "lumi.plug.aeu001",
     .z2s_device_uid = 31200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_8fffc3kb", .model_name = "TS0601",
+    .z2s_device_uid = 31300,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00,
     .z2s_device_endpoints_count = 1},
   
 //DEVICES_END

@@ -5160,7 +5160,8 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       case Z2S_DEVICE_DESC_RGBW_BULB_XY:
-      case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB: {
+      case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
+      case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00: {
         
         addZ2SDeviceVirtualRelay(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
@@ -6896,6 +6897,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
+    case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
       return true;
     default:
       return false;
