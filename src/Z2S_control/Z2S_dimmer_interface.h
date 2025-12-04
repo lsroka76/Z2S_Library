@@ -30,6 +30,8 @@
 #define Z2S_TUYA_F0_CMD_DIMMER                0x03 //LEVEL CONTROL 0 - 1000
 #define Z2S_TUYA_E0_CMD_DIMMER                0x04 //COLOR CLUSTER 0 - 1000
 #define Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER  0x05
+#define Z2S_TUYA_BRIGHTNESS_DP_DIMMER         0x06 //DP 0-1000
+#define Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER  0x07 //DP 0-1000
 
 namespace Supla {
 namespace Control {

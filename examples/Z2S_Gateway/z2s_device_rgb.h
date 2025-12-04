@@ -6,25 +6,21 @@
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void initZ2SDeviceRGB(ZigbeeGateway *gateway, 
-                      zbg_device_params_t *device, 
-                      int16_t channel_number_slot);
+void initZ2SDeviceRGB(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, 
+  int16_t channel_number_slot);
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void addZ2SDeviceRGB(ZigbeeGateway *gateway, 
-                     zbg_device_params_t *device, 
-                     uint8_t free_slot, 
-                     const char *name = nullptr, 
-                     uint32_t func = 0);
+void addZ2SDeviceRGB(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
+  const char *name = nullptr, uint32_t func = 0);
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void msgZ2SDeviceRGB(uint32_t model_id, 
-                     uint8_t Supla_channel, 
-                     uint8_t hue, 
-                     uint8_t saturation, 
-                     bool state);
+void msgZ2SDeviceRGB(
+  uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, 
+  bool state);
 
 
 #endif

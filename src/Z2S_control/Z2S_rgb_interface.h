@@ -36,7 +36,7 @@
 #define Z2S_PHILIPS_COLOR_HS_XY_RGB 0x22
 #define Z2S_PHILIPS_COLOR_XY_RGB    0x23
 
-#define Z2S_TUYA_DATAPOINT
+#define Z2S_TUYA_DP_COLOR_HS_RGB    0x30
 
 
 namespace Supla {

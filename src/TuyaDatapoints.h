@@ -313,6 +313,13 @@
 
 #define TUYA_ZM35HQ_BATTERY_DP                                      0x04
 
+#define TUYA_RGBWCT_LED_EF00_SWITCH_DP                              0x01 //BOOL
+#define TUYA_RGBWCT_LED_EF00_MODE_DP                                0x02 //ENUM
+#define TUYA_RGBWCT_LED_EF00_BRIGHTNESS_DP                          0x03 //RAW?
+#define TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP                   0x04 //RAW?
+#define TUYA_RGBWCT_LED_EF00_COLOR_DP                               0x3D //RAW
+
+
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_8   0x07 //8 bit value /7 bytes/
