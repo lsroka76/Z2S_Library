@@ -4054,6 +4054,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2,
     .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "Xiaomi", .model_name = "lumi.sensor_motion",
+    .z2s_device_uid = 30805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2,
+	  .z2s_device_endpoints_count = 1},
+
+
   { .manufacturer_name = "_TZ32101000000_5oy7cysk", .model_name = "TS0210",
     .z2s_device_uid = 30900,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2,

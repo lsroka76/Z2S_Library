@@ -524,7 +524,28 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
                   Z2S_VERSION);
     return;
   } else
-  if (strcmp(cmd, "LIST-DEVICES") == 0) {
+  if (strcmp(cmd, "MEMORY") == 0) {
+  
+    telnet.printf(
+      "\n\rMemory information:"
+      "\n\rFlash chip real size: %u B"
+      "\n\rFree Sketch Space: %u B"
+      "\n\rHeapSize: %u B"
+			"\n\rFree Heap: %u B"
+      "\n\rMaxAllocHeap: %u B"
+      "\n\rMinimal Free Heap: %u B"
+			"\n\rSupla uptime: %lu s", 
+			ESP.getFlashChipSize(), 
+      ESP.getFreeSketchSpace(), 
+      ESP.getHeapSize(),
+      ESP.getFreeHeap(), 
+      ESP.getMaxAllocHeap(),
+      ESP.getMinFreeHeap(), 
+      SuplaDevice.uptime.getUptime());
+    return;
+  } else
+  if ((strcmp(cmd, "LIST-DEVICES") == 0) ||
+      (strcmp(cmd, "LIST-CHANNELS") == 0)) {
     Z2S_printChannelsTableSlots(true);
     return;
   } else
@@ -657,21 +678,17 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     double threshold_2; 
     
     if (is_valid_action && is_valid_event)
-      Z2S_add_action(action_name, src_channel_id, Supla_action, dst_channel_id, Supla_event, false);
+      Z2S_add_action(
+        action_name, src_channel_id, Supla_action, dst_channel_id, 
+        Supla_event, false);
     else
     if ((params_number == 7) && is_valid_action && is_valid_condition) {
       threshold_1       = strtod(*(param+5), nullptr);
       threshold_2       = strtod(*(param+6), nullptr);
-      Z2S_add_action(action_name, 
-                     src_channel_id, 
-                     Supla_action, 
-                     dst_channel_id, 
-                     Supla_condition, 
-                     true, 
-                     threshold_1, 
-                     threshold_2);
+      Z2S_add_action(
+        action_name, src_channel_id, Supla_action, dst_channel_id, 
+        Supla_condition, true, threshold_1, threshold_2);
     }
-    
     return;
   } else
   if (strcmp(cmd,"UPDATE-DEVICE-DESC") == 0) {
