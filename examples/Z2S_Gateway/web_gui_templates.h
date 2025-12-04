@@ -259,6 +259,10 @@ static constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM =
 	   .zigbee_datatype_size = 0x02,	
 		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BIT_ENUM },
 
+	 { .zigbee_datatype_name = "SINGLE (FLOAT)",		
+	   .zigbee_datatype_size = 0x04,	
+		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SINGLE },
+
 	 { .zigbee_datatype_name = "OSTRING",	
 	   .zigbee_datatype_size = 0x00,	
 		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING },
@@ -1217,7 +1221,30 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "SWITCH MODE" },
 
-		
+	{ .zigbee_attribute_id  = LUMI_CUSTOM_POWER_ON_BEHAVIOR_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "POWER ON BEHAVIOR" },
+
+	{ .zigbee_attribute_id  = LUMI_CUSTOM_OVERLOAD_PROTECTION_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
+		.zigbee_attribute_name = "OVERLOAD PROTECTION (100 - 3840W)" },
+
+	{ .zigbee_attribute_id  = LUMI_CUSTOM_LED_INDICATOR_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+		.zigbee_attribute_name = "LED INDICATOR" },
+
+	{ .zigbee_attribute_id  = LUMI_CUSTOM_CHARGING_PROTECTION_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+		.zigbee_attribute_name = "CHARGING PROTECTION" },
+
+	{ .zigbee_attribute_id  = LUMI_CUSTOM_CHARGING_PROTECTION_POWER_LIMIT_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
+		.zigbee_attribute_name = "CHARGING PROTECTION LIMIT(0.1 - 2.0W)" }
 };
 	 
 
@@ -1402,6 +1429,54 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_attribute_id = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID,
 		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
 		.zigbee_attribute_value_name = "DECOUPLED",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_POWER_ON_BEHAVIOR_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_POWER_ON_BEHAVIOR_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "RESTORE",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_POWER_ON_BEHAVIOR_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0x02
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_POWER_ON_BEHAVIOR_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "INVERTED",
+		.zigbee_attribute_value = 0x03
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_LED_INDICATOR_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_LED_INDICATOR_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_CHARGING_PROTECTION_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = LUMI_CUSTOM_CHARGING_PROTECTION_ID,
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "OFF",
 		.zigbee_attribute_value = 0x00
 	}
 };

@@ -16,7 +16,9 @@
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY              (1 << 9)
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY       (1 << 10)
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_SETUP              (1 << 11)
-#define Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT               (1 << 12)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION        (1 << 12)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT               (1 << 13)
+
 
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL_1       (1 << 16)
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL_2       (1 << 17)
@@ -167,6 +169,8 @@
 #define Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER      0x4200
 #define Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER     0x4300
 #define Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER       0x4400
+
+#define Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET              0x4450
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER        0x4500
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1      0x4501
@@ -923,6 +927,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
                              ESP_ZB_ZCL_CLUSTER_ID_METERING }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x00, //Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             LUMI_CUSTOM_CLUSTER }},
+
    {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER,
      .z2s_device_clusters_count = 3,
      .z2s_device_config_flags = 0x0,
@@ -1175,12 +1185,14 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
     .z2s_device_clusters_count = 1,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
     .z2s_device_clusters_count = 1,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_MOES_BHT002,
@@ -1382,13 +1394,15 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
 	  
@@ -2280,6 +2294,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "Zbeacon", .model_name = "DS01",
+    .z2s_device_uid = 9610,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "Zbeacon", .model_name = "TS0207",
+    .z2s_device_uid = 9615,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-204Z",
     .z2s_device_uid = 9700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
@@ -2312,6 +2336,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_iutkth2a", .model_name = "TS0001",
     .z2s_device_uid = 10105,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_czjsxcwp", .model_name = "TS0001",
+    .z2s_device_uid = 10110,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
@@ -2382,6 +2411,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_bhcpnvud", .model_name = "TS0001",
     .z2s_device_uid = 10265,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_i9oy2rdq", .model_name = "TS0001",
+    .z2s_device_uid = 10270,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
@@ -2468,6 +2502,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_8n7lqbm0", .model_name = "TS0001",
+    .z2s_device_uid = 11100,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_g8n1n7lg", .model_name = "TS0001",
     .z2s_device_uid = 11100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
@@ -3503,6 +3542,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_RELAY },
                               { 2, Z2S_DEVICE_DESC_TUYA_RELAY }}},
 
+  {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-305Z",
+    .z2s_device_uid = 22505,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_RELAY },
+                              { 2, Z2S_DEVICE_DESC_TUYA_RELAY }}},
+
   {	.manufacturer_name = "_TZ3000_5ajpkyq6", .model_name = "TS0004",
     .z2s_device_uid = 22600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
@@ -3994,6 +4040,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_lpedvtvr", .model_name = "TS0601",
     .z2s_device_uid = 31100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Aqara", .model_name = "lumi.plug.aeu001",
+    .z2s_device_uid = 31200,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET,
     .z2s_device_endpoints_count = 1},
   
 //DEVICES_END

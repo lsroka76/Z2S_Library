@@ -103,6 +103,11 @@
 #define LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID                       0xFFF2 //0x41
 
 #define LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID                  0x0200 //U8
+#define LUMI_CUSTOM_CHARGING_PROTECTION_ID                    0x0202 //BOOL
+#define LUMI_CUSTOM_LED_INDICATOR_ID                          0x0203 //BOOL
+#define LUMI_CUSTOM_CHARGING_PROTECTION_POWER_LIMIT_ID        0x0206 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
+#define LUMI_CUSTOM_OVERLOAD_PROTECTION_ID                    0x020B //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
+#define LUMI_CUSTOM_POWER_ON_BEHAVIOR_ID                      0x0517 //U8
 
 #define LUMI_ATTRIBUTE_BATTERY_ID                             0x01 //ESP_ZB_ZCL_ATTR_TYPE_U16
 #define LUMI_ATTRIBUTE_CONTACT_ID                             0x64 //ESP_ZB_ZCL_ATTR_TYPE_BOOL
@@ -111,6 +116,10 @@
 #define LUMI_ATTRIBUTE_PRESSURE_ID                            0x66 //ESP_ZB_ZCL_ATTR_TYPE_S32
 #define LUMI_ATTRIBUTE_VOC_ID                                 0x66 //ESP_ZB_ZCL_ATTR_TYPE_U16
 #define LUMI_ATTRIBUTE_AIR_QUALITY_ID                         0x67 //ESP_ZB_ZCL_ATTR_TYPE_U8
+#define LUMI_ATTRIBUTE_ENERGY_ID                              0x95 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
+#define LUMI_ATTRIBUTE_VOLTAGE_ID                             0x96 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
+#define LUMI_ATTRIBUTE_CURRENT_ID                             0x97 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
+#define LUMI_ATTRIBUTE_POWER_ID                               0x98 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
 
 #define DEVELCO_CUSTOM_CLUSTER                                0xFC03
 #define DEVELCO_MANUFACTURER_CODE                             0x1015

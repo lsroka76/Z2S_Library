@@ -2558,15 +2558,21 @@ void processTuyaCustomCluster(
 
       uint8_t seq[2];
     
+      uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
+
+      if (!Z2S_checkZbDeviceFlags(
+            zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_MCU_VERSION_REQUEST)) {
+        
+        log_i("Ignoring TUYA_MCU_VERSION_RESPONSE message");
+
+        return;
+      }
+
       zbg_device_params_t device = {};
 
-      int16_t channel_number_slot = 
-        Z2S_findChannelNumberSlot(
-          ieee_addr, 
-          endpoint, 
-          TUYA_PRIVATE_CLUSTER_EF00, 
-          ALL_SUPLA_CHANNEL_TYPES, 
-          NO_CUSTOM_CMD_SID); 
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
+          ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
 
       if (channel_number_slot < 0) {
 
@@ -2575,35 +2581,25 @@ void processTuyaCustomCluster(
         return;
       }
 
-      device.endpoint = 
-        z2s_channels_table[channel_number_slot].endpoint;
+      device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
 
-      device.cluster_id = 
-        z2s_channels_table[channel_number_slot].cluster_id;
+      device.cluster_id = z2s_channels_table[channel_number_slot].cluster_id;
 
       memcpy(
-        device.ieee_addr, 
-        z2s_channels_table[channel_number_slot].ieee_addr, 
+        device.ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr, 
         sizeof(esp_zb_ieee_addr_t));
 
-      device.short_addr = 
-        z2s_channels_table[channel_number_slot].short_addr;
+      device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
 
-      device.model_id = 
-        z2s_channels_table[channel_number_slot].model_id;
+      device.model_id = z2s_channels_table[channel_number_slot].model_id;
   
       seq[0] = 00;
       seq[1] = 02;
 
       log_i("Sending TUYA_VERSION_REQUEST");
       zbGateway.sendCustomClusterCmd(
-        &device, 
-        TUYA_PRIVATE_CLUSTER_EF00, 
-        TUYA_MCU_VERSION_REQUEST, 
-        ESP_ZB_ZCL_ATTR_TYPE_SET, 
-        2, 
-        seq, 
-        false);
+        &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_VERSION_REQUEST, 
+        ESP_ZB_ZCL_ATTR_TYPE_SET, 2, seq, false);
     } break;
     
 

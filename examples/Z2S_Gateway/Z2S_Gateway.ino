@@ -1042,7 +1042,7 @@ if (GUIstarted)
 
       bool device_recognized = false;
 
-          for (int devices_list_counter = 0; 
+          for (uint32_t devices_list_counter = 0; 
                devices_list_counter < devices_list_table_size; 
                devices_list_counter++) { 
             
@@ -1075,7 +1075,7 @@ if (GUIstarted)
                     Z2S_DEVICES_LIST[devices_list_counter].\
                       z2s_device_endpoints[3].z2s_device_desc_id);
   
-              for (int endpoint_counter = 0; 
+              for (uint8_t endpoint_counter = 0; 
                    endpoint_counter < Z2S_DEVICES_LIST[devices_list_counter].\
                     z2s_device_endpoints_count; 
                    endpoint_counter++) {
@@ -1094,7 +1094,7 @@ if (GUIstarted)
                   Z2S_DEVICES_LIST[devices_list_counter].\
                   z2s_device_endpoints[endpoint_counter].z2s_device_desc_id; 
 
-                for (int devices_desc_counter = 0; 
+                for (uint32_t devices_desc_counter = 0; 
                      devices_desc_counter < devices_desc_table_size; 
                      devices_desc_counter++) {
 
@@ -1135,9 +1135,8 @@ if (GUIstarted)
                           0xFFFE };
 
                         zbGateway.sendAttributesRead(
-                          joined_device, 
-                          ESP_ZB_ZCL_CLUSTER_ID_BASIC, 
-                          6, tuya_init_attributes);  
+                          joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 6, 
+                          tuya_init_attributes);  
                       }
 
                       if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
@@ -1145,12 +1144,11 @@ if (GUIstarted)
 
                         log_i("Tuya setup");
 
-                        zbGateway.sendCustomClusterCmd(joined_device, 
-                                                        ESP_ZB_ZCL_CLUSTER_ID_BASIC, 
-                                                        TUYA_SETUP_CMD, 
-                                                        ESP_ZB_ZCL_ATTR_TYPE_SET, 
-                                                        0, nullptr, false, 
-                                                        ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 0, 0); //disable default response, no manufacurer code  
+                        zbGateway.sendCustomClusterCmd(
+                          joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 
+                          TUYA_SETUP_CMD, ESP_ZB_ZCL_ATTR_TYPE_SET, 
+                          0, nullptr, false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+                          1, 0, 0); //disable default response, no manufacurer code  
                       }
 
                       if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
@@ -1160,12 +1158,11 @@ if (GUIstarted)
 
                         write_mask = 0x01;
                         //joined_device->endpoint = 1;
-                        zbGateway.sendAttributeWrite(joined_device, 
-                                                     LUMI_CUSTOM_CLUSTER, 
-                                                     LUMI_CUSTOM_CLUSTER_MODE_ID, 
-                                                     ESP_ZB_ZCL_ATTR_TYPE_U8, 
-                                                    1, &write_mask, true, 
-                                                    1, LUMI_MANUFACTURER_CODE);
+                        zbGateway.sendAttributeWrite(
+                          joined_device, LUMI_CUSTOM_CLUSTER, 
+                          LUMI_CUSTOM_CLUSTER_MODE_ID, 
+                          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, true, 1, 
+                          LUMI_MANUFACTURER_CODE);
                       }
                     }
 
@@ -1193,13 +1190,10 @@ if (GUIstarted)
                               if (philips_0031 != write_mask_16)
                               write_mask_16 = 0x0000;
                             }*/
-                        zbGateway.sendAttributeWrite(joined_device, 
-                                                     ESP_ZB_ZCL_CLUSTER_ID_BASIC, 
-                                                     0x0031, 
-                                                     ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 
-                                                     2, &write_mask_16, 
-                                                     true, 
-                                                     1, PHILIPS_MANUFACTURER_CODE);
+                        zbGateway.sendAttributeWrite(
+                          joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, 
+                          ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 2, &write_mask_16, 
+                          true, 1, PHILIPS_MANUFACTURER_CODE);
                       } break;
                     }
 
@@ -1224,21 +1218,16 @@ if (GUIstarted)
                     if (endpoint_counter == 0) {//(endpoint_id == 1)
                           
                       uint8_t zb_device_slot = Z2S_addZbDeviceTableSlot(
-                        joined_device->ieee_addr,
-                        joined_device->short_addr,
+                        joined_device->ieee_addr,joined_device->short_addr,
                         zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
                         zbGateway.getQueryBasicClusterData()->zcl_model_name,
                         Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count,
                         Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id,
                         zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
 
-                      if ((zb_device_slot < 0xFF) &&
-                          (Z2S_DEVICES_DESC[devices_desc_counter].\
-                            z2s_device_config_flags & 
-                          Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY))
-                            Z2S_setZbDeviceFlags(
-                              zb_device_slot, 
-                              ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
+                      if (zb_device_slot < 0xFF) 
+                        Z2S_syncZbDeviceDescFlags(
+                          devices_desc_counter, zb_device_slot);
                     }
 
                     Z2S_buildSuplaChannels(joined_device, endpoint_counter);
@@ -1247,13 +1236,11 @@ if (GUIstarted)
               }
               //here we can configure reporting and restart ESP32
 
-              if (hasTuyaCustomCluster(Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id))
-                zbGateway.sendCustomClusterCmd(joined_device, 
-                                               TUYA_PRIVATE_CLUSTER_EF00, 
-                                               TUYA_QUERY_CMD, 
-                                               ESP_ZB_ZCL_ATTR_TYPE_NULL, 
-                                               0, 
-                                               nullptr);
+              if (hasTuyaCustomCluster(
+                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id))
+                zbGateway.sendCustomClusterCmd(
+                  joined_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
+                  ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr);
 
               switch (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id) { //(joined_device->model_id) {
 

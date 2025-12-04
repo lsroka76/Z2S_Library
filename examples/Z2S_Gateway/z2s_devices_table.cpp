@@ -359,7 +359,8 @@ bool Z2S_checkChannelFlags(int16_t channel_number_slot,
     return 
       (z2s_channels_table[channel_number_slot].user_data_flags &
        flags_to_check);    
-  } else return false;
+  } else 
+    return false;
 }
 
 bool Z2S_loadChannelsTable() {
@@ -643,10 +644,14 @@ uint8_t Z2S_findFirstFreeZbDevicesTableSlot(uint8_t start_slot) {
 
 uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr) {
 
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
-      if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
-          (memcmp(z2s_zb_devices_table[devices_counter].ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t)) == 0))
-        return devices_counter;
+  for (uint8_t devices_counter = 0; 
+       devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++)
+
+    if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
+        (memcmp(z2s_zb_devices_table[devices_counter].ieee_addr, ieee_addr,
+                sizeof(esp_zb_ieee_addr_t)) == 0))
+      return devices_counter;
+
   return 0xFF;  
 }
 
@@ -1229,6 +1234,23 @@ bool Z2S_clearZbDevicesTable() {
   return Z2S_saveZbDevicesTable();
 }
 
+void Z2S_syncZbDeviceDescFlags(
+  uint32_t devices_desc_slot, uint8_t zb_device_slot) {
+
+  uint32_t device_desc_config_flags = 
+    Z2S_DEVICES_DESC[devices_desc_slot].z2s_device_config_flags;
+  
+  if (device_desc_config_flags & 
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY)
+    Z2S_setZbDeviceFlags(
+      zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
+
+  if (device_desc_config_flags &
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION)
+    Z2S_setZbDeviceFlags(
+      zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_MCU_VERSION_REQUEST);
+}
+  
 bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set) {
 
   if ((device_number_slot >= 0) && 
@@ -1249,12 +1271,20 @@ bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set) {
     return false;
 }
 
-bool Z2S_clearZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_clear) {
+bool Z2S_clearZbDeviceFlags(
+  int8_t device_number_slot, uint32_t flags_to_clear) {
 
-  if ((device_number_slot >= 0) && (device_number_slot < Z2S_ZB_DEVICES_MAX_NUMBER) && z2s_zb_devices_table[device_number_slot].record_id > 0) {
+  if ((device_number_slot >= 0) && 
+      (device_number_slot < Z2S_ZB_DEVICES_MAX_NUMBER) && 
+      z2s_zb_devices_table[device_number_slot].record_id > 0) {
+
     z2s_zb_devices_table[device_number_slot].user_data_flags &= ~flags_to_clear;
+    
     if (Z2S_saveZbDevicesTable()) {
-    log_i("Device global flags cleared successfully to %x", z2s_zb_devices_table[device_number_slot].user_data_flags);
+
+    log_i("Device global flags cleared successfully to %x", 
+          z2s_zb_devices_table[device_number_slot].user_data_flags);
+
       return true;
     }
     return false;
@@ -1263,17 +1293,18 @@ bool Z2S_clearZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_clear) 
     return false;
 }
 
-bool Z2S_checkZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_check) {
+bool Z2S_checkZbDeviceFlags(
+  int8_t device_number_slot, uint32_t flags_to_check) {
 
   if ((device_number_slot >= 0) && 
       (device_number_slot < Z2S_ZB_DEVICES_MAX_NUMBER) && 
       z2s_zb_devices_table[device_number_slot].record_id > 0) {
 
-    if ((z2s_zb_devices_table[device_number_slot].user_data_flags & flags_to_check) == flags_to_check)
+    if ((z2s_zb_devices_table[device_number_slot].user_data_flags &
+         flags_to_check) == flags_to_check)
       return true;
     else 
       return false;
-  
   }
   return false;
 }
@@ -2532,6 +2563,66 @@ void Z2S_onLumiCustomClusterReceive(
             *(bool*)(attribute->data.value + lumi_contact_position);
 
           msgZ2SDeviceIASzone(channel_number_slot, lumi_contact);
+        }
+      }
+
+      channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER,
+        NO_CUSTOM_CMD_SID);  
+
+      if (channel_number_slot < 0) {
+    
+        log_e("no EM channel found for address %s", ieee_addr_str);
+      
+      } else {
+
+        uint8_t lumi_em_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_ENERGY_ID, ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+        if (lumi_em_position > 0) {
+
+          float lumi_energy = 
+            *(float *)(attribute->data.value + lumi_em_position);
+
+          msgZ2SDeviceElectricityMeter(
+            channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, lumi_energy); 
+        }
+        lumi_em_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_VOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+        if (lumi_em_position > 0) {
+
+          float lumi_voltage = 
+            *(float *)(attribute->data.value + lumi_em_position);
+
+          msgZ2SDeviceElectricityMeter(
+            channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, lumi_voltage / 10); 
+        }
+        lumi_em_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_CURRENT_ID, ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+        if (lumi_em_position > 0) {
+
+          float lumi_current = 
+            *(float *)(attribute->data.value + lumi_em_position);
+
+          msgZ2SDeviceElectricityMeter(
+            channel_number_slot, Z2S_EM_CURRENT_A_SEL, lumi_current); 
+        }
+        lumi_em_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+        if (lumi_em_position > 0) {
+
+          float lumi_power = 
+            *(float *)(attribute->data.value + lumi_em_position);
+
+          msgZ2SDeviceElectricityMeter(
+            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, lumi_power); 
         }
       }
 
@@ -4881,23 +4972,33 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2:
       case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A:
       case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER:
-      case Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER: {
+      case Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER:
+      case Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET: {
         
         addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot);
         
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
         if (first_free_slot == 0xFF) {
           
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        if (device->model_id == Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2)
-              addZ2SDeviceElectricityMeter(&zbGateway, device, true, true, first_free_slot);
-            else if (device->model_id == Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER)
-              addZ2SDeviceElectricityMeter(&zbGateway, device, true, false, first_free_slot);
-            else
-              addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot);
+        if (device->model_id == 
+            Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2)
+              addZ2SDeviceElectricityMeter(
+                &zbGateway, device, true, true, first_free_slot);
+        else {
+        
+          if (device->model_id == 
+              Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER)
+                addZ2SDeviceElectricityMeter(
+                  &zbGateway, device, true, false, first_free_slot);
+          else
+            addZ2SDeviceElectricityMeter(
+              &zbGateway, device, false, false, first_free_slot);
+        }
       } break;
 
 
