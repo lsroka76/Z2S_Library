@@ -534,7 +534,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 			"\n\rFree Heap: %u B"
       "\n\rMaxAllocHeap: %u B"
       "\n\rMinimal Free Heap: %u B"
-			"\n\rSupla uptime: %lu s", 
+			"\n\rSupla uptime: %lu s\n\r", 
 			ESP.getFlashChipSize(), 
       ESP.getFreeSketchSpace(), 
       ESP.getHeapSize(),

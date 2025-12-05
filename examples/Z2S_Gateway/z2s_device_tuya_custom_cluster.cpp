@@ -169,10 +169,9 @@ Tuya_read_dp_result_t Z2S_readTuyaDPvalue(uint8_t Tuya_dp_id, uint16_t payload_s
 
 // HVAC data reporting                         //
 
-void processTuyaHvacDataReport(int16_t channel_number_slot, 
-                              uint16_t payload_size, 
-                              uint8_t *payload, 
-                              uint32_t model_id) {
+void processTuyaHvacDataReport(
+  int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
+  uint32_t model_id) {
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
@@ -390,8 +389,9 @@ void processTuyaHvacDataReport(int16_t channel_number_slot,
       if (schedule_mode_dp_value == schedule_mode_value_off)
         schedule_mode_dp_value = 0x80;
       
-      //if (Tuya_read_dp_result.dp_value == schedule_mode_value_on)
-      if (schedule_mode_dp_value < 0x80)
+      log_i("scheduled mode dp value %u", schedule_mode_dp_value);
+      if (Tuya_read_dp_result.dp_value == schedule_mode_value_on)
+      //if (schedule_mode_dp_value < 0x80)
         msgZ2SDeviceHvac(
           channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 1);
     }
