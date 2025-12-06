@@ -376,22 +376,12 @@ void processTuyaHvacDataReport(
     
     if (Tuya_read_dp_result.is_success) {
 
-      uint8_t schedule_mode_dp_value = Tuya_read_dp_result.dp_value;
+      bool is_scheduled_mode_on = (schedule_mode_value_on < 0x80) ?
+        (Tuya_read_dp_result.dp_value == schedule_mode_value_on) :
+        ((1 << Tuya_read_dp_result.dp_value) & schedule_mode_value_on);
+    
+      if (is_scheduled_mode_on)
 
-      if ((system_mode_on_dp_id == schedule_mode_dp_id) &&
-          (schedule_mode_dp_value == system_mode_value_on))
-        schedule_mode_dp_value = 0x80;
-      
-      if ((system_mode_off_dp_id == schedule_mode_dp_id) &&
-          (schedule_mode_dp_value == system_mode_value_off))
-        schedule_mode_dp_value = 0x80;
-
-      if (schedule_mode_dp_value == schedule_mode_value_off)
-        schedule_mode_dp_value = 0x80;
-      
-      log_i("scheduled mode dp value %u", schedule_mode_dp_value);
-      if (Tuya_read_dp_result.dp_value == schedule_mode_value_on)
-      //if (schedule_mode_dp_value < 0x80)
         msgZ2SDeviceHvac(
           channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 1);
     }

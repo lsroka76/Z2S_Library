@@ -4193,7 +4193,7 @@ void buildActionsTabGUI() {
 	enableActionDetails(false);
 }
 
-void Z2S_buildWebGUI(gui_modes_t mode) {
+void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
  
 	log_i(" GUI building STARTED...");
 	
@@ -4203,75 +4203,84 @@ void Z2S_buildWebGUI(gui_modes_t mode) {
 
 	working_str.reserve(1056);
 
-	switch (mode) {
+	if (gui_custom_flags)
+		gui_build_control_flags = gui_custom_flags;
+	else {
+		switch (mode) {
 
 
-		case no_gui_mode:
-			
-			gui_build_control_flags = 0x0000;
-		break;
+			case no_gui_mode:
+				
+				gui_build_control_flags = 0x0000;
+			break;
 
-		case minimal_gui_mode: {
+			case minimal_gui_mode: {
 
-			
-			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
-																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
-																GUI_BUILD_CONTROL_FLAG_ZIGBEE;
-		} break;
+				
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE;
+			} break;
 
-		case standard_gui_mode: {
+			case standard_gui_mode: {
 
-			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
-																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
-																GUI_BUILD_CONTROL_FLAG_ZIGBEE |
-																GUI_BUILD_CONTROL_FLAG_DEVICES |
-																GUI_BUILD_CONTROL_FLAG_CHANNELS |
-																GUI_BUILD_CONTROL_FLAG_ACTIONS;
-		} break;
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+					GUI_BUILD_CONTROL_FLAG_DEVICES |
+					GUI_BUILD_CONTROL_FLAG_CHANNELS |
+					GUI_BUILD_CONTROL_FLAG_ACTIONS;
+			} break;
 
-		case extended_gui_mode: {
+			case extended_gui_mode: {
 
-			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
-																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
-																GUI_BUILD_CONTROL_FLAG_ZIGBEE |
-																GUI_BUILD_CONTROL_FLAG_DEVICES |
-																GUI_BUILD_CONTROL_FLAG_CHANNELS |
-																GUI_BUILD_CONTROL_FLAG_ACTIONS |
-																GUI_BUILD_CONTROL_FLAG_CA;
-		} break;
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+					GUI_BUILD_CONTROL_FLAG_DEVICES |
+					GUI_BUILD_CONTROL_FLAG_CHANNELS |
+					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_CA;
+			} break;
 
-		case full_gui_mode: {
+			case full_gui_mode: {
 
-			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
-																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
-																GUI_BUILD_CONTROL_FLAG_ZIGBEE |
-																GUI_BUILD_CONTROL_FLAG_DEVICES |
-																GUI_BUILD_CONTROL_FLAG_CHANNELS |
-																GUI_BUILD_CONTROL_FLAG_ACTIONS |
-																GUI_BUILD_CONTROL_FLAG_CA |
-																GUI_BUILD_CONTROL_FLAG_AD |
-																GUI_BUILD_CONTROL_FLAG_TCC;
-		} break;
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+					GUI_BUILD_CONTROL_FLAG_DEVICES |
+					GUI_BUILD_CONTROL_FLAG_CHANNELS |
+					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_CA |
+					GUI_BUILD_CONTROL_FLAG_AD |
+					GUI_BUILD_CONTROL_FLAG_TCC;
+			} break;
 
-		case developer_gui_mode: {
+			case developer_gui_mode: {
 
-			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
-																GUI_BUILD_CONTROL_FLAG_CA |
-																GUI_BUILD_CONTROL_FLAG_AD |
-																GUI_BUILD_CONTROL_FLAG_TCC;
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CA |
+					GUI_BUILD_CONTROL_FLAG_AD |
+					GUI_BUILD_CONTROL_FLAG_TCC;
 
-		} break;
+			} break;
 
-		case supla_gui_mode: {
+			case supla_gui_mode: {
 
-			gui_build_control_flags = GUI_BUILD_CONTROL_FLAG_GATEWAY |
-																GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
-																GUI_BUILD_CONTROL_FLAG_CHANNELS |
-																GUI_BUILD_CONTROL_FLAG_ACTIONS;
-		} break;
-
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+					GUI_BUILD_CONTROL_FLAG_CHANNELS |
+					GUI_BUILD_CONTROL_FLAG_ACTIONS;
+			} break;
+		}
 	}
-
+	
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_GATEWAY)
 		buildGatewayTabGUI();
 
@@ -8110,9 +8119,8 @@ void addLocalRemoteThermometerCallback(Control *sender, int type) {
 }
 
 
-void GUI_onTuyaCustomClusterReceive(uint8_t command_id, 
-																		uint16_t payload_size, 
-																		uint8_t * payload_data){
+void GUI_onTuyaCustomClusterReceive(
+	uint8_t command_id, uint16_t payload_size, uint8_t * payload_data){
 
 	if (current_Tuya_payload_label == 0)
 		return;

@@ -515,13 +515,44 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       esp_zb_set_tx_power(zb_tx_power);
     else
       telnet.printf(">Invalid TX power value for SET-ZIGBEE-TX-POWER: "
-                    "%d (should be between -24 and +20)\n\r>", 
-                    zb_tx_power);
+                    "%d (should be between -24 and +20)\n\r>", zb_tx_power);
     return;
   } else
   if (strcmp(cmd, "VERSION") == 0) {
-    telnet.printf(">Gateway version: %s\n\r>", 
-                  Z2S_VERSION);
+
+    telnet.printf(">Gateway version: %s\n\r>", Z2S_VERSION);
+    return;
+  } else
+  if (strcmp(cmd, "TIME") == 0) {
+
+    time_t now = time(nullptr);
+    telnet.printf(">Gateway current time: %s\n\r>", ctime(&now));
+    return;
+  } else
+  if (strcmp(cmd, "START-GUI") == 0) {
+
+    if (GUIstarted)
+      telnet.printf("GUI already started!");
+    else {
+
+      gui_modes_t gui_mode = minimal_gui_mode;
+      uint32_t gui_custom_flags = 0x0000;
+
+      GUIstarted = true;
+
+      if (params_number > 1)
+        gui_custom_flags = strtoul(*(param + 1), nullptr, 0);
+      if (params_number == 1)  
+        gui_mode = (gui_modes_t)strtoul(*(param), nullptr, 0);
+
+      telnet.printf("\n\rStarting GUI! Mode %u, flags %04x\n\r", gui_mode, 
+        gui_custom_flags);
+
+      Z2S_buildWebGUI(gui_mode, gui_custom_flags);
+      Z2S_startWebGUI();
+      Z2S_startUpdateServer();
+      onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
+    }
     return;
   } else
   if (strcmp(cmd, "MEMORY") == 0) {

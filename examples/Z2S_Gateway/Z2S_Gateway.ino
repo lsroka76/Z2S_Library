@@ -811,52 +811,35 @@ if (GUIstarted)
     
     esp_zb_lock_acquire(portMAX_DELAY);
 
-    esp_zb_zcl_set_attribute_val(1, 
-                                 ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-                                 ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
-                                 ESP_ZB_ZCL_ATTR_TIME_TIME_ID, 
-                                 &new_utc_time, 
-                                 false);
+    esp_zb_zcl_set_attribute_val(
+      1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      ESP_ZB_ZCL_ATTR_TIME_TIME_ID, &new_utc_time, false);
 
-    esp_zb_zcl_set_attribute_val(1, 
-                                 ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-                                 ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
-                                 ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, 
-                                 &time_status, 
-                                 false);
+    esp_zb_zcl_set_attribute_val(
+      1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, &time_status, false);
 
-    esp_zb_zcl_set_attribute_val(1, 
-                                 ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-                                 ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
-                                 ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, 
-                                 &new_local_time, 
-                                 false);
+    esp_zb_zcl_set_attribute_val(
+      1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &new_local_time, false);
 
     esp_zb_lock_release();
     
     uint32_t utc_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(
-      1, 
-      ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-      ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
       ESP_ZB_ZCL_ATTR_TIME_TIME_ID)->data_p);
 
     uint32_t local_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(
-      1, 
-      ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-      ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
       ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)->data_p);
 
     uint8_t time_status_attribute = (*(uint8_t *)esp_zb_zcl_get_attribute(
-      1, 
-      ESP_ZB_ZCL_CLUSTER_ID_TIME, 
-      ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
+      1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
       ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID)->data_p);
 
     log_i("\n\rLocal Time Cluster Time status attribute %u"
           "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
-          time_status_attribute, 
-          utc_time_attribute, 
-          local_time_attribute);
+          time_status_attribute, utc_time_attribute, local_time_attribute);
     
 
     if (GUIstarted)
@@ -867,17 +850,17 @@ if (GUIstarted)
     log_i("\n\rMemory information:"
           "\n\rFlash chip real size: %u B"
           "\n\rFree Sketch Space: %u B"
+          "\n\rHeapSize: %u B"
 					"\n\rFree Heap: %u B"
-          "\n\rMinimal Free Heap: %u B"
-					"\n\rHeapSize: %u B"
           "\n\rMaxAllocHeap: %u B"
+          "\n\rMinimal Free Heap: %u B"
 					"\n\rSupla uptime: %lu s", 
 					ESP.getFlashChipSize(), 
           ESP.getFreeSketchSpace(), 
-          ESP.getFreeHeap(), 
-          ESP.getMinFreeHeap(), 
           ESP.getHeapSize(),
-					ESP.getMaxAllocHeap(), 
+          ESP.getFreeHeap(), 
+          ESP.getMaxAllocHeap(),
+          ESP.getMinFreeHeap(),  
           SuplaDevice.uptime.getUptime());
   }
 

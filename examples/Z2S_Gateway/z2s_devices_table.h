@@ -701,65 +701,59 @@ uint8_t Z2S_addZ2SZbDevice(const char *manufacturer_name,
                            uint8_t endpoints,
                            uint32_t desc_id);
 
-void updateTimeout(uint8_t channel_number_slot,
-                   uint8_t timeout,
-                   uint8_t selector = 0,
-                   uint32_t timings_secs = 0);
+void updateTimeout(
+  uint8_t channel_number_slot, uint8_t timeout, uint8_t selector = 0,
+  uint32_t timings_secs = 0);
 
-void updateRGBMode(uint8_t channel_number_slot,
-                   uint8_t rgb_mode);
+void updateRGBMode(
+  uint8_t channel_number_slot, uint8_t rgb_mode);
 
-void sendChannelAction(uint8_t Supla_channel,
-                      uint16_t channel_action);
+void sendChannelAction(
+  uint8_t Supla_channel, uint16_t channel_action);
 
-void setRemoteRelay(uint8_t Supla_channel,
-                    bool state);
+void setRemoteRelay(
+  uint8_t Supla_channel, bool state);
 
-void updateRemoteRelayMDNSName(uint8_t channel_number_slot,
-                               char * mDNS_name);
+void updateRemoteRelayMDNSName(
+  uint8_t channel_number_slot, char * mDNS_name);
 
-void updateRemoteRelayIPAddress(uint8_t channel_number_slot,
-                                uint32_t remote_ip_address);
+void updateRemoteRelayIPAddress(
+  uint8_t channel_number_slot, uint32_t remote_ip_address);
 
-void updateRemoteRelaySuplaChannel(uint8_t channel_number_slot,
-                                   uint8_t remote_Supla_channel);
+void updateRemoteRelaySuplaChannel(
+  uint8_t channel_number_slot, uint8_t remote_Supla_channel);
 
-void updateRemoteThermometer(uint8_t Supla_channel,
-                             uint32_t connected_thermometer_ip_address,
-                             uint32_t connected_thermometer_channel,
-                             int32_t connected_thermometer_temperature);
+void updateRemoteThermometer(
+  uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
+  uint32_t connected_thermometer_channel, 
+  int32_t connected_thermometer_temperature);
 
-void setRemoteThermometerFunction(uint8_t Supla_channel,
-                                  uint32_t connected_thermometers_function);
+void setRemoteThermometerFunction(
+  uint8_t Supla_channel, uint32_t connected_thermometers_function);
 
-void updateHvacFixedCalibrationTemperature(uint8_t channel_number_slot,
-                                           int32_t hvac_fixed_calibration_temperature,
-                                           bool set_trv_interface = true);
+void updateHvacFixedCalibrationTemperature(
+  uint8_t channel_number_slot, int32_t hvac_fixed_calibration_temperature,
+  bool set_trv_interface = true);
 
-void updateDeviceTemperature(uint8_t channel_number_slot,
-                             int32_t temperature);
+void updateDeviceTemperature(
+  uint8_t channel_number_slot, int32_t temperature);
 
-void updateSuplaBatteryLevel(int16_t channel_number_slot,
-                             uint8_t msg_id,
-                             uint32_t msg_value,
-                             bool restore = false);
+void updateSuplaBatteryLevel(
+  int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value,
+  bool restore = false);
 
-bool Z2S_add_action(const char *action_name,
-                    uint8_t src_channel_id,
-                    uint16_t Supla_action,
-                    uint8_t dst_channel_id,
-                    uint16_t Supla_event,
-                    bool condition,
-                    double threshold_1 = 0,
-                    double threshold_2 = 0);
+bool Z2S_add_action(
+  const char *action_name, uint8_t src_channel_id, uint16_t Supla_action,
+  uint8_t dst_channel_id, uint16_t Supla_event,bool condition,
+  double threshold_1 = 0, double threshold_2 = 0);
 
 bool hasTuyaCustomCluster(uint32_t model_id);
 
 void log_i_telnet2(char *log_line, bool toTelnet = false);
 
-void onTuyaCustomClusterReceive(void (*callback)(uint8_t command_id,
-                                                 uint16_t payload_size, 
-                                                 uint8_t *payload_data));
+void onTuyaCustomClusterReceive(
+  void (*callback)(uint8_t command_id,uint16_t payload_size, 
+  uint8_t *payload_data));
 
 
 void printSizeOfClasses();

@@ -19,7 +19,8 @@ typedef enum gui_modes {
 
 void Z2S_startWebGUIConfig();
 
-void Z2S_buildWebGUI(gui_modes_t mode = minimal_gui_mode);
+void Z2S_buildWebGUI(
+  gui_modes_t mode = minimal_gui_mode, uint32_t gui_custom_flags = 0);
 
 void Z2S_startWebGUI();
 
