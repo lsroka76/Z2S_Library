@@ -24,7 +24,7 @@
 
 Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function)
-  : Relay(-1, true, RELAY_FLAGS),
+  : Relay(-1, true, RELAY_FLAGS ),
   _gateway(gateway), _z2s_function(z2s_function) {
 
     memcpy(&_device, device, sizeof(zbg_device_params_t));     
