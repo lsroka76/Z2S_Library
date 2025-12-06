@@ -1453,7 +1453,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
 namespace Supla {
 namespace Control {
-class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, public Element {
+class Z2S_TRVInterface : public RemoteOutputInterface, /*public ActionHandler*/, public Element {
  public:
   Z2S_TRVInterface(ZigbeeGateway *gateway, 
                    zbg_device_params_t *device, 
@@ -1468,9 +1468,9 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
 
   void setFixedTemperatureCalibration(int32_t trv_fixed_temperature_calibration);
 
-  void enableExternalSensorDetection(bool enable_external_sensor_detection, 
-                                     uint8_t external_sensor_mode, 
-                                     uint8_t internal_sensor_channel);
+  void enableExternalSensorDetection(
+    bool enable_external_sensor_detection, uint8_t external_sensor_mode, 
+    uint8_t internal_sensor_channel);
 
   void setTRVTemperatureSetpoint(int32_t trv_temperature_setpoint);
 
