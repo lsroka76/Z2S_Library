@@ -520,13 +520,13 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   } else
   if (strcmp(cmd, "VERSION") == 0) {
 
-    telnet.printf(">Gateway version: %s\n\r>", Z2S_VERSION);
+    telnet.printf("\n\r>Gateway version: %s\n\r>", Z2S_VERSION);
     return;
   } else
   if (strcmp(cmd, "TIME") == 0) {
 
     time_t now = time(nullptr);
-    telnet.printf(">Gateway current time: %s\n\r>", ctime(&now));
+    telnet.printf("\n\r>Gateway current time: %s\n\r>", ctime(&now));
     return;
   } else
   if (strcmp(cmd, "START-GUI") == 0) {
