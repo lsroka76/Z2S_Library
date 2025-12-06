@@ -529,6 +529,19 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     telnet.printf("\n\r>Gateway current time: %s\n\r>", ctime(&now));
     return;
   } else
+  if (strcmp(cmd, "RESTART") == 0) {
+
+    uint32_t restart_ms = 1000;
+
+    if (params_number > 0)
+      restart_ms = strtoul(*(param), nullptr, 0);
+
+    telnet.printf("\n\rRestarting gateway in %u ms!\n\r", restart_ms);
+
+    Supla::Storage::ConfigInstance()->commit();
+    SuplaDevice.scheduleSoftRestart(restart_ms);
+    return;
+  } else
   if (strcmp(cmd, "START-GUI") == 0) {
 
     if (GUIstarted)
@@ -565,7 +578,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 			"\n\rFree Heap: %u B"
       "\n\rMaxAllocHeap: %u B"
       "\n\rMinimal Free Heap: %u B"
-			"\n\rSupla uptime: %lu s\n\r", 
+			"\n\rSupla uptime: %lu s\n\r\n\r>", 
 			ESP.getFlashChipSize(), 
       ESP.getFreeSketchSpace(), 
       ESP.getHeapSize(),
@@ -1169,7 +1182,8 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     uint16_t cluster_id = parseClusterIdStr(*(param + 1));
     uint16_t command_id = strtoul(*(param + 2),nullptr, 0);
-    esp_zb_zcl_attr_type_t data_type = (esp_zb_zcl_attr_type_t)parseAttributeTypeStr(*(param + 3));
+    esp_zb_zcl_attr_type_t data_type = 
+      (esp_zb_zcl_attr_type_t)parseAttributeTypeStr(*(param + 3));
     uint16_t data_size = strtoul(*(param + 4),nullptr, 0);
     uint8_t direction = 0;
     uint8_t disable_default_response = 0;
@@ -1213,20 +1227,34 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
         custom_cmd_payload[i] = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
         telnet.printf("%X:", custom_cmd_payload[i]);
       }
-      zbGateway.sendCustomClusterCmd(&device, 
-                                     cluster_id, 
-                                     command_id, 
-                                     data_type, 
-                                     data_size, 
-                                     custom_cmd_payload, 
-                                     sync, 
-                                     direction, 
-                                     disable_default_response, 
-                                     manuf_specific, manuf_code); 
+      zbGateway.sendCustomClusterCmd(
+        &device, cluster_id, command_id, data_type, data_size, 
+        custom_cmd_payload, sync, direction, disable_default_response, 
+        manuf_specific, manuf_code); 
 
-      if (!sync) telnet.println("Custom command async request sent");
+      if (!sync) telnet.printf("Custom command async request sent\n\r>");
     }
     return;
-  }
+  } else
+  if (strcmp(cmd,"READ-RSSI")== 0) {
+  
+    if (params_number < 1)  {
+      telnet.println("read-rssi channel");
+      return;
+    }
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+    if (getDeviceByChannelNumber(&device, channel_id)) {
+
+      if (zbGateway.sendCustomClusterCmd(
+			  &device, 0x0003, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr, 
+        true))
+			  telnet.printf("\n\rdevice: %4X, rssi = %d\n\r>", device.short_addr, 
+        zbGateway.getZbgDeviceUnitLastRssi(device.short_addr));
+      else
+        telnet.printf("\n\rdevice: %4X, rssi query failed!\n\r>", 
+          device.short_addr);
+    }
+  } else
+    telnet.printf("\n\rUnrecognized command!\n\r>");
 }
 

@@ -1587,7 +1587,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void Supla::Control::Z2S_TRVInterface::handleAction(int event, int action) {
+/*void Supla::Control::Z2S_TRVInterface::handleAction(int event, int action) {
 
   (void)(event);
 
@@ -1600,4 +1600,4 @@ void Supla::Control::Z2S_TRVInterface::handleAction(int event, int action) {
     case TURN_OFF: {
     } break;   
   }
-}
+}*/

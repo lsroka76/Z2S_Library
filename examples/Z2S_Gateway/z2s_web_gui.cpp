@@ -4280,7 +4280,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 			} break;
 		}
 	}
-	
+
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_GATEWAY)
 		buildGatewayTabGUI();
 
@@ -5582,7 +5582,9 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 			} break;
 			case GUI_CB_RSSI_FLAG: { //RSSI
 
-				if (zbGateway.sendCustomClusterCmd(&device, 0x0003, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr, true)) {
+				if (zbGateway.sendCustomClusterCmd(
+					&device, 0x0003, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr, 
+					true)) {
 					
 					sprintf_P(general_purpose_gui_buffer, PSTR("%d"), 
 										zbGateway.getZbgDeviceUnitLastRssi(device.short_addr));

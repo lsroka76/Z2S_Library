@@ -229,51 +229,42 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
     z2s_channels_table[channel_number_slot].timeout_secs);
 
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF, 
-                                Supla_Z2S_TRVInterface,
-                                Supla::ON_HVAC_MODE_OFF);
+/*  Supla_Z2S_HvacBase->addAction(
+    Supla::TURN_OFF, Supla_Z2S_TRVInterface,Supla::ON_HVAC_MODE_OFF);
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_OFF,
-                                Supla_Z2S_TRVInterface,
-                                Supla::ON_TURN_OFF);
+  Supla_Z2S_HvacBase->addAction(
+    Supla::TURN_OFF, Supla_Z2S_TRVInterface, Supla::ON_TURN_OFF);
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
-                                Supla_Z2S_TRVInterface,
-                                Supla::ON_HVAC_MODE_HEAT);
+  Supla_Z2S_HvacBase->addAction(
+    Supla::TURN_ON, Supla_Z2S_TRVInterface, Supla::ON_HVAC_MODE_HEAT);
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
-                                Supla_Z2S_TRVInterface,
-                                Supla::ON_TURN_ON);
+  Supla_Z2S_HvacBase->addAction(
+    Supla::TURN_ON, Supla_Z2S_TRVInterface,Supla::ON_TURN_ON);
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
-                                Supla_Z2S_TRVInterface,
-                                Supla::ON_HVAC_WEEKLY_SCHEDULE_ENABLED);
+  Supla_Z2S_HvacBase->addAction(
+    Supla::TURN_ON, Supla_Z2S_TRVInterface, 
+    Supla::ON_HVAC_WEEKLY_SCHEDULE_ENABLED);
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
-                                Supla_Z2S_TRVInterface,
-                                Supla::ON_HVAC_WEEKLY_SCHEDULE_DISABLED);
+  Supla_Z2S_HvacBase->addAction(
+    Supla::TURN_ON, Supla_Z2S_TRVInterface,
+    Supla::ON_HVAC_WEEKLY_SCHEDULE_DISABLED);
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
-                                Supla_Z2S_TRVInterface,
-                                Supla::ON_HVAC_STANDBY);
+  Supla_Z2S_HvacBase->addAction(
+    Supla::TURN_ON, Supla_Z2S_TRVInterface, Supla::ON_HVAC_STANDBY);
 
-  Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
-                                Supla_Z2S_TRVInterface,
-                                Supla::ON_HVAC_HEATING);
-
-  //Supla_Z2S_HvacBase->addAction(Supla::TURN_ON, 
-  //                                Supla_Z2S_TRVInterface,
-  //                                Supla::ON_CHANGE);
+  Supla_Z2S_HvacBase->addAction(
+    Supla::TURN_ON, Supla_Z2S_TRVInterface, Supla::ON_HVAC_HEATING);
+*/
 
   Supla_Z2S_HvacBase->allowWrapAroundTemperatureSetpoints();
   Supla_Z2S_HvacBase->setPrimaryOutputEE(Supla_Z2S_TRVInterface);
   Supla_Z2S_TRVInterface->setTRVHvac(Supla_Z2S_HvacBase);
 
-  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMin(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 
-                                                   hvac_room_temperature_min);
+  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMin(
+    SUPLA_CHANNELFNC_HVAC_THERMOSTAT, hvac_room_temperature_min);
 
-  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMax(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 
-                                                   hvac_room_temperature_max);
+  Supla_Z2S_HvacBase->setDefaultTemperatureRoomMax(
+    SUPLA_CHANNELFNC_HVAC_THERMOSTAT, hvac_room_temperature_max);
 
   Supla_Z2S_HvacBase->setButtonTemperatureStep(50);
   Supla_Z2S_HvacBase->addLocalUILockCapability(Supla::LocalUILock::Full);
@@ -282,8 +273,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
       USER_DATA_FLAG_TRV_FIXED_CORRECTION) {
 
     Supla_Z2S_TRVInterface->enableExternalSensorDetection(
-      false, 
-      EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED, 
+      false, EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED, 
       z2s_channels_table[channel_number_slot].Supla_secondary_channel);  
 
     Supla_Z2S_TRVInterface->setFixedTemperatureCalibration(

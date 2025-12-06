@@ -1491,7 +1491,7 @@ class Z2S_TRVInterface : public RemoteOutputInterface, public ActionHandler, pub
   void refreshTimeout();
 
   void iterateAlways() override;
-  void handleAction(int event, int action) override;
+  //void handleAction(int event, int action) override;
 
 
 protected:
