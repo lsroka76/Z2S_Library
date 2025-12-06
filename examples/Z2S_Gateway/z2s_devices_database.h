@@ -180,6 +180,7 @@
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A      0x4503
 
 #define Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP            0x4540
+#define Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP               0x4541
 
 #define Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER      0x4550
 #define Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER       0x4551
@@ -403,6 +404,11 @@
 #define Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_TEMP_SID   0x00
 #define Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_SWITCH_SID 0x01
 #define Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_EM_SID     0x02
+
+#define Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_TEMP_SID      0x00
+#define Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_SWITCH_SID    0x01
+#define Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_EM_SID        0x02
+#define Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_FAULT_SID     0x03
 
 #define TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID           0x00
 #define TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID  0x01
@@ -1580,6 +1586,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+  
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL,
@@ -4093,6 +4105,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_ehhrv2e3", .model_name = "TS0601",
     .z2s_device_uid = 31400,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2,
+    .z2s_device_endpoints_count = 1},
+  
+  { .manufacturer_name = "_TZE284_5m4nchbm", .model_name = "TS0601",
+    .z2s_device_uid = 31500,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP,
     .z2s_device_endpoints_count = 1}
   
 //DEVICES_END

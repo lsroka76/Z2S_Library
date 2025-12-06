@@ -326,6 +326,18 @@
 #define TUYA_TS0601_TRV_TRV602Z_SCREEN_ORIENTATION_DP               0x71
 #define TUYA_TS0601_TRV_TRV602Z_HYSTERESIS_DP                       0x7F
 
+#define TUYA_DIN_RCBO_EM_SWITCH_DP                                  0x01
+#define TUYA_DIN_RCBO_EM_ENERGY_DP                                  0x11 // /100
+#define TUYA_DIN_RCBO_EM_CURRENT_DP                                 0x12 // /100
+#define TUYA_DIN_RCBO_EM_POWER_DP                                   0x13 // /10
+#define TUYA_DIN_RCBO_EM_VOLTAGE_DP                                 0x14 // /10
+#define TUYA_DIN_RCBO_EM_FAULT_DP                                   0x1A // 
+#define TUYA_DIN_RCBO_EM_POWER_OUTAGE_MEMORY_DP                     0x26 // 
+#define TUYA_DIN_RCBO_EM_CHILD_LOCK_DP                              0x29 // 
+#define TUYA_DIN_RCBO_EM_LEAKAGE_TEST_DP                            0x2D // 
+#define TUYA_DIN_RCBO_EM_TEMPERATURE_DP                             0x2F //
+
+
 
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/

@@ -4956,11 +4956,9 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
 
-        addZ2SDeviceActionTrigger(device, 
-                                  first_free_slot, 
-                                  sub_id, 
-                                  "SINGLE", 
-                                  SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, "SINGLE", 
+          SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -5031,13 +5029,17 @@ uint8_t Z2S_addZ2SDevice(
           case SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID:
           case SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID:
 
-            addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit); break;
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
         }
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
 
-        addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, NO_CUSTOM_CMD_SID, true);
+        addZ2SDeviceElectricityMeter(
+          &zbGateway, device, false, false, first_free_slot, NO_CUSTOM_CMD_SID,
+          true);
       } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/     
@@ -5908,11 +5910,13 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
-      case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP: {
+      case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP:
+      case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP: {
 
         switch (sub_id) {
 
           case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_TEMP_SID:
+          //case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_TEMP_SID:
           
             addZ2SDeviceTempHumidity(
               device, first_free_slot, sub_id, name, func, false); 
@@ -5920,6 +5924,7 @@ uint8_t Z2S_addZ2SDevice(
 
 
           case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_SWITCH_SID:
+          //case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_SWITCH_SID:
 
             addZ2SDeviceVirtualRelay(
               &zbGateway, device, first_free_slot, sub_id, name, func); 
@@ -5927,9 +5932,17 @@ uint8_t Z2S_addZ2SDevice(
 
 
           case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_EM_SID:
+          //case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_EM_SID:
 
             addZ2SDeviceElectricityMeter(
               &zbGateway, device, false, false, first_free_slot, sub_id, true); //one-phase 
+          
+
+          case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_FAULT_SID:
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func); 
+          break;         
         }                  
       } break;
 
@@ -6868,6 +6881,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
+    case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:
     case Z2S_DEVICE_DESC_TS0601_TRV_ME167:
@@ -8073,38 +8087,52 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
     case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
-                       "T/H");
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, "T/H");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_AIR_QUALITY_SENSOR_VOC_SID, 
-                       "VOC", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "ppb");
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_AIR_QUALITY_SENSOR_VOC_SID, "VOC", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppb");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID, 
-                       "AIR QUALITY", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "1-5");
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID, "AIR QUALITY", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "1-5");
     } break;
     
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
     case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP: {
 
-      Z2S_addZ2SDevice(joined_device, 
-                       Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_TEMP_SID, 
-                       "TEMP");
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_TEMP_SID, 
+        "TEMPERATURE");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_SWITCH_SID, 
-                       "SWITCH",
-                       SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_SWITCH_SID, 
+        "SWITCH", SUPLA_CHANNELFNC_POWERSWITCH);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_EM_SID);
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_EM_SID);
+    } break;
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
+    case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP: {
+
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_TEMP_SID, 
+        "TEMPERATURE");
+
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_SWITCH_SID, 
+        "SWITCH", SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_EM_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_FAULT_SID, 
+        "FAULT CODE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
     } break;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
@@ -8129,20 +8157,20 @@ void Z2S_buildSuplaChannels(zbg_device_params_t *joined_device,
 
     case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE: {
             
-      Z2S_addZ2SDevice(joined_device,
-                       TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TH_SID,
-                       "INTERNAL T/H");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TH_SID, 
+        "INTERNAL T/H");
 
-      Z2S_addZ2SDevice(joined_device,
-                       TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMP_SID,
-                       "TEMPERATURE PROBE");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMP_SID,
+        "TEMPERATURE PROBE");
     } break;
 
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-    default: Z2S_addZ2SDevice(joined_device, 
-                              NO_CUSTOM_CMD_SID);
+    default: Z2S_addZ2SDevice(
+      joined_device, NO_CUSTOM_CMD_SID);
   }
 }
 
