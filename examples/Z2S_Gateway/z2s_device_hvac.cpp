@@ -306,17 +306,16 @@ void addZ2SDeviceHvac(ZigbeeGateway *gateway,
   
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE();
 
-  Supla_Z2S_HvacBase->setMainThermometerChannelNo(z2s_channels_table[trv_thermometer_slot].Supla_channel);
-  Supla_Z2S_HvacBase->setBinarySensorChannelNo(Supla_Z2S_HvacBase->getChannel()->getChannelNumber());
+  Supla_Z2S_HvacBase->setMainThermometerChannelNo(
+    z2s_channels_table[trv_thermometer_slot].Supla_channel);
+    
+  Supla_Z2S_HvacBase->setBinarySensorChannelNo(
+    Supla_Z2S_HvacBase->getChannel()->getChannelNumber());
 
-  Z2S_fillChannelsTableSlot(device, 
-                            free_slot, 
-                            Supla_Z2S_HvacBase->getChannel()->getChannelNumber(), 
-                            SUPLA_CHANNELTYPE_HVAC, 
-                            -1, 
-                            "THERMOSTAT", 
-                            SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 
-                            z2s_channels_table[trv_thermometer_slot].Supla_channel); 
+  Z2S_fillChannelsTableSlot(
+    device, free_slot, Supla_Z2S_HvacBase->getChannel()->getChannelNumber(), 
+    SUPLA_CHANNELTYPE_HVAC, -1, "THERMOSTAT", SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 
+    z2s_channels_table[trv_thermometer_slot].Supla_channel); 
 }
 
 /*----------------------------------------------------------------------------------------------------------------------------*/
@@ -385,13 +384,17 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
           (abs(Supla_Z2S_HvacBase->getTemperatureSetpointHeat() - msg_value) > 40) &&
           (Supla_Z2S_HvacBase->getCurrentProgramId() != 0)) {
 
-        TWeeklyScheduleProgram program = 
-          Supla_Z2S_HvacBase->getProgramById(Supla_Z2S_HvacBase->getCurrentProgramId());
+        TWeeklyScheduleProgram program = Supla_Z2S_HvacBase->getProgramById(
+          Supla_Z2S_HvacBase->getCurrentProgramId());
 
-        //Supla_Z2S_HvacBase->setProgram(Supla_Z2S_HvacBase->getCurrentProgramId(), program.Mode, msg_value, program.SetpointTemperatureCool, false);
-        //Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
+        /*Supla_Z2S_HvacBase->setProgram(
+          Supla_Z2S_HvacBase->getCurrentProgramId(), program.Mode, msg_value, 
+          program.SetpointTemperatureCool, false);
+        /Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);*/
 
-        Supla_Z2S_HvacBase->applyNewRuntimeSettings(/*SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE*/SUPLA_HVAC_MODE_NOT_SET, msg_value, 0, 0);
+        Supla_Z2S_HvacBase->applyNewRuntimeSettings(
+          /*SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE*/
+          SUPLA_HVAC_MODE_NOT_SET, msg_value, 0, 0);
         Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
 
         log_i("\n\rChanging weekly schedule program temperature: \n\rprogram id %u"

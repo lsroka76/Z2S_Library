@@ -2249,6 +2249,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "ClimaxTechnology", .model_name = "IR-9ZBS-SL",
+   .z2s_device_uid = 8805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_d93wtje5", .model_name = "TS0203",
     .z2s_device_uid = 8900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,

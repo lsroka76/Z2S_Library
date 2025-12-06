@@ -2154,6 +2154,40 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Fading time",
     .Tuya_datapoint_description = "Enter numeric value: 5 - 1500/1 = 0.1 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_MOTOR_THRUST_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Motor thrust",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => strong<br>"
+																	"1 => middle"
+																	"2 => weak" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_DISPLAY_BRIGHTNESS_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Display brightness",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => high<br>"
+																	"1 => medium"
+																	"2 => low" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_SCREEN_ORIENTATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Screen orientation",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => up<br>"
+																	"1 => down" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_HYSTERESIS_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Hysteresis",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set PID mode<br>"
+																	"1 => set 0/1 mode" },
 		
 };
 

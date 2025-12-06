@@ -321,6 +321,11 @@
 #define TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP                   0x04 //RAW?
 #define TUYA_RGBWCT_LED_EF00_COLOR_DP                               0x3D //RAW
 
+#define TUYA_TS0601_TRV_TRV602Z_MOTOR_THRUST_DP                     0x6E
+#define TUYA_TS0601_TRV_TRV602Z_DISPLAY_BRIGHTNESS_DP               0x6F
+#define TUYA_TS0601_TRV_TRV602Z_SCREEN_ORIENTATION_DP               0x71
+#define TUYA_TS0601_TRV_TRV602Z_HYSTERESIS_DP                       0x7F
+
 
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
