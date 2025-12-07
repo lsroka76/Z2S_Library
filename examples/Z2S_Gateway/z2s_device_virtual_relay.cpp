@@ -265,9 +265,8 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
   if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
 
     auto Supla_Z2S_RollerShutter = 
-      new Supla::Control::Z2S_RollerShutter(gateway, 
-                                            device, 
-                                            Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
+      new Supla::Control::Z2S_RollerShutter(
+        gateway, device, Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
 
     if (name == nullptr)
       name = (char*)default_rs_name;
@@ -276,17 +275,14 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
   
     Supla_Z2S_RollerShutter->setDefaultFunction(func);
   
-    Z2S_fillChannelsTableSlot(device, 
-                              free_slot, 
-                              Supla_Z2S_RollerShutter->getChannelNumber(),
-                               SUPLA_CHANNELTYPE_RELAY, 
-                               sub_id, 
-                               name, 
-                               func);
+    Z2S_fillChannelsTableSlot(
+      device, free_slot, Supla_Z2S_RollerShutter->getChannelNumber(),
+      SUPLA_CHANNELTYPE_RELAY, sub_id, name, func);
 
   } else {
 
-    auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(gateway, device);
+    auto Supla_Z2S_VirtualRelay = 
+      new Supla::Control::Z2S_VirtualRelay(gateway, device);
 
     if (name == nullptr)
       name = (char*)default_relay_name;
@@ -296,13 +292,9 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
     if (func !=0) 
       Supla_Z2S_VirtualRelay->setDefaultFunction(func);
   
-    Z2S_fillChannelsTableSlot(device, 
-                              free_slot, 
-                              Supla_Z2S_VirtualRelay->getChannelNumber(), 
-                              SUPLA_CHANNELTYPE_RELAY, 
-                              sub_id, 
-                              name, 
-                              func);
+    Z2S_fillChannelsTableSlot(
+      device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), 
+      SUPLA_CHANNELTYPE_RELAY, sub_id, name, func);
   }
 }
 

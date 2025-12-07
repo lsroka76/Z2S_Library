@@ -19,6 +19,7 @@
 #include <supla/control/button.h>
 #include <supla/device/enter_cfg_mode_after_power_cycle.h>
 #include <supla/control/virtual_relay.h>
+#include <supla/control/roller_shutter_interface.h>
 #include <supla/sensor/general_purpose_measurement.h>
 #include <supla/device/status_led.h>
 
@@ -439,6 +440,9 @@ void setup() {
   toggleNotifications->setInitialCaption("Gateway sensors notifications");
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
+
+  //auto rs_1 = new Supla::Control::RollerShutterInterface();
+  //rs_1->getChannel()->setChannelNumber(109);
 
   /*auto gpm_1 = new Supla::Sensor::GeneralPurposeMeasurement();
   gpm_1->getChannel()->setChannelNumber(109);

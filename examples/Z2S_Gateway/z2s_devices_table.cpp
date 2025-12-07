@@ -109,17 +109,21 @@ uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot) {
 
 void Z2S_printChannelsTableSlots(bool toTelnet) {
   
-  for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) 
+  for (uint8_t channels_counter = 0; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) 
     if (z2s_channels_table[channels_counter].valid_record) {
+
       char log_line[1024];
 
-      sprintf_P(log_line, PSTR("ENTRY\t\t\t%u\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%X\n\rENDPOINT\t\t0x%X\n\rCLUSTER\t\t\t0x%X\n\r"
-            "MODEL\t\t\t%X\n\r"
-            "SUPLA CHANNEL\t\t%u\n\rSUPLA SECONDARY CHANNEL\t%u\n\rSUPLA CHANNEL TYPE\t%ld\n\r"
-            "SUPLA CHANNEL NAME\t%s\n\rSUPLA CHANNEL FUNCTION\t%lu\n\r"
-            "SUB ID\t\t\t%d\n\rUSER FLAGS\t\t%lu\n\r"
-            "USER DATA(1)\t\t%lu\n\rUSER DATA(2)\t\t%lu\n\rUSER DATA(3)\t\t%lu\n\rUSER DATA(4)\t\t%lu\n\r"
-            "KEEP ALIVE(S)\t\t%lu\n\rTIMEOUT(S)\t\t%lu\n\rREFRESH(S)\t\t%lu\n\rZB device id\t\t%u\n\r"),
+      sprintf_P(log_line, PSTR(
+        "ENTRY\t\t\t%u\n\rIEEE ADDRESS\t\t%X:%X:%X:%X:%X:%X:%X:%X\n\r"
+        "SHORT ADDRESS\t\t0x%X\n\rENDPOINT\t\t0x%X\n\rCLUSTER\t\t\t0x%X\n\r"
+        "MODEL\t\t\t%X\n\r"
+        "SUPLA CHANNEL\t\t%u\n\rSUPLA SECONDARY CHANNEL\t%u\n\rSUPLA CHANNEL TYPE\t%ld\n\r"
+        "SUPLA CHANNEL NAME\t%s\n\rSUPLA CHANNEL FUNCTION\t%lu\n\r"
+        "SUB ID\t\t\t%d\n\rUSER FLAGS\t\t%lu\n\r"
+        "USER DATA(1)\t\t%lu\n\rUSER DATA(2)\t\t%lu\n\rUSER DATA(3)\t\t%lu\n\rUSER DATA(4)\t\t%lu\n\r"
+        "KEEP ALIVE(S)\t\t%lu\n\rTIMEOUT(S)\t\t%lu\n\rREFRESH(S)\t\t%lu\n\rZB device id\t\t%u\n\r"),
         channels_counter,
         z2s_channels_table[channels_counter].ieee_addr[7], z2s_channels_table[channels_counter].ieee_addr[6], 
         z2s_channels_table[channels_counter].ieee_addr[5], z2s_channels_table[channels_counter].ieee_addr[4], 
@@ -149,27 +153,26 @@ void Z2S_printChannelsTableSlots(bool toTelnet) {
     }
 }
 
-int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr, 
-                                  int16_t endpoint, 
-                                  uint16_t cluster, 
-                                  int32_t channel_type, int8_t sub_id) {
+int16_t Z2S_findChannelNumberSlot(
+  esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
+  int32_t channel_type, int8_t sub_id) {
 
   char ieee_addr_str[24] = {};
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, channel type 0x%x", 
-        ieee_addr_str, 
-        endpoint, 
-        channel_type);
+  log_i(
+    "%s, endpoint 0x%x, channel type 0x%x", ieee_addr_str, endpoint, 
+    channel_type);
   
-  for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+  for (uint8_t channels_counter = 0; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
 
     if (z2s_channels_table[channels_counter].valid_record) {
 
-      if ((memcmp(z2s_channels_table[channels_counter].ieee_addr, 
-                  ieee_addr, 
-                  sizeof(esp_zb_ieee_addr_t)) == 0) && 
+      if ((memcmp(
+            z2s_channels_table[channels_counter].ieee_addr, 
+            ieee_addr, sizeof(esp_zb_ieee_addr_t)) == 0) && 
           ((endpoint < 0) || 
             (z2s_channels_table[channels_counter].endpoint == endpoint)) &&
           ((channel_type < 0) || 
@@ -185,8 +188,9 @@ int16_t Z2S_findChannelNumberSlot(esp_zb_ieee_addr_t ieee_addr,
   return -1;
 }
 
-int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
-                                      int32_t channel_type, int8_t sub_id) {
+int16_t Z2S_findChannelNumberNextSlot(
+  int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, 
+  uint16_t cluster, int32_t channel_type, int8_t sub_id) {
 
   char ieee_addr_str[24] = {};
 
@@ -1758,27 +1762,25 @@ void Z2S_initSuplaActions() {
     if (checkActionsIndexTablePosition(index)) {
       Z2S_loadAction(index, new_action);
       if (new_action.is_enabled)
-        Z2S_add_action(new_action.action_name, 
-                       new_action.src_Supla_channel, 
-                       new_action.dst_Supla_action, 
-                       new_action.dst_Supla_channel, 
-                       new_action.src_Supla_event, 
-                       new_action.is_condition, 
-                       new_action.min_value, 
-                       new_action.max_value);
+        Z2S_add_action(
+      new_action.action_name, new_action.src_Supla_channel,
+      new_action.dst_Supla_action, new_action.dst_Supla_channel, 
+      new_action.src_Supla_event, new_action.is_condition, 
+      new_action.min_value, new_action.max_value);
 
-      log_i("Action name: %s, enabled: %s, src_Supla_channel %u, dst_Supla_action %u, "
-            "dst_Supla_channel %u, src_Supla_event %u, is_condition %u" 
-            "min_value %f, max_value %f", 
-            new_action.action_name, 
-            new_action.is_enabled ? "YES" : "NO", 
-            new_action.src_Supla_channel, 
-            new_action.dst_Supla_action, 
-            new_action.dst_Supla_channel, 
-            new_action.src_Supla_event, 
-            new_action.is_condition, 
-            new_action.min_value, 
-            new_action.max_value);    
+      log_i(
+        "Action name: %s, enabled: %s, src_Supla_channel %u, "
+        "dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, " 
+        "is_condition %u, min_value %f, max_value %f", 
+        new_action.action_name, 
+        new_action.is_enabled ? "YES" : "NO", 
+        new_action.src_Supla_channel, 
+        new_action.dst_Supla_action, 
+        new_action.dst_Supla_channel, 
+        new_action.src_Supla_event, 
+        new_action.is_condition, 
+        new_action.min_value, 
+        new_action.max_value);    
     }
   }
 }
