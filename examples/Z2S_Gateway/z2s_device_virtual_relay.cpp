@@ -11,6 +11,7 @@ void initZ2SDeviceVirtualRelay(
         SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
 
     uint8_t z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
+    uint8_t z2s_rs_moving_direction = 1;
 
     switch (z2s_channels_table[channel_number_slot].model_id) {
 
@@ -23,9 +24,15 @@ void initZ2SDeviceVirtualRelay(
       
 
       case Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE: 
+        
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; 
+      break;
+
+
       case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER:
         
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; 
+        z2s_rs_moving_direction = 0;
       break;
 
 
@@ -54,6 +61,8 @@ void initZ2SDeviceVirtualRelay(
 
     Supla_Z2S_RollerShutter->setTimeoutSecs(
       z2s_channels_table[channel_number_slot].timeout_secs);
+    
+    Supla_Z2S_RollerShutter->setRSMovingDirection(z2s_rs_moving_direction);
   } else {  //VirtualRelay section
     
     uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
