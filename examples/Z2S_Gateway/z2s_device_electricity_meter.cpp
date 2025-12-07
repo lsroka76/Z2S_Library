@@ -87,6 +87,26 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
     } break;
 
 
+    case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP: {
+
+      _one_phase = true;
+
+      voltage_multiplier = 1;
+      voltage_divisor    = 10;
+
+      current_multiplier = 1;
+      current_divisor    = 100;
+
+      active_power_multiplier = 1;
+      active_power_divisor    = 10;
+
+      energy_multiplier = 1;
+      energy_divisor  = 100;
+      
+      ignore_zigbee_scaling = true;
+    } break;
+
+
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A: {
 
       //current_divisor_modifier = 1000; break;
