@@ -5936,6 +5936,7 @@ uint8_t Z2S_addZ2SDevice(
 
             addZ2SDeviceElectricityMeter(
               &zbGateway, device, false, false, first_free_slot, sub_id, true); //one-phase 
+          break;
           
 
           case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP_FAULT_SID:
