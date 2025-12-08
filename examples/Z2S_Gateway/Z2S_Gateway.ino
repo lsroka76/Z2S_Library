@@ -21,6 +21,7 @@
 #include <supla/control/virtual_relay.h>
 #include <supla/control/roller_shutter_interface.h>
 #include <supla/sensor/general_purpose_measurement.h>
+#include <supla/control/hvac_base.h>
 #include <supla/device/status_led.h>
 
 #include <Z2S_control/action_handler_with_callbacks.h>
@@ -441,7 +442,7 @@ void setup() {
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
 
-  //auto rs_1 = new Supla::Control::RollerShutterInterface();
+  //auto rs_1 = new Supla::Control::HvacBase();
   //rs_1->getChannel()->setChannelNumber(109);
 
   /*auto gpm_1 = new Supla::Sensor::GeneralPurposeMeasurement();

@@ -446,8 +446,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   uint8_t write_attribute_payload[20];
 
 
-  log_i("cmd: %s, param %s, param %s", 
-        cmd, *param != NULL ? *param : "-",
+  log_i("cmd: %s, param %s, param %s", cmd, *param != NULL ? *param : "-",
         *(param+1) != NULL ? *(param+1) : "-" );
   
   if (strcmp(cmd, "OPEN-NETWORK") == 0) {
@@ -463,14 +462,15 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint32_t zb_primary_channel = esp_zb_get_primary_network_channel_set();
     for (uint8_t i = 11; i <= 26; i++) {
       if (zb_primary_channel & (1 << i))
-        telnet.printf(PSTR(">Zigbee primary channel: %u\n\r>"), i);
+        telnet.printf(PSTR("\n\rZigbee primary channel: %u\n\r>"), i);
     }
     return;
   } else
   if (strcmp(cmd, "SET-ZIGBEE-PRIMARY-CHANNEL") == 0) {
     
     if (params_number < 1)  {
-      telnet.println(">set-zigbee-primary-channel zigbee_channel(11-26)");
+      telnet.printf(
+        "\n\rset-zigbee-primary-channel zigbee_channel(11-26)\n\r>");
       return;
     }
     
@@ -481,21 +481,27 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_ZIGBEE_PRIMARY_CHANNEL, 
           (1 << zb_primary_channel))) {
         
-        telnet.printf(PSTR(">New Zigbee primary channel(%u) mask(%x) "
-                           "write success! Restarting...\n\r"), 
-                           zb_primary_channel, (1 << zb_primary_channel));
+        telnet.printf(
+          PSTR(
+            "\n\rNew Zigbee primary channel(%u) mask(%x) "
+            "write success! Restarting...\n\r>"), 
+          zb_primary_channel, (1 << zb_primary_channel));
 
         Supla::Storage::ConfigInstance()->commit();
         SuplaDevice.scheduleSoftRestart(1000);
         return;
       } else {
-        telnet.printf(PSTR(">New Zigbee primary channel(%u) mask(%x) write failed!\n\r"), 
-                      zb_primary_channel, (1 << zb_primary_channel));
+        telnet.printf(
+          PSTR(
+            "\n\rNew Zigbee primary channel(%u) mask(%x) write failed!\n\r>"), 
+          zb_primary_channel, (1 << zb_primary_channel));
         return;
       }
     } else { 
-      telnet.printf(PSTR(">Invalid value for Zigbee primary channel: %u "
-                         "(should be between 11 and 26)\n\r"));
+      telnet.printf(
+        PSTR(
+          "\n\rInvalid value for Zigbee primary channel: %u "
+          "(should be between 11 and 26)\n\r>"));
       return;
     }
   } else
@@ -503,7 +509,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     int8_t zb_tx_power;
     esp_zb_get_tx_power(&zb_tx_power);
-    telnet.printf(PSTR(">Zigbee TX power: %d\n\r>"), zb_tx_power);
+    telnet.printf(PSTR("\n\rZigbee TX power: %d\n\r>"), zb_tx_power);
     return;
   } else
   if (strcmp(cmd, "SET-ZIGBEE-TX-POWER") == 0) {
@@ -514,7 +520,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if ((zb_tx_power <= 20) && (zb_tx_power>= -24))
       esp_zb_set_tx_power(zb_tx_power);
     else
-      telnet.printf(">Invalid TX power value for SET-ZIGBEE-TX-POWER: "
+      telnet.printf("\n\rInvalid TX power value for SET-ZIGBEE-TX-POWER: "
                     "%d (should be between -24 and +20)\n\r>", zb_tx_power);
     return;
   } else
@@ -597,10 +603,6 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     Z2S_printZbDevicesTableSlots(true);
     return;
   } else
-  if (strcmp(cmd,"LIST-CHANNELs") == 0) {
-    
-    return;
-  } else 
   if (strcmp(cmd,"REMOVE-CHANNEL") == 0) {
 
     if (params_number < 1)  {
@@ -647,7 +649,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   if (strcmp(cmd,"UPDATE-DEVICE-TIMINGS") == 0) {
 
     if (params_number < 3)  {
-      telnet.println(">update-device-timings channel \"keepalive\"/\"timeout\"/\"refresh\"/\"autoset\" time(seconds)");
+      telnet.printf(
+        "\n\rupdate-device-timings channel \"keepalive\"/\"timeout\"/"
+        "\"refresh\"/\"autoset\" time(seconds)");
       return;
     }
 
@@ -660,14 +664,16 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if (channel_number_slot >= 0) {
         updateTimeout(channel_number_slot, 0, selector, timings_secs);
     } else {
-      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+      telnet.printf("\n\rInvalid channel number %u\n\r>", channel_id);
     }  
     return;
   }  else
   if (strcmp(cmd,"UPDATE-DEVICE-RGB-MODE") == 0) {
 
     if (params_number < 2)  {
-      telnet.println(">update-device-rgb-mode channel \"HS\"/\"XY\"/\"TUYA-HS\"/\"TUYA-XY\"");
+      telnet.println(
+        ">update-device-rgb-mode channel \"HS\"/\"XY\"/\"TUYA-HS\"/"
+        "\"TUYA-XY\"");
       return;
     }
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
@@ -678,7 +684,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     if (channel_number_slot >= 0) {
         updateRGBMode(channel_number_slot, rgb_mode);
     } else {
-      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
+      telnet.printf("\n\rInvalid channel number %u\n\r>", channel_id);
     }  
     return;
   } else
@@ -702,10 +708,13 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   if (strcmp(cmd,"ADD-ACTION") == 0) {
 
     if ((params_number != 5) && (params_number != 7))  {
-      telnet.println(">add-action action_name src_channel Supla_action dst_channel Supla_event");
-      telnet.println(">or");
-      telnet.println(">add-action action_name src_channel Supla_action "
-                     "dst_channel Supla_condition threshold1 threshold2");
+      telnet.printf(
+        "\n\radd-action action_name src_channel Supla_action dst_channel"
+        "Supla_event");
+      telnet.printf("\n\ror");
+      telnet.printf(
+        "\n\radd-action action_name src_channel Supla_action "
+        "dst_channel Supla_condition threshold1 threshold2");
       return;
     }
 
@@ -1008,17 +1017,19 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
             telnet.printf(">Reading attribute successful - data value is 0x%x, data type is 0x%x\n\r>", 
                         *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value, zbGateway.getReadAttrLastResult()->data.type);
         } else
-          telnet.printf(">Reading attribute failed\n\r>");
+          telnet.printf("\n\rReading attribute failed\n\r>");
       } else {
         zbGateway.sendAttributeRead(&device, cluster_id, attribute_id, false, direction);
-        telnet.println("readAttribute async request sent");
+        telnet.printf("\n\rreadAttribute async request sent\n\r>");
       }
     }
     return;
   } else
   if (strcmp(cmd,"CONFIGURE-REPORTING")== 0) {
     if (params_number < 7)  {
-      telnet.println("configure-reporting channel cluster attribute attribute_type min_interval max_interval delta");
+      telnet.printf(
+        "\n\rconfigure-reporting channel cluster attribute attribute_type "
+        "min_interval max_interval delta\n\r>");
       return;
     }
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
@@ -1028,18 +1039,27 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint16_t min_interval = strtoul(*(param + 4),nullptr, 0);
     uint16_t max_interval = strtoul(*(param + 5),nullptr, 0);
     uint16_t delta = strtoul(*(param + 6),nullptr, 0);
-    bool sync = (params_number > 7) ? (strcmp(*(param + 7),"ASYNC") == 0 ? false : true) : true;
+    bool sync = (params_number > 7) ? 
+      (strcmp(*(param + 7),"ASYNC") == 0 ? false : true) : true;
     
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
-      telnet.printf(">configure-reporting %u 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X\n\r>", channel_id, cluster_id, attribute_id, attribute_type,
-                    min_interval, max_interval, delta);
+      telnet.printf(
+        "\n\rconfigure-reporting %u 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X\n\r>", 
+        channel_id, cluster_id, attribute_id, attribute_type,min_interval,
+        max_interval, delta);
+
       if (sync) {
-        zbGateway.setClusterReporting(&device, cluster_id, attribute_id, attribute_type, min_interval, max_interval, delta, true); 
-        telnet.printf(">Configure reporting sync request sent\n\r");
+        zbGateway.setClusterReporting(
+          &device, cluster_id, attribute_id, attribute_type, min_interval,
+          max_interval, delta, true); 
+        telnet.printf("\n\rConfigure reporting sync request sent\n\r>");
       } else {
-        zbGateway.setClusterReporting(&device, cluster_id, attribute_id, attribute_type, min_interval, max_interval, delta, false); 
-        telnet.println("Configure reporting async request sent");
+        zbGateway.setClusterReporting(
+          &device, cluster_id, attribute_id, attribute_type, min_interval, 
+          max_interval, delta, false); 
+        
+        telnet.printf("\n\rConfigure reporting async request sent\n\r>");
       }
     }
     return;
@@ -1115,7 +1135,9 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   if (strcmp(cmd,"WRITE-ATTRIBUTE")== 0) {
   
     if (params_number < 6)  {
-      telnet.println("write-attribute channel cluster attribute attribute_type attribute_size value");
+      telnet.printf(
+        "\n\rwrite-attribute channel cluster attribute attribute_type "
+        "attribute_size value\n\r>");
       return;
     }
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
@@ -1168,8 +1190,11 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
         }
       }
       if (value)
-        zbGateway.sendAttributeWrite(&device, cluster_id, attribute_id, attribute_type, attribute_size, value, manuf_specific, manuf_code); 
-      telnet.println("Write attribute async request sent");
+        zbGateway.sendAttributeWrite(
+          &device, cluster_id, attribute_id, attribute_type, attribute_size, 
+          value, manuf_specific, manuf_code); 
+
+      telnet.printf("\n\rWrite attribute async request sent\n\r>");
     } 
     return;
   } else
