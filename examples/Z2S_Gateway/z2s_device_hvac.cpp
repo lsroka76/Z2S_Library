@@ -599,6 +599,15 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     } break;
 
 
+    case TRV_SCHEDULE_MODE_ALT_MSG: {
+
+      log_i("msgZ2SDeviceHvac - TRV_SCHEDULE_MODE_ALT_MSG: 0x%x", 
+            msg_value);
+
+      Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
+    } break;
+
+
     default: 
 
       log_i("msgZ2SDeviceHvac - unknown message id: 0x%x, value 0x%x", 

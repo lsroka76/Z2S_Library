@@ -25,6 +25,7 @@
 #define TRV_TEMPERATURE_HISTERESIS_MSG  0x0D
 #define TRV_SENSOR_TYPE_MSG             0x0E
 #define TRV_PI_HEATING_DEMAND_MSG       0x0F
+#define TRV_SCHEDULE_MODE_ALT_MSG       0x10
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 

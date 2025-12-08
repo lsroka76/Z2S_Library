@@ -69,6 +69,13 @@ Supla::Control::HvacBaseEE *Supla::Control::Z2S_TRVInterface::getTRVHvac(){
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
+bool Supla::Control::Z2S_TRVInterface::isHvacWindowOpened() {
+
+  return _hvac_window_opened;
+}
+
+/*---------------------------------------------------------------------------------------------------------------------------*/
+
 void Supla::Control::Z2S_TRVInterface::setTRVHvac(
   Supla::Control::HvacBaseEE * trv_hvac) {
 

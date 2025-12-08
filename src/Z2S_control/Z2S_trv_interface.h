@@ -1550,6 +1550,8 @@ protected:
   //uint32_t  _temperature_calibration_update_ms      = 5 * 60 * 1000; //5 minutes
   //uint32_t  _temperature_calibration_last_update_ms = 0;
 
+  bool _hvac_window_opened = false;
+
   uint32_t _temperature_ping_ms = 60 * 1000;
   uint32_t _last_temperature_ping_ms = 0;
 
@@ -1569,6 +1571,8 @@ protected:
 
   bool isForcedTemperatureSet();
   void forceTRVTemperature();
+
+  bool isHvacWindowOpened();
 
   void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);
