@@ -8215,23 +8215,27 @@ void printTaskInfo(bool toTelnet) {
           uxTaskGetSystemState(taskStatusArray, uxArraySize, &ulTotalRunTime);
         ulTotalRunTime /= 100UL;
 
-        char task_info[256];
+        char task_info[512];
         int16_t loop_chars_written = 0;
         int16_t total_chars_written = 0;
+
         for (UBaseType_t i = 0; i < uxArraySize; i++) {
           
           ulStatsAsPercentage = 
             taskStatusArray[i].ulRunTimeCounter / ulTotalRunTime;
           
           loop_chars_written = snprintf(task_info + total_chars_written, 
-            256 - total_chars_written, "\n\rTASK: %s\t\t\t\tCPU usage: %d %%",
-            taskStatusArray[i].pcTaskName, ulStatsAsPercentage);
-          if ((loop_chars_written >= 0) && (loop_chars_written < 256))
+            512 - total_chars_written, "\n\rTASK: %s%sCPU usage: %d %%",
+            taskStatusArray[i].pcTaskName, 
+            strlen(taskStatusArray[i].pcTaskName) > 10 ? "\t" : "\t\t",
+            ulStatsAsPercentage);
+          if ((loop_chars_written >= 0) && (loop_chars_written < 512))
             total_chars_written += loop_chars_written;
-          if (total_chars_written >= 255)
+          if (total_chars_written >= 511)
             break;
         }
         log_i_telnet2(task_info, toTelnet);
+
         vPortFree(taskStatusArray);
     }
 }
