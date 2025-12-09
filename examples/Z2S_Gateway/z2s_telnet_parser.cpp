@@ -3,7 +3,7 @@
 extern ZigbeeGateway zbGateway;
 
 void printDir(fs::FS &fs, const char *dirname, uint8_t levels) {
-  Serial.printf("Listing directory: %s\n", dirname);
+  //Serial.printf("Listing directory: %s\n", dirname);
 
   File root = fs.open(dirname);
   if (!root) {
@@ -18,7 +18,7 @@ void printDir(fs::FS &fs, const char *dirname, uint8_t levels) {
   File file = root.openNextFile();
   while (file) {
     if (file.isDirectory()) {
-      telnet.print("  DIR : ");
+      telnet.print("\n\rDIR : ");
       telnet.print(file.name());
       time_t t = file.getLastWrite();
       struct tm *tmstruct = localtime(&t);
@@ -34,12 +34,12 @@ void printDir(fs::FS &fs, const char *dirname, uint8_t levels) {
       }
     } else {
       
-      telnet.printf("\tFILE: %s\tSIZE: %u\n\r", file.name(), file.size());
+      telnet.printf("\tFILE: %s\t\tSIZE: %u\n\r", file.name(), file.size());
       
       time_t t = file.getLastWrite();
       struct tm *tmstruct = localtime(&t);
       telnet.printf(
-        "LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n\r", 
+        "\t\tLAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n\r", 
           (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
           tmstruct->tm_mday, tmstruct->tm_hour,
         tmstruct->tm_min, tmstruct->tm_sec);
