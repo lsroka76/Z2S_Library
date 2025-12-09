@@ -60,16 +60,10 @@ void no_channel_found_error_func(char *ieee_addr_str) {
 
 void ieee_addr_to_str(char *ieee_addr_str, esp_zb_ieee_addr_t ieee_addr) {
 
-  sprintf_P(ieee_addr_str, 
-            PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
-            ieee_addr[7], 
-            ieee_addr[6], 
-            ieee_addr[5], 
-            ieee_addr[4], 
-            ieee_addr[3], 
-            ieee_addr[2], 
-            ieee_addr[1], 
-            ieee_addr[0]);
+  sprintf_P(
+    ieee_addr_str, PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
+    ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4], ieee_addr[3], 
+    ieee_addr[2], ieee_addr[1], ieee_addr[0]);
 }
 
 void devices_table_full_error_func() {
@@ -78,7 +72,8 @@ void devices_table_full_error_func() {
 
 uint32_t Z2S_getChannelsTableSize() {
   uint32_t _z2s_channels_table_size;
-  if (Supla::Storage::ConfigInstance()->getUInt32(Z2S_CHANNELS_TABLE_SIZE_ID, &_z2s_channels_table_size))
+  if (Supla::Storage::ConfigInstance()->getUInt32(
+        Z2S_CHANNELS_TABLE_SIZE_ID, &_z2s_channels_table_size))
     return _z2s_channels_table_size;
   else
     return 0;
@@ -86,24 +81,24 @@ uint32_t Z2S_getChannelsTableSize() {
 
 uint8_t Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot) {
 
-  for (uint8_t channels_counter = start_slot; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) 
-      if (!z2s_channels_table[channels_counter].valid_record)
-        return channels_counter;
+  for (uint8_t channels_counter = start_slot; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) 
+    if (!z2s_channels_table[channels_counter].valid_record)
+      return channels_counter;
   return 0xFF;
-  
 }
 
 uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot) {
 
   uint8_t local_action_handlers_number = 0;
 
-  for (uint8_t channels_counter = start_slot; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) 
-      if (z2s_channels_table[channels_counter].valid_record &&
-          (z2s_channels_table[channels_counter].Supla_channel >= 0x80))
-        local_action_handlers_number++;
+  for (uint8_t channels_counter = start_slot; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) 
+    if (z2s_channels_table[channels_counter].valid_record &&
+        (z2s_channels_table[channels_counter].Supla_channel >= 0x80))
+      local_action_handlers_number++;
 
   return (0x80 + local_action_handlers_number);
-  
 }
 
 
@@ -1253,6 +1248,11 @@ void Z2S_syncZbDeviceDescFlags(
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION)
     Z2S_setZbDeviceFlags(
       zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_MCU_VERSION_REQUEST);
+
+  if (device_desc_config_flags &
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC)
+    Z2S_setZbDeviceFlags(
+      zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC);
 }
   
 bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set) {
@@ -4561,6 +4561,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2:
+      case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
       case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
 
@@ -6869,6 +6870,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2:
+    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
@@ -8197,4 +8199,39 @@ void printSizeOfClasses() {
         sizeof(IPAddress),
         sizeof(NetworkServer),
         sizeof(NetworkClient));
+}
+
+void printTaskInfo(bool toTelnet) {
+
+    UBaseType_t uxArraySize;
+    TaskStatus_t *taskStatusArray;
+    uint32_t ulTotalRunTime,ulStatsAsPercentage;
+    uxArraySize = uxTaskGetNumberOfTasks();
+    taskStatusArray = 
+    (TaskStatus_t *)pvPortMalloc(uxArraySize * sizeof(TaskStatus_t));
+
+    if (taskStatusArray != NULL) {
+        uxArraySize = 
+          uxTaskGetSystemState(taskStatusArray, uxArraySize, &ulTotalRunTime);
+        ulTotalRunTime /= 100UL;
+
+        char task_info[256];
+        int16_t loop_chars_written = 0;
+        int16_t total_chars_written = 0;
+        for (UBaseType_t i = 0; i < uxArraySize; i++) {
+          
+          ulStatsAsPercentage = 
+            taskStatusArray[i].ulRunTimeCounter / ulTotalRunTime;
+          
+          loop_chars_written = snprintf(task_info + total_chars_written, 
+            256 - total_chars_written, "\n\rTASK: %s\t\t\t\tCPU usage: %d %%",
+            taskStatusArray[i].pcTaskName, ulStatsAsPercentage);
+          if ((loop_chars_written >= 0) && (loop_chars_written < 256))
+            total_chars_written += loop_chars_written;
+          if (total_chars_written >= 255)
+            break;
+        }
+        log_i_telnet2(task_info, toTelnet);
+        vPortFree(taskStatusArray);
+    }
 }

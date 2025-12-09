@@ -867,6 +867,7 @@ if (GUIstarted)
           ESP.getMaxAllocHeap(),
           ESP.getMinFreeHeap(),  
           SuplaDevice.uptime.getUptime());
+    printTaskInfo();
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {

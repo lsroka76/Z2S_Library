@@ -2,6 +2,51 @@
 
 extern ZigbeeGateway zbGateway;
 
+void printDir(fs::FS &fs, const char *dirname, uint8_t levels) {
+  Serial.printf("Listing directory: %s\n", dirname);
+
+  File root = fs.open(dirname);
+  if (!root) {
+    telnet.println("Failed to open directory");
+    return;
+  }
+  if (!root.isDirectory()) {
+    telnet.println("Not a directory");
+    return;
+  }
+
+  File file = root.openNextFile();
+  while (file) {
+    if (file.isDirectory()) {
+      telnet.print("  DIR : ");
+      telnet.print(file.name());
+      time_t t = file.getLastWrite();
+      struct tm *tmstruct = localtime(&t);
+      
+      telnet.printf(
+        "\tLAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n\r\n\r", 
+        (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
+        tmstruct->tm_mday, tmstruct->tm_hour,
+        tmstruct->tm_min, tmstruct->tm_sec);
+
+      if (levels) {
+        printDir(fs, file.path(), levels - 1);
+      }
+    } else {
+      
+      telnet.printf("\tFILE: %s\tSIZE: %u\n\r", file.name(), file.size());
+      
+      time_t t = file.getLastWrite();
+      struct tm *tmstruct = localtime(&t);
+      telnet.printf(
+        "LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n\r", 
+          (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
+          tmstruct->tm_mday, tmstruct->tm_hour,
+        tmstruct->tm_min, tmstruct->tm_sec);
+    }
+    file = root.openNextFile();
+  }
+}
 
 void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
 
@@ -527,6 +572,22 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   if (strcmp(cmd, "VERSION") == 0) {
 
     telnet.printf("\n\r>Gateway version: %s\n\r>", Z2S_VERSION);
+    return;
+  } else
+  if (strcmp(cmd, "TASKS") == 0) {
+
+    telnet.printf("\n\r>TASKS CPU USAGE\n\r");
+    printTaskInfo(true);
+    telnet.printf("--------------------\n\r>");
+    return;
+  } else
+  if (strcmp(cmd, "DIR") == 0) {
+
+    telnet.printf("\n\r>FILE SYSTEM\n\r");
+    LittleFS.begin(false);
+    printDir(LittleFS,"/",3);
+    LittleFS.end();
+    telnet.printf("--------------------\n\r>");
     return;
   } else
   if (strcmp(cmd, "TIME") == 0) {

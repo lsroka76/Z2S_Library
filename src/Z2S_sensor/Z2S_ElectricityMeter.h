@@ -328,9 +328,9 @@ void resetStorage() {
 
   channel_extended_data_em_t channel_extended_data_em = {};
 
-  memcpy(channel_extended_data_em.ieee_addr, 
-         _device.ieee_addr, 
-         sizeof(esp_zb_ieee_addr_t));
+  memcpy(
+    channel_extended_data_em.ieee_addr, _device.ieee_addr, 
+    sizeof(esp_zb_ieee_addr_t));
 
   for (uint8_t i = 0; i <3; i++) {
   
@@ -366,10 +366,9 @@ void resetStorage() {
   channel_extended_data_em.total_reverse_active_energy_balanced_counter = 
     total_reverse_active_energy_balanced_counter;
 
-  _gateway->requestDataSave(getChannelNumber(), 
-                            16, 
-                            CHANNEL_EXTENDED_DATA_TYPE_EM, 
-                            (uint8_t *)&channel_extended_data_em);
+  _gateway->requestDataSave(
+    getChannelNumber(), 16, CHANNEL_EXTENDED_DATA_TYPE_EM, 
+    (uint8_t *)&channel_extended_data_em);
 
 /*
   _energy_initial_counter = emValue.total_forward_active_energy[0];
