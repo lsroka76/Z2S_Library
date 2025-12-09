@@ -1432,7 +1432,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
                   "trv_last_temperature = %d,\n\rtrv_calibration = %d,"
                   "\n\rtrv_last_calibration = %d,\n\r"
                   "calculated offset = %d,\n\rlast calculated offset %d\n\r"
-                  "_trv_temperature_calibration_trigger = %u", 
+                  "_trv_temperature_calibration_trigger = %u"
+                  "_temperature_calibration_update_attempt = %u", 
                   hvacLastTemperature, 
                   _trv_local_temperature,
                   _trv_last_local_temperature,
@@ -1440,7 +1441,22 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
                   _trv_last_temperature_calibration,
                   _temperature_calibration_offset, 
                   _last_temperature_calibration_offset,
-                  _trv_temperature_calibration_trigger);
+                  _trv_temperature_calibration_trigger,
+                  _temperature_calibration_update_attempt);
+            
+            if (_temperature_calibration_offset == _last_temperature_calibration_offset)
+              _temperature_calibration_update_attempt++;
+            else
+              _temperature_calibration_update_attempt = 0;
+
+            if (_temperature_calibration_update_attempt >= 5) { //?
+
+              log_i("Possible calibration deadlock detected - "
+                    "resetting calibration value");
+
+              sendTRVTemperatureCalibration(0);
+            }
+
       
             if ((_trv_temperature_calibration_updated) && 
                 (abs(_temperature_calibration_offset - _trv_temperature_calibration) >= 

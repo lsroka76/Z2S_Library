@@ -604,6 +604,11 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
       log_i("msgZ2SDeviceHvac - TRV_SCHEDULE_MODE_ALT_MSG: 0x%x", 
             msg_value);
 
+      z2s_channels_table[channel_number_slot].user_data_flags |= 
+        USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
+      
+      z2s_channels_table[channel_number_slot].user_data_2 = 1;
+
       Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
     } break;
 

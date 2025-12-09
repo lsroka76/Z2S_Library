@@ -1537,6 +1537,7 @@ protected:
 
   bool _trv_switch_schedule_off = false;
 
+  uint8_t _temperature_calibration_update_attempt = 0;
   int32_t _temperature_calibration_offset      = 0;
   int32_t _last_temperature_calibration_offset = 0;
   
