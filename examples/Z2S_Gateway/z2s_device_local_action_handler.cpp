@@ -110,7 +110,7 @@ void initZ2SDeviceLocalActionHandler(
         z2s_channels_table[channel_number_slot].Supla_channel;
       
       auto Supla_VirtualRelay = 
-        new Supla::Control::VirtualRelay(); 
+        new Supla::Control::VirtualRelay(RELAY_FLAGS); 
       
       Supla_VirtualRelay->getChannel()->setChannelNumber(Supla_channel);
     }
@@ -198,9 +198,9 @@ void initZ2SDeviceLocalActionHandler(
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type, 
-                                    uint32_t local_channel_func,
-                                    uint8_t logic_operator) {
+bool addZ2SDeviceLocalActionHandler(
+  uint8_t local_channel_type, uint32_t local_channel_func, 
+  uint8_t logic_operator) {
 
   uint8_t first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
@@ -216,8 +216,7 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
     local_channel_type;
 
   memset(
-    z2s_channels_table[first_free_slot].ieee_addr, 
-    0, 
+    z2s_channels_table[first_free_slot].ieee_addr, 0, 
     sizeof(esp_zb_ieee_addr_t));
 
   z2s_channels_table[first_free_slot].short_addr = 0;
@@ -256,7 +255,7 @@ bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type,
       SuplaDevice.saveStateToStorage();
       Supla::Storage::ConfigInstance()->commit();
 
-      auto Supla_VirtualRelay = new Supla::Control::VirtualRelay(); 
+      auto Supla_VirtualRelay = new Supla::Control::VirtualRelay(RELAY_FLAGS); 
 
       z2s_channels_table[first_free_slot].Supla_channel = 
         Supla_VirtualRelay->getChannelNumber();

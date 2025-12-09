@@ -878,12 +878,17 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,
 		.zigbee_attribute_name = "SENSOR TYPE BITMAP"
 	},
-
 	{
 		.zigbee_attribute_id  = 0x0020, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
-		.zigbee_attribute_name = "SNZB-03P MOTION TIMEOUT [5-60s]"
+		.zigbee_attribute_name = "SNZB-03P/06P MOTION TIMEOUT [5-60s]"
+	},
+	{
+		.zigbee_attribute_id  = 0x0022, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "SNZB-06P OCCUPANCY SENSITIVITY [1(L)-3(H)]"
 	},
   //IAS ZONE
   {

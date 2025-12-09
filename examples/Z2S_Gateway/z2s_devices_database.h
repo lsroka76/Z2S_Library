@@ -2357,6 +2357,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "SONOFF", .model_name = "SNZB-06P",
+    .z2s_device_uid = 10005,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_prits6g4", .model_name = "TS0001",
     .z2s_device_uid = 10100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
@@ -2920,6 +2925,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-01",
     .z2s_device_uid = 15205,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "eWeLink", .model_name = "WB01",
+    .z2s_device_uid = 15210,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F,
 	  .z2s_device_endpoints_count = 1},
 

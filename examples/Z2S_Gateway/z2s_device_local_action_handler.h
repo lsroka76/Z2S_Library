@@ -10,6 +10,7 @@
 #include <supla/sensor/virtual_binary.h>
 #include <Z2S_control/Z2S_local_action_handlers.h>
 #include <Z2S_control/Z2S_remote_relay.h>
+#include <Z2S_control/Z2S_virtual_relay.h>
 #include <Z2S_sensor/Z2S_remote_thermometer.h>
 
 
@@ -44,15 +45,18 @@ static constexpr char* CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {
 "CONNECTED_THERMOMETERS_FNC_MAXIMUM"
 };
 
-const char* getZ2SDeviceLocalActionHandlerTypeName(int16_t channel_number_slot);
+const char* getZ2SDeviceLocalActionHandlerTypeName(
+  int16_t channel_number_slot);
 
-const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(int16_t channel_number_slot);
+const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
+  int16_t channel_number_slot);
 
 void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot);
 
-bool addZ2SDeviceLocalActionHandler(uint8_t local_channel_type = LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 
-                                    uint32_t local_channel_func = SUPLA_CHANNELFNC_NONE,
-                                    uint8_t logic_operator = PIN_LOGIC_OPERATOR_NONE);
+bool addZ2SDeviceLocalActionHandler(
+  uint8_t local_channel_type = LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 
+  uint32_t local_channel_func = SUPLA_CHANNELFNC_NONE,
+  uint8_t logic_operator = PIN_LOGIC_OPERATOR_NONE);
 
 
 #endif //Z2S_DEVICE_LOCAL_ACTION_HANDLERS_H_
