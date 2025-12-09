@@ -349,8 +349,13 @@ void processTuyaHvacDataReport(
       system_mode_on_dp_id, payload_size, payload);
     
     if (Tuya_read_dp_result.is_success) {
+
+      bool is_system_mode_on = (system_mode_value_on < 0x80) ?
+        (Tuya_read_dp_result.dp_value == system_mode_value_on) :
+        ((1 << Tuya_read_dp_result.dp_value) & system_mode_value_on);
       
-      if (Tuya_read_dp_result.dp_value == system_mode_value_on)
+      //if (Tuya_read_dp_result.dp_value == system_mode_value_on)
+      if (is_system_mode_on)
         msgZ2SDeviceHvac(
           channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1);
     }
