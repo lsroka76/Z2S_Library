@@ -631,7 +631,8 @@ void processTuyaSoilTempHumiditySensorReport(
 }
 
 void processTuyaTempHumiditySensorDataReport(
-  int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload){
+  int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload,
+  float humidity_divider) {
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
@@ -645,7 +646,8 @@ void processTuyaTempHumiditySensorDataReport(
     TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceTempHumidityHumi(
-      channel_number_slot, (float)Tuya_read_dp_result.dp_value);  
+      channel_number_slot, 
+      (float)Tuya_read_dp_result.dp_value/humidity_divider);  
             
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(
     TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
@@ -2373,10 +2375,16 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2:
+
+      processTuyaTempHumiditySensorDataReport(
+        channel_number_slot, payload_size, payload, 1); 
+    break;
+
+
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3:
 
       processTuyaTempHumiditySensorDataReport(
-        channel_number_slot, payload_size, payload); 
+        channel_number_slot, payload_size, payload, 10); 
     break;
 
 
