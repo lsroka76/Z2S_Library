@@ -1444,7 +1444,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
                   _trv_temperature_calibration_trigger,
                   _temperature_calibration_update_attempt);
             
-            if (_temperature_calibration_offset == _last_temperature_calibration_offset)
+            if (abs(hvacLastTemperature - _trv_local_temperature) > 
+                _trv_temperature_calibration_trigger)
               _temperature_calibration_update_attempt++;
             else
               _temperature_calibration_update_attempt = 0;

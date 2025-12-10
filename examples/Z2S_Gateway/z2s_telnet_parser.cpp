@@ -18,31 +18,33 @@ void printDir(fs::FS &fs, const char *dirname, uint8_t levels) {
   File file = root.openNextFile();
   while (file) {
     if (file.isDirectory()) {
-      telnet.print("\n\rDIR : ");
-      telnet.print(file.name());
+
+      telnet.printf("\n\r- DIR : %s\n\r", file.name());
+      
       time_t t = file.getLastWrite();
       struct tm *tmstruct = localtime(&t);
       
       telnet.printf(
-        "\tLAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n\r\n\r", 
+        "- LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n\n\n\r", 
         (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
-        tmstruct->tm_mday, tmstruct->tm_hour,
-        tmstruct->tm_min, tmstruct->tm_sec);
+        tmstruct->tm_mday, tmstruct->tm_hour,tmstruct->tm_min, 
+        tmstruct->tm_sec);
 
       if (levels) {
         printDir(fs, file.path(), levels - 1);
       }
     } else {
       
-      telnet.printf("\tFILE: %s\t\tSIZE: %u\n\r", file.name(), file.size());
+      telnet.printf("-- FILE: %s\n\r-- SIZE: %u\n\r", file.name(), 
+        /*strlen(file.name()) > 24 ? "\t" : "\t\t",*/ file.size());
       
       time_t t = file.getLastWrite();
       struct tm *tmstruct = localtime(&t);
       telnet.printf(
-        "\t\tLAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n\r", 
+        "-- LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n\n\r", 
           (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
-          tmstruct->tm_mday, tmstruct->tm_hour,
-        tmstruct->tm_min, tmstruct->tm_sec);
+          tmstruct->tm_mday, tmstruct->tm_hour,tmstruct->tm_min, 
+          tmstruct->tm_sec);
     }
     file = root.openNextFile();
   }
@@ -578,7 +580,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     telnet.printf("\n\r>TASKS CPU USAGE\n\r");
     printTaskInfo(true);
-    telnet.printf("--------------------\n\r>");
+    telnet.printf("\n\r>");
     return;
   } else
   if (strcmp(cmd, "DIR") == 0) {
