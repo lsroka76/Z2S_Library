@@ -1450,7 +1450,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
             else
               _temperature_calibration_update_attempt = 0;
 
-            if (_temperature_calibration_update_attempt >= 60) { //
+            if (_temperature_calibration_update_attempt >= 60) { //300 seconds
 
               log_i("Possible calibration deadlock detected - "
                     "resetting calibration value");
