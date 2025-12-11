@@ -578,9 +578,16 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   } else
   if (strcmp(cmd, "TASKS") == 0) {
 
-    telnet.printf("\n\r>TASKS CPU USAGE\n\r");
-    printTaskInfo(true);
-    telnet.printf("\n\r>");
+    if ((params_number > 0) && (strcmp(*(param), "RESET"))) {
+
+      telnet.printf("\n\r>RESETTING TASKS STATS - not yet implemented\n\r");
+      //vTaskResetState();
+    } else {
+      
+      telnet.printf("\n\r>TASKS CPU USAGE\n\r");
+      printTaskInfo(true);
+      telnet.printf("\n\r>");
+    }
     return;
   } else
   if (strcmp(cmd, "DIR") == 0) {

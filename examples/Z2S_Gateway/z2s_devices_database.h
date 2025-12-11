@@ -53,6 +53,8 @@
 #define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR       0x1100
 #define Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1     0x1101
 
+#define Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F                 0x1110
+
 #define Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE           0x1150
 
 #define Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR             0x1200
@@ -391,6 +393,10 @@
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID         0x03
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID          0x04
 #define TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID                 0x05
+
+#define TUYA_SOIL_SENSOR_3F_WATER_WARNING_SID               0x00
+#define TUYA_SOIL_SENSOR_3F_TH_SID                          0x01
+#define TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID               0x02
 
 //#define IAS_ZONE_ALARM_1_SID                              0x00
 //#define IAS_ZONE_ALARM_2_SID                              0x01
@@ -1412,6 +1418,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
@@ -3488,6 +3499,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
                               { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
+  {	.manufacturer_name = "_TYZB01_ugy1bbbg", .model_name = "TS0002",
+    .z2s_device_uid = 21105,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
   {	.manufacturer_name = "_TZ3000_zmy4lslw", .model_name = "TS0002",
     .z2s_device_uid = 21200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
@@ -4155,6 +4173,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 2, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F },
                               { 3, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F },
                               { 4, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F }}},
+    
+    { .manufacturer_name = "_TZE200_wqashyqo", .model_name = "TS0601",
+    .z2s_device_uid = 31800,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F,
+    .z2s_device_endpoints_count = 1},
+
 //DEVICES_END
 };
 #endif

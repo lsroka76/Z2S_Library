@@ -615,18 +615,99 @@ void processTuyaSoilTempHumiditySensorReport(
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_TEMPERATURE_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_SOIL_SENSOR_TEMPERATURE_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceTempHumidityTemp(channel_number_slot, (float)Tuya_read_dp_result.dp_value/divider);  
+    msgZ2SDeviceTempHumidityTemp(
+      channel_number_slot, (float)Tuya_read_dp_result.dp_value/divider);  
             
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_MOISTURE_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_SOIL_SENSOR_MOISTURE_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceTempHumidityHumi(channel_number_slot, (float)Tuya_read_dp_result.dp_value);  
+    msgZ2SDeviceTempHumidityHumi(
+      channel_number_slot, (float)Tuya_read_dp_result.dp_value);  
             
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_SOIL_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_SOIL_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success) { 
+
     log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(channel_number_slot, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);  
+
+    updateSuplaBatteryLevel(
+      channel_number_slot, ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);  
+  }
+}
+
+void processTuyaSoilSensor3FReport(
+  int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, 
+  float divider) {
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_SOIL_SENSOR_3F_WATER_WARNING_SID);
+    
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    TUYA_SOIL_SENSOR_3F_TH_SID);
+  
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID);
+
+  Tuya_read_dp_result_t Tuya_read_dp_result;
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_SOIL_SENSOR_3F_WATER_WARNING_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceIASzone(
+      channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1));
+  
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_SOIL_SENSOR_3F_TEMPERATURE_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceTempHumidityTemp(
+      channel_number_slot_2, (float)Tuya_read_dp_result.dp_value/divider);  
+            
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_SOIL_SENSOR_3F_HUMIDITY_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceTempHumidityHumi(
+      channel_number_slot_2, (float)Tuya_read_dp_result.dp_value);  
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+    Tuya_read_dp_result.dp_value);
+  
+            
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_SOIL_SENSOR_3F_BATTERY_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) { 
+
+    log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
+
+    updateSuplaBatteryLevel(
+      channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);  
   }
 }
 
@@ -677,6 +758,7 @@ void processTuyaIlluminanceSensorDataReport(
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(
     TUYA_ILLUMINANCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceGeneralPurposeMeasurement(
   channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
@@ -698,47 +780,39 @@ void processTuyaIlluminanceSensorDataReport(
 void processTuya3PhasesElectricityMeterDataReport(
   int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload) {
 
-
-  int16_t channel_number_slot_1, 
-          channel_number_slot_2, 
-          channel_number_slot_3, 
-          channel_number_slot_4, 
-          channel_number_slot_5;
-
-  channel_number_slot_1 = Z2S_findChannelNumberSlot(
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].ieee_addr, 
     z2s_channels_table[channel_number_slot].endpoint, 
     z2s_channels_table[channel_number_slot].cluster_id, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID);
 
-  channel_number_slot_2 = Z2S_findChannelNumberSlot(
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].ieee_addr, 
     z2s_channels_table[channel_number_slot].endpoint, 
     z2s_channels_table[channel_number_slot].cluster_id, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID);
 
-  channel_number_slot_3 = Z2S_findChannelNumberSlot(
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].ieee_addr, 
     z2s_channels_table[channel_number_slot].endpoint, 
     z2s_channels_table[channel_number_slot].cluster_id, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_3PHASES_ELECTRICITY_METER_POWER_SID);
 
-  channel_number_slot_4 = Z2S_findChannelNumberSlot(
+  int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].ieee_addr, 
     z2s_channels_table[channel_number_slot].endpoint, 
     z2s_channels_table[channel_number_slot].cluster_id, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID);
 
-  channel_number_slot_5 = Z2S_findChannelNumberSlot(
+  int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].ieee_addr, 
     z2s_channels_table[channel_number_slot].endpoint, 
     z2s_channels_table[channel_number_slot].cluster_id, 
-    SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
-    TUYA_3PHASES_ELECTRICITY_METER_SID);
+    SUPLA_CHANNELTYPE_ELECTRICITY_METER, TUYA_3PHASES_ELECTRICITY_METER_SID);
 
   Tuya_read_dp_result_t Tuya_read_dp_result;
 
@@ -910,11 +984,8 @@ void processTuya3PhasesElectricityMeterDataReport(
 void processTuya1PhaseElectricityMeterDataReport(
   int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload) {
 
-
-  int16_t channel_number_slot_1;
-
   
-  channel_number_slot_1 = Z2S_findChannelNumberSlot(
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].ieee_addr, 
     z2s_channels_table[channel_number_slot].endpoint, 
     z2s_channels_table[channel_number_slot].cluster_id, 
@@ -1138,8 +1209,7 @@ void processTuyaCOGasDetectorReport(
       z2s_channels_table[channel_number_slot].ieee_addr, 
       z2s_channels_table[channel_number_slot].endpoint, 
       z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, 
-      TUYA_GAS_DETECTOR_PREHEAT_SID);
+      SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_GAS_DETECTOR_PREHEAT_SID);
 
   Tuya_read_dp_result = Z2S_readTuyaDPvalue(
     TUYA_CO_DETECTOR_CO_DP, payload_size, payload);
@@ -2369,6 +2439,13 @@ void processTuyaDataReport(
 
       processTuyaSoilTempHumiditySensorReport(
         channel_number_slot, payload_size, payload, 1); 
+    break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
+
+      processTuyaSoilSensor3FReport(
+        channel_number_slot, payload_size, payload, 10); 
     break;
 
 

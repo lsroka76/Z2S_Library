@@ -125,7 +125,9 @@ uint8_t getZ2SDeviceHvacCmdSet(int16_t channel_number_slot) {
 
 /*----------------------------------------------------------------------------------------------------------------------------*/
 
-void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int16_t channel_number_slot) {
+void initZ2SDeviceHvac(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, 
+  int16_t channel_number_slot) {
   
   uint8_t trv_commands_set;
   uint8_t trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_IGNORE;
@@ -133,8 +135,7 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
   int16_t hvac_room_temperature_max = 3000;
   bool onOffOnly = true;
   
-  trv_commands_set = 
-    getZ2SDeviceHvacCmdSet(channel_number_slot);
+  trv_commands_set = getZ2SDeviceHvacCmdSet(channel_number_slot);
 
   if ((trv_commands_set >= saswell_cmd_set) && 
       (trv_commands_set < ts0601_cmd_sets_number)) {
@@ -201,12 +202,11 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
       (trv_commands_set == trv602z_cmd_set))
     onOffOnly = false;
 
-  auto Supla_Z2S_TRVInterface = 
-    new Supla::Control::Z2S_TRVInterface(
+  auto Supla_Z2S_TRVInterface = new Supla::Control::Z2S_TRVInterface(
       gateway, device, trv_commands_set, onOffOnly);
 
-  auto Supla_Z2S_HvacBase = 
-    new Supla::Control::HvacBaseEE(Supla_Z2S_TRVInterface);
+  auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE(
+    Supla_Z2S_TRVInterface);
             
   Supla_Z2S_HvacBase->getChannel()->setChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
@@ -299,10 +299,9 @@ void initZ2SDeviceHvac(ZigbeeGateway *gateway, zbg_device_params_t *device, int1
 
 /*----------------------------------------------------------------------------------------------------------------------------*/
 
-void addZ2SDeviceHvac(ZigbeeGateway *gateway, 
-                      zbg_device_params_t *device, 
-                      uint8_t free_slot, 
-                      uint8_t trv_thermometer_slot) {
+void addZ2SDeviceHvac(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
+  uint8_t trv_thermometer_slot) {
   
   auto Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE();
 
