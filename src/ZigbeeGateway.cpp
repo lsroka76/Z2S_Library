@@ -1576,72 +1576,94 @@ void ZigbeeGateway::zbAttributeReporting(
                                        cluster_id, 
                                        attribute->id, value);
       } else 
-        log_i("thermostat UI cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
-              cluster_id, attribute->id, attribute->data.type);
+        log_i(
+          "thermostat UI cluster (0x%x), attribute id (0x%x), "
+          "attribute data type (0x%x)", cluster_id, attribute->id, 
+          attribute->data.type);
     } else
-    if (cluster_id == SONOFF_CUSTOM_CLUSTER) {
-
-      log_i("SONOFF_CUSTOM_CLUSTER cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
-            cluster_id, attribute->id, attribute->data.type);
+    if ((cluster_id == SONOFF_CUSTOM_CLUSTER) || 
+        (cluster_id == SONOFF_CUSTOM_CLUSTER_2)) {
 
 	    if (_on_sonoff_custom_cluster_receive)
-        _on_sonoff_custom_cluster_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute);      
+        _on_sonoff_custom_cluster_receive(
+          src_address.u.ieee_addr, src_endpoint, cluster_id, attribute);
+      else
+        log_i(
+          "SONOFF_CUSTOM_CLUSTER endpoint (0x%x), cluster (0x%x), "
+          "attribute id (0x%x), attribute data type (0x%x)", 
+          src_endpoint, cluster_id, attribute->id, attribute->data.type);      
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING) {
 
       if ((attribute->id == 0xF000) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM)) {
       
-        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        uint8_t value = attribute->data.value ? 
+          *(uint8_t *)attribute->data.value : 0;
         
         log_i("window covering tuyaMovingState attribute %d",value);
         
         if (_on_window_covering_receive)
-          _on_window_covering_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value);
+          _on_window_covering_receive(
+            src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, 
+            value);
       } else
       if ((attribute->id == 0xF001) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM)) {
 
-        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        uint8_t value = attribute->data.value ? 
+          *(uint8_t *)attribute->data.value : 0;
         
         log_i("window covering tuyaCalibration attribute %d",value);
         
         if (_on_window_covering_receive)
-          _on_window_covering_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value);
+          _on_window_covering_receive(
+            src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, 
+            value);
       } else
       if ((attribute->id == 0xF003) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U16)) {
 
-        uint16_t value = attribute->data.value ? *(uint16_t *)attribute->data.value : 0;
+        uint16_t value = attribute->data.value ? 
+          *(uint16_t *)attribute->data.value : 0;
         
         log_i("window covering moesCalibrationTime attribute %d",value);
         
         if (_on_window_covering_receive)
-          _on_window_covering_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value);
+          _on_window_covering_receive(
+            src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, 
+            value);
       } else
       if ((attribute->id == ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8)) {
         
-        uint8_t value = attribute->data.value ? *(uint8_t *)attribute->data.value : 0;
+        uint8_t value = attribute->data.value ? 
+          *(uint8_t *)attribute->data.value : 0;
         
-        log_i("window covering Current Position Lift Percentage attribute %d",value);
+        log_i(
+          "window covering Current Position Lift Percentage attribute %d",
+          value);
         
         if (_on_window_covering_receive)
-          _on_window_covering_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, value);
+          _on_window_covering_receive(
+            src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, 
+            value);
       } else
-         log_i("window covering cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
-              cluster_id, attribute->id, attribute->data.type); 
+         log_i(
+          "window covering cluster (0x%x), attribute id (0x%x), "
+          "attribute data type (0x%x)", cluster_id, attribute->id, 
+          attribute->data.type); 
     } else 
-      log_i("from (0x%x), endpoint (%d), cluster (0x%x), attribute id (0x%x), attribute data type (0x%x) ", 
-            src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, attribute->data.type);
+      log_i(
+        "from (0x%x), endpoint (%d), cluster (0x%x), attribute id (0x%x), "
+        "attribute data type (0x%x) ", src_address.u.short_addr, src_endpoint,
+        cluster_id, attribute->id, attribute->data.type);
 }
 
-void ZigbeeGateway::zbReadAttrResponse(uint8_t tsn, 
-                                       esp_zb_zcl_addr_t src_address, 
-                                       uint16_t src_endpoint, 
-                                       uint16_t cluster_id, 
-                                      esp_zb_zcl_status_t status, 
-                                      const esp_zb_zcl_attribute_t *attribute) {
+void ZigbeeGateway::zbReadAttrResponse(
+  uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
+  uint16_t cluster_id,  esp_zb_zcl_status_t status, 
+  const esp_zb_zcl_attribute_t *attribute) {
   
   if ((_read_attr_tsn_list[tsn] == ZCL_CMD_TSN_SYNC) && 
       (tsn == _read_attr_last_tsn)) {

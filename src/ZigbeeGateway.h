@@ -76,6 +76,10 @@
 #define SONOFF_CUSTOM_CLUSTER_TEMPERATURE_CALIBRATION_ID      0x2003 //S16 -50 +50 0.1 Celcius
 #define SONOFF_CUSTOM_CLUSTER_HUMIDITY_CALIBRATION_ID         0x2004 //S16 -50 +50 0.1 %
 
+#define SONOFF_CUSTOM_CLUSTER_2                               0xFC12
+
+#define SONOFF_CUSTOM_CLUSTER_2_BUTTON_ID                     0x0000 //U8
+
 #define ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER                      0xE004
 #define ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER                     0xED00
 

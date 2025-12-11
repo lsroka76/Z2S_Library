@@ -242,6 +242,7 @@
 #define Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2                0x5212
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F              0x5300
+#define Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F            0x5305
 
 #define Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F        0x5400
 #define Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F                0x5410
@@ -420,6 +421,8 @@
 
 #define CUSTOM_CMD_BUTTON_PRESSED_SID                       0x00
 #define CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID                0x01
+#define CUSTOM_CMD_BUTTON_HELD_SID                          0x02
+#define CUSTOM_CMD_BUTTON_TRIPLE_PRESSED_SID                0x03
 
 #define IKEA_CUSTOM_CMD_BUTTON_1_PRESSED_SID                0x00
 #define IKEA_CUSTOM_CMD_BUTTON_1_HELD_SID                   0x01
@@ -1230,6 +1233,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { SONOFF_CUSTOM_CLUSTER_2 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
@@ -1943,6 +1951,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_yihvt3gp", .model_name = "TS0203",
     .z2s_device_uid = 3820,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "LINCUKOO", .model_name = "TS0203",
+    .z2s_device_uid = 3825,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
@@ -4132,7 +4145,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE284_9ern5sfh", .model_name = "TS0601",
     .z2s_device_uid = 31600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "SONOFF", .model_name = "SNZB-01M",
+    .z2s_device_uid = 31700,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F,
+	  .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F },
+                              { 2, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F },
+                              { 3, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F },
+                              { 4, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F }}},
 //DEVICES_END
 };
 #endif
