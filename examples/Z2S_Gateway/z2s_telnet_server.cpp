@@ -44,7 +44,7 @@ void onTelnetCmd(void (*_callback)(char *cmd, uint8_t params_number, char **para
 }
 
 void log_i_telnet(char *log_line, bool toTelnet) {
-  log_i("%s", log_line);
+  log_i("\n\r---------------------\n\r%s\n\r---------------------", log_line);
   if (toTelnet) {
     telnet.println(separator_line);
     telnet.println(log_line);

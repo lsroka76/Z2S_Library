@@ -6949,7 +6949,7 @@ void log_i_telnet2(char *log_line, bool toTelnet) {
 #ifdef USE_TELNET_CONSOLE
   log_i_telnet(log_line, toTelnet);
 #elif 
-  log_i("%s", log_line);
+  log_i("\n\r---------------------\n\r%s\n\r---------------------", log_line);
 #endif //USE_TELNET_CONSOLE
 }
 

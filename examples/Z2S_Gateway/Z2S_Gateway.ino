@@ -788,10 +788,9 @@ if (client2 && client2.connected()) {
                 cmd_dst_channel,
                 cmd_thermometer_value);
 
-          updateRemoteThermometer(cmd_dst_channel, 
-                                  client2.remoteIP(), 
-                                  cmd_src_channel,
-                                  cmd_thermometer_value);
+          updateRemoteThermometer(
+            cmd_dst_channel, client2.remoteIP(), cmd_src_channel, 
+            cmd_thermometer_value);
         } break;
       }      
       client2.print("OK\n");
@@ -851,28 +850,24 @@ if (GUIstarted)
       Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
-    
-    log_i("\n\rMemory information:"
-          "\n\rFlash chip real size: %u B"
-          "\n\rFree Sketch Space: %u B"
-          "\n\rHeapSize: %u B"
-					"\n\rFree Heap: %u B"
-          "\n\rMaxAllocHeap: %u B"
-          "\n\rMinimal Free Heap: %u B"
-					"\n\rSupla uptime: %lu s", 
-					ESP.getFlashChipSize(), 
-          ESP.getFreeSketchSpace(), 
-          ESP.getHeapSize(),
-          ESP.getFreeHeap(), 
-          ESP.getMaxAllocHeap(),
-          ESP.getMinFreeHeap(),  
-          SuplaDevice.uptime.getUptime());
-    printTaskInfo();
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
 
     
+    if (refresh_cycle == 30) {
+
+      log_i(
+        "\n\rMemory information:\n\rFlash chip real size: %u B"
+        "\n\rFree Sketch Space: %u B\n\rHeapSize: %u B\n\rFree Heap: %u B"
+        "\n\rMaxAllocHeap: %u B\n\rMinimal Free Heap: %u B"
+				"\n\rSupla uptime: %lu s", ESP.getFlashChipSize(), 
+        ESP.getFreeSketchSpace(), ESP.getHeapSize(), ESP.getFreeHeap(), 
+        ESP.getMaxAllocHeap(), ESP.getMinFreeHeap(),  
+        SuplaDevice.uptime.getUptime());
+
+      printTaskInfo();
+    }
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
       if (refresh_cycle % 12 == 0) {//print every 120 seconds - only for debug purposes 
@@ -965,11 +960,12 @@ if (GUIstarted)
         }*/
       }
     //}
+    }
+    
     if (!zbGateway.getGatewayDevices().empty()) {
       refresh_time = millis();
-      refresh_cycle = (refresh_cycle + 1) % 12;
+      refresh_cycle = (refresh_cycle + 1) % 31;
     }
-  }
   }
 
   if (zbGateway.isNewDeviceJoined()) {
