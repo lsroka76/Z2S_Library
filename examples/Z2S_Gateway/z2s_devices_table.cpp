@@ -8249,6 +8249,12 @@ void printSizeOfClasses() {
 
 void printTaskInfo(bool toTelnet) {
 
+    char task_info[512];
+
+    vTaskGetRunTimeStats(task_info);    
+    log_i_telnet2(task_info, toTelnet);
+    
+    /*
     UBaseType_t uxArraySize;
     TaskStatus_t *taskStatusArray;
     uint32_t ulTotalRunTime,ulStatsAsPercentage;
@@ -8261,7 +8267,6 @@ void printTaskInfo(bool toTelnet) {
           uxTaskGetSystemState(taskStatusArray, uxArraySize, &ulTotalRunTime);
         ulTotalRunTime /= 100UL;
 
-        char task_info[512];
         int16_t loop_chars_written = 0;
         int16_t total_chars_written = 0;
 
@@ -8283,5 +8288,5 @@ void printTaskInfo(bool toTelnet) {
         log_i_telnet2(task_info, toTelnet);
 
         vPortFree(taskStatusArray);
-    }
+    }*/
 }
