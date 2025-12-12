@@ -224,7 +224,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
 
       case Z2S_TUYA_DP_COLOR_HS_RGB:{
 
-        uint_8 test_buffer[17];
+        uint8_t test_buffer[17];
 
         test_buffer[0] = 00;
         test_buffer[1] = 22;
