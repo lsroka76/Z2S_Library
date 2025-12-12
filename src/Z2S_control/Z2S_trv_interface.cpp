@@ -228,13 +228,15 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVLocalTemperature = %d", 
-          local_temperature);
+    //log_i(" = %d", 
+     //     local_temperature);
 
     if ((_trv_commands_set >= saswell_cmd_set) &&
         (_trv_commands_set < ts0601_cmd_sets_number)) { 
 
-      if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == 
+      sendTuyaQueryCmd(_gateway, &_device, false);
+
+      /*if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == 
           _trv_commands_set) {
         
         if (ts0601_command_sets_table[_trv_commands_set].\
@@ -246,8 +248,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
           local_temperature /= 100;
 
           sendTuyaRequestCmdValue32(
-            _gateway, 
-            &_device, 
+            _gateway, &_device, 
             ts0601_command_sets_table[_trv_commands_set].\
               ts0601_cmd_set_local_temperature_dp_id,
             local_temperature);
@@ -255,7 +256,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
-              _trv_commands_set); 
+              _trv_commands_set); */
     } else
 
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
@@ -264,8 +265,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
         (_trv_commands_set == LUMI_CMD_SET)) {
 
       _gateway->sendAttributeRead(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID);
     }
 
@@ -1037,22 +1037,19 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
       log_i("EUROTRONIC host flags = 0x%04X", eurotronic_host_flags.low);
       
       _gateway->sendAttributeWrite(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
-        ESP_ZB_ZCL_ATTR_TYPE_U24, 3, &eurotronic_host_flags,
-        false, 1, EUROTRONIC_MANUFACTURER_CODE);
+        ESP_ZB_ZCL_ATTR_TYPE_U24, 3, &eurotronic_host_flags,false, 1, 
+        EUROTRONIC_MANUFACTURER_CODE);
     }
 
     if (_trv_commands_set == LUMI_CMD_SET) {
       
 
       _gateway->sendAttributeWrite(
-        &_device, 
-        LUMI_CUSTOM_CLUSTER, 
-        LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID, 
-        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_child_lock,
-        false, 1, LUMI_MANUFACTURER_CODE);
+        &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_child_lock,false, 1, 
+        LUMI_MANUFACTURER_CODE);
     }
     
     if (_last_cmd_sent_ms == 0)
@@ -1087,8 +1084,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
           temperature_histeresis /= 100;
           
           sendTuyaRequestCmdValue32(
-            _gateway, 
-            &_device, 
+            _gateway, &_device, 
             ts0601_command_sets_table[_trv_commands_set].\
               ts0601_cmd_set_temperature_histeresis_dp_id,
             temperature_histeresis);
@@ -1126,22 +1122,34 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 
   if (_gateway && Zigbee.started()) {
 
-    log_i("Z2S_TRVInterface::sendTRVPing");
+    log_i("sending ping");
  
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
         (_trv_commands_set == LUMI_CMD_SET)) {
 
-      uint16_t attributes[5] = { ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
-                                 ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
-                                 ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID,
-                                 ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID,
-                                 ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID };
+      uint16_t attributes[5] = { 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID,
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID,
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID };
 
-    _gateway->sendAttributesRead(&_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 5, &attributes[0]);
+    _gateway->sendAttributesRead(
+      &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 5, &attributes[0]);
     }
 
+    bool _trv_state_updated = _trv_system_mode_updated && 
+      _trv_running_state_updated && _trv_temperature_setpoint_updated;  
+      //&& _trv_local_temperature_updated;
+
+    if ((!_trv_state_updated) && (_trv_commands_set >= saswell_cmd_set) &&
+        (_trv_commands_set < ts0601_cmd_sets_number)) { 
+      
+      sendTuyaQueryCmd(_gateway, &_device, false);
+    }
+      
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -1541,7 +1549,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
      // log_i("No TRV temperature data - sending ",
        //     _trv_fixed_temperature_calibration);
             
-      readTRVLocalTemperature(-27500); //???? TODO
+        (-27500); //???? TODO
     }
 
     /*if ((_trv_last_temperature_calibration == INT32_MIN) {
@@ -1595,7 +1603,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     _last_thermostat_ping_ms = millis();
 
-    log_i("sendTRVPing");
+    //log_i("sendTRVPing");
     sendTRVPing();
   }
 

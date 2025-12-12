@@ -64,7 +64,9 @@ int32_t Supla::Control::Z2S_RGBInterface::handleNewValueFromServer(
     colorBrightness = 100;
   }
 
-  if ((_red != red) || (_blue != blue) || (_green != green) || (_colorBrightness != colorBrightness)) {
+  if ((_red != red) || (_blue != blue) || (_green != green) || 
+      (_colorBrightness != colorBrightness)) {
+    
     if (colorBrightness == 0) {
       log_i("RGB OFF");
     }
@@ -116,10 +118,7 @@ void Supla::Control::Z2S_RGBInterface::setValueOnServer(
 }
 
 void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
-  uint8_t red,
-  uint8_t green,
-  uint8_t blue,
-  uint8_t colorBrightness) {
+  uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness) {
 
   if (_gateway && Zigbee.started()) {
 
@@ -160,7 +159,9 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
     hsv = rgbToHsv(rgb);
 
     uint16_t _hue = hsv.m_h*360;
+    uint16_t _hue_360 = _hue;
     uint8_t  _saturation = hsv.m_s*100; //colorBrightness;
+    uint16_t  _saturation_1000 = hsv.m_s*1000;
 
     log_i("hue %d, saturation %d before mapping", _hue, _saturation);
     _hue = map(_hue, 0, 360, 0, 254);
@@ -218,6 +219,34 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
         
         _gateway->sendColorMoveToColorCmd(
           &_device, xy_color.x, xy_color.y, 1);
+      } break;
+
+
+      case Z2S_TUYA_DP_COLOR_HS_RGB:{
+
+        uint_8 test_buffer[17];
+
+        test_buffer[0] = 00;
+        test_buffer[1] = 22;
+        test_buffer[2] = 0x3D; //61
+        test_buffer[3] = 0x00; //RAW
+        test_buffer[4] = 0x00;
+        test_buffer[5] = 11;
+        test_buffer[6] = 0x00;
+        test_buffer[7] = 0x01;//COLOR
+        test_buffer[8] = 0x00; //GRADIENT
+        test_buffer[9] = 0x14;
+        test_buffer[10] = 0x00; //SEGMENT
+        test_buffer[11] = (_hue_360 >> 8) & 0x00FF;
+        test_buffer[12] = _hue_360 & 0x00FF;//COLOR
+        test_buffer[13] = (_saturation_1000 >> 8) & 0x00FF;
+        test_buffer[14] = _saturation & 0x00FF;//SATURATION
+        test_buffer[15] = 0x03;
+        test_buffer[16] = 0xE8;//BRIGHTNESS
+
+        _gateway->sendCustomClusterCmd(
+          &_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
+          ESP_ZB_ZCL_ATTR_TYPE_SET, 17, test_buffer, false);
       } break;
     }
   }
