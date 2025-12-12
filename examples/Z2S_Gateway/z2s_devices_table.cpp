@@ -6594,8 +6594,9 @@ bool Z2S_add_action(const char *action_name,
     }
   }
   
-  
-  if ((src_channel_id >= 0x80) && (dst_channel_id >= 0x80)) { //local action handlers, no conditions
+  //local action handlers, no conditions
+  if ((src_channel_id >= 0x80) && (dst_channel_id >= 0x80)) { 
+    
 
     auto Supla_Z2S_ActionHandler = 
       reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
@@ -6603,13 +6604,13 @@ bool Z2S_add_action(const char *action_name,
     auto Supla_Z2S_ActionClient = 
       reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
     
-    Supla_Z2S_ActionHandler->addAction(Supla_action, 
-                                       Supla_Z2S_ActionClient, 
-                                       Supla_event);
+    Supla_Z2S_ActionHandler->addAction(
+      Supla_action, Supla_Z2S_ActionClient, Supla_event);
     return true;
   }
 
-  if ((src_channel_id < 0x80) && (dst_channel_id >= 0x80)) { //channel -> local action handler
+  //channel -> local action handler
+  if ((src_channel_id < 0x80) && (dst_channel_id >= 0x80)) { 
 
     auto Supla_Z2S_ActionHandler = 
       reinterpret_cast<Supla::ElementWithChannelActions *>(src_element);
@@ -6618,13 +6619,11 @@ bool Z2S_add_action(const char *action_name,
       reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
     
     if (condition)
-      Supla_Z2S_ActionHandler->addAction(Supla_action, 
-                                         Supla_Z2S_ActionClient, 
-                                         Supla_condition);
+      Supla_Z2S_ActionHandler->addAction(
+    Supla_action, Supla_Z2S_ActionClient, Supla_condition);
     else
-      Supla_Z2S_ActionHandler->addAction(Supla_action, 
-                                         Supla_Z2S_ActionClient, 
-                                         Supla_event);
+      Supla_Z2S_ActionHandler->addAction(
+    Supla_action, Supla_Z2S_ActionClient, Supla_event);
     return true;
   }
 
@@ -6653,22 +6652,20 @@ bool Z2S_add_action(const char *action_name,
         reinterpret_cast<Supla::Control::Relay *>(dst_element);
       
       if (condition && Supla_Z2S_ChannelActionHandler)
-        Supla_Z2S_ChannelActionHandler->addAction(Supla_action, 
-                                                  Supla_Z2S_ChannelActionClient, 
-                                                  Supla_condition);
+        Supla_Z2S_ChannelActionHandler->addAction(
+          Supla_action, Supla_Z2S_ChannelActionClient, Supla_condition);
       else {
 
         if (Supla_Z2S_ChannelActionHandler)
-          Supla_Z2S_ChannelActionHandler->addAction(Supla_action, 
-                                                    Supla_Z2S_ChannelActionClient, 
-                                                    Supla_event);
+          Supla_Z2S_ChannelActionHandler->addAction(
+            Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
         else {
+
           log_i("we are here"); delay(200);
           auto Supla_Z2S_ActionClient = 
             reinterpret_cast<Supla::Control::Relay *>(dst_element);
-          Supla_Z2S_ActionHandler->addAction(Supla_action, 
-                                             Supla_Z2S_ActionClient, 
-                                             Supla_event);
+          Supla_Z2S_ActionHandler->addAction(
+            Supla_action, Supla_Z2S_ActionClient, Supla_event);
         }
       }
     } break; 
@@ -6680,13 +6677,11 @@ bool Z2S_add_action(const char *action_name,
         reinterpret_cast<Supla::Sensor::VirtualBinary *>(dst_element);
       
       if (condition && Supla_Z2S_ChannelActionHandler)
-        Supla_Z2S_ChannelActionHandler->addAction(Supla_action, 
-                                                  Supla_Z2S_ActionClient, 
-                                                  Supla_condition);
+        Supla_Z2S_ChannelActionHandler->addAction(
+          Supla_action, Supla_Z2S_ActionClient, Supla_condition);
       else
-        Supla_Z2S_ActionHandler->addAction(Supla_action, 
-                                           Supla_Z2S_ActionClient, 
-                                           Supla_event);
+        Supla_Z2S_ActionHandler->addAction(
+          Supla_action, Supla_Z2S_ActionClient, Supla_event);
     } break;
 
 
@@ -6696,13 +6691,11 @@ bool Z2S_add_action(const char *action_name,
         reinterpret_cast<Supla::Control::HvacBase*>(dst_element);
       
       if (condition && Supla_Z2S_ChannelActionHandler)
-        Supla_Z2S_ChannelActionHandler->addAction(Supla_action, 
-                                                  Supla_Z2S_ActionClient, 
-                                                  Supla_condition);
+        Supla_Z2S_ChannelActionHandler->addAction(
+          Supla_action, Supla_Z2S_ActionClient, Supla_condition);
       else
-        Supla_Z2S_ActionHandler->addAction(Supla_action, 
-                                           Supla_Z2S_ActionClient, 
-                                           Supla_event);
+        Supla_Z2S_ActionHandler->addAction(
+          Supla_action, Supla_Z2S_ActionClient, Supla_event);
     } break;
 
     case SUPLA_CHANNELTYPE_DIMMER: {
@@ -6711,13 +6704,11 @@ bool Z2S_add_action(const char *action_name,
         reinterpret_cast<Supla::Control::Z2S_DimmerInterface*>(dst_element);
       
       if (condition && Supla_Z2S_ChannelActionHandler)
-        Supla_Z2S_ChannelActionHandler->addAction(Supla_action, 
-                                                  Supla_Z2S_ActionClient, 
-                                                  Supla_condition);
+        Supla_Z2S_ChannelActionHandler->addAction(
+          Supla_action, Supla_Z2S_ActionClient, Supla_condition);
       else
-        Supla_Z2S_ActionHandler->addAction(Supla_action, 
-                                           Supla_Z2S_ActionClient, 
-                                           Supla_event);
+        Supla_Z2S_ActionHandler->addAction(
+          Supla_action, Supla_Z2S_ActionClient, Supla_event);
     } break;
 
     default: 

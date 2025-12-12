@@ -21,10 +21,13 @@
 using Supla::LocalActionHandlerWithTrigger;
 
 
-LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(uint8_t pin_logic_operator) 
-  : _pin_logic_operator(pin_logic_operator) {
+LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
+  uint8_t pin_logic_operator) : _pin_logic_operator(pin_logic_operator) {
 
-    log_i("_pin_logic_operator %u, pin_logic_operator %u", _pin_logic_operator, pin_logic_operator);
+    log_i(
+      "_pin_logic_operator %u, pin_logic_operator %u", _pin_logic_operator, 
+      pin_logic_operator);
+    
     switch (_pin_logic_operator) {
 
 
@@ -144,7 +147,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
     case PIN_LOGIC_OPERATOR_OR3:
 
-      logic_operation_result = (_pin_a | _pin_b & _pin_c); break;
+      logic_operation_result = (_pin_a | _pin_b | _pin_c); break;
   }
   
   log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");

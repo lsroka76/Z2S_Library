@@ -1415,6 +1415,20 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
             sendTRVTemperatureCalibration(0);
           }
 
+          if (abs(hvacLastTemperature - _trv_local_temperature) > 
+              _trv_temperature_calibration_trigger)
+              _temperature_calibration_update_attempt++;
+            else
+              _temperature_calibration_update_attempt = 0;
+
+          if (_temperature_calibration_update_attempt >= 60) { //300 seconds
+
+            log_i("Possible calibration deadlock detected - "
+                  "resetting calibration value");
+
+            sendTRVTemperatureCalibration(0);
+          }
+
           if ((_trv_local_temperature_updated) && 
               ((_trv_temperature_calibration_updated) || 
               (_trv_temperature_calibration == 0)) &&
@@ -1443,21 +1457,6 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
                   _last_temperature_calibration_offset,
                   _trv_temperature_calibration_trigger,
                   _temperature_calibration_update_attempt);
-            
-            if (abs(hvacLastTemperature - _trv_local_temperature) > 
-                _trv_temperature_calibration_trigger)
-              _temperature_calibration_update_attempt++;
-            else
-              _temperature_calibration_update_attempt = 0;
-
-            if (_temperature_calibration_update_attempt >= 60) { //300 seconds
-
-              log_i("Possible calibration deadlock detected - "
-                    "resetting calibration value");
-
-              sendTRVTemperatureCalibration(0);
-            }
-
       
             if ((_trv_temperature_calibration_updated) && 
                 (abs(_temperature_calibration_offset - _trv_temperature_calibration) >= 

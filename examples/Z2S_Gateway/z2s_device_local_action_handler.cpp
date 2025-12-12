@@ -6,7 +6,8 @@ IPAddress Z2S_IPAddress;
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-const char* getZ2SDeviceLocalActionHandlerTypeName(int16_t channel_number_slot){
+const char* getZ2SDeviceLocalActionHandlerTypeName(
+  int16_t channel_number_slot){
 
   switch (z2s_channels_table[channel_number_slot].local_channel_type) {
 

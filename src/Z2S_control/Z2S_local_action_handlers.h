@@ -42,7 +42,8 @@
 
 namespace Supla {
 
-class LocalActionHandlerWithTrigger : public Element, public LocalAction, public ActionHandler {
+class LocalActionHandlerWithTrigger : public Element, public LocalAction, 
+  public ActionHandler {
   public:
     LocalActionHandlerWithTrigger(uint8_t pin_logic_operator);
     virtual ~LocalActionHandlerWithTrigger();
