@@ -246,7 +246,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
     if ((_trv_commands_set >= saswell_cmd_set) &&
         (_trv_commands_set < ts0601_cmd_sets_number)) { 
 
-      sendTuyaQueryCmd(_gateway, &_device, false);
+      //sendTuyaQueryCmd(_gateway, &_device, false);
 
       /*if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == 
           _trv_commands_set) {
@@ -1159,7 +1159,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
     if ((!_trv_state_updated) && (_trv_commands_set >= saswell_cmd_set) &&
         (_trv_commands_set < ts0601_cmd_sets_number)) { 
       
-      sendTuyaQueryCmd(_gateway, &_device, false);
+      //sendTuyaQueryCmd(_gateway, &_device, false);
     }
       
     if (_last_cmd_sent_ms == 0)
@@ -1321,8 +1321,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     _last_refresh_ms = millis();
 
     sendTRVTemperatureSetpoint(_init_temperature_setpoint);
-  
-    return;
+
+    return; //TODO timeout control
   }
 
   if (_trv_switch_schedule_off) {
@@ -1372,6 +1372,13 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   if (millis() - _last_refresh_ms > _refresh_ms) {
 
     _last_refresh_ms = millis();
+
+    /*if (_trv_hvac && _trv_system_mode && 
+        _trv_hvac->isHvacFlagForcedOffBySensor()) {
+
+      sendTRVSystemMode(0);
+      return; //TODO timeout control
+    }*/
 
     if (_trv_hvac && 
         ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {

@@ -18,8 +18,22 @@
 #include "Z2S_local_action_handlers.h"
 
 
-using Supla::LocalActionHandlerWithTrigger;
+//using Supla::LocalActionHandler;
+//using Supla::LocalActionHandlerWithTrigger;
+using namespace Supla;
+/*****************************************************************************/
 
+LocalActionHandler::LocalActionHandler() {
+
+};
+
+/*****************************************************************************/
+
+LocalActionHandler::~LocalActionHandler() {
+
+};
+
+/*****************************************************************************/
 
 LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
   uint8_t pin_logic_operator) : _pin_logic_operator(pin_logic_operator) {
@@ -44,14 +58,18 @@ LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
     }
   };
 
+/*****************************************************************************/
+
 LocalActionHandlerWithTrigger::~LocalActionHandlerWithTrigger() {};
 
-void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
+/*****************************************************************************/
 
-  //if (actionhandler_callback != nullptr)  actionhandler_callback(event, action);  
+void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
+  
   log_i("event %u, action %u", event, action);
-  log_i("_pin_a %u, _pin_b %u, _pin_logic_operator %u", 
-        _pin_a, _pin_b, _pin_logic_operator);
+  log_i(
+    "_pin_a %u, _pin_b %u, _pin_logic_operator %u", _pin_a, _pin_b, 
+    _pin_logic_operator);
 
   bool logic_operation_result = false;
 
@@ -79,8 +97,10 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
         }
       }*/
 
-      log_i("TURN_ON _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, pins_changed %s", 
-            _pin_a, _pin_b, _pin_c, _pin_logic_operator, pins_changed ? "TRUE" : "FALSE");
+      log_i(
+        "TURN_ON _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, "
+        "pins_changed %s", _pin_a, _pin_b, _pin_c, _pin_logic_operator, 
+        pins_changed ? "TRUE" : "FALSE");
     } break;
 
     case TURN_OFF: {
@@ -103,8 +123,10 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
         }
       }*/
 
-      log_i("TURN_OFF _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, pins_changed %s", 
-            _pin_a, _pin_b, _pin_c, _pin_logic_operator, pins_changed ? "TRUE" : "FALSE");
+      log_i(
+        "TURN_OFF _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, "
+        "pins_changed %s", _pin_a, _pin_b, _pin_c, _pin_logic_operator, 
+        pins_changed ? "TRUE" : "FALSE");
     } break;
   }
   
@@ -150,7 +172,8 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
       logic_operation_result = (_pin_a | _pin_b | _pin_c); break;
   }
   
-  log_i("logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
+  log_i(
+    "logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
   
   if (logic_operation_result) {
 
@@ -168,8 +191,9 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   
   log_i("_postponed_turn_on_ms %lu, _pending_postponed_turn_on_ms %lu", 
         _postponed_turn_on_ms, _pending_postponed_turn_on_ms);
-
 }
+
+/*****************************************************************************/
 
 void LocalActionHandlerWithTrigger::iterateAlways() {
 
@@ -178,10 +202,13 @@ void LocalActionHandlerWithTrigger::iterateAlways() {
   if ((_pending_postponed_turn_on_ms) && 
       ((millis_ms - _pending_postponed_turn_on_ms) > _postponed_turn_on_ms)) {
 
-        log_i("millis_ms %lu, _postponed_turn_on_ms %lu, _pending_postponed_turn_on_ms %lu", 
-              millis_ms, _postponed_turn_on_ms, _pending_postponed_turn_on_ms);
+        log_i(
+          "millis_ms %lu, _postponed_turn_on_ms %lu, "
+          "_pending_postponed_turn_on_ms %lu", millis_ms, 
+          _postponed_turn_on_ms, _pending_postponed_turn_on_ms);
 
         _pending_postponed_turn_on_ms = 0;
         runAction(ON_TURN_ON);
   }
 }
+/*****************************************************************************/

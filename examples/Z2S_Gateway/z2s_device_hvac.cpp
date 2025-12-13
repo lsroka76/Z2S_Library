@@ -345,6 +345,15 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     reinterpret_cast<Supla::Control::Z2S_TRVInterface *>
       (Supla_Z2S_HvacBase->getPrimaryOutputEE());
 
+  /*if (Supla_Z2S_HvacBase->isHvacFlagForcedOffBySensor()) {
+
+    log_i(
+      "HvacFlagForcedOffBySensor set - ignoring message id: 0x%x, value 0x%x",
+       msg_id, msg_value);
+    return; //? 
+  }
+  */
+
   switch (msg_id) {
     
     
@@ -627,8 +636,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
 
     default: 
 
-      log_i("msgZ2SDeviceHvac - unknown message id: 0x%x, value 0x%x", 
-            msg_id, msg_value); 
+      log_i("unknown message id: 0x%x, value 0x%x", msg_id, msg_value); 
     break;
   }
 }

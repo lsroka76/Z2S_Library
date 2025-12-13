@@ -14,8 +14,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef LOCAL_ACTION_HANDLER_WITH_TRIGGER_H
-#define LOCAL_ACTION_HANDLER_WITH_TRIGGER_H
+#ifndef LOCAL_ACTION_HANDLERS_H
+#define LOCAL_ACTION_HANDLERS_H
 
 #include <Arduino.h>
 //#include <SuplaDevice.h>
@@ -42,8 +42,17 @@
 
 namespace Supla {
 
-class LocalActionHandlerWithTrigger : public Element, public LocalAction, 
+class LocalActionHandler : public Element, public LocalAction, 
   public ActionHandler {
+
+  public:
+    LocalActionHandler();
+    virtual ~LocalActionHandler();
+
+};
+
+class LocalActionHandlerWithTrigger : public LocalActionHandler {
+//public Element, public LocalAction, public ActionHandler {
   public:
     LocalActionHandlerWithTrigger(uint8_t pin_logic_operator);
     virtual ~LocalActionHandlerWithTrigger();
