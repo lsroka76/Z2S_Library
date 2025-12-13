@@ -1453,20 +1453,22 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
 namespace Supla {
 namespace Control {
-class Z2S_TRVInterface : public RemoteOutputInterface, /*public ActionHandler,*/public Element {
+class Z2S_TRVInterface : public RemoteOutputInterface, 
+  /*public ActionHandler,*/public Element {
  public:
-  Z2S_TRVInterface(ZigbeeGateway *gateway, 
-                   zbg_device_params_t *device, 
-                   uint8_t trv_commands_set,
-                   bool onOffOnly = true);
+  Z2S_TRVInterface(
+    ZigbeeGateway *gateway, zbg_device_params_t *device, 
+    uint8_t trv_commands_set, bool onOffOnly = true);
 
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
 
   /*void setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger);
   void setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms);*/
+  bool inInitSequence();
 
-  void setFixedTemperatureCalibration(int32_t trv_fixed_temperature_calibration);
+  void setFixedTemperatureCalibration(
+    int32_t trv_fixed_temperature_calibration);
 
   void enableExternalSensorDetection(
     bool enable_external_sensor_detection, uint8_t external_sensor_mode, 
@@ -1552,6 +1554,9 @@ protected:
   //uint32_t  _temperature_calibration_last_update_ms = 0;
 
   bool _hvac_window_opened = false;
+
+  uint8_t _init_sequence = 0; //disabled by default
+  uint32_t _init_temperature_setpoint = 0;
 
   uint32_t _temperature_ping_ms = 60 * 1000;
   uint32_t _last_temperature_ping_ms = 0;

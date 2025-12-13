@@ -18,7 +18,7 @@
 
 #include "Z2S_trv_interface.h"
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
   ZigbeeGateway *gateway, 
@@ -44,6 +44,11 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
         _trv_temperature_calibration_trigger /= 
           ts0601_command_sets_table[_trv_commands_set].\
             ts0601_cmd_set_temperature_calibration_factor;
+            
+        _init_sequence = 1; //
+        _init_temperature_setpoint = 
+          ts0601_command_sets_table[_trv_commands_set].\
+            ts0601_cmd_set_target_heatsetpoint_min;
   } else
     log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
           ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
@@ -60,21 +65,28 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
 
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 Supla::Control::HvacBaseEE *Supla::Control::Z2S_TRVInterface::getTRVHvac(){
 
   return _trv_hvac;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
+
+bool Supla::Control::Z2S_TRVInterface::inInitSequence(){
+
+  return (_init_sequence > 0);
+}
+
+/*****************************************************************************/
 
 bool Supla::Control::Z2S_TRVInterface::isHvacWindowOpened() {
 
   return _hvac_window_opened;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::setTRVHvac(
   Supla::Control::HvacBaseEE * trv_hvac) {
@@ -82,7 +94,7 @@ void Supla::Control::Z2S_TRVInterface::setTRVHvac(
   _trv_hvac = trv_hvac;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(
   uint32_t timeout_secs) {
@@ -97,7 +109,7 @@ void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(
    _timeout_enabled = true;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::refreshTimeout() {
 
@@ -107,7 +119,7 @@ void Supla::Control::Z2S_TRVInterface::refreshTimeout() {
       _trv_hvac->getChannel()->setStateOnline();
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::setFixedTemperatureCalibration(
     int32_t trv_fixed_temperature_calibration) {
@@ -128,7 +140,7 @@ void Supla::Control::Z2S_TRVInterface::setFixedTemperatureCalibration(
           _trv_temperature_calibration);
   }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::setCooperativeChildLock(
   bool cooperative_child_lock) {
@@ -136,7 +148,7 @@ void Supla::Control::Z2S_TRVInterface::setCooperativeChildLock(
     _cooperative_child_lock = cooperative_child_lock;
   }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSensorType(
   uint8_t trv_temperature_sensor_type) {
@@ -144,7 +156,7 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSensorType(
     _trv_temperature_sensor_type = trv_temperature_sensor_type;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::enableExternalSensorDetection(
     bool enable_external_sensor_detection, 
@@ -156,7 +168,7 @@ void Supla::Control::Z2S_TRVInterface::enableExternalSensorDetection(
   _trv_external_sensor_mode = external_sensor_mode;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
     int32_t temperature_setpoint) {
@@ -221,7 +233,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
     int32_t local_temperature) {
@@ -274,7 +286,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
   int32_t temperature_calibration) {
@@ -329,7 +341,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void buildLumiFFF2CmdHeader(uint8_t* fff2_cmd_data_buffer,
                             uint8_t counter,
@@ -586,7 +598,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
   bool trv_external_sensor_present) {
@@ -698,7 +710,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
   uint8_t trv_system_mode) {
@@ -814,7 +826,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
   uint8_t trv_schedule_mode) {
@@ -941,7 +953,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
   uint8_t trv_child_lock) {
@@ -1057,7 +1069,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
   int32_t temperature_histeresis) {
@@ -1116,7 +1128,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
 }
 
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 
@@ -1158,8 +1170,22 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
     int32_t trv_temperature_setpoint) {
 
-  _trv_temperature_setpoint = trv_temperature_setpoint;
-  _trv_temperature_setpoint_updated = true;
+  if (_init_sequence) {
+
+    log_i(
+      "\n\rin init sequence:\n\rtrv_temperature_setpoint = %04d <-> "
+      "_init_temperature_setpoint = %04d", trv_temperature_setpoint,
+      _init_temperature_setpoint);
+
+    if (trv_temperature_setpoint == _init_temperature_setpoint) {
+
+    _init_sequence = 0;
+    }
+  } else {
+
+    _trv_temperature_setpoint = trv_temperature_setpoint;
+    _trv_temperature_setpoint_updated = true;
+  }
   refreshTimeout();
 }
 
@@ -1219,7 +1245,7 @@ void Supla::Control::Z2S_TRVInterface::turnOffTRVScheduleMode() {
   _trv_switch_schedule_off = true;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 bool Supla::Control::Z2S_TRVInterface::isForcedTemperatureSet() {
 
@@ -1284,11 +1310,20 @@ void Supla::Control::Z2S_TRVInterface::forceTRVTemperature() {
     }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   int16_t hvacLastTemperature = INT16_MIN;
+
+  if ((_init_sequence > 0) && (millis() - _last_refresh_ms > _refresh_ms)) {
+
+    _last_refresh_ms = millis();
+
+    sendTRVTemperatureSetpoint(_init_temperature_setpoint);
+  
+    return;
+  }
 
   if (_trv_switch_schedule_off) {
 
@@ -1616,7 +1651,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 /*void Supla::Control::Z2S_TRVInterface::handleAction(int event, int action) {
 

@@ -431,7 +431,6 @@ inline int32_t getTuyaDPValue(Tuya_dp_zcl_payload_s *Tuya_dp_zcl_payload) {
   return dp_value;
 }
 
-
 /*---------------------------------------------------------------------------*/
 
 inline void makeTuyaDPValue32(
