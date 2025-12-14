@@ -1177,9 +1177,13 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
       "_init_temperature_setpoint = %04d", trv_temperature_setpoint,
       _init_temperature_setpoint);
 
-    if (trv_temperature_setpoint == _init_temperature_setpoint) {
-
+    //if (trv_temperature_setpoint == _init_temperature_setpoint) {
+    if (_trv_hvac->getTemperatureSetpointHeat() == trv_temperature_setpoint) {
+      
     _init_sequence = 0;
+    
+    _trv_temperature_setpoint = trv_temperature_setpoint;
+    _trv_temperature_setpoint_updated = true;
     }
   } else {
 
