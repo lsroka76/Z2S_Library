@@ -45,7 +45,7 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
           ts0601_command_sets_table[_trv_commands_set].\
             ts0601_cmd_set_temperature_calibration_factor;
             
-        _init_sequence = 1; //
+        _init_sequence = 2; //two steps
         _init_temperature_setpoint = 
           ts0601_command_sets_table[_trv_commands_set].\
             ts0601_cmd_set_target_heatsetpoint_min;
@@ -1177,11 +1177,18 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
       "_init_temperature_setpoint = %04d", trv_temperature_setpoint,
       _init_temperature_setpoint);
 
-    //if (trv_temperature_setpoint == _init_temperature_setpoint) {
-    if (_trv_hvac->getTemperatureSetpointHeat() == trv_temperature_setpoint) {
+    if ((_init_sequence == 2) &&
+        (trv_temperature_setpoint == _init_temperature_setpoint)) {
+      
+      _init_sequence = 1;
+    }
+
+    if ((_init_sequence == 1) &&
+        (_trv_hvac->getTemperatureSetpointHeat() == 
+          trv_temperature_setpoint)) {
       
     _init_sequence = 0;
-    
+
     _trv_temperature_setpoint = trv_temperature_setpoint;
     _trv_temperature_setpoint_updated = true;
     }
@@ -1320,13 +1327,21 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   int16_t hvacLastTemperature = INT16_MIN;
 
-  if ((_init_sequence > 0) && (millis() - _last_refresh_ms > _refresh_ms)) {
+  if ((_init_sequence == 2) && (millis() - _last_refresh_ms > _refresh_ms)) {
 
     _last_refresh_ms = millis();
 
     sendTRVTemperatureSetpoint(_init_temperature_setpoint);
 
     return; //TODO timeout control
+  }
+
+  if (_init_sequence == 1) {
+
+    if (_trv_hvac)
+      sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());
+    
+    return;
   }
 
   if (_trv_switch_schedule_off) {
