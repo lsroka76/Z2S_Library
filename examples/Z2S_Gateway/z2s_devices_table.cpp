@@ -5346,11 +5346,9 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR: {
         
-        addZ2SDeviceIASzone(device, 
-                            first_free_slot, 
-                            -1, 
-                            "LS ZONE", 
-                            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        addZ2SDeviceIASzone(
+          device, first_free_slot, -1, "LS ZONE", 
+          SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
@@ -5361,10 +5359,8 @@ uint8_t Z2S_addZ2SDevice(
         }
 
         addZ2SDeviceGeneralPurposeMeasurement(
-          device, first_free_slot, -1, 
-          "ILLUMINANCE.", 
-          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-          "lx");
+          device, first_free_slot, -1, "ILLUMINANCE.", 
+          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
       } break;
 
 /*****************************************************************************/     
@@ -6085,8 +6081,8 @@ uint8_t Z2S_addZ2SDevice(
 /******************************************************************************/
 
 void updateTimeout(
-  uint8_t channel_number_slot, 
-  uint8_t timeout, uint8_t selector, uint32_t timings_secs) {
+  uint8_t channel_number_slot, uint8_t timeout, uint8_t selector, 
+  uint32_t timings_secs) {
   
   if (timeout > 0) {
 
@@ -6329,7 +6325,10 @@ void sendChannelAction(uint8_t Supla_channel, uint16_t channel_action) {
   log_i("TODO send channel action for logic gates");
 }
 
-Supla::Control::Z2S_RemoteRelay *getRemoteRelayPtr(uint8_t channel_number_slot) {
+/*****************************************************************************/
+
+Supla::Control::Z2S_RemoteRelay *getRemoteRelayPtr(
+  uint8_t channel_number_slot) {
 
   auto element = 
     Supla::Element::getElementByChannelNumber(
@@ -6347,6 +6346,7 @@ Supla::Control::Z2S_RemoteRelay *getRemoteRelayPtr(uint8_t channel_number_slot) 
   return nullptr;
 }
 
+/*****************************************************************************/
 
 void setRemoteRelay(uint8_t Supla_channel, bool state) {
 
@@ -6366,8 +6366,10 @@ void setRemoteRelay(uint8_t Supla_channel, bool state) {
   log_i("No valid remote relay channel");
 }
 
-void updateRemoteRelayMDNSName(uint8_t channel_number_slot,
-                               char * mDNS_name) {
+/*****************************************************************************/
+
+void updateRemoteRelayMDNSName(
+  uint8_t channel_number_slot, char * mDNS_name) {
 
   auto Supla_Z2S_RemoteRelay = getRemoteRelayPtr(channel_number_slot);
 
@@ -6377,8 +6379,10 @@ void updateRemoteRelayMDNSName(uint8_t channel_number_slot,
   }
 }
 
-void updateRemoteRelayIPAddress(uint8_t channel_number_slot,
-                                uint32_t remote_ip_address) {
+/*****************************************************************************/
+
+void updateRemoteRelayIPAddress(
+  uint8_t channel_number_slot, uint32_t remote_ip_address) {
 
   auto Supla_Z2S_RemoteRelay = getRemoteRelayPtr(channel_number_slot);
 
@@ -6388,8 +6392,10 @@ void updateRemoteRelayIPAddress(uint8_t channel_number_slot,
   }
 }
 
-void updateRemoteRelaySuplaChannel(uint8_t channel_number_slot,
-                                   uint8_t remote_Supla_channel) {
+/*****************************************************************************/
+
+void updateRemoteRelaySuplaChannel(
+  uint8_t channel_number_slot, uint8_t remote_Supla_channel) {
 
   auto Supla_Z2S_RemoteRelay = getRemoteRelayPtr(channel_number_slot);
 
@@ -6399,10 +6405,12 @@ void updateRemoteRelaySuplaChannel(uint8_t channel_number_slot,
   }
 }
 
-void updateRemoteThermometer(uint8_t Supla_channel,
-                             uint32_t connected_thermometer_ip_address,
-                             uint32_t connected_thermometer_channel,
-                             int32_t connected_thermometer_temperature) {
+/*****************************************************************************/
+
+void updateRemoteThermometer(
+  uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
+  uint32_t connected_thermometer_channel, 
+  int32_t connected_thermometer_temperature) {
 
   if (Supla_channel > 0x7F) {
 
@@ -6435,9 +6443,11 @@ void updateRemoteThermometer(uint8_t Supla_channel,
   }
 }
 
-void setRemoteThermometerFunction(uint8_t channel_number_slot,
-                                  uint32_t connected_thermometers_function) {
+/*****************************************************************************/
 
+void setRemoteThermometerFunction(
+  uint8_t channel_number_slot, uint32_t connected_thermometers_function) {
+ 
   auto element = 
     Supla::Element::getElementByChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
@@ -6459,17 +6469,19 @@ void setRemoteThermometerFunction(uint8_t channel_number_slot,
 
     if (Z2S_saveChannelsTable()) {
 
-      log_i("Device(channel %d) connected thermometers function updated to %u.\n\r"
-            "Table saved successfully.", 
-            z2s_channels_table[channel_number_slot].Supla_channel,
-            z2s_channels_table[channel_number_slot].local_channel_func);
+      log_i(
+        "Device(channel %d) connected thermometers function updated to %u.\n\r"
+        "Table saved successfully.", 
+        z2s_channels_table[channel_number_slot].Supla_channel,
+        z2s_channels_table[channel_number_slot].local_channel_func);
     }
   }
 }
 
+/*****************************************************************************/
+
 void updateHvacFixedCalibrationTemperature(
-  uint8_t channel_number_slot,
-  int32_t hvac_fixed_calibration_temperature,
+  uint8_t channel_number_slot, int32_t hvac_fixed_calibration_temperature,
   bool set_trv_interface) {
 
   if (z2s_channels_table[channel_number_slot].
@@ -6514,8 +6526,10 @@ void updateHvacFixedCalibrationTemperature(
           "allowed for SUPLA_CHANNELTYPE_HVAC");
 }
 
-void updateDeviceTemperature(uint8_t channel_number_slot, 
-                             int32_t temperature) {
+/*****************************************************************************/
+
+void updateDeviceTemperature(
+  uint8_t channel_number_slot, int32_t temperature) {
   
       auto element = 
         Supla::Element::getElementByChannelNumber(channel_number_slot);
@@ -6533,14 +6547,12 @@ void updateDeviceTemperature(uint8_t channel_number_slot,
     log_i("set temperature only allowed for virtual thermometer");
 }
 
-bool Z2S_add_action(const char *action_name, 
-                    uint8_t src_channel_id, 
-                    uint16_t Supla_action, 
-                    uint8_t dst_channel_id, 
-                    uint16_t Supla_event, 
-                    bool condition, 
-                    double threshold_1, 
-                    double threshold_2) {
+/*****************************************************************************/
+
+bool Z2S_add_action(
+  const char *action_name, uint8_t src_channel_id, uint16_t Supla_action, 
+  uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
+  double threshold_1, double threshold_2) {
 
   auto src_element = Z2S_getSuplaElementByChannelNumber(src_channel_id);
   
@@ -6557,8 +6569,9 @@ bool Z2S_add_action(const char *action_name,
     log_e("Invalid destination Supla channel %d", dst_channel_id);
     return false;
   }
-  log_i("Action name %s, src channel %u, dst channel %u, event %u, action %u", 
-        action_name, src_channel_id, dst_channel_id, Supla_event, Supla_action);
+  log_i(
+    "Action name %s, src channel %u, dst channel %u, event %u, action %u", 
+    action_name, src_channel_id, dst_channel_id, Supla_event, Supla_action);
   
   Supla::Condition *Supla_condition = nullptr;
 
@@ -6599,10 +6612,12 @@ bool Z2S_add_action(const char *action_name,
     
 
     auto Supla_Z2S_ActionHandler = 
-      reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
+      reinterpret_cast<Supla::LocalActionHandler *>(src_element);
+      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
 
     auto Supla_Z2S_ActionClient = 
-      reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
+      reinterpret_cast<Supla::LocalActionHandler *>(dst_element);
+      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
     
     Supla_Z2S_ActionHandler->addAction(
       Supla_action, Supla_Z2S_ActionClient, Supla_event);

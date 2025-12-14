@@ -1084,7 +1084,24 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
 	.zigbee_attribute_name = "AC POWER DIVISOR"
 	},
-	
+	{
+	.zigbee_attribute_id  = TUYA_PRIVATE_CLUSTER_1_POWER_ON_BEHAVIOR_ID, 
+	.zigbee_attribute_cluster_id = TUYA_PRIVATE_CLUSTER_1, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+	.zigbee_attribute_name = "STARTUP ON/OFF"
+	},
+	{
+	.zigbee_attribute_id  = TUYA_PRIVATE_CLUSTER_1_SWITCH_MODE_ID, 
+	.zigbee_attribute_cluster_id = TUYA_PRIVATE_CLUSTER_1, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+	.zigbee_attribute_name = "SWITCH MODE (SWITCH/SCENE)"
+	},
+	{
+	.zigbee_attribute_id  = TUYA_PRIVATE_CLUSTER_1_SWITCH_MODE_ID, 
+	.zigbee_attribute_cluster_id = TUYA_PRIVATE_CLUSTER_1, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+	.zigbee_attribute_name = "SWITCH TYPE"
+	},
 	{
 	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
 	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
@@ -1361,6 +1378,54 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
 		.zigbee_attribute_value_name = "REVERSE",
 		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = TUYA_PRIVATE_CLUSTER_1_POWER_ON_BEHAVIOR_ID,
+		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1,
+		.zigbee_attribute_value_name = "OFF",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = TUYA_PRIVATE_CLUSTER_1_POWER_ON_BEHAVIOR_ID,
+		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1,
+		.zigbee_attribute_value_name = "ON",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = TUYA_PRIVATE_CLUSTER_1_POWER_ON_BEHAVIOR_ID,
+		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1,
+		.zigbee_attribute_value_name = "RESTORE",
+		.zigbee_attribute_value = 0x02
+	},
+	{
+		.zigbee_attribute_id = TUYA_PRIVATE_CLUSTER_1_SWITCH_MODE_ID,
+		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1,
+		.zigbee_attribute_value_name = "SWITCH",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = TUYA_PRIVATE_CLUSTER_1_SWITCH_MODE_ID,
+		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1,
+		.zigbee_attribute_value_name = "SCENE",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = TUYA_PRIVATE_CLUSTER_1_SWITCH_TYPE_ID,
+		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1,
+		.zigbee_attribute_value_name = "TOGGLE",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = TUYA_PRIVATE_CLUSTER_1_SWITCH_TYPE_ID,
+		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1,
+		.zigbee_attribute_value_name = "STATE",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = TUYA_PRIVATE_CLUSTER_1_SWITCH_TYPE_ID,
+		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1,
+		.zigbee_attribute_value_name = "MOMENTARY",
+		.zigbee_attribute_value = 0x02
 	},
 	{
 		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID,

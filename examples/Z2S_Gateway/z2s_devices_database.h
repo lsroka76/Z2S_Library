@@ -2037,7 +2037,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZE200_bh3n6gk8", .model_name = "TS0601",
     .z2s_device_uid = 4500,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_k4ej3ww2", .model_name = "TS0207",
@@ -2119,7 +2119,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZE200_3towulqd", .model_name = "TS0601",
    .z2s_device_uid = 5800,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_1bwpjvlz", .model_name = "TS0203",
@@ -3610,6 +3610,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
                               { 3, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
+  {	.manufacturer_name = "_TZ3000_ju82pu2b", .model_name = "TS0003",
+    .z2s_device_uid = 22210,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH,
+	  .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = {{ 1, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                             { 2, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                             { 3, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
   {	.manufacturer_name = "_TZ3000_mw1pqqqt", .model_name = "TS0003",
     .z2s_device_uid = 22300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH,
@@ -4174,10 +4182,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 3, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F },
                               { 4, Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F }}},
     
-    { .manufacturer_name = "_TZE200_wqashyqo", .model_name = "TS0601",
+  { .manufacturer_name = "_TZE200_wqashyqo", .model_name = "TS0601",
     .z2s_device_uid = 31800,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "HOBEIAN", .model_name = "ZG-303Z",
+    .z2s_device_uid = 31900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F,
+    .z2s_device_endpoints_count = 1},
+
 
 //DEVICES_END
 };

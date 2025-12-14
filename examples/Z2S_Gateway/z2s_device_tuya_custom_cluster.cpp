@@ -2100,8 +2100,7 @@ void processTuyaPIRIlluminanceSensorDataReport(
       channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0));
   }
 
-  Tuya_read_dp_result = 
-    Z2S_readTuyaDPvalue(
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
       TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
 
   if (Tuya_read_dp_result.is_success) {
@@ -2111,8 +2110,7 @@ void processTuyaPIRIlluminanceSensorDataReport(
       Tuya_read_dp_result.dp_value);
   }
 
-  Tuya_read_dp_result = 
-    Z2S_readTuyaDPvalue(
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
       TUYA_PIR_ILLUMINANCE_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
 
   if (Tuya_read_dp_result.is_success) {

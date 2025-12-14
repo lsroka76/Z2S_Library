@@ -26,6 +26,11 @@
 
 #define TUYA_PRIVATE_CLUSTER_0                                0xE000
 #define TUYA_PRIVATE_CLUSTER_1                                0xE001
+
+#define TUYA_PRIVATE_CLUSTER_1_POWER_ON_BEHAVIOR_ID           0xD010
+#define TUYA_PRIVATE_CLUSTER_1_SWITCH_MODE_ID                 0xD020
+#define TUYA_PRIVATE_CLUSTER_1_SWITCH_TYPE_ID                 0xD030
+
 #define TUYA_PRIVATE_CLUSTER_EF00                             0xEF00
 
 #define TUYA_REQUEST_CMD                                      0x00 //TUYA_PRIVATE_CLUSTER_EF00
