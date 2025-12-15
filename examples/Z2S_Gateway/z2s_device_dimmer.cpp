@@ -1,6 +1,6 @@
 #include "z2s_device_dimmer.h"
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void initZ2SDeviceDimmer(
   ZigbeeGateway *gateway, zbg_device_params_t *device, 
@@ -117,8 +117,8 @@ void initZ2SDeviceDimmer(
     return;
   }
 
-  auto Supla_Z2S_DimmerInterface = 
-    new Supla::Control::Z2S_DimmerInterface(gateway, device, dimmer_mode); 
+  auto Supla_Z2S_DimmerInterface = new Supla::Control::Z2S_DimmerInterface(
+    gateway, device, dimmer_mode); 
 
   Supla_Z2S_DimmerInterface->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
@@ -138,7 +138,7 @@ void initZ2SDeviceDimmer(
       z2s_channels_table[channel_number_slot].timeout_secs);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void addZ2SDeviceDimmer(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
@@ -173,8 +173,8 @@ void addZ2SDeviceDimmer(
     case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
 
-      channel_element = 
-        new Supla::Control::Z2S_DimmerInterface(gateway, device, sub_id); 
+      channel_element = new Supla::Control::Z2S_DimmerInterface(
+        gateway, device, sub_id); 
     break;
   }
   
@@ -184,7 +184,7 @@ void addZ2SDeviceDimmer(
       SUPLA_CHANNELTYPE_DIMMER, sub_id, name, func);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void addZ2SDeviceDimmer(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
@@ -193,7 +193,7 @@ void addZ2SDeviceDimmer(
   addZ2SDeviceDimmer(gateway, device, free_slot, -1, name, func);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void msgZ2SDeviceDimmer(
   int16_t channel_number_slot, int16_t level, bool state) {

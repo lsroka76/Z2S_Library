@@ -23,6 +23,7 @@
 #include <supla/actions.h>
 #include <supla/channel_element.h>
 #include "ZigbeeGateway.h"
+#include "TuyaDatapoints.h"
 
 #define Z2S_COLOR_HS_RGB            0x01
 #define Z2S_COLOR_HS_XY_RGB         0x02

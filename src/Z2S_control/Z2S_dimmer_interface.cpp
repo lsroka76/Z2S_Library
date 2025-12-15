@@ -120,9 +120,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
         uint16_t F0_brightness = map(brightness, 0, 100, 0, 1000);
 	      
         _gateway->sendCustomClusterCmd(
-          &_device, 
-          ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
-          0xF0, 
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&F0_brightness, 
           false);
         if (F0_brightness == 0)
@@ -135,10 +133,37 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
         uint16_t E0_color_temperature = map(brightness, 0, 100, 0, 1000);
 	      
         _gateway->sendCustomClusterCmd(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
-          0xE0, ESP_ZB_ZCL_ATTR_TYPE_U16, 2, 
-          (uint8_t *)&E0_color_temperature, 
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
+          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&E0_color_temperature, 
           false);
+      } break;
+
+
+      case Z2S_TUYA_BRIGHTNESS_DP_DIMMER: {
+
+        uint16_t dp_brightness = map(brightness, 0, 100, 0, 1000);
+        
+        //WHITE mode
+        sendTuyaRequestCmdEnum8(
+          _gateway, &_device, TUYA_RGBWCT_LED_EF00_MODE_DP, 0); 
+
+        sendTuyaRequestCmdValue32(
+          _gateway, &_device, TUYA_RGBWCT_LED_EF00_BRIGHTNESS_DP, 
+          dp_brightness, false);
+      } break;
+
+
+      case Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER: {
+
+        uint16_t dp_color_temperature = map(brightness, 0, 100, 0, 1000);
+
+        //WHITE mode
+        sendTuyaRequestCmdEnum8(
+          _gateway, &_device, TUYA_RGBWCT_LED_EF00_MODE_DP, 0);
+          
+        sendTuyaRequestCmdValue32(
+          _gateway, &_device, TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP, 
+          dp_color_temperature, false);
       } break;
     } 
   }

@@ -60,24 +60,21 @@ bool sendTuyaRequestCmdData(
     case TUYA_DP_TYPE_BOOL:
 
       return
-        sendTuyaRequestCmdBool(
-          gateway, device, dp_id, dp_value, cmd_sync);
+        sendTuyaRequestCmdBool(gateway, device, dp_id, dp_value, cmd_sync);
     break;
 
 
     case TUYA_DP_TYPE_VALUE:
 
       return
-        sendTuyaRequestCmdValue32(
-          gateway, device, dp_id, dp_value, cmd_sync); 
+        sendTuyaRequestCmdValue32(gateway, device, dp_id, dp_value, cmd_sync); 
     break;
 
 
     case TUYA_DP_TYPE_ENUM:
 
       return
-        sendTuyaRequestCmdEnum8(
-          gateway, device, dp_id, dp_value, cmd_sync); 
+        sendTuyaRequestCmdEnum8(gateway, device, dp_id, dp_value, cmd_sync); 
     break;
 
 

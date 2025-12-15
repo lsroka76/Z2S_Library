@@ -148,13 +148,13 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
     ColorHSV hsv;
     ColorRGB rgb;
 
-    red = (red*colorBrightness) / 100;
-    green = (green*colorBrightness) / 100;
-    blue = (blue*colorBrightness) / 100;
+    uint8_t red_cb = (red*colorBrightness) / 100;
+    uint8_t green_cb = (green*colorBrightness) / 100;
+    uint8_t blue_cb = (blue*colorBrightness) / 100;
 
-    rgb.m_r = (float)red / 255;
-    rgb.m_g = (float)green / 255;
-    rgb.m_b = (float)blue / 255;
+    rgb.m_r = (float)red_cb / 255;
+    rgb.m_g = (float)green_cb / 255;
+    rgb.m_b = (float)blue_cb / 255;
 
     hsv = rgbToHsv(rgb);
 
@@ -183,7 +183,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
       case Z2S_COLOR_XY_RGB:
       case Z2S_PHILIPS_COLOR_XY_RGB: {
 
-        espXyColor_t xy_color = espRgbToXYColor(red, green, blue);
+        espXyColor_t xy_color = espRgbToXYColor(red_cb, green_cb, blue_cb);
         xy_color.x = map(xy_color.x, 0 ,0xFFFF, 0, 0xFEFF);
         xy_color.y = map(xy_color.y, 0 ,0xFFFF, 0, 0xFEFF);
 
@@ -211,7 +211,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode, false);
 
-        espXyColor_t xy_color = espRgbToXYColor(red, green, blue);
+        espXyColor_t xy_color = espRgbToXYColor(red_cb, green_cb, blue_cb);
         xy_color.x = map(xy_color.x, 0 ,0xFFFF, 0, 0xFEFF);
         xy_color.y = map(xy_color.y, 0 ,0xFFFF, 0, 0xFEFF);
 
@@ -224,12 +224,25 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
 
       case Z2S_TUYA_DP_COLOR_HS_RGB:{
 
+        rgb.m_r = (float)red / 255;
+        rgb.m_g = (float)green / 255;
+        rgb.m_b = (float)blue / 255;
+
+        hsv = rgbToHsv(rgb);
+
+        _hue_360 = hsv.m_h*360;
+    
+        _saturation_1000 = hsv.m_s*1000;
+
+        uint16_t _color_brightness_1000 = map(
+          colorBrightness, 0, 100, 0, 1000);
+
         uint8_t test_buffer[17];
 
         test_buffer[0] = 00;
         test_buffer[1] = 22;
-        test_buffer[2] = 0x3D; //61
-        test_buffer[3] = 0x00; //RAW
+        test_buffer[2] = TUYA_RGBWCT_LED_EF00_COLOR_DP;
+        test_buffer[3] = TUYA_DP_TYPE_RAW;
         test_buffer[4] = 0x00;
         test_buffer[5] = 11;
         test_buffer[6] = 0x00;
@@ -241,8 +254,8 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
         test_buffer[12] = _hue_360 & 0x00FF;//COLOR
         test_buffer[13] = (_saturation_1000 >> 8) & 0x00FF;
         test_buffer[14] = _saturation & 0x00FF;//SATURATION
-        test_buffer[15] = 0x03;
-        test_buffer[16] = 0xE8;//BRIGHTNESS
+        test_buffer[15] = (_color_brightness_1000 >> 8) & 0x00FF;
+        test_buffer[16] = _color_brightness_1000 & 0x00FF;//BRIGHTNESS
 
         _gateway->sendCustomClusterCmd(
           &_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 

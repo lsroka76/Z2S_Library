@@ -23,6 +23,7 @@
 #include <supla/actions.h>
 #include <supla/channel_element.h>
 #include "ZigbeeGateway.h"
+#include "TuyaDatapoints.h"
 
 #define Z2S_SEND_TO_LEVEL_DIMMER              0x00
 #define Z2S_COLOR_TEMPERATURE_DIMMER          0x01
@@ -39,7 +40,9 @@ class Z2S_DimmerInterface : public ChannelElement, public ActionHandler {
 
 public:
 
-  Z2S_DimmerInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER);
+  Z2S_DimmerInterface(
+    ZigbeeGateway *gateway, zbg_device_params_t *device, 
+    uint8_t dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER);
 
   void setRGBChannel(uint8_t rgb_channel) {
     _rgb_channel = rgb_channel;
@@ -49,7 +52,8 @@ public:
     else _rgb = nullptr;
   }
 
-  int32_t handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue) override;
+  int32_t handleNewValueFromServer(
+    TSD_SuplaChannelNewValue *newValue) override;
   
   //void onInit() override;
   void iterateAlways() override;
