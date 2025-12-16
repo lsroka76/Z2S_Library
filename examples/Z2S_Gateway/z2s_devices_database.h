@@ -112,6 +112,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO            0x2320
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z         0x2325
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2       0x2330
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3    0x2331
 
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
@@ -1582,6 +1583,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -2637,6 +2643,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_waho4jtj", .model_name = "TS011F",
+    .z2s_device_uid = 11815,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_5f43h46b", .model_name = "TS011F",
     .z2s_device_uid = 11900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2,
@@ -3052,6 +3063,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "01MINIZB",
     .z2s_device_uid = 16600,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_wamqdr3f", .model_name = "TS011F",
+    .z2s_device_uid = 16650,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
 	  .z2s_device_endpoints_count = 1},
 
@@ -4196,6 +4212,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "HOBEIAN", .model_name = "ZG-303Z",
     .z2s_device_uid = 31900,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_gkfbdvyx", .model_name = "TS0601",
+    .z2s_device_uid = 32000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
     .z2s_device_endpoints_count = 1},
 
 

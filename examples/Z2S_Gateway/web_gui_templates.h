@@ -2288,6 +2288,36 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Fading time",
     .Tuya_datapoint_description = "Enter numeric value: 5 - 1500/1 = 0.1 [s]" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM10024GV3_MOVE_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Motion sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10" },
+
+	{ .z2s_device_desc_id 	 		  = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM10024GV3_MIN_DETECTION_DISTANCE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Minimal range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 [cm]/step 50 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM10024GV3_MAX_DETECTION_DISTANCE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Maximal range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 900 [cm]/step 50 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM10024GV3_PRESENCE_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Presence sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 1 - 10" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZYM10024GV3_PRESENCE_TIMEOUT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Fading time",
+    .Tuya_datapoint_description = "Enter numeric value: 1 - 15000 [s]" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
     .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_MOTOR_THRUST_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,

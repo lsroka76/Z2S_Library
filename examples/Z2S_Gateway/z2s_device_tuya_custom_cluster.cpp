@@ -1568,6 +1568,17 @@ void processTuyaPresenceSensorDataReport(
 
       presence_value_on = 0x01;
     } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3: {
+
+      motion_state_dp_id = TUYA_PRESENCE_SENSOR_ZYM10024GV3_PRESENCE_DP;
+      distance_dp_id = TUYA_PRESENCE_SENSOR_ZYM10024GV3_DISTANCE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_ZYM10024GV3_ILLUMINANCE_DP;
+      relay_state_dp_id = TUYA_PRESENCE_SENSOR_ZYM10024GV3_FIND_SWITCH_DP;
+
+      //presence_value_on = 0x01;
+    } break;
   }
   
   if (presence_dp_id) {
@@ -1587,6 +1598,7 @@ void processTuyaPresenceSensorDataReport(
       motion_state_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) { 
+
       log_i("MOTION STATE CHECK int %d, float %f", 
             Tuya_read_dp_result.dp_value, 
             Tuya_read_dp_result.dp_value);
@@ -1680,61 +1692,81 @@ void processTuyaPresenceSensorDataReport(
 void processTuyaRainSensorDataReport(
   int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload) {
 
-  int16_t channel_number_slot_1, channel_number_slot_2, channel_number_slot_3, channel_number_slot_4, channel_number_slot_5;
-  Tuya_read_dp_result_t Tuya_read_dp_result;
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
 
-  channel_number_slot_1 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                    z2s_channels_table[channel_number_slot].endpoint, 
-                                                    z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                    TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID);
 
-  channel_number_slot_2 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                    z2s_channels_table[channel_number_slot].endpoint, 
-                                                    z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                    TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID);
-
-  channel_number_slot_3 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                    z2s_channels_table[channel_number_slot].endpoint, 
-                                                    z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                    TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
   
-  channel_number_slot_4 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                    z2s_channels_table[channel_number_slot].endpoint, 
-                                                    z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                    TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
+  int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
 
-  channel_number_slot_5 = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                    z2s_channels_table[channel_number_slot].endpoint, 
-                                                    z2s_channels_table[channel_number_slot].cluster_id, 
-                                                    SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                    NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_RAIN_SENSOR_ILLUMINANCE_DP, payload_size, payload);
+  Tuya_read_dp_result_t Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_RAIN_SENSOR_ILLUMINANCE_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                          Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+      Tuya_read_dp_result.dp_value);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) 
-  { log_i("MOTION STATE CHECK int %d, float %f", Tuya_read_dp_result.dp_value, Tuya_read_dp_result.dp_value);
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                          Tuya_read_dp_result.dp_value);}
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_DP, payload_size, payload);
 
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_DP, payload_size, payload);
+  if (Tuya_read_dp_result.is_success) { 
+    
+    log_i(
+      "MOTION STATE CHECK int %d, float %f", Tuya_read_dp_result.dp_value, 
+      Tuya_read_dp_result.dp_value);
+
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+      Tuya_read_dp_result.dp_value);}
+
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success) 
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                          Tuya_read_dp_result.dp_value);
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+      Tuya_read_dp_result.dp_value);
   
-  Tuya_read_dp_result = Z2S_readTuyaDPvalue(TUYA_RAIN_SENSOR_RAIN_INTENSITY_DP, payload_size, payload);
+  Tuya_read_dp_result = Z2S_readTuyaDPvalue(
+    TUYA_RAIN_SENSOR_RAIN_INTENSITY_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success) {
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                          Tuya_read_dp_result.dp_value);
+
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+      Tuya_read_dp_result.dp_value);
+      
     if (z2s_channels_table[channel_number_slot_4].user_data_1 > 0) {
-      if (Tuya_read_dp_result.dp_value > z2s_channels_table[channel_number_slot_4].user_data_1)
+      if (Tuya_read_dp_result.dp_value > 
+            z2s_channels_table[channel_number_slot_4].user_data_1)
         msgZ2SDeviceIASzone(channel_number_slot_5, true, false); 
       else
         msgZ2SDeviceIASzone(channel_number_slot_5, false, false); 
@@ -2502,6 +2534,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
 
       processTuyaPresenceSensorDataReport(
         channel_number_slot, payload_size, payload, model_id); 

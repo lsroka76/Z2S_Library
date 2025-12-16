@@ -5396,27 +5396,24 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
             addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, 
-              "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
+              device, first_free_slot, sub_id, "PRESENCE", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
           break;
 
 
           case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID: 
 
             addZ2SDeviceGeneralPurposeMeasurement(
-              device, first_free_slot, sub_id,
-              "MOTION STATE", 
-              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-              "[0..5]"); 
+              device, first_free_slot, sub_id,"MOTION STATE", 
+              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..5]"); 
           break;
 
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
 
             addZ2SDeviceGeneralPurposeMeasurement(
-              device, first_free_slot, sub_id, 
-              "ILLUMINANCE",SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-              "lx"); 
+              device, first_free_slot, sub_id, "ILLUMINANCE",
+              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); 
           break;
         }
       } break;
@@ -5425,15 +5422,16 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2: {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3: {
         
         switch (sub_id) {
 
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
             addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, 
-              "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
+              device, first_free_slot, sub_id, "PRESENCE", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
           break;
 
 
@@ -5444,6 +5442,13 @@ uint8_t Z2S_addZ2SDevice(
             addZ2SDeviceGeneralPurposeMeasurement(
               device, first_free_slot, sub_id, name, 
               SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, unit); 
+          break;
+
+
+          case TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID:
+
+            addZ2SDeviceVirtualRelay(
+              &zbGateway, device, first_free_slot, sub_id, name, func); 
           break;
         }
       } break;
@@ -5456,8 +5461,7 @@ uint8_t Z2S_addZ2SDevice(
           
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
-            addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, name, func); 
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
 
 
@@ -5485,16 +5489,15 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
             addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, 
-              "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
+              device, first_free_slot, sub_id, "PRESENCE", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
           break;
 
       
           case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID: 
 
             addZ2SDeviceGeneralPurposeMeasurement(
-              device, first_free_slot, sub_id, 
-              "ILLUMINANCE",
+              device, first_free_slot, sub_id, "ILLUMINANCE",
               SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); 
           break;
         }
@@ -5537,16 +5540,15 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_RAIN_SENSOR_RAIN_SID:
 
             addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, 
-              "RAIN", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
+              device, first_free_slot, sub_id, "RAIN", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
           break;
 
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_SID: 
           
             addZ2SDeviceGeneralPurposeMeasurement(
-              device, first_free_slot, sub_id,
-              "ILLUMINANCE", 
+              device, first_free_slot, sub_id, "ILLUMINANCE", 
               SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); 
           break;
 
@@ -5554,8 +5556,7 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID: 
 
             addZ2SDeviceGeneralPurposeMeasurement(
-              device, first_free_slot, sub_id, 
-              "ILLUMINANCE AVG 20",
+              device, first_free_slot, sub_id, "ILLUMINANCE AVG 20",
               SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); 
           break;
 
@@ -5563,8 +5564,7 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID: 
 
             addZ2SDeviceGeneralPurposeMeasurement(
-              device, first_free_slot, sub_id, 
-              "ILLUMINANCE MAX TODAY",
+              device, first_free_slot, sub_id, "ILLUMINANCE MAX TODAY",
               SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV"); 
           break;
 
@@ -5587,16 +5587,15 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_RAIN_SENSOR_RAIN_SID:
 
             addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, 
-              "RAIN", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
+              device, first_free_slot, sub_id, "RAIN", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
           break;
 
 
           case TUYA_RAIN_SENSOR_ILLUMINANCE_SID: 
 
             addZ2SDeviceGeneralPurposeMeasurement(
-              device, first_free_slot, sub_id,
-              "ILLUMINANCE", 
+              device, first_free_slot, sub_id, "ILLUMINANCE", 
               SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); 
           break;
         }
@@ -5610,15 +5609,13 @@ uint8_t Z2S_addZ2SDevice(
           
           case IAS_ZONE_ALARM_1_SID:
 
-            addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, name, func); 
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
 
 
           case IAS_ZONE_TAMPER_SID:
 
-            addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, name, func); 
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
 
 
@@ -5645,8 +5642,7 @@ uint8_t Z2S_addZ2SDevice(
           
           case LUMI_MOTION_SENSOR_OCCUPANCY_SID:
 
-            addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, name, func); 
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
 
 
@@ -5662,8 +5658,7 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
         
-        addZ2SDeviceIASzone(
-          device, first_free_slot, sub_id, name, func); 
+        addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
       break;
     } break;
 
@@ -5671,16 +5666,14 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
 
-        addZ2SDeviceIASzone(
-          device, first_free_slot, sub_id, name, func); 
+        addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
       break;
 
 /******************************************************************************/     
 
       case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
 
-        addZ2SDeviceIASzone(
-          device, first_free_slot, sub_id, name, func); 
+        addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
       break;
 
 /******************************************************************************/     
@@ -5688,8 +5681,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2:
 
         if (sub_id == TUYA_VIBRATION_SENSOR_VIBRATION_SID)
-          addZ2SDeviceIASzone(
-            device, first_free_slot, sub_id, name, func); 
+          addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
         else
           addZ2SDeviceGeneralPurposeMeasurement(
             device, first_free_slot, sub_id, name, func, unit);
@@ -5704,8 +5696,7 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_CO_DETECTOR_CO_SID:
           case TUYA_CO_DETECTOR_SILENCE_SID:
 
-            addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, name, func); 
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
 
 
@@ -5729,8 +5720,7 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_GAS_DETECTOR_PREHEAT_SID:
           //case TUYA_GAS_DETECTOR_SILENCE_SID:
 
-            addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, name, func); 
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
 
 
@@ -6000,8 +5990,7 @@ uint8_t Z2S_addZ2SDevice(
 
           case TUYA_PRESENCE_SENSOR_PRESENCE_SID:
 
-            addZ2SDeviceIASzone(
-              device, first_free_slot, sub_id, name, func); 
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
 
 
@@ -6912,6 +6901,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
@@ -7505,32 +7495,25 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_PRESENCE_SID, 
-                       "PRESENCE", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, 
-                       "ILLUMINANCE",
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "lx");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_DISTANCE_SID, 
-                       "DISTANCE",
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "m");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_DISTANCE_SID, "DISTANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "m");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID, 
-                       "SWITCH (FOR MANUAL MODE)",
-                       SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID, 
+        "SWITCH (FOR MANUAL MODE)",SUPLA_CHANNELFNC_POWERSWITCH);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_RELAY_MODE_SID, 
-                       "SWITCH AUTO MODE",
-                       SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_RELAY_MODE_SID, "SWITCH AUTO MODE",
+        SUPLA_CHANNELFNC_POWERSWITCH);
     } break;
 
 /*****************************************************************************/                                         
@@ -7597,65 +7580,77 @@ void Z2S_buildSuplaChannels(
 
     } break;
 
+/*****************************************************************************/                                         
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID, "MOTION STATE", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..2]");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_DISTANCE_SID, "DISTANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "cm");
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID, 
+        "DISTANCE SWITCH",SUPLA_CHANNELFNC_POWERSWITCH);
+
+    } break;
+
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_RAIN_SENSOR_RAIN_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_SID);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_MAX_TODAY_SID);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_RAIN_SENSOR_RAIN_INTENSITY_SID);
     } break;
 
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_RAIN_SENSOR_RAIN_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_SID);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_ILLUMINANCE_SID);
     } break;
 
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID, 
-                       "ENERGY", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "kWh");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID, "ENERGY", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kWh");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID,
-                       "PRODUCED ENERGY", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "kWh");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_3PHASES_ELECTRICITY_METER_PRODUCED_ENERGY_SID,
+        "PRODUCED ENERGY", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+        "kWh");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_3PHASES_ELECTRICITY_METER_POWER_SID, 
-                       "POWER", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "W");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_SID, "POWER", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "W");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID, 
-                       "POWER FACTOR"); 
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID, 
+        "POWER FACTOR"); 
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_3PHASES_ELECTRICITY_METER_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_SID);
     } break;
 
 /*****************************************************************************/
