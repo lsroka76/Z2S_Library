@@ -520,7 +520,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_off_dp_id                            =  0x71,
     .ts0601_cmd_off_dp_type                          =  TUYA_DP_TYPE_BOOL,
-    .ts0601_cmd_off_dp_value_off                     =  0x00,
+    .ts0601_cmd_off_dp_value_off                     =  0x01,
     
     .ts0601_cmd_set_target_heatsetpoint_dp_id        =  0x04,
     .ts0601_cmd_set_target_heatsetpoint_dp_type      =  TUYA_DP_TYPE_VALUE,
@@ -545,7 +545,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_child_lock_dp_value_on           =  0x01,
     .ts0601_cmd_set_child_lock_dp_value_off          =  0x00,
 
-    .ts0601_cmd_set_window_detect_dp_id             =  0x0E,
+    .ts0601_cmd_set_window_detect_dp_id              =  0x0E,
     .ts0601_cmd_set_window_detect_dp_type            =  TUYA_DP_TYPE_BOOL,
     .ts0601_cmd_set_window_detect_dp_value_on        =  0x01,
     .ts0601_cmd_set_window_detect_dp_value_off       =  0x00,
@@ -1466,6 +1466,8 @@ class Z2S_TRVInterface : public RemoteOutputInterface,
   /*void setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger);
   void setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms);*/
   bool inInitSequence();
+  bool inScheduleMode();
+  bool isHvacWindowOpened();
 
   void setFixedTemperatureCalibration(
     int32_t trv_fixed_temperature_calibration);
@@ -1488,6 +1490,8 @@ class Z2S_TRVInterface : public RemoteOutputInterface,
   void setTRVChildLock(uint8_t trv_child_lock);
   void setCooperativeChildLock(bool cooperative_child_lock);
   void turnOffTRVScheduleMode();
+
+  void setHvacTemperatureSetpoint(int32_t hvac_temperature_setpoint);
 
   void setTimeoutSecs(uint32_t timeout_secs);
   void refreshTimeout();
@@ -1539,6 +1543,13 @@ protected:
 
   bool _trv_switch_schedule_off = false;
 
+  uint8_t _in_schedule_mode = 0;
+  uint32_t _schedule_stored_temperature_setpoint = INT32_MIN;
+  uint32_t _in_schedule_mode_timer = 0;
+
+  uint32_t _hvac_temperature_setpoint = INT32_MIN;
+  uint32_t _hvac_temperature_setpoint_pending_ms = 0;
+  
   uint8_t _temperature_calibration_update_attempt = 0;
   int32_t _temperature_calibration_offset      = 0;
   int32_t _last_temperature_calibration_offset = 0;
@@ -1554,9 +1565,11 @@ protected:
   //uint32_t  _temperature_calibration_last_update_ms = 0;
 
   bool _hvac_window_opened = false;
+  uint32_t  _window_opened_hvac_temperature = INT32_MIN;
 
   uint8_t _init_sequence = 0; //disabled by default
   uint32_t _init_temperature_setpoint = 0;
+  uint32_t _stored_temperature_setpoint = INT32_MIN;
 
   uint32_t _temperature_ping_ms = 60 * 1000;
   uint32_t _last_temperature_ping_ms = 0;
@@ -1578,8 +1591,6 @@ protected:
   bool isForcedTemperatureSet();
   void forceTRVTemperature();
 
-  bool isHvacWindowOpened();
-
   void sendTRVSystemMode(uint8_t trv_system_mode);
   void sendTRVTemperatureSetpoint(int32_t temperature_setpoint);
   void readTRVLocalTemperature(int32_t local_temperature);
@@ -1590,6 +1601,8 @@ protected:
   void sendTRVScheduleMode(uint8_t trv_schedule_mode);
   void sendTRVTemperatureHisteresis(int32_t temperature_histeresis);
   void sendTRVPing();
+
+  void sendHvacTemperatureSetpoint(int32_t temperature_setpoint);
 };
 
 };  // namespace Control

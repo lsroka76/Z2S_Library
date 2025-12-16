@@ -81,6 +81,13 @@ bool Supla::Control::Z2S_TRVInterface::inInitSequence(){
 
 /*****************************************************************************/
 
+bool Supla::Control::Z2S_TRVInterface::inScheduleMode(){
+
+  return (_in_schedule_mode > 0);
+}
+
+/*****************************************************************************/
+
 bool Supla::Control::Z2S_TRVInterface::isHvacWindowOpened() {
 
   return _hvac_window_opened;
@@ -1167,6 +1174,39 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
   }
 }
 
+void Supla::Control::Z2S_TRVInterface::sendHvacTemperatureSetpoint(
+  int32_t temperature_setpoint) {
+
+
+  if (_trv_hvac->isWeeklyScheduleEnabled()) { 
+    if ((abs(_trv_hvac->getTemperatureSetpointHeat() - 
+        temperature_setpoint) > 40) &&
+        (_trv_hvac->getCurrentProgramId() != 0)) {
+
+      TWeeklyScheduleProgram program = _trv_hvac->getProgramById(
+        _trv_hvac->getCurrentProgramId());
+
+      _trv_hvac->applyNewRuntimeSettings(
+        SUPLA_HVAC_MODE_NOT_SET, temperature_setpoint, 0, 0);
+        
+      setTRVTemperatureSetpoint(temperature_setpoint);
+
+      log_i(
+        "\n\rChanging weekly schedule program temperature: \n\rprogram id "
+        "%u\n\rhvac getTemperatureSetpointHeat %d\n\r"
+        "temperature_setpoint %d", _trv_hvac->getCurrentProgramId(),
+        _trv_hvac->getTemperatureSetpointHeat(), temperature_setpoint);
+    }
+  } else {
+
+    //_trv_hvac->setTemperatureSetpointHeat(temperature_setpoint);
+    _trv_hvac->applyNewRuntimeSettings(
+        SUPLA_HVAC_MODE_HEAT, temperature_setpoint, 0, 0);
+        
+    setTRVTemperatureSetpoint(temperature_setpoint);
+  }
+}
+
 void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
     int32_t trv_temperature_setpoint) {
 
@@ -1184,7 +1224,7 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
     }
 
     if ((_init_sequence == 1) &&
-        (_trv_hvac->getTemperatureSetpointHeat() == 
+        (_stored_temperature_setpoint ==//(_trv_hvac->getTemperatureSetpointHeat() == 
           trv_temperature_setpoint)) {
       
     _init_sequence = 0;
@@ -1192,11 +1232,29 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
     _trv_temperature_setpoint = trv_temperature_setpoint;
     _trv_temperature_setpoint_updated = true;
     }
-  } else {
-
-    _trv_temperature_setpoint = trv_temperature_setpoint;
-    _trv_temperature_setpoint_updated = true;
+    return;
   }
+
+  if (_in_schedule_mode) {
+
+    log_i(
+      "\n\rin schedule mode:\n\rtrv_temperature_setpoint = %04d <-> "
+      "_schedule_stored_temperature_setpoint = %04d", trv_temperature_setpoint,
+      _schedule_stored_temperature_setpoint);
+
+    if (_schedule_stored_temperature_setpoint == trv_temperature_setpoint) {
+
+      //_in_schedule_mode = 0;
+      _trv_temperature_setpoint = trv_temperature_setpoint;
+      _trv_temperature_setpoint_updated = true;
+    }    
+
+    return;
+  }
+
+  _trv_temperature_setpoint = trv_temperature_setpoint;
+  _trv_temperature_setpoint_updated = true;
+
   refreshTimeout();
 }
 
@@ -1253,8 +1311,26 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureHisteresis(
 
 void Supla::Control::Z2S_TRVInterface::turnOffTRVScheduleMode() {
 
+  _hvac_temperature_setpoint_pending_ms = 0; //clear last TEMP_SETPOINT
+
+  _in_schedule_mode = 1;
+  _in_schedule_mode_timer = millis();
+
+  _schedule_stored_temperature_setpoint = 
+    _trv_hvac->getTemperatureSetpointHeat();
+  
+  log_i("in schedule mode begin: _schedule_stored_temperature_setpoint %d",
+  _schedule_stored_temperature_setpoint);
+
   _trv_switch_schedule_off = true;
 }
+
+void Supla::Control::Z2S_TRVInterface::setHvacTemperatureSetpoint(
+  int32_t hvac_temperature_setpoint) {
+
+    _hvac_temperature_setpoint = hvac_temperature_setpoint;
+    _hvac_temperature_setpoint_pending_ms = millis();
+  }
 
 /*****************************************************************************/
 
@@ -1331,6 +1407,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     _last_refresh_ms = millis();
 
+    if (_trv_hvac)
+      _stored_temperature_setpoint = _trv_hvac->getTemperatureSetpointHeat();
+
     sendTRVTemperatureSetpoint(_init_temperature_setpoint);
 
     return; //TODO timeout control
@@ -1339,19 +1418,39 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   if (_init_sequence == 1) {
 
     if (_trv_hvac)
-      sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());
+      sendTRVTemperatureSetpoint(_stored_temperature_setpoint); //_trv_hvac->getTemperatureSetpointHeat());
     
     return;
+  }
+
+  if (_hvac_temperature_setpoint_pending_ms && 
+      ((millis() - _hvac_temperature_setpoint_pending_ms) > 350)) {
+
+    _hvac_temperature_setpoint_pending_ms = 0;
+    sendHvacTemperatureSetpoint(_hvac_temperature_setpoint);
   }
 
   if (_trv_switch_schedule_off) {
 
     _trv_switch_schedule_off = false;   
+    //_in_schedule_mode = 1;
+    //_in_schedule_mode_timer = millis();
     sendTRVScheduleMode(0);
+  }
 
+  if (_in_schedule_mode && ((millis() - _in_schedule_mode_timer) > 3000)) {
+
+    log_i("clearing in schedule mode - timer expired");
+    _in_schedule_mode = 0;
+  }
+
+
+  if (_in_schedule_mode && (!_trv_switch_schedule_off)) {
+    
     if (_trv_hvac)
-      sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());     
-    //sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());        
+      sendTRVTemperatureSetpoint(_schedule_stored_temperature_setpoint); //_trv_hvac->getTemperatureSetpointHeat());   
+
+    return;         
   }
 
   if (_trv_child_lock_changed) {
@@ -1392,12 +1491,20 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     _last_refresh_ms = millis();
 
-    /*if (_trv_hvac && _trv_system_mode && 
-        _trv_hvac->isHvacFlagForcedOffBySensor()) {
+    int32_t hvacTemperatureSetpointHeat = 
+      _trv_hvac->getTemperatureSetpointHeat();
 
-      sendTRVSystemMode(0);
+    /**/if (_trv_hvac && _trv_hvac->isHvacFlagForcedOffBySensor()) {
+      
+      if (!_hvac_window_opened)
+        _window_opened_hvac_temperature = hvacTemperatureSetpointHeat;
+
+      _hvac_window_opened = true;
+      if (_trv_system_mode)
+        sendTRVSystemMode(0);
+
       return; //TODO timeout control
-    }*/
+    }/**/
 
     if (_trv_hvac && 
         ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
@@ -1420,15 +1527,20 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     }
 
 
-    if ((_trv_hvac) && (_trv_hvac->getMode() != SUPLA_HVAC_MODE_OFF) && 
-        (_trv_hvac->getTemperatureSetpointHeat() != _trv_temperature_setpoint)) { //??
+    if ((_trv_hvac) && (_hvac_temperature_setpoint_pending_ms == 0) &&
+        (_trv_hvac->getMode() != SUPLA_HVAC_MODE_OFF) && 
+        (hvacTemperatureSetpointHeat != _trv_temperature_setpoint)) { //??
       
       log_i("setpoint difference detected: hvac = %d, trv = %d", 
-            _trv_hvac->getTemperatureSetpointHeat(), 
-            _trv_temperature_setpoint);
+            hvacTemperatureSetpointHeat, _trv_temperature_setpoint);
 
-      sendTRVTemperatureSetpoint(_trv_hvac->getTemperatureSetpointHeat());        
+      sendTRVTemperatureSetpoint(hvacTemperatureSetpointHeat);   
     }
+
+    if (_hvac_window_opened && 
+        (abs(
+          hvacTemperatureSetpointHeat - _trv_temperature_setpoint) > 40))
+      _hvac_window_opened = false;
     
     if (_trv_hvac && 
         ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1)  != 

@@ -471,12 +471,12 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
 
 bool Supla::Control::Z2S_VirtualRelay::isOn() {
   
-  if (_gateway && Zigbee.started()) {   
+  /*if (_gateway && Zigbee.started()) {   
     if (_gateway->sendAttributeRead(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
           ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true))
       state = *((bool *)_gateway->getReadAttrLastResult()->data.value);
-  }
+  }*/
    return state;
 }
 
