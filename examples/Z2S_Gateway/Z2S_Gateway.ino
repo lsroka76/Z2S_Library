@@ -1615,14 +1615,10 @@ if (GUIstarted)
                     LUMI_CUSTOM_CLUSTER_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_U8, 
                     1, &write_mask, true, 1, LUMI_MANUFACTURER_CODE);
 
-                  zbGateway.sendAttributeRead(joined_device, 
-                                              LUMI_CUSTOM_CLUSTER, 
-                                              0x0148, 
-                                              true, 
-                                              ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-                                              1, 
-                                              1, 
-                                              LUMI_MANUFACTURER_CODE);
+                  zbGateway.sendAttributeRead(
+                    joined_device, LUMI_CUSTOM_CLUSTER, 0x0148, true, 
+                    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 
+                    LUMI_MANUFACTURER_CODE);
                 } break;
               }
               SuplaDevice.scheduleSoftRestart(30000);
