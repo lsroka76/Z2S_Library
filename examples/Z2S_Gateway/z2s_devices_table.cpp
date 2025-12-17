@@ -536,13 +536,12 @@ bool Z2S_loadChannelsTable() {
             if ((z2s_channels_table[channels_counter].valid_record) &&
                 (z2s_channels_table[channels_counter].local_channel_type == 0)) {
               
-              uint8_t new_ZB_device_id = Z2S_addZbDeviceTableSlot(z2s_channels_table[channels_counter].ieee_addr,
-                                                                  z2s_channels_table[channels_counter].short_addr,
-                                                                  "Unknown",
-                                                                  "Unknown",
-                                                                  1,
-                                                                  z2s_channels_table[channels_counter].model_id,
-                                                                  0);
+              uint8_t new_ZB_device_id = Z2S_addZbDeviceTableSlot(
+                z2s_channels_table[channels_counter].ieee_addr,
+                z2s_channels_table[channels_counter].short_addr,
+                "Unknown", "Unknown", 1, 
+                z2s_channels_table[channels_counter].model_id, 0);
+
               if (z2s_channels_table[channels_counter].ZB_device_id != new_ZB_device_id) {
                 
                 z2s_channels_table[channels_counter].ZB_device_id = new_ZB_device_id;
@@ -734,6 +733,8 @@ bool Z2S_updateZbDeviceUidIdx(
 
         z2s_zb_devices_table[zb_device_slot].devices_list_idx = 
           devices_list_counter;
+        
+        Z2S_syncZbDeviceDescFlags(devices_list_counter, zb_device_slot);
 
         log_i("device uid = %lu, devices list index = %lu", 
               z2s_zb_devices_table[zb_device_slot].device_uid,
@@ -745,14 +746,18 @@ bool Z2S_updateZbDeviceUidIdx(
       if ((strcmp(model_name, Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
           (strcmp(manufacturer_name, Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
 
-        z2s_zb_devices_table[zb_device_slot].device_uid = Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid;
-        z2s_zb_devices_table[zb_device_slot].devices_list_idx = devices_list_counter;
+        z2s_zb_devices_table[zb_device_slot].device_uid = 
+          Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid;
 
-        log_i("Manufacturer name: %s, model name: %s, device uid = %lu, devices list index = %lu", 
-              manufacturer_name ? manufacturer_name : "none",
-              model_name ? model_name : "none", 
-              z2s_zb_devices_table[zb_device_slot].device_uid,
-              z2s_zb_devices_table[zb_device_slot].devices_list_idx);
+        z2s_zb_devices_table[zb_device_slot].devices_list_idx = 
+          devices_list_counter;
+
+        log_i(
+          "Manufacturer name: %s, model name: %s, device uid = %lu, "
+          "devices list index = %lu", manufacturer_name ? 
+          manufacturer_name : "none",model_name ? model_name : "none", 
+          z2s_zb_devices_table[zb_device_slot].device_uid,
+          z2s_zb_devices_table[zb_device_slot].devices_list_idx);
 
         return true;
       }
@@ -779,9 +784,15 @@ uint8_t Z2S_addZbDeviceTableSlot(
       return zb_device_slot;
     } else {
 
-      memset(&z2s_zb_devices_table[zb_device_slot], 0, sizeof(z2s_zb_device_params_t));
+      memset(
+        &z2s_zb_devices_table[zb_device_slot], 0, 
+        sizeof(z2s_zb_device_params_t));
+
       z2s_zb_devices_table[zb_device_slot].record_id = 3; //V2
-      memcpy(z2s_zb_devices_table[zb_device_slot].ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t));
+      
+      memcpy(
+        z2s_zb_devices_table[zb_device_slot].ieee_addr, ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
 
       if (!Z2S_updateZbDeviceUidIdx(
             zb_device_slot, manufacturer_name, model_name)) {
@@ -1095,8 +1106,7 @@ bool Z2S_loadZbDevicesTable() {
                   (z2s_zb_devices_legacy_2_table + table_index)->v2_params.device_uid, 
                   sizeof(uint32_t));
 
-                Z2S_updateZbDeviceUidIdx(
-                  table_index, nullptr, nullptr);
+                Z2S_updateZbDeviceUidIdx(table_index, nullptr, nullptr);
 
                 memcpy(
                   z2s_zb_devices_table[table_index].device_local_name, 
@@ -1112,16 +1122,31 @@ bool Z2S_loadZbDevicesTable() {
               } break;
             }
             
-            z2s_zb_devices_table[table_index].desc_id = (z2s_zb_devices_legacy_2_table + table_index)->desc_id;
+            z2s_zb_devices_table[table_index].desc_id = 
+              (z2s_zb_devices_legacy_2_table + table_index)->desc_id;
+            
             memcpy(z2s_zb_devices_table[table_index].ieee_addr, 
                    (z2s_zb_devices_legacy_2_table + table_index)->ieee_addr,
                    sizeof(esp_zb_ieee_addr_t));
-            z2s_zb_devices_table[table_index].endpoints_count = (z2s_zb_devices_legacy_2_table + table_index)->endpoints_count;
-            z2s_zb_devices_table[table_index].short_addr = (z2s_zb_devices_legacy_2_table + table_index)->short_addr;
-            z2s_zb_devices_table[table_index].power_source = (z2s_zb_devices_legacy_2_table + table_index)->power_source;
-            z2s_zb_devices_table[table_index].battery_percentage = (z2s_zb_devices_legacy_2_table + table_index)->battery_percentage;
-            z2s_zb_devices_table[table_index].battery_voltage_min = (z2s_zb_devices_legacy_2_table + table_index)->battery_voltage_min;
-            z2s_zb_devices_table[table_index].battery_voltage_max = (z2s_zb_devices_legacy_2_table + table_index)->battery_voltage_max;
+
+            z2s_zb_devices_table[table_index].endpoints_count = 
+              (z2s_zb_devices_legacy_2_table + table_index)->endpoints_count;
+
+            z2s_zb_devices_table[table_index].short_addr = 
+              (z2s_zb_devices_legacy_2_table + table_index)->short_addr;
+
+            z2s_zb_devices_table[table_index].power_source = 
+              (z2s_zb_devices_legacy_2_table + table_index)->power_source;
+
+            z2s_zb_devices_table[table_index].battery_percentage = 
+              (z2s_zb_devices_legacy_2_table + table_index)->battery_percentage;
+
+            z2s_zb_devices_table[table_index].battery_voltage_min = 
+              (z2s_zb_devices_legacy_2_table + table_index)->battery_voltage_min;
+
+            z2s_zb_devices_table[table_index].battery_voltage_max = 
+              (z2s_zb_devices_legacy_2_table + table_index)->battery_voltage_max;
+
             z2s_zb_devices_table[table_index].last_seen_ms = (z2s_zb_devices_legacy_2_table + table_index)->last_seen_ms;
             z2s_zb_devices_table[table_index].keep_alive_ms = (z2s_zb_devices_legacy_2_table + table_index)->keep_alive_ms;
             z2s_zb_devices_table[table_index].timeout_ms = (z2s_zb_devices_legacy_2_table + table_index)->timeout_ms;
@@ -1141,14 +1166,18 @@ bool Z2S_loadZbDevicesTable() {
 
         default: {
 
-          log_i("Zigbee devices table size mismatch %d <> %d, no upgrade is possible", z2s_zb_devices_table_size, sizeof(z2s_zb_devices_table));
+          log_i(
+            "Zigbee devices table size mismatch %d <> %d, no upgrade is possible", 
+            z2s_zb_devices_table_size, sizeof(z2s_zb_devices_table));
           return false;
         } break;
       }
     }//end of failed size comparison
     else {
       
-        if (!Z2S_loadFile(Z2S_ZB_DEVICES_TABLE_ID_V2, (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
+        if (
+          !Z2S_loadFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
+          (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
           
           log_i("Zigbee devices table load failed!");
           return false;
@@ -1169,8 +1198,7 @@ bool Z2S_loadZbDevicesTable() {
 
               case 3: {
 
-                if (!Z2S_updateZbDeviceUidIdx(
-                  table_index, nullptr, nullptr)) {
+                if (!Z2S_updateZbDeviceUidIdx(table_index, nullptr, nullptr)) {
 
                   log_e("Critical error - couldn't get devices list idx!");
                   continue;
@@ -1178,7 +1206,6 @@ bool Z2S_loadZbDevicesTable() {
               } break;
             }
           }
-
           //Z2S_printZbDevicesTableSlots();
           return true;
         }

@@ -1675,10 +1675,10 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
-    .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0x0000, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             TUYA_PRIVATE_CLUSTER_EF00 }}
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_USE_SEND_DATA,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }}
 };
 
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {

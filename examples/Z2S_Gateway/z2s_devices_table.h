@@ -16,8 +16,8 @@
 #include <supla/events.h>
 #include <supla/element.h>
 
-#define Z2S_ZB_DEVICES_MAX_NUMBER  0x20  //32
-#define Z2S_CHANNELS_MAX_NUMBER    0x80  //128
+#define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  //32
+#define Z2S_CHANNELS_MAX_NUMBER     0x80  //128
 #define Z2S_ACTIONS_MAX_NUMBER     0x100 //256
 
 #define MAX_ZB_DEVICE_SUPLA_CHANNELS 0x10 //16
@@ -62,14 +62,14 @@
 #define ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN   (1 << 17)
 #define ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN      (1 << 18)
 
-#define ZBD_BATTERY_PERCENTAGE_MSG 0x01
-#define ZBD_BATTERY_VOLTAGE_MSG    0x02
-#define ZBD_BATTERY_LEVEL_MSG      0x03
-#define ZBD_BATTERY_STATE_MSG      0x04
-#define ZBD_LOW_BATTERY_MSG        0x05
-#define ZBD_BATTERY_RESTORE_MSG    0x06
+#define ZBD_BATTERY_PERCENTAGE_MSG                              0x01
+#define ZBD_BATTERY_VOLTAGE_MSG                                 0x02
+#define ZBD_BATTERY_LEVEL_MSG                                   0x03
+#define ZBD_BATTERY_STATE_MSG                                   0x04
+#define ZBD_LOW_BATTERY_MSG                                     0x05
+#define ZBD_BATTERY_RESTORE_MSG                                 0x06
 
-#define CHANNEL_EXTENDED_DATA_TYPE_NULL 0x00
+#define CHANNEL_EXTENDED_DATA_TYPE_NULL                         0x00
 
 
 typedef struct z2s_legacy_device_params_s {
@@ -445,8 +445,7 @@ bool Z2S_checkChannelFlags(
 void Z2S_syncZbDeviceDescFlags(
   uint32_t devices_desc_slot, uint8_t zb_device_slot);
 
-bool Z2S_setZbDeviceFlags(
-  int8_t device_number_slot, uint32_t flags_to_set);
+bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set);
 
 bool Z2S_clearZbDeviceFlags(
   int8_t device_number_slot, uint32_t flags_to_clear);
