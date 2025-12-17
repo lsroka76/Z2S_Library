@@ -46,9 +46,27 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
             ts0601_cmd_set_temperature_calibration_factor;
             
         _init_sequence = 2; //two steps
+
         _init_temperature_setpoint = 
           ts0601_command_sets_table[_trv_commands_set].\
             ts0601_cmd_set_target_heatsetpoint_min;
+
+        switch (_trv_commands_set) {
+
+
+          case zwt198_cmd_set:
+          case zwt100_cmd_set:
+          case trv602z_cmd_set:
+
+            _schedule_trv_temperature_setpoint_magic_number = 550;
+          break;
+
+
+          default:
+
+            _schedule_trv_temperature_setpoint_magic_number = 0;
+          break;          
+        } 
   } else
     log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
           ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
@@ -1342,6 +1360,15 @@ void Supla::Control::Z2S_TRVInterface::setHvacTemperatureSetpoint(
       "_hvac_temperature_setpoint = %d, "
       "_hvac_temperature_setpoint_pending_ms = %lu", 
       _hvac_temperature_setpoint, _hvac_temperature_setpoint_pending_ms);*/
+
+    /* magic number implementation
+    if (_schedule_trv_temperature_setpoint_magic_number &&
+        hvac_temperature_setpoint == 
+          _schedule_trv_temperature_setpoint_magic_number)
+      return;
+    else
+      sendHvacTemperatureSetpoint(hvac_temperature_setpoint);
+    */
   }
 
 /*****************************************************************************/
@@ -1512,8 +1539,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     /**/if (_trv_hvac && _trv_hvac->isHvacFlagForcedOffBySensor()) {
       
-      if (!_hvac_window_opened)
-        _window_opened_hvac_temperature = hvacTemperatureSetpointHeat;
+      /*if (!_hvac_window_opened)
+        _window_opened_hvac_temperature = hvacTemperatureSetpointHeat;*/
 
       _hvac_window_opened = true;
       if (_trv_system_mode)
