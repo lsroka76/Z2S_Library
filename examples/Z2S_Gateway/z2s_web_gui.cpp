@@ -7211,7 +7211,7 @@ void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
 
 				if (Z2S_checkZbDeviceFlags(
 					Tuya_device_selector_value, 
-					ZBD_USER_DATA_FLAG_TUYA_FORCE_USE_SEND_DATA))
+					ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA))
 					Tuya_data_cmd = TUYA_SEND_CMD;
 
 				bool result = sendTuyaRequestCmdData(
