@@ -1544,10 +1544,12 @@ protected:
   bool _trv_switch_schedule_off = false;
 
   uint8_t _in_schedule_mode = 0;
-  uint32_t _schedule_stored_temperature_setpoint = INT32_MIN;
+  int32_t _schedule_stored_temperature_setpoint = INT32_MIN;
   uint32_t _in_schedule_mode_timer = 0;
 
-  volatile uint32_t _hvac_temperature_setpoint = INT32_MIN;
+  in32_t _schedule_trv_temperature_setpoint_magic_number = 0;
+
+  volatile int32_t _hvac_temperature_setpoint = INT32_MIN;
   volatile uint32_t _hvac_temperature_setpoint_pending_ms = 0;
   
   uint8_t _temperature_calibration_update_attempt = 0;
@@ -1565,11 +1567,11 @@ protected:
   //uint32_t  _temperature_calibration_last_update_ms = 0;
 
   bool _hvac_window_opened = false;
-  uint32_t  _window_opened_hvac_temperature = INT32_MIN;
+  //int32_t  _window_opened_hvac_temperature = INT32_MIN;
 
   uint8_t _init_sequence = 0; //disabled by default
   uint32_t _init_temperature_setpoint = 0;
-  uint32_t _stored_temperature_setpoint = INT32_MIN;
+  int32_t _stored_temperature_setpoint = INT32_MIN;
 
   uint32_t _temperature_ping_ms = 60 * 1000;
   uint32_t _last_temperature_ping_ms = 0;
