@@ -1270,20 +1270,32 @@ void Z2S_syncZbDeviceDescFlags(
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY)
     Z2S_setZbDeviceFlags(
       zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
+  else
+    Z2S_clearZbDeviceFlags(
+      zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN);
 
   if (device_desc_config_flags &
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION)
     Z2S_setZbDeviceFlags(
+      zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_MCU_VERSION_REQUEST);
+  else
+    Z2S_clearZbDeviceFlags(
       zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_MCU_VERSION_REQUEST);
 
   if (device_desc_config_flags &
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC)
     Z2S_setZbDeviceFlags(
       zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC);
+  else
+    Z2S_clearZbDeviceFlags(
+      zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC);
 
   if (device_desc_config_flags &
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_USE_SEND_DATA)
     Z2S_setZbDeviceFlags(
+      zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA);
+  else
+    Z2S_clearZbDeviceFlags(
       zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA);
 }
   
