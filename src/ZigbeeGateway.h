@@ -35,6 +35,7 @@
 
 #define TUYA_REQUEST_CMD                                      0x00 //TUYA_PRIVATE_CLUSTER_EF00
 #define TUYA_QUERY_CMD                                        0x03 //TUYA_PRIVATE_CLUSTER_EF00
+#define TUYA_SEND_CMD                                         0x04 //TUYA_PRIVATE_CLUSTER_EF00
 #define TUYA_SETUP_CMD                                        0xF0 //ESP_ZB_ZCL_CLUSTER_ID_BASIC 
 
 #define IKEA_PRIVATE_CLUSTER                                  0xFC7F

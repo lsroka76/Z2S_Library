@@ -1331,9 +1331,9 @@ void Supla::Control::Z2S_TRVInterface::setHvacTemperatureSetpoint(
     
     setTRVTemperatureSetpoint(hvac_temperature_setpoint);
 
-    if (_hvac_temperature_setpoint_pending_ms)
+    /*if (_hvac_temperature_setpoint_pending_ms)
       if (_hvac_temperature_setpoint == hvac_temperature_setpoint)
-        return;
+        return;*/
 
     _hvac_temperature_setpoint = hvac_temperature_setpoint;
     _hvac_temperature_setpoint_pending_ms = millis();

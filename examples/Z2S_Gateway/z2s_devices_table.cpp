@@ -1253,6 +1253,11 @@ void Z2S_syncZbDeviceDescFlags(
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC)
     Z2S_setZbDeviceFlags(
       zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC);
+
+  if (device_desc_config_flags &
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_USE_SEND_DATA)
+    Z2S_setZbDeviceFlags(
+      zb_device_slot, ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA);
 }
   
 bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set) {
@@ -1427,7 +1432,9 @@ void Z2S_initSuplaChannels() {
 
       device.endpoint = z2s_channels_table[channels_counter].endpoint;
       device.cluster_id = z2s_channels_table[channels_counter].cluster_id;
-      memcpy(device.ieee_addr, z2s_channels_table[channels_counter].ieee_addr, 8);
+      memcpy(
+        device.ieee_addr, z2s_channels_table[channels_counter].ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
       device.short_addr = z2s_channels_table[channels_counter].short_addr;
       device.model_id = z2s_channels_table[channels_counter].model_id;
 
@@ -4473,7 +4480,7 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
   device.endpoint = 0x01;
   device.cluster_id = TUYA_PRIVATE_CLUSTER_EF00;
-  memcpy(device.ieee_addr, ieee_addr, 8);
+  memcpy(device.ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t));
   device.short_addr = short_addr;
   device.model_id = z2s_zb_devices_table[device_number_slot].desc_id;
 

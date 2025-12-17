@@ -3402,13 +3402,10 @@ void buildTuyaCustomClusterTabGUI() {
 												"4 px; font-style: normal; font-weight: normal;");
 
 	Tuya_devices_tab_controls_table[Tuya_device_data_request_button]  = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 "Data request", 
-										 Control::Color::Emerald,
-										 Tuya_custom_cluster_tab, 
-										 TuyaCustomCmdCallback, 
-										 (void*)GUI_CB_SEND_TUYA_REQUEST_FLAG); 
+		ESPUI.addControl(
+			Control::Type::Button, PSTR(empty_str), "Data request", 
+			Control::Color::Emerald, Tuya_custom_cluster_tab, 
+			TuyaCustomCmdCallback, (void*)GUI_CB_SEND_TUYA_REQUEST_FLAG); 
 	
 	Tuya_devices_tab_controls_table[Tuya_device_data_query_button]  = 
 		ESPUI.addControl(Control::Type::Button, 
@@ -7157,184 +7154,122 @@ void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
 
 		uint16_t tsn_id = random(0x0000, 0xFFFF);;
 
-    memcpy(&device.ieee_addr, z2s_zb_devices_table[Tuya_device_selector_value].ieee_addr,8);
-    device.short_addr = z2s_zb_devices_table[Tuya_device_selector_value].short_addr;
+    memcpy(
+			&device.ieee_addr, 
+			z2s_zb_devices_table[Tuya_device_selector_value].ieee_addr, 
+			sizeof(esp_zb_ieee_addr_t));
+    
+		device.short_addr = 
+			z2s_zb_devices_table[Tuya_device_selector_value].short_addr;
 
 		switch ((uint32_t)param) {
 			
 			case GUI_CB_SEND_TUYA_REQUEST_FLAG: {
 
-				uint8_t cmd_dp_id = 
-					ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_datapoint_id_number])->value.toInt();
+				uint8_t cmd_dp_id = ESPUI.getControl(
+						Tuya_devices_tab_controls_table[Tuya_datapoint_id_number])->value.toInt();
 
 				if (cmd_dp_id == 0) {
 
-					updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-												PSTR("Tuya datapoint id must be in range [1...255]!"));
+					updateLabel_P(
+						Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+						PSTR("Tuya datapoint id must be in range [1...255]!"));
 					return;
 				}
 
-				int8_t cmd_dp_type = 
-					ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector])->value.toInt();
+				int8_t cmd_dp_type = ESPUI.getControl(
+					Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector])->value.toInt();
 
 				if (cmd_dp_type < 0) {
 
-					updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-												PSTR("Tuya datapoint type not selected!"));
+					updateLabel_P(
+						Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+						PSTR("Tuya datapoint type not selected!"));
 					return;
 				}
 
-				uint8_t cmd_dp_length = 
-					ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_datapoint_length_number])->value.toInt();
+				uint8_t cmd_dp_length = ESPUI.getControl(
+					Tuya_devices_tab_controls_table[Tuya_datapoint_length_number])->value.toInt();
 
 				if (cmd_dp_type > 58) {
 
-					updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-												PSTR("Tuya datapoint length must be in range [1..58]!"));
+					updateLabel_P(
+						Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+						PSTR("Tuya datapoint length must be in range [1..58]!"));
 					return;
 				}
 
-				int32_t cmd_dp_value = 
-					ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_datapoint_value_number])->value.toInt();
+				int32_t cmd_dp_value = ESPUI.getControl(
+					Tuya_devices_tab_controls_table[Tuya_datapoint_value_number])->value.toInt();
 
-				
-				/*cmd_id = 0x00;
-				
-				uint8_t *custom_cmd_payload = nullptr;
-
-				uint8_t payload_size = 6 + cmd_dp_length; // 6 = tsn(2)+id(1)+type(1)+size(2)
-				
-				if (payload_size > 64) {
-					updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-												Tuya_device_payload_size_error_str);
-					return;
-				}
-
-				const char* payload_value = 
-					ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_datapoint_value_text])->value.c_str();
-
-				log_i("payload_value = %s, length = %u", payload_value, strlen(payload_value));
-
-      	if (cmd_dp_length > 0) {
-						
-					if ((strlen(payload_value) / 2) != cmd_dp_length) {
-						
-						updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-													Tuya_device_payload_size_mismatch_str);
-						return;
-					}
-
-        	char byte_str[3];
-        	byte_str[2] = '\0';
-					
-					custom_cmd_payload = (uint8_t*)malloc(payload_size);
-
-					if (custom_cmd_payload == nullptr) {
-						
-						updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-													PSTR("Error allocating custom command payload buffer!"));
-						return;
-					}
-
-					memset(custom_cmd_payload, 0, payload_size);
-					
-					*(custom_cmd_payload + 0) = (tsn_id & 0xFF00);
-      		*(custom_cmd_payload + 1) = (tsn_id & 0x00FF);
-
-					*(custom_cmd_payload + 2) = cmd_dp_id;
-					*(custom_cmd_payload + 3) = Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_id;
-					*(custom_cmd_payload + 5) = cmd_dp_length;
-
-        	for (int i = 0; i < cmd_dp_length; i++) {
-          		
-						memcpy(byte_str, payload_value + (i * 2), 2);
-          	*(custom_cmd_payload + 6 + i) = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
-						log_i("custom_cmd_payload[%u] = %u(0x%02X)", 
-									6 + i, 
-									*(custom_cmd_payload + 6 + i), 
-									*(custom_cmd_payload + 6 + i));
-        	}
-				} else
-					log_i("Tuya datapoint payload size equals 0"); 
-      	
-				custom_cmd_tsn = (((uint16_t)(*custom_cmd_payload)) << 16) + (*(custom_cmd_payload + 1));
-				
 				Tuya_custom_cmd_dp = cmd_dp_id;
-				current_Tuya_payload_label = Tuya_devices_tab_controls_table[Tuya_device_payload_label];
+
+				current_Tuya_payload_label = 
+					Tuya_devices_tab_controls_table[Tuya_device_payload_label];
+
+				uint8_t Tuya_data_cmd = TUYA_REQUEST_CMD;
+
+				if (Z2S_checkZbDeviceFlags(
+					Tuya_device_selector_value, 
+					ZBD_USER_DATA_FLAG_TUYA_FORCE_USE_SEND_DATA))
+					Tuya_data_cmd = TUYA_SEND_CMD;
+
+				bool result = sendTuyaRequestCmdData(
+					&zbGateway, &device, cmd_dp_id, cmd_dp_type, cmd_dp_value, true, 
+					Tuya_data_cmd);
+
+				if (result) {
+
+					if (*zbGateway.getCustomCmdStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 					
-
-					bool result = zbGateway.sendCustomClusterCmd(&device, 
-																											 device.cluster_id, 
-																											 cmd_id, 
-																											 ESP_ZB_ZCL_ATTR_TYPE_SET, 
-																											 payload_size, 
-																											 custom_cmd_payload, 
-																											 true);
-					*/
-				
-				Tuya_custom_cmd_dp = cmd_dp_id;
-				current_Tuya_payload_label = Tuya_devices_tab_controls_table[Tuya_device_payload_label];
-
-				bool result = sendTuyaRequestCmdData(&zbGateway,
-																						 &device,
-																						 cmd_dp_id,
-																						 cmd_dp_type,
-																						 cmd_dp_value,
-																						 true);
-					if (result) {
-
-						if (*zbGateway.getCustomCmdStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
-						
-							sprintf_P(general_purpose_gui_buffer, 
-												PSTR("Tuya custom cluster data request sent successfully! <br>"
-														 "Datapoint id   = %u(0x%02X)<br>"
-														 "Datapoint type = %s(0x%02X)<br>"
-														 "Datapoint length 	= %u(0x%02X)<br>"
-														 "Datapoint value = %u(0x%02X)"),
-      		            	cmd_dp_id,
-												cmd_dp_id,
-												Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_name,
-												Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_id,
-												cmd_dp_length,
-												cmd_dp_length,
-												cmd_dp_value,
-												cmd_dp_value);
-												
-							updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-														general_purpose_gui_buffer);
-						} else {
-
-							sprintf_P(general_purpose_gui_buffer, 
-												PSTR("Tuya custom cluster data request failed! <br>"
-														 "Status         = %u(0x%02X)<br>"
-														 "Datapoint id   = %u(0x%02X)<br>"
-														 "Datapoint type = %s(0x%02X)<br>"
-													   "Datapoint length 	= %u(0x%02X)<br>"
-														 "Datapoint value = %u(0x%02X)"),
-												*zbGateway.getCustomCmdStatusLastResult(),
-												*zbGateway.getCustomCmdStatusLastResult(),
-      		            	cmd_dp_id,
-												cmd_dp_id,
-												Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_name,
-												Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_id,
-												cmd_dp_length,
-												cmd_dp_length,
-												cmd_dp_value,
-												cmd_dp_value);
-							updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-														general_purpose_gui_buffer);
-							updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_payload_label], 
-														three_dots_str);
-						}
+						sprintf_P(general_purpose_gui_buffer, 
+											PSTR("Tuya custom cluster data request sent successfully! <br>"
+														"Datapoint id   = %u(0x%02X)<br>"
+														"Datapoint type = %s(0x%02X)<br>"
+														"Datapoint length 	= %u(0x%02X)<br>"
+														"Datapoint value = %u(0x%02X)"),
+											cmd_dp_id,
+											cmd_dp_id,
+											Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_name,
+											Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_id,
+											cmd_dp_length,
+											cmd_dp_length,
+											cmd_dp_value,
+											cmd_dp_value);
+											
+						updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+													general_purpose_gui_buffer);
 					} else {
 
-							updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
-														device_query_failed_str);
-							updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_payload_label], 
-														three_dots_str);
+						sprintf_P(general_purpose_gui_buffer, 
+											PSTR("Tuya custom cluster data request failed! <br>"
+														"Status         = %u(0x%02X)<br>"
+														"Datapoint id   = %u(0x%02X)<br>"
+														"Datapoint type = %s(0x%02X)<br>"
+														"Datapoint length 	= %u(0x%02X)<br>"
+														"Datapoint value = %u(0x%02X)"),
+											*zbGateway.getCustomCmdStatusLastResult(),
+											*zbGateway.getCustomCmdStatusLastResult(),
+											cmd_dp_id,
+											cmd_dp_id,
+											Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_name,
+											Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_id,
+											cmd_dp_length,
+											cmd_dp_length,
+											cmd_dp_value,
+											cmd_dp_value);
+						updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+													general_purpose_gui_buffer);
+						updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_payload_label], 
+													three_dots_str);
 					}
-				//if (custom_cmd_payload) 
-				//	free(custom_cmd_payload);
+				} else {
+
+						updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label], 
+													device_query_failed_str);
+						updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_payload_label], 
+													three_dots_str);
+				}
 			} break;
 
 			case GUI_CB_SEND_TUYA_QUERY_FLAG: {

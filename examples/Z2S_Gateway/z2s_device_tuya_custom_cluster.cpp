@@ -2663,7 +2663,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
 
       processTuyaDINRCBOEMTemp(
-        channel_number_slot, payload_size, payload, model_id);
+channel_number_slot, payload_size, payload, model_id);
     break;
 
     default: 
@@ -2688,10 +2688,10 @@ void processTuyaCustomCluster(
 
     case TUYA_DATA_REPORT_CMD:
     case 0x01:
+    case 0x05:
     case 0x06:
       
-      processTuyaDataReport(
-        ieee_addr, endpoint, payload_size, payload); 
+      processTuyaDataReport(ieee_addr, endpoint, payload_size, payload); 
     break;
 
 

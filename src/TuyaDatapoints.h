@@ -491,25 +491,29 @@ inline void makeTuyaDPEnum8(
 
 bool sendTuyaRequestCmdBool(
     ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dp_id, 
-    bool dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC);
+    bool dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
+    uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
 
 /*---------------------------------------------------------------------------*/
 
 bool sendTuyaRequestCmdEnum8(
     ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dp_id, 
-    uint8_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC);
+    uint8_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
+    uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
 
 /*---------------------------------------------------------------------------*/
 
 bool sendTuyaRequestCmdValue32(
     ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dp_id, 
-    uint32_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC);
+    uint32_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
+    uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
 
 /*---------------------------------------------------------------------------*/
 
 bool sendTuyaRequestCmdData(
     ZigbeeGateway *gateway, zbg_device_params_t *device,uint8_t dp_id, 
-    uint8_t dp_type, uint32_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC);
+    uint8_t dp_type, uint32_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
+    uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
 
 /*---------------------------------------------------------------------------*/
 
