@@ -1177,6 +1177,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 void Supla::Control::Z2S_TRVInterface::sendHvacTemperatureSetpoint(
   int32_t temperature_setpoint) {
 
+  //log_i("temperature_setpoint = %d", temperature_setpoint);
 
   if (_trv_hvac->isWeeklyScheduleEnabled()) { 
     if ((abs(_trv_hvac->getTemperatureSetpointHeat() - 
@@ -1189,7 +1190,7 @@ void Supla::Control::Z2S_TRVInterface::sendHvacTemperatureSetpoint(
       _trv_hvac->applyNewRuntimeSettings(
         SUPLA_HVAC_MODE_NOT_SET, temperature_setpoint, 0, 0);
         
-      setTRVTemperatureSetpoint(temperature_setpoint);
+      //setTRVTemperatureSetpoint(temperature_setpoint);
 
       log_i(
         "\n\rChanging weekly schedule program temperature: \n\rprogram id "
@@ -1203,7 +1204,7 @@ void Supla::Control::Z2S_TRVInterface::sendHvacTemperatureSetpoint(
     _trv_hvac->applyNewRuntimeSettings(
         SUPLA_HVAC_MODE_HEAT, temperature_setpoint, 0, 0);
         
-    setTRVTemperatureSetpoint(temperature_setpoint);
+    //setTRVTemperatureSetpoint(temperature_setpoint);
   }
 }
 
@@ -1327,9 +1328,20 @@ void Supla::Control::Z2S_TRVInterface::turnOffTRVScheduleMode() {
 
 void Supla::Control::Z2S_TRVInterface::setHvacTemperatureSetpoint(
   int32_t hvac_temperature_setpoint) {
+    
+    setTRVTemperatureSetpoint(hvac_temperature_setpoint);
+
+    if (_hvac_temperature_setpoint_pending_ms)
+      if (_hvac_temperature_setpoint == hvac_temperature_setpoint)
+        return;
 
     _hvac_temperature_setpoint = hvac_temperature_setpoint;
     _hvac_temperature_setpoint_pending_ms = millis();
+
+    /*log_i(
+      "_hvac_temperature_setpoint = %d, "
+      "_hvac_temperature_setpoint_pending_ms = %lu", 
+      _hvac_temperature_setpoint, _hvac_temperature_setpoint_pending_ms);*/
   }
 
 /*****************************************************************************/
@@ -1425,6 +1437,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   if (_hvac_temperature_setpoint_pending_ms && 
       ((millis() - _hvac_temperature_setpoint_pending_ms) > 350)) {
+
+    /*log_i(
+      "_hvac_temperature_setpoint_pending_ms %lu", 
+      _hvac_temperature_setpoint_pending_ms);*/
 
     _hvac_temperature_setpoint_pending_ms = 0;
     sendHvacTemperatureSetpoint(_hvac_temperature_setpoint);

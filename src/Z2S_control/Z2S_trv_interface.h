@@ -1547,8 +1547,8 @@ protected:
   uint32_t _schedule_stored_temperature_setpoint = INT32_MIN;
   uint32_t _in_schedule_mode_timer = 0;
 
-  uint32_t _hvac_temperature_setpoint = INT32_MIN;
-  uint32_t _hvac_temperature_setpoint_pending_ms = 0;
+  volatile uint32_t _hvac_temperature_setpoint = INT32_MIN;
+  volatile uint32_t _hvac_temperature_setpoint_pending_ms = 0;
   
   uint8_t _temperature_calibration_update_attempt = 0;
   int32_t _temperature_calibration_offset      = 0;
