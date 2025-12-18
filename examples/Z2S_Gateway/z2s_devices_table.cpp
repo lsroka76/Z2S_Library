@@ -1318,7 +1318,7 @@ bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set) {
       (device_number_slot < Z2S_ZB_DEVICES_MAX_NUMBER) && 
       (z2s_zb_devices_table[device_number_slot].record_id > 0) &&
       (!(z2s_zb_devices_table[device_number_slot].user_data_flags & 
-       flags_to_set)) {
+       flags_to_set))) {
 
     z2s_zb_devices_table[device_number_slot].user_data_flags |= flags_to_set;
 
@@ -1329,8 +1329,7 @@ bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set) {
       return true;
     }
     return false;
-  }
-  else 
+  } else 
     return false;
 }
 
