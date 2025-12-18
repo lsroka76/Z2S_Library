@@ -354,6 +354,9 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     if (msg_id == TRV_SYSTEM_MODE_MSG) 
       Supla_Z2S_TRVInterface->setTRVSystemMode(msg_value);
 
+    if (msg_id == TRV_HEATING_SETPOINT_MSG) 
+      Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);  
+
     if (msg_id == TRV_RUNNING_STATE_MSG) {
 
       Supla_Z2S_TRVInterface->setTRVRunningState(msg_value);
