@@ -723,6 +723,21 @@ bool Z2S_updateZbDeviceUidIdx(
   uint16_t devices_desc_table_size = 
     sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
 
+  for (uint32_t devices_desc_counter = 0; 
+    devices_desc_counter < devices_desc_table_size; devices_desc_counter++) {
+
+    uint32_t device_desc_id = 
+      Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id;
+    
+    if (z2s_zb_devices_table[zb_device_slot].desc_id == device_desc_id) {
+                   
+      log_i("Syncing flags for model 0x%04X", device_desc_id);
+
+      Z2S_syncZbDeviceDescFlags(devices_desc_counter, zb_device_slot);
+      break;
+    }
+  }
+
   for (int devices_list_counter = 0; 
        devices_list_counter < devices_list_table_size; 
        devices_list_counter++) {
@@ -733,8 +748,6 @@ bool Z2S_updateZbDeviceUidIdx(
 
         z2s_zb_devices_table[zb_device_slot].devices_list_idx = 
           devices_list_counter;
-        
-        Z2S_syncZbDeviceDescFlags(devices_list_counter, zb_device_slot);
 
         log_i("device uid = %lu, devices list index = %lu", 
               z2s_zb_devices_table[zb_device_slot].device_uid,
@@ -1303,7 +1316,9 @@ bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set) {
 
   if ((device_number_slot >= 0) && 
       (device_number_slot < Z2S_ZB_DEVICES_MAX_NUMBER) && 
-      (z2s_zb_devices_table[device_number_slot].record_id > 0)) {
+      (z2s_zb_devices_table[device_number_slot].record_id > 0) &&
+      (!(z2s_zb_devices_table[device_number_slot].user_data_flags & 
+       flags_to_set)) {
 
     z2s_zb_devices_table[device_number_slot].user_data_flags |= flags_to_set;
 
@@ -1324,7 +1339,10 @@ bool Z2S_clearZbDeviceFlags(
 
   if ((device_number_slot >= 0) && 
       (device_number_slot < Z2S_ZB_DEVICES_MAX_NUMBER) && 
-      z2s_zb_devices_table[device_number_slot].record_id > 0) {
+      (z2s_zb_devices_table[device_number_slot].record_id > 0) &&
+      (z2s_zb_devices_table[device_number_slot].user_data_flags & 
+       flags_to_clear)) {
+
 
     z2s_zb_devices_table[device_number_slot].user_data_flags &= ~flags_to_clear;
     

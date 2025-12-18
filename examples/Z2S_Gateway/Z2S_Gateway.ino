@@ -1102,7 +1102,8 @@ if (GUIstarted)
                     device_recognized = true;
 
                     joined_device->endpoint = endpoint_id;
-                    joined_device->model_id = Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id;
+                    joined_device->model_id = 
+                      Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id;
                         
                     if (endpoint_counter == 0) { 
 
