@@ -1582,7 +1582,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     if (_hvac_window_opened && _trv_system_mode &&
         (abs(
-          hvacTemperatureSetpointHeat - _trv_temperature_setpoint) < 40))
+          hvacTemperatureSetpointHeat - _trv_temperature_setpoint) < 50))
       _hvac_window_opened = false;
     
     if (_trv_hvac && 
