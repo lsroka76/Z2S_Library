@@ -22,9 +22,8 @@
 
 #include <supla/time.h>
 
-Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(ZigbeeGateway *gateway, 
-                                                     zbg_device_params_t *device, 
-                                                     uint8_t z2s_function)
+Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function)
   : _gateway(gateway), _z2s_function(z2s_function) {
 
       memcpy(&_device, device, sizeof(zbg_device_params_t));     
@@ -260,7 +259,8 @@ void Supla::Control::Z2S_RollerShutter::ping() {
 
 void Supla::Control::Z2S_RollerShutter::onTimer() {
 
-  if (newTargetPositionAvailable && (targetPosition == STOP_POSITION)) {
+  if (newTargetPositionAvailable && ((targetPosition == STOP_POSITION) ||
+     (targetPosition == STOP_REQUEST))) {
     
     log_i("newTargetPositionAvailable = STOP_POSITION");
 

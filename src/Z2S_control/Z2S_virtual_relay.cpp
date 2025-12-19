@@ -40,6 +40,8 @@ void Supla::Control::Z2S_VirtualRelay::onInit() {
   }*/
   if (_timeout_enabled)
     channel.setStateOffline();
+  
+  initDone = true;
 }
 
 void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
