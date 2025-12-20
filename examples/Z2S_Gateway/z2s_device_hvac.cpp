@@ -486,7 +486,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
         case 0: 
         
           if (!Supla_Z2S_HvacBase->isThermostatDisabled())
-            Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, true); 
+            Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, false); 
           
           Supla_Z2S_TRVInterface->setOutputValueFromRemote(0);
 
