@@ -521,7 +521,10 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
         } break;
         
         
-        case 1: {
+        case 1:
+        case 2:
+        case 3:
+        case 4: {
 
           if (z2s_channels_table[channel_number_slot].user_data_flags & 
               USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) {
@@ -553,6 +556,10 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
             Supla_Z2S_TRVInterface->setTRVSystemMode(0);
           }
         } break;
+
+        case 5:
+          Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
+        break;
       }        
     } break;
 
