@@ -2351,6 +2351,34 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => set PID mode<br>"
 																	"1 => set 0/1 mode" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_COMFORT_TEMPERATURE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature (COMFORT)",
+    .Tuya_datapoint_description = "Enter numeric value between 50 and 300<br>"
+																	"1 = 0.1°C" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_ECO_TEMPERATURE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature (ECO)",
+    .Tuya_datapoint_description = "Enter numeric value between 50 and 300<br>"
+																	"1 = 0.1°C" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_HOLIDAY_TEMPERATURE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature (HOLIDAY)",
+    .Tuya_datapoint_description = "Enter numeric value between 50 and 300<br>"
+																	"1 = 0.1°C" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_FROST_TEMPERATURE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature (ANTIFROST)",
+    .Tuya_datapoint_description = "Enter numeric value between 50 and 300<br>"
+																	"1 = 0.1°C" },
 		
 };
 

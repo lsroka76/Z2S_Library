@@ -502,7 +502,9 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     } break;
 
 
+    case TRV_SCHEDULE_MODE_ALT_MSG:
     case TRV_SCHEDULE_MODE_MSG: { //0:off, 1:on
+    
 
       log_i("msgZ2SDeviceHvac - TRV_SCHEDULE_MODE_MSG: 0x%x", 
             msg_value);
@@ -650,7 +652,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     } break;
 
 
-    case TRV_SCHEDULE_MODE_ALT_MSG: {
+    /*case TRV_SCHEDULE_MODE_ALT_MSG: {
 
       log_i("msgZ2SDeviceHvac - TRV_SCHEDULE_MODE_ALT_MSG: 0x%x", 
             msg_value);
@@ -661,7 +663,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
       z2s_channels_table[channel_number_slot].user_data_2 = 1;
 
       Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
-    } break;
+    } break;*/
 
 
     default: 
