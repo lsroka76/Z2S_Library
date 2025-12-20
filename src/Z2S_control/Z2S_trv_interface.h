@@ -899,7 +899,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
 
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
-    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
+    .ts0601_cmd_set_target_heatsetpoint_max          =  0x0B54, //2900 0x0DAC, //3500
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x72 },
 

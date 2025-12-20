@@ -345,6 +345,8 @@
 #define TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP                   0x04 //RAW?
 #define TUYA_RGBWCT_LED_EF00_COLOR_DP                               0x3D //RAW
 
+#define                 0x09
+#define TUYA_TS0601_TRV_TRV602Z_MINIMAL_TEMPERATURE_DP              0x0A
 #define TUYA_TS0601_TRV_TRV602Z_MOTOR_THRUST_DP                     0x6E
 #define TUYA_TS0601_TRV_TRV602Z_DISPLAY_BRIGHTNESS_DP               0x6F
 #define TUYA_TS0601_TRV_TRV602Z_SCREEN_ORIENTATION_DP               0x71
