@@ -2724,6 +2724,41 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_lepzuhto", .model_name = "TS011F",
+    .z2s_device_uid = 13110,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_cayepv1a", .model_name = "TS011F",
+    .z2s_device_uid = 13115,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_qystbcjg", .model_name = "TS011F",
+    .z2s_device_uid = 13120,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_303avxxt", .model_name = "TS011F",
+    .z2s_device_uid = 13125,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_ibefeicf", .model_name = "TS011F",
+    .z2s_device_uid = 13130,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_zjchz7pd", .model_name = "TS011F",
+    .z2s_device_uid = 13135,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_zv6x8bt2", .model_name = "TS011F",
+    .z2s_device_uid = 13140,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "ADEO", .model_name = "LDSENK02F",
     .z2s_device_uid = 13200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
@@ -2808,8 +2843,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "HOBEIAN", .model_name = "TS0044",
     .z2s_device_uid = 13535,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
 	  .z2s_device_endpoints_count = 4,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
@@ -2817,6 +2853,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_kfu8zapd", .model_name = "TS0044",
     .z2s_device_uid = 13600,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+	  .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 3, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 4, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
+  {	.manufacturer_name = "_TZ3000_5tqxpine", .model_name = "TS0044",
+    .z2s_device_uid = 13605,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
 	  .z2s_device_endpoints_count = 4,
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
@@ -3843,6 +3888,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_eg7awg6a", .model_name = "TS130F",
+    .z2s_device_uid = 25115,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_fccpjz5z", .model_name = "TS130F",
     .z2s_device_uid = 25200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
@@ -4218,9 +4268,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_gkfbdvyx", .model_name = "TS0601",
     .z2s_device_uid = 32000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
-    .z2s_device_endpoints_count = 1},
-
-
+    .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };
 #endif

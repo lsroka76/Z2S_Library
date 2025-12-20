@@ -86,6 +86,8 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler {
     uint32_t _postponed_turn_on_ms = 0;
 };
 
+//class LocalAction
+
 };  // namespace Supla
 
 #endif
