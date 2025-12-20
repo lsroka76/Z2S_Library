@@ -521,7 +521,7 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
         } break;
         
         
-        case 1:
+        //case 1:
         case 2:
         case 3:
         case 4: {
@@ -557,6 +557,8 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
           }
         } break;
 
+
+        case 1:
         case 5:
           Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
         break;
