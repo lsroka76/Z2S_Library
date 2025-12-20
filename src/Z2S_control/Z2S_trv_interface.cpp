@@ -781,12 +781,16 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_off_dp_value_off;
           } break;
         }
-            
-        sendTuyaRequestCmdData(_gateway, 
-                               &_device, 
-                               system_mode_dp_id,
-                               system_mode_dp_type,
-                               system_mode_value); 
+        
+        if (_trv_commands_set == trv602z_cmd_set) {
+
+          if ((_trv_system_mode == 0) && (trv_system_mode == 1))
+            system_mode_value = 0x05;
+        }
+
+        sendTuyaRequestCmdData(
+          _gateway, &_device, system_mode_dp_id, system_mode_dp_type, 
+          system_mode_value); 
 
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
@@ -1280,6 +1284,11 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
 void Supla::Control::Z2S_TRVInterface::setTRVSystemMode(
     uint8_t trv_system_mode) {
 
+  if ((trv_system_mode == 1) && (_trv_system_mode == 0))
+    _trv_turn_on = true;
+  else
+    _trv_turn_on = false;
+
   _trv_system_mode = trv_system_mode;
   _trv_system_mode_updated = true;
   refreshTimeout();
@@ -1580,7 +1589,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVTemperatureSetpoint(hvacTemperatureSetpointHeat);   
     }
 
-    if (_hvac_window_opened && _trv_system_mode &&
+    if (_hvac_window_opened && (_trv_system_mode == 1) &&
         (abs(
           hvacTemperatureSetpointHeat - _trv_temperature_setpoint) < 50))
       _hvac_window_opened = false;

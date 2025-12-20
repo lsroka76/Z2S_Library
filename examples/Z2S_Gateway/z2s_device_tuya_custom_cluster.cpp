@@ -384,6 +384,7 @@ void processTuyaHvacDataReport(
       /*bool is_scheduled_mode_on = (schedule_mode_value_on < 0x80) ?
         (Tuya_read_dp_result.dp_value == schedule_mode_value_on) :
         ((1 << Tuya_read_dp_result.dp_value) & schedule_mode_value_on);*/
+      if (Tuya_read_dp_result.dp_value < 7)
       if ((schedule_mode_value_on >= 0x80) &&
           ((1 << Tuya_read_dp_result.dp_value) & schedule_mode_value_on))
         msgZ2SDeviceHvac(

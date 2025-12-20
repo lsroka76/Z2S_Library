@@ -843,7 +843,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     
     .ts0601_cmd_on_dp_id                             =  0x02,
     .ts0601_cmd_on_dp_type                           =  TUYA_DP_TYPE_ENUM,
-    .ts0601_cmd_on_dp_value_on                       =  07,//0xAE, //0x03,
+    .ts0601_cmd_on_dp_value_on                       =  03, //07,//0xAE, //0x03,
 
     .ts0601_cmd_off_dp_id                            =  0x02,
     .ts0601_cmd_off_dp_type                          =  TUYA_DP_TYPE_ENUM,
@@ -865,7 +865,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_schedule_mode_dp_id              =  0x02,
     .ts0601_cmd_set_schedule_mode_dp_type            =  TUYA_DP_TYPE_ENUM,
     //null
-    .ts0601_cmd_set_schedule_mode_dp_value_on        =  0xBE, //0x04, //0xB6, 
+    .ts0601_cmd_set_schedule_mode_dp_value_on        =  0xB6, //0x04, //0xB6, 
     .ts0601_cmd_set_schedule_mode_dp_value_off       =  0xFF,
 
     .ts0601_cmd_set_child_lock_dp_id                 =  0x07,
@@ -1508,8 +1508,9 @@ protected:
 
   HvacBaseEE *_trv_hvac = nullptr;
 
-  uint8_t _trv_system_mode         = 0;
+  uint8_t _trv_system_mode         = 0xFF; //unknown state
   bool    _trv_system_mode_updated = false;
+  bool    _trv_turn_on = false;
 
   uint8_t _trv_running_state         = 0;
   bool    _trv_running_state_updated = false;

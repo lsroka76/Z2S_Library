@@ -2374,11 +2374,10 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
 																	"1 = 0.1°C" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
-    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_FROST_TEMPERATURE_DP,
-    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
-    .Tuya_datapoint_name 	 			= "Temperature (ANTIFROST)",
-    .Tuya_datapoint_description = "Enter numeric value between 50 and 300<br>"
-																	"1 = 0.1°C" },
+    .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_FROST_PROTECTION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Frost protection (on/off)",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 1" },
 		
 };
 
