@@ -897,7 +897,6 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_local_temperature_factor         =  0x0A,
     .ts0601_cmd_set_temperature_calibration_factor   =  0x0A,
     
-
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0D7A, //3450
 

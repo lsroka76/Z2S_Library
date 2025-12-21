@@ -2650,8 +2650,11 @@ void Z2S_onLumiCustomClusterReceive(
           float lumi_energy = 
             *(float *)(attribute->data.value + lumi_em_position);
 
+          log_i("LUMI_ATTRIBUTE_ENERGY_ID %f4.2", lumi_energy);
+
           msgZ2SDeviceElectricityMeter(
-            channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, lumi_energy); 
+            channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, 
+            lumi_energy * 1000); 
         }
         lumi_em_position = scanLumiPayload(
           LUMI_ATTRIBUTE_VOLTAGE_ID, ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
@@ -2663,7 +2666,7 @@ void Z2S_onLumiCustomClusterReceive(
             *(float *)(attribute->data.value + lumi_em_position);
 
           msgZ2SDeviceElectricityMeter(
-            channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, lumi_voltage / 10); 
+            channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, lumi_voltage * 10); 
         }
         lumi_em_position = scanLumiPayload(
           LUMI_ATTRIBUTE_CURRENT_ID, ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
@@ -2675,7 +2678,7 @@ void Z2S_onLumiCustomClusterReceive(
             *(float *)(attribute->data.value + lumi_em_position);
 
           msgZ2SDeviceElectricityMeter(
-            channel_number_slot, Z2S_EM_CURRENT_A_SEL, lumi_current); 
+            channel_number_slot, Z2S_EM_CURRENT_A_SEL, lumi_current * 100); 
         }
         lumi_em_position = scanLumiPayload(
           LUMI_ATTRIBUTE_POWER_ID, ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
@@ -3437,12 +3440,22 @@ void Z2S_onElectricalMeasurementReceive(
   if (channel_number_slot < 0) {
     
     log_e("no electricity meter channel found for address %s", ieee_addr_str);
+
     return;
   }
 
   if (attribute->data.value == nullptr) {
       
     log_e("missing data value for address %s", ieee_addr_str);
+
+    return;
+  }
+
+  if (z2s_channels_table[channel_number_slot].model_id ==
+      Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET) {
+
+    log_i("LumiEM active - skipping EM attribute reporting");
+
     return;
   }
 
@@ -3621,9 +3634,11 @@ void Z2S_onAnalogInputReceive(
 
         case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
 
-          channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
-                                                          SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                          LUMI_AIR_QUALITY_SENSOR_VOC_SID);    
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            ieee_addr, endpoint, cluster, 
+            SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+            LUMI_AIR_QUALITY_SENSOR_VOC_SID);    
+
           if (channel_number_slot < 0) {
     
             log_e("no GPM channel found for address %s", ieee_addr_str);
