@@ -506,13 +506,12 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     case TRV_SCHEDULE_MODE_MSG: { //0:off, 1:on
     
 
-      log_i("msgZ2SDeviceHvac - TRV_SCHEDULE_MODE_MSG: 0x%x", 
-            msg_value);
+      log_i("msgZ2SDeviceHvac - TRV_SCHEDULE_MODE_MSG: 0x%x::0x%x", 
+            msg_id, msg_value);
 
       switch (msg_value) {
    
         
-        //case 0: Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_TURN_ON); break;
         case 0: {
 
           if (z2s_channels_table[channel_number_slot].user_data_flags & 
@@ -532,27 +531,22 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
             if (z2s_channels_table[channel_number_slot].user_data_flags & 
                 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) {
                   
-                    log_i("USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE & USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL");
-                    Supla_Z2S_HvacBase->handleAction(0, Supla::TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES);
+                    log_i(
+                      "USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE & "
+                      "USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL");
+
+                    Supla_Z2S_HvacBase->handleAction(
+                      0, Supla::TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES);
             } else {
               
               log_i("USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE");
-              Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE, true); 
-            }
-            
-            /*z2s_channels_table[channel_number_slot].user_data_flags |= 
-              USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
-            z2s_channels_table[channel_number_slot].user_data_2 = 1; *///now used for hvac_fixed_temperature
-            
-            //Supla_Z2S_HvacBase->applyNewRuntimeSettings(SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE, 0);
+              Supla_Z2S_HvacBase->setTargetMode(
+                SUPLA_HVAC_MODE_CMD_WEEKLY_SCHEDULE, true); 
+            }              
             Supla_Z2S_TRVInterface->turnOffTRVScheduleMode();
-            //Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(
-            //Supla_Z2S_HvacBase->setTemperatureSetpointHeat(msg_value);
-
           } else {
 
             Supla_Z2S_HvacBase->setTargetMode(SUPLA_HVAC_MODE_OFF, false); 
-            
             Supla_Z2S_TRVInterface->setTRVSystemMode(0);
           }
         } break;

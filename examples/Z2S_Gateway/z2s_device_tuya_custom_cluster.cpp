@@ -388,11 +388,12 @@ void processTuyaHvacDataReport(
       if ((schedule_mode_value_on >= 0x80) &&
           ((1 << Tuya_read_dp_result.dp_value) & schedule_mode_value_on))
         msgZ2SDeviceHvac(
-          channel_number_slot_2, TRV_SCHEDULE_MODE_ALT_MSG, Tuya_read_dp_result.dp_value);
+          channel_number_slot_2, TRV_SCHEDULE_MODE_ALT_MSG, 
+          Tuya_read_dp_result.dp_value);
       //if (is_scheduled_mode_on)
       if (Tuya_read_dp_result.dp_value == schedule_mode_value_on)
         msgZ2SDeviceHvac(
-          channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 1);
+          channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 2); //adjusted
     }
   } 
 
