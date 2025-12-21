@@ -8374,8 +8374,8 @@ void printSizeOfClasses() {
         "\n\rGPM %u"
         "\n\rIPAddress %u"
         "\n\rNetworkServer %u"
-        "\n\rNetworkClient %u",
-        "\n\rZigbeeGateway %u"
+        "\n\rNetworkClient %u"
+        "\n\rZigbeeGateway %u",
         sizeof(Supla::Control::Relay),
         sizeof(Supla::Control::VirtualRelay),
         sizeof(Supla::Control::Z2S_VirtualRelay),
