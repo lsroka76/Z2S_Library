@@ -260,6 +260,7 @@
 #define Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2                  0x5602
 
 #define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F                0x5610
+#define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F                0x5611
 
 #define Z2S_DEVICE_DESC_HVAC_START                          0x6000
 
@@ -1247,6 +1248,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { SONOFF_CUSTOM_CLUSTER_2 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
@@ -3029,6 +3035,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "LUMI", .model_name = "lumi.sensor_86sw1",
     .z2s_device_uid = 15400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "LUMI", .model_name = "lumi.sensor_switch",
+    .z2s_device_uid = 15450,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "Remote Control N2",

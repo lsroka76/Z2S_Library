@@ -4115,18 +4115,23 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, cluster 0x%x, cmd id 0x%x", ieee_addr_str, endpoint, cluster_id, command_id);
+  log_i(
+    "%s, endpoint 0x%x, cluster 0x%x, cmd id 0x%x", ieee_addr_str, endpoint,
+     cluster_id, command_id);
   
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                            ALL_SUPLA_CHANNEL_TYPES/*SUPLA_CHANNELTYPE_ACTIONTRIGGER*/, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ALL_SUPLA_CHANNEL_TYPES
+    /*SUPLA_CHANNELTYPE_ACTIONTRIGGER*/, NO_CUSTOM_CMD_SID);
+
   if (channel_number_slot < 0) {
-    //log_i(_no_channel_found_str, ieee_addr);
+  
     no_channel_found_error_func(ieee_addr_str);
     return false;
   }
   
-  log_i("z2s_channels_table[channel_number_slot].Supla_channel 0x%x", 
-        z2s_channels_table[channel_number_slot].Supla_channel);
+  log_i(
+    "z2s_channels_table[channel_number_slot].Supla_channel 0x%x", 
+    z2s_channels_table[channel_number_slot].Supla_channel);
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
     
@@ -4187,7 +4192,8 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
         SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
 
       if (channel_number_slot < 0)
-        log_i("No Livarno device channel found for address %s", ieee_addr_str);
+        log_i(
+          "No Livarno device channel found for address %s", ieee_addr_str);
       else 
         msgZ2SDeviceActionTrigger(channel_number_slot);
       return true;
@@ -4203,13 +4209,17 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
     case Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F:
     case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: {
       
-      log_i("IKEA command: cluster(0x%x), command id(0x%x), ", cluster_id, command_id);
+      log_i(
+        "IKEA command: cluster(0x%x), command id(0x%x), ", cluster_id, 
+        command_id);
+
       int8_t sub_id = 0x7F;
 
       if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x42))
         sub_id = -1;
       else if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && (command_id == 0x01)) {
-        if ((Styrbar_ignore_button_1) && (millis() - Styrbar_timer < 1500)) return true;
+        if ((Styrbar_ignore_button_1) && (millis() - Styrbar_timer < 1500)) 
+          return true;
         else {
           sub_id = IKEA_CUSTOM_CMD_BUTTON_1_PRESSED_SID;
           Styrbar_ignore_button_1 = false;
@@ -4249,8 +4259,10 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
       }  
       if (sub_id == 0x7F) return false;
 
-      channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+      channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+        SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+
       if (channel_number_slot < 0)
         log_i("No IKEA device channel found for address %s", ieee_addr_str);
       else 
@@ -4261,11 +4273,15 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:  
       
-      return processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer); break;
+      return processIkeaSymfoniskCommands(
+        ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
+      break;
 
     case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON:  //this will never happen
       
-      return processIkeaSymfoniskCommands(ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer); break;
+      return processIkeaSymfoniskCommands(
+        ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
+    break;
 
     case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1: {
       
@@ -4347,15 +4363,28 @@ bool Z2S_onCustomCmdReceive( esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, ui
 
         switch (command_id) {
 
-          case 0: sub_id = TUYA_CUSTOM_CMD_BUTTON_HELD_SID; break;
 
-          case 1: sub_id = TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID; break;
+          case 0: 
+          
+            sub_id = TUYA_CUSTOM_CMD_BUTTON_HELD_SID; 
+          break;
 
-          case 2: sub_id = TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID; break;
+
+          case 1: 
+          
+            sub_id = TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID; 
+          break;
+
+
+          case 2: 
+          
+            sub_id = TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID; 
+          break;
         } 
 
-        channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+          SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
         if (channel_number_slot < 0)
           no_channel_found_error_func(ieee_addr_str);
         else 
@@ -4432,9 +4461,10 @@ void Z2S_rebuildZbDeviceSuplaChannels(uint8_t device_number_slot) {
     uint8_t endpoint_id = (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count == 1) ? 
                            1 : Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints[endpoint_counter].endpoint_id; 
                                         
-    uint32_t z2s_device_desc_id = (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count == 1) ?
-                                   Z2S_DEVICES_LIST[devices_list_idx].z2s_device_desc_id :
-                                   Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints[endpoint_counter].z2s_device_desc_id;
+    uint32_t z2s_device_desc_id = 
+      (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count == 1) ?
+      Z2S_DEVICES_LIST[devices_list_idx].z2s_device_desc_id :
+      Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints[endpoint_counter].z2s_device_desc_id;
 
     device.endpoint = endpoint_id;
     device.model_id = z2s_device_desc_id;
@@ -4461,28 +4491,29 @@ void Z2S_rebuildSuplaChannels() {
       ieee_addr_to_str(ieee_addr_str, esp_zb_ieee_addr);
       log_i("checking IEEE address %s", ieee_addr_str);
   
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(esp_zb_ieee_addr, 
-                                                              -1, 
-                                                              0, 
-                                                              ALL_SUPLA_CHANNEL_TYPES, 
-                                                              NO_CUSTOM_CMD_SID);
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        esp_zb_ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   
       if ((channel_number_slot < 0)) { // && (_rebuild_Supla_channels_on_start == 1)) {
 
-        log_i("No channels for IEEE address %s, ZB device #%02u found - trying to rebuild", 
-              esp_zb_ieee_addr, devices_counter);
+        log_i(
+          "No channels for IEEE address %s, ZB device #%02u found - "
+          "trying to rebuild", esp_zb_ieee_addr, devices_counter);
 
         Z2S_rebuildZbDeviceSuplaChannels(devices_counter);
         restart_required = true;
       }
-      else log_i("Channel #%02d found for IEEE address %s", channel_number_slot, ieee_addr_str);
+      else log_i(
+        "Channel #%02d found for IEEE address %s", channel_number_slot, 
+        ieee_addr_str);
     }
   }
   if (restart_required)
     SuplaDevice.scheduleSoftRestart(1000);
 }
 
-void Z2S_onBTCBoundDevice(zbg_device_params_t *device, uint8_t count, uint8_t position) {
+void Z2S_onBTCBoundDevice(
+  zbg_device_params_t *device, uint8_t count, uint8_t position) {
 
   char ieee_addr_str[24] = {};
 
@@ -4497,7 +4528,7 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device, uint8_t count, uint8_t po
     ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0)
-    //log_i(_no_channel_found_str, device->ieee_addr);
+    
     no_channel_found_error_func(ieee_addr_str);
   else
     while (channel_number_slot >= 0) {
@@ -4508,9 +4539,8 @@ void Z2S_onBTCBoundDevice(zbg_device_params_t *device, uint8_t count, uint8_t po
       z2s_channels_table[channel_number_slot].short_addr = device->short_addr;
 
       channel_number_slot = Z2S_findChannelNumberNextSlot(
-        channel_number_slot, 
-        device->ieee_addr, device->endpoint, device->cluster_id, 
-        ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+        channel_number_slot, device->ieee_addr, device->endpoint, 
+        device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
     } 
 }
 
@@ -4540,8 +4570,9 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   if (device_number_slot == 0xFF) {
     
     log_e("No Zigbee device found for address %s!",ieee_addr_str);
-    log_i("Forcing device %s(0x04%X) to leave network and rejoin!",
-          ieee_addr_str, short_addr);
+    log_i(
+      "Forcing device %s(0x04%X) to leave network and rejoin!", 
+      ieee_addr_str, short_addr);
 
     zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, true);
     return;
@@ -5064,7 +5095,16 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: {
 
         addZ2SDeviceActionTrigger(
-          device, first_free_slot, sub_id, "SINGLE", 
+          device, first_free_slot, sub_id, "BUTTON", 
+          SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F: {
+
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, "BUTTON", 
           SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
@@ -8335,6 +8375,7 @@ void printSizeOfClasses() {
         "\n\rIPAddress %u"
         "\n\rNetworkServer %u"
         "\n\rNetworkClient %u",
+        "\n\rZigbeeGateway %u"
         sizeof(Supla::Control::Relay),
         sizeof(Supla::Control::VirtualRelay),
         sizeof(Supla::Control::Z2S_VirtualRelay),
@@ -8345,7 +8386,8 @@ void printSizeOfClasses() {
         sizeof(Supla::Sensor::GeneralPurposeMeasurement),
         sizeof(IPAddress),
         sizeof(NetworkServer),
-        sizeof(NetworkClient));
+        sizeof(NetworkClient),
+        sizeof(ZigbeeGateway));
 }
 
 void printTaskInfo(bool toTelnet) {
