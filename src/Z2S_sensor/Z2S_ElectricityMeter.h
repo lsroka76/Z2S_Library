@@ -399,14 +399,11 @@ void resetStorage() {
                                   
 
       _gateway->sendAttributesRead(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-        8, &em_attributes[0]);
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 8, 
+        &em_attributes[0]);
 
       _gateway->sendAttributesRead(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_METERING, 
-        2, &sm_attributes[0]);
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 2, &sm_attributes[0]);
       
       if (_init_ms < 3600000)
         _init_ms *= 2;
@@ -534,9 +531,12 @@ void iterateAlways() override {
 
   Supla::Sensor::ElectricityMeter::iterateAlways();
 
-  if (_fresh_start && ((millis() - _last_init_ms) > _init_ms)) {
-    initZigbee();
-    _last_init_ms = millis();
+  if (!_ignore_zigbee_scaling) {
+
+    if (_fresh_start && ((millis() - _last_init_ms) > _init_ms)) {
+      initZigbee();
+      _last_init_ms = millis();
+    }
   }
 
   if ((_refresh_enabled) && ((millis() - _last_refresh_ms) > _refresh_ms)) {
