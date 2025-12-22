@@ -776,7 +776,7 @@ public:
         subdeviceDetails.SubDeviceId = i + 1;
     
         snprintf(
-          subdeviceDetails.Name, SUPLA_DEVICE_NAME_MAXSIZE - 1, "%s(%s::%s)",
+          subdeviceDetails.Name, SUPLA_DEVICE_NAME_MAXSIZE - 1, "%s (%s::%s)",
           Z2S_getZbDeviceLocalName(i), Z2S_getZbDeviceManufacturerName(i), 
           Z2S_getZbDeviceModelName(i));
 
