@@ -770,7 +770,7 @@ public:
     for (int i = 0; i < Z2S_ZB_DEVICES_MAX_NUMBER; i++) {
 
 
-      if ((z2s_zb_devices_table[i].record_id > 0) {
+      if (z2s_zb_devices_table[i].record_id > 0) {
 
         if (z2s_zb_devices_table[i].user_data_flags & 
           ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED)
