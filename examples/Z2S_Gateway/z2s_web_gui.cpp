@@ -6445,7 +6445,9 @@ void editDeviceCallback(Control *sender, int type, void *param) {
 								ESPUI.getControl(device_name_text)->value.c_str(), 32);
 
 				z2s_zb_devices_table[device_slot].device_local_name[32] = '\0';
-				
+				z2s_zb_devices_table[device_slot].user_data_flags &= 
+					~ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED;
+					
 				if (Z2S_saveZbDevicesTable()) {
 
 					//rebuildDevicesSelector();
