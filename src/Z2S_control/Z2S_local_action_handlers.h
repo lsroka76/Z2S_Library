@@ -51,8 +51,8 @@ class LocalActionHandler : public Element, public LocalAction,
 
 };
 
-class LocalActionHandlerWithTrigger : public LocalActionHandler {
-//public Element, public LocalAction, public ActionHandler {
+class LocalActionHandlerWithTrigger : //public LocalActionHandler {
+  public Element, public LocalAction, public ActionHandler {
   public:
     LocalActionHandlerWithTrigger(uint8_t pin_logic_operator);
     virtual ~LocalActionHandlerWithTrigger();
