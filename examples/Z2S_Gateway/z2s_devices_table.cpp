@@ -6740,12 +6740,12 @@ bool Z2S_add_action(
     
 
     auto Supla_Z2S_ActionHandler = 
-      reinterpret_cast<Supla::LocalActionHandler *>(src_element);
-      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
+      //reinterpret_cast<Supla::LocalActionHandler *>(src_element);
+      reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
 
     auto Supla_Z2S_ActionClient = 
-      reinterpret_cast<Supla::LocalActionHandler *>(dst_element);
-      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
+      //reinterpret_cast<Supla::LocalActionHandler *>(dst_element);
+      reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
     
     Supla_Z2S_ActionHandler->addAction(
       Supla_action, Supla_Z2S_ActionClient, Supla_event);
