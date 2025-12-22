@@ -1577,12 +1577,15 @@ void Z2S_initSuplaChannels() {
         uint8_t zb_device_number_slot = Z2S_findZbDeviceTableSlot(
           z2s_channels_table[channels_counter].ieee_addr);
 
-        auto element = Supla::Element::getElementByChannelNumber(
-          z2s_channels_table[channels_counter].Supla_channel);
-        
-        element->getChannel()->setSubDeviceId(zb_device_number_slot + 1);
+        if (z2s_channels_table[channels_counter].Supla_channel < 0x80) {
 
-        log_i("setSubDeviceId to %u", zb_device_number_slot + 1);
+          auto element = Supla::Element::getElementByChannelNumber(
+            z2s_channels_table[channels_counter].Supla_channel);
+        
+          element->getChannel()->setSubDeviceId(zb_device_number_slot + 1);
+
+          log_i("setSubDeviceId to %u", zb_device_number_slot + 1);
+        }
 
       }
     }
