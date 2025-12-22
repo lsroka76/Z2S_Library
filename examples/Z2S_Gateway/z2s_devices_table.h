@@ -51,7 +51,7 @@
 #define ZBD_USER_DATA_FLAG_RESERVED_2                           (1 << 2)
 #define ZBD_USER_DATA_FLAG_RESERVED_3                           (1 << 3)
 #define ZBD_USER_DATA_FLAG_RESERVED_4                           (1 << 4)
-#define ZBD_USER_DATA_FLAG_RESERVED_5                           (1 << 5)
+#define ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED                 (1 << 5)
 #define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG                  (1 << 6)
 #define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG       (1 << 7)
 #define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG          (1 << 8)
@@ -752,7 +752,9 @@ public:
     for (int i = 0; i < Z2S_ZB_DEVICES_MAX_NUMBER; i++) {
 
       if (z2s_zb_devices_table[i].record_id > 0)
-        z2s_zb_devices_table[i].reserved_0 = 0;
+        //z2s_zb_devices_table[i].reserved_0 = 0;
+        z2s_zb_devices_table[i].user_data_flags &= 
+          ~ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED;
     }
   }
 
@@ -768,8 +770,11 @@ public:
     for (int i = 0; i < Z2S_ZB_DEVICES_MAX_NUMBER; i++) {
 
 
-      if ((z2s_zb_devices_table[i].record_id > 0) &&
-          (z2s_zb_devices_table[i].reserved_0 == 0)) {
+      if ((z2s_zb_devices_table[i].record_id > 0) {
+
+        if (z2s_zb_devices_table[i].user_data_flags & 
+          ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED)
+        continue;
 
         TDS_SubdeviceDetails subdeviceDetails = {};
     
@@ -790,10 +795,12 @@ public:
         char ieee_addr_str[24];
         ieee_addr_to_str(ieee_addr_str, z2s_zb_devices_table[i].ieee_addr);
         strncpy(
-          subdeviceDetails.SerialNumber, ieee_addr_str, SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE);
+          subdeviceDetails.SerialNumber, ieee_addr_str, 
+          SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE);
 
         srpc->sendSubdeviceDetails(&subdeviceDetails);
-        z2s_zb_devices_table[i].reserved_0 = 1;
+        z2s_zb_devices_table[i].user_data_flags |= 
+          ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED;
         dataSend = true;
         break;
       }
