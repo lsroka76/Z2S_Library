@@ -15,6 +15,7 @@
 #include <supla/actions.h>
 #include <supla/events.h>
 #include <supla/element.h>
+#include <supla/protocol/supla_srpc.h>
 
 #define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  //32
 #define Z2S_CHANNELS_MAX_NUMBER     0x80  //128
@@ -491,18 +492,14 @@ uint16_t Z2S_getActionsNumber();
 int16_t Z2S_getActionCounter(uint16_t action_position);
 
 int16_t Z2S_findFreeActionIndex();
-int16_t Z2S_findNextActionPosition(
-  uint16_t action_position = 0);
+int16_t Z2S_findNextActionPosition(uint16_t action_position = 0);
 int16_t Z2S_findPrevActionPosition(
   uint16_t action_position = Z2S_ACTIONS_MAX_NUMBER);
 
-bool Z2S_saveAction(uint16_t action_index, 
-                    z2s_channel_action_t &action);
-bool Z2S_loadAction(uint16_t action_index, 
-                    z2s_channel_action_t &action);
+bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action);
+bool Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action);
 bool Z2S_removeAction(uint16_t action_index);
-void Z2S_removeChannelActions(uint8_t channel_id, 
-                              bool all_channels = false);
+void Z2S_removeChannelActions(uint8_t channel_id, bool all_channels = false);
 
 void Z2S_initSuplaActions();
 
@@ -512,92 +509,75 @@ uint16_t Z2S_getChannelExtendedDataTypeSize(
   uint8_t extended_data_type);
 
 bool Z2S_saveChannelExtendedData(
-  int16_t channel_number_slot,
-  uint8_t extended_data_type,
-  uint8_t *extended_data,
-  bool save_table = true);
+  int16_t channel_number_slot, uint8_t extended_data_type, 
+  uint8_t *extended_data, bool save_table = true);
 
 bool Z2S_removeChannelExtendedData(
-  int16_t channel_number_slot,
-  uint8_t extended_data_type,
+  int16_t channel_number_slot, uint8_t extended_data_type, 
   bool save_table = true);
 
 bool Z2S_loadChannelExtendedData(
-  int16_t channel_number_slot,
-  uint8_t extended_data_type,
+  int16_t channel_number_slot, uint8_t extended_data_type,
   uint8_t *extended_data);
 
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
-void Z2S_onTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, 
-                              uint16_t endpoint, 
-                              uint16_t cluster, 
-                              float temperature);
+void Z2S_onTemperatureReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  float temperature);
 
-void Z2S_onHumidityReceive(esp_zb_ieee_addr_t ieee_addr, 
-                           uint16_t endpoint, 
-                           uint16_t cluster, float humidity);
+void Z2S_onHumidityReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  float humidity);
 
-void Z2S_onPressureReceive(esp_zb_ieee_addr_t ieee_addr, 
-                           uint16_t endpoint, 
-                           uint16_t cluster, 
-                           float pressure);
+void Z2S_onPressureReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  float pressure);
 
-void Z2S_onPM25Receive(esp_zb_ieee_addr_t ieee_addr, 
-                       uint16_t endpoint, 
-                       uint16_t cluster, 
-                       float pm25);
+void Z2S_onPM25Receive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  float pm25);
 
+void Z2S_onIlluminanceReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t illuminance);
 
-void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, 
-                              uint16_t endpoint, 
-                              uint16_t cluster, 
-                              uint16_t illuminance);
+void Z2S_onFlowReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t flow);
 
-void Z2S_onFlowReceive(esp_zb_ieee_addr_t ieee_addr, 
-                       uint16_t endpoint, 
-                       uint16_t cluster, 
-                       uint16_t flow);
+void Z2S_onOccupancyReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint8_t occupancy);
 
-void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, 
-                            uint16_t endpoint, 
-                            uint16_t cluster, 
-                            uint8_t occupancy);
+void Z2S_onOnOffReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  bool state);
 
-void Z2S_onOnOffReceive(esp_zb_ieee_addr_t ieee_addr, 
-                        uint16_t endpoint, 
-                        uint16_t cluster, 
-                        bool state);
+void Z2S_onElectricalMeasurementReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
 
-void Z2S_onElectricalMeasurementReceive(esp_zb_ieee_addr_t ieee_addr, 
-                                        uint16_t endpoint, 
-                                        uint16_t cluster,
-                                        const esp_zb_zcl_attribute_t *attribute);
+void Z2S_onMultistateInputReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
 
-void Z2S_onMultistateInputReceive(esp_zb_ieee_addr_t ieee_addr, 
-                                  uint16_t endpoint, 
-                                  uint16_t cluster,
-                                  const esp_zb_zcl_attribute_t *attribute);
+void Z2S_onAnalogInputReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
 
-void Z2S_onAnalogInputReceive(esp_zb_ieee_addr_t ieee_addr, 
-                              uint16_t endpoint, 
-                              uint16_t cluster,
-                              const esp_zb_zcl_attribute_t *attribute);
-
-void Z2S_onMeteringReceive(esp_zb_ieee_addr_t ieee_addr, 
-                           uint16_t endpoint, 
-                           uint16_t cluster,
-                           const esp_zb_zcl_attribute_t *attribute);
+void Z2S_onMeteringReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onBasicReceive(
   esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, uint16_t endpoint, 
   uint16_t cluster, const esp_zb_zcl_attribute_t *attribute);
 
-void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, 
-                               uint16_t endpoint, 
-                               uint16_t cluster, 
-                               uint16_t level);
+void Z2S_onCurrentLevelReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t level);
 
 void Z2S_onColorHueReceive(esp_zb_ieee_addr_t ieee_addr, 
                            uint16_t endpoint, 
@@ -759,4 +739,71 @@ void onTuyaCustomClusterReceive(
 
 void printSizeOfClasses();
 void printTaskInfo(bool toTelnet = false);
+
+class ZbDevicesConfigurator : public Supla::Element {
+
+public:
+  void onRegistered(Supla::Protocol::SuplaSrpc *srpc) {
+  
+    this->srpc = srpc;
+    // delay sending subdevice details to server by 1 s
+    lastSendTime = millis();
+
+    for (int i = 0; i < Z2S_ZB_DEVICES_MAX_NUMBER; i++) {
+
+      if (z2s_zb_devices_table[i].record_id > 0)
+        z2s_zb_devices_table[i].reserved_0 = 0;
+    }
+  }
+
+  bool iterateConnected() {
+  
+    bool dataSend = false;
+    
+    if (srpc == nullptr ||  millis() - lastSendTime < 12000) {
+      return !dataSend;
+    }
+    lastSendTime = millis() - 11500;
+
+    for (int i = 0; i < Z2S_ZB_DEVICES_MAX_NUMBER; i++) {
+
+
+      if ((z2s_zb_devices_table[i].record_id > 0) &&
+          (z2s_zb_devices_table[i].reserved_0 == 0)) {
+
+        TDS_SubdeviceDetails subdeviceDetails = {};
+    
+        subdeviceDetails.SubDeviceId = i + 1;
+    
+        snprintf(
+          subdeviceDetails.Name, SUPLA_DEVICE_NAME_MAXSIZE - 1, "%s(%s::%s)",
+          Z2S_getZbDeviceLocalName(i), Z2S_getZbDeviceManufacturerName(i), 
+          Z2S_getZbDeviceModelName(i));
+
+        strncpy(subdeviceDetails.SoftVer, "SOFTWARE VERSION",
+          SUPLA_SOFTVER_MAXSIZE);
+
+        snprintf(subdeviceDetails.ProductCode,
+          SUPLA_SUBDEVICE_PRODUCT_CODE_MAXSIZE, "%s (%s)",
+          "PRODUCT CODE", "HW VERSION");
+
+        strncpy(subdeviceDetails.SerialNumber, "SERIAL",
+          SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE);
+
+        srpc->sendSubdeviceDetails(&subdeviceDetails);
+        z2s_zb_devices_table[i].reserved_0 = 1;
+        dataSend = true;
+        break;
+      }
+    }
+    return !dataSend;
+  }
+
+private:
+
+  Supla::Protocol::SuplaSrpc *srpc = nullptr;
+
+  uint32_t lastSendTime = 0;
+};
+
 #endif

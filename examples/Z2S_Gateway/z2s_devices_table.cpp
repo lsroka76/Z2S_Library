@@ -1524,31 +1524,44 @@ void Z2S_initSuplaChannels() {
 
 
         case SUPLA_CHANNELTYPE_ACTIONTRIGGER: 
-          initZ2SDeviceActionTrigger(channels_counter); break;
+          
+          initZ2SDeviceActionTrigger(channels_counter); 
+        break;
 
 
         case SUPLA_CHANNELTYPE_ELECTRICITY_METER: 
-          initZ2SDeviceElectricityMeter(&zbGateway, &device, channels_counter); break;
+          
+          initZ2SDeviceElectricityMeter(&zbGateway, &device, channels_counter); 
+        break;
 
 
         case SUPLA_CHANNELTYPE_HVAC: 
-          initZ2SDeviceHvac(&zbGateway, &device, channels_counter); break;
+
+          initZ2SDeviceHvac(&zbGateway, &device, channels_counter); 
+        break;
 
 
         case SUPLA_CHANNELTYPE_DIMMER: 
-          initZ2SDeviceDimmer(&zbGateway, &device, channels_counter); break;
+
+          initZ2SDeviceDimmer(&zbGateway, &device, channels_counter); 
+        break;
 
 
         case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: 
-          initZ2SDeviceRGB(&zbGateway, &device, channels_counter); break;
+
+          initZ2SDeviceRGB(&zbGateway, &device, channels_counter); 
+        break;
 
 
         case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE: 
         
-          initZ2SDeviceVirtualValve(&zbGateway, &device, channels_counter); break;
+          initZ2SDeviceVirtualValve(&zbGateway, &device, channels_counter); 
+        break;
 
         case 0x000:
-          initZ2SDeviceLocalActionHandler(channels_counter); break;
+
+          initZ2SDeviceLocalActionHandler(channels_counter); 
+        break;
         
         
         default: {
@@ -1563,6 +1576,14 @@ void Z2S_initSuplaChannels() {
         
         uint8_t zb_device_number_slot = Z2S_findZbDeviceTableSlot(
           z2s_channels_table[channels_counter].ieee_addr);
+
+        auto element = Supla::Element::getElementByChannelNumber(
+          z2s_channels_table[channels_counter].Supla_channel);
+        
+        element->getChannel()->setSubDeviceId(zb_device_number_slot + 1);
+
+        log_i("setSubDeviceId to %u", zb_device_number_slot + 1);
+
       }
     }
   }

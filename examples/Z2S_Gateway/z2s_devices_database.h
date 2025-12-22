@@ -2569,6 +2569,46 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_o4cjetlm", .model_name = "TS0001",
+    .z2s_device_uid = 10805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_iedbgyxt", .model_name = "TS0001",
+    .z2s_device_uid = 10810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_h3noz0a5", .model_name = "TS0001",
+    .z2s_device_uid = 10815,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TYZB01_4tlksk8a", .model_name = "TS0001",
+    .z2s_device_uid = 10820,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_5ucujjts", .model_name = "TS0001",
+    .z2s_device_uid = 10825,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_h8ngtlxy", .model_name = "TS0001",
+    .z2s_device_uid = 10830,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_w0ypwa1f", .model_name = "TS0001",
+    .z2s_device_uid = 10835,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_wpueorev", .model_name = "TS0001",
+    .z2s_device_uid = 10840,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "Aqara", .model_name = "lumi.valve.agl001",
     .z2s_device_uid = 10900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_VALVE_DC,
@@ -2576,6 +2616,21 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_ahxwesag", .model_name = "TS0011",
     .z2s_device_uid = 11000,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TYZB01_rifa0wlb", .model_name = "TS0011",
+    .z2s_device_uid = 11005,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_rk2yzt0u", .model_name = "TS011F",
+    .z2s_device_uid = 11010,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_o4cjetlm", .model_name = "TS011F",
+    .z2s_device_uid = 11015,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC,
 	  .z2s_device_endpoints_count = 1},
 
@@ -3367,6 +3422,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "ORMANAS LED Strip",
+    .z2s_device_uid = 18810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
     .z2s_device_uid = 18900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
@@ -3424,6 +3484,51 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E27 WS globe 1055lm",
     .z2s_device_uid = 19650,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI_bulb_GU10_WS_345lm",
+    .z2s_device_uid = 19655,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRIbulbGU10WS345lm",
+    .z2s_device_uid = 19660,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb GU10 WS 345lm",
+    .z2s_device_uid = 19665,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRIbulbGU10WS380lm",
+    .z2s_device_uid = 19670,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb GU10 WS 380lm",
+    .z2s_device_uid = 19675,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRIbulbE14WSglobeopal470lm",
+    .z2s_device_uid = 19680,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRIbulbE12WSglobeopal470lm",
+    .z2s_device_uid = 19685,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E17 WS globe 440lm",
+    .z2s_device_uid = 19690,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRIbulbE17WSglobeopal470lm",
+    .z2s_device_uid = 19695,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
 	  .z2s_device_endpoints_count = 1},
 

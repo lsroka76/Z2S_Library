@@ -100,6 +100,8 @@ constexpr uint8_t NUM_LEDS  = 1;
 uint32_t refresh_time       = 0;
 uint8_t refresh_cycle       = 0;
 
+uint32_t _init_devices_ms   = 0;
+
 uint32_t _time_cluster_last_refresh_ms = 0;
 
 bool GUIstarted   = false;
@@ -154,6 +156,7 @@ void supla_callback_bridge(int event, int action) {
                             ESP_ZB_IC_TYPE_128, 
                             test_device_install_code);*/
         refresh_time = 0;
+        _init_devices_ms = millis();
         
         #ifdef USE_TELNET_CONSOLE
 
@@ -589,8 +592,8 @@ void setup() {
 
   uint32_t zb_primary_channel_mask;
 
-  if (Supla::Storage::ConfigInstance()->getUInt32(Z2S_ZIGBEE_PRIMARY_CHANNEL, 
-                                                  &zb_primary_channel_mask)) {
+  if (Supla::Storage::ConfigInstance()->getUInt32(
+    Z2S_ZIGBEE_PRIMARY_CHANNEL, &zb_primary_channel_mask)) {
 
     log_i("Zigbee primary channel mask (0x%x) loaded successfully", 
           zb_primary_channel_mask);
@@ -600,23 +603,33 @@ void setup() {
   //Open network for 180 seconds after boot
   Zigbee.setRebootOpenNetwork(180);
 
-  if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_ENABLE_GUI_ON_START, &_enable_gui_on_start)) {
+  if (Supla::Storage::ConfigInstance()->getUInt8(
+    Z2S_ENABLE_GUI_ON_START, &_enable_gui_on_start)) {
+
     log_i("Z2S_ENABLE_GUI_ON_START = %d", _enable_gui_on_start);
   } else {
+
     log_i("Z2S_ENABLE_GUI_ON_START not configured - turning on");
     _enable_gui_on_start = 1;
   }
   
-  if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
+  if (Supla::Storage::ConfigInstance()->getUInt8(
+    Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
+
     log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
   } else {
+
     log_i("Z2S_FORCE_CONFIG_ON_START not configured - turning off");
+
     _force_config_on_start = 0;
   }
 
-  if (Supla::Storage::ConfigInstance()->getUInt32(Z2S_GUI_ON_START_DELAY, &_gui_start_delay)) {
+  if (Supla::Storage::ConfigInstance()->getUInt32(
+    Z2S_GUI_ON_START_DELAY, &_gui_start_delay)) {
+
     log_i("Z2S_GUI_ON_START_DELAY = %d s", _gui_start_delay);
   } else {
+
     log_i("Z2S_GUI_ON_START_DELAY not configured - setting to 0 s");
     _gui_start_delay = 0;
   }
@@ -631,12 +644,15 @@ void setup() {
     //GatewayMDNSLocalName = "Z2S_gateway";
   }
   
-  Supla::Storage::ConfigInstance()->getUInt8(PSTR("security_level"), &_z2s_security_level);
+  Supla::Storage::ConfigInstance()->getUInt8(
+    PSTR("security_level"), &_z2s_security_level);
   
   Supla::Storage::ConfigInstance()->setUInt8(Z2S_FILES_STRUCTURE_VERSION, 2);
 
   //Supla
   
+  auto zdc = new ZbDevicesConfigurator();
+
   SuplaDevice.setSuplaCACert(suplaCACert);
   SuplaDevice.setSupla3rdPartyCACert(supla3rdCACert);
   
@@ -646,7 +662,7 @@ void setup() {
 
   SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
   SuplaDevice.allowWorkInOfflineMode(2);
-  SuplaDevice.begin();      
+  SuplaDevice.begin(28);      
   
   refresh_time = millis();
 
