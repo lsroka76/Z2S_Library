@@ -661,7 +661,8 @@ void setup() {
   wifi.enableSSL(ENABLE_SSL);
 
   SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
-  SuplaDevice.allowWorkInOfflineMode(2);
+  //SuplaDevice.allowWorkInOfflineMode(2);
+  SuplaDevice.setInitialMode(Supla::InitialMode::StartInCfgMode);
   SuplaDevice.begin(28);      
   
   refresh_time = millis();

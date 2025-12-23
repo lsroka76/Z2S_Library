@@ -785,12 +785,11 @@ public:
           Z2S_getZbDeviceLocalName(i), Z2S_getZbDeviceManufacturerName(i), 
           Z2S_getZbDeviceModelName(i));
 
-        strncpy(
-          subdeviceDetails.SoftVer, "SOFTWARE VERSION", SUPLA_SOFTVER_MAXSIZE);
+        strncpy(subdeviceDetails.SoftVer, "", SUPLA_SOFTVER_MAXSIZE);
 
         snprintf(
           subdeviceDetails.ProductCode, SUPLA_SUBDEVICE_PRODUCT_CODE_MAXSIZE, 
-          "%s (%s)", "PRODUCT CODE", "HW VERSION");
+          "");
 
         char ieee_addr_str[24];
         ieee_addr_to_str(ieee_addr_str, z2s_zb_devices_table[i].ieee_addr);
