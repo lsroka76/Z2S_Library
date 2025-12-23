@@ -124,10 +124,10 @@ void initZ2SDeviceLocalActionHandler(
         z2s_channels_table[channel_number_slot].Supla_channel;
       
       auto Supla_VirtualBinary = 
-        new Supla::Sensor::VirtualBinary(); 
+        new Supla::Sensor::VirtualBinary(true); 
       
       Supla_VirtualBinary->getChannel()->setChannelNumber(Supla_channel);
-      Supla_VirtualBinary->setDefaultStateRestore();
+      Supla_VirtualBinary->setStateOfflineRemoteWakeupNotSupported();
     }
     break;
 
