@@ -4610,9 +4610,9 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   device.short_addr = short_addr;
   device.model_id = z2s_zb_devices_table[device_number_slot].desc_id;
 
-  log_i("IEEE: %s, slot: %u, flags: %lu", 
-        ieee_addr_str,device_number_slot, 
-        z2s_zb_devices_table[device_number_slot].user_data_flags);  
+  log_i(
+    "IEEE: %s, slot: %u, flags: %lu", ieee_addr_str,device_number_slot, 
+    z2s_zb_devices_table[device_number_slot].user_data_flags);  
 
  // if (Z2S_checkZbDeviceFlags(device_number_slot, 
    //   ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN)) {

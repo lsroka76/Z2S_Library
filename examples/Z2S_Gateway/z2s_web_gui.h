@@ -14,6 +14,10 @@ typedef enum gui_modes {
   full_gui_mode = 4,
   developer_gui_mode = 5,
   supla_gui_mode = 6,
+  gateway_ca_mode = 7,
+  gateway_tcc_mode = 8,
+  gateway_ca_tcc_mode = 9,
+  gateway_devices_channels_mode = 10,
   gui_modes_number
 } gui_modes_t;
 

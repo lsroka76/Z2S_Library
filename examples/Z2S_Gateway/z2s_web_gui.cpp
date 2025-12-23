@@ -867,79 +867,49 @@ void buildGatewayTabGUI() {
 																				 gatewayCallback,
 																				 (void*)GUI_CB_ENABLE_GUI_FLAG);*/
 
-	auto gui_mode_selector = ESPUI.addControl(Control::Type::Select, 
-									 												  PSTR("Select GUI mode (requires restart)"), 
-																		 				zero_str, 
-																		 				Control::Color::Emerald, 
-																		 				gatewaytab, 
-																		 				selectGuiModeCallback);
+	auto gui_mode_selector = ESPUI.addControl(
+		Control::Type::Select, PSTR(
+			"Select GUI mode (requires restart)"), zero_str, 
+			Control::Color::Emerald, gatewaytab, selectGuiModeCallback);
 
-	for (uint8_t modes_counter = no_gui_mode; modes_counter < gui_modes_number; modes_counter++) {
+	for (uint8_t modes_counter = no_gui_mode; 
+			 modes_counter < gui_modes_number; modes_counter++) {
 
   	working_str = modes_counter;
-		ESPUI.addControl(Control::Type::Option, 
-										 GUI_MODE_OPTIONS[modes_counter], 
-										 working_str, 
-										 Control::Color::None, 
-										 gui_mode_selector);
+		ESPUI.addControl(
+			Control::Type::Option, GUI_MODE_OPTIONS[modes_counter], working_str, 
+			Control::Color::None, gui_mode_selector);
 	}
 
-	working_str = PSTR("When GUI is disabled on start use 5x BOOT to enable it.");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 gui_mode_selector), 
-											  PSTR(clearLabelStyle));
+	working_str = PSTR(
+		"When GUI is disabled on start use 5x BOOT to enable it.");
 
-	gui_start_delay_number = ESPUI.addControl(Control::Type::Number, 
-																						PSTR("GUI start delay (s)"), 
-																						zero_str, 
-																						Control::Color::Emerald, 
-																						gatewaytab, 
-																						generalMinMaxCallback, 
-																						(void*)3600);
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Color::None, gui_mode_selector), 
+		PSTR(clearLabelStyle));
 
-	/*ESPUI.addControl(Control::Type::Min, 
-									 PSTR(empty_str), 
-									 zero_str, 
-									 Control::Color::None, 
-									 gui_start_delay_number);
-
-	ESPUI.addControl(Control::Type::Max, 
-									 PSTR(empty_str), 
-									 max_int_str, 
-									 Control::Color::None, 
-									 gui_start_delay_number);*/
+	gui_start_delay_number = ESPUI.addControl(
+		Control::Type::Number, PSTR("GUI start delay (s)"), zero_str, 
+		Control::Color::Emerald, gatewaytab, generalMinMaxCallback, (void*)3600);
 
 	working_str = PSTR("Save");
-	auto gui_start_delay_save_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 gui_start_delay_number, 
-										 gatewayCallback, 
-										 (void*)GUI_CB_GUI_DELAY_FLAG);
+	auto gui_start_delay_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, gui_start_delay_number, gatewayCallback,
+		(void*)GUI_CB_GUI_DELAY_FLAG);
 
 
-	gateway_mdns_name_text = 
-		ESPUI.addControl(Control::Type::Text, 
-										 PSTR("Gateway local mDNS name"), 
-									   empty_str, 
-										 Control::Color::Emerald, 
-										 gatewaytab, 
-										 generalCallback);
+	gateway_mdns_name_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Gateway local mDNS name"), empty_str, 
+		Control::Color::Emerald, gatewaytab, generalCallback);
 
 	working_str = PSTR("Save");
-	auto gateway_mdns_name_save_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 gateway_mdns_name_text, 
-										 gatewayCallback, 
-										 (void*)GUI_CB_SAVE_MDNS_NAME_FLAG);
+	auto gateway_mdns_name_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, gateway_mdns_name_text, gatewayCallback, 
+		(void*)GUI_CB_SAVE_MDNS_NAME_FLAG);
 
 	working_str = PSTR("(max. 11 characters, no spaces!!!)");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
@@ -4213,6 +4183,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 				gui_build_control_flags = 0x0000;
 			break;
 
+
 			case minimal_gui_mode: {
 
 				
@@ -4221,6 +4192,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
 					GUI_BUILD_CONTROL_FLAG_ZIGBEE;
 			} break;
+
 
 			case standard_gui_mode: {
 
@@ -4233,6 +4205,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_ACTIONS;
 			} break;
 
+
 			case extended_gui_mode: {
 
 				gui_build_control_flags = 
@@ -4244,6 +4217,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_ACTIONS |
 					GUI_BUILD_CONTROL_FLAG_CA;
 			} break;
+
 
 			case full_gui_mode: {
 
@@ -4259,6 +4233,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_TCC;
 			} break;
 
+
 			case developer_gui_mode: {
 
 				gui_build_control_flags = 
@@ -4269,6 +4244,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
 			} break;
 
+
 			case supla_gui_mode: {
 
 				gui_build_control_flags = 
@@ -4277,6 +4253,41 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_CHANNELS |
 					GUI_BUILD_CONTROL_FLAG_ACTIONS;
 			} break;
+
+
+			case gateway_ca_mode: {
+
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CA;
+			} break;
+
+
+			case gateway_tcc_mode: {
+
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_TCC;
+			} break;
+
+
+			case gateway_ca_tcc_mode: {
+
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CA |
+					GUI_BUILD_CONTROL_FLAG_TCC;
+			} break;
+
+
+			case gateway_devices_channels_mode: {
+
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_DEVICES |
+					GUI_BUILD_CONTROL_FLAG_CHANNELS;
+			} break;
+
 		}
 	}
 

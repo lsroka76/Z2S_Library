@@ -106,7 +106,11 @@ static constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 	"Extended GUI (Standard + Clusters&Attributes)",
 	"Full GUI",
 	"Developer GUI (Gateway + C&A + AD + TCC)",
-	"Supla GUI (Gateway + Credentials + Channels + Actions)"
+	"Supla GUI (Gateway + Credentials + Channels + Actions)",
+	"Gateway + C&A",
+	"Gateway + TCC",
+	"Gateway + C&A + TCC",
+	"Gateway + Devices + Channels"
 };
 
 static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
