@@ -14,8 +14,8 @@ void initZ2SDeviceActionTrigger(int16_t channel_number_slot) {
     debounce_time_ms = z2s_channels_table[channel_number_slot].refresh_secs;
 
   auto Supla_Z2S_ActionTrigger = 
-    new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, 
-                                                debounce_time_ms);
+    new Supla::Control::VirtualRelaySceneSwitch(
+      0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, debounce_time_ms);
   
   Supla_Z2S_ActionTrigger->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
