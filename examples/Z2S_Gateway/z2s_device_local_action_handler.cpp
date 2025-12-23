@@ -127,7 +127,7 @@ void initZ2SDeviceLocalActionHandler(
         new Supla::Sensor::VirtualBinary(true); 
       
       Supla_VirtualBinary->getChannel()->setChannelNumber(Supla_channel);
-      Supla_VirtualBinary->setStateOfflineRemoteWakeupNotSupported();
+      Supla_VirtualBinary->getChannel()->setStateOfflineRemoteWakeupNotSupported();
     }
     break;
 
