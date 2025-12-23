@@ -127,6 +127,7 @@ void initZ2SDeviceLocalActionHandler(
         new Supla::Sensor::VirtualBinary(); 
       
       Supla_VirtualBinary->getChannel()->setChannelNumber(Supla_channel);
+      Supla_VirtualBinary->setDefaultStateRestore();
     }
     break;
 
