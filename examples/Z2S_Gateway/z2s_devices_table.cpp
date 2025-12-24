@@ -2329,15 +2329,13 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
 
         case 4: 
           
-          msgZ2SDeviceHvac(channel_number_slot_2, 
-                           TRV_SYSTEM_MODE_MSG, 1); 
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1); 
         break;
         
 
         case 1: 
           
-          msgZ2SDeviceHvac(channel_number_slot_2, 
-                           TRV_SCHEDULE_MODE_MSG, 1); 
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 2); 
         break;
       }
     } break;
@@ -2350,22 +2348,19 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
 
         case 5: 
           
-          msgZ2SDeviceHvac(channel_number_slot_2, 
-                           TRV_SYSTEM_MODE_MSG, 0); 
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0); 
         break;
 
 
         case 1: 
           
-          msgZ2SDeviceHvac(channel_number_slot_2, 
-                           TRV_SYSTEM_MODE_MSG, 1); 
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1); 
         break;
         
 
         case 0: 
           
-          msgZ2SDeviceHvac(channel_number_slot_2, 
-                           TRV_SCHEDULE_MODE_MSG, 1); 
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 2); 
         break;
       }
     } break;
@@ -2374,29 +2369,22 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
     case EUROTRONIC_HOST_FLAGS_ID: {
 
       if (mode & 0x20)
-        msgZ2SDeviceHvac(channel_number_slot_2, 
-                         TRV_SYSTEM_MODE_MSG, 0);
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0);
       if (mode & 0x04)
-        msgZ2SDeviceHvac(channel_number_slot_2, 
-                         TRV_SYSTEM_MODE_MSG, 1);
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1);
       if (mode & 0x10)
-        msgZ2SDeviceHvac(channel_number_slot_2, 
-                         TRV_SCHEDULE_MODE_MSG, 1);
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 2);
       if (mode & 0x80)
-        msgZ2SDeviceHvac(channel_number_slot_2, 
-                         TRV_CHILD_LOCK_MSG, 1);
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_CHILD_LOCK_MSG, 1);
       else
-        msgZ2SDeviceHvac(channel_number_slot_2, 
-                         TRV_CHILD_LOCK_MSG, 0);
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_CHILD_LOCK_MSG, 0);
     } break;
   }
 }
 
-void Z2S_onWindowCoveringReceive(esp_zb_ieee_addr_t ieee_addr, 
-                                 uint16_t endpoint, 
-                                 uint16_t cluster, 
-                                 uint16_t id,
-                                 uint16_t value) {
+void Z2S_onWindowCoveringReceive(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t id, uint16_t value) {
 
   char ieee_addr_str[24] = {};
 
@@ -2895,7 +2883,7 @@ void Z2S_onLumiCustomClusterReceive(
         case LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID: {
 
           msgZ2SDeviceHvac(channel_number_slot, TRV_SCHEDULE_MODE_MSG, 
-          lumi_mode == 0 ? 0 : 1);
+          lumi_mode == 0 ? 0 : 2);
         } break;
 
 
