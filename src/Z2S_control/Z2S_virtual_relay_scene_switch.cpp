@@ -27,6 +27,7 @@ void Supla::Control::VirtualRelaySceneSwitch::onInit() {
     default: 
       turnOff(duration); break;
   }
+  initDone = true;
 }
 
 void Supla::Control::VirtualRelaySceneSwitch::onSaveState() {
