@@ -1775,13 +1775,13 @@ void ZigbeeGateway::zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address,
   }
 }
 
-void ZigbeeGateway::addBoundDevice(zb_device_params_t *device, 
-                                   uint16_t cluster_id, 
-                                   uint8_t count, 
-                                   uint8_t position) {
+void ZigbeeGateway::addBoundDevice(
+  zb_device_params_t *device, uint16_t cluster_id, uint8_t count, 
+  uint8_t position) {
     
     //return; //temporary
-    zbg_device_params_t *zbg_device = (zbg_device_params_t *)calloc(1, sizeof(zbg_device_params_t));
+    zbg_device_params_t *zbg_device = 
+      (zbg_device_params_t *)calloc(1, sizeof(zbg_device_params_t));
 
     zbg_device->short_addr = device->short_addr;
     memcpy(zbg_device->ieee_addr, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));

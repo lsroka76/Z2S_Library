@@ -466,12 +466,19 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
 
     case ESP_ZB_ZDO_SIGNAL_LEAVE_INDICATION: {
 
-      dev_leave_params = (esp_zb_zdo_signal_leave_indication_params_t *)esp_zb_app_signal_get_params(p_sg_p);
+      dev_leave_params = (esp_zb_zdo_signal_leave_indication_params_t *)\
+        esp_zb_app_signal_get_params(p_sg_p);
 
-      log_i("Joined device is leaving network (short: 0x%04hx), rejoin (%s)", dev_leave_params->short_addr, dev_leave_params->rejoin == 1 ? "YES" : "NO");
+      log_i(
+        "Joined device is leaving network (short: 0x%04hx), rejoin (%s)", 
+        dev_leave_params->short_addr, 
+        dev_leave_params->rejoin == 1 ? "YES" : "NO");
       
-      for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) 
-        (*it)->zbDeviceLeave(dev_leave_params->short_addr, dev_leave_params->device_addr, dev_leave_params->rejoin);
+      for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); 
+           it != Zigbee.ep_objects.end(); ++it) 
+        (*it)->zbDeviceLeave(
+          dev_leave_params->short_addr, dev_leave_params->device_addr, 
+          dev_leave_params->rejoin);
     } break;
 
      case ESP_ZB_NLME_STATUS_INDICATION: {
@@ -480,10 +487,10 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
                *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
     } break;
 
-    default: log_v("ZDO signal: %s (0x%x), status: %s", 
-                   esp_zb_zdo_signal_to_string(sig_type), 
-                   sig_type, 
-                   esp_err_to_name(err_status)); 
+    default: log_v(
+      "ZDO signal: %s (0x%x), status: %s", 
+      esp_zb_zdo_signal_to_string(sig_type), sig_type, 
+      esp_err_to_name(err_status)); 
     break;
   }
 }
@@ -491,14 +498,19 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
 // APS DATA INDICATION HANDLER to catch bind/unbind requests
 bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind) {
   //if (Zigbee.getDebugMode()) {
-    log_d("APSDE INDICATION - Received APSDE-DATA indication, status: %d", ind.status);
-    log_d("APSDE INDICATION - dst_endpoint: %d, src_endpoint: %d, dst_addr_mode: %d\n\r"
-          "APSDE INDICATION - src_addr_mode: %d, cluster_id: 0x%04x, asdu_length: %d\n\r"
-          "APSDE INDICATION - dst_short_addr: 0x%04x, src_short_addr: 0x%04x\n\r"
-          "APSDE INDICATION - profile_id: 0x%04x, security_status: %d, lqi: %d, rx_time: %d", 
-          ind.dst_endpoint, ind.src_endpoint, ind.dst_addr_mode, ind.src_addr_mode, 
-          ind.cluster_id, ind.asdu_length, ind.dst_short_addr,
-          ind.src_short_addr, ind.profile_id, ind.security_status, ind.lqi, ind.rx_time);
+
+    log_d(
+      "APSDE INDICATION - Received APSDE-DATA indication, status: %d", 
+      ind.status);
+
+    log_d(
+      "APSDE INDICATION - dst_endpoint: %d, src_endpoint: %d, dst_addr_mode: %d\n\r"
+      "APSDE INDICATION - src_addr_mode: %d, cluster_id: 0x%04x, asdu_length: %d\n\r"
+      "APSDE INDICATION - dst_short_addr: 0x%04x, src_short_addr: 0x%04x\n\r"
+      "APSDE INDICATION - profile_id: 0x%04x, security_status: %d, lqi: %d, rx_time: %d", 
+      ind.dst_endpoint, ind.src_endpoint, ind.dst_addr_mode, ind.src_addr_mode, 
+      ind.cluster_id, ind.asdu_length, ind.dst_short_addr,
+      ind.src_short_addr, ind.profile_id, ind.security_status, ind.lqi, ind.rx_time);
   //}
   /*if (ind.status == 0x00) {
     // Catch bind/unbind requests to update the bound devices list
@@ -516,9 +528,14 @@ void ZigbeeCore::factoryReset() {
   esp_zb_factory_reset();
 }
 
-void ZigbeeCore::scanCompleteCallback(esp_zb_zdp_status_t zdo_status, uint8_t count, esp_zb_network_descriptor_t *nwk_descriptor) {
+void ZigbeeCore::scanCompleteCallback(
+  esp_zb_zdp_status_t zdo_status, uint8_t count, 
+  esp_zb_network_descriptor_t *nwk_descriptor) {
+
   log_v("Zigbee network scan complete");
+
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
+
     log_v("Found %d networks", count);
     //print Zigbee networks
     for (int i = 0; i < count; i++) {
@@ -640,7 +657,9 @@ void ZigbeeCore::bindingTableCb(const esp_zb_zdo_binding_table_info_t *table_inf
 }
 
 void ZigbeeCore::searchBindings() {
-  esp_zb_zdo_mgmt_bind_param_t *mb_req = (esp_zb_zdo_mgmt_bind_param_t *)malloc(sizeof(esp_zb_zdo_mgmt_bind_param_t));
+  
+  esp_zb_zdo_mgmt_bind_param_t *mb_req = 
+    (esp_zb_zdo_mgmt_bind_param_t *)malloc(sizeof(esp_zb_zdo_mgmt_bind_param_t));
   mb_req->dst_addr = esp_zb_get_short_address();
   mb_req->start_index = 0;
   log_d("Requesting binding table for address 0x%04x", mb_req->dst_addr);
