@@ -985,9 +985,8 @@ void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr,
   //_instance->_joined_devices.push_back(device);
 }
 
-void ZigbeeGateway::zbDeviceLeave(uint16_t short_addr, 
-                                  esp_zb_ieee_addr_t ieee_addr, 
-                                  uint8_t rejoin) {
+void ZigbeeGateway::zbDeviceLeave(
+  uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {
 
   for (std::list<zbg_device_params_t *>::iterator bound_device = _gateway_devices.begin(); 
        bound_device != _gateway_devices.end(); ++bound_device) {
@@ -998,8 +997,8 @@ void ZigbeeGateway::zbDeviceLeave(uint16_t short_addr,
 	}
 }
 
-void ZigbeeGateway::zbDeviceRejoin(uint16_t short_addr, 
-                                   esp_zb_ieee_addr_t ieee_addr) {
+void ZigbeeGateway::zbDeviceRejoin(
+  uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
   if (_on_device_rejoin)
     _on_device_rejoin(short_addr, ieee_addr);
