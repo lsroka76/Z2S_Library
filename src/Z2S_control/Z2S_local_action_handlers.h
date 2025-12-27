@@ -86,8 +86,14 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler {
     uint32_t _postponed_turn_on_ms = 0;
 };
 
-//class LocalAction
+class LocalActionVirtualButton : public LocalActionHandler {
 
+  public:
+
+    LocalActionVirtualButton();
+    virtual ~LocalActionVirtualButton();
+    void handleAction(int event, int action);
+};
 };  // namespace Supla
 
 #endif
