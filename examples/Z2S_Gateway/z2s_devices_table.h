@@ -911,9 +911,7 @@ public:
       if ((zb_device_slot < 0xFF) &&
           (Z2S_countChannelsWithZbDeviceId(zb_device_slot) == 0)) {
 
-        log_i(
-          "all channels for device %02u removed - removing device %02u", 
-          zb_device_slot);
+        log_i("all channels removed - removing device %02u", zb_device_slot);
 
         Z2S_removeZbDevice(zb_device_slot);
       }

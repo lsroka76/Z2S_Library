@@ -1867,9 +1867,9 @@ bool Z2S_removeAction(uint16_t action_index) {
   sprintf(file_name_buffer, Z2S_CHANNELS_ACTIONS_PPREFIX_V2, action_index);
   
   if (Z2S_deleteFile(file_name_buffer)) 
-    log_i ("Removing Zigbee<=>Supla action file %s: SUCCESS", file_name_buffer);
+    log_i("Removing Zigbee<=>Supla action file %s: SUCCESS", file_name_buffer);
   else 
-    log_i ("Removing Zigbee<=>Supla action file %s: FAILED", file_name_buffer);
+    log_i("Removing Zigbee<=>Supla action file %s: FAILED", file_name_buffer);
 
   clearActionsIndexTablePosition(action_index);
   Z2S_saveActionsIndexTable();
@@ -1893,7 +1893,8 @@ void Z2S_removeChannelActions(uint8_t channel_id, bool all_channels) {
       }
 
       Z2S_loadAction(index, new_action);      
-      if (( new_action.src_Supla_channel == channel_id) || ( new_action.dst_Supla_channel))
+      if (( new_action.src_Supla_channel == channel_id) || 
+          ( new_action.dst_Supla_channel == channel_id))
         Z2S_removeAction(index);
     }  
 }
@@ -6799,12 +6800,12 @@ bool Z2S_add_action(
     
 
     auto Supla_Z2S_ActionHandler = 
-      //reinterpret_cast<Supla::LocalActionHandler *>(src_element);
-      reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
+      reinterpret_cast<Supla::LocalActionHandler *>(src_element);
+      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
 
     auto Supla_Z2S_ActionClient = 
-      //reinterpret_cast<Supla::LocalActionHandler *>(dst_element);
-      reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
+      reinterpret_cast<Supla::LocalActionHandler *>(dst_element);
+      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
     
     Supla_Z2S_ActionHandler->addAction(
       Supla_action, Supla_Z2S_ActionClient, Supla_event);
@@ -6818,7 +6819,8 @@ bool Z2S_add_action(
       reinterpret_cast<Supla::ElementWithChannelActions *>(src_element);
 
     auto Supla_Z2S_ActionClient = 
-      reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
+      reinterpret_cast<Supla::LocalActionHandler *>(dst_element);
+      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
     
     if (condition)
       Supla_Z2S_ActionHandler->addAction(
@@ -6836,7 +6838,8 @@ bool Z2S_add_action(
     Supla_Z2S_ChannelActionHandler = nullptr;
 
   auto Supla_Z2S_ActionHandler = 
-    reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
+    reinterpret_cast<Supla::LocalActionHandler *>(src_element);
+    //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
 
   auto Supla_Z2S_ChannelActionClient = 
     reinterpret_cast<Supla::ElementWithChannelActions *>(dst_element);
