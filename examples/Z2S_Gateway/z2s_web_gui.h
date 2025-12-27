@@ -1,6 +1,8 @@
 #ifndef Z2S_WEB_GUI_H_
 #define Z2S_WEB_GUI_H_
 
+#define ESPASYNCHTTPUPDATESERVER_MODE 0
+
 #include <ESPUI.h>
 #include <ESPmDNS.h>
 #include "ESPAsyncHTTPUpdateServer.h"
