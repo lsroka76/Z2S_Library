@@ -5051,18 +5051,13 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3: {
 
-        static const char *button_name_function[] =  {  "BUTTON #1 PRESSED", 
-                                                        "BUTTON #1 DOUBLE PRESSED",
-                                                        "BUTTON #1 HELD",
-                                                        "BUTTON #2 PRESSED", 
-                                                        "BUTTON #2 DOUBLE PRESSED",
-                                                        "BUTTON #2 HELD"};
+        static const char *button_name_function[] =  {  
+          "BUTTON #1 PRESSED", "BUTTON #1 DOUBLE PRESSED","BUTTON #1 HELD",
+          "BUTTON #2 PRESSED", "BUTTON #2 DOUBLE PRESSED","BUTTON #2 HELD"};
 
-        addZ2SDeviceActionTrigger(device, 
-                                  first_free_slot, 
-                                  sub_id, 
-                                  (char *)button_name_function[sub_id], 
-                                  SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, 
+          (char *)button_name_function[sub_id], SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 /*****************************************************************************/     
@@ -5504,9 +5499,9 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: {
 
-        addZ2SDeviceIASzone(device, first_free_slot, -1, 
-                            "SMOKE DETECT", 
-                            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        addZ2SDeviceIASzone(
+          device, first_free_slot, -1, "SMOKE DETECT", 
+          SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
         //sub_id = -1 has to kept for compatibility reason   
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
@@ -5528,9 +5523,9 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2: {
 
-        addZ2SDeviceIASzone(device, first_free_slot, -1, 
-                            "SMOKE DETECT", 
-                            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        addZ2SDeviceIASzone(
+          device, first_free_slot, -1, "SMOKE DETECT", 
+          SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
       } break;
 
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
@@ -5568,14 +5563,16 @@ uint8_t Z2S_addZ2SDevice(
 
         addZ2SDeviceActionTrigger(device, first_free_slot, -1, 
                                   "OCCUPANCY EXEC", 
-                                  SUPLA_CHANNELFNC_STAIRCASETIMER); break;
+                                  SUPLA_CHANNELFNC_STAIRCASETIMER); 
+      break;
 
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_2:  
 
-        addZ2SDeviceIASzone(device, first_free_slot, -1, 
-                            "OCCUPANCY_DETECTED", 
-                            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); break;
+        addZ2SDeviceIASzone(
+          device, first_free_slot, -1, "OCCUPANCY_DETECTED", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR); 
+      break;
 
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_3: 
@@ -7973,40 +7970,34 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       IAS_ZONE_ALARM_1_SID,
-                       "CONTACT", 
-                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_ALARM_1_SID, "CONTACT", 
+        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       IAS_ZONE_TAMPER_SID, 
-                       "TAMPER", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       IAS_ZONE_LOW_BATTERY_SID, 
-                       "LOW BATTERY", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_LOW_BATTERY_SID, "LOW BATTERY", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       IAS_ZONE_ALARM_1_SID,
-                       "CONTACT", 
-                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_ALARM_1_SID,"CONTACT", 
+        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       SONOFF_CUSTOM_CLUSTER_TAMPER_SID, 
-                       "TAMPER", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_CUSTOM_CLUSTER_TAMPER_SID, "TAMPER", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       IAS_ZONE_LOW_BATTERY_SID, 
-                       "LOW BATTERY", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_LOW_BATTERY_SID, "LOW BATTERY", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*****************************************************************************/

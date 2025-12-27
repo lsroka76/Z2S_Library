@@ -33,14 +33,12 @@ void initZ2SDeviceActionTrigger(int16_t channel_number_slot) {
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void addZ2SDeviceActionTrigger(zbg_device_params_t *device, 
-                               uint8_t free_slot, 
-                               int8_t sub_id, 
-                               const char *name, 
-                               uint32_t func) {
+void addZ2SDeviceActionTrigger(
+  zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
+  const char *name, uint32_t func) {
   
-  auto Supla_Z2S_ActionTrigger = 
-    new Supla::Control::VirtualRelaySceneSwitch(0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER);
+  auto Supla_Z2S_ActionTrigger = new Supla::Control::VirtualRelaySceneSwitch(
+    0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER);
 
   if (name == nullptr)
     name = (char*)default_at_name;
@@ -50,13 +48,9 @@ void addZ2SDeviceActionTrigger(zbg_device_params_t *device,
   if (func !=0) 
     Supla_Z2S_ActionTrigger->setDefaultFunction(func);
   
-  Z2S_fillChannelsTableSlot(device, 
-                            free_slot, 
-                            Supla_Z2S_ActionTrigger->getChannelNumber(), 
-                            SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
-                            sub_id, 
-                            name, 
-                            func);
+  Z2S_fillChannelsTableSlot(
+    device, free_slot, Supla_Z2S_ActionTrigger->getChannelNumber(), 
+    SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id, name, func);
 }
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
