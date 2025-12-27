@@ -60,7 +60,9 @@ LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
 
 /*****************************************************************************/
 
-LocalActionHandlerWithTrigger::~LocalActionHandlerWithTrigger() {};
+LocalActionHandlerWithTrigger::~LocalActionHandlerWithTrigger() {
+
+};
 
 /*****************************************************************************/
 
@@ -211,4 +213,21 @@ void LocalActionHandlerWithTrigger::iterateAlways() {
         runAction(ON_TURN_ON);
   }
 }
+
 /*****************************************************************************/
+
+LocalActionVirtualButton::LocalActionVirtualButton() {
+
+}
+
+/*****************************************************************************/
+
+LocalActionVirtualButton::~LocalActionVirtualButton() {
+
+}
+
+/*****************************************************************************/
+
+void LocalActionVirtualButton::handleAction(int event, int action) {
+
+}
