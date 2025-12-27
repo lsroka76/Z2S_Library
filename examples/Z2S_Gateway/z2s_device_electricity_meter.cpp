@@ -35,6 +35,21 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
 
       _isTuya = true; 
       _active_query = false; //true;
+
+      if ((strcmp(
+            Z2S_getZbDeviceManufacturerName(
+              z2s_channels_table[channel_number_slot].Zb_device_id),
+              "_TZ3000_5f43h46b") == 0) ||
+          (strcmp(
+            Z2S_getZbDeviceManufacturerName(
+              z2s_channels_table[channel_number_slot].Zb_device_id),
+              "_TZ3000_5f43h46b") == 0)) {
+
+        energy_multiplier = 1;
+        energy_divisor  = 100;
+      
+        ignore_zigbee_scaling = true;
+      }
     } break;
 
 
@@ -45,11 +60,11 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
 
       if ((strcmp(
             Z2S_getZbDeviceManufacturerName(
-              z2s_channels_table[channel_number_slot].ZB_device_id),
+              z2s_channels_table[channel_number_slot].Zb_device_id),
               "_TZ3000_ww6drja5") == 0) ||
           (strcmp(
             Z2S_getZbDeviceManufacturerName(
-              z2s_channels_table[channel_number_slot].ZB_device_id),
+              z2s_channels_table[channel_number_slot].Zb_device_id),
               "_TZ3000_fukaa7nc") == 0)) {
 
         energy_multiplier = 1;
@@ -124,7 +139,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
       ignore_zigbee_scaling = true;
 
       if (strcmp(Z2S_getZbDeviceManufacturerName(
-                  z2s_channels_table[channel_number_slot].ZB_device_id),
+                  z2s_channels_table[channel_number_slot].Zb_device_id),
                   "_TZ3000_kqvb5akv") == 0) {
 
         energy_multiplier = 1;
@@ -219,7 +234,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
      
 
       if (strcmp(Z2S_getZbDeviceManufacturerName(
-                  z2s_channels_table[channel_number_slot].ZB_device_id),
+                  z2s_channels_table[channel_number_slot].Zb_device_id),
                   "_TZ3000_kqvb5akv") == 0) {
 
         current_multiplier = 1;
