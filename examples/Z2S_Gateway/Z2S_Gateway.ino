@@ -520,7 +520,7 @@ void setup() {
   LittleFS.end();
 
   Z2S_loadZbDevicesTable();
-  
+
   Z2S_initZbDevices(millis());
 
   esp_zb_ieee_addr_t esp_zb_ieee_addr = {};
@@ -650,8 +650,6 @@ void setup() {
     PSTR("security_level"), &_z2s_security_level);
   
   Supla::Storage::ConfigInstance()->setUInt8(Z2S_FILES_STRUCTURE_VERSION, 2);
-
-  //Supla
   
   auto zbcr = new ZbConflictResolver();
   SuplaDevice.setChannelConflictResolver(zbcr);
