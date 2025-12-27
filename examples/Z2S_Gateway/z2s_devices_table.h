@@ -889,7 +889,7 @@ public:
             if ( zb_device_slot == 0xFF) {
 
               log_e("missing ZB device id for channel #%02u", i);
-              continue;
+              //continue;
             } 
 
             Z2S_removeChannel(channel_number_slot, true);
@@ -908,7 +908,8 @@ public:
           }
         }
       }
-      if (Z2S_countChannelsWithZbDeviceId(zb_device_slot) == 0) {
+      if ((zb_device_slot < 0xFF) &&
+          (Z2S_countChannelsWithZbDeviceId(zb_device_slot) == 0)) {
 
         log_i(
           "all channels for device %02u removed - removing device %02u", 

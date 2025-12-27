@@ -685,7 +685,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-      //z2s_channels_table[channel_number_slot].valid_record = false;
+      
       if (Z2S_removeChannel(channel_number_slot)) {
         log_i("Supla channel #%d removed. Restarting...", channel_id);
       SuplaDevice.scheduleSoftRestart(1000);
