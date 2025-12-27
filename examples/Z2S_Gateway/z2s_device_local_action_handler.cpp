@@ -350,7 +350,7 @@ bool addZ2SDeviceLocalActionHandler(
   
   z2s_channels_table[first_free_slot].Supla_channel_func = local_channel_func;
 
-  z2s_channels_table[first_free_slot].ZB_device_id = 0xFF;
+  z2s_channels_table[first_free_slot].Zb_device_id = 0xFF;
   
   return Z2S_saveChannelsTable();
 }

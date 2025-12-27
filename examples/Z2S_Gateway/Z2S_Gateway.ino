@@ -520,6 +520,8 @@ void setup() {
   LittleFS.end();
 
   Z2S_loadZbDevicesTable();
+  
+  Z2S_initZbDevices(millis());
 
   esp_zb_ieee_addr_t esp_zb_ieee_addr = {};
 
@@ -528,10 +530,13 @@ void setup() {
 
   Z2S_loadChannelsTable();
 
-  if (Supla::Storage::ConfigInstance()->getUInt8(Z2S_REBUILD_CHANNELS_ON_START, 
-                                                 &_rebuild_Supla_channels_on_start)) {
+  Z2S_initSuplaChannels();
+
+  if (Supla::Storage::ConfigInstance()->getUInt8(
+        Z2S_REBUILD_CHANNELS_ON_START, &_rebuild_Supla_channels_on_start)) {
                                                   
-    log_i("Z2S_REBUILD_CHANNELS_ON_START = %d", _rebuild_Supla_channels_on_start);
+    log_i(
+      "Z2S_REBUILD_CHANNELS_ON_START = %d", _rebuild_Supla_channels_on_start);
 
   } else {
 
@@ -543,8 +548,8 @@ void setup() {
 
     _rebuild_Supla_channels_on_start = 0;
 
-    if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_REBUILD_CHANNELS_ON_START, 
-                                                   _rebuild_Supla_channels_on_start))
+    if (Supla::Storage::ConfigInstance()->setUInt8(
+          Z2S_REBUILD_CHANNELS_ON_START, _rebuild_Supla_channels_on_start))
       Supla::Storage::ConfigInstance()->commit();
 
     log_i("rebuild Supla Channels action triggered!");  
@@ -552,9 +557,6 @@ void setup() {
     Z2S_rebuildSuplaChannels();
   }
 
-  Z2S_initZbDevices(millis());
-
-  Z2S_initSuplaChannels();
 
   /*z2s_channel_action_t test_action;
 
@@ -651,6 +653,11 @@ void setup() {
 
   //Supla
   
+  auto zbcr = new ZbConflictResolver();
+  SuplaDevice.setChannelConflictResolver(zbcr);
+  SuplaDevice.addFlags(
+    SUPLA_DEVICE_FLAG_BLOCK_ADDING_CHANNELS_AFTER_DELETION);
+
   auto zdc = new ZbDevicesConfigurator();
 
   SuplaDevice.setSuplaCACert(suplaCACert);
@@ -715,8 +722,8 @@ void loop() {
     
     _force_config_on_start = 0;
     
-    if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_FORCE_CONFIG_ON_START, 
-                                                   _force_config_on_start))
+    if (Supla::Storage::ConfigInstance()->setUInt8(
+      Z2S_FORCE_CONFIG_ON_START, _force_config_on_start))
       Supla::Storage::ConfigInstance()->commit();
 
     SuplaDevice.enterConfigMode();

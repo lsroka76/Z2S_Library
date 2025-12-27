@@ -142,7 +142,7 @@ void Z2S_printChannelsTableSlots(bool toTelnet) {
         z2s_channels_table[channels_counter].keep_alive_secs,
         z2s_channels_table[channels_counter].timeout_secs,
         z2s_channels_table[channels_counter].refresh_secs,
-        z2s_channels_table[channels_counter].ZB_device_id);
+        z2s_channels_table[channels_counter].Zb_device_id);
  
       log_i_telnet2(log_line, toTelnet);
     }
@@ -232,27 +232,24 @@ Supla::Element *Z2S_getSuplaElementByChannelNumber(uint8_t channel_id) {
       Supla::Element::getElementByChannelNumber(channel_id);
   else
     return 
-      z2s_channels_table[Z2S_findTableSlotByChannelNumber(channel_id)].local_action_handler_data.Supla_element;
+      z2s_channels_table[Z2S_findTableSlotByChannelNumber(channel_id)].\
+        local_action_handler_data.Supla_element;
 }
 
-void Z2S_fillChannelsTableSlot(zbg_device_params_t *device, 
-                               uint8_t slot, 
-                               uint8_t channel, 
-                               int32_t channel_type, 
-                               int8_t sub_id,
-                               const char *name, 
-                               uint32_t func, 
-                               uint8_t secondary_channel,
-                               uint8_t extended_data_type,
-                               uint8_t *extended_data) {
+void Z2S_fillChannelsTableSlot(
+  zbg_device_params_t *device, uint8_t slot, uint8_t channel, 
+  int32_t channel_type, int8_t sub_id, const char *name, uint32_t func, 
+  uint8_t secondary_channel, uint8_t extended_data_type, 
+  uint8_t *extended_data) {
 
   
   memset(&z2s_channels_table[slot], 0, sizeof(z2s_device_params_t));
   z2s_channels_table[slot].valid_record = true;
   z2s_channels_table[slot].local_channel_type = 0;
   z2s_channels_table[slot].extended_data_type = extended_data_type;
-  memcpy(z2s_channels_table[slot].ieee_addr, device->ieee_addr, 
-         sizeof(esp_zb_ieee_addr_t));
+  memcpy(
+    z2s_channels_table[slot].ieee_addr, device->ieee_addr, 
+    sizeof(esp_zb_ieee_addr_t));
   z2s_channels_table[slot].short_addr = device->short_addr;
   z2s_channels_table[slot].model_id = device->model_id;
   z2s_channels_table[slot].endpoint = device->endpoint;
@@ -268,11 +265,9 @@ void Z2S_fillChannelsTableSlot(zbg_device_params_t *device,
   if (extended_data_type != CHANNEL_EXTENDED_DATA_TYPE_NULL) {
 
       if (Z2S_saveChannelExtendedData(
-            slot, 
-            extended_data_type, extended_data, false)) {
+            slot, extended_data_type, extended_data, false)) {
       }
   }
-  
   Z2S_saveChannelsTable();
 }
 
@@ -284,25 +279,27 @@ bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table) {
 
     if (z2s_channels_table[channel_number_slot].user_data_flags & 
         USER_DATA_FLAG_HAS_EXTENDED_DATA) 
-      Z2S_removeChannelExtendedData(z2s_channels_table[channel_number_slot].Supla_channel,
-                                    z2s_channels_table[channel_number_slot].extended_data_type, false);
+      Z2S_removeChannelExtendedData(
+        z2s_channels_table[channel_number_slot].Supla_channel,
+        z2s_channels_table[channel_number_slot].extended_data_type, false);
     
-    Z2S_removeChannelActions(z2s_channels_table[channel_number_slot].Supla_channel, false);
+    Z2S_removeChannelActions(
+      z2s_channels_table[channel_number_slot].Supla_channel, false);
     
-    memset(&z2s_channels_table[channel_number_slot], 0, sizeof(z2s_device_params_t));
+    memset(
+      &z2s_channels_table[channel_number_slot], 0, 
+      sizeof(z2s_device_params_t));
         
     if (save_table)
       return Z2S_saveChannelsTable();
 
     return true;
   }
-
   return false;
 }
 
-bool Z2S_setChannelFlags(int16_t channel_number_slot, 
-                         uint32_t flags_to_set,
-                         bool save_table) {
+bool Z2S_setChannelFlags(
+  int16_t channel_number_slot, uint32_t flags_to_set,bool save_table) {
 
   if ((channel_number_slot >= 0) && 
       (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) && 
@@ -324,9 +321,8 @@ bool Z2S_setChannelFlags(int16_t channel_number_slot,
   } else return false;
 }
 
-bool Z2S_clearChannelFlags(int16_t channel_number_slot, 
-                           uint32_t flags_to_clear,
-                           bool save_table) {
+bool Z2S_clearChannelFlags(
+  int16_t channel_number_slot, uint32_t flags_to_clear, bool save_table) {
 
   if ((channel_number_slot >= 0) && 
       (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) && 
@@ -348,8 +344,8 @@ bool Z2S_clearChannelFlags(int16_t channel_number_slot,
   } else return false;
 }
 
-bool Z2S_checkChannelFlags(int16_t channel_number_slot, 
-                           uint32_t flags_to_check) {
+bool Z2S_checkChannelFlags(
+  int16_t channel_number_slot, uint32_t flags_to_check) {
 
   if ((channel_number_slot >= 0) && 
       (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) && 
@@ -376,17 +372,19 @@ bool Z2S_loadChannelsTable() {
 
   if (z2s_channels_table_size == 0) {
 
-      log_i(" No channels table found, writing empty one with size %d", sizeof(z2s_channels_table));
+      log_i(
+        " No channels table found, writing empty one with size %d", 
+        sizeof(z2s_channels_table));
       
       memset(z2s_channels_table,0,sizeof(z2s_channels_table));
       
-      bool save_result = Z2S_saveFile(Z2S_CHANNELS_TABLE_ID_V2, 
-                                      (uint8_t *)z2s_channels_table, 
-                                      sizeof(z2s_channels_table));
+      bool save_result = Z2S_saveFile(
+        Z2S_CHANNELS_TABLE_ID_V2, (uint8_t *)z2s_channels_table, 
+        sizeof(z2s_channels_table));
 
-      bool backup_result = Z2S_saveFile(Z2S_CHANNELS_TABLE_BACKUP_ID_V2, 
-                                        (uint8_t *)z2s_channels_table, 
-                                        sizeof(z2s_channels_table));
+      bool backup_result = Z2S_saveFile(
+        Z2S_CHANNELS_TABLE_BACKUP_ID_V2, (uint8_t *)z2s_channels_table, 
+        sizeof(z2s_channels_table));
 
       if (!(save_result || backup_result)) {
 
@@ -448,7 +446,7 @@ bool Z2S_loadChannelsTable() {
               z2s_channels_table[table_index].timeout_secs = 0;
               z2s_channels_table[table_index].refresh_secs = 0;
               z2s_channels_table[table_index].data_counter = 0;
-              z2s_channels_table[table_index].ZB_device_id = 0xFF;
+              z2s_channels_table[table_index].Zb_device_id = 0xFF;
             }
           log_i("Channels table upgrade completed - saving new table");
           Z2S_saveChannelsTable();
@@ -498,7 +496,7 @@ bool Z2S_loadChannelsTable() {
                 z2s_channels_table[table_index].timeout_secs = (z2s_devices_legacy_2_table + table_index)->user_data_2 * 3600;
               z2s_channels_table[table_index].refresh_secs = 0;
               z2s_channels_table[table_index].data_counter = 0;
-              z2s_channels_table[table_index].ZB_device_id = 0xFF;
+              z2s_channels_table[table_index].Zb_device_id = 0xFF;
             }
           log_i("Channels table upgrade completed - saving new table");
           Z2S_saveChannelsTable();
@@ -536,15 +534,15 @@ bool Z2S_loadChannelsTable() {
             if ((z2s_channels_table[channels_counter].valid_record) &&
                 (z2s_channels_table[channels_counter].local_channel_type == 0)) {
               
-              uint8_t new_ZB_device_id = Z2S_addZbDeviceTableSlot(
+              uint8_t new_Zb_device_id = Z2S_addZbDeviceTableSlot(
                 z2s_channels_table[channels_counter].ieee_addr,
                 z2s_channels_table[channels_counter].short_addr,
                 "Unknown", "Unknown", 1, 
                 z2s_channels_table[channels_counter].model_id, 0);
 
-              if (z2s_channels_table[channels_counter].ZB_device_id != new_ZB_device_id) {
+              if (z2s_channels_table[channels_counter].Zb_device_id != new_Zb_device_id) {
                 
-                z2s_channels_table[channels_counter].ZB_device_id = new_ZB_device_id;
+                z2s_channels_table[channels_counter].Zb_device_id = new_Zb_device_id;
                 channels_table_save_required = true;
               }
               if ((z2s_channels_table[channels_counter].model_id >= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) &&
@@ -653,48 +651,111 @@ uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr) {
   return 0xFF;  
 }
 
+uint8_t Z2S_countChannelsWithZbDeviceId(uint8_t Zb_device_id) {
+  
+  uint8_t Zb_device_id_counter = 0;
+
+  for (uint8_t channels_counter = 0; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; 
+       channels_counter++) {
+        
+    if ((z2s_channels_table[channels_counter].valid_record) && 
+        (z2s_channels_table[channels_counter].Zb_device_id == Zb_device_id))
+      Zb_device_id_counter++;
+  }
+  return Zb_device_id_counter;
+}
+
+
 bool  Z2S_hasZbDevice(uint32_t desc_id) {
 
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
-      if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
-          (z2s_zb_devices_table[devices_counter].desc_id == desc_id))
-        return true;
+  for (uint8_t devices_counter = 0; 
+       devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
+    if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
+        (z2s_zb_devices_table[devices_counter].desc_id == desc_id))
+      return true;
   return false;
 }
 
-bool Z2S_removeZbDeviceWithAllChannels(uint8_t zb_device_slot) {
+bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table) {
 
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
 
-    //bool zb_devices_table_save_required = false;
+    memset(&z2s_zb_devices_table[zb_device_slot], 0, 
+      sizeof(z2s_zb_device_params_t));
+
+    if (save_table)
+      return Z2S_saveZbDevicesTable();
+
+    return true;
+  } else {
+
+    log_e("Invalid Zb devices table slot!");
+    return false;
+  }
+}
+
+
+bool Z2S_removeZbDeviceWithAllChannels(
+  uint8_t zb_device_slot, bool save_tables) {
+
+  if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
+
     bool channels_table_save_required = false;
 
-    for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+    for (uint8_t channels_counter = 0; 
+         channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
 
       if ((z2s_channels_table[channels_counter].valid_record) && 
           (memcmp(z2s_channels_table[channels_counter].ieee_addr, 
           z2s_zb_devices_table[zb_device_slot].ieee_addr, 
           sizeof(esp_zb_ieee_addr_t)) == 0)) {
 
-            //z2s_channels_table[channels_counter].valid_record = false;
-            Z2S_removeChannel(channels_counter, false);
-            //Z2S_removeChannelActions(z2s_channels_table[channels_counter].Supla_channel, false);
-            channels_table_save_required = true;
+        Z2S_removeChannel(channels_counter, false);
+        channels_table_save_required = true;
       }
     }
     bool tables_save_result = false;
 
-    if (channels_table_save_required)
+    if (save_tables && channels_table_save_required)
       tables_save_result = Z2S_saveChannelsTable();
+    else 
+      tables_save_result = channels_table_save_required;
 
-    memset(&z2s_zb_devices_table[zb_device_slot], 0, sizeof(z2s_zb_device_params_t));
-    tables_save_result = Z2S_saveZbDevicesTable();
+    memset(&z2s_zb_devices_table[zb_device_slot], 0, 
+      sizeof(z2s_zb_device_params_t));
+
+    if (save_tables)
+      tables_save_result = Z2S_saveZbDevicesTable();
     return tables_save_result;
   } else {
 
     log_e("Invalid ZB devices table slot!");
     return false;
   }
+}
+
+bool Z2S_removeAllZbDeviceWithAllChannels() {
+
+  bool channels_table_save_required = false;
+  bool zb_devices_table_save_required = false;
+  
+  for (uint8_t devices_counter = 0; 
+       devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
+    if (z2s_zb_devices_table[devices_counter].record_id > 0) {
+
+      channels_table_save_required  = channels_table_save_required ||
+        Z2S_removeZbDeviceWithAllChannels(devices_counter, false);
+      
+      zb_devices_table_save_required = true;
+    }
+  if (channels_table_save_required)
+    Z2S_saveChannelsTable();
+
+  if (zb_devices_table_save_required)
+    Z2S_saveZbDevicesTable();
+
+  return (channels_table_save_required || zb_devices_table_save_required);
 }
 
 void Z2S_initZbDevices(uint32_t init_ms) {
@@ -756,8 +817,10 @@ bool Z2S_updateZbDeviceUidIdx(
         return true;
       }
     } else
-      if ((strcmp(model_name, Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
-          (strcmp(manufacturer_name, Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
+      if ((strcmp(model_name, 
+            Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
+          (strcmp(manufacturer_name, 
+            Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
 
         z2s_zb_devices_table[zb_device_slot].device_uid = 
           Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid;
@@ -1232,9 +1295,9 @@ bool Z2S_saveZbDevicesTable() {
 
   save_mutex = 1;*/
 
-  if (!Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
-                    (uint8_t *)z2s_zb_devices_table, 
-                    sizeof(z2s_zb_devices_table))) {
+  if (!Z2S_saveFile(
+    Z2S_ZB_DEVICES_TABLE_ID_V2, (uint8_t *)z2s_zb_devices_table, 
+    sizeof(z2s_zb_devices_table))) {
 
     log_i ("Zigbee devices table write failed!");
 
@@ -1243,11 +1306,12 @@ bool Z2S_saveZbDevicesTable() {
   }
   else { 
     
-    if (Supla::Storage::ConfigInstance()->
-          setUInt32(Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
+    if (Supla::Storage::ConfigInstance()->setUInt32(
+      Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
 
-      log_i("Zigbee devices table new size(%d) write success!", 
-            sizeof(z2s_zb_devices_table));
+      log_i(
+        "Zigbee devices table new size(%d) write success!", 
+        sizeof(z2s_zb_devices_table));
 
       Supla::Storage::ConfigInstance()->commit();
 
@@ -1266,11 +1330,11 @@ bool Z2S_saveZbDevicesTable() {
 
 bool Z2S_clearZbDevicesTable() {
 
-  log_i("Clear Zigbee devices table");
+  log_i("Clear Zigbee devices table function is deprecated!");
   
-  memset(z2s_zb_devices_table, 0, sizeof(z2s_zb_devices_table));
+  //memset(z2s_zb_devices_table, 0, sizeof(z2s_zb_devices_table));
 
-  return Z2S_saveZbDevicesTable();
+  //return Z2S_saveZbDevicesTable();
 }
 
 void Z2S_syncZbDeviceDescFlags(
@@ -1583,6 +1647,8 @@ void Z2S_initSuplaChannels() {
             z2s_channels_table[channels_counter].Supla_channel);
         
           element->getChannel()->setSubDeviceId(zb_device_number_slot + 1);
+          element->getChannel()->setFlag(
+            SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
           log_i("setSubDeviceId to %u", zb_device_number_slot + 1);
         }
@@ -1929,9 +1995,8 @@ bool Z2S_saveChannelExtendedData(int16_t channel_number_slot,
   }
 }
 
-bool Z2S_removeChannelExtendedData(int16_t channel_number_slot, 
-                                   uint8_t extended_data_type,
-                                   bool save_table) {
+bool Z2S_removeChannelExtendedData(
+  int16_t channel_number_slot, uint8_t extended_data_type, bool save_table) {
 
   
   if ((z2s_channels_table[channel_number_slot].user_data_flags &
@@ -4470,8 +4535,9 @@ void Z2S_rebuildZbDeviceSuplaChannels(uint8_t device_number_slot) {
        endpoint_counter < Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count; 
        endpoint_counter++) {
 
-    uint8_t endpoint_id = (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count == 1) ? 
-                           1 : Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints[endpoint_counter].endpoint_id; 
+    uint8_t endpoint_id = 
+      (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count == 1) ? 
+      1 : Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints[endpoint_counter].endpoint_id; 
                                         
     uint32_t z2s_device_desc_id = 
       (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count == 1) ?
@@ -4498,7 +4564,9 @@ void Z2S_rebuildSuplaChannels() {
     
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
-      memcpy(esp_zb_ieee_addr, z2s_zb_devices_table[devices_counter].ieee_addr, sizeof(esp_zb_ieee_addr_t));
+      memcpy(
+        esp_zb_ieee_addr, z2s_zb_devices_table[devices_counter].ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
 
       ieee_addr_to_str(ieee_addr_str, esp_zb_ieee_addr);
       log_i("checking IEEE address %s", ieee_addr_str);
@@ -4583,10 +4651,10 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
     
     log_e("No Zigbee device found for address %s!",ieee_addr_str);
     log_i(
-      "Forcing device %s(0x04%X) to leave network and rejoin!", 
+      "Forcing device %s(0x04%X) to leave network (no rejoin)!", 
       ieee_addr_str, short_addr);
 
-    zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, true);
+    zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, false);
     return;
   }
 

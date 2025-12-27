@@ -16,6 +16,16 @@
 #include <supla/events.h>
 #include <supla/element.h>
 #include <supla/protocol/supla_srpc.h>
+#include <supla/device/register_device.h>
+#include <supla/device/channel_conflict_resolver.h>
+#include <supla/mutex.h>
+#include <supla/auto_lock.h>
+#include <SuplaDevice.h>
+
+#include <supla/storage/config.h>
+#include <supla/storage/storage.h>
+
+
 
 #define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  //32
 #define Z2S_CHANNELS_MAX_NUMBER     0x80  //128
@@ -173,7 +183,7 @@ union {
       uint32_t        last_temperature_measurement;//TEMP*100
     };
 };
-  uint8_t             ZB_device_id;
+  uint8_t             Zb_device_id;
   uint8_t             reserved_7;
   uint8_t             reserved_8;
   uint8_t             reserved_9;
@@ -399,17 +409,21 @@ bool Z2S_loadZbDevicesTable();
 bool Z2S_clearZbDevicesTable();
 void Z2S_printZbDevicesTableSlots(bool toTelnet = false);
 uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t ieee_addr);
+uint8_t Z2S_countChannelsWithZbDeviceId(uint8_t Zb_device_id);
 bool Z2S_hasZbDevice(uint32_t desc_id);
 void Z2S_initZbDevices(uint32_t init_ms);
-void Z2S_updateZbDeviceLastSeenMs(esp_zb_ieee_addr_t ieee_addr, 
-                                  uint32_t last_seen_ms);
+void Z2S_updateZbDeviceLastSeenMs(
+  esp_zb_ieee_addr_t ieee_addr, uint32_t last_seen_ms);
 
 uint8_t Z2S_addZbDeviceTableSlot(
   esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr,
   const char *manufacturer_name, const char *model_name,
   uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source);
 
-bool Z2S_removeZbDeviceWithAllChannels(uint8_t zb_device_slot);
+bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table = true);
+bool Z2S_removeZbDeviceWithAllChannels(uint8_t zb_device_slot, 
+  bool save_tables = true);
+bool Z2S_removeAllZbDeviceWithAllChannels();
 
 /*****************************************************************************/
 
@@ -812,6 +826,99 @@ private:
   Supla::Protocol::SuplaSrpc *srpc = nullptr;
 
   uint32_t lastSendTime = 0;
+};
+
+class ZbConflictResolver : public Supla::Device::ChannelConflictResolver {
+
+public:
+
+  bool onChannelConflictReport(
+    uint8_t *channelReport,uint8_t channelReportSize, 
+    bool hasConflictInvalidType, bool hasConflictChannelMissingOnServer,
+    bool hasConflictChannelMissingOnDevice) {
+
+    if (hasConflictChannelMissingOnDevice) {
+      
+      log_i(
+        "ConflictResolver: Channel conflict - channel missing "
+        "on device. Not recoverable. Aborting...");
+      
+      return false;
+    }
+    
+    if (hasConflictInvalidType) {
+      
+      log_i(
+        "ConflictResolver: Channel conflict - channel type "
+        "mismatch. Not recoverable. Aborting...");
+      
+      return false;
+    }
+    
+    if (hasConflictChannelMissingOnServer) {
+      
+      log_i(
+        "ConflictResolver: Channel conflict - channel missing "
+        "on server. Trying to remove affected devices...");
+
+      auto maxChannelNumber = Supla::RegisterDevice::getMaxChannelNumberUsed();
+
+      uint8_t zb_device_slot = 0xFF;
+
+      for (int i = 0; i <= maxChannelNumber; i++) {
+
+        if ((i >= channelReportSize || channelReport[i] == 0) &&
+            !Supla::RegisterDevice::isChannelNumberFree(i)) {
+       
+          log_i("%u, %u, %u", channelReportSize, i, channelReport[i]);
+          int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(i);
+          if ( channel_number_slot >= 0) {
+
+            //Z2S_findZbDeviceTableSlot(
+          //z2s_channels_table[channel_number_slot].ieee_addr)
+            if ((zb_device_slot < 0xFF) && 
+                (zb_device_slot != z2s_channels_table[channel_number_slot].Zb_device_id)) {
+
+              log_e(
+                "Unexpected SuplaDevice behavior - multiple subdevices conflict!!!");
+              break;
+            }
+            zb_device_slot = 
+              z2s_channels_table[channel_number_slot].Zb_device_id;
+
+            if ( zb_device_slot == 0xFF) {
+
+              log_e("missing ZB device id for channel #%02u", i);
+              continue;
+            } 
+
+            Z2S_removeChannel(channel_number_slot, true);
+            auto element =
+              Supla::Element::getElementByChannelNumber(i);
+            if (element) {
+
+              Supla::AutoLock lock(SuplaDevice.getTimerAccessMutex());
+              delete element;
+              element = nullptr;
+              if (!Supla::Storage::IsStateStorageValid()) {
+              
+                Supla::Storage::WriteStateStorage();
+              }
+            }
+          }
+        }
+      }
+      if (Z2S_countChannelsWithZbDeviceId(zb_device_slot) == 0) {
+
+        log_i(
+          "all channels for device %02u removed - removing device %02u", 
+          zb_device_slot);
+
+        Z2S_removeZbDevice(zb_device_slot);
+      }
+    }
+    return false;
+  }
 };
 
 #endif

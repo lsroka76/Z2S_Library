@@ -128,7 +128,7 @@ uint16_t device_attribute_id_selector_last_option_id  = 0xFFFF;
 uint16_t device_attribute_value_selector_first_option_id = 0xFFFF;
 uint16_t device_attribute_value_selector_last_option_id  = 0xFFFF;	
 
-uint16_t remove_device_button;
+//uint16_t remove_device_button;
 uint16_t remove_device_and_channels_button;
 uint16_t remove_all_devices_button;
 
@@ -257,6 +257,9 @@ volatile bool data_ready = false;
 volatile uint8_t gui_command = 0;
 
 volatile uint32_t gui_callback_reentry_number = 0;
+
+volatile uint8_t	remove_all_devices_counter = 2; 
+
 
 #define GUI_COMMAND_DEVICE_NAME_CHANGE		10
 #define GUI_COMMAND_CHANNEL_NAME_CHANGE		11
@@ -534,7 +537,7 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot);
 void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf);
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 bool isNumber(String& str) {
 
@@ -563,7 +566,7 @@ bool isNumber(String& str) {
     return true;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 const char* getSuplaChannelTypeName(int32_t channelType) {
 
@@ -604,7 +607,7 @@ const char* getSuplaChannelTypeName(int32_t channelType) {
 	}
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc) {
 
@@ -645,7 +648,7 @@ const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc) {
 	}*/
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 const char* getZ2SDeviceDescName(uint32_t modelID)  {
 
@@ -715,7 +718,7 @@ const char* getZ2SDeviceDescName(uint32_t modelID)  {
 	}
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 const char* getZigbeeDataTypeName(uint8_t dataType)  {
 
@@ -729,7 +732,7 @@ const char* getZigbeeDataTypeName(uint8_t dataType)  {
 	return PSTR("Unknown data type");
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void fillGatewayGeneralnformation(char *buf) {
 
@@ -758,7 +761,7 @@ void fillGatewayGeneralnformation(char *buf) {
 	}
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void fillMemoryUptimeInformation(char *buf) {
 
@@ -782,7 +785,7 @@ void fillMemoryUptimeInformation(char *buf) {
 	}
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void enableControlStyle(uint16_t control_id, bool enable) {
 
@@ -799,7 +802,7 @@ void enableControlStyle(uint16_t control_id, bool enable) {
 	}
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void updateLabel_P(Control::ControlId_t id, const char* value) {
 
@@ -807,7 +810,7 @@ void updateLabel_P(Control::ControlId_t id, const char* value) {
 	ESPUI.updateLabel(id, working_str);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void buildGatewayTabGUI() {
 
@@ -975,7 +978,7 @@ void buildGatewayTabGUI() {
 	ESPUI.updateNumber(rebuild_Supla_channels_switcher, _rebuild_Supla_channels_on_start);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void buildCredentialsGUI() {
 
@@ -1255,7 +1258,7 @@ void rebuildDevicesSelector() {
 	}
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void buildDevicesTabGUI() {
 
@@ -1496,53 +1499,36 @@ void buildDevicesTabGUI() {
 		PSTR(clearLabelStyle));							
 
 
-	ESPUI.addControl(Control::Type::Separator, 
-									 PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::None, 
-									 devicestab);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR(empty_str), working_str, 
+		Control::Color::None, devicestab);
 
-	working_str = PSTR("Remove device!");
-	remove_device_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR("Remove Zigbee device(s)"), 
-										 working_str, 
-										 Control::Color::Alizarin, 
-										 devicestab, 
-										 removeDeviceCallback, 
-										 (void*)GUI_CB_SINGLE_FLAG);
+	/*working_str = PSTR("Remove device!");
+	remove_device_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("Remove Zigbee device(s)"), working_str, 
+		Control::Color::Alizarin, devicestab, removeDeviceCallback, 
+		(void*)GUI_CB_SINGLE_FLAG);*/
 
 	working_str = PSTR("Remove device with channels!");
-	remove_device_and_channels_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Alizarin, 
-										 remove_device_button, 
-										 removeDeviceCallback, 
-										 (void*)GUI_CB_WITH_CHANNELS_FLAG);
+	remove_device_and_channels_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Alizarin, devicestab, removeDeviceCallback, 
+		(void*)GUI_CB_WITH_CHANNELS_FLAG);
 
-	working_str = PSTR("Remove all devices!");
-	remove_all_devices_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Alizarin, 
-										 remove_device_button, 
-										 removeDeviceCallback, 
-										 (void*)GUI_CB_ALL_FLAG); 
+	working_str = PSTR("Remove all devices with channels!!!");
+	remove_all_devices_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Alizarin, remove_device_and_channels_button, 
+		removeDeviceCallback, (void*)GUI_CB_ALL_FLAG); 
 
-	device_status_label = 
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR("Status"), 
-										 three_dots_str, 
-										 Control::Color::Alizarin, 
-										 remove_device_button);
+	device_status_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Status"), three_dots_str, 
+		Control::Color::Alizarin, remove_device_and_channels_button);
 
 	enableDeviceControls(false);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void rebuildChannelsSelector(bool rebuild_channels_list, 
 														 uint16_t channelstab = 0xFFFF) {
@@ -1629,30 +1615,25 @@ void rebuildChannelsSelector(bool rebuild_channels_list,
 		channelSelectorCallback(ESPUI.getControl(channel_selector), SL_VALUE);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void buildChannelsTabGUI() {
 
 	working_str = PSTR("Zigbee channels");
-	auto channelstab = ESPUI.addControl(Control::Type::Tab, 
-																			PSTR(empty_str), 
-																			working_str,
-																			Control::Color::Emerald, 
-																			Control::noParent, 
-																			onChannelsTabCallback);
+	auto channelstab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str,Control::Color::Emerald, 
+		Control::noParent, onChannelsTabCallback);
   
 	rebuildChannelsSelector(false, channelstab);
 
-	zb_channel_info_label = ESPUI.addControl(Control::Type::Label, 
-																					 PSTR("Channel info"), 
-																					 three_dots_str, 
-																					 Control::Color::Emerald, 
-																					 channelstab);
+	zb_channel_info_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Channel info"), three_dots_str, 
+		Control::Color::Emerald, channelstab);
 	
-	ESPUI.setElementStyle(zb_channel_info_label, 
-												"color:black;text-align: justify;"
-												" font-family:tahoma; font-size: "
-												"4 px; font-style: normal; font-weight: normal;");
+	ESPUI.setElementStyle(
+		zb_channel_info_label, "color:black;text-align: justify;"
+		" font-family:tahoma; font-size: "
+		"4 px; font-style: normal; font-weight: normal;");
 	ESPUI.setPanelWide(zb_channel_info_label, true);
 
 	working_str = PSTR(empty_str);
@@ -2195,7 +2176,7 @@ void buildChannelsTabGUI() {
 	enableChannelControls(false);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void buildClustersAttributesTab() {
 
@@ -4813,7 +4794,7 @@ void enableDeviceControls(bool enable) {
 	enableControlStyle(getswbuild_button, enable);
 	enableControlStyle(getrssi_button, enable);
 
-	enableControlStyle(remove_device_button, enable);
+	//enableControlStyle(remove_device_button, enable);
 	enableControlStyle(remove_device_and_channels_button, enable);
 	enableControlStyle(remove_all_devices_button, enable);
 
@@ -5246,12 +5227,12 @@ void updateChannelInfoLabel(uint8_t label_number) {
 						z2s_channels_table[channel_slot].user_data_3,
 						z2s_channels_table[channel_slot].user_data_4,
 						z2s_channels_table[channel_slot].extended_data_type,
-						Z2S_getZbDeviceLocalName(z2s_channels_table[channel_slot].ZB_device_id),
+						Z2S_getZbDeviceLocalName(z2s_channels_table[channel_slot].Zb_device_id),
 						(z2s_channels_table[channel_slot].local_channel_type == 0) ?
-						Z2S_getZbDeviceManufacturerName(z2s_channels_table[channel_slot].ZB_device_id):
+						Z2S_getZbDeviceManufacturerName(z2s_channels_table[channel_slot].Zb_device_id):
 						getZ2SDeviceLocalActionHandlerTypeName(channel_slot),
 						(z2s_channels_table[channel_slot].local_channel_type == 0) ?
-						Z2S_getZbDeviceModelName(z2s_channels_table[channel_slot].ZB_device_id):
+						Z2S_getZbDeviceModelName(z2s_channels_table[channel_slot].Zb_device_id):
 						getZ2SDeviceLocalActionHandlerLogicOperatorName(channel_slot),
 						z2s_channels_table[channel_slot].gui_control_id);
 	
@@ -6187,43 +6168,58 @@ void removeDeviceCallback(Control *sender, int type, void *param) {
 				z2s_zb_devices_table[device_slot].record_id = 0;
 				if (Z2S_saveZbDevicesTable()) {
 
-					sprintf_P(general_purpose_gui_buffer, 
-										PSTR("Device #%02u removed! Restarting..."), device_slot);
+					sprintf_P(
+						general_purpose_gui_buffer, 
+						PSTR("Device #%02u removed! Restarting..."), device_slot);
 
 					restart_required = true;
 				} else
-					sprintf_P(general_purpose_gui_buffer, 
-										PSTR("Device #%02u removal failed! Error saving ZB devices table!"), 
-										device_slot);
+					sprintf_P(
+						general_purpose_gui_buffer, 
+						PSTR("Device #%02u removal failed! Error saving ZB devices table!"), 
+						device_slot);
 			} break;
 
 
 			case GUI_CB_WITH_CHANNELS_FLAG : {	
 
-				if (Z2S_removeZbDeviceWithAllChannels(device_slot)) {
+				if (Z2S_removeZbDeviceWithAllChannels(device_slot, true)) {
 
-					sprintf_P(general_purpose_gui_buffer, 
-										PSTR("Device #%02u and it's all channels removed! Restarting..."), 
-										device_slot);
+					sprintf_P(
+						general_purpose_gui_buffer, 
+						PSTR("Device #%02u and it's all channels removed! Restarting..."), 
+						device_slot);
 					restart_required = true;
 				} else
-					sprintf_P(general_purpose_gui_buffer, 
-										PSTR("Device #%02u or some of it's channels removal failed! "
-										"Error saving one of devices table!"), 
-										device_slot);
+					sprintf_P(
+						general_purpose_gui_buffer, 
+						PSTR("Device #%02u or some of it's channels removal failed! "
+						"Error saving one of devices table!"), device_slot);
 			} break;
 
 
 			case GUI_CB_ALL_FLAG: {
 
-				if (Z2S_clearZbDevicesTable()) {
-					sprintf_P(general_purpose_gui_buffer, 
-										PSTR("All devices removed! Restarting..."));
-					restart_required = true;
-				} else
-					sprintf_P(general_purpose_gui_buffer, 
-										PSTR("Devices removal failed! "
-										"Error saving ZB devices table!"));
+				//if (Z2S_clearZbDevicesTable()) {
+				if (remove_all_devices_counter == 0) {
+
+					if (Z2S_removeAllZbDeviceWithAllChannels()) {
+						sprintf_P(
+							general_purpose_gui_buffer, 
+							PSTR("All devices with channels removed! Restarting..."));
+							restart_required = true;
+					} else
+						sprintf_P(
+							general_purpose_gui_buffer, 
+							PSTR("Devices removal failed! Error saving ZB devices table!"));
+				} else {
+
+						sprintf_P(
+							general_purpose_gui_buffer, 
+							PSTR("Press this button %s more to remove all devices"),
+							(remove_all_devices_counter == 2) ? "twice" : "once");
+							remove_all_devices_counter--;
+				}
 			} break;
 		}
 
@@ -6240,18 +6236,25 @@ void removeChannelCallback(Control *sender, int type) {
 
 		uint8_t channel_slot = ESPUI.getControl(channel_selector)->value.toInt();
 
-		//z2s_channels_table[channel_slot].valid_record = false;
     bool is_zigbee_channel = (z2s_channels_table[channel_slot].local_channel_type == 0);
 
 		if (Z2S_removeChannel(channel_slot, true)) {
 
-			//Z2S_removeChannelActions(z2s_channels_table[channel_slot].Supla_channel, false);
 			if (is_zigbee_channel) {
-				sprintf_P(general_purpose_gui_buffer, PSTR("Channel # %02u with all actions removed. Restarting..."), channel_slot);
+				
+				sprintf_P(
+					general_purpose_gui_buffer, 
+					PSTR("Channel # %02u with all actions removed. Restarting..."),
+					channel_slot);
+
       	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
       	SuplaDevice.scheduleSoftRestart(1000);
 			} else {
-				sprintf_P(general_purpose_gui_buffer, PSTR("Channel # %02u with all actions removed."), channel_slot);
+				
+				sprintf_P(
+					general_purpose_gui_buffer, 
+					PSTR("Channel # %02u with all actions removed."), channel_slot);
+
       	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
 				
 			}
@@ -6265,7 +6268,9 @@ void removeAllChannelsCallback(Control *sender, int type) {
 		
 		if (Z2S_removeAllChannels()) {
 
-      updateLabel_P(channel_status_label, PSTR("All channels and actions removed!. Restarting..."));
+      updateLabel_P(
+				channel_status_label, 
+				PSTR("All channels and actions removed!. Restarting..."));
       SuplaDevice.scheduleSoftRestart(1000);
 		}
 	}
