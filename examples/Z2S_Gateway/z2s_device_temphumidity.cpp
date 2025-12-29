@@ -10,10 +10,11 @@
 
 NetworkClient RemoteThermometer;
 IPAddress ip_address;
-/*---------------------------------------------------------------------------------------------------------------------------*/
 
-void initZ2SDeviceTempHumidity(int16_t channel_number_slot, 
-                               bool thermhygrometer) {
+/*****************************************************************************/
+
+void initZ2SDeviceTempHumidity(
+  int16_t channel_number_slot, bool thermhygrometer) {
   
   if (thermhygrometer) {
 
@@ -23,7 +24,8 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot,
     Supla_Z2S_VirtualThermHygroMeter->getChannel()->setChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
 
-    if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
+    if (strlen(
+          z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
       Supla_Z2S_VirtualThermHygroMeter->setInitialCaption(
         z2s_channels_table[channel_number_slot].Supla_channel_name);
   
@@ -57,7 +59,8 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot,
     Supla_Z2S_VirtualThermometer->getChannel()->setChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
 
-    if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
+    if (strlen(
+          z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
       Supla_Z2S_VirtualThermometer->setInitialCaption(
         z2s_channels_table[channel_number_slot].Supla_channel_name);
   
@@ -85,12 +88,9 @@ void initZ2SDeviceTempHumidity(int16_t channel_number_slot,
   }
 }
 
-void addZ2SDeviceTempHumidity(zbg_device_params_t *device, 
-                              uint8_t free_slot, 
-                              int8_t sub_id, 
-                              const char *name, 
-                              uint32_t func,
-                              bool thermhygrometer) {
+void addZ2SDeviceTempHumidity(
+  zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
+  const char *name, uint32_t func, bool thermhygrometer) {
 
   if (thermhygrometer) {
 
@@ -100,34 +100,26 @@ void addZ2SDeviceTempHumidity(zbg_device_params_t *device,
     if (name == nullptr)
       name = (char*)default_temphumi_name;
   
-    Z2S_fillChannelsTableSlot(device, 
-                              free_slot, 
-                              Supla_Z2S_VirtualThermHygroMeter->getChannelNumber(), 
-                              SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
-                              sub_id, 
-                              name, 
-                              func);
+    Z2S_fillChannelsTableSlot(
+      device, free_slot, Supla_Z2S_VirtualThermHygroMeter->getChannelNumber(), 
+      SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, sub_id, name, func);
   } else {
 
-    auto Z2S_VirtualThermometer = 
-      new Supla::Sensor::Z2S_VirtualThermometer();
+    auto Z2S_VirtualThermometer = new Supla::Sensor::Z2S_VirtualThermometer();
   
     if (name == nullptr)
       name = (char*)default_temp_name;
   
-    Z2S_fillChannelsTableSlot(device, 
-                              free_slot, 
-                              Z2S_VirtualThermometer->getChannelNumber(), 
-                              SUPLA_CHANNELTYPE_THERMOMETER, 
-                              sub_id, 
-                              name, 
-                              func);
+    Z2S_fillChannelsTableSlot(
+      device, free_slot, Z2S_VirtualThermometer->getChannelNumber(), 
+      SUPLA_CHANNELTYPE_THERMOMETER, sub_id, name, func);
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
-Supla::Sensor::Z2S_VirtualThermHygroMeter* getZ2SDeviceTempHumidityPtr(uint8_t Supla_channel) {
+Supla::Sensor::Z2S_VirtualThermHygroMeter* getZ2SDeviceTempHumidityPtr(
+  uint8_t Supla_channel) {
 
   auto element = 
     Supla::Element::getElementByChannelNumber(Supla_channel);
@@ -143,10 +135,9 @@ Supla::Sensor::Z2S_VirtualThermHygroMeter* getZ2SDeviceTempHumidityPtr(uint8_t S
     nullptr;  
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
-void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, 
-                                  double temp) {
+void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
 
   if (channel_number_slot < 0) {
     
@@ -230,8 +221,7 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
         remote_channel_data.remote_ip_address == 0) {
 
         updateRemoteThermometer(
-          remote_Supla_channel,
-          ip_address,
+          remote_Supla_channel, ip_address,
           z2s_channels_table[channel_number_slot].Supla_channel,
           (int32_t)(temp*100));
 
@@ -240,12 +230,10 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
 
     if (RemoteThermometer.connect(ip_address, 1234)) {
 
-      RemoteThermometer.printf("Z2SCMD%02u%03u%03u%08ld\n", 
-                            0x10, 
-                            remote_Supla_channel,
-                            z2s_channels_table[channel_number_slot].Supla_channel,
-                            (int32_t)(temp*100));
-    
+      RemoteThermometer.printf(
+        "Z2SCMD%02u%03u%03u%08ld\n", 0x10, remote_Supla_channel,
+        z2s_channels_table[channel_number_slot].Supla_channel,
+        (int32_t)(temp*100));
     
       String response = RemoteThermometer.readStringUntil('\n');
       
@@ -254,14 +242,14 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot,
         
       RemoteThermometer.stop();
     } else
-      log_e("Temperature forwarding FAILED - no connection to remote thremometer"); 
+      log_e(
+        "Temperature forwarding FAILED - no connection to remote thremometer"); 
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
-void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, 
-                                  double humi) {
+void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi) {
 
   if (channel_number_slot < 0) {
     log_e("msgZ2SDeviceTempHumidityHumi - invalid channel number slot");

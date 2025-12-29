@@ -22,16 +22,12 @@ union {
   uint8_t  dp_raw_value_8[8];
 } Tuya_read_dp_result_t;
 
-void processTuyaCustomCluster(esp_zb_ieee_addr_t ieee_addr, 
-                              uint16_t endpoint, 
-                              uint8_t command_id, 
-                              uint16_t payload_size, 
-                              uint8_t *payload);
+void processTuyaCustomCluster(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, 
+  uint16_t payload_size, uint8_t *payload);
 
-void processZosungCustomCluster(esp_zb_ieee_addr_t ieee_addr, 
-                                uint16_t endpoint, 
-                                uint8_t command_id, 
-                                uint16_t payload_size, 
-                                uint8_t *payload);
+void processZosungCustomCluster(
+  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, 
+  uint16_t payload_size, uint8_t *payload);
 
 #endif

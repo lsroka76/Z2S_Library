@@ -6232,11 +6232,13 @@ void removeDeviceCallback(Control *sender, int type, void *param) {
 
 void removeChannelCallback(Control *sender, int type) {
 
-	if ((type == B_UP) && (ESPUI.getControl(channel_selector)->value.toInt() >= 0)) {
+	if ((type == B_UP) && 
+			(ESPUI.getControl(channel_selector)->value.toInt() >= 0)) {
 
 		uint8_t channel_slot = ESPUI.getControl(channel_selector)->value.toInt();
 
-    bool is_zigbee_channel = (z2s_channels_table[channel_slot].local_channel_type == 0);
+    bool is_zigbee_channel = 
+			(z2s_channels_table[channel_slot].local_channel_type == 0);
 
 		if (Z2S_removeChannel(channel_slot, true)) {
 

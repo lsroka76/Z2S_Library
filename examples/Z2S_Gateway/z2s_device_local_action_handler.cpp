@@ -42,6 +42,11 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
     break;
 
 
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON:
+      
+      return "Local virtual button";
+    break;
+
     default:
 
     break;  
@@ -69,6 +74,7 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY:
     case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
     case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON:
       
       return "No special functions";
     break;
@@ -93,15 +99,27 @@ void initZ2SDeviceLocalActionHandler(
 
       auto Supla_LocalActionHandlerWithTrigger = 
         new Supla::LocalActionHandlerWithTrigger(
-          z2s_channels_table[channel_number_slot].
+          z2s_channels_table[channel_number_slot].\
           local_action_handler_data.logic_operator); 
 
-      z2s_channels_table[channel_number_slot].
+      z2s_channels_table[channel_number_slot].\
       local_action_handler_data.Supla_element =
         Supla_LocalActionHandlerWithTrigger;
 
       Supla_LocalActionHandlerWithTrigger->setPostponedTurnOnSecs(  
         z2s_channels_table[channel_number_slot].keep_alive_secs);
+    } break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON: {
+
+
+      auto Supla_LocalActionVirtualButton = 
+        new Supla::LocalActionVirtualButton(); 
+
+      z2s_channels_table[channel_number_slot].\
+      local_action_handler_data.Supla_element =
+        Supla_LocalActionVirtualButton;
     } break;
 
 
@@ -127,7 +145,6 @@ void initZ2SDeviceLocalActionHandler(
         new Supla::Sensor::VirtualBinary(true); 
       
       Supla_VirtualBinary->getChannel()->setChannelNumber(Supla_channel);
-      //Supla_VirtualBinary->getChannel()->setStateOfflineRemoteWakeupNotSupported();
     }
     break;
 
@@ -198,7 +215,7 @@ void initZ2SDeviceLocalActionHandler(
   } 
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 bool addZ2SDeviceLocalActionHandler(
   uint8_t local_channel_type, uint32_t local_channel_func, 
@@ -249,6 +266,27 @@ bool addZ2SDeviceLocalActionHandler(
       z2s_channels_table[first_free_slot].
         local_action_handler_data.Supla_element = 
         new Supla::LocalActionHandlerWithTrigger(logic_operator);   
+    } break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON: {
+
+      SuplaDevice.saveStateToStorage();
+      Supla::Storage::ConfigInstance()->commit();
+
+      z2s_channels_table[first_free_slot].Supla_channel = 
+        Z2S_findFirstFreeLocalActionHandlerId();
+
+      strcpy(
+        z2s_channels_table[first_free_slot].Supla_channel_name, 
+        "VIRTUAL BUTTON");
+
+      /*z2s_channels_table[first_free_slot].
+        local_action_handler_data.logic_operator = logic_operator;*/
+
+      z2s_channels_table[first_free_slot].
+        local_action_handler_data.Supla_element = 
+        new Supla::LocalActionVirtualButton();   
     } break;
 
 

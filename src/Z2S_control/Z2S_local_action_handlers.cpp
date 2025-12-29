@@ -111,7 +111,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
         _pin_a = 0 : (_pin_b == 1) ? 
           _pin_b = 0 : (_pin_c == 1) ? 
             _pin_c = 0 : pins_changed = false;
-
+    
       /*if (_pin_a == 1) {
 
         _pin_a = 0;
@@ -228,6 +228,54 @@ LocalActionVirtualButton::~LocalActionVirtualButton() {
 
 /*****************************************************************************/
 
+void LocalActionVirtualButton::registerFunction(uint32_t function) {
+
+  _function_flags |= function;
+}
+
+/*****************************************************************************/
+
+void LocalActionVirtualButton::unregisterFunction(uint32_t function) {
+
+  _function_flags &= ~function;
+}
+
+/*****************************************************************************/
+
+bool LocalActionVirtualButton::hasFunction(uint32_t function) {
+
+  return (_function_flags & function);
+}
+
+/*****************************************************************************/
+
 void LocalActionVirtualButton::handleAction(int event, int action) {
 
+}
+
+/*****************************************************************************/
+
+Supla::Control::LocalActionTrigger::LocalActionTrigger() {
+
+}
+
+/*****************************************************************************/
+
+Supla::Control::LocalActionTrigger::~LocalActionTrigger() {
+
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalActionTrigger::handleAction(int event, int action) {
+
+  Supla::Control::ActionTrigger::handleAction(event, action);
+
+  uint32_t local_event = actionTriggerCapToButtonEvent(
+    getActionTriggerCap(action));
+
+  log_i("event %u, action %u, local event %u", event, action, local_event);
+
+  //Supla::LocalAction::
+  runAction(local_event);
 }

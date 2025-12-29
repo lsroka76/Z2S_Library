@@ -394,8 +394,26 @@ static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 	{ .Supla_event_id = Supla::ON_CHANGE,
 		.Supla_event_name =  "ON CHANGE" },
 
+	{ .Supla_event_id = Supla::ON_HOLD,
+		.Supla_event_name =  "ON HOLD" },
+
 	{ .Supla_event_id = Supla::ON_CLICK_1,
 		.Supla_event_name =  "ON CLICK 1" },
+
+	{ .Supla_event_id = Supla::ON_CLICK_2,
+		.Supla_event_name =  "ON CLICK 2" },
+
+	{ .Supla_event_id = Supla::ON_CLICK_3,
+		.Supla_event_name =  "ON CLICK 3" },
+
+	{ .Supla_event_id = Supla::ON_CLICK_3,
+		.Supla_event_name =  "ON CLICK 3" },
+
+	{ .Supla_event_id = Supla::ON_CLICK_4,
+		.Supla_event_name =  "ON CLICK 4" },
+
+	{ .Supla_event_id = Supla::ON_CLICK_5,
+		.Supla_event_name =  "ON CLICK 5" },
 
 	{ .Supla_event_id = Supla::ON_TURN_ON,
 		.Supla_event_name =  "ON TURN ON" },

@@ -116,7 +116,7 @@ uint8_t _z2s_security_level    = 0;
 
 bool sendIASNotifications = false;
 
-
+bool do_once = true;
 
 void supla_callback_bridge(int event, int action) {
   log_i("event(0x%x), action(0x%x)", event, action);
@@ -464,7 +464,14 @@ void setup() {
   at1->getChannel()->setChannelNumber(111);
   at1->setInitialCaption("TEST AT");
   at1->getChannel()->setActionTriggerCaps(
-    SUPLA_ACTION_CAP_TURN_ON |
+    SUPLA_ACTION_CAP_SHORT_PRESS_x1 |
+    SUPLA_ACTION_CAP_SHORT_PRESS_x2);
+
+    at1->getChannel()->setActionTriggerCaps(
+      at1->getChannel()->getActionTriggerCaps() |
+    SUPLA_ACTION_CAP_HOLD);*/
+
+   /* SUPLA_ACTION_CAP_TURN_ON |
     SUPLA_ACTION_CAP_TURN_OFF |
     SUPLA_ACTION_CAP_TOGGLE_x1 |
     SUPLA_ACTION_CAP_TOGGLE_x2 |
@@ -732,6 +739,31 @@ void loop() {
     Z2S_startWebGUIConfig();
     Z2S_startUpdateServer();
   } 
+
+  /*if (do_once) {
+
+    if (SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+
+      do_once = false;
+
+      zbg_device_params_t test_joined_device = {};
+
+      test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3;
+
+      for (uint8_t i = 1; i < 5; i++) {
+
+        test_joined_device.endpoint = i;
+
+        Z2S_addZ2SDevice(&test_joined_device, 
+          TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID);
+
+        Z2S_addZ2SDevice(
+          &test_joined_device, TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
+
+        Z2S_addZ2SDevice(&test_joined_device, TUYA_CUSTOM_CMD_BUTTON_HELD_SID);
+      }
+    }
+  }*/
 
   if ((!GUIstarted) && 
       (_enable_gui_on_start != no_gui_mode) && 

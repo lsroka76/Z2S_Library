@@ -26,16 +26,23 @@
 #include <supla/local_action.h>
 #include <supla/events.h>
 #include <supla/element_with_channel_actions.h>
+#include <supla/control/action_trigger.h>
 
-#define PIN_LOGIC_OPERATOR_NONE 0x00
-#define PIN_LOGIC_OPERATOR_AND  0x01
-#define PIN_LOGIC_OPERATOR_OR   0x02
-#define PIN_LOGIC_OPERATOR_NOT  0x03
-#define PIN_LOGIC_OPERATOR_XOR  0x04
-#define PIN_LOGIC_OPERATOR_NAND 0x05
-#define PIN_LOGIC_OPERATOR_NOR  0x06
-#define PIN_LOGIC_OPERATOR_AND3 0x07
-#define PIN_LOGIC_OPERATOR_OR3  0x08
+#define PIN_LOGIC_OPERATOR_NONE       0x00
+#define PIN_LOGIC_OPERATOR_AND        0x01
+#define PIN_LOGIC_OPERATOR_OR         0x02
+#define PIN_LOGIC_OPERATOR_NOT        0x03
+#define PIN_LOGIC_OPERATOR_XOR        0x04
+#define PIN_LOGIC_OPERATOR_NAND       0x05
+#define PIN_LOGIC_OPERATOR_NOR        0x06
+#define PIN_LOGIC_OPERATOR_AND3       0x07
+#define PIN_LOGIC_OPERATOR_OR3        0x08
+
+#define LAVB_SINGLE_PRESS_FUNC        0x01
+#define LAVB_DOUBLE_PRESS_FUNC        0x02
+#define LAVB_HELD_FUNC                0x03
+#define LAVB_ROTATE_RIGHT_FUNC        0x04
+#define LAVB_ROTATE_LEFT_FUNC         0x05
 
 
 //typedef void (*_actionhandler_callback)(int event, int action);
@@ -92,8 +99,27 @@ class LocalActionVirtualButton : public LocalActionHandler {
 
     LocalActionVirtualButton();
     virtual ~LocalActionVirtualButton();
+
+    void registerFunction(uint32_t function);
+    void unregisterFunction(uint32_t function);
+    bool hasFunction(uint32_t function);
     void handleAction(int event, int action);
+
+  private:
+
+  uint32_t  _function_flags = 0;
 };
+namespace Control {
+class LocalActionTrigger: public ActionTrigger, public LocalAction {
+
+  public:
+
+    LocalActionTrigger();
+    virtual ~LocalActionTrigger();
+    void handleAction(int event, int action) override;
+
+};
+}; //namespace Control
 };  // namespace Supla
 
 #endif

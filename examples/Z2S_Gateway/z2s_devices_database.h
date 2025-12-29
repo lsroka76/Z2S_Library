@@ -3840,6 +3840,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_RELAY },
                               { 2, Z2S_DEVICE_DESC_TUYA_RELAY }}},
 
+  {	.manufacturer_name = "_TZ3000_h1ipgkwn", .model_name = "",
+    .z2s_device_uid = 22501,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_RELAY },
+                              { 2, Z2S_DEVICE_DESC_TUYA_RELAY }}},
+
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-305Z",
     .z2s_device_uid = 22505,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
