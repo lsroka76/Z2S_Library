@@ -1465,7 +1465,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     return; //TODO timeout control
   }
 
-  if (_init_sequence == 1) {
+  if ((_init_sequence == 1) && (millis() - _last_refresh_ms > _refresh_ms)) {
+
+    _last_refresh_ms = millis();
 
     if (_trv_hvac)
       sendTRVTemperatureSetpoint(_stored_temperature_setpoint); //_trv_hvac->getTemperatureSetpointHeat());
