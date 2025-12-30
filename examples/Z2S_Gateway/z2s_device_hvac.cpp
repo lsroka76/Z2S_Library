@@ -402,6 +402,14 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
         return;
       }
 
+      if (Supla_Z2S_HvacBase->isThermostatDisabled()) {
+
+        log_i("TRV_HEATING_SETPOINT_MSG(HVAC_OFF_MODE) %04d", msg_value);
+
+        Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
+        return;
+      }
+
       log_i("msgZ2SDeviceHvac - TRV_HEATING_SETPOINT_MSG: %04d", msg_value);
       log_i(
         "HVAC flags: 0x%x", Supla_Z2S_HvacBase->getChannel()->getHvacFlags());
