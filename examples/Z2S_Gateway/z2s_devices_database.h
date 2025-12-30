@@ -4047,6 +4047,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints = {{ 1, Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE},
                              { 2, Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE }}},
 
+{	.manufacturer_name = "_TZ3000_kmsbwdol", .model_name = "TS130F",
+    .z2s_device_uid = 25255,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_DOUBLE,
+    .z2s_device_endpoints_count = 2,
+	  .z2s_device_endpoints = {{ 1, Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE},
+                             { 2, Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE }}},
+
   {	.manufacturer_name = "_TZ3000_femsaaua", .model_name = "TS130F",
     .z2s_device_uid = 25300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE,
