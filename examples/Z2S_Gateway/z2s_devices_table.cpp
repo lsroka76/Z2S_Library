@@ -161,7 +161,7 @@ int16_t Z2S_findChannelNumberSlot(
     channel_type);*/
 
   if (channel_type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-
+    log_i ("sub id %d", sub_id);
     for (uint8_t channels_counter = 0; 
        channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
 
