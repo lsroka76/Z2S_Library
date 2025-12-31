@@ -4274,6 +4274,9 @@ bool processIkeaSymfoniskCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoin
     sub_id = IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID;
   }
 
+log_i("IKEA SYMFONISK/SOMRIG sub id %d, %u", sub_id,sub_id);
+  
+  
   if (sub_id == 0x7F) return false;
 
   channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
