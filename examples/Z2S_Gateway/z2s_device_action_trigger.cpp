@@ -937,12 +937,13 @@ bool getVirtualButtonNumber(
     break;
 
 
-    //case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON:   
+       
     case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1:              
 
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -1095,6 +1096,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID: {
 
           virtual_button_data.button_id = 2;
