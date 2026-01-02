@@ -2972,6 +2972,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
                               { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
+{	.manufacturer_name = "_TZ3000_dfgbtub0", .model_name = "TS0042",
+    .z2s_device_uid = 13955,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+                              { 2, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
+
   {	.manufacturer_name = "_TZ3000_yj6k7vfo", .model_name = "TS0041",
     .z2s_device_uid = 14000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F,
