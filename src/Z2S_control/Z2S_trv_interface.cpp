@@ -1244,6 +1244,7 @@ void Supla::Control::Z2S_TRVInterface::setTRVTemperatureSetpoint(
         (trv_temperature_setpoint == _init_temperature_setpoint)) {
       
       _init_sequence = 1;
+	  _last_refresh_ms = millis();
     }
 
     if ((_init_sequence == 1) &&
@@ -1470,7 +1471,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     return; //TODO timeout control
   }
 
-  if ((_init_sequence == 1) && (millis() - _last_refresh_ms > _refresh_ms)) {
+  if ((_init_sequence == 1) && 
+	  ((millis() - _last_refresh_ms >
+	    (3 *_refresh_ms)) ||
+	   _trv_running_state_updated)) {
 
     _last_refresh_ms = millis();
 
