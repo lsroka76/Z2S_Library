@@ -652,7 +652,7 @@ void processTuyaSoilTempHumiditySensorReport(
 
 void processTuyaSoilSensor3FReport(
   int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, 
-  float divider) {
+  float divider, uint32_t model_id) {
 
   int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].ieee_addr, 
@@ -676,46 +676,94 @@ void processTuyaSoilSensor3FReport(
 
   Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_SOIL_SENSOR_3F_WATER_WARNING_DP, payload_size, payload);
+  uint8_t water_warning_dp = 0;
+  uint8_t temperature_dp   = 0;
+  uint8_t humidity_dp      = 0;
+  uint8_t soil_moisture_dp = 0;
+  unit8_t battery_dp       = 0;
 
-  if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceIASzone(
-      channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1));
+  switch (model_id) {
+
+
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F: {
+    
+      water_warning_dp = TUYA_SOIL_SENSOR_3F_WATER_WARNING_DP;
+      temperature_dp   = TUYA_SOIL_SENSOR_3F_TEMPERATURE_DP;
+      humidity_dp      = TUYA_SOIL_SENSOR_3F_HUMIDITY_DP;
+      soil_moisture_dp = TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_DP;
+      battery_dp       = TUYA_SOIL_SENSOR_3F_BATTERY_DP;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
+
+      
+      water_warning_dp = TUYA_SOIL_SENSOR_3F_2_WATER_WARNING_DP;
+      temperature_dp   = TUYA_SOIL_SENSOR_3F_2_TEMPERATURE_DP;
+      humidity_dp      = TUYA_SOIL_SENSOR_3F_2_HUMIDITY_DP;
+      soil_moisture_dp = TUYA_SOIL_SENSOR_3F_2_SOIL_MOISTURE_DP;
+      battery_dp       = TUYA_SOIL_SENSOR_3F_2_BATTERY_DP;
+    } break;
+
+
+    default: break;
+    
+  };
+  if (water_warning_dp) {
+    
+    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
+      water_warning_dp, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success)
+      msgZ2SDeviceIASzone(
+        channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1));
+  }
+
+  if (temperature_dp) {
+    
+    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
+      temperature_dp, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success)
+      msgZ2SDeviceTempHumidityTemp(
+        channel_number_slot_2, (float)Tuya_read_dp_result.dp_value/divider);  
+  }
+
+  if (humidity_dp) {
   
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_SOIL_SENSOR_3F_TEMPERATURE_DP, payload_size, payload);
+    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
+      humidity_dp, payload_size, payload);
 
-  if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceTempHumidityTemp(
-      channel_number_slot_2, (float)Tuya_read_dp_result.dp_value/divider);  
-            
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_SOIL_SENSOR_3F_HUMIDITY_DP, payload_size, payload);
-
-  if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceTempHumidityHumi(
-      channel_number_slot_2, (float)Tuya_read_dp_result.dp_value);  
-
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_DP, payload_size, payload);
-
-  if (Tuya_read_dp_result.is_success)
-    msgZ2SDeviceGeneralPurposeMeasurement(
-      channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-    Tuya_read_dp_result.dp_value);
+    if (Tuya_read_dp_result.is_success)
+      msgZ2SDeviceTempHumidityHumi(
+        channel_number_slot_2, (float)Tuya_read_dp_result.dp_value);  
+  }
   
-            
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_SOIL_SENSOR_3F_BATTERY_DP, payload_size, payload);
+  if (soil_moisture_dp) {
+    
+    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
+      soil_moisture_dp, payload_size, payload);
 
-  if (Tuya_read_dp_result.is_success) { 
+    if (Tuya_read_dp_result.is_success)
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+        Tuya_read_dp_result.dp_value);
+  
+  }
 
-    log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
+  if (battery_dp) {
+    
+    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
+      battery_dp, payload_size, payload);
 
-    updateSuplaBatteryLevel(
-      channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
-      Tuya_read_dp_result.dp_value);  
+    if (Tuya_read_dp_result.is_success) { 
+
+      log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
+
+      updateSuplaBatteryLevel(
+        channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
+        Tuya_read_dp_result.dp_value);  
+    }
   }
 }
 
