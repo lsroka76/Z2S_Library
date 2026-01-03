@@ -19,7 +19,10 @@ uint8_t getZ2SDeviceHvacCmdSet(int16_t channel_number_slot) {
              "_TZE200_9xfjixap") == 0) || 
           (strcmp(Z2S_getZbDeviceManufacturerName(
              z2s_channels_table[channel_number_slot].Zb_device_id),
-             "_TZE200_hvaxb2tc") == 0))
+             "_TZE200_hvaxb2tc") == 0) || 
+          (strcmp(Z2S_getZbDeviceManufacturerName(
+             z2s_channels_table[channel_number_slot].Zb_device_id),
+             "_TZE200_rxq4iti9") == 0))
         return me167_no_pi_cmd_set;
       else
         return me167_cmd_set;
