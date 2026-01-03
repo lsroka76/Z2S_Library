@@ -1880,6 +1880,50 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Soil moisture alarm value",
     .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_3F_2_TEMPERATURE_UNIT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Temperature unit",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => Celsius, 1 => Fahrenheit" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_3F_2_TEMPERATURE_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature calibration",
+    .Tuya_datapoint_description = "Enter numeric value between -20 and 20: <br>"
+																	"1 = 0.1°C" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_3F_2_HUMIDITY_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Humidity calibration",
+    .Tuya_datapoint_description = "Enter numeric value between -30% and 30%" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_3F_2_SOIL_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Soil moisture calibration",
+    .Tuya_datapoint_description = "Enter numeric value between -30% and 30%" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_3F_2_TEMPERATURE_SAMPLING_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Air T/H sampling interval",
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 3600 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_3F_2_SOIL_SAMPLING_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Soil moisture sampling interval",
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 3600 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_3F_2_SOIL_WARNING_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Soil moisture alarm value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_4IN1_MOTION_DETECTION_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
