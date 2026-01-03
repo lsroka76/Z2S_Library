@@ -2528,9 +2528,10 @@ void processTuyaDataReport(
 
 
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
 
       processTuyaSoilSensor3FReport(
-        channel_number_slot, payload_size, payload, 10); 
+        channel_number_slot, payload_size, payload, 10, model_id); 
     break;
 
 
