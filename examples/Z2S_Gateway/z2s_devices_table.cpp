@@ -4911,7 +4911,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/
 
-      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F: {
+      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
+      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
 
         switch (sub_id) {
 
@@ -7270,6 +7271,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2:
@@ -8583,7 +8585,8 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
-case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F: {
+case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
+case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
 
       Z2S_addZ2SDevice(
         joined_device, TUYA_SOIL_SENSOR_3F_WATER_WARNING_SID, "WATER ALARM", 
