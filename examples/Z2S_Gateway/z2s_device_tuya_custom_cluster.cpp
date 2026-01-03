@@ -680,7 +680,7 @@ void processTuyaSoilSensor3FReport(
   uint8_t temperature_dp   = 0;
   uint8_t humidity_dp      = 0;
   uint8_t soil_moisture_dp = 0;
-  unit8_t battery_dp       = 0;
+  uint8_t battery_dp       = 0;
 
   switch (model_id) {
 
