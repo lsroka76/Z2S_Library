@@ -6937,6 +6937,9 @@ bool Z2S_add_action(
   auto Supla_Z2S_ActionHandler = 
     reinterpret_cast<Supla::LocalActionHandler *>(src_element);
 
+  auto Supla_Z2S_LocalActionTrigger = 
+    reinterpret_cast<Supla::Control::LocalActionTrigger *>(src_element);
+
   if (src_element->getChannel())
     if (src_element->getChannel()->getChannelType() ==
           SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
@@ -6944,10 +6947,10 @@ bool Z2S_add_action(
       log_i("2x nullptr");
       Supla_Z2S_ChannelActionHandler = nullptr;
       Supla_Z2S_ActionHandler = nullptr;
-    }
-
-  auto Supla_Z2S_LocalActionTrigger = 
-    reinterpret_cast<Supla::Control::LocalActionTrigger *>(src_element);
+    } else
+      Supla_Z2S_LocalActionTrigger = nullptr;
+  else
+    Supla_Z2S_LocalActionTrigger = nullptr;
 
   auto Supla_Z2S_ChannelActionClient = 
     reinterpret_cast<Supla::ElementWithChannelActions *>(dst_element);
