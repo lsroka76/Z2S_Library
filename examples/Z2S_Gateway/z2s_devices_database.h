@@ -4293,6 +4293,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
     .z2s_device_endpoints_count = 1},
 
+{ .manufacturer_name = "_TZE200_viy9ihs7", .model_name = "TS0601",
+    .z2s_device_uid = 29140,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
+    .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZE284_ye5jkfsb", .model_name = "TS0601",
     .z2s_device_uid = 29200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_MOES_BHT002,
