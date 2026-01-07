@@ -1971,6 +1971,33 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Enter numeric value between -20 and 20: <br>"
 																	"1 = 0.1°C" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZE_MD_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Motion Detection Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 19: <br>"
+																	"0 => minimal, 19 => maximal sensitivity" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZE_FADING_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Motion Keep Time",
+    .Tuya_datapoint_description = "Time to keep sensor active after detection.<br>"
+																	"Enter numeric value between 0 and 28800 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZE_ILLUMINANCE_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Illuminance sampling interval",
+    .Tuya_datapoint_description = "Enter numeric value between 1 and 720 [min]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZE_LED_INDICATOR_MODE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "LED indicator",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => turn OFF, 1 => turn ON" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2,
     .Tuya_datapoint_id 		 			= TUYA_RAIN_SENSOR_2_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,

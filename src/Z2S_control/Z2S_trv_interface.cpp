@@ -1479,10 +1479,13 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     _last_refresh_ms = millis();
 
     if (_trv_hvac)
-      sendTRVTemperatureSetpoint(_stored_temperature_setpoint); //_trv_hvac->getTemperatureSetpointHeat());
+      sendTRVTemperatureSetpoint(_stored_temperature_setpoint); 
     
     return;
   }
+
+  if (_init_sequence)
+    return;
 
   if (_hvac_temperature_setpoint_pending_ms && 
       ((millis() - _hvac_temperature_setpoint_pending_ms) > 350)) {

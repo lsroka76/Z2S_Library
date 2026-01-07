@@ -262,6 +262,9 @@ uint8_t parseAttributeTypeStr(char *attribute_type) {
   if (strcmp(attribute_type, "U16") == 0)
     return 0x21;
   else
+  if (strcmp(attribute_type, "U48") == 0)
+    return 0x25;
+  else
   if (strcmp(attribute_type, "S8") == 0)
     return 0x28;
   else

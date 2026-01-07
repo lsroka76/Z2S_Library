@@ -1637,12 +1637,22 @@ void processTuyaPresenceSensorDataReport(
 
       //presence_value_on = 0x01;
     } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE: {
+
+      presence_dp_id = TUYA_PRESENCE_SENSOR_ZG204ZE_PRESENCE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_ZG204ZE_ILLUMINANCE_DP;
+      battery_dp_id = TUYA_PRESENCE_SENSOR_ZG204ZE_BATTERY_DP;
+
+      presence_value_on = 0x00;
+    } break;
   }
   
   if (presence_dp_id) {
     
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      presence_dp_id, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result,presence_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceIASzone(
@@ -1652,8 +1662,8 @@ void processTuyaPresenceSensorDataReport(
 
   if (motion_state_dp_id) {
 
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      motion_state_dp_id, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, motion_state_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) { 
 
@@ -2591,6 +2601,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
 
       processTuyaPresenceSensorDataReport(
         channel_number_slot, payload_size, payload, model_id); 

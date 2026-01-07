@@ -5719,7 +5719,8 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3: {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE: {
         
         switch (sub_id) {
 
@@ -7288,6 +7289,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
@@ -7814,22 +7816,18 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_PRESENCE_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
                        
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_MOTION_STATE_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
     } break;
 
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_PRESENCE_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
                        
     } break;
 
@@ -7837,31 +7835,25 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_PRESENCE_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+      Z2S_addZ2SDevice(joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
     } break;
 
 /*****************************************************************************/                                         
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_PRESENCE_SID, 
-                       "PRESENCE", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID, 
-                       "T&H");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_TEMPHUMIDITY_SID, "T&H");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, 
-                       "ILLUMINANCE",
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "lx");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
     } break;
 
 /*****************************************************************************/                                         
@@ -7893,22 +7885,17 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_PRESENCE_SID, 
-                       "PRESENCE", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_MOTION_STATE_SID, 
-                       "MOTION STATE",
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "[0..2]");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID, "MOTION STATE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..2]");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_PRESENCE_SENSOR_DISTANCE_SID, 
-                       "DISTANCE",
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "cm");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_DISTANCE_SID, "DISTANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "cm");
 
     } break;
 
@@ -7917,18 +7904,15 @@ void Z2S_buildSuplaChannels(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z: {
       
       Z2S_addZ2SDevice(
-        joined_device, 
-        TUYA_PRESENCE_SENSOR_MOTION_STATE_SID, "MOTION STATE", 
+        joined_device, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID, "MOTION STATE", 
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..4]");
 
       Z2S_addZ2SDevice(
-        joined_device, 
-        TUYA_PRESENCE_SENSOR_DISTANCE_SID, "DISTANCE",
+        joined_device, TUYA_PRESENCE_SENSOR_DISTANCE_SID, "DISTANCE",
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "cm");
       
       Z2S_addZ2SDevice(
-        joined_device, 
-        TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
 
     } break;
@@ -7938,17 +7922,15 @@ void Z2S_buildSuplaChannels(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2: {
       
       Z2S_addZ2SDevice(
-        joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, 
-        "PRESENCE", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
       Z2S_addZ2SDevice(
-        joined_device, 
-        TUYA_PRESENCE_SENSOR_DISTANCE_SID, "DISTANCE",
+        joined_device, TUYA_PRESENCE_SENSOR_DISTANCE_SID, "DISTANCE",
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "cm");
       
       Z2S_addZ2SDevice(
-        joined_device, 
-        TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
 
     } break;
@@ -7972,6 +7954,20 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID, 
         "DISTANCE SWITCH",SUPLA_CHANNELFNC_POWERSWITCH);
+
+    } break;
+
+/*****************************************************************************/                                         
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
 
     } break;
 
