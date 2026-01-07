@@ -113,8 +113,10 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY          0x2315
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO            0x2320
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z         0x2325
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZL        0x2326
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2       0x2330
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3    0x2331
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE        0x2335
 
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
@@ -146,6 +148,7 @@
 #define Z2S_DEVICE_DESC_LED_DIMMER                          0x3201
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB                 0x3205
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0               0x3210
+#define Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0                  0x3215
 
 #define Z2S_DEVICE_DESC_IKEA_WW_BULB                        0x3220
 #define Z2S_DEVICE_DESC_IKEA_WS_BULB                        0x3221
@@ -1409,6 +1412,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_SWITCH,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -1591,12 +1600,22 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZL,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -4461,6 +4480,25 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_npj9bug3", .model_name = "TS0601",
     .z2s_device_uid = 32100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_pagajpog", .model_name = "TS110E",
+    .z2s_device_uid = 32200,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0,
+    .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints ={{ 1, Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0 },
+                            { 2, Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0 }}},
+
+  { .manufacturer_name = "_TZ3210_4ubylghk", .model_name = "TS110E",
+    .z2s_device_uid = 32300,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0,
+    .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints ={{ 1, Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0 },
+                            { 2, Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0 }}},
+  
+  { .manufacturer_name = "ZG-204ZE", .model_name = "CK-BL702-MWS-01(7016)",
+    .z2s_device_uid = 32400,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE,
     .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };
