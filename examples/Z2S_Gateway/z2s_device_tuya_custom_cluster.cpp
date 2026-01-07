@@ -2510,6 +2510,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100:
     case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
+    case Z2S_DEVICE_DESC_TS0601_BOTR9V:
 
       processTuyaHvacDataReport(
         channel_number_slot, payload_size, payload, model_id); 

@@ -301,6 +301,7 @@
 #define Z2S_DEVICE_DESC_TS0601_MOES_BHT002                  0x6201
 #define Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR                   0x6202
 #define Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100                   0x6203
+#define Z2S_DEVICE_DESC_TS0601_BOTR9V                       0X6204
 
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
 
@@ -1218,6 +1219,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT, //|
+                               //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_BOTR9V,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT, //|
                                //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
@@ -4499,6 +4506,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "ZG-204ZE", .model_name = "CK-BL702-MWS-01(7016)",
     .z2s_device_uid = 32400,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_wc2w9t1s", .model_name = "TS0601",
+    .z2s_device_uid = 32500,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_BOTR9V,
     .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };
