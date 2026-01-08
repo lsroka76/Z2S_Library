@@ -246,14 +246,13 @@ void msgZ2SDeviceDimmer(
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
       case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
       case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00: {*/
-      default:
+      default: {
 
         auto Supla_Z2S_DimmerInterface = 
           reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
         
         Supla_Z2S_DimmerInterface->setValueOnServer(level);
       } break;
-
     }
   }
 }
