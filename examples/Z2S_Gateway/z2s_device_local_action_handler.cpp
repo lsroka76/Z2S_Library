@@ -132,6 +132,8 @@ void initZ2SDeviceLocalActionHandler(
         new Supla::Control::VirtualRelay(RELAY_FLAGS); 
       
       Supla_VirtualRelay->getChannel()->setChannelNumber(Supla_channel);
+      Supla_VirtualRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      Supla_VirtualRelay->setDefaultStateRestore();
     }
     break;
 
@@ -182,9 +184,11 @@ void initZ2SDeviceLocalActionHandler(
 
       Supla_Z2S_RemoteRelay->getChannel()->setChannelNumber(Supla_channel);
 
-      uint8_t remote_address_type = 
-        Z2S_checkChannelFlags(channel_number_slot, 
-                              USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
+      Supla_Z2S_RemoteRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      Supla_Z2S_RemoteRelay->setDefaultStateRestore();
+
+      uint8_t remote_address_type = Z2S_checkChannelFlags(
+        channel_number_slot, USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
         REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
       
       switch (remote_address_type) {
@@ -306,13 +310,15 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_VirtualRelay->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
-      Supla_VirtualRelay->setDefaultFunction(local_channel_func);
+      //Supla_VirtualRelay->setDefaultFunction(local_channel_func);
+      Supla_VirtualRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      Supla_VirtualRelay->setDefaultStateRestore();
     } break;
 
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY: {
 
-      auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(); 
+      auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(true); 
 
       z2s_channels_table[first_free_slot].Supla_channel = 
         Supla_VirtualBinary->getChannelNumber();
@@ -349,7 +355,9 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_Z2S_RemoteRelay->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
-      Supla_Z2S_RemoteRelay->setDefaultFunction(local_channel_func);
+      //Supla_Z2S_RemoteRelay->setDefaultFunction(local_channel_func);
+      Supla_Z2S_RemoteRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      Supla_Z2S_RemoteRelay->setDefaultStateRestore();
     } break;
 
 
