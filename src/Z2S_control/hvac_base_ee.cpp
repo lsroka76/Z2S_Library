@@ -54,7 +54,8 @@ void HvacBaseEE::handleAction(int event, int action) {
 
     case 0x5000:
 
-      applyNewRuntimeSettings(SUPLA_HVAC_MODE_HEAT, 3000, 0, 0);
+      applyNewRuntimeSettings(
+        SUPLA_HVAC_MODE_HEAT, getDefaultTemperatureRoomMax(), 0, 0);
     break;
 
 

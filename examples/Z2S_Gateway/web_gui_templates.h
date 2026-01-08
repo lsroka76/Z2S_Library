@@ -386,7 +386,10 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "SWITCH TO MANUAL MODE" },
 
 	{ .Supla_action_id = Supla::SWITCH_TO_WEEKLY_SCHEDULE_MODE,
-		.Supla_action_name = "SWITCH TO WEEKLY SCHEDULE MODE" }
+		.Supla_action_name = "SWITCH TO WEEKLY SCHEDULE MODE" },
+
+	{ .Supla_action_id = (Supla::Action)0x5000,
+		.Supla_action_name = "TURN_ON_BOOST(TEST)" }
 };
 
 static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
