@@ -25,10 +25,12 @@ HvacBaseEE::HvacBaseEE(Supla::Control::OutputInterface *primaryOutput,
 
 HvacBaseEE::~HvacBaseEE() {}
 
-int32_t HvacBaseEE::handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue)
+int32_t HvacBaseEE::handleNewValueFromServer(
+  TSD_SuplaChannelNewValue *newValue)
 {
   
-  int32_t handleNewValueFromServer_result = HvacBase::handleNewValueFromServer(newValue);
+  int32_t handleNewValueFromServer_result = 
+    HvacBase::handleNewValueFromServer(newValue);
   //if (handleNewValueFromServer_result)
   //  runAction(Supla::ON_CHANGE);
   
@@ -44,3 +46,22 @@ void HvacBaseEE::setPrimaryOutputEE(Supla::Control::OutputInterface *output) {
 
   primaryOutputEE = output;
 }
+
+void HvacBaseEE::handleAction(int event, int action) {
+  (void)(event);
+  switch (action) {
+  
+
+    case 0x5000:
+
+      applyNewRuntimeSettings(SUPLA_HVAC_MODE_HEAT, 3000, 0, 0);
+    break;
+
+
+    default:
+
+      HvacBase::handleAction(event, action);
+    break;
+  }
+}
+

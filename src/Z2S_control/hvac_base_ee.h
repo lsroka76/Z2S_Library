@@ -10,10 +10,14 @@ namespace Supla
     class HvacBaseEE:public HvacBase
     {
       public:
-        explicit HvacBaseEE(Supla::Control::OutputInterface *primaryOutput = nullptr,
-                    Supla::Control::OutputInterface *secondaryOutput = nullptr);
-        int32_t handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue) override;  
+        explicit HvacBaseEE(
+          Supla::Control::OutputInterface *primaryOutput = nullptr,
+          Supla::Control::OutputInterface *secondaryOutput = nullptr);
+        int32_t handleNewValueFromServer(
+          TSD_SuplaChannelNewValue *newValue) override;  
         virtual ~HvacBaseEE();
+
+        void handleAction(int event, int action) override;
         
         Supla::Control::OutputInterface *getPrimaryOutputEE();
         void setPrimaryOutputEE(Supla::Control::OutputInterface *output);
