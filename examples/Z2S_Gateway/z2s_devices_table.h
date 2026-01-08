@@ -158,6 +158,10 @@ union {
       int32_t        hvac_fixed_temperature_correction;
     };
     struct {
+      uint32_t        button_last_seen_ms;
+      uint32_t        button_debounce_ms;
+    };
+    struct {
       uint32_t        value : 24;
       uint32_t        program : 8;
       uint32_t        pause_time : 24;

@@ -50,6 +50,10 @@ void initZ2SDeviceActionTriggerV2(int16_t channel_number_slot) {
   if (z2s_channels_table[channel_number_slot].refresh_secs > 0)
     debounce_time_ms = z2s_channels_table[channel_number_slot].refresh_secs;
 
+  z2s_channels_table[channel_number_slot].button_last_seen_ms = 0;
+  z2s_channels_table[channel_number_slot].button_debounce_ms = 
+    debounce_time_ms;
+
   auto Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
   
   Supla_Z2S_ActionTrigger->getChannel()->setChannelNumber(
@@ -226,12 +230,21 @@ void msgZ2SDeviceActionTriggerV2(int16_t channel_number_slot, int8_t sub_id) {
 
     virtual_button_data_t virtual_button_data = {};
 
+    if ((millis() - 
+         z2s_channels_table[channel_number_slot].button_last_seen_ms) < 
+         z2s_channels_table[channel_number_slot].button_debounce_ms)
+      return;
+    else
+      z2s_channels_table[channel_number_slot].button_last_seen_ms =
+        millis();
+
     if (getVirtualButtonNumber(
       virtual_button_data, 
       z2s_channels_table[channel_number_slot].endpoint, 
       z2s_channels_table[channel_number_slot].cluster_id, 
       z2s_channels_table[channel_number_slot].model_id, sub_id))
-        Supla_Z2S_ActionTrigger->handleAction(0, virtual_button_data.button_action_id);
+        Supla_Z2S_ActionTrigger->handleAction(
+          0, virtual_button_data.button_action_id);
   }
 }
 
