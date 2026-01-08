@@ -97,6 +97,7 @@
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR                 0x2200
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1               0x2201
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2               0x2202 //ONENUO
+#define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH          0x2205
 
 #define Z2S_DEVICE_DESC_TUYA_CO_DETECTOR                    0x2210
 
@@ -118,7 +119,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2       0x2330
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3    0x2331
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE        0x2335
-
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z         0x2340
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
@@ -322,7 +323,6 @@
 #define MAX_BOUND_ENDPOINTS                                 0x06
 #define MAX_BOUND_CLUSTERS                                  0x08
 
-
 #define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID              0xFD
 #define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID             0xFC
 
@@ -365,6 +365,8 @@
 
 #define TUYA_SMOKE_DETECTOR_SMOKE_SID                       0x00
 #define TUYA_SMOKE_DETECTOR_TAMPER_SID                      0x01
+#define TUYA_SMOKE_DETECTOR_SELF_TEST_SID                   0x02
+#define TUYA_SMOKE_DETECTOR_TEMPHUMIDITY_SID                0x03
 
 #define TUYA_SMOKE_DETECTOR_1_SMOKE_SID                     0x00
 #define TUYA_SMOKE_DETECTOR_1_TAMPER_SID                    0x01
@@ -1536,6 +1538,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_DETECTOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -1887,6 +1894,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 1905,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
 	.z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "eWeLink", .model_name = "CK-TLSR8656-SS5-01(7014)",
+    .z2s_device_uid = 1910,
+	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
+	.z2s_device_endpoints_count = 1},
+
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-02D",
     .z2s_device_uid = 2000,
@@ -2585,6 +2598,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 10500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3210_n0wbkysi", .model_name = "TS0003",
+    .z2s_device_uid = 10550,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = {{ 1, Z2S_DEVICE_DESC_TUYA_RELAY },
+                             { 2, Z2S_DEVICE_DESC_TUYA_RELAY },
+                             { 3, Z2S_DEVICE_DESC_TUYA_RELAY }}},
 
   {	.manufacturer_name = "eWeLink", .model_name = "SWITCH-ZR03-1",
     .z2s_device_uid = 10600,
@@ -4522,8 +4543,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZ3210_ekjc2rzh", .model_name = "TS0225",
     .z2s_device_uid = 32600,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_QUERY,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_gyzlwu5q", .model_name = "TS0601",
+    .z2s_device_uid = 32700,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH,
+    .z2s_device_endpoints_count = 1}
   
 //DEVICES_END
 };

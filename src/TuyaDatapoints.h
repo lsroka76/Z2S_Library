@@ -69,6 +69,13 @@
 #define TUYA_SMOKE_DETECTOR_BATTERY_STATE_DP                        0x0E
 #define TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP                        0x0F
 
+#define TUYA_SMOKE_DETECTOR_228WZH_SMOKE_DP                         0x01
+#define TUYA_SMOKE_DETECTOR_228WZH_SELF_TEST_DP                     0x09
+#define TUYA_SMOKE_DETECTOR_228WZH_BATTERY_STATE_DP                 0x0E
+#define TUYA_SMOKE_DETECTOR_228WZH_SILENCE_DP                       0x10
+#define TUYA_SMOKE_DETECTOR_228WZH_TEMPERATURE_DP                   0x17
+#define TUYA_SMOKE_DETECTOR_228WZH_HUMIDITY_DP                      0x18
+
 #define TUYA_SMOKE_DETECTOR_2_SENSITIVITY_DP                        0x66
 
 #define TUYA_CO_DETECTOR_CO_DP                                      0x01
@@ -202,6 +209,8 @@
 #define TUYA_PRESENCE_SENSOR_ZG204ZE_LED_INDICATOR_MODE_DP          0x6C
 #define TUYA_PRESENCE_SENSOR_ZG204ZE_BATTERY_DP                     0x6E
 
+#define TUYA_PRESENCE_SENSOR_MWPS3Z_MOTION_STATE_DP                 0x65
+#define TUYA_PRESENCE_SENSOR_MWPS3Z_ILLUMINANCE_DP                  0x68
 
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_DP                             0x65
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_DP                  0x66

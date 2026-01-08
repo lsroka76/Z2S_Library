@@ -1155,64 +1155,151 @@ void processTuyaSmokeDetectorReport(
   int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
   uint32_t model_id) {
 
-  int16_t channel_number_slot_1;
-  int16_t channel_number_slot_2;
   Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
-  if (z2s_channels_table[channel_number_slot].Supla_channel_type == 
-      SUPLA_CHANNELTYPE_BINARYSENSOR) {
+  uint8_t smoke_dp_id = 0;
+  uint8_t ppm_dp_id = 0;
+  uint8_t self_test_dp_id = 0;
+  uint8_t temperature_dp_id = 0;
+  uint8_t humidity_dp_id  = 0;
+  uint8_t battery_state_dp_id = 0;
+  uint8_t battery_level_dp_id = 0;
+  uint8_t smoke_detected_value = 1;
 
-    channel_number_slot_1 = channel_number_slot;
-    channel_number_slot_2 = Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-      NO_CUSTOM_CMD_SID);
-  }
-  else {
-    channel_number_slot_1 = Z2S_findChannelNumberSlot(
-      z2s_channels_table[channel_number_slot].ieee_addr, 
-      z2s_channels_table[channel_number_slot].endpoint, 
-      z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
-    channel_number_slot_2 = channel_number_slot;
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, NO_CUSTOM_CMD_SID);
+    
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
+
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    TUYA_SMOKE_DETECTOR_TEMPHUMIDITY_SID);
+    
+  switch (model_id) {
+
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: {
+
+      smoke_dp_id = TUYA_SMOKE_DETECTOR_SMOKE_DP;
+      ppm_dp_id = TUYA_SMOKE_DETECTOR_PPM_DP;
+      battery_level_dp_id = TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP;
+      smoke_detected_value = 1;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1: {
+
+      smoke_dp_id = TUYA_SMOKE_DETECTOR_SMOKE_DP;
+      battery_state_dp_id = TUYA_SMOKE_DETECTOR_BATTERY_STATE_DP;
+      smoke_detected_value = 1;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2: {
+
+      smoke_dp_id = TUYA_SMOKE_DETECTOR_SMOKE_DP;
+      battery_level_dp_id = TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP;
+      smoke_detected_value = 0;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH: {
+
+      smoke_dp_id = TUYA_SMOKE_DETECTOR_228WZH_SMOKE_DP;
+      battery_state_dp_id = TUYA_SMOKE_DETECTOR_228WZH_BATTERY_STATE_DP;
+      self_test_dp_id = TUYA_SMOKE_DETECTOR_228WZH_SELF_TEST_DP;
+      temperature_dp_id = TUYA_SMOKE_DETECTOR_228WZH_TEMPERATURE_DP;
+      humidity_dp_id = TUYA_SMOKE_DETECTOR_228WZH_HUMIDITY_DP;
+      smoke_detected_value = 1;
+    } break;
   }
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_SMOKE_DETECTOR_SMOKE_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) {
-    if (model_id == Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2)
+  if (smoke_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, smoke_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceIASzone(
-        channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0));
-    else
-      msgZ2SDeviceIASzone(
-        channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1));
-  }
+        channel_number_slot_1, (Tuya_read_dp_result.dp_value == smoke_detected_value));
+  } 
   
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_SMOKE_DETECTOR_PPM_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) 
-    msgZ2SDeviceGeneralPurposeMeasurement(
-      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM, 
-      Tuya_read_dp_result.dp_value);
+  if (ppm_dp_id) {
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_SMOKE_DETECTOR_BATTERY_LEVEL_DP, payload_size, payload);
-  if (Tuya_read_dp_result.is_success) { 
-    log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
-    updateSuplaBatteryLevel(
-      channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
-      Tuya_read_dp_result.dp_value);
-    //updateSuplaBatteryLevel(channel_number_slot_2, Tuya_read_dp_result.dp_value);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, ppm_dp_id, payload_size, payload);
+    
+    if (Tuya_read_dp_result.is_success) 
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM, 
+        Tuya_read_dp_result.dp_value);
   }
 
-  if (model_id == Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1) {
+  if (self_test_dp_id) {
 
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      TUYA_SMOKE_DETECTOR_BATTERY_STATE_DP, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, self_test_dp_id, payload_size, payload);
+    
+    if (Tuya_read_dp_result.is_success) 
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+        Tuya_read_dp_result.dp_value);
+  }
+
+  if (temperature_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, temperature_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) 
+      msgZ2SDeviceTempHumidityTemp(
+        channel_number_slot_3, (float)Tuya_read_dp_result.dp_value / 10);
+  }
+
+  if (humidity_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, humidity_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) 
+      msgZ2SDeviceTempHumidityHumi(
+        channel_number_slot_3, (float)Tuya_read_dp_result.dp_value);
+  }
+
+  if (battery_level_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, battery_level_dp_id, payload_size, payload);
+
     if (Tuya_read_dp_result.is_success) { 
+      
+      log_i("Battery level 0x0F is %d", Tuya_read_dp_result.dp_value);
+    
+      updateSuplaBatteryLevel(
+        channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
+        Tuya_read_dp_result.dp_value);
+    }
+  }
+
+  if (battery_state_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, battery_state_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) { 
+      
       log_i("Battery state 0x0E is %d", Tuya_read_dp_result.dp_value * 50);
+      
       updateSuplaBatteryLevel(
         channel_number_slot_1, ZBD_BATTERY_STATE_MSG, 
         Tuya_read_dp_result.dp_value * 50);
@@ -1647,6 +1734,13 @@ void processTuyaPresenceSensorDataReport(
 
       presence_value_on = 0x00;
     } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z: {
+
+      motion_state_dp_id = TUYA_PRESENCE_SENSOR_MWPS3Z_MOTION_STATE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_MWPS3Z_ILLUMINANCE_DP;
+    } break;
   }
   
   if (presence_dp_id) {
@@ -1692,8 +1786,8 @@ void processTuyaPresenceSensorDataReport(
   
   if (temperature_dp_id) {
 
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      temperature_dp_id, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, temperature_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceTempHumidityTemp(
@@ -1702,8 +1796,8 @@ void processTuyaPresenceSensorDataReport(
 
   if (humidity_dp_id) {
 
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      humidity_dp_id, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, humidity_dp_id, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceTempHumidityHumi(
@@ -2572,6 +2666,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR: 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH:
 
       processTuyaSmokeDetectorReport(
         channel_number_slot, payload_size, payload, model_id); 
@@ -2603,6 +2698,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z:
 
       processTuyaPresenceSensorDataReport(
         channel_number_slot, payload_size, payload, model_id); 

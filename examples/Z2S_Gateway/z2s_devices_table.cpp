@@ -3999,6 +3999,8 @@ void Z2S_onBatteryReceive(
   }
 }
 
+/*****************************************************************************/
+
 void Z2S_onIASzoneStatusChangeNotification(
     esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
     int iaszone_status) {
@@ -4011,10 +4013,9 @@ void Z2S_onIASzoneStatusChangeNotification(
   log_i("%s, endpoint 0x%x, cluster 0x%x, zone status 0x%x", 
         ieee_addr_str, endpoint, cluster, iaszone_status);
 
-  int16_t channel_number_slot = 
-    Z2S_findChannelNumberSlot(
-      ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
-      TUYA_VIBRATION_SENSOR_CONTACT_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    TUYA_VIBRATION_SENSOR_CONTACT_SID);
   
   if (channel_number_slot >= 0) {
 
@@ -4025,19 +4026,15 @@ void Z2S_onIASzoneStatusChangeNotification(
     return;
   }
   
-  channel_number_slot = 
-    Z2S_findChannelNumberSlot(
-      ieee_addr, 
-      endpoint, 
-      cluster, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, 
-      IAS_ZONE_ALARM_1_SID);
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    IAS_ZONE_ALARM_1_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - IAS_ZONE_ALARM_1_SID channel:%x, status: %x", 
-          channel_number_slot, 
-          iaszone_status);
+    log_i(
+      "IASZONE - IAS_ZONE_ALARM_1_SID channel:%x, status: %x", 
+      channel_number_slot, iaszone_status);
     
     if (iaszone_status < 0x0400)
       msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1));
@@ -4047,60 +4044,45 @@ void Z2S_onIASzoneStatusChangeNotification(
     skip_generic_check = true;
   }
 
-  channel_number_slot = 
-    Z2S_findChannelNumberSlot(
-      ieee_addr, 
-      endpoint, 
-      cluster, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, 
-      IAS_ZONE_ALARM_2_SID);
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    IAS_ZONE_ALARM_2_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - IAS_ZONE_ALARM_2_SID: "
-          "channel:%x, status: %x", 
-          channel_number_slot, 
-          iaszone_status);
+    log_i(
+      "IASZONE - IAS_ZONE_ALARM_2_SID: channel:%x, status: %x", 
+      channel_number_slot, iaszone_status);
 
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 2));
 
     skip_generic_check = true;
   }
 
-  channel_number_slot = 
-    Z2S_findChannelNumberSlot(
-      ieee_addr, 
-      endpoint, 
-      cluster, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, 
-      IAS_ZONE_TAMPER_SID);
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    IAS_ZONE_TAMPER_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - IAS_ZONE_TAMPER_SID "
-          "channel:%x, status: %x", 
-          channel_number_slot, 
-          iaszone_status);
+    log_i(
+      "IASZONE - IAS_ZONE_TAMPER_SID channel:%x, status: %x", 
+      channel_number_slot, iaszone_status);
 
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 4));
 
     skip_generic_check = true;
   }
   
-  channel_number_slot = 
-    Z2S_findChannelNumberSlot(
-      ieee_addr, 
-      endpoint, 
-      cluster, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, 
-      IAS_ZONE_LOW_BATTERY_SID);
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    IAS_ZONE_LOW_BATTERY_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - IAS_ZONE_LOW_BATTERY_SID "
-          "channel:%x, status: %x", 
-          channel_number_slot, 
-          iaszone_status);
+    log_i(
+      "IASZONE - IAS_ZONE_LOW_BATTERY_SID channel:%x, status: %x", 
+      channel_number_slot, iaszone_status);
 
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 8));
 
@@ -4110,20 +4092,15 @@ void Z2S_onIASzoneStatusChangeNotification(
   if (skip_generic_check)
     return;
   
-  channel_number_slot = 
-    Z2S_findChannelNumberSlot(
-      ieee_addr, 
-      endpoint, 
-      cluster, 
-      SUPLA_CHANNELTYPE_BINARYSENSOR, 
-      NO_CUSTOM_CMD_SID);
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
 
-    log_i("IASZONE - NO_CUSTOM_CMD_SID "
-          "channel:%x, status: %x", 
-          channel_number_slot, 
-          iaszone_status);
+    log_i(
+      "IASZONE - NO_CUSTOM_CMD_SID channel:%x, status: %x", 
+      channel_number_slot, iaszone_status);
     
     msgZ2SDeviceIASzone(channel_number_slot, (iaszone_status & 1));
     return;
@@ -4132,9 +4109,9 @@ void Z2S_onIASzoneStatusChangeNotification(
   no_channel_found_error_func(ieee_addr_str);
 }
 
-bool compareBuffer(uint8_t *buffer, 
-                   uint8_t buffer_size, 
-                   char *lookup_str) {
+/*****************************************************************************/
+
+bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
   
   char byte_str[3];
   byte_str[2] = '\0';
@@ -5392,10 +5369,12 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001:
       case Z2s_DEVICE_DESC_LUMI_TRV: {
       
-        addZ2SDeviceTempHumidity(device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
+        addZ2SDeviceTempHumidity(
+          device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
         
         uint8_t trv_thermometer_slot = first_free_slot;
-        Z2S_setChannelFlags(trv_thermometer_slot, USER_DATA_FLAG_CORRECTIONS_DISABLED);
+        Z2S_setChannelFlags(
+          trv_thermometer_slot, USER_DATA_FLAG_CORRECTIONS_DISABLED);
         
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
         if (first_free_slot == 0xFF) {
@@ -5404,7 +5383,8 @@ uint8_t Z2S_addZ2SDevice(
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDeviceHvac(&zbGateway, device, first_free_slot, trv_thermometer_slot); 
+        addZ2SDeviceHvac(
+          &zbGateway, device, first_free_slot, trv_thermometer_slot); 
       } break;
       
 /*****************************************************************************/     
@@ -5580,12 +5560,9 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY: {
       
-        addZ2SDeviceVirtualRelay(&zbGateway,
-                                 device, 
-                                 first_free_slot, 
-                                 NO_CUSTOM_CMD_SID, 
-                                 "RGB SWITCH", 
-                                 SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay(
+          &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, "RGB SWITCH", 
+          SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
@@ -5595,23 +5572,19 @@ uint8_t Z2S_addZ2SDevice(
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDeviceRGB(&zbGateway,
-                        device, 
-                        first_free_slot, 
-                        "RGB", 
-                        SUPLA_CHANNELFNC_RGBLIGHTING); 
+        addZ2SDeviceRGB(
+          &zbGateway, device, first_free_slot, "RGB", 
+          SUPLA_CHANNELFNC_RGBLIGHTING); 
       } break; 
 
 /*****************************************************************************/     
 
       case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
       
-        addZ2SDeviceDimmer(&zbGateway,
-                           device, 
-                           first_free_slot, 
-                           sub_id, 
-                           "DIMMER SWITCH", 
-                           SUPLA_CHANNELFNC_DIMMER); break;
+        addZ2SDeviceDimmer(
+          &zbGateway, device, first_free_slot, sub_id, "DIMMER SWITCH", 
+          SUPLA_CHANNELFNC_DIMMER); 
+      break;
 
 /*****************************************************************************/     
 
@@ -5630,10 +5603,9 @@ uint8_t Z2S_addZ2SDevice(
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, 
-                                              "SMOKE CONCENTRATION", 
-                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                                              "ppm");
+        addZ2SDeviceGeneralPurposeMeasurement(
+          device, first_free_slot, -1, "SMOKE CONCENTRATION", 
+          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
       } break;
 
 /*****************************************************************************/     
@@ -5649,10 +5621,38 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
 
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, -1, 
-                                              "ILLUMINANCE", 
-                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                                              "lx"); break;
+        addZ2SDeviceGeneralPurposeMeasurement(
+          device, first_free_slot, -1, "ILLUMINANCE", 
+          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); 
+          break;
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH:
+
+        switch (sub_id) {
+
+          case TUYA_SMOKE_DETECTOR_SMOKE_SID:
+
+            addZ2SDeviceIASzone(
+              device, first_free_slot, sub_id, name, func); 
+          break;
+
+
+          case TUYA_SMOKE_DETECTOR_SELF_TEST_SID: 
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+
+      
+          case TUYA_SMOKE_DETECTOR_TEMPHUMIDITY_SID: 
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func, true);
+          break;
+        }
+
 
 /*****************************************************************************/     
 
@@ -5738,7 +5738,8 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE: {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z: {
         
         switch (sub_id) {
 
@@ -7292,6 +7293,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH:
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
@@ -7310,6 +7312,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z:
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
@@ -7991,6 +7994,41 @@ void Z2S_buildSuplaChannels(
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
 
     } break;
+
+/*****************************************************************************/                                         
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_MOTION_STATE_SID, "MOTION STATE", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "[0..3?4?5]");
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH: {
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMOKE_DETECTOR_SMOKE_SID, "SMOKE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMOKE_DETECTOR_SELF_TEST_SID, "SELF TEST STATUS", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMOKE_DETECTOR_TEMPHUMIDITY_SID, "T/H");
+
+    }break;
 
 /*****************************************************************************/
 
