@@ -59,6 +59,7 @@ void initZ2SDeviceDimmer(
 
 
         case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
+        case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0:
 
           dimmer_mode = Z2S_TUYA_F0_CMD_DIMMER; 
         break;
@@ -156,7 +157,8 @@ void addZ2SDeviceDimmer(
     break;
 
 
-    case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
+    /*case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0:
+    case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0:
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
@@ -171,7 +173,8 @@ void addZ2SDeviceDimmer(
     case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
     case Z2S_DEVICE_DESC_LED_DIMMER:
     case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
-    case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
+    case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:*/
+    default:
 
       channel_element = new Supla::Control::Z2S_DimmerInterface(
         gateway, device, sub_id); 
@@ -215,7 +218,20 @@ void msgZ2SDeviceDimmer(
     switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
-      case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: 
+      case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
+        
+        auto Supla_Z2S_TuyaDimmerSwitch = 
+          reinterpret_cast<Supla::Control::Z2S_TuyaDimmerSwitch *>(element);
+        
+        if (level == DIMMER_NO_LEVEL_DATA)
+          Supla_Z2S_TuyaDimmerSwitch->setStateOnServer(state);
+        else
+          Supla_Z2S_TuyaDimmerSwitch->setValueOnServer(level);
+      } break;
+
+
+      /*case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: 
+      case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B: 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
@@ -229,7 +245,8 @@ void msgZ2SDeviceDimmer(
       case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
       case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
-      case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00: {
+      case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00: {*/
+      default:
 
         auto Supla_Z2S_DimmerInterface = 
           reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
@@ -237,17 +254,6 @@ void msgZ2SDeviceDimmer(
         Supla_Z2S_DimmerInterface->setValueOnServer(level);
       } break;
 
-
-      case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
-        
-        auto Supla_Z2S_TuyaDimmerSwitch = 
-          reinterpret_cast<Supla::Control::Z2S_TuyaDimmerSwitch *>(element);
-        
-        if (level == DIMMER_NO_LEVEL_DATA)
-          Supla_Z2S_TuyaDimmerSwitch->setStateOnServer(state);
-        else
-          Supla_Z2S_TuyaDimmerSwitch->setValueOnServer(level);
-      } break;
     }
   }
 }

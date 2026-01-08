@@ -5411,11 +5411,9 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: {
 
-        addZ2SDeviceVirtualRelay(&zbGateway,device, 
-                                 first_free_slot, 
-                                NO_CUSTOM_CMD_SID, 
-                                "DIMMER SWITCH", 
-                                SUPLA_CHANNELFNC_LIGHTSWITCH);
+        addZ2SDeviceVirtualRelay(
+          &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
+          "DIMMER SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
         
@@ -5425,12 +5423,9 @@ uint8_t Z2S_addZ2SDevice(
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDeviceDimmer(&zbGateway,
-                           device, 
-                           first_free_slot, 
-                           DIMMER_FUNC_BRIGHTNESS_SID, 
-                           "BRIGHTNESS", 
-                           SUPLA_CHANNELFNC_DIMMER);
+        addZ2SDeviceDimmer(
+          &zbGateway, device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, 
+          "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
         
@@ -5440,10 +5435,32 @@ uint8_t Z2S_addZ2SDevice(
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDeviceDimmer(&zbGateway,device, first_free_slot, 
-                           DIMMER_FUNC_COLOR_TEMPERATURE_SID, 
-                           "COLOR TEMPERATURE", 
-                           SUPLA_CHANNELFNC_DIMMER);
+        addZ2SDeviceDimmer(
+          &zbGateway, device, first_free_slot, 
+          DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE", 
+          SUPLA_CHANNELFNC_DIMMER);
+
+      } break; 
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0: {
+
+        addZ2SDeviceVirtualRelay(
+          &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
+          "DIMMER SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
+
+        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+        
+        if (first_free_slot == 0xFF) {
+          
+          devices_table_full_error_func();
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+
+        addZ2SDeviceDimmer(
+          &zbGateway, device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, 
+          "BRIGHTNESS", SUPLA_CHANNELFNC_DIMMER);
 
       } break; 
 
@@ -7268,6 +7285,8 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
   
   switch (model_id) {
   
+    
+    case Z2S_DEVICE_DESC_TUYA_QUERY:
     case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
