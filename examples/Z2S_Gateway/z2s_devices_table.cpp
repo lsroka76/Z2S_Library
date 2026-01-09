@@ -5651,8 +5651,8 @@ uint8_t Z2S_addZ2SDevice(
             addZ2SDeviceTempHumidity(
               device, first_free_slot, sub_id, name, func, true);
           break;
-        }
-
+        } break;
+      
 
 /*****************************************************************************/     
 
