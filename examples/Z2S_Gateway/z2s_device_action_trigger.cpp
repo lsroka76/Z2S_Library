@@ -230,13 +230,20 @@ void msgZ2SDeviceActionTriggerV2(int16_t channel_number_slot, int8_t sub_id) {
 
     virtual_button_data_t virtual_button_data = {};
 
-    if ((millis() - 
+    uint32_t millis_ms = millis();
+
+    log_i(
+      "millis - button_last_seen_ms = %lu, button_debounce_ms = %u",
+      millis_ms - z2s_channels_table[channel_number_slot].button_last_seen_ms,
+      z2s_channels_table[channel_number_slot].button_debounce_ms);
+
+    if ((millis_ms - 
          z2s_channels_table[channel_number_slot].button_last_seen_ms) < 
-         z2s_channels_table[channel_number_slot].button_debounce_ms)
+         z2s_channels_table[channel_number_slot].button_debounce_ms) 
       return;
     else
       z2s_channels_table[channel_number_slot].button_last_seen_ms =
-        millis();
+        millis_ms;
 
     if (getVirtualButtonNumber(
       virtual_button_data, 
