@@ -1521,9 +1521,12 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 /*---------------------------------------------------------------------------------------*/
 
 namespace Supla {
+
 namespace Control {
+
 class Z2S_TRVInterface : public RemoteOutputInterface, 
   /*public ActionHandler,*/public Element {
+ 
  public:
   Z2S_TRVInterface(
     ZigbeeGateway *gateway, zbg_device_params_t *device, 

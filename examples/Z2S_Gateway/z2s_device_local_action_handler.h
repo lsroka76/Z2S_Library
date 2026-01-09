@@ -7,10 +7,12 @@
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
 #include <supla/control/virtual_relay.h>
+#include <supla/control/hvac_base.h>
 #include <supla/sensor/virtual_binary.h>
 #include <Z2S_control/Z2S_local_action_handlers.h>
 #include <Z2S_control/Z2S_remote_relay.h>
 #include <Z2S_control/Z2S_virtual_relay.h>
+#include <Z2S_control/virtual_output_interface.h>
 #include <Z2S_sensor/Z2S_remote_thermometer.h>
 
 
@@ -22,6 +24,8 @@
 #define LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER   0x11
 
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON       0x20
+
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC         0x30
 
 #define REMOTE_ADDRESS_TYPE_LOCAL               0x00
 #define REMOTE_ADDRESS_TYPE_IP4                 0x01

@@ -528,6 +528,7 @@ void addLocalVirtualRelayCallback(Control *sender, int type);
 void addLocalVirtualBinaryCallback(Control *sender, int type);
 void addLocalRemoteRelayCallback(Control *sender, int type);
 void addLocalRemoteThermometerCallback(Control *sender, int type);
+void addLocalVirtualHvacCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
 
@@ -2067,116 +2068,82 @@ void buildChannelsTabGUI() {
 																								remove_channel_button, 
 																								removeAllChannelsCallback);
 
-	channel_status_label = ESPUI.addControl(Control::Type::Label, 
-																					PSTR("Status"), 
-																					three_dots_str, 
-																					Control::Color::Alizarin, 
-																					remove_channel_button);
+	channel_status_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Status"), three_dots_str, 
+		Control::Color::Alizarin, remove_channel_button);
 
 	working_str = PSTR("Add AND gate");
-	auto lah_panel = ESPUI.addControl(Control::Type::Button, 
-								  								  PSTR("Local logic components (experimental!)"), 
-									 									working_str, 
-									 									Control::Color::Emerald, 
-									 									channelstab, 
-									 									addLocalActionHandlerCallback,
-																		(void*)GUI_CB_ADD_AND_HANDLER_FLAG);
+	auto lah_panel = ESPUI.addControl(
+		Control::Type::Button, PSTR("Local logic components (experimental!)"), 
+		working_str, Control::Color::Emerald, channelstab, 
+		addLocalActionHandlerCallback, (void*)GUI_CB_ADD_AND_HANDLER_FLAG);
 
 	working_str = PSTR("Add OR gate");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalActionHandlerCallback,
-									 (void*)GUI_CB_ADD_OR_HANDLER_FLAG);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
+		(void*)GUI_CB_ADD_OR_HANDLER_FLAG);
 
 	working_str = PSTR("Add XOR gate");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalActionHandlerCallback,
-									 (void*)GUI_CB_ADD_XOR_HANDLER_FLAG);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
+		(void*)GUI_CB_ADD_XOR_HANDLER_FLAG);
 
 	working_str = PSTR("Add NOT gate");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalActionHandlerCallback,
-									 (void*)GUI_CB_ADD_NOT_HANDLER_FLAG);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
+		(void*)GUI_CB_ADD_NOT_HANDLER_FLAG);
 
 	working_str = PSTR("Add NAND gate");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalActionHandlerCallback,
-									 (void*)GUI_CB_ADD_NAND_HANDLER_FLAG);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
+		(void*)GUI_CB_ADD_NAND_HANDLER_FLAG);
 
 	working_str = PSTR("Add NOR gate");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalActionHandlerCallback,
-									 (void*)GUI_CB_ADD_NOR_HANDLER_FLAG);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
+		(void*)GUI_CB_ADD_NOR_HANDLER_FLAG);
 
 	working_str = PSTR("Add AND gate (3 inputs)");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalActionHandlerCallback,
-									 (void*)GUI_CB_ADD_AND3_HANDLER_FLAG);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
+		(void*)GUI_CB_ADD_AND3_HANDLER_FLAG);
 
 	working_str = PSTR("Add OR gate (3 inputs)");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalActionHandlerCallback,
-									 (void*)GUI_CB_ADD_OR3_HANDLER_FLAG);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
+		(void*)GUI_CB_ADD_OR3_HANDLER_FLAG);
 
 	working_str = PSTR("Add virtual relay");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalVirtualRelayCallback);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalVirtualRelayCallback);
 
 	working_str = PSTR("Add virtual binary");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalVirtualBinaryCallback);
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalVirtualBinaryCallback);
+
+	working_str = PSTR("Add virtual hvac");
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalVirtualHvacCallback);
 
 	working_str = PSTR("Add remote relay");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalRemoteRelayCallback);																					
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalRemoteRelayCallback);																					
 
 	working_str = PSTR("Add remote thermometer");
-	ESPUI.addControl(Control::Type::Button, 
-								   PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::Emerald, 
-									 lah_panel, 
-									 addLocalRemoteThermometerCallback);																					
-
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, lah_panel, addLocalRemoteThermometerCallback);																					
 
 	enableChannelControls(false);
 }
@@ -4629,8 +4596,9 @@ void Z2S_loopWebGUI() {
 		case 67: {
 
 			gui_command = 0;
-			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY, 
-																			 SUPLA_CHANNELFNC_BINARY_SENSOR)) {
+			if (addZ2SDeviceLocalActionHandler(
+						LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY, 
+						SUPLA_CHANNELFNC_BINARY_SENSOR)) {
 
 			
 				rebuildChannelsSelector(true);
@@ -4642,8 +4610,9 @@ void Z2S_loopWebGUI() {
 		case 68: {
 
 			gui_command = 0;
-			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_REMOTE_RELAY, 
-																			 SUPLA_CHANNELFNC_POWERSWITCH)) {
+			if (addZ2SDeviceLocalActionHandler(
+						LOCAL_CHANNEL_TYPE_REMOTE_RELAY, 
+						SUPLA_CHANNELFNC_POWERSWITCH)) {
 
 			
 				rebuildChannelsSelector(true);
@@ -4655,10 +4624,24 @@ void Z2S_loopWebGUI() {
 		case 69: {
 
 			gui_command = 0;
-			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER, 
-																			 SUPLA_CHANNELFNC_THERMOMETER)) {
+			if (addZ2SDeviceLocalActionHandler(
+						LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER, 
+						SUPLA_CHANNELFNC_THERMOMETER)) {
 
 			
+				rebuildChannelsSelector(true);
+				buildActionsChannelSelectors(true);
+			}
+		} break;
+
+
+		case 70: {
+
+			gui_command = 0;
+			if (addZ2SDeviceLocalActionHandler(
+						LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC, 
+						SUPLA_CHANNELFNC_HVAC_THERMOSTAT)) {
+
 				rebuildChannelsSelector(true);
 				buildActionsChannelSelectors(true);
 			}
@@ -8103,6 +8086,13 @@ void addLocalRemoteThermometerCallback(Control *sender, int type) {
 	}
 }
 
+void addLocalVirtualHvacCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+
+		gui_command = 70;
+	}
+}
 
 void GUI_onTuyaCustomClusterReceive(
 	uint8_t command_id, uint16_t payload_size, uint8_t * payload_data){

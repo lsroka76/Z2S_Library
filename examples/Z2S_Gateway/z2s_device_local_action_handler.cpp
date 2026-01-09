@@ -24,6 +24,12 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
     break;
 
 
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC:
+      
+      return "Local virtual hvac";
+    break;
+
+
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY:
       
       return "Local virtual binary";
@@ -75,6 +81,7 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
     case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
     case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON:
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC:
       
       return "No special functions";
     break;
@@ -135,6 +142,27 @@ void initZ2SDeviceLocalActionHandler(
       Supla_VirtualRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
       Supla_VirtualRelay->setDefaultStateRestore();
     }
+    break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC: {
+      
+      uint8_t Supla_channel = 
+        z2s_channels_table[channel_number_slot].Supla_channel;
+
+      auto Supla_VirtualOutputInterface = 
+        new Supla::Control::VirtualOutputInterface();
+
+      auto Supla_VirtualHvac = 
+        new Supla::Control::HvacBase(Supla_VirtualOutputInterface); 
+      
+      Supla_VirtualHvac->getChannel()->setChannelNumber(Supla_channel);
+      //Supla_VirtualHvac->getChannel()->setDefaultFunction(
+      //  SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL);
+     // Supla_VirtualHvac->setAndSaveFunction(
+       // SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+    }
+
     break;
 
 
@@ -313,6 +341,36 @@ bool addZ2SDeviceLocalActionHandler(
       //Supla_VirtualRelay->setDefaultFunction(local_channel_func);
       Supla_VirtualRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
       Supla_VirtualRelay->setDefaultStateRestore();
+    } break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC: {
+
+      SuplaDevice.saveStateToStorage();
+      Supla::Storage::ConfigInstance()->commit();
+
+      auto Supla_VirtualOutputInterface = 
+        new Supla::Control::VirtualOutputInterface();
+
+      auto Supla_VirtualHvac = 
+        new Supla::Control::HvacBase(Supla_VirtualOutputInterface);
+
+      z2s_channels_table[first_free_slot].Supla_channel = 
+        Supla_VirtualHvac->getChannelNumber();
+
+      strcpy(
+        z2s_channels_table[first_free_slot].Supla_channel_name, 
+        "LOCAL VIRTUAL HVAC");
+      
+      Supla_VirtualHvac->setInitialCaption(
+          z2s_channels_table[first_free_slot].Supla_channel_name);
+
+      //Supla_VirtualHvac->getChannel()->setDefaultFunction(
+      //  SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL);
+      //Supla_VirtualHvac->setDefaultFunction(local_channel_func);
+      //Supla_VirtualHvac->setAndSaveFunction(
+       // SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+
     } break;
 
 

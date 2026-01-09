@@ -389,7 +389,10 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "SWITCH TO WEEKLY SCHEDULE MODE" },
 
 	{ .Supla_action_id = (Supla::Action)0x5000,
-		.Supla_action_name = "TURN_ON_BOOST(TEST)" }
+		.Supla_action_name = "TURN_ON_MAX_TEMPERATURE" },
+
+	{ .Supla_action_id = (Supla::Action)0x5001,
+		.Supla_action_name = "TURN_ON_MIN_TEMPERATURE" }
 };
 
 static constexpr Supla_event_type_t Supla_events [] PROGMEM = {

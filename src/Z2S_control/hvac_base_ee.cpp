@@ -59,6 +59,13 @@ void HvacBaseEE::handleAction(int event, int action) {
     break;
 
 
+    case 0x5001:
+
+      applyNewRuntimeSettings(
+        SUPLA_HVAC_MODE_HEAT, getDefaultTemperatureRoomMin(), 0, 0);
+    break;
+
+
     default:
 
       HvacBase::handleAction(event, action);
