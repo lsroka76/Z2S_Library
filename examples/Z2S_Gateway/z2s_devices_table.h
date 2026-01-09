@@ -158,10 +158,6 @@ union {
       int32_t        hvac_fixed_temperature_correction;
     };
     struct {
-      uint32_t        button_last_seen_ms;
-      uint32_t        button_debounce_ms;
-    };
-    struct {
       uint32_t        value : 24;
       uint32_t        program : 8;
       uint32_t        pause_time : 24;
@@ -175,6 +171,7 @@ union {
       Supla::Element  *Supla_element;
       uint32_t         button_flags;
       uint32_t         button_last_seen_ms;
+      //uint32_t         button_debounce_ms;
     } virtual_button_data;
     struct {
       char            mDNS_name[12];
@@ -184,7 +181,10 @@ union {
   uint32_t            user_data_flags;
   uint32_t            timeout_secs;
   uint32_t            keep_alive_secs;
+union {  
   uint32_t            refresh_secs;
+  uint32_t            debounce_ms;
+};
 union {
   struct {
     uint64_t          data_counter;

@@ -48,12 +48,15 @@ void initZ2SDeviceActionTriggerV2(int16_t channel_number_slot) {
         Z2S_DEVICE_DESC_TUYA_SWITCH_4X3)
     debounce_time_ms = 1500;
   
-  if (z2s_channels_table[channel_number_slot].refresh_secs > 0)
-    debounce_time_ms = z2s_channels_table[channel_number_slot].refresh_secs;
+  if (z2s_channels_table[channel_number_slot].debounce_ms > 0)
+    debounce_time_ms = z2s_channels_table[channel_number_slot].debounce_ms;
 
-  z2s_channels_table[channel_number_slot].button_last_seen_ms = 0;
-  z2s_channels_table[channel_number_slot].button_debounce_ms = 
-    debounce_time_ms;
+  z2s_channels_table[channel_number_slot].debounce_ms = debounce_time_ms;
+  z2s_channels_table[channel_number_slot].\
+    virtual_button_data.button_last_seen_ms = 0;
+
+  //z2s_channels_table[channel_number_slot].button_debounce_ms = 
+  //  debounce_time_ms;
 
   auto Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
   
@@ -238,18 +241,14 @@ void msgZ2SDeviceActionTriggerV2(int16_t channel_number_slot, int8_t sub_id) {
 
     uint32_t millis_ms = millis();
 
-    log_i(
-      "millis - button_last_seen_ms = %lu, button_debounce_ms = %u",
-      millis_ms - z2s_channels_table[channel_number_slot].button_last_seen_ms,
-      z2s_channels_table[channel_number_slot].button_debounce_ms);
-
     if ((millis_ms - 
-         z2s_channels_table[channel_number_slot].button_last_seen_ms) < 
-         z2s_channels_table[channel_number_slot].button_debounce_ms) 
+         z2s_channels_table[channel_number_slot].virtual_button_data.\
+          button_last_seen_ms) < 
+         z2s_channels_table[channel_number_slot].debounce_ms) 
       return;
     else
-      z2s_channels_table[channel_number_slot].button_last_seen_ms =
-        millis_ms;
+      z2s_channels_table[channel_number_slot].virtual_button_data.\
+        button_last_seen_ms = millis_ms;
 
     if (getVirtualButtonNumber(
       virtual_button_data, 
