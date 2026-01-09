@@ -110,6 +110,7 @@ bool GUIdisabled  = false;
 uint8_t  _enable_gui_on_start  = 1;
 uint8_t	_force_config_on_start = 0;
 uint8_t _rebuild_Supla_channels_on_start = 0;
+uint8_t _use_new_at_model = 1;
 uint32_t _gui_start_delay      = 0;
 
 uint8_t _z2s_security_level    = 0;
@@ -651,6 +652,18 @@ void setup() {
   } else {
     log_i("Z2S_GATEWAY_MDNS_LOCAL_NAME not configured - using default");
     //GatewayMDNSLocalName = "Z2S_gateway";
+  }
+
+  if (Supla::Storage::ConfigInstance()->getUInt8(
+        Z2S_USE_NEW_AT_MODEL, &_use_new_at_model)) {
+                                                  
+    log_i(
+      "Z2S_USE_NEW_AT_MODEL = %d", _use_new_at_model);
+
+  } else {
+
+    log_i("Z2S_USE_NEW_AT_MODEL not configured - turning on");
+    _use_new_at_model = 1;
   }
   
   Supla::Storage::ConfigInstance()->getUInt8(

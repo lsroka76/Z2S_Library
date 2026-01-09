@@ -1,5 +1,6 @@
 #include "z2s_device_action_trigger.h"
 
+extern uint8_t _use_new_at_model;
 /*****************************************************************************/
 
 void initZ2SDeviceActionTrigger(int16_t channel_number_slot) {
@@ -73,8 +74,13 @@ void addZ2SDeviceActionTrigger(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
   const char *name, uint32_t func) {
 
-  addZ2SDeviceActionTriggerV2(device, free_slot, sub_id, name, func);
-  return; //temp test
+  if (_use_new_at_model) {
+  
+    log_i("Z2S_USE_NEW_AT_MODEL ACTIVE - adding button(s) as AT!");
+    
+    addZ2SDeviceActionTriggerV2(device, free_slot, sub_id, name, func);
+    return;
+  }
 
   auto Supla_Z2S_ActionTrigger = new Supla::Control::VirtualRelaySceneSwitch(
     0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER);

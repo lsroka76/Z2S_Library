@@ -382,6 +382,7 @@ const static char Z2S_ENABLE_GUI_ON_START[] PROGMEM = "Z2S_enable_gui";
 const static char Z2S_GUI_ON_START_DELAY[] PROGMEM = "Z2S_gui_delay";
 const static char Z2S_FORCE_CONFIG_ON_START[] PROGMEM = "Z2S_force_cfg";
 const static char Z2S_REBUILD_CHANNELS_ON_START[] PROGMEM = "Z2S_rebuild";
+const static char Z2S_USE_NEW_AT_MODEL[] PROGMEM = "Z2S_new_at";
 const static char Z2S_GATEWAY_MDNS_LOCAL_NAME[] PROGMEM = "Z2S_mdns_name";
 
 namespace Supla {

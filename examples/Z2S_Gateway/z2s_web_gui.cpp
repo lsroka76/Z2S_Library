@@ -30,6 +30,7 @@ extern uint8_t  _enable_gui_on_start;
 extern uint8_t	_force_config_on_start;
 extern uint32_t _gui_start_delay;
 extern uint8_t _rebuild_Supla_channels_on_start;
+extern uint8_t _use_new_at_model;
 
 extern uint8_t _z2s_security_level;
 
@@ -45,6 +46,7 @@ uint16_t gui_start_delay_number;
 //uint16_t gui_start_delay_save_button;
 uint16_t gateway_mdns_name_text;
 uint16_t rebuild_Supla_channels_switcher;
+uint16_t use_new_at_model_switcher;
 
 uint16_t wifi_ssid_text;
 uint16_t wifi_pass_text;
@@ -315,7 +317,8 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_GUI_DELAY_FLAG											0x0102
 #define GUI_CB_SAVE_MDNS_NAME_FLAG								0x0103
 #define GUI_CB_REBUILD_CHANNELS_FLAG							0x0104
-#define GUI_CB_GUI_RESTART_FLAG										0x0105
+#define GUI_CB_USE_NEW_AT_FLAG										0x0105
+#define GUI_CB_GUI_RESTART_FLAG										0x0106
 
 
 #define GUI_CB_SAVE_FLAG													0x1000
@@ -816,50 +819,45 @@ void buildGatewayTabGUI() {
 
 	//char buf[1024] = {};
 	working_str = PSTR("Gateway");
-	auto gatewaytab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), working_str, 
-																		 Control::Color::Emerald, Control::noParent, 
-																		 generalCallback);
+	auto gatewaytab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str, Control::Color::Emerald,
+		Control::noParent, generalCallback);
 
 	working_str = PSTR(empty_str);
-	ESPUI.addControl(Control::Type::Separator, 
-									 PSTR("General information"), 
-									 working_str, 
-									 Control::Color::None, 
-									 gatewaytab);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR("General information"), working_str, 
+		Control::Color::None, gatewaytab);
 
 	fillGatewayGeneralnformation(general_purpose_gui_buffer);
 
 	working_str = general_purpose_gui_buffer;
-	gateway_general_info = ESPUI.addControl(Control::Type::Label, 
-																					PSTR("Device information"), 
-																					working_str, 
-																					Control::Color::Emerald, 
-																					gatewaytab);
+	gateway_general_info = ESPUI.addControl(
+		Control::Type::Label, PSTR("Device information"), working_str, 
+		Control::Color::Emerald, gatewaytab);
 
-	ESPUI.setElementStyle(gateway_general_info, 
-												"color:black;text-align: justify; font-family:tahoma;"
-												" font-size: 4 px; font-style: normal; font-weight: normal;");
+	ESPUI.setElementStyle(
+		gateway_general_info, 
+		"color:black;text-align: justify; font-family:tahoma;"
+		" font-size: 4 px; font-style: normal; font-weight: normal;");
 
 	ESPUI.setPanelWide(gateway_general_info, true);
 
 	fillMemoryUptimeInformation(general_purpose_gui_buffer);
 	
 	working_str = PSTR(empty_str);
-	ESPUI.addControl(Control::Type::Separator, 
-									 PSTR("Status"), 
-									 working_str, 
-									 Control::Color::None, 
-									 gatewaytab);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR("Status"), working_str, 
+		Control::Color::None, gatewaytab);
 
 	working_str = general_purpose_gui_buffer;
-	gateway_memory_info = ESPUI.addControl(Control::Type::Label, 
-																				 PSTR("Memory & Uptime"), 
-																				 working_str, 
-																				 Control::Color::Emerald, 
-																				 gatewaytab);
-	//ESPUI.setElementStyle(gateway_memory_info, "text-align: justify; font-size: 4 px; font-style: normal; font-weight: normal;");
-	ESPUI.setElementStyle(gateway_memory_info, "color:black;text-align: justify; font-family:tahoma;"
-												" font-size: 4 px; font-style: normal; font-weight: normal;");
+	gateway_memory_info = ESPUI.addControl(
+		Control::Type::Label, PSTR("Memory & Uptime"), working_str, 
+		Control::Color::Emerald, gatewaytab);
+
+	ESPUI.setElementStyle(
+		gateway_memory_info, 
+		"color:black;text-align: justify; font-family:tahoma;"
+		" font-size: 4 px; font-style: normal; font-weight: normal;");
 	ESPUI.setPanelWide(gateway_memory_info, true);
 
 	/*enable_gui_switcher = ESPUI.addControl(Control::Type::Switcher, 
@@ -871,9 +869,8 @@ void buildGatewayTabGUI() {
 																				 (void*)GUI_CB_ENABLE_GUI_FLAG);*/
 
 	auto gui_mode_selector = ESPUI.addControl(
-		Control::Type::Select, PSTR(
-			"Select GUI mode (requires restart)"), zero_str, 
-			Control::Color::Emerald, gatewaytab, selectGuiModeCallback);
+		Control::Type::Select, PSTR("Select GUI mode (requires restart)"), 
+		zero_str, Control::Color::Emerald, gatewaytab, selectGuiModeCallback);
 
 	for (uint8_t modes_counter = no_gui_mode; 
 			 modes_counter < gui_modes_number; modes_counter++) {
@@ -903,7 +900,6 @@ void buildGatewayTabGUI() {
 		Control::Color::Emerald, gui_start_delay_number, gatewayCallback,
 		(void*)GUI_CB_GUI_DELAY_FLAG);
 
-
 	gateway_mdns_name_text = ESPUI.addControl(
 		Control::Type::Text, PSTR("Gateway local mDNS name"), empty_str, 
 		Control::Color::Emerald, gatewaytab, generalCallback);
@@ -915,57 +911,64 @@ void buildGatewayTabGUI() {
 		(void*)GUI_CB_SAVE_MDNS_NAME_FLAG);
 
 	working_str = PSTR("(max. 11 characters, no spaces!!!)");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), working_str, 
-																				 Control::Color::None, 
-																				 gateway_mdns_name_text), 
-												PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Color::None, gateway_mdns_name_text), 
+		PSTR(clearLabelStyle));
 
-
-
-	force_config_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																					 PSTR("Force config mode on next startup"), 
-																					 zero_str, 
-																					 Control::Color::Emerald, 
-																					 gatewaytab, 
-																					 gatewayCallback,
-																					 (void*)GUI_CB_FORCE_CONFIG_FLAG);
+	force_config_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR("Force config mode on next startup"), 
+		zero_str, Control::Color::Emerald, gatewaytab, gatewayCallback,
+		(void*)GUI_CB_FORCE_CONFIG_FLAG);
 
 	working_str = PSTR("On next startup gateway will enter config mode.");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), working_str, 
-																				 Control::Color::None, 
-																				 force_config_switcher), 
-												PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Color::None, force_config_switcher), 
+		PSTR(clearLabelStyle));
 
-	
+	rebuild_Supla_channels_switcher = ESPUI.addControl(
+		Control::Type::Switcher, 
+		PSTR("Rebuild missing Supla channels on next startup"), 
+		zero_str, Control::Color::Emerald, gatewaytab, gatewayCallback,
+		(void*)GUI_CB_REBUILD_CHANNELS_FLAG);
 
-	rebuild_Supla_channels_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR("Rebuild missing Supla channels on next startup"), 
-										 zero_str, 
-										 Control::Color::Emerald, 
-										 gatewaytab, 
-										 gatewayCallback,
-										 (void*)GUI_CB_REBUILD_CHANNELS_FLAG);
+	working_str = PSTR(
+		"On next startup gateway will try to rebuild missing Supla channels<br>"
+		"using existing Zigbee devices definitions (experimental!)");
 
-	working_str = PSTR("On next startup gateway will try to rebuild missing Supla channels<br>"
-										 "using existing Zigbee devices definitions (experimental!)");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 rebuild_Supla_channels_switcher), 
-												PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Color::None, rebuild_Supla_channels_switcher), 
+		PSTR(clearLabelStyle));
+
+	/**/
+
+	use_new_at_model_switcher = ESPUI.addControl(
+		Control::Type::Switcher, 
+		PSTR("Use new AT model for smart buttons"), 
+		zero_str, Control::Color::Emerald, gatewaytab, gatewayCallback,
+		(void*)GUI_CB_USE_NEW_AT_FLAG);
+
+	working_str = PSTR(
+		"New smart buttons will add as AT with Cloud and local actions");
+
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Color::None, use_new_at_model_switcher), 
+		PSTR(clearLabelStyle));
+
+	/**/
 
 	working_str = PSTR("Restart gateway");
-	save_button = ESPUI.addControl(Control::Type::Button, 
-																 PSTR(empty_str), 
-																 working_str, 
-																 Control::Color::Emerald, 
-																 gatewaytab, 
-																 gatewayCallback, 
-																 (void*)GUI_CB_GUI_RESTART_FLAG);
+	save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, gatewaytab, gatewayCallback, 
+		(void*)GUI_CB_GUI_RESTART_FLAG);
 
 
 	//ESPUI.updateNumber(enable_gui_switcher, _enable_gui_on_start);
@@ -975,7 +978,9 @@ void buildGatewayTabGUI() {
 	working_str = GatewayMDNSLocalName;
 	ESPUI.updateText(gateway_mdns_name_text, working_str);
 	ESPUI.updateNumber(force_config_switcher, _force_config_on_start);
-	ESPUI.updateNumber(rebuild_Supla_channels_switcher, _rebuild_Supla_channels_on_start);
+	ESPUI.updateNumber(
+		rebuild_Supla_channels_switcher, _rebuild_Supla_channels_on_start);
+	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 }
 
 /*****************************************************************************/
@@ -7146,6 +7151,19 @@ void gatewayCallback(Control *sender, int type, void *param) {
 			if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_REBUILD_CHANNELS_ON_START, 
 					ESPUI.getControl(rebuild_Supla_channels_switcher)->value.toInt()))
       	Supla::Storage::ConfigInstance()->commit();
+		} break;
+
+
+		case GUI_CB_USE_NEW_AT_FLAG: {
+
+			uint8_t use_new_at_model = 
+				ESPUI.getControl(use_new_at_model_switcher)->value.toInt();
+
+			if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_USE_NEW_AT_MODEL, 
+					use_new_at_model))
+      	Supla::Storage::ConfigInstance()->commit();
+
+			_use_new_at_model = use_new_at_model;
 		} break;
 
 
