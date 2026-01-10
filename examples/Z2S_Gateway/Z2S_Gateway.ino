@@ -243,9 +243,13 @@ void Z2S_onOpenNetwork(uint8_t permit_duration) {
     rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
     GUI_onZigbeeOpenNetwork(true);
 
-    if (zpm)
+    if (zpm) {
+
+      zpm->setSrpc(SuplaDevice.getSrpcLayer());
+
       zpm->notifySrpcAboutParingEnd(
-        SUPLA_CALCFG_PAIRINGRESULT_PROCEDURE_STARTED, nullptr);
+        SUPLA_CALCFG_PAIRINGRESULT_ONGOING, nullptr);
+    }
   }
   else {
     
@@ -254,9 +258,13 @@ void Z2S_onOpenNetwork(uint8_t permit_duration) {
     rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
     GUI_onZigbeeOpenNetwork(false);
 
-    if (zpm)
+    if (zpm) {
+
+      zpm->setSrpc(SuplaDevice.getSrpcLayer());
+      
       zpm->notifySrpcAboutParingEnd(
         SUPLA_CALCFG_PAIRINGRESULT_NO_NEW_DEVICE_FOUND, nullptr);
+    }
     
   }
 }

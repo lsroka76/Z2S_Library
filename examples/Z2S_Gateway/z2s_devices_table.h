@@ -949,13 +949,13 @@ class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
     } else
       Zigbee.openNetwork(180);
     
-    this->srpc = srpc;
+    this->_srpc = srpc;
     return true;
     }
 
   void notifySrpcAboutParingEnd(int pairingResult, const char *deviceName) {
     
-    if (srpc) {
+    if (_srpc) {
       
       TCalCfg_SubdevicePairingResult result = {};
       if (linkStartTimeMs != 0) {
@@ -973,9 +973,11 @@ class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
       result.NameSize = len;
       result.PairingResult = pairingResult;
 
-      srpc->sendPendingCalCfgResult(-1, SUPLA_CALCFG_RESULT_TRUE, -1,
+      log_i("updating Cloud pairing status - %u", pairingResult);
+
+      _srpc->sendPendingCalCfgResult(-1, SUPLA_CALCFG_RESULT_TRUE, -1,
           sizeof(result), &result);
-      srpc->clearPendingCalCfgResult(-1);
+      _srpc->clearPendingCalCfgResult(-1);
       linkStartTimeMs = 0;
       _state = 1;
     }
@@ -990,13 +992,18 @@ class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
 
     return _state;
   }
+
+  void setSrpc(Supla::Protocol::SuplaSrpc *srpc) {
+
+    _srpc = srpc;
+  }
   private:
 
   uint8_t _state = 1;
-  Supla::Protocol::SuplaSrpc *srpc = nullptr;
+  Supla::Protocol::SuplaSrpc *_srpc = nullptr;
 
   uint32_t linkStartTimeMs = 0;
-  uint32_t pairingTimeoutSec = 0;
+  uint32_t pairingTimeoutSec = 180;
 
 };
 
