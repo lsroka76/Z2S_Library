@@ -769,7 +769,7 @@ void loop() {
     Z2S_startUpdateServer();
   } 
 
-  if (do_once) {
+  /*if (do_once) {
 
     if ((SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) &&
         (zpm->getState() == 2)) {
@@ -786,7 +786,7 @@ void loop() {
           //SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED,
           unknown_device_name);
 
-      /*zbg_device_params_t test_joined_device = {};
+      zbg_device_params_t test_joined_device = {};
 
       test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3;
 
@@ -801,9 +801,9 @@ void loop() {
           &test_joined_device, TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
 
         Z2S_addZ2SDevice(&test_joined_device, TUYA_CUSTOM_CMD_BUTTON_HELD_SID);
-      }*/
+      }
     }
-  }
+  }*/
 
   if ((!GUIstarted) && 
       (_enable_gui_on_start != no_gui_mode) && 
@@ -1717,16 +1717,18 @@ if (GUIstarted)
                 } break;
               }
 
-              char found_device_name[128];
+              if (zpm->getState() == 2) {
+                
+                char found_device_name[128];
               
-              sprintf(
-                found_device_name,"%s::%s", 
-                zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-                zbGateway.getQueryBasicClusterData()->zcl_model_name);
+                sprintf(
+                  found_device_name,"%s::%s", 
+                  zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+                  zbGateway.getQueryBasicClusterData()->zcl_model_name);
 
-              zpm->notifySrpcAboutParingEnd(
-                SUPLA_CALCFG_PAIRINGRESULT_SUCCESS,
-                found_device_name);
+                zpm->notifySrpcAboutParingEnd(
+                  SUPLA_CALCFG_PAIRINGRESULT_SUCCESS, found_device_name);
+              }
 
               SuplaDevice.scheduleSoftRestart(30000);
               break;
@@ -1750,16 +1752,19 @@ if (GUIstarted)
         Z2S_startWebGUI();
         GUI_onLastBindingFailure(true);
 
-        char unknown_device_name[128];
+        if (zpm->getState() == 2) {
 
-        sprintf(
-          unknown_device_name,"%s::%s", 
-          zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-          zbGateway.getQueryBasicClusterData()->zcl_model_name);
+          char unknown_device_name[128];
 
-        zpm->notifySrpcAboutParingEnd(
-          SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED,
-          unknown_device_name);
+          sprintf(
+            unknown_device_name,"%s::%s", 
+            zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+            zbGateway.getQueryBasicClusterData()->zcl_model_name);
+
+          zpm->notifySrpcAboutParingEnd(
+            SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED,
+            unknown_device_name);
+        }
       }
     }
   }
