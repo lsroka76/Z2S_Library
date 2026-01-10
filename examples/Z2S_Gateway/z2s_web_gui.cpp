@@ -8140,9 +8140,11 @@ void GUI_onTuyaCustomClusterReceive(
 
 void GUI_onLastBindingFailure(bool binding_failed) {
 	
-	sprintf_P(general_purpose_gui_buffer, PSTR("Unknown model %s::%s, no binding is possible"), 
-						zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-            zbGateway.getQueryBasicClusterData()->zcl_model_name);
+	sprintf_P(
+		general_purpose_gui_buffer, 
+		PSTR("Unknown model %s::%s, no binding is possible"), 
+		zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+    zbGateway.getQueryBasicClusterData()->zcl_model_name);
 
 	updateLabel_P(zigbee_last_binding_result_label, general_purpose_gui_buffer);
 }

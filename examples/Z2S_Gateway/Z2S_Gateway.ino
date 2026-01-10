@@ -94,6 +94,8 @@ Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi;
 Supla::LittleFsConfig     configSupla(4096);
 
+ZbPairingManager *zpm = nullptr;
+
 constexpr uint8_t LED_PIN   = 8;
 constexpr uint8_t NUM_LEDS  = 1;
 
@@ -240,6 +242,10 @@ void Z2S_onOpenNetwork(uint8_t permit_duration) {
 
     rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
     GUI_onZigbeeOpenNetwork(true);
+
+    if (zpm)
+      zpm->notifySrpcAboutParingEnd(
+        SUPLA_CALCFG_PAIRINGRESULT_PROCEDURE_STARTED, nullptr);
   }
   else {
     
@@ -247,6 +253,11 @@ void Z2S_onOpenNetwork(uint8_t permit_duration) {
 
     rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
     GUI_onZigbeeOpenNetwork(false);
+
+    if (zpm)
+      zpm->notifySrpcAboutParingEnd(
+        SUPLA_CALCFG_PAIRINGRESULT_NO_NEW_DEVICE_FOUND, nullptr);
+    
   }
 }
 
@@ -678,6 +689,11 @@ void setup() {
 
   auto zdc = new ZbDevicesConfigurator();
 
+  zpm = new ZbPairingManager();
+
+  SuplaDevice.addFlags(SUPLA_DEVICE_FLAG_CALCFG_SUBDEVICE_PAIRING);
+  SuplaDevice.setSubdevicePairingHandler(zpm);
+
   SuplaDevice.setSuplaCACert(suplaCACert);
   SuplaDevice.setSupla3rdPartyCACert(supla3rdCACert);
   
@@ -753,13 +769,24 @@ void loop() {
     Z2S_startUpdateServer();
   } 
 
-  /*if (do_once) {
+  if (do_once) {
 
-    if (SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) {
+    if ((SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) &&
+        (zpm->getState() == 2)) {
 
-      do_once = false;
+      //do_once = false;
 
-      zbg_device_params_t test_joined_device = {};
+      char unknown_device_name[128];
+        sprintf(
+          unknown_device_name,"%s::%s", 
+          "MANUFACTURER NAME",
+          "MODEL NAME");
+        zpm->notifySrpcAboutParingEnd(
+          SUPLA_CALCFG_PAIRINGRESULT_SUCCESS,
+          //SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED,
+          unknown_device_name);
+
+      /*zbg_device_params_t test_joined_device = {};
 
       test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3;
 
@@ -774,9 +801,9 @@ void loop() {
           &test_joined_device, TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
 
         Z2S_addZ2SDevice(&test_joined_device, TUYA_CUSTOM_CMD_BUTTON_HELD_SID);
-      }
+      }*/
     }
-  }*/
+  }
 
   if ((!GUIstarted) && 
       (_enable_gui_on_start != no_gui_mode) && 
@@ -1689,6 +1716,18 @@ if (GUIstarted)
                     LUMI_MANUFACTURER_CODE);
                 } break;
               }
+
+              char found_device_name[128];
+              
+              sprintf(
+                found_device_name,"%s::%s", 
+                zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+                zbGateway.getQueryBasicClusterData()->zcl_model_name);
+
+              zpm->notifySrpcAboutParingEnd(
+                SUPLA_CALCFG_PAIRINGRESULT_SUCCESS,
+                found_device_name);
+
               SuplaDevice.scheduleSoftRestart(30000);
               break;
             }   
@@ -1698,9 +1737,10 @@ if (GUIstarted)
                           devices_list_counter);*/
           }
       if (!device_recognized) {
-        log_d("Unknown model %s::%s, no binding is possible", 
-              zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-              zbGateway.getQueryBasicClusterData()->zcl_model_name);
+        log_d(
+          "Unknown model %s::%s, no binding is possible", 
+          zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+          zbGateway.getQueryBasicClusterData()->zcl_model_name);
         
         rgbLedWrite(RGB_BUILTIN, 255, 0, 0);  // Red
         delay(1000);
@@ -1709,6 +1749,17 @@ if (GUIstarted)
 
         Z2S_startWebGUI();
         GUI_onLastBindingFailure(true);
+
+        char unknown_device_name[128];
+
+        sprintf(
+          unknown_device_name,"%s::%s", 
+          zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
+          zbGateway.getQueryBasicClusterData()->zcl_model_name);
+
+        zpm->notifySrpcAboutParingEnd(
+          SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED,
+          unknown_device_name);
       }
     }
   }

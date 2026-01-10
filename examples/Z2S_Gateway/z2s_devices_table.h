@@ -18,6 +18,7 @@
 #include <supla/protocol/supla_srpc.h>
 #include <supla/device/register_device.h>
 #include <supla/device/channel_conflict_resolver.h>
+#include <supla/device/subdevice_pairing_handler.h>
 #include <supla/mutex.h>
 #include <supla/auto_lock.h>
 #include <SuplaDevice.h>
@@ -902,6 +903,101 @@ public:
     }
     return false;
   }
+};
+
+class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
+
+ public:
+
+  bool startPairing(
+    Supla::Protocol::SuplaSrpc *srpc, 
+    TCalCfg_SubdevicePairingResult *result) override {
+    
+    if (result != nullptr) {
+      
+      result->MaximumDurationSec = 180; //pairingTimeoutSec;
+      if (_state == 2) { //Zigbee.isNetworkOpen()
+        log_d("Pairing already in progress");
+        if (linkStartTimeMs != 0) {
+          result->ElapsedTimeSec = (millis() - linkStartTimeMs) / 1000;
+        }
+        result->PairingResult = SUPLA_CALCFG_PAIRINGRESULT_ONGOING;
+        return false;
+      }
+
+      if (_state != 1) {
+        log_d("Pairing not started, device is not ready");
+        result->PairingResult = 
+          SUPLA_CALCFG_PAIRINGRESULT_NOT_STARTED_NOT_READY;
+        return false;
+      }
+
+      result->PairingResult = SUPLA_CALCFG_PAIRINGRESULT_PROCEDURE_STARTED;
+    }
+ 
+    if (_state != 1) {
+      log_d("Pairing not started, device is not ready");
+      return false;
+    }
+
+    setState(2);
+    linkStartTimeMs = millis();
+    
+    if (Zigbee.isNetworkOpen()) {
+      Zigbee.openNetwork(0);
+      Zigbee.openNetwork(180);
+    } else
+      Zigbee.openNetwork(180);
+    
+    this->srpc = srpc;
+    return true;
+    }
+
+  void notifySrpcAboutParingEnd(int pairingResult, const char *deviceName) {
+    
+    if (srpc) {
+      
+      TCalCfg_SubdevicePairingResult result = {};
+      if (linkStartTimeMs != 0) {
+        result.ElapsedTimeSec = (millis() - linkStartTimeMs) / 1000;
+      }
+      int len = 0;
+      if (deviceName &&
+          pairingResult != SUPLA_CALCFG_PAIRINGRESULT_NO_NEW_DEVICE_FOUND) {
+        len = strnlen(deviceName, sizeof(result.Name) - 1);
+        strncpy(result.Name, deviceName, len);
+        len++;  // NameSize should have a terminating null byte inclueded
+      }
+
+      result.MaximumDurationSec = pairingTimeoutSec;
+      result.NameSize = len;
+      result.PairingResult = pairingResult;
+
+      srpc->sendPendingCalCfgResult(-1, SUPLA_CALCFG_RESULT_TRUE, -1,
+          sizeof(result), &result);
+      srpc->clearPendingCalCfgResult(-1);
+      linkStartTimeMs = 0;
+      _state = 1;
+    }
+  }
+
+  void setState(uint8_t state) {
+
+    _state = state;
+  }
+
+  int getState() {
+
+    return _state;
+  }
+  private:
+
+  uint8_t _state = 1;
+  Supla::Protocol::SuplaSrpc *srpc = nullptr;
+
+  uint32_t linkStartTimeMs = 0;
+  uint32_t pairingTimeoutSec = 0;
+
 };
 
 #endif
