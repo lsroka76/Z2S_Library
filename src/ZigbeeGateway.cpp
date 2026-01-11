@@ -1431,25 +1431,23 @@ void ZigbeeGateway::zbAttributeReporting(
         log_i("thermostat local temperature %d",value);
         
         if (_on_thermostat_temperatures_receive)
-          _on_thermostat_temperatures_receive(src_address.u.ieee_addr, 
-                                              src_endpoint, 
-                                              cluster_id, 
-                                              attribute->id, 
-                                              value);
+          _on_thermostat_temperatures_receive(
+            src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, 
+            value);
       } else
-      if ((attribute->id == ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID) && 
+      if ((attribute->id == 
+            ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_S16)) {
 
-        int16_t value = attribute->data.value ? *(int16_t *)attribute->data.value : 0;
+        int16_t value = 
+        attribute->data.value ? *(int16_t *)attribute->data.value : 0;
         
         log_i("thermostat occupied heating setpoint %d",value);
         
         if (_on_thermostat_temperatures_receive)
-          _on_thermostat_temperatures_receive(src_address.u.ieee_addr, 
-                                              src_endpoint, 
-                                              cluster_id, 
-                                              attribute->id, 
-                                              value);
+          _on_thermostat_temperatures_receive(
+            src_address.u.ieee_addr, src_endpoint, cluster_id, attribute->id, 
+            value);
       } else
       if ((attribute->id == 
             ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID) && 
