@@ -759,6 +759,8 @@ bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table) {
 
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
 
+    
+
     memset(&z2s_zb_devices_table[zb_device_slot], 0, 
       sizeof(z2s_zb_device_params_t));
 
@@ -778,6 +780,12 @@ bool Z2S_removeZbDeviceWithAllChannels(
   uint8_t zb_device_slot, bool save_tables) {
 
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
+
+
+    zbGateway.sendDeviceLeaveRequest(
+      z2s_zb_devices_table[zb_device_slot].ieee_addr, 
+      z2s_zb_devices_table[zb_device_slot].short_addr, 
+      false, false);
 
     bool channels_table_save_required = false;
 

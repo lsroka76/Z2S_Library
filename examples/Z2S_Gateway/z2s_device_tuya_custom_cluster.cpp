@@ -721,8 +721,8 @@ void processTuyaSoilSensor3FReport(
 
   if (temperature_dp) {
     
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      temperature_dp, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, temperature_dp, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceTempHumidityTemp(
@@ -731,8 +731,8 @@ void processTuyaSoilSensor3FReport(
 
   if (humidity_dp) {
   
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      humidity_dp, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, humidity_dp, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceTempHumidityHumi(
@@ -741,20 +741,19 @@ void processTuyaSoilSensor3FReport(
   
   if (soil_moisture_dp) {
     
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      soil_moisture_dp, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, soil_moisture_dp, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceGeneralPurposeMeasurement(
         channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
         Tuya_read_dp_result.dp_value);
-  
   }
 
   if (battery_dp) {
     
-    Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      battery_dp, payload_size, payload);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, battery_dp, payload_size, payload);
 
     if (Tuya_read_dp_result.is_success) { 
 
@@ -773,21 +772,22 @@ void processTuyaTempHumiditySensorDataReport(
 
   Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_TH_SENSOR_TEMPERATURE_DP, payload_size, payload);
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_TH_SENSOR_TEMPERATURE_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceTempHumidityTemp(
       channel_number_slot, (float)Tuya_read_dp_result.dp_value_signed/10);
             
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_TH_SENSOR_HUMIDITY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceTempHumidityHumi(
       channel_number_slot, 
       (float)Tuya_read_dp_result.dp_value/humidity_divider);  
             
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, payload);
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_TH_SENSOR_BATTERY_STATE_DP, payload_size, 
+    payload);
   if (Tuya_read_dp_result.is_success) { 
 
     log_i("Battery state is %d", Tuya_read_dp_result.dp_value);
@@ -796,8 +796,9 @@ void processTuyaTempHumiditySensorDataReport(
       channel_number_slot,ZBD_BATTERY_STATE_MSG, 
       Tuya_read_dp_result.dp_value * 50);  
   }
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_TH_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_TH_SENSOR_BATTERY_LEVEL_DP, payload_size, 
+    payload);
   if (Tuya_read_dp_result.is_success) {
 
     log_i("Battery level is %d", Tuya_read_dp_result.dp_value);

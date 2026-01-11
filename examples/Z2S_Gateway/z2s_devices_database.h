@@ -2368,6 +2368,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "HEIMAN", .model_name = "PIRSensor-EM",
+   .z2s_device_uid = 8810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_d93wtje5", .model_name = "TS0203",
     .z2s_device_uid = 8900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
@@ -2402,6 +2407,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "Develco Products A/S", .model_name = "SPLZB-132",
     .z2s_device_uid = 9400,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 2, Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER },
+                             { 1, Z2S_DEVICE_DESC_NULL }}},
+
+  {	.manufacturer_name = "Develco Products A/S", .model_name = "SPLZB-137",
+    .z2s_device_uid = 9405,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {{ 2, Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER },

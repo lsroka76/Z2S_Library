@@ -1081,7 +1081,7 @@ void buildZigbeeTabGUI() {
 										 pairing_mode_switcher, 
 										 pairingSwitcherCallback,
 										 (void*)GUI_CB_FORCE_LEAVE_FLAG);
-	working_str = PSTR("force joined device to leave network and perform full join");
+	working_str = PSTR("Force joined device to leave network and perform full join");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str, 
