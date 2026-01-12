@@ -273,7 +273,11 @@ void Supla::Control::Z2S_RollerShutter::onTimer() {
     log_i("newTargetPositionAvailable = MOVE_UP_POSITION");
 
     newTargetPositionAvailable = false;
-    rsOpen(); //rsClose();
+
+    if (rsConfig.motorUpsideDown == 2) 
+      rsClose();
+    else
+      rsOpen(); 
   }
 
   if (newTargetPositionAvailable && (targetPosition == MOVE_DOWN_POSITION)) {
@@ -281,7 +285,11 @@ void Supla::Control::Z2S_RollerShutter::onTimer() {
     log_i("newTargetPositionAvailable = MOVE_DOWN_POSITION");
 
     newTargetPositionAvailable = false;
-    rsClose(); //rsOpen();
+
+    if (rsConfig.motorUpsideDown == 2) 
+      rsOpen();
+    else
+      rsClose();
   }
 
   if (newTargetPositionAvailable && (targetPosition >= 0) && (targetPosition <= 100)) {
