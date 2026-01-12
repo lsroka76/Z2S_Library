@@ -3699,6 +3699,21 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3210_mja6r5ix", .model_name = "TS0505B",
+    .z2s_device_uid = 19920,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3210_jd3z4yig", .model_name = "TS0505B",
+    .z2s_device_uid = 19925,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3210_r5afgmkl", .model_name = "TS0505B",
+    .z2s_device_uid = 19930,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3210_3lbtuxgp", .model_name = "TS0505B",
     .z2s_device_uid = 20000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
@@ -4240,6 +4255,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_piuensvr", .model_name = "CK-BL702-ROUTER-01(7018)",
     .z2s_device_uid = 26405,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_nlsszmzl", .model_name = "TS0207",
+    .z2s_device_uid = 26410,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
