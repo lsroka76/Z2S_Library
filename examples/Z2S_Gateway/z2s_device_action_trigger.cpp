@@ -1625,6 +1625,189 @@ bool getVirtualButtonNumber(
     break;
 
 
+    case Z2S_DEVICE_DESC_ADEO_ENKI_REMOTE_CONTROL: 
+    
+      switch (sub_id) {
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_ON_PRESSED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "REMOTE ON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_OFF_PRESSED_SID: {
+
+          virtual_button_data.button_id = 2;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "REMOTE OFF";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_UP_PRESSED_SID: {
+
+          virtual_button_data.button_id = 3;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "REMOTE UP";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_DOWN_PRESSED_SID: {
+
+          virtual_button_data.button_id = 4;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "REMOTE DOWN";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_ROUND_WUP_PRESSED_SID: {
+
+          virtual_button_data.button_id = 5;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "DIMMER BUTTON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_ROUND_WDOWN_PRESSED_SID: {
+
+          virtual_button_data.button_id = 5;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x2;
+          virtual_button_data.button_action_trigger_name = "DIMMER BUTTON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_ROUND_CUP_PRESSED_SID: {
+
+          virtual_button_data.button_id = 6;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "COLOR BUTTON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_ROUND_CDOWN_PRESSED_SID: {
+
+          virtual_button_data.button_id = 6;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x2;
+          virtual_button_data.button_action_trigger_name = "COLOR BUTTON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_ROUND_CLEFT_PRESSED_SID: {
+
+          virtual_button_data.button_id = 6;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x3;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x3;
+          virtual_button_data.button_action_trigger_name = "COLOR BUTTON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_ROUND_CRIGHT_PRESSED_SID: {
+
+          virtual_button_data.button_id = 6;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x4;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x4;
+          virtual_button_data.button_action_trigger_name = "COLOR BUTTON";
+          return true;
+        } break;
+
+        case ADEO_ENKI_REMOTE_CONTROL_SCENE_1_PRESSED_SID: {
+
+          virtual_button_data.button_id = 7;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "SCENE 1 BUTTON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_SCENE_2_PRESSED_SID: {
+
+          virtual_button_data.button_id = 8;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "SCENE 2 BUTTON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_SCENE_3_PRESSED_SID: {
+
+          virtual_button_data.button_id = 9;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "SCENE 3 BUTTON";
+          return true;
+        } break;
+
+
+        case ADEO_ENKI_REMOTE_CONTROL_SCENE_4_PRESSED_SID: {
+
+          virtual_button_data.button_id = 10;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "SCENE 4 BUTTON";
+          return true;
+        } break;
+
+
+        default: {
+
+          log_e(
+            "unknown combination: model id = 0x%04X, sub id = 0x%02X", 
+            model_id, sub_id);
+          return 0;
+        } break;
+      } 
+    break;
+
+
     default: {
 
           log_e(

@@ -145,6 +145,7 @@
 
 #define Z2S_DEVICE_DESC_IKEA_RGBW_BULB                      0x3120
 #define Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB                   0x3130
+#define Z2S_DEVICE_DESC_ADEO_RGBW_BULB                      0x3140
 
 #define Z2S_DEVICE_DESC_DIMMER_BULB                         0x3200
 #define Z2S_DEVICE_DESC_LED_DIMMER                          0x3201
@@ -256,6 +257,7 @@
 
 #define Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F        0x5400
 #define Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F                0x5410
+#define Z2S_DEVICE_DESC_ADEO_ENKI_REMOTE_CONTROL            0x5415
 
 #define Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH           0x5500
 #define Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1         0x5501
@@ -495,6 +497,22 @@
 #define LIVARNO_DIMMER_SWITCH_DIM_DOWN_HOLD_SID             0x06
 #define LIVARNO_DIMMER_SWITCH_DIM_DOWN_LONG_PRESSED_SID     0x07
 
+#define ADEO_ENKI_REMOTE_CONTROL_ON_PRESSED_SID             0x00
+#define ADEO_ENKI_REMOTE_CONTROL_OFF_PRESSED_SID            0x01
+#define ADEO_ENKI_REMOTE_CONTROL_UP_PRESSED_SID             0x02
+//#define ADEO_ENKI_REMOTE_CONTROL_UP__LONG_PRESSED_SID       0x03
+#define ADEO_ENKI_REMOTE_CONTROL_DOWN_PRESSED_SID           0x04
+//#define ADEO_ENKI_REMOTE_CONTROL_DOWN_LONG_PRESSED_SID      0x05
+#define ADEO_ENKI_REMOTE_CONTROL_ROUND_WUP_PRESSED_SID      0x06
+#define ADEO_ENKI_REMOTE_CONTROL_ROUND_WDOWN_PRESSED_SID    0x07
+#define ADEO_ENKI_REMOTE_CONTROL_ROUND_CUP_PRESSED_SID      0x08
+#define ADEO_ENKI_REMOTE_CONTROL_ROUND_CDOWN_PRESSED_SID    0x09
+#define ADEO_ENKI_REMOTE_CONTROL_ROUND_CLEFT_PRESSED_SID    0x0A
+#define ADEO_ENKI_REMOTE_CONTROL_ROUND_CRIGHT_PRESSED_SID   0x0B
+#define ADEO_ENKI_REMOTE_CONTROL_SCENE_1_PRESSED_SID        0x0C
+#define ADEO_ENKI_REMOTE_CONTROL_SCENE_2_PRESSED_SID        0x0D
+#define ADEO_ENKI_REMOTE_CONTROL_SCENE_3_PRESSED_SID        0x0E
+#define ADEO_ENKI_REMOTE_CONTROL_SCENE_4_PRESSED_SID        0x0F
 
 #define LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID                 0x00
 #define LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID          0x01
@@ -1105,6 +1123,14 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ADEO_CUSTOM_CLUSTER }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_ENKI_REMOTE_CONTROL,
+    .z2s_device_clusters_count = 5, .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC,
+                             ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+                             ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ON_OFF_1,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
@@ -1377,6 +1403,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
                              
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+                             ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_RGBW_BULB,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -3534,6 +3567,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "ADEO", .model_name = "ZBEK-1",
+    .z2s_device_uid = 18950,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_RGBW_BULB,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
     .z2s_device_uid = 19000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
@@ -4212,6 +4250,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_BUTTON_3F,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "ADEO", .model_name = "ZBEK-26",
+    .z2s_device_uid = 25750,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_ENKI_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
+
   {	.manufacturer_name = "ADEO", .model_name = "LDSENK08",
     .z2s_device_uid = 24700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR,
@@ -4448,6 +4492,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "AwoX", .model_name = "TLSR82xx",
     .z2s_device_uid = 30100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "ADEO", .model_name = "ZBEK-12",
+    .z2s_device_uid = 30105,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB,
     .z2s_device_endpoints_count = 1},
 

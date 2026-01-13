@@ -53,6 +53,7 @@ void initZ2SDeviceDimmer(
         case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
         case Z2S_DEVICE_DESC_LED_DIMMER:
         case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
+        case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
           dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER; 
         break;
@@ -86,6 +87,7 @@ void initZ2SDeviceDimmer(
         case Z2S_DEVICE_DESC_RGBW_BULB_HS: 
         case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB:
         case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
+        case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
           dimmer_mode = Z2S_COLOR_TEMPERATURE_DIMMER; 
         break;

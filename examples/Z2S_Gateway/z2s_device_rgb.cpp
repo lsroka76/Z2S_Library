@@ -35,9 +35,9 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway,
 
 
     case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
+    case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
-      Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(
+      Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(
           gateway, device, Z2S_COLOR_HS_RGB); 
       break;
 
@@ -45,8 +45,7 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway,
     case Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY:
     case Z2S_DEVICE_DESC_RGBW_BULB_XY:
 
-      Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(
+      Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(
           gateway, device, Z2S_COLOR_XY_RGB); 
     break;
 
@@ -96,7 +95,7 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway,
 
 void addZ2SDeviceRGB(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot,
-    const char *name, uint32_t func) {
+  const char *name, uint32_t func) {
   
   Supla::ChannelElement *channel_element = nullptr;
   int8_t sub_id = Z2S_COLOR_HS_RGB;
@@ -118,8 +117,9 @@ void addZ2SDeviceRGB(
 
 
     case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
+    case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
-      sub_id = Z2S_COLOR_XY_RGB; 
+      sub_id = Z2S_COLOR_HS_RGB; 
     break;
 
 
@@ -167,7 +167,8 @@ void msgZ2SDeviceRGB(
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
-      case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: {
+      case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: 
+      case Z2S_DEVICE_DESC_ADEO_RGBW_BULB: {
         
         if ((hue == 0xFF) && (saturation == 0xFF))
         {

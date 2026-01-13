@@ -410,6 +410,11 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
 
   esp_zb_cluster_list_add_custom_cluster(
     _cluster_list, 
+    esp_zb_zcl_attr_list_create(ADEO_CUSTOM_CLUSTER),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
     esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
