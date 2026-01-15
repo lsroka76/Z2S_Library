@@ -267,6 +267,26 @@ void GatewayEvents::handleAction(int event, int action) {
     "&&&&&&&&&&&&&&&&&&&&&&&&&&"
     "event %u, action %u", event, action);
 
+  if (action) {
+
+    switch (action) {
+
+      case Z2S_SUPLA_ACTION_START_TIMER: {
+
+        cyclic_event_enabled = true;
+        cyclic_event_ms = millis();
+        cyclic_event_counter = 0;
+      } break;
+
+
+      case Z2S_SUPLA_ACTION_STOP_TIMER:
+
+        cyclic_event_enabled = false;
+      break;
+    }
+  return;
+  }
+  
   switch (event) {
 
 
@@ -295,12 +315,15 @@ void GatewayEvents::iterateAlways() {
 
   uint32_t millis_ms = millis();
 
+  if (!cyclic_event_enabled)
+    return;
+
   if (millis_ms - cyclic_event_ms < 5000)
     return;
 
   cyclic_event_ms = millis_ms;
 
-  cyclic_event_counter = (cyclic_event_counter + 1) % 60;
+  cyclic_event_counter = (cyclic_event_counter + 1) % 17280; //24H
 
   if ((cyclic_event_counter % 1) == 0)
     runAction(Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS);
@@ -311,7 +334,8 @@ void GatewayEvents::iterateAlways() {
   if ((cyclic_event_counter % 12) == 0)
     runAction(Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS);
 
-
+  if (cyclic_event_counter == 0)
+    runAction(Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS);
 }
 
 

@@ -7,6 +7,10 @@
 #define Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF            0x4001
 #define Z2S_SUPLA_ACTION_DEVICE_STATUS_CHANGE             0x4010
 
+#define Z2S_SUPLA_ACTION_START_TIMER                      0x4020
+#define Z2S_SUPLA_ACTION_STOP_TIMER                       0x4021
+//#define Z2S_SUPLA_ACTION_RESTART_GATEWAY                  0x4100
+
 #define Z2S_SUPLA_ACTION_TURN_ON_MAX_TEMPERATURE          0x5000
 #define Z2S_SUPLA_ACTION_TURN_ON_MIN_TEMPERATURE          0x5001
 
@@ -20,6 +24,7 @@
 #define Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS                0x4100
 #define Z2S_SUPLA_EVENT_ON_EVERY_30_SECONDS               0x4101
 #define Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS               0x4102
+#define Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS                 0x4150
 
 
 #endif //

@@ -397,7 +397,13 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "TURN_ON_MIN_TEMPERATURE" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_RESEND_RELAY_STATE,
-		.Supla_action_name = "RESEND RELAY STATE" }
+		.Supla_action_name = "RESEND RELAY STATE" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_START_TIMER,
+		.Supla_action_name = "START TIMER" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_STOP_TIMER,
+		.Supla_action_name = "STOP TIMER" }
 };
 
 static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
@@ -473,6 +479,9 @@ static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS,
 		.Supla_event_name =  "ON EVERY 60 SECONDS" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS,
+		.Supla_event_name =  "ON EVERY 24 HOURS" },
 
 	{ .Supla_event_id = Supla::ON_LESS,
 		.is_condition = true,

@@ -126,6 +126,7 @@ class GatewayEvents: public LocalActionHandler {
 
   private:
 
+    bool      cyclic_event_enabled = false;
     uint32_t  cyclic_event_ms = 0;
     uint32_t  cyclic_event_counter = 0;
 };
