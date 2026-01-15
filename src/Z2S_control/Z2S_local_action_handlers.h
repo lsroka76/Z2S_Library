@@ -18,7 +18,7 @@
 #define LOCAL_ACTION_HANDLERS_H
 
 #include <Arduino.h>
-//#include <SuplaDevice.h>
+#include <SuplaDevice.h>
 //#include <supla/storage/storage.h>
 #include <supla/actions.h>
 #include <supla/action_handler.h>

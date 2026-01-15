@@ -141,6 +141,12 @@ void supla_callback_bridge(int event, int action) {
 
       int8_t sd_current_status = SuplaDevice.getCurrentStatus();
 
+      if (sd_current_status == STATUS_INITIALIZED) {
+
+        handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED);
+        return;
+      }
+
       if (sd_current_status == STATUS_REGISTERED_AND_READY)
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);
   
@@ -639,8 +645,8 @@ void setup() {
 
     Zigbee.setPrimaryChannelMask(zb_primary_channel_mask);
   }
-  //Open network for 180 seconds after boot
-  Zigbee.setRebootOpenNetwork(180);
+  //Disable pairing after boot 1.2.2-15/01/26
+  Zigbee.setRebootOpenNetwork(0);
 
   if (Supla::Storage::ConfigInstance()->getUInt8(
     Z2S_ENABLE_GUI_ON_START, &_enable_gui_on_start)) {

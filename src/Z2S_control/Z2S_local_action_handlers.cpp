@@ -283,6 +283,11 @@ void GatewayEvents::handleAction(int event, int action) {
 
         cyclic_event_enabled = false;
       break;
+
+
+      case Supla::SOFT_RESTART:
+
+        SuplaDevice.scheduleSoftRestart(0);
     }
   return;
   }
@@ -295,6 +300,12 @@ void GatewayEvents::handleAction(int event, int action) {
       runAction(Supla::ON_DEVICE_STATUS_CHANGE);
     break;
 
+
+    case Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED:
+
+      runAction(Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED);
+    break;
+  
 
     case Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY:
 

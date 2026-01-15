@@ -465,6 +465,9 @@ static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 	{ .Supla_event_id = Supla::ON_DEVICE_STATUS_CHANGE,
 		.Supla_event_name =  "ON DEVICE STATUS CHANGE" },
 
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED,
+		.Supla_event_name =  "ON SUPLA INITIALIZED" },
+
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY,
 		.Supla_event_name =  "ON SUPLA REGISTERED AND READY" },
 

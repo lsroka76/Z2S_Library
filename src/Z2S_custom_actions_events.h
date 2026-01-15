@@ -18,6 +18,7 @@
 
 #define Z2S_SUPLA_EVENT_BASE                              0x4000
 
+#define Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED              0x4009
 #define Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY     0x4010
 #define Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED                 0x4020
 
