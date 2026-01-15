@@ -84,6 +84,7 @@
 
 #define CHANNEL_EXTENDED_DATA_TYPE_NULL                         0x00
 
+#define GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT                       0x7F
 
 typedef struct z2s_legacy_device_params_s {
 
@@ -735,6 +736,7 @@ void onTuyaCustomClusterReceive(
   void (*callback)(uint8_t command_id,uint16_t payload_size, 
   uint8_t *payload_data));
 
+void handleGatewayEvent(int event);
 
 void printSizeOfClasses();
 void printTaskInfo(bool toTelnet = false);

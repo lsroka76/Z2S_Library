@@ -252,8 +252,59 @@ bool LocalActionVirtualButton::hasFunction(uint32_t function) {
 void LocalActionVirtualButton::handleAction(int event, int action) {
 
 }
+/*****************************************************************************/
+
+void GatewayEvents::onInit() {
+
+  cyclic_event_ms = millis();
+}
 
 /*****************************************************************************/
+
+void GatewayEvents::handleAction(int event, int action) {
+
+  log_i(
+    "&&&&&&&&&&&&&&&&&&&&&&&&&&"
+    "event %u, action %u", event, action);
+
+  switch (event) {
+
+
+    case Supla::ON_DEVICE_STATUS_CHANGE:
+
+      runAction(Supla::ON_DEVICE_STATUS_CHANGE);
+    break;
+  }
+}
+
+/*****************************************************************************/
+
+void GatewayEvents::iterateAlways() {
+
+  uint32_t millis_ms = millis();
+
+  if (millis_ms - cyclic_event_ms < 5000)
+    return;
+
+  cyclic_event_ms = millis_ms;
+
+  cyclic_event_counter = (cyclic_event_counter + 1) % 60;
+
+  if ((cyclic_event_counter % 1) == 0)
+    runAction(Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS);
+
+  if ((cyclic_event_counter % 6) == 0)
+    runAction(Z2S_SUPLA_EVENT_ON_EVERY_30_SECONDS);
+
+  if ((cyclic_event_counter % 12) == 0)
+    runAction(Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS);
+
+
+}
+
+
+/*****************************************************************************/
+
 
 Supla::Control::LocalActionTrigger::LocalActionTrigger() {
 
@@ -278,4 +329,38 @@ void Supla::Control::LocalActionTrigger::handleAction(int event, int action) {
 
   //Supla::LocalAction::
   runAction(local_event);
+}
+
+/*****************************************************************************/
+
+
+Supla::Control::LocalVirtualRelay::LocalVirtualRelay(_supla_int_t functions):
+ VirtualRelay(functions) {
+
+}
+
+/*****************************************************************************/
+
+Supla::Control::LocalVirtualRelay::~LocalVirtualRelay() {
+
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
+
+  Supla::Control::VirtualRelay::handleAction(event, action);
+
+  log_i("event %u, action %u", event, action);
+
+  switch (action) {
+
+    case Z2S_SUPLA_ACTION_RESEND_RELAY_STATE:
+
+      if (state) 
+        runAction(Supla::ON_TURN_ON);
+      else
+        runAction(Supla::ON_TURN_OFF);
+    break;
+  }
 }

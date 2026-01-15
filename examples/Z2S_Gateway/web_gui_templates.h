@@ -5,6 +5,8 @@
 #include <supla/events.h>
 
 #include "TuyaDatapoints.h"
+#include "Z2S_custom_actions_events.h"
+
 
 enum ActionGUIState {
 
@@ -388,11 +390,14 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = Supla::SWITCH_TO_WEEKLY_SCHEDULE_MODE,
 		.Supla_action_name = "SWITCH TO WEEKLY SCHEDULE MODE" },
 
-	{ .Supla_action_id = (Supla::Action)0x5000,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_ON_MAX_TEMPERATURE,
 		.Supla_action_name = "TURN_ON_MAX_TEMPERATURE" },
 
-	{ .Supla_action_id = (Supla::Action)0x5001,
-		.Supla_action_name = "TURN_ON_MIN_TEMPERATURE" }
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_ON_MIN_TEMPERATURE,
+		.Supla_action_name = "TURN_ON_MIN_TEMPERATURE" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_RESEND_RELAY_STATE,
+		.Supla_action_name = "RESEND RELAY STATE" }
 };
 
 static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
@@ -450,6 +455,24 @@ static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 
 	{ .Supla_event_id = Supla::ON_HVAC_MODE_HEAT,
 		.Supla_event_name =  "ON HVAC MODE HEAT" },
+
+	{ .Supla_event_id = Supla::ON_DEVICE_STATUS_CHANGE,
+		.Supla_event_name =  "ON DEVICE STATUS CHANGE" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY,
+		.Supla_event_name =  "ON SUPLA REGISTERED AND READY" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED,
+		.Supla_event_name =  "ON ZIGBEE STACK STARTED" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS,
+		.Supla_event_name =  "ON EVERY 5 SECONDS" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_30_SECONDS,
+		.Supla_event_name =  "ON EVERY 30 SECONDS" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS,
+		.Supla_event_name =  "ON EVERY 60 SECONDS" },
 
 	{ .Supla_event_id = Supla::ON_LESS,
 		.is_condition = true,

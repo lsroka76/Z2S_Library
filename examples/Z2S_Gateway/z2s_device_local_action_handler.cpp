@@ -4,7 +4,7 @@ NetworkClient Z2S_NetworkClient;
 
 IPAddress Z2S_IPAddress;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 const char* getZ2SDeviceLocalActionHandlerTypeName(
   int16_t channel_number_slot){
@@ -53,6 +53,13 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
       return "Local virtual button";
     break;
 
+
+    case LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS:
+
+      return "Gateway events";
+    break;
+
+
     default:
 
     break;  
@@ -61,7 +68,7 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
   return "Unkown local object!";
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
   int16_t channel_number_slot) {
@@ -82,6 +89,7 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
     case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON:
     case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC:
+    case LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS:
       
       return "No special functions";
     break;
@@ -92,7 +100,32 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
   return "Unknown local object function!";
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
+void initZ2SDeviceGatewayEvents(int16_t channel_number_slot) {
+
+  if (z2s_channels_table[channel_number_slot].local_channel_type != 
+      LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS) {
+    
+    log_e(
+      "Fatal error - channel %u is not LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS!",
+      channel_number_slot);
+    
+    return;
+  }
+  
+  auto Supla_GatewayEvents = new Supla::GatewayEvents(); 
+
+  z2s_channels_table[channel_number_slot].\
+    local_action_handler_data.Supla_element = Supla_GatewayEvents;
+  
+  SuplaDevice.addAction(
+    0x6000, Supla_GatewayEvents, Supla::ON_DEVICE_STATUS_CHANGE, false);
+
+
+      
+}
+
+/*****************************************************************************/
 
 void initZ2SDeviceLocalActionHandler(
   int16_t channel_number_slot)  {
@@ -135,12 +168,12 @@ void initZ2SDeviceLocalActionHandler(
       uint8_t Supla_channel = 
         z2s_channels_table[channel_number_slot].Supla_channel;
       
-      auto Supla_VirtualRelay = 
-        new Supla::Control::VirtualRelay(RELAY_FLAGS); 
+      auto Supla_LocalVirtualRelay = 
+        new Supla::Control::LocalVirtualRelay(RELAY_FLAGS); 
       
-      Supla_VirtualRelay->getChannel()->setChannelNumber(Supla_channel);
-      Supla_VirtualRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
-      Supla_VirtualRelay->setDefaultStateRestore();
+      Supla_LocalVirtualRelay->getChannel()->setChannelNumber(Supla_channel);
+      Supla_LocalVirtualRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      Supla_LocalVirtualRelay->setDefaultStateRestore();
     }
     break;
 
@@ -249,6 +282,54 @@ void initZ2SDeviceLocalActionHandler(
 
 /*****************************************************************************/
 
+bool addZ2SDeviceGatewayEvents(int16_t channel_number_slot) {
+
+  z2s_channels_table[channel_number_slot].valid_record = true;
+
+  z2s_channels_table[channel_number_slot].extended_data_type = 
+    CHANNEL_EXTENDED_DATA_TYPE_NULL;
+
+  z2s_channels_table[channel_number_slot].local_channel_type = 
+    LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS;
+
+  memset(
+    z2s_channels_table[channel_number_slot].ieee_addr, 0, 
+    sizeof(esp_zb_ieee_addr_t));
+  z2s_channels_table[channel_number_slot].short_addr = 0;
+  z2s_channels_table[channel_number_slot].model_id = 
+    Z2S_DEVICE_DESC_LOCAL_ACTION_HANDLER;
+
+  z2s_channels_table[channel_number_slot].endpoint = 0;
+  z2s_channels_table[channel_number_slot].cluster_id = 0;
+
+  z2s_channels_table[channel_number_slot].Supla_channel = 
+    Z2S_findFirstFreeLocalActionHandlerId();
+
+  strcpy(
+    z2s_channels_table[channel_number_slot].Supla_channel_name, 
+    "GATEWAY EVENTS");
+
+  auto Supla_GatewayEvents = new Supla::GatewayEvents(); 
+
+  z2s_channels_table[channel_number_slot].\
+    local_action_handler_data.Supla_element = Supla_GatewayEvents;
+
+  SuplaDevice.addAction(
+    0x6000, Supla_GatewayEvents, Supla::ON_DEVICE_STATUS_CHANGE, false);
+
+  z2s_channels_table[channel_number_slot].Supla_secondary_channel = 0xFF;
+
+  z2s_channels_table[channel_number_slot].Supla_channel_type = 0x0000;
+
+  z2s_channels_table[channel_number_slot].sub_id = 0; 
+  
+  z2s_channels_table[channel_number_slot].Zb_device_id = 0xFF;
+  
+  return Z2S_saveChannelsTable();   
+}
+
+/*****************************************************************************/
+
 bool addZ2SDeviceLocalActionHandler(
   uint8_t local_channel_type, uint32_t local_channel_func, 
   uint8_t logic_operator) {
@@ -327,20 +408,22 @@ bool addZ2SDeviceLocalActionHandler(
       SuplaDevice.saveStateToStorage();
       Supla::Storage::ConfigInstance()->commit();
 
-      auto Supla_VirtualRelay = new Supla::Control::VirtualRelay(RELAY_FLAGS); 
+      auto Supla_LocalVirtualRelay = 
+        new Supla::Control::LocalVirtualRelay(RELAY_FLAGS); 
 
       z2s_channels_table[first_free_slot].Supla_channel = 
-        Supla_VirtualRelay->getChannelNumber();
+        Supla_LocalVirtualRelay->getChannelNumber();
 
       strcpy(z2s_channels_table[first_free_slot].
         Supla_channel_name, "LOCAL VIRTUAL RELAY");
       
-      Supla_VirtualRelay->setInitialCaption(
+      Supla_LocalVirtualRelay->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
       //Supla_VirtualRelay->setDefaultFunction(local_channel_func);
-      Supla_VirtualRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
-      Supla_VirtualRelay->setDefaultStateRestore();
+      Supla_LocalVirtualRelay->setDefaultFunction(
+        SUPLA_CHANNELFNC_POWERSWITCH);
+      Supla_LocalVirtualRelay->setDefaultStateRestore();
     } break;
 
 

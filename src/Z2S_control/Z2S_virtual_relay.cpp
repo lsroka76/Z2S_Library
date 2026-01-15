@@ -22,6 +22,10 @@
 
 #include <supla/time.h>
 
+#include <supla/actions.h>
+#include <supla/events.h>
+
+
 Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function)
   : Relay(-1, true, RELAY_FLAGS ),
@@ -470,6 +474,23 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
       channel.setStateOffline();
   }
 }
+
+void Supla::Control::Z2S_VirtualRelay::handleAction(int event, int action) {
+
+  Supla::Control::Relay::handleAction(event, action);
+
+  switch (action) {
+
+    case Z2S_SUPLA_ACTION_RESEND_RELAY_STATE:
+
+      if (state) 
+        runAction(Supla::ON_TURN_ON);
+      else
+        runAction(Supla::ON_TURN_OFF);
+    break;
+  }
+}
+
 
 bool Supla::Control::Z2S_VirtualRelay::isOn() {
   

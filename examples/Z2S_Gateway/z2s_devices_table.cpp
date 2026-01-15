@@ -82,7 +82,7 @@ uint32_t Z2S_getChannelsTableSize() {
 uint8_t Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot) {
 
   for (uint8_t channels_counter = start_slot; 
-       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) 
+       channels_counter < (Z2S_CHANNELS_MAX_NUMBER - 1); channels_counter++) 
     if (!z2s_channels_table[channels_counter].valid_record)
       return channels_counter;
   return 0xFF;
@@ -352,7 +352,7 @@ void Z2S_fillChannelsTableSlot(
 bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table) {
 
   if ((channel_number_slot >= 0) && 
-      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) && 
+      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER - 1) && 
       z2s_channels_table[channel_number_slot].valid_record) {
 
     if (z2s_channels_table[channel_number_slot].user_data_flags & 
@@ -1742,6 +1742,13 @@ void Z2S_initSuplaChannels() {
       }
     }
   }
+  //tutaj
+  //uint8_t free_slot = Z2S_findFirstFreeChannelsTableSlot();
+  if (z2s_channels_table[GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT].valid_record)
+    initZ2SDeviceGatewayEvents(GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT);
+  else
+    addZ2SDeviceGatewayEvents(GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT);
+
 }
 
 bool checkActionsIndexTablePosition(uint16_t index_position) {
@@ -8833,6 +8840,30 @@ case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
     default: Z2S_addZ2SDevice(
       joined_device, NO_CUSTOM_CMD_SID);
   }
+}
+
+void handleGatewayEvent(int event){
+
+  if (z2s_channels_table[GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT].valid_record) {
+
+    if (z2s_channels_table[GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT].\
+          local_channel_type != LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS) {
+    
+    log_e(
+      "Fatal error - channel %u is not LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS!",
+      GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT);
+    
+    return;
+  }
+  
+  auto Supla_GatewayEvents = reinterpret_cast<Supla::GatewayEvents *>
+    (z2s_channels_table[GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT].\
+      local_action_handler_data.Supla_element);
+
+  if (Supla_GatewayEvents)
+    Supla_GatewayEvents->handleAction(event, 0);
+  } else
+    log_e("Gateway events local channel slot is empty!");
 }
 
 void printSizeOfClasses() {

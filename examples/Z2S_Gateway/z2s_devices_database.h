@@ -2862,7 +2862,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "Zbeacon", .model_name = "TS011F",
     .z2s_device_uid = 12500,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_2uollq9d", .model_name = "TS011F",
@@ -3305,6 +3305,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "SONOFF", .model_name = "MINI-ZB2GS",
+    .z2s_device_uid = 16550,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 1, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 2, Z2S_DEVICE_DESC_RELAY_1 }}},
+
   {	.manufacturer_name = "SONOFF", .model_name = "01MINIZB",
     .z2s_device_uid = 16600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
@@ -3567,7 +3574,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "ADEO", .model_name = "ZBEK-1",
+  {	.manufacturer_name = "Adeo", .model_name = "ZBEK-1",
     .z2s_device_uid = 18950,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
@@ -4495,7 +4502,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB,
     .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "ADEO", .model_name = "ZBEK-12",
+  { .manufacturer_name = "Adeo", .model_name = "ZBEK-12",
     .z2s_device_uid = 30105,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB,
     .z2s_device_endpoints_count = 1},

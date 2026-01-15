@@ -27,6 +27,9 @@
 #include <supla/events.h>
 #include <supla/element_with_channel_actions.h>
 #include <supla/control/action_trigger.h>
+#include <supla/control/virtual_relay.h>
+
+#include "Z2S_custom_actions_events.h"
 
 #define PIN_LOGIC_OPERATOR_NONE       0x00
 #define PIN_LOGIC_OPERATOR_AND        0x01
@@ -109,6 +112,24 @@ class LocalActionVirtualButton : public LocalActionHandler {
 
   uint32_t  _function_flags = 0;
 };
+
+class GatewayEvents: public LocalActionHandler {
+
+  public:
+
+    GatewayEvents() {};
+    virtual ~GatewayEvents() {};
+
+    void onInit();
+    void handleAction(int event, int action);
+    void iterateAlways();
+
+  private:
+
+    uint32_t  cyclic_event_ms = 0;
+    uint32_t  cyclic_event_counter = 0;
+};
+
 namespace Control {
 class LocalActionTrigger: public ActionTrigger, public LocalAction {
 
@@ -118,6 +139,20 @@ class LocalActionTrigger: public ActionTrigger, public LocalAction {
     virtual ~LocalActionTrigger();
     void handleAction(int event, int action) override;
 
+};
+
+class LocalVirtualRelay: public VirtualRelay {
+
+  public:
+
+    LocalVirtualRelay(
+      _supla_int_t functions =
+       (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER));
+
+    virtual ~LocalVirtualRelay();
+    void handleAction(int event, int action) override;
+
+    
 };
 }; //namespace Control
 };  // namespace Supla

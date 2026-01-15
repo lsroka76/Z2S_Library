@@ -8,6 +8,7 @@
 #include <esp_heap_caps.h>
 
 #include <ZigbeeGateway.h>
+#include <Z2S_custom_actions_events.h>
 
 #include <SuplaDevice.h>
 #include <supla/network/esp_wifi.h>
@@ -124,22 +125,27 @@ bool do_once = true;
 void supla_callback_bridge(int event, int action) {
   log_i("event(0x%x), action(0x%x)", event, action);
   switch (action) {
-    case 0x4000: {
+    case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_ON: {
       
       sendIASNotifications = true; 
       return;
     } break;
     
-    case 0x4001: {
+    case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF: {
       
       sendIASNotifications = false; 
       return;
     } break;
 
-    case 0x4010: {
+    case Z2S_SUPLA_ACTION_DEVICE_STATUS_CHANGE: {
 
+      int8_t sd_current_status = SuplaDevice.getCurrentStatus();
+
+      if (sd_current_status == STATUS_REGISTERED_AND_READY)
+        handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);
+  
       if ((!Zigbee.started()) && 
-          (SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY)) {
+          (sd_current_status == STATUS_REGISTERED_AND_READY)) {
   
         log_i("Starting Zigbee subsystem");
     
@@ -150,7 +156,7 @@ void supla_callback_bridge(int event, int action) {
           log_e("Zigbee failed to start! Rebooting...");
           SuplaDevice.scheduleSoftRestart(1000);
         }
-      
+        handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
         /*esp_zb_secur_ic_add(test_device_ieee_address, 
                             ESP_ZB_IC_TYPE_128, 
                             test_device_install_code);*/
@@ -174,7 +180,7 @@ void supla_callback_bridge(int event, int action) {
         return;
       }
       if (Zigbee.started() && 
-         (SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE)) {
+         (sd_current_status == STATUS_CONFIG_MODE)) {
         
         if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_FORCE_CONFIG_ON_START, 1)) {
       	  
@@ -508,8 +514,10 @@ void setup() {
   auto AHwC = new Supla::ActionHandlerWithCallbacks();
   AHwC->setActionHandlerCallback(supla_callback_bridge);
 
-  toggleNotifications->addAction(0x4000, AHwC, Supla::ON_TURN_ON, false);
-  toggleNotifications->addAction(0x4001, AHwC, Supla::ON_TURN_OFF, false);
+  toggleNotifications->addAction(
+    Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_ON, AHwC, Supla::ON_TURN_ON, false);
+  toggleNotifications->addAction(
+    Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF, AHwC, Supla::ON_TURN_OFF, false);
 
   auto buttonCfg = new Supla::Control::Button(CFG_BUTTON_PIN, true, true);
 
@@ -524,7 +532,9 @@ void setup() {
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_5);
   buttonCfg->addAction(Supla::TURN_ON, AHwC, Supla::ON_CLICK_10);
 
-  SuplaDevice.addAction(0x4010, AHwC, Supla::ON_DEVICE_STATUS_CHANGE, false);
+  SuplaDevice.addAction(
+    Z2S_SUPLA_ACTION_DEVICE_STATUS_CHANGE, AHwC, 
+    Supla::ON_DEVICE_STATUS_CHANGE, false);
 
   LittleFS.begin(false);
   listDir(LittleFS,"/",3);

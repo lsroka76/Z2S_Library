@@ -16,20 +16,22 @@
 #include <Z2S_sensor/Z2S_remote_thermometer.h>
 
 
-#define LOCAL_CHANNEL_TYPE_ACTION_HANDLER       0x01
-#define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY        0x02
-#define LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY       0x03
+#define LOCAL_CHANNEL_TYPE_ACTION_HANDLER                 0x01
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY                  0x02
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY                 0x03
 
-#define LOCAL_CHANNEL_TYPE_REMOTE_RELAY         0x10
-#define LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER   0x11
+#define LOCAL_CHANNEL_TYPE_REMOTE_RELAY                   0x10
+#define LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER             0x11
 
-#define LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON       0x20
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON                 0x20
 
-#define LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC         0x30
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC                   0x30
 
-#define REMOTE_ADDRESS_TYPE_LOCAL               0x00
-#define REMOTE_ADDRESS_TYPE_IP4                 0x01
-#define REMOTE_ADDRESS_TYPE_MDNS                0x02
+#define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                 0x80
+
+#define REMOTE_ADDRESS_TYPE_LOCAL                         0x00
+#define REMOTE_ADDRESS_TYPE_IP4                           0x01
+#define REMOTE_ADDRESS_TYPE_MDNS                          0x02
 
 static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
 
@@ -58,6 +60,9 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
   int16_t channel_number_slot);
 
 void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot);
+
+void initZ2SDeviceGatewayEvents(int16_t channel_number_slot);
+bool addZ2SDeviceGatewayEvents(int16_t channel_number_slot);
 
 bool addZ2SDeviceLocalActionHandler(
   uint8_t local_channel_type = LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 
