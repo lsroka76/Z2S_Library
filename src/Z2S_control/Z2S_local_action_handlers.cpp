@@ -274,6 +274,18 @@ void GatewayEvents::handleAction(int event, int action) {
 
       runAction(Supla::ON_DEVICE_STATUS_CHANGE);
     break;
+
+
+    case Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY:
+
+      runAction(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);
+    break;
+
+
+    case Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED:
+
+      runAction(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
+    break;
   }
 }
 
