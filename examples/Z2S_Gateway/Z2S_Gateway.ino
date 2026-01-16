@@ -1106,7 +1106,7 @@ if (Z2S_isGUIStarted())
       
       //rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 128));
       //rgbLed.show();
-      rgbLedWrite(RGB_BUILTIN, 0, 128, 128);  // Green
+      rgbLedWrite(RGB_BUILTIN, 0, 0, 255);  // Blue
 
       Z2S_stopWebGUI();
 

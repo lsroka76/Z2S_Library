@@ -418,7 +418,13 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "START TIMER" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_STOP_TIMER,
-		.Supla_action_name = "STOP TIMER" }
+		.Supla_action_name = "STOP TIMER" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_ON_LED_WHITE,
+		.Supla_action_name = "TURN ON LED (WHITE)" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_LED,
+		.Supla_action_name = "TURN OFF LED" }
 };
 
 static constexpr Supla_event_type_t Supla_events [] PROGMEM = {

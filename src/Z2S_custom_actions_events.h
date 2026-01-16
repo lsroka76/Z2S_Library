@@ -9,6 +9,8 @@
 
 #define Z2S_SUPLA_ACTION_START_TIMER                      0x4020
 #define Z2S_SUPLA_ACTION_STOP_TIMER                       0x4021
+#define Z2S_SUPLA_ACTION_TURN_ON_LED_WHITE                0x4030
+#define Z2S_SUPLA_ACTION_TURN_OFF_LED                     0x4031
 
 #define Z2S_SUPLA_ACTION_OPEN_ZIGBEE_NETWORK              0x4100
 #define Z2S_SUPLA_ACTION_CLOSE_ZIGBEE_NETWORK             0x4101
