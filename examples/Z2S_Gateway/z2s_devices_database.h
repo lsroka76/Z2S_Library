@@ -174,6 +174,7 @@
 #define Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH                  0x4011
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY                          0x4020
+#define Z2S_DEVICE_DESC_TUYA_DP_RELAY                       0x4025
 
 #define Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS                   0x4030
 
@@ -927,6 +928,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DP_RELAY,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS,
     .z2s_device_clusters_count = 1,
@@ -4659,7 +4665,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE284_gyzlwu5q", .model_name = "TS0601",
     .z2s_device_uid = 32700,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "HOBEIAN", .model_name = "ZG-302Z1",
+    .z2s_device_uid = 32800,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DP_RELAY,
+    .z2s_device_endpoints_count = 1},
+
+
   
 //DEVICES_END
 };

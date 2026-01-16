@@ -1575,6 +1575,22 @@ void processTuya8RelaysDataReport(
 
 /*******************************************************************************/
 
+void processTuyaDPRelayDataReport(
+  int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
+  uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_DP_RELAY_STATE_DP, payload_size, payload);
+     
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceVirtualRelay(
+      channel_number_slot, Tuya_read_dp_result.dp_value);
+}
+
+/*******************************************************************************/
+
 void processTuyaPresenceSensorDataReport(
   int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
   uint32_t model_id) {
@@ -2820,6 +2836,7 @@ void processTuyaDataReport(
         channel_number_slot, payload_size, payload, model_id);
     break;
 
+
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
 
     break;
@@ -2828,8 +2845,16 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
 
       processTuyaDINRCBOEMTemp(
-channel_number_slot, payload_size, payload, model_id);
+        channel_number_slot, payload_size, payload, model_id);
     break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
+
+      processTuyaDPRelayDataReport(
+        channel_number_slot, payload_size, payload, model_id);
+    break;
+
 
     default: 
       

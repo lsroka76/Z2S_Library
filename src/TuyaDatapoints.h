@@ -412,6 +412,7 @@
 #define TUYA_DIN_RCBO_EM_LEAKAGE_TEST_DP                            0x2D // 
 #define TUYA_DIN_RCBO_EM_TEMPERATURE_DP                             0x2F //
 
+#define TUYA_DP_RELAY_STATE_DP                                      0x01
 
 
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/

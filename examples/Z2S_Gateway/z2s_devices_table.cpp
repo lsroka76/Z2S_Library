@@ -5093,6 +5093,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_RELAY_1: 
       case Z2S_DEVICE_DESC_LUMI_SWITCH:
       case Z2S_DEVICE_DESC_TUYA_RELAY:
+      case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
       case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
 
         addZ2SDeviceVirtualRelay(
@@ -7521,6 +7522,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
+    case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
       return true;
     default:
       return false;
