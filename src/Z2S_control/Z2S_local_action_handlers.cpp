@@ -296,13 +296,13 @@ void GatewayEvents::handleAction(int event, int action) {
 
       case Z2S_SUPLA_ACTION_TURN_ON_LED_WHITE:
 
-        rgbLedWrite(RGB_BUILTIN, 255, 255, 255);;
+        rgbLedWrite(RGB_BUILTIN, 255, 255, 255);
       break;
 
 
       case Z2S_SUPLA_ACTION_TURN_OFF_LED:
 
-        rgbLedWrite(RGB_BUILTIN, 0, 0, 0);;
+        rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
       break;
 
 
