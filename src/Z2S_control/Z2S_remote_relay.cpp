@@ -19,6 +19,9 @@
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
 
+#include <supla/actions.h>
+#include <supla/events.h>
+
 #include <supla/time.h>
 
 Supla::Control::Z2S_RemoteRelay::Z2S_RemoteRelay(
