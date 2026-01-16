@@ -48,6 +48,7 @@ class Z2S_RemoteRelay : public Relay {
   void turnOn(_supla_int_t duration = 0) override;
   void turnOff(_supla_int_t duration = 0) override;
   void iterateAlways() override;
+  void handleAction(int event, int action) override;
 
   void Z2S_setOnOff(bool on_off_state);
 

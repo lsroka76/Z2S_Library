@@ -23,6 +23,7 @@
 
 #define Z2S_SUPLA_ACTION_RESEND_RELAY_STATE               0x5100
 #define Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED         0x5101
+#define Z2S_SUPLA_ACTION_RESYNC_REMOTE_RELAY              0x5102
 
 #define Z2S_SUPLA_EVENT_BASE                              0x4000
 

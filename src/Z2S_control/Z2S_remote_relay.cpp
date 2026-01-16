@@ -49,9 +49,7 @@ bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
     if(_remote_gateway_ip == 0) {
 
       if (_remote_gateway_mDNS_name)
-        _remote_gateway_ip = MDNS.queryHost(
-          _remote_gateway_mDNS_name, 
-          1000);
+        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name, 1000);
       else
         return false;
 
@@ -60,20 +58,14 @@ bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
         return false;
     }
 
-    if (!Z2S_NetworkClient.connect(
-      _remote_gateway_ip, 
-      REMOTE_RELAY_PORT)) {
+    if (!Z2S_NetworkClient.connect(_remote_gateway_ip, REMOTE_RELAY_PORT)) {
 
       if (_remote_gateway_mDNS_name)
-        _remote_gateway_ip = MDNS.queryHost(
-          _remote_gateway_mDNS_name, 
-          1000);
+        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name, 1000);
       else
         return false;
 
-      if (!Z2S_NetworkClient.connect(
-        _remote_gateway_ip, 
-        REMOTE_RELAY_PORT))
+      if (!Z2S_NetworkClient.connect(_remote_gateway_ip, REMOTE_RELAY_PORT))
       return false;
     } else   
       return true;
@@ -95,8 +87,7 @@ void Supla::Control::Z2S_RemoteRelay::postponeTurnOnOff(bool pending_state) {
 void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
   
   SUPLA_LOG_INFO(
-      "Relay[%d] turn ON (duration %d ms)",
-      channel.getChannelNumber(),
+      "Relay[%d] turn ON (duration %d ms)",channel.getChannelNumber(),
       duration);
 
   durationMs = duration;
@@ -119,10 +110,9 @@ void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
 
   if (connectRemoteGateway()) {
 
-    Z2S_NetworkClient.printf("Z2SCMD%02u%03u%08ld\n", 
-                            REMOTE_CMD_TURN_ON, 
-                            _remote_Supla_channel,
-                            -12567);
+    Z2S_NetworkClient.printf(
+      "Z2SCMD%02u%03u%08ld\n", REMOTE_CMD_TURN_ON, _remote_Supla_channel,
+      -12567);
     
     String response = Z2S_NetworkClient.readStringUntil('\n');
     if (response == "OK") {
@@ -144,8 +134,7 @@ void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
 void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
   
   SUPLA_LOG_INFO(
-      "Relay[%d] turn OFF (duration %d ms)",
-      channel.getChannelNumber(),
+      "Relay[%d] turn OFF (duration %d ms)", channel.getChannelNumber(),
       duration);
   
   durationMs = duration;
@@ -160,10 +149,9 @@ void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
 
   if (connectRemoteGateway()) {
 
-    Z2S_NetworkClient.printf("Z2SCMD%02u%03u%08ld\n", 
-                            REMOTE_CMD_TURN_OFF, 
-                            _remote_Supla_channel,
-                            0xAB);
+    Z2S_NetworkClient.printf(
+      "Z2SCMD%02u%03u%08ld\n", REMOTE_CMD_TURN_OFF, _remote_Supla_channel,
+      0xAB);
     
     String response = Z2S_NetworkClient.readStringUntil('\n');
     
@@ -209,6 +197,39 @@ void Supla::Control::Z2S_RemoteRelay::iterateAlways() {
     else 
       turnOff();
     }
+}
+
+void Supla::Control::Z2S_RemoteRelay::handleAction(int event, int action)  {
+
+  Supla::Control::Relay::handleAction(event, action);
+
+  log_i("event %u, action %u", event, action);
+
+  switch (action) {
+
+    case Z2S_SUPLA_ACTION_RESEND_RELAY_STATE:
+
+      if (state) 
+        runAction(Supla::ON_TURN_ON);
+      else
+        runAction(Supla::ON_TURN_OFF);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_RESYNC_REMOTE_RELAY:
+
+      if (state) 
+        turnOn();
+      else
+        turnOff();
+    break;
+
+
+    case Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED:
+
+      channel.setStateOffline();
+    break;
+  }  
 }
 
 bool Supla::Control::Z2S_RemoteRelay::isOn() {
@@ -263,7 +284,8 @@ void Supla::Control::Z2S_RemoteRelay::Z2S_setOnOff(bool on_off_state) {
   Supla::Storage::ScheduleSave(5000);
 }
 
-/*void Supla::Control::Z2S_RemoteRelay::setKeepAliveSecs(uint32_t keep_alive_secs) {
+/*void Supla::Control::Z2S_RemoteRelay::setKeepAliveSecs(
+  uint32_t keep_alive_secs) {
 
   _keep_alive_ms = keep_alive_secs * 1000;
   if (_keep_alive_ms == 0)
