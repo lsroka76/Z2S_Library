@@ -25,6 +25,8 @@
 #include <supla/control/relay.h>
 #include "ZigbeeGateway.h"
 
+#include "Z2S_custom_actions_events.h"
+
 #define REMOTE_CMD_TURN_OFF       0x00
 #define REMOTE_CMD_TURN_ON        0x01
 
