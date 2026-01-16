@@ -981,9 +981,12 @@ class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
 
       _srpc->sendPendingCalCfgResult(-1, SUPLA_CALCFG_RESULT_TRUE, -1,
           sizeof(result), &result);
-      _srpc->clearPendingCalCfgResult(-1);
-      linkStartTimeMs = 0;
-      _state = 1;
+      if ((pairingResult != SUPLA_CALCFG_PAIRINGRESULT_PROCEDURE_STARTED) &&
+          (pairingResult != SUPLA_CALCFG_PAIRINGRESULT_ONGOING)) {
+        _srpc->clearPendingCalCfgResult(-1);
+        linkStartTimeMs = 0;
+        _state = 1;
+      }
     }
   }
 
