@@ -37,6 +37,8 @@ extern uint8_t _z2s_security_level;
 #define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 24
 #define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 6
 
+static volatile bool GUIstarted   = false;
+
 //UI handles
 uint16_t gateway_general_info;
 uint16_t gateway_memory_info;
@@ -4486,11 +4488,14 @@ void Z2S_startWebGUIConfig() {
 	ESPUI.updateNumber(gui_start_delay_number, _gui_start_delay);
 
 	ESPUI.begin("ZIGBEE <=> SUPLA CONFIG PAGE");
+	GUIstarted = true;
 }
 
 void Z2S_startWebGUI() {
 
   ESPUI.begin("ZIGBEE <=> SUPLA CONTROL PANEL");
+	GUIstarted = true;
+	handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_STARTED);
 
 }
 
@@ -4499,6 +4504,11 @@ void Z2S_stopWebGUI() {
 	if (ESPUI.WebServer())
 		ESPUI.WebServer()->end();
 	current_Tuya_payload_label = 0;
+}
+
+bool Z2S_isGUIStarted() {
+
+	return GUIstarted;
 }
 
 void onUpdateBegin(const UpdateType type, int &result) {

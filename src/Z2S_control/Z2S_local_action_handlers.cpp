@@ -261,6 +261,15 @@ void GatewayEvents::onInit() {
 
 /*****************************************************************************/
 
+void GatewayEvents::setActionHandlerCallback(
+  _actionhandler_callback actionhandler_callback) {
+
+    this->actionhandler_callback = actionhandler_callback;
+}
+
+
+/*****************************************************************************/
+
 void GatewayEvents::handleAction(int event, int action) {
 
   log_i(
@@ -288,7 +297,36 @@ void GatewayEvents::handleAction(int event, int action) {
       case Supla::SOFT_RESTART:
 
         SuplaDevice.scheduleSoftRestart(0);
-    }
+      break;
+
+
+      case Supla::ENTER_CONFIG_MODE:
+
+        SuplaDevice.enterConfigMode();
+      break;
+
+
+      case Z2S_SUPLA_ACTION_OPEN_ZIGBEE_NETWORK:
+
+        if (!Zigbee.isNetworkOpen())
+          Zigbee.openNetwork(180);
+      break;
+
+
+      case Z2S_SUPLA_ACTION_CLOSE_ZIGBEE_NETWORK:
+
+        if (Zigbee.isNetworkOpen())
+          Zigbee.openNetwork(0);
+      break;
+
+
+      case Z2S_SUPLA_ACTION_START_GUI_MINIMAL:
+      case Z2S_SUPLA_ACTION_START_GUI_STANDARD:
+
+        if (actionhandler_callback != nullptr)  
+          actionhandler_callback(event, action);  
+      break;
+    } 
   return;
   }
   
@@ -296,26 +334,15 @@ void GatewayEvents::handleAction(int event, int action) {
 
 
     case Supla::ON_DEVICE_STATUS_CHANGE:
-
-      runAction(Supla::ON_DEVICE_STATUS_CHANGE);
-    break;
-
-
     case Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED:
-
-      runAction(Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED);
-    break;
-  
-
     case Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY:
-
-      runAction(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);
-    break;
-
-
     case Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED:
+    case Z2S_SUPLA_EVENT_ON_ZIGBEE_OPEN_NETWORK:
+    case Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK:
+    case Z2S_SUPLA_EVENT_ON_GUI_STARTED:
+    case Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED:
 
-      runAction(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
+      runAction(event);
     break;
   }
 }
@@ -408,6 +435,12 @@ void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
         runAction(Supla::ON_TURN_ON);
       else
         runAction(Supla::ON_TURN_OFF);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED:
+
+      channel.setStateOffline();
     break;
   }
 }

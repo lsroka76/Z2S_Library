@@ -27,7 +27,6 @@
 #include <supla/storage/storage.h>
 
 
-
 #define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  //32
 #define Z2S_CHANNELS_MAX_NUMBER                                 0x80  //128
 #define Z2S_ACTIONS_MAX_NUMBER                                  0x100 //256
@@ -85,6 +84,8 @@
 #define CHANNEL_EXTENDED_DATA_TYPE_NULL                         0x00
 
 #define GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT                       0x7F
+
+typedef void (*_actionhandler_callback)(int event, int action);
 
 typedef struct z2s_legacy_device_params_s {
 
@@ -737,6 +738,7 @@ void onTuyaCustomClusterReceive(
   uint8_t *payload_data));
 
 void handleGatewayEvent(int event);
+void setGatewayEventHandler(_actionhandler_callback actionhandler_callback);
 
 void printSizeOfClasses();
 void printTaskInfo(bool toTelnet = false);

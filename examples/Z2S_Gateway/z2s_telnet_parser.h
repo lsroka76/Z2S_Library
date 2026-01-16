@@ -13,7 +13,7 @@
 #include "z2s_web_gui.h"
 
 
-extern bool GUIstarted;
+//extern bool GUIstarted;
 
 void Z2S_onTelnetCmd(
   char *cmd, uint8_t params_number, char **param);

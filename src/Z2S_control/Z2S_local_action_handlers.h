@@ -18,6 +18,7 @@
 #define LOCAL_ACTION_HANDLERS_H
 
 #include <Arduino.h>
+#include <ZigbeeGateway.h>
 #include <SuplaDevice.h>
 //#include <supla/storage/storage.h>
 #include <supla/actions.h>
@@ -48,7 +49,7 @@
 #define LAVB_ROTATE_LEFT_FUNC         0x05
 
 
-//typedef void (*_actionhandler_callback)(int event, int action);
+typedef void (*_actionhandler_callback)(int event, int action);
 
 namespace Supla {
 
@@ -123,12 +124,15 @@ class GatewayEvents: public LocalActionHandler {
     void onInit();
     void handleAction(int event, int action);
     void iterateAlways();
+    void setActionHandlerCallback(_actionhandler_callback actionhandler_callback);
 
-  private:
+  protected:
 
     bool      cyclic_event_enabled = false;
     uint32_t  cyclic_event_ms = 0;
     uint32_t  cyclic_event_counter = 0;
+    
+    _actionhandler_callback actionhandler_callback = nullptr;
 };
 
 namespace Control {

@@ -623,14 +623,14 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   } else
   if (strcmp(cmd, "START-GUI") == 0) {
 
-    if (GUIstarted)
+    if (Z2S_isGUIStarted())
       telnet.printf("GUI already started!");
     else {
 
       gui_modes_t gui_mode = minimal_gui_mode;
       uint32_t gui_custom_flags = 0x0000;
 
-      GUIstarted = true;
+      //GUIstarted = true;
 
       if (params_number > 1)
         gui_custom_flags = strtoul(*(param + 1), nullptr, 0);

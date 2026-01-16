@@ -399,6 +399,21 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_RESEND_RELAY_STATE,
 		.Supla_action_name = "RESEND RELAY STATE" },
 
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED,
+		.Supla_action_name = "DISABLE RELAY" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_OPEN_ZIGBEE_NETWORK,
+		.Supla_action_name = "START ZIGBEE PAIRING" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CLOSE_ZIGBEE_NETWORK,
+		.Supla_action_name = "CLOSE ZIGBEE PAIRING" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_START_GUI_MINIMAL,
+		.Supla_action_name = "START GUI (MINIMAL)" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_START_GUI_STANDARD,
+		.Supla_action_name = "START GUI (STANDARD)" },
+	
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_START_TIMER,
 		.Supla_action_name = "START TIMER" },
 
@@ -473,6 +488,15 @@ static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED,
 		.Supla_event_name =  "ON ZIGBEE STACK STARTED" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_ZIGBEE_OPEN_NETWORK,
+		.Supla_event_name =  "ON ZIGBEE NETWORK OPEN" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK,
+		.Supla_event_name =  "ON ZIGBEE NETWORK CLOSE" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_GUI_STARTED,
+		.Supla_event_name =  "ON GUI STARTED" },
 
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS,
 		.Supla_event_name =  "ON EVERY 5 SECONDS" },

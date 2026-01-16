@@ -270,7 +270,9 @@ void ZigbeeCore::setRebootOpenNetwork(uint8_t time) {
 void ZigbeeCore::openNetwork(uint8_t time) {
   if (started()) {
     log_v("Opening network for joining for %d seconds", time);
+    esp_zb_lock_acquire(portMAX_DELAY);
     esp_zb_bdb_open_network(time);
+    esp_zb_lock_release();
   }
 }
 

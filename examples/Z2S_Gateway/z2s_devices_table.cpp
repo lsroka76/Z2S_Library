@@ -8842,6 +8842,8 @@ case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
   }
 }
 
+/*****************************************************************************/
+
 void handleGatewayEvent(int event){
 
   if (z2s_channels_table[GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT].valid_record) {
@@ -8865,6 +8867,33 @@ void handleGatewayEvent(int event){
   } else
     log_e("Gateway events local channel slot is empty!");
 }
+
+
+void setGatewayEventHandler(_actionhandler_callback actionhandler_callback) {
+
+  if (z2s_channels_table[GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT].valid_record) {
+
+    if (z2s_channels_table[GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT].\
+          local_channel_type != LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS) {
+    
+    log_e(
+      "Fatal error - channel %u is not LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS!",
+      GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT);
+    
+    return;
+  }
+  
+  auto Supla_GatewayEvents = reinterpret_cast<Supla::GatewayEvents *>
+    (z2s_channels_table[GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT].\
+      local_action_handler_data.Supla_element);
+
+  if (Supla_GatewayEvents)
+    Supla_GatewayEvents->setActionHandlerCallback(actionhandler_callback);
+  } else
+    log_e("Gateway events local channel slot is empty!");
+}
+
+/*****************************************************************************/
 
 void printSizeOfClasses() {
 

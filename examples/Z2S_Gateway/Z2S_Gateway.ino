@@ -107,8 +107,8 @@ uint32_t _init_devices_ms   = 0;
 
 uint32_t _time_cluster_last_refresh_ms = 0;
 
-bool GUIstarted   = false;
-bool GUIdisabled  = false;
+//bool GUIstarted   = false;
+//bool GUIdisabled  = false;
 
 uint8_t  _enable_gui_on_start  = 1;
 uint8_t	_force_config_on_start = 0;
@@ -122,8 +122,25 @@ bool sendIASNotifications = false;
 
 bool do_once = true;
 
+void initGUI(gui_modes_t mode = minimal_gui_mode) {
+
+  log_i("GUIstarted = %s", Z2S_isGUIStarted() ? "YES" : "NO");
+      
+  if (!Z2S_isGUIStarted()) {
+    if (Supla::Network::IsReady()) {
+        
+      Z2S_buildWebGUI(mode);
+      Z2S_startWebGUI();
+      Z2S_startUpdateServer();
+      onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
+    }
+  }
+}
+
 void supla_callback_bridge(int event, int action) {
+
   log_i("event(0x%x), action(0x%x)", event, action);
+  
   switch (action) {
     case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_ON: {
       
@@ -134,6 +151,19 @@ void supla_callback_bridge(int event, int action) {
     case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF: {
       
       sendIASNotifications = false; 
+      return;
+    } break;
+
+
+    case Z2S_SUPLA_ACTION_START_GUI_MINIMAL: {
+
+      initGUI();
+      return;
+    } break;
+
+    case Z2S_SUPLA_ACTION_START_GUI_STANDARD: {
+
+      initGUI(standard_gui_mode);
       return;
     } break;
 
@@ -163,13 +193,7 @@ void supla_callback_bridge(int event, int action) {
           SuplaDevice.scheduleSoftRestart(1000);
         }
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
-        /*esp_zb_secur_ic_add(test_device_ieee_address, 
-                            ESP_ZB_IC_TYPE_128, 
-                            test_device_install_code);*/
-
-        /*esp_zb_secur_ic_add(test_device_ieee_address_2, 
-                            ESP_ZB_IC_TYPE_128, 
-                            test_device_install_code);*/
+        
         refresh_time = 0;
         _init_devices_ms = millis();
         
@@ -188,7 +212,8 @@ void supla_callback_bridge(int event, int action) {
       if (Zigbee.started() && 
          (sd_current_status == STATUS_CONFIG_MODE)) {
         
-        if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_FORCE_CONFIG_ON_START, 1)) {
+        if (Supla::Storage::ConfigInstance()->setUInt8(
+              Z2S_FORCE_CONFIG_ON_START, 1)) {
       	  
           log_i("Supla config mode detected (Zigbee stack active) - "
                 "setting Z2S_FORCE_CONFIG_ON_START flag and restarting!");
@@ -209,38 +234,14 @@ void supla_callback_bridge(int event, int action) {
     case Supla::ON_EVENT_1:
     case Supla::ON_CLICK_1: 
 
-      Zigbee.isNetworkOpen() ? Zigbee.openNetwork(0) : Zigbee.openNetwork(180); break;
+      Zigbee.isNetworkOpen() ? Zigbee.openNetwork(0) : Zigbee.openNetwork(180); 
+    break;
 
 
     case Supla::ON_EVENT_2:
     case Supla::ON_CLICK_5: {
 
-      log_i("GUIstarted = %s", GUIstarted ? "YES" : "NO");
-      
-      if (!GUIstarted) {
-        if (Supla::Network::IsReady()) {
-          
-          GUIstarted = true;
-          Z2S_buildWebGUI(minimal_gui_mode);
-          Z2S_startWebGUI();
-          Z2S_startUpdateServer();
-          onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
-        }
-      } else {
-        
-        if (GUIdisabled) {
-          
-          GUIdisabled = false;
-          log_i("restarting WebGUI");
-          Z2S_startWebGUI();
-        }
-        else {
-
-          GUIdisabled = true;
-          log_i("stopping WebGUI");
-          Z2S_stopWebGUI();
-        }
-      }
+      initGUI();
     } break; 
   }
 }
@@ -254,14 +255,15 @@ void Z2S_onOpenNetwork(uint8_t permit_duration) {
 
     rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
     GUI_onZigbeeOpenNetwork(true);
+    handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_OPEN_NETWORK);
 
-    if (zpm) {
+    /*if (zpm) {
 
       zpm->setSrpc(SuplaDevice.getSrpcLayer());
 
       zpm->notifySrpcAboutParingEnd(
         SUPLA_CALCFG_PAIRINGRESULT_ONGOING, nullptr);
-    }
+    }*/
   }
   else {
     
@@ -269,15 +271,15 @@ void Z2S_onOpenNetwork(uint8_t permit_duration) {
 
     rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
     GUI_onZigbeeOpenNetwork(false);
+    handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
 
-    if (zpm) {
+    /*if (zpm) {
 
       zpm->setSrpc(SuplaDevice.getSrpcLayer());
       
       zpm->notifySrpcAboutParingEnd(
         SUPLA_CALCFG_PAIRINGRESULT_NO_NEW_DEVICE_FOUND, nullptr);
-    }
-    
+    }*/
   }
 }
 
@@ -600,6 +602,9 @@ void setup() {
     Z2S_rebuildSuplaChannels();
   }
 
+  setGatewayEventHandler(supla_callback_bridge);
+  handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
+  handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED);
 
   /*z2s_channel_action_t test_action;
 
@@ -787,8 +792,9 @@ void loop() {
     SuplaDevice.enterConfigMode();
   }
 
-  if ((!GUIstarted) && SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE) {
-    GUIstarted = true;
+  if ((!Z2S_isGUIStarted()) && 
+      SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE) {
+    //GUIstarted = true;
     Z2S_startWebGUIConfig();
     Z2S_startUpdateServer();
   } 
@@ -829,12 +835,12 @@ void loop() {
     }
   }*/
 
-  if ((!GUIstarted) && 
+  if ((!Z2S_isGUIStarted()) && 
       (_enable_gui_on_start != no_gui_mode) && 
       Zigbee.started() && 
       (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {
 
-    GUIstarted = true;
+    //GUIstarted = true;
     Z2S_buildWebGUI((gui_modes_t)_enable_gui_on_start);  
     Z2S_startWebGUI();
     Z2S_startUpdateServer();
@@ -916,7 +922,7 @@ if (client2 && client2.connected()) {
      client2.stop();
    }
 
-if (GUIstarted)
+if (Z2S_isGUIStarted())
       Z2S_loopWebGUI();
 
   
@@ -964,7 +970,7 @@ if (GUIstarted)
           time_status_attribute, utc_time_attribute, local_time_attribute);
     
 
-    if (GUIstarted)
+    if (Z2S_isGUIStarted())
       Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
@@ -1103,6 +1109,11 @@ if (GUIstarted)
       rgbLedWrite(RGB_BUILTIN, 0, 128, 128);  // Green
 
       Z2S_stopWebGUI();
+
+      if (zpm->getState() == 2)
+        zpm->notifySrpcAboutParingEnd(
+        SUPLA_CALCFG_PAIRINGRESULT_ONGOING, nullptr);
+
       //zbGateway.zbPrintDeviceDiscovery(joined_device); 
 
       //do some Tuya vodoo - just in case Tuya device is paired

@@ -35,7 +35,7 @@ class ActionHandlerWithCallbacks : public ActionHandler, public Element {
     ActionHandlerWithCallbacks();
     virtual ~ActionHandlerWithCallbacks();
     void handleAction(int event, int action);
-    void  setActionHandlerCallback(_actionhandler_callback actionhandler_callback);
+    void setActionHandlerCallback(_actionhandler_callback actionhandler_callback);
     //void iterateAlways();
   protected:
     _actionhandler_callback actionhandler_callback = nullptr;
