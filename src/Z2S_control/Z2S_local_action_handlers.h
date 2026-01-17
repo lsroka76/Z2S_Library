@@ -126,11 +126,17 @@ class GatewayEvents: public LocalActionHandler {
     void iterateAlways();
     void setActionHandlerCallback(_actionhandler_callback actionhandler_callback);
 
+    void disableActions() {
+
+      _disable_actions = true;
+    }
+
   protected:
 
-    bool      cyclic_event_enabled = false;
-    uint32_t  cyclic_event_ms = 0;
-    uint32_t  cyclic_event_counter = 0;
+    bool      _disable_actions = false;
+    bool      _cyclic_event_enabled = false;
+    uint32_t  _cyclic_event_ms = 0;
+    uint32_t  _cyclic_event_counter = 0;
     
     _actionhandler_callback actionhandler_callback = nullptr;
 };

@@ -256,7 +256,7 @@ void LocalActionVirtualButton::handleAction(int event, int action) {
 
 void GatewayEvents::onInit() {
 
-  cyclic_event_ms = millis();
+  _cyclic_event_ms = millis();
 }
 
 /*****************************************************************************/
@@ -276,21 +276,24 @@ void GatewayEvents::handleAction(int event, int action) {
     "&&&&&&&&&&&&&&&&&&&&&&&&&&"
     "event %u, action %u", event, action);
 
+  if (_disable_actions)
+    return;
+
   if (action) {
 
     switch (action) {
 
       case Z2S_SUPLA_ACTION_START_TIMER: {
 
-        cyclic_event_enabled = true;
-        cyclic_event_ms = millis();
-        cyclic_event_counter = 0;
+        _cyclic_event_enabled = true;
+        _cyclic_event_ms = millis();
+        _cyclic_event_counter = 0;
       } break;
 
 
       case Z2S_SUPLA_ACTION_STOP_TIMER:
 
-        cyclic_event_enabled = false;
+        _cyclic_event_enabled = false;
       break;
 
 
@@ -353,7 +356,7 @@ void GatewayEvents::handleAction(int event, int action) {
     case Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK:
     case Z2S_SUPLA_EVENT_ON_GUI_STARTED:
     case Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED:
-
+      
       runAction(event);
     break;
   }
@@ -365,26 +368,26 @@ void GatewayEvents::iterateAlways() {
 
   uint32_t millis_ms = millis();
 
-  if (!cyclic_event_enabled)
+  if (!_cyclic_event_enabled)
     return;
 
-  if (millis_ms - cyclic_event_ms < 5000)
+  if (millis_ms - _cyclic_event_ms < 5000)
     return;
 
-  cyclic_event_ms = millis_ms;
+  _cyclic_event_ms = millis_ms;
 
-  cyclic_event_counter = (cyclic_event_counter + 1) % 17280; //24H
+  _cyclic_event_counter = (_cyclic_event_counter + 1) % 17280; //24H
 
-  if ((cyclic_event_counter % 1) == 0)
+  if ((_cyclic_event_counter % 1) == 0)
     runAction(Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS);
 
-  if ((cyclic_event_counter % 6) == 0)
+  if ((_cyclic_event_counter % 6) == 0)
     runAction(Z2S_SUPLA_EVENT_ON_EVERY_30_SECONDS);
 
-  if ((cyclic_event_counter % 12) == 0)
+  if ((_cyclic_event_counter % 12) == 0)
     runAction(Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS);
 
-  if (cyclic_event_counter == 0)
+  if (_cyclic_event_counter == 0)
     runAction(Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS);
 }
 

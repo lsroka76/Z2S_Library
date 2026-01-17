@@ -26,9 +26,9 @@ extern ZigbeeGateway zbGateway;
 
 extern bool force_leave_global_flag;
 
-extern uint8_t  _enable_gui_on_start;
+extern int8_t  _enable_gui_on_start;
 extern uint8_t	_force_config_on_start;
-extern uint32_t _gui_start_delay;
+extern int32_t _gui_start_delay;
 extern uint8_t _rebuild_Supla_channels_on_start;
 extern uint8_t _use_new_at_model;
 
@@ -4908,7 +4908,7 @@ void selectGuiModeCallback(Control *sender, int type) {
 			return;
 	} else {
 
-		if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_ENABLE_GUI_ON_START, 
+		if (Supla::Storage::ConfigInstance()->setInt8(Z2S_ENABLE_GUI_ON_START_V2, 
 					sender->value.toInt()))
 			Supla::Storage::ConfigInstance()->commit();
 	}
@@ -7109,7 +7109,7 @@ void gatewayCallback(Control *sender, int type, void *param) {
 
 		case GUI_CB_ENABLE_GUI_FLAG: { 
 
-			if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_ENABLE_GUI_ON_START, 
+			if (Supla::Storage::ConfigInstance()->setInt8(Z2S_ENABLE_GUI_ON_START_V2, 
 					ESPUI.getControl(enable_gui_switcher)->value.toInt()))
       	Supla::Storage::ConfigInstance()->commit();
 		} break;
@@ -7125,7 +7125,7 @@ void gatewayCallback(Control *sender, int type, void *param) {
 
 		case GUI_CB_GUI_DELAY_FLAG: {
 
-			if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_GUI_ON_START_DELAY, 
+			if (Supla::Storage::ConfigInstance()->setInt32(Z2S_GUI_ON_START_DELAY_V2, 
 					ESPUI.getControl(gui_start_delay_number)->value.toInt()))
       	Supla::Storage::ConfigInstance()->commit();
 		} break;

@@ -25,6 +25,16 @@
 #include <supla/control/hvac_base.h>
 #include <supla/device/status_led.h>
 
+#include <supla/network/esp_web_server.h>
+#include <supla/network/html/device_info.h>
+#include <supla/network/html/protocol_parameters.h>
+#include <supla/network/html/status_led_parameters.h>
+#include <supla/network/html/wifi_parameters.h>
+#include <supla/network/html/button_update.h>
+#include <supla/network/html/custom_parameter.h>
+#include <supla/network/html/custom_text_parameter.h>
+#include <supla/network/html/select_input_parameter.h>
+
 #include <Z2S_control/action_handler_with_callbacks.h>
 #include <Z2S_control/Z2S_remote_relay.h>
 
@@ -34,6 +44,7 @@
 #include "z2s_version_info.h"
 #include "priv_auth_data.h"
 #include "z2s_web_gui.h"
+#include "web_gui_templates.h"
 
 #ifdef USE_TELNET_CONSOLE
 
@@ -95,6 +106,8 @@ Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi;
 Supla::LittleFsConfig     configSupla(4096);
 
+Supla::EspWebServer *suplaServer;
+
 ZbPairingManager *zpm = nullptr;
 
 constexpr uint8_t LED_PIN   = 8;
@@ -107,20 +120,22 @@ uint32_t _init_devices_ms   = 0;
 
 uint32_t _time_cluster_last_refresh_ms = 0;
 
-//bool GUIstarted   = false;
-//bool GUIdisabled  = false;
 
-uint8_t  _enable_gui_on_start  = 1;
+int8_t  _enable_gui_on_start  = 1;
 uint8_t	_force_config_on_start = 0;
 uint8_t _rebuild_Supla_channels_on_start = 0;
 uint8_t _use_new_at_model = 1;
-uint32_t _gui_start_delay      = 0;
+int32_t _gui_start_delay      = 0;
 
 uint8_t _z2s_security_level    = 0;
 
 bool sendIASNotifications = false;
 
 bool do_once = true;
+
+bool _restart_scheduled = false;
+
+//const static char PARAM_CMD_SELECT_GUI_MODE[] = "selectGUI";
 
 void initGUI(gui_modes_t mode = minimal_gui_mode) {
 
@@ -169,6 +184,9 @@ void supla_callback_bridge(int event, int action) {
 
     case Z2S_SUPLA_ACTION_DEVICE_STATUS_CHANGE: {
 
+      if (_restart_scheduled)
+        return;
+
       int8_t sd_current_status = SuplaDevice.getCurrentStatus();
 
       if (sd_current_status == STATUS_INITIALIZED) {
@@ -190,6 +208,9 @@ void supla_callback_bridge(int event, int action) {
         if (!Zigbee.begin(ZIGBEE_COORDINATOR)) {
           
           log_e("Zigbee failed to start! Rebooting...");
+
+          disableGatewayActions();
+          _restart_scheduled = true;
           SuplaDevice.scheduleSoftRestart(1000);
         }
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
@@ -209,21 +230,31 @@ void supla_callback_bridge(int event, int action) {
 
         return;
       }
-      if (Zigbee.started() && 
-         (sd_current_status == STATUS_CONFIG_MODE)) {
+      if (sd_current_status == STATUS_CONFIG_MODE) {
+
+        if (Zigbee.started()) {
         
-        if (Supla::Storage::ConfigInstance()->setUInt8(
-              Z2S_FORCE_CONFIG_ON_START, 1)) {
+          if (Supla::Storage::ConfigInstance()->setUInt8(
+                Z2S_FORCE_CONFIG_ON_START, 1)) {
       	  
-          log_i("Supla config mode detected (Zigbee stack active) - "
-                "setting Z2S_FORCE_CONFIG_ON_START flag and restarting!");
-          Supla::Storage::ConfigInstance()->commit();
-          SuplaDevice.scheduleSoftRestart();
-        }
-        else
-          log_e("Supla config mode detected (Zigbee stack active) - "
+            log_i("Supla config mode detected (Zigbee stack active) - "
+                  "setting Z2S_FORCE_CONFIG_ON_START flag and restarting!");
+            
+            Supla::Storage::ConfigInstance()->commit();
+
+            disableGatewayActions();
+            _restart_scheduled = true;
+            SuplaDevice.scheduleSoftRestart(1000);
+          } else
+            log_e("Supla config mode detected (Zigbee stack active) - "
                 "setting Z2S_FORCE_CONFIG_ON_START flag FAILED!");
-        return;  
+          return;
+        } 
+        
+        if (suplaServer == nullptr) {
+
+          
+        }
       }
     } break;
   }
@@ -653,13 +684,13 @@ void setup() {
   //Disable pairing after boot 1.2.2-15/01/26
   Zigbee.setRebootOpenNetwork(0);
 
-  if (Supla::Storage::ConfigInstance()->getUInt8(
-    Z2S_ENABLE_GUI_ON_START, &_enable_gui_on_start)) {
+  if (Supla::Storage::ConfigInstance()->getInt8(
+    Z2S_ENABLE_GUI_ON_START_V2, &_enable_gui_on_start)) {
 
-    log_i("Z2S_ENABLE_GUI_ON_START = %d", _enable_gui_on_start);
+    log_i("Z2S_ENABLE_GUI_ON_START_V2 = %i", _enable_gui_on_start);
   } else {
 
-    log_i("Z2S_ENABLE_GUI_ON_START not configured - turning on");
+    log_i("Z2S_ENABLE_GUI_ON_START_V2 not configured - turning on");
     _enable_gui_on_start = 1;
   }
   
@@ -674,14 +705,14 @@ void setup() {
     _force_config_on_start = 0;
   }
 
-  if (Supla::Storage::ConfigInstance()->getUInt32(
-    Z2S_GUI_ON_START_DELAY, &_gui_start_delay)) {
+  if (Supla::Storage::ConfigInstance()->getInt32(
+    Z2S_GUI_ON_START_DELAY_V2, &_gui_start_delay)) {
 
-    log_i("Z2S_GUI_ON_START_DELAY = %d s", _gui_start_delay);
+    log_i("Z2S_GUI_ON_START_DELAY_V2 = %i s", _gui_start_delay);
   } else {
 
-    log_i("Z2S_GUI_ON_START_DELAY not configured - setting to 0 s");
-    _gui_start_delay = 0;
+    log_i("Z2S_GUI_ON_START_DELAY_V2 not configured - setting to 10 s");
+    _gui_start_delay = 10;
   }
 
   //GatewayMDNSLocalName = "Z2S_gateway"
@@ -733,6 +764,35 @@ void setup() {
   SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
   //SuplaDevice.allowWorkInOfflineMode(2);
   SuplaDevice.setInitialMode(Supla::InitialMode::StartInCfgMode);
+
+  if (_force_config_on_start) {
+
+    SuplaDevice.setCustomHostnamePrefix("SUPLA-ZIGBEE-GATEWAY");
+
+    suplaServer = new Supla::EspWebServer;
+    new Supla::Html::DeviceInfo(&SuplaDevice);
+    new Supla::Html::WifiParameters;
+    new Supla::Html::ProtocolParameters;
+    new Supla::Html::StatusLedParameters;
+    new Supla::Html::ButtonUpdate(suplaServer);
+
+    auto selectGUIMode = new Supla::Html::SelectInputParameter(
+      Z2S_ENABLE_GUI_ON_START_V2, "SELECT GUI START MODE");
+
+    selectGUIMode->setBaseTypeBitCount(8);  
+
+    for (int8_t modes_counter = no_gui_mode; 
+			 modes_counter < gui_modes_number; modes_counter++) {
+
+      selectGUIMode->registerValue(
+        GUI_MODE_OPTIONS[modes_counter], modes_counter);
+    }
+
+    auto inputGUIDelay = new Supla::Html::CustomParameter(
+      Z2S_GUI_ON_START_DELAY_V2, " GUI START DELAY (S)", 30);
+
+  }
+
   SuplaDevice.begin(28);      
   
   refresh_time = millis();
@@ -792,12 +852,12 @@ void loop() {
     SuplaDevice.enterConfigMode();
   }
 
-  if ((!Z2S_isGUIStarted()) && 
+  /*if ((!Z2S_isGUIStarted()) && 
       SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE) {
-    //GUIstarted = true;
+  
     Z2S_startWebGUIConfig();
     Z2S_startUpdateServer();
-  } 
+  }*/ 
 
   /*if (do_once) {
 

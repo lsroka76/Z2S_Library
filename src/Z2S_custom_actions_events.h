@@ -41,5 +41,6 @@
 #define Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS               0x4102
 #define Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS                 0x4150
 
+#define Z2S_SUPLA_EVENT_ON_GUI_MODE_SELECT                0x4200
 
 #endif //
