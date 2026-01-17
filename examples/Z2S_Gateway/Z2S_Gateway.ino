@@ -136,7 +136,6 @@ bool do_once = true;
 
 bool _restart_scheduled = false;
 
-//const static char PARAM_CMD_SELECT_GUI_MODE[] = "selectGUI";
 
 void initGUI(gui_modes_t mode = minimal_gui_mode) {
 
