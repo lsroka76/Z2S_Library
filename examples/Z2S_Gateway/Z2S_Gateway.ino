@@ -24,6 +24,7 @@
 #include <supla/sensor/general_purpose_measurement.h>
 #include <supla/control/hvac_base.h>
 #include <supla/device/status_led.h>
+#include <supla/device/register_device.h>
 
 #include <supla/network/esp_web_server.h>
 #include <supla/network/html/device_info.h>
@@ -509,47 +510,7 @@ void setup() {
   toggleNotifications->setInitialCaption("Gateway sensors notifications");
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
-
-  //auto rs_1 = new Supla::Control::HvacBase();
-  //rs_1->getChannel()->setChannelNumber(109);
-
-  /*auto gpm_1 = new Supla::Sensor::GeneralPurposeMeasurement();
-  gpm_1->getChannel()->setChannelNumber(109);
   
-  auto gpm_2 = new Supla::Sensor::GeneralPurposeMeasurement();
-  gpm_2->getChannel()->setChannelNumber(108);
-  
-  auto gpm_3 = new Supla::Sensor::GeneralPurposeMeasurement();
-  gpm_3->getChannel()->setChannelNumber(107);*/
-  
-  //TEST_VT = new Supla::Control::VirtualThermometer();
-  //TEST_VT->getChannel()->setChannelNumber(112);
-
-  /*auto at1 = new Supla::Control::ActionTrigger();
-  at1->getChannel()->setChannelNumber(111);
-  at1->setInitialCaption("TEST AT");
-  at1->getChannel()->setActionTriggerCaps(
-    SUPLA_ACTION_CAP_SHORT_PRESS_x1 |
-    SUPLA_ACTION_CAP_SHORT_PRESS_x2);
-
-    at1->getChannel()->setActionTriggerCaps(
-      at1->getChannel()->getActionTriggerCaps() |
-    SUPLA_ACTION_CAP_HOLD);*/
-
-   /* SUPLA_ACTION_CAP_TURN_ON |
-    SUPLA_ACTION_CAP_TURN_OFF |
-    SUPLA_ACTION_CAP_TOGGLE_x1 |
-    SUPLA_ACTION_CAP_TOGGLE_x2 |
-    SUPLA_ACTION_CAP_TOGGLE_x3 |
-    SUPLA_ACTION_CAP_TOGGLE_x4 |
-    SUPLA_ACTION_CAP_TOGGLE_x5 |
-    SUPLA_ACTION_CAP_HOLD |
-    SUPLA_ACTION_CAP_SHORT_PRESS_x1 |
-    SUPLA_ACTION_CAP_SHORT_PRESS_x2 |
-    SUPLA_ACTION_CAP_SHORT_PRESS_x3 |
-    SUPLA_ACTION_CAP_SHORT_PRESS_x4 |
-    SUPLA_ACTION_CAP_SHORT_PRESS_x5);*/
-
   auto AHwC = new Supla::ActionHandlerWithCallbacks();
   AHwC->setActionHandlerCallback(supla_callback_bridge);
 
@@ -765,7 +726,8 @@ void setup() {
   //SuplaDevice.allowWorkInOfflineMode(2);
   SuplaDevice.setInitialMode(Supla::InitialMode::StartInCfgMode);
 
-  if (_force_config_on_start) {
+  if ((_force_config_on_start) || 
+      (Supla::RegisterDevice::isEmailEmpty())) {
 
     SuplaDevice.setCustomHostnamePrefix("SUPLA-ZIGBEE-GATEWAY");
 
