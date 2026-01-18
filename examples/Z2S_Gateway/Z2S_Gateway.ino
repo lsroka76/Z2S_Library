@@ -728,7 +728,7 @@ void setup() {
   if ((_force_config_on_start) || 
       (Supla::RegisterDevice::isEmailEmpty())) {
 
-    SuplaDevice.setCustomHostnamePrefix("SUPLA-ZIGBEE-GATEWAY");
+    SuplaDevice.setCustomHostnamePrefix("SUPLA-ZIGBEE-GATE");
 
     suplaServer = new Supla::EspWebServer;
     new Supla::Html::DeviceInfo(&SuplaDevice);

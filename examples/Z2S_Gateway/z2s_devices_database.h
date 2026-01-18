@@ -3495,6 +3495,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_MOES,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE200_cwnjrr72", .model_name = "TS0601",
+    .z2s_device_uid = 17905,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_MOES,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE200_b6wax7g0", .model_name = "TS0601",
     .z2s_device_uid = 18000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_BECA,
@@ -4339,6 +4344,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "ZIBI", .model_name = "MY_RANGE_EXTENDER",
+    .z2s_device_uid = 26420,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
     .z2s_device_uid = 26500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY,
@@ -4480,6 +4490,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE204_1oft6qso", .model_name = "TS0601",
     .z2s_device_uid = 29300,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_adlblwab", .model_name = "TS0601",
+    .z2s_device_uid = 29350,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER,
     .z2s_device_endpoints_count = 1},
 
