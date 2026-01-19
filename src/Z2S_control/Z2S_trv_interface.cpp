@@ -1462,6 +1462,23 @@ void Supla::Control::Z2S_TRVInterface::forceTRVTemperature() {
 
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
+  if ((_keep_alive_ms) && 
+      ((millis() - _last_keep_alive_ms) > _keep_alive_ms)) {
+
+    _last_keep_alive_ms = millis();
+
+    if (_trv_system_mode != 0xFF)
+      sendTRVSystemMode(_trv_system_mode);
+  }
+
+  if (_timeout_enabled && 
+      (_last_cmd_sent_ms > 0) && 
+      (millis() - _last_cmd_sent_ms > _timeout_ms)) {
+
+    if (_trv_hvac)
+      _trv_hvac->getChannel()->setStateOffline();
+  }
+  
   int16_t hvacLastTemperature = INT16_MIN;
 
   if ((_init_sequence == 2) && (millis() - _last_refresh_ms > _refresh_ms)) {
@@ -1860,22 +1877,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     sendTRVPing();
   }
 
-  if ((_keep_alive_ms) && 
-      ((millis() - _last_keep_alive_ms) > _keep_alive_ms)) {
-
-    _last_keep_alive_ms = millis();
-
-    if (_trv_system_mode != 0xFF)
-      sendTRVSystemMode(_trv_system_mode);
-  }
-
-  if (_timeout_enabled && 
-      (_last_cmd_sent_ms > 0) && 
-      (millis() - _last_cmd_sent_ms > _timeout_ms)) {
-
-    if (_trv_hvac)
-      _trv_hvac->getChannel()->setStateOffline();
-  }
+  
 }
 
 /*****************************************************************************/
