@@ -151,6 +151,7 @@ void Supla::Control::Z2S_TRVInterface::refreshTimeout() {
 
   _last_seen_ms = millis();
   _last_cmd_sent_ms = 0;
+  _last_keep_alive_ms = millis();
   if (_trv_hvac)
       _trv_hvac->getChannel()->setStateOnline();
 }
