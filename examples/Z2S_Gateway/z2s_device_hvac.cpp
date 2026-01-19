@@ -235,6 +235,8 @@ void initZ2SDeviceHvac(
 
   Supla_Z2S_TRVInterface->setTimeoutSecs(
     z2s_channels_table[channel_number_slot].timeout_secs);
+  Supla_Z2S_TRVInterface->setKeepAliveSecs(
+    z2s_channels_table[channel_number_slot].keep_alive_secs);
 
 
 /*  Supla_Z2S_HvacBase->addAction(

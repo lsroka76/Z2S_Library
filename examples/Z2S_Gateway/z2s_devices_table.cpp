@@ -6731,6 +6731,9 @@ void updateTimeout(
           reinterpret_cast<Supla::Control::Z2S_TRVInterface*>(
             Supla_Z2S_HvacBaseEE->getPrimaryOutputEE());
         
+        if (Supla_Z2S_TRVInterface && (selector & 1))
+          Supla_Z2S_TRVInterface->setKeepAliveSecs(timings_secs);
+
         if (Supla_Z2S_TRVInterface && (selector & 2))
         Supla_Z2S_TRVInterface->setTimeoutSecs(timings_secs);
       } break;

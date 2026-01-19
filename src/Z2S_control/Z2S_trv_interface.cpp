@@ -121,8 +121,7 @@ void Supla::Control::Z2S_TRVInterface::setTRVHvac(
 
 /*****************************************************************************/
 
-void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(
-  uint32_t timeout_secs) {
+void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(uint32_t timeout_secs) {
 
   _timeout_ms = timeout_secs * 1000;
   if (_timeout_ms == 0) {
@@ -133,6 +132,18 @@ void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(
   else
    _timeout_enabled = true;
 }
+
+/*****************************************************************************/
+
+void Supla::Control::Z2S_TRVInterface::setKeepAliveSecs(
+  uint32_t keep_alive_secs) {
+
+  _keep_alive_ms = keep_alive_secs * 1000;
+  if (_keep_alive_ms == 0)
+    if (_trv_hvac)
+      _trv_hvac->getChannel()->setStateOnline();
+}
+
 
 /*****************************************************************************/
 
@@ -1846,6 +1857,15 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     //log_i("sendTRVPing");
     sendTRVPing();
+  }
+
+  if ((_keep_alive_ms) && 
+      ((millis() - _last_keep_alive_ms) > _keep_alive_ms)) {
+
+    _last_keep_alive_ms = millis();
+
+    if (_trv_system_mode != 0xFF)
+      sendTRVSystemMode(_trv_system_mode);
   }
 
   if (_timeout_enabled && 

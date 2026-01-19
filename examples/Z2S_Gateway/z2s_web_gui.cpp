@@ -1940,44 +1940,27 @@ void buildChannelsTabGUI() {
 	ESPUI.setElementStyle(param_2_desc_label, PSTR(clearLabelStyle));
 
 
-	zb_channel_timings_label = ESPUI.addControl(Control::Type::Label, 
-																							PSTR("Channel timings panel"), 
-																						 	PSTR("Input new value and press Save"), 
-																						 	Control::Color::Emerald, 
-																					 		channelstab);
+	zb_channel_timings_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Channel timings panel"), 
+		PSTR("Input new value and press Save"), Control::Color::Emerald, 
+		channelstab);
 
-	keepalive_number = ESPUI.addControl(Control::Type::Number, 
-																			PSTR(empty_str), 
-																			zero_str, 
-																			Control::Color::Emerald, 
-																			zb_channel_timings_label, 
-																			generalCallback);
-	/*ESPUI.addControl(Control::Type::Min, 
-									 PSTR(empty_str), 
-									 zero_str, 
-									 Control::Color::None, 
-									 keepalive_number);
-	ESPUI.addControl(Control::Type::Max, 
-									 PSTR(empty_str), 
-									 max_int_str, 
-									 Control::Color::None, 
-									 keepalive_number);*/
+	keepalive_number = ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), zero_str, Control::Color::Emerald, 
+		zb_channel_timings_label, generalCallback);
+	
 	working_str = PSTR("Save");
-	keepalive_save_button = ESPUI.addControl(Control::Type::Button, 
-																					 PSTR(empty_str),
-																					 working_str, 
-																					 Control::Color::Emerald, 
-																					 zb_channel_timings_label, 
-																					 editChannelCallback, 
-																					 (void*)GUI_CB_UPDATE_KEEPALIVE_FLAG);
+	keepalive_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, zb_channel_timings_label, editChannelCallback, 
+		(void*)GUI_CB_UPDATE_KEEPALIVE_FLAG);
 	working_str = PSTR("&#10023; keepalive (s) &#10023; turn on delay (s) "
 										 "[logical gates] &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 zb_channel_timings_label), 
-												PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
+			zb_channel_timings_label), 
+		PSTR(clearLabelStyle));
 	
 	timeout_number = ESPUI.addControl(Control::Type::Number, 
 																		PSTR(empty_str), 
@@ -5273,8 +5256,10 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				enableChannelParams(3);
 				fillRemoteAddressData(channel_slot);
 
-				working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
-										 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
+				working_str = PSTR(
+					"&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
+					"for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
+
 				ESPUI.updateText(param_1_desc_label, working_str);
 
 				working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
@@ -5298,15 +5283,6 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					refresh_number, 
 					z2s_channels_table[channel_slot].refresh_secs);
 
-				/*enableChannelParams(3);
-				fillRemoteAddressData(channel_slot);
-
-				working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
-										 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
-				ESPUI.updateText(param_1_desc_label, working_str);
-
-				working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
-				ESPUI.updateText(param_2_desc_label, working_str);*/
 			}
 		} break;
 		
@@ -5341,9 +5317,11 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				z2s_channels_table[channel_slot].\
 				rain_intensity_treshold);
 
-			working_str = PSTR("&#10023; Virtual Binary custom param<br>"
-												 "enter rain intensity threshold<br>"
-												 "currently unused for other sensors &#10023;");
+			working_str = PSTR(
+				"&#10023; Virtual Binary custom param<br>"
+				"enter rain intensity threshold<br>"
+				"currently unused for other sensors &#10023;");
+
 			ESPUI.updateText(param_1_desc_label, working_str);
 		} break;
 
@@ -5383,26 +5361,28 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				enable_resend_temperature_flag
 			); 
 
-			ESPUI.updateNumber(timeout_number, 
-													 z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(
+				timeout_number, z2s_channels_table[channel_slot].timeout_secs);
 		
 			if (enable_resend_temperature_flag) {
 				
 				enableChannelParams(3);
 
-				log_i("remote address type = %s",
-							Z2S_checkChannelFlags(channel_slot, 
-                            				USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
-      				"MDNS" : "IP4");
+				log_i("remote address type = %s",Z2S_checkChannelFlags(
+					channel_slot, USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
+      		"MDNS" : "IP4");
 
 				fillRemoteAddressData(channel_slot);
 
-				working_str = PSTR("&#10023; Enter remote thermometer IP address or mDNS name &#10023;<br>"
-													 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway<br>"
-													 "or enter 0.0.0.0 for local temperature forwarding");
+				working_str = PSTR(
+					"&#10023; Enter remote thermometer IP address or mDNS name &#10023;<br>"
+					"for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway<br>"
+					"or enter 0.0.0.0 for local temperature forwarding");
+				
 				ESPUI.updateText(param_1_desc_label, working_str);
 
-				working_str = PSTR("&#10023; Enter destination thermometer channel # &#10023;");
+				working_str = PSTR(
+					"&#10023; Enter destination thermometer channel # &#10023;");
 				ESPUI.updateText(param_2_desc_label, working_str);
 			} else {
 
@@ -5420,9 +5400,13 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		
 		case SUPLA_CHANNELTYPE_HVAC: {
 			
-			enableChannelTimings(2); //timeout only
-			ESPUI.updateNumber(timeout_number, 
-				z2s_channels_table[channel_slot].timeout_secs);
+			enableChannelTimings(1 + 2); //keepalive + timeout
+
+			ESPUI.updateNumber(
+				keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
+
+			ESPUI.updateNumber(
+				timeout_number, z2s_channels_table[channel_slot].timeout_secs);
 	
 			enableChannelFlags(2);
 			ESPUI.updateNumber(trv_auto_to_schedule_switcher, 
@@ -6680,8 +6664,9 @@ void editChannelCallback(Control *sender, int type, void *param) {
 			
 			case GUI_CB_UPDATE_KEEPALIVE_FLAG : {	
 
-				updateTimeout(channel_slot, 0, 1, 
-											ESPUI.getControl(keepalive_number)->value.toInt());
+				updateTimeout(
+					channel_slot, 0, 1, 
+					ESPUI.getControl(keepalive_number)->value.toInt());
 			} break;
 
 

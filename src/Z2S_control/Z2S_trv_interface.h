@@ -1566,6 +1566,7 @@ class Z2S_TRVInterface : public RemoteOutputInterface,
   void setHvacTemperatureSetpoint(int32_t hvac_temperature_setpoint);
 
   void setTimeoutSecs(uint32_t timeout_secs);
+  void setKeepAliveSecs(uint32_t keep_alive_secs);
   void refreshTimeout();
 
   void iterateAlways() override;
@@ -1659,6 +1660,8 @@ protected:
   uint32_t _last_refresh_ms = 0;
 
   uint32_t  _timeout_ms = 0;
+  uint32_t  _keep_alive_ms = 0;
+  uint32_t  _last_keep_alive_ms = 0;
   uint32_t  _last_seen_ms = 0;
   uint32_t  _last_cmd_sent_ms = 0;
   bool      _timeout_enabled = false;
