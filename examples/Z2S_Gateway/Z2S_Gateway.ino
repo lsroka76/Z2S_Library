@@ -650,8 +650,13 @@ void setup() {
     log_i("Z2S_ENABLE_GUI_ON_START_V2 = %i", _enable_gui_on_start);
   } else {
 
-    log_i("Z2S_ENABLE_GUI_ON_START_V2 not configured - turning on");
+    log_i(
+      "Z2S_ENABLE_GUI_ON_START_V2 not configured - setting to minimal_gui");
+
     _enable_gui_on_start = 1;
+    Supla::Storage::ConfigInstance()->setInt8(Z2S_ENABLE_GUI_ON_START_V2, 
+		  _enable_gui_on_start);
+		Supla::Storage::ConfigInstance()->commit();
   }
   
   if (Supla::Storage::ConfigInstance()->getUInt8(
@@ -672,15 +677,20 @@ void setup() {
   } else {
 
     log_i("Z2S_GUI_ON_START_DELAY_V2 not configured - setting to 10 s");
-    _gui_start_delay = 10;
-  }
 
-  //GatewayMDNSLocalName = "Z2S_gateway"
+    _gui_start_delay = 10;
+    Supla::Storage::ConfigInstance()->setInt8(Z2S_GUI_ON_START_DELAY_V2, 
+		  _gui_start_delay);
+		Supla::Storage::ConfigInstance()->commit();
+    
+  }
 
   if (Supla::Storage::ConfigInstance()->
       getString(Z2S_GATEWAY_MDNS_LOCAL_NAME, GatewayMDNSLocalName, 12)) {
+
     log_i("Z2S_GATEWAY_MDNS_LOCAL_NAME = %s", GatewayMDNSLocalName);
   } else {
+    
     log_i("Z2S_GATEWAY_MDNS_LOCAL_NAME not configured - using default");
     //GatewayMDNSLocalName = "Z2S_gateway";
   }

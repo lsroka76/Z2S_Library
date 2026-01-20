@@ -1035,11 +1035,9 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
           } break;
         }
       
-        sendTuyaRequestCmdData(_gateway, 
-                               &_device, 
-                               child_lock_dp_id,
-                               child_lock_dp_type,
-                               child_lock_value);
+        sendTuyaRequestCmdData(
+          _gateway, &_device, child_lock_dp_id, child_lock_dp_type, 
+          child_lock_value);
    
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
@@ -1050,30 +1048,24 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
     if (_trv_commands_set == TRVZB_CMD_SET) {
 
       _gateway->sendAttributeWrite(
-        &_device, 
-        SONOFF_CUSTOM_CLUSTER, 
-        SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+        &_device, SONOFF_CUSTOM_CLUSTER, SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &trv_child_lock);
       delay(200);
 
       _gateway->sendAttributeRead(
-        &_device, 
-        SONOFF_CUSTOM_CLUSTER, 
-        SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+        &_device, SONOFF_CUSTOM_CLUSTER, SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
         false);
     }
     if (_trv_commands_set == BOSCH_CMD_SET) {
 
       _gateway->sendAttributeWrite(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_child_lock);
       delay(200);
 
       _gateway->sendAttributeRead(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
         false);
     }
@@ -1091,8 +1083,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
       
       _gateway->sendAttributeWrite(
         &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
-        ESP_ZB_ZCL_ATTR_TYPE_U24, 3, &eurotronic_host_flags,false, 1, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_U24, 
+        3, &eurotronic_host_flags,false, 1, 
         EUROTRONIC_MANUFACTURER_CODE);
     }
 
@@ -1103,6 +1095,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
         &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_child_lock,false, 1, 
         LUMI_MANUFACTURER_CODE);
+      delay(200);
+
+      _gateway->sendAttributeRead(
+        &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID,
+        false);
+      
     }
     
     if (_last_cmd_sent_ms == 0)
@@ -1467,8 +1465,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     _last_keep_alive_ms = millis();
 
-    if (_trv_system_mode != 0xFF)
-      sendTRVSystemMode(_trv_system_mode);
+    /*if (_trv_system_mode != 0xFF)
+      sendTRVSystemMode(_trv_system_mode);*/
+    if (_trv_child_lock != 0xFF)
+      sendTRVChildLock(_trv_child_lock);
   }
 
   if (_timeout_enabled && 
