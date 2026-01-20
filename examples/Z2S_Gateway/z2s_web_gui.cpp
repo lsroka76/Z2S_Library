@@ -460,6 +460,21 @@ const String clearFlagsLabelStyle PROGMEM =
 	"font-size: 85%; font-style: normal; "
 	"font-weight: normal;";
 
+static const char* myCustomJS = R"=====(
+console.log("myCustomJS");
+function myFunction() {
+	location.assign("/update");
+};
+document.addEventListener("click", function(e){
+  const target = e.target.closest("#btn31"); 
+
+  if(target){
+    myFunction();
+  }
+});
+
+)=====";
+
 //String switcherLabelStyle = "width: 60px; margin-left: .3rem; margin-right: .3rem; background-color: unset;";
 const static String zero_str PROGMEM = "0";
 const static String minus_one_str PROGMEM = "-1";
@@ -863,14 +878,6 @@ void buildGatewayTabGUI() {
 		" font-size: 4 px; font-style: normal; font-weight: normal;");
 	ESPUI.setPanelWide(gateway_memory_info, true);
 
-	/*enable_gui_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																				 PSTR("Enable GUI on start"), 
-																				 zero_str, 
-																				 Control::Color::Emerald, 
-																				 gatewaytab, 
-																				 gatewayCallback,
-																				 (void*)GUI_CB_ENABLE_GUI_FLAG);*/
-
 	auto gui_mode_selector = ESPUI.addControl(
 		Control::Type::Select, PSTR("Select GUI mode (requires restart)"), 
 		zero_str, Control::Color::Emerald, gatewaytab, selectGuiModeCallback);
@@ -948,8 +955,6 @@ void buildGatewayTabGUI() {
 			Control::Color::None, rebuild_Supla_channels_switcher), 
 		PSTR(clearLabelStyle));
 
-	/**/
-
 	use_new_at_model_switcher = ESPUI.addControl(
 		Control::Type::Switcher, 
 		PSTR("Use new AT model for smart buttons"), 
@@ -973,6 +978,10 @@ void buildGatewayTabGUI() {
 		Control::Color::Emerald, gatewaytab, gatewayCallback, 
 		(void*)GUI_CB_GUI_RESTART_FLAG);
 
+	working_str = PSTR("FIRMWARE UPDATE");
+	auto test_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, gatewaytab);
 
 	//ESPUI.updateNumber(enable_gui_switcher, _enable_gui_on_start);
 	working_str = _enable_gui_on_start;
@@ -992,41 +1001,64 @@ void buildCredentialsGUI() {
 
 	//char buf[512] = {};
 	working_str = PSTR("WiFi & Supla credentials");
-	auto wifitab = ESPUI.addControl(Control::Type::Tab, PSTR(empty_str), working_str);
+	auto wifitab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str);
 
 	working_str = PSTR(empty_str);
-	wifi_ssid_text = ESPUI.addControl(Control::Type::Text, PSTR("SSID"), working_str, Control::Color::Emerald, wifitab, textCallback);
+	wifi_ssid_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("SSID"), working_str, Control::Color::Emerald, 
+		wifitab, textCallback);
 	working_str = PSTR("32");
-	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, wifi_ssid_text);
+	ESPUI.addControl(
+		Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, 
+		wifi_ssid_text);
 
 	working_str = PSTR(empty_str);
-	wifi_pass_text = ESPUI.addControl(Control::Type::Text, PSTR("Password"), working_str, Control::Color::Emerald, wifitab, textCallback);
+	wifi_pass_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Password"), working_str, 
+		Control::Color::Emerald, wifitab, textCallback);
 	working_str = PSTR("64");
-	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, wifi_pass_text);
+	ESPUI.addControl(
+		Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, 
+		wifi_pass_text);
 	working_str = PSTR("password");
 	ESPUI.setInputType(wifi_pass_text, working_str);
 
 	working_str = PSTR(empty_str);
-	Supla_server = ESPUI.addControl(Control::Type::Text, PSTR("Supla server"), working_str, Control::Color::Emerald, wifitab, textCallback);
+	Supla_server = ESPUI.addControl(
+		Control::Type::Text, PSTR("Supla server"), working_str, 
+		Control::Color::Emerald, wifitab, textCallback);
 	working_str = PSTR("64");
-	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, Supla_server);
+	ESPUI.addControl(
+		Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, 
+		Supla_server);
 
 	working_str = PSTR(empty_str);
-	Supla_email = ESPUI.addControl(Control::Type::Text, PSTR("Supla email"), working_str, Control::Color::Emerald, wifitab, textCallback);
+	Supla_email = ESPUI.addControl(
+		Control::Type::Text, PSTR("Supla email"), working_str, 
+		Control::Color::Emerald, wifitab, textCallback);
 	working_str = PSTR("64");	
-	ESPUI.addControl(Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, Supla_email);
+	ESPUI.addControl(
+		Control::Type::Max, PSTR(empty_str), working_str, Control::Color::None, 
+		Supla_email);
 
-	Supla_skip_certificate_switcher = ESPUI.addControl(Control::Type::Switcher, PSTR("Skip CA certificate check"), zero_str, 
-																										 Control::Color::Emerald, wifitab, generalCallback);
+	Supla_skip_certificate_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR("Skip CA certificate check"), zero_str, 
+		Control::Color::Emerald, wifitab, generalCallback);
 
 	working_str = PSTR("Save");
-	save_button = ESPUI.addControl(Control::Type::Button, PSTR("Save"), working_str, 
-																 Control::Color::Emerald, wifitab, enterWifiDetailsCallback,(void*)GUI_CB_SAVE_FLAG);
+	save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("Save"), working_str, Control::Color::Emerald, 
+		wifitab, enterWifiDetailsCallback,(void*)GUI_CB_SAVE_FLAG);
 	working_str = PSTR("Save & Restart");
-	auto save_n_restart_button = ESPUI.addControl(Control::Type::Button, PSTR("Save & Restart"), working_str, 
-																								Control::Color::Emerald, save_button, enterWifiDetailsCallback, (void*)GUI_CB_RESTART_FLAG);
+	auto save_n_restart_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("Save & Restart"), working_str, 
+		Control::Color::Emerald, save_button, enterWifiDetailsCallback, 
+		(void*)GUI_CB_RESTART_FLAG);
 	working_str = PSTR("Missing data...");
-	save_label = ESPUI.addControl(Control::Type::Label, PSTR("Status"), working_str, Control::Color::Wetasphalt, save_button);
+	save_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Status"), working_str, 
+		Control::Color::Wetasphalt, save_button);
 
 	auto cfg = Supla::Storage::ConfigInstance();
   
@@ -4470,13 +4502,17 @@ void Z2S_startWebGUIConfig() {
 	ESPUI.updateSelect(gui_mode_selector, working_str);
 	ESPUI.updateNumber(gui_start_delay_number, _gui_start_delay);
 
+	//log_i("%s", myCustomJS);
+
 	ESPUI.begin("ZIGBEE <=> SUPLA CONFIG PAGE");
 	GUIstarted = true;
 }
 
 void Z2S_startWebGUI() {
 
-  ESPUI.begin("ZIGBEE <=> SUPLA CONTROL PANEL");
+  ESPUI.setCustomJS(myCustomJS);
+	
+	ESPUI.begin("ZIGBEE <=> SUPLA CONTROL PANEL");
 	GUIstarted = true;
 	handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_STARTED);
 
@@ -5409,27 +5445,32 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				timeout_number, z2s_channels_table[channel_slot].timeout_secs);
 	
 			enableChannelFlags(2);
-			ESPUI.updateNumber(trv_auto_to_schedule_switcher, 
-										 (z2s_channels_table[channel_slot].user_data_flags &
-										 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
+			ESPUI.updateNumber(
+				trv_auto_to_schedule_switcher, 
+				(z2s_channels_table[channel_slot].user_data_flags &
+				 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
 
 			uint8_t fixed_correction_flag = 
 				(z2s_channels_table[channel_slot].user_data_flags &
 				USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0;
 
-			ESPUI.updateNumber(trv_fixed_calibration_switcher, fixed_correction_flag);
+			ESPUI.updateNumber(
+				trv_fixed_calibration_switcher, fixed_correction_flag);
 
-			ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 
-										 		 (z2s_channels_table[channel_slot].user_data_flags &
-										 		 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
+			ESPUI.updateNumber(
+				trv_auto_to_schedule_manual_switcher, 
+				(z2s_channels_table[channel_slot].user_data_flags &
+				USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
 
-			ESPUI.updateNumber(trv_auto_to_schedule_manual_switcher, 
-										 		 (z2s_channels_table[channel_slot].user_data_flags &
-										 		 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
+			ESPUI.updateNumber(
+				trv_auto_to_schedule_manual_switcher, 
+				(z2s_channels_table[channel_slot].user_data_flags &
+				USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
 
-			ESPUI.updateNumber(trv_cooperative_childlock_switcher, 
-										 		 (z2s_channels_table[channel_slot].user_data_flags &
-										 		 USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK) ? 1 : 0);
+			ESPUI.updateNumber(
+				trv_cooperative_childlock_switcher, 
+				(z2s_channels_table[channel_slot].user_data_flags &
+				USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK) ? 1 : 0);
 
 			if (fixed_correction_flag) {
 
@@ -5439,9 +5480,10 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					param_1_number, 
 					z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
 
-				working_str = PSTR("&#10023; Thermostat custom parameter<br>"
-												 	 "enter calibration fixed value (temperature x100)<br>"
-												   "ie. to set correction to -1 enter -100 &#10023;");
+				working_str = PSTR(
+					"&#10023; Thermostat custom parameter<br>"
+					"enter calibration fixed value (temperature x100)<br>"
+					"ie. to set correction to -1 enter -100 &#10023;");
 				ESPUI.updateText(param_1_desc_label, working_str);
 			} else
 				enableChannelParams(0);
