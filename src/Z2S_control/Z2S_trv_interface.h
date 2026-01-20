@@ -1675,7 +1675,7 @@ protected:
   void sendTRVTemperatureCalibration(int32_t temperature_calibration);
   void sendTRVExternalSensorTemperature(int32_t external_sensor_temperature);
   void sendTRVExternalSensorInput(bool trv_external_sensor_present);
-  void sendTRVChildLock(uint8_t trv_child_lock);
+  void sendTRVChildLock(uint8_t trv_child_lock, bool send_value = true);
   void sendTRVScheduleMode(uint8_t trv_schedule_mode);
   void sendTRVTemperatureHisteresis(int32_t temperature_histeresis);
   void sendTRVPing();
