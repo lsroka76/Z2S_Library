@@ -460,10 +460,16 @@ const String clearFlagsLabelStyle PROGMEM =
 	"font-size: 85%; font-style: normal; "
 	"font-weight: normal;";
 
+//
+
 static const char* myCustomJS = R"=====(
-console.log("myCustomJS");
 function myFunction() {
-	location.assign("/update");
+	/*var a = document.createElement('a');
+	a.href='/update';
+	a.target = '_blank';
+	document.body.appendChild(a);
+	a.click();*/
+	window.location.assign("/update");
 };
 document.addEventListener("click", function(e){
   const target = e.target.closest("#btn31"); 
@@ -472,7 +478,6 @@ document.addEventListener("click", function(e){
     myFunction();
   }
 });
-
 )=====";
 
 //String switcherLabelStyle = "width: 60px; margin-left: .3rem; margin-right: .3rem; background-color: unset;";
@@ -4439,35 +4444,23 @@ void Z2S_startWebGUIConfig() {
 
 	working_str = PSTR("Save");
 	auto gui_start_delay_save_button = 
-		ESPUI.addControl(Control::Type::Button, 
-						  			 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 gui_start_delay_number, 
-										 gatewayCallback, 
-										 (void*)GUI_CB_GUI_DELAY_FLAG);
+		ESPUI.addControl(
+			Control::Type::Button, PSTR(empty_str), working_str, 
+			Control::Color::Emerald, gui_start_delay_number, 
+			gatewayCallback, (void*)GUI_CB_GUI_DELAY_FLAG);
 
-	save_button = ESPUI.addControl(Control::Type::Button, 
-																 PSTR("Save"), 
-																 "Save", 
-																 Control::Color::Emerald, 
-																 Control::noParent, 
-																 enterWifiDetailsCallback,
-																 (void*) GUI_CB_SAVE_FLAG);
+	save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("Save"), "Save", Control::Color::Emerald, 
+		Control::noParent, enterWifiDetailsCallback, (void*) GUI_CB_SAVE_FLAG);
 
-	auto save_n_restart_button = ESPUI.addControl(Control::Type::Button, 
-																								PSTR("Save & Restart"), 
-																								"Save & Restart", 
-																								Control::Color::Emerald, 
-																								save_button, 
-																								enterWifiDetailsCallback, 
-																								(void*)GUI_CB_RESTART_FLAG);
+	auto save_n_restart_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("Save & Restart"), "Save & Restart", 
+		Control::Color::Emerald, save_button, enterWifiDetailsCallback, 
+		(void*)GUI_CB_RESTART_FLAG);
 
-	save_label = ESPUI.addControl(Control::Type::Label, 
-																PSTR("Status"), 
-																"Missing data...", 
-																Control::Color::Emerald, 
-																save_button);
+	save_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Status"), "Missing data...", 
+		Control::Color::Emerald, save_button);
 
 	auto cfg = Supla::Storage::ConfigInstance();
   
@@ -4477,25 +4470,25 @@ void Z2S_startWebGUIConfig() {
 					 sizeof(general_purpose_gui_buffer));
   	if (cfg->getWiFiSSID(general_purpose_gui_buffer) && 
 			 strlen(general_purpose_gui_buffer) > 0)
-			ESPUI.updateText(wifi_ssid_text, 
-											general_purpose_gui_buffer);
+			ESPUI.updateText(
+				wifi_ssid_text, general_purpose_gui_buffer);
 
-		memset(general_purpose_gui_buffer, 0, 
-					 sizeof(general_purpose_gui_buffer));
+		memset(
+			general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getSuplaServer(general_purpose_gui_buffer) && 
 				strlen(general_purpose_gui_buffer) > 0)
-			ESPUI.updateText(Supla_server, 
-											 general_purpose_gui_buffer);
+			ESPUI.updateText(
+				Supla_server, general_purpose_gui_buffer);
 
-		memset(general_purpose_gui_buffer, 0, 
-					 sizeof(general_purpose_gui_buffer));
+		memset(
+			general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getEmail(general_purpose_gui_buffer) && 
 				strlen(general_purpose_gui_buffer) > 0)
-			ESPUI.updateText(Supla_email, 
-											 general_purpose_gui_buffer);
+			ESPUI.updateText(
+				Supla_email, general_purpose_gui_buffer);
 
-		ESPUI.updateNumber(Supla_skip_certificate_switcher, 
-											 _z2s_security_level);
+		ESPUI.updateNumber(
+			Supla_skip_certificate_switcher, _z2s_security_level);
 	}
 
 	working_str = _enable_gui_on_start;

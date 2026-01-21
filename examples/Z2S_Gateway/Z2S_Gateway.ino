@@ -135,7 +135,7 @@ bool sendIASNotifications = false;
 bool do_once = true;
 
 bool _restart_scheduled = false;
-
+bool _forced_config = false;
 
 void initGUI(gui_modes_t mode = minimal_gui_mode) {
 
@@ -232,12 +232,12 @@ void supla_callback_bridge(int event, int action) {
       }
       if (sd_current_status == STATUS_CONFIG_MODE) {
 
-        if (Zigbee.started()) {
+        if (!_forced_config) {//if (Zigbee.started()) {
         
           if (Supla::Storage::ConfigInstance()->setUInt8(
                 Z2S_FORCE_CONFIG_ON_START, 1)) {
       	  
-            log_i("Supla config mode detected (Zigbee stack active) - "
+            log_i("Supla config mode detected - " //(Zigbee stack active) - "
                   "setting Z2S_FORCE_CONFIG_ON_START flag and restarting!");
             
             Supla::Storage::ConfigInstance()->commit();
@@ -246,7 +246,7 @@ void supla_callback_bridge(int event, int action) {
             _restart_scheduled = true;
             SuplaDevice.scheduleSoftRestart(1000);
           } else
-            log_e("Supla config mode detected (Zigbee stack active) - "
+            log_e("Supla config mode detected - "//(Zigbee stack active) - "
                 "setting Z2S_FORCE_CONFIG_ON_START flag FAILED!");
           return;
         } 
@@ -663,6 +663,9 @@ void setup() {
     Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
 
     log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
+
+    if (_force_config_on_start)
+      _forced_config = true;
   } else {
 
     log_i("Z2S_FORCE_CONFIG_ON_START not configured - turning off");
@@ -690,7 +693,7 @@ void setup() {
 
     log_i("Z2S_GATEWAY_MDNS_LOCAL_NAME = %s", GatewayMDNSLocalName);
   } else {
-    
+
     log_i("Z2S_GATEWAY_MDNS_LOCAL_NAME not configured - using default");
     //GatewayMDNSLocalName = "Z2S_gateway";
   }
@@ -820,6 +823,7 @@ void loop() {
       Z2S_FORCE_CONFIG_ON_START, _force_config_on_start))
       Supla::Storage::ConfigInstance()->commit();
 
+    _forced_config = true;
     SuplaDevice.enterConfigMode();
   }
 
