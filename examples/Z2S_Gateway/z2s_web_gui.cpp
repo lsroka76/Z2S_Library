@@ -469,12 +469,45 @@ function myFunction() {
 	a.target = '_blank';
 	document.body.appendChild(a);
 	a.click();*/
+	//alert("CLICKED");
 	window.location.assign("/update");
-};
-document.addEventListener("click", function(e){
-  const target = e.target.closest("#btn31"); 
 
-  if(target){
+};
+/*document.addEventListener("click", function(e){
+  alert(e.target.id);
+	console.log(e.target.getAttribute("id"));
+	console.log(e.target.id);
+
+	const target = e.target.closest("#btn31"); 
+
+  if(e.target.id == "#btn31") {
+		console.log("#btn31");
+    myFunction();
+  }
+	if(e.target.id == "btn31") {
+		console.log("btn31");
+    myFunction();
+  }
+});*/
+document.addEventListener("mouseup", function(e){
+  //alert(e.target.id);
+	console.log(e.target.getAttribute("id"));
+	console.log(e.target.id);
+
+	if(e.target.id == "btn31") {
+		console.log("btn31");
+		e.stopImmediatePropagation();
+    myFunction();
+  }
+});
+document.addEventListener("touchend", function(e){
+  //alert(e.target.id);
+	console.log(e.target.getAttribute("id"));	
+	console.log(e.target.id);
+
+	if(e.target.id == "btn31") {
+		console.log("btn31");
+		e.stopImmediatePropagation();
     myFunction();
   }
 });
