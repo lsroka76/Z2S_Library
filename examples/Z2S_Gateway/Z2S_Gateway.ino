@@ -559,11 +559,6 @@ void setup() {
 
   Z2S_initZbDevices(millis());
 
-  esp_zb_ieee_addr_t esp_zb_ieee_addr = {};
-
-  esp_zb_ieee_addr[0] = 0xCC;
-  //Z2S_addZbDeviceTableSlot(esp_zb_ieee_addr, 0, "_TZE200_wzk0x7fq","TS0601", 1, Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR, 0);
-
   Z2S_loadChannelsTable();
 
   Z2S_initSuplaChannels();
@@ -596,30 +591,6 @@ void setup() {
   setGatewayEventHandler(supla_callback_bridge);
   handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
   handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED);
-
-  /*z2s_channel_action_t test_action;
-
-  
-  test_action.is_enabled = true;
-  test_action.src_Supla_channel = 1;
-  test_action.dst_Supla_channel = 2;
-  test_action.src_Supla_event = Supla::ON_CLICK_1;
-  test_action.dst_Supla_action = Supla::TURN_ON;
-  strcpy(test_action.action_name, "Test Action 1");
-  strcpy(test_action.action_description, "Short description");
-  test_action.is_condition = false;
-  test_action.min_value = 12.8;
-  test_action.max_value = 1214.56;
-
-  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
-  strcpy(test_action.action_name, "Test Action 2");
-  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
-  strcpy(test_action.action_name, "Test Action 3");
-  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
-  strcpy(test_action.action_name, "Test Action 4");
-  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);
-  strcpy(test_action.action_name, "Test Action 5");
-  Z2S_saveAction( Z2S_findFreeActionIndex(), test_action);*/
 
   Z2S_initSuplaActions();
 
@@ -654,6 +625,7 @@ void setup() {
       "Z2S_ENABLE_GUI_ON_START_V2 not configured - setting to minimal_gui");
 
     _enable_gui_on_start = 1;
+    Supla::Storage::ConfigInstance()->eraseKey(Z2S_ENABLE_GUI_ON_START_V2);
     Supla::Storage::ConfigInstance()->setInt8(Z2S_ENABLE_GUI_ON_START_V2, 
 		  _enable_gui_on_start);
 		Supla::Storage::ConfigInstance()->commit();
@@ -682,7 +654,8 @@ void setup() {
     log_i("Z2S_GUI_ON_START_DELAY_V2 not configured - setting to 10 s");
 
     _gui_start_delay = 10;
-    Supla::Storage::ConfigInstance()->setInt8(Z2S_GUI_ON_START_DELAY_V2, 
+    Supla::Storage::ConfigInstance()->eraseKey(Z2S_GUI_ON_START_DELAY_V2);
+    Supla::Storage::ConfigInstance()->setInt32(Z2S_GUI_ON_START_DELAY_V2, 
 		  _gui_start_delay);
 		Supla::Storage::ConfigInstance()->commit();
     
