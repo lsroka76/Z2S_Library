@@ -29,7 +29,6 @@ jobs:
           arduino-cli lib install --git-url https://github.com/bblanchon/ArduinoJson.git
           arduino-cli lib install --git-url https://github.com/lsroka76/ESPAsyncWebServer.git
           arduino-cli lib install --git-url https://github.com/lsroka76/AsyncTCP.git
-          arduino-cli lib install --git-url https://github.com/IPdotSetAF/ESPAsyncHTTPUpdateServer.git
       - name: Copy boards.txt with C6 config
         run: | 
           cp ./partitions/boards334.txt ~/.arduino15/packages/esp32/hardware/esp32/3.3.4/boards.txt
