@@ -51,6 +51,9 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
     Supla_GeneralPurposeMeasurement->setDefaultFunction(
       z2s_channels_table[channel_number_slot].Supla_channel_func);
 
+  if (z2s_channels_table[channel_number_slot].user_data_2 > 0)
+    z2s_channels_table[channel_number_slot].user_data_3 = millis();
+
   switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
@@ -171,6 +174,23 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
       default: break;
   } */
 
+  uint32_t gpm_time_threshold = 
+    z2s_channels_table[channel_number_slot].user_data_2;
+  
+  if (gpm_time_threshold > 0)  {
+
+    uint32_t gpm_time_delta = 
+      millis() - z2s_channels_table[channel_number_slot].user_data_3;
+
+    log_i(
+      "gpm_time_threshold: %lu, gpm_time_delta: %lu", 
+      gpm_time_threshold * 1000, gpm_time_delta);
+
+    if (gpm_time_delta < gpm_time_threshold * 1000)
+    return;
+    else
+      z2s_channels_table[channel_number_slot].user_data_3 = millis();
+  }
   auto element = 
     Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
   

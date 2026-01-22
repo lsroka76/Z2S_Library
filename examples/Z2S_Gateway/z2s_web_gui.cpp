@@ -5457,6 +5457,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 			enableChannelTimings(0);
 			enableChannelFlags(0);
+			enableChannelParams(3);
 		} break;
 		
 		
