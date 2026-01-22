@@ -176,8 +176,12 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
 
   uint32_t gpm_time_threshold = 
     z2s_channels_table[channel_number_slot].user_data_2;
+
+    uint32_t gpm_value_threshold = 
+    z2s_channels_table[channel_number_slot].user_data_1;
   
-  if (gpm_time_threshold > 0)  {
+  if ((gpm_time_threshold > 0) &&
+  (value >= gpm_value_threshold)) {
 
     uint32_t gpm_time_delta = 
       millis() - z2s_channels_table[channel_number_slot].user_data_3;
