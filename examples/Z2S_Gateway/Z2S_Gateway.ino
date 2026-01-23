@@ -1003,6 +1003,9 @@ if (Z2S_isGUIStarted())
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
       if (refresh_cycle % 12 == 0) {//print every 120 seconds - only for debug purposes 
+        //uint32_t app_device_id = 0;
+        //zbGateway.sendSimpleDescriptorRequestCmd(device->short_addr, 1, &app_device_id);
+        //log_i("app_device_id %u", app_device_id);
         /*log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
               device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
         log_i("Gateway version: %s", Z2S_VERSION);*/
@@ -1122,12 +1125,6 @@ if (Z2S_isGUIStarted())
         zpm->notifySrpcAboutParingEnd(
         SUPLA_CALCFG_PAIRINGRESULT_ONGOING, nullptr);
 
-      //zbGateway.zbPrintDeviceDiscovery(joined_device); 
-
-      //do some Tuya vodoo - just in case Tuya device is paired
-      
-      //zbGateway.sendCustomClusterCmd(joined_device, TUYA_PRIVATE_CLUSTER_EF00, 0x03, ESP_ZB_ZCL_ATTR_TYPE_SET, 0, NULL);
-      
       bool _basic_cluster_query_success = false;
 
       if ((strlen(
@@ -1439,12 +1436,10 @@ if (Z2S_isGUIStarted())
                   joined_device->endpoint = Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[0].endpoint_id; //2
                   
                   bool sync_cmd = true;
-                  zbGateway.setClusterReporting(joined_device, 
-                                                ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-                                                ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
-                                                ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
-                                                0, 300, 1, 
-                                                sync_cmd);
+                  zbGateway.setClusterReporting(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+                    ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, sync_cmd);
 
                   zbGateway.setClusterReporting(joined_device, 
                                                 ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 

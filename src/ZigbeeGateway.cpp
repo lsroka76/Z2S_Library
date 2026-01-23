@@ -468,17 +468,16 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
   xSemaphoreGive(gt_lock);
 }
 
-void ZigbeeGateway::find_Cb(esp_zb_zdp_status_t zdo_status, 
-                            uint16_t addr, 
-                            uint8_t endpoint, 
-                            void *user_ctx) {
+void ZigbeeGateway::find_Cb(
+  esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, 
+  void *user_ctx) {
   
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
-    
-    
+      
     esp_zb_zdo_bind_req_param_t bind_req = {};
     
-    zbg_device_params_t *sensor = (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
+    zbg_device_params_t *sensor = 
+      (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
 
     if (addr == 0xFFFF) {
 
@@ -498,15 +497,17 @@ void ZigbeeGateway::find_Cb(esp_zb_zdp_status_t zdo_status,
     }
     esp_zb_ieee_address_by_short(sensor->short_addr, sensor->ieee_addr);
 
+    /*_instance->sendSimpleDescriptorRequestCmd(
+      sensor->short_addr, sensor->endpoint, &sensor->user_data);*/
+
     _new_device_joined = true;
     _instance->_joined_devices.push_back(sensor); 
   }
 }
 
- void ZigbeeGateway::Z2S_active_ep_req_cb(esp_zb_zdp_status_t zdo_status, 
-                                          uint8_t ep_count, 
-                                          uint8_t *ep_id_list, 
-                                          void *user_ctx) {
+ void ZigbeeGateway::Z2S_active_ep_req_cb(
+  esp_zb_zdp_status_t zdo_status, uint8_t ep_count, uint8_t *ep_id_list, 
+  void *user_ctx) {
 
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
       
@@ -527,9 +528,9 @@ void ZigbeeGateway::find_Cb(esp_zb_zdp_status_t zdo_status,
   else log_i("Z2S active_ep_req failed");
 }
 
-void ZigbeeGateway::Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, 
-                                           esp_zb_af_simple_desc_1_1_t *simple_desc, 
-                                           void *user_ctx) {
+void ZigbeeGateway::Z2S_simple_desc_req_cb(
+  esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, 
+  void *user_ctx) {
 
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
     
@@ -580,11 +581,12 @@ void ZigbeeGateway::Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status,
   }
   else log_i("Z2S simple desc failed");
 }
-uint16_t short_addr_req;
+//
 
 void ZigbeeGateway::zbPrintDeviceDiscovery (zbg_device_params_t * device) {
 
-  
+  uint16_t short_addr_req;
+
   esp_zb_zdo_active_ep_req_param_t ep_cmd_req = {};
   
   short_addr_req = device->short_addr; 
@@ -596,9 +598,8 @@ void ZigbeeGateway::zbPrintDeviceDiscovery (zbg_device_params_t * device) {
   esp_zb_lock_release();
 }
 
-bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device, 
-                                              bool single_attribute, 
-                                              uint16_t attribute_id) {
+bool ZigbeeGateway::zbQueryDeviceBasicCluster(
+  zbg_device_params_t * device, bool single_attribute, uint16_t attribute_id) {
   
   esp_zb_zcl_read_attr_cmd_t read_req = {};
 
@@ -642,9 +643,12 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(zbg_device_params_t * device,
     log_i("basic tsn 0x%x", basic_tsn);
 
     //Wait for response or timeout
-    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(2000)/*ZB_CMD_TIMEOUT*/) != pdTRUE) {
+    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(6000)/*ZB_CMD_TIMEOUT*/) != pdTRUE) {
       log_e("Error while querying basic cluster attribute 0x%x", attributes[attribute_number]);
-      if (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) {
+      if ((attributes[attribute_number] == 
+            ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) || 
+          (attributes[attribute_number] == 
+            ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID )) {
           return false;
       /*read_req.zcl_basic_cmd.dst_endpoint = 0x23; //temporary solution for Develco
 
@@ -2653,6 +2657,42 @@ void ZigbeeGateway::sendDeviceLeaveRequest(
   esp_zb_lock_release();
 
   delay(200);
+}
+
+/*****************************************************************************/
+
+void ZigbeeGateway::simple_descriptor_req_Cb(
+    esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, 
+    void *user_ctx) {
+
+  log_i("status = %02X", zdo_status);
+
+  if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
+
+    *((uint32_t*)user_ctx) = simple_desc->app_device_id;
+  }
+  xSemaphoreGive(gt_lock);
+}
+
+void ZigbeeGateway::sendSimpleDescriptorRequestCmd(
+  uint16_t addr_of_interest, uint8_t endpoint, void *user_ctx) {
+  
+  esp_zb_zdo_simple_desc_req_param_t cmd_req = {};
+
+  cmd_req.addr_of_interest = addr_of_interest;
+  cmd_req.endpoint = endpoint;
+
+  *((uint32_t*)user_ctx) = 0;
+
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_zdo_simple_desc_req(&cmd_req, simple_descriptor_req_Cb, user_ctx);
+  esp_zb_lock_release();
+
+  delay(200);
+
+  if (xSemaphoreTake(gt_lock, ZB_CMD_TIMEOUT) != pdTRUE) {
+    log_e("Semaphore timeout while requesting simple descriptor");
+    }
 }
 
 /*****************************************************************************/

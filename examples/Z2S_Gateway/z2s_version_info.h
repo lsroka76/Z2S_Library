@@ -1,6 +1,6 @@
 #ifndef Z2S_VERSION_INFO_H_
 #define Z2S_VERSION_INFO_H_
 
-#define Z2S_VERSION "Z2S-1.2.19-22/01/26"
+#define Z2S_VERSION "Z2S-1.2.20-23/01/26"
 
 #endif

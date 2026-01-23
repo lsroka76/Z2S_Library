@@ -322,6 +322,7 @@
 #define Z2S_DEVICE_DESC_ON_OFF                              0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                            0x8001
 
+#define Z2S_DEVICE_DESC_LAST_ID                             0xFFFF
 
 #define MAX_BOUND_ENDPOINTS                                 0x06
 #define MAX_BOUND_CLUSTERS                                  0x08
@@ -1952,6 +1953,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-02D",
     .z2s_device_uid = 2000,
+	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL,
+	.z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "SONOFF", .model_name = "SNZB-02DR2",
+    .z2s_device_uid = 2050,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL,
 	.z2s_device_endpoints_count = 1},
 
@@ -4706,6 +4712,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 32800,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DP_RELAY,
     .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "Shelly", .model_name = "2PM",
+    .z2s_device_uid = 32900,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints ={{ 1, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER },
+                            { 2, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER }}},
 
 
   

@@ -759,7 +759,10 @@ bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table) {
 
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
 
-    
+    zbGateway.sendDeviceLeaveRequest(
+      z2s_zb_devices_table[zb_device_slot].ieee_addr, 
+      z2s_zb_devices_table[zb_device_slot].short_addr, 
+      false, false);
 
     memset(&z2s_zb_devices_table[zb_device_slot], 0, 
       sizeof(z2s_zb_device_params_t));
@@ -4852,7 +4855,7 @@ void Z2S_onBTCBoundDevice(
     while (channel_number_slot >= 0) {
 
       device->model_id = z2s_channels_table[channel_number_slot].model_id;
-      device->user_data = z2s_channels_table[channel_number_slot].Supla_channel; //probably not used ?
+      //device->user_data = z2s_channels_table[channel_number_slot].Supla_channel; //probably not used ?
 
       z2s_channels_table[channel_number_slot].short_addr = device->short_addr;
 

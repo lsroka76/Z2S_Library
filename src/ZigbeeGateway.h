@@ -383,6 +383,9 @@ static void bindDeviceCluster2(zbg_device_params_t *, int16_t cluster_id);
     esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, bool remove_children,
     bool rejoin);
 
+  void sendSimpleDescriptorRequestCmd(
+    uint16_t addr_of_interest, uint8_t endpoint, void *user_ctx);
+
   void sendDeviceFactoryReset(
     zbg_device_params_t *device, bool isTuya = false);
 
@@ -630,6 +633,9 @@ private:
   static void find_Cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx);
   static void ieee_Cb(esp_zb_zdp_status_t zdo_status, esp_zb_zdo_ieee_addr_rsp_t *resp, void *user_ctx);
   static void leave_Cb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
+  static void simple_descriptor_req_Cb(
+    esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, 
+    void *user_ctx);
 
   static void Z2S_active_ep_req_cb(esp_zb_zdp_status_t zdo_status, uint8_t ep_count, uint8_t *ep_id_list, void *user_ctx);
   static void Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, void *user_ctx);
