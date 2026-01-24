@@ -103,6 +103,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR                   0x2220
 
+#define Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR                0x2225
+
 #define Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR             0x2230
 #define Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR          0x2250
 #define Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR             0x2260
@@ -385,6 +387,12 @@
 #define TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID              0x02
 #define TUYA_GAS_DETECTOR_SILENCE_SID                       0x03
 #define TUYA_GAS_DETECTOR_PREHEAT_SID                       0x05
+
+#define TUYA_CO_GAS_DETECTOR_GAS_SID                        0x00 
+#define TUYA_CO_GAS_DETECTOR_GAS_CONC_SID                   0x01
+#define TUYA_CO_GAS_DETECTOR_CO_SID                         0x02 
+#define TUYA_CO_GAS_DETECTOR_CO_CONC_SID                    0x03
+#define TUYA_CO_GAS_DETECTOR_SELF_TEST_RESULT_SID           0x04
 
 #define DEVELCO_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID         0x00
 #define DEVELCO_AIR_QUALITY_SENSOR_VOC_SID                  0x01
@@ -1593,6 +1601,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -2420,6 +2433,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "HEIMAN", .model_name = "PIRSensor-EM",
    .z2s_device_uid = 8810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "HEIMAN", .model_name = "PIR_TPV12",
+   .z2s_device_uid = 8815,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1},
 
@@ -4529,6 +4547,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_COVER,
     .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE284_waa352qv", .model_name = "TS0601",
+    .z2s_device_uid = 29550,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_COVER,
+    .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "BOSCH", .model_name = "RBSH-SP-ZB-EU",
     .z2s_device_uid = 29600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER,
@@ -4719,6 +4742,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints ={{ 1, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER },
                             { 2, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER }}},
+
+  { .manufacturer_name = "_TZE204", .model_name = "TS0601",
+    .z2s_device_uid = 33000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR,
+    .z2s_device_endpoints_count = 1},
 
 
   

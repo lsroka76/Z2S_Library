@@ -1311,8 +1311,8 @@ void rebuildDevicesSelector() {
 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
-			ESPUI.removeControl(z2s_zb_devices_table[devices_counter].device_gui_id, 
-													false);
+			ESPUI.removeControl(
+				z2s_zb_devices_table[devices_counter].device_gui_id, false);
 		}
 	}
 
@@ -1325,13 +1325,10 @@ void rebuildDevicesSelector() {
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
 			working_str = devices_counter;
-			z2s_zb_devices_table[devices_counter].device_gui_id =  
-				ESPUI.addControl(
-					Control::Type::Option, 
-					z2s_zb_devices_table[devices_counter].device_local_name, 
-					working_str, 
-					Control::Color::None, 
-					device_selector);
+			z2s_zb_devices_table[devices_counter].device_gui_id =  ESPUI.addControl(
+				Control::Type::Option, 
+				z2s_zb_devices_table[devices_counter].device_local_name, 
+				working_str, Control::Color::None, device_selector);
 		}
 	}
 }
@@ -1341,36 +1338,28 @@ void rebuildDevicesSelector() {
 void buildDevicesTabGUI() {
 
 	working_str = PSTR("Zigbee devices");
-	devicestab = ESPUI.addControl(Control::Type::Tab, 
-																PSTR(empty_str), 
-																working_str);
+	devicestab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str);
 	
 	working_str = -1;
-	device_selector = ESPUI.addControl(Control::Type::Select, 
-																		 PSTR("Devices"), 
-																		 working_str, 
-																		 Control::Color::Emerald, 
-																		 devicestab, 
-																		 deviceSelectorCallback);
+	device_selector = ESPUI.addControl(
+		Control::Type::Select, PSTR("Devices"), working_str, 
+		Control::Color::Emerald, devicestab, deviceSelectorCallback);
 
-	device_selector_main_option = 
-		ESPUI.addControl(Control::Type::Option, 
-										PSTR("Select Zigbee device..."), 
-										working_str, 
-										Control::Color::None, 
-										device_selector);
+	device_selector_main_option =ESPUI.addControl(
+		Control::Type::Option, PSTR("Select Zigbee device..."), working_str, 
+		Control::Color::None, device_selector);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+	for (uint8_t devices_counter = 0; 
+			 devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
 			working_str = devices_counter;
-			z2s_zb_devices_table[devices_counter].device_gui_id = 
-				ESPUI.addControl(Control::Type::Option, 
-												 z2s_zb_devices_table[devices_counter].device_local_name, 
-												 working_str, 
-												 Control::Color::None, 
-												 device_selector);
+			z2s_zb_devices_table[devices_counter].device_gui_id = ESPUI.addControl(
+					Control::Type::Option, 
+					z2s_zb_devices_table[devices_counter].device_local_name, 
+					working_str, Control::Color::None, device_selector);
 		}
 	}
 
@@ -1608,8 +1597,8 @@ void buildDevicesTabGUI() {
 
 /*****************************************************************************/
 
-void rebuildChannelsSelector(bool rebuild_channels_list, 
-														 uint16_t channelstab = 0xFFFF) {
+void rebuildChannelsSelector(
+	bool rebuild_channels_list, uint16_t channelstab = 0xFFFF) {
 
 	if (rebuild_channels_list) {
 

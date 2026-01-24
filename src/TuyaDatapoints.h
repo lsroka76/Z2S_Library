@@ -94,6 +94,16 @@
 #define TUYA_GAS_DETECTOR_BATTERY_LEVEL_DP                          0x0F
 #define TUYA_GAS_DETECTOR_SILENCE_DP                                0x10
 
+#define TUYA_CO_GAS_DETECTOR_GAS_DP                                 0x01
+#define TUYA_CO_GAS_DETECTOR_GAS_CONC_DP                            0x02
+#define TUYA_CO_GAS_DETECTOR_SELF_TEST_DP                           0x08
+#define TUYA_CO_GAS_DETECTOR_SELF_TEST_RESULT_DP                    0x09
+#define TUYA_CO_GAS_DETECTOR_CO_DP                                  0x12
+#define TUYA_CO_GAS_DETECTOR_CO_CONC_DP                             0x13
+#define TUYA_CO_GAS_DETECTOR_MAX_GAS_ALARM_DP                       0x65
+#define TUYA_CO_GAS_DETECTOR_MAX_CO_ALARM_DP                        0x66
+
+
 #define TUYA_AIR_QUALITY_SENSOR_TEMPERATURE_DP                      0x12
 #define TUYA_AIR_QUALITY_SENSOR_HUMIDITY_DP                         0x13
 #define TUYA_AIR_QUALITY_SENSOR_CO2_DP                              0x16
@@ -290,6 +300,7 @@
 #define MOES_COVER_CALIBRATION_DP                                   0x03
 #define MOES_COVER_BACKLIGHT_DP                                     0x07
 #define MOES_COVER_STATE_MOTOR_REVERSAL_DP                          0x08
+#define MOES_COVER_STATE_CHILD_LOCK_DP                              0x67
 
 #define TUYA_VIBRATION_SENSOR_VIBRATION_DP                          0x01
 #define TUYA_VIBRATION_SENSOR_CONTACT_DP                            0x65

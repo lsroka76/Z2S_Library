@@ -476,11 +476,11 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
         dev_leave_params->short_addr, 
         dev_leave_params->rejoin == 1 ? "YES" : "NO");
       
-      for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); 
+      /*for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); 
            it != Zigbee.ep_objects.end(); ++it) 
         (*it)->zbDeviceLeave(
           dev_leave_params->short_addr, dev_leave_params->device_addr, 
-          dev_leave_params->rejoin);
+          dev_leave_params->rejoin);*/
     } break;
 
      case ESP_ZB_NLME_STATUS_INDICATION: {

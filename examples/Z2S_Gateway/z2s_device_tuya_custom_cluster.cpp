@@ -1397,6 +1397,92 @@ void processTuyaCOGasDetectorReport(
 
 /*******************************************************************************/
 
+void processTuyaCOGasDetector2Report(
+  int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
+  uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_CO_GAS_DETECTOR_GAS_SID);
+    
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_CO_GAS_DETECTOR_GAS_CONC_SID);
+
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_CO_GAS_DETECTOR_CO_SID);
+    
+  int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_CO_GAS_DETECTOR_CO_CONC_SID);
+
+
+  int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_CO_GAS_DETECTOR_SELF_TEST_RESULT_SID);
+
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_CO_GAS_DETECTOR_GAS_DP, payload_size, payload);
+  
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceIASzone(
+      channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1));
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_CO_GAS_DETECTOR_GAS_CONC_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_CO_GAS_DETECTOR_CO_DP, payload_size, payload);
+  
+  if (Tuya_read_dp_result.is_success)
+    msgZ2SDeviceIASzone(
+      channel_number_slot_3, (Tuya_read_dp_result.dp_value == 1));
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_CO_GAS_DETECTOR_CO_CONC_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM, 
+      Tuya_read_dp_result.dp_value);
+
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_CO_GAS_DETECTOR_SELF_TEST_RESULT_DP, 
+    payload_size, payload);
+  
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_5, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+}
+
+/*******************************************************************************/
+
 void processTuyaAirQualitySensorReport(
   int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, 
   uint32_t model_id) {
@@ -2002,56 +2088,97 @@ void processMoesShadesDriveMotorDataReport(
 
   Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
+  uint8_t cover_state_dp_id = 0x00;
+  uint8_t cover_position_dp_id = 0x00;
+  uint8_t cover_position_percetage_dp_id = 0x00;
+  uint8_t cover_battery_level_dp_id = 0x00;
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      MOES_SHADES_DRIVE_MOTOR_STATE_DP, payload_size, payload);
+  switch (model_id) {
 
-  if (Tuya_read_dp_result.is_success)
-    log_i("state = %u", Tuya_read_dp_result.dp_value);
 
-  Z2S_readTuyaDPvalue(
-    Tuya_read_dp_result, 
-    MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP, 
-    payload_size, payload);
+    case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR: {
 
-  if (Tuya_read_dp_result.is_success) {
+      cover_state_dp_id = MOES_SHADES_DRIVE_MOTOR_STATE_DP;
+      cover_position_dp_id = MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR: {
+
+      cover_state_dp_id = MOES_SHADES_DRIVE_MOTOR_STATE_DP;
+      cover_position_dp_id = MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP;
+      cover_position_percetage_dp_id = 
+        MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP;
+      cover_battery_level_dp_id = TUYA_COVER_MOTOR_BATTERY_LEVEL_DP;
+    } break;
     
-    log_i("position(%) = %u", Tuya_read_dp_result.dp_value);
-  
-    msgZ2SDeviceRollerShutter(
-      channel_number_slot, RS_MOVING_DIRECTION_MSG, 0);
+    
+    case Z2S_DEVICE_DESC_MOES_COVER: {
 
-    msgZ2SDeviceRollerShutter(
-      channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
-      100 - Tuya_read_dp_result.dp_value);
+      cover_state_dp_id = MOES_COVER_STATE_DP;
+      cover_position_dp_id = MOES_COVER_STATE_COVER_POSITION_DP;
+    } break;
   }
 
-   
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, payload_size, payload);
-
-  if (Tuya_read_dp_result.is_success) {
+  if (cover_state_dp_id) {
     
-    log_i("position = %u", Tuya_read_dp_result.dp_value);
-    
-    msgZ2SDeviceRollerShutter(
-      channel_number_slot, RS_MOVING_DIRECTION_MSG, 0);
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, cover_state_dp_id, payload_size, payload);
 
-    msgZ2SDeviceRollerShutter(
-      channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
-      100 - Tuya_read_dp_result.dp_value);
+    if (Tuya_read_dp_result.is_success)
+      log_i("state = %u", Tuya_read_dp_result.dp_value);
+  }
+
+  if (cover_position_percetage_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, cover_position_percetage_dp_id, payload_size, 
+      payload);
+
+    if (Tuya_read_dp_result.is_success) {
+    
+      log_i("position(%) = %u", Tuya_read_dp_result.dp_value);
+  
+      msgZ2SDeviceRollerShutter(
+        channel_number_slot, RS_MOVING_DIRECTION_MSG, 0);
+
+      msgZ2SDeviceRollerShutter(
+        channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
+        100 - Tuya_read_dp_result.dp_value);
+    }
+  }
+
+  if (cover_position_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, cover_position_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) {
+    
+      log_i("position = %u", Tuya_read_dp_result.dp_value);
+    
+      msgZ2SDeviceRollerShutter(
+        channel_number_slot, RS_MOVING_DIRECTION_MSG, 0);
+
+      msgZ2SDeviceRollerShutter(
+        channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
+        100 - Tuya_read_dp_result.dp_value);
+    }
   } 
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      TUYA_COVER_MOTOR_BATTERY_LEVEL_DP, payload_size, payload);
+  if (cover_battery_level_dp_id) {
 
-  if (Tuya_read_dp_result.is_success) {
+    Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, cover_battery_level_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) {
     
-    log_i("battery level = %u", Tuya_read_dp_result.dp_value);
+      log_i("battery level = %u", Tuya_read_dp_result.dp_value);
 
-    updateSuplaBatteryLevel(
-      channel_number_slot, ZBD_BATTERY_LEVEL_MSG, 
-      Tuya_read_dp_result.dp_value);
+      updateSuplaBatteryLevel(
+        channel_number_slot, ZBD_BATTERY_LEVEL_MSG, 
+        Tuya_read_dp_result.dp_value);
+    }
   }
 }
 
@@ -2688,6 +2815,13 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
 
       processTuyaCOGasDetectorReport(
+        channel_number_slot, payload_size, payload, model_id); 
+    break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR:
+
+      processTuyaCOGasDetector2Report(
         channel_number_slot, payload_size, payload, model_id); 
     break;
 

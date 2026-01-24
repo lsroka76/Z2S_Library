@@ -2332,6 +2332,14 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
 																	"0 => set backlight OFF<br>"
 																	"1 => set backlight ON" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_MOES_COVER,
+    .Tuya_datapoint_id 		 			= MOES_COVER_STATE_CHILD_LOCK_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Child lock",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => set child lock OFF<br>"
+																	"1 => set child lock ON" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_NEO_DEPARTURE_DELAY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
