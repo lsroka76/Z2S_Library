@@ -1881,7 +1881,28 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Silence",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => turn Silence OFF, 1 => turn Silence ON" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR,
+    .Tuya_datapoint_id 		 			= TUYA_CO_GAS_DETECTOR_SELF_TEST_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Selftest",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => turn Selftest OFF, 1 => turn Selftest ON" },
 	
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR,
+    .Tuya_datapoint_id 		 			= TUYA_CO_GAS_DETECTOR_MAX_GAS_ALARM_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Gas alarm value (%LEL)",
+    .Tuya_datapoint_description = "Enter numeric value between 100 and 20000:<br>"
+																	"100 => 0.1, 20000 => 20, step 100 (0.1)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR,
+    .Tuya_datapoint_id 		 			= TUYA_CO_GAS_DETECTOR_MAX_CO_ALARM_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "CO alarm value (ppm)",
+    .Tuya_datapoint_description = "Enter numeric value between 10 and 1000:<br>"
+																	"with step 10" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_VIBRATION_SENSOR_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
