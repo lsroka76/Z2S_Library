@@ -2843,9 +2843,9 @@ void processTuyaDataReport(
     break;
 
 
-    case Z2S_DEVICE_DESC_TUYA_CO2_GAS_DETECTOR:
+    case Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR:
 
-      processTuyaCO2GasDetectorReport(
+      processTuyaCO2DetectorReport(
         channel_number_slot, payload_size, payload, model_id); 
     break;
 
