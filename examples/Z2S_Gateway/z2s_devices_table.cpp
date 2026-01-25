@@ -6312,6 +6312,16 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
+      case Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR: {
+
+
+        addZ2SDeviceGeneralPurposeMeasurement(
+          device, first_free_slot, sub_id, "CO2", func, "ppm"); 
+        
+      } break;
+
+/******************************************************************************/     
+
       case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR: {
 
         switch (sub_id) {
@@ -7626,6 +7636,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z:
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
+    case Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
@@ -8774,51 +8785,41 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_CO_DETECTOR_CO_SID,"CARBON MONOXIDE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_CO_DETECTOR_CO_CONC_SID, 
-                       "CO CONCENTRATION", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "ppm");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_CO_DETECTOR_CO_CONC_SID, "CO CONCENTRATION", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_CO_DETECTOR_SELF_TEST_SID, 
-                       "SELF TEST RESULT", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "1..3");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_CO_DETECTOR_SELF_TEST_SID, "SELF TEST RESULT", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "1..3");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_CO_DETECTOR_SILENCE_SID, 
-                       "SILENCE");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_CO_DETECTOR_SILENCE_SID, "SILENCE");
     } break;
 
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_GAS_DETECTOR_GAS_SID,
-                       "GAS DETECTED", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_GAS_DETECTOR_GAS_SID, "GAS DETECTED", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_GAS_DETECTOR_GAS_CONC_SID, 
-                       "GAS CONCENTRATION", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "%LEL");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_GAS_DETECTOR_GAS_CONC_SID, "GAS CONCENTRATION", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "%LEL");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID, 
-                       "SELF TEST RESULT", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "1..3");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_GAS_DETECTOR_SELF_TEST_RESULT_SID, 
+        "SELF TEST RESULT", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+        "1..3");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       TUYA_GAS_DETECTOR_PREHEAT_SID, 
-                       "PREHEAT");
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_GAS_DETECTOR_PREHEAT_SID, "PREHEAT");
     } break;
 
 /*****************************************************************************/

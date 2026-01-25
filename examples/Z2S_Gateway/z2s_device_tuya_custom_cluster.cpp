@@ -1397,6 +1397,23 @@ void processTuyaCOGasDetectorReport(
 
 /*******************************************************************************/
 
+void processTuyaCO2DetectorReport(
+  int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
+  uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_CO2_DETECTOR_CO2_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM, 
+      Tuya_read_dp_result.dp_value);
+}
+
+/*******************************************************************************/
+
 void processTuyaCOGasDetector2Report(
   int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
   uint32_t model_id) {
@@ -2822,6 +2839,13 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR:
 
       processTuyaCOGasDetector2Report(
+        channel_number_slot, payload_size, payload, model_id); 
+    break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_CO2_GAS_DETECTOR:
+
+      processTuyaCO2GasDetectorReport(
         channel_number_slot, payload_size, payload, model_id); 
     break;
 

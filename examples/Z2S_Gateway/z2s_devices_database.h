@@ -100,9 +100,8 @@
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH          0x2205
 
 #define Z2S_DEVICE_DESC_TUYA_CO_DETECTOR                    0x2210
-
+#define Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR                   0x2215
 #define Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR                   0x2220
-
 #define Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR                0x2225
 
 #define Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR             0x2230
@@ -1592,6 +1591,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_DETECTOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -4135,6 +4139,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZE284_rjxqso4a", .model_name = "TS0601",
     .z2s_device_uid = 23300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_DETECTOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE204_ogkdpgy2", .model_name = "TS0601",
+    .z2s_device_uid = 23350,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE284_chbyv06x", .model_name = "TS0601",

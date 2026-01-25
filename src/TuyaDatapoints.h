@@ -103,6 +103,7 @@
 #define TUYA_CO_GAS_DETECTOR_MAX_GAS_ALARM_DP                       0x65
 #define TUYA_CO_GAS_DETECTOR_MAX_CO_ALARM_DP                        0x66
 
+#define TUYA_CO2_DETECTOR_CO2_DP                                    0x02
 
 #define TUYA_AIR_QUALITY_SENSOR_TEMPERATURE_DP                      0x12
 #define TUYA_AIR_QUALITY_SENSOR_HUMIDITY_DP                         0x13
