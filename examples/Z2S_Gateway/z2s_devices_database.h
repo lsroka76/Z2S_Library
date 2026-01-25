@@ -4743,7 +4743,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints ={{ 1, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER },
                             { 2, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER }}},
 
-  { .manufacturer_name = "_TZE204", .model_name = "TS0601",
+  { .manufacturer_name = "_TZE204_jpyrsdp3", .model_name = "TS0601",
     .z2s_device_uid = 33000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR,
     .z2s_device_endpoints_count = 1},
