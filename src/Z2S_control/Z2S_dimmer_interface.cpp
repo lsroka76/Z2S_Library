@@ -227,7 +227,7 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
   if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (_gateway) {
       
-      _last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+      //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
@@ -240,7 +240,7 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
   }
   if (_timeout_enabled && channel.isStateOnline() && ((millis() - _last_seen_ms) > _timeout_ms)) {
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
-    _last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
     if ((millis() - _last_seen_ms) > _timeout_ms)
       channel.setStateOffline();

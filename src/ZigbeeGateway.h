@@ -294,9 +294,6 @@ public:
   static void unbindLocalDeviceCluster(
     zbg_device_params_t *, int16_t cluster_id);
 
-  static uint32_t getZbgDeviceUnitLastSeenMs(uint16_t short_addr);
-  static int8_t getZbgDeviceUnitLastRssi(uint16_t short_addr);
-
   bool zbQueryDeviceBasicCluster(
     zbg_device_params_t * device, bool single_attribute = false, 
     uint16_t attribute_id = 0x00);
@@ -309,10 +306,10 @@ public:
   bool setClusterReporting(
     zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id,
     uint8_t attribute_type, uint16_t min_interval, uint16_t max_interval, 
-    uint16_t delta, bool ack,
+    uint16_t delta, bool ack, 
     uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-    uint8_t disable_default_response = 1, 
-    uint8_t manuf_specific = 0, uint16_t manuf_code = 0);
+    uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0);
 
   void readClusterReportCmd(
     zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
@@ -683,9 +680,6 @@ private:
 
   void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id, uint8_t count, uint8_t position) override;
   bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
-
-  static void updateZbgDeviceUnitLastSeenMs(uint16_t short_addr);
-  static void updateZbgDeviceUnitLastRssi(uint16_t short_addr, int8_t rssi);
 
 protected:
 
