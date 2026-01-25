@@ -716,7 +716,7 @@ uint8_t Z2S_findFirstFreeZbDevicesTableSlot(uint8_t start_slot) {
   return 0xFF;  
 }
 
-uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr) {
+uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t ieee_addr) {
 
   for (uint8_t devices_counter = 0; 
        devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++)
@@ -724,6 +724,18 @@ uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t  ieee_addr) {
     if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
         (memcmp(z2s_zb_devices_table[devices_counter].ieee_addr, ieee_addr,
                 sizeof(esp_zb_ieee_addr_t)) == 0))
+      return devices_counter;
+
+  return 0xFF;  
+}
+
+uint8_t Z2S_findZbDeviceTableSlot(uint16_t short_addr) {
+
+  for (uint8_t devices_counter = 0; 
+       devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++)
+
+    if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
+        (z2s_zb_devices_table[devices_counter].short_addr == short_addr))
       return devices_counter;
 
   return 0xFF;  
@@ -759,10 +771,10 @@ bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table) {
 
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
 
-    zbGateway.sendDeviceLeaveRequest(
+    /*zbGateway.sendDeviceLeaveRequest(
       z2s_zb_devices_table[zb_device_slot].ieee_addr, 
       z2s_zb_devices_table[zb_device_slot].short_addr, 
-      false, false);
+      false, false);*/
 
     memset(&z2s_zb_devices_table[zb_device_slot], 0, 
       sizeof(z2s_zb_device_params_t));
@@ -785,10 +797,10 @@ bool Z2S_removeZbDeviceWithAllChannels(
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
 
 
-    zbGateway.sendDeviceLeaveRequest(
+    /*zbGateway.sendDeviceLeaveRequest(
       z2s_zb_devices_table[zb_device_slot].ieee_addr, 
       z2s_zb_devices_table[zb_device_slot].short_addr, 
-      false, false);
+      false, false);*/
 
     bool channels_table_save_required = false;
 
@@ -4833,7 +4845,7 @@ void Z2S_rebuildSuplaChannels() {
     SuplaDevice.scheduleSoftRestart(1000);
 }
 
-void Z2S_onBTCBoundDevice(
+bool Z2S_onBTCBoundDevice(
   zbg_device_params_t *device, uint8_t count, uint8_t position) {
 
   char ieee_addr_str[24] = {};
@@ -4843,7 +4855,22 @@ void Z2S_onBTCBoundDevice(
   log_i("BTC bound device(0x%x) on endpoint(0x%x), cluster id(0x%x)", 
         device->short_addr, device->endpoint, device->cluster_id);
   
+  if (force_leave_global_flag) 
+    return false;
+
+  uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(device->ieee_addr);
+
+  if ( zb_device_slot == 0xFF) {
+
+    log_i("No ZbDevice - full registration required");
+    return false;
+  }
+  if (Z2S_checkZbDeviceFlags(
+        zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED))
+  return false;
   
+  return true;
+  //25.01 - remove remaining code?
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     device->ieee_addr, device->endpoint, device->cluster_id, 
     ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
@@ -4856,13 +4883,14 @@ void Z2S_onBTCBoundDevice(
 
       device->model_id = z2s_channels_table[channel_number_slot].model_id;
       //device->user_data = z2s_channels_table[channel_number_slot].Supla_channel; //probably not used ?
-
       z2s_channels_table[channel_number_slot].short_addr = device->short_addr;
+
 
       channel_number_slot = Z2S_findChannelNumberNextSlot(
         channel_number_slot, device->ieee_addr, device->endpoint, 
         device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-    } 
+    }
+  return true; 
 }
 
 
@@ -4870,6 +4898,56 @@ void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster) {
 
   //not used
 }
+
+void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
+
+  uint8_t device_number_slot = Z2S_findZbDeviceTableSlot(short_addr);
+
+  if (device_number_slot < 0xFF)  {
+
+    z2s_zb_devices_table[device_number_slot].rssi = rssi;
+    z2s_zb_devices_table[device_number_slot].last_seen_ms = millis();
+
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, -1, -1, 
+    ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+
+    while (channel_number_slot >= 0) {
+
+      auto element = 
+        Supla::Element::getElementByChannelNumber(
+          z2s_channels_table[channel_number_slot].Supla_channel);
+ 
+      if (element) 
+        element->getChannel()->setBridgeSignalStrength(rssi);
+
+      channel_number_slot = Z2S_findChannelNumberNextSlot(
+        channel_number_slot, 
+        z2s_channels_table[channel_number_slot].ieee_addr, -1, -1, 
+        ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+    }
+  }
+}
+
+void Z2S_onDeviceLeave(
+  uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {
+
+  char ieee_addr_str[24] = {};
+
+  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  uint8_t device_number_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
+
+  if (device_number_slot < 0xFF)  {
+
+    log_i(
+      "Device %s(0x%04X) has left network - marked for binding on next join!",
+      ieee_addr_str, short_addr);
+    
+    Z2S_setZbDeviceFlags(device_number_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
+  }
+}
+
 
 void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
@@ -4879,25 +4957,25 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
   uint8_t device_number_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
-  if (force_leave_global_flag) {
+  /*if (force_leave_global_flag) {
 
-    log_i("Forcing device %s(0x04%X) to leave network and rejoin!",
+    log_i("Forcing device %s(0x%04X) to leave network and rejoin!",
           ieee_addr_str, short_addr);
 
     zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, true);
     return;
-  }
+  }*/
 
-  if (device_number_slot == 0xFF) {
+  /*if (device_number_slot == 0xFF) {
     
     log_e("No Zigbee device found for address %s!",ieee_addr_str);
     log_i(
-      "Forcing device %s(0x04%X) to leave network (no rejoin)!", 
+      "Forcing device %s(0x%04X) to leave network (no rejoin)!", 
       ieee_addr_str, short_addr);
 
     zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, false);
     return;
-  }
+  }*/
 
   zbg_device_params_t device = {};
 

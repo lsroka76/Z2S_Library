@@ -58,7 +58,7 @@
 #define USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0               (1 << 13) // 0x2000
 
 #define ZBD_USER_DATA_FLAG_VERSION_2_0                          (1 << 0)
-#define ZBD_USER_DATA_FLAG_RESERVED_1                           (1 << 1)
+#define ZBD_USER_DATA_FLAG_BINDING_REQUIRED                     (1 << 1)
 #define ZBD_USER_DATA_FLAG_RESERVED_2                           (1 << 2)
 #define ZBD_USER_DATA_FLAG_RESERVED_3                           (1 << 3)
 #define ZBD_USER_DATA_FLAG_RESERVED_4                           (1 << 4)
@@ -425,6 +425,7 @@ bool Z2S_loadZbDevicesTable();
 bool Z2S_clearZbDevicesTable();
 void Z2S_printZbDevicesTableSlots(bool toTelnet = false);
 uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t ieee_addr);
+uint8_t Z2S_findZbDeviceTableSlot(uint16_t short_addr);
 uint8_t Z2S_countChannelsWithZbDeviceId(uint8_t Zb_device_id);
 bool Z2S_hasZbDevice(uint32_t desc_id);
 void Z2S_initZbDevices(uint32_t init_ms);
@@ -666,8 +667,8 @@ void Z2S_onIASzoneStatusChangeNotification(
   esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
   int iaszone_status);
 
-void Z2S_onBTCBoundDevice(zbg_device_params_t *device, uint8_t count, 
-                          uint8_t position);
+bool Z2S_onBTCBoundDevice(
+  zbg_device_params_t *device, uint8_t count, uint8_t position);
 
 void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster);
 
@@ -676,6 +677,11 @@ void Z2S_onDataSaveRequest(
   uint8_t *extended_data);
 
 void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr);
+
+void Z2S_onDeviceLeave(
+  uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin);
+
+void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi);
 
 uint8_t Z2S_addZ2SDevice(
   zbg_device_params_t *device, int8_t sub_id = -1, const char *name = nullptr,

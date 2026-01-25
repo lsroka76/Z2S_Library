@@ -1153,7 +1153,8 @@ void buildZigbeeTabGUI() {
 										 pairing_mode_switcher, 
 										 pairingSwitcherCallback,
 										 (void*)GUI_CB_FORCE_LEAVE_FLAG);
-	working_str = PSTR("Force joined device to leave network and perform full join");
+	//working_str = PSTR("Force joined device to leave network and perform full join");
+	working_str = PSTR("Force device to bind gateway again");
 	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
 																				 PSTR(empty_str), 
 																				 working_str, 
@@ -4889,8 +4890,8 @@ void updateDeviceInfoLabel() {
 								"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X "
 								"<b>| <i>Power source</b></i> 0x%02X<br>"
 								"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
-								"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>"
-								"Gateway unit last RSSI</b></i> %d<br>"
+								//"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>"
+								"Last RSSI</b></i> %d<br>"
 								"<b><i>Device flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X <b>"
 								"| <i>ud(2)</b></i> 0x%08X<br>"), 
 						device_slot,
@@ -4903,8 +4904,9 @@ void updateDeviceInfoLabel() {
 						z2s_zb_devices_table[device_slot].power_source,
 						battery_percentage,
 						z2s_zb_devices_table[device_slot].last_seen_ms,
-						zbGateway.getZbgDeviceUnitLastSeenMs(z2s_zb_devices_table[device_slot].short_addr),
-						zbGateway.getZbgDeviceUnitLastRssi(z2s_zb_devices_table[device_slot].short_addr),
+						z2s_zb_devices_table[device_slot].rssi,
+						//zbGateway.getZbgDeviceUnitLastSeenMs(z2s_zb_devices_table[device_slot].short_addr),
+						//zbGateway.getZbgDeviceUnitLastRssi(z2s_zb_devices_table[device_slot].short_addr),
 						z2s_zb_devices_table[device_slot].user_data_flags,
 						z2s_zb_devices_table[device_slot].user_data_1,
 						z2s_zb_devices_table[device_slot].user_data_2);
