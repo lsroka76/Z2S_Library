@@ -285,6 +285,19 @@ int16_t Z2S_findChannelNumberNextSlot(
   return -1;
 }
 
+int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, uint16_t short_addr) {
+
+  for (uint8_t channels_counter = prev_slot + 1; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+
+    if ((z2s_channels_table[channels_counter].valid_record) &&
+        (z2s_channels_table[channels_counter].short_addr == short_addr)) {
+      return channels_counter;
+    }
+  }  
+  return -1;
+}
+
 int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id) {
   
   for (uint8_t channels_counter = 0; 
@@ -1038,9 +1051,22 @@ uint8_t Z2S_addZbDeviceTableSlot(
   }
 }
 
-void  Z2S_updateZbDeviceLastSeenMs(esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms){
+void  Z2S_updateZbDeviceLastSeenMs(
+  esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms){
 
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
+
+  if (zb_device_slot == 0xFF) {
+    log_e("Unknown ZB device - update not possible!");
+    return;
+  } else
+    z2s_zb_devices_table[zb_device_slot].last_seen_ms = last_seen_ms;
+}
+
+void  Z2S_updateZbDeviceLastSeenMs(
+  uint16_t short_addr, uint32_t last_seen_ms) {
+
+  uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
 
   if (zb_device_slot == 0xFF) {
     log_e("Unknown ZB device - update not possible!");
@@ -4852,13 +4878,16 @@ bool Z2S_onBTCBoundDevice(
 
   ieee_addr_to_str(ieee_addr_str, device->ieee_addr);
 
-  log_i("BTC bound device(0x%x) on endpoint(0x%x), cluster id(0x%x)", 
-        device->short_addr, device->endpoint, device->cluster_id);
+  log_i(
+    "BTC bound device %s (0x%x) on endpoint(0x%x), cluster id(0x%x)", 
+    ieee_addr_str, device->short_addr, device->endpoint, device->cluster_id);
   
   if (force_leave_global_flag) 
     return false;
 
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(device->ieee_addr);
+
+  log_i("zb_device_slot %u", zb_device_slot);
 
   if ( zb_device_slot == 0xFF) {
 
@@ -4866,8 +4895,11 @@ bool Z2S_onBTCBoundDevice(
     return false;
   }
   if (Z2S_checkZbDeviceFlags(
-        zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED))
-  return false;
+        zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED)) {
+
+    log_i("ZBD_USER_DATA_FLAG_BINDING_REQUIRED SET");
+    return false;
+  }
   
   return true;
   //25.01 - remove remaining code?
@@ -4901,30 +4933,29 @@ void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster) {
 
 void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
 
+  log_i("short addr 0x%04X, rssi %i", short_addr, rssi);
   uint8_t device_number_slot = Z2S_findZbDeviceTableSlot(short_addr);
 
   if (device_number_slot < 0xFF)  {
 
+    log_i("short addr 0x%04X, rssi %i", short_addr, rssi);
     z2s_zb_devices_table[device_number_slot].rssi = rssi;
     z2s_zb_devices_table[device_number_slot].last_seen_ms = millis();
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    z2s_channels_table[channel_number_slot].ieee_addr, -1, -1, 
-    ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-
+    int16_t channel_number_slot = Z2S_findChannelNumberNextSlot(-1, short_addr);
+    uint8_t rssi_percentage = map(rssi, -100, -30, 0, 100);
+    
     while (channel_number_slot >= 0) {
-
+      log_i("short addr 0x%04X, rssi %i", short_addr, rssi);
       auto element = 
         Supla::Element::getElementByChannelNumber(
           z2s_channels_table[channel_number_slot].Supla_channel);
  
       if (element) 
-        element->getChannel()->setBridgeSignalStrength(rssi);
+        element->getChannel()->setBridgeSignalStrength(rssi_percentage);
 
       channel_number_slot = Z2S_findChannelNumberNextSlot(
-        channel_number_slot, 
-        z2s_channels_table[channel_number_slot].ieee_addr, -1, -1, 
-        ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+        channel_number_slot, short_addr);
     }
   }
 }
@@ -7465,7 +7496,8 @@ void updateSuplaBatteryLevel(
   }
 
   //if (!restore)
-  Z2S_updateZbDeviceLastSeenMs(z2s_channels_table[channel_number_slot].ieee_addr, millis());
+  Z2S_updateZbDeviceLastSeenMs(
+    z2s_channels_table[channel_number_slot].short_addr, millis());
 
   if (zb_device_number_slot < 0xFF) {
 

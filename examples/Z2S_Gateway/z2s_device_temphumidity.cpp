@@ -146,7 +146,7 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
   }
 
   Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].ieee_addr, millis());
+    z2s_channels_table[channel_number_slot].short_addr, millis());
 
   auto element = 
     Supla::Element::getElementByChannelNumber(
@@ -257,7 +257,7 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi) {
   }
 
   Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].ieee_addr, millis());
+    z2s_channels_table[channel_number_slot].short_addr, millis());
 
   auto Supla_Z2S_VirtualThermHygroMeter = 
     getZ2SDeviceTempHumidityPtr(

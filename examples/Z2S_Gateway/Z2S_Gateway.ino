@@ -1353,9 +1353,13 @@ if (Z2S_isGUIStarted())
                         Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id,
                         zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
 
-                      if (zb_device_slot < 0xFF) 
+                      if (zb_device_slot < 0xFF) {
+
                         Z2S_syncZbDeviceDescFlags(
                           devices_desc_counter, zb_device_slot);
+                        Z2S_clearZbDeviceFlags(
+                          zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
+                      }
                     }
 
                     Z2S_buildSuplaChannels(joined_device, endpoint_counter);

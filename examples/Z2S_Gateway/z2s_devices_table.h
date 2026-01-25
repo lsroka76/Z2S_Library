@@ -431,6 +431,8 @@ bool Z2S_hasZbDevice(uint32_t desc_id);
 void Z2S_initZbDevices(uint32_t init_ms);
 void Z2S_updateZbDeviceLastSeenMs(
   esp_zb_ieee_addr_t ieee_addr, uint32_t last_seen_ms);
+void  Z2S_updateZbDeviceLastSeenMs(
+  uint16_t short_addr, uint32_t last_seen_ms);
 
 uint8_t Z2S_addZbDeviceTableSlot(
   esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr,
@@ -457,6 +459,8 @@ int16_t Z2S_findChannelNumberNextSlot(
   int16_t prev_slot, 
   esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster,
   int32_t channel_type, int8_t sub_id);
+
+int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, uint16_t short_addr);
 
 void Z2S_fillChannelsTableSlot(
   zbg_device_params_t *device, uint8_t slot, uint8_t channel,

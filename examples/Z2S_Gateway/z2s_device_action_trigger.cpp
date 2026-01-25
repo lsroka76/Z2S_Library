@@ -220,7 +220,7 @@ void msgZ2SDeviceActionTriggerV2(int16_t channel_number_slot, int8_t sub_id) {
   }
 
   Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].ieee_addr, millis());
+    z2s_channels_table[channel_number_slot].short_addr, millis());
   
   if (!(z2s_channels_table[channel_number_slot].user_data_flags &
       USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0)) {

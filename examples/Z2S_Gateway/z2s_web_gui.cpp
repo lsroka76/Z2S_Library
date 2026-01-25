@@ -5592,15 +5592,20 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 
 		zbg_device_params_t device;
 
-		log_i("device_selector value %u", 
-					ESPUI.getControl(device_selector)->value.toInt());
+		uint8_t device_selector_value = ESPUI.getControl(
+			device_selector)->value.toInt();
+
+		log_i("device_selector value %u", device_selector_value);
 
     device.endpoint = 1; 
     device.cluster_id = 0; 
-		memcpy(&device.ieee_addr, 
-					 z2s_zb_devices_table[ESPUI.getControl(device_selector)->value.toInt()].ieee_addr,8);
+		memcpy(
+			&device.ieee_addr, 
+			z2s_zb_devices_table[device_selector_value].ieee_addr, 
+			sizeof(esp_zb_ieee_addr_t));
+
 		device.short_addr =
-			z2s_zb_devices_table[ESPUI.getControl(device_selector)->value.toInt()].short_addr;
+			z2s_zb_devices_table[device_selector_value].short_addr;
 
 
 		switch ((uint32_t)param) {
@@ -5619,7 +5624,7 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 					true)) {
 					
 					sprintf_P(general_purpose_gui_buffer, PSTR("%d"), 
-										zbGateway.getZbgDeviceUnitLastRssi(device.short_addr));
+										z2s_zb_devices_table[device_selector_value].rssi);
 					updateLabel_P(rssilabel, general_purpose_gui_buffer);
 				}
 				else
@@ -5647,8 +5652,10 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 
     device.cluster_id = 0; 
     
-		memcpy(&device.ieee_addr, 
-					 z2s_zb_devices_table[ESPUI.getControl(c_a_device_selector)->value.toInt()].ieee_addr,8);
+		memcpy(
+			&device.ieee_addr, 
+			z2s_zb_devices_table[ESPUI.getControl(c_a_device_selector)->value.toInt()].ieee_addr,
+			sizeof(esp_zb_ieee_addr_t));
 
     device.short_addr = 
 			z2s_zb_devices_table[ESPUI.getControl(c_a_device_selector)->value.toInt()].short_addr;
@@ -5684,14 +5691,9 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 
 			case GUI_CB_READ_ATTR_FLAG : { //read attribute
 					
-				bool result = zbGateway.sendAttributeRead(&device, 
-																									cluster_id, 
-																									attribute_id, 
-																									sync_cmd,
-																									ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-																									1, 
-																									manuf_specific, 
-																									manuf_code);
+				bool result = zbGateway.sendAttributeRead(
+					&device, cluster_id, attribute_id, sync_cmd,
+					ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, manuf_specific, manuf_code);
 				if (result) {
 					if (*zbGateway.getReadAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
@@ -7650,7 +7652,9 @@ void valveCallback(Control *sender, int type, void *param) {
 		log_i("device_selector value %u, param id %d", device_slot, (uint32_t)param);
     device.endpoint = 1;
     device.cluster_id = SONOFF_CUSTOM_CLUSTER; 
-    memcpy(&device.ieee_addr, z2s_zb_devices_table[device_slot].ieee_addr,8);
+    memcpy(
+			&device.ieee_addr, z2s_zb_devices_table[device_slot].ieee_addr,
+			sizeof(esp_zb_ieee_addr_t));
     device.short_addr = z2s_zb_devices_table[device_slot].short_addr;
 
 		uint16_t attribute_id;
