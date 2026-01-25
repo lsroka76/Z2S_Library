@@ -2436,7 +2436,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "HEIMAN", .model_name = "PIR_TPV12",
+  {	.manufacturer_name = "Heiman", .model_name = "PIR_TPV12",
    .z2s_device_uid = 8815,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1},
@@ -2478,6 +2478,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "Develco Products A/S", .model_name = "WISZB-120",
     .z2s_device_uid = 9300,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 35, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B },
+                             { 38, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR }}},
+
+  {	.manufacturer_name = "Develco Products A/S", .model_name = "FLSZB-110",
+    .z2s_device_uid = 9350,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {{ 35, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B },
