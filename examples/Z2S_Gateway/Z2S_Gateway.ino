@@ -626,6 +626,7 @@ void setup() {
 
     _enable_gui_on_start = 1;
     Supla::Storage::ConfigInstance()->eraseKey(Z2S_ENABLE_GUI_ON_START_V2);
+	Supla::Storage::ConfigInstance()->commit();
     Supla::Storage::ConfigInstance()->setInt8(Z2S_ENABLE_GUI_ON_START_V2, 
 		  _enable_gui_on_start);
 		Supla::Storage::ConfigInstance()->commit();
@@ -655,6 +656,7 @@ void setup() {
 
     _gui_start_delay = 10;
     Supla::Storage::ConfigInstance()->eraseKey(Z2S_GUI_ON_START_DELAY_V2);
+	Supla::Storage::ConfigInstance()->commit();
     Supla::Storage::ConfigInstance()->setInt32(Z2S_GUI_ON_START_DELAY_V2, 
 		  _gui_start_delay);
 		Supla::Storage::ConfigInstance()->commit();
