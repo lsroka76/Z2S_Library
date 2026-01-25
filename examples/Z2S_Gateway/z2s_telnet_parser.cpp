@@ -1343,14 +1343,14 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     if (getDeviceByChannelNumber(&device, channel_id)) {
 
-      if (zbGateway.sendCustomClusterCmd(
+      /*if (zbGateway.sendCustomClusterCmd(
 			  &device, 0x0003, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr, 
         true))
 			  telnet.printf("\n\rdevice: %4X, rssi = %d\n\r>", device.short_addr, 
         zbGateway.getZbgDeviceUnitLastRssi(device.short_addr));
       else
         telnet.printf("\n\rdevice: %4X, rssi query failed!\n\r>", 
-          device.short_addr);
+          device.short_addr);*/
     }
   } else
     telnet.printf("\n\rUnrecognized command!\n\r>");

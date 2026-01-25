@@ -1077,8 +1077,10 @@ void  Z2S_updateZbDeviceLastSeenMs(
 
 void Z2S_printZbDevicesTableSlots(bool toTelnet) {
   
-  for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
+  for (uint8_t devices_counter = 0; 
+       devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
+
       char log_line[1024];
 
       sprintf_P(log_line,
@@ -1088,7 +1090,7 @@ void Z2S_printZbDevicesTableSlots(bool toTelnet) {
                      "SHORT ADDRESS\t\t0x%X\n\rENDPOINTS COUNT\t\t0x%X\n\rPOWER SOURCE\t\t0x%X\n\r"
                      "MODEL\t\t\t%lu\n\r"
                      "LAST RSSI\t\t%d\n\rLAST SEEN (MS)\t\t%lu\n\rKEEP ALIVE (MS)\t\t%lu\n\r"
-                     "TIMEOUT (MS)\t\t%lu\n\rBATTERY (%)\t\t%u\n\rUSER FLAGS\t\t%lu\n\rUSER DATA\t\t%lu\n\r"),
+                     "TIMEOUT (MS)\t\t%lu\n\rBATTERY (%)\t\t%u\n\rUSER FLAGS\t\t0x%08X\n\rUSER DATA\t\t0x%08X\n\r"),
                 devices_counter, 
                 z2s_zb_devices_table[devices_counter].record_id,
                 Z2S_getZbDeviceManufacturerName(devices_counter), 
@@ -1118,8 +1120,11 @@ void Z2S_printZbDevicesTableSlots(bool toTelnet) {
 }
 
 uint32_t Z2S_getZbDevicesTableSize() {
+  
   uint32_t _z2s_zb_devices_table_size;
-  if (Supla::Storage::ConfigInstance()->getUInt32(Z2S_ZB_DEVICES_TABLE_SIZE, &_z2s_zb_devices_table_size))
+  
+  if (Supla::Storage::ConfigInstance()->getUInt32(
+    Z2S_ZB_DEVICES_TABLE_SIZE, &_z2s_zb_devices_table_size))
     return _z2s_zb_devices_table_size;
   else
     return 0;
