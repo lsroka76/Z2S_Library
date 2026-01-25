@@ -20,7 +20,7 @@ jobs:
           arduino-cli config set board_manager.additional_urls "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
           arduino-cli config set library.enable_unsafe_install true
           arduino-cli core update-index
-          arduino-cli core install esp32:esp32@3.3.4
+          arduino-cli core install esp32:esp32@3.3.6
           arduino-cli lib install --git-url https://github.com/lsroka76/supla-device.git
           arduino-cli lib install --git-url https://github.com/LennartHennigs/ESPTelnet.git
           arduino-cli lib install --git-url https://github.com/adafruit/Adafruit_NeoPixel.git
@@ -31,9 +31,9 @@ jobs:
           arduino-cli lib install --git-url https://github.com/lsroka76/AsyncTCP.git
       - name: Copy boards.txt with C6 config
         run: | 
-          cp ./partitions/boards334.txt ~/.arduino15/packages/esp32/hardware/esp32/3.3.4/boards.txt
-          cp ./partitions/custom_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.3.4/tools/partitions/custom_zigbee_zczr.csv
-          cp ./core/HTTPUpdateServer.h ~/.arduino15/packages/esp32/hardware/esp32/3.3.4/libraries/HTTPUpdateServer/src/HTTPUpdateServer.h 
+          cp ./partitions/boards336.txt ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/boards.txt
+          cp ./partitions/custom_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/tools/partitions/custom_zigbee_zczr.csv
+          cp ./core/HTTPUpdateServer.h ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/libraries/HTTPUpdateServer/src/HTTPUpdateServer.h 
       - name: Compile Gateway_4MB_logs
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=.  
