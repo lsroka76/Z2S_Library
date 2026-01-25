@@ -134,10 +134,10 @@ public:
 
   virtual void zbAttributeRead(uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) {};
 
-  virtual void zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, 
-                                  uint16_t src_endpoint, uint16_t cluster_id, 
-                                  esp_zb_zcl_status_t status, 
-                                  const esp_zb_zcl_attribute_t *attribute) {};
+  virtual void zbReadAttrResponse(
+    uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 
+    uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status, 
+    const esp_zb_zcl_attribute_t *attribute) {};
 
   virtual void zbWriteAttrResponse(uint8_t tsn, esp_zb_zcl_status_t status, uint16_t attribute_id) {};
 

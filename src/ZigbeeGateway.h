@@ -289,8 +289,10 @@ public:
   static void bindDeviceCluster(
     zbg_device_params_t *, int16_t cluster_id, uint8_t groupcast_flag = 0);
 
-static void bindDeviceCluster2(zbg_device_params_t *, int16_t cluster_id);
+  static void bindDeviceCluster2(zbg_device_params_t *, int16_t cluster_id);
 
+  static void unbindLocalDeviceCluster(
+    zbg_device_params_t *, int16_t cluster_id);
 
   static uint32_t getZbgDeviceUnitLastSeenMs(uint16_t short_addr);
   static int8_t getZbgDeviceUnitLastRssi(uint16_t short_addr);
@@ -382,6 +384,8 @@ static void bindDeviceCluster2(zbg_device_params_t *, int16_t cluster_id);
   void sendDeviceLeaveRequest(
     esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, bool remove_children,
     bool rejoin);
+
+  void clearLocalBindings();
 
   void sendSimpleDescriptorRequestCmd(
     uint16_t addr_of_interest, uint8_t endpoint, void *user_ctx);
@@ -521,7 +525,7 @@ static void bindDeviceCluster2(zbg_device_params_t *, int16_t cluster_id);
   void onBoundDevice(void (*callback)(zbg_device_params_t *, bool)) {
     _on_bound_device = callback;
   }
-  void onBTCBoundDevice(void (*callback)(zbg_device_params_t *, uint8_t count, uint8_t position)) {
+  void onBTCBoundDevice(bool (*callback)(zbg_device_params_t *, uint8_t count, uint8_t position)) {
     _on_btc_bound_device = callback;
   }
   void onDataSaveRequest(void (*callback)(uint8_t Supla_channel, 
@@ -533,6 +537,13 @@ static void bindDeviceCluster2(zbg_device_params_t *, int16_t cluster_id);
   void onDeviceRejoin(void (*callback)(uint16_t, esp_zb_ieee_addr_t)) {
     _on_device_rejoin = callback;
   }
+  void onDeviceLeave(void (*callback)(uint16_t, esp_zb_ieee_addr_t, uint8_t)) {
+    _on_device_leave = callback;
+  }
+  void onUpdateDeviceLastRssi(void (*callback)(uint16_t, int8_t)) {
+    _on_update_device_last_rssi = callback;
+  }
+  
 
 private:
   // save instance of the class in order to use it in static functions
@@ -582,7 +593,7 @@ private:
   //static bool _read_attr_async;
   //static bool enable_attribute_reporting 
 
-  static zbg_device_unit_t zbg_device_units[ZBG_MAX_DEVICES];
+  //static zbg_device_unit_t zbg_device_units[ZBG_MAX_DEVICES];
 
   void (*_on_IAS_zone_status_change_notification)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, int);
   void (*_on_temperature_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, float);
@@ -617,11 +628,13 @@ private:
   void (*_on_cmd_custom_cluster_receive)(esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t *);
 
   void (*_on_bound_device)(zbg_device_params_t *, bool);
-  void (*_on_btc_bound_device)(zbg_device_params_t *, uint8_t count, uint8_t position);
+  bool (*_on_btc_bound_device)(zbg_device_params_t *, uint8_t count, uint8_t position);
 
   void (*_on_data_save_request)(uint8_t , uint8_t, uint8_t, uint8_t *);
 
   void (*_on_device_rejoin)(uint16_t, esp_zb_ieee_addr_t);
+  void (*_on_device_leave)(uint16_t, esp_zb_ieee_addr_t, uint8_t);
+  void (*_on_update_device_last_rssi)(uint16_t, int8_t);
 
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);
 
@@ -642,8 +655,12 @@ private:
 
   void zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
                             const esp_zb_zcl_attribute_t *attribute) override;
-  void zbReadAttrResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-                          esp_zb_zcl_status_t status, const esp_zb_zcl_attribute_t *attribute) override;
+  
+  void zbReadAttrResponse(
+    uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 
+    uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status,
+    const esp_zb_zcl_attribute_t *attribute) override;
+
   void zbWriteAttrResponse(uint8_t tsn, esp_zb_zcl_status_t status, uint16_t attribute_id) override;
   void zbIASZoneEnrollRequest(const esp_zb_zcl_ias_zone_enroll_request_message_t *message) override;
   void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) override;

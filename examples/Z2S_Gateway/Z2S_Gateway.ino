@@ -213,6 +213,7 @@ void supla_callback_bridge(int event, int action) {
           _restart_scheduled = true;
           SuplaDevice.scheduleSoftRestart(1000);
         }
+        zbGateway.clearLocalBindings();
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
         
         refresh_time = 0;
@@ -353,6 +354,8 @@ void enableZ2SNotifications() {
 
   zbGateway.onDataSaveRequest(Z2S_onDataSaveRequest);
   zbGateway.onDeviceRejoin(Z2S_onDeviceRejoin);
+  zbGateway.onDeviceLeave(Z2S_onDeviceLeave);
+  zbGateway.onUpdateDeviceLastRssi(Z2S_onUpdateDeviceLastRssi);
 }
 
 void disableZ2SNotifications() {
@@ -390,6 +393,8 @@ void disableZ2SNotifications() {
   zbGateway.onBTCBoundDevice(nullptr);
   zbGateway.onDataSaveRequest(nullptr);
   zbGateway.onDeviceRejoin(nullptr);
+  zbGateway.onDeviceLeave(nullptr);
+  zbGateway.onUpdateDeviceLastRssi(nullptr);
 }
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
@@ -626,7 +631,11 @@ void setup() {
 
     _enable_gui_on_start = 1;
     Supla::Storage::ConfigInstance()->eraseKey(Z2S_ENABLE_GUI_ON_START_V2);
+<<<<<<< Updated upstream
 	Supla::Storage::ConfigInstance()->commit();
+=======
+    Supla::Storage::ConfigInstance()->commit();
+>>>>>>> Stashed changes
     Supla::Storage::ConfigInstance()->setInt8(Z2S_ENABLE_GUI_ON_START_V2, 
 		  _enable_gui_on_start);
 		Supla::Storage::ConfigInstance()->commit();
@@ -656,7 +665,11 @@ void setup() {
 
     _gui_start_delay = 10;
     Supla::Storage::ConfigInstance()->eraseKey(Z2S_GUI_ON_START_DELAY_V2);
+<<<<<<< Updated upstream
 	Supla::Storage::ConfigInstance()->commit();
+=======
+    Supla::Storage::ConfigInstance()->commit();
+>>>>>>> Stashed changes
     Supla::Storage::ConfigInstance()->setInt32(Z2S_GUI_ON_START_DELAY_V2, 
 		  _gui_start_delay);
 		Supla::Storage::ConfigInstance()->commit();
@@ -1105,12 +1118,13 @@ if (Z2S_isGUIStarted())
     }
   }
 
-  if (zbGateway.isNewDeviceJoined()) {
+  if ((!zbGateway.getJoinedDevices().empty()) && 
+      (zbGateway.isNewDeviceJoined())) {
 
     disableZ2SNotifications();
     //zbGateway.setActivePairing(true); //TODO - rethink that idea
     
-    zbGateway.clearNewDeviceJoined();
+    //zbGateway.clearNewDeviceJoined();
     zbGateway.printJoinedDevices();
 
     while (!zbGateway.getJoinedDevices().empty())
@@ -1770,7 +1784,7 @@ if (Z2S_isGUIStarted())
                   SUPLA_CALCFG_PAIRINGRESULT_SUCCESS, found_device_name);
               }
 
-              SuplaDevice.scheduleSoftRestart(30000);
+              SuplaDevice.scheduleSoftRestart(10000);
               break;
             }   
             /*else log_i("LIST checking %s::%s, entry # %d",
