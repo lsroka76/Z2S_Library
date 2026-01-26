@@ -204,10 +204,14 @@ void initZ2SDeviceLocalActionHandler(
       uint8_t Supla_channel = 
         z2s_channels_table[channel_number_slot].Supla_channel;
       
-      auto Supla_VirtualBinary = 
-        new Supla::Sensor::VirtualBinary(true); 
+      auto Supla_LocalVirtualBinary = 
+        new Supla::Sensor::LocalVirtualBinary(true); 
       
-      Supla_VirtualBinary->getChannel()->setChannelNumber(Supla_channel);
+      Supla_LocalVirtualBinary->getChannel()->setChannelNumber(Supla_channel);
+
+      if (Supla::Notification::RegisterNotification(
+            Supla_channel, false, true))
+        Supla_LocalVirtualBinary->registerNotification();
     }
     break;
 
@@ -459,18 +463,19 @@ bool addZ2SDeviceLocalActionHandler(
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY: {
 
-      auto Supla_VirtualBinary = new Supla::Sensor::VirtualBinary(true); 
+      auto Supla_LocalVirtualBinary = 
+        new Supla::Sensor::LocalVirtualBinary(true); 
 
       z2s_channels_table[first_free_slot].Supla_channel = 
-        Supla_VirtualBinary->getChannelNumber();
+        Supla_LocalVirtualBinary->getChannelNumber();
 
       strcpy(z2s_channels_table[first_free_slot].
         Supla_channel_name, "LOCAL VIRTUAL BINARY");
       
-      Supla_VirtualBinary->setInitialCaption(
+      Supla_LocalVirtualBinary->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
-      Supla_VirtualBinary->setDefaultFunction(local_channel_func);
+      Supla_LocalVirtualBinary->setDefaultFunction(local_channel_func);
     } break;
 
 

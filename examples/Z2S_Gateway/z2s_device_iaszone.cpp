@@ -1,7 +1,7 @@
 #include "z2s_device_iaszone.h"
 #include <supla/device/notifications.h>
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void initZ2SDeviceIASzone(int16_t channel_number_slot) {
   
@@ -37,7 +37,7 @@ void initZ2SDeviceIASzone(int16_t channel_number_slot) {
     z2s_channels_table[channel_number_slot].Supla_channel, false, true);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void addZ2SDeviceIASzone(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
@@ -60,7 +60,7 @@ void addZ2SDeviceIASzone(
     SUPLA_CHANNELTYPE_BINARYSENSOR, sub_id, name, func);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void msgZ2SDeviceIASzone(
   int16_t channel_number_slot, bool state, bool check_flags) {

@@ -1862,6 +1862,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
 	  .z2s_device_endpoints_count = 1 },
 
+  {	.manufacturer_name = "Wing", .model_name = "TS0201",
+    .z2s_device_uid = 210,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
+	  .z2s_device_endpoints_count = 1 },
+
   {	.manufacturer_name = "Xiaomi", .model_name = "LYWSD03MMC-z",
     .z2s_device_uid = 300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1,
@@ -3700,9 +3705,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
-{	.manufacturer_name = "IKEA of Sweden", .model_name = "SILVERGLANS IP44 LED driver",
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "SILVERGLANS IP44 LED driver",
     .z2s_device_uid = 19605,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 WS globe 470lm",
+    .z2s_device_uid = 19645,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E27 WS globe 1055lm",
@@ -4158,6 +4168,36 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZE200_mja3fuja", .model_name = "TS0601",
     .z2s_device_uid = 23500,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE204_yvx5lh6k", .model_name = "TS0601",
+    .z2s_device_uid = 23505,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE204_c2fmom5z", .model_name = "TS0601",
+    .z2s_device_uid = 23510,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_c2fmom5z", .model_name = "TS0601",
+    .z2s_device_uid = 23515,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_ryfmq5rl", .model_name = "TS0601",
+    .z2s_device_uid = 23520,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_yvx5lh6k", .model_name = "TS0601",
+    .z2s_device_uid = 23525,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_8ygsuhe1", .model_name = "TS0601",
+    .z2s_device_uid = 23530,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 

@@ -459,3 +459,84 @@ void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
     break;
   }
 }
+
+/*****************************************************************************/
+
+Supla::Sensor::LocalVirtualBinary::LocalVirtualBinary(
+  bool keepStateInStorage) : VirtualBinary(keepStateInStorage) {
+
+};
+
+/*****************************************************************************/
+
+Supla::Sensor::LocalVirtualBinary::~LocalVirtualBinary() {
+
+};
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualBinary::handleAction(int event, int action) {
+
+  Supla::Sensor::VirtualBinary::handleAction(event, action);
+
+  if (!_notification_registered)
+    return;
+
+  switch (action) {
+    
+    
+    case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_ON:
+
+      enableNotifications();
+    break;
+
+
+    case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF:
+
+      disableNotifications();
+    break;
+    
+    
+    case SET:
+    case CLEAR:
+    case TOGGLE: 
+      
+      sendNotification();
+    break;
+  }
+}  
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualBinary::registerNotification() {
+
+  _notification_registered = true;
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualBinary::enableNotifications() {
+
+  _notifications_enabled = true;
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualBinary::disableNotifications() {
+
+  _notifications_enabled = false;
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualBinary::sendNotification() {
+
+  if (!sendIASNotifications)
+    return;
+
+  Supla::Notification::SendF(
+    channel.getChannelNumber(), "","State changed - now is %s", 
+    getValue() ? "ON" : "OFF");
+}
+
+/*****************************************************************************/

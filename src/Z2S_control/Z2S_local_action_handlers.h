@@ -29,6 +29,8 @@
 #include <supla/element_with_channel_actions.h>
 #include <supla/control/action_trigger.h>
 #include <supla/control/virtual_relay.h>
+#include <supla/sensor/virtual_binary.h>
+#include <supla/device/notifications.h>
 
 #include "Z2S_custom_actions_events.h"
 
@@ -48,6 +50,7 @@
 #define LAVB_ROTATE_RIGHT_FUNC        0x04
 #define LAVB_ROTATE_LEFT_FUNC         0x05
 
+extern bool sendIASNotifications;
 
 typedef void (*_actionhandler_callback)(int event, int action);
 
@@ -142,6 +145,7 @@ class GatewayEvents: public LocalActionHandler {
 };
 
 namespace Control {
+
 class LocalActionTrigger: public ActionTrigger, public LocalAction {
 
   public:
@@ -161,11 +165,36 @@ class LocalVirtualRelay: public VirtualRelay {
        (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER));
 
     virtual ~LocalVirtualRelay();
-    void handleAction(int event, int action) override;
-
-    
+    void handleAction(int event, int action) override; 
 };
 }; //namespace Control
+
+namespace Sensor {
+
+class LocalVirtualBinary: public VirtualBinary {
+
+  public:
+
+    LocalVirtualBinary(bool keepStateInStorage);
+    virtual ~LocalVirtualBinary();
+
+    void handleAction(int event, int action) override;
+
+    void registerNotification();
+    void enableNotifications();
+    void disableNotifications();
+  
+  private:
+
+    bool _notification_registered = false;
+    bool _notifications_enabled = false;
+
+    void sendNotification();
+
+};
+
+
+}; //namespace Sensor
 };  // namespace Supla
 
 #endif

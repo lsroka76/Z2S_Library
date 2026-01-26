@@ -427,7 +427,13 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "TURN ON LED (WHITE)" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_LED,
-		.Supla_action_name = "TURN OFF LED" }
+		.Supla_action_name = "TURN OFF LED" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_ON,
+		.Supla_action_name = "TURN ON GATEWAY SENSOR NOTIFICATIONS" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF,
+		.Supla_action_name = "TURN OFF GATEWAY SENSOR NOTIFICATIONS" }
 };
 
 static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
