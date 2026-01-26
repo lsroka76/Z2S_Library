@@ -820,7 +820,7 @@ void ZigbeeGateway::bindDeviceCluster(
   if (groupcast_flag == 1)
     return;
 
-  //return; //temp test 25.01.2026
+  return; //temp test 25.01.2026
 
   bind_req.req_dst_addr = esp_zb_get_short_address();
 

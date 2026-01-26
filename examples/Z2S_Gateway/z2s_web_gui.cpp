@@ -154,6 +154,7 @@ uint16_t trv_fixed_calibration_switcher;
 uint16_t trv_cooperative_childlock_switcher;
 uint16_t set_sorwns_on_start_switcher;
 uint16_t enable_resend_temperature_switcher;
+uint16_t skip_subdevice_registation_switcher;
 uint16_t param_1_number;
 uint16_t param_1_desc_label;
 uint16_t param_1_save_button; 
@@ -371,6 +372,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG		0x4009
 #define GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG			0x400A
 #define GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG			0x400B
+#define GUI_CB_SKIP_SUBDEVICE_REGISTRATION_FLAG		0x400C
 
 #define GUI_CB_UPDATE_KEEPALIVE_FLAG							0x4020
 #define GUI_CB_UPDATE_TIMEOUT_FLAG								0x4021
@@ -566,7 +568,7 @@ void editChannelFlagsCallback(Control *sender, int type, void *param);
 void batteryCallback(Control *sender, int type, void *param);
 void batterySwitcherCallback(Control *sender, int type, void *param);
 void removeChannelCallback(Control *sender, int type);
-void removeAllChannelsCallback(Control *sender, int type);
+//void removeAllChannelsCallback(Control *sender, int type);
 void getClustersAttributesQueryCallback(Control *sender, int type, void *param);
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param);
 void pairingSwitcherCallback(Control *sender, int type, void *param);
@@ -1928,29 +1930,40 @@ void buildChannelsTabGUI() {
 	ESPUI.setElementStyle(enable_resend_temperature_switcher, 
 												"margin: 0% 15%;");
 
+	skip_subdevice_registation_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), zero_str, 
+		Control::Color::Emerald, zb_channel_flags_label, 
+		editChannelFlagsCallback, (void*)GUI_CB_SKIP_SUBDEVICE_REGISTRATION_FLAG);
+	ESPUI.setElementStyle(
+		skip_subdevice_registation_switcher, "margin: 0% 15%;");
+
 	working_str = PSTR("");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str,
+			Control::Color::None,	zb_channel_flags_label), 
+		PSTR(clearLabelStyle));
 
-	working_str = PSTR("&#10023; <i>Enable temperature forwarding<br>"
-										 "to remote or local thermometer</i> &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearFlagsLabelStyle));
+	working_str = PSTR(
+		"&#10023; <i>Enable temperature forwarding<br>");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
+			zb_channel_flags_label), 
+		PSTR(clearFlagsLabelStyle));
+	
+	working_str = PSTR(
+		"&#10023; <i>Skip subdevice registration at startup</i> &#10023;");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
+			zb_channel_flags_label), 
+		PSTR(clearFlagsLabelStyle));
 
-	zb_channel_params_label = ESPUI.addControl(Control::Type::Label, 
-																						 PSTR("CHANNEL CUSTOM PARAMETERS"), 
-																					 	 PSTR("here you can change channel custom parameters<br>"
-																								  "(restart may be required!)"), 
-																					 	 Control::Color::Emerald, 
-																					 	 channelstab);
+	zb_channel_params_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("CHANNEL CUSTOM PARAMETERS"), 
+		PSTR("here you can change channel custom parameters<br>"
+		"(restart may be required!)"), Control::Color::Emerald, channelstab);
 	ESPUI.setElementStyle(zb_channel_params_label, PSTR(clearLabelStyle));
 
 	param_1_number = ESPUI.addControl(Control::Type::Text, //Number, 
@@ -2097,21 +2110,21 @@ void buildChannelsTabGUI() {
 									 Control::Color::None, 
 									 channelstab);
 
-	working_str = PSTR("Remove channel");
+	working_str = PSTR("Remove local channels");
 	remove_channel_button = ESPUI.addControl(Control::Type::Button, 
-																					 PSTR("Remove Supla channel(s)"), 
+																					 PSTR("Remove local channel"), 
 																					 working_str, 
 																					 Control::Color::Alizarin, 
 																					 channelstab, 
 																					removeChannelCallback);
 
-	working_str = PSTR("Remove all channels!");
+	/*working_str = PSTR("Remove all channels!");
 	remove_all_channels_button = ESPUI.addControl(Control::Type::Button, 
 																								PSTR(empty_str), 
 																								working_str, 
 																								Control::Color::Alizarin, 
 																								remove_channel_button, 
-																								removeAllChannelsCallback);
+																								removeAllChannelsCallback);*/
 
 	channel_status_label = ESPUI.addControl(
 		Control::Type::Label, PSTR("Status"), three_dots_str, 
@@ -5014,6 +5027,7 @@ void enableChannelControls(bool enable) {
 	ESPUI.updateNumber(trv_cooperative_childlock_switcher, 0);
 	ESPUI.updateNumber(set_sorwns_on_start_switcher, 0);
 	ESPUI.updateNumber(enable_resend_temperature_switcher, 0);
+	ESPUI.updateNumber(skip_subdevice_registation_switcher, 0);
 	ESPUI.updateSelect(channel_local_function, minus_one_str);
 	
 	enableControlStyle(channel_name_text, enable);
@@ -5025,6 +5039,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(trv_cooperative_childlock_switcher, enable);
 	enableControlStyle(set_sorwns_on_start_switcher, enable);
 	enableControlStyle(enable_resend_temperature_switcher, enable);
+	enableControlStyle(skip_subdevice_registation_switcher, enable);
 	enableControlStyle(param_1_number, enable);
 	enableControlStyle(param_2_number, enable);
 	enableControlStyle(param_1_save_button, enable);
@@ -5120,6 +5135,14 @@ void enableChannelFlags(uint8_t flags_mask) {
 	else {
 		ESPUI.updateNumber(enable_resend_temperature_switcher, 0);
 		enableControlStyle(enable_resend_temperature_switcher, false);
+	}
+
+	if (flags_mask & 16)
+		enableControlStyle(
+			skip_subdevice_registation_switcher, true);
+	else {
+		ESPUI.updateNumber(skip_subdevice_registation_switcher, 0);
+		enableControlStyle(skip_subdevice_registation_switcher, false);
 	}
 
 	if (flags_mask == 0) 
@@ -5283,8 +5306,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 	ESPUI.updateSelect(channel_local_function, minus_one_str);
 	enableControlStyle(channel_local_function, false);
 
-	switch (z2s_channels_table[channel_slot].\
-						Supla_channel_type) {
+	switch (z2s_channels_table[channel_slot].Supla_channel_type) {
 
 		case 0x0000: {
 
@@ -5351,7 +5373,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				refresh_number, 
 				z2s_channels_table[channel_slot].refresh_secs);
 	
-			enableChannelFlags(5);
+			enableChannelFlags(5 + 16);
 			
 			ESPUI.updateNumber(
 				disable_channel_notifications_switcher, 
@@ -5388,7 +5410,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 			ESPUI.updateNumber(refresh_number, 
 				z2s_channels_table[channel_slot].refresh_secs);
 	
-			enableChannelFlags(0); 
+			enableChannelFlags(16); 
 		} break;
 
 
@@ -5396,7 +5418,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
 		case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 	
-			enableChannelFlags(4+8);
+			enableChannelFlags(4 + 8 + 16);
 			enableChannelTimings(2); //timeout only
 
 			ESPUI.updateNumber(
@@ -5447,7 +5469,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT: {
 
 			enableChannelTimings(0);
-			enableChannelFlags(0);
+			enableChannelFlags(16);
 			enableChannelParams(3);
 		} break;
 		
@@ -5462,7 +5484,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 			ESPUI.updateNumber(
 				timeout_number, z2s_channels_table[channel_slot].timeout_secs);
 	
-			enableChannelFlags(2);
+			enableChannelFlags(2 + 16);
 			ESPUI.updateNumber(
 				trv_auto_to_schedule_switcher, 
 				(z2s_channels_table[channel_slot].user_data_flags &
@@ -5527,7 +5549,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 												 "ie. to set correction to -1 enter -100 &#10023;");
 			ESPUI.updateText(param_1_desc_label, working_str);
 
-			enableChannelFlags(0);
+			enableChannelFlags(16);
 		} break;
 
 		
@@ -5545,7 +5567,7 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				ESPUI.updateNumber(timeout_number, 
 					z2s_channels_table[channel_slot].timeout_secs);
 
-				enableChannelFlags(0);
+				enableChannelFlags(16);
 			}
 		} break;
 
@@ -5553,20 +5575,28 @@ void updateChannelInfoLabel(uint8_t label_number) {
 		case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
 			enableChannelTimings(7); //timeout + keepalive + refresh
-			ESPUI.updateNumber(keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
-			ESPUI.updateNumber(timeout_number, z2s_channels_table[channel_slot].timeout_secs);
-			ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+			ESPUI.updateNumber(
+				keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
+			ESPUI.updateNumber(
+				timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(
+				refresh_number, z2s_channels_table[channel_slot].refresh_secs);
 
-			enableChannelFlags(0);
+			enableChannelFlags(16);
 		} break;
 
 
 		default: {
 
 			enableChannelTimings(0);
-			enableChannelFlags(0);
+			enableChannelFlags(16);
 		} break;
 	}
+	if (z2s_channels_table[channel_slot].local_channel_type != 0)
+		ESPUI.updateNumber(
+			skip_subdevice_registation_switcher, 
+			(z2s_channels_table[channel_slot].user_data_flags & 
+			USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION) ? 1 : 0);
 }
 
 void channelSelectorCallback(Control *sender, int type) {
@@ -6284,7 +6314,26 @@ void removeChannelCallback(Control *sender, int type) {
     bool is_zigbee_channel = 
 			(z2s_channels_table[channel_slot].local_channel_type == 0);
 
-		if (Z2S_removeChannel(channel_slot, true)) {
+		if (is_zigbee_channel) {
+
+			sprintf_P(
+					general_purpose_gui_buffer, PSTR(
+						"Single channel removal is depreciated - "
+						"use SKIP_SUBDEVICE_REGISTRATION flag"));
+
+      	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
+		} else {
+
+			if (Z2S_removeChannel(channel_slot, true)) {
+
+				sprintf_P(
+					general_purpose_gui_buffer, PSTR(
+						":Local channel # %02u with all actions removed."), channel_slot);
+
+      	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
+			}
+		}
+		/*if (Z2S_removeChannel(channel_slot, true)) {
 
 			if (is_zigbee_channel) {
 				
@@ -6304,11 +6353,11 @@ void removeChannelCallback(Control *sender, int type) {
       	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
 				
 			}
-		}
+		}*/
 	}
 }
 
-void removeAllChannelsCallback(Control *sender, int type) {
+/*void removeAllChannelsCallback(Control *sender, int type) {
 
 	if (type == B_UP) {
 		
@@ -6320,7 +6369,7 @@ void removeAllChannelsCallback(Control *sender, int type) {
       SuplaDevice.scheduleSoftRestart(1000);
 		}
 	}
-}
+}*/
 
 void pairingSwitcherCallback(Control *sender, int type, void *param){
 
@@ -6810,19 +6859,19 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 				case GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, 
-																	USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+							Z2S_setChannelFlags(
+								channel_slot, USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
 						else
-							Z2S_clearChannelFlags(channel_slot, 
-																		USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+							Z2S_clearChannelFlags(
+								channel_slot, USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
 				} break;
 
 
 				case GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, 
-																	USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
+							Z2S_setChannelFlags(
+						channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
 						else {
 
 							z2s_channels_table[channel_slot].\
@@ -6830,9 +6879,9 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 
 							z2s_channels_table[channel_slot].Supla_remote_channel = 0xFF;
 
-							Z2S_clearChannelFlags(channel_slot, 
-																		USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE |
-																		USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS);			
+							Z2S_clearChannelFlags(
+								channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE |
+								USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS);			
 						}	
 					
 					updateChannelInfoLabel(1);
@@ -6842,11 +6891,22 @@ void editChannelFlagsCallback(Control *sender, int type, void *param) {
 				case GUI_CB_SET_SORWNS_ON_START_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, 
-																	USER_DATA_FLAG_SET_SORWNS_ON_START);
+							Z2S_setChannelFlags(
+								channel_slot, USER_DATA_FLAG_SET_SORWNS_ON_START);
 						else
-							Z2S_clearChannelFlags(channel_slot, 
-																		USER_DATA_FLAG_SET_SORWNS_ON_START);
+							Z2S_clearChannelFlags(
+								channel_slot, USER_DATA_FLAG_SET_SORWNS_ON_START);
+				} break;
+
+
+				case GUI_CB_SKIP_SUBDEVICE_REGISTRATION_FLAG: {
+
+					if (type == S_ACTIVE)
+							Z2S_setChannelFlags(
+								channel_slot, USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
+						else
+							Z2S_clearChannelFlags(
+								channel_slot, USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
 				} break;	
 		}
 	}

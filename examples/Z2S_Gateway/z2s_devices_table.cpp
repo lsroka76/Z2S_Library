@@ -1778,11 +1778,27 @@ void Z2S_initSuplaChannels() {
           auto element = Supla::Element::getElementByChannelNumber(
             z2s_channels_table[channels_counter].Supla_channel);
         
-          element->getChannel()->setSubDeviceId(zb_device_number_slot + 1);
+          if (Z2S_checkChannelFlags(
+                channels_counter, USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION)) {
+
+            log_i(
+              "Skipping subdevice registration for channel #%u!", 
+              channels_counter);    
+
+            element->getChannel()->setSubDeviceId(0); 
+          } else {
+
+            log_i(
+              "Registering channel #%u to subdevice #%u", channels_counter,
+              zb_device_number_slot + 1);      
+
+            element->getChannel()->setSubDeviceId(zb_device_number_slot + 1);
+          }
+
           element->getChannel()->setFlag(
             SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-          log_i("setSubDeviceId to %u", zb_device_number_slot + 1);
+          //log_i("setSubDeviceId to %u", zb_device_number_slot + 1);
         }
 
       }

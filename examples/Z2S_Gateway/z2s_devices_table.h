@@ -56,6 +56,7 @@
 #define USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE                (1 << 11) // 0x0800
 #define USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS                 (1 << 12) // 0x1000
 #define USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0               (1 << 13) // 0x2000
+#define USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION              (1 << 14) // 0x4000
 
 #define ZBD_USER_DATA_FLAG_VERSION_2_0                          (1 << 0)
 #define ZBD_USER_DATA_FLAG_BINDING_REQUIRED                     (1 << 1)
