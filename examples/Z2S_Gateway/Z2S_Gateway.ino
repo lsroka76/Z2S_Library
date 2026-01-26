@@ -105,7 +105,7 @@ ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi;
-Supla::LittleFsConfig     configSupla(4096);
+Supla::LittleFsConfig     configSupla(4160);
 
 Supla::EspWebServer *suplaServer;
 
