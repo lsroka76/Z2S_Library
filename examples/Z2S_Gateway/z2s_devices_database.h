@@ -57,6 +57,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F                 0x1110
 #define Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2               0x1111
+#define Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F                 0x1112
 
 #define Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE           0x1150
 
@@ -419,6 +420,7 @@
 #define TUYA_SOIL_SENSOR_3F_WATER_WARNING_SID               0x00
 #define TUYA_SOIL_SENSOR_3F_TH_SID                          0x01
 #define TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID               0x02
+#define TUYA_SOIL_SENSOR_4F_ILLUMINANCE_SID                 0x03
 
 //#define IAS_ZONE_ALARM_1_SID                              0x00
 //#define IAS_ZONE_ALARM_2_SID                              0x01
@@ -1507,6 +1509,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -4116,6 +4123,24 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               { 3, Z2S_DEVICE_DESC_TUYA_RELAY },
                               { 4, Z2S_DEVICE_DESC_TUYA_RELAY }}},
 
+  {	.manufacturer_name = "_TZ3000_knoj8lpk", .model_name = "TS0004",
+    .z2s_device_uid = 22605,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_RELAY },
+                              { 2, Z2S_DEVICE_DESC_TUYA_RELAY },
+                              { 3, Z2S_DEVICE_DESC_TUYA_RELAY },
+                              { 4, Z2S_DEVICE_DESC_TUYA_RELAY }}},
+
+  {	.manufacturer_name = "_TZ3000_3n2minvf", .model_name = "TS0004",
+    .z2s_device_uid = 22610,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = { { 1, Z2S_DEVICE_DESC_TUYA_RELAY },
+                              { 2, Z2S_DEVICE_DESC_TUYA_RELAY },
+                              { 3, Z2S_DEVICE_DESC_TUYA_RELAY },
+                              { 4, Z2S_DEVICE_DESC_TUYA_RELAY }}},
+
   {	.manufacturer_name = "_TZE204_jtbgusdc", .model_name = "TS0601",
     .z2s_device_uid = 22700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH,
@@ -4818,6 +4843,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 33000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Arteco", .model_name = "ZS-304Z",
+    .z2s_device_uid = 33100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F,
+    .z2s_device_endpoints_count = 1}
 
 
   

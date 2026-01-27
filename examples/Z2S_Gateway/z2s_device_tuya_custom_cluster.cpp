@@ -674,6 +674,13 @@ void processTuyaSoilSensor3FReport(
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID);
 
+  int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].ieee_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SOIL_SENSOR_4F_ILLUMINANCE_SID);
+
   Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
   uint8_t water_warning_dp = 0;
@@ -681,6 +688,8 @@ void processTuyaSoilSensor3FReport(
   uint8_t humidity_dp      = 0;
   uint8_t soil_moisture_dp = 0;
   uint8_t battery_dp       = 0;
+  uint8_t illuminance_dp   = 0;
+  uint8_t battery_state_dp = 0;
 
   switch (model_id) {
 
@@ -696,13 +705,23 @@ void processTuyaSoilSensor3FReport(
 
 
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
-
-      
+  
       water_warning_dp = TUYA_SOIL_SENSOR_3F_2_WATER_WARNING_DP;
       temperature_dp   = TUYA_SOIL_SENSOR_3F_2_TEMPERATURE_DP;
       humidity_dp      = TUYA_SOIL_SENSOR_3F_2_HUMIDITY_DP;
       soil_moisture_dp = TUYA_SOIL_SENSOR_3F_2_SOIL_MOISTURE_DP;
       battery_dp       = TUYA_SOIL_SENSOR_3F_2_BATTERY_DP;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F: {
+  
+      water_warning_dp = TUYA_SOIL_SENSOR_4F_WATER_WARNING_DP;
+      temperature_dp   = TUYA_SOIL_SENSOR_4F_TEMPERATURE_DP;
+      humidity_dp      = TUYA_SOIL_SENSOR_4F_HUMIDITY_DP;
+      soil_moisture_dp = TUYA_SOIL_SENSOR_4F_SOIL_MOISTURE_DP;
+      illuminance_dp   = TUYA_SOIL_SENSOR_4F_ILLUMINANCE_DP;
+      battery_state_dp = TUYA_SOIL_SENSOR_4F_BATTERY_STATE_DP;
     } break;
 
 
@@ -750,6 +769,17 @@ void processTuyaSoilSensor3FReport(
         Tuya_read_dp_result.dp_value);
   }
 
+  if (illuminance_dp) {
+    
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, illuminance_dp, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success)
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+        Tuya_read_dp_result.dp_value);
+  }
+
   if (battery_dp) {
     
     Z2S_readTuyaDPvalue(
@@ -761,6 +791,21 @@ void processTuyaSoilSensor3FReport(
 
       updateSuplaBatteryLevel(
         channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
+        Tuya_read_dp_result.dp_value);  
+    }
+  }
+
+  if (battery_state_dp) {
+    
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, battery_state_dp, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) { 
+
+      log_i("Battery state 0x)0E is %d", Tuya_read_dp_result.dp_value * 50);
+
+      updateSuplaBatteryLevel(
+        channel_number_slot_1, ZBD_BATTERY_STATE_MSG, 
         Tuya_read_dp_result.dp_value);  
     }
   }
@@ -2789,6 +2834,7 @@ void processTuyaDataReport(
 
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F:
 
       processTuyaSoilSensor3FReport(
         channel_number_slot, payload_size, payload, 10, model_id); 

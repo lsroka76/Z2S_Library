@@ -49,6 +49,20 @@
 #define TUYA_SOIL_SENSOR_3F_2_SOIL_SAMPLING_DP                      0x70
 #define TUYA_SOIL_SENSOR_3F_2_SOIL_WARNING_DP                       0x6E
 
+#define TUYA_SOIL_SENSOR_4F_WATER_WARNING_DP                        0x6F
+#define TUYA_SOIL_SENSOR_4F_TEMPERATURE_DP                          0x05
+#define TUYA_SOIL_SENSOR_4F_HUMIDITY_DP                             0x65
+#define TUYA_SOIL_SENSOR_4F_ILLUMINANCE_DP                          0x66
+#define TUYA_SOIL_SENSOR_4F_SOIL_MOISTURE_DP                        0x03
+#define TUYA_SOIL_SENSOR_4F_BATTERY_STATE_DP                        0x0E
+#define TUYA_SOIL_SENSOR_4F_TEMPERATURE_CALIBRATION_DP              0x6B
+#define TUYA_SOIL_SENSOR_4F_HUMIDITY_CALIBRATION_DP                 0x69
+#define TUYA_SOIL_SENSOR_4F_SOIL_CALIBRATION_DP                     0x68
+#define TUYA_SOIL_SENSOR_4F_ILLUMINANCE_CALIBRATION_DP              0x6A
+#define TUYA_SOIL_SENSOR_4F_SOIL_SAMPLING_DP                        0x67
+#define TUYA_SOIL_SENSOR_4F_SOIL_WARNING_DP                         0x6E
+
+
 #define TUYA_TH_SENSOR_TEMPERATURE_DP                               0x01
 #define TUYA_TH_SENSOR_HUMIDITY_DP                                  0x02
 #define TUYA_TH_SENSOR_BATTERY_STATE_DP                             0x03

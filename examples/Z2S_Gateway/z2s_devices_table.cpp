@@ -5179,7 +5179,8 @@ uint8_t Z2S_addZ2SDevice(
 /*****************************************************************************/
 
       case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
-      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
+      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
+      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F: {
 
         switch (sub_id) {
 
@@ -5198,6 +5199,7 @@ uint8_t Z2S_addZ2SDevice(
 
 
           case TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID:
+          case TUYA_SOIL_SENSOR_4F_ILLUMINANCE_SID:
 
             addZ2SDeviceGeneralPurposeMeasurement(
               device, first_free_slot, sub_id, name, func, unit); 
@@ -7636,6 +7638,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2:
@@ -9016,7 +9019,8 @@ void Z2S_buildSuplaChannels(
 /*****************************************************************************/
 
 case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
-case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
+case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
+case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F: {
 
       Z2S_addZ2SDevice(
         joined_device, TUYA_SOIL_SENSOR_3F_WATER_WARNING_SID, "WATER ALARM", 
@@ -9027,6 +9031,11 @@ case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
       Z2S_addZ2SDevice(
         joined_device, TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID,"SOIL MOISTURE",
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "%");
+
+      if (joined_device->model_id == Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F)
+        Z2S_addZ2SDevice(
+        joined_device, TUYA_SOIL_SENSOR_4F_ILLUMINANCE_SID,"ILLUMINANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
     } break;
 
 /*****************************************************************************/
