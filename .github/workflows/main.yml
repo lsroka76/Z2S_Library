@@ -54,7 +54,7 @@ jobs:
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.no_logs.bin
       - name: Compile Gateway_8MB_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc,DebugLevel=verbose -e --library=.
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr_debug,FlashSize=8M,CDCOnBoot=cdc,DebugLevel=verbose -e --library=.
       - name: Rename binaries 8MB_logs
         working-directory: .
         run: |
@@ -62,7 +62,7 @@ jobs:
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.logs.bin
       - name: Compile Gateway_8MB_no_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc -e --library=.
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr_debug,FlashSize=8M,CDCOnBoot=cdc -e --library=.
       - name: Rename binaries 8MB_no_logs
         working-directory: .
         run: |
