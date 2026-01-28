@@ -806,7 +806,7 @@ void processTuyaSoilSensor3FReport(
 
       updateSuplaBatteryLevel(
         channel_number_slot_1, ZBD_BATTERY_STATE_MSG, 
-        Tuya_read_dp_result.dp_value);  
+        Tuya_read_dp_result.dp_value * 50);  
     }
   }
 }
