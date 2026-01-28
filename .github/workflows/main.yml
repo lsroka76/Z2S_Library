@@ -38,7 +38,7 @@ jobs:
           cp ./core/HTTPUpdateServer.h ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/libraries/HTTPUpdateServer/src/HTTPUpdateServer.h 
       - name: Compile Gateway_8MB_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:UploadSpeed=921600,CDCOnBoot=cdc,CPUFreq=160,FlashFreq=80,FlashMode=qio,FlashSize=8M,PartitionScheme=zigbee_zczr_8MB,DebugLevel=verbose,EraseFlash=none,JTAGAdapter=default,ZigbeeMode=zczr_debug --build-property compiler.optimization_flags="-w -Os -Werror=return-type" -e --library=.
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:UploadSpeed=921600,CDCOnBoot=cdc,CPUFreq=160,FlashFreq=80,FlashMode=qio,FlashSize=8M,PartitionScheme=zigbee_zczr_8MB,DebugLevel=verbose,EraseFlash=none,JTAGAdapter=default,ZigbeeMode=zczr_debug --build-property compiler.cpp.extra_flags="-w -Os -Werror=return-type" -e --library=.
       - name: Rename binaries 8MB_logs
         working-directory: .
         run: |
