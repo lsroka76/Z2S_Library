@@ -3378,6 +3378,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "SONOFF", .model_name = "BASICZBR3",
+    .z2s_device_uid = 16415,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "SONOFF", .model_name = "ZBMINIR2",
     .z2s_device_uid = 16500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
