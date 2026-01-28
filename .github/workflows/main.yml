@@ -28,7 +28,7 @@ jobs:
           arduino-cli lib install --git-url https://github.com/adafruit/Adafruit_NeoPixel.git
           arduino-cli lib install --git-url https://github.com/dojyorin/arduino_base64.git
           arduino-cli lib install --git-url https://github.com/lsroka76/ESPUI.git
-          arduino-cli lib install --git-url https://github.com/lsroka/ArduinoJson.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/ArduinoJson.git
           arduino-cli lib install --git-url https://github.com/lsroka76/ESPAsyncWebServer.git
           arduino-cli lib install --git-url https://github.com/lsroka76/AsyncTCP.git
       - name: Copy boards.txt with C6 config
