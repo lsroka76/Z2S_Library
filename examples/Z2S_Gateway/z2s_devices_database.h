@@ -210,7 +210,9 @@
 #define Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH                   0x4607
 
 #define Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES      0x4650
-#define Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER            0x4660
+#define Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER         0x4660
+#define Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER         0x4665
+
 #define Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER            0x4670
 
 #define Z2S_DEVICE_DESC_ON_OFF_VALVE_DC                     0x4700
@@ -613,14 +615,14 @@
 #define TUYA_LCD_PANEL_3_RELAYS_COOL_ON_SID                 0x11
 #define TUYA_LCD_PANEL_3_RELAYS_HEAT_ON_SID                 0x12
 
-#define TUYA_8_RELAYS_CONTROLLER_RELAY_1_SID                0x01
-#define TUYA_8_RELAYS_CONTROLLER_RELAY_2_SID                0x02
-#define TUYA_8_RELAYS_CONTROLLER_RELAY_3_SID                0x03
-#define TUYA_8_RELAYS_CONTROLLER_RELAY_4_SID                0x04
-#define TUYA_8_RELAYS_CONTROLLER_RELAY_5_SID                0x05
-#define TUYA_8_RELAYS_CONTROLLER_RELAY_6_SID                0x06
-#define TUYA_8_RELAYS_CONTROLLER_RELAY_7_SID                0x07
-#define TUYA_8_RELAYS_CONTROLLER_RELAY_8_SID                0x08
+#define TUYA_X_RELAYS_CONTROLLER_RELAY_1_SID                0x01
+#define TUYA_X_RELAYS_CONTROLLER_RELAY_2_SID                0x02
+#define TUYA_X_RELAYS_CONTROLLER_RELAY_3_SID                0x03
+#define TUYA_X_RELAYS_CONTROLLER_RELAY_4_SID                0x04
+#define TUYA_X_RELAYS_CONTROLLER_RELAY_5_SID                0x05
+#define TUYA_X_RELAYS_CONTROLLER_RELAY_6_SID                0x06
+#define TUYA_X_RELAYS_CONTROLLER_RELAY_7_SID                0x07
+#define TUYA_X_RELAYS_CONTROLLER_RELAY_8_SID                0x08
 #define TUYA_8_RELAYS_CONTROLLER_STATUS_SID                 0x1B // ENUM ??
 #define TUYA_8_RELAYS_CONTROLLER_LOCK_SID                   0x1D
 
@@ -954,7 +956,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
-  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER,
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -4620,12 +4627,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE204_1oft6qso", .model_name = "TS0601",
     .z2s_device_uid = 29300,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE204_adlblwab", .model_name = "TS0601",
     .z2s_device_uid = 29350,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER,
     .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_j0ktmul1", .model_name = "TS011F",
@@ -4852,7 +4859,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "Arteco", .model_name = "ZS-304Z",
     .z2s_device_uid = 33100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_f5efvtbv", .model_name = "TS0601",
+    .z2s_device_uid = 33200,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER,
+    .z2s_device_endpoints_count = 1},
 
 
   

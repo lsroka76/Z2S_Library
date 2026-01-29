@@ -1688,14 +1688,14 @@ void processTuyaRelaysDataReport(
 
 /*******************************************************************************/
 
-void processTuya8RelaysDataReport(
+void processTuyaXRelaysDataReport(
   int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
-  uint32_t model_id) {
+  uint32_t model_id, uint8_t relays_number) {
 
   
   Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
-  for (uint8_t dps_counter = 1; dps_counter <= 8; dps_counter++) {
+  for (uint8_t dps_counter = 1; dps_counter <= relays_number; dps_counter++) {
 
     Z2S_readTuyaDPvalue(Tuya_read_dp_result,
       dps_counter, payload_size, payload);
@@ -1704,8 +1704,7 @@ void processTuya8RelaysDataReport(
       z2s_channels_table[channel_number_slot].ieee_addr, 
       z2s_channels_table[channel_number_slot].endpoint, 
       z2s_channels_table[channel_number_slot].cluster_id, 
-      SUPLA_CHANNELTYPE_RELAY, 
-      dps_counter);
+      SUPLA_CHANNELTYPE_RELAY, dps_counter);
   
     if (Tuya_read_dp_result.is_success) {
 
@@ -2978,10 +2977,16 @@ void processTuyaDataReport(
     break;
 
       
-    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
 
-      processTuya8RelaysDataReport(
-        channel_number_slot, payload_size, payload, model_id); 
+      processTuyaXRelaysDataReport(
+        channel_number_slot, payload_size, payload, model_id, 8); 
+    break;
+
+    case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
+
+      processTuyaXRelaysDataReport(
+        channel_number_slot, payload_size, payload, model_id, 4); 
     break;
 
 

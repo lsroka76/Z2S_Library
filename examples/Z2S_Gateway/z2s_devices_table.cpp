@@ -5266,20 +5266,21 @@ uint8_t Z2S_addZ2SDevice(
 /*****************************************************************************/     
 
 
-      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER: {
+      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
+      case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER: {
 
 
         switch (sub_id) {
 
 
-          case TUYA_8_RELAYS_CONTROLLER_RELAY_1_SID:
-          case TUYA_8_RELAYS_CONTROLLER_RELAY_2_SID:
-          case TUYA_8_RELAYS_CONTROLLER_RELAY_3_SID:
-          case TUYA_8_RELAYS_CONTROLLER_RELAY_4_SID:
-          case TUYA_8_RELAYS_CONTROLLER_RELAY_5_SID:
-          case TUYA_8_RELAYS_CONTROLLER_RELAY_6_SID:
-          case TUYA_8_RELAYS_CONTROLLER_RELAY_7_SID:
-          case TUYA_8_RELAYS_CONTROLLER_RELAY_8_SID:
+          case TUYA_X_RELAYS_CONTROLLER_RELAY_1_SID:
+          case TUYA_X_RELAYS_CONTROLLER_RELAY_2_SID:
+          case TUYA_X_RELAYS_CONTROLLER_RELAY_3_SID:
+          case TUYA_X_RELAYS_CONTROLLER_RELAY_4_SID:
+          case TUYA_X_RELAYS_CONTROLLER_RELAY_5_SID:
+          case TUYA_X_RELAYS_CONTROLLER_RELAY_6_SID:
+          case TUYA_X_RELAYS_CONTROLLER_RELAY_7_SID:
+          case TUYA_X_RELAYS_CONTROLLER_RELAY_8_SID:
           //case TUYA_8_RELAYS_CONTROLLER_LOCK_SID:
 
             addZ2SDeviceVirtualRelay(
@@ -7693,7 +7694,8 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
     case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
     case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
-    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
@@ -8188,7 +8190,8 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
-    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER: {
+    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER::
+    case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER: {
 
       Z2S_addZ2SDevice(
         joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_1_SID, "RELAY 1");
@@ -8202,20 +8205,24 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_4_SID, "RELAY 4");
 
-      Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_5_SID, "RELAY 5");
+      if (joined_device->model_id == 
+            Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER) {
 
-      Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_6_SID, "RELAY 6");
+        Z2S_addZ2SDevice(
+          joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_5_SID, "RELAY 5");
 
-      Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_7_SID, "RELAY 7");
+        Z2S_addZ2SDevice(
+          joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_6_SID, "RELAY 6");
 
-      Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_8_SID, "RELAY 8");
+        Z2S_addZ2SDevice(
+          joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_7_SID, "RELAY 7");
 
-      Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_STATUS_SID, "STATUS ?");
+        Z2S_addZ2SDevice(
+          joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_8_SID, "RELAY 8");
+
+        Z2S_addZ2SDevice(
+          joined_device, TUYA_8_RELAYS_CONTROLLER_STATUS_SID, "STATUS ?");
+      }
     } break;
 
 /*****************************************************************************/
