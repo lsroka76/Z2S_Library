@@ -8190,7 +8190,7 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
-    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER::
+    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER: {
 
       Z2S_addZ2SDevice(
