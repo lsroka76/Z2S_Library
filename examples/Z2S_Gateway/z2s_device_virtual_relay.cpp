@@ -71,7 +71,8 @@ void initZ2SDeviceVirtualRelay(
 
 
       case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
-      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
+      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
+      case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
       case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
       case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
@@ -232,7 +233,8 @@ void initZ2SDeviceVirtualRelay(
       break;
 
 
-      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_CONTROLLER:
+      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
+      case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
 
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
           z2s_channels_table[channel_number_slot].sub_id);
