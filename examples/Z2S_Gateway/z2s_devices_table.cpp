@@ -8206,7 +8206,7 @@ void Z2S_buildSuplaChannels(
         joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_4_SID, "RELAY 4");
 
       if (joined_device->model_id == 
-            Z2S_DEVICE_DESC_TUYA_X_RELAYS_DP_CONTROLLER) {
+            Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER) {
 
         Z2S_addZ2SDevice(
           joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_5_SID, "RELAY 5");
