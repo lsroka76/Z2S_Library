@@ -8194,31 +8194,31 @@ void Z2S_buildSuplaChannels(
     case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER: {
 
       Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_1_SID, "RELAY 1");
+        joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_1_SID, "RELAY 1");
 
       Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_2_SID, "RELAY 2");
+        joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_2_SID, "RELAY 2");
 
       Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_3_SID, "RELAY 3");
+        joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_3_SID, "RELAY 3");
 
       Z2S_addZ2SDevice(
-        joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_4_SID, "RELAY 4");
+        joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_4_SID, "RELAY 4");
 
       if (joined_device->model_id == 
-            Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER) {
+            Z2S_DEVICE_DESC_TUYA_X_RELAYS_DP_CONTROLLER) {
 
         Z2S_addZ2SDevice(
-          joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_5_SID, "RELAY 5");
+          joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_5_SID, "RELAY 5");
 
         Z2S_addZ2SDevice(
-          joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_6_SID, "RELAY 6");
+          joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_6_SID, "RELAY 6");
 
         Z2S_addZ2SDevice(
-          joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_7_SID, "RELAY 7");
+          joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_7_SID, "RELAY 7");
 
         Z2S_addZ2SDevice(
-          joined_device, TUYA_8_RELAYS_CONTROLLER_RELAY_8_SID, "RELAY 8");
+          joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_8_SID, "RELAY 8");
 
         Z2S_addZ2SDevice(
           joined_device, TUYA_8_RELAYS_CONTROLLER_STATUS_SID, "STATUS ?");
