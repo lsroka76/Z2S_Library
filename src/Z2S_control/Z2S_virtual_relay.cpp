@@ -434,6 +434,19 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
     _gateway->sendAttributeRead(
       &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+
+	switch (_z2s_function) {
+
+
+      case Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY: {
+
+        uint8_t realy_dp_id = _z2s_function_value_U8;
+
+        sendTuyaRequestCmdBool(
+          _gateway, &_device, realy_dp_id, state);
+        
+      } break;
+	}
   }
 }
 
