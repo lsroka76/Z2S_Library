@@ -5497,9 +5497,9 @@ uint8_t Z2S_addZ2SDevice(
 
         char button_name_function[30];
         sprintf(button_name_function, IKEA_SYMFONISK_BUTTONS[sub_id]);
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
-                                  button_name_function, 
-                                  SUPLA_CHANNELFNC_POWERSWITCH);
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, button_name_function, 
+          SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 /*****************************************************************************/     

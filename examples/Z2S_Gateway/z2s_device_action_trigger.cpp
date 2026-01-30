@@ -968,19 +968,18 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
-        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
           virtual_button_data.button_action_trigger_flag = 
-            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+            SUPLA_ACTION_CAP_SHORT_PRESS_x3;
           virtual_button_data.button_action_id = 
-            Supla::SEND_AT_SHORT_PRESS_x1;
+            Supla::SEND_AT_SHORT_PRESS_x3;
           virtual_button_data.button_action_trigger_name = "DOT";
           return true;
         } break;
 
-
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -1009,9 +1008,9 @@ bool getVirtualButtonNumber(
 
           virtual_button_data.button_id = 1;
           virtual_button_data.button_action_trigger_flag = 
-            SUPLA_ACTION_CAP_HOLD;
+            SUPLA_ACTION_CAP_SHORT_PRESS_x4;
           virtual_button_data.button_action_id = 
-            Supla::SEND_AT_HOLD;
+            Supla::SUPLA_ACTION_CAP_SHORT_PRESS_x4;
           virtual_button_data.button_action_trigger_name = "DOT";
           return true;
         } break;
@@ -1049,9 +1048,9 @@ bool getVirtualButtonNumber(
 
           virtual_button_data.button_id = 7;
           virtual_button_data.button_action_trigger_flag = 
-            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+            SUPLA_ACTION_CAP_SHORT_PRESS_x3;
           virtual_button_data.button_action_id = 
-            Supla::SEND_AT_SHORT_PRESS_x1;
+            Supla::SEND_AT_SHORT_PRESS_x3;
           virtual_button_data.button_action_trigger_name = "DOTS";
           return true;
         } break;
@@ -1085,9 +1084,9 @@ bool getVirtualButtonNumber(
 
           virtual_button_data.button_id = 7;
           virtual_button_data.button_action_trigger_flag = 
-            SUPLA_ACTION_CAP_HOLD;
+            SUPLA_ACTION_CAP_SHORT_PRESS_x4;
           virtual_button_data.button_action_id = 
-            Supla::SEND_AT_HOLD;
+            Supla::SUPLA_ACTION_CAP_SHORT_PRESS_x4;
           virtual_button_data.button_action_trigger_name = "DOTS";
           return true;
         } break;
