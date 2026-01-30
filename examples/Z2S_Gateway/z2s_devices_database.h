@@ -4705,6 +4705,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER,
     .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "LUMI", .model_name = "lumi.curtain.acn002",
+    .z2s_device_uid = 30450,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER,
+    .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZ3210_y5rtzkmc", .model_name = "TS0504B",
     .z2s_device_uid = 30500,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT,

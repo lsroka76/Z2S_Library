@@ -447,7 +447,7 @@ static constexpr char* zigbee_primary_channel_text_str PROGMEM =
 	"Press Read to get current value or enter value between "
 	"11 and 26 and press Update";
 
-static char general_purpose_gui_buffer[1024] = {};
+//static char general_purpose_gui_buffer[1024] = {};
 
 static constexpr char* disabledstyle PROGMEM = 
 	"background-color: #bbb; border-bottom: #999 3px solid;";
@@ -597,6 +597,35 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot);
 
 void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf);
+
+/*****************************************************************************/
+
+void addEmptyLineLabel(uint16_t parent_id) {
+
+	ESPUI.setElementStyle(
+			ESPUI.addControl(
+				Control::Type::Label, PSTR(empty_str), empty_str,
+				Control::Color::None, parent_id), 
+		PSTR(clearLabelStyle));
+}
+
+void addFlagsLabel(const char* label, uint16_t parent_id) {
+
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), label,Control::Color::None,
+			parent_id), 
+		PSTR(clearFlagsLabelStyle));
+}
+
+uint16_t addClearLabel(const char* label, uint16_t parent_id) {
+
+	auto label_id = ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), label,Control::Color::None,
+			parent_id);
+	ESPUI.setElementStyle(label_id, PSTR(clearLabelStyle));
+	return label_id;
+}
 
 /*****************************************************************************/
 
@@ -853,12 +882,10 @@ void enableControlStyle(uint16_t control_id, bool enable) {
 	ESPUI.setEnabled(control_id, enable);
 	if (enable) {
 
-		working_str = PSTR(";");
 		ESPUI.setPanelStyle(control_id, PSTR(";"));
 	}
 	else {
 
-		working_str = disabledstyle;
 		ESPUI.setPanelStyle(control_id, disabledstyle);	
 	}
 }
@@ -881,10 +908,11 @@ void updateLabel_C(Control::ControlId_t id, const char* value) {
 
 void buildGatewayTabGUI() {
 
-	//char buf[1024] = {};
-	working_str = PSTR("Gateway");
+	char general_purpose_gui_buffer[1024] = {};
+
+	char *working_str_ptr = PSTR("Gateway");
 	auto gatewaytab = ESPUI.addControl(
-		Control::Type::Tab, PSTR(empty_str), working_str, Control::Color::Emerald,
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr, Control::Color::Emerald,
 		Control::noParent, generalCallback);
 
 	working_str = PSTR(empty_str);
@@ -926,33 +954,28 @@ void buildGatewayTabGUI() {
 
 	auto gui_mode_selector = ESPUI.addControl(
 		Control::Type::Select, PSTR("Select GUI mode (requires restart)"), 
-		(long int) 0,/*zero_str*/ Control::Color::Emerald, gatewaytab, selectGuiModeCallback);
+		(long int) 0, Control::Color::Emerald, gatewaytab, selectGuiModeCallback);
 
 	for (uint8_t modes_counter = no_gui_mode; 
 			 modes_counter < gui_modes_number; modes_counter++) {
 
   	working_str = modes_counter;
 		ESPUI.addControl(
-			Control::Type::Option, GUI_MODE_OPTIONS[modes_counter], modes_counter, //working_str, 
+			Control::Type::Option, GUI_MODE_OPTIONS[modes_counter], modes_counter, 
 			Control::Color::None, gui_mode_selector);
 	}
 
-	working_str = PSTR(
-		"When GUI is disabled on start use 5x BOOT to enable it.");
-
-	ESPUI.setElementStyle(
-		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, 
-			Control::Color::None, gui_mode_selector), 
-		PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("When GUI is disabled on start use 5x BOOT to enable it."), 
+		gui_mode_selector);
 
 	gui_start_delay_number = ESPUI.addControl(
-		Control::Type::Number, PSTR("GUI start delay (s)"), (long int)0, //zero_str, 
+		Control::Type::Number, PSTR("GUI start delay (s)"), (long int)0,
 		Control::Color::Emerald, gatewaytab, generalMinMaxCallback, (void*)3600);
 
-	working_str = PSTR("Save");
+	working_str_ptr = PSTR("Save");
 	auto gui_start_delay_save_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, gui_start_delay_number, gatewayCallback,
 		(void*)GUI_CB_GUI_DELAY_FLAG);
 
@@ -961,73 +984,74 @@ void buildGatewayTabGUI() {
 		Control::Type::Text, PSTR("Gateway local mDNS name"), working_str, 
 		Control::Color::Emerald, gatewaytab, generalCallback);
 
-	working_str = PSTR("Save");
+	working_str_ptr = PSTR("Save");
 	auto gateway_mdns_name_save_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, gateway_mdns_name_text, gatewayCallback, 
 		(void*)GUI_CB_SAVE_MDNS_NAME_FLAG);
 
-	working_str = PSTR("(max. 11 characters, no spaces!!!)");
+	working_str_ptr = PSTR("(max. 11 characters, no spaces!!!)");
 	ESPUI.setElementStyle(
 		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Type::Label, PSTR(empty_str), working_str_ptr, 
 			Control::Color::None, gateway_mdns_name_text), 
 		PSTR(clearLabelStyle));
 
 	force_config_switcher = ESPUI.addControl(
 		Control::Type::Switcher, PSTR("Force config mode on next startup"), 
-		zero_str, Control::Color::Emerald, gatewaytab, gatewayCallback,
+		(long int)0, Control::Color::Emerald, gatewaytab, gatewayCallback,
 		(void*)GUI_CB_FORCE_CONFIG_FLAG);
 
-	working_str = PSTR("On next startup gateway will enter config mode.");
+	working_str_ptr = PSTR(
+		"On next startup gateway will enter config mode.");
 	ESPUI.setElementStyle(
 		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Type::Label, PSTR(empty_str), working_str_ptr, 
 			Control::Color::None, force_config_switcher), 
 		PSTR(clearLabelStyle));
 
 	rebuild_Supla_channels_switcher = ESPUI.addControl(
 		Control::Type::Switcher, 
 		PSTR("Rebuild missing Supla channels on next startup"), 
-		zero_str, Control::Color::Emerald, gatewaytab, gatewayCallback,
+		(long int)0, Control::Color::Emerald, gatewaytab, gatewayCallback,
 		(void*)GUI_CB_REBUILD_CHANNELS_FLAG);
 
-	working_str = PSTR(
+	working_str_ptr = PSTR(
 		"On next startup gateway will try to rebuild missing Supla channels<br>"
 		"using existing Zigbee devices definitions (experimental!)");
 
 	ESPUI.setElementStyle(
 		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Type::Label, PSTR(empty_str), working_str_ptr, 
 			Control::Color::None, rebuild_Supla_channels_switcher), 
 		PSTR(clearLabelStyle));
 
 	use_new_at_model_switcher = ESPUI.addControl(
 		Control::Type::Switcher, 
 		PSTR("Use new AT model for smart buttons"), 
-		zero_str, Control::Color::Emerald, gatewaytab, gatewayCallback,
+		(long int)0, Control::Color::Emerald, gatewaytab, gatewayCallback,
 		(void*)GUI_CB_USE_NEW_AT_FLAG);
 
-	working_str = PSTR(
+	working_str_ptr = PSTR(
 		"New smart buttons will add as AT with Cloud and local actions");
 
 	ESPUI.setElementStyle(
 		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, 
+			Control::Type::Label, PSTR(empty_str), working_str_ptr, 
 			Control::Color::None, use_new_at_model_switcher), 
 		PSTR(clearLabelStyle));
 
 	/**/
 
-	working_str = PSTR("Restart gateway");
+	working_str_ptr = PSTR("Restart gateway");
 	save_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, gatewaytab, gatewayCallback, 
 		(void*)GUI_CB_GUI_RESTART_FLAG);
 
-	working_str = PSTR("FIRMWARE UPDATE");
+	working_str_ptr = PSTR("FIRMWARE UPDATE");
 	auto test_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, gatewaytab);
 
 	//ESPUI.updateNumber(enable_gui_switcher, _enable_gui_on_start);
@@ -1046,16 +1070,16 @@ void buildGatewayTabGUI() {
 
 void buildCredentialsGUI() {
 
-	//char buf[512] = {};
-	working_str = PSTR("WiFi & Supla credentials");
+	char general_purpose_gui_buffer[1024] = {};
+
+	char *working_str_ptr = PSTR("WiFi & Supla credentials");
 	auto wifitab = ESPUI.addControl(
-		Control::Type::Tab, PSTR(empty_str), working_str);
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 
 	working_str = PSTR(empty_str);
 	wifi_ssid_text = ESPUI.addControl(
 		Control::Type::Text, PSTR("SSID"), working_str, Control::Color::Emerald, 
 		wifitab, textCallback);
-	
 
 	working_str = PSTR(empty_str);
 	wifi_pass_text = ESPUI.addControl(
@@ -1075,16 +1099,18 @@ void buildCredentialsGUI() {
 		Control::Color::Emerald, wifitab, textCallback);
 	
 	Supla_skip_certificate_switcher = ESPUI.addControl(
-		Control::Type::Switcher, PSTR("Skip CA certificate check"), zero_str, 
+		Control::Type::Switcher, PSTR("Skip CA certificate check"), (long int)0, 
 		Control::Color::Emerald, wifitab, generalCallback);
 
-	working_str = PSTR("Save");
+	working_str_ptr = PSTR("Save");
 	save_button = ESPUI.addControl(
-		Control::Type::Button, PSTR("Save"), working_str, Control::Color::Emerald, 
-		wifitab, enterWifiDetailsCallback,(void*)GUI_CB_SAVE_FLAG);
-	working_str = PSTR("Save & Restart");
+		Control::Type::Button, PSTR("Save"), working_str_ptr, 
+		Control::Color::Emerald, wifitab, enterWifiDetailsCallback,
+		(void*)GUI_CB_SAVE_FLAG);
+
+	working_str_ptr = PSTR("Save & Restart");
 	auto save_n_restart_button = ESPUI.addControl(
-		Control::Type::Button, PSTR("Save & Restart"), working_str, 
+		Control::Type::Button, PSTR("Save & Restart"), working_str_ptr, 
 		Control::Color::Emerald, save_button, enterWifiDetailsCallback, 
 		(void*)GUI_CB_RESTART_FLAG);
 	working_str = PSTR("Missing data...");
@@ -1111,192 +1137,119 @@ void buildCredentialsGUI() {
 
 void buildZigbeeTabGUI() {
 
-	working_str = PSTR("Zigbee settings");
-	auto zigbeetab = 
-		ESPUI.addControl(Control::Type::Tab, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 Control::noParent, 
-										 onZigbeeTabCallback);
+	char *working_str_ptr = PSTR("Zigbee settings");
+	auto zigbeetab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, Control::noParent, onZigbeeTabCallback);
 	
-	working_str = PSTR("Pairing mode");
-	pairing_mode_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR("Pairing mode"), 
-									   working_str, 
-										 Control::Color::Emerald, 
-										 zigbeetab, 
-										 pairingSwitcherCallback,
-										 (void*)GUI_CB_PAIRING_FLAG);
+	pairing_mode_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR("Pairing mode"), 
+		(long int)0, Control::Color::Emerald, zigbeetab, 
+		pairingSwitcherCallback, (void*)GUI_CB_PAIRING_FLAG);
 
-	working_str = PSTR("enable/disable pairing mode (180 s)");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 pairing_mode_switcher), 
-												PSTR(clearLabelStyle));
+	working_str_ptr = PSTR("enable/disable pairing mode (180 s)");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr, 
+			Control::Color::None, pairing_mode_switcher), 
+		PSTR(clearLabelStyle));
 
-	working_str = empty_str;
-	force_leave_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR(""), 
-									   working_str, 
-										 Control::Color::Emerald, 
-										 pairing_mode_switcher, 
-										 pairingSwitcherCallback,
-										 (void*)GUI_CB_FORCE_LEAVE_FLAG);
-	//working_str = PSTR("Force joined device to leave network and perform full join");
-	working_str = PSTR("Force device to bind gateway again");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 pairing_mode_switcher), 
-												PSTR(clearLabelStyle));
+	force_leave_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, pairing_mode_switcher, 
+		pairingSwitcherCallback, (void*)GUI_CB_FORCE_LEAVE_FLAG);
+
+	working_str_ptr = PSTR("Force device to bind gateway again");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr, 
+			Control::Color::None, pairing_mode_switcher), 
+		PSTR(clearLabelStyle));
 
 
 	working_str = zigbee_tx_power_text_str;
-	zigbee_tx_power_text = 
-		ESPUI.addControl(Control::Type::Text, 
-										 PSTR("Zigbee TX power"), 
-													working_str, 
-												  Control::Color::Emerald, 
-													zigbeetab, 
-													generalCallback);
+	zigbee_tx_power_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Zigbee TX power"), working_str, 
+		Control::Color::Emerald, zigbeetab, generalCallback);
 
 	working_str = zigbee_primary_channel_text_str;
-	zigbee_primary_channel_text = 
-		ESPUI.addControl(Control::Type::Text, 
-		PSTR("Zigbee primary channel"), 
-		working_str, 
-		Control::Color::Emerald, 
-		zigbeetab, 
-		generalCallback);
+	zigbee_primary_channel_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Zigbee primary channel"), 
+		working_str, Control::Color::Emerald, zigbeetab, generalCallback);
 	
-	working_str = PSTR("Read");
-	auto zigbee_get_tx_power_button = 
-		ESPUI.addControl(Control::Type::Button, 
-									   PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 zigbee_tx_power_text, 
-										 generalZigbeeCallback,
-										 (void*)GUI_CB_GET_TX_FLAG);
+	working_str_ptr = PSTR("Read");
+	auto zigbee_get_tx_power_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zigbee_tx_power_text, 
+		generalZigbeeCallback, (void*)GUI_CB_GET_TX_FLAG);
 
-	auto zigbee_get_primary_channel_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 zigbee_primary_channel_text, 
-										 generalZigbeeCallback,
-										 (void*)GUI_CB_GET_PC_FLAG);
+	auto zigbee_get_primary_channel_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zigbee_primary_channel_text, 
+		generalZigbeeCallback, (void*)GUI_CB_GET_PC_FLAG);
 
-	working_str = PSTR("Update");
-	auto zigbee_set_tx_power_button = 
-		ESPUI.addControl(Control::Type::Button, 
-	  PSTR(empty_str), 
-		working_str, 
-		Control::Color::Emerald, 
-		zigbee_tx_power_text, 
-		generalZigbeeCallback,
+	working_str_ptr = PSTR("Update");
+	auto zigbee_set_tx_power_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zigbee_tx_power_text, generalZigbeeCallback,
 		(void*)GUI_CB_SET_TX_FLAG);
 
-	auto zigbee_set_primary_channel_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 zigbee_primary_channel_text, 
-										 generalZigbeeCallback,
-										 (void*)GUI_CB_SET_PC_FLAG);
+	auto zigbee_set_primary_channel_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zigbee_primary_channel_text, 
+		generalZigbeeCallback, (void*)GUI_CB_SET_PC_FLAG);
 	
 	working_str = three_dots_str;
-	zigbee_last_binding_result_label = 
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR("Last binding result"), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 zigbeetab);
+	zigbee_last_binding_result_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Last binding result"), working_str, 
+		Control::Color::Emerald, zigbeetab);
 
 	working_str = PSTR("Enter device IEEE address");
-	zigbee_installation_code_ieee_address = 
-		ESPUI.addControl(Control::Type::Text, 
-										 PSTR("Installation code"), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 zigbeetab,
-										 generalCallback);
+	zigbee_installation_code_ieee_address = ESPUI.addControl(
+		Control::Type::Text, PSTR("Installation code"), working_str, 
+		Control::Color::Emerald, zigbeetab, generalCallback);
 
 	working_str = PSTR("Enter device installation code");
-	zigbee_installation_code_str = 
-		ESPUI.addControl(Control::Type::Text, 
-										 empty_str, 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 zigbee_installation_code_ieee_address,
-										 generalCallback);
+	zigbee_installation_code_str = ESPUI.addControl(
+		Control::Type::Text, empty_str, working_str, 
+		Control::Color::Emerald, zigbee_installation_code_ieee_address,
+		generalCallback);
 										
-	working_str = PSTR("Save installation code for single device");
-	auto zigbee_set_installation_code = 
-		ESPUI.addControl(Control::Type::Button, 
-	  PSTR(empty_str), 
-		working_str, 
-		Control::Color::Emerald, 
-		zigbee_installation_code_ieee_address, 
-		generalZigbeeCallback,
-		(void*)GUI_CB_SET_INSTALLATION_CODE_FLAG);
+	working_str_ptr = PSTR("Save installation code for single device");
+	auto zigbee_set_installation_code = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zigbee_installation_code_ieee_address, 
+		generalZigbeeCallback, (void*)GUI_CB_SET_INSTALLATION_CODE_FLAG);
 
-	working_str = PSTR("Clear all saved installation codes");
-	auto zigbee_clear_installation_codes = 
-		ESPUI.addControl(Control::Type::Button, 
-	  PSTR(empty_str), 
-		working_str, 
-		Control::Color::Emerald, 
-		zigbee_installation_code_ieee_address, 
-		generalZigbeeCallback,
-		(void*)GUI_CB_CLEAR_INSTALLATION_CODES_FLAG);
-
+	working_str_ptr = PSTR("Clear all saved installation codes");
+	auto zigbee_clear_installation_codes = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zigbee_installation_code_ieee_address, 
+		generalZigbeeCallback, (void*)GUI_CB_CLEAR_INSTALLATION_CODES_FLAG);
 
 	working_str = PSTR(empty_str);
-	ESPUI.addControl(Control::Type::Separator, 
-									 PSTR("Zigbee stack factory reset"), 
-									 working_str, 
-									 Control::Color::None, 
-									 zigbeetab);
+	ESPUI.addControl(Control::Type::Separator, PSTR("Zigbee stack factory reset"), 
+		working_str, Control::Color::None, zigbeetab);
 
-	factory_reset_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR("Enable Zigbee stack factory reset"), 
-													zero_str, 
-													Control::Color::Alizarin, 
-													zigbeetab, 
-													switchCallback);
+	factory_reset_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR("Enable Zigbee stack factory reset"), 
+		(long int)0, Control::Color::Alizarin, zigbeetab, switchCallback);
 
-	working_str = factory_reset_disabled_str;
-	factory_reset_label = 
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Wetasphalt, 
-										 factory_reset_switcher);
+	working_str_ptr = factory_reset_disabled_str;
+	factory_reset_label = ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Wetasphalt, factory_reset_switcher);
 
-	working_str = PSTR("FACTORY RESET!");
-	auto factory_reset_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR("FACTORY RESET!"), 
-										 working_str, 
-										 Control::Color::Alizarin, 
-										 zigbeetab, 
-										 generalZigbeeCallback,
-										 (void*)GUI_CB_FACTORY_FLAG); 
+	working_str_ptr = PSTR("FACTORY RESET!");
+	auto factory_reset_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("FACTORY RESET!"), working_str_ptr, 
+		Control::Color::Alizarin, zigbeetab, generalZigbeeCallback,
+		(void*)GUI_CB_FACTORY_FLAG); 
 
-	ESPUI.updateNumber(pairing_mode_switcher, 
-										 Zigbee.isNetworkOpen() ? 1 : 0);
-	ESPUI.updateNumber(force_leave_switcher, 
-										 force_leave_global_flag ? 1 : 0);
+	ESPUI.updateNumber(
+		pairing_mode_switcher, Zigbee.isNetworkOpen() ? 1 : 0);
+	ESPUI.updateNumber(
+		force_leave_switcher, force_leave_global_flag ? 1 : 0);
 }
 
 void rebuildDevicesSelector() {
@@ -1324,8 +1277,7 @@ void rebuildDevicesSelector() {
 			z2s_zb_devices_table[devices_counter].device_gui_id =  ESPUI.addControl(
 				Control::Type::Option, 
 				z2s_zb_devices_table[devices_counter].device_local_name, 
-				devices_counter, //working_str, 
-				Control::Color::None, device_selector);
+				devices_counter, Control::Color::None, device_selector);
 		}
 	}
 }
@@ -1334,19 +1286,18 @@ void rebuildDevicesSelector() {
 
 void buildDevicesTabGUI() {
 
-	working_str = PSTR("Zigbee devices");
+	char *working_str_ptr = PSTR("Zigbee devices");
 	devicestab = ESPUI.addControl(
-		Control::Type::Tab, PSTR(empty_str), working_str);
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 	
 	working_str = -1;
 	device_selector = ESPUI.addControl(
-		Control::Type::Select, PSTR("Devices"), (long int)-1, //working_str, 
+		Control::Type::Select, PSTR("Devices"), (long int)-1, 
 		Control::Color::Emerald, devicestab, deviceSelectorCallback);
 
 	device_selector_main_option =ESPUI.addControl(
 		Control::Type::Option, PSTR("Select Zigbee device..."), 
-		(long int)-1, //working_str, 
-		Control::Color::None, device_selector);
+		(long int)-1, Control::Color::None, device_selector);
 
 	for (uint8_t devices_counter = 0; 
 			 devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
@@ -1357,208 +1308,147 @@ void buildDevicesTabGUI() {
 			z2s_zb_devices_table[devices_counter].device_gui_id = ESPUI.addControl(
 				Control::Type::Option, 
 				z2s_zb_devices_table[devices_counter].device_local_name, 
-				devices_counter, //working_str, 
-				Control::Color::None, device_selector);
+				devices_counter, Control::Color::None, device_selector);
 		}
 	}
 
 	ESPUI.setPanelWide(device_selector, true);
 
 	working_str = three_dots_str;
-	zb_device_info_label = ESPUI.addControl(Control::Type::Label, 
-																					PSTR("Device info"), 
-																					working_str, 
-																					Control::Color::Emerald, 
-																					devicestab); 
+	zb_device_info_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Device info"), working_str, 
+		Control::Color::Emerald, devicestab); 
 
-	ESPUI.setElementStyle(zb_device_info_label, 
-												"color:black;text-align: justify; font-family:tahoma; "
-												"font-size: 4 px; font-style: normal; font-weight: normal;");
+	ESPUI.setElementStyle(
+		zb_device_info_label, 
+		"color:black;text-align: justify; font-family:tahoma; "
+		"font-size: 4 px; font-style: normal; font-weight: normal;");
 	
 	ESPUI.setPanelWide(zb_device_info_label, true);
 
 	working_str = PSTR(empty_str);
-	device_name_text = ESPUI.addControl(Control::Type::Text, 
-																			PSTR("Device panel"), 
-																			working_str, 
-																			 Control::Color::Emerald, 
-																			 devicestab, 
-																			 generalCallback); 
+	device_name_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Device panel"), working_str, 
+		Control::Color::Emerald, devicestab, generalCallback); 
 
-	working_str = PSTR("&#10023; device name (local) &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 device_name_text), 
-												PSTR(clearLabelStyle));
-
-	working_str = PSTR("Save");
-	device_name_save_button = ESPUI.addControl(Control::Type::Button, 
-																						 PSTR(empty_str), 
-																						 working_str, 
-																						 Control::Color::Emerald, 
-																						 device_name_text, 
-																				  	 editDeviceCallback, 
-																						 (void*)GUI_CB_UPDATE_DEVICE_NAME_FLAG);
-
-	working_str = PSTR("Read Software Build ID");
-	getswbuild_button = ESPUI.addControl(Control::Type::Button, 
-																			 PSTR("Software Build ID / RSSI"), 
-																			 working_str, 
-																			 Control::Color::Emerald, 
-																			 devicestab, 
-																			 getZigbeeDeviceQueryCallback, 
-																			 (void*)GUI_CB_SWBUILD_FLAG);
-
-	working_str = PSTR("Read device RSSI");
-	getrssi_button = ESPUI.addControl(Control::Type::Button, 
-																		PSTR(empty_str), 
-																		working_str,
-																		Control::Color::Emerald, 
-																		getswbuild_button, 
-																		getZigbeeDeviceQueryCallback, 
-																		(void*)GUI_CB_RSSI_FLAG);
-	working_str = three_dots_str;
-	rssilabel = ESPUI.addControl(Control::Type::Label, 
-															 PSTR(empty_str), 
-															 working_str, 
-															 Control::Color::Emerald, 
-															 getswbuild_button);
-	
-	battery_voltage_min_number = 
-		ESPUI.addControl(Control::Type::Number, 
-										 PSTR("Battery panel"), 
-										 (long int)0, //zero_str, 
-										 Control::Color::Emerald, 
-										 devicestab, 
-										 generalMinMaxCallback, 
-										 (void*)255);
-
-	ESPUI.setElementStyle(battery_voltage_min_number, 
-												"color:black; margin: 0% 5%;");
-
-	working_str = PSTR("Save");
-	battery_voltage_min_save_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 battery_voltage_min_number, 
-										 batteryCallback, 
-										 (void*)GUI_CB_BATTERY_VOLTAGE_MIN_FLAG);
-
-	
-	battery_voltage_max_number = 
-		ESPUI.addControl(Control::Type::Number, 
-										 PSTR(empty_str), 
-										 (long int)0, //zero_str, 
-										 Control::Color::Emerald, 
-										 battery_voltage_min_number, 
-										 generalMinMaxCallback, 
-										 (void*)255);
-
-	ESPUI.setElementStyle(battery_voltage_max_number, 
-												"color:black; margin: 0% 5%;");
-
-	
-	working_str = PSTR("Save");
-	battery_voltage_max_save_button = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 battery_voltage_min_number, 
-										 batteryCallback, 
-										 (void*)GUI_CB_BATTERY_VOLTAGE_MAX_FLAG);
-
-	working_str = "";
+	working_str_ptr = PSTR(
+		"&#10023; device name (local) &#10023;");
 	ESPUI.setElementStyle(
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR(empty_str), 
-										 working_str,
-										 Control::Color::None, 
-										 battery_voltage_min_number), 
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr, 
+			Control::Color::None, device_name_text), 
 		PSTR(clearLabelStyle));
-	
-	working_str = PSTR("&#10023; V(min) x10, ie. 28 = 2,8V &#10023;");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR(empty_str), 
-										 working_str,
-										 Control::Color::None, 
-										 battery_voltage_min_number), 
-		PSTR(clearFlagsLabelStyle));
-	
-	working_str = PSTR("&#10023; V(max) x10, ie. 33 = 3,3V &#10023;");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR(empty_str), 
-										 working_str,
-										 Control::Color::None, 
-										 battery_voltage_min_number), 
-		PSTR(clearFlagsLabelStyle));
-	
-	disable_battery_percentage_msg_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR(empty_str), 
-										 zero_str, 
-										 Control::Color::Emerald, 
-										 battery_voltage_min_number, 
-										 batterySwitcherCallback, 
-										 (void*)GUI_CB_DISABLE_PERCENTAGE_MSG_FLAG);
 
-	working_str = 
-		PSTR("&#10023; <i>DISABLE BATTERY PERCENTAGE MESSAGES</i> &#10023;");
+	working_str_ptr = PSTR("Save");
+	device_name_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, device_name_text, editDeviceCallback, 
+		(void*)GUI_CB_UPDATE_DEVICE_NAME_FLAG);
+
+	working_str_ptr = PSTR("Read Software Build ID");
+	getswbuild_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("Software Build ID / RSSI"), working_str_ptr, 
+		Control::Color::Emerald, devicestab, getZigbeeDeviceQueryCallback, 
+		(void*)GUI_CB_SWBUILD_FLAG);
+
+	working_str_ptr = PSTR("Read device RSSI");
+	getrssi_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr,
+		Control::Color::Emerald, getswbuild_button, getZigbeeDeviceQueryCallback, 
+		(void*)GUI_CB_RSSI_FLAG);
+
+	working_str = three_dots_str;
+	rssilabel = ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, getswbuild_button);
+	
+	battery_voltage_min_number = ESPUI.addControl(
+		Control::Type::Number, PSTR("Battery panel"), (long int)0, 
+		Control::Color::Emerald, devicestab, generalMinMaxCallback, (void*)255);
 
 	ESPUI.setElementStyle(
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR(empty_str), 
-										 working_str,
-										 Control::Color::None, 
-										 battery_voltage_min_number), 
+		battery_voltage_min_number, "color:black; margin: 0% 5%;");
+
+	working_str_ptr = PSTR("Save");
+	battery_voltage_min_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, battery_voltage_min_number, batteryCallback, 
+		(void*)GUI_CB_BATTERY_VOLTAGE_MIN_FLAG);
+
+	
+	battery_voltage_max_number = ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0,
+		Control::Color::Emerald, battery_voltage_min_number, 
+		generalMinMaxCallback, (void*)255);
+
+	ESPUI.setElementStyle(
+		battery_voltage_max_number, "color:black; margin: 0% 5%;");
+
+	
+	working_str_ptr = PSTR("Save");
+	battery_voltage_max_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, battery_voltage_min_number, 
+		batteryCallback, (void*)GUI_CB_BATTERY_VOLTAGE_MAX_FLAG);
+
+	addEmptyLineLabel(battery_voltage_min_number);
+	
+	working_str_ptr = PSTR("&#10023; V(min) x10, ie. 28 = 2,8V &#10023;");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr,
+			Control::Color::None, battery_voltage_min_number), 
+		PSTR(clearFlagsLabelStyle));
+	
+	working_str_ptr = PSTR("&#10023; V(max) x10, ie. 33 = 3,3V &#10023;");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr,
+			Control::Color::None, battery_voltage_min_number), 
+		PSTR(clearFlagsLabelStyle));
+	
+	disable_battery_percentage_msg_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, battery_voltage_min_number, 
+		batterySwitcherCallback, (void*)GUI_CB_DISABLE_PERCENTAGE_MSG_FLAG);
+
+	working_str_ptr = PSTR(
+		"&#10023; <i>DISABLE BATTERY PERCENTAGE MESSAGES</i> &#10023;");
+
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr,
+			Control::Color::None, battery_voltage_min_number), 
 		PSTR(clearLabelStyle));							
 
-	disable_battery_voltage_msg_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR(empty_str), 
-										 zero_str, 
-										 Control::Color::Emerald, 
-										 battery_voltage_min_number, 
-										 batterySwitcherCallback, 
-										 (void*)GUI_CB_DISABLE_VOLTAGE_MSG_FLAG);
+	disable_battery_voltage_msg_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, battery_voltage_min_number, 
+		batterySwitcherCallback, (void*)GUI_CB_DISABLE_VOLTAGE_MSG_FLAG);
 
-	working_str = 
-		PSTR("&#10023; <i>DISABLE BATTERY VOLTAGE MESSAGES</i> &#10023;");
+	working_str_ptr = PSTR(
+		"&#10023; <i>DISABLE BATTERY VOLTAGE MESSAGES</i> &#10023;");
 
 	ESPUI.setElementStyle(
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR(empty_str), 
-										 working_str,
-										 Control::Color::None, 
-										 battery_voltage_min_number), 
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr,
+			Control::Color::None, battery_voltage_min_number), 
 		PSTR(clearLabelStyle));							
 
 
 	ESPUI.addControl(
-		Control::Type::Separator, PSTR(empty_str), working_str, 
+		Control::Type::Separator, PSTR(empty_str), empty_str, 
 		Control::Color::None, devicestab);
 
-	/*working_str = PSTR("Remove device!");
-	remove_device_button = ESPUI.addControl(
-		Control::Type::Button, PSTR("Remove Zigbee device(s)"), working_str, 
-		Control::Color::Alizarin, devicestab, removeDeviceCallback, 
-		(void*)GUI_CB_SINGLE_FLAG);*/
-
-	working_str = PSTR("Remove device with channels!");
+	working_str_ptr = PSTR("Remove device with channels!");
 	remove_device_and_channels_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Alizarin, devicestab, removeDeviceCallback, 
 		(void*)GUI_CB_WITH_CHANNELS_FLAG);
 
-	working_str = PSTR("Remove all devices with channels!!!");
+	working_str_ptr = PSTR("Remove all devices with channels!!!");
 	remove_all_devices_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Alizarin, remove_device_and_channels_button, 
 		removeDeviceCallback, (void*)GUI_CB_ALL_FLAG); 
 
@@ -1593,17 +1483,15 @@ void rebuildChannelsSelector(
 
 		channel_selector = ESPUI.addControl(Control::Type::Select, 
 																		  PSTR("Channels"), 
-																			(long int)-1, //minus_one_str, 
+																			(long int)-1, 
 																			Control::Color::Emerald, 
 																			channelstab, 
 																			channelSelectorCallback);
 
 	
-		ESPUI.addControl(Control::Type::Option, 
-										PSTR("Select Zigbee channel..."), 
-										(long int)-1, //minus_one_str, 
-										Control::Color::None, 
-										channel_selector);
+		ESPUI.addControl(
+			Control::Type::Option, PSTR("Select Zigbee channel..."), (long int)-1,
+			Control::Color::None, channel_selector);
 
 		
 		ESPUI.setPanelWide(channel_selector, true);
@@ -1623,23 +1511,19 @@ void rebuildChannelsSelector(
       
 			working_str = channels_counter;
 			//z2s_channels_table[channels_counter].gui_control_id  = 
-			current_option_id =
-				ESPUI.addControl(
-					Control::Type::Option, 
-					z2s_channels_table[channels_counter].Supla_channel_name, 
-					channels_counter, //working_str, 
-					Control::Color::None, 
-					channel_selector);
+			current_option_id = ESPUI.addControl(
+				Control::Type::Option, 
+				z2s_channels_table[channels_counter].Supla_channel_name, 
+				channels_counter, Control::Color::None, channel_selector);
 			
 			if (channel_selector_first_option_id == 0xFFFF)
-				channel_selector_first_option_id = 
-					current_option_id;
+				channel_selector_first_option_id = current_option_id;
 			
-			log_i("\n\rchannels_counter %u\n\rcurrent_option_id %u"
-						"\n\r\channel_selector_first_option_id %u",
-						channels_counter,
-						current_option_id,
-						channel_selector_first_option_id);
+			log_i(
+				"\n\rchannels_counter %u\n\rcurrent_option_id %u"
+				"\n\r\channel_selector_first_option_id %u",
+					channels_counter, current_option_id,
+					channel_selector_first_option_id);
 
 			z2s_channels_table[channels_counter].gui_control_id = 
 				current_option_id; //for channel name update
@@ -1661,10 +1545,10 @@ void rebuildChannelsSelector(
 
 void buildChannelsTabGUI() {
 
-	working_str = PSTR("Zigbee channels");
+	char *working_str_ptr = PSTR("Zigbee channels");
 	auto channelstab = ESPUI.addControl(
-		Control::Type::Tab, PSTR(empty_str), working_str,Control::Color::Emerald, 
-		Control::noParent, onChannelsTabCallback);
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr,
+		Control::Color::Emerald, Control::noParent, onChannelsTabCallback);
   
 	rebuildChannelsSelector(false, channelstab);
 
@@ -1680,312 +1564,209 @@ void buildChannelsTabGUI() {
 	ESPUI.setPanelWide(zb_channel_info_label, true);
 
 	working_str = PSTR(empty_str);
-	channel_name_text = ESPUI.addControl(Control::Type::Text, 
-																			 PSTR("Channel description panel"), 
-																			 working_str, 
-																			 Control::Color::Emerald, 
-																			 channelstab, 
-																			 generalCallback); 
-	working_str = PSTR("&#10023; channel name (local) &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				working_str, 
-																				Control::Color::None, 
-																				channel_name_text), 
-												PSTR(clearLabelStyle));
-	working_str = PSTR("Save");
-	channel_name_save_button = ESPUI.addControl(Control::Type::Button, 
-																							PSTR(empty_str), working_str, 
-																							Control::Color::Emerald, 
-																							channel_name_text, 
-																				  		editChannelCallback, 
-																							(void*)GUI_CB_UPDATE_CHANNEL_NAME_FLAG);
+	channel_name_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Channel description panel"), 
+		working_str, Control::Color::Emerald, channelstab, 
+		generalCallback); 
 
-	channel_local_function = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR(empty_str), 
-										 (long int)-1, //working_str, 
-										 Control::Color::Emerald, 
-										 channel_name_text, 
-										 editChannelCallback, 
-										 (void*)GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG);
+	addClearLabel(
+		PSTR("&#10023; channel name (local) &#10023;"), channel_name_text);
+
+	working_str_ptr = PSTR("Save");
+	channel_name_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, channel_name_text, 
+		editChannelCallback, (void*)GUI_CB_UPDATE_CHANNEL_NAME_FLAG);
+
+	channel_local_function = ESPUI.addControl(
+		Control::Type::Select, PSTR(empty_str), (long int)-1,  
+		Control::Color::Emerald, channel_name_text, 
+		editChannelCallback, (void*)GUI_CB_UPDATE_CHANNEL_LOCAL_FUNCTION_FLAG);
 		
-		ESPUI.addControl(Control::Type::Option, 
-										 PSTR("Select channel local function"), 
-										 (long int)-1, //minus_one_str, 
-										 Control::Color::None, 
-										 channel_local_function);
+		ESPUI.addControl(
+			Control::Type::Option, PSTR("Select channel local function"), 
+			(long int)-1, Control::Color::None, channel_local_function);
 
 		for (uint8_t ctf = 1; ctf < 4; ctf++ ) {
 
 			working_str = ctf;
-			ESPUI.addControl(Control::Type::Option, 
-										 CONNECTED_THERMOMETERS_FUNCTION_NAMES[ctf - 1], 
-										 ctf, //working_str, 
-										 Control::Color::None, 
-										 channel_local_function);
+			ESPUI.addControl(
+				Control::Type::Option, CONNECTED_THERMOMETERS_FUNCTION_NAMES[ctf - 1], 
+				ctf, Control::Color::None, channel_local_function);
 		}
 
-	
-	zb_channel_flags_label = ESPUI.addControl(Control::Type::Label, 
-																						PSTR("CHANNEL FLAGS"), 
-																					 	PSTR("here you can set channel flags "
-																								 "(changes are saved immediately)"), 
-																					 	Control::Color::Emerald, 
-																					 	channelstab);
+	working_str_ptr = PSTR(
+		"here you can set channel flags (changes are saved immediately)");
+	zb_channel_flags_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("CHANNEL FLAGS"), working_str_ptr, 
+		Control::Color::Emerald, channelstab);
 
 	ESPUI.setElementStyle(zb_channel_flags_label, PSTR(clearLabelStyle));
-	working_str = PSTR(empty_str);
-	disable_channel_notifications_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																														PSTR(empty_str), 
-																														working_str, 
-																														Control::Color::Emerald, 
-																													  zb_channel_flags_label, 
-																														editChannelFlagsCallback, 
-																													  (void*)GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG);
-	ESPUI.setElementStyle(disable_channel_notifications_switcher, "margin: 0% 15%;");
+	
+	disable_channel_notifications_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_flags_label, editChannelFlagsCallback, 
+		(void*)GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG);
+	ESPUI.setElementStyle(
+		disable_channel_notifications_switcher, "margin: 0% 15%;");
 
-	set_sorwns_on_start_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																									PSTR(empty_str), 
-																									zero_str, 
-																									Control::Color::Emerald, 
-																									zb_channel_flags_label, 
-																									editChannelFlagsCallback, 
-																									(void*)GUI_CB_SET_SORWNS_ON_START_FLAG);
+	set_sorwns_on_start_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_flags_label, 
+		editChannelFlagsCallback, (void*)GUI_CB_SET_SORWNS_ON_START_FLAG);
 	ESPUI.setElementStyle(set_sorwns_on_start_switcher, "margin: 0% 15%;");
 	
-	working_str = PSTR("");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearLabelStyle));
-
-	working_str = PSTR("&#10023; <i>disable single channel notofications</i> &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearFlagsLabelStyle));
-
-	working_str = PSTR("&#10023; <i>sensor starts in offline state  &#10023;<br>"
-										 "(NO REMOTE WAKEUP SUPPORTED)</i>");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearFlagsLabelStyle));
 	
-	working_str = PSTR("");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), empty_str,Control::Color::None, 
+			zb_channel_flags_label), 
+		PSTR(clearLabelStyle));
 
-	trv_auto_to_schedule_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																									 PSTR(empty_str), 
-																									 zero_str, 
-																									 Control::Color::Emerald, 
-																									 zb_channel_flags_label, 
-																									 editChannelFlagsCallback, 
-																									 (void*)GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG);
+	working_str_ptr = PSTR(
+		"&#10023; <i>disable single channel notofications</i> &#10023;");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr,
+			Control::Color::None, zb_channel_flags_label), 
+		PSTR(clearFlagsLabelStyle));
+
+	working_str_ptr = PSTR(
+		"&#10023; <i>sensor starts in offline state  &#10023;<br>"
+		"(NO REMOTE WAKEUP SUPPORTED)</i>");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr,
+			Control::Color::None, zb_channel_flags_label), 
+		PSTR(clearFlagsLabelStyle));
+	
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), empty_str,
+			Control::Color::None, zb_channel_flags_label), 
+		PSTR(clearLabelStyle));
+
+	trv_auto_to_schedule_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_flags_label, 
+		editChannelFlagsCallback, (void*)GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG);
 	ESPUI.setElementStyle(trv_auto_to_schedule_switcher, "margin: 0% 15%;");
 	
-	trv_fixed_calibration_switcher = ESPUI.addControl(Control::Type::Switcher, 
-																									 	PSTR(empty_str), 
-																										 zero_str, 
-																										 Control::Color::Emerald, 
-																										 zb_channel_flags_label, 
-																										 editChannelFlagsCallback, 
-																									 	(void*)GUI_CB_TRV_FIXED_CALIBRATION_FLAG);
+	trv_fixed_calibration_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_flags_label, 
+		editChannelFlagsCallback, (void*)GUI_CB_TRV_FIXED_CALIBRATION_FLAG);
 	ESPUI.setElementStyle(trv_fixed_calibration_switcher, "margin: 0% 15%;");
 
-	working_str = PSTR("");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearLabelStyle));
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), empty_str,
+			Control::Color::None, zb_channel_flags_label), 
+		PSTR(clearLabelStyle));
 
-	working_str = PSTR("&#10023; <i>TRV AUTO mode => Supla schedule</i> &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearFlagsLabelStyle));
+	working_str_ptr = PSTR(
+		"&#10023; <i>TRV AUTO mode => Supla schedule</i> &#10023;");
+	ESPUI.setElementStyle(
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr,
+			Control::Color::None, zb_channel_flags_label), 
+			PSTR(clearFlagsLabelStyle));
 
-	working_str = PSTR("&#10023; <i>TRV fixed correction value &#10023;<br>"
-										 "(ignores external thermometer settings)</i>");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearFlagsLabelStyle));
+	addClearLabel(
+		PSTR(
+			"&#10023; <i>TRV fixed correction value &#10023;<br>"
+			"(ignores external thermometer settings)</i>"), 
+			zb_channel_flags_label);
+				
+	addEmptyLineLabel(zb_channel_flags_label);
+
+	trv_auto_to_schedule_manual_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_flags_label, 
+		editChannelFlagsCallback, (void*)GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG);
+	ESPUI.setElementStyle(
+		trv_auto_to_schedule_manual_switcher, "margin: 0% 15%;");
 	
-	working_str = PSTR("");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearLabelStyle));
+	trv_cooperative_childlock_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_flags_label, 
+		editChannelFlagsCallback, (void*)GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG);
+	ESPUI.setElementStyle(
+		trv_cooperative_childlock_switcher, "margin: 0% 15%;");
 
-	trv_auto_to_schedule_manual_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR(empty_str), 
-									   zero_str, 
-										 Control::Color::Emerald, 
-										 zb_channel_flags_label, 
-										 editChannelFlagsCallback, 	
-										 (void*)GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG);
-	ESPUI.setElementStyle(trv_auto_to_schedule_manual_switcher, 
-												"margin: 0% 15%;");
-	
-	trv_cooperative_childlock_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR(empty_str), 
-									   zero_str, 
-										 Control::Color::Emerald, 
-										 zb_channel_flags_label, 
-										 editChannelFlagsCallback, 	
-										 (void*)GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG);
-	ESPUI.setElementStyle(trv_cooperative_childlock_switcher, 
-												"margin: 0% 15%;");
-	
+	addEmptyLineLabel(zb_channel_flags_label);
 
-	working_str = PSTR("");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearLabelStyle));
+	addFlagsLabel(
+		PSTR(
+			"&#10023; <i>TRV AUTO mode =><br>Supla schedule/manual</i> &#10023;"),
+		zb_channel_flags_label);
+	addFlagsLabel(
+		PSTR("&#10023; <i>TRV cooperative childlock &#10023;"),
+		zb_channel_flags_label);
+	addEmptyLineLabel(zb_channel_flags_label);
 
-	working_str = PSTR("&#10023; <i>TRV AUTO mode =><br>"
-										 "Supla schedule/manual</i> &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearFlagsLabelStyle));
-
-	working_str = PSTR("&#10023; <i>TRV cooperative childlock &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearFlagsLabelStyle));
-
-	working_str = PSTR("");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 zb_channel_flags_label), 
-												PSTR(clearLabelStyle));
-
-	enable_resend_temperature_switcher = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR(empty_str), 
-									   zero_str, 
-										 Control::Color::Emerald, 
-										 zb_channel_flags_label, 
-										 editChannelFlagsCallback, 	
-										 (void*)GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG);
-	ESPUI.setElementStyle(enable_resend_temperature_switcher, 
-												"margin: 0% 15%;");
+	enable_resend_temperature_switcher = ESPUI.addControl(
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_flags_label, 
+		editChannelFlagsCallback, (void*)GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG);
+	ESPUI.setElementStyle(
+		enable_resend_temperature_switcher, "margin: 0% 15%;");
 
 	skip_subdevice_registation_switcher = ESPUI.addControl(
-		Control::Type::Switcher, PSTR(empty_str), zero_str, 
+		Control::Type::Switcher, PSTR(empty_str), (long int)0, 
 		Control::Color::Emerald, zb_channel_flags_label, 
 		editChannelFlagsCallback, (void*)GUI_CB_SKIP_SUBDEVICE_REGISTRATION_FLAG);
 	ESPUI.setElementStyle(
 		skip_subdevice_registation_switcher, "margin: 0% 15%;");
 
-	working_str = PSTR("");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str,
-			Control::Color::None,	zb_channel_flags_label), 
-		PSTR(clearLabelStyle));
-
-	working_str = PSTR(
-		"&#10023; <i>Enable temperature forwarding<br>");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
-			zb_channel_flags_label), 
-		PSTR(clearFlagsLabelStyle));
+	addEmptyLineLabel(zb_channel_flags_label);
+	addFlagsLabel(
+		PSTR(
+			"&#10023; <i>Enable temperature forwarding<br>"),
+		zb_channel_flags_label);
+	addFlagsLabel(
+		PSTR(
+			"&#10023; <i>Skip subdevice registration at startup</i> &#10023;"),
+		zb_channel_flags_label);
 	
-	working_str = PSTR(
-		"&#10023; <i>Skip subdevice registration at startup</i> &#10023;");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
-			zb_channel_flags_label), 
-		PSTR(clearFlagsLabelStyle));
-
+	
 	zb_channel_params_label = ESPUI.addControl(
 		Control::Type::Label, PSTR("CHANNEL CUSTOM PARAMETERS"), 
 		PSTR("here you can change channel custom parameters<br>"
 		"(restart may be required!)"), Control::Color::Emerald, channelstab);
 	ESPUI.setElementStyle(zb_channel_params_label, PSTR(clearLabelStyle));
 
-	param_1_number = ESPUI.addControl(Control::Type::Text, //Number, 
-																		PSTR(empty_str), 
-																		zero_str, 
-																		Control::Color::Emerald, 
-																		zb_channel_params_label, 
-																		generalCallback);
-	working_str = PSTR("Save");
-	param_1_save_button = ESPUI.addControl(Control::Type::Button, 
-																				 PSTR(empty_str),
-																				 working_str, 
-																				 Control::Color::Emerald, 
-																				 zb_channel_params_label, 
-																				 editChannelCallback, 
-																				 (void*)GUI_CB_UPDATE_PARAM_1_FLAG);
-	working_str = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
-	param_1_desc_label = 
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::None, 
-										 zb_channel_params_label);
+	param_1_number = ESPUI.addControl(
+		Control::Type::Text, PSTR(empty_str), zero_str, 
+		Control::Color::Emerald, zb_channel_params_label, 
+		generalCallback);
+	working_str_ptr = PSTR("Save");
+	param_1_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zb_channel_params_label, 
+		editChannelCallback, (void*)GUI_CB_UPDATE_PARAM_1_FLAG);
+
+	working_str_ptr = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
+	param_1_desc_label = ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), working_str_ptr, 
+			Control::Color::None, zb_channel_params_label);
 	ESPUI.setElementStyle(param_1_desc_label, PSTR(clearLabelStyle));
 
-	param_2_number = ESPUI.addControl(Control::Type::Number, 
-																		PSTR(empty_str), 
-																		(long int)0, //zero_str, 
-																		Control::Color::Emerald, 
-																		zb_channel_params_label, 
-																		generalCallback);
-	working_str = PSTR("Save");
-	param_2_save_button = ESPUI.addControl(Control::Type::Button, 
-																				 PSTR(empty_str),
-																				 working_str, 
-																				 Control::Color::Emerald, 
-																				 zb_channel_params_label, 
-																				 editChannelCallback, 
-																				 (void*)GUI_CB_UPDATE_PARAM_2_FLAG);
-	working_str = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
-	param_2_desc_label = 
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::None, 
-										 zb_channel_params_label);
-	ESPUI.setElementStyle(param_2_desc_label, PSTR(clearLabelStyle));
+	param_2_number = ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_params_label, generalCallback);
 
+	working_str_ptr = PSTR("Save");
+	param_2_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zb_channel_params_label, 
+		editChannelCallback, (void*)GUI_CB_UPDATE_PARAM_2_FLAG);
+
+	working_str_ptr = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
+	param_2_desc_label = ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str_ptr, 
+		Control::Color::None, zb_channel_params_label);
+	ESPUI.setElementStyle(param_2_desc_label, PSTR(clearLabelStyle));
 
 	zb_channel_timings_label = ESPUI.addControl(
 		Control::Type::Label, PSTR("Channel timings panel"), 
@@ -1996,168 +1777,135 @@ void buildChannelsTabGUI() {
 		Control::Type::Number, PSTR(empty_str), (long int)0, Control::Color::Emerald, 
 		zb_channel_timings_label, generalCallback);
 	
-	working_str = PSTR("Save");
+	working_str_ptr = PSTR("Save");
 	keepalive_save_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, zb_channel_timings_label, editChannelCallback, 
 		(void*)GUI_CB_UPDATE_KEEPALIVE_FLAG);
-	working_str = PSTR("&#10023; keepalive (s) &#10023; turn on delay (s) "
-										 "[logical gates] &#10023;");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
-			zb_channel_timings_label), 
-		PSTR(clearLabelStyle));
+
+	addClearLabel(
+		PSTR(
+			"&#10023; keepalive (s) &#10023; turn on delay (s) "
+			"[logical gates] &#10023;"),zb_channel_timings_label);
+
+	timeout_number = ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, zb_channel_timings_label, generalCallback);
 	
-	timeout_number = ESPUI.addControl(Control::Type::Number, 
-																		PSTR(empty_str), 
-																		(long int)0, //zero_str, 
-																		Control::Color::Emerald, 
-																		zb_channel_timings_label, 
-																		generalCallback);
+	working_str_ptr = PSTR("Save");
+	timeout_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zb_channel_timings_label, 
+		editChannelCallback, (void*)GUI_CB_UPDATE_TIMEOUT_FLAG);
+
+	addClearLabel(
+		PSTR("&#10023; timeout (s) &#10023;"), zb_channel_timings_label);
+
+	refresh_number = ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0,
+		Control::Color::Emerald, zb_channel_timings_label, generalCallback);
 	
-	working_str = PSTR("Save");
-	timeout_save_button = ESPUI.addControl(Control::Type::Button, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::Emerald, 
-																				 zb_channel_timings_label, 
-																				 editChannelCallback, 
-																				 (void*)GUI_CB_UPDATE_TIMEOUT_FLAG);
-	working_str = PSTR("&#10023; timeout (s) &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), working_str, 
-																				 Control::Color::None, 
-																				 zb_channel_timings_label), 
-												PSTR(clearLabelStyle));
-	
-	refresh_number = ESPUI.addControl(Control::Type::Number, 
-																		PSTR(empty_str), 
-																		(long int)0, //zero_str, 
-																		Control::Color::Emerald, 
-																		zb_channel_timings_label, 
-																		generalCallback);
-	
-	working_str = PSTR("Save");
-	refresh_save_button = ESPUI.addControl(Control::Type::Button, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::Emerald, 
-																				 zb_channel_timings_label, 
-																				 editChannelCallback, 
-																				 (void*)GUI_CB_UPDATE_REFRESH_FLAG); 
-	working_str = PSTR("&#10023; refresh(s) [ElectricityMeter] &#10023;<br>"
-										 "&#10023; autoset(s) [VirtualBinary] &#10023<br>;"
-										 "&#10023; debounce(ms) [VirtualSceneSwitch] &#10023; <br>"
-										 "&#10023; thermometers timeout(s) [Remote Thermometer] &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 zb_channel_timings_label), 
-												PSTR(clearLabelStyle));
+	working_str_ptr = PSTR("Save");
+	refresh_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, zb_channel_timings_label, editChannelCallback, 
+		(void*)GUI_CB_UPDATE_REFRESH_FLAG); 
+
+	addClearLabel(
+		PSTR(
+			"&#10023; refresh(s) [ElectricityMeter] &#10023;<br>"
+			"&#10023; autoset(s) [VirtualBinary] &#10023<br>;"
+			"&#10023; debounce(ms) [VirtualSceneSwitch] &#10023; <br>"
+			"&#10023; thermometers timeout(s) [Remote Thermometer] &#10023;"),
+		zb_channel_timings_label);
 
 	ESPUI.setPanelWide(zb_channel_timings_label, false);
 	
-	working_str = PSTR(empty_str);
-	ESPUI.addControl(Control::Type::Separator, 
-									 PSTR(empty_str), 
-									 working_str, 
-									 Control::Color::None, 
-									 channelstab);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR(empty_str), empty_str, 
+		Control::Color::None, channelstab);
 
-	working_str = PSTR("Remove local channels");
-	remove_channel_button = ESPUI.addControl(Control::Type::Button, 
-																					 PSTR("Remove local channel"), 
-																					 working_str, 
-																					 Control::Color::Alizarin, 
-																					 channelstab, 
-																					removeChannelCallback);
-
-	/*working_str = PSTR("Remove all channels!");
-	remove_all_channels_button = ESPUI.addControl(Control::Type::Button, 
-																								PSTR(empty_str), 
-																								working_str, 
-																								Control::Color::Alizarin, 
-																								remove_channel_button, 
-																								removeAllChannelsCallback);*/
+	working_str_ptr = PSTR("Remove local channel");
+	remove_channel_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("Remove local channels"), working_str_ptr, 
+		Control::Color::Alizarin, channelstab, removeChannelCallback);
 
 	working_str = three_dots_str;
 	channel_status_label = ESPUI.addControl(
 		Control::Type::Label, PSTR("Status"), working_str, 
 		Control::Color::Alizarin, remove_channel_button);
 
-	working_str = PSTR("Add AND gate");
+	working_str_ptr = PSTR("Add AND gate");
 	auto lah_panel = ESPUI.addControl(
 		Control::Type::Button, PSTR("Local logic components (experimental!)"), 
-		working_str, Control::Color::Emerald, channelstab, 
+		working_str_ptr, Control::Color::Emerald, channelstab, 
 		addLocalActionHandlerCallback, (void*)GUI_CB_ADD_AND_HANDLER_FLAG);
 
-	working_str = PSTR("Add OR gate");
+	working_str_ptr = PSTR("Add OR gate");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_OR_HANDLER_FLAG);
 
-	working_str = PSTR("Add XOR gate");
+	working_str_ptr = PSTR("Add XOR gate");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_XOR_HANDLER_FLAG);
 
-	working_str = PSTR("Add NOT gate");
+	working_str_ptr = PSTR("Add NOT gate");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_NOT_HANDLER_FLAG);
 
-	working_str = PSTR("Add NAND gate");
+	working_str_ptr = PSTR("Add NAND gate");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_NAND_HANDLER_FLAG);
 
-	working_str = PSTR("Add NOR gate");
+	working_str_ptr = PSTR("Add NOR gate");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_NOR_HANDLER_FLAG);
 
-	working_str = PSTR("Add AND gate (3 inputs)");
+	working_str_ptr = PSTR("Add AND gate (3 inputs)");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_AND3_HANDLER_FLAG);
 
-	working_str = PSTR("Add OR gate (3 inputs)");
+	working_str_ptr = PSTR("Add OR gate (3 inputs)");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_OR3_HANDLER_FLAG);
 
-	working_str = PSTR("Add virtual relay");
+	working_str_ptr = PSTR("Add virtual relay");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalVirtualRelayCallback);
 
-	working_str = PSTR("Add virtual binary");
+	working_str_ptr = PSTR("Add virtual binary");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalVirtualBinaryCallback);
 
-	working_str = PSTR("Add virtual hvac");
+	working_str_ptr = PSTR("Add virtual hvac");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalVirtualHvacCallback);
 
-	working_str = PSTR("Add remote relay");
+	working_str_ptr = PSTR("Add remote relay");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalRemoteRelayCallback);																					
 
-	working_str = PSTR("Add remote thermometer");
+	working_str_ptr = PSTR("Add remote thermometer");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalRemoteThermometerCallback);																					
 
 	enableChannelControls(false);
@@ -2167,545 +1915,355 @@ void buildChannelsTabGUI() {
 
 void buildClustersAttributesTab() {
 
-	working_str = PSTR("Clusters&Attributes");
-	clusters_attributes_table[clusters_attributes_tab] =
-		ESPUI.addControl(Control::Type::Tab, 
- 										 PSTR(empty_str), 
-										 working_str);
+	char *working_str_ptr = PSTR("Clusters&Attributes");
+	clusters_attributes_table[clusters_attributes_tab] = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 	
 	working_str = -1;
 	clusters_attributes_table[clusters_attributes_device_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR("Devices"), 
-										 (long int)-1, //working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[clusters_attributes_tab], 
-										 clustersattributesdeviceSelectorCallback);
+		ESPUI.addControl(
+			Control::Type::Select, PSTR("Devices"), (long int)-1, 
+			Control::Color::Emerald, 
+			clusters_attributes_table[clusters_attributes_tab], 
+			clustersattributesdeviceSelectorCallback);
+
 	working_str = three_dots_str;
 	clusters_attributes_table[clusters_attributes_device_info_label] =
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR("Device info"), 
-										 working_str,	
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[clusters_attributes_tab]);
+		ESPUI.addControl(
+			Control::Type::Label, PSTR("Device info"), working_str,	
+			Control::Color::Emerald, 
+			clusters_attributes_table[clusters_attributes_tab]);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select Zigbee device..."), 
-									 (long int)-1, //working_str, 
-									 Control::Color::None, 
-									 clusters_attributes_table[clusters_attributes_device_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select Zigbee device..."), (long int)-1, 
+		Control::Color::None, 
+		clusters_attributes_table[clusters_attributes_device_selector]);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
+	for (uint8_t devices_counter = 0; 
+			 devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
-			working_str = devices_counter;
-			ESPUI.addControl(Control::Type::Option, 
-											 z2s_zb_devices_table[devices_counter].device_local_name, 
-											 devices_counter, //working_str, 
-											 Control::Color::None, 
-											 clusters_attributes_table[clusters_attributes_device_selector]);
+			ESPUI.addControl(
+				Control::Type::Option, 
+				z2s_zb_devices_table[devices_counter].device_local_name, 
+				devices_counter, Control::Color::None, 
+				clusters_attributes_table[clusters_attributes_device_selector]);
 		}
 
-	ESPUI.setPanelWide(clusters_attributes_table[clusters_attributes_device_selector], false);
+	ESPUI.setPanelWide(
+		clusters_attributes_table[clusters_attributes_device_selector], false);
 
+	clusters_attributes_table[device_endpoint_number] = ESPUI.addControl(
+		Control::Type::Number, PSTR("Clusters&Attributes"), (long int)1, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[clusters_attributes_tab], endpointCallback);
+
+	addClearLabel(
+		PSTR("Endpoint id"), clusters_attributes_table[device_endpoint_number]); 
+
+	clusters_attributes_table[device_cluster_selector] = ESPUI.addControl(
+		Control::Type::Select, PSTR(empty_str), (long int)-1,
+		Control::Color::Emerald, clusters_attributes_table[device_endpoint_number], 
+		clusterCallback);
+
+	addClearLabel(
+		PSTR("Cluster id"), clusters_attributes_table[device_endpoint_number]);
 	
-	working_str = 1;
-	clusters_attributes_table[device_endpoint_number] = 
-		ESPUI.addControl(Control::Type::Number, 
-										 PSTR("Clusters&Attributes"), 
-										 (long int)1, //working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[clusters_attributes_tab], 
-										 endpointCallback);
-
-	working_str = PSTR("Endpoint id");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), working_str, 
-																				 Control::Color::None, 
-																				 clusters_attributes_table[device_endpoint_number]), 
-												PSTR(clearLabelStyle));
-
-	clusters_attributes_table[device_cluster_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR(empty_str), 
-										 (long int)-1, //minus_one_str,
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 clusterCallback);
-
-	working_str = PSTR("Cluster id");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 clusters_attributes_table[device_endpoint_number]), 
-												PSTR(clearLabelStyle));
-
-	clusters_attributes_table[device_attribute_id_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR(empty_str), 
-										 (long int)-1, //minus_one_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 attributeCallback);
+	clusters_attributes_table[device_attribute_id_selector] = ESPUI.addControl(
+		Control::Type::Select, PSTR(empty_str), (long int)-1, 
+		Control::Color::Emerald, clusters_attributes_table[device_endpoint_number], 
+		attributeCallback);
 	
-	clusters_attributes_table[device_attribute_id_text] = 
-		ESPUI.addControl(Control::Type::Text, 
-										 PSTR(empty_str), 
-										 zero_str,
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 generalCallback);
+	clusters_attributes_table[device_attribute_id_text] = ESPUI.addControl(
+		Control::Type::Text, PSTR(empty_str), zero_str,Control::Color::Emerald, 
+		clusters_attributes_table[device_endpoint_number], generalCallback);
 
-	working_str = PSTR("Select or enter attribute id/custom command id"
-										 "<br>use 0x for hexadecimal values)");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 clusters_attributes_table[device_endpoint_number]), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR(
+			"Select or enter attribute id/custom command id"
+			"<br>use 0x for hexadecimal values)"),
+		clusters_attributes_table[device_endpoint_number]);
 
-	clusters_attributes_table[device_attribute_type_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR(empty_str), 
-										 (long int)-1, //minus_one_str,
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 datatypeCallback);
+	clusters_attributes_table[device_attribute_type_selector] = ESPUI.addControl(
+		Control::Type::Select, PSTR(empty_str), (long int)-1, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[device_endpoint_number], datatypeCallback);
 	
-	clusters_attributes_table[device_attribute_size_number] = 
-		ESPUI.addControl(Control::Type::Number, 
-										 PSTR(empty_str), 
-										 (long int)0, //zero_str,
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 generalMinMaxCallback, (void*)255);
+	clusters_attributes_table[device_attribute_size_number] = ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[device_endpoint_number], generalMinMaxCallback, 
+		(void*)255);
 
-	working_str = PSTR("Select or enter attribute/custom command payload size"
-										 "<br>(use 0x for hexadecimal values)");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																	  		 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 clusters_attributes_table[device_endpoint_number]), 
-												PSTR(clearLabelStyle));
-	
+	addClearLabel(
+		PSTR(
+			"Select or enter attribute/custom command payload size"
+			"<br>(use 0x for hexadecimal values)"),
+		clusters_attributes_table[device_endpoint_number]);
+
 	clusters_attributes_table[device_attribute_value_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR(empty_str), 
-										 (long int)-1, //minus_one_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 valueCallback);
+	ESPUI.addControl(Control::Type::Select, PSTR(empty_str), (long int)-1, 
+		Control::Color::Emerald, clusters_attributes_table[device_endpoint_number], 
+		valueCallback);
 	
-	clusters_attributes_table[device_attribute_value_text] = 
-		ESPUI.addControl(Control::Type::Text, 
-										 PSTR("Value"), 
-										 zero_str,
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 generalCallback);
+	clusters_attributes_table[device_attribute_value_text] = ESPUI.addControl(
+		Control::Type::Text, PSTR("Value"), zero_str,Control::Color::Emerald, 
+		clusters_attributes_table[device_endpoint_number], generalCallback);
 
-	working_str = PSTR("Select or enter attribute value<br>or custom command payload<br>"
-										 "use 0x for hexadecimal values or hexstring without 0x");															 
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 clusters_attributes_table[device_endpoint_number]), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR(
+			"Select or enter attribute value<br>or custom command payload<br>"
+			"use 0x for hexadecimal values or hexstring without 0x"),
+		clusters_attributes_table[device_endpoint_number]);
+
+	clusters_attributes_table[device_config_min_number] =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, clusters_attributes_table[device_endpoint_number], 
+		generalMinMaxCallback, (void*)65535);
+
+	addClearLabel(
+		PSTR("Min interval"), clusters_attributes_table[device_endpoint_number]);
 	
-	clusters_attributes_table[device_config_min_number] =	
-		ESPUI.addControl(Control::Type::Number, 
-										 PSTR(empty_str), 
-										 (long int)0, //zero_str,
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 generalMinMaxCallback, 
-										 (void*)65535);
+	clusters_attributes_table[device_config_max_number] =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0,
+		Control::Color::Emerald, clusters_attributes_table[device_endpoint_number], 
+		generalMinMaxCallback, (void*)65535);
 
-	working_str = PSTR("Min interval");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 clusters_attributes_table[device_endpoint_number]), 
-												PSTR(clearLabelStyle));
-	
-	clusters_attributes_table[device_config_max_number] =	
-		ESPUI.addControl(Control::Type::Number, 
-										 PSTR(empty_str), 
-										 (long int)0, //zero_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 generalMinMaxCallback, 
-										 (void*)65535);
+	addClearLabel(
+		PSTR("Max interval"), clusters_attributes_table[device_endpoint_number]);
 
-	working_str = PSTR("Max interval");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 clusters_attributes_table[device_endpoint_number]), 
-												PSTR(clearLabelStyle));
+	clusters_attributes_table[device_config_delta_number] =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[device_endpoint_number], generalMinMaxCallback, 
+		(void*)65535);
 
-	clusters_attributes_table[device_config_delta_number] =	
-		ESPUI.addControl(Control::Type::Number, 
-										 PSTR(empty_str), 
-										 (long int)0, //zero_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_endpoint_number], 
-										 generalMinMaxCallback, 
-										 (void*)65535);
+	addClearLabel(
+		PSTR("Delta"), clusters_attributes_table[device_endpoint_number]);
 
-	working_str = PSTR("Delta");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 clusters_attributes_table[device_endpoint_number]), 
-												PSTR(clearLabelStyle));
-	
-
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select Zigbee cluster..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 clusters_attributes_table[device_cluster_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select Zigbee cluster..."), (long int)-1,
+		 Control::Color::None, clusters_attributes_table[device_cluster_selector]);
 
 	//clusters_attributes_table[device_attribute_id_selector_main_option] = 
-		ESPUI.addControl(Control::Type::Option, 
-										PSTR("Select attribute id..."), 
-										(long int)-1, //minus_one_str, 
-										Control::Color::None, 
-										clusters_attributes_table[device_attribute_id_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select attribute id..."), (long int)-1, 
+		Control::Color::None, 
+		clusters_attributes_table[device_attribute_id_selector]);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select attribute type..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 clusters_attributes_table[device_attribute_type_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select attribute type..."), (long int)-1, 
+		Control::Color::None, 
+		clusters_attributes_table[device_attribute_type_selector]);
 
 	//clusters_attributes_table[device_attribute_value_selector_main_option] = 
-		ESPUI.addControl(Control::Type::Option, 
-										PSTR("Select attribute value..."), 
-										(long int)-1, //minus_one_str, 
-										Control::Color::None, 
-										clusters_attributes_table[device_attribute_value_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select attribute value..."), (long int)-1, 
+		Control::Color::None, 
+		clusters_attributes_table[device_attribute_value_selector]);
 
-	uint32_t zigbee_clusters_count = sizeof(zigbee_clusters)/sizeof(zigbee_cluster_t);
+	uint32_t zigbee_clusters_count = 
+	sizeof(zigbee_clusters)/sizeof(zigbee_cluster_t);
 
-	for (uint8_t clusters_counter = 0; clusters_counter < zigbee_clusters_count; clusters_counter++) {
+	for (uint8_t clusters_counter = 0; clusters_counter < zigbee_clusters_count;
+			 clusters_counter++) {
   
-		working_str = zigbee_clusters[clusters_counter].zigbee_cluster_id;
-		ESPUI.addControl(Control::Type::Option, 
-										 zigbee_clusters[clusters_counter].zigbee_cluster_name, 
-										 zigbee_clusters[clusters_counter].zigbee_cluster_id, //working_str, 
-										 Control::Color::None, 
-										 clusters_attributes_table[device_cluster_selector]);
+		ESPUI.addControl(
+			Control::Type::Option, 
+			zigbee_clusters[clusters_counter].zigbee_cluster_name, 
+			zigbee_clusters[clusters_counter].zigbee_cluster_id, 
+			Control::Color::None, 
+			clusters_attributes_table[device_cluster_selector]);
 	}
 
-	uint32_t zigbee_datatypes_count = sizeof(zigbee_datatypes)/sizeof(zigbee_datatype_t);
+	uint32_t zigbee_datatypes_count = 
+		sizeof(zigbee_datatypes)/sizeof(zigbee_datatype_t);
 
-	for (uint8_t datatypes_counter = 0; datatypes_counter < zigbee_datatypes_count; datatypes_counter++) {
+	for (uint8_t datatypes_counter = 0; 
+			 datatypes_counter < zigbee_datatypes_count; datatypes_counter++) {
   
 		working_str = datatypes_counter; 
 		ESPUI.addControl(Control::Type::Option, 
 										 zigbee_datatypes[datatypes_counter].zigbee_datatype_name, 
-										 datatypes_counter, //working_str, 
-										 Control::Color::None, 
+										 datatypes_counter, Control::Color::None, 
 										 clusters_attributes_table[device_attribute_type_selector]);
 	}
 
-	working_str = PSTR("Read attribute");
-	clusters_attributes_table[device_read_attribute_button] = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR("Attribute commands"), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[clusters_attributes_tab], 
-										 getClustersAttributesQueryCallback, 
-										 (void*)GUI_CB_READ_ATTR_FLAG);
+	working_str_ptr = PSTR("Read attribute");
+	clusters_attributes_table[device_read_attribute_button] = ESPUI.addControl(
+		Control::Type::Button, PSTR("Attribute commands"), working_str_ptr, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[clusters_attributes_tab], 
+		getClustersAttributesQueryCallback, (void*)GUI_CB_READ_ATTR_FLAG);
 
-	working_str = PSTR("Read reporting settings");
-	clusters_attributes_table[device_read_config_button] = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_read_attribute_button], 
-										 getClustersAttributesQueryCallback, 
-										 (void*)GUI_CB_READ_CONFIG_FLAG);
+	working_str_ptr = PSTR("Read reporting settings");
+	clusters_attributes_table[device_read_config_button] = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[device_read_attribute_button], 
+		getClustersAttributesQueryCallback, (void*)GUI_CB_READ_CONFIG_FLAG);
 
-	working_str = PSTR("Write attribute");
-	clusters_attributes_table[device_write_attribute_button] = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_read_attribute_button],
-										 getClustersAttributesQueryCallback, 
-										 (void*)GUI_CB_WRITE_ATTR_FLAG);
+	working_str_ptr = PSTR("Write attribute");
+	clusters_attributes_table[device_write_attribute_button] = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[device_read_attribute_button],
+		getClustersAttributesQueryCallback, (void*)GUI_CB_WRITE_ATTR_FLAG);
 
-	working_str = PSTR("Configure reporting");
-	clusters_attributes_table[device_write_config_button] = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_read_attribute_button], 
-										 getClustersAttributesQueryCallback, 
-										 (void*)GUI_CB_CONFIG_REPORT_FLAG); 
+	working_str_ptr = PSTR("Configure reporting");
+	clusters_attributes_table[device_write_config_button] = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[device_read_attribute_button], 
+		getClustersAttributesQueryCallback, (void*)GUI_CB_CONFIG_REPORT_FLAG); 
 
-	working_str = PSTR("Send custom command");
-	clusters_attributes_table[device_custom_command_button] = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_read_attribute_button], 
-										 getClustersAttributesQueryCallback, 
-										 (void*)GUI_CB_CUSTOM_CMD_FLAG);
+	working_str_ptr = PSTR("Send custom command");
+	clusters_attributes_table[device_custom_command_button] = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[device_read_attribute_button], 
+		getClustersAttributesQueryCallback, (void*)GUI_CB_CUSTOM_CMD_FLAG);
 
-	clusters_attributes_table[manufacturer_code_switcher] = 
-		ESPUI.addControl(Control::Type::Switcher, 
-										 PSTR("Manufacturer code"), 
-										 zero_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[clusters_attributes_tab], 
-										 generalCallback);
+	clusters_attributes_table[manufacturer_code_switcher] = ESPUI.addControl(
+		Control::Type::Switcher, PSTR("Manufacturer code"), (long int)0, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[clusters_attributes_tab], generalCallback);
 
-	working_str = PSTR("&#10023; <i>Use manufacturer code</i> &#10023;");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str,
-																				 Control::Color::None, 
-																				 clusters_attributes_table[manufacturer_code_switcher]), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("&#10023; <i>Use manufacturer code</i> &#10023;"),
+		clusters_attributes_table[manufacturer_code_switcher]);
 
-	clusters_attributes_table[manufacturer_code_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR(empty_str), 
-										 (long int)-1, //minus_one_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[manufacturer_code_switcher], 
-										 generalCallback);
+	clusters_attributes_table[manufacturer_code_selector] = ESPUI.addControl(
+		Control::Type::Select, PSTR(empty_str), (long int)-1, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[manufacturer_code_switcher], generalCallback);
 
-	working_str = PSTR("Manufacturer code");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 clusters_attributes_table[manufacturer_code_switcher]), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("Manufacturer code"), 
+		clusters_attributes_table[manufacturer_code_switcher]);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select manufacturer code..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 clusters_attributes_table[manufacturer_code_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select manufacturer code..."), (long int)-1, 
+		Control::Color::None, 
+		clusters_attributes_table[manufacturer_code_selector]);
 
-	uint32_t zigbee_manufacturer_codes_count = sizeof(zigbee_manufacturer_codes)/
-																						 sizeof(zigbee_manufacturer_code_t);
+	uint32_t zigbee_manufacturer_codes_count = 
+		sizeof(zigbee_manufacturer_codes) / sizeof(zigbee_manufacturer_code_t);
 
 	for (uint8_t manufacturer_codes_counter = 0; 
 			 manufacturer_codes_counter < zigbee_manufacturer_codes_count; 
 			 manufacturer_codes_counter++) {
   
-		working_str = zigbee_manufacturer_codes[manufacturer_codes_counter].manufacturer_code;
-		ESPUI.addControl(Control::Type::Option, 
-										 zigbee_manufacturer_codes[manufacturer_codes_counter].manufacturer_name,
-										 zigbee_manufacturer_codes[manufacturer_codes_counter].manufacturer_code, //working_str, 
-										 Control::Color::None, 
-										 clusters_attributes_table[manufacturer_code_selector]);
+		ESPUI.addControl(
+			Control::Type::Option, 
+			zigbee_manufacturer_codes[manufacturer_codes_counter].manufacturer_name,
+			zigbee_manufacturer_codes[manufacturer_codes_counter].manufacturer_code,
+			Control::Color::None, 
+			clusters_attributes_table[manufacturer_code_selector]);
 	}
 
-	clusters_attributes_table[device_async_switcher] = 
-		ESPUI.addControl(Control::Type::Switcher, 
-		PSTR("Asynchronous command"), 
-		zero_str, 
+	clusters_attributes_table[device_async_switcher] = ESPUI.addControl(
+		Control::Type::Switcher, PSTR("Asynchronous command"), (long int)0, 
 		Control::Color::Emerald, 
-		clusters_attributes_table[clusters_attributes_tab], 
-		generalCallback);
+		clusters_attributes_table[clusters_attributes_tab], generalCallback);
   
 	working_str = three_dots_str;
-	clusters_attributes_table[device_read_attribute_label] =
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR("Command result"), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[clusters_attributes_tab]);
+	clusters_attributes_table[device_read_attribute_label] =ESPUI.addControl(
+		Control::Type::Label, PSTR("Command result"), working_str, 
+		Control::Color::Emerald, 
+		clusters_attributes_table[clusters_attributes_tab]);
 
-	clusters_attributes_table[device_Tuya_payload_label] = 
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR("Tuya payload"), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[clusters_attributes_tab]);
-
-	working_str = PSTR("Bind cluster (experimental!!!)");
-	clusters_attributes_table[device_bind_button] = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[clusters_attributes_tab],
-										 getClustersAttributesQueryCallback, 
-										 (void*)GUI_CB_BIND_CLUSTER_FLAG);
-
-	working_str = PSTR("Bind cluster 2(experimental!!!)");
-	clusters_attributes_table[device_bind_2_button] = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 clusters_attributes_table[device_bind_button],
-										 getClustersAttributesQueryCallback, 
-										 (void*)GUI_CB_BIND_CLUSTER_2_FLAG);
+	clusters_attributes_table[device_Tuya_payload_label] = ESPUI.addControl(
+			Control::Type::Label, PSTR("Tuya payload"), working_str, 
+			Control::Color::Emerald, 
+			clusters_attributes_table[clusters_attributes_tab]);
 
 	enableClustersAttributesControls(false);
 }
 
 void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 
-	valve_program_selector = ESPUI.addControl(Control::Type::Select, 
-																						"SONOFF SWV VALVE", 
-																						(long int)-1, //minus_one_str, 
-																						Control::Color::Emerald, 
-																						advanced_devices_tab, 
-																						generalCallback);
+	valve_program_selector = ESPUI.addControl(
+		Control::Type::Select, "SONOFF SWV VALVE", (long int)-1, 
+		Control::Color::Emerald, advanced_devices_tab, generalCallback);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select program..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 valve_program_selector);
-	working_str = 1;
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Time program..."), 
-									 1, //working_str, 
-									 Control::Color::None, 
-									 valve_program_selector);
-	working_str = 2;
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Volume program..."), 
-									 2, //working_str, 
-									 Control::Color::None, 
-									 valve_program_selector);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select program..."), (long int)-1, 
+		Control::Color::None, valve_program_selector);
 
-	valve_cycles_number =	ESPUI.addControl(Control::Type::Number, 
-																				 PSTR(empty_str), 
-																				 (long int)0, //zero_str, 
-																				 Control::Color::Emerald, 
-																				 valve_program_selector, 
-																				 generalMinMaxCallback, 
-																				 (void*)100);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Time program..."), 1,  Control::Color::None, 
+		valve_program_selector);
 	
-	working_str = PSTR("Valve cycles count (0-100)");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 valve_program_selector), 
-												PSTR(clearLabelStyle));
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Volume program..."), 2, Control::Color::None, 
+		valve_program_selector);
 
-	valve_worktime_number =	ESPUI.addControl(Control::Type::Number, 
-																					 PSTR(empty_str), 
-																					 (long int)0, //zero_str, 
-																					 Control::Color::Emerald, 
-																					 
-																					 valve_program_selector, 
-																					 generalMinMaxCallback, 
-																					 (void*)86400);
+	valve_cycles_number =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, valve_program_selector, 
+		generalMinMaxCallback, (void*)100);
 	
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 "Valve cycle worktime (0 s - 86400 s)", 
-																				 Control::Color::None, 
-																				 valve_program_selector), 
-												PSTR(clearLabelStyle));
-
-	valve_volume_number =	ESPUI.addControl(Control::Type::Number, 
-																				 PSTR(empty_str), 
-																				 (long int)0, //zero_str, 
-																				 Control::Color::Emerald, 
-																				 valve_program_selector, 
-																				 generalMinMaxCallback, 
-																				 (void*)6500);
+	addClearLabel(PSTR("Valve cycles count (0-100)"), valve_program_selector);
 	
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 "Valve cycle volume (0 L - 6500 L)", 
-																				 Control::Color::None, 
-																				 valve_program_selector), 
-												PSTR(clearLabelStyle));
-
-	valve_pause_number =	ESPUI.addControl(Control::Type::Number, 
-																				 PSTR(empty_str), 
-																				 (long int)0, //zero_str, 
-																				 Control::Color::Emerald, 
-																				 valve_program_selector, 
-																				 generalMinMaxCallback, 
-																				 (void*)86400);
+	valve_worktime_number =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0,
+		Control::Color::Emerald, valve_program_selector, generalMinMaxCallback, 
+		(void*)86400);
 	
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 "Valve cycle pause (0 s - 86400 s)", 
-																				 Control::Color::None, 
-																				 valve_program_selector), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("Valve cycle worktime (0 s - 86400 s)"), valve_program_selector);
+	
+	valve_volume_number =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, valve_program_selector, generalMinMaxCallback, 
+		(void*)6500);
+	
+	addClearLabel(
+		PSTR("Valve cycle volume (0 L - 6500 L)"), valve_program_selector);
+	
+	valve_pause_number =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, valve_program_selector, generalMinMaxCallback, 
+		(void*)86400);
+	
+	addClearLabel(
+		PSTR("Valve cycle pause (0 s - 86400 s)"), valve_program_selector);
+	
+	save_program_button = ESPUI.addControl(
+		Control::Type::Button, "Valve programs", "Save program", 
+		Control::Color::Emerald, valve_program_selector, valveCallback, 
+		(void*)GUI_CB_SAVE_PROGRAM_FLAG);
 
-	save_program_button = ESPUI.addControl(Control::Type::Button, 
-																				 "Valve programs", 
-																				 "Save program", 
-																			 	 Control::Color::Emerald, 
-																				 valve_program_selector, 
-																				 valveCallback, 
-																				 (void*)GUI_CB_SAVE_PROGRAM_FLAG);
+	load_program_button = ESPUI.addControl(
+		Control::Type::Button, "Valve programs", "Load program", 
+		Control::Color::Emerald, valve_program_selector,valveCallback, 
+		(void*)GUI_CB_LOAD_PROGRAM_FLAG);
 
-	load_program_button = ESPUI.addControl(Control::Type::Button, 
-																				 "Valve programs", 
-																				 "Load program", 
-																			 	 Control::Color::Emerald, 
-																				 valve_program_selector,
-																				 valveCallback, 
-																				 (void*)GUI_CB_LOAD_PROGRAM_FLAG);
+	start_program_button  = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Start program", 
+		Control::Color::Emerald, valve_program_selector, valveCallback, 
+		(void*)GUI_CB_START_PROGRAM_FLAG);
 
-	start_program_button  = ESPUI.addControl(Control::Type::Button, 
-																					 PSTR(empty_str), 
-																					 "Start program", 
-																				 	 Control::Color::Emerald, 
-																					 valve_program_selector, 
-																					 valveCallback, 
-																					 (void*)GUI_CB_START_PROGRAM_FLAG);
+	stop_program_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Stop program", 
+		Control::Color::Emerald, valve_program_selector, valveCallback, 
+		(void*)GUI_CB_STOP_PROGRAM_FLAG);
 
-	stop_program_button = ESPUI.addControl(Control::Type::Button, 
-																				 PSTR(empty_str), 
-																				 "Stop program", 
-																				 Control::Color::Emerald, 
-																				 valve_program_selector, 
-																				 valveCallback, 
-																				 (void*)GUI_CB_STOP_PROGRAM_FLAG);
+	stop_program_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Save program in Supla channel", 
+		Control::Color::Emerald, valve_program_selector, valveCallback, 
+		(void*)GUI_CB_SEND_PROGRAM_FLAG);
 
-	stop_program_button = ESPUI.addControl(Control::Type::Button, 
-																				 PSTR(empty_str), 
-																				 "Save program in Supla channel", 
-																				 Control::Color::Emerald, 
-																				 valve_program_selector, 
-																				 valveCallback, 
-																				 (void*)GUI_CB_SEND_PROGRAM_FLAG);
 	working_str = three_dots_str;																		 
-	valve_info_label =  ESPUI.addControl(Control::Type::Label, 
-																			 PSTR(empty_str), 
-																			 working_str,	
-																			 Control::Color::Emerald, 
-																			 valve_program_selector);
+	valve_info_label =  ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str,	
+		Control::Color::Emerald, valve_program_selector);
 }
 
 void enableSonoffValveGUI(bool enable) {
 
-	ESPUI.updateSelect(valve_program_selector, -1); //minus_one_str);
+	ESPUI.updateSelect(valve_program_selector, -1);
 	ESPUI.updateNumber(valve_cycles_number, 0);
 	ESPUI.updateNumber(valve_worktime_number, 0);
 	ESPUI.updateNumber(valve_volume_number, 0);
@@ -2725,7 +2283,7 @@ void enableSonoffValveGUI(bool enable) {
 
 void enableTuyaGasDetectorGUI(bool enable) {
 
-	ESPUI.updateSelect(gas_alarm_ringtone_selector, -1); //minus_one_str);
+	ESPUI.updateSelect(gas_alarm_ringtone_selector, -1); 
 	ESPUI.updateNumber(gas_alarm_time_number, 0);
 
 	updateLabel_C(gas_alarm_info_label, three_dots_str);
@@ -2741,103 +2299,69 @@ void enableTuyaGasDetectorGUI(bool enable) {
 
 void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
 
-	static const char ringtones[][9] PROGMEM = {"MELODY 1", 
-																							"MELODY 2", 
-																							"MELODY 3", 
-																							"MELODY 4", 
-																							"MELODY 5"};
+	static const char ringtones[][9] PROGMEM = {
+		"MELODY 1", "MELODY 2", "MELODY 3", "MELODY 4", "MELODY 5"};
 
-	gas_alarm_ringtone_selector = ESPUI.addControl(Control::Type::Select, 
-																								 "GAS DETECTOR", 
-																								 (long int)-1, //minus_one_str, 
-																								 Control::Color::Emerald, 
-																								 advanced_devices_tab, 
-																								 generalCallback);
+	gas_alarm_ringtone_selector = ESPUI.addControl(
+		Control::Type::Select, "GAS DETECTOR", (long int)-1,
+		Control::Color::Emerald, advanced_devices_tab, generalCallback);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select alarm ringtone..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 gas_alarm_ringtone_selector);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select alarm ringtone..."), (long int)-1, 
+		Control::Color::None, gas_alarm_ringtone_selector);
 
 	for (uint8_t r = 0; r < 5; r++) {
 
-		working_str = r;
-		ESPUI.addControl(Control::Type::Option, 
-										 ringtones[r], 
-										 r, //working_str, 
-										 Control::Color::None, 
-										 gas_alarm_ringtone_selector);
+	ESPUI.addControl(
+			Control::Type::Option, ringtones[r], r, 
+			Control::Color::None, gas_alarm_ringtone_selector);
 	}
 	
-	ESPUI.addControl(Control::Type::Separator,
-									 PSTR(empty_str),"", 
-									 Control::Color::None, 
-									 gas_alarm_ringtone_selector);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR(empty_str), empty_str, 
+		Control::Color::None, gas_alarm_ringtone_selector);
 
-	gas_alarm_time_number =	ESPUI.addControl(Control::Type::Number, 
-																					 PSTR(empty_str), 
-																					 (long int)0, //zero_str, 
-																					 Control::Color::Emerald, 
-																					 gas_alarm_ringtone_selector, 
-																					 generalMinMaxCallback, 
-																					 (void*)180);
+	gas_alarm_time_number =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, gas_alarm_ringtone_selector, 
+		generalMinMaxCallback, (void*)180);
 	
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 "Alarm duration (0-180 s)", 
-																				 Control::Color::None, 
-																				 gas_alarm_ringtone_selector), 
-												PSTR(clearLabelStyle));
-
-	gas_alarm_ringtone_button  = ESPUI.addControl(Control::Type::Button, 
-																								PSTR(empty_str), 
-																								"Send alarm ringtone", 
-																				 				Control::Color::Emerald, 
-																								gas_alarm_ringtone_selector, 
-																								valveCallback, 
-																								(void*)GUI_CB_SEND_RINGTONE_FLAG);
+	addClearLabel(
+		PSTR("Alarm duration (0-180 s)"), gas_alarm_ringtone_selector);
 	
-	gas_alarm_time_button  = ESPUI.addControl(Control::Type::Button, 
-																						PSTR(empty_str), 
-																						"Send alarm duration", 
-																				 		Control::Color::Emerald, 
-																						gas_alarm_ringtone_selector, 
-																						valveCallback, 
-																						(void*)GUI_CB_SEND_TIME_FLAG);
+	gas_alarm_ringtone_button  = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Send alarm ringtone", 
+		Control::Color::Emerald, gas_alarm_ringtone_selector, valveCallback, 
+		(void*)GUI_CB_SEND_RINGTONE_FLAG);
+	
+	gas_alarm_time_button  = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Send alarm duration", 
+		Control::Color::Emerald, gas_alarm_ringtone_selector, 
+		valveCallback, (void*)GUI_CB_SEND_TIME_FLAG);
 
-	gas_alarm_self_test_button  = ESPUI.addControl(Control::Type::Button, 
-																								 PSTR(empty_str), 
-																								 "Self test", 
-																				 				 Control::Color::Emerald, 
-																								 gas_alarm_ringtone_selector, 
-																								 valveCallback, 
-																								 (void*)GUI_CB_SELF_TEST_FLAG);
+	gas_alarm_self_test_button  = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Self test", 
+		Control::Color::Emerald, gas_alarm_ringtone_selector, valveCallback, 
+		(void*)GUI_CB_SELF_TEST_FLAG);
 
-	gas_alarm_silence_button = ESPUI.addControl(Control::Type::Button, 
-																							PSTR(empty_str), 
-																							"Silence alarm", 
-																						 	Control::Color::Emerald, 
-																							gas_alarm_ringtone_selector, 
-																							valveCallback, 
-																							(void*)GUI_CB_SILENCE_FLAG); 
+	gas_alarm_silence_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Silence alarm", 
+		Control::Color::Emerald, gas_alarm_ringtone_selector, valveCallback, 
+		(void*)GUI_CB_SILENCE_FLAG); 
+
 	working_str = three_dots_str;																		 
-	gas_alarm_info_label =  ESPUI.addControl(Control::Type::Label, 
-																					 PSTR(empty_str), 
-																					 working_str,
-																					 Control::Color::Emerald, 
-																					 gas_alarm_ringtone_selector);
+	gas_alarm_info_label =  ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str,
+		Control::Color::Emerald, gas_alarm_ringtone_selector);
 
-	gas_alarm_Tuya_payload_label = ESPUI.addControl(Control::Type::Label, 
-																									PSTR(empty_str), 
-																									working_str, 
-																									Control::Color::Emerald, 
-																									gas_alarm_ringtone_selector);
+	gas_alarm_Tuya_payload_label = ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, gas_alarm_ringtone_selector);
 }
 
 void enableMoesAlarmGUI(bool enable) {
 
-	ESPUI.updateSelect(moes_alarm_melody_selector, -1); //minus_one_str);
+	ESPUI.updateSelect(moes_alarm_melody_selector, -1);
 	ESPUI.updateNumber(moes_alarm_duration_number, 0);
 	ESPUI.updateNumber(moes_alarm_volume_number, 0);
 	
@@ -2854,120 +2378,70 @@ void enableMoesAlarmGUI(bool enable) {
 
 void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 
-	static const char melodies[][10] PROGMEM = {"MELODY 1", 
-																							"MELODY 2", 
-																							"MELODY 3", 
-																							"MELODY 4", 
-																							"MELODY 5", 
-																							"MELODY 6", 
-																							"MELODY 7", 
-																							"MELODY 8", 
-																							"MELODY 9", 
-																							"MELODY 10",
-																							"MELODY 11", 
-																							"MELODY 12", 
-																							"MELODY 13", 
-																							"MELODY 14", 
-																							"MELODY 15", 
-																							"MELODY 16", 
-																							"MELODY 17", 
-																							"MELODY 18"};
+	static const char melodies[][10] PROGMEM = {
+		"MELODY 1", "MELODY 2", "MELODY 3", "MELODY 4", "MELODY 5", "MELODY 6", 
+		"MELODY 7", "MELODY 8", "MELODY 9", "MELODY 10", "MELODY 11", "MELODY 12", 
+		"MELODY 13", "MELODY 14", "MELODY 15", "MELODY 16", "MELODY 17", 
+		"MELODY 18"};
 
-	moes_alarm_melody_selector = ESPUI.addControl(Control::Type::Select, 
-																								PSTR("SIREN ALARM"), 
-																								(long int)-1, //minus_one_str, 
-																								Control::Color::Emerald, 
-																								advanced_devices_tab, 
-																								generalCallback);
+	moes_alarm_melody_selector = ESPUI.addControl(
+		Control::Type::Select, PSTR("SIREN ALARM"), (long int)-1,
+		Control::Color::Emerald, advanced_devices_tab, generalCallback);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select alarm melody..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 moes_alarm_melody_selector);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select alarm melody..."), (long int)-1, 
+		Control::Color::None, moes_alarm_melody_selector);
 
 	for (uint8_t m = 0; m < 18; m++) {
 
-		working_str = m;
-		ESPUI.addControl(Control::Type::Option, 
-										 melodies[m], 
-										 m, //working_str, 
-										 Control::Color::None, 
-										 moes_alarm_melody_selector);
+		ESPUI.addControl(
+			Control::Type::Option, melodies[m], m,Control::Color::None, 
+			moes_alarm_melody_selector);
 	}
 	
-	ESPUI.addControl(Control::Type::Separator,
-									 PSTR(empty_str),
-									 "", 
-									 Control::Color::None, 
-									 moes_alarm_melody_selector);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR(empty_str),empty_str, Control::Color::None, 
+		moes_alarm_melody_selector);
 
-	moes_alarm_duration_number =	ESPUI.addControl(Control::Type::Number, 
-																								 PSTR(empty_str), 
-																								 (long int)0, //zero_str, 
-																								 Control::Color::Emerald, 
-																								 moes_alarm_melody_selector, 
-																								 generalMinMaxCallback, 
-																								 (void*)1800);
+	moes_alarm_duration_number =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0,  
+		Control::Color::Emerald, moes_alarm_melody_selector, 
+		generalMinMaxCallback, (void*)1800);
 	
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 "Alarm duration (0 - 1800 s)", 
-																				 Control::Color::None, 
-																				 moes_alarm_melody_selector), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("Alarm duration (0 - 1800 s)"), moes_alarm_melody_selector);
 	
-	moes_alarm_volume_number =	ESPUI.addControl(Control::Type::Number, 
-																							 PSTR(empty_str), 
-																							 (long int)0, //zero_str, 
-																							 Control::Color::Emerald, 
-																							 moes_alarm_melody_selector, 
-																							 generalMinMaxCallback, 
-																							 (void*)2);
+	moes_alarm_volume_number =	ESPUI.addControl(
+		Control::Type::Number, PSTR(empty_str), (long int)0, 
+		Control::Color::Emerald, moes_alarm_melody_selector, 
+		generalMinMaxCallback, (void*)2);
 	
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 "Alarm volume (0 - 2)", 
-																				 Control::Color::None, 
-																				 moes_alarm_melody_selector), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("Alarm volume (0 - 2)"), moes_alarm_melody_selector);
 
-	moes_alarm_melody_button  = ESPUI.addControl(Control::Type::Button, 
-																							 PSTR(empty_str), 
-																							 "Send alarm melody", 
-																				 			Control::Color::Emerald, 
-																							moes_alarm_melody_selector, 
-																							valveCallback, 
-																							(void*)GUI_CB_SEND_MELODY_FLAG); 
+	moes_alarm_melody_button  = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Send alarm melody", 
+		Control::Color::Emerald, moes_alarm_melody_selector, valveCallback, 
+		(void*)GUI_CB_SEND_MELODY_FLAG); 
 	
-	moes_alarm_duration_button  = ESPUI.addControl(Control::Type::Button, 
-																								 PSTR(empty_str), 
-																								 "Send alarm duration", 
-																				 				Control::Color::Emerald, 
-																								moes_alarm_melody_selector, 
-																								valveCallback, 
-																								(void*)GUI_CB_SEND_DURATION_FLAG);
+	moes_alarm_duration_button  = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Send alarm duration", 
+		Control::Color::Emerald, moes_alarm_melody_selector, valveCallback, 
+		(void*)GUI_CB_SEND_DURATION_FLAG);
 
-	moes_alarm_volume_button  = ESPUI.addControl(Control::Type::Button, 
-																							 PSTR(empty_str), 
-																							 "Send alarm volume", 
-																				 			 Control::Color::Emerald, 
-																							 moes_alarm_melody_selector, 
-																							 valveCallback, 
-																							 (void*)GUI_CB_SEND_VOLUME_FLAG); 
+	moes_alarm_volume_button  = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), "Send alarm volume", 
+		Control::Color::Emerald, moes_alarm_melody_selector, valveCallback, 
+		(void*)GUI_CB_SEND_VOLUME_FLAG); 
 
 	working_str = three_dots_str;																		 
-	moes_alarm_info_label =  ESPUI.addControl(Control::Type::Label, 
-																						PSTR(empty_str), 
-																						working_str,	
-																						Control::Color::Emerald, 
-																						moes_alarm_melody_selector);
+	moes_alarm_info_label =  ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str,	
+		Control::Color::Emerald, moes_alarm_melody_selector);
 
-	moes_alarm_Tuya_payload_label = ESPUI.addControl(Control::Type::Label, 
-																									 PSTR(empty_str), 
-																									 working_str, 
-																									 Control::Color::Emerald, 
-																									 moes_alarm_melody_selector);
+	moes_alarm_Tuya_payload_label = ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, moes_alarm_melody_selector);
 }
 
 void enableTuyaDevicesControls(bool enable) {
@@ -2975,9 +2449,11 @@ void enableTuyaDevicesControls(bool enable) {
 	if (enable == (controls_enabled_flags & TUYA_DEVICES_ENABLED_FLAG))
 		return;
 	
-	updateLabel_C(Tuya_devices_tab_controls_table[Tuya_device_info_label], three_dots_str);
+	updateLabel_C(
+		Tuya_devices_tab_controls_table[Tuya_device_info_label], three_dots_str);
 
-	for (uint16_t i = Tuya_datapoint_id_selector; i < Tuya_device_last_enum_position; i++)
+	for (uint16_t i = Tuya_datapoint_id_selector; 
+			 i < Tuya_device_last_enum_position; i++)
 
 		enableControlStyle(Tuya_devices_tab_controls_table[i], enable);
 
@@ -3022,11 +2498,10 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot) {
 
 			working_str = i;	
 			current_option_id =
-				ESPUI.addControl(Control::Type::Option, 
-													Tuya_datapoints[i].Tuya_datapoint_name, 
-													i, //working_str, 
-													Control::Color::None, 
-													Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+				ESPUI.addControl(
+					Control::Type::Option, Tuya_datapoints[i].Tuya_datapoint_name, 
+					i, Control::Color::None, 
+					Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
 
 			if (Tuya_devices_id_selector_first_option_id == 0xFFFF)
 				Tuya_devices_id_selector_first_option_id = current_option_id;
@@ -3038,170 +2513,124 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot) {
 
 void buildTuyaCustomClusterTabGUI() {
 
-	working_str = "Tuya custom cluster (0xEF00) devices";
-	auto Tuya_custom_cluster_tab = ESPUI.addControl(Control::Type::Tab, 
-																									PSTR(empty_str), 
-																									working_str);
+	char *working_str_ptr = "Tuya custom cluster (0xEF00) devices";
+	auto Tuya_custom_cluster_tab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 	
 	Tuya_devices_tab_controls_table[Tuya_device_selector] = 
 		ESPUI.addControl(Control::Type::Select, 
 										 PSTR("Tuya devices"), 
-										 (long int)-1, //minus_one_str, 
+										 (long int)-1, 
 										 Control::Color::Emerald, 
 										 Tuya_custom_cluster_tab, 
 										 TuyaDeviceSelectorCallback);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select Tuya device..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 Tuya_devices_tab_controls_table[Tuya_device_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select Tuya device..."), (long int)-1, 
+		Control::Color::None, 
+		Tuya_devices_tab_controls_table[Tuya_device_selector]);
 
 	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
 
     if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
 				 hasTuyaCustomCluster(z2s_zb_devices_table[devices_counter].desc_id)) {
 
-			working_str = devices_counter;
-			ESPUI.addControl(Control::Type::Option, 
-											 z2s_zb_devices_table[devices_counter].device_local_name, 
-											 devices_counter, //working_str, 
-											 Control::Color::None, 
-											 Tuya_devices_tab_controls_table[Tuya_device_selector]);
+			ESPUI.addControl(
+				Control::Type::Option, 
+				z2s_zb_devices_table[devices_counter].device_local_name, 
+				devices_counter, Control::Color::None, 
+				Tuya_devices_tab_controls_table[Tuya_device_selector]);
 		}
 	}
 	working_str = three_dots_str;
-	Tuya_devices_tab_controls_table[Tuya_device_info_label]
-		 =  ESPUI.addControl(Control::Type::Label, 
-												 PSTR("Tuya device"), 
-												 working_str,	
-												 Control::Color::Emerald, 
-											   Tuya_custom_cluster_tab);
+	Tuya_devices_tab_controls_table[Tuya_device_info_label]=  ESPUI.addControl(
+		Control::Type::Label, PSTR("Tuya device"), working_str,	
+		Control::Color::Emerald, Tuya_custom_cluster_tab);
 
 	Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR("Tuya datapoints"), 
-										 (long int)-1, //minus_one_str, 
-										 Control::Color::Emerald, 
-										 Tuya_custom_cluster_tab, 
-								     TuyaDatapointIdSelectorCallback);
+		ESPUI.addControl(
+			Control::Type::Select, PSTR("Tuya datapoints"), (long int)-1, 
+			Control::Color::Emerald, Tuya_custom_cluster_tab, 
+			TuyaDatapointIdSelectorCallback);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select predefined datapoint..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select predefined datapoint..."), 
+		(long int)-1, Control::Color::None, 
+		Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
 
 	Tuya_devices_tab_controls_table[Tuya_datapoint_id_number] =	
-		ESPUI.addControl(Control::Type::Number, 
-										 PSTR(empty_str),
-										 (long int)0, //zero_str, 
-										 Control::Color::Emerald, 
-										 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], 
-										 generalMinMaxCallback, (void*)255);
+		ESPUI.addControl(
+			Control::Type::Number, PSTR(empty_str), (long int)0, 
+			Control::Color::Emerald, 
+			Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], 
+			generalMinMaxCallback, (void*)255);
 
-	working_str = "Datapoint id (1 - 255)";
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("Datapoint id (1 - 255)"),
+		 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
 	
 	Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR("Datapoint type"), 
-										 (long int)-1, //minus_one_str, 
-										 Control::Color::Emerald, 
-										 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], 
-										 TuyaDatapointTypeSelectorCallback);
+		ESPUI.addControl(
+			Control::Type::Select, PSTR("Datapoint type"), (long int)-1,
+			Control::Color::Emerald, 
+			Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], 
+			TuyaDatapointTypeSelectorCallback);
 
-	ESPUI.addControl(Control::Type::Option, 
-									 PSTR("Select datapoint type..."), 
-									 (long int)-1, //minus_one_str, 
-									 Control::Color::None, 
-									 Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select datapoint type..."), (long int)-1,
+		Control::Color::None, 
+		Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
 	
 	for (uint8_t t = 0; t < 6; t++) {
 
 		working_str = Tuya_datapoint_types[t].Tuya_datapoint_type_id;
-		ESPUI.addControl(Control::Type::Option, 
-										 Tuya_datapoint_types[t].Tuya_datapoint_type_name, 
-										 Tuya_datapoint_types[t].Tuya_datapoint_type_id, //working_str, 
-										 Control::Color::None, 
-										 Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
+		ESPUI.addControl(
+			Control::Type::Option, Tuya_datapoint_types[t].Tuya_datapoint_type_name, 
+			Tuya_datapoint_types[t].Tuya_datapoint_type_id, Control::Color::None, 
+			Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
 	}
 
 	Tuya_devices_tab_controls_table[Tuya_datapoint_length_number] =	
 		ESPUI.addControl(Control::Type::Number, 
 									   PSTR(empty_str),
-										 (long int)0, //zero_str, 
+										 (long int)0,
 										 Control::Color::Emerald, 
 										 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector],
 										 generalMinMaxCallback, 
 										 (void*)58);
 
-	working_str = "Datapoint type length (1-58)";
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]), 
-												PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("Datapoint type length (1-58)"),
+		Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]), 
+		
 	
 	Tuya_devices_tab_controls_table[Tuya_datapoint_value_number] =	
-		ESPUI.addControl(Control::Type::Number, 
-									   PSTR(empty_str),
-										 (long int)0, //zero_str, 
-										 Control::Color::Emerald, 
-										 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector],
-										 generalCallback);
-	working_str = "Datapoint value (numbers only, no range checking)";
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]), 
-												PSTR(clearLabelStyle));
+		ESPUI.addControl(
+			Control::Type::Number, PSTR(empty_str),(long int)0, 
+			Control::Color::Emerald, 
+			Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector],
+			generalCallback);
+
+	addClearLabel(
+		PSTR("Datapoint value (numbers only, no range checking)"),
+		Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
 	
-
-	/*Tuya_devices_tab_controls_table[Tuya_datapoint_value_text] = 
-		ESPUI.addControl(Control::Type::Text, 
-										 PSTR("Datapoint payload"), 
-										 zero_str, 
-										 Control::Color::Emerald, 
-										 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], 
-										 generalCallback);
-
-	working_str = PSTR("Enter custom command payload - "
-										 "use hexstring without 0x <br> ie. "
-										 "00120B020004090706FF");															 
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]), 
-												PSTR(clearLabelStyle));
-	*/
 	working_str = three_dots_str;
 	Tuya_devices_tab_controls_table[Tuya_datapoint_description_label] =
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR("Datapoint description"), 
-										 working_str, 
-										 Control::Color::Emerald, 
-										 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
-	working_str = PSTR("Datapoint acceptable values description.<br>"
-										 "Use it to fill datapoint value field.");															 
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]), 
-												PSTR(clearLabelStyle));
+		ESPUI.addControl(
+			Control::Type::Label, PSTR("Datapoint description"), working_str, 
+			Control::Color::Emerald, 
+			Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
 
-	ESPUI.setElementStyle(Tuya_devices_tab_controls_table[Tuya_datapoint_description_label], 
-												"text-align: left; font-family:tahoma; font-size: "
-												"4 px; font-style: normal; font-weight: normal;");
+	addClearLabel(
+		PSTR("Datapoint acceptable values description.<br>"
+				 "Use it to fill datapoint value field."), 		
+	 Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+
+	ESPUI.setElementStyle(
+		Tuya_devices_tab_controls_table[Tuya_datapoint_description_label], 
+		"text-align: left; font-family:tahoma; font-size: "
+		"4 px; font-style: normal; font-weight: normal;");
 
 	Tuya_devices_tab_controls_table[Tuya_device_data_request_button]  = 
 		ESPUI.addControl(
@@ -3210,55 +2639,49 @@ void buildTuyaCustomClusterTabGUI() {
 			TuyaCustomCmdCallback, (void*)GUI_CB_SEND_TUYA_REQUEST_FLAG); 
 	
 	Tuya_devices_tab_controls_table[Tuya_device_data_query_button]  = 
-		ESPUI.addControl(Control::Type::Button, 
-										 PSTR(empty_str), 
-										 "Data query", 
-										 Control::Color::Emerald, 
-										 Tuya_devices_tab_controls_table[Tuya_device_data_request_button], 
-										 TuyaCustomCmdCallback, 
-										 (void*)GUI_CB_SEND_TUYA_QUERY_FLAG);
+		ESPUI.addControl(
+			Control::Type::Button, PSTR(empty_str), "Data query", 
+			Control::Color::Emerald, 
+			Tuya_devices_tab_controls_table[Tuya_device_data_request_button], 
+			TuyaCustomCmdCallback, (void*)GUI_CB_SEND_TUYA_QUERY_FLAG);
 
 	working_str = three_dots_str;
 	Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label] =  
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR("Command Result"), 
-										 working_str,	
-										 Control::Color::Emerald, 
-										 Tuya_custom_cluster_tab);
+		ESPUI.addControl(
+			Control::Type::Label, PSTR("Command Result"), working_str,	
+			Control::Color::Emerald, Tuya_custom_cluster_tab);
 
 	Tuya_devices_tab_controls_table[Tuya_device_payload_label] =  
-		ESPUI.addControl(Control::Type::Label, 
-										 PSTR("Command Response payload"), 
-										 working_str,	
-										 Control::Color::Emerald, 
-										 Tuya_custom_cluster_tab);
+		ESPUI.addControl(
+			Control::Type::Label, PSTR("Command Response payload"), working_str,	
+			Control::Color::Emerald, Tuya_custom_cluster_tab);
 }
 
 void buildAdvancedDevicesTabGUI() {
 
-	auto advanced_devices_tab = ESPUI.addControl(Control::Type::Tab, 
-																							 PSTR(empty_str), 
-																							 "Advanced devices");
+	char *working_str_ptr = PSTR("Advanced devices");
+	auto advanced_devices_tab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 	
-	advanced_device_selector = ESPUI.addControl(Control::Type::Select, 
-																							PSTR("Advanced devices"), 
-																							(long int)-1, //minus_one_str, 
-																							Control::Color::Emerald, 
-																							advanced_devices_tab, 
-																							advancedDeviceSelectorCallback);
+	advanced_device_selector = ESPUI.addControl(
+		Control::Type::Select, PSTR("Advanced devices"), (long int)-1, 
+		Control::Color::Emerald, advanced_devices_tab, 
+		advancedDeviceSelectorCallback);
 
-	ESPUI.addControl(Control::Type::Option, 
-									PSTR("Select device..."), 
-									(long int)-1, //minus_one_str, 
-									Control::Color::None, 
-									advanced_device_selector);
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select device..."), (long int)-1, 
+		Control::Color::None, advanced_device_selector);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+	for (uint8_t devices_counter = 0; 
+			 devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
 
     if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
-		((z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_SONOFF_SMART_VALVE) ||
-		  (z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR) ||
-			(z2s_zb_devices_table[devices_counter].desc_id == Z2S_DEVICE_DESC_MOES_ALARM))) {
+				((z2s_zb_devices_table[devices_counter].desc_id == 
+						Z2S_DEVICE_DESC_SONOFF_SMART_VALVE) ||
+		  		(z2s_zb_devices_table[devices_counter].desc_id == 
+						Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR) ||
+					(z2s_zb_devices_table[devices_counter].desc_id == 
+						Z2S_DEVICE_DESC_MOES_ALARM))) {
 			
 			switch (z2s_zb_devices_table[devices_counter].desc_id) {
 				
@@ -3278,20 +2701,16 @@ void buildAdvancedDevicesTabGUI() {
 					isMoesAlarmPresent = true; break;
 			}
 
-			working_str = devices_counter;
-			ESPUI.addControl(Control::Type::Option, 
-											 z2s_zb_devices_table[devices_counter].device_local_name, 
-											 devices_counter, //working_str, 
-											 Control::Color::None, 
-											 advanced_device_selector);
+			ESPUI.addControl(
+				Control::Type::Option, 
+				z2s_zb_devices_table[devices_counter].device_local_name, 
+				devices_counter, Control::Color::None, advanced_device_selector);
 		}
 	}
   working_str = three_dots_str;
-	advanced_device_info_label =  ESPUI.addControl(Control::Type::Label, 
-																								 PSTR("Advanced Device"), 
-																								 working_str,	
-																								 Control::Color::Emerald, 
-																								 advanced_devices_tab);
+	advanced_device_info_label =  ESPUI.addControl(
+		Control::Type::Label, PSTR("Advanced Device"), working_str,	
+		Control::Color::Emerald, advanced_devices_tab);
 
 //SONOFF VALVE SWV
 	if (Z2S_hasZbDevice(Z2S_DEVICE_DESC_SONOFF_SMART_VALVE)) {
@@ -3351,6 +2770,8 @@ const char* getSuplaConditionName(Supla::Conditions condition_id) {
 
 void sprintfAction(z2s_channel_action_t &action) {
 
+	char general_purpose_gui_buffer[1024] = {};
+
 	if (action.is_condition)
 		sprintf(general_purpose_gui_buffer, 
 						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
@@ -3400,14 +2821,12 @@ void enableActionDetails(bool enable) {
 		working_str = "";
 		ESPUI.updateText(action_name_text, working_str);
 		ESPUI.updateText(action_description_text, working_str);
-		working_str = minus_one_str;
-		ESPUI.updateSelect(action_source_channel_selector, -1); //working_str);
-		ESPUI.updateSelect(action_event_selector, -1); //working_str);
-		ESPUI.updateSelect(action_destination_channel_selector, -1); //working_str);
-		ESPUI.updateSelect(action_action_selector, -1); //working_str);
+		ESPUI.updateSelect(action_source_channel_selector, -1);
+		ESPUI.updateSelect(action_event_selector, -1);
+		ESPUI.updateSelect(action_destination_channel_selector, -1); 
+		ESPUI.updateSelect(action_action_selector, -1);
 		ESPUI.updateNumber(action_condition_threshold_1_number, 0);
 		ESPUI.updateNumber(action_condition_threshold_2_number, 0);
-		
 	}
 
 	enableControlStyle(action_enabled_switcher, enable);
@@ -3501,7 +2920,8 @@ void updateActionButtons() {
 	enableControlStyle(action_copy_button, action_remove_button_enable);
 }
 
-void updateActionDetails(z2s_channel_action_t &action, bool empty_action = false) {
+void updateActionDetails(
+	z2s_channel_action_t &action, bool empty_action = false) {
 
 	if (current_action_gui_state == VIEW_ACTION) {
 
@@ -3522,20 +2942,21 @@ void updateActionDetails(z2s_channel_action_t &action, bool empty_action = false
 	working_str = empty_action ? empty_str : action.action_description;
 	ESPUI.updateText(action_description_text, working_str);
 	
-	working_str = empty_action ? -1 : action.src_Supla_channel;
-	ESPUI.updateSelect(action_source_channel_selector, empty_action ? -1 : action.src_Supla_channel); //working_str);
+	ESPUI.updateSelect(
+		action_source_channel_selector, empty_action ? 
+		-1 : action.src_Supla_channel);
 
-	//working_str = 
-	long action_id = empty_action ? 
-		-1 : action.is_condition ? 
+	long action_id = empty_action ? -1 : action.is_condition ? 
 			(0xFFFF + action.src_Supla_event) : action.src_Supla_event;
-	ESPUI.updateSelect(action_event_selector, action_id); //working_str);
+	ESPUI.updateSelect(action_event_selector, action_id);
 
-	working_str = empty_action ? -1 : action.dst_Supla_channel;
-	ESPUI.updateSelect(action_destination_channel_selector, empty_action ? -1 : action.dst_Supla_channel); //working_str);
+	ESPUI.updateSelect(
+		action_destination_channel_selector, empty_action ? 
+		-1 : action.dst_Supla_channel);
 
-	working_str = empty_action ? -1 : action.dst_Supla_action;
-	ESPUI.updateSelect(action_action_selector, empty_action ? -1 : action.dst_Supla_action); //working_str);
+	ESPUI.updateSelect(
+		action_action_selector, empty_action ? 
+		-1 : action.dst_Supla_action);
 
 	working_str = empty_action ? 
 		String(0, 2) : String(action.min_value, 2);
@@ -3643,76 +3064,57 @@ void buildActionsChannelSelectors(
 		}
 		
 		ESPUI.updateControlValue(
-			action_destination_channel_selector, -1); //minus_one_str);
+			action_destination_channel_selector, -1); 
 
 	} else { 
 		
 		action_source_channel_selector = ESPUI.addControl(
-			Control::Type::Select, PSTR(empty_str), (long int)-1, //minus_one_str, 
+			Control::Type::Select, PSTR(empty_str), (long int)-1, 
 			Control::Color::Emerald, parent_control_id, generalCallback);
 
 		//this have to be here to keep user friendly layout
 		action_event_selector = ESPUI.addControl(
-			Control::Type::Select,  PSTR(empty_str), (long int)-1, //minus_one_str, 
+			Control::Type::Select,  PSTR(empty_str), (long int)-1, 
 			Control::Color::Emerald, parent_control_id, generalCallback);
 
 		action_destination_channel_selector = ESPUI.addControl(
-			Control::Type::Select, PSTR(empty_str), (long int)-1, //minus_one_str,
+			Control::Type::Select, PSTR(empty_str), (long int)-1, 
 			Control::Color::Emerald, parent_control_id, generalCallback);
 
 		//this have to be here to keep user friendly layout
 		action_action_selector = ESPUI.addControl(
-			Control::Type::Select, PSTR(empty_str), (long int)-1, //minus_one_str, 
+			Control::Type::Select, PSTR(empty_str), (long int)-1,
 			Control::Color::Emerald, parent_control_id, generalCallback);
 
 		//this have to be here to keep user friendly layout
-		action_condition_threshold_1_number = ESPUI.addControl(Control::Type::Number, 
-																													 PSTR(empty_str), 
-																													 (long int)-1, //minus_one_str, 
-																						 							 Control::Color::Emerald, 
-																													 parent_control_id, 
-																													 generalCallback);
+		action_condition_threshold_1_number = ESPUI.addControl(
+			Control::Type::Number, PSTR(empty_str), (long int)-1, 
+			Control::Color::Emerald, parent_control_id, generalCallback);
 		
-		working_str = PSTR("&#10023; condition main threshold value (for =, >, <, ≥, ≤) &#10023;"
-											 "<br>enter number ie. 21.5 or -8.0");
-		ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																					PSTR(empty_str), 
-																					working_str, 
-																					Control::Color::None, 
-																					parent_control_id), 
-													PSTR(clearLabelStyle));
-		
-
-		action_condition_threshold_2_number = ESPUI.addControl(Control::Type::Number, //this have to be here to keep user friendly layout
-																													 PSTR(empty_str), 
-																													 (long int)-1, //minus_one_str, 
-																						 							 Control::Color::Emerald, 
-																													 parent_control_id, 
-																													 generalCallback);
-
-		working_str = PSTR("&#10023; condition secondary threshold value (only for between) &#10023;"
-											 "<br>enter number ie. 21.5 or -8.0");
-		ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																					PSTR(empty_str), 
-																					working_str, 
-																					Control::Color::None, 
-																					parent_control_id), 
-													PSTR(clearLabelStyle));
-		
-
-
-		ESPUI.addControl(Control::Type::Option, 
-											PSTR("Select source channel..."), 
-											(long int)-1, //minus_one_str, 
-											Control::Color::None, 
-											action_source_channel_selector);
+		addClearLabel(
+			PSTR(
+				"&#10023; condition main threshold value (for =, >, <, ≥, ≤) &#10023;"
+				"<br>enter number ie. 21.5 or -8.0"), parent_control_id);
 
 	
-		ESPUI.addControl(Control::Type::Option, 
-										 PSTR("Select destination channel..."), 
-										 (long int)-1, //minus_one_str, 
-										 Control::Color::None, 
-										 action_destination_channel_selector);
+		//this have to be here to keep user friendly layout
+		action_condition_threshold_2_number = ESPUI.addControl(
+			Control::Type::Number, PSTR(empty_str), (long int)-1, 
+			Control::Color::Emerald, parent_control_id, generalCallback);
+
+		addClearLabel(
+			PSTR(
+				"&#10023; condition secondary threshold value (only for between)"
+				" &#10023;<br>enter number ie. 21.5 or -8.0"), parent_control_id);
+		
+		ESPUI.addControl(
+			Control::Type::Option, PSTR("Select source channel..."), (long int)-1,
+			Control::Color::None, action_source_channel_selector);
+
+		ESPUI.addControl(
+			Control::Type::Option, PSTR("Select destination channel..."), 
+			(long int)-1, Control::Color::None, 
+			action_destination_channel_selector);
 	}
 
 	uint16_t current_option_id 			= 0xFFFF;
@@ -3728,11 +3130,11 @@ void buildActionsChannelSelectors(
       
 			working_str = z2s_channels_table[channels_counter].Supla_channel; //channels_counter;
 			current_option_id = 
-				ESPUI.addControl(Control::Type::Option,  
-												z2s_channels_table[channels_counter].Supla_channel_name, 
-												z2s_channels_table[channels_counter].Supla_channel, //working_str, 
-												Control::Color::None, 
-												action_source_channel_selector);
+				ESPUI.addControl(
+					Control::Type::Option,  
+					z2s_channels_table[channels_counter].Supla_channel_name, 
+					z2s_channels_table[channels_counter].Supla_channel, 
+					Control::Color::None, action_source_channel_selector);
 			
 			if (action_source_channel_selector_first_option_id == 0xFFFF) 
 				action_source_channel_selector_first_option_id = current_option_id;
@@ -3750,13 +3152,12 @@ void buildActionsChannelSelectors(
 	for (uint8_t channels_counter = 0; channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
     if (z2s_channels_table[channels_counter].valid_record) {
 	
-			working_str = z2s_channels_table[channels_counter].Supla_channel; //channels_counter;
 			current_option_id = 
-				ESPUI.addControl(Control::Type::Option, 
-												z2s_channels_table[channels_counter].Supla_channel_name, 
-												z2s_channels_table[channels_counter].Supla_channel, //working_str, 
-												Control::Color::None, 
-												action_destination_channel_selector);
+				ESPUI.addControl(
+					Control::Type::Option, 
+					z2s_channels_table[channels_counter].Supla_channel_name, 
+					z2s_channels_table[channels_counter].Supla_channel,
+					Control::Color::None, action_destination_channel_selector);
 
 			if (action_destination_channel_selector_first_option_id == 0xFFFF) 
 				action_destination_channel_selector_first_option_id = current_option_id;
@@ -3768,32 +3169,35 @@ void buildActionsChannelSelectors(
 
 void buildActionsTabGUI() {
 
+	char general_purpose_gui_buffer[1024] = {};
+
+	char *working_str_ptr = "Local actions";
 	auto actions_tab = ESPUI.addControl(
-		Control::Type::Tab, PSTR(empty_str), "Local actions");
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 	
 	z2s_channel_action_t new_action = {};
 
-	working_str = "FIRST";							
+	working_str_ptr = "FIRST";							
 	table_first_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, actions_tab, actionsTableCallback, 
 		(void*)GUI_CB_ACTION_FIRST_FLAG);
 																				
-	working_str = "NEXT";							
+	working_str_ptr = "NEXT";							
 	table_next_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, table_first_button, actionsTableCallback, 
 		(void*)GUI_CB_ACTION_NEXT_FLAG);
 
-	working_str = "PREV";							
+	working_str_ptr = "PREV";							
 	table_prev_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, table_first_button, 
 		actionsTableCallback, (void*)GUI_CB_ACTION_PREV_FLAG);
 
-	working_str = "LAST";							
+	working_str_ptr = "LAST";							
 	table_last_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, table_first_button, 
 		actionsTableCallback, (void*)GUI_CB_ACTION_LAST_FLAG);
 
@@ -3808,8 +3212,6 @@ void buildActionsTabGUI() {
       Z2S_loadAction(first_action, new_action);
 			sprintfAction(new_action);
 		}
-	
-	log_i("table html source length: %u", strlen(general_purpose_gui_buffer));
 								
 	actions_table_label = ESPUI.addControl(
 		Control::Type::Label, PSTR("Table label"), working_str, 
@@ -3823,50 +3225,39 @@ void buildActionsTabGUI() {
 	ESPUI.setPanelWide(actions_table_label, false);
 
 	action_enabled_switcher = ESPUI.addControl(
-		Control::Type::Switcher, PSTR("Action details"), zero_str, 
+		Control::Type::Switcher, PSTR("Action details"), (long int)0, 
 		Control::Color::Emerald, actions_tab, generalCallback);
 
-	working_str = PSTR("&#10023; action enabled &#10023;");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
-			action_enabled_switcher), 
-		PSTR(clearLabelStyle));				
+	addClearLabel(
+		PSTR("&#10023; action enabled &#10023;"), action_enabled_switcher);
 
 	working_str = PSTR(empty_str);
 	action_name_text = ESPUI.addControl(
 		Control::Type::Text, PSTR(empty_str), working_str, 
 		Control::Color::Emerald, action_enabled_switcher, generalCallback);
 
-	working_str = PSTR("&#10023; action name (max 32 characters) &#10023;");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
-			action_enabled_switcher), 
-		PSTR(clearLabelStyle));
-	
+	addClearLabel(
+		PSTR("&#10023; action name (max 32 characters) &#10023;"), 
+		action_enabled_switcher);
+
 	working_str = PSTR(empty_str);
 	action_description_text = ESPUI.addControl(
 		Control::Type::Text, PSTR(empty_str), working_str, Control::Color::Emerald, 
 		action_enabled_switcher, generalCallback);
 
-	working_str = PSTR(
-		"&#10023; action short description (max 127 characters) &#10023;");
-	ESPUI.setElementStyle(
-		ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), working_str, Control::Color::None, 
-			action_enabled_switcher), 
-		PSTR(clearLabelStyle));
-	
+	addClearLabel(
+		PSTR("&#10023; action short description (max 127 characters) &#10023;"), 
+		action_enabled_switcher);
+
 	buildActionsChannelSelectors(false, action_enabled_switcher);
 
 	ESPUI.addControl(
-		Control::Type::Option, PSTR("Select source event..."), (long int)-1, //minus_one_str, 
+		Control::Type::Option, PSTR("Select source event..."), (long int)-1, 
 		Control::Color::None, action_event_selector);	
 
 	ESPUI.addControl(
-		Control::Type::Option, PSTR("Select destination action..."), 
-		-1 /*minus_one_str*/, Control::Color::None, action_action_selector);
+		Control::Type::Option, PSTR("Select destination action..."), (long int)-1, 
+		Control::Color::None, action_action_selector);
 
 	uint16_t actions_number = 
 		sizeof(Supla_actions) / sizeof(Supla_action_type_t);
@@ -3880,8 +3271,8 @@ void buildActionsTabGUI() {
 		working_str = Supla_actions[actions_counter].Supla_action_id;
 		ESPUI.addControl(
 			Control::Type::Option, Supla_actions[actions_counter].Supla_action_name, 
-			Supla_actions[actions_counter].Supla_action_id, //working_str, 
-			Control::Color::None, action_action_selector);
+			Supla_actions[actions_counter].Supla_action_id,Control::Color::None, 
+			action_action_selector);
 	}
 
 	uint16_t events_number = sizeof(Supla_events) / sizeof(Supla_event_type_t);
@@ -3889,79 +3280,62 @@ void buildActionsTabGUI() {
 	for (uint16_t events_counter = 0; events_counter < events_number; 
 			 events_counter++) {
 
-		//working_str = 
-		int event_id = 
-			Supla_events[events_counter].is_condition ? 
-				Supla_events[events_counter].Supla_event_id + 0xFFFF :
-				Supla_events[events_counter].Supla_event_id;
+		int event_id = Supla_events[events_counter].is_condition ? 
+			Supla_events[events_counter].Supla_event_id + 0xFFFF :
+			Supla_events[events_counter].Supla_event_id;
 
 		ESPUI.addControl(
 			Control::Type::Option, Supla_events[events_counter].Supla_event_name, 
-			event_id /*working_str*/, Control::Color::None, action_event_selector);
+			event_id, Control::Color::None, action_event_selector);
 	}
 
-	working_str = "EDIT ACTION";							
+	working_str_ptr = "EDIT ACTION";							
 	action_edit_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str, 
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, actions_tab, actionsTableCallback, 
 		(void*)GUI_CB_ACTION_EDIT_FLAG);
 
-	working_str = "NEW ACTION";							
-	action_new_button = ESPUI.addControl(Control::Type::Button, 
-																			PSTR(empty_str), 
-																			working_str, 
-																			Control::Color::Emerald, 
-																			action_edit_button, 
-																			actionsTableCallback, 
-																			(void*)GUI_CB_ACTION_NEW_FLAG);
+	working_str_ptr = "NEW ACTION";							
+	action_new_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, action_edit_button, actionsTableCallback, 
+		(void*)GUI_CB_ACTION_NEW_FLAG);
 	
-	working_str = "COPY ACTION";							
-	action_copy_button = ESPUI.addControl(Control::Type::Button, 
-																				PSTR(empty_str), 
-																				working_str, 
-																				Control::Color::Emerald, 
-																				action_edit_button, 
-																				actionsTableCallback, 
-																				(void*)GUI_CB_ACTION_COPY_FLAG);
+	working_str_ptr = "COPY ACTION";							
+	action_copy_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, action_edit_button, actionsTableCallback, 
+		(void*)GUI_CB_ACTION_COPY_FLAG);
 																			
-	working_str = "SAVE ACTION";							
-	action_save_button = ESPUI.addControl(Control::Type::Button, 
-																				PSTR(empty_str), 
-																				working_str, 
-																				Control::Color::Emerald, 
-																				action_edit_button, 
-																				actionsTableCallback, 
-																				(void*)GUI_CB_ACTION_SAVE_FLAG);
+	working_str_ptr = "SAVE ACTION";							
+	action_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, action_edit_button, actionsTableCallback, 
+		(void*)GUI_CB_ACTION_SAVE_FLAG);
 
-	working_str = "CANCEL CHANGES";							
-	action_cancel_button = ESPUI.addControl(Control::Type::Button, 
-																					PSTR(empty_str), 
-																					working_str, 
-																			 		Control::Color::Emerald, 
-																					action_edit_button, 
-																					actionsTableCallback, 
-																					(void*)GUI_CB_ACTION_CANCEL_FLAG);
+	working_str_ptr = "CANCEL CHANGES";							
+	action_cancel_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, action_edit_button, actionsTableCallback, 
+		(void*)GUI_CB_ACTION_CANCEL_FLAG);
 
-	working_str = "DELETE ACTION";							
-	action_remove_button = ESPUI.addControl(Control::Type::Button, 
-																					PSTR(empty_str), 
-																					working_str, 
-																			 		Control::Color::Emerald, 
-																					action_edit_button, 
-																					actionsTableCallback, 
-																					(void*)GUI_CB_ACTION_REMOVE_FLAG);
+	working_str_ptr = "DELETE ACTION";							
+	action_remove_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, action_edit_button, actionsTableCallback, 
+		(void*)GUI_CB_ACTION_REMOVE_FLAG);
 
 	working_str = three_dots_str;
-	action_state_label = ESPUI.addControl(Control::Type::Label, 
-																				PSTR(empty_str), 
-																				working_str, 
-																			 	Control::Color::Emerald, 
-																				action_edit_button);
+	action_state_label = ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, action_edit_button);
 	
 	enableActionDetails(false);
 }
 
 void mem_log(const char *tab_name) {
+
+		char general_purpose_gui_buffer[1024] = {};
 
 		delay(500);
 	  fillMemoryUptimeInformation(general_purpose_gui_buffer);
@@ -4179,48 +3553,40 @@ void Z2S_reloadWebGUI() {
 
 void Z2S_startWebGUIConfig() {
 
-	//char buf[1024] = {};
+	char general_purpose_gui_buffer[1024] = {};
 	
 	fillGatewayGeneralnformation(general_purpose_gui_buffer);
 
-	ESPUI.addControl(Control::Type::Separator, 
-									 PSTR("General information"), 
-									 "", 
-									 Control::Color::None);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR("General information"), empty_str, 
+		Control::Color::None);
 
-	gateway_general_info = ESPUI.addControl(Control::Type::Label, 
-																					"Device information", 
-																					general_purpose_gui_buffer, 
-																					Control::Color::Emerald);
+	gateway_general_info = ESPUI.addControl(
+		Control::Type::Label, "Device information", general_purpose_gui_buffer, 
+		Control::Color::Emerald);
 
 	fillMemoryUptimeInformation(general_purpose_gui_buffer);
 	
-	ESPUI.addControl(Control::Type::Separator, 
-									 PSTR("Status"), 
-									 "", 
-									 Control::Color::None);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR("Status"), empty_str, 
+		Control::Color::None);
 
-	gateway_memory_info = ESPUI.addControl(Control::Type::Label, 
-																				 "Memory & Uptime", 
-																				 general_purpose_gui_buffer, 
-																				 Control::Color::Emerald);
+	gateway_memory_info = ESPUI.addControl(
+		Control::Type::Label, "Memory & Uptime", 
+		general_purpose_gui_buffer, Control::Color::Emerald);
 	
-	ESPUI.addControl(Control::Type::Separator, 
-									 PSTR("Status"), 
-									 PSTR(empty_str), 
-									 Control::Color::None);
+	ESPUI.addControl(
+		Control::Type::Separator, PSTR("Status"), empty_str, 
+		Control::Color::None);
 
-  ESPUI.addControl(Control::Type::Separator, 
-									 PSTR("WiFi & Supla credentials"), 
-									 "", 
-									 Control::Color::None);
+  ESPUI.addControl(
+		Control::Type::Separator, PSTR("WiFi & Supla credentials"), empty_str, 
+		Control::Color::None);
 
   working_str = empty_str;
-	wifi_ssid_text = ESPUI.addControl(Control::Type::Text, 
-																		PSTR("SSID"), 
-																		working_str, 
-																		Control::Color::Emerald, 
-																		Control::noParent, textCallback);
+	wifi_ssid_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("SSID"), working_str, 
+		Control::Color::Emerald, Control::noParent, textCallback);
 
 	wifi_pass_text = ESPUI.addControl(Control::Type::Text, 
 																		"Password", 
@@ -4247,51 +3613,41 @@ void Z2S_startWebGUIConfig() {
 	
 	Supla_skip_certificate_switcher = ESPUI.addControl(Control::Type::Switcher, 
 																										 PSTR("Skip CA certificate check"), 
-																										 zero_str,
+																										 (long int)0,
 																										 Control::Color::Emerald, 
 																										 Control::noParent, 
 																										 generalCallback);
 
 	auto gui_mode_selector = ESPUI.addControl(Control::Type::Select, 
 									 												  PSTR("Select GUI mode (requires restart)"), 
-																		 				(long int)(long int)0, //zero_str, 
+																		 				(long int)(long int)0, 
 																		 				Control::Color::Emerald, 
 																		 				Control::noParent, 
 																		 				selectGuiModeCallback);
 
-	for (uint8_t modes_counter = no_gui_mode; modes_counter < gui_modes_number; modes_counter++) {
+	for (uint8_t modes_counter = no_gui_mode; modes_counter < gui_modes_number; 
+	     modes_counter++) {
 
   	working_str = modes_counter;
-		ESPUI.addControl(Control::Type::Option, 
-										 GUI_MODE_OPTIONS[modes_counter], 
-										 modes_counter, //working_str, 
-										 Control::Color::None, 
-										 gui_mode_selector);
+		ESPUI.addControl(
+			Control::Type::Option, GUI_MODE_OPTIONS[modes_counter], modes_counter, 
+			Control::Color::None, gui_mode_selector);
 	}
 
-	working_str = PSTR("When GUI is disabled on start use 5x BOOT to enable it.");
-	ESPUI.setElementStyle(ESPUI.addControl(Control::Type::Label, 
-																				 PSTR(empty_str), 
-																				 working_str, 
-																				 Control::Color::None, 
-																				 gui_mode_selector), 
-											  PSTR(clearLabelStyle));
+	addClearLabel(
+		PSTR("When GUI is disabled on start use 5x BOOT to enable it."), 
+		gui_mode_selector);
 
+	gui_start_delay_number = ESPUI.addControl(
+		Control::Type::Number, PSTR("GUI start delay (s)"), (long int)0,
+		Control::Color::Emerald, Control::noParent, generalMinMaxCallback, 
+		(void*)3600);
 
-	gui_start_delay_number = ESPUI.addControl(Control::Type::Number, 
-																						PSTR("GUI start delay (s)"), 
-																						(long int)0, //zero_str, 
-																						Control::Color::Emerald, 
-																						Control::noParent, 
-																						generalMinMaxCallback, 
-																						(void*)3600);
-
-	working_str = PSTR("Save");
-	auto gui_start_delay_save_button = 
-		ESPUI.addControl(
-			Control::Type::Button, PSTR(empty_str), working_str, 
-			Control::Color::Emerald, gui_start_delay_number, 
-			gatewayCallback, (void*)GUI_CB_GUI_DELAY_FLAG);
+	char *working_str_ptr = PSTR("Save");
+	auto gui_start_delay_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, gui_start_delay_number, gatewayCallback, 
+		(void*)GUI_CB_GUI_DELAY_FLAG);
 
 	save_button = ESPUI.addControl(
 		Control::Type::Button, PSTR("Save"), "Save", Control::Color::Emerald, 
@@ -4310,36 +3666,30 @@ void Z2S_startWebGUIConfig() {
   
 	if (cfg) {
 
-  	memset(general_purpose_gui_buffer, 0, 
-					 sizeof(general_purpose_gui_buffer));
+  	memset(
+			general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
   	if (cfg->getWiFiSSID(general_purpose_gui_buffer) && 
-			 strlen(general_purpose_gui_buffer) > 0)
-			ESPUI.updateText(
-				wifi_ssid_text, general_purpose_gui_buffer);
+			  strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(wifi_ssid_text, general_purpose_gui_buffer);
 
 		memset(
 			general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getSuplaServer(general_purpose_gui_buffer) && 
 				strlen(general_purpose_gui_buffer) > 0)
-			ESPUI.updateText(
-				Supla_server, general_purpose_gui_buffer);
+			ESPUI.updateText(Supla_server, general_purpose_gui_buffer);
 
 		memset(
 			general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getEmail(general_purpose_gui_buffer) && 
 				strlen(general_purpose_gui_buffer) > 0)
-			ESPUI.updateText(
-				Supla_email, general_purpose_gui_buffer);
+			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
 
-		ESPUI.updateNumber(
-			Supla_skip_certificate_switcher, _z2s_security_level);
+		ESPUI.updateNumber(Supla_skip_certificate_switcher, _z2s_security_level);
 	}
 
 	working_str = _enable_gui_on_start;
-	ESPUI.updateSelect(gui_mode_selector, _enable_gui_on_start); //working_str);
+	ESPUI.updateSelect(gui_mode_selector, _enable_gui_on_start); 
 	ESPUI.updateNumber(gui_start_delay_number, _gui_start_delay);
-
-	//log_i("%s", myCustomJS);
 
 	ESPUI.begin("ZIGBEE <=> SUPLA CONFIG PAGE");
 	GUIstarted = true;
@@ -4389,12 +3739,11 @@ void Z2S_startUpdateServer() {
 
 void Z2S_updateWebGUI() {
 
-	//char buf[1024] = {};
+	char general_purpose_gui_buffer[1024] = {};
 
 	fillMemoryUptimeInformation(general_purpose_gui_buffer);
-	//working_str = general_purpose_gui_buffer;
-	updateLabel_P(gateway_memory_info, 
-								general_purpose_gui_buffer);
+
+	updateLabel_P(gateway_memory_info, general_purpose_gui_buffer);
 }
 
 void clusterCallbackCmd() {
@@ -4403,13 +3752,15 @@ void clusterCallbackCmd() {
 	clearAttributeValueSelect();
 
 	uint16_t cluster_id = 
-		ESPUI.getControl(clusters_attributes_table[device_cluster_selector])->getValueInt();
+		ESPUI.getControl(
+			clusters_attributes_table[device_cluster_selector])->getValueInt();
 
-	ESPUI.updateNumber(clusters_attributes_table[device_attribute_size_number], 0);
+	ESPUI.updateNumber(
+		clusters_attributes_table[device_attribute_size_number], 0);
 	ESPUI.updateNumber(clusters_attributes_table[device_attribute_id_text], 0);
 	
-	uint32_t zigbee_attributes_count = sizeof(zigbee_attributes) / 
-																		 sizeof(zigbee_attribute_t);
+	uint32_t zigbee_attributes_count = 
+		sizeof(zigbee_attributes) / sizeof(zigbee_attribute_t);
 	
 	device_attribute_id_selector_first_option_id = 0xFFFF;
 	device_attribute_id_selector_last_option_id	= 0xFFFF;
@@ -4422,12 +3773,10 @@ void clusterCallbackCmd() {
 
 			working_str = i;	
 			
-			current_option_id =
-				ESPUI.addControl(Control::Type::Option, 
-													zigbee_attributes[i].zigbee_attribute_name, 
-													i, //working_str, 
-													Control::Color::None, 
-													clusters_attributes_table[device_attribute_id_selector]);
+			current_option_id =ESPUI.addControl(
+					Control::Type::Option, zigbee_attributes[i].zigbee_attribute_name, 
+					i, Control::Color::None, 
+					clusters_attributes_table[device_attribute_id_selector]);
 
 			if (device_attribute_id_selector_first_option_id == 0xFFFF)
 				device_attribute_id_selector_first_option_id = current_option_id;
@@ -4478,8 +3827,7 @@ void Z2S_loopWebGUI() {
 
 			gui_command = 0;
 			if (addZ2SDeviceLocalActionHandler(
-						LOCAL_CHANNEL_TYPE_REMOTE_RELAY, 
-						SUPLA_CHANNELFNC_POWERSWITCH)) {
+						LOCAL_CHANNEL_TYPE_REMOTE_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
 
 			
 				rebuildChannelsSelector(true);
@@ -4519,12 +3867,6 @@ void Z2S_loopWebGUI() {
 void enterWifiDetailsCallback(Control *sender, int type, void *param) {
 
 	if ((type == B_UP) && data_ready) {
-
-		//Serial.println("Saving credentials to Supla Config...");
-		//Serial.println(ESPUI.getControl(wifi_ssid_text)->getValue());
-		//Serial.println(ESPUI.getControl(wifi_pass_text)->getValue());
-		//Serial.println(ESPUI.getControl(Supla_server)->getValue());
-		//Serial.println(ESPUI.getControl(Supla_email)->getValue());
 		
     auto cfg = Supla::Storage::ConfigInstance();
 
@@ -4534,8 +3876,10 @@ void enterWifiDetailsCallback(Control *sender, int type, void *param) {
   		cfg->setWiFiPassword(ESPUI.getControl(wifi_pass_text)->getValueCstr());
 			cfg->setSuplaServer(ESPUI.getControl(Supla_server)->getValueCstr());
 		  cfg->setEmail(ESPUI.getControl(Supla_email)->getValueCstr());
-			cfg->setUInt8(PSTR("security_level"), 
-										ESPUI.getControl(Supla_skip_certificate_switcher)->getValueInt() > 0 ? 2 :0);
+			cfg->setUInt8(
+				PSTR("security_level"), 
+				ESPUI.getControl(
+					Supla_skip_certificate_switcher)->getValueInt() > 0 ? 2 :0);
 
 			cfg->commit();
 			if ((uint32_t)param == GUI_CB_RESTART_FLAG) SuplaDevice.softRestart();
@@ -4545,7 +3889,7 @@ void enterWifiDetailsCallback(Control *sender, int type, void *param) {
 
 void textCallback(Control *sender, int type) {
 		
-		/*if ((ESPUI.getControl(wifi_ssid_text)->getValue().length() > 0) &&
+		if ((ESPUI.getControl(wifi_ssid_text)->getValue().length() > 0) &&
 				(ESPUI.getControl(wifi_pass_text)->getValue().length() > 0) &&
 				(ESPUI.getControl(Supla_server)->getValue().length() > 0) &&
 				(ESPUI.getControl(Supla_email)->getValue().length() > 0)) {
@@ -4554,31 +3898,31 @@ void textCallback(Control *sender, int type) {
 		} else {
 			updateLabel_C(save_label, PSTR("Data incomplete!"));
 			data_ready = false;
-		}*/
+		}
 }
 
 void generalCallback(Control *sender, int type) {
 	
-	Serial.print("CB: id(");
+	/*Serial.print("CB: id(");
 	Serial.print(sender->GetId());
 	Serial.print(") Type(");
 	Serial.print(type);
 	Serial.print(") '");
 	Serial.print(sender->label);
-	Serial.print("' = ");
+	Serial.print("' = ");*/
 	//Serial.println(sender->getValue());
 }
 
 void onZigbeeTabCallback(Control *sender, int type) {
 	
-	Serial.print("CB: id(");
+	/*Serial.print("CB: id(");
 	Serial.print(sender->GetId());
 	Serial.print(") Type(");
 	Serial.print(type);
 	Serial.print(") '");
 	Serial.print(sender->label);
 	Serial.print("' = ");
-	Serial.println(sender->getValue());
+	Serial.println(sender->getValue());*/
 
 	ESPUI.updateNumber(pairing_mode_switcher, Zigbee.isNetworkOpen() ? 1 : 0);
 	ESPUI.updateNumber(force_leave_switcher, force_leave_global_flag ? 1 : 0);	
@@ -4586,14 +3930,14 @@ void onZigbeeTabCallback(Control *sender, int type) {
 
 void onChannelsTabCallback(Control *sender, int type) {
 	
-	Serial.print("CB: id(");
+	/*Serial.print("CB: id(");
 	Serial.print(sender->GetId());
 	Serial.print(") Type(");
 	Serial.print(type);
 	Serial.print(") '");
 	Serial.print(sender->label);
 	Serial.print("' = ");
-	Serial.println(sender->getValue());
+	Serial.println(sender->getValue());*/
 }
 
 
@@ -4687,6 +4031,7 @@ void enableClustersAttributesControls(bool enable) {
 
 void updateDeviceInfoLabel() {
 
+	char general_purpose_gui_buffer[1024] = {};
 	char ieee_addr_str[24] 		= {};
 
 	uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
@@ -4775,6 +4120,8 @@ void selectGuiModeCallback(Control *sender, int type) {
 
 void deviceSelectorCallback(Control *sender, int type) {
 
+	char general_purpose_gui_buffer[1024] = {};
+
 	if (/*(!isNumber(sender->getValue())) ||*/ 
 			(sender->getValueInt() < 0) || 
 			(sender->getValueInt() >= Z2S_ZB_DEVICES_MAX_NUMBER)) {
@@ -4789,6 +4136,8 @@ void deviceSelectorCallback(Control *sender, int type) {
 }
 
 void clustersattributesdeviceSelectorCallback(Control *sender, int type) {
+
+	char general_purpose_gui_buffer[1024] = {};
 
 	if (/*(!isNumber(sender->getValue())) ||*/ 
 			(sender->getValueInt() < 0) || 
@@ -4972,8 +4321,9 @@ void enableChannelParams(uint8_t params_mask) {
 	else {
 		
 		ESPUI.updateNumber(param_1_number, 0);
-		working_str = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
-		ESPUI.updateText(param_1_desc_label, working_str);
+		char *working_str_ptr = 
+			PSTR("&#10023; PARAM(1) - currently not used &#10023;");
+		ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 		enableControlStyle(param_1_number, false);
 		enableControlStyle(param_1_save_button, false);
 	}
@@ -4987,8 +4337,9 @@ void enableChannelParams(uint8_t params_mask) {
 	else {
 		
 		ESPUI.updateNumber(param_2_number, 0);
-		working_str = PSTR("&#10023; PARAM(2) - currently not used &#10023;");
-		ESPUI.updateText(param_2_desc_label, working_str);
+		char *working_str_ptr = 
+			PSTR("&#10023; PARAM(2) - currently not used &#10023;");
+		ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
 		enableControlStyle(param_2_number, false);
 		enableControlStyle(param_2_save_button, false);
 	}
@@ -5000,6 +4351,8 @@ void enableChannelParams(uint8_t params_mask) {
 }
 
 void fillRemoteAddressData(uint8_t channel_slot) {
+
+	char general_purpose_gui_buffer[1024] = {};
 
 	uint8_t remote_address_type = 
       Z2S_checkChannelFlags(channel_slot, 
@@ -5046,6 +4399,8 @@ working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;
 
 
 void updateChannelInfoLabel(uint8_t label_number) {
+
+	char general_purpose_gui_buffer[1024] = {};
 
 	char ieee_addr_str[24] 		= {};
 
@@ -5140,14 +4495,15 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				enableChannelParams(3);
 				fillRemoteAddressData(channel_slot);
 
-				working_str = PSTR(
+				char *working_str_ptr = PSTR(
 					"&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
 					"for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
 
-				ESPUI.updateText(param_1_desc_label, working_str);
+				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 
-				working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
-				ESPUI.updateText(param_2_desc_label, working_str);
+				working_str_ptr = PSTR(
+					"&#10023; Enter remote relay channel # &#10023;");
+				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
 			}
 
 			if (z2s_channels_table[channel_slot].local_channel_type == 
@@ -5202,12 +4558,12 @@ void updateChannelInfoLabel(uint8_t label_number) {
 				z2s_channels_table[channel_slot].\
 				rain_intensity_treshold);
 
-			working_str = PSTR(
+			char *working_str_ptr = PSTR(
 				"&#10023; Virtual Binary custom param<br>"
 				"enter rain intensity threshold<br>"
 				"currently unused for other sensors &#10023;");
 
-			ESPUI.updateText(param_1_desc_label, working_str);
+			ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 		} break;
 
 
@@ -5259,16 +4615,16 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 				fillRemoteAddressData(channel_slot);
 
-				working_str = PSTR(
+				char *working_str_ptr = PSTR(
 					"&#10023; Enter remote thermometer IP address or mDNS name &#10023;<br>"
 					"for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway<br>"
 					"or enter 0.0.0.0 for local temperature forwarding");
 				
-				ESPUI.updateText(param_1_desc_label, working_str);
+				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 
 				working_str = PSTR(
 					"&#10023; Enter destination thermometer channel # &#10023;");
-				ESPUI.updateText(param_2_desc_label, working_str);
+				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
 			} else {
 
 				enableChannelParams(0);
@@ -5330,11 +4686,11 @@ void updateChannelInfoLabel(uint8_t label_number) {
 					param_1_number, 
 					z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
 
-				working_str = PSTR(
+				char *working_str_ptr = PSTR(
 					"&#10023; Thermostat custom parameter<br>"
 					"enter calibration fixed value (temperature x100)<br>"
 					"ie. to set correction to -1 enter -100 &#10023;");
-				ESPUI.updateText(param_1_desc_label, working_str);
+				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 			} else
 				enableChannelParams(0);
 		} break;
@@ -5354,10 +4710,11 @@ void updateChannelInfoLabel(uint8_t label_number) {
 
 			ESPUI.updateNumber(param_1_number, 
 										 		 z2s_channels_table[channel_slot].rgb_color_mode);
-			working_str = PSTR("&#10023; RGB custom param<br>"
-												 "enter numeric value to select RGB MODE<br>"
-												 "ie. to set correction to -1 enter -100 &#10023;");
-			ESPUI.updateText(param_1_desc_label, working_str);
+			char *working_str_ptr = PSTR(
+				"&#10023; RGB custom param<br>"
+				"enter numeric value to select RGB MODE<br>"
+				"ie. to set correction to -1 enter -100 &#10023;");
+			ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 
 			enableChannelFlags(16);
 		} break;
@@ -5428,6 +4785,8 @@ void channelSelectorCallback(Control *sender, int type) {
 
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 
+	char general_purpose_gui_buffer[1024] = {};
+
 	if ((type == B_UP) && (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
 
 		zbg_device_params_t device;
@@ -5475,6 +4834,8 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 }
 
 void getClustersAttributesQueryCallback(Control *sender, int type, void *param) {
+
+	char general_purpose_gui_buffer[1024] = {};
 
 	if ((type == B_UP) && 
 			(ESPUI.getControl(
@@ -6038,6 +5399,8 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 
 void removeDeviceCallback(Control *sender, int type, void *param) {
 
+	char general_purpose_gui_buffer[1024] = {};
+
 	if ((type == B_UP) && (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
 
 		uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
@@ -6115,6 +5478,8 @@ void removeDeviceCallback(Control *sender, int type, void *param) {
 }
 
 void removeChannelCallback(Control *sender, int type) {
+
+	char general_purpose_gui_buffer[1024] = {};
 
 	if ((type == B_UP) && 
 			(ESPUI.getControl(channel_selector)->getValueInt() >= 0)) {
@@ -6347,9 +5712,9 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 void switchCallback(Control *sender, int type) {
 
 	if (sender->getValueInt() == 1)
-		updateLabel_C(factory_reset_label, factory_reset_enabled_str);
+		ESPUI.updateLabel(factory_reset_label, factory_reset_enabled_str);
 	else
-		updateLabel_C(factory_reset_label, factory_reset_disabled_str);
+		ESPUI.updateLabel(factory_reset_label, factory_reset_disabled_str);
 }
 
 void editDeviceCallback(Control *sender, int type, void *param) {
@@ -6937,12 +6302,10 @@ void attributeCallback (Control *sender, int type) {
 					(zigbee_attribute_values[i].zigbee_attribute_id == 
 					 zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id)) {
 
-				working_str = i;
 				current_option_id = ESPUI.addControl(
 					Control::Type::Option, 
 					zigbee_attribute_values[i].zigbee_attribute_value_name, 
-					i, //working_str, 
-					Control::Color::None, 
+					i, Control::Color::None, 
 					clusters_attributes_table[device_attribute_value_selector]);
 
 				if (device_attribute_value_selector_first_option_id == 0xFFFF)
@@ -6974,6 +6337,8 @@ void valueCallback(Control *sender, int type) {
 }
 
 void advancedDeviceSelectorCallback(Control *sender, int type) {
+
+	char general_purpose_gui_buffer[1024] = {};
 
 	log_i("value = %s(%u)", sender->getValueCstr(), sender->getValueInt());
 	
@@ -7088,6 +6453,8 @@ void gatewayCallback(Control *sender, int type, void *param) {
 }
 
 void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
+
+	char general_purpose_gui_buffer[1024] = {};
 
 	if ((type == B_UP) && 
 			(ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_device_selector])->getValueInt() >= 0)) {
@@ -7898,6 +7265,8 @@ void valveCallback(Control *sender, int type, void *param) {
 
 void TuyaDeviceSelectorCallback(Control *sender, int type) {
 
+	char general_purpose_gui_buffer[1024] = {};
+
 	int16_t device_slot = sender->getValueInt();
 
 	if (device_slot >=0) {
@@ -8071,6 +7440,8 @@ void GUI_onTuyaCustomClusterReceive(
 }
 
 void GUI_onLastBindingFailure(bool binding_failed) {
+
+	char general_purpose_gui_buffer[1024] = {};
 	
 	sprintf_P(
 		general_purpose_gui_buffer, 
