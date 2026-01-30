@@ -168,7 +168,7 @@ uint16_t keepalive_save_button;
 uint16_t timeout_save_button; 
 uint16_t refresh_save_button;
 uint16_t remove_channel_button;
-uint16_t remove_all_channels_button;
+//uint16_t remove_all_channels_button;
 
 uint16_t advanced_device_selector;
 uint16_t advanced_device_info_label;
@@ -1672,7 +1672,7 @@ void buildChannelsTabGUI() {
 			Control::Color::None, zb_channel_flags_label), 
 			PSTR(clearFlagsLabelStyle));
 
-	addClearLabel(
+	addFlagsLabel(
 		PSTR(
 			"&#10023; <i>TRV fixed correction value &#10023;<br>"
 			"(ignores external thermometer settings)</i>"), 
@@ -3751,8 +3751,7 @@ void clusterCallbackCmd() {
 	clearAttributeIdSelect();
 	clearAttributeValueSelect();
 
-	uint16_t cluster_id = 
-		ESPUI.getControl(
+	uint16_t cluster_id = ESPUI.getControl(
 			clusters_attributes_table[device_cluster_selector])->getValueInt();
 
 	ESPUI.updateNumber(
@@ -3995,7 +3994,7 @@ void enableDeviceControls(bool enable) {
 
 	//enableControlStyle(remove_device_button, enable);
 	enableControlStyle(remove_device_and_channels_button, enable);
-	enableControlStyle(remove_all_devices_button, enable);
+	enableControlStyle(remove_all_devices_button, true);
 
 	enable ? controls_enabled_flags |= DEVICES_CONTROLS_ENABLED_FLAG :
 					 controls_enabled_flags &= ~DEVICES_CONTROLS_ENABLED_FLAG;
@@ -4009,10 +4008,10 @@ void enableClustersAttributesControls(bool enable) {
 	updateLabel_C(clusters_attributes_table[device_read_attribute_label], three_dots_str);
 	updateLabel_C(clusters_attributes_table[device_Tuya_payload_label], three_dots_str);
 
-	ESPUI.updateSelect(clusters_attributes_table[device_cluster_selector], 1); //minus_one_str);
-	ESPUI.updateSelect(clusters_attributes_table[device_attribute_id_selector], -1); //minus_one_str);
-	ESPUI.updateSelect(clusters_attributes_table[device_attribute_value_selector], -1); //minus_one_str);
-	ESPUI.updateSelect(clusters_attributes_table[device_attribute_type_selector], -1); //minus_one_str);
+	ESPUI.updateSelect(clusters_attributes_table[device_cluster_selector], 1);
+	ESPUI.updateSelect(clusters_attributes_table[device_attribute_id_selector], -1);
+	ESPUI.updateSelect(clusters_attributes_table[device_attribute_value_selector], -1);
+	ESPUI.updateSelect(clusters_attributes_table[device_attribute_type_selector], -1); 
 
 	ESPUI.updateNumber(clusters_attributes_table[device_endpoint_number], 1);
 	ESPUI.updateNumber(clusters_attributes_table[device_attribute_size_number], 0);
@@ -4209,7 +4208,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(refresh_number, enable);
 	enableControlStyle(refresh_save_button, enable);
 	enableControlStyle(remove_channel_button, enable);
-	enableControlStyle(remove_all_channels_button, enable);
+	//enableControlStyle(remove_all_channels_button, enable);
 	enableControlStyle(zb_channel_timings_label, enable);
 	enableControlStyle(zb_channel_flags_label, enable);
 	enableControlStyle(zb_channel_params_label, enable);
@@ -6288,8 +6287,8 @@ void attributeCallback (Control *sender, int type) {
 		uint32_t zigbee_attribute_values_count = 
 			sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_value_t);
 
-		uint16_t cluster_id = 
-			ESPUI.getControl(clusters_attributes_table[device_cluster_selector])->getValueInt();
+		uint16_t cluster_id = ESPUI.getControl(
+			clusters_attributes_table[device_cluster_selector])->getValueInt();
 
 		device_attribute_value_selector_first_option_id = 0xFFFF;
 		device_attribute_value_selector_last_option_id		= 0xFFFF;
