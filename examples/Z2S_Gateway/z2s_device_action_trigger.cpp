@@ -1010,7 +1010,7 @@ bool getVirtualButtonNumber(
           virtual_button_data.button_action_trigger_flag = 
             SUPLA_ACTION_CAP_SHORT_PRESS_x4;
           virtual_button_data.button_action_id = 
-            Supla::SUPLA_ACTION_CAP_SHORT_PRESS_x4;
+            Supla::SEND_AT_SHORT_PRESS_x4;
           virtual_button_data.button_action_trigger_name = "DOT";
           return true;
         } break;
@@ -1086,7 +1086,7 @@ bool getVirtualButtonNumber(
           virtual_button_data.button_action_trigger_flag = 
             SUPLA_ACTION_CAP_SHORT_PRESS_x4;
           virtual_button_data.button_action_id = 
-            Supla::SUPLA_ACTION_CAP_SHORT_PRESS_x4;
+            Supla::SEND_AT_SHORT_PRESS_x4;
           virtual_button_data.button_action_trigger_name = "DOTS";
           return true;
         } break;
