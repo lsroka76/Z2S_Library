@@ -2614,6 +2614,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "Zbeacon", .model_name = "TS0001",
+    .z2s_device_uid = 10120,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_skueekg3", .model_name = "TS0001",
     .z2s_device_uid = 10200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,

@@ -62,7 +62,6 @@
 #define TUYA_SOIL_SENSOR_4F_SOIL_SAMPLING_DP                        0x67
 #define TUYA_SOIL_SENSOR_4F_SOIL_WARNING_DP                         0x6E
 
-
 #define TUYA_TH_SENSOR_TEMPERATURE_DP                               0x01
 #define TUYA_TH_SENSOR_HUMIDITY_DP                                  0x02
 #define TUYA_TH_SENSOR_BATTERY_STATE_DP                             0x03
