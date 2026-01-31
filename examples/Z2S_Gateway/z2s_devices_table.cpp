@@ -3847,6 +3847,14 @@ void Z2S_onMultistateInputReceive(
     case ESP_ZB_ZCL_ATTR_MULTI_VALUE_PRESENT_VALUE_ID: {
 
       log_i("present value = %d", *(uint16_t *)attribute->data.value);
+
+      channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+        NO_CUSTOM_CMD_SID);
+      
+      if (channel_number_slot >= 0)
+        msgZ2SDeviceRollerShutter(
+        channel_number_slot, RS_MOVING_DIRECTION_MSG, (value < 2) ? 0 : 1);
     } break;  
   }
 }
@@ -6500,6 +6508,7 @@ uint8_t Z2S_addZ2SDevice(
 /******************************************************************************/     
 
       case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER:
+      case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1:
 
         addZ2SDeviceVirtualRelay(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 

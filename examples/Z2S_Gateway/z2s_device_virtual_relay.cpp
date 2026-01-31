@@ -36,6 +36,13 @@ void initZ2SDeviceVirtualRelay(
       break;
 
 
+      case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1:
+        
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; 
+        z2s_rs_moving_direction = 1;
+      break;
+
+
       case Z2S_DEVICE_DESC_MOES_COVER:
 
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_MOES_COVER;

@@ -227,6 +227,7 @@
 #define Z2S_DEVICE_DESC_MOES_COVER                          0x4822
 #define Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE      0x4830
 #define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER                 0x4850
+#define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1               0x4851
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_VALVE                  0x4900
 #define Z2S_DEVICE_DESC_GIEX_SMART_VALVE                    0x4910
@@ -1633,6 +1634,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
+                             ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR,
     .z2s_device_clusters_count = 2,
@@ -4796,7 +4803,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "LUMI", .model_name = "lumi.curtain.acn002",
     .z2s_device_uid = 30450,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZ3210_y5rtzkmc", .model_name = "TS0504B",
