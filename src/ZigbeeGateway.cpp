@@ -442,11 +442,11 @@ void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
 
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
           
-      if (device->ZC_binding) { 
+      /*if (device->ZC_binding) { 
 
         log_i("ZC has bounded to ZED (0x%x), endpoint (0x%x) cluster (0x%x)", 
               device->short_addr, device->endpoint, device->cluster_id);
-      } else 
+      } else */
         log_i("ZED (0x%x), endpoint (0x%x) cluster (0x%x) has bounded to ZC", 
               device->short_addr, device->endpoint, device->cluster_id);
       _is_bound = true;
@@ -790,7 +790,7 @@ void ZigbeeGateway::bindDeviceCluster(
     bind_req.dst_endp = _instance->getEndpoint(); 
   }
     
-  device->ZC_binding = false;
+  //device->ZC_binding = false;
   device->cluster_id = cluster_id;
 
   log_d("Requesting ZED (0x%x), endpoint (0x%x), cluster_id (0x%x) to bind ZC", 
@@ -850,7 +850,7 @@ void ZigbeeGateway::bindDeviceCluster(
   esp_zb_get_long_address(bind_req.dst_address_u.addr_long);
   bind_req.dst_endp = _instance->getEndpoint();*/ 
 
-  device->ZC_binding = true;
+  //device->ZC_binding = true;
   device->cluster_id = cluster_id;
 
   bind_device =(zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
@@ -893,7 +893,7 @@ void ZigbeeGateway::bindDeviceCluster2(
   esp_zb_get_long_address(bind_req.src_address);
   bind_req.src_endp = _instance->getEndpoint(); 
     
-  device->ZC_binding = false;
+  //device->ZC_binding = false;
   device->cluster_id = cluster_id;
 
   log_d("Requesting ZED (0x%x), endpoint (0x%x), cluster_id (0x%x) to bind ZC (2)", 
@@ -924,7 +924,7 @@ void ZigbeeGateway::bindDeviceCluster2(
   memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   bind_req.dst_endp = device->endpoint;
 
-  device->ZC_binding = true;
+  //device->ZC_binding = true;
   device->cluster_id = cluster_id;
 
   log_d("Requesting ZC to bind ZED (0x%x), endpoint (0x%x), cluster_id (0x%x)", 
@@ -961,7 +961,7 @@ void ZigbeeGateway::unbindLocalDeviceCluster(
   memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   bind_req.dst_endp = device->endpoint;
 
-  device->ZC_binding = true;
+  //device->ZC_binding = true;
   device->cluster_id = cluster_id;
 
   log_d("Requesting ZC to unbind ZED (0x%x), endpoint (0x%x), cluster_id (0x%x)", 
@@ -1788,8 +1788,6 @@ void ZigbeeGateway::addBoundDevice(
       zbg_device->short_addr = esp_zb_address_short_by_ieee(zbg_device->ieee_addr);
     
     zbg_device->model_id = 0x0000;
-    zbg_device->rejoined = false;
-    zbg_device->rejoin_after_leave = false;
     
     _gateway_devices.push_back(zbg_device);
 }

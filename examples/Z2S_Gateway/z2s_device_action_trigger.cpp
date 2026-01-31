@@ -1120,19 +1120,18 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
-        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID: {
 
           virtual_button_data.button_id = 2;
           virtual_button_data.button_action_trigger_flag = 
-            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+            SUPLA_ACTION_CAP_SHORT_PRESS_x3;
           virtual_button_data.button_action_id = 
-            Supla::SEND_AT_SHORT_PRESS_x1;
+            Supla::SEND_AT_SHORT_PRESS_x3;
           virtual_button_data.button_action_trigger_name = "DOTS";
           return true;
         } break;
 
-
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID: {
 
           virtual_button_data.button_id = 2;
@@ -1161,9 +1160,9 @@ bool getVirtualButtonNumber(
 
           virtual_button_data.button_id = 2;
           virtual_button_data.button_action_trigger_flag = 
-            SUPLA_ACTION_CAP_HOLD;
+            SUPLA_ACTION_CAP_SHORT_PRESS_x4;
           virtual_button_data.button_action_id = 
-            Supla::SEND_AT_HOLD;
+            Supla::SEND_AT_SHORT_PRESS_x4;
           virtual_button_data.button_action_trigger_name = "DOTS";
           return true;
         } break;

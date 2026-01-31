@@ -181,14 +181,11 @@ typedef struct query_basic_cluster_data_s {
 
 typedef struct zbg_device_params_s {
   uint32_t model_id;
-  bool rejoined;
-  bool ZC_binding;
-  bool rejoin_after_leave;
   esp_zb_ieee_addr_t ieee_addr;
   uint8_t endpoint;
   uint16_t cluster_id;
   uint16_t short_addr;
-  uint32_t user_data;
+  //uint32_t user_data;
 } zbg_device_params_t;
 
 typedef struct zbg_device_unit_s {

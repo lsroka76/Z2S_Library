@@ -19,16 +19,27 @@
 #ifndef Z2S_VIRTUAL_THERM_HYGRO_METER_H_
 #define Z2S_VIRTUAL_THERM_HYGRO_METER_H_
 
+#include "ZigbeeGateway.h"
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 
 namespace Supla {
 namespace Sensor {
-class Z2S_VirtualThermHygroMeter : public Supla::Sensor::VirtualThermHygroMeter {
+class Z2S_VirtualThermHygroMeter : 
+  public Supla::Sensor::VirtualThermHygroMeter {
   
 public:
     
-  Z2S_VirtualThermHygroMeter(bool rwns_flag = false) 
-  : _rwns_flag(rwns_flag) {}
+  Z2S_VirtualThermHygroMeter(bool rwns_flag = false) : _rwns_flag(rwns_flag) 
+  {
+
+  }
+
+  /*Z2S_VirtualThermHygroMeter(
+    ZigbeeGateway *gateway, zbg_device_params_t *device, 
+    bool rwns_flag = false) : _gateway(gateway), _rwns_flag(rwns_flag) {
+
+      memcpy(&_device, device, sizeof(zbg_device_params_t));     
+    }*/
 
 
   void setRWNSFlag(bool rwns_flag) {
@@ -67,6 +78,11 @@ public:
     return _forced_temperature;
   }
 
+  /*bool setExternalTemperature(int32_t external_temperature) {
+
+    _external_temperature = external_temperature;
+  }*/
+
   void iterateAlways() override {
 
     if (millis() - lastReadTime > refreshIntervalMs) {
@@ -90,6 +106,11 @@ public:
  protected:
   bool     _rwns_flag;
   bool     _forced_temperature = false;
+
+  //ZigbeeGateway *_gateway = nullptr;
+  //zbg_device_params_t _device;
+
+  //uint32_t _external_temperature = INT32_MIN;
 
   uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;

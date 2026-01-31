@@ -273,17 +273,13 @@ void initZ2SDeviceVirtualRelay(
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, 
-                              zbg_device_params_t *device, 
-                              uint8_t free_slot, 
-                              int8_t sub_id, 
-                              const char *name, 
-                              uint32_t func) {
+void addZ2SDeviceVirtualRelay(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
+  int8_t sub_id, const char *name, uint32_t func) {
   
   if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
 
-    auto Supla_Z2S_RollerShutter = 
-      new Supla::Control::Z2S_RollerShutter(
+    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(
         gateway, device, Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
 
     if (name == nullptr)
@@ -299,8 +295,8 @@ void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway,
 
   } else {
 
-    auto Supla_Z2S_VirtualRelay = 
-      new Supla::Control::Z2S_VirtualRelay(gateway, device);
+    auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay(
+      gateway, device);
 
     if (name == nullptr)
       name = (char*)default_relay_name;

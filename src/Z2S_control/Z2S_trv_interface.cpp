@@ -21,10 +21,8 @@
 /*****************************************************************************/
 
 Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
-  ZigbeeGateway *gateway, 
-  zbg_device_params_t *device, 
-  uint8_t trv_commands_set,
-  bool onOffOnly) 
+  ZigbeeGateway *gateway, zbg_device_params_t *device, 
+  uint8_t trv_commands_set, bool onOffOnly) 
   : RemoteOutputInterface(onOffOnly), 
   _gateway(gateway), 
   _trv_commands_set(trv_commands_set) {
@@ -575,14 +573,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
       uint8_t temperature_selector = 1;
 
       _gateway->sendAttributeWrite(
-        &_device, 
-        SONOFF_CUSTOM_CLUSTER, 
+        &_device, SONOFF_CUSTOM_CLUSTER, 
         TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
 
       _gateway->sendAttributeWrite(
-        &_device, 
-        SONOFF_CUSTOM_CLUSTER, 
+        &_device, SONOFF_CUSTOM_CLUSTER, 
         TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT, 
         ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &external_sensor_temperature);
     }
@@ -591,13 +587,9 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
       
     
       _gateway->sendAttributeWrite(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        BOSCH_TRV_EXTERNAL_TEMPERATURE_INPUT_ID, 
-        ESP_ZB_ZCL_ATTR_TYPE_S16, 
-        2, &external_sensor_temperature,
-        true,
-        1, BOSCH_MANUFACTURER_CODE);
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        BOSCH_TRV_EXTERNAL_TEMPERATURE_INPUT_ID, ESP_ZB_ZCL_ATTR_TYPE_S16, 
+        2, &external_sensor_temperature, true, 1, BOSCH_MANUFACTURER_CODE);
     }
 
     if (_trv_commands_set == LUMI_CMD_SET) {

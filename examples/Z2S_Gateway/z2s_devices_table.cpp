@@ -7085,6 +7085,38 @@ void updateRemoteThermometer(
         connected_thermometer_ip_address,
         connected_thermometer_channel,
         connected_thermometer_temperature);      
+  } else
+  if (element && 
+      (element->getChannel()->getChannelType() == 
+        SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
+      (strcmp(Z2S_getZbDeviceManufacturerName(
+        z2s_channels_table[channel_number_slot].Zb_device_id), 
+        "SNZB-02DR2") == 0))  {
+
+    uint8_t temperature_selector = 1;
+
+    zbg_device_params_t device = {};
+
+    device.endpoint = 0x01;
+    device.cluster_id = SONOFF_CUSTOM_CLUSTER;
+    memcpy(
+      device.ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr,
+      sizeof(esp_zb_ieee_addr_t));
+    device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
+    device.model_id = z2s_channels_table[channel_number_slot].model_id;
+
+    zbGateway.sendAttributeWrite(
+      &device, SONOFF_CUSTOM_CLUSTER, TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
+      ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
+
+    zbGateway.sendAttributeWrite(
+      &device, SONOFF_CUSTOM_CLUSTER, TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT, 
+      ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &connected_thermometer_temperature);
+    /*auto Supla_Z2S_VirtualThermHygroMeter = 
+        reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+
+    Supla_Z2S_VirtualThermHygroMeter->setExternalTemperature(
+      connected_thermometer_temperature);*/
   }
 }
 
