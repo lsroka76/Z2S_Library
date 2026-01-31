@@ -3846,7 +3846,8 @@ void Z2S_onMultistateInputReceive(
 
     case ESP_ZB_ZCL_ATTR_MULTI_VALUE_PRESENT_VALUE_ID: {
 
-      log_i("present value = %d", *(uint16_t *)attribute->data.value);
+      uint16_t present_value = *(uint16_t *)attribute->data.value;
+      log_i("present value = %d", present_value);
 
       channel_number_slot = Z2S_findChannelNumberSlot(
         ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
@@ -3854,7 +3855,8 @@ void Z2S_onMultistateInputReceive(
       
       if (channel_number_slot >= 0)
         msgZ2SDeviceRollerShutter(
-        channel_number_slot, RS_MOVING_DIRECTION_MSG, (value < 2) ? 0 : 1);
+        channel_number_slot, RS_MOVING_DIRECTION_MSG, 
+        (present_value < 2) ? 0 : 1);
     } break;  
   }
 }
