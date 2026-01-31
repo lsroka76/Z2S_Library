@@ -2325,6 +2325,48 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Enter numeric value: 0 - 10"
 																	"Only for firmware version >= 0122052017" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_5_PRESENCE_TIMEOUT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Presence Timeout",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 180 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_5_MOVE_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Move Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_5_BREATH_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Breath Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 10" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_5_MOVE_DETECTION_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Move Maximum Range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 with step 10 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_5_MOVE_DETECTION_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Move Minimum Range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 with step 10 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_5_BREATH_DETECTION_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Breath Maximum Range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 with step 10 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_5_BREATH_DETECTION_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Breath Minimum Range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 with step 10 [cm]" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
     .Tuya_datapoint_id 		 			= TUYA_ZWT_ZWT198_SENSOR_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
