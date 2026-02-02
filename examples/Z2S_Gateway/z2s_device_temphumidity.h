@@ -23,7 +23,8 @@ void addZ2SDeviceTempHumidity(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp); 
+void msgZ2SDeviceTempHumidityTemp(
+  int16_t channel_number_slot, double temp, bool refresh_only = false); 
 
 /*****************************************************************************/
 

@@ -336,6 +336,8 @@ void processTuyaHvacDataReport(
     }
   }
 
+  bool refresh_hvac_thermometer = false;
+
   if (current_heating_setpoint_dp_id) {
     
     Z2S_readTuyaDPvalue(Tuya_read_dp_result,
@@ -346,6 +348,8 @@ void processTuyaHvacDataReport(
       msgZ2SDeviceHvac(
         channel_number_slot_2, TRV_HEATING_SETPOINT_MSG, 
         (Tuya_read_dp_result.dp_value * 100) / target_heatsetpoint_factor);
+      
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -364,6 +368,8 @@ void processTuyaHvacDataReport(
       if (is_system_mode_on)
         msgZ2SDeviceHvac(
           channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1);
+
+      refresh_hvac_thermometer = true;  
     }
   }
 
@@ -377,6 +383,8 @@ void processTuyaHvacDataReport(
       if (Tuya_read_dp_result.dp_value == system_mode_value_off)
         msgZ2SDeviceHvac(
           channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0);
+      
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -400,6 +408,8 @@ void processTuyaHvacDataReport(
       if (Tuya_read_dp_result.dp_value == schedule_mode_value_on)
         msgZ2SDeviceHvac(
           channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 2); //adjusted
+      
+      refresh_hvac_thermometer = true;
     }
   } 
 
@@ -413,6 +423,8 @@ void processTuyaHvacDataReport(
       if (Tuya_read_dp_result.dp_value == schedule_mode_value_off)
         msgZ2SDeviceHvac(
           channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 0);
+
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -436,6 +448,8 @@ void processTuyaHvacDataReport(
         msgZ2SDeviceHvac(
           channel_number_slot_2, TRV_RUNNING_STATE_MSG, 
           Tuya_read_dp_result.dp_value);
+
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -454,6 +468,8 @@ void processTuyaHvacDataReport(
       msgZ2SDeviceHvac(
         channel_number_slot_2, TRV_RUNNING_STATE_MSG, 
         pi_heating_demand_dp_value);
+      
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -468,6 +484,8 @@ void processTuyaHvacDataReport(
         channel_number_slot_2, TRV_TEMPERATURE_CALIBRATION_MSG, 
         (((int32_t)Tuya_read_dp_result.dp_value) * 100) / 
         temperature_calibration_factor);
+      
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -482,6 +500,8 @@ void processTuyaHvacDataReport(
         channel_number_slot_2, TRV_TEMPERATURE_HISTERESIS_MSG, 
         (Tuya_read_dp_result.dp_value * 100) / 
         temperature_histeresis_factor);
+
+      refresh_hvac_thermometer = true;
     }
   }
   
@@ -500,6 +520,8 @@ void processTuyaHvacDataReport(
       msgZ2SDeviceHvac(
         channel_number_slot_2,TRV_LOW_BATTERY_MSG, 
         Tuya_read_dp_result.dp_value);
+
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -517,6 +539,8 @@ void processTuyaHvacDataReport(
       msgZ2SDeviceHvac(
         channel_number_slot_2, TRV_BATTERY_LEVEL_MSG, 
         Tuya_read_dp_result.dp_value);
+
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -530,6 +554,8 @@ void processTuyaHvacDataReport(
       msgZ2SDeviceHvac(
         channel_number_slot_2, TRV_CHILD_LOCK_MSG, 
         Tuya_read_dp_result.dp_value);
+      
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -543,6 +569,8 @@ void processTuyaHvacDataReport(
       msgZ2SDeviceHvac(
         channel_number_slot_2, TRV_WINDOW_DETECT_MSG, 
         Tuya_read_dp_result.dp_value);
+
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -556,6 +584,8 @@ void processTuyaHvacDataReport(
       msgZ2SDeviceHvac(
         channel_number_slot_2, TRV_ANTI_FREEZE_MSG, 
         Tuya_read_dp_result.dp_value);
+
+      refresh_hvac_thermometer = true;
     }
   }
 
@@ -569,8 +599,13 @@ void processTuyaHvacDataReport(
       msgZ2SDeviceHvac(
         channel_number_slot_2, TRV_LIMESCALE_PROTECT_MSG, 
         Tuya_read_dp_result.dp_value);
+
+      refresh_hvac_thermometer = true;
     }
   }
+
+  if (refresh_hvac_thermometer)
+    msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, -1, true);
 }
 
 void processTuyaDoubleDimmerSwitchDataReport(

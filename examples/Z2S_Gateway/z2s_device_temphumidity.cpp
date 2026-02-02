@@ -137,7 +137,8 @@ Supla::Sensor::Z2S_VirtualThermHygroMeter* getZ2SDeviceTempHumidityPtr(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
+void msgZ2SDeviceTempHumidityTemp(
+  int16_t channel_number_slot, double temp, bool refresh_only) {
 
   if (channel_number_slot < 0) {
     
@@ -163,8 +164,11 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
       auto Supla_Z2S_VirtualThermHygroMeter = 
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
     
-      Supla_Z2S_VirtualThermHygroMeter->setTemperature(temp);
-      //Supla_Z2S_VirtualThermHygroMeter->Refresh();
+      if (refresh_only)
+        Supla_Z2S_VirtualThermHygroMeter->Refresh();
+      else
+        Supla_Z2S_VirtualThermHygroMeter->setTemperature(temp);
+      
     } break;
 
 
@@ -174,10 +178,16 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
     
       //Supla_Z2S_VirtualThermometer->setValue(temp);
-      //Supla_Z2S_VirtualThermometer->Refresh();
-      Supla_Z2S_VirtualThermometer->setTemperature(temp);
+      
+      if (refresh_only)
+        Supla_Z2S_VirtualThermometer->Refresh();
+      else
+        Supla_Z2S_VirtualThermometer->setTemperature(temp);
     } break;
   }
+
+  if (refresh_only)
+    return;
 
   if (z2s_channels_table[channel_number_slot].user_data_flags &
 			USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) {
@@ -186,8 +196,8 @@ void msgZ2SDeviceTempHumidityTemp(int16_t channel_number_slot, double temp) {
       z2s_channels_table[channel_number_slot].Supla_remote_channel;
     
     uint8_t remote_address_type = 
-      Z2S_checkChannelFlags(channel_number_slot, 
-                            USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
+      Z2S_checkChannelFlags(
+        channel_number_slot, USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
       REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
 
     log_i("Resending temperature, address flag = %s, channel = %u",
