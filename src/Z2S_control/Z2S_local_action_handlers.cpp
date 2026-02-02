@@ -341,6 +341,20 @@ void GatewayEvents::handleAction(int event, int action) {
         if (actionhandler_callback != nullptr)  
           actionhandler_callback(event, action);  
       break;
+
+
+      case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_ON:
+
+        if (toggleNotifications)
+          toggleNotifications->turnOn();
+      break;
+
+
+      case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF:
+
+        if (toggleNotifications)
+          toggleNotifications->turnOff();
+      break;
     } 
   return;
   }

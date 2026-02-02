@@ -642,8 +642,16 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
     delay(1000);
     log_i("basic tsn 0x%x", basic_tsn);
 
+    uint64_t wait_ticks = 2000;
+
+    if ((attributes[attribute_number] == 
+          ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) || 
+        (attributes[attribute_number] == 
+          ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID ))
+      wait_ticks = 6000;          
+
     //Wait for response or timeout
-    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(6000)/*ZB_CMD_TIMEOUT*/) != pdTRUE) {
+    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(wait_ticks)/*ZB_CMD_TIMEOUT*/) != pdTRUE) {
       log_e("Error while querying basic cluster attribute 0x%x", attributes[attribute_number]);
       if ((attributes[attribute_number] == 
             ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) || 
@@ -1694,9 +1702,8 @@ void ZigbeeGateway::zbReadAttrResponse(
   }
 }
 
-void ZigbeeGateway::zbWriteAttrResponse(uint8_t tsn, 
-                                        esp_zb_zcl_status_t status, 
-                                        uint16_t attribute_id) {
+void ZigbeeGateway::zbWriteAttrResponse(
+  uint8_t tsn, esp_zb_zcl_status_t status, uint16_t attribute_id) {
 
   log_i("tsn = %u, _write_attr_last_tsn = %u, _write_attr_last_tsn_flag = %u", 
         tsn, _write_attr_last_tsn, _write_attr_last_tsn_flag);

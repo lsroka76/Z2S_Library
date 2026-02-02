@@ -1966,6 +1966,7 @@ void buildClustersAttributesTab() {
 		Control::Type::Select, PSTR(empty_str), (long int)-1, 
 		Control::Color::Emerald, clusters_attributes_table[device_endpoint_number], 
 		attributeCallback);
+
 	working_str = "0";
 	clusters_attributes_table[device_attribute_id_text] = ESPUI.addControl(
 		Control::Type::Text, PSTR(empty_str), working_str,Control::Color::Emerald, 
@@ -2070,6 +2071,24 @@ void buildClustersAttributesTab() {
 			clusters_attributes_table[device_cluster_selector]);
 	}
 
+	uint32_t zigbee_attributes_count = 
+		sizeof(zigbee_attributes) / sizeof(zigbee_attribute_t);
+	
+	uint16_t current_option_id = 0xFFFF;
+	
+	for (uint32_t i = 0; i < zigbee_attributes_count; i++) {
+			
+		current_option_id = ESPUI.addControl(
+			Control::Type::Option, zigbee_attributes[i].zigbee_attribute_name, 
+			-2, Control::Color::None, 
+			clusters_attributes_table[device_attribute_id_selector]);
+
+		if (device_attribute_id_selector_first_option_id == 0xFFFF)
+			device_attribute_id_selector_first_option_id = current_option_id;
+
+		//ESPUI.updateVisibility(current_option_id, false);
+	}
+
 	uint32_t zigbee_datatypes_count = 
 		sizeof(zigbee_datatypes)/sizeof(zigbee_datatype_t);
 
@@ -2077,10 +2096,26 @@ void buildClustersAttributesTab() {
 			 datatypes_counter < zigbee_datatypes_count; datatypes_counter++) {
   
 		working_str = datatypes_counter; 
-		ESPUI.addControl(Control::Type::Option, 
-										 zigbee_datatypes[datatypes_counter].zigbee_datatype_name, 
-										 datatypes_counter, Control::Color::None, 
-										 clusters_attributes_table[device_attribute_type_selector]);
+		ESPUI.addControl(
+			Control::Type::Option, 
+			zigbee_datatypes[datatypes_counter].zigbee_datatype_name, 
+			datatypes_counter, Control::Color::None, 
+			clusters_attributes_table[device_attribute_type_selector]);
+	}
+
+	uint32_t zigbee_attribute_values_count = 
+		sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_value_t);
+
+	for (uint32_t i = 0; i < zigbee_attribute_values_count; i++) {
+
+		current_option_id = ESPUI.addControl(
+			Control::Type::Option, 
+			zigbee_attribute_values[i].zigbee_attribute_value_name, 
+			-2, Control::Color::None, 
+			clusters_attributes_table[device_attribute_value_selector]);
+
+		if (device_attribute_value_selector_first_option_id == 0xFFFF)
+			device_attribute_value_selector_first_option_id = current_option_id;
 	}
 
 	working_str_ptr = PSTR("Read attribute");
@@ -2457,7 +2492,7 @@ void enableTuyaDevicesControls(bool enable) {
 
 void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot) {
 
-	if (Tuya_devices_id_selector_first_option_id < 0xFFFF) {
+	/*if (Tuya_devices_id_selector_first_option_id < 0xFFFF) {
 
 		for (uint16_t options_id_counter = Tuya_devices_id_selector_first_option_id;
 				 options_id_counter <= Tuya_devices_id_selector_last_option_id;
@@ -2466,7 +2501,7 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot) {
 					if (options_id_counter < 0xFFFF)
 					ESPUI.removeControl(options_id_counter, false);
 		}
-	}
+	}*/
 
 	ESPUI.updateControlValue(
 		Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], -1);
@@ -2475,34 +2510,48 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot) {
 	if (Tuya_device_slot == 0xFF)
 		return;
 
-	uint32_t Tuya_datapoints_desc_number = sizeof(Tuya_datapoints) / 
-																		 		 sizeof(Tuya_datapoint_desc_t);
+	uint32_t Tuya_datapoints_desc_number = 
+	sizeof(Tuya_datapoints) / sizeof(Tuya_datapoint_desc_t);
 	
-	Tuya_devices_id_selector_first_option_id = 0xFFFF;
-	Tuya_devices_id_selector_last_option_id		= 0xFFFF;
+	//Tuya_devices_id_selector_first_option_id = 0xFFFF;
+	//Tuya_devices_id_selector_last_option_id		= 0xFFFF;
 
-	uint16_t current_option_id = 0xFFFF;
+	//uint16_t current_option_id = 0xFFFF;
+	uint32_t current_option_id = 0;
+	bool has_zb_device = false;
+	uint32_t z2s_device_desc_id = 0;
 
-	uint32_t z2s_device_desc_id = 
+	uint32_t z2s_current_device_desc_id = 
 		z2s_zb_devices_table[Tuya_device_slot].desc_id;
 
 	for (uint32_t i = 0; i < Tuya_datapoints_desc_number; i++) {
 	
-		if (Tuya_datapoints[i].z2s_device_desc_id == z2s_device_desc_id) {
+		if (Tuya_datapoints[i].z2s_device_desc_id != z2s_device_desc_id) {
 
-			working_str = i;	
-			current_option_id =
-				ESPUI.addControl(
-					Control::Type::Option, Tuya_datapoints[i].Tuya_datapoint_name, 
-					i, Control::Color::None, 
-					Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+			z2s_device_desc_id = Tuya_datapoints[i].z2s_device_desc_id;
+			has_zb_device = Z2S_hasZbDevice(z2s_device_desc_id);
+		}
+
+		if (has_zb_device) {
+		
+		if (Tuya_datapoints[i].z2s_device_desc_id == z2s_current_device_desc_id) {
+
+			ESPUI.updateControlValue(
+				Tuya_devices_id_selector_first_option_id + current_option_id, i);
+		
+			/*current_option_id = ESPUI.addControl(
+				Control::Type::Option, Tuya_datapoints[i].Tuya_datapoint_name, 
+				i, Control::Color::None, 
+				Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
 
 			if (Tuya_devices_id_selector_first_option_id == 0xFFFF)
-				Tuya_devices_id_selector_first_option_id = current_option_id;
+				Tuya_devices_id_selector_first_option_id = current_option_id;*/
+		} else
+		ESPUI.updateControlValue(
+				Tuya_devices_id_selector_first_option_id + current_option_id, -2);
+		current_option_id++;
 		}
 	}
-	
-	Tuya_devices_id_selector_last_option_id = current_option_id;
 }
 
 void buildTuyaCustomClusterTabGUI() {
@@ -2512,19 +2561,18 @@ void buildTuyaCustomClusterTabGUI() {
 		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 	
 	Tuya_devices_tab_controls_table[Tuya_device_selector] = 
-		ESPUI.addControl(Control::Type::Select, 
-										 PSTR("Tuya devices"), 
-										 (long int)-1, 
-										 Control::Color::Emerald, 
-										 Tuya_custom_cluster_tab, 
-										 TuyaDeviceSelectorCallback);
+		ESPUI.addControl(
+			Control::Type::Select, PSTR("Tuya devices"), (long int)-1, 
+			Control::Color::Emerald, Tuya_custom_cluster_tab, 
+			TuyaDeviceSelectorCallback);
 
 	ESPUI.addControl(
 		Control::Type::Option, PSTR("Select Tuya device..."), (long int)-1, 
 		Control::Color::None, 
 		Tuya_devices_tab_controls_table[Tuya_device_selector]);
 
-	for (uint8_t devices_counter = 0; devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+	for (uint8_t devices_counter = 0; 
+			 devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
 
     if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
 				 hasTuyaCustomCluster(z2s_zb_devices_table[devices_counter].desc_id)) {
@@ -2551,6 +2599,35 @@ void buildTuyaCustomClusterTabGUI() {
 		Control::Type::Option, PSTR("Select predefined datapoint..."), 
 		(long int)-1, Control::Color::None, 
 		Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+
+	uint32_t Tuya_datapoints_desc_number = 
+		sizeof(Tuya_datapoints) / sizeof(Tuya_datapoint_desc_t);
+	
+	uint16_t current_option_id = 0xFFFF;
+
+	uint32_t z2s_device_desc_id = 0;
+	bool has_zb_device = false;
+
+
+	for (uint32_t i = 0; i < Tuya_datapoints_desc_number; i++) {
+	
+		if (Tuya_datapoints[i].z2s_device_desc_id != z2s_device_desc_id) {
+
+			z2s_device_desc_id = Tuya_datapoints[i].z2s_device_desc_id;
+			has_zb_device = Z2S_hasZbDevice(z2s_device_desc_id);
+		}
+		
+		if (has_zb_device) {
+
+			current_option_id = ESPUI.addControl(
+				Control::Type::Option, Tuya_datapoints[i].Tuya_datapoint_name, 
+				-2, Control::Color::None, 
+				Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+
+			if (Tuya_devices_id_selector_first_option_id == 0xFFFF)
+				Tuya_devices_id_selector_first_option_id = current_option_id;
+		}
+	}
 
 	Tuya_devices_tab_controls_table[Tuya_datapoint_id_number] =	
 		ESPUI.addControl(
@@ -3742,11 +3819,20 @@ void Z2S_updateWebGUI() {
 
 void clusterCallbackCmd() {
 
-	clearAttributeIdSelect();
-	clearAttributeValueSelect();
+	//clearAttributeIdSelect();
+	//clearAttributeValueSelect();
 
 	uint16_t cluster_id = ESPUI.getControl(
 			clusters_attributes_table[device_cluster_selector])->getValueInt();
+
+	ESPUI.updateNumber(
+		clusters_attributes_table[device_attribute_id_selector], -1);	
+
+	ESPUI.updateNumber(
+		clusters_attributes_table[device_attribute_type_selector], -1);
+
+	ESPUI.updateNumber(
+		clusters_attributes_table[device_attribute_value_selector], -1);
 
 	ESPUI.updateNumber(
 		clusters_attributes_table[device_attribute_size_number], 0);
@@ -3755,7 +3841,7 @@ void clusterCallbackCmd() {
 	uint32_t zigbee_attributes_count = 
 		sizeof(zigbee_attributes) / sizeof(zigbee_attribute_t);
 	
-	device_attribute_id_selector_first_option_id = 0xFFFF;
+	//device_attribute_id_selector_first_option_id = 0xFFFF;
 	device_attribute_id_selector_last_option_id	= 0xFFFF;
 
 	uint16_t current_option_id = 0xFFFF;
@@ -3764,17 +3850,35 @@ void clusterCallbackCmd() {
 	
 		if (zigbee_attributes[i].zigbee_attribute_cluster_id == cluster_id) {
 
-			working_str = i;	
-			
-			current_option_id =ESPUI.addControl(
+			/*log_i(
+				"update visibility for %u as TRUE",
+				device_attribute_id_selector_first_option_id + i);
+
+			ESPUI.updateVisibility(
+				device_attribute_id_selector_first_option_id + i, true);*/
+			ESPUI.updateControlValue(
+				device_attribute_id_selector_first_option_id + i, i);
+
+			/*current_option_id =ESPUI.addControl(
 					Control::Type::Option, zigbee_attributes[i].zigbee_attribute_name, 
 					i, Control::Color::None, 
 					clusters_attributes_table[device_attribute_id_selector]);
 
 			if (device_attribute_id_selector_first_option_id == 0xFFFF)
-				device_attribute_id_selector_first_option_id = current_option_id;
+				device_attribute_id_selector_first_option_id = current_option_id;*/
+		} else {
+
+			/*log_i(
+				"update visibility for %u as FALSE",
+				device_attribute_id_selector_first_option_id + i);
+
+			ESPUI.updateVisibility(
+				device_attribute_id_selector_first_option_id + i, false);*/
+			ESPUI.updateControlValue(
+				device_attribute_id_selector_first_option_id + i, -2);
 		}
 	}
+	
 	
 	device_attribute_id_selector_last_option_id = current_option_id;
 }
@@ -3796,8 +3900,8 @@ void Z2S_loopWebGUI() {
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
 
-				rebuildChannelsSelector(true);
-				buildActionsChannelSelectors(true);
+				//rebuildChannelsSelector(true);
+				//buildActionsChannelSelectors(true);
 			}
 		} break;
 
@@ -3810,8 +3914,8 @@ void Z2S_loopWebGUI() {
 						SUPLA_CHANNELFNC_BINARY_SENSOR)) {
 
 			
-				rebuildChannelsSelector(true);
-				buildActionsChannelSelectors(true);
+				//rebuildChannelsSelector(true);
+				//buildActionsChannelSelectors(true);
 			}
 		} break;
 
@@ -3823,8 +3927,8 @@ void Z2S_loopWebGUI() {
 						LOCAL_CHANNEL_TYPE_REMOTE_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
 
 			
-				rebuildChannelsSelector(true);
-				buildActionsChannelSelectors(true);
+				//rebuildChannelsSelector(true);
+				//buildActionsChannelSelectors(true);
 			}
 		} break;
 
@@ -3837,8 +3941,8 @@ void Z2S_loopWebGUI() {
 						SUPLA_CHANNELFNC_THERMOMETER)) {
 
 			
-				rebuildChannelsSelector(true);
-				buildActionsChannelSelectors(true);
+				//rebuildChannelsSelector(true);
+				//buildActionsChannelSelectors(true);
 			}
 		} break;
 
@@ -3850,8 +3954,8 @@ void Z2S_loopWebGUI() {
 						LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC, 
 						SUPLA_CHANNELFNC_HVAC_THERMOSTAT)) {
 
-				rebuildChannelsSelector(true);
-				buildActionsChannelSelectors(true);
+				//rebuildChannelsSelector(true);
+				//buildActionsChannelSelectors(true);
 			}
 		} break;
 	}
@@ -5734,9 +5838,10 @@ void editDeviceCallback(Control *sender, int type, void *param) {
 					//rebuildDevicesSelector();
 					/*log_i("%d, %s", z2s_zb_devices_table[device_slot].device_gui_id, 
 								z2s_zb_devices_table[device_slot].device_local_name);*/
-					ESPUI.updateControlLabel(z2s_zb_devices_table[device_slot].device_gui_id, 
-																	 z2s_zb_devices_table[device_slot].device_local_name);
-					ESPUI.jsonDom(0);
+					ESPUI.updateControlLabel(
+						z2s_zb_devices_table[device_slot].device_gui_id, 
+						z2s_zb_devices_table[device_slot].device_local_name);
+					//ESPUI.jsonDom(0);
 				}
 			} break;
 		}
@@ -5838,7 +5943,7 @@ void editChannelCallback(Control *sender, int type, void *param) {
 						z2s_channels_table[channel_slot].gui_control_id, 
 						z2s_channels_table[channel_slot].Supla_channel_name);
 					
-					ESPUI.jsonDom(0);
+					//ESPUI.jsonDom(0);
 				}
 			} break;
 
@@ -6277,10 +6382,14 @@ void attributeCallback (Control *sender, int type) {
 				break;
 			}
 		}
-		ESPUI.updateNumber(clusters_attributes_table[device_attribute_id_text], 
-											 zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id);
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_id_text], 
+			zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id);
 
-		clearAttributeValueSelect();
+		//clearAttributeValueSelect();
+
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_value_selector], -1);
 
 		uint32_t zigbee_attribute_values_count = 
 			sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_value_t);
@@ -6288,10 +6397,10 @@ void attributeCallback (Control *sender, int type) {
 		uint16_t cluster_id = ESPUI.getControl(
 			clusters_attributes_table[device_cluster_selector])->getValueInt();
 
-		device_attribute_value_selector_first_option_id = 0xFFFF;
+		//device_attribute_value_selector_first_option_id = 0xFFFF;
 		device_attribute_value_selector_last_option_id	= 0xFFFF;
 
-		uint16_t current_option_id = 0xFFFF;
+		//uint16_t current_option_id = 0xFFFF;
 
 		for (uint32_t i = 0; i < zigbee_attribute_values_count; i++) {
 
@@ -6299,18 +6408,20 @@ void attributeCallback (Control *sender, int type) {
 					(zigbee_attribute_values[i].zigbee_attribute_id == 
 					 zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id)) {
 
-				current_option_id = ESPUI.addControl(
+				/*current_option_id = ESPUI.addControl(
 					Control::Type::Option, 
 					zigbee_attribute_values[i].zigbee_attribute_value_name, 
 					i, Control::Color::None, 
-					clusters_attributes_table[device_attribute_value_selector]);
+					clusters_attributes_table[device_attribute_value_selector]);*/
+				ESPUI.updateControlValue(
+					device_attribute_value_selector_first_option_id + i, i);
 
-				if (device_attribute_value_selector_first_option_id == 0xFFFF)
-					device_attribute_value_selector_first_option_id = current_option_id;
-			}
+				//if (device_attribute_value_selector_first_option_id == 0xFFFF)
+				//	device_attribute_value_selector_first_option_id = current_option_id;
+			} else
+				ESPUI.updateControlValue(
+					device_attribute_value_selector_first_option_id + i, -2);
 		}
-		
-		device_attribute_value_selector_last_option_id = current_option_id;
 	}
 }
 	
@@ -7343,12 +7454,13 @@ void addLocalActionHandlerCallback(Control *sender, int type, void *param) {
 			break;
 		}
 
-		if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 
-																			 SUPLA_CHANNELFNC_NONE,
-																			 logic_operator)) {
+		if (addZ2SDeviceLocalActionHandler(
+			LOCAL_CHANNEL_TYPE_ACTION_HANDLER, SUPLA_CHANNELFNC_NONE, 
+			logic_operator)) {
+			
 			delay(200);																
-			rebuildChannelsSelector(true);
-			buildActionsChannelSelectors(true);
+			//rebuildChannelsSelector(true);
+			//buildActionsChannelSelectors(true);
 		}
 	}
 }

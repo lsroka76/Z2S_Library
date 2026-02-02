@@ -131,6 +131,7 @@ int32_t _gui_start_delay      = 0;
 uint8_t _z2s_security_level    = 0;
 
 bool sendIASNotifications = false;
+Supla::Control::VirtualRelay *toggleNotifications = nullptr;
 
 bool do_once = true;
 
@@ -509,7 +510,7 @@ void setup() {
 
 #endif
 
-  auto toggleNotifications = new Supla::Control::VirtualRelay();
+  toggleNotifications = new Supla::Control::VirtualRelay();
   toggleNotifications->getChannel()->setChannelNumber(110);
   toggleNotifications->setInitialCaption("Gateway sensors notifications");
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);

@@ -51,6 +51,7 @@
 #define LAVB_ROTATE_LEFT_FUNC         0x05
 
 extern bool sendIASNotifications;
+extern Supla::Control::VirtualRelay *toggleNotifications;
 
 typedef void (*_actionhandler_callback)(int event, int action);
 
