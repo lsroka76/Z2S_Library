@@ -298,6 +298,18 @@ int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, uint16_t short_addr) {
   return -1;
 }
 
+int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot) {
+
+  for (uint8_t channels_counter = prev_slot + 1; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+
+    if (z2s_channels_table[channels_counter].valid_record) {
+      return channels_counter;
+    }
+  }  
+  return -1;
+}
+
 int16_t Z2S_findChannelNumberSlot(int16_t gui_control_id) {
 
   for (uint8_t channels_counter = 0; 

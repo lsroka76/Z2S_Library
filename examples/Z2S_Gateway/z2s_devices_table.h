@@ -463,6 +463,8 @@ int16_t Z2S_findChannelNumberNextSlot(
 
 int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, uint16_t short_addr);
 
+int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot);
+
 int16_t Z2S_findChannelNumberSlot(int16_t gui_control_id);
 
 /*****************************************************************************/
