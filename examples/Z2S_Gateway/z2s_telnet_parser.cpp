@@ -637,13 +637,25 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       if (params_number == 1)  
         gui_mode = (gui_modes_t)strtoul(*(param), nullptr, 0);
 
-      telnet.printf("\n\rStarting GUI! Mode %u, flags %04x\n\r", gui_mode, 
+      telnet.printf("\n\rStarting GUI! Mode %u, flags %04x\n\r>", gui_mode, 
         gui_custom_flags);
 
-      Z2S_buildWebGUI(gui_mode, gui_custom_flags);
+      if (!Z2S_isGUIBuilt())
+        Z2S_buildWebGUI(gui_mode, gui_custom_flags);
       Z2S_startWebGUI();
       Z2S_startUpdateServer();
       onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
+    }
+    return;
+  } else
+  if (strcmp(cmd, "STOP-GUI") == 0) {
+
+    if (!Z2S_isGUIStarted())
+      telnet.printf("GUI not started!");
+    else {
+
+      telnet.printf("\n\rStopping GUI!\n\r>");
+      Z2S_stopWebGUI();
     }
     return;
   } else

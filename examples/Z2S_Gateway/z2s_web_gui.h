@@ -24,6 +24,7 @@ typedef enum gui_modes {
 } gui_modes_t;
 
 bool Z2S_isGUIStarted();
+bool Z2S_isGUIBuilt();
 
 void Z2S_startWebGUIConfig();
 
@@ -48,9 +49,8 @@ void Z2S_startUpdateServer();
 
 void GUI_onLastBindingFailure(bool binding_failed);
 
-void GUI_onTuyaCustomClusterReceive(uint8_t command_id, 
-                                    uint16_t payload_size, 
-                                    uint8_t * payload_data);
+void GUI_onTuyaCustomClusterReceive(
+  uint8_t command_id, uint16_t payload_size, uint8_t * payload_data);
 
 void GUI_onZigbeeOpenNetwork(bool is_network_open);
 

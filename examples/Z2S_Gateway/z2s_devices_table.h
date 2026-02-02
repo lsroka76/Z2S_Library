@@ -463,6 +463,10 @@ int16_t Z2S_findChannelNumberNextSlot(
 
 int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, uint16_t short_addr);
 
+int16_t Z2S_findChannelNumberSlot(int16_t gui_control_id);
+
+/*****************************************************************************/
+
 void Z2S_fillChannelsTableSlot(
   zbg_device_params_t *device, uint8_t slot, uint8_t channel,
   int32_t channel_type, int8_t sub_id, const char *name = nullptr, 

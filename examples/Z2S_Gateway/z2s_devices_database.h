@@ -4796,6 +4796,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE,
     .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE284_8se38w3c", .model_name = "TS0601",
+    .z2s_device_uid = 30305,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE,
+    .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "LUMI", .model_name = "lumi.curtain.agl001",
     .z2s_device_uid = 30400,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER,

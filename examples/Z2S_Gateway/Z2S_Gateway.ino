@@ -128,12 +128,14 @@ uint8_t _rebuild_Supla_channels_on_start = 0;
 uint8_t _use_new_at_model = 1;
 int32_t _gui_start_delay      = 0;
 
+bool _initial_gui_check = true;
+
 uint8_t _z2s_security_level    = 0;
 
 bool sendIASNotifications = false;
 Supla::Control::VirtualRelay *toggleNotifications = nullptr;
 
-bool do_once = true;
+
 
 bool _restart_scheduled = false;
 bool _forced_config = false;
@@ -850,13 +852,14 @@ void loop() {
       }
     }
   }*/
-
-  if ((!Z2S_isGUIStarted()) && 
+  
+  if (_initial_gui_check && (!Z2S_isGUIStarted()) && 
       (_enable_gui_on_start != no_gui_mode) && 
       Zigbee.started() && 
       (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {
 
-    //GUIstarted = true;
+    _initial_gui_check = false;
+    
     Z2S_buildWebGUI((gui_modes_t)_enable_gui_on_start);  
     Z2S_startWebGUI();
     Z2S_startUpdateServer();
