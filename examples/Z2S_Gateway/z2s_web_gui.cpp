@@ -3847,6 +3847,8 @@ void clusterCallbackCmd() {
 
 	uint16_t cluster_id = ESPUI.getControl(
 			clusters_attributes_table[device_cluster_selector])->getValueInt();
+	
+	log_i("cluster_id %u", cluster_id);
 
 	ESPUI.updateNumber(
 		clusters_attributes_table[device_attribute_id_selector], -1);	
@@ -3860,6 +3862,8 @@ void clusterCallbackCmd() {
 	ESPUI.updateNumber(
 		clusters_attributes_table[device_attribute_size_number], 0);
 	ESPUI.updateNumber(clusters_attributes_table[device_attribute_id_text], 0);
+	ESPUI.updateNumber(
+		clusters_attributes_table[device_attribute_value_text], 0);
 	
 	uint32_t zigbee_attributes_count = 
 		sizeof(zigbee_attributes) / sizeof(zigbee_attribute_t);
@@ -3902,6 +3906,7 @@ void clusterCallbackCmd() {
 		}
 	}
 	//device_attribute_id_selector_last_option_id = current_option_id;
+	attributeCallback(nullptr, -1);
 }
 
 void Z2S_loopWebGUI() {
@@ -5282,12 +5287,10 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 					return;
 				}
 
-				const char* attribute_value = 
-					ESPUI.getControl(
-						clusters_attributes_table[device_attribute_value_text])->getValueCstr();
+				const char* attribute_value = ESPUI.getControl(
+					clusters_attributes_table[device_attribute_value_text])->getValueCstr();
 
-				log_i("attribute_value = %s, length = %u", 
-							attribute_value, 
+				log_i("attribute_value = %s, length = %u", attribute_value, 
 							strlen(attribute_value));
 
       	if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
@@ -5421,11 +5424,11 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 					return;
 				}
 
-				const char* payload_value = 
-					ESPUI.getControl(clusters_attributes_table[device_attribute_value_text])->getValueCstr();
+				const char* payload_value = ESPUI.getControl(
+					clusters_attributes_table[device_attribute_value_text])->getValueCstr();
 
-				log_i("payload_value = %s, length = %u", 
-							payload_value, strlen(payload_value));
+				log_i("payload_value = %s, length = %u", payload_value, 
+				strlen(payload_value));
 
       	//if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && (attribute_type <= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
 				if (true) {	
@@ -6425,11 +6428,15 @@ void clearAttributeValueSelect() {
 
 void attributeCallback (Control *sender, int type) {
 
-	if (ESPUI.getControl(
-		clusters_attributes_table[device_attribute_id_selector])->getValueInt() >= 0) {
+	int device_attribute_id_selector_value = type;
+	
+	if (sender) 
+		device_attribute_id_selector_value = ESPUI.getControl(
+			clusters_attributes_table[device_attribute_id_selector])->getValueInt();
 
-		uint16_t zigbee_attributes_idx = 
-			ESPUI.getControl(clusters_attributes_table[device_attribute_id_selector])->getValueInt();
+	if (device_attribute_id_selector_value >= 0) {
+
+		uint16_t zigbee_attributes_idx = device_attribute_id_selector_value;
 
 		uint32_t zigbee_datatypes_count = 
 			sizeof(zigbee_datatypes) / sizeof(zigbee_datatype_t);
@@ -6441,9 +6448,9 @@ void attributeCallback (Control *sender, int type) {
 			if (zigbee_datatypes[datatypes_counter].zigbee_datatype_id == 
 					zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_datatype_id) {
 
-				working_str = datatypes_counter;
 				ESPUI.updateSelect(
-					clusters_attributes_table[device_attribute_type_selector], datatypes_counter); 
+					clusters_attributes_table[device_attribute_type_selector], 
+					datatypes_counter); 
 				ESPUI.updateNumber(
 					clusters_attributes_table[device_attribute_size_number], 
 					zigbee_datatypes[datatypes_counter].zigbee_datatype_size);
@@ -6460,7 +6467,7 @@ void attributeCallback (Control *sender, int type) {
 			clusters_attributes_table[device_attribute_value_selector], -1);
 
 		uint32_t zigbee_attribute_values_count = 
-			sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_value_t);
+			sizeof(zigbee_attribute_values) / sizeof(zigbee_attribute_value_t);
 
 		uint16_t cluster_id = ESPUI.getControl(
 			clusters_attributes_table[device_cluster_selector])->getValueInt();
@@ -6490,12 +6497,37 @@ void attributeCallback (Control *sender, int type) {
 				ESPUI.updateControlValue(
 					device_attribute_value_selector_first_option_id + i, -2);
 		}
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_value_text], 0);
+	} else {
+
+		ESPUI.updateSelect(
+			clusters_attributes_table[device_attribute_type_selector], -1); 
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_size_number], 0);
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_id_text], 0);
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_value_selector], -1);
+													 
+		uint32_t zigbee_attribute_values_count = 
+			sizeof(zigbee_attribute_values) / sizeof(zigbee_attribute_value_t);
+
+		for (uint32_t i = 0; i < zigbee_attribute_values_count; i++) {
+
+			ESPUI.updateControlValue(
+				device_attribute_value_selector_first_option_id + i, -2);
+		}
+
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_value_text], 0);
 	}
+	
 }
 	
 void clusterCallback (Control *sender, int type) {
 
-	if (sender->getValueInt() >= 0) {
+	if (sender->getValueInt() >= -1) {
 		
 		gui_command = 34;
 	}
@@ -6510,7 +6542,9 @@ void valueCallback(Control *sender, int type) {
 		ESPUI.updateNumber(
 			clusters_attributes_table[device_attribute_value_text], 
 			zigbee_attribute_values[sender_value].zigbee_attribute_value);
-	}
+	} else
+		ESPUI.updateNumber(
+			clusters_attributes_table[device_attribute_value_text], 0);
 }
 
 void advancedDeviceSelectorCallback(Control *sender, int type) {

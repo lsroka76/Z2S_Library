@@ -65,7 +65,11 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
           (strcmp(
             Z2S_getZbDeviceManufacturerName(
               z2s_channels_table[channel_number_slot].Zb_device_id),
-              "_TZ3000_fukaa7nc") == 0)) {
+              "_TZ3000_fukaa7nc") == 0) ||
+          (strcmp(
+            Z2S_getZbDeviceManufacturerName(
+              z2s_channels_table[channel_number_slot].Zb_device_id),
+              "_TZ3210_2uollq9d") == 0)) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;
