@@ -401,8 +401,26 @@ void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(
         rs_current_position);
 }
 
+void Supla::Control::Z2S_RollerShutter::setRSIgnoreMovingDirection(
+  bool rs_ignore_moving_direction) {
+  
+  _rs_ignore_moving_direction = rs_ignore_moving_direction;
+  if(_rs_ignore_moving_direction)
+    _rs_moving_direction = 0;
+  else
+    _rs_moving_direction = 1;
+}
+
+bool Supla::Control::Z2S_RollerShutter::getRSIgnoreMovingDirection() {
+  
+  return _rs_ignore_moving_direction;
+}
+
 void Supla::Control::Z2S_RollerShutter::setRSMovingDirection(
   uint8_t rs_moving_direction) {
+
+  if (_rs_ignore_moving_direction)
+    return;
 
   switch (_z2s_function) {
 

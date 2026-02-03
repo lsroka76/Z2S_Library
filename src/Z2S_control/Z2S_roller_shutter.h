@@ -43,6 +43,9 @@ class Z2S_RollerShutter : public RollerShutterInterface {
   void ping();
 
   void setRSCurrentPosition(uint8_t rs_current_position);
+  
+  void setRSIgnoreMovingDirection(bool rs_ignore_moving_direction);
+  bool getRSIgnoreMovingDirection();
   void setRSMovingDirection(uint8_t rs_moving_direction);
 
   void Refresh();
@@ -68,6 +71,8 @@ class Z2S_RollerShutter : public RollerShutterInterface {
     Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
 
   uint8_t _rs_moving_direction = 1;
+  bool    _rs_ignore_moving_direction = false;
+
   uint8_t _rs_current_position = 0xFF;
   bool    _rs_current_position_changed = false;
 

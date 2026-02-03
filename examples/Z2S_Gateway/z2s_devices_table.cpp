@@ -3881,8 +3881,8 @@ void Z2S_onMultistateInputReceive(
       
       if (channel_number_slot >= 0)
         msgZ2SDeviceRollerShutter(
-        channel_number_slot, RS_MOVING_DIRECTION_MSG, 
-        (present_value < 2) ? 0 : 1);
+        channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
+        0 : 1);
     } break;  
   }
 }
