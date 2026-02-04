@@ -3879,10 +3879,10 @@ void Z2S_onMultistateInputReceive(
         ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
         NO_CUSTOM_CMD_SID);
       
-      if (channel_number_slot >= 0)
+      /*if (channel_number_slot >= 0)
         msgZ2SDeviceRollerShutter(
         channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
-        0 : 1);
+        0 : 1);*/
     } break;  
   }
 }
