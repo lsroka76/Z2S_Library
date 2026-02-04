@@ -46,6 +46,12 @@ void initZ2SDeviceVirtualRelay(
 
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_MOES_COVER;
       break;
+
+
+      case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
+
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER;
+      break;
     }
     
 
