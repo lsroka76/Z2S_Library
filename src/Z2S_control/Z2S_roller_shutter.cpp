@@ -418,6 +418,10 @@ void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(
   /*if (_rs_target_position >= 0)
           newTargetPositionAvailable = true;
   */
+
+  if (_z2s_function == Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER)
+    _rs_current_position = 100 - _rs_current_position;
+  
   setCurrentPosition(_rs_current_position);
  } else
   log_i("No RS movement detected - ignoring setRSCurrentPosition new value %u", 
