@@ -1070,7 +1070,7 @@ void buildCredentialsGUI() {
 
 	//char general_purpose_gui_buffer[1024] = {};
 
-	char *working_str_ptr = PSTR("WiFi & Supla credentials");
+	char *working_str_ptr = PSTR("WiFi2 & Supla credentials");
 	auto wifitab = ESPUI.addControl(
 		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 
@@ -3664,7 +3664,7 @@ void Z2S_startWebGUIConfig() {
 		Control::Color::None);
 
   ESPUI.addControl(
-		Control::Type::Separator, PSTR("WiFi & Supla credentials"), empty_str, 
+		Control::Type::Separator, PSTR("WiFi2 & Supla credentials"), empty_str, 
 		Control::Color::None);
 
   working_str = empty_str;
