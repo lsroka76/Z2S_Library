@@ -1070,7 +1070,7 @@ void buildCredentialsGUI() {
 
 	//char general_purpose_gui_buffer[1024] = {};
 
-	char *working_str_ptr = PSTR("WiFi2 & Supla credentials");
+	char *working_str_ptr = PSTR("WiFi & Supla credentials");
 	auto wifitab = ESPUI.addControl(
 		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 
@@ -1100,6 +1100,11 @@ void buildCredentialsGUI() {
 		Control::Type::Switcher, PSTR("Skip CA certificate check"), (long int)0, 
 		Control::Color::Emerald, wifitab, generalCallback);
 
+	working_str = PSTR(empty_str);
+	Zabbix_server = ESPUI.addControl(
+		Control::Type::Text, PSTR("Zabbix server"), working_str, 
+		Control::Color::Emerald, wifitab, textCallback);
+	
 	working_str_ptr = PSTR("Save");
 	save_button = ESPUI.addControl(
 		Control::Type::Button, PSTR("Save"), working_str_ptr, 
@@ -3664,7 +3669,7 @@ void Z2S_startWebGUIConfig() {
 		Control::Color::None);
 
   ESPUI.addControl(
-		Control::Type::Separator, PSTR("WiFi2 & Supla credentials"), empty_str, 
+		Control::Type::Separator, PSTR("WiFi & Supla credentials"), empty_str, 
 		Control::Color::None);
 
   working_str = empty_str;
