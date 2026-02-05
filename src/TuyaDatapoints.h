@@ -324,6 +324,8 @@
 #define MOES_COVER_STATE_MOTOR_REVERSAL_DP                          0x08
 #define MOES_COVER_STATE_CHILD_LOCK_DP                              0x67
 
+#define CURRYSMARTER_COVER_BACKLIGHT_DP                             0x66
+
 #define TUYA_VIBRATION_SENSOR_VIBRATION_DP                          0x01
 #define TUYA_VIBRATION_SENSOR_CONTACT_DP                            0x65
 #define TUYA_VIBRATION_SENSOR_BATTERY_DP                            0x04
