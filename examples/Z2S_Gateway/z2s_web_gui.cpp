@@ -38,7 +38,7 @@ extern uint8_t _z2s_security_level;
 #define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 6
 
 static volatile bool GUIstarted   = false;
-static volatile bool GUIbuilt	    = false;
+static volatile bool GUIbuilt	  = false;
 
 static volatile uint16_t _last_cluster_id = 0xFFFF;
 static volatile uint16_t _last_attribute_id = 0xFFFF;
@@ -279,43 +279,43 @@ volatile uint8_t	remove_all_devices_counter = 2;
 #define GUI_COMMAND_DEVICE_NAME_CHANGE		10
 #define GUI_COMMAND_CHANNEL_NAME_CHANGE		11
 
-#define GUI_COMMAND_CLUSTER_ID_CHANGE			34
+#define GUI_COMMAND_CLUSTER_ID_CHANGE		34
 #define GUI_COMMAND_ATTRIBUTE_ID_CHANGE		35
 
-#define GUI_BUILD_CONTROL_FLAG_GATEWAY 			0x0001
+#define GUI_BUILD_CONTROL_FLAG_GATEWAY 		0x0001
 #define GUI_BUILD_CONTROL_FLAG_CREDENTIALS 	0x0002
-#define GUI_BUILD_CONTROL_FLAG_ZIGBEE 			0x0004
-#define GUI_BUILD_CONTROL_FLAG_DEVICES 			0x0008
-#define GUI_BUILD_CONTROL_FLAG_CHANNELS 		0x0010
-#define GUI_BUILD_CONTROL_FLAG_ACTIONS 			0x0020
-#define GUI_BUILD_CONTROL_FLAG_CA 					0x0040
-#define GUI_BUILD_CONTROL_FLAG_AD 					0x0080
-#define GUI_BUILD_CONTROL_FLAG_TCC 					0x0100
+#define GUI_BUILD_CONTROL_FLAG_ZIGBEE 		0x0004
+#define GUI_BUILD_CONTROL_FLAG_DEVICES 		0x0008
+#define GUI_BUILD_CONTROL_FLAG_CHANNELS 	0x0010
+#define GUI_BUILD_CONTROL_FLAG_ACTIONS 		0x0020
+#define GUI_BUILD_CONTROL_FLAG_CA 			0x0040
+#define GUI_BUILD_CONTROL_FLAG_AD 			0x0080
+#define GUI_BUILD_CONTROL_FLAG_TCC 			0x0100
 
 volatile uint32_t gui_build_control_flags = 0x00;
 
 
 volatile uint8_t controls_enabled_flags = 0xFF;
 
-#define DEVICES_CONTROLS_ENABLED_FLAG 															0x01
-#define CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG 									0x02
-#define CHANNELS_CONTROLS_ENABLED_FLAG 															0x04
-#define TUYA_DEVICES_ENABLED_FLAG																		0x08
+#define DEVICES_CONTROLS_ENABLED_FLAG 				0x01
+#define CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG	0x02
+#define CHANNELS_CONTROLS_ENABLED_FLAG 				0x04
+#define TUYA_DEVICES_ENABLED_FLAG					0x08
 
 volatile uint32_t advanced_device_present_flags = 0x00;
 
-#define SONOFF_VALVE_PRESENT_FLAG																		0x01
-#define TUYA_GAS_DETECTOR_PRESENT_FLAG															0x02
-#define MOES_ALARM_PRESENT_FLAG																			0x04
+#define SONOFF_VALVE_PRESENT_FLAG					0x01
+#define TUYA_GAS_DETECTOR_PRESENT_FLAG				0x02
+#define MOES_ALARM_PRESENT_FLAG						0x04
 
 bool isSonoffValvePresent 		= false;
-bool isTuyaGasDetectorPresent = false;
-bool isMoesAlarmPresent				= false;
+bool isTuyaGasDetectorPresent 	= false;
+bool isMoesAlarmPresent			= false;
 
 volatile bool channels_selector_build_required = true;
 
 volatile uint16_t custom_cmd_tsn = 0;
-volatile uint8_t 	Tuya_custom_cmd_dp = 0xFF;
+volatile uint8_t  Tuya_custom_cmd_dp = 0xFF;
 volatile uint16_t current_Tuya_payload_label = 0;
 
 volatile int16_t current_action_counter = -1;
@@ -325,13 +325,13 @@ volatile int16_t current_action_id = -1;
 volatile ActionGUIState current_action_gui_state = VIEW_ACTION;
 volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 
-#define GUI_CB_ENABLE_GUI_FLAG										0x0100
-#define GUI_CB_FORCE_CONFIG_FLAG									0x0101
-#define GUI_CB_GUI_DELAY_FLAG											0x0102
-#define GUI_CB_SAVE_MDNS_NAME_FLAG								0x0103
-#define GUI_CB_REBUILD_CHANNELS_FLAG							0x0104
-#define GUI_CB_USE_NEW_AT_FLAG										0x0105
-#define GUI_CB_GUI_RESTART_FLAG										0x0106
+#define GUI_CB_ENABLE_GUI_FLAG			0x0100
+#define GUI_CB_FORCE_CONFIG_FLAG		0x0101
+#define GUI_CB_GUI_DELAY_FLAG			0x0102
+#define GUI_CB_SAVE_MDNS_NAME_FLAG		0x0103
+#define GUI_CB_REBUILD_CHANNELS_FLAG	0x0104
+#define GUI_CB_USE_NEW_AT_FLAG			0x0105
+#define GUI_CB_GUI_RESTART_FLAG			0x0106
 
 
 #define GUI_CB_SAVE_FLAG													0x1000
@@ -618,9 +618,9 @@ uint32_t getNextDynamicOptionId() {
 void addEmptyLineLabel(uint16_t parent_id) {
 
 	ESPUI.setElementStyle(
-			ESPUI.addControl(
-				Control::Type::Label, PSTR(empty_str), empty_str,
-				Control::Color::None, parent_id), 
+		ESPUI.addControl(
+			Control::Type::Label, PSTR(empty_str), empty_str,
+			Control::Color::None, parent_id), 
 		PSTR(clearLabelStyle));
 }
 
@@ -638,8 +638,8 @@ void addFlagsLabel(const char* label, uint16_t parent_id) {
 uint16_t addClearLabel(const char* label, uint16_t parent_id) {
 
 	auto label_id = ESPUI.addControl(
-			Control::Type::Label, PSTR(empty_str), label,Control::Color::None,
-			parent_id);
+		Control::Type::Label, PSTR(empty_str), label,Control::Color::None,
+		parent_id);
 	ESPUI.setElementStyle(label_id, PSTR(clearLabelStyle));
 	return label_id;
 }
@@ -1121,12 +1121,6 @@ void buildCredentialsGUI() {
 		Control::Color::Emerald, wifitab, generalCallback);
 
 	//===========================================================
-//	working_str = PSTR(empty_str);
-//	Zabbix_server = ESPUI.addControl(
-//		Control::Type::Text, PSTR("Zabbix server"), working_str, 
-//		Control::Color::Emerald, wifitab, textCallback);
-	
-	//===========================================================
 	working_str_ptr = PSTR("Save");
 	save_button = ESPUI.addControl(
 		Control::Type::Button, PSTR("Save"), working_str_ptr, 
@@ -1177,10 +1171,10 @@ void buildCredentialsZabbix() {
 		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
 		
 	//===========================================================
-//	working_str = PSTR(empty_str);
-//	Zabbix_server = ESPUI.addControl(
-//		Control::Type::Text, PSTR("Zabbix server"), working_str, 
-//		Control::Color::Emerald, wifitab, textCallback);
+	working_str = PSTR(empty_str);
+	Zabbix_server = ESPUI.addControl(
+		Control::Type::Text, PSTR("Zabbix server"), working_str, 
+		Control::Color::Emerald, wifitab, textCallback);
 	
 	//===========================================================
 	working_str_ptr = PSTR("Save");
