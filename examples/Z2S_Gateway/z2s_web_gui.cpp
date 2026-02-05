@@ -1080,6 +1080,10 @@ void buildGatewayTabGUI() {
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 }
 
+bool Config::getZabbixServer(char* result) {
+  return getString("zabbixserver", result, SUPLA_SERVER_NAME_MAXSIZE);
+}
+
 /*****************************************************************************/
 
 void buildCredentialsGUI() {
