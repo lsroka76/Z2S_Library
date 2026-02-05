@@ -3879,10 +3879,10 @@ void Z2S_onMultistateInputReceive(
         ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
         NO_CUSTOM_CMD_SID);
       
-      if (channel_number_slot >= 0)
+      /*if (channel_number_slot >= 0)
         msgZ2SDeviceRollerShutter(
         channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
-        0 : 1);
+        0 : 1);*/
     } break;  
   }
 }
@@ -6558,6 +6558,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
       case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
       case Z2S_DEVICE_DESC_MOES_COVER:
+      case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
 
         addZ2SDeviceVirtualRelay(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
@@ -7094,6 +7095,12 @@ void updateRemoteThermometer(
   uint32_t connected_thermometer_channel, 
   int32_t connected_thermometer_temperature) {
 
+
+  log_i(
+    "Supla_channel %u, connected_thermometer_channel %u, "
+    "connected_thermometer_temperature %lu", Supla_channel, 
+    connected_thermometer_channel, connected_thermometer_temperature);
+
   if (Supla_channel > 0x7F) {
 
     Supla_channel -= 0x80;
@@ -7103,8 +7110,13 @@ void updateRemoteThermometer(
   int16_t channel_number_slot = 
     Z2S_findTableSlotByChannelNumber(Supla_channel);
 
+  log_i("channel_number_slot %i", channel_number_slot);
+
   if (channel_number_slot < 0)
     return;
+  log_i(
+    "device name %s", Z2S_getZbDeviceModelName(
+        z2s_channels_table[channel_number_slot].Zb_device_id));
 
   auto element = 
     Supla::Element::getElementByChannelNumber(Supla_channel);
@@ -7126,10 +7138,11 @@ void updateRemoteThermometer(
   if (element && 
       (element->getChannel()->getChannelType() == 
         SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
-      (strcmp(Z2S_getZbDeviceManufacturerName(
+      (strcmp(Z2S_getZbDeviceModelName(
         z2s_channels_table[channel_number_slot].Zb_device_id), 
         "SNZB-02DR2") == 0))  {
 
+     log_i("here we are");      
     uint8_t temperature_selector = 1;
 
     zbg_device_params_t device = {};
@@ -7146,9 +7159,10 @@ void updateRemoteThermometer(
       &device, SONOFF_CUSTOM_CLUSTER, TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
       ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
 
+    int16_t sonoff_external_temperature = connected_thermometer_temperature;
     zbGateway.sendAttributeWrite(
       &device, SONOFF_CUSTOM_CLUSTER, TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT, 
-      ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &connected_thermometer_temperature);
+      ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &sonoff_external_temperature);
     /*auto Supla_Z2S_VirtualThermHygroMeter = 
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
 
@@ -7782,6 +7796,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_MOES_ALARM:
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_MOES_COVER:
+    case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:

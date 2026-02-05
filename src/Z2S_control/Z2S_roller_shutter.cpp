@@ -68,11 +68,14 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER: {
 
-        uint8_t lift_percentage = 0;
 
-        sendTuyaRequestCmdEnum8( //Value32(
-          _gateway, &_device, MOES_COVER_STATE_DP, //MOES_COVER_STATE_COVER_POSITION_DP, 
-          0x02); //lift_percentage);
+        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_COVER_STATE_DP,0x02);
+      } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
+
+        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_COVER_STATE_DP, 0x02);
       } break;
     }
   }
@@ -113,9 +116,13 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
 
         uint8_t lift_percentage = 100;
 
-        sendTuyaRequestCmdEnum8(  //Value32
-          _gateway, &_device, MOES_COVER_STATE_DP, //MOES_COVER_STATE_COVER_POSITION_DP, 
-          0x00); //lift_percentage);
+        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_COVER_STATE_DP, 0x00);
+      } break;
+ 
+
+      case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
+
+        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_COVER_STATE_DP, 0x01);
       } break;
     }
   }
@@ -142,10 +149,17 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
           _gateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x01);
       } break;
 
+
       case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER: {
         
         sendTuyaRequestCmdEnum8(
           _gateway, &_device, MOES_COVER_STATE_DP, 0x01);
+      } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
+
+        sendTuyaRequestCmdEnum8(_gateway, &_device, MOES_COVER_STATE_DP, 0x00);
       } break;
     }
   }
@@ -216,7 +230,16 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
           100 - lift_percentage);
       } break;
 
+
       case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER: {
+
+        sendTuyaRequestCmdValue32(
+          _gateway, &_device, MOES_COVER_STATE_COVER_POSITION_DP, 
+          lift_percentage);
+      } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
         sendTuyaRequestCmdValue32(
           _gateway, &_device, MOES_COVER_STATE_COVER_POSITION_DP, 
@@ -395,6 +418,10 @@ void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(
   /*if (_rs_target_position >= 0)
           newTargetPositionAvailable = true;
   */
+
+  if (_z2s_function == Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER)
+    _rs_current_position = 100 - _rs_current_position;
+  
   setCurrentPosition(_rs_current_position);
  } else
   log_i("No RS movement detected - ignoring setRSCurrentPosition new value %u", 

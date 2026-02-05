@@ -2209,7 +2209,8 @@ void processMoesShadesDriveMotorDataReport(
     } break;
     
     
-    case Z2S_DEVICE_DESC_MOES_COVER: {
+    case Z2S_DEVICE_DESC_MOES_COVER:
+    case Z2S_DEVICE_DESC_CURRYSMARTER_COVER: {
 
       cover_state_dp_id = MOES_COVER_STATE_DP;
       cover_position_dp_id = MOES_COVER_STATE_COVER_POSITION_DP;
@@ -2992,6 +2993,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_MOES_COVER:
+    case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
 
       processMoesShadesDriveMotorDataReport(
         channel_number_slot, payload_size, payload, model_id); 

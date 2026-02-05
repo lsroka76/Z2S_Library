@@ -225,6 +225,7 @@
 #define Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR             0x4820
 #define Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR        0x4821
 #define Z2S_DEVICE_DESC_MOES_COVER                          0x4822
+#define Z2S_DEVICE_DESC_CURRYSMARTER_COVER                  0x4823
 #define Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE      0x4830
 #define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER                 0x4850
 #define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1               0x4851
@@ -1864,6 +1865,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_CURRYSMARTER_COVER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR,
     .z2s_device_clusters_count = 1,
@@ -4753,7 +4760,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_waa352qv", .model_name = "TS0601",
     .z2s_device_uid = 29550,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_COVER,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_CURRYSMARTER_COVER,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "BOSCH", .model_name = "RBSH-SP-ZB-EU",
