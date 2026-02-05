@@ -62,6 +62,7 @@ uint16_t wifi_pass_text;
 uint16_t Supla_server;
 uint16_t Supla_email;
 uint16_t Supla_skip_certificate_switcher;
+uint16_t Zabbix_server;
 uint16_t save_button;
 uint16_t save_label;
 
@@ -1149,6 +1150,9 @@ void buildCredentialsGUI() {
 		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getEmail(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
+		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+		if (cfg->getZabbixServer(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(Zabbix_server, general_purpose_gui_buffer);
 		ESPUI.updateNumber(Supla_skip_certificate_switcher, _z2s_security_level == 2 ? 1 : 0);
 	}			
 }
@@ -3796,6 +3800,12 @@ void Z2S_startWebGUIConfig() {
 				strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
 
+		memset(
+			general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+		if (cfg->getZabbixServer(general_purpose_gui_buffer) && 
+				strlen(general_purpose_gui_buffer) > 0)
+			ESPUI.updateText(Zabbix_server, general_purpose_gui_buffer);
+
 		ESPUI.updateNumber(Supla_skip_certificate_switcher, _z2s_security_level);
 	}
 
@@ -4049,13 +4059,14 @@ void enterWifiDetailsCallback(Control *sender, int type, void *param) {
 		if (cfg) {
 
 			cfg->setWiFiSSID(ESPUI.getControl(wifi_ssid_text)->getValueCstr());
-  		cfg->setWiFiPassword(ESPUI.getControl(wifi_pass_text)->getValueCstr());
+			cfg->setWiFiPassword(ESPUI.getControl(wifi_pass_text)->getValueCstr());
 			cfg->setSuplaServer(ESPUI.getControl(Supla_server)->getValueCstr());
-		  cfg->setEmail(ESPUI.getControl(Supla_email)->getValueCstr());
+			cfg->setEmail(ESPUI.getControl(Supla_email)->getValueCstr());
 			cfg->setUInt8(
 				PSTR("security_level"), 
 				ESPUI.getControl(
 					Supla_skip_certificate_switcher)->getValueInt() > 0 ? 2 :0);
+			cfg->setZabbixServer(ESPUI.getControl(Zabbix_server)->getValueCstr());
 
 			cfg->commit();
 			if ((uint32_t)param == GUI_CB_RESTART_FLAG) SuplaDevice.softRestart();
