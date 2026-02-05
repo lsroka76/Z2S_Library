@@ -3723,6 +3723,13 @@ void Z2S_startWebGUIConfig() {
 																										 Control::noParent, 
 																										 generalCallback);
 
+	Zabbix_server = ESPUI.addControl(Control::Type::Text, 
+																	PSTR("Zabbix server"), 
+																	working_str, 
+																	Control::Color::Emerald, 
+																	Control::noParent, 
+																	textCallback);
+
 	auto gui_mode_selector = ESPUI.addControl(Control::Type::Select, 
 									 												  PSTR("Select GUI mode (requires restart)"), 
 																		 				(long int)(long int)0, 
