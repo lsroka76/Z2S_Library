@@ -27,6 +27,7 @@
 
 #define Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR     0x10
 #define Z2S_ROLLER_SHUTTER_FNC_MOES_COVER                  0x11
+#define Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER          0x12
 
 namespace Supla {
 namespace Control {
