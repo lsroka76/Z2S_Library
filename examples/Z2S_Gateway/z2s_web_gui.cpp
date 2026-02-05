@@ -1080,18 +1080,6 @@ void buildGatewayTabGUI() {
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 }
 
-//bool getString(const char* key, char* value, size_t maxSize) {
-//  auto element = find(key);
-//  if (!element) {
-//    return false;
-//  }
-//  return element->getString(value, maxSize);
-//}
-
-bool Config::getZabbixServer(char* result) {
-//  return getString("zabbixserver", result, SUPLA_SERVER_NAME_MAXSIZE);
-}
-
 /*****************************************************************************/
 
 void buildCredentialsGUI() {
@@ -1156,15 +1144,35 @@ void buildCredentialsGUI() {
   	memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
   	if (cfg->getWiFiSSID(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(wifi_ssid_text, general_purpose_gui_buffer);
+			
 		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getSuplaServer(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(Supla_server, general_purpose_gui_buffer);
+			
 		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
 		if (cfg->getEmail(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
-		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
-		if (cfg->getZabbixServer(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
-			ESPUI.updateText(Zabbix_server, general_purpose_gui_buffer);
+
+		//================================================================================================			
+		working_str = empty_str;
+		gateway_mdns_name_text = ESPUI.addControl(
+			Control::Type::Text, PSTR("Zabbix Server Name"), working_str, 
+			Control::Color::Emerald, gatewaytab, generalCallback);
+
+		working_str_ptr = PSTR("Save");
+		auto gateway_mdns_name_save_button = ESPUI.addControl(
+			Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+			Control::Color::Emerald, gateway_mdns_name_text, gatewayCallback, 
+			(void*)GUI_CB_SAVE_MDNS_NAME_FLAG);
+
+		working_str_ptr = PSTR("(max. 11 characters, no spaces!!!)");
+		ESPUI.setElementStyle(
+			ESPUI.addControl(
+				Control::Type::Label, PSTR(empty_str), working_str_ptr, 
+				Control::Color::None, gateway_mdns_name_text), 
+			PSTR(clearLabelStyle));
+//================================================================================================			
+			
 		ESPUI.updateNumber(Supla_skip_certificate_switcher, _z2s_security_level == 2 ? 1 : 0);
 	}			
 }
@@ -3811,12 +3819,6 @@ void Z2S_startWebGUIConfig() {
 		if (cfg->getEmail(general_purpose_gui_buffer) && 
 				strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
-
-		memset(
-			general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
-		if (cfg->getZabbixServer(general_purpose_gui_buffer) && 
-				strlen(general_purpose_gui_buffer) > 0)
-			ESPUI.updateText(Zabbix_server, general_purpose_gui_buffer);
 
 		ESPUI.updateNumber(Supla_skip_certificate_switcher, _z2s_security_level);
 	}
