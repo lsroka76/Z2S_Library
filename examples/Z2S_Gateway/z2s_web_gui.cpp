@@ -913,6 +913,8 @@ void updateLabel_C(Control::ControlId_t id, const char* value) {
 }
 
 //============================================================================
+// GATEWAY
+//============================================================================
 void buildGatewayTabGUI() {
 
 	//char general_purpose_gui_buffer[1024] = {};
@@ -922,6 +924,7 @@ void buildGatewayTabGUI() {
 		Control::Type::Tab, PSTR(empty_str), working_str_ptr, Control::Color::Emerald,
 		Control::noParent, generalCallback);
 
+	//===========================================================
 	ESPUI.addControl(
 		Control::Type::Separator, PSTR("General information"), empty_str, 
 		Control::Color::None, gatewaytab);
@@ -942,6 +945,7 @@ void buildGatewayTabGUI() {
 
 	fillMemoryUptimeInformation(general_purpose_gui_buffer);
 	
+	//===========================================================
 	ESPUI.addControl(
 		Control::Type::Separator, PSTR("Status"), empty_str, Control::Color::None,
 		gatewaytab);
@@ -957,6 +961,7 @@ void buildGatewayTabGUI() {
 		" font-size: 4 px; font-style: normal; font-weight: normal;");
 	ESPUI.setPanelWide(gateway_memory_info, true);
 
+	//===========================================================
 	auto gui_mode_selector = ESPUI.addControl(
 		Control::Type::Select, PSTR("Select GUI mode (requires restart)"), 
 		(long int) 0, Control::Color::Emerald, gatewaytab, selectGuiModeCallback);
@@ -1070,9 +1075,11 @@ void buildGatewayTabGUI() {
 		rebuild_Supla_channels_switcher, _rebuild_Supla_channels_on_start);
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 }
+//============================================================================
+//============================================================================
 
 //============================================================================
-// WIFI & Supla Credentials & Zabbix
+// WIFI & Supla Credentials
 //============================================================================
 void buildCredentialsGUI() {
 
@@ -1157,6 +1164,55 @@ void buildCredentialsGUI() {
 //============================================================================
 //============================================================================
 
+//============================================================================
+// ZABBIX Credentials
+//============================================================================
+void buildCredentialsZabbix() {
+
+	//char general_purpose_gui_buffer[1024] = {};
+
+	char *working_str_ptr = PSTR("Zabbix credentials");
+	auto wifitab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
+		
+	//===========================================================
+//	working_str = PSTR(empty_str);
+//	Zabbix_server = ESPUI.addControl(
+//		Control::Type::Text, PSTR("Zabbix server"), working_str, 
+//		Control::Color::Emerald, wifitab, textCallback);
+	
+	//===========================================================
+	working_str_ptr = PSTR("Save");
+	save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("Save"), working_str_ptr, 
+		Control::Color::Emerald, wifitab, enterWifiDetailsCallback,
+		(void*)GUI_CB_SAVE_FLAG);
+
+	//===========================================================
+//	auto cfg = Supla::Storage::ConfigInstance();
+  
+//	if (cfg) {
+
+//  	memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+//  	if (cfg->getWiFiSSID(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+//			ESPUI.updateText(wifi_ssid_text, general_purpose_gui_buffer);
+			
+//		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+//		if (cfg->getSuplaServer(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+//			ESPUI.updateText(Supla_server, general_purpose_gui_buffer);
+			
+//		memset(general_purpose_gui_buffer, 0, sizeof(general_purpose_gui_buffer));
+//		if (cfg->getEmail(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
+//			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
+
+//		ESPUI.updateNumber(Supla_skip_certificate_switcher, _z2s_security_level == 2 ? 1 : 0);
+//	}			
+}
+//============================================================================
+//============================================================================
+
+//============================================================================
+// ZIGBEE SETTINGS
 //============================================================================
 void buildZigbeeTabGUI() {
 
@@ -1303,9 +1359,10 @@ void rebuildDevicesSelector() {
 		}
 	}
 }
+//============================================================================
+//============================================================================
 
-/*****************************************************************************/
-
+//============================================================================
 void buildDevicesTabGUI() {
 
 	char *working_str_ptr = PSTR("Zigbee devices");
@@ -1482,8 +1539,7 @@ void buildDevicesTabGUI() {
 	enableDeviceControls(false);
 }
 
-/*****************************************************************************/
-
+//============================================================================
 void rebuildChannelsSelector(
 	bool rebuild_channels_list, uint16_t channelstab = 0xFFFF) {
 
