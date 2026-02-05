@@ -607,15 +607,13 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot);
 void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf);
 
-/*****************************************************************************/
-
+//============================================================================
 uint32_t getNextDynamicOptionId() {
 
 	return _dynamic_option_id++;
 }
 
-/*****************************************************************************/
-
+//============================================================================
 void addEmptyLineLabel(uint16_t parent_id) {
 
 	ESPUI.setElementStyle(
@@ -625,6 +623,7 @@ void addEmptyLineLabel(uint16_t parent_id) {
 		PSTR(clearLabelStyle));
 }
 
+//============================================================================
 void addFlagsLabel(const char* label, uint16_t parent_id) {
 
 	ESPUI.setElementStyle(
@@ -634,6 +633,7 @@ void addFlagsLabel(const char* label, uint16_t parent_id) {
 		PSTR(clearFlagsLabelStyle));
 }
 
+//============================================================================
 uint16_t addClearLabel(const char* label, uint16_t parent_id) {
 
 	auto label_id = ESPUI.addControl(
@@ -643,8 +643,7 @@ uint16_t addClearLabel(const char* label, uint16_t parent_id) {
 	return label_id;
 }
 
-/*****************************************************************************/
-
+//============================================================================
 bool isNumber(String& str) {
 
     unsigned int stringLength = str.length();
@@ -672,8 +671,7 @@ bool isNumber(String& str) {
     return true;
 }
 
-/*****************************************************************************/
-
+//============================================================================
 const char* getSuplaChannelTypeName(int32_t channelType) {
 
 	switch (channelType) {
@@ -713,8 +711,7 @@ const char* getSuplaChannelTypeName(int32_t channelType) {
 	}
 }
 
-/*****************************************************************************/
-
+//============================================================================
 const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc) {
 
 	switch (channelType) {
@@ -754,8 +751,7 @@ const char* getSuplaChannelFuncName(int32_t channelType, int32_t channelFunc) {
 	}*/
 }
 
-/*****************************************************************************/
-
+//============================================================================
 const char* getZ2SDeviceDescName(uint32_t modelID)  {
 
 	switch (modelID) {
@@ -824,8 +820,7 @@ const char* getZ2SDeviceDescName(uint32_t modelID)  {
 	}
 }
 
-/*****************************************************************************/
-
+//============================================================================
 const char* getZigbeeDataTypeName(uint8_t dataType)  {
 
 	uint32_t zigbee_datatypes_count = sizeof(zigbee_datatypes)/sizeof(zigbee_datatype_t);
@@ -838,8 +833,7 @@ const char* getZigbeeDataTypeName(uint8_t dataType)  {
 	return PSTR("Unknown data type");
 }
 
-/*****************************************************************************/
-
+//============================================================================
 void fillGatewayGeneralnformation(char *buf) {
 
 	if (buf) {
@@ -867,8 +861,7 @@ void fillGatewayGeneralnformation(char *buf) {
 	}
 }
 
-/*****************************************************************************/
-
+//============================================================================
 void fillMemoryUptimeInformation(char *buf) {
 
 	if (buf) {
@@ -891,8 +884,7 @@ void fillMemoryUptimeInformation(char *buf) {
 	}
 }
 
-/*****************************************************************************/
-
+//============================================================================
 void enableControlStyle(uint16_t control_id, bool enable) {
 
 	ESPUI.setEnabled(control_id, enable);
@@ -906,22 +898,21 @@ void enableControlStyle(uint16_t control_id, bool enable) {
 	}
 }
 
-/*****************************************************************************/
-
+//============================================================================
 void updateLabel_P(Control::ControlId_t id, const char* value) {
 
 	working_str = value;
 	ESPUI.updateLabel(id, working_str);
 }
 
+//============================================================================
 void updateLabel_C(Control::ControlId_t id, const char* value) {
 
 	working_str = value;
 	ESPUI.updateLabel(id, working_str);
 }
 
-/*****************************************************************************/
-
+//============================================================================
 void buildGatewayTabGUI() {
 
 	//char general_purpose_gui_buffer[1024] = {};
@@ -1080,8 +1071,9 @@ void buildGatewayTabGUI() {
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 }
 
-/*****************************************************************************/
-
+//============================================================================
+// WIFI & Supla Credentials & Zabbix
+//============================================================================
 void buildCredentialsGUI() {
 
 	//char general_purpose_gui_buffer[1024] = {};
@@ -1089,44 +1081,49 @@ void buildCredentialsGUI() {
 	char *working_str_ptr = PSTR("WiFi & Supla credentials");
 	auto wifitab = ESPUI.addControl(
 		Control::Type::Tab, PSTR(empty_str), working_str_ptr);
-
+		
+	//===========================================================
 	working_str = PSTR(empty_str);
 	wifi_ssid_text = ESPUI.addControl(
 		Control::Type::Text, PSTR("SSID"), working_str, Control::Color::Emerald, 
 		wifitab, textCallback);
 
+	//===========================================================
 	working_str = PSTR(empty_str);
 	wifi_pass_text = ESPUI.addControl(
 		Control::Type::Text, PSTR("Password"), working_str, 
 		Control::Color::Emerald, wifitab, textCallback);
-	
 	ESPUI.setInputType(wifi_pass_text, PSTR("password"));
 
+	//===========================================================
 	working_str = PSTR(empty_str);
 	Supla_server = ESPUI.addControl(
 		Control::Type::Text, PSTR("Supla server"), working_str, 
 		Control::Color::Emerald, wifitab, textCallback);
 	
+	//===========================================================
 	working_str = PSTR(empty_str);
 	Supla_email = ESPUI.addControl(
 		Control::Type::Text, PSTR("Supla email"), working_str, 
 		Control::Color::Emerald, wifitab, textCallback);
 	
+	//===========================================================
 	Supla_skip_certificate_switcher = ESPUI.addControl(
 		Control::Type::Switcher, PSTR("Skip CA certificate check"), (long int)0, 
 		Control::Color::Emerald, wifitab, generalCallback);
 
-	working_str = PSTR(empty_str);
-	Zabbix_server = ESPUI.addControl(
-		Control::Type::Text, PSTR("Zabbix server"), working_str, 
-		Control::Color::Emerald, wifitab, textCallback);
+	//===========================================================
+//	working_str = PSTR(empty_str);
+//	Zabbix_server = ESPUI.addControl(
+//		Control::Type::Text, PSTR("Zabbix server"), working_str, 
+//		Control::Color::Emerald, wifitab, textCallback);
 	
+	//===========================================================
 	working_str_ptr = PSTR("Save");
 	save_button = ESPUI.addControl(
 		Control::Type::Button, PSTR("Save"), working_str_ptr, 
 		Control::Color::Emerald, wifitab, enterWifiDetailsCallback,
 		(void*)GUI_CB_SAVE_FLAG);
-
 	working_str_ptr = PSTR("Save & Restart");
 	auto save_n_restart_button = ESPUI.addControl(
 		Control::Type::Button, PSTR("Save & Restart"), working_str_ptr, 
@@ -1137,6 +1134,7 @@ void buildCredentialsGUI() {
 		Control::Type::Label, PSTR("Status"), working_str, 
 		Control::Color::Wetasphalt, save_button);
 
+	//===========================================================
 	auto cfg = Supla::Storage::ConfigInstance();
   
 	if (cfg) {
@@ -1153,30 +1151,13 @@ void buildCredentialsGUI() {
 		if (cfg->getEmail(general_purpose_gui_buffer) && strlen(general_purpose_gui_buffer) > 0)
 			ESPUI.updateText(Supla_email, general_purpose_gui_buffer);
 
-		//================================================================================================			
-		working_str = empty_str;
-		gateway_mdns_name_text = ESPUI.addControl(
-			Control::Type::Text, PSTR("Zabbix Server Name"), working_str, 
-			Control::Color::Emerald, gatewaytab, generalCallback);
-
-		working_str_ptr = PSTR("Save");
-		auto gateway_mdns_name_save_button = ESPUI.addControl(
-			Control::Type::Button, PSTR(empty_str), working_str_ptr, 
-			Control::Color::Emerald, gateway_mdns_name_text, gatewayCallback, 
-			(void*)GUI_CB_SAVE_MDNS_NAME_FLAG);
-
-		working_str_ptr = PSTR("(max. 11 characters, no spaces!!!)");
-		ESPUI.setElementStyle(
-			ESPUI.addControl(
-				Control::Type::Label, PSTR(empty_str), working_str_ptr, 
-				Control::Color::None, gateway_mdns_name_text), 
-			PSTR(clearLabelStyle));
-//================================================================================================			
-			
 		ESPUI.updateNumber(Supla_skip_certificate_switcher, _z2s_security_level == 2 ? 1 : 0);
 	}			
 }
+//============================================================================
+//============================================================================
 
+//============================================================================
 void buildZigbeeTabGUI() {
 
 	char *working_str_ptr = PSTR("Zigbee settings");
