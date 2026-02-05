@@ -4061,7 +4061,7 @@ void enterWifiDetailsCallback(Control *sender, int type, void *param) {
 				PSTR("security_level"), 
 				ESPUI.getControl(
 					Supla_skip_certificate_switcher)->getValueInt() > 0 ? 2 :0);
-			cfg->setZabbixServer(ESPUI.getControl(Zabbix_server)->getValueCstr());
+			//cfg->setZabbixServer(ESPUI.getControl(Zabbix_server)->getValueCstr());
 
 			cfg->commit();
 			if ((uint32_t)param == GUI_CB_RESTART_FLAG) SuplaDevice.softRestart();
