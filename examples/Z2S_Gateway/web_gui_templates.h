@@ -2458,8 +2458,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Cover calibration",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
-																	"0 => set calibration OFF<br>"
-																	"1 => set calibration ON" },
+																	"0 => start automatic calibration" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_CURRYSMARTER_COVER,
     .Tuya_datapoint_id 		 			= MOES_COVER_STATE_MOTOR_REVERSAL_DP,
@@ -2470,12 +2469,13 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
 																	"1 => set motor reversal ON" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_CURRYSMARTER_COVER,
-    .Tuya_datapoint_id 		 			= MOES_COVER_BACKLIGHT_DP,
-    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_id 		 			= CURRYSMARTER_COVER_BACKLIGHT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Backlight",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
-																	"0 => set backlight OFF<br>"
-																	"1 => set backlight ON" },
+																	"0 => set backlight to HIGH<br>"
+																	"1 => set backlight to LOW"
+																	"2 => set backlight to OFF" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_CURRYSMARTER_COVER,
     .Tuya_datapoint_id 		 			= MOES_COVER_STATE_CHILD_LOCK_DP,
