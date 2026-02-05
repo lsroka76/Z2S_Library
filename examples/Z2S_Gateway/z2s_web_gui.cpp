@@ -539,6 +539,7 @@ const char* getZigbeeDataTypeName(uint8_t dataType);
 
 void buildGatewayTabGUI();
 void buildCredentialsGUI();
+void buildCredentialsZabbix();
 void buildZigbeeTabGUI();
 void buildDevicesTabGUI();
 void buildChannelsTabGUI();
@@ -3647,6 +3648,11 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CREDENTIALS) {
 		buildCredentialsGUI();
 		//mem_log("CREDENTIALS");
+	}
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CREDENTIALS) {
+		buildCredentialsZabbix();
+		//mem_log("ZABBIX");
 	}
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_ZIGBEE) {
