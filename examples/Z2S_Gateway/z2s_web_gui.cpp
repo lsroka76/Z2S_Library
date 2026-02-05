@@ -1080,16 +1080,16 @@ void buildGatewayTabGUI() {
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 }
 
-bool KeyValue::getString(const char* key, char* value, size_t maxSize) {
-  auto element = find(key);
-  if (!element) {
-    return false;
-  }
-  return element->getString(value, maxSize);
-}
+//bool getString(const char* key, char* value, size_t maxSize) {
+//  auto element = find(key);
+//  if (!element) {
+//    return false;
+//  }
+//  return element->getString(value, maxSize);
+//}
 
 bool Config::getZabbixServer(char* result) {
-  return getString("zabbixserver", result, SUPLA_SERVER_NAME_MAXSIZE);
+//  return getString("zabbixserver", result, SUPLA_SERVER_NAME_MAXSIZE);
 }
 
 /*****************************************************************************/
