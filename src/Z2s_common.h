@@ -1,8 +1,6 @@
 #ifndef SRC_Z2S_COMMON_H_
 #define SRC_Z2S_COMMON_H_
 
-//include <supla/element.h
-
 typedef struct z2s_zb_device_params_s {
 
   uint32_t record_id;
