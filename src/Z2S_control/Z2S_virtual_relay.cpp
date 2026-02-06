@@ -34,6 +34,24 @@ Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(
     memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
 
+/*****************************************************************************/
+
+void Supla::Control::Z2S_VirtualRelay::setZ2SZbDevice(
+  z2s_zb_device_params_t *z2s_zb_device) {
+
+    _z2s_zb_device = z2s_zb_device;
+  }
+
+/*****************************************************************************/
+
+z2s_zb_device_params_t *Supla::Control::Z2S_VirtualRelay::getZ2SZbDevice() {
+
+    return _z2s_zb_device;
+}
+  
+/*****************************************************************************/
+
+
 void Supla::Control::Z2S_VirtualRelay::onInit() {
   /*uint32_t duration = durationMs;
   if (stateOnInit == STATE_ON_INIT_ON ||
@@ -462,14 +480,16 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
   if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (_gateway) {
       
+      if (_z2s_zb_device)
+        _last_seen_ms = _z2s_zb_device->last_seen_ms;
       //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
       } else {
         _last_ping_ms = _last_seen_ms;
-        if (!channel.isStateOnline()) 
-	  channel.setStateOnline();
+        //if (!channel.isStateOnline()) 
+	      channel.setStateOnline();
       }
     }
   }

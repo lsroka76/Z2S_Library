@@ -42,7 +42,7 @@ public:
 
   void setRWNSFlag(bool rwns_flag) {
 
-    _rwns_flag = rwns_flag;    
+    _rwns_flag = rwns_flag;
   }
 
   
@@ -101,8 +101,11 @@ public:
 
     if (_timeout_ms) {
       
-      if (_z2s_zb_device && (_z2s_zb_device->last_seen_ms > _last_timeout_ms))
+      if (_z2s_zb_device && (_z2s_zb_device->last_seen_ms > _last_timeout_ms)) {
+
         _last_timeout_ms = _z2s_zb_device->last_seen_ms;
+        channel.setStateOnline();
+      }
 
       if ((millis_ms - _last_timeout_ms) > _timeout_ms) {
       
@@ -119,6 +122,7 @@ public:
  protected:
 
   z2s_zb_device_params_t *_z2s_zb_device = nullptr;
+
   bool     _rwns_flag;
   bool     _forced_temperature = false;
 

@@ -24,6 +24,7 @@
 #include <supla/control/relay.h>
 #include "ZigbeeGateway.h"
 
+#include "Z2S_common.h"
 #include "Z2S_custom_actions_events.h"
 
 #define MAX_COMMAND_DATA_SIZE                         0x0B 
@@ -74,6 +75,9 @@ class Z2S_VirtualRelay : public Relay {
     ZigbeeGateway *gateway, zbg_device_params_t *device,
     uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
 
+  void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device);
+  z2s_zb_device_params_t *getZ2SZbDevice();
+
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;
   void turnOff(_supla_int_t duration = 0) override;
@@ -111,8 +115,9 @@ class Z2S_VirtualRelay : public Relay {
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
 
+  z2s_zb_device_params_t *_z2s_zb_device = nullptr;
+
   uint8_t _z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
-  //uint8_t _z2s_function_data[MAX_COMMAND_DATA_SIZE];
   
   int8_t  _z2s_function_value_S8 = INT8_MAX; //0x7F
   int32_t _z2s_function_value_S32 = INT32_MAX;
