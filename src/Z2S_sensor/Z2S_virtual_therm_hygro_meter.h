@@ -20,6 +20,8 @@
 #define Z2S_VIRTUAL_THERM_HYGRO_METER_H_
 
 #include "ZigbeeGateway.h"
+#include "Z2S_common.h"
+
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 
 namespace Supla {

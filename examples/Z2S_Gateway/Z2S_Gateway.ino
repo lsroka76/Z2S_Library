@@ -786,7 +786,6 @@ void setup() {
   client.setRxTimeout(20000);
   client.setNoDelay(true);
 */
-
 }
 
 zbg_device_params_t *gateway_device;
@@ -987,6 +986,15 @@ if (Z2S_isGUIStarted())
     log_i("\n\rLocal Time Cluster Time status attribute %u"
           "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
           time_status_attribute, utc_time_attribute, local_time_attribute);
+
+    /*for (uint8_t channels_counter = 0; 
+             channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++)
+      if (Z2S_getChannelZbDevicePtr(channels_counter))
+        log_i(
+          "DEVICE: %s, LAST SEEN (S) %lu", 
+          Z2S_getChannelZbDevicePtr(channels_counter)->device_local_name,
+          Z2S_getChannelZbDevicePtr(channels_counter)->last_seen_ms / 1000);*/
+
     
 
     if (Z2S_isGUIStarted())
@@ -1748,7 +1756,7 @@ if (Z2S_isGUIStarted())
                   
                 } break;
 
-                case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR:
+                //case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
                 case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2:
                 case Z2S_DEVICE_DESC_LUMI_SWITCH:

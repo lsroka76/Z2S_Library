@@ -24,6 +24,8 @@
 
 #include <supla/sensor/virtual_thermometer.h>
 
+#include "Z2S_common.h"
+
 #define MSINHOUR (60*60*1000)
 
 //extern NetworkClient Z2S_NetworkClient;
@@ -41,6 +43,18 @@ public:
   void setRWNSFlag(bool rwns_flag) {
 
     _rwns_flag = rwns_flag;    
+  }
+
+  
+  void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device) {
+
+    _z2s_zb_device = z2s_zb_device;
+  }
+
+
+  z2s_zb_device_params_t *getZ2SZbDevice() {
+
+    return _z2s_zb_device;
   }
   
   void setTimeoutSecs(uint32_t timeout_secs) {
@@ -77,25 +91,34 @@ public:
 
   void iterateAlways() override {
     
-    if (millis() - lastReadTime > refreshIntervalMs) {
+    uint32_t millis_ms = millis();
+
+    if (millis_ms - lastReadTime > refreshIntervalMs) {
       
-      lastReadTime = millis();
+      lastReadTime = millis_ms;
       channel.setNewValue(getTemp());
     }
 
-    if ((_timeout_ms > 0) && 
-        (millis() - _last_timeout_ms > _timeout_ms)) {
+    if (_timeout_ms) {
       
-      _last_timeout_ms = millis();
+      if (_z2s_zb_device && (_z2s_zb_device->last_seen_ms > _last_timeout_ms))
+        _last_timeout_ms = _z2s_zb_device->last_seen_ms;
 
-      if (_rwns_flag) 
-        channel.setStateOfflineRemoteWakeupNotSupported();
-      else
-        channel.setStateOffline();
+      if ((millis_ms - _last_timeout_ms) > _timeout_ms) {
+      
+        _last_timeout_ms = millis_ms;
+
+        if (_rwns_flag) 
+          channel.setStateOfflineRemoteWakeupNotSupported();
+        else
+          channel.setStateOffline();
+      }
     }
   }
     
  protected:
+
+  z2s_zb_device_params_t *_z2s_zb_device = nullptr;
   bool     _rwns_flag;
   bool     _forced_temperature = false;
 

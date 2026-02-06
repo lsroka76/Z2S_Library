@@ -19,13 +19,15 @@
 #ifndef SRC_SUPLA_CONTROL_Z2S_TRV_INTERFACE_H_
 #define SRC_SUPLA_CONTROL_Z2S_TRV_INTERFACE_H_
 
+#include "ZigbeeGateway.h"
+#include "TuyaDatapoints.h"
+#include "hvac_base_ee.h"
+#include "Z2S_common.h"
+
 #include <supla/element.h>
 #include <supla/actions.h>
 #include <supla/action_handler.h>
 #include <supla/control/remote_output_interface.h>
-#include "ZigbeeGateway.h"
-#include "TuyaDatapoints.h"
-#include "hvac_base_ee.h"
 #include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>
 #include <Z2S_sensor/Z2S_virtual_thermometer.h>
 
@@ -1535,8 +1537,9 @@ class Z2S_TRVInterface : public RemoteOutputInterface,
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
 
-  /*void setTemperatureCalibrationOffsetTrigger(int32_t temperature_calibration_offset_trigger);
-  void setTemperatureCalibrationUpdateMs(uint32_t temperature_calibration_update_ms);*/
+  void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device);
+  z2s_zb_device_params_t *getZ2SZbDevice();
+  
   bool inInitSequence();
   bool inScheduleMode();
   bool isHvacWindowOpened();
@@ -1578,6 +1581,8 @@ protected:
   ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t _device;
   uint8_t _trv_commands_set;
+
+  z2s_zb_device_params_t *_z2s_zb_device = nullptr;
 
   HvacBaseEE *_trv_hvac = nullptr;
 

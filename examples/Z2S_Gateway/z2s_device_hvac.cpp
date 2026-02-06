@@ -305,6 +305,9 @@ void initZ2SDeviceHvac(
     ~USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG;
 
   z2s_channels_table[channel_number_slot].user_data_2 = 0;
+
+  Supla_Z2S_TRVInterface->setZ2SZbDevice(
+    Z2S_getChannelZbDevicePtr(channel_number_slot));
 }
 
 /*----------------------------------------------------------------------------------------------------------------------------*/

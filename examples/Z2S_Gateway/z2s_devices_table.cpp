@@ -898,6 +898,25 @@ bool Z2S_removeAllZbDeviceWithAllChannels() {
   return (channels_table_save_required || zb_devices_table_save_required);
 }
 
+z2s_zb_device_params_t *Z2S_getChannelZbDevicePtr(
+  int16_t channel_number_slot) {
+
+  if ((channel_number_slot >= 0) && 
+      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) &&
+      z2s_channels_table[channel_number_slot].valid_record) {
+
+    uint8_t Zb_device_id = 
+      z2s_channels_table[channel_number_slot].Zb_device_id;
+    
+    if ((Zb_device_id >= 0) && (Zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER))
+      return (z2s_zb_devices_table + Zb_device_id);
+    else
+      return nullptr;
+      
+  }
+  return nullptr;
+}
+
 void Z2S_initZbDevices(uint32_t init_ms) {
 
   for (uint8_t devices_counter = 0; 

@@ -83,11 +83,34 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
 
 /*****************************************************************************/
 
+void Supla::Control::Z2S_TRVInterface::setTRVHvac(
+  Supla::Control::HvacBaseEE * trv_hvac) {
+
+  _trv_hvac = trv_hvac;
+}
+
+/*****************************************************************************/
+
 Supla::Control::HvacBaseEE *Supla::Control::Z2S_TRVInterface::getTRVHvac(){
 
   return _trv_hvac;
 }
 
+/*****************************************************************************/
+
+void Supla::Control::Z2S_TRVInterface::setZ2SZbDevice(
+  z2s_zb_device_params_t *z2s_zb_device) {
+
+    _z2s_zb_device = z2s_zb_device;
+  }
+
+/*****************************************************************************/
+
+z2s_zb_device_params_t *Supla::Control::Z2S_TRVInterface::getZ2SZbDevice() {
+
+    return _z2s_zb_device;
+}
+  
 /*****************************************************************************/
 
 bool Supla::Control::Z2S_TRVInterface::inInitSequence(){
@@ -107,14 +130,6 @@ bool Supla::Control::Z2S_TRVInterface::inScheduleMode(){
 bool Supla::Control::Z2S_TRVInterface::isHvacWindowOpened() {
 
   return _hvac_window_opened;
-}
-
-/*****************************************************************************/
-
-void Supla::Control::Z2S_TRVInterface::setTRVHvac(
-  Supla::Control::HvacBaseEE * trv_hvac) {
-
-  _trv_hvac = trv_hvac;
 }
 
 /*****************************************************************************/
@@ -1464,10 +1479,28 @@ void Supla::Control::Z2S_TRVInterface::forceTRVTemperature() {
 
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
-  if ((_keep_alive_ms) && 
-      ((millis() - _last_keep_alive_ms) > _keep_alive_ms)) {
+  uint32_t millis_ms = millis();
+  
+  uint32_t z2s_zb_device_last_seen_ms = _z2s_zb_device ? 
+    _z2s_zb_device->last_seen_ms : 0;
 
-    _last_keep_alive_ms = millis();
+  if (z2s_zb_device_last_seen_ms) {
+
+    if (z2s_zb_device_last_seen_ms > _last_keep_alive_ms)
+      _last_keep_alive_ms = z2s_zb_device_last_seen_ms;
+    
+    if (z2s_zb_device_last_seen_ms > _last_cmd_sent_ms) {
+
+      _last_cmd_sent_ms = 0;
+      if (_trv_hvac)
+        _trv_hvac->getChannel()->setStateOnline();
+    }    
+  }
+
+  if ((_keep_alive_ms) && 
+      ((millis_ms - _last_keep_alive_ms) > _keep_alive_ms)) {
+
+    _last_keep_alive_ms = millis_ms;
 
     /*if (_trv_system_mode != 0xFF)
       sendTRVSystemMode(_trv_system_mode);*/
@@ -1477,7 +1510,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   if (_timeout_enabled && 
       (_last_cmd_sent_ms > 0) && 
-      (millis() - _last_cmd_sent_ms > _timeout_ms)) {
+      (millis_ms - _last_cmd_sent_ms > _timeout_ms)) {
 
     if (_trv_hvac)
       _trv_hvac->getChannel()->setStateOffline();
@@ -1485,9 +1518,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   
   int16_t hvacLastTemperature = INT16_MIN;
 
-  if ((_init_sequence == 2) && (millis() - _last_refresh_ms > _refresh_ms)) {
+  if ((_init_sequence == 2) && (millis_ms - _last_refresh_ms > _refresh_ms)) {
 
-    _last_refresh_ms = millis();
+    _last_refresh_ms = millis_ms;
 
     if (_trv_hvac) {
       _stored_temperature_setpoint = _trv_hvac->getTemperatureSetpointHeat();
@@ -1505,11 +1538,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   }
 
   if ((_init_sequence == 1) && 
-	  ((millis() - _last_refresh_ms >
-	    (3 *_refresh_ms)) ||
-	   _trv_running_state_updated)) {
+      ((millis_ms - _last_refresh_ms > (3 *_refresh_ms)) ||
+	    _trv_running_state_updated)) {
 
-    _last_refresh_ms = millis();
+    _last_refresh_ms = millis_ms;
 
     if (_trv_hvac)
       sendTRVTemperatureSetpoint(_stored_temperature_setpoint); 
@@ -1521,7 +1553,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     return;
 
   if (_hvac_temperature_setpoint_pending_ms && 
-      ((millis() - _hvac_temperature_setpoint_pending_ms) > 350)) {
+      ((millis_ms - _hvac_temperature_setpoint_pending_ms) > 350)) {
 
     /*log_i(
       "_hvac_temperature_setpoint_pending_ms %lu", 
@@ -1535,11 +1567,11 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
     _trv_switch_schedule_off = false;   
     //_in_schedule_mode = 1;
-    //_in_schedule_mode_timer = millis();
+    //_in_schedule_mode_timer = millis_ms;
     sendTRVScheduleMode(0);
   }
 
-  if (_in_schedule_mode && ((millis() - _in_schedule_mode_timer) > 3000)) {
+  if (_in_schedule_mode && ((millis_ms - _in_schedule_mode_timer) > 3000)) {
 
     log_i("clearing in schedule mode - timer expired");
     _in_schedule_mode = 0;
@@ -1588,9 +1620,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   }
 
-  if (millis() - _last_refresh_ms > _refresh_ms) {
+  if (millis_ms - _last_refresh_ms > _refresh_ms) {
 
-    _last_refresh_ms = millis();
+    _last_refresh_ms = millis_ms;
 
     int32_t hvacTemperatureSetpointHeat = 
       _trv_hvac->getTemperatureSetpointHeat();
@@ -1749,10 +1781,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
               sendTRVTemperatureCalibration(_temperature_calibration_offset);
             }
-            /*if ((millis() - _trv_temperature_calibration_last_update_ms > _trv_temperature_calibration_update_ms) ||
+            /*if ((millis_ms - _trv_temperature_calibration_last_update_ms > _trv_temperature_calibration_update_ms) ||
                   (abs(_trv_last_temperature_calibration_offset) > _trv_temperature_calibration_offset_trigger)) {
                 log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - _trv_temperature_calibration_last_update_ms %d", _trv_temperature_calibration_last_update_ms);
-                  _trv_temperature_calibration_last_update_ms = millis();
+                  _trv_temperature_calibration_last_update_ms = millis_ms;
                 sendTRVTemperatureCalibration(_trv_temperature_calibration_offset);
             }*/        
           }
@@ -1762,14 +1794,14 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       
           if ((hvacLastTemperature != INT16_MIN) && 
               ((abs(hvacLastTemperature - _trv_local_temperature) >= 10) || 
-              ((millis() - _last_external_temperature_ping_ms) > 
+              ((millis_ms - _last_external_temperature_ping_ms) > 
                _external_temperature_ping_ms))) {
 
             log_i("external temperature difference detected %d vs %d",
                   hvacLastTemperature,
                   _trv_local_temperature);
 
-            _last_external_temperature_ping_ms = millis();
+            _last_external_temperature_ping_ms = millis_ms;
             sendTRVExternalSensorTemperature(hvacLastTemperature);
           }
         } break;
@@ -1814,9 +1846,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     }
   }
 
-  if (millis() - _last_temperature_ping_ms > _temperature_ping_ms) {
+  if (millis_ms - _last_temperature_ping_ms > _temperature_ping_ms) {
 
-    _last_temperature_ping_ms = millis();
+    _last_temperature_ping_ms = millis_ms;
 
     if (_trv_local_temperature == INT32_MIN) {
 
@@ -1873,9 +1905,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     }
   }
 
-  if (millis() - _last_thermostat_ping_ms > _thermostat_ping_ms) {
+  if (millis_ms - _last_thermostat_ping_ms > _thermostat_ping_ms) {
 
-    _last_thermostat_ping_ms = millis();
+    _last_thermostat_ping_ms = millis_ms;
 
     //log_i("sendTRVPing");
     sendTRVPing();

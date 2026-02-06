@@ -44,7 +44,8 @@ static volatile uint16_t _last_cluster_id = 0xFFFF;
 static volatile uint16_t _last_attribute_id = 0xFFFF;
 static volatile uint32_t _z2s_last_device_desc_id = 0;
 
-static volatile uint32_t _dynamic_option_id = 0;
+//static volatile uint32_t _dynamic_option_id = 0;
+
 
 //UI handles
 uint16_t gateway_general_info;
@@ -608,10 +609,10 @@ void fillMemoryUptimeInformation(char *buf);
 
 /*****************************************************************************/
 
-uint32_t getNextDynamicOptionId() {
+/*uint32_t getNextDynamicOptionId() {
 
 	return _dynamic_option_id++;
-}
+}*/
 
 /*****************************************************************************/
 
@@ -1510,7 +1511,6 @@ void rebuildChannelsSelector(
 	uint16_t current_option_id = 0xFFFF;
 
 	channel_selector_first_option_id 	= 0xFFFF;
-	//channel_selector_last_option_id 	= 0xFFFF;
 
 	for (uint8_t channels_counter = 0; 
 			 channels_counter < Z2S_CHANNELS_MAX_NUMBER; 
@@ -1527,24 +1527,12 @@ void rebuildChannelsSelector(
 			if (channel_selector_first_option_id == 0xFFFF)
 				channel_selector_first_option_id = current_option_id;
 			
-			/*log_i(
-				"\n\rchannels_counter %u\n\rcurrent_option_id %u"
-				"\n\r\channel_selector_first_option_id %u",
-					channels_counter, current_option_id,
-					channel_selector_first_option_id);*/
-
+			
 			z2s_channels_table[channels_counter].gui_control_id = 
 				current_option_id; //for channel name update
 		}
 	}
 	
-	//channel_selector_last_option_id = current_option_id;
-	
-	/*log_i("\n\r\channel_selector_first_option_id %u"
-				"\n\rchannel_selector_last_option_id %u",
-						channel_selector_first_option_id,
-						channel_selector_last_option_id);*/
-
 	if (rebuild_channels_list)
 		channelSelectorCallback(ESPUI.getControl(channel_selector), SL_VALUE);
 }
