@@ -27,6 +27,7 @@
 #include <supla/storage/storage.h>
 
 #include <Z2S_common.h>
+#include "z2s_web_gui.h"
 
 #define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  //32
 #define Z2S_CHANNELS_MAX_NUMBER                                 0x80  //128
@@ -726,90 +727,9 @@ public:
   bool onChannelConflictReport(
     uint8_t *channelReport,uint8_t channelReportSize, 
     bool hasConflictInvalidType, bool hasConflictChannelMissingOnServer,
-    bool hasConflictChannelMissingOnDevice) {
-
-    if (hasConflictChannelMissingOnDevice) {
-      
-      log_i(
-        "ConflictResolver: Channel conflict - channel missing "
-        "on device. Not recoverable. Aborting...");
-      
-      return false;
-    }
-    
-    if (hasConflictInvalidType) {
-      
-      log_i(
-        "ConflictResolver: Channel conflict - channel type "
-        "mismatch. Not recoverable. Aborting...");
-      
-      return false;
-    }
-    
-    if (hasConflictChannelMissingOnServer) {
-      
-      log_i(
-        "ConflictResolver: Channel conflict - channel missing "
-        "on server. Trying to remove affected devices...");
-
-      auto maxChannelNumber = Supla::RegisterDevice::getMaxChannelNumberUsed();
-
-      uint8_t zb_device_slot = 0xFF;
-
-      for (int i = 0; i <= maxChannelNumber; i++) {
-
-        if ((i >= channelReportSize || channelReport[i] == 0) &&
-            !Supla::RegisterDevice::isChannelNumberFree(i)) {
-       
-          log_i("%u, %u, %u", channelReportSize, i, channelReport[i]);
-          int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(i);
-          if ( channel_number_slot >= 0) {
-
-            //Z2S_findZbDeviceTableSlot(
-          //z2s_channels_table[channel_number_slot].ieee_addr)
-            if ((zb_device_slot < 0xFF) && 
-                (zb_device_slot != z2s_channels_table[channel_number_slot].Zb_device_id)) {
-
-              log_e(
-                "Unexpected SuplaDevice behavior - multiple subdevices conflict!!!");
-              break;
-            }
-            zb_device_slot = 
-              z2s_channels_table[channel_number_slot].Zb_device_id;
-
-            if ( zb_device_slot == 0xFF) {
-
-              log_e("missing ZB device id for channel #%02u", i);
-              //continue;
-            } 
-
-            Z2S_removeChannel(channel_number_slot, true);
-            auto element =
-              Supla::Element::getElementByChannelNumber(i);
-            if (element) {
-
-              Supla::AutoLock lock(SuplaDevice.getTimerAccessMutex());
-              delete element;
-              element = nullptr;
-              if (!Supla::Storage::IsStateStorageValid()) {
-              
-                Supla::Storage::WriteStateStorage();
-              }
-            }
-          }
-        }
-      }
-      if ((zb_device_slot < 0xFF) &&
-          (Z2S_countChannelsWithZbDeviceId(zb_device_slot) == 0)) {
-
-        log_i("all channels removed - removing device %02u", zb_device_slot);
-
-        Z2S_removeZbDevice(zb_device_slot);
-      }
-    }
-    return false;
-  }
+    bool hasConflictChannelMissingOnDevice);
 };
+  
 
 class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
 

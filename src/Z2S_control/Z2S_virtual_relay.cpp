@@ -29,7 +29,7 @@
 Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function)
   : Relay(-1, true, RELAY_FLAGS ),
-  _gateway(gateway), _z2s_function(z2s_function) {
+  /*_gateway(gateway),*/ _z2s_function(z2s_function) {
 
     memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
@@ -90,7 +90,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
     durationTimestamp = 0;
   }
 
-  if (_gateway && Zigbee.started()) { 
+  if (Zigbee.started()) { 
     
     uint8_t _z2s_function_data[MAX_COMMAND_DATA_SIZE];
 
@@ -99,11 +99,22 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
       case Z2S_VIRTUAL_RELAY_FNC_NONE: {
         
         state = true;
-        _gateway->sendOnOffCmd(&_device, state);
+        zbGateway.sendOnOffCmd(&_device, state);
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
+
+      case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8: {
+
+        state = true;
+        //zbGateway.sendAttributeWrite(
+      //    &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+      //    ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_z2s_function_value_U8, false, 1,
+      //LUMI_MANUFACTURER_CODE);
+      } break;
+
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM:
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM: {
@@ -119,108 +130,108 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         _z2s_function_data[4] = 0x01; //strobe level field
 
         //log_i("_z2s_function = %u, short addr = 0x%X",_z2s_function, _device.short_addr);
-        _gateway->sendCustomClusterCmd(
+        zbGateway.sendCustomClusterCmd(
           &_device, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, 
           _z2s_function_data);
-        _gateway->sendOnOffCmd(&_device, state);
+        zbGateway.sendOnOffCmd(&_device, state);
 
         channel.setNewValue(state);
 
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH: {
 
         state = true;
 
         sendTuyaRequestCmdBool(
-          _gateway, &_device, MOES_ALARM_SWITCH_DP, state);
+          &zbGateway, &_device, MOES_ALARM_SWITCH_DP, state);
       
         channel.setNewValue(state);
 
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION: {
 
         state = false;
 
         sendTuyaRequestCmdValue32(
-          _gateway, &_device, MOES_ALARM_DURATION_DP, Z2S_incValueU32(
+          &zbGateway, &_device, MOES_ALARM_DURATION_DP, Z2S_incValueU32(
             MOES_ALARM_MELODY_MIN_DURATION, MOES_ALARM_MELODY_MAX_DURATION, 
             10));
         channel.setNewValue(state);
 
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY: {
 
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, MOES_ALARM_MELODY_DP, Z2S_incValueU8(
+          &zbGateway, &_device, MOES_ALARM_MELODY_DP, Z2S_incValueU8(
             MOES_ALARM_MELODY_FIRST_MELODY, MOES_ALARM_MELODY_LAST_MELODY));
 
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME: {
 
         state = false;
         
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, MOES_ALARM_MELODY_DP, Z2S_incValueU8(
+          &zbGateway, &_device, MOES_ALARM_MELODY_DP, Z2S_incValueU8(
             MOES_ALARM_VOLUME_LOWEST, MOES_ALARM_VOLUME_HIGHEST));
         
         channel.setNewValue(state);
 
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE: {
 
         state = true;
 
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
+          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
           state ? 1 : 0);
         
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
         state = true;
 
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
+          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
           state ? 1 : 0); //automatic = local mode = 1
         
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 
         state = true;
 
         sendTuyaRequestCmdBool(
-          _gateway, &_device, GIEX_WATER_VALVE_STATE_DP, state);
+          &zbGateway, &_device, GIEX_WATER_VALVE_STATE_DP, state);
         
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY: {
 
@@ -229,12 +240,12 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
         uint8_t realy_dp_id = _z2s_function_value_U8;
 
         sendTuyaRequestCmdBool(
-          _gateway, &_device, realy_dp_id, state);
+          &zbGateway, &_device, realy_dp_id, state);
         
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM: {
 
@@ -275,7 +286,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
           _z2s_function_data[9] = (_z2s_function_value_U32 & 0xFF00) >> 8;
           _z2s_function_data[10] = _z2s_function_value_U32 & 0xFF;
 		
-          _gateway->sendAttributeWrite(
+          zbGateway.sendAttributeWrite(
             &_device, SONOFF_CUSTOM_CLUSTER, attribute_id, 
             ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, _z2s_function_data, true);
         }
@@ -305,7 +316,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
     durationTimestamp = 0;
   }
 
-  if (_gateway && Zigbee.started()) { 
+  if (Zigbee.started()) { 
     
     uint8_t _z2s_function_data[MAX_COMMAND_DATA_SIZE];
     
@@ -313,9 +324,22 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_NONE: {
         state = false;
-        _gateway->sendOnOffCmd(&_device, state);
+        zbGateway.sendOnOffCmd(&_device, state);
         channel.setNewValue(state);
       } break;
+
+/*****************************************************************************/
+
+      case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8: {
+
+        state = false;
+        //zbGateway.sendAttributeWrite(
+      //    &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+      //    ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_z2s_function_value_S8, false, 1,
+      //LUMI_MANUFACTURER_CODE);
+      } break;
+
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM:
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM: {
@@ -328,8 +352,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         _z2s_function_data[3] = 0x00; //strobe duty cycle
         _z2s_function_data[4] = 0x00; //strobe level field
 
-        _gateway->sendOnOffCmd(&_device, state);
-        _gateway->sendCustomClusterCmd(
+        zbGateway.sendOnOffCmd(&_device, state);
+        zbGateway.sendCustomClusterCmd(
           &_device, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, 
           _z2s_function_data);
         channel.setNewValue(state);
@@ -341,7 +365,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdBool(
-          _gateway, &_device, MOES_ALARM_SWITCH_DP, state);
+          &zbGateway, &_device, MOES_ALARM_SWITCH_DP, state);
 
         channel.setNewValue(state);
 
@@ -352,7 +376,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdValue32(
-          _gateway, &_device, MOES_ALARM_DURATION_DP, Z2S_decValueU32(
+          &zbGateway, &_device, MOES_ALARM_DURATION_DP, Z2S_decValueU32(
             MOES_ALARM_MELODY_MIN_DURATION, MOES_ALARM_MELODY_MAX_DURATION, 
             10));
 
@@ -364,7 +388,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, MOES_ALARM_MELODY_DP, Z2S_decValueU8(
+          &zbGateway, &_device, MOES_ALARM_MELODY_DP, Z2S_decValueU8(
             MOES_ALARM_MELODY_FIRST_MELODY, MOES_ALARM_MELODY_LAST_MELODY));
 
         channel.setNewValue(state);
@@ -375,53 +399,53 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
         
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, MOES_ALARM_MELODY_DP, Z2S_decValueU8(
+          &zbGateway, &_device, MOES_ALARM_MELODY_DP, Z2S_decValueU8(
             MOES_ALARM_VOLUME_LOWEST, MOES_ALARM_VOLUME_HIGHEST));
         
         channel.setNewValue(state);
 
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE: {
 
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
+          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
           state ? 1 : 0);
         
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
+          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
           state ? 1 : 0);
         
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 
         state = false;
 
         sendTuyaRequestCmdBool(
-          _gateway, &_device, GIEX_WATER_VALVE_STATE_DP, state);
+          &zbGateway, &_device, GIEX_WATER_VALVE_STATE_DP, state);
         
         channel.setNewValue(state);
 
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
       
       case Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY: {
 
@@ -430,12 +454,12 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         uint8_t realy_dp_id = _z2s_function_value_U8;
 
         sendTuyaRequestCmdBool(
-          _gateway, &_device, realy_dp_id, state);
+          &zbGateway, &_device, realy_dp_id, state);
         
         channel.setNewValue(state);
       } break;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
     }  
   }
@@ -445,11 +469,11 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
 void Supla::Control::Z2S_VirtualRelay::ping() {
 
-  if (_gateway && Zigbee.started()) {
+  if (Zigbee.started()) {
 
     _fresh_start = false;
     
-    _gateway->sendAttributeRead(
+    zbGateway.sendAttributeRead(
       &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
 
@@ -461,7 +485,7 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
         uint8_t realy_dp_id = _z2s_function_value_U8;
 
         sendTuyaRequestCmdBool(
-          _gateway, &_device, realy_dp_id, state);
+          &zbGateway, &_device, realy_dp_id, state);
         
       } break;
 	}
@@ -478,11 +502,11 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
     ping();
 
   if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
-    if (_gateway) {
+    if (true) {
       
       if (_z2s_zb_device)
         _last_seen_ms = _z2s_zb_device->last_seen_ms;
-      //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+      //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
@@ -498,7 +522,7 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
 	  
     log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
     
-    //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
     
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), 
           _last_seen_ms);
@@ -527,11 +551,11 @@ void Supla::Control::Z2S_VirtualRelay::handleAction(int event, int action) {
 
 bool Supla::Control::Z2S_VirtualRelay::isOn() {
   
-  /*if (_gateway && Zigbee.started()) {   
-    if (_gateway->sendAttributeRead(
+  /*if (Zigbee.started()) {   
+    if (zbGateway.sendAttributeRead(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
           ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true))
-      state = *((bool *)_gateway->getReadAttrLastResult()->data.value);
+      state = *((bool *)zbGateway.getReadAttrLastResult()->data.value);
   }*/
    return state;
 }

@@ -53,7 +53,7 @@
 
 #endif //USE_TELNET_CONSOLE
 
-#define GATEWAY_ENDPOINT_NUMBER 1
+//#define GATEWAY_ENDPOINT_NUMBER 1
 
 #define BUTTON_PIN                  9  //Boot button for C6/H2
 #define CFG_BUTTON_PIN              9  //Boot button for C6/H2
@@ -101,7 +101,7 @@ static NetworkClient client2;
 
 static bool tcp_server_started = false;
 
-ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
+//ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi;
@@ -456,22 +456,27 @@ void setup() {
   log_i("setup start");
 
   printSizeOfClasses();
+
   uint32_t sanity_check_time_ms = millis();
-  uint16_t devices_list_table_size = sizeof(Z2S_DEVICES_LIST)/
-    sizeof(Z2S_DEVICES_LIST[0]);
+
+  uint16_t devices_list_table_number = 
+    sizeof(Z2S_DEVICES_LIST) / sizeof(Z2S_DEVICES_LIST[0]);
   
   uint8_t match = 0;
 
-  for(uint16_t i = 0; i < devices_list_table_size; i++) {
+  for(uint16_t i = 0; i < devices_list_table_number; i++) {
     match = 0;
-    for (uint16_t j = 0; j < devices_list_table_size; j++) {
+    for (uint16_t j = 0; j < devices_list_table_number; j++) {
       
       if ((Z2S_DEVICES_LIST[i].z2s_device_uid > 0) &&
-          (Z2S_DEVICES_LIST[i].z2s_device_uid == Z2S_DEVICES_LIST[j].z2s_device_uid))
+          (Z2S_DEVICES_LIST[i].z2s_device_uid == 
+            Z2S_DEVICES_LIST[j].z2s_device_uid))
         match++;
       if (match > 1) {
 
-        log_e("Critical! Duplicate found %s", Z2S_DEVICES_LIST[i].manufacturer_name);
+        log_e(
+          "Critical! Duplicate found %s", 
+          Z2S_DEVICES_LIST[i].manufacturer_name);
         break;
       }
     }
@@ -1168,21 +1173,22 @@ if (Z2S_isGUIStarted())
                 "Gateway will restart, try to pair device once again!");
           SuplaDevice.scheduleSoftRestart(1000);
         } 
-      //write_mask = 0x13;
-      //zbGateway.sendAttributeWrite(joined_device, 0x0000, 0xffde, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask); //Tuya black magic continues
-      //write_mask = 0x1;
-      //zbGateway.sendAttributeWrite(joined_device, 0xfcc0, 0x0009, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, 1, 0x115F); //Lumi magic
-
-      uint16_t devices_list_table_size = 
+      
+      uint16_t devices_list_table_number = 
         sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
 
-      uint16_t devices_desc_table_size = 
+      uint16_t devices_desc_table_number = 
         sizeof(Z2S_DEVICES_DESC)/sizeof(Z2S_DEVICES_DESC[0]);
+
+      uint16_t reporting_sets_desc_table_number = 
+        sizeof(Z2S_REPORTING_SETS_DESC)/sizeof(Z2S_REPORTING_SETS_DESC[0]);
+      
+      log_i("sizeof(Z2S_DEVICES_LIST) = %u", sizeof(Z2S_DEVICES_LIST));
 
       bool device_recognized = false;
 
           for (uint32_t devices_list_counter = 0; 
-               devices_list_counter < devices_list_table_size; 
+               devices_list_counter < devices_list_table_number; 
                devices_list_counter++) { 
             
             if ((strcmp(zbGateway.getQueryBasicClusterData()->zcl_model_name, 
@@ -1234,7 +1240,7 @@ if (Z2S_isGUIStarted())
                   z2s_device_endpoints[endpoint_counter].z2s_device_desc_id; 
 
                 for (uint32_t devices_desc_counter = 0; 
-                     devices_desc_counter < devices_desc_table_size; 
+                     devices_desc_counter < devices_desc_table_number; 
                      devices_desc_counter++) {
 
                   if (z2s_device_desc_id == 
@@ -1377,7 +1383,52 @@ if (Z2S_isGUIStarted())
                     Z2S_buildSuplaChannels(joined_device, endpoint_counter);
                   }          
                 }
-              }
+                //here starts new reporting code
+
+                if (Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_endpoints[endpoint_counter].reporting_flags &
+                    Z2S_REPORTING_SET_FLAG_STANDARD) {
+
+                  log_i("new configure reporting at pairing started");
+
+                  for (uint16_t reporting_sets_table_counter = 0;
+                       reporting_sets_table_counter < 
+                        reporting_sets_desc_table_number; 
+                      reporting_sets_table_counter++) {
+
+                    if (Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_reporting_set_id == 
+                        Z2S_DEVICES_LIST[devices_list_counter].\
+                          z2s_device_endpoints[endpoint_counter].\
+                          z2s_reporting_set_id) {
+
+                      log_i(
+                        "reporting set matched #%u", 
+                        reporting_sets_table_counter);
+
+                      zbGateway.setClusterReporting(
+                        joined_device, 
+                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_cluster_id,
+                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_attribute_id,
+                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_attribute_type,
+                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_min_interval_value,
+                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_max_interval_value,
+                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_delta_value,
+                        false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1,
+                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_manufacturer_code > 0 ? 1 : 0,
+                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                          z2s_manufacturer_code);
+                    }
+                  }
+                } 
+              } //endpoint counter
               //here we can configure reporting and restart ESP32
 
               if (hasTuyaCustomCluster(
@@ -1385,6 +1436,9 @@ if (Z2S_isGUIStarted())
                 zbGateway.sendCustomClusterCmd(
                   joined_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
                   ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr);
+
+              
+
 
               switch (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id) { //(joined_device->model_id) {
 
@@ -1408,21 +1462,19 @@ if (Z2S_isGUIStarted())
 
                   memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
 
-                  zbGateway.sendAttributeWrite(joined_device, 
-                                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
-                                              ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                                              ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, 
-                                              sizeof(esp_zb_ieee_addr_t), 
-                                              &gateway_ieee_addr);
+                  zbGateway.sendAttributeWrite(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,  
+                    ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), 
+                    &gateway_ieee_addr);
 
                   esp_zb_get_long_address(gateway_ieee_addr);
 
-                  zbGateway.sendAttributeWrite(joined_device, 
-                                               ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
-                                               ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                                               ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, 
-                                               sizeof(esp_zb_ieee_addr_t), 
-                                               &gateway_ieee_addr);
+                  zbGateway.sendAttributeWrite(
+                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+                    ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), 
+                    &gateway_ieee_addr);
 
                 } break;
                 
@@ -1465,19 +1517,17 @@ if (Z2S_isGUIStarted())
                     ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
                     ESP_ZB_ZCL_ATTR_TYPE_BOOL, 0, 300, 1, sync_cmd);
 
-                  zbGateway.setClusterReporting(joined_device, 
-                                                ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_ID,
-                                                ESP_ZB_ZCL_ATTR_TYPE_U16, 
-                                                0, 0, 232, 
-                                                sync_cmd);
+                  zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 232, sync_cmd);
 
-                   zbGateway.setClusterReporting(joined_device, 
-                                                 ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID,
-                                                 ESP_ZB_ZCL_ATTR_TYPE_U16, 
-                                                0, 0, 50, 
-                                                sync_cmd);
+                   zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 50, sync_cmd);
 
                    zbGateway.setClusterReporting(joined_device, 
                                                  ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
@@ -1757,15 +1807,15 @@ if (Z2S_isGUIStarted())
                 } break;
 
                 //case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR:
-                case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
-                case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2:
-                case Z2S_DEVICE_DESC_LUMI_SWITCH:
-                case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH:
-                case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO:
+                //case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
+                //case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2:
+                //case Z2S_DEVICE_DESC_LUMI_SWITCH:
+                //case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH:
+                //case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO:
                 //case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
-                case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
+                //case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
 
-                  write_mask = 0x01;
+                  /*write_mask = 0x01;
                   joined_device->endpoint = 1;
                   zbGateway.sendAttributeWrite(
                     joined_device, LUMI_CUSTOM_CLUSTER, 
@@ -1776,7 +1826,7 @@ if (Z2S_isGUIStarted())
                     joined_device, LUMI_CUSTOM_CLUSTER, 0x0148, true, 
                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 
                     LUMI_MANUFACTURER_CODE);
-                } break;
+                } break;*/
               }
 
               if (zpm->getState() == 2) {

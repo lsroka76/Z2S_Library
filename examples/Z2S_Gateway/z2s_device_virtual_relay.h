@@ -29,28 +29,24 @@ void initZ2SDeviceVirtualRelay(
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void addZ2SDeviceVirtualRelay(ZigbeeGateway *gateway, 
-                              zbg_device_params_t *device, 
-                              uint8_t free_slot, 
-                              int8_t sub_id = -1, 
-                              const char *name = nullptr, 
-                              uint32_t func = 0);
+void addZ2SDeviceVirtualRelay(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, 
+  uint8_t free_slot, int8_t sub_id = -1, const char *name = nullptr, 
+  uint32_t func = 0);
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, 
-                              bool state);
+void msgZ2SDeviceVirtualRelay(
+  int16_t channel_number_slot, bool state);
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void msgZ2SDeviceVirtualRelayValue(int16_t channel_number_slot, 
-                                   uint8_t value_id, 
-                                   uint32_t value);
+void msgZ2SDeviceVirtualRelayValue(
+  int16_t channel_number_slot, uint8_t value_id, uint32_t value);
 
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
-void msgZ2SDeviceRollerShutter(int16_t channel_number_slot, 
-                               uint8_t msg_id, 
-                               uint16_t msg_value);
+void msgZ2SDeviceRollerShutter(
+  int16_t channel_number_slot, uint8_t msg_id, uint16_t msg_value);
 
 #endif

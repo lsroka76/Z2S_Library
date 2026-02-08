@@ -2,6 +2,7 @@
 #define Z2S_DEVICE_IASZONE_H_
 
 #include "z2s_devices_table.h"
+
 #include <Z2S_sensor/Z2S_virtual_binary.h>
 
 /*---------------------------------------------------------------------------------------------------------------------------*/

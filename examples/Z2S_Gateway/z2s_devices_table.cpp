@@ -29,8 +29,9 @@
 #include "z2s_device_virtual_valve.h"
 #include "z2s_little_fs.h"
 #include "z2s_device_local_action_handler.h"
+#include "z2s_web_gui.h"
 
-extern ZigbeeGateway zbGateway;
+//extern ZigbeeGateway zbGateway;
 
 extern uint8_t _rebuild_Supla_channels_on_start;
 
@@ -810,11 +811,6 @@ bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table) {
 
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
 
-    /*zbGateway.sendDeviceLeaveRequest(
-      z2s_zb_devices_table[zb_device_slot].ieee_addr, 
-      z2s_zb_devices_table[zb_device_slot].short_addr, 
-      false, false);*/
-
     memset(&z2s_zb_devices_table[zb_device_slot], 0, 
       sizeof(z2s_zb_device_params_t));
 
@@ -834,12 +830,6 @@ bool Z2S_removeZbDeviceWithAllChannels(
   uint8_t zb_device_slot, bool save_tables) {
 
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
-
-
-    /*zbGateway.sendDeviceLeaveRequest(
-      z2s_zb_devices_table[zb_device_slot].ieee_addr, 
-      z2s_zb_devices_table[zb_device_slot].short_addr, 
-      false, false);*/
 
     bool channels_table_save_required = false;
 
@@ -2869,11 +2859,9 @@ void Z2S_onLumiCustomClusterReceive(
 
   ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
-        ieee_addr_str, 
-        endpoint,
-        attribute->id, 
-        attribute->data.size);
+  log_i(
+    "%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint,
+    attribute->id, attribute->data.size);
 
   switch (attribute->id) {
 
@@ -2904,6 +2892,19 @@ void Z2S_onLumiCustomClusterReceive(
 
         updateSuplaBatteryLevel(
           channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, lumi_battery);
+      }
+
+      if (z2s_channels_table[channel_number_slot].model_id == 
+            Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR) {
+
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+          LUMI_SMOKE_DETECTOR_SMOKE_SID);
+        
+        if (channel_number_slot >=0) {
+
+        }
+        return;
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
@@ -2999,30 +3000,30 @@ void Z2S_onLumiCustomClusterReceive(
       if (channel_number_slot < 0) {
     
         log_e("no T/H channel found for address %s", ieee_addr_str);
-        return;
-      }
+      } else {
 
-      uint8_t lumi_temperature_position = scanLumiPayload(
-        LUMI_ATTRIBUTE_TEMPERATURE_ID, ESP_ZB_ZCL_ATTR_TYPE_S16,
-        attribute->data.size, (uint8_t*)attribute->data.value);
+        uint8_t lumi_temperature_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_TEMPERATURE_ID, ESP_ZB_ZCL_ATTR_TYPE_S16,
+          attribute->data.size, (uint8_t*)attribute->data.value);
 
-      if (lumi_temperature_position > 0) {
+        if (lumi_temperature_position > 0) {
 
-        float lumi_temperature = 
-          (*(int16_t*)(attribute->data.value + lumi_temperature_position)) / 100;
+          float lumi_temperature = 
+            (*(int16_t*)(attribute->data.value + lumi_temperature_position)) / 100;
 
-        msgZ2SDeviceTempHumidityTemp(channel_number_slot, lumi_temperature);
-      }
-      uint8_t lumi_humidity_position = scanLumiPayload(
-        LUMI_ATTRIBUTE_HUMIDITY_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 
-        attribute->data.size, (uint8_t*)attribute->data.value);
+          msgZ2SDeviceTempHumidityTemp(channel_number_slot, lumi_temperature);
+        }
+        uint8_t lumi_humidity_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_HUMIDITY_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, 
+          attribute->data.size, (uint8_t*)attribute->data.value);
 
-      if (lumi_humidity_position > 0) {
+        if (lumi_humidity_position > 0) {
 
-        float lumi_humidity = 
-          (*(uint16_t*)(attribute->data.value + lumi_humidity_position)) / 100;
+          float lumi_humidity = 
+            (*(uint16_t*)(attribute->data.value + lumi_humidity_position)) / 100;
 
-        msgZ2SDeviceTempHumidityHumi(channel_number_slot, lumi_humidity);
+          msgZ2SDeviceTempHumidityHumi(channel_number_slot, lumi_humidity);
+        }
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
@@ -3033,21 +3034,20 @@ void Z2S_onLumiCustomClusterReceive(
       if (channel_number_slot < 0) {
     
         log_e("no GPM channel found for address %s", ieee_addr_str);
-        return;
-      }       
+      } else {       
 
-      uint8_t lumi_air_quality_position = scanLumiPayload(
-        LUMI_ATTRIBUTE_AIR_QUALITY_ID, ESP_ZB_ZCL_ATTR_TYPE_U8,
-        attribute->data.size, (uint8_t*)attribute->data.value);
+        uint8_t lumi_air_quality_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_AIR_QUALITY_ID, ESP_ZB_ZCL_ATTR_TYPE_U8,
+          attribute->data.size, (uint8_t*)attribute->data.value);
 
-      if (lumi_air_quality_position > 0) {
+        if (lumi_air_quality_position > 0) {
 
-        msgZ2SDeviceGeneralPurposeMeasurement(
-          channel_number_slot, 
-          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-          *(uint8_t*)(attribute->data.value + lumi_air_quality_position));
+          msgZ2SDeviceGeneralPurposeMeasurement(
+            channel_number_slot, 
+            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+            *(uint8_t*)(attribute->data.value + lumi_air_quality_position));
+        }
       }
-
       
       channel_number_slot = Z2S_findChannelNumberSlot(
         ieee_addr, endpoint, cluster, 
@@ -3057,19 +3057,19 @@ void Z2S_onLumiCustomClusterReceive(
       if (channel_number_slot < 0) {
     
         log_e("no GPM channel found for address %s", ieee_addr_str);
-        return;
-      }       
+      } else {       
 
-      uint8_t lumi_voc_position = scanLumiPayload(
-        LUMI_ATTRIBUTE_VOC_ID, ESP_ZB_ZCL_ATTR_TYPE_U16,
-        attribute->data.size, (uint8_t*)attribute->data.value);
+        uint8_t lumi_voc_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_VOC_ID, ESP_ZB_ZCL_ATTR_TYPE_U16,
+          attribute->data.size, (uint8_t*)attribute->data.value);
 
-      if (lumi_voc_position > 0) {
+        if (lumi_voc_position > 0) {
 
-        msgZ2SDeviceGeneralPurposeMeasurement(
-          channel_number_slot, 
-          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-          *(uint16_t*)(attribute->data.value + lumi_voc_position));
+          msgZ2SDeviceGeneralPurposeMeasurement(
+            channel_number_slot, 
+            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+            *(uint16_t*)(attribute->data.value + lumi_voc_position));
+        }
       }
     } break;
 
@@ -6011,8 +6011,41 @@ uint8_t Z2S_addZ2SDevice(
               device, first_free_slot, sub_id, name, func, true);
           break;
         } break;
-      
 
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR:
+
+        switch (sub_id) {
+
+          case LUMI_SMOKE_DETECTOR_SMOKE_SID:
+          case LUMI_SMOKE_DETECTOR_SELFTEST_STATE_SID:
+          case LUMI_SMOKE_DETECTOR_BUZZER_MANUAL_ALARM_SID:
+          case LUMI_SMOKE_DETECTOR_BUZZER_MANUAL_MUTE_SID:
+          case LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_STATE_SID:
+
+            addZ2SDeviceIASzone(
+              device, first_free_slot, sub_id, name, func); 
+          break;
+
+
+          case LUMI_SMOKE_DETECTOR_SMOKE_DENSITY_SID: 
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+
+
+          case LUMI_SMOKE_DETECTOR_SELFTEST_SID: 
+          case LUMI_SMOKE_DETECTOR_BUZZER_SID:
+          case LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID:
+          case LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID:
+
+            addZ2SDeviceVirtualRelay(
+            &zbGateway, device, first_free_slot, sub_id, name, func);
+          break;
+        } break;
+      
 /*****************************************************************************/     
 
       case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR: {
@@ -6038,9 +6071,9 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_1: 
 
-        addZ2SDeviceActionTrigger(device, first_free_slot, -1, 
-                                  "OCCUPANCY EXEC", 
-                                  SUPLA_CHANNELFNC_STAIRCASETIMER); 
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, -1, "OCCUPANCY EXEC", 
+          SUPLA_CHANNELFNC_STAIRCASETIMER); 
       break;
 
 
@@ -6054,10 +6087,10 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_IKEA_VALLHORN_3: 
 
-        addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, 
-                                              "ILLUMINANCE",
-                                              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                                              "lx"); break;
+        addZ2SDeviceGeneralPurposeMeasurement(
+          device, first_free_slot, sub_id, "ILLUMINANCE",
+          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); 
+      break;
 
 /******************************************************************************/     
 
@@ -8549,6 +8582,53 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
+    case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR: {
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_SMOKE_SID, "SMOKE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_SMOKE_DENSITY_SID, "SMOKE DENSITY", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_SELFTEST_SID, "RUN SELFTEST", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_SELFTEST_STATE_SID, "TEST STATE", 
+        SUPLA_CHANNELFNC_BINARY_SENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_BUZZER_SID, "BUZZER MUTE/ALARM", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_BUZZER_MANUAL_MUTE_SID, 
+        "BUZZER MUTED MANUALLY", SUPLA_CHANNELFNC_BINARY_SENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_BUZZER_MANUAL_ALARM_SID, 
+        "BUZZER ALARMED MANUALLY", SUPLA_CHANNELFNC_BINARY_SENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_BUZZER_SID, 
+        "ENABLE HEARTBEAT INDICATOR", SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID, 
+        "ENABLE LINKAGE ALARM", SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_STATE_SID, 
+        "LINKAGE_ALARM_STATE", SUPLA_CHANNELFNC_BINARY_SENSOR);
+
+      
+    }break;
+
+/*****************************************************************************/
+
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR: {
       
       Z2S_addZ2SDevice(joined_device, TUYA_RAIN_SENSOR_RAIN_SID);
@@ -9305,4 +9385,102 @@ void printTaskInfo(bool toTelnet) {
 
         vPortFree(taskStatusArray);
     }*/
+}
+
+bool ZbConflictResolver::onChannelConflictReport(
+  uint8_t *channelReport,uint8_t channelReportSize, 
+  bool hasConflictInvalidType, bool hasConflictChannelMissingOnServer,
+  bool hasConflictChannelMissingOnDevice) {
+
+  if (hasConflictChannelMissingOnDevice) {
+      
+    log_i(
+      "ConflictResolver: Channel conflict - channel missing "
+      "on device. Not recoverable. Aborting...");
+      
+    return false;
+  }
+    
+  if (hasConflictInvalidType) {
+      
+    log_i(
+      "ConflictResolver: Channel conflict - channel type "
+      "mismatch. Not recoverable. Aborting...");
+      
+    return false;
+  }
+    
+  if (hasConflictChannelMissingOnServer) {
+      
+    log_i(
+      "ConflictResolver: Channel conflict - channel missing "
+      "on server. Trying to remove affected devices...");
+
+    auto maxChannelNumber = Supla::RegisterDevice::getMaxChannelNumberUsed();
+
+    uint8_t zb_device_slot = 0xFF;
+
+    for (int i = 0; i <= maxChannelNumber; i++) {
+
+      if ((i >= channelReportSize || channelReport[i] == 0) &&
+          !Supla::RegisterDevice::isChannelNumberFree(i)) {
+       
+        log_i("%u, %u, %u", channelReportSize, i, channelReport[i]);
+        
+        int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(i);
+        
+        if ( channel_number_slot >= 0) {
+
+          if ((zb_device_slot < 0xFF) && 
+              (zb_device_slot != 
+                z2s_channels_table[channel_number_slot].Zb_device_id)) {
+
+            log_e(
+              "Unexpected SuplaDevice behavior - multiple subdevices conflict!!!");
+            break;
+          }
+          
+          zb_device_slot = 
+            z2s_channels_table[channel_number_slot].Zb_device_id;
+
+          if ( zb_device_slot == 0xFF) {
+
+            log_e("missing ZB device id for channel #%02u", i);
+            //continue;
+          } 
+
+          uint16_t gui_control_id = 
+            z2s_channels_table[channel_number_slot].gui_control_id;
+
+          Z2S_removeChannel(channel_number_slot, true);
+          removeChannelsSelectorChannel(channel_number_slot, gui_control_id);
+          
+          auto element =
+            Supla::Element::getElementByChannelNumber(i);
+          
+          if (element) {
+
+            Supla::AutoLock lock(SuplaDevice.getTimerAccessMutex());
+            delete element;
+            element = nullptr;
+            
+            if (!Supla::Storage::IsStateStorageValid()) {
+              
+              Supla::Storage::WriteStateStorage();
+            }
+          }
+        }
+      }
+    }
+    
+    if ((zb_device_slot < 0xFF) &&
+      (Z2S_countChannelsWithZbDeviceId(zb_device_slot) == 0)) {
+
+      log_i("all channels removed - removing device %02u", zb_device_slot);
+
+      Z2S_removeZbDevice(zb_device_slot);
+      removeDevicesSelectorDevice(zb_device_slot);
+    }
+  }
+  return false;
 }

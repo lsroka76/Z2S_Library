@@ -54,4 +54,9 @@ void GUI_onTuyaCustomClusterReceive(
 
 void GUI_onZigbeeOpenNetwork(bool is_network_open);
 
+void removeDevicesSelectorDevice(uint8_t device_slot);
+
+void removeChannelsSelectorChannel(
+  int16_t channel_number_slot, int32_t channel_option_id);
+
 #endif // Z2S_WEB_GUI_H_

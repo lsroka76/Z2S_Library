@@ -201,6 +201,9 @@ void initZ2SDeviceVirtualRelay(
     Supla_Z2S_VirtualRelay->setTimeoutSecs(
         z2s_channels_table[channel_number_slot].timeout_secs);
 
+    Supla_Z2S_VirtualRelay->setZ2SZbDevice(
+      Z2S_getChannelZbDevicePtr(channel_number_slot));
+
 
     switch (z2s_channels_table[channel_number_slot].model_id) {
 

@@ -1,8 +1,6 @@
 #ifndef Z2S_DEVICE_LOCAL_ACTION_HANDLERS_H_
 #define Z2S_DEVICE_LOCAL_ACTION_HANDLERS_H_
 
-#include "z2s_devices_table.h"
-
 #include <SuplaDevice.h>
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
@@ -15,6 +13,7 @@
 #include <Z2S_control/virtual_output_interface.h>
 #include <Z2S_sensor/Z2S_remote_thermometer.h>
 
+#include "z2s_devices_table.h"
 
 #define LOCAL_CHANNEL_TYPE_ACTION_HANDLER                 0x01
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY                  0x02

@@ -1491,6 +1491,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     
     if (z2s_zb_device_last_seen_ms > _last_cmd_sent_ms) {
 
+      _last_keep_alive_ms = z2s_zb_device_last_seen_ms;
+      
       _last_cmd_sent_ms = 0;
       if (_trv_hvac)
         _trv_hvac->getChannel()->setStateOnline();

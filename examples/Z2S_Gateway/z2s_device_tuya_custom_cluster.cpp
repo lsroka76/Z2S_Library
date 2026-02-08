@@ -15,7 +15,7 @@
 #include <arduino_base64.hpp>
 #include <math.h>
 
-extern ZigbeeGateway zbGateway;
+//extern ZigbeeGateway zbGateway;
 
 /*uint8_t learned_ir_code[256];
 char    learned_ir_code_base64[256];

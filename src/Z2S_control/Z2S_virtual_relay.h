@@ -52,6 +52,8 @@
 
 #define Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY           0x60
 
+#define Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8       0x70
+
 static const uint32_t RELAY_FLAGS = 
   SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK |
   SUPLA_BIT_FUNC_CONTROLLINGTHEGATE |
@@ -112,7 +114,7 @@ class Z2S_VirtualRelay : public Relay {
 
 
   bool state = false;
-  ZigbeeGateway *_gateway = nullptr;
+  //ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
 
   z2s_zb_device_params_t *_z2s_zb_device = nullptr;

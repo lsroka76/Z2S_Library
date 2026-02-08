@@ -1,6 +1,6 @@
 #include "z2s_telnet_parser.h"
 
-extern ZigbeeGateway zbGateway;
+//extern ZigbeeGateway zbGateway;
 
 void printDir(fs::FS &fs, const char *dirname, uint8_t levels) {
   //Serial.printf("Listing directory: %s\n", dirname);
