@@ -440,8 +440,10 @@ void msgZ2SDeviceRollerShutter(
 
       case RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG:
 
-        if (Z2S_checkChannelFlags(USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG)) 
-          Z2S_clearChannelFlags(USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
+        if (Z2S_checkChannelFlags(
+          channel_number_slot, USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG)) 
+          Z2S_clearChannelFlags(
+            channel_number_slot, USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
         else
           Supla_Z2S_RollerShutter->setRSCurrentPosition(msg_value); 
       break;
