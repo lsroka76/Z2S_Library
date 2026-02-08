@@ -3632,29 +3632,72 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
 	GUIbuilt = true;
 
-	/*uint16_t max_size = 0;
-	uint16_t min_size = 0xFFFF;
-	uint32_t total_size = 0;
-	uint16_t control_size = 0;*/
-	Control *ESPUIcontrol = nullptr;
-
-	/*for (uint16_t control_idx = 0; 
-			 control_idx <= ESPUIcontrolMgr.GetControlCount(); control_idx++) {
-
-		ESPUIcontrol = ESPUI.getControl(control_idx);
-		if (ESPUIcontrol)
-			control_size = ESPUIcontrol->getValue().length();
-		if (control_size > max_size)
-			max_size = control_size;
-		if (control_size < min_size)
-			min_size = control_size;
-		total_size += control_size;
-	}
-	log_i(
-		"CONTROLS: TOTAL SIZE %lu, MIN_SIZE %u, MAX_SIZE %u, AVG_SIZE %u", 
-		total_size, min_size, max_size, 
-		total_size / ESPUIcontrolMgr.GetControlCount());*/
 	log_i("Control sizeof %u, String sizeof %u", sizeof(Control), sizeof(String));
+
+	uint32_t prev_desc = 0;
+	uint16_t desc_counter = 0;
+	uint16_t total_sum  = 0;
+
+	for (uint16_t i = 0; i < sizeof(Tuya_datapoints)/sizeof(Tuya_datapoints[0]);
+			 i++) {
+
+		if (Tuya_datapoints[i].z2s_device_desc_id != prev_desc) {
+			if (prev_desc != 0)
+				log_i("Device id %lu, counter %u", prev_desc, desc_counter);
+			prev_desc = Tuya_datapoints[i].z2s_device_desc_id;
+			total_sum += desc_counter;
+			desc_counter = 0;
+		} else desc_counter++;
+	}
+	log_i("Tuya datapoints total %u", total_sum);
+
+	uint16_t zigbee_attribute_id = 0;
+	uint16_t prev_cluster = 0xFFFF;
+	prev_desc = 0;
+	desc_counter = 0;
+	total_sum = 0;
+
+	for (uint16_t i = 0; 
+			 i < sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_values[0]);
+			 i++) {
+
+		if ((zigbee_attribute_values[i].zigbee_attribute_id != prev_desc) ||
+		    (zigbee_attribute_values[i].zigbee_cluster_id != prev_cluster)) {
+			if (prev_desc != 0)
+				log_i(
+			"Attribute id %lu, cluster %04X, counter %u", prev_desc, prev_cluster,
+			desc_counter);
+			prev_desc = zigbee_attribute_values[i].zigbee_attribute_id;
+			prev_cluster = zigbee_attribute_values[i].zigbee_cluster_id;
+			total_sum += desc_counter;
+			desc_counter = 0;
+		} else desc_counter++;
+	}
+	
+	log_i("Attribute values total %u", total_sum);
+
+	zigbee_attribute_id = 0;
+	prev_cluster = 0xFFFF;
+	prev_desc = 0;
+	desc_counter = 0;
+	total_sum = 0;
+
+
+	for (uint16_t i = 0; 
+			 i < sizeof(zigbee_attributes)/sizeof(zigbee_attributes[0]);
+			 i++) {
+
+		if (zigbee_attributes[i].zigbee_attribute_cluster_id != prev_cluster) {
+			if (prev_desc != 0)
+				log_i(
+			"Cluster %04X, counter %u", prev_cluster, desc_counter);
+			prev_cluster = zigbee_attributes[i].zigbee_attribute_cluster_id;
+			total_sum += desc_counter;
+			desc_counter = 0;
+		} else desc_counter++;
+	}
+
+	log_i("Cluster attributes total %u", total_sum);
 }
 
 void Z2S_reloadWebGUI() {
