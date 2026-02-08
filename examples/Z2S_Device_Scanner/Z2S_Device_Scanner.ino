@@ -13,11 +13,11 @@ extern "C" {
 #include <ZigbeeGateway.h>
 #include <SuplaDevice.h>
 
-#define GATEWAY_ENDPOINT_NUMBER 1
+//#define GATEWAY_ENDPOINT_NUMBER 1
 
 #define BUTTON_PIN                  9  //Boot button for C6/H2
 
-ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
+//ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 
 
