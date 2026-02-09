@@ -484,7 +484,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
     } break;
 
      case ESP_ZB_NLME_STATUS_INDICATION: {
-        printf("%s, status: 0x%x\n", 
+        printf("%s, status(DJ): 0x%x\n", 
                esp_zb_zdo_signal_to_string(sig_type), 
                *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
     } break;

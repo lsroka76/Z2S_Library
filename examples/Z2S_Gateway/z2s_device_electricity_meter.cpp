@@ -108,6 +108,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
       energy_divisor  = 100;
       
       ignore_zigbee_scaling = true;
+	  printf("Multiplier1: %i\n", voltage_multiplier);
     } break;
 
 
@@ -128,6 +129,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
       energy_divisor  = 100;
       
       ignore_zigbee_scaling = true;
+      printf("Multiplier2: %i\n", voltage_multiplier);
     } break;
 
 
@@ -167,6 +169,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
       energy_divisor  = 1000;
 
       ignore_zigbee_scaling = true;
+      printf("Multiplier3: %i\n", voltage_multiplier);
 
     } break;
 
@@ -185,6 +188,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
       energy_divisor  = 100;
 
       ignore_zigbee_scaling = true;
+      printf("Multiplier4: %i\n", voltage_multiplier);
 
     } break;
 
@@ -200,6 +204,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
       active_power_divisor    = 1000;*/
 
       ignore_zigbee_scaling = false;
+      printf("Multiplier5: %i\n", voltage_multiplier);
 
     } break;
 
@@ -220,6 +225,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
 
       energy_multiplier = 1;
       energy_divisor  = 1000;
+      printf("Multiplier6: %i\n", voltage_multiplier);
     } break;
 
 
@@ -292,7 +298,7 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
       log_i("EM channel extended data successfully CREATED");
   }
   
-  printf("Multiplier: %i\n", voltage_multiplier);
+  printf("Multiplier7: %i\n", voltage_multiplier);
 
   Supla_Z2S_ElectricityMeter->setIgnoreZigbeeScaling(ignore_zigbee_scaling);
 
