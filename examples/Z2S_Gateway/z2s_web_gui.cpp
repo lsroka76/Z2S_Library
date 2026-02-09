@@ -35,18 +35,24 @@ extern uint8_t _use_new_at_model;
 extern uint8_t _z2s_security_level;
 
 #define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 			40
-#define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 		6
-#define MAX_TUYA_DATAPOINTS_SELECTOR_OPTIONS 		6
+#define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 		5
+#define MAX_TUYA_DATAPOINTS_SELECTOR_OPTIONS 		15
 
 static volatile bool GUIstarted   = false;
 static volatile bool GUIbuilt	    = false;
 
-static volatile uint16_t _last_cluster_id = 0xFFFF;
-static volatile uint16_t _last_attribute_id = 0xFFFF;
-static volatile uint32_t _z2s_last_device_desc_id = 0;
+//static volatile uint16_t _last_cluster_id = 0xFFFF;
+//static volatile uint16_t _last_attribute_id = 0xFFFF;
+//static volatile uint32_t _z2s_last_device_desc_id = 0;
 
 static volatile uint16_t max_attribute_id_selector_options = 
 	MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS;
+
+static volatile uint16_t max_attribute_value_selector_options =
+	MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS;
+
+static volatile uint16_t max_Tuya_datapoints_selector_options =
+	MAX_TUYA_DATAPOINTS_SELECTOR_OPTIONS;
 
 
 //UI handles
@@ -225,7 +231,7 @@ Tuya_device_last_enum_position
 };
 
 uint16_t Tuya_devices_tab_controls_table[Tuya_device_last_enum_position];
-uint16_t Tuya_devices_id_selector_first_option_id = 0xFFFF;
+uint16_t Tuya_datapoint_id_selector_first_option_id = 0xFFFF;
 
 uint16_t table_first_button;
 uint16_t table_next_button;
@@ -627,24 +633,66 @@ uint16_t getMaxClusterAttributesNumber() {
 	return max_counter;
 }
 
-uint16_t getMaxTuyaDatapointsNumber() {
+uint16_t getMaxAttributeValuesNumber() {
 
-	uint16_t prev_desc = 0;
+	uint32_t prev_desc = 0;
 	uint16_t desc_counter = 0;
+	uint16_t prev_cluster = 0xFFFF;
 	uint16_t max_counter = 0;
 
-for (uint16_t i = 0; i < sizeof(Tuya_datapoints)/sizeof(Tuya_datapoints[0]);
+	for (uint16_t i = 0; 
+			 i < sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_values[0]);
 			 i++) {
 
-		if (Tuya_datapoints[i].z2s_device_desc_id != prev_desc) {
+		if ((zigbee_attribute_values[i].zigbee_attribute_id != prev_desc) ||
+		    (zigbee_attribute_values[i].zigbee_cluster_id != prev_cluster)) {
 			if (prev_desc != 0)
-				log_i("Device id %lu, counter %u", prev_desc, desc_counter);
-			prev_desc = Tuya_datapoints[i].z2s_device_desc_id;
+				log_i(
+			"Attribute id %lu, cluster %04X, counter %u", prev_desc, prev_cluster,
+			desc_counter);
+			prev_desc = zigbee_attribute_values[i].zigbee_attribute_id;
+			prev_cluster = zigbee_attribute_values[i].zigbee_cluster_id;
 			if (desc_counter > max_counter)
 				max_counter = desc_counter;
 			desc_counter = 1;
 		} else desc_counter++;
 	}
+	
+	if (desc_counter > max_counter)
+		max_counter = desc_counter;
+
+	log_i("max counter = %u", max_counter);
+	
+	return max_counter;
+}
+
+
+uint16_t getMaxTuyaDatapointsNumber() {
+
+	uint32_t prev_desc = 0;
+	uint16_t desc_counter = 0;
+	uint16_t max_counter = 0;
+
+	for (uint16_t i = 0; i < sizeof(Tuya_datapoints)/sizeof(Tuya_datapoints[0]);
+			 i++) {
+	
+		if (Z2S_hasZbDevice(Tuya_datapoints[i].z2s_device_desc_id)) {
+			if (Tuya_datapoints[i].z2s_device_desc_id != prev_desc) {
+				
+				if (prev_desc != 0)
+					log_i("Device id %lu, counter %u", prev_desc, desc_counter);
+				
+				prev_desc = Tuya_datapoints[i].z2s_device_desc_id;
+				
+				if (desc_counter > max_counter)
+					max_counter = desc_counter;
+				
+				desc_counter = 1;
+
+			} else desc_counter++;
+		}
+	}
+
 	if (desc_counter > max_counter)
 		max_counter = desc_counter;
 
@@ -2227,14 +2275,16 @@ void buildClustersAttributesTab() {
 			clusters_attributes_table[device_attribute_type_selector]);
 	}
 
+	max_attribute_value_selector_options = getMaxAttributeValuesNumber();
+
 	uint32_t zigbee_attribute_values_count = 
 		sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_value_t);
 
-	for (uint32_t i = 0; i < zigbee_attribute_values_count; i++) {
+	for (uint32_t i = 0; i < max_attribute_value_selector_options; i++) {
 
 		current_option_id = ESPUI.addControl(
-			Control::Type::Option, 
-			zigbee_attribute_values[i].zigbee_attribute_value_name, 
+			Control::Type::Option, PSTR("EMPTY ATTRIBUTE VALUE"),
+			//zigbee_attribute_values[i].zigbee_attribute_value_name, 
 			-3, Control::Color::None, 
 			clusters_attributes_table[device_attribute_value_selector]);
 
@@ -2616,68 +2666,49 @@ void enableTuyaDevicesControls(bool enable) {
 
 void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot) {
 
-	/*if (Tuya_devices_id_selector_first_option_id < 0xFFFF) {
-
-		for (uint16_t options_id_counter = Tuya_devices_id_selector_first_option_id;
-				 options_id_counter <= Tuya_devices_id_selector_last_option_id;
-				 options_id_counter++) {
-
-					if (options_id_counter < 0xFFFF)
-					ESPUI.removeControl(options_id_counter, false);
-		}
-	}*/
-
 	ESPUI.updateControlValue(
 		Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], -1);
 										
+	if (Tuya_device_slot == 0xFF) {
 
-	if (Tuya_device_slot == 0xFF)
+		for (uint32_t i = 0; i < max_Tuya_datapoints_selector_options; i++)
+		ESPUI.updateControlValue(
+				Tuya_datapoint_id_selector_first_option_id + i, -2);
+
 		return;
+	}
+		
 
 	uint32_t Tuya_datapoints_desc_number = 
 	sizeof(Tuya_datapoints) / sizeof(Tuya_datapoint_desc_t);
-	
-	//Tuya_devices_id_selector_first_option_id = 0xFFFF;
-	//Tuya_devices_id_selector_last_option_id		= 0xFFFF;
 
-	//uint16_t current_option_id = 0xFFFF;
-	uint32_t current_option_id = 0;
-	bool has_zb_device = false;
-	uint32_t z2s_device_desc_id = 0;
+	uint8_t datapoints_counter = 0;
 
 	uint32_t z2s_current_device_desc_id = 
 		z2s_zb_devices_table[Tuya_device_slot].desc_id;
 
 	for (uint32_t i = 0; i < Tuya_datapoints_desc_number; i++) {
 	
-		if (Tuya_datapoints[i].z2s_device_desc_id != z2s_device_desc_id) {
-
-			z2s_device_desc_id = Tuya_datapoints[i].z2s_device_desc_id;
-			has_zb_device = Z2S_hasZbDevice(z2s_device_desc_id);
-		}
-
-		if (has_zb_device) {
-		
 		if (Tuya_datapoints[i].z2s_device_desc_id == z2s_current_device_desc_id) {
 
-			ESPUI.updateControlValue(
-				Tuya_devices_id_selector_first_option_id + current_option_id, i);
-		
-			/*current_option_id = ESPUI.addControl(
-				Control::Type::Option, Tuya_datapoints[i].Tuya_datapoint_name, 
-				i, Control::Color::None, 
-				Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+			ESPUI.updateControlLabel(
+				Tuya_datapoint_id_selector_first_option_id + datapoints_counter,
+				Tuya_datapoints[i].Tuya_datapoint_name);
 
-			if (Tuya_devices_id_selector_first_option_id == 0xFFFF)
-				Tuya_devices_id_selector_first_option_id = current_option_id;*/
-		} else
-		if (Tuya_datapoints[i].z2s_device_desc_id == _z2s_last_device_desc_id)
 			ESPUI.updateControlValue(
-				Tuya_devices_id_selector_first_option_id + current_option_id, -2);
-		current_option_id++;
-		}
+				Tuya_datapoint_id_selector_first_option_id + datapoints_counter, i);
+
+			datapoints_counter++;
+		} 
 	}
-	_z2s_last_device_desc_id = z2s_current_device_desc_id;
+	log_i(
+		"%u datapoints definitions added for Tuya device id 0x%04X", 
+		datapoints_counter, z2s_current_device_desc_id);
+
+	for (uint32_t i = datapoints_counter; 
+			 i < max_Tuya_datapoints_selector_options; i++)
+		ESPUI.updateControlValue(
+				Tuya_datapoint_id_selector_first_option_id + i, -2);
 }
 
 void buildTuyaCustomClusterTabGUI() {
@@ -2734,7 +2765,7 @@ void buildTuyaCustomClusterTabGUI() {
 	uint32_t z2s_device_desc_id = 0;
 	bool has_zb_device = false;
 
-	for (uint32_t i = 0; i < Tuya_datapoints_desc_number; i++) {
+	/*for (uint32_t i = 0; i < Tuya_datapoints_desc_number; i++) {
 	
 		if (Tuya_datapoints[i].z2s_device_desc_id != z2s_device_desc_id) {
 
@@ -2752,8 +2783,21 @@ void buildTuyaCustomClusterTabGUI() {
 			if (Tuya_devices_id_selector_first_option_id == 0xFFFF)
 				Tuya_devices_id_selector_first_option_id = current_option_id;
 		}
-	}
+	}*/
+	
+	max_Tuya_datapoints_selector_options = getMaxTuyaDatapointsNumber();
 
+	for (uint32_t i = 0; i < max_Tuya_datapoints_selector_options; i++) {
+	
+		current_option_id = ESPUI.addControl(
+				Control::Type::Option, PSTR("EMPTY DATAPOINT ID"), -3, 
+				Control::Color::None, 
+				Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+
+		if (Tuya_datapoint_id_selector_first_option_id == 0xFFFF)
+			Tuya_datapoint_id_selector_first_option_id = current_option_id;
+	}
+	
 	Tuya_devices_tab_controls_table[Tuya_datapoint_id_number] =	
 		ESPUI.addControl(
 			Control::Type::Number, PSTR(empty_str), (long int)0, 
@@ -3703,35 +3747,6 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	GUIbuilt = true;
 
 	log_i("Control sizeof %u, String sizeof %u", sizeof(Control), sizeof(String));
-
-	uint32_t prev_desc = 0;
-	uint16_t desc_counter = 0;
-	uint16_t total_sum  = 0;
-
-	uint16_t zigbee_attribute_id = 0;
-	uint16_t prev_cluster = 0xFFFF;
-	prev_desc = 0;
-	desc_counter = 0;
-	total_sum = 0;
-
-	for (uint16_t i = 0; 
-			 i < sizeof(zigbee_attribute_values)/sizeof(zigbee_attribute_values[0]);
-			 i++) {
-
-		if ((zigbee_attribute_values[i].zigbee_attribute_id != prev_desc) ||
-		    (zigbee_attribute_values[i].zigbee_cluster_id != prev_cluster)) {
-			if (prev_desc != 0)
-				log_i(
-			"Attribute id %lu, cluster %04X, counter %u", prev_desc, prev_cluster,
-			desc_counter);
-			prev_desc = zigbee_attribute_values[i].zigbee_attribute_id;
-			prev_cluster = zigbee_attribute_values[i].zigbee_cluster_id;
-			total_sum += desc_counter;
-			desc_counter = 0;
-		} else desc_counter++;
-	}
-	
-	log_i("Attribute values total %u", total_sum);
 }
 
 void Z2S_reloadWebGUI() {
@@ -3945,8 +3960,6 @@ void Z2S_updateWebGUI() {
 
 void clusterCallbackCmd() {
 
-	//clearAttributeIdSelect();
-	//clearAttributeValueSelect();
 
 	int32_t cluster_id = ESPUI.getControl(
 			clusters_attributes_table[device_cluster_selector])->getValueInt();
@@ -3979,20 +3992,14 @@ void clusterCallbackCmd() {
 		if (zigbee_attributes[i].zigbee_attribute_cluster_id == cluster_id) {
 
 			ESPUI.updateControlLabel(
-				device_attribute_id_selector_first_option_id + attributes_counter,//i,
+				device_attribute_id_selector_first_option_id + attributes_counter,
 				zigbee_attributes[i].zigbee_attribute_name);
 				
 			ESPUI.updateControlValue(
 				device_attribute_id_selector_first_option_id + attributes_counter, i);
-				//i, i);
+
 			attributes_counter++;
-
-		} /*else {
-
-			if (zigbee_attributes[i].zigbee_attribute_cluster_id == _last_cluster_id)
-			ESPUI.updateControlValue(
-				device_attribute_id_selector_first_option_id + i, -2);
-		}*/
+		} 
 	}
 	log_i(
 		"%u attributes added for cluster 0x%04X", attributes_counter, cluster_id);
@@ -4002,7 +4009,7 @@ void clusterCallbackCmd() {
 		ESPUI.updateControlValue(
 				device_attribute_id_selector_first_option_id + i, -2);
 
-	_last_cluster_id = cluster_id;
+	//_last_cluster_id = cluster_id;
 	attributeCallback(nullptr, -1);
 }
 
@@ -4891,6 +4898,15 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			enableChannelTimings(0);
 			enableChannelFlags(16);
 			enableChannelParams(3);
+
+			char *working_str_ptr = PSTR(
+				"&#10023; Enter GPM temporary deactivation threshold value &#10023;");
+
+			ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+
+			working_str_ptr = PSTR(
+					"&#10023; Enter GPM temporary deactivation duration [s] &#10023;");
+				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
 		} break;
 		
 		
@@ -6624,10 +6640,7 @@ void attributeCallback (Control *sender, int type) {
 		uint16_t cluster_id = ESPUI.getControl(
 			clusters_attributes_table[device_cluster_selector])->getValueInt();
 
-		//device_attribute_value_selector_first_option_id = 0xFFFF;
-		//device_attribute_value_selector_last_option_id	= 0xFFFF;
-
-		//uint16_t current_option_id = 0xFFFF;
+		uint8_t values_counter = 0;
 
 		for (uint32_t i = 0; i < zigbee_attribute_values_count; i++) {
 
@@ -6635,20 +6648,26 @@ void attributeCallback (Control *sender, int type) {
 					(zigbee_attribute_values[i].zigbee_attribute_id == 
 					 zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id)) {
 
-				/*current_option_id = ESPUI.addControl(
-					Control::Type::Option, 
-					zigbee_attribute_values[i].zigbee_attribute_value_name, 
-					i, Control::Color::None, 
-					clusters_attributes_table[device_attribute_value_selector]);*/
+				ESPUI.updateControlLabel(
+					device_attribute_value_selector_first_option_id + values_counter,
+					zigbee_attribute_values[i].zigbee_attribute_value_name);
+				
 				ESPUI.updateControlValue(
-					device_attribute_value_selector_first_option_id + i, i);
-
-				//if (device_attribute_value_selector_first_option_id == 0xFFFF)
-				//	device_attribute_value_selector_first_option_id = current_option_id;
-			} else 
-				ESPUI.updateControlValue(
-					device_attribute_value_selector_first_option_id + i, -2);
+					device_attribute_value_selector_first_option_id + values_counter, i);
+				
+				values_counter++;
+			}
 		}
+
+		log_i(
+			"%u values added for attribute 0x%04X", values_counter, cluster_id,
+			zigbee_attributes[zigbee_attributes_idx].zigbee_attribute_id);
+
+		for (uint8_t i = values_counter; i < max_attribute_value_selector_options;
+				 i++)
+			ESPUI.updateControlValue(
+				device_attribute_value_selector_first_option_id + i, -2);
+
 		ESPUI.updateNumber(
 			clusters_attributes_table[device_attribute_value_text], 0);
 	} else {
@@ -6665,7 +6684,7 @@ void attributeCallback (Control *sender, int type) {
 		uint32_t zigbee_attribute_values_count = 
 			sizeof(zigbee_attribute_values) / sizeof(zigbee_attribute_value_t);
 
-		for (uint32_t i = 0; i < zigbee_attribute_values_count; i++) {
+		for (uint32_t i = 0; i < max_attribute_value_selector_options; i++) {
 
 			ESPUI.updateControlValue(
 				device_attribute_value_selector_first_option_id + i, -2);
@@ -7649,21 +7668,22 @@ void TuyaDeviceSelectorCallback(Control *sender, int type) {
 
 		enableTuyaDevicesControls(true);
 
-		sprintf_P(general_purpose_gui_buffer,
-							PSTR("<b><i>Manufacturer name</i></b> %s "
-							"<b>| <i>model ID</b></i> %s"), 
-							Z2S_getZbDeviceManufacturerName(device_slot),
-							Z2S_getZbDeviceModelName(device_slot));
+		sprintf_P(
+			general_purpose_gui_buffer, PSTR("<b><i>Manufacturer name</i></b> %s "
+			"<b>| <i>model ID</b></i> %s"), 
+			Z2S_getZbDeviceManufacturerName(device_slot),
+			Z2S_getZbDeviceModelName(device_slot));
 
-		updateLabel_P(Tuya_devices_tab_controls_table[Tuya_device_info_label], 
-									general_purpose_gui_buffer);
+		updateLabel_P(
+			Tuya_devices_tab_controls_table[Tuya_device_info_label], 
+			general_purpose_gui_buffer);
 		
 		rebuildTuyaDevicesDatapointsList(device_slot);
 
 		
 	} else {
 
-		//rebuildTuyaDevicesDatapointsList(0xFF);
+		rebuildTuyaDevicesDatapointsList(0xFF);
 		enableTuyaDevicesControls(false);	
 	}
 }

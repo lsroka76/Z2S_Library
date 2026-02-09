@@ -273,6 +273,8 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
+        rsStop();
+        
         if (_z2s_channel)
           _z2s_channel->user_data_flags |= 0x10; //IGNORE_NEXT_MSG
         
