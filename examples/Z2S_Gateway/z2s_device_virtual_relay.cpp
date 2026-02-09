@@ -445,11 +445,20 @@ void msgZ2SDeviceRollerShutter(
       case RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG:
 
         if (Z2S_checkChannelFlags(
-          channel_number_slot, USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG)) 
-          Z2S_clearChannelFlags(
-            channel_number_slot, USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
-        else
-          Supla_Z2S_RollerShutter->setRSCurrentPosition(msg_value); 
+          channel_number_slot, USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG)) {
+          
+          if (z2s_channels_table[channel_number_slot].\
+              ignore_next_msg_counter == 0)
+            Z2S_clearChannelFlags(
+              channel_number_slot, USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
+          else {
+
+            z2s_channels_table[channel_number_slot].ignore_next_msg_counter--;
+            return;
+          }
+        }
+        
+        Supla_Z2S_RollerShutter->setRSCurrentPosition(msg_value); 
       break;
 
 

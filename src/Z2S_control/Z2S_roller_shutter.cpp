@@ -272,11 +272,12 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
 
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
+    
+        if (_z2s_channel) {
+          _z2s_channel->user_data_flags |= 0x10; //IGNORE_NEXT_MSG
+          _z2s_channel->ignore_next_msg_counter = 2;
 
         rsStop();
-        
-        if (_z2s_channel)
-          _z2s_channel->user_data_flags |= 0x10; //IGNORE_NEXT_MSG
         
         sendTuyaRequestCmdValue32(
           &zbGateway, &_device, MOES_COVER_STATE_COVER_POSITION_DP, 
