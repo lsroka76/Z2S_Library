@@ -40,6 +40,8 @@ class Z2S_RollerShutter : public RollerShutterInterface {
 
   void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device);
   z2s_zb_device_params_t *getZ2SZbDevice();
+  void setZ2SChannel(z2s_device_params_t *z2s_channel);
+  z2s_device_params_t *getZ2SChannel();
 
   void onInit() override;
   void onTimer() override;
@@ -68,12 +70,14 @@ class Z2S_RollerShutter : public RollerShutterInterface {
   void rsStop();
   void rsMoveToLiftPercentage(uint8_t lift_percentage);
 
-  bool state = false;
   //ZigbeeGateway *_gateway = nullptr;
   zbg_device_params_t 	_device;
 
   z2s_zb_device_params_t *_z2s_zb_device = nullptr;
+  z2s_device_params_t *_z2s_channel = nullptr;
 
+  bool state = false;
+  
   uint8_t _z2s_function = 
     Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
 

@@ -76,6 +76,10 @@ void initZ2SDeviceVirtualRelay(
     
     Supla_Z2S_RollerShutter->setRSIgnoreMovingDirection(
       z2s_rs_ignore_moving_direction);
+    
+    Supla_Z2S_RollerShutter->setZ2SChannel(
+      Z2S_getChannelPtr(channel_number_slot));
+
   } else {  //VirtualRelay section
     
     uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;

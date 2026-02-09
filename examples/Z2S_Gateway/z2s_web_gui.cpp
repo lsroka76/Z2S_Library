@@ -36,6 +36,7 @@ extern uint8_t _z2s_security_level;
 
 #define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 			40
 #define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 		6
+#define MAX_TUYA_DATAPOINTS_SELECTOR_OPTIONS 		6
 
 static volatile bool GUIstarted   = false;
 static volatile bool GUIbuilt	    = false;
@@ -44,7 +45,8 @@ static volatile uint16_t _last_cluster_id = 0xFFFF;
 static volatile uint16_t _last_attribute_id = 0xFFFF;
 static volatile uint32_t _z2s_last_device_desc_id = 0;
 
-//static volatile uint32_t _dynamic_option_id = 0;
+static volatile uint16_t max_attribute_id_selector_options = 
+	MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS;
 
 
 //UI handles
@@ -596,6 +598,60 @@ void fillMemoryUptimeInformation(char *buf);
 
 	return _dynamic_option_id++;
 }*/
+
+uint16_t getMaxClusterAttributesNumber() {
+
+	uint16_t prev_cluster = 0xFFFF;
+	uint16_t desc_counter = 0;
+	uint16_t max_counter = 0;
+
+	for (uint16_t i = 0; 
+			 i < sizeof(zigbee_attributes)/sizeof(zigbee_attributes[0]);
+			 i++) {
+
+		if (zigbee_attributes[i].zigbee_attribute_cluster_id != prev_cluster) {
+			if (prev_cluster != 0xFFFF)
+				log_i(
+			"Cluster %04X, counter %u", prev_cluster, desc_counter);
+			prev_cluster = zigbee_attributes[i].zigbee_attribute_cluster_id;
+			if (desc_counter > max_counter)
+				max_counter = desc_counter;
+			desc_counter = 0;
+		} else desc_counter++;
+	}
+	if (desc_counter > max_counter)
+		max_counter = desc_counter;
+
+	log_i("max counter = %u", max_counter);
+	
+	return max_counter;
+}
+
+uint16_t getMaxTuyaDatapointsNumber() {
+
+	uint16_t prev_desc = 0;
+	uint16_t desc_counter = 0;
+	uint16_t max_counter = 0;
+
+for (uint16_t i = 0; i < sizeof(Tuya_datapoints)/sizeof(Tuya_datapoints[0]);
+			 i++) {
+
+		if (Tuya_datapoints[i].z2s_device_desc_id != prev_desc) {
+			if (prev_desc != 0)
+				log_i("Device id %lu, counter %u", prev_desc, desc_counter);
+			prev_desc = Tuya_datapoints[i].z2s_device_desc_id;
+			if (desc_counter > max_counter)
+				max_counter = desc_counter;
+			desc_counter = 0;
+		} else desc_counter++;
+	}
+	if (desc_counter > max_counter)
+		max_counter = desc_counter;
+
+	log_i("max counter = %u", max_counter);
+
+	return max_counter;
+}
 
 /*****************************************************************************/
 
@@ -2144,7 +2200,9 @@ void buildClustersAttributesTab() {
 
 	}*/
 
-	for (uint8_t i = 0; i < MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS; i++) {
+	max_attribute_id_selector_options = getMaxClusterAttributesNumber();
+
+	for (uint8_t i = 0; i < max_attribute_id_selector_options; i++) {
 			
 		current_option_id = ESPUI.addControl(
 			Control::Type::Option, PSTR("EMPTY ATTRIBUTE ID"), -3, 
@@ -3638,19 +3696,6 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	uint16_t desc_counter = 0;
 	uint16_t total_sum  = 0;
 
-	for (uint16_t i = 0; i < sizeof(Tuya_datapoints)/sizeof(Tuya_datapoints[0]);
-			 i++) {
-
-		if (Tuya_datapoints[i].z2s_device_desc_id != prev_desc) {
-			if (prev_desc != 0)
-				log_i("Device id %lu, counter %u", prev_desc, desc_counter);
-			prev_desc = Tuya_datapoints[i].z2s_device_desc_id;
-			total_sum += desc_counter;
-			desc_counter = 0;
-		} else desc_counter++;
-	}
-	log_i("Tuya datapoints total %u", total_sum);
-
 	uint16_t zigbee_attribute_id = 0;
 	uint16_t prev_cluster = 0xFFFF;
 	prev_desc = 0;
@@ -3675,29 +3720,6 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	}
 	
 	log_i("Attribute values total %u", total_sum);
-
-	zigbee_attribute_id = 0;
-	prev_cluster = 0xFFFF;
-	prev_desc = 0;
-	desc_counter = 0;
-	total_sum = 0;
-
-
-	for (uint16_t i = 0; 
-			 i < sizeof(zigbee_attributes)/sizeof(zigbee_attributes[0]);
-			 i++) {
-
-		if (zigbee_attributes[i].zigbee_attribute_cluster_id != prev_cluster) {
-			if (prev_desc != 0)
-				log_i(
-			"Cluster %04X, counter %u", prev_cluster, desc_counter);
-			prev_cluster = zigbee_attributes[i].zigbee_attribute_cluster_id;
-			total_sum += desc_counter;
-			desc_counter = 0;
-		} else desc_counter++;
-	}
-
-	log_i("Cluster attributes total %u", total_sum);
 }
 
 void Z2S_reloadWebGUI() {
@@ -3963,7 +3985,7 @@ void clusterCallbackCmd() {
 	log_i(
 		"%u attributes added for cluster 0x%04X", attributes_counter, cluster_id);
 
-	for (uint8_t i = attributes_counter; i < MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS;
+	for (uint8_t i = attributes_counter; i < max_attribute_id_selector_options;
 			 i++)
 		ESPUI.updateControlValue(
 				device_attribute_id_selector_first_option_id + i, -2);

@@ -325,6 +325,17 @@ int16_t Z2S_findChannelNumberSlot(int16_t gui_control_id) {
   return -1;
 }
 
+z2s_device_params_t *Z2S_getChannelPtr(int16_t channel_number_slot) {
+
+  if ((channel_number_slot >= 0) && 
+      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) &&
+      z2s_channels_table[channel_number_slot].valid_record) 
+    return (z2s_channels_table + channel_number_slot);
+  else
+    return nullptr;
+
+}
+
 int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id) {
   
   for (uint8_t channels_counter = 0; 

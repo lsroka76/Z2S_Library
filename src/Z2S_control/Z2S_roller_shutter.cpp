@@ -46,6 +46,20 @@ z2s_zb_device_params_t *Supla::Control::Z2S_RollerShutter::getZ2SZbDevice() {
   
 /*****************************************************************************/
 
+void Supla::Control::Z2S_RollerShutter::setZ2SChannel(
+  z2s_device_params_t *z2s_channel) {
+
+    _z2s_channel = z2s_channel;
+  }
+
+/*****************************************************************************/
+
+z2s_device_params_t *Supla::Control::Z2S_RollerShutter::getZ2SChannel() {
+
+    return _z2s_channel;
+}
+  
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::onInit() {
 
@@ -259,8 +273,9 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
-        if (lift_percentage == 100 && _z2s_zb_device)
-          _z2s_zb_device->user_data_flags |= 0x10;
+        if (((lift_percentage == 100) || (lift_percentage == 0)) && 
+            _z2s_channel)
+          _z2s_channel->user_data_flags |= 0x10;
         sendTuyaRequestCmdValue32(
           &zbGateway, &_device, MOES_COVER_STATE_COVER_POSITION_DP, 
           lift_percentage);
