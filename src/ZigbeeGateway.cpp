@@ -1854,7 +1854,7 @@ bool ZigbeeGateway::setClusterReporting(
     //{
       records[0].direction = ESP_ZB_ZCL_REPORT_DIRECTION_SEND, //0x00, //ESP_ZB_ZCL_REPORT_DIRECTION_SEND,
       records[0].attributeID = attribute_id,
-      records[0].attrType = attribute_type, //ESP_ZB_ZCL_ATTR_TYPE_S16,
+      records[0].attrType = attribute_type,
       records[0].min_interval = min_interval,
       records[0].max_interval = max_interval,
       records[0].reportable_change = &report_change,

@@ -276,7 +276,8 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
         if (_z2s_channel) {
           _z2s_channel->user_data_flags |= 0x10; //IGNORE_NEXT_MSG
           _z2s_channel->ignore_next_msg_counter = 2;
-
+        }
+        
         rsStop();
         
         sendTuyaRequestCmdValue32(
