@@ -292,6 +292,8 @@ void initZ2SDeviceElectricityMeter(ZigbeeGateway *gateway,
       log_i("EM channel extended data successfully CREATED");
   }
   
+  printf("Multiplier: %i\n", voltage_multiplier);
+
   Supla_Z2S_ElectricityMeter->setIgnoreZigbeeScaling(ignore_zigbee_scaling);
 
   Supla_Z2S_ElectricityMeter->setCurrentMultiplierModifier(current_multiplier_modifier);
