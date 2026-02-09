@@ -5115,7 +5115,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER,
     .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "LUMI", .model_name = "sensor_smoke.acn03",
+  { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_smoke.acn03",
     .z2s_device_uid = 33300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR,
     .z2s_device_endpoints_count = 1}  
