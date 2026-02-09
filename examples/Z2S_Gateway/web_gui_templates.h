@@ -112,7 +112,8 @@ static constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 	"Gateway + C&A",
 	"Gateway + TCC",
 	"Gateway + C&A + TCC",
-	"Gateway + Devices + Channels"
+	"Gateway + Devices + Channels",
+	"Gateway + Zigbee + Devices + Channels + C&A + TCC"
 };
 
 static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
@@ -1289,6 +1290,12 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	.zigbee_attribute_name = "TEMPERATURE ACCURACY [-1°C...-0.2°C/0.2°C/x100] (TRVZB 1.3.0)"
 	},
 	{
+	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_TRVZB_PID_MODE, 
+	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BITMAP,
+	.zigbee_attribute_name = "PID MODE (TRVZB 1.4.4) - by@LukiSpajder"
+	},
+	{
 	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_AC_CURRENT_ID, 
 	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
@@ -1576,6 +1583,18 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
 		.zigbee_attribute_value_name = "EXTERNAL",
 		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_TRVZB_PID_MODE,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "ON/OFF",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_TRVZB_PID_MODE,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "PID",
+		.zigbee_attribute_value = 0x02
 	},
 	{
 		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_OUTLET_CONTROL_PROTECT_ID,

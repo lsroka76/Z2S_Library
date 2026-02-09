@@ -616,7 +616,7 @@ uint16_t getMaxClusterAttributesNumber() {
 			prev_cluster = zigbee_attributes[i].zigbee_attribute_cluster_id;
 			if (desc_counter > max_counter)
 				max_counter = desc_counter;
-			desc_counter = 0;
+			desc_counter = 1;
 		} else desc_counter++;
 	}
 	if (desc_counter > max_counter)
@@ -642,7 +642,7 @@ for (uint16_t i = 0; i < sizeof(Tuya_datapoints)/sizeof(Tuya_datapoints[0]);
 			prev_desc = Tuya_datapoints[i].z2s_device_desc_id;
 			if (desc_counter > max_counter)
 				max_counter = desc_counter;
-			desc_counter = 0;
+			desc_counter = 1;
 		} else desc_counter++;
 	}
 	if (desc_counter > max_counter)
@@ -3634,6 +3634,18 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_ZIGBEE |
 					GUI_BUILD_CONTROL_FLAG_DEVICES |
 					GUI_BUILD_CONTROL_FLAG_CHANNELS;
+			} break;
+
+
+			case gateway_no_local_actions_mode: {
+
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+					GUI_BUILD_CONTROL_FLAG_DEVICES |
+					GUI_BUILD_CONTROL_FLAG_CHANNELS |
+					GUI_BUILD_CONTROL_FLAG_CA |
+					GUI_BUILD_CONTROL_FLAG_TCC;
 			} break;
 		}
 	}
