@@ -3916,26 +3916,27 @@ void Z2S_onMultistateInputReceive(
       
           if (channel_number_slot >= 0) {
 
-          msgZ2SDeviceRollerShutter(
-            channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
-            0 : 1);
-          
-          if (present_value == 2) {
+            msgZ2SDeviceRollerShutter(
+              channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
+              0 : 1);
+            
+            if (present_value == 2) {
 
-            zbg_device_params_t device = {};
-            device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
-            memcpy(
-              device.ieee_addr, 
-              z2s_channels_table[channel_number_slot].ieee_addr, 
-              sizeof(esp_zb_ieee_addr_t));
-            device.short_addr = 
-              z2s_channels_table[channel_number_slot].short_addr;
-      
-            zbGateway.sendAttributeRead(
-              &device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
+              zbg_device_params_t device = {};
+              device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
+              memcpy(
+                device.ieee_addr, 
+                z2s_channels_table[channel_number_slot].ieee_addr, 
+                sizeof(esp_zb_ieee_addr_t));
+              device.short_addr = 
+                z2s_channels_table[channel_number_slot].short_addr;
+        
+              zbGateway.sendAttributeRead(
+                &device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
+            }
           }
-        }
-      } break;
+        } break;
+      };
     } break;  
   }
 }
