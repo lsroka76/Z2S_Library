@@ -2905,6 +2905,37 @@ void Z2S_onLumiCustomClusterReceive(
           channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, lumi_battery);
       }
 
+/*----------Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1----------*/
+
+      if (z2s_channels_table[channel_number_slot].model_id == 
+            Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1) {
+
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+          NO_CUSTOM_CMD_SID);
+        
+        if (channel_number_slot >=0) {
+
+          uint8_t lumi_rsd_battery_position = scanLumiPayload(
+            LUMI_ATTRIBUTE_RSD_BATTERY_ID, ESP_ZB_ZCL_ATTR_TYPE_U8,
+              attribute->data.size, (uint8_t*)attribute->data.value);
+
+          if (lumi_rsd_battery_position > 0) {
+
+            uint8_t lumi_rsd_battery = 
+              (*(uint8_t*)(attribute->data.value + lumi_battery_position));
+
+            updateSuplaBatteryLevel(
+              channel_number_slot, ZBD_BATTERY_PERCENTAGE_MSG, 
+              lumi_rsd_battery * 2);
+          }
+          return;
+        }
+        return;
+      }
+
+/*----------Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR----------*/
+
       if (z2s_channels_table[channel_number_slot].model_id == 
             Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR) {
 
@@ -3085,6 +3116,31 @@ void Z2S_onLumiCustomClusterReceive(
     } break;
 
 
+    case 0x409: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+
+      if (channel_number_slot < 0) {
+    
+        log_e("no channel found for address %s", ieee_addr_str);
+        return;
+      }
+
+      bool is_charging = ((*(uint8_t*)attribute->data.value) == 1);
+
+      auto element = Supla::Element::getElementByChannelNumber(
+        z2s_channels_table[channel_number_slot].Supla_channel);
+ 
+      if (element) {
+
+        log_i("is_charging %u", is_charging);
+        
+        element->getChannel()->setBatteryPowered(is_charging);
+      }
+    }break;
+
+
     case LUMI_CUSTOM_CLUSTER_ILLUMINANCE_ID: {
 
       /*int16_t channel_number_slot = Z2S_findChannelNumberSlot(
@@ -3138,9 +3194,9 @@ void Z2S_onLumiCustomClusterReceive(
     case LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID: {
 
       int16_t channel_number_slot = 
-        Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
-                                  SUPLA_CHANNELTYPE_HVAC, 
-                                  NO_CUSTOM_CMD_SID);    
+        Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
+          NO_CUSTOM_CMD_SID);    
                                   
       if (channel_number_slot < 0) {
     
@@ -3878,13 +3934,12 @@ void Z2S_onMultistateInputReceive(
         ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, 
-    SUPLA_CHANNELTYPE_ACTIONTRIGGER, NO_CUSTOM_CMD_SID);
+    ieee_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
     
-    log_e("no action trigger channel found for address %s", ieee_addr_str);
-    //return;
+    log_e("no channel found for address %s", ieee_addr_str);
+    return;
   }
 
   if (attribute->data.value == nullptr) {
@@ -4008,7 +4063,7 @@ void Z2S_onAnalogInputReceive(
               "no RollerShutter channel found for address %s", ieee_addr_str);
             return;
           }       
-          uint16_t lift_percentage = *(float *)attribute->data.value;
+          uint16_t lift_percentage = 100 - (*(float *)attribute->data.value);
           msgZ2SDeviceRollerShutter(
             channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
             lift_percentage);

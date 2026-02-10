@@ -1,0 +1,1859 @@
+[     1][V][ZigbeeEP.cpp:22] ZigbeeEP(): Endpoint: 1
+=========== Before Setup Start ===========
+Chip Info:
+------------------------------------------
+  Model             : ESP32-C6
+  Package           : 0
+  Revision          : 0.01
+  Cores             : 1
+  CPU Frequency     : 160 MHz
+  XTAL Frequency    : 40 MHz
+  Features Bitfield : 0x00000052
+  Embedded Flash    : No
+  Embedded PSRAM    : No
+  2.4GHz WiFi       : Yes
+  Classic BT        : No
+  BT Low Energy     : Yes
+  IEEE 802.15.4     : Yes
+------------------------------------------
+INTERNAL Memory Info:
+------------------------------------------
+  Total Size        :   357212 B ( 348.8 KB)
+  Free Bytes        :   306488 B ( 299.3 KB)
+  Allocated Bytes   :    37804 B (  36.9 KB)
+  Minimum Free Bytes:   301500 B ( 294.4 KB)
+  Largest Free Block:   278516 B ( 272.0 KB)
+------------------------------------------
+Flash Info:
+------------------------------------------
+  Chip Size         : 16777216 B (16 MB)
+  Block Size        :    65536 B (  64.0 KB)
+  Sector Size       :     4096 B (   4.0 KB)
+  Page Size         :      256 B (   0.2 KB)
+  Bus Speed         : 80 MHz
+  Flash Frequency   : 80 MHz (source: 80 MHz, divider: 1)
+  Bus Mode          : QIO
+------------------------------------------
+Partitions Info:
+------------------------------------------
+                nvs : addr: 0x00009000, size:    20.0 KB, type: DATA, subtype: NVS
+            otadata : addr: 0x0000E000, size:     8.0 KB, type: DATA, subtype: OTA
+               app0 : addr: 0x00010000, size:  3328.0 KB, type:  APP, subtype: OTA_0
+               app1 : addr: 0x00350000, size:  3328.0 KB, type:  APP, subtype: OTA_1
+             spiffs : addr: 0x00690000, size:  1384.0 KB, type: DATA, subtype: SPIFFS
+         zb_storage : addr: 0x007EA000, size:    16.0 KB, type: DATA, subtype: FAT
+             zb_fct : addr: 0x007EE000, size:     4.0 KB, type: DATA, subtype: FAT
+             rcp_fw : addr: 0x007EF000, size:     4.0 KB, type: DATA, subtype: SPIFFS
+           coredump : addr: 0x007F0000, size:    64.0 KB, type: DATA, subtype: COREDUMP
+------------------------------------------
+Software Info:
+------------------------------------------
+  Compile Date/Time : Jan 25 2026 21:53:02
+  Compile Host OS   : windows
+  ESP-IDF Version   : v5.5.2-249-gf56bea3d1f
+  Arduino Version   : 3.3.6
+------------------------------------------
+Board Info:
+------------------------------------------
+  Arduino Board     : ESP32C6_DEV
+  Arduino Variant   : esp32c6
+  Arduino FQBN      : esp32:esp32:esp32c6:UploadSpeed=921600,CDCOnBoot=cdc,CPUFreq=160,FlashFreq=80,FlashMode=qio,FlashSize=8M,PartitionScheme=zigbee_zczr_8MB,DebugLevel=verbose,EraseFlash=none,JTAGAdapter=default,ZigbeeMode=zczr_debug
+============ Before Setup End ============
+[   397][V][esp32-hal-periman.c:251] perimanClearBusDeinit(): Deinit function for type UART_RX (2) cleared
+[   397][V][esp32-hal-periman.c:251] perimanClearBusDeinit(): Deinit function for type UART_TX (3) cleared
+[   398][V][esp32-hal-periman.c:251] perimanClearBusDeinit(): Deinit function for type UART_CTS (4) cleared
+[   398][V][esp32-hal-periman.c:251] perimanClearBusDeinit(): Deinit function for type UART_RTS (5) cleared
+[   399][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 17 successfully set to type UART_RX (2) with bus 0x40816e50
+[   399][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type UART_RX (2) successfully set to 0x42096bda
+[   400][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 16 successfully set to type UART_TX (3) with bus 0x40816e50
+[   401][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type UART_TX (3) successfully set to 0x42096aa0
+[   401][I][Z2S_Gateway.ino:456] setup(): setup start
+[   401][I][z2s_devices_table.cpp:9411] printSizeOfClasses(): 
+
+Relay 136 - VirtualRelay 136 - Z2S_VirtualRelay 192
+
+HvacBase 1032 - HvacBaseEE 1040 - Z2S_trv_interface 224
+
+VirtualSceneSwitch 144
+
+GPM 184
+
+IPAddress 28
+
+NetworkServer 44
+
+NetworkClient 52
+
+ZigbeeGateway 248
+[   422][I][Z2S_Gateway.ino:485] setup(): Sanity check time 19
+[   422][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type GPIO (1) successfully set to 0x42093ccc
+[   423][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 9 successfully set to type GPIO (1) with bus 0xa
+[   423][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type GPIO (1) successfully set to 0x42093ccc
+[   424][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 3 successfully set to type GPIO (1) with bus 0x4
+[   424][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type GPIO (1) successfully set to 0x42093ccc
+[   425][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 14 successfully set to type GPIO (1) with bus 0xf
+Storage initialization
+readStorage: 8; Read: [53 55 50 4C 41 1 0 1 ]
+Storage: Number of sections 1
+Reading section: 0
+readStorage: 7; Read: [3 10 0 93 44 93 44 ]
+Section type: 3; size: 16
+storedCRC 17555, CRC calc 17555
+LittleFsConfig: file "/supla-dev.cfg" size 667
+LittleFsConfig: initializing storage from file...
+LittleFsConfig: init result success
+LittleFsConfig: writing to file "/supla-dev.cfg"
+LittleFsConfig: writing to file "/supla-dev.cfg.bak"
+Channel[110] initial caption set to 'Gateway sensors notifications'
+Button[0] setHoldTime: 2000
+Button[0] setMulticlickTime: 500
+Button[0]::configureAsConfigButton
+Button[0] setHoldTime: 5000
+Button[0] setMulticlickTime: 300
+Listing directory: /
+  FILE: supla-dev.cfg.bak  SIZE: 667 LAST WRITE: 1970-01-01 00:00:00
+  FILE: supla-dev.cfg  SIZE: 667 LAST WRITE: 1970-01-01 00:00:00
+  DIR : z2s_gatewayLAST WRITE: 1969-12-31 23:59:59
+Listing directory: /z2s_gateway
+  FILE: actions_index_table.z2s  SIZE: 32 LAST WRITE: 1970-01-01 00:00:02
+  FILE: channels_table_v2.bak  SIZE: 15360 LAST WRITE: 2026-02-10 11:08:49
+  FILE: channels_table_v2.z2s  SIZE: 15360 LAST WRITE: 2026-02-10 11:08:49
+  FILE: zb_devices_table_v2.z2s  SIZE: 3840 LAST WRITE: 2026-02-10 11:08:49
+Listing directory: /
+  FILE: supla-dev.cfg.bak  SIZE: 667 LAST WRITE: 1970-01-01 00:00:00
+  FILE: supla-dev.cfg  SIZE: 667 LAST WRITE: 1970-01-01 00:00:00
+  DIR : z2s_gatewayLAST WRITE: 1969-12-31 23:59:59
+Listing directory: /z2s_gateway
+  FILE: actions_index_table.z2s  SIZE: 32 LAST WRITE: 1970-01-01 00:00:02
+  FILE: channels_table_v2.bak  SIZE: 15360 LAST WRITE: 2026-02-10 11:08:49
+  FILE: channels_table_v2.z2s  SIZE: 15360 LAST WRITE: 2026-02-10 11:08:49
+  FILE: zb_devices_table_v2.z2s  SIZE: 3840 LAST WRITE: 2026-02-10 11:08:49
+[   643][I][z2s_devices_table.cpp:1183] Z2S_loadZbDevicesTable(): 
+
+Z2S_getZbDevicesTableSize 3840
+
+sizeof(z2s_zb_devices_table) 3840
+
+sizeof(z2s_zb_device_params_t) 120
+
+sizeof(bool)1
+[   658][I][z2s_devices_table.cpp:1439] Z2S_loadZbDevicesTable(): Zigbee devices table load success!
+[   659][I][z2s_devices_table.cpp:955] Z2S_updateZbDeviceUidIdx(): Syncing flags for model 0x4851
+[   660][I][z2s_devices_table.cpp:973] Z2S_updateZbDeviceUidIdx(): device uid = 30450, devices list index = 539
+[   660][I][z2s_devices_table.cpp:495] Z2S_loadChannelsTable(): Z2S_getChannelsTableSize 15360, sizeof(z2s_channels_table) 15360, sizeof(z2s_device_params_t) 120, sizeof(bool)1
+[   678][I][z2s_devices_table.cpp:658] Z2S_loadChannelsTable(): Channels table load success!
+[   678][I][z2s_devices_table.cpp:1056] Z2S_addZbDeviceTableSlot(): ZB device already in ZB devices table
+[   679][I][z2s_devices_table.cpp:955] Z2S_updateZbDeviceUidIdx(): Syncing flags for model 0x4851
+[   680][I][z2s_devices_table.cpp:973] Z2S_updateZbDeviceUidIdx(): device uid = 30450, devices list index = 539
+[   680][I][z2s_devices_table.cpp:1721] Z2S_initSuplaChannels(): initSuplaChannels starting
+Channel[0] initial caption set to 'CURTAIN DRIVER'
+[   681][I][z2s_devices_table.cpp:1837] Z2S_initSuplaChannels(): Registering channel #0 to subdevice #1
+[   681][I][Z2S_Gateway.ino:587] setup(): Z2S_REBUILD_CHANNELS_ON_START not configured - turning off
+[   682][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16418, action 0
+[   683][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16433, action 0
+[   697][I][z2s_devices_table.cpp:1908] Z2S_loadActionsIndexTable(): Zigbee<=>Supla actions index table load SUCCESS!
+[   697][I][z2s_devices_table.cpp:2111] Z2S_initSuplaActions(): actions number: 0
+[   698][D][ZigbeeCore.cpp:110] addGatewayEndpoint(): Endpoint: 1, Device ID: 0x0050
+[   698][I][Z2S_Gateway.ino:634] setup(): Z2S_ENABLE_GUI_ON_START_V2 = 4
+[   699][I][Z2S_Gateway.ino:651] setup(): Z2S_FORCE_CONFIG_ON_START = 0
+[   699][I][Z2S_Gateway.ino:665] setup(): Z2S_GUI_ON_START_DELAY_V2 = 10 s
+[   699][I][Z2S_Gateway.ino:682] setup(): Z2S_GATEWAY_MDNS_LOCAL_NAME = test_js
+[   700][I][Z2S_Gateway.ino:697] setup(): Z2S_USE_NEW_AT_MODEL not configured - turning on
+SD: initial mode: Start in cfg mode (legacy, deprected)
+[   701][V][NetworkServer.h:41] NetworkServer(): NetworkServer::NetworkServer(port=80, ...)
+[   701][V][WebServer.cpp:49] WebServer(): WebServer::Webserver(port=80)
+ *** Supla - starting initialization (platform 0)
+SD: add flag DEVICE_CONFIG_SUPPORTED
+SD: add flag CALCFG_RESTART_DEVICE
+ *** Supla - Config initalization
+SD: add flag CALCFG_ENTER_CFG_MODE
+SD: add flag CALCFG_FACTORY_RESET_SUPPORTED
+Automatic firmware update is disabled
+Device mode: 0
+Security level: Supla CA
+ *** Supla - Config load for elements
+SD: add flag CALCFG_IDENTIFY_DEVICE
+RemoteDeviceConfig: Registering field 0x000000001
+RemoteDeviceConfig: Registering field 0x000000010
+Clock: automaticTimeSync: 1
+Channel[110] function missing. Using SW defaults
+Button[0] don't load config
+PowerCycle: 0 (enabled)
+Channel[0] function missing. Using SW defaults
+RS[0] rsConfig: motor: normal (1), button: normal (1), time margin: -1, visualization: 0
+ *** Supla - Config load for elements done
+ *** Supla - Load state storage
+Validating storage state section with current device configuration
+Storage state section validation successful
+readStorage: 1; Read: [6E ]
+readStorage: 4; Read: [0 0 0 0 ]
+readStorage: 1; Read: [0 ]
+Relay[110] restored relay state: OFF
+Relay[110] restored remaining countdown timer durationMs: 0
+readStorage: 1; Read: [0 ]
+readStorage: 9; Read: [0 0 0 0 0 0 0 0 5E ]
+RS[0] settings restored from storage. Opening time: 0 ms; closing time: 0 ms. Position: 9400
+ *** Supla - Load state storage done
+ *** Supla - Init elements
+[   706][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[   706][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type RMT_TX (10) successfully set to 0x42095670
+[   707][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type RMT_RX (11) successfully set to 0x42095670
+[   708][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type RMT_TX (10) with bus 0x40833e34
+[   709][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[   709][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+[   710][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type GPIO (1) successfully set to 0x42093ccc
+[   711][V][esp32-hal-rmt.c:142] _rmtDetachBus(): Detaching RMT GPIO Bus
+[   711][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type INIT (0) with bus 0x0
+[   712][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type GPIO (1) with bus 0x9
+VRelay[110] turn OFF (duration 0 ms)
+VRelay[110] turn OFF (duration 0 ms)
+Relay[110] init done, storedTurnOnDurationMs 0
+Button[0]: Initialized: pin 9, pullUp 1, invertLogic 1, state 1
+ *** Supla - Init elements done
+GUID: 338A3AF6BD057663FD8991FAF4E5236F
+Device name: Zigbee <=> Supla Gateway
+Device software version: Z2S-1.4.19-10/02/26
+ *** Supla - Initializing network layer
+[Wi-Fi] Network AP/hostname: SUPLA-ZIGBEE-GATE-404CCA5E87B8
+Using Supla protocol version 28
+[   714][I][Z2S_Gateway.ino:160] supla_callback_bridge(): event(0x23), action(0x4010)
+[   714][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16393, action 0
+[   715][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 35, action 24576
+Current status: [5] SuplaDevice initialized
+Enter normal mode
+[Wi-Fi] setNormalMode
+ *** Supla - Initialization done
+ *** Self-test ***
+TEST: ManufacturerID is 0
+TEST failed: ProductID is empty
+TEST failed: missing public RSA key
+TEST failed: automatic firmware update is disabled
+TEST failed: config encryption is disabled
+TEST failed: invalid certificates format
+TEST failed: security log is disabled
+TEST failed: initial mode is set to config mode
+ *** Self-test done ***
+=========== After Setup Start ============
+INTERNAL Memory Info:
+------------------------------------------
+  Total Size        :   357212 B ( 348.8 KB)
+  Free Bytes        :   297944 B ( 291.0 KB)
+  Allocated Bytes   :    43940 B (  42.9 KB)
+  Minimum Free Bytes:   291368 B ( 284.5 KB)
+  Largest Free Block:   278516 B ( 272.0 KB)
+------------------------------------------
+GPIO Info:
+------------------------------------------
+  GPIO : BUS_TYPE[bus/unit][chan]
+  --------------------------------------  
+     3 : GPIO
+     8 : GPIO
+     9 : GPIO
+    12 : USB_DM
+    13 : USB_DP
+    14 : GPIO
+    16 : UART_TX[0]
+    17 : UART_RX[0]
+============ After Setup End =============
+[   743][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[   743][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type RMT_TX (10) successfully set to 0x42095670
+[   744][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type RMT_RX (11) successfully set to 0x42095670
+[   745][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type INIT (0) with bus 0x0
+[   746][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type RMT_TX (10) with bus 0x40834200
+[   747][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[   747][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+LittleFsConfig: writing to file "/supla-dev.cfg"
+LittleFsConfig: writing to file "/supla-dev.cfg.bak"
+Channel(0) value changed to 94
+WiFi: establishing connection with SSID: "THE_TEMPEST_2GEXT"
+[   817][V][NetworkEvents.cpp:120] _checkForEvent(): Network Event: 101 - WIFI_READY
+[   914][V][STA.cpp:186] _onStaEvent(): STA Started
+[   914][V][NetworkEvents.cpp:120] _checkForEvent(): Network Event: 110 - STA_START
+[   915][V][STA.cpp:110] _onStaArduinoEvent(): Arduino STA Event: 110 - STA_START
+[  1257][V][STA.cpp:206] _onStaEvent(): STA Connected: SSID: THE_TEMPEST_2GEXT, BSSID: 12:0f:a1:96:5c:4b, Channel: 11, Auth: WPA3_PSK
+[  1258][V][NetworkEvents.cpp:120] _checkForEvent(): Network Event: 112 - STA_CONNECTED
+[  1259][V][STA.cpp:110] _onStaArduinoEvent(): Arduino STA Event: 112 - STA_CONNECTED
+[  2386][V][NetworkInterface.cpp:79] _onIpEvent(): sta Got New IP: 172.29.179.243 MASK: 255.255.255.0 GW: 172.29.179.91
+[  2387][V][NetworkEvents.cpp:120] _checkForEvent(): Network Event: 115 - STA_GOT_IP
+[  2387][V][STA.cpp:110] _onStaArduinoEvent(): Arduino STA Event: 115 - STA_GOT_IP
+[  2388][V][STA.cpp:171] _onStaArduinoEvent(): STA IP: 172.29.179.243, MASK: 255.255.255.0, GW: 172.29.179.91
+Connected BSSID: 12:0F:A1:96:5C:4B
+local IP: 172.29.179.243
+subnetMask: 255.255.255.0
+gatewayIP: 172.29.179.91
+Signal strength (RSSI): -43 dBm
+Establishing encrypted connection with: svr3.supla.org (port: 2016)
+[  2427][D][NetworkManager.cpp:83] hostByName(): Clearing DNS cache
+[  2753][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[  2753][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[  2754][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+[  2809][D][NetworkManager.cpp:127] hostByName(): DNS found IPv4 135.181.25.1
+[  2810][V][ssl_client.cpp:68] start_ssl_client(): Free internal heap before TLS 239008
+[  2810][V][ssl_client.cpp:75] start_ssl_client(): Starting socket (domain 2)
+[  3764][V][ssl_client.cpp:170] start_ssl_client(): Seeding the random number generator
+[  3769][V][ssl_client.cpp:178] start_ssl_client(): Setting up the SSL/TLS structure...
+[  3770][V][ssl_client.cpp:198] start_ssl_client(): Loading CA cert
+[  3778][V][ssl_client.cpp:293] start_ssl_client(): Setting hostname for TLS session...
+[  3779][V][ssl_client.cpp:314] ssl_starttls_handshake(): Performing the SSL/TLS handshake...
+[  4763][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[  4763][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[  4764][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+[  4852][V][ssl_client.cpp:335] ssl_starttls_handshake(): Verifying peer X.509 certificate...
+[  4853][V][ssl_client.cpp:343] ssl_starttls_handshake(): Certificate verified.
+[  4853][V][ssl_client.cpp:359] ssl_starttls_handshake(): Free internal heap after TLS 200412
+Connected via IP 172.29.179.243
+SSL error: 48, UNKNOWN ERROR CODE (0030)
+LAST STATE ADDED: UNKNOWN ERROR CODE (0030)
+Connected to Supla Server
+Initializing SRPC (proto: 28)
+LAST STATE ADDED: Register in progress
+[  4855][I][Z2S_Gateway.ino:160] supla_callback_bridge(): event(0x23), action(0x4010)
+[  4855][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 35, action 24576
+Current status: [10] Register in progress
+Send: [53 55 50 4C 41 1B 01 00 00 00 4C 00 00 00 90 02 00 00 6C 2E 73 72 6F 6B 61 40 67 6D 61 69 6C 2E 63 6F 6D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 AC 6B 76 D0 35 1C FA 49 AA 04 FA 3B 0F BC B2 A1 33 8A 3A F6 BD 05 76 63 FD 89 91 FA F4 E5 23 6F 5A 69 67 62 65 65 20 3C 3D 3E 20 53 75 70 6C 61 20 47 61 74 65 77 61 79 00 00 00 00 00 00 00 00 00 00 ]
+CH[110], subDevId: 0, type: 2900, FuncList: 0xEF, function: 130, flags: 0x009010000, online, validityTimeSec: 0, icon: 0, value: [00 00 00 00 00 00 00 00]
+Send: [6E 54 0B 00 00 EF 00 00 00 82 00 00 00 00 00 01 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ]
+CH[0], subDevId: 1, type: 2900, FuncList: 0x2E08010, function: 110, flags: 0x008010200, online, validityTimeSec: 0, icon: 0, value: [5e 00 00 00 00 00 00 00]
+Send: [00 54 0B 00 00 10 80 E0 02 6E 00 00 00 00 02 01 08 00 00 00 00 00 00 00 00 00 5E 00 00 00 00 00 00 00 00 01 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 01 00 00 00 46 00 00 00 07 00 00 00 03 00 00 00 78 1C 01 53 55 50 4C 41 ]
+Device registered (activity timeout 120 s, server version: 28, server min version: 1)
+LAST STATE ADDED: Registered and ready
+[  5029][I][Z2S_Gateway.ino:160] supla_callback_bridge(): event(0x23), action(0x4010)
+[  5030][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16400, action 0
+[  5030][I][Z2S_Gateway.ino:207] supla_callback_bridge(): Starting Zigbee subsystem
+[  5031][D][ZigbeeCore.cpp:180] zigbeeInit(): Initialize Zigbee stack
+[  5034][D][ZigbeeCore.cpp:187] zigbeeInit(): Register all Zigbee EPs in list
+[  5042][I][ZigbeeCore.cpp:195] zigbeeInit(): List of registered Zigbee EPs:
+[  5043][I][ZigbeeCore.cpp:199] zigbeeInit(): Device type: Home Gateway, Endpoint: 1, Device ID: 0x0050
+[  5058][V][ZigbeeCore.cpp:492] esp_zb_app_signal_handler(): ZDO signal: ZDO Config Ready (0x17), status: ESP_FAIL
+[  5059][I][ZigbeeCore.cpp:296] esp_zb_app_signal_handler(): Zigbee stack initialized
+[  5065][I][ZigbeeCore.cpp:442] esp_zb_app_signal_handler(): Network(0x046f) closed, devices joining not allowed.
+[  5066][I][Z2S_Gateway.ino:305] Z2S_onOpenNetwork(): Network closed
+[  5066][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[  5067][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[  5067][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+[  5068][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16418, action 0
+[  5071][I][ZigbeeCore.cpp:302] esp_zb_app_signal_handler(): Device started up in non factory-reset mode
+[  5072][I][ZigbeeCore.cpp:315] esp_zb_app_signal_handler(): Device rebooted
+[  5072][D][ZigbeeCore.cpp:667] searchBindings(): Requesting binding table for address 0x0000
+[  5073][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[  5074][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 0, src_endpoint: 0, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 0, cluster_id: 0x0033, asdu_length: 2
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x0000
+
+APSDE INDICATION - profile_id: 0x0000, security_status: 0, lqi: 0, rx_time: 0
+[  5076][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[  5077][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 0, src_endpoint: 0, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 0, cluster_id: 0x8033, asdu_length: 5
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x0000
+
+APSDE INDICATION - profile_id: 0x0000, security_status: 0, lqi: 0, rx_time: 0
+[  5079][D][ZigbeeCore.cpp:596] bindingTableCb(): Binding table callback for address 0x0000 with status 0
+[  5079][D][ZigbeeCore.cpp:599] bindingTableCb(): Binding table info: total 0, index 0, count 0
+[  5080][D][ZigbeeCore.cpp:605] bindingTableCb(): No binding table entries found
+[  5081][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16416, action 0
+- Telnet: [  5082][V][NetworkServer.h:41] NetworkServer(): NetworkServer::NetworkServer(port=23, ...)
+Telnet running
+[  5086][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 35, action 24576
+Current status: [17] Registered and ready
+Changing activity timeout to 30 s
+Send: [53 55 50 4C 41 1B 02 00 00 00 D2 00 00 00 01 00 00 00 1E ]
+Send: [53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 03 00 00 00 E0 01 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Relay[110] updating timer value: remainingTime=0 state=0
+SRPC sending: remaining time 0, channel 110, state 0
+Send: [53 55 50 4C 41 1B 04 00 00 00 69 00 00 00 E3 00 00 00 6E 32 DD 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 05 00 00 00 80 02 00 00 17 00 00 00 00 00 00 00 0F 00 00 00 43 55 52 54 41 49 4E 20 44 52 49 56 45 52 00 ]
+Send: [53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 06 00 00 00 80 02 00 00 26 00 00 00 6E 00 00 00 1E 00 00 00 47 61 74 65 77 61 79 20 73 65 6E 73 6F 72 73 20 6E 6F 74 69 66 69 63 61 74 69 6F 6E 73 00 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 02 00 00 00 AD 02 00 00 1D 00 00 00 01 00 00 00 00 00 00 00 00 11 00 00 00 00 00 00 00 11 00 00 00 00 00 00 00 02 00 00 01 53 55 50 4C 41 ]
+Received new device config
+Processing StatusLed config
+Processing AutomaticTimeSync config
+Sending device config result OK (1)
+Send: [53 55 50 4C 41 1B 07 00 00 00 B7 02 00 00 0A 00 00 00 01 00 00 00 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 03 00 00 00 AA 02 00 00 34 00 00 00 00 6E 00 00 00 00 2C 00 00 00 00 00 00 00 00 00 01 01 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 53 55 50 4C 41 ]
+Channel[0] Received SetChannelConfig: fnc 110, config type 0, config size 44
+Channel[0] handleChannelConfig, func 110, configtype 0, configsize 44
+RS[0] applyChannelConfig, func 110, configtype 0, configsize 44
+RS[0] set target position: -5, tilt: -1
+RS[0] rsConfig: motor: normal (1), button: normal (1), time margin: -1, visualization: 0
+Channel[0] ConfigType 0 applied
+Channel[0] Sending SetChannelConfigResult OK (1)
+Send: [53 55 50 4C 41 1B 08 00 00 00 B4 02 00 00 03 00 00 00 01 00 00 ]
+[  5223][I][Z2S_roller_shutter.cpp:366] onTimer(): newTargetPositionAvailable = STOP_POSITION
+[  5223][I][ZigbeeGateway.cpp:2255] sendAttributeWrite(): Sending 'write attribute' command - id (0x55), type (0x21), size (0x2), value (0x2)
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 04 00 00 00 AB 02 00 00 01 00 00 00 00 53 55 50 4C 41 ]
+Channel[0] Received ChannelConfigFinished
+Recv: [53 55 50 4C 41 1B 05 00 00 00 AA 02 00 00 32 00 00 00 6E 82 00 00 00 00 2A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 53 55 50 4C 41 ]
+Channel[110] Received SetChannelConfig: fnc 130, config type 0, config size 42
+Channel[110] handleChannelConfig, func 130, configtype 0, configsize 42
+Relay[110] applyChannelConfig, func 130, configtype 0, configsize 42
+Relay[110] OvercurrentMaxAllowed: 0, OvercurrentThreshold: 0
+Channel[110] ConfigType 0 applied
+Channel[110] Sending SetChannelConfigResult OK (1)
+Send: [53 55 50 4C 41 1B 09 00 00 00 B4 02 00 00 03 00 00 00 01 00 6E ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 06 00 00 00 AB 02 00 00 01 00 00 00 6E 53 55 50 4C 41 ]
+Channel[110] Received ChannelConfigFinished
+Recv: [53 55 50 4C 41 1B 07 00 00 00 DC 00 00 00 03 00 00 00 1E 0A F0 53 55 50 4C 41 ]
+Activity timeout set to 30 s
+Recv: [53 55 50 4C 41 1B 08 00 00 00 EA 01 00 00 1A 00 00 00 EA 07 02 0A 03 13 2F 10 0E 00 00 00 45 75 72 6F 70 65 2F 57 61 72 73 61 77 00 53 55 50 4C 41 ]
+Clock: current time: 1970-01-01 00:00:05
+Clock: time diff (system-new): -1770752831 s
+Clock: new time: 2026-02-10 19:47:16
+Recv: [53 55 50 4C 41 1B 09 00 00 00 8A 02 00 00 18 00 00 00 00 00 00 00 1A 0F 00 00 00 43 55 52 54 41 49 4E 20 44 52 49 56 45 52 00 53 55 50 4C 41 ]
+Channel[0] Receieved setChannelCaptionResult
+Recv: [53 55 50 4C 41 1B 0A 00 00 00 8A 02 00 00 27 00 00 00 6E 00 00 00 1A 1E 00 00 00 47 61 74 65 77 61 79 20 73 65 6E 73 6F 72 73 20 6E 6F 74 69 66 69 63 61 74 69 6F 6E 73 00 53 55 50 4C 41 ]
+Channel[110] Receieved setChannelCaptionResult
+ZB_TRACE_LOG[0]: nwk/nwk_cr_join.c:281    rejoin req tbl is full (1) or bad request - drop req
+LittleFsConfig: writing to file "/supla-dev.cfg"
+LittleFsConfig: writing to file "/supla-dev.cfg.bak"
+[  9423][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[  9424][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 26, cluster_id: 0x0000, asdu_length: 19
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 5, rx_time: 0
+[  9426][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0x0, command id: 10
+[  9426][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[  9427][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[  9427][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[  9428][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 20 size: 14
+[  9428][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x06 
+[  9429][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[  9429][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x42 
+[  9429][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0A 
+[  9430][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x30 
+[  9430][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x39 
+[  9430][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x2D 
+[  9430][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x31 
+[  9431][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[  9431][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x2D 
+[  9432][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[  9432][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x30 
+[  9432][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[  9433][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x33 
+[  9433][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[  9434][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0x0, cmd id 0xa
+[  9434][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[  9435][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[  9436][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[  9436][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0x0)
+[  9437][I][ZigbeeGateway.cpp:760] zbReadBasicCluster(): attribute reporting with short address(0x1909), updating IEEE address
+[  9437][I][ZigbeeGateway.cpp:764] zbReadBasicCluster(): Basic cluster: attribute(0x06), type (0x42), size (0x0B)
+[  9438][I][z2s_devices_table.cpp:3264] Z2S_onBasicReceive(): 54:EF:44:10:00:BE:16:62, short address 0x1909 endpoint 0x1, attribute id 0x6, size 11
+[ 10523][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 10523][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 15, cluster_id: 0x000a, asdu_length: 7
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 15, rx_time: 0
+[ 10525][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xa, command id: 0
+[ 10525][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 10526][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 0
+[ 10526][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x0
+[ 10527][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 3 size: 4
+[ 10527][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 10528][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 10528][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x02 
+[ 10528][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 10528][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 10529][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xa, cmd id 0x0
+[ 10530][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 10530][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+PowerCycle: timeout, counter reset to 0
+[ 11000][I][z2s_web_gui.cpp:3634] Z2S_buildWebGUI():  GUI building STARTED...
+[ 11001][I][z2s_web_gui.cpp:954] fillGatewayGeneralnformation(): Device information <b><i>Supla firmware:</i></b> <i>Z2S-1.4.19-10/02/26</i><br><br><b><i>Supla GUID:</i></b> <i>338A3AF6BD057663FD8991FAF4E5236F</i><br><br><b><i>Z2S Gateway version:</i></b> <i>Z2S-1.4.19-10/02/26</i><br><br><b><i>Network extended PAN ID:</i></b> <i>40:4C:CA:FF:FE:5E:87:B8</i><br><br>
+[ 11004][I][z2s_web_gui.cpp:979] fillMemoryUptimeInformation(): Memory & uptime information <b><i>Flash chip real size:</b></i> 16777216 B <b>| <i>Free Sketch Space:</b></i> 3407872 B<br><b><i>HeapSize:</b></i> 357212 B <b>| <i>FreeHeap:</b></i> 140004 B <b>| <i>MinimalFreeHeap:</b></i> 110000 B <b>| <i>MaxAllocHeap:</b></i> 122868 B<br><b><i>uxTaskGetStackHighWaterMark:</b></i> 3000 B <br><b><i>Total PSRAM:</b></i> 0 B <b>| <i>Free PSRAM:</b></i> 0 B<br><br><b><i>Local time:</i></b> Tue Feb 10 19:47:21 2026
+<b><i>Supla uptime:</i></b> 11 s
+[ 11023][I][z2s_web_gui.cpp:3544] buildActionsTabGUI(): Supla_actions 264, Supla_events 432
+[ 11029][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0001, counter 2
+[ 11030][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0006, counter 11
+[ 11030][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0008, counter 1
+[ 11031][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0020, counter 4
+[ 11031][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0102, counter 10
+[ 11032][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0201, counter 6
+[ 11032][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0204, counter 2
+[ 11033][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0300, counter 7
+[ 11033][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0400, counter 3
+[ 11034][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0402, counter 3
+[ 11034][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0403, counter 3
+[ 11035][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0404, counter 3
+[ 11035][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0405, counter 3
+[ 11036][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0406, counter 5
+[ 11036][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0500, counter 7
+[ 11037][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0502, counter 4
+[ 11037][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0702, counter 6
+[ 11038][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0B04, counter 14
+[ 11039][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster E001, counter 3
+[ 11040][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster FC11, counter 25
+[ 11040][I][z2s_web_gui.cpp:633] getMaxClusterAttributesNumber(): max counter = 25
+[ 11042][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 16387, cluster 0006, counter 4
+[ 11043][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 32770, cluster 0006, counter 3
+[ 11043][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 32769, cluster 0006, counter 3
+[ 11044][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 20480, cluster 0006, counter 2
+[ 11045][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 61441, cluster 0102, counter 2
+[ 11045][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 61442, cluster 0102, counter 2
+[ 11046][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 53264, cluster E001, counter 3
+[ 11047][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 53280, cluster E001, counter 2
+[ 11047][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 53296, cluster E001, counter 3
+[ 11048][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 18, cluster FC11, counter 2
+[ 11049][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 24576, cluster FC11, counter 2
+[ 11049][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 24590, cluster FC11, counter 2
+[ 11050][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 24599, cluster FC11, counter 2
+[ 11050][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 28679, cluster FC11, counter 2
+[ 11051][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 7, cluster FC11, counter 2
+[ 11052][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 512, cluster FCC0, counter 2
+[ 11052][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 1303, cluster FCC0, counter 4
+[ 11053][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 515, cluster FCC0, counter 2
+[ 11054][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 514, cluster FCC0, counter 2
+[ 11054][I][z2s_web_gui.cpp:666] getMaxAttributeValuesNumber(): max counter = 4
+[ 11059][I][z2s_web_gui.cpp:701] getMaxTuyaDatapointsNumber(): max counter = 0
+[ 11061][I][z2s_web_gui.cpp:3818] Z2S_buildWebGUI():  ...GUI building FINISHED
+[ 11062][I][z2s_web_gui.cpp:3822] Z2S_buildWebGUI(): Control sizeof 52, String sizeof 16
+[ 11062][I][z2s_web_gui.cpp:3975] Z2S_startWebGUI(): STOP WEB GUI
+[ 11064][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16432, action 0
+LittleFsConfig: writing to file "/supla-dev.cfg"
+LittleFsConfig: writing to file "/supla-dev.cfg.bak"
+[ 14727][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 14728][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 30, cluster_id: 0xfcc0, asdu_length: 64
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 40, rx_time: 0
+[ 14730][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xfcc0, command id: 10
+[ 14730][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 14731][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[ 14731][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[ 14732][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 26 size: 59
+[ 14732][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0xF7 
+[ 14732][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14733][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x41 
+[ 14733][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x37 
+[ 14733][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x03 
+[ 14734][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x28 
+[ 14734][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1B 
+[ 14734][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x05 
+[ 14735][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 14735][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x05 
+[ 14735][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14736][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x09 
+[ 14736][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 14736][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14737][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 14737][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0A 
+[ 14737][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 14737][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14738][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14738][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0B 
+[ 14738][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14739][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14739][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0C 
+[ 14739][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14740][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 14740][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0D 
+[ 14740][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 14741][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1F 
+[ 14741][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0E 
+[ 14741][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14742][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14742][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x11 
+[ 14742][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 14743][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 14743][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14743][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14744][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14744][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x64 
+[ 14744][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14745][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x06 
+[ 14745][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x65 
+[ 14745][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14746][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x64 
+[ 14746][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x66 
+[ 14746][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14746][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x80 
+[ 14747][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x67 
+[ 14747][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14748][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0D 
+[ 14748][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x69 
+[ 14748][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14749][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x02 
+[ 14749][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x6A 
+[ 14749][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 14749][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x79 
+[ 14750][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14750][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x6B 
+[ 14750][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14751][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14751][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 14752][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xfcc0, cmd id 0xa
+[ 14752][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 14753][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 14754][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[ 14754][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0xfcc0)
+[ 14755][I][ZigbeeGateway.cpp:1279] zbAttributeReporting(): LUMI custom cluster (0xfcc0), attribute id (0xf7), attribute data type (0x41)
+[ 14756][I][z2s_devices_table.cpp:2873] Z2S_onLumiCustomClusterReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, attribute id 0xf7, size 56
+[ 14756][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[0] = 0x37(55)
+[ 14757][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[1] = 0x03(3)
+[ 14757][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[2] = 0x28(40)
+[ 14758][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[3] = 0x1B(27)
+[ 14758][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[4] = 0x05(5)
+[ 14759][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[5] = 0x21(33)
+[ 14759][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[6] = 0x05(5)
+[ 14760][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[7] = 0x00(0)
+[ 14760][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[8] = 0x09(9)
+[ 14760][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[9] = 0x21(33)
+[ 14761][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[10] = 0x00(0)
+[ 14761][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[11] = 0x01(1)
+[ 14762][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[12] = 0x0A(10)
+[ 14763][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[13] = 0x21(33)
+[ 14763][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[14] = 0x00(0)
+[ 14764][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[15] = 0x00(0)
+[ 14764][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[16] = 0x0B(11)
+[ 14765][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[17] = 0x20(32)
+[ 14765][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[18] = 0x00(0)
+[ 14766][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[19] = 0x0C(12)
+[ 14766][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[20] = 0x20(32)
+[ 14767][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[21] = 0x01(1)
+[ 14767][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[22] = 0x0D(13)
+[ 14768][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[23] = 0x23(35)
+[ 14768][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[24] = 0x1F(31)
+[ 14769][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[25] = 0x0E(14)
+[ 14769][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[26] = 0x00(0)
+[ 14770][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[27] = 0x00(0)
+[ 14770][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[28] = 0x11(17)
+[ 14771][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[29] = 0x23(35)
+[ 14771][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[30] = 0x01(1)
+[ 14772][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[31] = 0x00(0)
+[ 14772][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[32] = 0x00(0)
+[ 14773][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[33] = 0x00(0)
+[ 14773][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[34] = 0x64(100)
+[ 14774][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[35] = 0x20(32)
+[ 14774][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[36] = 0x06(6)
+[ 14775][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[37] = 0x65(101)
+[ 14775][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[38] = 0x20(32)
+[ 14776][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[39] = 0x64(100)
+[ 14776][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[40] = 0x66(102)
+[ 14777][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[41] = 0x20(32)
+[ 14777][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[42] = 0x80(128)
+[ 14778][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[43] = 0x67(103)
+[ 14778][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[44] = 0x20(32)
+[ 14779][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[45] = 0x0D(13)
+[ 14779][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[46] = 0x69(105)
+[ 14780][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[47] = 0x20(32)
+[ 14780][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[48] = 0x02(2)
+[ 14781][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[49] = 0x6A(106)
+[ 14781][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[50] = 0x21(33)
+[ 14782][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[51] = 0x79(121)
+[ 14782][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[52] = 0x20(32)
+[ 14783][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[53] = 0x6B(107)
+[ 14783][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[54] = 0x20(32)
+[ 14784][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[55] = 0x00(0)
+[ 14784][E][z2s_devices_table.cpp:2927] Z2S_onLumiCustomClusterReceive(): no binary channel found for address 54:EF:44:10:00:BE:16:62
+[ 14785][E][z2s_devices_table.cpp:2950] Z2S_onLumiCustomClusterReceive(): no EM channel found for address 54:EF:44:10:00:BE:16:62
+[ 14785][E][z2s_devices_table.cpp:3013] Z2S_onLumiCustomClusterReceive(): no T/H channel found for address 54:EF:44:10:00:BE:16:62
+[ 14786][E][z2s_devices_table.cpp:3047] Z2S_onLumiCustomClusterReceive(): no GPM channel found for address 54:EF:44:10:00:BE:16:62
+[ 14787][E][z2s_devices_table.cpp:3070] Z2S_onLumiCustomClusterReceive(): no GPM channel found for address 54:EF:44:10:00:BE:16:62
+Send: [53 55 50 4C 41 1B 0A 00 00 00 EC 04 00 00 45 01 00 00 01 44 65 76 69 63 65 20 23 30 30 20 28 4C 55 4D 49 3A 3A 6C 75 6D 69 2E 63 75 72 74 61 69 6E 2E 61 63 6E 30 30 32 29 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 35 34 3A 45 46 3A 34 34 3A 31 30 3A 30 30 3A 42 45 3A 31 36 3A 36 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+
+
+[     1][V][ZigbeeEP.cpp:22] ZigbeeEP(): Endpoint: 1
+=========== Before Setup Start ===========
+Chip Info:
+------------------------------------------
+  Model             : ESP32-C6
+  Package           : 0
+  Revision          : 0.01
+  Cores             : 1
+  CPU Frequency     : 160 MHz
+  XTAL Frequency    : 40 MHz
+  Features Bitfield : 0x00000052
+  Embedded Flash    : No
+  Embedded PSRAM    : No
+  2.4GHz WiFi       : Yes
+  Classic BT        : No
+  BT Low Energy     : Yes
+  IEEE 802.15.4     : Yes
+------------------------------------------
+INTERNAL Memory Info:
+------------------------------------------
+  Total Size        :   357212 B ( 348.8 KB)
+  Free Bytes        :   306488 B ( 299.3 KB)
+  Allocated Bytes   :    37804 B (  36.9 KB)
+  Minimum Free Bytes:   301500 B ( 294.4 KB)
+  Largest Free Block:   278516 B ( 272.0 KB)
+------------------------------------------
+Flash Info:
+------------------------------------------
+  Chip Size         : 16777216 B (16 MB)
+  Block Size        :    65536 B (  64.0 KB)
+  Sector Size       :     4096 B (   4.0 KB)
+  Page Size         :      256 B (   0.2 KB)
+  Bus Speed         : 80 MHz
+  Flash Frequency   : 80 MHz (source: 80 MHz, divider: 1)
+  Bus Mode          : QIO
+------------------------------------------
+Partitions Info:
+------------------------------------------
+                nvs : addr: 0x00009000, size:    20.0 KB, type: DATA, subtype: NVS
+            otadata : addr: 0x0000E000, size:     8.0 KB, type: DATA, subtype: OTA
+               app0 : addr: 0x00010000, size:  3328.0 KB, type:  APP, subtype: OTA_0
+               app1 : addr: 0x00350000, size:  3328.0 KB, type:  APP, subtype: OTA_1
+             spiffs : addr: 0x00690000, size:  1384.0 KB, type: DATA, subtype: SPIFFS
+         zb_storage : addr: 0x007EA000, size:    16.0 KB, type: DATA, subtype: FAT
+             zb_fct : addr: 0x007EE000, size:     4.0 KB, type: DATA, subtype: FAT
+             rcp_fw : addr: 0x007EF000, size:     4.0 KB, type: DATA, subtype: SPIFFS
+           coredump : addr: 0x007F0000, size:    64.0 KB, type: DATA, subtype: COREDUMP
+------------------------------------------
+Software Info:
+------------------------------------------
+  Compile Date/Time : Jan 25 2026 21:53:02
+  Compile Host OS   : windows
+  ESP-IDF Version   : v5.5.2-249-gf56bea3d1f
+  Arduino Version   : 3.3.6
+------------------------------------------
+Board Info:
+------------------------------------------
+  Arduino Board     : ESP32C6_DEV
+  Arduino Variant   : esp32c6
+  Arduino FQBN      : esp32:esp32:esp32c6:UploadSpeed=921600,CDCOnBoot=cdc,CPUFreq=160,FlashFreq=80,FlashMode=qio,FlashSize=8M,PartitionScheme=zigbee_zczr_8MB,DebugLevel=verbose,EraseFlash=none,JTAGAdapter=default,ZigbeeMode=zczr_debug
+============ Before Setup End ============
+[   397][V][esp32-hal-periman.c:251] perimanClearBusDeinit(): Deinit function for type UART_RX (2) cleared
+[   397][V][esp32-hal-periman.c:251] perimanClearBusDeinit(): Deinit function for type UART_TX (3) cleared
+[   398][V][esp32-hal-periman.c:251] perimanClearBusDeinit(): Deinit function for type UART_CTS (4) cleared
+[   398][V][esp32-hal-periman.c:251] perimanClearBusDeinit(): Deinit function for type UART_RTS (5) cleared
+[   399][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 17 successfully set to type UART_RX (2) with bus 0x40816e50
+[   399][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type UART_RX (2) successfully set to 0x42096bda
+[   400][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 16 successfully set to type UART_TX (3) with bus 0x40816e50
+[   401][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type UART_TX (3) successfully set to 0x42096aa0
+[   401][I][Z2S_Gateway.ino:456] setup(): setup start
+[   401][I][z2s_devices_table.cpp:9411] printSizeOfClasses(): 
+
+Relay 136 - VirtualRelay 136 - Z2S_VirtualRelay 192
+
+HvacBase 1032 - HvacBaseEE 1040 - Z2S_trv_interface 224
+
+VirtualSceneSwitch 144
+
+GPM 184
+
+IPAddress 28
+
+NetworkServer 44
+
+NetworkClient 52
+
+ZigbeeGateway 248
+[   422][I][Z2S_Gateway.ino:485] setup(): Sanity check time 19
+[   422][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type GPIO (1) successfully set to 0x42093ccc
+[   423][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 9 successfully set to type GPIO (1) with bus 0xa
+[   423][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type GPIO (1) successfully set to 0x42093ccc
+[   424][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 3 successfully set to type GPIO (1) with bus 0x4
+[   424][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type GPIO (1) successfully set to 0x42093ccc
+[   425][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 14 successfully set to type GPIO (1) with bus 0xf
+Storage initialization
+readStorage: 8; Read: [53 55 50 4C 41 1 0 1 ]
+Storage: Number of sections 1
+Reading section: 0
+readStorage: 7; Read: [3 10 0 93 44 93 44 ]
+Section type: 3; size: 16
+storedCRC 17555, CRC calc 17555
+LittleFsConfig: file "/supla-dev.cfg" size 667
+LittleFsConfig: initializing storage from file...
+LittleFsConfig: init result success
+LittleFsConfig: writing to file "/supla-dev.cfg"
+LittleFsConfig: writing to file "/supla-dev.cfg.bak"
+Channel[110] initial caption set to 'Gateway sensors notifications'
+Button[0] setHoldTime: 2000
+Button[0] setMulticlickTime: 500
+Button[0]::configureAsConfigButton
+Button[0] setHoldTime: 5000
+Button[0] setMulticlickTime: 300
+Listing directory: /
+  FILE: supla-dev.cfg.bak  SIZE: 667 LAST WRITE: 1970-01-01 00:00:00
+  FILE: supla-dev.cfg  SIZE: 667 LAST WRITE: 1970-01-01 00:00:00
+  DIR : z2s_gatewayLAST WRITE: 1969-12-31 23:59:59
+Listing directory: /z2s_gateway
+  FILE: actions_index_table.z2s  SIZE: 32 LAST WRITE: 1970-01-01 00:00:02
+  FILE: channels_table_v2.bak  SIZE: 15360 LAST WRITE: 2026-02-10 11:08:49
+  FILE: channels_table_v2.z2s  SIZE: 15360 LAST WRITE: 2026-02-10 11:08:49
+  FILE: zb_devices_table_v2.z2s  SIZE: 3840 LAST WRITE: 2026-02-10 11:08:49
+Listing directory: /
+  FILE: supla-dev.cfg.bak  SIZE: 667 LAST WRITE: 1970-01-01 00:00:00
+  FILE: supla-dev.cfg  SIZE: 667 LAST WRITE: 1970-01-01 00:00:00
+  DIR : z2s_gatewayLAST WRITE: 1969-12-31 23:59:59
+Listing directory: /z2s_gateway
+  FILE: actions_index_table.z2s  SIZE: 32 LAST WRITE: 1970-01-01 00:00:02
+  FILE: channels_table_v2.bak  SIZE: 15360 LAST WRITE: 2026-02-10 11:08:49
+  FILE: channels_table_v2.z2s  SIZE: 15360 LAST WRITE: 2026-02-10 11:08:49
+  FILE: zb_devices_table_v2.z2s  SIZE: 3840 LAST WRITE: 2026-02-10 11:08:49
+[   643][I][z2s_devices_table.cpp:1183] Z2S_loadZbDevicesTable(): 
+
+Z2S_getZbDevicesTableSize 3840
+
+sizeof(z2s_zb_devices_table) 3840
+
+sizeof(z2s_zb_device_params_t) 120
+
+sizeof(bool)1
+[   658][I][z2s_devices_table.cpp:1439] Z2S_loadZbDevicesTable(): Zigbee devices table load success!
+[   659][I][z2s_devices_table.cpp:955] Z2S_updateZbDeviceUidIdx(): Syncing flags for model 0x4851
+[   660][I][z2s_devices_table.cpp:973] Z2S_updateZbDeviceUidIdx(): device uid = 30450, devices list index = 539
+[   660][I][z2s_devices_table.cpp:495] Z2S_loadChannelsTable(): Z2S_getChannelsTableSize 15360, sizeof(z2s_channels_table) 15360, sizeof(z2s_device_params_t) 120, sizeof(bool)1
+[   678][I][z2s_devices_table.cpp:658] Z2S_loadChannelsTable(): Channels table load success!
+[   678][I][z2s_devices_table.cpp:1056] Z2S_addZbDeviceTableSlot(): ZB device already in ZB devices table
+[   679][I][z2s_devices_table.cpp:955] Z2S_updateZbDeviceUidIdx(): Syncing flags for model 0x4851
+[   680][I][z2s_devices_table.cpp:973] Z2S_updateZbDeviceUidIdx(): device uid = 30450, devices list index = 539
+[   680][I][z2s_devices_table.cpp:1721] Z2S_initSuplaChannels(): initSuplaChannels starting
+Channel[0] initial caption set to 'CURTAIN DRIVER'
+[   681][I][z2s_devices_table.cpp:1837] Z2S_initSuplaChannels(): Registering channel #0 to subdevice #1
+[   681][I][Z2S_Gateway.ino:587] setup(): Z2S_REBUILD_CHANNELS_ON_START not configured - turning off
+[   682][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16418, action 0
+[   683][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16433, action 0
+[   697][I][z2s_devices_table.cpp:1908] Z2S_loadActionsIndexTable(): Zigbee<=>Supla actions index table load SUCCESS!
+[   697][I][z2s_devices_table.cpp:2111] Z2S_initSuplaActions(): actions number: 0
+[   698][D][ZigbeeCore.cpp:110] addGatewayEndpoint(): Endpoint: 1, Device ID: 0x0050
+[   698][I][Z2S_Gateway.ino:634] setup(): Z2S_ENABLE_GUI_ON_START_V2 = 4
+[   699][I][Z2S_Gateway.ino:651] setup(): Z2S_FORCE_CONFIG_ON_START = 0
+[   699][I][Z2S_Gateway.ino:665] setup(): Z2S_GUI_ON_START_DELAY_V2 = 10 s
+[   699][I][Z2S_Gateway.ino:682] setup(): Z2S_GATEWAY_MDNS_LOCAL_NAME = test_js
+[   700][I][Z2S_Gateway.ino:697] setup(): Z2S_USE_NEW_AT_MODEL not configured - turning on
+SD: initial mode: Start in cfg mode (legacy, deprected)
+[   701][V][NetworkServer.h:41] NetworkServer(): NetworkServer::NetworkServer(port=80, ...)
+[   701][V][WebServer.cpp:49] WebServer(): WebServer::Webserver(port=80)
+ *** Supla - starting initialization (platform 0)
+SD: add flag DEVICE_CONFIG_SUPPORTED
+SD: add flag CALCFG_RESTART_DEVICE
+ *** Supla - Config initalization
+SD: add flag CALCFG_ENTER_CFG_MODE
+SD: add flag CALCFG_FACTORY_RESET_SUPPORTED
+Automatic firmware update is disabled
+Device mode: 0
+Security level: Supla CA
+ *** Supla - Config load for elements
+SD: add flag CALCFG_IDENTIFY_DEVICE
+RemoteDeviceConfig: Registering field 0x000000001
+RemoteDeviceConfig: Registering field 0x000000010
+Clock: automaticTimeSync: 1
+Channel[110] function missing. Using SW defaults
+Button[0] don't load config
+PowerCycle: 0 (enabled)
+Channel[0] function missing. Using SW defaults
+RS[0] rsConfig: motor: normal (1), button: normal (1), time margin: -1, visualization: 0
+ *** Supla - Config load for elements done
+ *** Supla - Load state storage
+Validating storage state section with current device configuration
+Storage state section validation successful
+readStorage: 1; Read: [6E ]
+readStorage: 4; Read: [0 0 0 0 ]
+readStorage: 1; Read: [0 ]
+Relay[110] restored relay state: OFF
+Relay[110] restored remaining countdown timer durationMs: 0
+readStorage: 1; Read: [0 ]
+readStorage: 9; Read: [0 0 0 0 0 0 0 0 5E ]
+RS[0] settings restored from storage. Opening time: 0 ms; closing time: 0 ms. Position: 9400
+ *** Supla - Load state storage done
+ *** Supla - Init elements
+[   706][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[   706][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type RMT_TX (10) successfully set to 0x42095670
+[   707][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type RMT_RX (11) successfully set to 0x42095670
+[   708][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type RMT_TX (10) with bus 0x40833e34
+[   709][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[   709][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+[   710][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type GPIO (1) successfully set to 0x42093ccc
+[   711][V][esp32-hal-rmt.c:142] _rmtDetachBus(): Detaching RMT GPIO Bus
+[   711][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type INIT (0) with bus 0x0
+[   712][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type GPIO (1) with bus 0x9
+VRelay[110] turn OFF (duration 0 ms)
+VRelay[110] turn OFF (duration 0 ms)
+Relay[110] init done, storedTurnOnDurationMs 0
+Button[0]: Initialized: pin 9, pullUp 1, invertLogic 1, state 1
+ *** Supla - Init elements done
+GUID: 338A3AF6BD057663FD8991FAF4E5236F
+Device name: Zigbee <=> Supla Gateway
+Device software version: Z2S-1.4.19-10/02/26
+ *** Supla - Initializing network layer
+[Wi-Fi] Network AP/hostname: SUPLA-ZIGBEE-GATE-404CCA5E87B8
+Using Supla protocol version 28
+[   714][I][Z2S_Gateway.ino:160] supla_callback_bridge(): event(0x23), action(0x4010)
+[   714][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16393, action 0
+[   715][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 35, action 24576
+Current status: [5] SuplaDevice initialized
+Enter normal mode
+[Wi-Fi] setNormalMode
+ *** Supla - Initialization done
+ *** Self-test ***
+TEST: ManufacturerID is 0
+TEST failed: ProductID is empty
+TEST failed: missing public RSA key
+TEST failed: automatic firmware update is disabled
+TEST failed: config encryption is disabled
+TEST failed: invalid certificates format
+TEST failed: security log is disabled
+TEST failed: initial mode is set to config mode
+ *** Self-test done ***
+=========== After Setup Start ============
+INTERNAL Memory Info:
+------------------------------------------
+  Total Size        :   357212 B ( 348.8 KB)
+  Free Bytes        :   297944 B ( 291.0 KB)
+  Allocated Bytes   :    43940 B (  42.9 KB)
+  Minimum Free Bytes:   291368 B ( 284.5 KB)
+  Largest Free Block:   278516 B ( 272.0 KB)
+------------------------------------------
+GPIO Info:
+------------------------------------------
+  GPIO : BUS_TYPE[bus/unit][chan]
+  --------------------------------------  
+     3 : GPIO
+     8 : GPIO
+     9 : GPIO
+    12 : USB_DM
+    13 : USB_DP
+    14 : GPIO
+    16 : UART_TX[0]
+    17 : UART_RX[0]
+============ After Setup End =============
+[   743][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[   743][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type RMT_TX (10) successfully set to 0x42095670
+[   744][V][esp32-hal-periman.c:235] perimanSetBusDeinit(): Deinit function for type RMT_RX (11) successfully set to 0x42095670
+[   745][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type INIT (0) with bus 0x0
+[   746][V][esp32-hal-periman.c:160] perimanSetPinBus(): Pin 8 successfully set to type RMT_TX (10) with bus 0x40834200
+[   747][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[   747][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+LittleFsConfig: writing to file "/supla-dev.cfg"
+LittleFsConfig: writing to file "/supla-dev.cfg.bak"
+Channel(0) value changed to 94
+WiFi: establishing connection with SSID: "THE_TEMPEST_2GEXT"
+[   817][V][NetworkEvents.cpp:120] _checkForEvent(): Network Event: 101 - WIFI_READY
+[   914][V][STA.cpp:186] _onStaEvent(): STA Started
+[   914][V][NetworkEvents.cpp:120] _checkForEvent(): Network Event: 110 - STA_START
+[   915][V][STA.cpp:110] _onStaArduinoEvent(): Arduino STA Event: 110 - STA_START
+[  1257][V][STA.cpp:206] _onStaEvent(): STA Connected: SSID: THE_TEMPEST_2GEXT, BSSID: 12:0f:a1:96:5c:4b, Channel: 11, Auth: WPA3_PSK
+[  1258][V][NetworkEvents.cpp:120] _checkForEvent(): Network Event: 112 - STA_CONNECTED
+[  1259][V][STA.cpp:110] _onStaArduinoEvent(): Arduino STA Event: 112 - STA_CONNECTED
+[  2386][V][NetworkInterface.cpp:79] _onIpEvent(): sta Got New IP: 172.29.179.243 MASK: 255.255.255.0 GW: 172.29.179.91
+[  2387][V][NetworkEvents.cpp:120] _checkForEvent(): Network Event: 115 - STA_GOT_IP
+[  2387][V][STA.cpp:110] _onStaArduinoEvent(): Arduino STA Event: 115 - STA_GOT_IP
+[  2388][V][STA.cpp:171] _onStaArduinoEvent(): STA IP: 172.29.179.243, MASK: 255.255.255.0, GW: 172.29.179.91
+Connected BSSID: 12:0F:A1:96:5C:4B
+local IP: 172.29.179.243
+subnetMask: 255.255.255.0
+gatewayIP: 172.29.179.91
+Signal strength (RSSI): -43 dBm
+Establishing encrypted connection with: svr3.supla.org (port: 2016)
+[  2427][D][NetworkManager.cpp:83] hostByName(): Clearing DNS cache
+[  2753][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[  2753][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[  2754][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+[  2809][D][NetworkManager.cpp:127] hostByName(): DNS found IPv4 135.181.25.1
+[  2810][V][ssl_client.cpp:68] start_ssl_client(): Free internal heap before TLS 239008
+[  2810][V][ssl_client.cpp:75] start_ssl_client(): Starting socket (domain 2)
+[  3764][V][ssl_client.cpp:170] start_ssl_client(): Seeding the random number generator
+[  3769][V][ssl_client.cpp:178] start_ssl_client(): Setting up the SSL/TLS structure...
+[  3770][V][ssl_client.cpp:198] start_ssl_client(): Loading CA cert
+[  3778][V][ssl_client.cpp:293] start_ssl_client(): Setting hostname for TLS session...
+[  3779][V][ssl_client.cpp:314] ssl_starttls_handshake(): Performing the SSL/TLS handshake...
+[  4763][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[  4763][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[  4764][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+[  4852][V][ssl_client.cpp:335] ssl_starttls_handshake(): Verifying peer X.509 certificate...
+[  4853][V][ssl_client.cpp:343] ssl_starttls_handshake(): Certificate verified.
+[  4853][V][ssl_client.cpp:359] ssl_starttls_handshake(): Free internal heap after TLS 200412
+Connected via IP 172.29.179.243
+SSL error: 48, UNKNOWN ERROR CODE (0030)
+LAST STATE ADDED: UNKNOWN ERROR CODE (0030)
+Connected to Supla Server
+Initializing SRPC (proto: 28)
+LAST STATE ADDED: Register in progress
+[  4855][I][Z2S_Gateway.ino:160] supla_callback_bridge(): event(0x23), action(0x4010)
+[  4855][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 35, action 24576
+Current status: [10] Register in progress
+Send: [53 55 50 4C 41 1B 01 00 00 00 4C 00 00 00 90 02 00 00 6C 2E 73 72 6F 6B 61 40 67 6D 61 69 6C 2E 63 6F 6D 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 AC 6B 76 D0 35 1C FA 49 AA 04 FA 3B 0F BC B2 A1 33 8A 3A F6 BD 05 76 63 FD 89 91 FA F4 E5 23 6F 5A 69 67 62 65 65 20 3C 3D 3E 20 53 75 70 6C 61 20 47 61 74 65 77 61 79 00 00 00 00 00 00 00 00 00 00 ]
+CH[110], subDevId: 0, type: 2900, FuncList: 0xEF, function: 130, flags: 0x009010000, online, validityTimeSec: 0, icon: 0, value: [00 00 00 00 00 00 00 00]
+Send: [6E 54 0B 00 00 EF 00 00 00 82 00 00 00 00 00 01 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ]
+CH[0], subDevId: 1, type: 2900, FuncList: 0x2E08010, function: 110, flags: 0x008010200, online, validityTimeSec: 0, icon: 0, value: [5e 00 00 00 00 00 00 00]
+Send: [00 54 0B 00 00 10 80 E0 02 6E 00 00 00 00 02 01 08 00 00 00 00 00 00 00 00 00 5E 00 00 00 00 00 00 00 00 01 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 01 00 00 00 46 00 00 00 07 00 00 00 03 00 00 00 78 1C 01 53 55 50 4C 41 ]
+Device registered (activity timeout 120 s, server version: 28, server min version: 1)
+LAST STATE ADDED: Registered and ready
+[  5029][I][Z2S_Gateway.ino:160] supla_callback_bridge(): event(0x23), action(0x4010)
+[  5030][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16400, action 0
+[  5030][I][Z2S_Gateway.ino:207] supla_callback_bridge(): Starting Zigbee subsystem
+[  5031][D][ZigbeeCore.cpp:180] zigbeeInit(): Initialize Zigbee stack
+[  5034][D][ZigbeeCore.cpp:187] zigbeeInit(): Register all Zigbee EPs in list
+[  5042][I][ZigbeeCore.cpp:195] zigbeeInit(): List of registered Zigbee EPs:
+[  5043][I][ZigbeeCore.cpp:199] zigbeeInit(): Device type: Home Gateway, Endpoint: 1, Device ID: 0x0050
+[  5058][V][ZigbeeCore.cpp:492] esp_zb_app_signal_handler(): ZDO signal: ZDO Config Ready (0x17), status: ESP_FAIL
+[  5059][I][ZigbeeCore.cpp:296] esp_zb_app_signal_handler(): Zigbee stack initialized
+[  5065][I][ZigbeeCore.cpp:442] esp_zb_app_signal_handler(): Network(0x046f) closed, devices joining not allowed.
+[  5066][I][Z2S_Gateway.ino:305] Z2S_onOpenNetwork(): Network closed
+[  5066][V][esp32-hal-rmt.c:490] rmtInit(): GPIO 8 - TX MODE - MemSize[48] - Freq=10000000Hz
+[  5067][V][esp32-hal-rmt.c:307] _rmtWrite(): GPIO: 8 - Request: 24 RMT Symbols - Blocking - Timeout: -1
+[  5067][V][esp32-hal-rmt.c:315] _rmtWrite(): GPIO: 8 - Currently in Loop Mode: [NO] | Loop Request: [NO], LoopCancel: [NO]
+[  5068][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16418, action 0
+[  5071][I][ZigbeeCore.cpp:302] esp_zb_app_signal_handler(): Device started up in non factory-reset mode
+[  5072][I][ZigbeeCore.cpp:315] esp_zb_app_signal_handler(): Device rebooted
+[  5072][D][ZigbeeCore.cpp:667] searchBindings(): Requesting binding table for address 0x0000
+[  5073][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[  5074][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 0, src_endpoint: 0, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 0, cluster_id: 0x0033, asdu_length: 2
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x0000
+
+APSDE INDICATION - profile_id: 0x0000, security_status: 0, lqi: 0, rx_time: 0
+[  5076][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[  5077][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 0, src_endpoint: 0, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 0, cluster_id: 0x8033, asdu_length: 5
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x0000
+
+APSDE INDICATION - profile_id: 0x0000, security_status: 0, lqi: 0, rx_time: 0
+[  5079][D][ZigbeeCore.cpp:596] bindingTableCb(): Binding table callback for address 0x0000 with status 0
+[  5079][D][ZigbeeCore.cpp:599] bindingTableCb(): Binding table info: total 0, index 0, count 0
+[  5080][D][ZigbeeCore.cpp:605] bindingTableCb(): No binding table entries found
+[  5081][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16416, action 0
+- Telnet: [  5082][V][NetworkServer.h:41] NetworkServer(): NetworkServer::NetworkServer(port=23, ...)
+Telnet running
+[  5086][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 35, action 24576
+Current status: [17] Registered and ready
+Changing activity timeout to 30 s
+Send: [53 55 50 4C 41 1B 02 00 00 00 D2 00 00 00 01 00 00 00 1E ]
+Send: [53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 03 00 00 00 E0 01 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Relay[110] updating timer value: remainingTime=0 state=0
+SRPC sending: remaining time 0, channel 110, state 0
+Send: [53 55 50 4C 41 1B 04 00 00 00 69 00 00 00 E3 00 00 00 6E 32 DD 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 05 00 00 00 80 02 00 00 17 00 00 00 00 00 00 00 0F 00 00 00 43 55 52 54 41 49 4E 20 44 52 49 56 45 52 00 ]
+Send: [53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 06 00 00 00 80 02 00 00 26 00 00 00 6E 00 00 00 1E 00 00 00 47 61 74 65 77 61 79 20 73 65 6E 73 6F 72 73 20 6E 6F 74 69 66 69 63 61 74 69 6F 6E 73 00 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 02 00 00 00 AD 02 00 00 1D 00 00 00 01 00 00 00 00 00 00 00 00 11 00 00 00 00 00 00 00 11 00 00 00 00 00 00 00 02 00 00 01 53 55 50 4C 41 ]
+Received new device config
+Processing StatusLed config
+Processing AutomaticTimeSync config
+Sending device config result OK (1)
+Send: [53 55 50 4C 41 1B 07 00 00 00 B7 02 00 00 0A 00 00 00 01 00 00 00 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 03 00 00 00 AA 02 00 00 34 00 00 00 00 6E 00 00 00 00 2C 00 00 00 00 00 00 00 00 00 01 01 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 53 55 50 4C 41 ]
+Channel[0] Received SetChannelConfig: fnc 110, config type 0, config size 44
+Channel[0] handleChannelConfig, func 110, configtype 0, configsize 44
+RS[0] applyChannelConfig, func 110, configtype 0, configsize 44
+RS[0] set target position: -5, tilt: -1
+RS[0] rsConfig: motor: normal (1), button: normal (1), time margin: -1, visualization: 0
+Channel[0] ConfigType 0 applied
+Channel[0] Sending SetChannelConfigResult OK (1)
+Send: [53 55 50 4C 41 1B 08 00 00 00 B4 02 00 00 03 00 00 00 01 00 00 ]
+[  5223][I][Z2S_roller_shutter.cpp:366] onTimer(): newTargetPositionAvailable = STOP_POSITION
+[  5223][I][ZigbeeGateway.cpp:2255] sendAttributeWrite(): Sending 'write attribute' command - id (0x55), type (0x21), size (0x2), value (0x2)
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 04 00 00 00 AB 02 00 00 01 00 00 00 00 53 55 50 4C 41 ]
+Channel[0] Received ChannelConfigFinished
+Recv: [53 55 50 4C 41 1B 05 00 00 00 AA 02 00 00 32 00 00 00 6E 82 00 00 00 00 2A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 53 55 50 4C 41 ]
+Channel[110] Received SetChannelConfig: fnc 130, config type 0, config size 42
+Channel[110] handleChannelConfig, func 130, configtype 0, configsize 42
+Relay[110] applyChannelConfig, func 130, configtype 0, configsize 42
+Relay[110] OvercurrentMaxAllowed: 0, OvercurrentThreshold: 0
+Channel[110] ConfigType 0 applied
+Channel[110] Sending SetChannelConfigResult OK (1)
+Send: [53 55 50 4C 41 1B 09 00 00 00 B4 02 00 00 03 00 00 00 01 00 6E ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 06 00 00 00 AB 02 00 00 01 00 00 00 6E 53 55 50 4C 41 ]
+Channel[110] Received ChannelConfigFinished
+Recv: [53 55 50 4C 41 1B 07 00 00 00 DC 00 00 00 03 00 00 00 1E 0A F0 53 55 50 4C 41 ]
+Activity timeout set to 30 s
+Recv: [53 55 50 4C 41 1B 08 00 00 00 EA 01 00 00 1A 00 00 00 EA 07 02 0A 03 13 2F 10 0E 00 00 00 45 75 72 6F 70 65 2F 57 61 72 73 61 77 00 53 55 50 4C 41 ]
+Clock: current time: 1970-01-01 00:00:05
+Clock: time diff (system-new): -1770752831 s
+Clock: new time: 2026-02-10 19:47:16
+Recv: [53 55 50 4C 41 1B 09 00 00 00 8A 02 00 00 18 00 00 00 00 00 00 00 1A 0F 00 00 00 43 55 52 54 41 49 4E 20 44 52 49 56 45 52 00 53 55 50 4C 41 ]
+Channel[0] Receieved setChannelCaptionResult
+Recv: [53 55 50 4C 41 1B 0A 00 00 00 8A 02 00 00 27 00 00 00 6E 00 00 00 1A 1E 00 00 00 47 61 74 65 77 61 79 20 73 65 6E 73 6F 72 73 20 6E 6F 74 69 66 69 63 61 74 69 6F 6E 73 00 53 55 50 4C 41 ]
+Channel[110] Receieved setChannelCaptionResult
+ZB_TRACE_LOG[0]: nwk/nwk_cr_join.c:281    rejoin req tbl is full (1) or bad request - drop req
+LittleFsConfig: writing to file "/supla-dev.cfg"
+LittleFsConfig: writing to file "/supla-dev.cfg.bak"
+[  9423][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[  9424][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 26, cluster_id: 0x0000, asdu_length: 19
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 5, rx_time: 0
+[  9426][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0x0, command id: 10
+[  9426][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[  9427][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[  9427][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[  9428][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 20 size: 14
+[  9428][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x06 
+[  9429][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[  9429][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x42 
+[  9429][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0A 
+[  9430][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x30 
+[  9430][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x39 
+[  9430][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x2D 
+[  9430][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x31 
+[  9431][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[  9431][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x2D 
+[  9432][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[  9432][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x30 
+[  9432][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[  9433][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x33 
+[  9433][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[  9434][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0x0, cmd id 0xa
+[  9434][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[  9435][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[  9436][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[  9436][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0x0)
+[  9437][I][ZigbeeGateway.cpp:760] zbReadBasicCluster(): attribute reporting with short address(0x1909), updating IEEE address
+[  9437][I][ZigbeeGateway.cpp:764] zbReadBasicCluster(): Basic cluster: attribute(0x06), type (0x42), size (0x0B)
+[  9438][I][z2s_devices_table.cpp:3264] Z2S_onBasicReceive(): 54:EF:44:10:00:BE:16:62, short address 0x1909 endpoint 0x1, attribute id 0x6, size 11
+[ 10523][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 10523][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 15, cluster_id: 0x000a, asdu_length: 7
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 15, rx_time: 0
+[ 10525][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xa, command id: 0
+[ 10525][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 10526][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 0
+[ 10526][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x0
+[ 10527][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 3 size: 4
+[ 10527][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 10528][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 10528][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x02 
+[ 10528][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 10528][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 10529][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xa, cmd id 0x0
+[ 10530][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 10530][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+PowerCycle: timeout, counter reset to 0
+[ 11000][I][z2s_web_gui.cpp:3634] Z2S_buildWebGUI():  GUI building STARTED...
+[ 11001][I][z2s_web_gui.cpp:954] fillGatewayGeneralnformation(): Device information <b><i>Supla firmware:</i></b> <i>Z2S-1.4.19-10/02/26</i><br><br><b><i>Supla GUID:</i></b> <i>338A3AF6BD057663FD8991FAF4E5236F</i><br><br><b><i>Z2S Gateway version:</i></b> <i>Z2S-1.4.19-10/02/26</i><br><br><b><i>Network extended PAN ID:</i></b> <i>40:4C:CA:FF:FE:5E:87:B8</i><br><br>
+[ 11004][I][z2s_web_gui.cpp:979] fillMemoryUptimeInformation(): Memory & uptime information <b><i>Flash chip real size:</b></i> 16777216 B <b>| <i>Free Sketch Space:</b></i> 3407872 B<br><b><i>HeapSize:</b></i> 357212 B <b>| <i>FreeHeap:</b></i> 140004 B <b>| <i>MinimalFreeHeap:</b></i> 110000 B <b>| <i>MaxAllocHeap:</b></i> 122868 B<br><b><i>uxTaskGetStackHighWaterMark:</b></i> 3000 B <br><b><i>Total PSRAM:</b></i> 0 B <b>| <i>Free PSRAM:</b></i> 0 B<br><br><b><i>Local time:</i></b> Tue Feb 10 19:47:21 2026
+<b><i>Supla uptime:</i></b> 11 s
+[ 11023][I][z2s_web_gui.cpp:3544] buildActionsTabGUI(): Supla_actions 264, Supla_events 432
+[ 11029][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0001, counter 2
+[ 11030][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0006, counter 11
+[ 11030][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0008, counter 1
+[ 11031][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0020, counter 4
+[ 11031][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0102, counter 10
+[ 11032][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0201, counter 6
+[ 11032][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0204, counter 2
+[ 11033][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0300, counter 7
+[ 11033][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0400, counter 3
+[ 11034][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0402, counter 3
+[ 11034][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0403, counter 3
+[ 11035][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0404, counter 3
+[ 11035][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0405, counter 3
+[ 11036][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0406, counter 5
+[ 11036][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0500, counter 7
+[ 11037][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0502, counter 4
+[ 11037][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0702, counter 6
+[ 11038][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster 0B04, counter 14
+[ 11039][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster E001, counter 3
+[ 11040][I][z2s_web_gui.cpp:622] getMaxClusterAttributesNumber(): Cluster FC11, counter 25
+[ 11040][I][z2s_web_gui.cpp:633] getMaxClusterAttributesNumber(): max counter = 25
+[ 11042][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 16387, cluster 0006, counter 4
+[ 11043][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 32770, cluster 0006, counter 3
+[ 11043][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 32769, cluster 0006, counter 3
+[ 11044][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 20480, cluster 0006, counter 2
+[ 11045][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 61441, cluster 0102, counter 2
+[ 11045][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 61442, cluster 0102, counter 2
+[ 11046][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 53264, cluster E001, counter 3
+[ 11047][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 53280, cluster E001, counter 2
+[ 11047][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 53296, cluster E001, counter 3
+[ 11048][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 18, cluster FC11, counter 2
+[ 11049][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 24576, cluster FC11, counter 2
+[ 11049][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 24590, cluster FC11, counter 2
+[ 11050][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 24599, cluster FC11, counter 2
+[ 11050][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 28679, cluster FC11, counter 2
+[ 11051][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 7, cluster FC11, counter 2
+[ 11052][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 512, cluster FCC0, counter 2
+[ 11052][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 1303, cluster FCC0, counter 4
+[ 11053][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 515, cluster FCC0, counter 2
+[ 11054][I][z2s_web_gui.cpp:652] getMaxAttributeValuesNumber(): Attribute id 514, cluster FCC0, counter 2
+[ 11054][I][z2s_web_gui.cpp:666] getMaxAttributeValuesNumber(): max counter = 4
+[ 11059][I][z2s_web_gui.cpp:701] getMaxTuyaDatapointsNumber(): max counter = 0
+[ 11061][I][z2s_web_gui.cpp:3818] Z2S_buildWebGUI():  ...GUI building FINISHED
+[ 11062][I][z2s_web_gui.cpp:3822] Z2S_buildWebGUI(): Control sizeof 52, String sizeof 16
+[ 11062][I][z2s_web_gui.cpp:3975] Z2S_startWebGUI(): STOP WEB GUI
+[ 11064][I][Z2S_local_action_handlers.cpp:275] handleAction(): &&&&&&&&&&&&&&&&&&&&&&&&&&event 16432, action 0
+LittleFsConfig: writing to file "/supla-dev.cfg"
+LittleFsConfig: writing to file "/supla-dev.cfg.bak"
+[ 14727][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 14728][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 30, cluster_id: 0xfcc0, asdu_length: 64
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 40, rx_time: 0
+[ 14730][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xfcc0, command id: 10
+[ 14730][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 14731][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[ 14731][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[ 14732][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 26 size: 59
+[ 14732][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0xF7 
+[ 14732][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14733][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x41 
+[ 14733][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x37 
+[ 14733][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x03 
+[ 14734][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x28 
+[ 14734][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1B 
+[ 14734][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x05 
+[ 14735][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 14735][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x05 
+[ 14735][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14736][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x09 
+[ 14736][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 14736][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14737][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 14737][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0A 
+[ 14737][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 14737][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14738][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14738][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0B 
+[ 14738][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14739][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14739][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0C 
+[ 14739][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14740][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 14740][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0D 
+[ 14740][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 14741][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1F 
+[ 14741][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0E 
+[ 14741][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14742][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14742][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x11 
+[ 14742][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 14743][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 14743][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14743][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14744][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14744][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x64 
+[ 14744][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14745][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x06 
+[ 14745][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x65 
+[ 14745][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14746][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x64 
+[ 14746][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x66 
+[ 14746][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14746][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x80 
+[ 14747][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x67 
+[ 14747][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14748][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0D 
+[ 14748][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x69 
+[ 14748][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14749][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x02 
+[ 14749][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x6A 
+[ 14749][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 14749][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x79 
+[ 14750][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14750][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x6B 
+[ 14750][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 14751][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 14751][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 14752][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xfcc0, cmd id 0xa
+[ 14752][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 14753][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 14754][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[ 14754][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0xfcc0)
+[ 14755][I][ZigbeeGateway.cpp:1279] zbAttributeReporting(): LUMI custom cluster (0xfcc0), attribute id (0xf7), attribute data type (0x41)
+[ 14756][I][z2s_devices_table.cpp:2873] Z2S_onLumiCustomClusterReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, attribute id 0xf7, size 56
+[ 14756][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[0] = 0x37(55)
+[ 14757][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[1] = 0x03(3)
+[ 14757][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[2] = 0x28(40)
+[ 14758][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[3] = 0x1B(27)
+[ 14758][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[4] = 0x05(5)
+[ 14759][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[5] = 0x21(33)
+[ 14759][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[6] = 0x05(5)
+[ 14760][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[7] = 0x00(0)
+[ 14760][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[8] = 0x09(9)
+[ 14760][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[9] = 0x21(33)
+[ 14761][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[10] = 0x00(0)
+[ 14761][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[11] = 0x01(1)
+[ 14762][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[12] = 0x0A(10)
+[ 14763][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[13] = 0x21(33)
+[ 14763][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[14] = 0x00(0)
+[ 14764][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[15] = 0x00(0)
+[ 14764][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[16] = 0x0B(11)
+[ 14765][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[17] = 0x20(32)
+[ 14765][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[18] = 0x00(0)
+[ 14766][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[19] = 0x0C(12)
+[ 14766][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[20] = 0x20(32)
+[ 14767][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[21] = 0x01(1)
+[ 14767][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[22] = 0x0D(13)
+[ 14768][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[23] = 0x23(35)
+[ 14768][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[24] = 0x1F(31)
+[ 14769][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[25] = 0x0E(14)
+[ 14769][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[26] = 0x00(0)
+[ 14770][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[27] = 0x00(0)
+[ 14770][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[28] = 0x11(17)
+[ 14771][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[29] = 0x23(35)
+[ 14771][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[30] = 0x01(1)
+[ 14772][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[31] = 0x00(0)
+[ 14772][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[32] = 0x00(0)
+[ 14773][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[33] = 0x00(0)
+[ 14773][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[34] = 0x64(100)
+[ 14774][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[35] = 0x20(32)
+[ 14774][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[36] = 0x06(6)
+[ 14775][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[37] = 0x65(101)
+[ 14775][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[38] = 0x20(32)
+[ 14776][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[39] = 0x64(100)
+[ 14776][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[40] = 0x66(102)
+[ 14777][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[41] = 0x20(32)
+[ 14777][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[42] = 0x80(128)
+[ 14778][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[43] = 0x67(103)
+[ 14778][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[44] = 0x20(32)
+[ 14779][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[45] = 0x0D(13)
+[ 14779][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[46] = 0x69(105)
+[ 14780][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[47] = 0x20(32)
+[ 14780][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[48] = 0x02(2)
+[ 14781][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[49] = 0x6A(106)
+[ 14781][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[50] = 0x21(33)
+[ 14782][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[51] = 0x79(121)
+[ 14782][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[52] = 0x20(32)
+[ 14783][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[53] = 0x6B(107)
+[ 14783][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[54] = 0x20(32)
+[ 14784][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[55] = 0x00(0)
+[ 14784][E][z2s_devices_table.cpp:2927] Z2S_onLumiCustomClusterReceive(): no binary channel found for address 54:EF:44:10:00:BE:16:62
+[ 14785][E][z2s_devices_table.cpp:2950] Z2S_onLumiCustomClusterReceive(): no EM channel found for address 54:EF:44:10:00:BE:16:62
+[ 14785][E][z2s_devices_table.cpp:3013] Z2S_onLumiCustomClusterReceive(): no T/H channel found for address 54:EF:44:10:00:BE:16:62
+[ 14786][E][z2s_devices_table.cpp:3047] Z2S_onLumiCustomClusterReceive(): no GPM channel found for address 54:EF:44:10:00:BE:16:62
+[ 14787][E][z2s_devices_table.cpp:3070] Z2S_onLumiCustomClusterReceive(): no GPM channel found for address 54:EF:44:10:00:BE:16:62
+Send: [53 55 50 4C 41 1B 0A 00 00 00 EC 04 00 00 45 01 00 00 01 44 65 76 69 63 65 20 23 30 30 20 28 4C 55 4D 49 3A 3A 6C 75 6D 69 2E 63 75 72 74 61 69 6E 2E 61 63 6E 30 30 32 29 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 35 34 3A 45 46 3A 34 34 3A 31 30 3A 30 30 3A 42 45 3A 31 36 3A 36 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 0B 00 00 00 28 00 00 00 10 00 00 00 5D 8B 8B 69 00 00 00 00 7F 0F 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 0B 00 00 00 32 00 00 00 10 00 00 00 4D 7D 8B 69 00 00 00 00 C4 DA 0E 00 00 00 00 00 53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 0C 00 00 00 28 00 00 00 10 00 00 00 76 8B 8B 69 00 00 00 00 E6 1A 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 0C 00 00 00 32 00 00 00 10 00 00 00 66 7D 8B 69 00 00 00 00 5A BF 0E 00 00 00 00 00 53 55 50 4C 41 ]
+[ 60001][I][Z2S_Gateway.ino:959] loop(): New UTC time 824068090, new local time 824068090
+[ 60002][I][Z2S_Gateway.ino:991] loop(): 
+
+Local Time Cluster Time status attribute 2
+
+UTC time attribute 824068090
+
+local time attribute 824068090
+[ 60004][I][z2s_web_gui.cpp:979] fillMemoryUptimeInformation(): Memory & uptime information <b><i>Flash chip real size:</b></i> 16777216 B <b>| <i>Free Sketch Space:</b></i> 3407872 B<br><b><i>HeapSize:</b></i> 357212 B <b>| <i>FreeHeap:</b></i> 94116 B <b>| <i>MinimalFreeHeap:</b></i> 81672 B <b>| <i>MaxAllocHeap:</b></i> 77812 B<br><b><i>uxTaskGetStackHighWaterMark:</b></i> 3000 B <br><b><i>Total PSRAM:</b></i> 0 B <b>| <i>Free PSRAM:</b></i> 0 B<br><br><b><i>Local time:</i></b> Tue Feb 10 19:48:10 2026
+<b><i>Supla uptime:</i></b> 60 s
+[ 64591][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 64592][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 0, src_endpoint: 0, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 22, cluster_id: 0x0013, asdu_length: 12
+
+APSDE INDICATION - dst_short_addr: 0xfffd, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0000, security_status: 0, lqi: 35, rx_time: 0
+[ 64594][I][ZigbeeCore.cpp:380] esp_zb_app_signal_handler(): New device commissioned or rejoined (short: 0x1909)
+[ 64595][V][ZigbeeCore.cpp:384] esp_zb_app_signal_handler(): Device capabilities: 0x80
+[ 64595][I][z2s_devices_table.cpp:5034] Z2S_onBTCBoundDevice(): BTC bound device 54:EF:44:10:00:BE:16:62 (0x1909) on endpoint(0x0), cluster id(0x0)
+[ 64596][I][z2s_devices_table.cpp:5043] Z2S_onBTCBoundDevice(): zb_device_slot 0
+[ 64596][D][ZigbeeCore.cpp:401] esp_zb_app_signal_handler(): Device already bound to endpoint 1
+[ 64597][I][z2s_devices_table.cpp:5172] Z2S_onDeviceRejoin(): IEEE: 54:EF:44:10:00:BE:16:62, slot: 0, flags: 33
+[ 64597][I][z2s_devices_table.cpp:5179] Z2S_onDeviceRejoin(): IAS zone status query after rejoin
+[ 64597][I][ZigbeeGateway.cpp:2153] sendAttributeRead(): Sending 'read attribute' command
+[ 64798][I][z2s_devices_table.cpp:5189] Z2S_onDeviceRejoin(): On/Off state query after rejoin
+[ 64798][I][ZigbeeGateway.cpp:2153] sendAttributeRead(): Sending 'read attribute' command
+[ 65008][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 65009][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 0, cluster_id: 0xfcc0, asdu_length: 64
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 40, rx_time: 0
+[ 65011][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xfcc0, command id: 10
+[ 65012][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 65012][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[ 65013][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[ 65013][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 16 size: 59
+[ 65013][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0xF7 
+[ 65014][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65014][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x41 
+[ 65014][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x37 
+[ 65015][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x03 
+[ 65015][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x28 
+[ 65015][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1B 
+[ 65016][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x05 
+[ 65016][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 65016][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x05 
+[ 65017][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65017][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x09 
+[ 65017][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 65017][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65018][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 65018][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0A 
+[ 65018][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 65019][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65019][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65019][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0B 
+[ 65020][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65020][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65020][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0C 
+[ 65021][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65021][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 65021][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0D 
+[ 65022][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 65022][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1F 
+[ 65022][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0E 
+[ 65023][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65023][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65023][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x11 
+[ 65023][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 65024][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 65024][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65024][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65025][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65025][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x64 
+[ 65026][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65026][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x06 
+[ 65026][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x65 
+[ 65026][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65027][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x64 
+[ 65027][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x66 
+[ 65027][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65028][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x80 
+[ 65028][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x67 
+[ 65028][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65029][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0D 
+[ 65029][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x69 
+[ 65029][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65030][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x02 
+[ 65030][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x6A 
+[ 65030][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 65030][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x79 
+[ 65031][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65031][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x6B 
+[ 65031][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 65032][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 65032][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 65033][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xfcc0, cmd id 0xa
+[ 65033][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 65034][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 65035][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[ 65035][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0xfcc0)
+[ 65036][I][ZigbeeGateway.cpp:1279] zbAttributeReporting(): LUMI custom cluster (0xfcc0), attribute id (0xf7), attribute data type (0x41)
+[ 65037][I][z2s_devices_table.cpp:2873] Z2S_onLumiCustomClusterReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, attribute id 0xf7, size 56
+[ 65037][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[0] = 0x37(55)
+[ 65038][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[1] = 0x03(3)
+[ 65038][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[2] = 0x28(40)
+[ 65039][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[3] = 0x1B(27)
+[ 65039][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[4] = 0x05(5)
+[ 65040][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[5] = 0x21(33)
+[ 65040][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[6] = 0x05(5)
+[ 65041][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[7] = 0x00(0)
+[ 65041][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[8] = 0x09(9)
+[ 65042][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[9] = 0x21(33)
+[ 65042][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[10] = 0x00(0)
+[ 65043][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[11] = 0x01(1)
+[ 65043][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[12] = 0x0A(10)
+[ 65044][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[13] = 0x21(33)
+[ 65044][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[14] = 0x00(0)
+[ 65044][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[15] = 0x00(0)
+[ 65045][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[16] = 0x0B(11)
+[ 65045][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[17] = 0x20(32)
+[ 65046][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[18] = 0x00(0)
+[ 65046][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[19] = 0x0C(12)
+[ 65047][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[20] = 0x20(32)
+[ 65047][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[21] = 0x01(1)
+[ 65048][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[22] = 0x0D(13)
+[ 65048][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[23] = 0x23(35)
+[ 65049][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[24] = 0x1F(31)
+[ 65049][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[25] = 0x0E(14)
+[ 65050][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[26] = 0x00(0)
+[ 65050][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[27] = 0x00(0)
+[ 65051][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[28] = 0x11(17)
+[ 65051][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[29] = 0x23(35)
+[ 65052][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[30] = 0x01(1)
+[ 65052][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[31] = 0x00(0)
+[ 65053][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[32] = 0x00(0)
+[ 65053][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[33] = 0x00(0)
+[ 65054][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[34] = 0x64(100)
+[ 65054][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[35] = 0x20(32)
+[ 65055][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[36] = 0x06(6)
+[ 65055][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[37] = 0x65(101)
+[ 65056][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[38] = 0x20(32)
+[ 65056][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[39] = 0x64(100)
+[ 65057][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[40] = 0x66(102)
+[ 65057][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[41] = 0x20(32)
+[ 65058][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[42] = 0x80(128)
+[ 65058][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[43] = 0x67(103)
+[ 65059][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[44] = 0x20(32)
+[ 65059][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[45] = 0x0D(13)
+[ 65060][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[46] = 0x69(105)
+[ 65060][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[47] = 0x20(32)
+[ 65061][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[48] = 0x02(2)
+[ 65061][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[49] = 0x6A(106)
+[ 65062][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[50] = 0x21(33)
+[ 65062][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[51] = 0x79(121)
+[ 65063][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[52] = 0x20(32)
+[ 65063][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[53] = 0x6B(107)
+[ 65064][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[54] = 0x20(32)
+[ 65064][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[55] = 0x00(0)
+[ 65065][E][z2s_devices_table.cpp:2927] Z2S_onLumiCustomClusterReceive(): no binary channel found for address 54:EF:44:10:00:BE:16:62
+[ 65065][E][z2s_devices_table.cpp:2950] Z2S_onLumiCustomClusterReceive(): no EM channel found for address 54:EF:44:10:00:BE:16:62
+[ 65066][E][z2s_devices_table.cpp:3013] Z2S_onLumiCustomClusterReceive(): no T/H channel found for address 54:EF:44:10:00:BE:16:62
+[ 65067][E][z2s_devices_table.cpp:3047] Z2S_onLumiCustomClusterReceive(): no GPM channel found for address 54:EF:44:10:00:BE:16:62
+[ 65067][E][z2s_devices_table.cpp:3070] Z2S_onLumiCustomClusterReceive(): no GPM channel found for address 54:EF:44:10:00:BE:16:62
+[ 65797][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 65798][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 0, src_endpoint: 0, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 25, cluster_id: 0x0013, asdu_length: 12
+
+APSDE INDICATION - dst_short_addr: 0xfffd, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0000, security_status: 0, lqi: 45, rx_time: 0
+[ 65800][I][ZigbeeCore.cpp:380] esp_zb_app_signal_handler(): New device commissioned or rejoined (short: 0x1909)
+[ 65800][V][ZigbeeCore.cpp:384] esp_zb_app_signal_handler(): Device capabilities: 0x80
+[ 65801][I][z2s_devices_table.cpp:5034] Z2S_onBTCBoundDevice(): BTC bound device 54:EF:44:10:00:BE:16:62 (0x1909) on endpoint(0x0), cluster id(0x0)
+[ 65801][I][z2s_devices_table.cpp:5043] Z2S_onBTCBoundDevice(): zb_device_slot 0
+[ 65802][D][ZigbeeCore.cpp:401] esp_zb_app_signal_handler(): Device already bound to endpoint 1
+[ 65802][I][z2s_devices_table.cpp:5172] Z2S_onDeviceRejoin(): IEEE: 54:EF:44:10:00:BE:16:62, slot: 0, flags: 33
+[ 65803][I][z2s_devices_table.cpp:5179] Z2S_onDeviceRejoin(): IAS zone status query after rejoin
+[ 65803][I][ZigbeeGateway.cpp:2153] sendAttributeRead(): Sending 'read attribute' command
+[ 66004][I][z2s_devices_table.cpp:5189] Z2S_onDeviceRejoin(): On/Off state query after rejoin
+[ 66004][I][ZigbeeGateway.cpp:2153] sendAttributeRead(): Sending 'read attribute' command
+[ 66565][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 66565][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 30, cluster_id: 0x0006, asdu_length: 5
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 40, rx_time: 0
+[ 66567][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0x6, command id: 11
+[ 66568][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 66568][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 0
+[ 66568][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x0
+[ 66569][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 26 size: 2
+[ 66569][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 66569][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0xC3 
+[ 66570][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 66570][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0x6, cmd id 0xb
+[ 66571][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 66571][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 66572][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x1005) callback
+[ 66573][V][ZigbeeHandlers.cpp:384] zb_cmd_default_resp_handler(): Received default response: from address(0x1909), src_endpoint(1) to dst_endpoint(1), cluster(0x6) for command (0x0) with status 0xc3
+[ 66574][V][ZigbeeHandlers.cpp:388] zb_cmd_default_resp_handler(): command id (11), direction (1), is common (1)
+[ 66574][I][z2s_devices_table.cpp:5089] Z2S_onUpdateDeviceLastRssi(): short addr 0x1909, rssi -72
+[ 66575][I][z2s_devices_table.cpp:5094] Z2S_onUpdateDeviceLastRssi(): short addr 0x1909, rssi -72
+[ 66575][I][z2s_devices_table.cpp:5102] Z2S_onUpdateDeviceLastRssi(): short addr 0x1909, rssi -72
+[ 66576][I][ZigbeeGateway.cpp:2756] zbCmdDefaultResponse(): tsn = 2, _custom_cmd_last_tsn = 0, _custom_cmd_last_tsn_flag = 255
+[ 66576][I][ZigbeeGateway.cpp:2773] zbCmdDefaultResponse(): zbCustomCmd default response async, tsn = 2, _custom_cmd_last_tsn_flag = 255
+[ 66577][I][ZigbeeGateway.cpp:2777] zbCmdDefaultResponse(): custom cmd rssi -72
+[ 66855][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 66856][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 19, cluster_id: 0x0006, asdu_length: 5
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 51, rx_time: 0
+[ 66858][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0x6, command id: 11
+[ 66858][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 66859][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 0
+[ 66859][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x0
+[ 66860][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 9 size: 2
+[ 66860][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 66860][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0xC3 
+[ 66861][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 66861][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0x6, cmd id 0xb
+[ 66862][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 66862][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 66863][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x1005) callback
+[ 66864][V][ZigbeeHandlers.cpp:384] zb_cmd_default_resp_handler(): Received default response: from address(0x1909), src_endpoint(1) to dst_endpoint(1), cluster(0x6) for command (0x0) with status 0xc3
+[ 66865][V][ZigbeeHandlers.cpp:388] zb_cmd_default_resp_handler(): command id (11), direction (1), is common (1)
+[ 66865][I][z2s_devices_table.cpp:5089] Z2S_onUpdateDeviceLastRssi(): short addr 0x1909, rssi -70
+[ 66866][I][z2s_devices_table.cpp:5094] Z2S_onUpdateDeviceLastRssi(): short addr 0x1909, rssi -70
+[ 66866][I][z2s_devices_table.cpp:5102] Z2S_onUpdateDeviceLastRssi(): short addr 0x1909, rssi -70
+[ 66867][I][ZigbeeGateway.cpp:2756] zbCmdDefaultResponse(): tsn = 4, _custom_cmd_last_tsn = 0, _custom_cmd_last_tsn_flag = 255
+[ 66867][I][ZigbeeGateway.cpp:2773] zbCmdDefaultResponse(): zbCustomCmd default response async, tsn = 4, _custom_cmd_last_tsn_flag = 255
+[ 66868][I][ZigbeeGateway.cpp:2777] zbCmdDefaultResponse(): custom cmd rssi -70
+[ 68892][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 68892][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 26, cluster_id: 0x0000, asdu_length: 19
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 76, rx_time: 0
+[ 68894][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0x0, command id: 10
+[ 68895][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 68895][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[ 68896][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[ 68896][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 19 size: 14
+[ 68897][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x06 
+[ 68897][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 68897][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x42 
+[ 68898][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0A 
+[ 68898][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x30 
+[ 68898][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x39 
+[ 68898][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x2D 
+[ 68899][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x31 
+[ 68899][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[ 68899][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x2D 
+[ 68900][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[ 68900][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x30 
+[ 68900][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x32 
+[ 68901][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x33 
+[ 68901][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 68902][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0x0, cmd id 0xa
+[ 68902][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 68903][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 68904][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[ 68904][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0x0)
+[ 68905][I][ZigbeeGateway.cpp:760] zbReadBasicCluster(): attribute reporting with short address(0x1909), updating IEEE address
+[ 68905][I][ZigbeeGateway.cpp:764] zbReadBasicCluster(): Basic cluster: attribute(0x06), type (0x42), size (0x0B)
+[ 68906][I][z2s_devices_table.cpp:3264] Z2S_onBasicReceive(): 54:EF:44:10:00:BE:16:62, short address 0x1909 endpoint 0x1, attribute id 0x6, size 11
+[ 69995][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 69996][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 27, cluster_id: 0x000a, asdu_length: 7
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 51, rx_time: 0
+[ 69998][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xa, command id: 0
+[ 69998][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 69999][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 0
+[ 69999][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x0
+[ 69999][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 21 size: 4
+[ 70000][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 70000][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 70000][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x02 
+[ 70001][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 70001][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 70002][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xa, cmd id 0x0
+[ 70002][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 70003][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 71093][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 71094][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 19, cluster_id: 0xfcc0, asdu_length: 12
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 0, rx_time: 0
+[ 71095][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xfcc0, command id: 10
+[ 71096][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 71096][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[ 71097][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[ 71097][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 9 size: 7
+[ 71097][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0xEE 
+[ 71098][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 71098][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 71098][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1F 
+[ 71099][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0E 
+[ 71099][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 71099][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 71100][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 71100][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xfcc0, cmd id 0xa
+[ 71101][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 71101][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 71102][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[ 71103][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0xfcc0)
+[ 71104][I][ZigbeeGateway.cpp:1279] zbAttributeReporting(): LUMI custom cluster (0xfcc0), attribute id (0xee), attribute data type (0x23)
+[ 71104][I][z2s_devices_table.cpp:2873] Z2S_onLumiCustomClusterReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, attribute id 0xee, size 4
+[ 74216][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 74216][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 26, cluster_id: 0xfcc0, asdu_length: 64
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 15, rx_time: 0
+[ 74218][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xfcc0, command id: 10
+[ 74218][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 74219][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[ 74219][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[ 74220][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 19 size: 59
+[ 74220][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0xF7 
+[ 74221][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74221][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x41 
+[ 74221][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x37 
+[ 74222][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x03 
+[ 74222][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x28 
+[ 74222][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1B 
+[ 74223][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x05 
+[ 74223][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 74223][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x05 
+[ 74224][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74224][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x09 
+[ 74224][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 74225][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74225][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 74225][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0A 
+[ 74226][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 74226][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74226][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74226][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0B 
+[ 74227][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74227][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74227][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0C 
+[ 74228][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74228][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 74228][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0D 
+[ 74229][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 74229][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x1F 
+[ 74229][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0E 
+[ 74230][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74230][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74230][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x11 
+[ 74231][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x23 
+[ 74231][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 74231][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74232][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74232][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74232][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x64 
+[ 74233][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74233][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x06 
+[ 74233][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x65 
+[ 74234][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74234][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x64 
+[ 74234][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x66 
+[ 74235][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74235][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x80 
+[ 74235][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x67 
+[ 74236][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74236][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x0D 
+[ 74236][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x69 
+[ 74237][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74237][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x02 
+[ 74237][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x6A 
+[ 74238][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x21 
+[ 74238][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x79 
+[ 74238][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74239][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x6B 
+[ 74239][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 74239][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x00 
+[ 74240][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 74240][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xfcc0, cmd id 0xa
+[ 74241][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 74241][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 74242][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[ 74243][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0xfcc0)
+[ 74244][I][ZigbeeGateway.cpp:1279] zbAttributeReporting(): LUMI custom cluster (0xfcc0), attribute id (0xf7), attribute data type (0x41)
+[ 74244][I][z2s_devices_table.cpp:2873] Z2S_onLumiCustomClusterReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, attribute id 0xf7, size 56
+[ 74245][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[0] = 0x37(55)
+[ 74245][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[1] = 0x03(3)
+[ 74246][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[2] = 0x28(40)
+[ 74246][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[3] = 0x1B(27)
+[ 74247][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[4] = 0x05(5)
+[ 74247][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[5] = 0x21(33)
+[ 74248][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[6] = 0x05(5)
+[ 74248][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[7] = 0x00(0)
+[ 74249][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[8] = 0x09(9)
+[ 74249][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[9] = 0x21(33)
+[ 74250][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[10] = 0x00(0)
+[ 74250][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[11] = 0x01(1)
+[ 74251][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[12] = 0x0A(10)
+[ 74251][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[13] = 0x21(33)
+[ 74251][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[14] = 0x00(0)
+[ 74252][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[15] = 0x00(0)
+[ 74252][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[16] = 0x0B(11)
+[ 74253][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[17] = 0x20(32)
+[ 74253][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[18] = 0x00(0)
+[ 74254][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[19] = 0x0C(12)
+[ 74254][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[20] = 0x20(32)
+[ 74255][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[21] = 0x01(1)
+[ 74255][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[22] = 0x0D(13)
+[ 74256][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[23] = 0x23(35)
+[ 74256][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[24] = 0x1F(31)
+[ 74257][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[25] = 0x0E(14)
+[ 74257][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[26] = 0x00(0)
+[ 74258][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[27] = 0x00(0)
+[ 74258][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[28] = 0x11(17)
+[ 74259][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[29] = 0x23(35)
+[ 74259][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[30] = 0x01(1)
+[ 74260][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[31] = 0x00(0)
+[ 74260][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[32] = 0x00(0)
+[ 74261][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[33] = 0x00(0)
+[ 74261][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[34] = 0x64(100)
+[ 74261][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[35] = 0x20(32)
+[ 74262][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[36] = 0x06(6)
+[ 74262][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[37] = 0x65(101)
+[ 74263][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[38] = 0x20(32)
+[ 74263][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[39] = 0x64(100)
+[ 74264][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[40] = 0x66(102)
+[ 74264][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[41] = 0x20(32)
+[ 74265][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[42] = 0x80(128)
+[ 74265][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[43] = 0x67(103)
+[ 74266][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[44] = 0x20(32)
+[ 74266][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[45] = 0x0D(13)
+[ 74267][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[46] = 0x69(105)
+[ 74267][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[47] = 0x20(32)
+[ 74268][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[48] = 0x02(2)
+[ 74268][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[49] = 0x6A(106)
+[ 74269][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[50] = 0x21(33)
+[ 74269][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[51] = 0x79(121)
+[ 74270][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[52] = 0x20(32)
+[ 74270][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[53] = 0x6B(107)
+[ 74271][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[54] = 0x20(32)
+[ 74271][I][z2s_devices_table.cpp:2882] Z2S_onLumiCustomClusterReceive(): F7 attribute[55] = 0x00(0)
+[ 74272][E][z2s_devices_table.cpp:2927] Z2S_onLumiCustomClusterReceive(): no binary channel found for address 54:EF:44:10:00:BE:16:62
+[ 74272][E][z2s_devices_table.cpp:2950] Z2S_onLumiCustomClusterReceive(): no EM channel found for address 54:EF:44:10:00:BE:16:62
+[ 74273][E][z2s_devices_table.cpp:3013] Z2S_onLumiCustomClusterReceive(): no T/H channel found for address 54:EF:44:10:00:BE:16:62
+[ 74273][E][z2s_devices_table.cpp:3047] Z2S_onLumiCustomClusterReceive(): no GPM channel found for address 54:EF:44:10:00:BE:16:62
+[ 74274][E][z2s_devices_table.cpp:3070] Z2S_onLumiCustomClusterReceive(): no GPM channel found for address 54:EF:44:10:00:BE:16:62
+[ 79484][D][ZigbeeCore.cpp:504] zb_apsde_data_indication_handler(): APSDE INDICATION - Received APSDE-DATA indication, status: 0
+[ 79484][D][ZigbeeCore.cpp:508] zb_apsde_data_indication_handler(): APSDE INDICATION - dst_endpoint: 1, src_endpoint: 1, dst_addr_mode: 255
+
+APSDE INDICATION - src_addr_mode: 25, cluster_id: 0xfcc0, asdu_length: 9
+
+APSDE INDICATION - dst_short_addr: 0x0000, src_short_addr: 0x1909
+
+APSDE INDICATION - profile_id: 0x0104, security_status: 0, lqi: 76, rx_time: 0
+[ 79486][I][ZigbeeHandlers.cpp:138] zb_raw_cmd_handler(): cluster id: 0xfcc0, command id: 10
+[ 79486][I][ZigbeeHandlers.cpp:141] zb_raw_cmd_handler(): src endpoint (0x1, dst endpoint 0x1
+[ 79487][I][ZigbeeHandlers.cpp:145] zb_raw_cmd_handler(): is common comand 1, disable_default_response 1, is_manuf_specific 1
+[ 79487][I][ZigbeeHandlers.cpp:149] zb_raw_cmd_handler(): manuf_specific 0x115f
+[ 79488][I][ZigbeeHandlers.cpp:153] zb_raw_cmd_handler(): RAW bufid: 18 size: 4
+[ 79488][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x09 
+[ 79489][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x04 
+[ 79489][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x20 
+[ 79489][I][ZigbeeHandlers.cpp:156] zb_raw_cmd_handler(): 0x01 
+[ 79489][I][ZigbeeHandlers.cpp:165] zb_raw_cmd_handler(): ZigbeeHandlers rawCMD 0x1909, 0x1909, 0x0, 0x0
+[ 79490][I][z2s_devices_table.cpp:4503] Z2S_onCustomCmdReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, cluster 0xfcc0, cmd id 0xa
+[ 79491][I][z2s_devices_table.cpp:4517] Z2S_onCustomCmdReceive(): z2s_channels_table[channel_number_slot].Supla_channel 0x0
+[ 79491][I][ZigbeeHandlers.cpp:189] zb_raw_cmd_handler(): ----------------------------raw command not processed------------------------------------------------------------
+[ 79492][I][ZigbeeHandlers.cpp:42] zb_action_handler(): Receive Zigbee action(0x2000) callback
+[ 79492][V][ZigbeeHandlers.cpp:232] zb_attribute_reporting_handler(): Received report from address(0x1909) src endpoint(1) to dst endpoint(1) cluster(0xfcc0)
+[ 79493][I][ZigbeeGateway.cpp:1279] zbAttributeReporting(): LUMI custom cluster (0xfcc0), attribute id (0x409), attribute data type (0x20)
+[ 79494][I][z2s_devices_table.cpp:2873] Z2S_onLumiCustomClusterReceive(): 54:EF:44:10:00:BE:16:62, endpoint 0x1, attribute id 0x409, size 1
+Channel[0] battery powered changed to 2
+Channel[0] sending channel state update
+Send: [53 55 50 4C 41 1B 0D 00 00 00 FE 01 00 00 32 00 00 00 00 00 00 00 00 00 00 00 FB 01 00 00 00 00 00 00 AC 1D B3 F3 40 4C CA 5E 87 B8 00 00 D3 64 00 2A 4F 00 00 00 4D 00 00 00 00 00 00 00 00 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Send: [53 55 50 4C 41 1B 0E 00 00 00 28 00 00 00 10 00 00 00 8F 8B 8B 69 00 00 00 00 7D 9B 02 00 00 00 00 00 ]
+Send: [53 55 50 4C 41 ]
+Recv: [53 55 50 4C 41 1B 0D 00 00 00 32 00 00 00 10 00 00 00 80 7D 8B 69 00 00 00 00 81 03 06 00 00 00 00 00 53 55 50 4C 41 ]

@@ -5219,14 +5219,11 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 		uint8_t attribute_type_idx = 
 			ESPUI.getControl(clusters_attributes_table[device_attribute_type_selector])->getValueInt();
 
-		uint8_t attribute_type = 
-			attribute_type_idx < 0xFF ? 
-				zigbee_datatypes[attribute_type_idx].zigbee_datatype_id : 
-				0xFF;
+		uint8_t attribute_type = attribute_type_idx < 0xFF ? 
+			zigbee_datatypes[attribute_type_idx].zigbee_datatype_id : 0xFF;
 
-		bool sync_cmd = 
-			ESPUI.getControl(
-				clusters_attributes_table[device_async_switcher])->getValueInt() == 0;
+		bool sync_cmd = ESPUI.getControl(
+			clusters_attributes_table[device_async_switcher])->getValueInt() == 0;
 
 		uint8_t manuf_specific = (ESPUI.getControl(
 			clusters_attributes_table[manufacturer_code_switcher])->getValueInt() == 0) ? 0 : 1;
@@ -5399,19 +5396,32 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 				uint16_t delta = ESPUI.getControl(
 					clusters_attributes_table[device_config_delta_number])->getValueInt();
 
-				bool result = zbGateway.setClusterReporting(
-					&device, 
-					cluster_id, 
-					attribute_id, 
-					attribute_type, 
-					min_interval, 
-					max_interval, 
-					delta, 
-					sync_cmd,
-					ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-					1, 
-					manuf_specific, 
-					manuf_code);
+				float delta_f = delta;
+				uint8_t delta_8 = delta;
+				void *delta_ptr = &delta;
+
+				switch (attribute_type) {
+
+
+					case ESP_ZB_ZCL_ATTR_TYPE_SINGLE:
+						
+						delta_ptr = &delta_f;
+					break;
+
+
+					case ESP_ZB_ZCL_ATTR_TYPE_U8:
+					case ESP_ZB_ZCL_ATTR_TYPE_S8:
+					case ESP_ZB_ZCL_ATTR_TYPE_8BITMAP:
+					case ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM:
+
+						delta_ptr = &delta_8;
+					break;
+				} 
+
+				bool result = zbGateway.setClusterReportingExt(
+					&device, cluster_id, attribute_id, attribute_type, min_interval,
+					max_interval, delta_ptr, sync_cmd, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+					1, manuf_specific, manuf_code);
 					
 				if (result) {
 					if (*zbGateway.getConfigReportStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {

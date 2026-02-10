@@ -109,6 +109,16 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
         sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP, 0x02);
       } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE: {
+
+        float lift_cmd = 100;
+
+        zbGateway.sendAttributeWrite(
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
+          ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_cmd, false, 0, 0);
+      } break;
     }
   }
 }
@@ -156,6 +166,16 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
 
         sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP, 0x01);
       } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE: {
+
+        float lift_cmd = 0;
+
+        zbGateway.sendAttributeWrite(
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
+          ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_cmd, false, 0, 0);
+      } break;
     }
   }
 }
@@ -192,6 +212,16 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
         sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP, 0x00);
+      } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE: {
+
+        uint8_t lift_cmd = 2;
+
+        zbGateway.sendAttributeWrite(
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT, 0x55, 
+          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &lift_cmd, false, 0, 0);
       } break;
     }
   }
@@ -288,7 +318,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
       case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE: {
 
-        float lift_float = lift_percentage;
+        float lift_float = 100 - lift_percentage;
         zbGateway.sendAttributeWrite(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
           ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_float, false, 0, 0);
@@ -388,19 +418,20 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
 
   Supla::Control::RollerShutterInterface::iterateAlways();
 
-  /*if (_rs_current_position_changed) {
-    _rs_current_position_changed = false;
-    if (Zigbee.started()) {   
-    
-      zbGateway.sendAttributeWrite(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, 
-        ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID,
-        ESP_ZB_ZCL_ATTR_TYPE_U8, 
-        1, 
-        &_rs_current_position);
+  /*if ((_rs_moving_direction != 1) &&
+      ((millis() - _update_rs_position_ms) > 1000)) {
+
+    _update_rs_position_ms = millis();
+
+    log_i("trying to update rs position");
+
+    if (Zigbee.started()) {
+
+      zbGateway.sendAttributeRead(
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
     }
   }*/
+  
 
   //uint32_t current_millis = millis();
 
@@ -460,17 +491,13 @@ void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(
 
   return;*/
 
-  if (_rs_moving_direction != 1) {
+  if ((_rs_moving_direction != 1) || _rs_ignore_moving_direction) {
   _rs_current_position = rs_current_position;
 
-  /*if (_rs_target_position >= 0)
-          newTargetPositionAvailable = true;
-  */
-
-  if (_z2s_function == Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER)
-    _rs_current_position = 100 - _rs_current_position;
+    if (_z2s_function == Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER)
+      _rs_current_position = 100 - _rs_current_position;
   
-  setCurrentPosition(_rs_current_position);
+    setCurrentPosition(_rs_current_position);
  } else
   log_i("No RS movement detected - ignoring setRSCurrentPosition new value %u", 
         rs_current_position);
@@ -480,10 +507,10 @@ void Supla::Control::Z2S_RollerShutter::setRSIgnoreMovingDirection(
   bool rs_ignore_moving_direction) {
   
   _rs_ignore_moving_direction = rs_ignore_moving_direction;
-  if(_rs_ignore_moving_direction)
+  /*if(_rs_ignore_moving_direction)
     _rs_moving_direction = 0;
   else
-    _rs_moving_direction = 1;
+    _rs_moving_direction = 1;*/
 }
 
 bool Supla::Control::Z2S_RollerShutter::getRSIgnoreMovingDirection() {
@@ -494,8 +521,10 @@ bool Supla::Control::Z2S_RollerShutter::getRSIgnoreMovingDirection() {
 void Supla::Control::Z2S_RollerShutter::setRSMovingDirection(
   uint8_t rs_moving_direction) {
 
-  if (_rs_ignore_moving_direction)
-    return;
+  /*if (_rs_ignore_moving_direction)
+    return;*/
+
+  log_i("_rs_ignore_moving_direction %u", _rs_ignore_moving_direction);
 
   switch (_z2s_function) {
 

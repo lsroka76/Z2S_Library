@@ -139,11 +139,17 @@ static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 	{ .zigbee_cluster_name = "LEVEL CONTROL",						
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL },
 
+	{ .zigbee_cluster_name = "ANALOG INPUT",				
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT },
+
+	{ .zigbee_cluster_name = "ANALOG OUTPUT",				
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT },
+	
 	{ .zigbee_cluster_name = "MULTISTATE INPUT",				
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT },
 
-	{ .zigbee_cluster_name = "ANALOG INPUT",				
-		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT },
+	{ .zigbee_cluster_name = "MULTISTATE OUTPUT",				
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT },
 
 	{ .zigbee_cluster_name = "TIME",										
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TIME },

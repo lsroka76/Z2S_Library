@@ -100,6 +100,7 @@ class Z2S_RollerShutter : public RollerShutterInterface {
   uint32_t _timeout_ms    = 60000;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
+  uint32_t _update_rs_position_ms = 0;
  
 };
 

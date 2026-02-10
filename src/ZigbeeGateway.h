@@ -149,6 +149,8 @@
 #define LUMI_ATTRIBUTE_CURRENT_ID                             0x97 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
 #define LUMI_ATTRIBUTE_POWER_ID                               0x98 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
 
+#define LUMI_ATTRIBUTE_RSD_BATTERY_ID                         0x65 //U8
+
 #define LUMI_ATTRIBUTE_SMOKE_ID                               0x0A0
 #define LUMI_ATTRIBUTE_SMOKE_DENSITY_ID                       0x0A1
 #define LUMI_ATTRIBUTE_TEST_STATE_ID                          0x0A2
@@ -334,6 +336,14 @@ public:
     zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id,
     uint8_t attribute_type, uint16_t min_interval, uint16_t max_interval, 
     uint16_t delta, bool ack, 
+    uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+    uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0);
+
+  bool setClusterReportingExt(
+    zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id,
+    uint8_t attribute_type, uint16_t min_interval, uint16_t max_interval, 
+    void *delta, bool ack, 
     uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
     uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, 
     uint16_t manuf_code = 0);
