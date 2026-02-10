@@ -3905,30 +3905,37 @@ void Z2S_onMultistateInputReceive(
       uint16_t present_value = *(uint16_t *)attribute->data.value;
       log_i("present value = %d", present_value);
 
-      channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
-        NO_CUSTOM_CMD_SID);
-      
-      if (channel_number_slot >= 0) {
+      switch (z2s_channels_table[channel_number_slot].model_id) {
 
-        msgZ2SDeviceRollerShutter(
-          channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
-          0 : 1);
-        if (present_value == 2) {
 
-          zbg_device_params_t device = {};
-          device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
-          memcpy(
-            device.ieee_addr, 
-            z2s_channels_table[channel_number_slot].ieee_addr, 
-            sizeof(esp_zb_ieee_addr_t));
-          device.short_addr = 
-            z2s_channels_table[channel_number_slot].short_addr;
+        case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1: {
       
-          zbGateway.sendAttributeRead(
-            &device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
+          channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+          NO_CUSTOM_CMD_SID);
+      
+          if (channel_number_slot >= 0) {
+
+          msgZ2SDeviceRollerShutter(
+            channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
+            0 : 1);
+          
+          if (present_value == 2) {
+
+            zbg_device_params_t device = {};
+            device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
+            memcpy(
+              device.ieee_addr, 
+              z2s_channels_table[channel_number_slot].ieee_addr, 
+              sizeof(esp_zb_ieee_addr_t));
+            device.short_addr = 
+              z2s_channels_table[channel_number_slot].short_addr;
+      
+            zbGateway.sendAttributeRead(
+              &device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
+          }
         }
-      }
+      } break;
     } break;  
   }
 }
