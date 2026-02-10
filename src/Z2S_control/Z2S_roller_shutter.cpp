@@ -284,6 +284,15 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
           &zbGateway, &_device, MOES_COVER_STATE_COVER_POSITION_DP, 
           lift_percentage);
       } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE: {
+
+        float lift_float = lift_percentage;
+        zbGateway.sendAttributeWrite(
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
+          ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_float, false, 0, 0);
+      } break;
     }
   }
 }

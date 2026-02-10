@@ -3909,10 +3909,26 @@ void Z2S_onMultistateInputReceive(
         ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
         NO_CUSTOM_CMD_SID);
       
-      /*if (channel_number_slot >= 0)
+      if (channel_number_slot >= 0) {
+
         msgZ2SDeviceRollerShutter(
-        channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
-        0 : 1);*/
+          channel_number_slot, RS_MOVING_DIRECTION_MSG, (present_value < 2) ?
+          0 : 1);
+        if (present_value == 2) {
+
+          zbg_device_params_t device = {};
+          device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
+          memcpy(
+            device.ieee_addr, 
+            z2s_channels_table[channel_number_slot].ieee_addr, 
+            sizeof(esp_zb_ieee_addr_t));
+          device.short_addr = 
+            z2s_channels_table[channel_number_slot].short_addr;
+      
+          zbGateway.sendAttributeRead(
+            &device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
+        }
+      }
     } break;  
   }
 }
@@ -3950,7 +3966,9 @@ void Z2S_onAnalogInputReceive(
 
     case ESP_ZB_ZCL_ATTR_ANALOG_INPUT_PRESENT_VALUE_ID: {
 
+
       switch (z2s_channels_table[channel_number_slot].model_id) {
+
 
         case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
 
@@ -3964,9 +3982,28 @@ void Z2S_onAnalogInputReceive(
             log_e("no GPM channel found for address %s", ieee_addr_str);
             return;
           }       
-          msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
-                                                ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
-                                                *(float *)attribute->data.value);
+          msgZ2SDeviceGeneralPurposeMeasurement(
+            channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+            *(float *)attribute->data.value);
+        } break;
+
+
+        case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1: {
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+            NO_CUSTOM_CMD_SID);    
+
+          if (channel_number_slot < 0) {
+    
+            log_e(
+              "no RollerShutter channel found for address %s", ieee_addr_str);
+            return;
+          }       
+          uint16_t lift_percentage = *(float *)attribute->data.value;
+          msgZ2SDeviceRollerShutter(
+            channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
+            lift_percentage);
         } break;
       }
 
@@ -5203,6 +5240,8 @@ uint8_t Z2S_addZ2SDevice(
           device, first_free_slot, sub_id, name, func); 
       break;
 
+/*****************************************************************************/
+
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: 
       case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR: {
 
@@ -5215,6 +5254,13 @@ uint8_t Z2S_addZ2SDevice(
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
+
+        addZ2SDevicePressure(device, first_free_slot);
+      } break;
+
+/*****************************************************************************/
+
+      case Z2S_DEVICE_DESC_PRESSURE_SENSOR: {
 
         addZ2SDevicePressure(device, first_free_slot);
       } break;

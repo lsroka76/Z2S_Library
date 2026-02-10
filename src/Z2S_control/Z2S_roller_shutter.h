@@ -30,6 +30,8 @@
 #define Z2S_ROLLER_SHUTTER_FNC_MOES_COVER                  0x11
 #define Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER          0x12
 
+#define Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE      0x20
+
 namespace Supla {
 namespace Control {
 class Z2S_RollerShutter : public RollerShutterInterface {

@@ -1252,14 +1252,16 @@ void ZigbeeGateway::zbAttributeReporting(
       if (_on_electrical_measurement_receive)
         _on_electrical_measurement_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute);
     } else
-    if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT) { 
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT) ||
+        (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT)) { 
 
       log_i("multistate input cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
             cluster_id, attribute->id, attribute->data.type);
       if (_on_multistate_input_receive)
         _on_multistate_input_receive(src_address.u.ieee_addr, src_endpoint, cluster_id, attribute);
     } else
-    if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT) { 
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT) ||
+        (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT)) { 
 
       log_i("analog input cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
             cluster_id, attribute->id, attribute->data.type);

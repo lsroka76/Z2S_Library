@@ -38,7 +38,7 @@ void initZ2SDeviceVirtualRelay(
 
       case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1:
         
-        z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; 
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE; 
       break;
 
 
