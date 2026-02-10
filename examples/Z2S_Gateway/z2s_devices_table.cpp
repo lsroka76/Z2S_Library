@@ -2923,8 +2923,8 @@ void Z2S_onLumiCustomClusterReceive(
           if (lumi_rsd_battery_position > 0) {
 
             uint8_t lumi_rsd_battery = 
-              (*(uint8_t*)(attribute->data.value + lumi_battery_position));
-
+              (*(uint8_t*)(attribute->data.value + lumi_rsd_battery_position));
+            
             updateSuplaBatteryLevel(
               channel_number_slot, ZBD_BATTERY_PERCENTAGE_MSG, 
               lumi_rsd_battery * 2);
@@ -3135,8 +3135,8 @@ void Z2S_onLumiCustomClusterReceive(
       if (element) {
 
         log_i("is_charging %u", is_charging);
-        
-        element->getChannel()->setBatteryPowered(is_charging);
+
+        element->getChannel()->setBatteryPowered(!is_charging);
       }
     }break;
 
