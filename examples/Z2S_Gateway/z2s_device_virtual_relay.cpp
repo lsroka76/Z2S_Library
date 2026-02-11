@@ -99,6 +99,32 @@ void initZ2SDeviceVirtualRelay(
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY; 
       } break;
 
+
+      case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR: {
+
+        switch (z2s_channels_table[channel_number_slot].sub_id) {
+
+
+          case LUMI_SMOKE_DETECTOR_SELFTEST_SID: 
+            
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL;
+          break;
+
+
+          case LUMI_SMOKE_DETECTOR_BUZZER_SID:
+
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2;
+          break;
+          
+
+          case LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID:
+          case LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID:
+            
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8;
+          break;  
+        } 
+      } break;
+
       
       case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
 
@@ -287,6 +313,49 @@ void initZ2SDeviceVirtualRelay(
 
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
           TUYA_PRESENCE_SENSOR_ZYM10024GV3_FIND_SWITCH_DP);
+      break;
+
+
+      case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR:
+
+        switch (z2s_channels_table[channel_number_slot].sub_id) {
+
+
+          case LUMI_SMOKE_DETECTOR_SELFTEST_SID: {
+
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU32(
+              LUMI_CUSTOM_CLUSTER_SELFTEST_ID);
+
+            //Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(1);
+            //Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS8(0);
+          } break;
+
+
+          case LUMI_SMOKE_DETECTOR_BUZZER_SID:
+          break;
+
+
+          case LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID: {
+
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU32(
+              LUMI_CUSTOM_CLUSTER_HEARTBEAT_INDICATOR_ID);
+
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(1);
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS8(0);
+          } break;
+
+
+          case LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID: {
+
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU32(
+              LUMI_CUSTOM_CLUSTER_LINKAGE_ALARM_ID);
+
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(1);
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS8(0);
+          } break;
+        }
+
+      
       break;
     }
   }

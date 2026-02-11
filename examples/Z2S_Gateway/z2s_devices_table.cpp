@@ -2943,8 +2943,124 @@ void Z2S_onLumiCustomClusterReceive(
           ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
           LUMI_SMOKE_DETECTOR_SMOKE_SID);
         
-        if (channel_number_slot >=0) {
+        if (channel_number_slot >= 0) {
 
+          uint8_t lumi_smoke_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_SMOKE_ID, ESP_ZB_ZCL_ATTR_TYPE_U16,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+          if (lumi_smoke_position > 0) {
+
+            uint16_t lumi_smoke = 
+              *(uint16_t*)(attribute->data.value + lumi_smoke_position);
+
+            msgZ2SDeviceIASzone(channel_number_slot, (lumi_smoke == 1));
+          }
+        }
+        
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, 
+          SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+          LUMI_SMOKE_DETECTOR_SMOKE_DENSITY_SID);
+        
+        if (channel_number_slot >= 0) {
+
+          uint8_t lumi_smoke_density_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_SMOKE_DENSITY_ID, ESP_ZB_ZCL_ATTR_TYPE_U8,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+          if (lumi_smoke_density_position > 0) {
+
+            uint8_t lumi_smoke_density = 
+              *(uint8_t*)(attribute->data.value + lumi_smoke_density_position);
+
+            msgZ2SDeviceGeneralPurposeMeasurement(
+            channel_number_slot, 
+            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+            lumi_smoke_density);
+          }
+        }
+
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+          LUMI_SMOKE_DETECTOR_SELFTEST_STATE_SID);
+        
+        if (channel_number_slot >= 0) {
+
+          uint8_t lumi_selftest_state_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_TEST_STATE_ID, ESP_ZB_ZCL_ATTR_TYPE_U8,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+          if (lumi_selftest_state_position > 0) {
+
+            uint8_t lumi_selftest_state = 
+              *(uint8_t*)(attribute->data.value + lumi_selftest_state_position);
+
+            msgZ2SDeviceIASzone(
+              channel_number_slot, (lumi_selftest_state == 1)); 
+          }
+        }
+
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+          LUMI_SMOKE_DETECTOR_BUZZER_MANUAL_MUTE_SID);
+        
+        if (channel_number_slot >= 0) {
+
+          uint8_t lumi_buzzer_manual_mute_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_BUZZER_MANUAL_MUTE_ID, ESP_ZB_ZCL_ATTR_TYPE_U8,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+          if (lumi_buzzer_manual_mute_position > 0) {
+
+            uint8_t lumi_buzzer_manual_mute = 
+              *(uint8_t*)(attribute->data.value + 
+              lumi_buzzer_manual_mute_position);
+
+            msgZ2SDeviceIASzone(
+              channel_number_slot, (lumi_buzzer_manual_mute == 1)); 
+          }
+        }
+
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+          LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID);
+        
+        if (channel_number_slot >= 0) {
+
+          uint8_t lumi_heartbeat_indicator_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_HEARTBEAT_INDICATOR_ID, ESP_ZB_ZCL_ATTR_TYPE_U8,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+          if (lumi_heartbeat_indicator_position > 0) {
+
+            uint8_t lumi_heartbeat_indicator = 
+              *(uint8_t*)(attribute->data.value + 
+              lumi_heartbeat_indicator_position);
+
+            msgZ2SDeviceVirtualRelay(
+              channel_number_slot, (lumi_heartbeat_indicator == 1)); 
+          }
+        }
+
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+          LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID);
+        
+        if (channel_number_slot >= 0) {
+
+          uint8_t lumi_linkage_alarm_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_LINKAGE_ALARM_ID, ESP_ZB_ZCL_ATTR_TYPE_U8,
+          attribute->data.size, (uint8_t*)attribute->data.value);
+
+          if (lumi_linkage_alarm_position > 0) {
+
+            uint8_t lumi_linkage_alarm = 
+              *(uint8_t*)(attribute->data.value + lumi_linkage_alarm_position);
+
+            msgZ2SDeviceVirtualRelay(
+              channel_number_slot, (lumi_linkage_alarm == 1)); 
+          }
         }
         return;
       }
@@ -5238,6 +5354,31 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
       &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
       ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr); 
   }
+
+  if (device.model_id == Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR) {
+
+    zbGateway.sendAttributeRead(
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_SMOKE_ALARM_ID, false, 
+      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+    zbGateway.sendAttributeRead(
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_SMOKE_DENSITY_ID, false, 
+      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+    zbGateway.sendAttributeRead(
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_HEARTBEAT_INDICATOR_ID, false, 
+      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+    zbGateway.sendAttributeRead(
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_MANUAL_ALARM_ID, false, 
+      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+    zbGateway.sendAttributeRead(
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID, false, 
+      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+    zbGateway.sendAttributeRead(
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_LINKAGE_ALARM_ID, false, 
+      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+    
+  }
+
+
 }
 
 uint8_t Z2S_addZ2SDevice(

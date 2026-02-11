@@ -108,16 +108,51 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
       case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8: {
 
         state = true;
-        //zbGateway.sendAttributeWrite(
-      //    &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
-      //    ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_z2s_function_value_U8, false, 1,
-      //LUMI_MANUFACTURER_CODE);
+
+        zbGateway.sendAttributeWrite(
+          &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_z2s_function_value_U8, false, 1,
+          LUMI_MANUFACTURER_CODE);
+      } break;
+
+/*****************************************************************************/
+
+      case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL: {
+
+        state = true;
+        
+        zbGateway.sendAttributeWrite(
+          &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+          ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &state, false, 1, 
+          LUMI_MANUFACTURER_CODE);
+      } break;
+
+/*****************************************************************************/
+
+      case Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2: {
+
+        state = true;
+        
+        _z2s_function_value_U32 = 0x3C01;
+
+        zbGateway.sendAttributeWrite(
+          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_1_ID,
+          ESP_ZB_ZCL_ATTR_TYPE_U32, 4, &_z2s_function_value_U32, false, 1,
+          LUMI_MANUFACTURER_CODE);
+
+        _z2s_function_value_U8 = 0;
+
+        zbGateway.sendAttributeWrite(
+          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,
+          ESP_ZB_ZCL_ATTR_TYPE_U8, 4, &_z2s_function_value_U8, false, 1,
+          LUMI_MANUFACTURER_CODE);
       } break;
 
 /*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM:
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM: {
+
         state = true;
         
         if (_z2s_function == Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM)
@@ -333,10 +368,44 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
       case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8: {
 
         state = false;
-        //zbGateway.sendAttributeWrite(
-      //    &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
-      //    ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_z2s_function_value_S8, false, 1,
-      //LUMI_MANUFACTURER_CODE);
+
+        zbGateway.sendAttributeWrite(
+          &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_z2s_function_value_S8, false, 1,
+          LUMI_MANUFACTURER_CODE);
+      } break;
+
+/*****************************************************************************/
+
+      case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL: {
+
+        state = false;
+        
+        zbGateway.sendAttributeWrite(
+          &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+          ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &state, false, 1, 
+          LUMI_MANUFACTURER_CODE);
+      } break;
+
+/*****************************************************************************/
+
+      case Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2: {
+
+        state = true;
+        
+        _z2s_function_value_U32 = 0x3C00;
+
+        zbGateway.sendAttributeWrite(
+          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_1_ID,
+          ESP_ZB_ZCL_ATTR_TYPE_U32, 4, &_z2s_function_value_U32, false, 1,
+          LUMI_MANUFACTURER_CODE);
+
+        _z2s_function_value_U8 = 1;
+
+        zbGateway.sendAttributeWrite(
+          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,
+          ESP_ZB_ZCL_ATTR_TYPE_U8, 4, &_z2s_function_value_U8, false, 1,
+          LUMI_MANUFACTURER_CODE);
       } break;
 
 /*****************************************************************************/

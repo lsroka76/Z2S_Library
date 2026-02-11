@@ -1827,6 +1827,17 @@ if (Z2S_isGUIStarted())
                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 
                     LUMI_MANUFACTURER_CODE);
                 } break;*/
+
+                case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR: {
+
+                  write_mask = 0x01;
+                  joined_device->endpoint = 1;
+                  zbGateway.sendAttributeWrite(
+                    joined_device, LUMI_CUSTOM_CLUSTER, 
+                    LUMI_CUSTOM_CLUSTER_LINKAGE_ALARM_ID, 
+                    ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, true, 1, 
+                    LUMI_MANUFACTURER_CODE);
+                } break;
               }
 
               if (zpm->getState() == 2) {

@@ -151,12 +151,12 @@
 
 #define LUMI_ATTRIBUTE_RSD_BATTERY_ID                         0x65 //U8
 
-#define LUMI_ATTRIBUTE_SMOKE_ID                               0x0A0
-#define LUMI_ATTRIBUTE_SMOKE_DENSITY_ID                       0x0A1
-#define LUMI_ATTRIBUTE_TEST_STATE_ID                          0x0A2
-#define LUMI_ATTRIBUTE_BUZZER_MANUAL_MUTE_ID                  0x0A3
-#define LUMI_ATTRIBUTE_HEARTBEAT_INDICATOR_ID                 0x0A4
-#define LUMI_ATTRIBUTE_LINKAGE_ALARM_ID                       0x0A5
+#define LUMI_ATTRIBUTE_SMOKE_ID                               0x0A0 //U16
+#define LUMI_ATTRIBUTE_SMOKE_DENSITY_ID                       0x0A1 //U8
+#define LUMI_ATTRIBUTE_TEST_STATE_ID                          0x0A2 //U8
+#define LUMI_ATTRIBUTE_BUZZER_MANUAL_MUTE_ID                  0x0A3 //U8
+#define LUMI_ATTRIBUTE_HEARTBEAT_INDICATOR_ID                 0x0A4 //U8
+#define LUMI_ATTRIBUTE_LINKAGE_ALARM_ID                       0x0A5 //U8
 #define LUMI_ATTRIBUTE_BUZZER_MANUAL_MUTE_2_ID                0x126
 #define LUMI_ATTRIBUTE_TEST_STATE_2_ID                        0x127
 #define LUMI_ATTRIBUTE_SMOKE_2_ID                             0x13A
