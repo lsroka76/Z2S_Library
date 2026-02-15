@@ -456,99 +456,99 @@ bool Z2S_loadChannelExtendedData(
 /*****************************************************************************/
 
 void Z2S_onTemperatureReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float temperature);
 
 void Z2S_onHumidityReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float humidity);
 
 void Z2S_onPressureReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float pressure);
 
 void Z2S_onPM25Receive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float pm25);
 
 void Z2S_onIlluminanceReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t illuminance);
 
 void Z2S_onFlowReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t flow);
 
 void Z2S_onOccupancyReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint8_t occupancy);
 
 void Z2S_onOnOffReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   bool state);
 
 void Z2S_onElectricalMeasurementReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onMultistateInputReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onAnalogInputReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onMeteringReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onBasicReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, uint16_t endpoint, 
-  uint16_t cluster, const esp_zb_zcl_attribute_t *attribute);
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onCurrentLevelReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t level);
 
 void Z2S_onColorHueReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint8_t hue);
 
 void Z2S_onColorSaturationReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint8_t saturation);
 
 void Z2S_onThermostatTemperaturesReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t id, int16_t temperature);
 
 void Z2S_onThermostatModesReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t id, uint16_t mode);
 
 void Z2S_onWindowCoveringReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t id, uint16_t value);
 
 void Z2S_onSonoffCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onDevelcoCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onLumiCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onIkeaCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster,
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
 void Z2S_onBatteryReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t id, uint8_t battery_remaining);
 
 bool Z2S_onCustomCmdReceive(
@@ -556,11 +556,12 @@ bool Z2S_onCustomCmdReceive(
   uint8_t command_id, uint8_t buffer_size, uint8_t *buffer);
 
 void Z2S_onCmdCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-  uint8_t command_id, uint16_t payload_size, uint8_t *payload);
+  esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, uint16_t endpoint, 
+  uint16_t cluster, uint8_t command_id, uint16_t payload_size, 
+  uint8_t *payload);
 
 void Z2S_onIASzoneStatusChangeNotification(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   int iaszone_status);
 
 bool Z2S_onBTCBoundDevice(

@@ -335,7 +335,7 @@
 
 #define Z2S_DEVICE_DESC_LAST_ID                             0xFFFF
 
-#define MAX_BOUND_ENDPOINTS                                 0x06
+#define MAX_BOUND_ENDPOINTS                                 0x08
 #define MAX_BOUND_CLUSTERS                                  0x08
 
 #define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID              0xFD
@@ -1014,10 +1014,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR,
-    .z2s_device_clusters_count = 2,
+    .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT | 
                                Z2S_DEVICE_DESC_CONFIG_FLAG_ON_OFF_REJOIN_QUERY,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
+                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR,
@@ -5138,7 +5139,52 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_smoke.acn03",
     .z2s_device_uid = 33300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR,
-    .z2s_device_endpoints_count = 1}  
+    .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "ZIBI", .model_name = "Switch_1CH",
+    .z2s_device_uid = 33400,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "ZIBI", .model_name = "Switch_2CH",
+    .z2s_device_uid = 33405,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_2 }}},
+
+  {	.manufacturer_name = "ZIBI", .model_name = "Switch_4CH",
+    .z2s_device_uid = 33410,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
+	  .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_2 }}},
+
+  {	.manufacturer_name = "ZIBI", .model_name = "Switch_6CH",
+    .z2s_device_uid = 33415,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
+	  .z2s_device_endpoints_count = 6,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 6, 0, 0, Z2S_DEVICE_DESC_RELAY_2 }}},
+
+  {	.manufacturer_name = "ZIBI", .model_name = "Switch_8CH",
+    .z2s_device_uid = 33420,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
+	  .z2s_device_endpoints_count = 8,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 6, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 7, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
+                             { 8, 0, 0, Z2S_DEVICE_DESC_RELAY_2 }}}
 //DEVICES_END
 };
 #endif

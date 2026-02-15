@@ -225,13 +225,78 @@ int16_t Z2S_findChannelNumberSlot(
   return -1;
 }
 
+int16_t Z2S_findChannelNumberSlot(
+  uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
+  int32_t channel_type, int8_t sub_id) {
+
+  if (channel_type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
+
+    log_i ("sub id %d", sub_id);
+    for (uint8_t channels_counter = 0; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+
+      if (z2s_channels_table[channels_counter].valid_record) {
+
+        if ((z2s_channels_table[channels_counter].short_addr == short_addr) && 
+            ((endpoint < 0) || 
+              (z2s_channels_table[channels_counter].endpoint == endpoint)) &&
+            ((channel_type < 0) || 
+              (z2s_channels_table[channels_counter].Supla_channel_type == channel_type)) &&
+            ((sub_id < 0) || 
+              (z2s_channels_table[channels_counter].sub_id == sub_id) ||
+              (z2s_channels_table[channels_counter].user_data_flags &
+               USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0))) {
+
+          if (z2s_channels_table[channels_counter].user_data_flags &
+               USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0) {
+
+            virtual_button_data_t virtual_button_data = {};
+
+            if (getVirtualButtonNumber(
+                  virtual_button_data, 
+                  z2s_channels_table[channels_counter].endpoint, 
+                  z2s_channels_table[channels_counter].cluster_id, 
+                  z2s_channels_table[channels_counter].model_id, sub_id))
+              if (z2s_channels_table[channels_counter].sub_id ==
+                  virtual_button_data.button_id + 0x40)
+                return channels_counter;
+              else continue; 
+            else continue;
+          }
+          return channels_counter;
+        }
+      }
+    }
+    return -1;
+  }   
+  
+  for (uint8_t channels_counter = 0; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+
+    if (z2s_channels_table[channels_counter].valid_record) {
+
+      if ((z2s_channels_table[channels_counter].short_addr == short_addr) && 
+          ((endpoint < 0) || 
+            (z2s_channels_table[channels_counter].endpoint == endpoint)) &&
+          ((channel_type < 0) || 
+            (z2s_channels_table[channels_counter].Supla_channel_type == channel_type)) &&
+          ((sub_id < 0) || 
+            (z2s_channels_table[channels_counter].sub_id == sub_id))) { 
+        return 
+          channels_counter;
+      }
+    }
+  }  
+  return -1;
+}
+
 int16_t Z2S_findChannelNumberSlotV2(
   esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id, uint32_t channel_flags) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i(
     "%s, endpoint 0x%x, channel type 0x%x", ieee_addr_str, endpoint, 
@@ -262,13 +327,48 @@ int16_t Z2S_findChannelNumberSlotV2(
   return -1;
 }
 
+int16_t Z2S_findChannelNumberSlotV2(
+  uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
+  int32_t channel_type, int8_t sub_id, uint32_t channel_flags) {
+
+  char ieee_addr_str[24] = {};
+
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
+
+  log_i(
+    "%s, endpoint 0x%x, channel type 0x%x", ieee_addr_str, endpoint, 
+    channel_type);
+  
+  for (uint8_t channels_counter = 0; 
+       channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+
+    if (z2s_channels_table[channels_counter].valid_record) {
+
+      if ((z2s_channels_table[channels_counter].short_addr == short_addr) && 
+          ((endpoint < 0) || 
+            (z2s_channels_table[channels_counter].endpoint == endpoint)) &&
+          ((channel_type < 0) || 
+            (z2s_channels_table[channels_counter].Supla_channel_type == 
+              channel_type)) &&
+          ((sub_id < 0) || 
+            (z2s_channels_table[channels_counter].sub_id == sub_id)) &&
+            (z2s_channels_table[channels_counter].user_data_flags & 
+              channel_flags)) { 
+        return 
+          channels_counter;
+      }
+    }
+  }  
+  return -1;
+}
+
 int16_t Z2S_findChannelNumberNextSlot(
   int16_t prev_slot, esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, 
   uint16_t cluster, int32_t channel_type, int8_t sub_id) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
   
   log_i("%s, endpoint 0x%x, channel type 0x%x", ieee_addr_str, endpoint, channel_type);
   
@@ -2283,22 +2383,22 @@ bool Z2S_loadChannelExtendedData(
 /*****************************************************************************/
 
 void Z2S_onTemperatureReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float temperature) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, temperature %f", ieee_addr_str, endpoint, temperature);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) 
     channel_number_slot = Z2S_findChannelNumberSlot(
-      ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_THERMOMETER, 
+      short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_THERMOMETER, 
       NO_CUSTOM_CMD_SID);
   if (channel_number_slot < 0) 
     no_channel_found_error_func(ieee_addr_str);
@@ -2307,17 +2407,17 @@ void Z2S_onTemperatureReceive(
 }
 
 void Z2S_onHumidityReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float humidity) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, humidity %f", ieee_addr_str, endpoint, humidity);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
     NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0)
@@ -2327,18 +2427,18 @@ void Z2S_onHumidityReceive(
 }
 
 void Z2S_onPressureReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float pressure) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, pressure %f", 
         ieee_addr_str, endpoint, pressure);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-      ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_PRESSURESENSOR, 
+      short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_PRESSURESENSOR, 
       NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0)
@@ -2348,18 +2448,18 @@ void Z2S_onPressureReceive(
 }
 
 void Z2S_onPM25Receive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float pm25) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, PM 2.5 %f", 
         ieee_addr_str, endpoint, pm25);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, 
+    short_addr, endpoint, cluster, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     IKEA_AIR_QUALITY_SENSOR_PM25_SID);
   
@@ -2372,20 +2472,19 @@ void Z2S_onPM25Receive(
       pm25);
 }
 
-void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr, 
-                              uint16_t endpoint, 
-                              uint16_t cluster, 
-                              uint16_t illuminance) {
+void Z2S_onIlluminanceReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t illuminance) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, illuminance %u", 
         ieee_addr_str, endpoint, illuminance);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, 
+    short_addr, endpoint, cluster, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
 
@@ -2398,7 +2497,7 @@ void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr,
   }
   
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, 
+    short_addr, endpoint, cluster, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     NO_CUSTOM_CMD_SID);
 
@@ -2413,54 +2512,52 @@ void Z2S_onIlluminanceReceive(esp_zb_ieee_addr_t ieee_addr,
   no_channel_found_error_func(ieee_addr_str);
 }
 
-void Z2S_onFlowReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t flow) {
+void Z2S_onFlowReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t flow) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, flow %u", ieee_addr_str, endpoint, flow);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                          endpoint, 
-                                                          cluster, 
-                                                          SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                          SONOFF_SMART_VALVE_FLOW_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    SONOFF_SMART_VALVE_FLOW_SID);
 
   if (channel_number_slot >= 0) {                         
-    msgZ2SDeviceGeneralPurposeMeasurement(channel_number_slot, 
-                                          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-                                          flow); 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      flow); 
     return;
   }
   
   no_channel_found_error_func(ieee_addr_str);
 }
 
-void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t occupancy) {
+void Z2S_onOccupancyReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  uint8_t occupancy) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, occupancy 0x%x", ieee_addr_str, endpoint, occupancy);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                          endpoint, 
-                                                          cluster, 
-                                                          SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                          SONOFF_PIR_SENSOR_OCCUPANCY_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    SONOFF_PIR_SENSOR_OCCUPANCY_SID);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0));
     return;
   }
 
-  channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, 
-                                                  endpoint, 
-                                                  cluster, 
-                                                  SUPLA_CHANNELTYPE_BINARYSENSOR, 
-                                                  NO_CUSTOM_CMD_SID);
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0));
@@ -2470,44 +2567,33 @@ void Z2S_onOccupancyReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uin
   no_channel_found_error_func(ieee_addr_str);
 }
 
-void Z2S_onThermostatTemperaturesReceive(esp_zb_ieee_addr_t ieee_addr, 
-                                         uint16_t endpoint, 
-                                         uint16_t cluster, 
-                                         uint16_t id, 
-                                         int16_t temperature) {
+void Z2S_onThermostatTemperaturesReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, 
+  int16_t temperature) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, temperature %d", 
-        ieee_addr, endpoint, id, temperature);
+        short_addr, endpoint, id, temperature);
 
   int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
-    ieee_addr, 
-    endpoint, 
-    cluster, 
-    SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot_1 < 0)
     channel_number_slot_1 = Z2S_findChannelNumberSlot(
-      ieee_addr, 
-      endpoint, 
-      cluster, 
-      SUPLA_CHANNELTYPE_THERMOMETER, 
+      short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_THERMOMETER, 
       NO_CUSTOM_CMD_SID);
 
   int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
-    ieee_addr, 
-    endpoint, 
-    cluster, 
-    SUPLA_CHANNELTYPE_HVAC, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot_2 < 0) {
 
-    log_i("no thermostat channel found for address %s", ieee_addr);
+    log_i("no thermostat channel found for address %s", short_addr);
     return;
   }
 
@@ -2517,14 +2603,14 @@ void Z2S_onThermostatTemperaturesReceive(esp_zb_ieee_addr_t ieee_addr,
     case ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID: {
 
       if (channel_number_slot_1 >= 0)
-        msgZ2SDeviceTempHumidityTemp(channel_number_slot_1, 
-                                     (float)temperature / 100);
+        msgZ2SDeviceTempHumidityTemp(
+      channel_number_slot_1, (float)temperature / 100);
 
       else log_e("Missing thermometer channel for thermostat device!");
 
-      msgZ2SDeviceHvac(channel_number_slot_2, 
-                       TRV_LOCAL_TEMPERATURE_MSG, 
-                       temperature);
+      msgZ2SDeviceHvac(
+        channel_number_slot_2, TRV_LOCAL_TEMPERATURE_MSG, 
+        temperature);
     } break;
 
 
@@ -2545,37 +2631,31 @@ void Z2S_onThermostatTemperaturesReceive(esp_zb_ieee_addr_t ieee_addr,
   }
 }
 
-void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr, 
-                                  uint16_t endpoint, 
-                                  uint16_t cluster, 
-                                  uint16_t id, 
-                                  uint16_t mode) {
+void Z2S_onThermostatModesReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, 
+  uint16_t mode) {
   
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, mode %u", 
-        ieee_addr, endpoint, id, mode);
+        short_addr, endpoint, id, mode);
 
   int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
-    ieee_addr, 
-    endpoint, 
-    cluster,
-    SUPLA_CHANNELTYPE_HVAC, 
+    short_addr, endpoint, cluster,SUPLA_CHANNELTYPE_HVAC, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot_2 < 0) {
 
-    log_i("no thermostat channel found for address %s", ieee_addr);
+    log_i("no thermostat channel found for address %s", short_addr);
     return;
   }
   if ((cluster == ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG) &&
       (id == ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID)) {
 
-    msgZ2SDeviceHvac(channel_number_slot_2, 
-                     TRV_CHILD_LOCK_MSG, 
-                     mode);
+    msgZ2SDeviceHvac(
+      channel_number_slot_2, TRV_CHILD_LOCK_MSG, mode);
     return;
   }
 
@@ -2586,9 +2666,8 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
 
       uint8_t running_mode = mode & 1;
       
-      msgZ2SDeviceHvac(channel_number_slot_2, 
-                       TRV_RUNNING_STATE_MSG, 
-                       running_mode);
+      msgZ2SDeviceHvac(
+        channel_number_slot_2, TRV_RUNNING_STATE_MSG, running_mode);
     } break;
 
 
@@ -2670,23 +2749,23 @@ void Z2S_onThermostatModesReceive(esp_zb_ieee_addr_t ieee_addr,
 }
 
 void Z2S_onWindowCoveringReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t id, uint16_t value) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, value %u",  
-        ieee_addr, endpoint, id, value);
+        short_addr, endpoint, id, value);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
 
-    log_i("no roller shutter channel found for address %s", ieee_addr);
+    log_i("no roller shutter channel found for address %s", short_addr);
     return;
   }
   
@@ -2711,12 +2790,12 @@ void Z2S_onWindowCoveringReceive(
 /******************************************************************************/
 
 void Z2S_onDevelcoCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
@@ -2728,7 +2807,7 @@ void Z2S_onDevelcoCustomClusterReceive(
     case DEVELCO_CUSTOM_CLUSTER_MEASURED_VALUE_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster,
+        short_addr, endpoint, cluster,
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         DEVELCO_AIR_QUALITY_SENSOR_VOC_SID);
 
@@ -2863,12 +2942,12 @@ uint8_t scanLumiPayload(
 /******************************************************************************/
 
 void Z2S_onLumiCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i(
     "%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint,
@@ -2884,7 +2963,7 @@ void Z2S_onLumiCustomClusterReceive(
               *((uint8_t*)(attribute->data.value + i)));
       
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+        short_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
       if (channel_number_slot < 0) {
     
@@ -2911,7 +2990,7 @@ void Z2S_onLumiCustomClusterReceive(
             Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1) {
 
         channel_number_slot = Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
           NO_CUSTOM_CMD_SID);
         
         if (channel_number_slot >=0) {
@@ -2940,7 +3019,7 @@ void Z2S_onLumiCustomClusterReceive(
             Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR) {
 
         channel_number_slot = Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
           LUMI_SMOKE_DETECTOR_SMOKE_SID);
         
         if (channel_number_slot >= 0) {
@@ -2959,7 +3038,7 @@ void Z2S_onLumiCustomClusterReceive(
         }
         
         channel_number_slot = Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, 
+          short_addr, endpoint, cluster, 
           SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
           LUMI_SMOKE_DETECTOR_SMOKE_DENSITY_SID);
         
@@ -2982,7 +3061,7 @@ void Z2S_onLumiCustomClusterReceive(
         }
 
         channel_number_slot = Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
           LUMI_SMOKE_DETECTOR_SELFTEST_STATE_SID);
         
         if (channel_number_slot >= 0) {
@@ -3002,7 +3081,7 @@ void Z2S_onLumiCustomClusterReceive(
         }
 
         channel_number_slot = Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
           LUMI_SMOKE_DETECTOR_BUZZER_MANUAL_MUTE_SID);
         
         if (channel_number_slot >= 0) {
@@ -3023,7 +3102,7 @@ void Z2S_onLumiCustomClusterReceive(
         }
 
         channel_number_slot = Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
           LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID);
         
         if (channel_number_slot >= 0) {
@@ -3044,7 +3123,7 @@ void Z2S_onLumiCustomClusterReceive(
         }
 
         channel_number_slot = Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
           LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID);
         
         if (channel_number_slot >= 0) {
@@ -3066,7 +3145,7 @@ void Z2S_onLumiCustomClusterReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR,
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR,
         NO_CUSTOM_CMD_SID);  
 
       if (channel_number_slot < 0) {
@@ -3089,7 +3168,7 @@ void Z2S_onLumiCustomClusterReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER,
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER,
         NO_CUSTOM_CMD_SID);  
 
       if (channel_number_slot < 0) {
@@ -3152,7 +3231,7 @@ void Z2S_onLumiCustomClusterReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
         LUMI_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID);
 
       if (channel_number_slot < 0) {
@@ -3185,7 +3264,7 @@ void Z2S_onLumiCustomClusterReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
 
@@ -3208,7 +3287,7 @@ void Z2S_onLumiCustomClusterReceive(
       }
       
       channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         LUMI_AIR_QUALITY_SENSOR_VOC_SID);    
 
@@ -3235,7 +3314,7 @@ void Z2S_onLumiCustomClusterReceive(
     case 0x409: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+        short_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
       if (channel_number_slot < 0) {
     
@@ -3285,7 +3364,7 @@ void Z2S_onLumiCustomClusterReceive(
 
       int16_t channel_number_slot = 
         Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, 
+          short_addr, endpoint, cluster, 
           SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
           LUMI_AIR_QUALITY_SENSOR_AIR_QUALITY_SID);    
 
@@ -3311,7 +3390,7 @@ void Z2S_onLumiCustomClusterReceive(
 
       int16_t channel_number_slot = 
         Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
           NO_CUSTOM_CMD_SID);    
                                   
       if (channel_number_slot < 0) {
@@ -3369,12 +3448,12 @@ void Z2S_onLumiCustomClusterReceive(
 }
 
 void Z2S_onIkeaCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
         ieee_addr_str, 
@@ -3388,7 +3467,7 @@ void Z2S_onIkeaCustomClusterReceive(
     case IKEA_CUSTOM_CLUSTER_VOC_MEASUREMENT_ID: {
     
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         IKEA_AIR_QUALITY_SENSOR_VOC_SID);
   
@@ -3404,12 +3483,12 @@ void Z2S_onIkeaCustomClusterReceive(
 }
 
 void Z2S_onBasicReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, uint16_t endpoint, 
-  uint16_t cluster, const esp_zb_zcl_attribute_t *attribute) {
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   
   log_i("%s, short address 0x%x endpoint 0x%x, attribute id 0x%x, size %u", 
@@ -3427,7 +3506,7 @@ void Z2S_onBasicReceive(
       
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+        short_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
       if (channel_number_slot < 0) {
     
@@ -3449,7 +3528,7 @@ void Z2S_onBasicReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR,
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR,
         NO_CUSTOM_CMD_SID);  
 
       if (channel_number_slot < 0) {
@@ -3471,7 +3550,7 @@ void Z2S_onBasicReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
         NO_CUSTOM_CMD_SID);  
 
       if (channel_number_slot < 0) {
@@ -3505,7 +3584,7 @@ void Z2S_onBasicReceive(
       }
 
       channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_PRESSURESENSOR, NO_CUSTOM_CMD_SID);   
 
       if (channel_number_slot < 0) {
@@ -3530,12 +3609,12 @@ void Z2S_onBasicReceive(
 }
 
 void Z2S_onSonoffCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   uint32_t value = 0;
 
@@ -3559,7 +3638,7 @@ void Z2S_onSonoffCustomClusterReceive(
       case SONOFF_CUSTOM_CLUSTER_2_BUTTON_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-      ieee_addr, endpoint, SONOFF_CUSTOM_CLUSTER_2,
+      short_addr, endpoint, SONOFF_CUSTOM_CLUSTER_2,
       SUPLA_CHANNELTYPE_ACTIONTRIGGER, value - 1);    
 
       if (channel_number_slot < 0)
@@ -3581,7 +3660,7 @@ void Z2S_onSonoffCustomClusterReceive(
     case SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
         NO_CUSTOM_CMD_SID);
 
       if (channel_number_slot < 0) {
@@ -3597,7 +3676,7 @@ void Z2S_onSonoffCustomClusterReceive(
     case SONOFF_CUSTOM_CLUSTER_TAMPER_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
         SONOFF_CUSTOM_CLUSTER_TAMPER_SID);
       
       if (channel_number_slot < 0) {
@@ -3611,7 +3690,7 @@ void Z2S_onSonoffCustomClusterReceive(
     case SONOFF_CUSTOM_CLUSTER_ILLUMINATION_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
         SONOFF_PIR_SENSOR_ILLUMINANCE_SID);
       
       if (channel_number_slot < 0) {
@@ -3627,7 +3706,7 @@ void Z2S_onSonoffCustomClusterReceive(
     case SONOFF_CUSTOM_CLUSTER_AC_POWER_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
         SONOFF_ELECTRICITY_METER_SID);
       
       if (channel_number_slot < 0) {
@@ -3666,7 +3745,7 @@ void Z2S_onSonoffCustomClusterReceive(
     case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_TODAY_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster,
+        short_addr, endpoint, cluster,
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID);
       
@@ -3687,7 +3766,7 @@ void Z2S_onSonoffCustomClusterReceive(
     case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_MONTH_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID);
       
@@ -3708,7 +3787,7 @@ void Z2S_onSonoffCustomClusterReceive(
     case SONOFF_CUSTOM_CLUSTER_AC_ENERGY_YESTERDAY_ID: {
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID);
       
@@ -3729,7 +3808,7 @@ void Z2S_onSonoffCustomClusterReceive(
     case SONOFF_CUSTOM_CLUSTER_IRRIGATION_CYCLE_MODE_ID: {
         
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_VALVE_MODE_SID);
       
@@ -3757,27 +3836,27 @@ void Z2S_onSonoffCustomClusterReceive(
       }
            
       int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_VALVE_CYCLE_NUMBER_SID);
 
       int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_VALVE_CYCLES_COUNT_SID);
 
       int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_VALVE_TIME_SID);
 
       int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_VALVE_PAUSE_SID);
 
       int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(
-        ieee_addr, endpoint, cluster,
+        short_addr, endpoint, cluster,
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_VALVE_VOLUME_SID);
       
@@ -3821,18 +3900,18 @@ void Z2S_onSonoffCustomClusterReceive(
 }
 
 void Z2S_onOnOffReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   bool state) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, state 0x%x", 
         ieee_addr_str, endpoint, state);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot >= 0) {
 
@@ -3842,7 +3921,7 @@ void Z2S_onOnOffReceive(
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
@@ -3860,7 +3939,7 @@ void Z2S_onOnOffReceive(
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, NO_CUSTOM_CMD_SID);
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(
@@ -3869,7 +3948,7 @@ void Z2S_onOnOffReceive(
   }
   
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
@@ -3881,7 +3960,7 @@ void Z2S_onOnOffReceive(
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
@@ -3891,7 +3970,7 @@ void Z2S_onOnOffReceive(
   } 
   
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
@@ -3905,18 +3984,18 @@ void Z2S_onOnOffReceive(
 }
 
 void Z2S_onElectricalMeasurementReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
         ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
@@ -4039,18 +4118,18 @@ void Z2S_onElectricalMeasurementReceive(
 /******************************************************************************/
 
 void Z2S_onMultistateInputReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
         ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+    short_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
     
@@ -4082,7 +4161,7 @@ void Z2S_onMultistateInputReceive(
         case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1: {
       
           channel_number_slot = Z2S_findChannelNumberSlot(
-          ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
           NO_CUSTOM_CMD_SID);
       
           if (channel_number_slot >= 0) {
@@ -4115,18 +4194,18 @@ void Z2S_onMultistateInputReceive(
 /******************************************************************************/
 
 void Z2S_onAnalogInputReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
         ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, 
+    short_addr, endpoint, cluster, 
     ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
@@ -4152,7 +4231,7 @@ void Z2S_onAnalogInputReceive(
         case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
 
           channel_number_slot = Z2S_findChannelNumberSlot(
-            ieee_addr, endpoint, cluster, 
+            short_addr, endpoint, cluster, 
             SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
             LUMI_AIR_QUALITY_SENSOR_VOC_SID);    
 
@@ -4170,7 +4249,7 @@ void Z2S_onAnalogInputReceive(
         case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1: {
 
           channel_number_slot = Z2S_findChannelNumberSlot(
-            ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+            short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
             NO_CUSTOM_CMD_SID);    
 
           if (channel_number_slot < 0) {
@@ -4191,18 +4270,18 @@ void Z2S_onAnalogInputReceive(
   }
 }
 
-void Z2S_onMeteringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+void Z2S_onMeteringReceive(uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
                            const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, 
-                                                          SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
-                                                          NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+    NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
     
@@ -4244,15 +4323,18 @@ void Z2S_onMeteringReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint
   }
 }
 
-void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t level) {
+void Z2S_onCurrentLevelReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t level) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, cluster 0x%x, level 0x%x", ieee_addr_str, endpoint, cluster, level);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, DIMMER_FUNC_BRIGHTNESS_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
+    DIMMER_FUNC_BRIGHTNESS_SID);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(channel_number_slot, level, true);
@@ -4262,55 +4344,70 @@ void Z2S_onCurrentLevelReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, 
   no_channel_found_error_func(ieee_addr_str);
 }
 
-void Z2S_onColorHueReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t hue) {
+void Z2S_onColorHueReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint8_t hue) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, cluster 0x%x, hue 0x%x", ieee_addr_str, endpoint, cluster, hue);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
+    NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGB(z2s_channels_table[channel_number_slot].model_id, z2s_channels_table[channel_number_slot].Supla_channel, hue, 0xFF, true);
+    msgZ2SDeviceRGB(
+      z2s_channels_table[channel_number_slot].model_id, 
+      z2s_channels_table[channel_number_slot].Supla_channel, hue, 0xFF, true);
     return;
   }
   //log_i(_no_channel_found_str, ieee_addr);
   no_channel_found_error_func(ieee_addr_str);
 }
 
-void Z2S_onColorSaturationReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint8_t saturation) {
+void Z2S_onColorSaturationReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint8_t saturation) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, cluster 0x%x, saturation 0x%x", ieee_addr_str, endpoint, cluster, saturation);
   
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, NO_CUSTOM_CMD_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
+    NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGB(z2s_channels_table[channel_number_slot].model_id, z2s_channels_table[channel_number_slot].Supla_channel, 0xFF, 
-                    saturation,true);
+    msgZ2SDeviceRGB(
+      z2s_channels_table[channel_number_slot].model_id, 
+      z2s_channels_table[channel_number_slot].Supla_channel, 0xFF, saturation,
+      true);
     return;
   }
   //log_i(_no_channel_found_str, ieee_addr);
   no_channel_found_error_func(ieee_addr_str);
 }
 
-void Z2S_onColorTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, uint16_t color_temperature) {
+void Z2S_onColorTemperatureReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t color_temperature) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, cluster 0x%x, color temparature 0x%x", ieee_addr_str, endpoint, cluster, color_temperature);
   
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, DIMMER_FUNC_COLOR_TEMPERATURE_SID);
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
+    DIMMER_FUNC_COLOR_TEMPERATURE_SID);
   
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceDimmer(z2s_channels_table[channel_number_slot].Supla_channel, color_temperature, true);
+    msgZ2SDeviceDimmer(
+      z2s_channels_table[channel_number_slot].Supla_channel, 
+      color_temperature, true);
     return;
   }
   //log_i(_no_channel_found_str, ieee_addr);
@@ -4319,18 +4416,18 @@ void Z2S_onColorTemperatureReceive(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoi
 
 
 void Z2S_onBatteryReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t id, uint8_t battery_remaining) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, cluster 0x%x, battery 0x%x", 
         ieee_addr_str, endpoint, cluster, battery_remaining);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, -1, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+    short_addr, -1, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot < 0) {
     //log_i(_no_channel_found_str, ieee_addr);
@@ -4361,19 +4458,19 @@ void Z2S_onBatteryReceive(
 /*****************************************************************************/
 
 void Z2S_onIASzoneStatusChangeNotification(
-    esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
+    uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
     int iaszone_status) {
   
   char ieee_addr_str[24] = {};
   bool skip_generic_check = false;
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i("%s, endpoint 0x%x, cluster 0x%x, zone status 0x%x", 
         ieee_addr_str, endpoint, cluster, iaszone_status);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     TUYA_VIBRATION_SENSOR_CONTACT_SID);
   
   if (channel_number_slot >= 0) {
@@ -4386,7 +4483,7 @@ void Z2S_onIASzoneStatusChangeNotification(
   }
   
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     IAS_ZONE_ALARM_1_SID);
 
   if (channel_number_slot >= 0) {
@@ -4404,7 +4501,7 @@ void Z2S_onIASzoneStatusChangeNotification(
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     IAS_ZONE_ALARM_2_SID);
 
   if (channel_number_slot >= 0) {
@@ -4419,7 +4516,7 @@ void Z2S_onIASzoneStatusChangeNotification(
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     IAS_ZONE_TAMPER_SID);
 
   if (channel_number_slot >= 0) {
@@ -4434,7 +4531,7 @@ void Z2S_onIASzoneStatusChangeNotification(
   }
   
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     IAS_ZONE_LOW_BATTERY_SID);
 
   if (channel_number_slot >= 0) {
@@ -4452,7 +4549,7 @@ void Z2S_onIASzoneStatusChangeNotification(
     return;
   
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
@@ -4483,10 +4580,13 @@ bool compareBuffer(uint8_t *buffer, uint8_t buffer_size, char *lookup_str) {
   return true;
 }
 
-bool processPhilipsCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, uint8_t command_id, 
-                            uint8_t buffer_size, uint8_t *buffer) {
+bool processPhilipsCommands(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
+  uint8_t command_id, uint8_t buffer_size, uint8_t *buffer) {
 
-    log_i("endpoint (0x%x), command id (0x%x), buffer_size (0x%x)", endpoint, command_id, buffer_size);
+    log_i(
+      "endpoint (0x%x), command id (0x%x), buffer_size (0x%x)", 
+      endpoint, command_id, buffer_size);
 
     if ((command_id == 0) && (buffer_size ==8)) {
 
@@ -4495,15 +4595,19 @@ bool processPhilipsCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uin
       uint8_t is_valid  = *(buffer + 2);
       uint16_t duration = ((*(buffer + 7)) << 8) | (*(buffer + 6));
 
-      log_i("is_valid = %d, button_id = %d, action_id = %d, duration = %d", is_valid, button_id, action_id, duration);
+      log_i(
+        "is_valid = %d, button_id = %d, action_id = %d, duration = %d", 
+        is_valid, button_id, action_id, duration);
 
       uint8_t sub_id = 4 * (button_id - 1);
       sub_id += action_id;
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+        sub_id);
 
       if (channel_number_slot < 0)
-        log_i("No PHILIPS HUE channel found for address %s", ieee_addr);
+        log_i("No PHILIPS HUE channel found for address %s", short_addr);
       else 
         msgZ2SDeviceActionTriggerV2(channel_number_slot, sub_id);
       return true;
@@ -4512,7 +4616,7 @@ bool processPhilipsCommands(esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uin
 }
 
 bool processIkeaSymfoniskCommands(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
   uint8_t command_id, uint8_t buffer_size, uint8_t *buffer) {
 
   log_i(
@@ -4527,7 +4631,7 @@ bool processIkeaSymfoniskCommands(
   bool isSomrig = false;
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
     NO_CUSTOM_CMD_SID);
 
   if ((z2s_channels_table[channel_number_slot].model_id == 
@@ -4633,10 +4737,10 @@ bool processIkeaSymfoniskCommands(
   if (sub_id == 0x7F) return false;
 
   channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
 
   if (channel_number_slot < 0)
-    log_i("No IKEA SYMFONISK/SOMRIG channel found for address %s", ieee_addr);
+    log_i("No IKEA SYMFONISK/SOMRIG channel found for address %s", short_addr);
   else 
     msgZ2SDeviceActionTriggerV2(channel_number_slot, sub_id);
   return true;
@@ -4648,7 +4752,7 @@ bool Z2S_onCustomCmdReceive(
   
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   log_i(
     "%s, endpoint 0x%x, cluster 0x%x, cmd id 0x%x", ieee_addr_str, endpoint,
@@ -4668,6 +4772,8 @@ bool Z2S_onCustomCmdReceive(
     "z2s_channels_table[channel_number_slot].Supla_channel 0x%x", 
     z2s_channels_table[channel_number_slot].Supla_channel);
 
+  uint16_t short_addr = z2s_channels_table[channel_number_slot].short_addr;
+  
   switch (z2s_channels_table[channel_number_slot].model_id) {
     
     
@@ -4933,13 +5039,13 @@ bool Z2S_onCustomCmdReceive(
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:  
       
       return processIkeaSymfoniskCommands(
-        ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
+        short_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
       break;
 
     case Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON:  //this will never happen
       
       return processIkeaSymfoniskCommands(
-        ieee_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
+        short_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
     break;
 
     case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1: {
@@ -5057,8 +5163,9 @@ bool Z2S_onCustomCmdReceive(
 }
 
 void Z2S_onCmdCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster, 
-  uint8_t command_id, uint16_t payload_size, uint8_t *payload) {
+  esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, uint16_t endpoint, 
+  uint16_t cluster, uint8_t command_id, uint16_t payload_size, 
+  uint8_t *payload) {
 
   switch (cluster) {
     case TUYA_PRIVATE_CLUSTER_EF00: {
@@ -5080,16 +5187,18 @@ void Z2S_onCmdCustomClusterReceive(
       
       log_i("IKEA custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", 
             cluster, endpoint, command_id);
+
       processIkeaSymfoniskCommands(
-        ieee_addr, endpoint, cluster, command_id, payload_size, payload);
+        short_addr, endpoint, cluster, command_id, payload_size, payload);
      } break;
 
      case PHILIPS_CUSTOM_CLUSTER: {
       
       log_i("Philips custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", 
             cluster, endpoint, command_id);
+
       processPhilipsCommands(
-        ieee_addr, endpoint, cluster, command_id, payload_size, payload);
+        short_addr, endpoint, cluster, command_id, payload_size, payload);
      } break;
     
     default: log_i("Unknown custom cluster(0x%x) command(0x%x)", 
@@ -5268,7 +5377,7 @@ void Z2S_onDeviceLeave(
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   uint8_t device_number_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
@@ -5287,7 +5396,7 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
   char ieee_addr_str[24] = {};
 
-  ieee_addr_to_str(ieee_addr_str, ieee_addr);
+  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
   uint8_t device_number_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
@@ -5326,6 +5435,18 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
  // if (Z2S_checkZbDeviceFlags(device_number_slot, 
    //   ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN)) {
     
+
+    if (device.model_id == Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR) {
+
+      uint8_t write_mask = 1;
+      
+      zbGateway.sendAttributeWrite(
+        &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, true, 1, 
+        LUMI_MANUFACTURER_CODE);
+    }
+
+
     log_i("IAS zone status query after rejoin");
   
     zbGateway.sendAttributeRead(
@@ -5374,11 +5495,8 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
       ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
     zbGateway.sendAttributeRead(
       &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_LINKAGE_ALARM_ID, false, 
-      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
-    
+      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE); 
   }
-
-
 }
 
 uint8_t Z2S_addZ2SDevice(
