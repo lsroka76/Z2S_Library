@@ -1106,8 +1106,10 @@ void ZigbeeGateway::zbAttributeReporting(
   //log_i(
     //"short address after esp_zb_ieee_address_by_short 0x%04X", short_addr);
 
-  //for (uint8_t i = 0; i < 8; i++)
-  //log_i("ieee_addr[%u] = %02X", i, src_address.u.ieee_addr[7-i]);
+  esp_zb_ieee_addr_t ieee_addr_test = {};
+  esp_zb_ieee_address_by_short(short_addr, ieee_addr_test);
+  for (uint8_t i = 0; i < 8; i++)
+  log_i("ieee_addr[%u] = %02X", i, ieee_addr_test[7-i]);
 
   if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT) {
     
