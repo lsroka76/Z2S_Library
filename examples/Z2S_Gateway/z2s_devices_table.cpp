@@ -774,8 +774,20 @@ bool Z2S_loadChannelsTable() {
                 z2s_channels_table[channels_counter].Zb_device_id = new_Zb_device_id;
                 channels_table_save_required = true;
               }
-              if ((z2s_channels_table[channels_counter].model_id >= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) &&
-                  (z2s_channels_table[channels_counter].model_id <= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY) &&
+              //Zbeacon::TS011F correction
+              if ((new_Zb_device_id < 0xFF) &&
+                  (z2s_zb_devices_table[new_Zb_device_id].device_uid == 
+                    12500)) {
+
+                z2s_channels_table[channels_counter].model_id = 
+                  Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A;
+                channels_table_save_required = true;
+              }
+
+              if ((z2s_channels_table[channels_counter].model_id >= 
+                    Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) &&
+                  (z2s_channels_table[channels_counter].model_id <= 
+                    Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY) &&
                   (z2s_channels_table[channels_counter].sub_id == 0x01)) {
 
                     z2s_channels_table[channels_counter].sub_id = 0x00;
@@ -1070,9 +1082,10 @@ bool Z2S_updateZbDeviceUidIdx(
         z2s_zb_devices_table[zb_device_slot].devices_list_idx = 
           devices_list_counter;
 
-        log_i("device uid = %lu, devices list index = %lu", 
-              z2s_zb_devices_table[zb_device_slot].device_uid,
-              z2s_zb_devices_table[zb_device_slot].devices_list_idx);
+        log_i(
+          "device uid = %lu, devices list index = %lu", 
+          z2s_zb_devices_table[zb_device_slot].device_uid,
+          z2s_zb_devices_table[zb_device_slot].devices_list_idx);
 
         return true;
       }
@@ -1779,10 +1792,9 @@ char* Z2S_getZbDeviceLocalName(int8_t device_number_slot) {
 }
 
 
-void Z2S_onDataSaveRequest(uint8_t Supla_channel, 
-                           uint8_t data_save_mode,  
-                           uint8_t extended_data_type, 
-                           uint8_t *extended_data) {
+void Z2S_onDataSaveRequest(
+  uint8_t Supla_channel, uint8_t data_save_mode,  uint8_t extended_data_type, 
+  uint8_t *extended_data) {
   
   switch (data_save_mode) {
 
