@@ -1806,6 +1806,77 @@ bool getVirtualButtonNumber(
     break;
 
 
+    case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM: 
+        
+      switch (sub_id) {
+
+
+        case LUMI_SMART_BUTTON_5F_WXKG12LM_PRESSED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          return true;
+        } break;
+
+
+        case LUMI_SMART_BUTTON_5F_WXKG12LM_DOUBLE_PRESSED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x2;
+          return true;
+        } break;
+
+
+        case LUMI_SMART_BUTTON_5F_WXKG12LM_HELD_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_HOLD;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_HOLD;
+          return true;
+        } break;
+
+        
+        case LUMI_SMART_BUTTON_5F_WXKG12LM_RELEASED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x4;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x4;
+          return true;
+        } break;
+
+
+        case LUMI_SMART_BUTTON_5F_WXKG12LM_SHAKED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x5;
+          return true;
+        } break;
+
+
+        default: {
+
+          log_e(
+            "unknown combination: model id = 0x%04X, sub id = 0x%02X", 
+            model_id, sub_id);
+          return false;
+        } break;
+      } 
+    break;
+
+
     default: {
 
           log_e(

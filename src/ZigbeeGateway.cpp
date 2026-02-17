@@ -2122,15 +2122,17 @@ void ZigbeeGateway::zbReadReportConfigResponse(
   }
 }
 
-bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t cluster_id, 
-                                      uint16_t attribute_id, bool ack, uint8_t direction,
-                                      uint8_t disable_default_response, uint8_t manuf_specific, 
-                                      uint16_t manuf_code) {
+bool ZigbeeGateway::sendAttributeRead(
+  zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, 
+  bool ack, uint8_t direction,uint8_t disable_default_response, 
+  uint8_t manuf_specific, uint16_t manuf_code) {
 
     if (_active_pairing)
       return false;
 
     esp_zb_zcl_read_attr_cmd_t read_req = {};
+
+    log_i("device->short_addr = 0x%04X", device->short_addr);
 
     if (device->short_addr != 0) {
       read_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
@@ -2177,13 +2179,16 @@ bool ZigbeeGateway::sendAttributeRead(zbg_device_params_t * device, int16_t clus
     return ack;
 }
 
-void ZigbeeGateway::sendAttributesRead(zbg_device_params_t * device, int16_t cluster_id, 
-                                       uint8_t attr_number, uint16_t *attribute_ids) {
+void ZigbeeGateway::sendAttributesRead(
+  zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, 
+  uint16_t *attribute_ids) {
   
   if (_active_pairing)
     return;
   
   esp_zb_zcl_read_attr_cmd_t read_req = {};
+
+  log_i("device->short_addr = 0x%04X", device->short_addr);
 
   if (device->short_addr != 0) {
     read_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
@@ -2317,6 +2322,8 @@ void ZigbeeGateway::sendOnOffCmd(zbg_device_params_t *device, bool value) {
 
     esp_zb_zcl_on_off_cmd_t cmd_req = {};
     
+    log_i("device->short_addr = 0x%04X", device->short_addr);
+
     if (device->short_addr != 0) {
       cmd_req.address_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
       cmd_req.zcl_basic_cmd.dst_addr_u.addr_short = device->short_addr;

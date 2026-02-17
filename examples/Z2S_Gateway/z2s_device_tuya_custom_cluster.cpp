@@ -1303,6 +1303,25 @@ void processTuyaSmokeDetectorReport(
       humidity_dp_id = TUYA_SMOKE_DETECTOR_228WZH_HUMIDITY_DP;
       smoke_detected_value = 1;
     } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1: {
+
+      smoke_dp_id = TUYA_SMOKE_DETECTOR_HS2SA1_SMOKE_DP;
+      battery_state_dp_id = TUYA_SMOKE_DETECTOR_HS2SA1_BATTERY_STATE_DP;
+      self_test_dp_id = TUYA_SMOKE_DETECTOR_HS2SA1_SELF_TEST_DP;
+      smoke_detected_value = 1;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01: {
+
+      smoke_dp_id = MOES_SMOKE_DETECTOR_ZSSHMSSD01_SMOKE_DP;
+      battery_state_dp_id = MOES_SMOKE_DETECTOR_ZSSHMSSD01_BATTERY_STATE_DP;
+      self_test_dp_id = MOES_SMOKE_DETECTOR_ZSSHMSSD01_SELF_TEST_DP;
+      battery_level_dp_id = MOES_SMOKE_DETECTOR_ZSSHMSSD01_BATTERY_LEVEL_DP;
+      smoke_detected_value = 1;
+    } break;
   }
 
   if (smoke_dp_id) {
@@ -2913,6 +2932,8 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH:
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1:
+    case Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01:
 
       processTuyaSmokeDetectorReport(
         channel_number_slot, payload_size, payload, model_id); 

@@ -2748,7 +2748,7 @@ void Z2S_onThermostatTemperaturesReceive(
 
   if (channel_number_slot_2 < 0) {
 
-    log_i("no thermostat channel found for address %s", short_addr);
+    log_i("no thermostat channel found for address 0x%04X", short_addr);
     return;
   }
 
@@ -2803,7 +2803,7 @@ void Z2S_onThermostatModesReceive(
 
   if (channel_number_slot_2 < 0) {
 
-    log_i("no thermostat channel found for address %s", short_addr);
+    log_i("no thermostat channel found for address 0x%04X", short_addr);
     return;
   }
   if ((cluster == ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG) &&
@@ -2920,7 +2920,7 @@ void Z2S_onWindowCoveringReceive(
 
   if (channel_number_slot < 0) {
 
-    log_i("no roller shutter channel found for address %s", short_addr);
+    log_i("no roller shutter channel found for address 0x%04X", short_addr);
     return;
   }
   
@@ -4341,6 +4341,53 @@ void Z2S_onMultistateInputReceive(
             }
           }
         } break;
+
+
+        case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM: {
+
+          int8_t sub_id = 0x7F;
+
+          switch (present_value) {
+
+            case 0:
+            case 16:
+
+              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_HELD_SID;
+            break;
+
+            case 1:
+              
+              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_PRESSED_SID;
+            break;
+
+            case 2:
+              
+              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_DOUBLE_PRESSED_SID;
+            break;
+
+            case 0xFF:
+            case 0x11:
+              
+              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_RELEASED_SID;
+            break;
+
+            case 0x12:
+              
+              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_SHAKED_SID;
+            break;
+          }
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+            sub_id);
+
+          if (channel_number_slot < 0)
+            log_i(
+              "No LUMI smart button channel found for address 0x%04X", 
+              short_addr);
+          else 
+            msgZ2SDeviceActionTriggerV2(channel_number_slot, sub_id);   
+        } break;
       };
     } break;  
   }
@@ -4762,7 +4809,7 @@ bool processPhilipsCommands(
         sub_id);
 
       if (channel_number_slot < 0)
-        log_i("No PHILIPS HUE channel found for address %s", short_addr);
+        log_i("No PHILIPS HUE channel found for address 0x%04X", short_addr);
       else 
         msgZ2SDeviceActionTriggerV2(channel_number_slot, sub_id);
       return true;
@@ -4895,7 +4942,7 @@ bool processIkeaSymfoniskCommands(
     short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
 
   if (channel_number_slot < 0)
-    log_i("No IKEA SYMFONISK/SOMRIG channel found for address %s", short_addr);
+    log_i("No IKEA SYMFONISK/SOMRIG channel found for address 0x%04X", short_addr);
   else 
     msgZ2SDeviceActionTriggerV2(channel_number_slot, sub_id);
   return true;
@@ -6131,7 +6178,8 @@ uint8_t Z2S_addZ2SDevice(
           case LUMI_DOUBLE_SWITCH_RIGHT_SWITCH_SID:
 
             addZ2SDeviceVirtualRelay(
-              &zbGateway, device, first_free_slot,sub_id, name, SUPLA_CHANNELFNC_POWERSWITCH); 
+              &zbGateway, device, first_free_slot,sub_id, name, 
+              SUPLA_CHANNELFNC_POWERSWITCH); 
           break;
         }        
       } break;
@@ -6152,6 +6200,14 @@ uint8_t Z2S_addZ2SDevice(
         addZ2SDeviceActionTrigger(
           device, first_free_slot, sub_id, "BUTTON", 
           SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM: {
+
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, name, func);
       } break;
 
 /*****************************************************************************/     
@@ -6545,6 +6601,28 @@ uint8_t Z2S_addZ2SDevice(
             addZ2SDeviceTempHumidity(
               device, first_free_slot, sub_id, name, func, true);
           break;
+        } break;
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1:
+      case Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01:
+
+        switch (sub_id) {
+
+          case TUYA_SMOKE_DETECTOR_SMOKE_SID:
+
+            addZ2SDeviceIASzone(
+              device, first_free_slot, sub_id, name, func); 
+          break;
+
+
+          case TUYA_SMOKE_DETECTOR_SELF_TEST_SID: 
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+
         } break;
 
 /*****************************************************************************/     
@@ -8331,6 +8409,8 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH:
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1:
+    case Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01:
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
     case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
@@ -8765,6 +8845,25 @@ void Z2S_buildSuplaChannels(
     } break;
 
 /*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_5F_WXKG12LM_PRESSED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_5F_WXKG12LM_DOUBLE_PRESSED_SID);
+
+      Z2S_addZ2SDevice(joined_device, LUMI_SMART_BUTTON_5F_WXKG12LM_HELD_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_5F_WXKG12LM_RELEASED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_5F_WXKG12LM_SHAKED_SID);
+    } break;
+
+/*****************************************************************************/
     
     case Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH: {
       
@@ -9116,6 +9215,19 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_SMOKE_DETECTOR_TEMPHUMIDITY_SID, "T/H");
 
+    }break;
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1:
+    case Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01: {
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMOKE_DETECTOR_SMOKE_SID, "SMOKE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMOKE_DETECTOR_SELF_TEST_SID, "SELF TEST STATUS", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
     }break;
 
 /*****************************************************************************/

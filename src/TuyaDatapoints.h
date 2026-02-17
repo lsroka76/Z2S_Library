@@ -91,6 +91,18 @@
 
 #define TUYA_SMOKE_DETECTOR_2_SENSITIVITY_DP                        0x66
 
+#define TUYA_SMOKE_DETECTOR_HS2SA1_SMOKE_DP                         0x01
+#define TUYA_SMOKE_DETECTOR_HS2SA1_SELF_TEST_DP                     0x09
+#define TUYA_SMOKE_DETECTOR_HS2SA1_BATTERY_STATE_DP                 0x0E
+#define TUYA_SMOKE_DETECTOR_HS2SA1_SILENCE_DP                       0x10
+
+#define MOES_SMOKE_DETECTOR_ZSSHMSSD01_SMOKE_DP                      0x01
+#define MOES_SMOKE_DETECTOR_ZSSHMSSD01_SELF_TEST_DP                  0x09
+#define MOES_SMOKE_DETECTOR_ZSSHMSSD01_BATTERY_STATE_DP              0x0E
+#define MOES_SMOKE_DETECTOR_ZSSHMSSD01_BATTERY_LEVEL_DP              0x0F
+#define MOES_SMOKE_DETECTOR_ZSSHMSSD01_SILENCE_DP                    0x10
+
+
 #define TUYA_CO_DETECTOR_CO_DP                                      0x01
 #define TUYA_CO_DETECTOR_CO_CONC_DP                                 0x02
 #define TUYA_CO_DETECTOR_SELF_TEST_DP                               0x09

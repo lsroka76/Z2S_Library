@@ -101,6 +101,8 @@
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1               0x2201
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2               0x2202 //ONENUO
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH          0x2205
+#define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1          0x2206
+#define Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01      0x2207
 
 #define Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR                 0x220A
 
@@ -180,6 +182,7 @@
 
 #define Z2S_DEVICE_DESC_LUMI_SWITCH                         0x4010
 #define Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH                  0x4011
+#define Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY                   0x4011
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY                          0x4020
 #define Z2S_DEVICE_DESC_TUYA_DP_RELAY                       0x4025
@@ -282,6 +285,7 @@
 
 #define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F                0x5610
 #define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F                0x5611
+#define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM       0x5612
 
 #define Z2S_DEVICE_DESC_HVAC_START                          0x6000
 
@@ -432,7 +436,6 @@
 #define IKEA_AIR_QUALITY_SENSOR_PM25_SID                    0x01
 #define IKEA_AIR_QUALITY_SENSOR_VOC_SID                     0x02
 
-
 #define TUYA_RAIN_SENSOR_RAIN_SID                           0x01
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_SID                    0x02
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_AVG_20_MIN_SID         0x03
@@ -546,6 +549,12 @@
 #define ADEO_ENKI_REMOTE_CONTROL_SCENE_2_PRESSED_SID        0x0D
 #define ADEO_ENKI_REMOTE_CONTROL_SCENE_3_PRESSED_SID        0x0E
 #define ADEO_ENKI_REMOTE_CONTROL_SCENE_4_PRESSED_SID        0x0F
+
+#define LUMI_SMART_BUTTON_5F_WXKG12LM_PRESSED_SID           0x00
+#define LUMI_SMART_BUTTON_5F_WXKG12LM_DOUBLE_PRESSED_SID    0x01
+#define LUMI_SMART_BUTTON_5F_WXKG12LM_HELD_SID              0x02
+#define LUMI_SMART_BUTTON_5F_WXKG12LM_RELEASED_SID          0x03
+#define LUMI_SMART_BUTTON_5F_WXKG12LM_SHAKED_SID            0x04
 
 #define LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID                 0x00
 #define LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID          0x01
@@ -1258,6 +1267,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                             // ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT,
                             // LUMI_CUSTOM_CLUSTER }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_IAS_ACE_SMART_BUTTON_4F,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
@@ -1469,6 +1483,10 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM,
+    .z2s_device_clusters_count = 0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F,
     .z2s_device_clusters_count = 2,
@@ -1768,6 +1786,18 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -5207,6 +5237,34 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 33500,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_switch.aq3",
+    .z2s_device_uid = 33600,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.relay.c2acn01",
+    .z2s_device_uid = 33700,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY,
+    .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+
+  { .manufacturer_name = "_TZE284_ai4rqhky", .model_name = "TS0601",
+    .z2s_device_uid = 33800,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_vawy74yh", .model_name = "TS0601",
+    .z2s_device_uid = 33900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_vawy74yh", .model_name = "TS0601",
+    .z2s_device_uid = 33905,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01,
+    .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };
 #endif
+//
