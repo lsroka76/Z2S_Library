@@ -2663,6 +2663,43 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Fading time",
     .Tuya_datapoint_description = "Enter numeric value: 1 - 15000 [s]" },
 
+	//wzm100
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_WZM100_RADAR_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Radar sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 1 - 9" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_WZM100_MINIMUM_RANGE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Minimal range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 1000 [cm]/step 10 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_WZM100_MAXIMUM_RANGE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Maximal range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 1000 [cm]/step 10 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_WZM100_INTERVAL_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Interval time",
+    .Tuya_datapoint_description = "Enter numeric value: 1 - 3600 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_WZM100_DETECTION_DELAY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Detection delay",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 100/1 = 0.1 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_WZM100_FADING_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Fading time",
+    .Tuya_datapoint_description = "Enter numeric value: 5 - 1500 [s]/step 5 [s]" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
     .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_MOTOR_THRUST_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,

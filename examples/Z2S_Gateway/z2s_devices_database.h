@@ -126,6 +126,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3    0x2331
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE        0x2335
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z         0x2340
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100         0x2345
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
@@ -1889,6 +1890,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -2278,6 +2285,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_bguser20", .model_name = "TS0201",
     .z2s_device_uid = 3000,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_f2bw0b6k", .model_name = "TS0201",
+    .z2s_device_uid = 3005,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
@@ -5155,41 +5167,46 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 33405,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
 	  .z2s_device_endpoints_count = 2,
-    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_2 }}},
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
 
   {	.manufacturer_name = "ZIBI", .model_name = "Switch_4CH",
     .z2s_device_uid = 33410,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
 	  .z2s_device_endpoints_count = 4,
-    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_2 }}},
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
 
   {	.manufacturer_name = "ZIBI", .model_name = "Switch_6CH",
     .z2s_device_uid = 33415,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
 	  .z2s_device_endpoints_count = 6,
-    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 6, 0, 0, Z2S_DEVICE_DESC_RELAY_2 }}},
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 6, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
 
   {	.manufacturer_name = "ZIBI", .model_name = "Switch_8CH",
     .z2s_device_uid = 33420,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
 	  .z2s_device_endpoints_count = 8,
-    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 6, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 7, 0, 0, Z2S_DEVICE_DESC_RELAY_2 },
-                             { 8, 0, 0, Z2S_DEVICE_DESC_RELAY_2 }}}
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 3, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 4, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 6, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 7, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                             { 8, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+
+  { .manufacturer_name = "TZE204_laokfqwu", .model_name = "TS0601",
+    .z2s_device_uid = 33500,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .z2s_device_endpoints_count = 1},
 //DEVICES_END
 };
 #endif

@@ -791,6 +791,27 @@ void setup() {
   client.setRxTimeout(20000);
   client.setNoDelay(true);
 */
+
+  /*zbg_device_params_t test_joined_device = {};
+
+  test_joined_device.model_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR;
+  esp_zb_ieee_addr_t ieee_addr_test = {};
+
+  const char *manuf = "Develco Products A/S";
+  const char *model = "WISZB-120";
+  Z2S_addZbDeviceTableSlot(
+    ieee_addr_test, 0x1250, manuf, model, 2, 
+    Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR, 0);
+
+    test_joined_device.endpoint = 35;
+    test_joined_device.model_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B;
+    
+    Z2S_addZ2SDevice(&test_joined_device);
+
+    test_joined_device.endpoint = 38;
+    test_joined_device.model_id = Z2S_DEVICE_DESC_TEMPERATURE_SENSOR;
+    
+    Z2S_addZ2SDevice(&test_joined_device);*/
 }
 
 zbg_device_params_t *gateway_device;
