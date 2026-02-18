@@ -9593,17 +9593,17 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, ELECTRICITY_METER_TOTAL_ACTIVE_POWER_SID, 
         "TOTAL ACTIVE POWER", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-        "kW");
+        "W");
 
       Z2S_addZ2SDevice(
         joined_device, ELECTRICITY_METER_TOTAL_REACTIVE_POWER_SID, 
         "TOTAL REACTIVE POWER", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-        "kW");
+        "var");
 
       Z2S_addZ2SDevice(
         joined_device, ELECTRICITY_METER_TOTAL_APPARENT_POWER_SID, 
         "TOTAL APPARENT POWER", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-        "kW");
+        "VA");
     } break;
 
 /*****************************************************************************/
