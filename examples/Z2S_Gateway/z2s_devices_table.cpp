@@ -4177,6 +4177,7 @@ void Z2S_onElectricalMeasurementReceive(
 
   switch (attribute->id) {
 
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_ID: {
 
       msgZ2SDeviceElectricityMeter(
@@ -4184,12 +4185,30 @@ void Z2S_onElectricalMeasurementReceive(
         *(uint16_t *)attribute->data.value);
     } break;
     
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID: {
 
       msgZ2SDeviceElectricityMeter(
         channel_number_slot, Z2S_EM_VOLTAGE_A_SEL, 
         *(uint16_t *)attribute->data.value);
     } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_PHB_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_VOLTAGE_B_SEL, 
+        *(uint16_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_PHC_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_VOLTAGE_C_SEL, 
+        *(uint16_t *)attribute->data.value);
+    } break;
+
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID: {
 
@@ -4198,12 +4217,45 @@ void Z2S_onElectricalMeasurementReceive(
         *(uint16_t *)attribute->data.value);
     } break;
 
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_PHB_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_CURRENT_B_SEL, 
+        *(uint16_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_PHC_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_CURRENT_C_SEL, 
+        *(uint16_t *)attribute->data.value);
+    } break;
+
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID: {
 
       msgZ2SDeviceElectricityMeter(
         channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, 
         *(int16_t *)attribute->data.value);
     } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_PHB_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACTIVE_POWER_B_SEL, 
+        *(int16_t *)attribute->data.value);
+    } break;
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_PHC_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACTIVE_POWER_C_SEL, 
+        *(int16_t *)attribute->data.value);
+    } break;
+
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_REACTIVE_POWER_ID: {
 
@@ -4212,12 +4264,78 @@ void Z2S_onElectricalMeasurementReceive(
         *(int16_t *)attribute->data.value);
     } break;
 
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_REACTIVE_POWER_PH_B_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_REACTIVE_POWER_B_SEL, 
+        *(int16_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_REACTIVE_POWER_PH_C_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_REACTIVE_POWER_C_SEL, 
+        *(int16_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_APPARENT_POWER_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_APPARENT_POWER_A_SEL, 
+        *(uint16_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_APPARENT_POWER_PHB_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_APPARENT_POWER_B_SEL, 
+        *(uint16_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_APPARENT_POWER_PHC_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_APPARENT_POWER_C_SEL, 
+        *(uint16_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_POWER_FACTOR_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_POWER_FACTOR_A_SEL, 
+        *(int8_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_POWER_FACTOR_PH_B_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_POWER_FACTOR_B_SEL, 
+        *(int8_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_POWER_FACTOR_PH_C_ID: {
+
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_POWER_FACTOR_C_SEL, 
+        *(int8_t *)attribute->data.value);
+    } break;
+
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID: {
 
       msgZ2SDeviceElectricityMeter(
         channel_number_slot, Z2S_EM_AC_VOLTAGE_MUL_SEL, 
         *(uint16_t *)attribute->data.value);
     } break;
+
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_DIVISOR_ID: {
 
@@ -4226,12 +4344,14 @@ void Z2S_onElectricalMeasurementReceive(
         *(uint16_t *)attribute->data.value);
     } break;
 
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_MULTIPLIER_ID: {
 
       msgZ2SDeviceElectricityMeter(
         channel_number_slot, Z2S_EM_AC_CURRENT_MUL_SEL, 
         *(uint16_t *)attribute->data.value);
     } break;
+
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACCURRENT_DIVISOR_ID: {
 
@@ -4240,12 +4360,14 @@ void Z2S_onElectricalMeasurementReceive(
         *(uint16_t *)attribute->data.value);
     } break;
 
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_MULTIPLIER_ID: {
 
       msgZ2SDeviceElectricityMeter(
         channel_number_slot, Z2S_EM_AC_ACTIVE_POWER_MUL_SEL, 
         *(uint16_t *)attribute->data.value);
     } break;
+
 
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACPOWER_DIVISOR_ID: {
 
@@ -4254,6 +4376,7 @@ void Z2S_onElectricalMeasurementReceive(
         *(uint16_t *)attribute->data.value);
     } break;
 
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_MULTIPLIER_ID: {
 
       msgZ2SDeviceElectricityMeter(
@@ -4261,11 +4384,20 @@ void Z2S_onElectricalMeasurementReceive(
         *(uint16_t *)attribute->data.value);
     } break;
 
+
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_DIVISOR_ID: {
 
       msgZ2SDeviceElectricityMeter(
         channel_number_slot,  Z2S_EM_AC_FREQUENCY_DIV_SEL, 
         *(uint16_t *)attribute->data.value);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_ACTIVE_POWER_ID:
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_REACTIVE_POWER_ID:
+    case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_APPARENT_POWER_ID: {
+
+      
     } break;
   }
 }
@@ -5724,12 +5856,14 @@ uint8_t Z2S_addZ2SDevice(
         devices_table_full_error_func();
         return ADD_Z2S_DEVICE_STATUS_DT_FULL;
     }
-    log_i("model id %d, first free slot %d", 
-          device->model_id, first_free_slot);
+    log_i(
+      "model id 0x%04X, first free slot %d", device->model_id, 
+      first_free_slot);
     
     switch (device->model_id) {
       
       case Z2S_DEVICE_DESC_NULL: break;
+
 /*****************************************************************************/     
 
       case Z2S_DEVICE_DESC_TUYA_REPEATER: 
@@ -6262,12 +6396,16 @@ uint8_t Z2S_addZ2SDevice(
           
           case SONOFF_ON_OFF_SID:
 
-            addZ2SDeviceVirtualRelay( &zbGateway,device, first_free_slot, sub_id, name, func); break;
+            addZ2SDeviceVirtualRelay(
+              &zbGateway,device, first_free_slot, sub_id, name, func); 
+            break;
             
 
           case SONOFF_ELECTRICITY_METER_SID:
 
-            addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, sub_id, true); break;
+            addZ2SDeviceElectricityMeter(
+              &zbGateway, device, false, false, first_free_slot, sub_id, true); 
+            break;
 
 
           case SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID:
@@ -6279,6 +6417,39 @@ uint8_t Z2S_addZ2SDevice(
           break;
         }
       } break;
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER: {
+
+        switch (sub_id) {
+          
+          /*case SONOFF_ON_OFF_SID:
+
+            addZ2SDeviceVirtualRelay(
+              &zbGateway,device, first_free_slot, sub_id, name, func); 
+            break;*/
+            
+
+          case ELECTRICITY_METER_SID:
+
+            addZ2SDeviceElectricityMeter(
+              &zbGateway, device, false, false, first_free_slot, sub_id, 
+              false); 
+            break;
+
+
+          case ELECTRICITY_METER_TOTAL_ACTIVE_POWER_SID:
+          case ELECTRICITY_METER_TOTAL_REACTIVE_POWER_SID:
+          case ELECTRICITY_METER_TOTAL_APPARENT_POWER_SID:
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+        }
+      } break;
+
+/*****************************************************************************/
 
       case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
 
@@ -7362,30 +7533,28 @@ uint8_t Z2S_addZ2SDevice(
             addZ2SDeviceVirtualRelay(
               &zbGateway, device, first_free_slot, sub_id, name, func); 
           break;
+        } 
+      } break;
 
+      case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER: {
 
-          case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER: {
+        addZ2SDeviceIASzone(
+          device, first_free_slot, -1, "GATE CONTACT", 
+          SUPLA_CHANNELFNC_OPENINGSENSOR_GATE);
 
-            addZ2SDeviceIASzone(
-              device, first_free_slot, -1, "GATE CONTACT", 
-              SUPLA_CHANNELFNC_OPENINGSENSOR_GATE);
+        uint8_t contact_slot = first_free_slot;
 
-            uint8_t contact_slot = first_free_slot;
+        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
-            first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
-
-            if (first_free_slot == 0xFF) {
+        if (first_free_slot == 0xFF) {
           
-              devices_table_full_error_func();
-              return ADD_Z2S_DEVICE_STATUS_DT_FWA;
-            }
-
-            addZ2SDeviceVirtualRelay(
-              &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
-              "OPEN/CLOSE GATE", SUPLA_CHANNELFNC_CONTROLLINGTHEGATE);
-            
-          } break;
+          devices_table_full_error_func();
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
+
+        addZ2SDeviceVirtualRelay(
+          &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
+          "OPEN/CLOSE GATE", SUPLA_CHANNELFNC_CONTROLLINGTHEGATE);
       } break;
     
 /******************************************************************************/     
@@ -9352,32 +9521,51 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       SONOFF_ON_OFF_SID, 
-                       "SWITCH", 
-                       SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_ON_OFF_SID, "SWITCH", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       SONOFF_ELECTRICITY_METER_SID, 
-                       "EM");
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_ELECTRICITY_METER_SID, "EM");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID, 
-                       "ENERGY (TODAY)", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "kWh");
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID, 
+        "ENERGY (TODAY)", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kWh");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID, 
-                       "ENERGY (MONTH)", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "kWh");   
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID, 
+        "ENERGY (MONTH)", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kWh");   
 
-      Z2S_addZ2SDevice(joined_device, 
-                       SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID, 
-                       "ENERGY (YESTERDAY)", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "kWh");
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID, 
+        "ENERGY (YESTERDAY)", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+        "kWh");
+    } break;
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER: {
+      
+      /*Z2S_addZ2SDevice(
+        joined_device, SONOFF_ON_OFF_SID, "SWITCH", 
+        SUPLA_CHANNELFNC_POWERSWITCH);*/
+
+      Z2S_addZ2SDevice(
+        joined_device, ELECTRICITY_METER_SID, "EM");
+
+      Z2S_addZ2SDevice(
+        joined_device, ELECTRICITY_METER_TOTAL_ACTIVE_POWER_SID, 
+        "TOTAL ACTIVE POWER", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+        "kW");
+
+      Z2S_addZ2SDevice(
+        joined_device, ELECTRICITY_METER_TOTAL_REACTIVE_POWER_SID, 
+        "TOTAL REACTIVE POWER", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+        "kW");
+
+      Z2S_addZ2SDevice(
+        joined_device, ELECTRICITY_METER_TOTAL_APPARENT_POWER_SID, 
+        "TOTAL APPARENT POWER", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+        "kW");
     } break;
 
 /*****************************************************************************/

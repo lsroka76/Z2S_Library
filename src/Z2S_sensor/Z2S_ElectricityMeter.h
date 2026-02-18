@@ -265,6 +265,36 @@ void setPowerActive2(int phase, int64_t power) {
   setPowerActive(phase, em_power);
 }
 
+void setPowerReactive2(int phase, int64_t power) {
+
+  int64_t em_power;
+  
+  if ((_active_power_multiplier == 0) || (_active_power_divisor == 0))
+    em_power = power * 100000;
+  else
+    em_power = (power * _active_power_multiplier * 100000) / _active_power_divisor;
+
+  log_d("_active_power_multiplier = %d, _active_power_divisor = %d, em_power = %lld", 
+        _active_power_multiplier, _active_power_divisor, em_power);
+
+  setPowerReactive(phase, em_power);
+}
+
+void setPowerApparent2(int phase, int64_t power) {
+
+  int64_t em_power;
+  
+  if ((_active_power_multiplier == 0) || (_active_power_divisor == 0))
+    em_power = power * 100000;
+  else
+    em_power = (power * _active_power_multiplier * 100000) / _active_power_divisor;
+
+  log_d("_active_power_multiplier = %d, _active_power_divisor = %d, em_power = %lld", 
+        _active_power_multiplier, _active_power_divisor, em_power);
+
+  setPowerApparent(phase, em_power);
+}
+
 void setFreq2(uint32_t freq) {
 
   uint32_t em_freq;
