@@ -224,6 +224,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER            0x4670
 
+#define Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER         0x4680
+
 #define Z2S_DEVICE_DESC_ON_OFF_VALVE_DC                     0x4700
 #define Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_DC                0x4705
 #define Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY           0x4710
@@ -1157,6 +1159,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
@@ -5351,6 +5358,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "Danfoss", .model_name = "eTRV0103",
     .z2s_device_uid = 34000,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DANFOSS_ETRV0103,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE608_xkr8gep3", .model_name = "TS0603",
+    .z2s_device_uid = 34100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER,
     .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };

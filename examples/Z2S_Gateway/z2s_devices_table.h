@@ -335,6 +335,10 @@ int16_t Z2S_findChannelNumberSlot(
   esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id);
 
+int16_t Z2S_findChannelNumberSlot(
+  uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
+  int32_t channel_type, int8_t sub_id);
+
 int16_t Z2S_findChannelNumberSlotV2(
   esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id, uint32_t channel_flags = UINT32_MAX);

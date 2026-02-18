@@ -5373,7 +5373,7 @@ void Z2S_onCmdCustomClusterReceive(
     case TUYA_PRIVATE_CLUSTER_EF00: {
 
       processTuyaCustomCluster(
-        ieee_addr, endpoint, command_id, payload_size, payload); 
+        short_addr, endpoint, command_id, payload_size, payload); 
       
       if (_on_Tuya_custom_cluster_receive) 
         _on_Tuya_custom_cluster_receive(command_id, payload_size, payload);
@@ -5949,12 +5949,9 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
 
-        addZ2SDeviceVirtualRelay(&zbGateway,
-                                device, 
-                                first_free_slot, 
-                                sub_id, 
-                                name, 
-                                SUPLA_CHANNELFNC_POWERSWITCH); 
+        addZ2SDeviceVirtualRelay(
+          &zbGateway, device, first_free_slot, sub_id, name, 
+          SUPLA_CHANNELFNC_POWERSWITCH); 
       break;
 
 /*****************************************************************************/     
@@ -5965,12 +5962,9 @@ uint8_t Z2S_addZ2SDevice(
 
         char gang_name[30];
         sprintf(gang_name, "GANG #%d", device->endpoint);
-        addZ2SDeviceVirtualRelay(&zbGateway,
-                                 device, 
-                                 first_free_slot, 
-                                 NO_CUSTOM_CMD_SID, 
-                                 gang_name, 
-                                 SUPLA_CHANNELFNC_LIGHTSWITCH); 
+        addZ2SDeviceVirtualRelay(
+          &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, gang_name, 
+          SUPLA_CHANNELFNC_LIGHTSWITCH); 
       } break;
 
 /*****************************************************************************/     
@@ -6253,9 +6247,11 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
 
         if (sub_id == TUYA_3PHASES_ELECTRICITY_METER_SID)
-          addZ2SDeviceElectricityMeter(&zbGateway, device, false, false, first_free_slot, sub_id, false); 
+          addZ2SDeviceElectricityMeter(
+        &zbGateway, device, false, false, first_free_slot, sub_id, false); 
         else
-          addZ2SDeviceGeneralPurposeMeasurement(device, first_free_slot, sub_id, name, func, unit);
+          addZ2SDeviceGeneralPurposeMeasurement(
+        device, first_free_slot, sub_id, name, func, unit);
       } break;
 
 /*****************************************************************************/     
@@ -7366,6 +7362,29 @@ uint8_t Z2S_addZ2SDevice(
             addZ2SDeviceVirtualRelay(
               &zbGateway, device, first_free_slot, sub_id, name, func); 
           break;
+
+
+          case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER: {
+
+            addZ2SDeviceIASzone(
+              device, first_free_slot, -1, "GATE CONTACT", 
+              SUPLA_CHANNELFNC_OPENINGSENSOR_GATE);
+
+            uint8_t contact_slot = first_free_slot;
+
+            first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
+            if (first_free_slot == 0xFF) {
+          
+              devices_table_full_error_func();
+              return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+            }
+
+            addZ2SDeviceVirtualRelay(
+              &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
+              "OPEN/CLOSE GATE", SUPLA_CHANNELFNC_CONTROLLINGTHEGATE);
+            
+          } break;
         }
       } break;
     

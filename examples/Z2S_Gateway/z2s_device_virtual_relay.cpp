@@ -94,7 +94,8 @@ void initZ2SDeviceVirtualRelay(
       case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
       case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
-      case Z2S_DEVICE_DESC_TUYA_DP_RELAY: {
+      case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
+      case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER: {
 
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY; 
       } break;
@@ -313,6 +314,13 @@ void initZ2SDeviceVirtualRelay(
 
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
           TUYA_PRESENCE_SENSOR_ZYM10024GV3_FIND_SWITCH_DP);
+      break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER:
+
+        Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
+          TUYA_TS0603_GATE_CONTROLER_STATE_DP);
       break;
 
 
