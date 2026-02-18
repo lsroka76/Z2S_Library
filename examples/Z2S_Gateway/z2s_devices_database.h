@@ -4866,6 +4866,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "SILICON_LABORATORIES", .model_name = "NSPanelP-Router",
+    .z2s_device_uid = 26425,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
     .z2s_device_uid = 26500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY,
