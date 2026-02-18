@@ -1427,7 +1427,7 @@ if (Z2S_isGUIStarted())
                         "reporting set matched #%u", 
                         reporting_sets_table_counter);
 
-                      zbGateway.setClusterReporting(
+                      zbGateway.setClusterReportingExt(
                         joined_device, 
                         Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
                           z2s_cluster_id,
@@ -1439,7 +1439,8 @@ if (Z2S_isGUIStarted())
                           z2s_min_interval_value,
                         Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
                           z2s_max_interval_value,
-                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
+                        (void *)
+                        &Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
                           z2s_delta_value,
                         false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1,
                         Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
@@ -1786,7 +1787,7 @@ if (Z2S_isGUIStarted())
                 } break;
 
 
-                case Z2s_DEVICE_DESC_LUMI_TRV: {  
+                case Z2S_DEVICE_DESC_LUMI_TRV: {  
                   
                   zbGateway.setClusterReporting(
                     joined_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 

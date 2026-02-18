@@ -31,7 +31,7 @@
 #include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>
 #include <Z2S_sensor/Z2S_virtual_thermometer.h>
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 #define TRVZB_CMD_SET 0x40 //1-63 reserved for Tuya/Saswell/Moes and other TS0601 variants
 
@@ -56,7 +56,7 @@
 #define TRVZB_CMD_SET_HEATSETPOINT_MIN    0x0190 //400
 #define TRVZB_CMD_SET_HEATSETPOINT_MAX    0x0DAC //3500
                     
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 #define BOSCH_CMD_SET 0x41
 
@@ -64,14 +64,14 @@
 #define BOSCH_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
 #define BOSCH_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 #define EUROTRONIC_CMD_SET 0x42
 
 #define EUROTRONIC_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
 #define EUROTRONIC_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 #define LUMI_CMD_SET 0x43
 
@@ -81,6 +81,22 @@
 #define LUMI_FFF2_CMD_ACTION_LINK_SENSOR      0x02
 #define LUMI_FFF2_CMD_ACTION_UNLINK_SENSOR    0x04
 #define LUMI_FFF2_CMD_ACTION_SEND_TEMPERATURE 0x05
+
+/*****************************************************************************/
+
+#define DANFOSS_CMD_SET 0x44
+
+#define DANFOSS_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
+#define DANFOSS_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+
+/*****************************************************************************/
+
+#define EXTERNAL_TEMPERATURE_SENSOR_IGNORE          0x0000
+#define EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE   0x0001
+#define EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT       0x0002
+#define EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED       0x0004
+
+/*****************************************************************************/
 
 typedef struct lumi_fff2_cmd_header_s {
 
@@ -214,12 +230,6 @@ static constexpr lumi_sensor_send_temperature_params_t
   .temperature_100   = -27500
 };
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
-
-#define EXTERNAL_TEMPERATURE_SENSOR_IGNORE          0x0000
-#define EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE   0x0001
-#define EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT       0x0002
-#define EXTERNAL_TEMPERATURE_SENSOR_USE_FIXED       0x0004
 
 typedef struct ts0601_command_set_s {
 

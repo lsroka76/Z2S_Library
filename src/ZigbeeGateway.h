@@ -184,6 +184,11 @@
 #define EUROTRONIC_VALVE_POSITION_ID                          0x4001 //U8 
 #define EUROTRONIC_HOST_FLAGS_ID                              0x4008 //U24 bit 0 =1, bit 1=1 OFF, bit 2=1 HEAT, CHILD LOCK bit3
 
+#define DANFOSS_MANUFACTURER_CODE                             0x1246
+
+#define DANFOSS_EXTERNAL_TEMPERATURE_INPUT_ID                 0x4015 //S16
+#define DANFOSS_RADIATOR_COVERED_ID                           0x4016 //BOOL
+
 #define CUSTOM_CMD_SYNC                                       true
 #define CUSTOM_CMD_ASYNC                                      false
 

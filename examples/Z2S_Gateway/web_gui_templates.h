@@ -338,7 +338,10 @@ static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM 
 	 	 .manufacturer_name = "BOSCH" },
 
 		{ .manufacturer_code = EUROTRONIC_MANUFACTURER_CODE,										
-	 	 .manufacturer_name = "EUROTRONIC" }
+	 	 .manufacturer_name = "EUROTRONIC" },
+
+		{ .manufacturer_code = DANFOSS_MANUFACTURER_CODE,										
+	 	 .manufacturer_name = "DANFOSS" }
 	};
 
 static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {

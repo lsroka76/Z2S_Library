@@ -1,6 +1,7 @@
 #include "z2s_device_hvac.h"
 
-/*----------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
+
 uint8_t getZ2SDeviceHvacCmdSet(int16_t channel_number_slot) {
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
@@ -76,62 +77,79 @@ uint8_t getZ2SDeviceHvacCmdSet(int16_t channel_number_slot) {
       return siterwell_cmd_set;
     } break;
 
+
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV16: {
 
       return trv16_cmd_set;
     } break;
+
 
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198: {
 
       return zwt198_cmd_set;
     } break;
 
+
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100: {
 
       return zwt100_cmd_set;
     } break;
-    
+
+
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002: {
 
       return bht002_cmd_set;
     } break;
+
 
     case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR: {
 
       return zhtsr_cmd_set;
     } break;
 
+
     case Z2S_DEVICE_DESC_TS0601_BOTR9V: {
 
       return botr9v_cmd_set;
     } break;
-    
+
+
     case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
 
       return TRVZB_CMD_SET;
     } break;
+
 
     case Z2S_DEVICE_DESC_BOSCH_BTHRA: {
 
       return BOSCH_CMD_SET;
     } break;
 
+
     case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001: {
 
       return EUROTRONIC_CMD_SET;
     } break;
 
-    case Z2s_DEVICE_DESC_LUMI_TRV: {
+
+    case Z2S_DEVICE_DESC_LUMI_TRV: {
 
       return LUMI_CMD_SET;
     } break;
+
+
+    case Z2S_DEVICE_DESC_DANFOSS_ETRV0103: {
+
+      return DANFOSS_CMD_SET;
+    } break;
+
 
     default:
       return 0xFF; break;
   }  
 }
 
-/*----------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void initZ2SDeviceHvac(
   ZigbeeGateway *gateway, zbg_device_params_t *device, 
@@ -179,6 +197,7 @@ void initZ2SDeviceHvac(
         hvac_room_temperature_max = TRVZB_CMD_SET_HEATSETPOINT_MAX;
       } break;
 
+
       case BOSCH_CMD_SET: {
 
         trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
@@ -186,6 +205,7 @@ void initZ2SDeviceHvac(
         hvac_room_temperature_max = BOSCH_CMD_SET_HEATSETPOINT_MAX;
         onOffOnly = false;
       } break;
+
 
       case EUROTRONIC_CMD_SET: {
 
@@ -195,12 +215,22 @@ void initZ2SDeviceHvac(
         onOffOnly = false;
       } break;
 
+
       case LUMI_CMD_SET: {
 
         trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
         hvac_room_temperature_min = LUMI_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = LUMI_CMD_SET_HEATSETPOINT_MAX;
         onOffOnly = true;
+      } break;
+
+
+      case DANFOSS_CMD_SET: {
+
+        trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
+        hvac_room_temperature_min = DANFOSS_CMD_SET_HEATSETPOINT_MIN;
+        hvac_room_temperature_max = DANFOSS_CMD_SET_HEATSETPOINT_MAX;
+        onOffOnly = false;
       } break;
     }
   }
@@ -310,7 +340,7 @@ void initZ2SDeviceHvac(
     Z2S_getChannelZbDevicePtr(channel_number_slot));
 }
 
-/*----------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void addZ2SDeviceHvac(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
@@ -330,7 +360,7 @@ void addZ2SDeviceHvac(
     z2s_channels_table[trv_thermometer_slot].Supla_channel); 
 }
 
-/*----------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value) {
 

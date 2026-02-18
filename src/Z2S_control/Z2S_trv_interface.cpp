@@ -74,7 +74,8 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
   if ((_trv_commands_set == TRVZB_CMD_SET) ||
       (_trv_commands_set == BOSCH_CMD_SET) ||
       (_trv_commands_set == EUROTRONIC_CMD_SET) ||
-      (_trv_commands_set == LUMI_CMD_SET)) {
+      (_trv_commands_set == LUMI_CMD_SET) ||
+      (_trv_commands_set == DANFOSS_CMD_SET)) {
   
       _trv_temperature_calibration_trigger = 10;
   }
@@ -240,11 +241,9 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
             ts0601_cmd_set_target_heatsetpoint_factor;
           temperature_setpoint /= 100;
 
-          sendTuyaRequestCmdValue32(_gateway, 
-                                    &_device, 
-                                    ts0601_command_sets_table[_trv_commands_set].
-                                      ts0601_cmd_set_target_heatsetpoint_dp_id,
-                                    temperature_setpoint);
+          sendTuyaRequestCmdValue32(
+            _gateway, &_device, ts0601_command_sets_table[_trv_commands_set].\
+            ts0601_cmd_set_target_heatsetpoint_dp_id, temperature_setpoint);
         }
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
@@ -254,7 +253,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
 
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
-        (_trv_commands_set == LUMI_CMD_SET)) {
+        (_trv_commands_set == LUMI_CMD_SET) ||
+        (_trv_commands_set == DANFOSS_CMD_SET)) {
 
       _gateway->sendAttributeWrite(
         &_device, 
@@ -324,7 +324,8 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
-        (_trv_commands_set == LUMI_CMD_SET)) {
+        (_trv_commands_set == LUMI_CMD_SET) ||
+        (_trv_commands_set == DANFOSS_CMD_SET)) {
 
       _gateway->sendAttributeRead(
         &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
@@ -375,7 +376,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
-        (_trv_commands_set == LUMI_CMD_SET)) {
+        (_trv_commands_set == LUMI_CMD_SET) ||
+        (_trv_commands_set == DANFOSS_CMD_SET)) {
 
       
       temperature_calibration = temperature_calibration / 10;
@@ -607,6 +609,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
         2, &external_sensor_temperature, true, 1, BOSCH_MANUFACTURER_CODE);
     }
 
+    if (_trv_commands_set == DANFOSS_CMD_SET) {
+      
+    
+      _gateway->sendAttributeWrite(
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        DANFOSS_EXTERNAL_TEMPERATURE_INPUT_ID, ESP_ZB_ZCL_ATTR_TYPE_S16, 
+        2, &external_sensor_temperature, true, 1, DANFOSS_MANUFACTURER_CODE);
+    }
+
     if (_trv_commands_set == LUMI_CMD_SET) {
 
       uint8_t fff2_cmd_data_buffer[0xAA];
@@ -671,81 +682,47 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
 
       if (trv_external_sensor_present) {
       
-        uint8_t buffer_size =
-          buildLumiFFF2CmdLinkParams1(fff2_cmd_data_buffer,
-                                      0x12, 
-                                      timestamp, 
-                                      _device.ieee_addr);
+        uint8_t buffer_size = buildLumiFFF2CmdLinkParams1(
+          fff2_cmd_data_buffer, 0x12, timestamp, _device.ieee_addr);
 
         _gateway->sendAttributeWrite(
-          &_device, 
-          LUMI_CUSTOM_CLUSTER, 
-          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-          buffer_size, &fff2_cmd_data_buffer,
-          true,
-          1, LUMI_MANUFACTURER_CODE);
+          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
+          &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
-        buffer_size =
-          buildLumiFFF2CmdLinkParams2(fff2_cmd_data_buffer, 
-                                      0x13,
-                                      timestamp, 
-                                      _device.ieee_addr);
+        buffer_size =buildLumiFFF2CmdLinkParams2(
+          fff2_cmd_data_buffer, 0x13, timestamp, _device.ieee_addr);
 
         _gateway->sendAttributeWrite(
-          &_device, 
-          LUMI_CUSTOM_CLUSTER, 
-          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-          buffer_size, &fff2_cmd_data_buffer,
-          true,
-          1, LUMI_MANUFACTURER_CODE);
+          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
+          &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         _gateway->sendAttributeRead(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
-        false);
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, false);
 
       } else {
 
-        uint8_t buffer_size =
-          buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
-                                       0x12,
-                                       timestamp, 
-                                       0x05,
-                                       _device.ieee_addr);
+        uint8_t buffer_size = buildLumiFFF2CmdUnlinkParams(
+          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, _device.ieee_addr);
 
         _gateway->sendAttributeWrite(
-          &_device, 
-          LUMI_CUSTOM_CLUSTER, 
-          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-          buffer_size, &fff2_cmd_data_buffer,
-          true,
-          1, LUMI_MANUFACTURER_CODE);
+          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
+          &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
-        buffer_size =
-          buildLumiFFF2CmdUnlinkParams(fff2_cmd_data_buffer, 
-                                       0x13,
-                                       timestamp, 
-                                       0x04,
-                                       _device.ieee_addr);
+        buffer_size = buildLumiFFF2CmdUnlinkParams(
+          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, _device.ieee_addr);
 
         _gateway->sendAttributeWrite(
-          &_device, 
-          LUMI_CUSTOM_CLUSTER, 
-          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-          buffer_size, &fff2_cmd_data_buffer,
-          true,
-          1, LUMI_MANUFACTURER_CODE);
+          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
+          &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         _gateway->sendAttributeRead(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
-        true);
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, true);
       } 
     }
 
@@ -817,6 +794,17 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
               _trv_commands_set);
     } else 
     if (_trv_commands_set == TRVZB_CMD_SET) {
+      
+      trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
+
+      _gateway->sendAttributeWrite(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);
+    }
+
+    if (_trv_commands_set == DANFOSS_CMD_SET) {
       
       trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
@@ -940,16 +928,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
     } else 
-    if (_trv_commands_set == TRVZB_CMD_SET) {
+    if ((_trv_commands_set == TRVZB_CMD_SET) ||
+        (_trv_commands_set == DANFOSS_CMD_SET)) {
 
       trv_schedule_mode = (trv_schedule_mode == 0) ? 4 : 1; //
 
-      _gateway->sendAttributeWrite(&_device, 
-                                   ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-                                   ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
-                                   ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 
-                                   1, 
-                                   &trv_schedule_mode);
+      _gateway->sendAttributeWrite(
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_schedule_mode);
     }
 
     if (_trv_commands_set == BOSCH_CMD_SET) {
@@ -957,11 +944,9 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
       trv_schedule_mode = (trv_schedule_mode == 0) ? 1 : 0; //
 
       _gateway->sendAttributeWrite(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        BOSCH_TRV_OPERATING_MODE_ID, 
-        ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_schedule_mode,
-        false, 1, BOSCH_MANUFACTURER_CODE);
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        BOSCH_TRV_OPERATING_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, 
+        &trv_schedule_mode, false, 1, BOSCH_MANUFACTURER_CODE);
     }
 
 
@@ -969,19 +954,18 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
 
       esp_zb_uint24_t eurotronic_host_flags;
 
-      eurotronic_host_flags.low = (1 << 0) |
-                                  //(1 << ((trv_system_mode == 0) ? 5 : 2)) |
-                                  (1 << ((trv_schedule_mode == 0) ? 2 : 4)) |
-                                  (1 << ((_trv_child_lock == 1) ? 7 : 0));
+      eurotronic_host_flags.low = 
+        (1 << 0) |
+        //(1 << ((trv_system_mode == 0) ? 5 : 2)) |
+        (1 << ((trv_schedule_mode == 0) ? 2 : 4)) |
+        (1 << ((_trv_child_lock == 1) ? 7 : 0));
 
       log_i("EUROTRONIC host flags = 0x%04X", eurotronic_host_flags.low);
       
       _gateway->sendAttributeWrite(
-        &_device, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
-        ESP_ZB_ZCL_ATTR_TYPE_U24, 3, &eurotronic_host_flags,
-        false, 1, EUROTRONIC_MANUFACTURER_CODE);
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_U24, 
+        3, &eurotronic_host_flags, false, 1, EUROTRONIC_MANUFACTURER_CODE);
     }
 
     if (_trv_commands_set == LUMI_CMD_SET) {
@@ -989,11 +973,9 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
       trv_schedule_mode = (trv_schedule_mode == 0) ? 0 : 1; //
 
       _gateway->sendAttributeWrite(
-        &_device, 
-        LUMI_CUSTOM_CLUSTER, 
-        LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID, 
-        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_schedule_mode,
-        false, 1, LUMI_MANUFACTURER_CODE);
+        &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID, 
+        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_schedule_mode,false, 1, 
+        LUMI_MANUFACTURER_CODE);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -1067,7 +1049,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
         false);
     }
 
-    if (_trv_commands_set == BOSCH_CMD_SET) {
+    if ((_trv_commands_set == BOSCH_CMD_SET) ||
+        (_trv_commands_set == DANFOSS_CMD_SET)) {
 
       if (send_value) {
 
@@ -1197,7 +1180,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
-        (_trv_commands_set == LUMI_CMD_SET)) {
+        (_trv_commands_set == LUMI_CMD_SET) ||
+        (_trv_commands_set == DANFOSS_CMD_SET)) {
 
       uint16_t attributes[5] = { 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 
@@ -1799,9 +1783,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
               ((millis_ms - _last_external_temperature_ping_ms) > 
                _external_temperature_ping_ms))) {
 
-            log_i("external temperature difference detected %d vs %d",
-                  hvacLastTemperature,
-                  _trv_local_temperature);
+            log_i(
+              "external temperature difference detected %d vs %d",
+              hvacLastTemperature, _trv_local_temperature);
 
             _last_external_temperature_ping_ms = millis_ms;
             sendTRVExternalSensorTemperature(hvacLastTemperature);

@@ -6316,7 +6316,8 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_SONOFF_TRVZB:
       case Z2S_DEVICE_DESC_BOSCH_BTHRA:
       case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001:
-      case Z2s_DEVICE_DESC_LUMI_TRV: {
+      case Z2S_DEVICE_DESC_LUMI_TRV:
+      case Z2S_DEVICE_DESC_DANFOSS_ETRV0103: {
       
         addZ2SDeviceTempHumidity(
           device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);

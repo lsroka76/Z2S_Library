@@ -297,8 +297,8 @@
 #define Z2S_DEVICE_DESC_SONOFF_TRVZB                        0x6005
 #define Z2S_DEVICE_DESC_BOSCH_BTHRA                         0x6006
 #define Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001                 0x6007
-#define Z2s_DEVICE_DESC_LUMI_TRV                            0x6008
-                                                            //0x6009
+#define Z2S_DEVICE_DESC_LUMI_TRV                            0x6008
+#define Z2S_DEVICE_DESC_DANFOSS_ETRV0103                    0x6009
                                                             //0x600A
                                                             //0x600B
                                                             //0x600C
@@ -729,7 +729,14 @@ typedef struct z2s_reporting_set_desc_s {
   uint8_t z2s_attribute_type;
   uint16_t z2s_min_interval_value; 
   uint16_t z2s_max_interval_value; 
-  uint16_t z2s_delta_value; 
+union {
+  uint8_t  z2s_delta_value_8;
+  uint16_t z2s_delta_value;
+  uint32_t z2s_delta_value_32;
+  uint64_t z2s_delta_value_64; 
+  float    z2s_delta_value_f;
+  double   z2s_delta_value_d;
+};
   uint16_t z2s_manufacturer_code;
 } z2s_reporting_set_desc_t;
 
@@ -766,6 +773,8 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 
 #define Z2S_REPORTING_SET_DESC_SONOFF_ONOFF_1                           0x0300
 
+#define Z2S_REPORTING_SET_DESC_DANFOSS_TRV                              0x0500
+
 static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_BASIC,
@@ -801,7 +810,7 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
     .z2s_min_interval_value = 3600, 
     .z2s_max_interval_value = 65000,
-    .z2s_delta_value = 0,
+    .z2s_delta_value_8 = 0,
     .z2s_manufacturer_code = 0},
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD,
@@ -810,7 +819,7 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
     .z2s_min_interval_value = 3600, 
     .z2s_max_interval_value = 65000,
-    .z2s_delta_value = 10,
+    .z2s_delta_value_8 = 10,
     .z2s_manufacturer_code = 0},
   
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SONOFF_ONOFF_1,
@@ -819,6 +828,60 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
     .z2s_min_interval_value = 1, 
     .z2s_max_interval_value = 1800,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DANFOSS_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 3600, 
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DANFOSS_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DANFOSS_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DANFOSS_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 1,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DANFOSS_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DANFOSS_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 3600,
     .z2s_delta_value = 0,
     .z2s_manufacturer_code = 0}
 
@@ -1328,13 +1391,18 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
 
-  {	.z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_TRV,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
                              LUMI_CUSTOM_CLUSTER,
                              ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DANFOSS_ETRV0103,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
     .z2s_device_clusters_count = 1,
@@ -5009,7 +5077,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "LUMI", .model_name = "lumi.airrtc.agl001",
     .z2s_device_uid = 30200,
-    .z2s_device_desc_id = Z2s_DEVICE_DESC_LUMI_TRV,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_TRV,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE284_hodyryli", .model_name = "TS0601",
@@ -5273,6 +5341,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_vawy74yh", .model_name = "TS0601",
     .z2s_device_uid = 33905,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Danfoss", .model_name = "eTRV0103",
+    .z2s_device_uid = 34000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DANFOSS_ETRV0103,
     .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };
