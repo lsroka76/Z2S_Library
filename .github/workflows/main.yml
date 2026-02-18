@@ -42,32 +42,32 @@ jobs:
       - name: Rename binaries 4MB_logs
         working-directory: .
         run: |
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.logs.bin
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.logs.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.full_version.bin
       - name: Compile Gateway_4MB_no_logs
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=.
       - name: Rename binaries 4MB_no_logs
         working-directory: .
         run: |
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.no_logs.bin
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.no_logs.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.full_version.bin
       - name: Compile Gateway_8MB_logs
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc,DebugLevel=verbose -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1"
       - name: Rename binaries 8MB_logs
         working-directory: .
         run: |
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.logs.bin
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.logs.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.logs.full_version.bin
       - name: Compile Gateway_8MB_no_logs
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1"
       - name: Rename binaries 8MB_no_logs
         working-directory: .
         run: |
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.no_logs.bin
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.no_logs.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.full_version.bin
       - name: Compile Scanner
         working-directory: .
         run: arduino-cli compile ./examples/Z2S_Device_Scanner -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,DebugLevel=verbose,CDCOnBoot=cdc -e --library=. 
