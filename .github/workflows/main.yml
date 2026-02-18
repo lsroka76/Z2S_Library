@@ -83,14 +83,14 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
-          artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.4MB.no_OTA.no_logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.8MB.OTA.no_logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.4MB.no_OTA.no_logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.logs.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.8MB.OTA.no_logs.bin,
+          artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.update_only.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.full_version.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.update_only.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.full_version.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.logs.update_only.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.logs.full_version.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.full_version.bin,
                     ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.bin,
                      ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.merged.bin
 

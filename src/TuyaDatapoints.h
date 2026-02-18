@@ -471,6 +471,8 @@
 
 #define TUYA_DP_RELAY_STATE_DP                                      0x01
 
+#define TUYA_TS0603_GATE_CONTROLER_STATE_DP                         0x01
+#define TUYA_TS0603_GATE_CONTROLER_CONTACT_DP                       0x03
 
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
