@@ -5238,7 +5238,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                              { 7, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
                              { 8, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
 
-  { .manufacturer_name = "TZE204_laokfqwu", .model_name = "TS0601",
+  { .manufacturer_name = "_TZE204_laokfqwu", .model_name = "TS0601",
     .z2s_device_uid = 33500,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
     .z2s_device_endpoints_count = 1},
