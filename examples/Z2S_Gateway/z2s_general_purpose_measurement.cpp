@@ -1,7 +1,7 @@
 #include "z2s_device_general_purpose_measurement.h"
 #include <math.h>
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 uint64_t uipow10(uint8_t power) {
     
@@ -13,7 +13,7 @@ uint64_t uipow10(uint8_t power) {
     return result;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 uint64_t setU64Digits(
   int64_t value, uint8_t first_digit, uint8_t last_digit, 
@@ -33,7 +33,7 @@ uint64_t setU64Digits(
     return result;
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
@@ -115,7 +115,7 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
   }
 } 
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void addZ2SDeviceGeneralPurposeMeasurement(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
@@ -134,7 +134,7 @@ void addZ2SDeviceGeneralPurposeMeasurement(
   Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void msgZ2SDeviceGeneralPurposeMeasurement(
   int16_t channel_number_slot, uint8_t function, double value) {
@@ -209,7 +209,7 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
   }  
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
   int16_t channel_number_slot, uint8_t first_digit, uint8_t last_digit, 

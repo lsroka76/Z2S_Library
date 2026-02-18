@@ -4397,7 +4397,45 @@ void Z2S_onElectricalMeasurementReceive(
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_REACTIVE_POWER_ID:
     case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_APPARENT_POWER_ID: {
 
+      int8_t sub_id; 
+
+      switch (attribute->id) {
+
+
+        case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_ACTIVE_POWER_ID:
+
+          sub_id = ELECTRICITY_METER_TOTAL_ACTIVE_POWER_SID;
+        break;
+
+
+        case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_REACTIVE_POWER_ID:
+
+          sub_id = ELECTRICITY_METER_TOTAL_REACTIVE_POWER_SID;
+        break;
+
+
+        case ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_APPARENT_POWER_ID:
+
+          sub_id = ELECTRICITY_METER_TOTAL_APPARENT_POWER_SID;
+        break;
+      }
+
+      channel_number_slot = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster,
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id);
       
+      if (channel_number_slot < 0) {
+
+        no_channel_found_error_func(ieee_addr_str);
+        return;
+      }
+      double power_value = (attribute->id == 
+        ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_TOTAL_APPARENT_POWER_ID) ?
+        *(uint16_t *)attribute->data.value : *(int16_t *)attribute->data.value;
+
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+        power_value);
     } break;
   }
 }

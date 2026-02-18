@@ -204,6 +204,8 @@
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2      0x4502
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A      0x4503
 
+#define Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER           0x4530
+
 #define Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP            0x4540
 #define Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP               0x4541
 
@@ -460,6 +462,11 @@
 #define SONOFF_ELECTRICITY_METER_ENERGY_TODAY_SID           0x02
 #define SONOFF_ELECTRICITY_METER_ENERGY_MONTH_SID           0x03
 #define SONOFF_ELECTRICITY_METER_ENERGY_YESTERDAY_SID       0x04
+
+#define ELECTRICITY_METER_SID                               0x00
+#define ELECTRICITY_METER_TOTAL_ACTIVE_POWER_SID            0x01
+#define ELECTRICITY_METER_TOTAL_REACTIVE_POWER_SID          0x02
+#define ELECTRICITY_METER_TOTAL_APPARENT_POWER_SID          0x03
 
 #define Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_TEMP_SID   0x00
 #define Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP_SWITCH_SID 0x01
@@ -1239,6 +1246,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_METERING,
                              ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_METERING }},
+
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
     .z2s_device_clusters_count = 3,
@@ -5363,6 +5377,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE608_xkr8gep3", .model_name = "TS0603",
     .z2s_device_uid = 34100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Zemismart", .model_name = "SPM02-3Z3",
+    .z2s_device_uid = 34200,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER,
     .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };
