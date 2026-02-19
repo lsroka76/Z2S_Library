@@ -2659,6 +2659,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "DIY", .model_name = "ZBmodule_post",
+   .z2s_device_uid = 6010,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_au1rjicn", .model_name = "TS0203",
    .z2s_device_uid = 6100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
