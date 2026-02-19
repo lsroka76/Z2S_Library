@@ -779,6 +779,7 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 #define Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_XIAOMI              0x0110
 
 #define Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD               0x0200
+#define Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD    0x0201
 
 #define Z2S_REPORTING_SET_DESC_SONOFF_ONOFF_1                           0x0300
 
@@ -814,6 +815,15 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_manufacturer_code = 0},
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_XIAOMI,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 3600, 
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD,
     .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
     .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID,
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
@@ -2590,7 +2600,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_upgcbody", .model_name = "TS0207",
     .z2s_device_uid = 4800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},  
 
   {	.manufacturer_name = "_TZ3000_wuep9zng", .model_name = "TS0207",
     .z2s_device_uid = 4900,
@@ -2605,7 +2619,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_upgcbody", .model_name = "SNZB-05",
     .z2s_device_uid = 5100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_lf56vpxj", .model_name = "TS0202",
     .z2s_device_uid = 5200,
@@ -4768,6 +4786,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_1dd0d5yi", .model_name = "TS130F",
     .z2s_device_uid = 25120,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_8kzqgzu4", .model_name = "TS130F",
+    .z2s_device_uid = 25125,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 1},
 
