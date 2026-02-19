@@ -223,6 +223,12 @@ void initZ2SDeviceElectricityMeter(
     } break;
 
 
+    case Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER:
+
+      _one_phase = false;
+    break;
+
+
     default: {
       _isTuya = false; 
       _active_query = false;

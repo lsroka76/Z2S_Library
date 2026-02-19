@@ -4642,14 +4642,17 @@ void Z2S_onAnalogInputReceive(
   }
 }
 
-void Z2S_onMeteringReceive(uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-                           const esp_zb_zcl_attribute_t *attribute) {
+void Z2S_onMeteringReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute) {
 
   char ieee_addr_str[24] = {};
 
   //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint, attribute->id, attribute->data.size);
+  log_i(
+    "%s, endpoint 0x%x, attribute id 0x%x, size %u", ieee_addr_str, endpoint,
+     attribute->id, attribute->data.size);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
@@ -4669,28 +4672,44 @@ void Z2S_onMeteringReceive(uint16_t short_addr, uint16_t endpoint, uint16_t clus
 
   switch (attribute->id) {
 
+
     case ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID: {
       
       esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
       uint64_t act_fwd_energy = (((uint64_t)value->high) << 32) + value->low;
     
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, act_fwd_energy);
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, act_fwd_energy);
     } break;
+
+
+    case ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_RECEIVED_ID: {
+      
+      esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
+      uint64_t act_rvr_energy = (((uint64_t)value->high) << 32) + value->low;
+    
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACT_RVR_ENERGY_A_SEL, act_rvr_energy);
+    } break;
+
 
     case ESP_ZB_ZCL_ATTR_METERING_MULTIPLIER_ID: {
 
       esp_zb_uint24_t *value = (esp_zb_uint24_t *)attribute->data.value;
       uint32_t energy_multiplier = (((uint32_t)value->high) << 16) + value->low;
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_MUL_SEL, energy_multiplier);
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_MUL_SEL, energy_multiplier);
     } break;
+
 
     case ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID: {
 
       esp_zb_uint24_t *value = (esp_zb_uint24_t *)attribute->data.value;
       uint32_t energy_divisor = (((uint32_t)value->high) << 16) + value->low;
 
-      msgZ2SDeviceElectricityMeter(channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_DIV_SEL, energy_divisor);
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_DIV_SEL, energy_divisor);
     } break;
   }
 }
