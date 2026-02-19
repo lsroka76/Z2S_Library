@@ -449,9 +449,22 @@ static constexpr char* zigbee_tx_power_text_str PROGMEM =
 	"Press Read to get current value or enter value between "
 	"-24 and 20 and press Update";
 
-static constexpr char* zigbee_primary_channel_text_str PROGMEM = 
+static constexpr char* zigbee_primary_channel_info_str PROGMEM = 
 	"Press Read to get current value or enter value between "
 	"11 and 26 and press Update";
+
+static constexpr char* zigbee_primary_channel_update_str PROGMEM =
+	"New Zigbee primary channel write success!<br>"
+	"Unfortunately, due to ZBOSS stack limitation, "
+	"new channel can be activated only after "
+	"<b><i>Zigbee factory reset</i></b>, "
+	"which itself will require re-pairing every device!<br><br>"
+	//"with active switch "
+	//"<b><i>Force device to bind gateway again</i></b>"
+	"<(TIP: Before re-pairing device turn on switch "
+	"<b><i>Force device to bind gateway again</i></b>"
+	" and don't remove that device from gateway via Cloud/GUI - "
+	"all channel settings and actions will remain unchanged)";
 
 static char general_purpose_gui_buffer[1024] = {};
 
@@ -1305,7 +1318,7 @@ void buildZigbeeTabGUI() {
 		Control::Color::Emerald, zigbee_primary_channel_text, 
 		generalZigbeeCallback, (void*)GUI_CB_SET_PC_FLAG);
 
-	working_str_ptr = zigbee_primary_channel_text_str;
+	working_str_ptr = zigbee_primary_channel_info_str;
 	zigbee_primary_channel_label = ESPUI.addControl(
 		Control::Type::Label, PSTR("Zigbee primary channel"), working_str_ptr, 
 		Control::Color::Emerald, zigbee_primary_channel_text);
@@ -6023,15 +6036,7 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 
         				ESPUI.updateLabel(
 									zigbee_primary_channel_label, 
-									"New Zigbee primary channel write success!<br>"
-									"Unfortunately, due to ZBOSS stack limitation, "
-									"new channel can be activated only after "
-									"<b><i>Zigbee factory reset</i></b>, "
-									"which itself will require re-pairing every device "
-									"with active switch "
-									"<b><i>Force device to bind gateway again</i></b>"
-									"<br>(TIP: don't remove any device via Cloud/GUI - "
-									"all channel settings and actions will remain unchanged)");
+									zigbee_primary_channel_update_str);
 
 								log_i(
 									"New Zigbee primary channel set to 0x%08X", 
@@ -6043,7 +6048,7 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 						}
 				else
 					ESPUI.updateLabel(
-				zigbee_primary_channel_label, zigbee_primary_channel_text_str);
+				zigbee_primary_channel_label, zigbee_primary_channel_info_str);
 			} break;
 
 			case GUI_CB_SET_INSTALLATION_CODE_FLAG: {
