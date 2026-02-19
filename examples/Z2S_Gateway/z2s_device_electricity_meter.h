@@ -48,6 +48,9 @@
 #define Z2S_EM_ACT_FWD_ENERGY_MUL_SEL  0x0048
 #define Z2S_EM_ACT_FWD_ENERGY_DIV_SEL  0x0049
 
+#define Z2S_EM_FWD_BALANCED_ENERGY_SEL 0x0050
+#define Z2S_EM_RVR_BALANCED_ENERGY_SEL 0x0051
+
 /*---------------------------------------------------------------------------------------------------------------------------*/
 
 void initZ2SDeviceElectricityMeter(

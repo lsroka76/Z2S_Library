@@ -344,6 +344,40 @@ void setRvrActEnergy2(int phase, unsigned _supla_int64_t energy) {
   setRvrActEnergy(phase, energy);
 }
 
+void setFwdBalancedEnergy2(uint64_t energy) {
+
+  if (energy == 0)
+    return;
+
+  if ((_energy_multiplier != 0) && (_energy_divisor != 0))
+    energy = (energy * _energy_multiplier * 100000) / _energy_divisor;
+  else energy *= 100000;
+  
+  if (energy > total_forward_active_energy_balanced_counter)
+    energy -= total_forward_active_energy_balanced_counter;
+  else
+    energy = 0;
+
+  setFwdBalancedEnergy(phase, energy);
+}
+
+void setRvrBalancedEnergy2(uint64_t energy) {
+
+  if (energy == 0)
+    return;
+
+  if ((_energy_multiplier != 0) && (_energy_divisor != 0))
+    energy = (energy * _energy_multiplier * 100000) / _energy_divisor;
+  else energy *= 100000;
+  
+  if (energy > total_reverse_active_energy_balanced_counter)
+    energy -= total_reverse_active_energy_balanced_counter;
+  else
+    energy = 0;
+
+  setRvrBalancedEnergy(phase, energy);
+}
+
 void onInit() override {
   
   if (_timeout_enabled)

@@ -4679,7 +4679,37 @@ void Z2S_onMeteringReceive(
       uint64_t act_fwd_energy = (((uint64_t)value->high) << 32) + value->low;
     
       msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_FWD_BALANCED_ENERGY_SEL, act_fwd_energy);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_METERING_CURRENT_TIER1_SUMMATION_DELIVERED_ID: {
+      
+      esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
+      uint64_t act_fwd_energy = (((uint64_t)value->high) << 32) + value->low;
+    
+      msgZ2SDeviceElectricityMeter(
         channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, act_fwd_energy);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_METERING_CURRENT_TIER2_SUMMATION_DELIVERED_ID: {
+      
+      esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
+      uint64_t act_fwd_energy = (((uint64_t)value->high) << 32) + value->low;
+    
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_B_SEL, act_fwd_energy);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_METERING_CURRENT_TIER3_SUMMATION_DELIVERED_ID: {
+      
+      esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
+      uint64_t act_fwd_energy = (((uint64_t)value->high) << 32) + value->low;
+    
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_C_SEL, act_fwd_energy);
     } break;
 
 
@@ -4689,7 +4719,38 @@ void Z2S_onMeteringReceive(
       uint64_t act_rvr_energy = (((uint64_t)value->high) << 32) + value->low;
     
       msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_RVR_BALANCED_ENERGY_SEL, act_rvr_energy);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_METERING_CURRENT_TIER1_SUMMATION_RECEIVED_ID: {
+      
+      esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
+      uint64_t act_rvr_energy = (((uint64_t)value->high) << 32) + value->low;
+    
+      msgZ2SDeviceElectricityMeter(
         channel_number_slot, Z2S_EM_ACT_RVR_ENERGY_A_SEL, act_rvr_energy);
+    } break;
+
+
+    case ESP_ZB_ZCL_ATTR_METERING_CURRENT_TIER2_SUMMATION_RECEIVED_ID: {
+      
+      esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
+      uint64_t act_rvr_energy = (((uint64_t)value->high) << 32) + value->low;
+    
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACT_RVR_ENERGY_B_SEL, act_rvr_energy);
+    } break;
+
+
+
+    case ESP_ZB_ZCL_ATTR_METERING_CURRENT_TIER3_SUMMATION_RECEIVED_ID: {
+      
+      esp_zb_uint48_t *value = (esp_zb_uint48_t *)attribute->data.value;
+      uint64_t act_rvr_energy = (((uint64_t)value->high) << 32) + value->low;
+    
+      msgZ2SDeviceElectricityMeter(
+        channel_number_slot, Z2S_EM_ACT_RVR_ENERGY_C_SEL, act_rvr_energy);
     } break;
 
 

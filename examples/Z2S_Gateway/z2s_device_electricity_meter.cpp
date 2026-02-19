@@ -545,6 +545,17 @@ void msgZ2SDeviceElectricityMeter(
       break;
 
 
+      case Z2S_EM_FWD_BALANCED_ENERGY_SEL:
+
+        Supla_ElectricityMeter->setFwdBalancedEnergy2(em_value); 
+      break;
+
+
+      case Z2S_EM_RVR_BALANCED_ENERGY_SEL:
+
+        Supla_ElectricityMeter->setRvrBalancedEnergy2(em_value); 
+      break;
+
 
       case Z2S_EM_AC_VOLTAGE_MUL_SEL: 
 
