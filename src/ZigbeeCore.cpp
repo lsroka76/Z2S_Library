@@ -221,6 +221,12 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     return false;
   }
 
+  err = esp_zb_set_secondary_network_channel_set(_primary_channel_mask);
+  if (err != ESP_OK) {
+    log_e("Failed to set secondary network channel mask");
+    return false;
+  }
+
   // Register APSDATA INDICATION handler to catch bind/unbind requests
   esp_zb_aps_data_indication_handler_register(zb_apsde_data_indication_handler);
 
