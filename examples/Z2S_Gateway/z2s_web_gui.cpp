@@ -6007,16 +6007,21 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 
 			case GUI_CB_GET_PC_FLAG : { //read primary channel
 
-				uint32_t zb_primary_channel = 
-					esp_zb_get_primary_network_channel_set();
+				uint32_t zb_primary_channel;
 
-    		for (uint8_t i = 11; i <= 26; i++) {
-      		if (zb_primary_channel & (1 << i)) {
+				if (Supla::Storage::ConfigInstance()->getUInt32(
+    			Z2S_ZIGBEE_PRIMARY_CHANNEL, &zb_primary_channel)) {
 
-						//working_str = i;
-						ESPUI.updateNumber(zigbee_primary_channel_text, i);
+    			for (uint8_t i = 11; i <= 26; i++) {
+      			if (zb_primary_channel & (1 << i)) {
+
+							//working_str = i;
+							ESPUI.updateNumber(zigbee_primary_channel_text, i);
+						}
 					}
-    		}		
+    		}
+				ESPUI.updateLabel(
+					zigbee_primary_channel_label, zigbee_primary_channel_info_str);		
 			} break;
 
 			case GUI_CB_SET_PC_FLAG : { //write primary channel
@@ -6048,7 +6053,7 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 						}
 				else
 					ESPUI.updateLabel(
-				zigbee_primary_channel_label, zigbee_primary_channel_info_str);
+						zigbee_primary_channel_label, zigbee_primary_channel_info_str);
 			} break;
 
 			case GUI_CB_SET_INSTALLATION_CODE_FLAG: {
