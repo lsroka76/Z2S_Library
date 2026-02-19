@@ -216,12 +216,14 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
   zb_bdb_set_legacy_device_support(1);
 
   err = esp_zb_set_primary_network_channel_set(_primary_channel_mask);
+  //zb_set_bdb_primary_channel_set(_primary_channel_mask);
   if (err != ESP_OK) {
     log_e("Failed to set primary network channel mask");
     return false;
   }
 
   err = esp_zb_set_secondary_network_channel_set(_primary_channel_mask);
+  //zb_set_bdb_secondary_channel_set(_primary_channel_mask);
   if (err != ESP_OK) {
     log_e("Failed to set secondary network channel mask");
     return false;

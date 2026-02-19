@@ -620,7 +620,7 @@ void setup() {
   if (Supla::Storage::ConfigInstance()->getUInt32(
     Z2S_ZIGBEE_PRIMARY_CHANNEL, &zb_primary_channel_mask)) {
 
-    log_i("Zigbee primary channel mask (0x%x) loaded successfully", 
+    log_i("Zigbee primary channel mask (0x%08X) loaded successfully", 
           zb_primary_channel_mask);
 
     Zigbee.setPrimaryChannelMask(zb_primary_channel_mask);

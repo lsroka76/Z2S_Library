@@ -17,6 +17,7 @@
 #include <supla/storage/storage.h>
 
 #include <supla/device/register_device.h>
+#include <supla/version.h>
 
 #include "web_gui_templates.h"
 
@@ -80,6 +81,7 @@ uint16_t zigbee_tx_power_text;
 //uint16_t zigbee_get_tx_power_button;
 //uint16_t zigbee_set_tx_power_button;
 uint16_t zigbee_primary_channel_text;
+uint16_t zigbee_primary_channel_label;
 //uint16_t zigbee_get_primary_channel_button;
 //uint16_t zigbee_set_primary_channel_button;
 uint16_t zigbee_last_binding_result_label;
@@ -942,14 +944,15 @@ void fillGatewayGeneralnformation(char *buf) {
 		esp_zb_get_extended_pan_id(extended_pan_id);
 		ieee_addr_to_str(extended_pan_id_str, extended_pan_id);
 		
-		snprintf_P(buf, 1024, PSTR("<b><i>Supla firmware:</i></b> <i>%s</i><br><br>"
-															 "<b><i>Supla GUID:</i></b> <i>%s</i><br><br>"
-															 "<b><i>Z2S Gateway version:</i></b> <i>%s</i><br><br>"
-															 "<b><i>Network extended PAN ID:</i></b> <i>%s</i><br><br>"), 
-							 Supla::RegisterDevice::getSoftVer(), 
-							 Supla_GUID_str, 
-							 Z2S_VERSION,
-							 extended_pan_id_str);
+		snprintf_P(
+			buf, 1024, PSTR(
+				"<br><b><i>Supla Device SDK version:</i></b> <i>%s</i><br>"
+				"<b><i>Supla GUID:</i></b> <i>%s</i><br><br>"
+				"<b><i>Z2S Gateway version:</i></b> <i>%s</i><br><br>"
+				"<b><i>Network extended PAN ID:</i></b> <i>%s</i><br>"
+				"<b><i>Network current channel:</i></b> <i>%u</i><br><br>"), 
+			suplaDeviceVersion,Supla_GUID_str, Z2S_VERSION, extended_pan_id_str,
+			esp_zb_get_current_channel());
 	
 		log_i("Device information %s", buf);
 
@@ -1275,10 +1278,10 @@ void buildZigbeeTabGUI() {
 		Control::Type::Text, PSTR("Zigbee TX power"), working_str, 
 		Control::Color::Emerald, zigbeetab, generalCallback);
 
-	working_str = zigbee_primary_channel_text_str;
+	//working_str = zigbee_primary_channel_text_str;
 	zigbee_primary_channel_text = ESPUI.addControl(
-		Control::Type::Text, PSTR("Zigbee primary channel"), 
-		working_str, Control::Color::Emerald, zigbeetab, generalCallback);
+		Control::Type::Number, PSTR("Zigbee primary channel"), (long int)0, 
+		Control::Color::Emerald, zigbeetab, generalCallback);
 	
 	working_str_ptr = PSTR("Read");
 	auto zigbee_get_tx_power_button = ESPUI.addControl(
@@ -1301,6 +1304,11 @@ void buildZigbeeTabGUI() {
 		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, zigbee_primary_channel_text, 
 		generalZigbeeCallback, (void*)GUI_CB_SET_PC_FLAG);
+
+	working_str_ptr = zigbee_primary_channel_text_str;
+	zigbee_primary_channel_label = ESPUI.addControl(
+		Control::Type::Label, PSTR("Zigbee primary channel"), working_str_ptr, 
+		Control::Color::Emerald, zigbee_primary_channel_text);
 	
 	working_str = three_dots_str;
 	zigbee_last_binding_result_label = ESPUI.addControl(
@@ -5992,8 +6000,8 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
     		for (uint8_t i = 11; i <= 26; i++) {
       		if (zb_primary_channel & (1 << i)) {
 
-						working_str = i;
-						ESPUI.updateText(zigbee_primary_channel_text, working_str);
+						//working_str = i;
+						ESPUI.updateNumber(zigbee_primary_channel_text, i);
 					}
     		}		
 			} break;
@@ -6013,15 +6021,29 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 							if (Supla::Storage::ConfigInstance()->setUInt32(
 										Z2S_ZIGBEE_PRIMARY_CHANNEL, (1 << zb_primary_channel))) {
 
-        				ESPUI.updateText(zigbee_primary_channel_text, 
-									"New Zigbee primary channel write success! Restarting...");
+        				ESPUI.updateLabel(
+									zigbee_primary_channel_label, 
+									"New Zigbee primary channel write success!<br>"
+									"Unfortunately, due to ZBOSS stack limitation, "
+									"new channel can be activated only after "
+									"<b><i>Zigbee factory reset</i></b>, "
+									"which itself will require re-pairing every device "
+									"with active switch "
+									"<b><i>Force device to bind gateway again</i></b>"
+									"<br>(TIP: don't remove any device via Cloud/GUI - "
+									"all channel settings and actions will remain unchanged)");
+
+								log_i(
+									"New Zigbee primary channel set to 0x%08X", 
+									(1 << zb_primary_channel));
+
    				     	Supla::Storage::ConfigInstance()->commit();
-        				SuplaDevice.scheduleSoftRestart(1000);
+        				//SuplaDevice.scheduleSoftRestart(1000);
 							}
 						}
 				else
-					ESPUI.updateText(zigbee_primary_channel_text, 
-													 zigbee_primary_channel_text_str);
+					ESPUI.updateLabel(
+				zigbee_primary_channel_label, zigbee_primary_channel_text_str);
 			} break;
 
 			case GUI_CB_SET_INSTALLATION_CODE_FLAG: {
