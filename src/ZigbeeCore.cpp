@@ -443,6 +443,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
             log_i("Network(0x%04hx) is open for %d seconds", 
                   esp_zb_get_pan_id(), 
                   *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
+            log_i("channel %d", esp_zb_get_current_channel());
           } else {
             Zigbee.setNetworkOpen(false);
             log_i("Network(0x%04hx) closed, devices joining not allowed.", 
