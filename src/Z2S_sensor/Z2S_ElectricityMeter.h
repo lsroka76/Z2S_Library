@@ -358,7 +358,7 @@ void setFwdBalancedEnergy2(uint64_t energy) {
   else
     energy = 0;
 
-  setFwdBalancedEnergy(phase, energy);
+  setFwdBalancedEnergy(energy);
 }
 
 void setRvrBalancedEnergy2(uint64_t energy) {
@@ -375,7 +375,7 @@ void setRvrBalancedEnergy2(uint64_t energy) {
   else
     energy = 0;
 
-  setRvrBalancedEnergy(phase, energy);
+  setRvrBalancedEnergy(energy);
 }
 
 void onInit() override {
