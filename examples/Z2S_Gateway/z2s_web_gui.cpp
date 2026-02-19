@@ -461,10 +461,10 @@ static constexpr char* zigbee_primary_channel_update_str PROGMEM =
 	"which itself will require re-pairing every device!<br><br>"
 	//"with active switch "
 	//"<b><i>Force device to bind gateway again</i></b>"
-	"<(TIP: Before re-pairing device turn on switch "
+	"TIP: Before re-pairing device turn on switch "
 	"<b><i>Force device to bind gateway again</i></b>"
 	" and don't remove that device from gateway via Cloud/GUI - "
-	"all channels settings and actions will remain unchanged)";
+	"all channels settings and actions will remain unchanged.";
 
 static char general_purpose_gui_buffer[1024] = {};
 
