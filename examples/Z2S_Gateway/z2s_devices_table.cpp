@@ -7264,7 +7264,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
-      case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
+      case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR:
+      case Z2S_DEVICE_DESC_DIY_MAIL_SENSOR: {
         
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
       break;
@@ -9904,6 +9905,14 @@ void Z2S_buildSuplaChannels(
         joined_device, SONOFF_PIR_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 
         SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_DIY_MAIL_SENSOR: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, NO_CUSTOM_CMD_SID, "MAILBOX", 
+        SUPLA_CHANNELFNC_MAILSENSOR);
 
 /*****************************************************************************/
 

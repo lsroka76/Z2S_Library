@@ -134,6 +134,7 @@
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
 
 #define Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR                   0x2600
+#define Z2S_DEVICE_DESC_DIY_MAIL_SENSOR                     0x2610
 
 #define Z2S_DEVICE_DESC_RGBW_START                          0x3000
 
@@ -1095,6 +1096,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_MAIL_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -2677,7 +2684,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "DIY", .model_name = "ZBmodule_post",
+  {	.manufacturer_name = "DIY_george1255", .model_name = "ZBmodule_post",
    .z2s_device_uid = 6010,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
@@ -2980,6 +2987,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-06P",
     .z2s_device_uid = 10005,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "DIY_ZZRR", .model_name = "POSTIN_W2P",
+    .z2s_device_uid = 10050,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_MAIL_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_prits6g4", .model_name = "TS0001",
