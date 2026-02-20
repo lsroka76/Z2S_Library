@@ -9913,7 +9913,7 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, NO_CUSTOM_CMD_SID, "MAILBOX", 
         SUPLA_CHANNELFNC_MAILSENSOR);
-    }
+    } break;
 
 /*****************************************************************************/
 
