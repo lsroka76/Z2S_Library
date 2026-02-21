@@ -4801,7 +4801,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "_TZ3000_8kzqgzu4", .model_name = "TS130F",
+  {	.manufacturer_name = "_TZ3000_8kzqqzu4", .model_name = "TS130F",
     .z2s_device_uid = 25125,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
 	  .z2s_device_endpoints_count = 1},
