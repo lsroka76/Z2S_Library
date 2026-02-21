@@ -195,7 +195,7 @@ uint32_t getEnergyMultiplier() {
   return _energy_multiplier;
 } 
 
-void setEnergyDivisor(uint16_t energy_divisor, bool from_zigbee = true) {
+void setEnergyDivisor(uint32_t energy_divisor, bool from_zigbee = true) {
   
   if (_ignore_zigbee_scaling && from_zigbee)
     return;
