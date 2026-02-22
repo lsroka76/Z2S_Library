@@ -158,9 +158,10 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
   
   esp_zb_zcl_addr_t esp_zb_zcl_address;
   
-  esp_zb_zcl_address.u.short_addr = cmd_info->addr_data.common_data.source.u.short_addr;
-  memcpy(esp_zb_zcl_address.u.ieee_addr, cmd_info->addr_data.common_data.source.u.ieee_addr, 
-        sizeof(esp_zb_ieee_addr_t));
+  esp_zb_zcl_address.u.short_addr = 
+    cmd_info->addr_data.common_data.source.u.short_addr;
+  /*memcpy(esp_zb_zcl_address.u.ieee_addr, cmd_info->addr_data.common_data.source.u.ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));*/
 
   log_i("ZigbeeHandlers rawCMD 0x%x, 0x%x, 0x%x, 0x%x",
         esp_zb_zcl_address.u.short_addr,
@@ -168,14 +169,17 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
         esp_zb_zcl_address.u.ieee_addr[4], 
         cmd_info->addr_data.common_data.source.u.ieee_addr[4]);
 
-  esp_zb_ieee_address_by_short(esp_zb_zcl_address.u.short_addr, esp_zb_zcl_address.u.ieee_addr);
+  //esp_zb_ieee_address_by_short(
+  //  esp_zb_zcl_address.u.short_addr, esp_zb_zcl_address.u.ieee_addr);
+  
   // List through all Zigbee EPs and call the callback function, with the message
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
   
     if (true /*cmd_info->addr_data.common_data.dst_endpoint == (*it)->getEndpoint()*/) {
       
       if ((*it)->zbRawCmdHandler(
-        esp_zb_zcl_address, cmd_info->addr_data.common_data.src_endpoint, 
+        esp_zb_zcl_address, cmd_info->rssi, 
+        cmd_info->addr_data.common_data.src_endpoint, 
         cmd_info->addr_data.common_data.dst_endpoint, 
         cmd_info->cluster_id, cmd_info->cmd_id, cmd_info->is_common_command,
         cmd_info->disable_default_response, cmd_info->is_manuf_specific,
@@ -183,10 +187,10 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
 
         zb_zcl_send_default_handler(bufid, cmd_info, ZB_ZCL_STATUS_SUCCESS);
 
-        log_i("----------------------------raw command proccessed---------------------------------------------------------------");
+        log_i("-------------------raw command proccessed-------------------");
         return true;
       } else {
-        log_i("----------------------------raw command not processed------------------------------------------------------------");
+        log_i("-----------------raw command not processed------------------");
         return false;
       }
     }

@@ -1289,8 +1289,8 @@ void ZigbeeGateway::zbAttributeReporting(
         log_i("value = %u", *(uint8_t *)attribute->data.value);
 
       if (_on_lumi_custom_cluster_receive)
-        _on_lumi_custom_cluster_receive(src_address.u.short_addr, 
-                                        src_endpoint, cluster_id, attribute);
+        _on_lumi_custom_cluster_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
     } else
     if (cluster_id == IKEA_CUSTOM_CLUSTER_FC7E) {      
 
@@ -2866,14 +2866,18 @@ void ZigbeeGateway::zbCmdCustomClusterReq(
 /*****************************************************************************/
 
 bool ZigbeeGateway::zbRawCmdHandler(
-  esp_zb_zcl_addr_t source, uint8_t src_endpoint, uint8_t dst_endpoint, 
-  uint16_t cluster_id, uint8_t cmd_id, bool is_common_command, 
-  bool disable_default_response, bool is_manuf_specific, 
-  uint16_t manuf_specific, uint8_t buffer_size, uint8_t *buffer) {
+    esp_zb_zcl_addr_t source, int8_t rssi, uint8_t src_endpoint, 
+    uint8_t dst_endpoint, uint16_t cluster_id, uint8_t cmd_id, 
+    bool is_common_command, bool disable_default_response, 
+    bool is_manuf_specific, uint16_t manuf_specific, uint8_t buffer_size,
+    uint8_t *buffer) {
   
+    if (_on_update_device_last_rssi)
+      _on_update_device_last_rssi(source.u.short_addr, rssi);
+    
     if (_on_custom_cmd_receive)
       return _on_custom_cmd_receive(
-        source.u.ieee_addr, src_endpoint, cluster_id, cmd_id, buffer_size, 
+        source.u.short_addr, src_endpoint, cluster_id, cmd_id, buffer_size, 
         buffer);
     else return false;
 }

@@ -3,6 +3,16 @@
 
 // Z2S_DEVICE_DESC_ID - used for selection of clusters to bind and matching Supla channels#define
 
+#define Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS         (1 << 0)
+#define Z2S_DEVICE_CONFIG_FLAG_RESERVED_1                   (1 << 1)
+#define Z2S_DEVICE_CONFIG_FLAG_RESERVED_2                   (1 << 2)
+#define Z2S_DEVICE_CONFIG_FLAG_RESERVED_3                   (1 << 3)
+#define Z2S_DEVICE_CONFIG_FLAG_RESERVED_4                   (1 << 4)
+#define Z2S_DEVICE_CONFIG_FLAG_RESERVED_5                   (1 << 5)
+#define Z2S_DEVICE_CONFIG_FLAG_RESERVED_6                   (1 << 6)
+#define Z2S_DEVICE_CONFIG_FLAG_RESERVED_7                   (1 << 7)
+
+
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_0              (1 << 0)
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_1              (1 << 1)
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_2              (1 << 2)
@@ -755,6 +765,7 @@ typedef struct z2s_device_entity_s {
   const char *model_name;
   uint32_t z2s_device_uid;
   uint32_t z2s_device_desc_id;
+  uint8_t z2s_device_flags;
   uint8_t z2s_device_endpoints_count;
   z2s_device_endpoint_t z2s_device_endpoints[MAX_BOUND_ENDPOINTS];
 } z2s_device_entity_t;
@@ -2161,7 +2172,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "Unknown", .model_name = "Unknown",
     .z2s_device_uid = 0,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_NULL,
+    .z2s_device_flags = 0,
 	  .z2s_device_endpoints_count = 0 },
+
+    {	.manufacturer_name = "@VAJERA", .model_name = "ME_TEST",
+    .z2s_device_uid = 5,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
+	  .z2s_device_endpoints_count = 12,
+    .z2s_device_endpoints = {{10, 0, 0, Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR}}},
 
   {	.manufacturer_name = "ZIBI", .model_name = "ESP32C6_THP_Sensor",
     .z2s_device_uid = 10,

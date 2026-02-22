@@ -556,7 +556,7 @@ void Z2S_onBatteryReceive(
   uint16_t id, uint8_t battery_remaining);
 
 bool Z2S_onCustomCmdReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint16_t cluster_id, 
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
   uint8_t command_id, uint8_t buffer_size, uint8_t *buffer);
 
 void Z2S_onCmdCustomClusterReceive(

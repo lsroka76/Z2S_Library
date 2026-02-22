@@ -322,6 +322,8 @@ void enableZ2SNotifications() {
 
   //  Zigbee Gateway notifications
 
+  log_i("enabling Zigbee Gateway notifications");
+
   zbGateway.onOpenNetwork(Z2S_onOpenNetwork);
 
   zbGateway.onTemperatureReceive(Z2S_onTemperatureReceive);
@@ -364,6 +366,7 @@ void enableZ2SNotifications() {
 void disableZ2SNotifications() {
 
 //  switch off Zigbee Gateway notifications
+  log_i("disabling Zigbee Gateway notifications");
 
   zbGateway.onTemperatureReceive(nullptr);
   zbGateway.onHumidityReceive(nullptr);
@@ -794,14 +797,14 @@ void setup() {
 
   /*zbg_device_params_t test_joined_device = {};
 
-  test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER;
+  test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR;
   esp_zb_ieee_addr_t ieee_addr_test = {};
 
-  const char *manuf = "_TZE608_xkr8gep3";
-  const char *model = "TS0603";
+  const char *manuf = "Z2S";
+  const char *model = "TEST";
   Z2S_addZbDeviceTableSlot(
     ieee_addr_test, 0x1250, manuf, model, 1, 
-    Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER, 0);
+    Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, 0);
 
     test_joined_device.endpoint = 1;
     test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER;
@@ -1157,15 +1160,15 @@ if (Z2S_isGUIStarted())
     //zbGateway.clearNewDeviceJoined();
     zbGateway.printJoinedDevices();
 
-    while (!zbGateway.getJoinedDevices().empty())
-    {
+    while (!zbGateway.getJoinedDevices().empty()) {
+
       joined_device = zbGateway.getLastJoinedDevice();
       
       //rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 128));
       //rgbLed.show();
       rgbLedWrite(RGB_BUILTIN, 0, 0, 255);  // Blue
 
-      Z2S_stopWebGUI();
+      //Z2S_stopWebGUI();
 
       if (zpm->getState() == 2)
         zpm->notifySrpcAboutParingEnd(
@@ -1207,6 +1210,7 @@ if (Z2S_isGUIStarted())
       log_i("sizeof(Z2S_DEVICES_LIST) = %u", sizeof(Z2S_DEVICES_LIST));
 
       bool device_recognized = false;
+      bool restart_required  = true;
 
           for (uint32_t devices_list_counter = 0; 
                devices_list_counter < devices_list_table_number; 
@@ -1246,11 +1250,25 @@ if (Z2S_isGUIStarted())
                     z2s_device_endpoints_count; 
                    endpoint_counter++) {
               
+                uint8_t endpoint_idx = endpoint_counter;
+
+                if (Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_flags & 
+                    Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
+                  endpoint_idx = 0;
+
                 uint8_t endpoint_id = 
                   (Z2S_DEVICES_LIST[devices_list_counter].\
                     z2s_device_endpoints_count == 1) ? 
                   1 : Z2S_DEVICES_LIST[devices_list_counter].\
-                    z2s_device_endpoints[endpoint_counter].endpoint_id; 
+                    z2s_device_endpoints[endpoint_idx].endpoint_id; 
+
+                //mirrored endpoints must be numbered in sequential order 
+                //starting from 1st endpoint id, i.e. 7, 8, 9...
+                if (Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_flags & 
+                    Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
+                  endpoint_id += endpoint_counter; 
                                         
                 uint32_t z2s_device_desc_id = 
                   (Z2S_DEVICES_LIST[devices_list_counter].\
@@ -1258,7 +1276,7 @@ if (Z2S_isGUIStarted())
                   Z2S_DEVICES_LIST[devices_list_counter].\
                     z2s_device_desc_id :
                   Z2S_DEVICES_LIST[devices_list_counter].\
-                  z2s_device_endpoints[endpoint_counter].z2s_device_desc_id; 
+                  z2s_device_endpoints[endpoint_idx].z2s_device_desc_id; 
 
                 for (uint32_t devices_desc_counter = 0; 
                      devices_desc_counter < devices_desc_table_number; 
@@ -1384,7 +1402,13 @@ if (Z2S_isGUIStarted())
 
                     if (endpoint_counter == 0) {//(endpoint_id == 1)
                           
-                      uint8_t zb_device_slot = Z2S_addZbDeviceTableSlot(
+                      uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(
+                        joined_device->ieee_addr);
+                      
+                      if (zb_device_slot < 0xFF)
+                        restart_required = false;
+
+                      zb_device_slot = Z2S_addZbDeviceTableSlot(
                         joined_device->ieee_addr,joined_device->short_addr,
                         zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
                         zbGateway.getQueryBasicClusterData()->zcl_model_name,
@@ -1400,7 +1424,7 @@ if (Z2S_isGUIStarted())
                           zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
                       }
                     }
-
+                    //if (restart_required)
                     Z2S_buildSuplaChannels(joined_device, endpoint_counter);
                   }          
                 }
@@ -1420,7 +1444,7 @@ if (Z2S_isGUIStarted())
                     if (Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
                           z2s_reporting_set_id == 
                         Z2S_DEVICES_LIST[devices_list_counter].\
-                          z2s_device_endpoints[endpoint_counter].\
+                          z2s_device_endpoints[endpoint_idx].\
                           z2s_reporting_set_id) {
 
                       log_i(
@@ -1671,9 +1695,9 @@ if (Z2S_isGUIStarted())
                       n < Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count; 
                       n++) {
 
-                    joined_device->endpoint = 
+                    /*joined_device->endpoint = 
                       ( Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count == 1) ? 
-                        1 : Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[n].endpoint_id;
+                        1 : Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[n].endpoint_id;*/
 
                       //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD010, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); 
                       //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD030, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
@@ -1874,8 +1898,14 @@ if (Z2S_isGUIStarted())
                 zpm->notifySrpcAboutParingEnd(
                   SUPLA_CALCFG_PAIRINGRESULT_SUCCESS, found_device_name);
               }
-
-              SuplaDevice.scheduleSoftRestart(10000);
+              if (restart_required)
+                SuplaDevice.scheduleSoftRestart(10000);
+              else {
+                
+                zbGateway.clearQueryBasicClusterData();
+                zbGateway.clearNewDeviceJoined();
+                enableZ2SNotifications();
+              }
               break;
             }   
             /*else log_i("LIST checking %s::%s, entry # %d",
@@ -1892,9 +1922,9 @@ if (Z2S_isGUIStarted())
         rgbLedWrite(RGB_BUILTIN, 255, 0, 0);  // Red
         delay(1000);
         enableZ2SNotifications();
-        zbGateway.setActivePairing(false);
+        //zbGateway.setActivePairing(false);
 
-        Z2S_startWebGUI();
+        //Z2S_startWebGUI();
         GUI_onLastBindingFailure(true);
 
         if (zpm->getState() == 2) {

@@ -316,6 +316,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -388,6 +389,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case LIVARNO_DIMMER_SWITCH_ON_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -501,6 +503,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID: {
 
           virtual_button_data.button_id = endpoint_id;
@@ -550,6 +553,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case TUYA_CUSTOM_CMD_BUTTON_1_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -638,6 +642,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_BUTTON_1_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -750,6 +755,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_BUTTON_1_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -815,6 +821,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_PLAY_SID: {
 
           virtual_button_data.button_id = 1;
@@ -891,6 +898,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID: {
 
           virtual_button_data.button_id = 6;
@@ -968,6 +976,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOT_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -979,7 +988,7 @@ bool getVirtualButtonNumber(
           return true;
         } break;
 
-        case NO_CUSTOM_CMD_SID:
+        //case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOT_SHORT_RELEASED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -1044,6 +1053,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID: {
 
           virtual_button_data.button_id = 7;
@@ -1120,6 +1130,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOTS_PRESSED_SID: {
 
           virtual_button_data.button_id = 2;
@@ -1131,7 +1142,7 @@ bool getVirtualButtonNumber(
           return true;
         } break;
 
-        case NO_CUSTOM_CMD_SID:
+        //case NO_CUSTOM_CMD_SID:
         case IKEA_CUSTOM_CMD_SYMFONISK_DOTS_SHORT_RELEASED_SID: {
 
           virtual_button_data.button_id = 2;
@@ -1195,7 +1206,8 @@ bool getVirtualButtonNumber(
     
       switch (sub_id) {
 
-
+        
+        case NO_CUSTOM_CMD_SID:
         case TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -1245,6 +1257,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case CUSTOM_CMD_BUTTON_PRESSED_SID: {
 
           virtual_button_data.button_id = endpoint_id;
@@ -1305,6 +1318,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case IAS_ACE_ARM_CMD_SID: {
 
           virtual_button_data.button_id = 1;
@@ -1369,6 +1383,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case ADEO_CUSTOM_CMD_BUTTON_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -1420,6 +1435,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_SID: {
 
           virtual_button_data.button_id = 1;
@@ -1628,6 +1644,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case ADEO_ENKI_REMOTE_CONTROL_ON_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
@@ -1811,6 +1828,7 @@ bool getVirtualButtonNumber(
       switch (sub_id) {
 
 
+        case NO_CUSTOM_CMD_SID:
         case LUMI_SMART_BUTTON_5F_WXKG12LM_PRESSED_SID: {
 
           virtual_button_data.button_id = 1;
