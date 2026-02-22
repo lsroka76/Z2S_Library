@@ -6623,10 +6623,10 @@ void datatypeCallback(Control *sender, int type) {
 
 void TuyaDatapointIdSelectorCallback(Control *sender, int type) {
 
-	int8_t Tuya_datapoint_id_selector_value = 
+	long Tuya_datapoint_id_selector_value = 
 		ESPUI.getControl(
 			Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector])->getValueInt();
-
+	//log_i("Tuya_datapoint_id_selector_value")
 	if (Tuya_datapoint_id_selector_value >= 0) {
 
 		

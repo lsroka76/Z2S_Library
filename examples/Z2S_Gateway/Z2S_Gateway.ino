@@ -797,17 +797,17 @@ void setup() {
 
   /*zbg_device_params_t test_joined_device = {};
 
-  test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR;
+  test_joined_device.model_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z;
   esp_zb_ieee_addr_t ieee_addr_test = {};
 
-  const char *manuf = "Z2S";
-  const char *model = "TEST";
+  const char *manuf = "_TZE204_ltwbm23f";
+  const char *model = "TS0601";
   Z2S_addZbDeviceTableSlot(
     ieee_addr_test, 0x1250, manuf, model, 1, 
-    Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR, 0);
+    Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z, 0);
 
     test_joined_device.endpoint = 1;
-    test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER;
+    test_joined_device.model_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z;
     
     Z2S_addZ2SDevice(&test_joined_device);*/
 
