@@ -353,7 +353,8 @@ void setFwdBalancedEnergy2(uint64_t energy) {
 
     setFwdActEnergy2(0, energy);
     return;
-  }
+  } else
+    return; //temporary solution
 
   if ((_energy_multiplier != 0) && (_energy_divisor != 0))
     energy = (energy * _energy_multiplier * 100000) / _energy_divisor;
@@ -376,7 +377,9 @@ void setRvrBalancedEnergy2(uint64_t energy) {
 
     setRvrActEnergy2(0, energy);
     return;
-  }
+  } else
+    return; //temporary solution
+
 
   if ((_energy_multiplier != 0) && (_energy_divisor != 0))
     energy = (energy * _energy_multiplier * 100000) / _energy_divisor;

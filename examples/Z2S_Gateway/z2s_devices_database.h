@@ -4409,6 +4409,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB_XY,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "GLEDOPTO", .model_name = "GL-C-008P",
+    .z2s_device_uid = 20405,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB_XY,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "Aqara", .model_name = "lumi.light.acn132",
     .z2s_device_uid = 20450,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB_XY,
