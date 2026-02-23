@@ -2024,7 +2024,7 @@ void buildChannelsTabGUI() {
 
 	working_str_ptr = PSTR("Add AND gate");
 	auto lah_panel = ESPUI.addControl(
-		Control::Type::Button, PSTR("Local logic components (experimental!)"), 
+		Control::Type::Button, PSTR("Local logic components"), 
 		working_str_ptr, Control::Color::Emerald, channelstab, 
 		addLocalActionHandlerCallback, (void*)GUI_CB_ADD_AND_HANDLER_FLAG);
 

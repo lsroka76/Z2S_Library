@@ -30,7 +30,7 @@ class Z2S_ElectricityMeter : public ElectricityMeter {
                       bool isTuya, 
 		                  bool active_query = false, 
                       bool one_phase = true) : 
-    _gateway(gateway) {
+    _gateway(gateway), _one_phase(one_phase) {
 	
     memcpy(&_device, device, sizeof(zbg_device_params_t));
 	
@@ -40,7 +40,7 @@ class Z2S_ElectricityMeter : public ElectricityMeter {
     if (active_query) 
       setRefreshSecs(30);
 	
-    if (one_phase) {
+    if (_one_phase) {
 	  
       extChannel.setFlag(SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED);
       extChannel.setFlag(SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED);
@@ -349,6 +349,12 @@ void setFwdBalancedEnergy2(uint64_t energy) {
   if (energy == 0)
     return;
 
+  if (_one_phase) {
+
+    setFwdActEnergy2(0, energy);
+    return;
+  }
+
   if ((_energy_multiplier != 0) && (_energy_divisor != 0))
     energy = (energy * _energy_multiplier * 100000) / _energy_divisor;
   else energy *= 100000;
@@ -365,6 +371,12 @@ void setRvrBalancedEnergy2(uint64_t energy) {
 
   if (energy == 0)
     return;
+
+  if (_one_phase) {
+
+    setRvrActEnergy2(0, energy);
+    return;
+  }
 
   if ((_energy_multiplier != 0) && (_energy_divisor != 0))
     energy = (energy * _energy_multiplier * 100000) / _energy_divisor;
@@ -644,14 +656,16 @@ void iterateAlways() override {
   protected:
     ZigbeeGateway 	     *_gateway = nullptr;
     zbg_device_params_t  _device;  
+
     //uint64_t		         *_data_counter = nullptr;
     //channel_extended_data_em_t *_ext_data = nullptr;
     //bool                 _active_query  = false;
     //esp_zb_uint48_t      _write_mask;
     //bool                 _isTuya = false;
 
-    bool _fresh_start	        = true;
+    bool _fresh_start	          = true;
 
+    bool _one_phase             = true;
     bool _ignore_zigbee_scaling = false;
 
     //uint8_t _em_scaling_mask          = 0xFF; //0x3F; //bits 0-5 on

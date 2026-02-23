@@ -18,7 +18,7 @@ ZigbeeCore::ZigbeeCore() {
   _radio_config.radio_mode = ZB_RADIO_MODE_NATIVE;                   // Use the native 15.4 radio
   _host_config.host_connection_mode = ZB_HOST_CONNECTION_MODE_NONE;  // Disable host connection
   _zb_ep_list = esp_zb_ep_list_create();
-  _primary_channel_mask = 0x800; //ESP_ZB_TRANSCEIVER_ALL_CHANNELS_MASK; //0x800
+  _primary_channel_mask = (1 << 20); //default channel = 20 0x800; //ESP_ZB_TRANSCEIVER_ALL_CHANNELS_MASK; //0x800
   _open_network = 0xFF;
   _scan_status = ZB_SCAN_FAILED;
   _started = false;
