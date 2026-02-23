@@ -373,8 +373,14 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = Supla::BRIGHTEN_ALL,
 		.Supla_action_name = "BRIGHTEN ALL" },
 
+	{ .Supla_action_id = Supla::BRIGHTEN_W,
+		.Supla_action_name = "BRIGHTEN WHITE" },
+
 	{ .Supla_action_id = Supla::DIM_ALL,
 		.Supla_action_name = "DIM ALL" },
+
+	{ .Supla_action_id = Supla::DIM_W,
+		.Supla_action_name = "DIM WHITE" },
 
 	{ .Supla_action_id = Supla::ENTER_CONFIG_MODE,
 		.Supla_action_name = "ENTER CONFIG MODE" },

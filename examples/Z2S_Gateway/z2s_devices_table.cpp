@@ -2767,7 +2767,7 @@ void Z2S_onThermostatTemperaturesReceive(
 
   //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, temperature %d", 
+  log_i("0x%04X, endpoint 0x%x, attribute id 0x%x, temperature %d", 
         short_addr, endpoint, id, temperature);
 
   int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
@@ -2831,7 +2831,7 @@ void Z2S_onThermostatModesReceive(
 
   //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, mode %u", 
+  log_i("0x%04X, endpoint 0x%x, attribute id 0x%x, mode %u", 
         short_addr, endpoint, id, mode);
 
   int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
@@ -2949,7 +2949,7 @@ void Z2S_onWindowCoveringReceive(
   //ieee_addr_to_str(ieee_addr_str, ieee_addr);
 
 
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, value %u",  
+  log_i("0x%04X, endpoint 0x%x, attribute id 0x%x, value %u",  
         short_addr, endpoint, id, value);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
