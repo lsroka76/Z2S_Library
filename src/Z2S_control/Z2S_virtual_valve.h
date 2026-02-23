@@ -37,7 +37,9 @@ class Z2S_VirtualValve : public ValveBase {
     *
     * @param openClose true = open/close, false = 0-100 percentage
     */
-  explicit Z2S_VirtualValve(ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose = true, uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF);
+  explicit Z2S_VirtualValve(
+    ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose = true,
+     uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF);
 
   /**
    * Sets the value of the valve virtual device
@@ -55,6 +57,17 @@ class Z2S_VirtualValve : public ValveBase {
 
   void setValueOnServer(bool state);
 
+  void iterateAlways() override;
+
+  void ping();
+  void Refresh();
+
+  void setKeepAliveSecs(uint32_t keep_alive_secs);
+  void setTimeoutSecs(uint32_t timeout_secs);
+
+  uint32_t getKeepAliveSecs();
+  uint32_t getTimeoutSecs();
+
  protected:
   uint8_t valveOpenState = 0;
 
@@ -62,6 +75,13 @@ class Z2S_VirtualValve : public ValveBase {
   zbg_device_params_t 	_device;
 
   uint8_t _z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF;
+  
+  bool _fresh_start = true;
+
+  uint32_t _keep_alive_ms = 0;
+  uint32_t _timeout_ms    = 0;
+  uint32_t _last_ping_ms  = 0;
+  uint32_t _last_seen_ms  = 0;
 };
 
 }  // namespace Control

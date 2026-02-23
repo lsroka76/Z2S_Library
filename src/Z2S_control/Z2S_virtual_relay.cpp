@@ -553,8 +553,7 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
 
         uint8_t realy_dp_id = _z2s_function_value_U8;
 
-        sendTuyaRequestCmdBool(
-          &zbGateway, &_device, realy_dp_id, state);
+        sendTuyaRequestCmdBool(&zbGateway, &_device, realy_dp_id, state);
         
       } break;
 	}

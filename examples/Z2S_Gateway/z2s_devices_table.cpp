@@ -7917,6 +7917,19 @@ void updateTimeout(
       } break;
 
 
+      case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE: {
+
+        auto Supla_Z2S_VirtualValve = 
+          reinterpret_cast<Supla::Control::Z2S_VirtualValve *>(element);
+
+        if (selector & 1)
+          Supla_Z2S_VirtualValve->setKeepAliveSecs(timings_secs);
+
+        if (selector & 2)
+          Supla_Z2S_VirtualValve->setTimeoutSecs(timings_secs);
+      } break;
+
+
       case SUPLA_CHANNELTYPE_DIMMER: {
 
         auto Supla_Z2S_DimmerInterface = 
