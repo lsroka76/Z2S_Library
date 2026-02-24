@@ -1865,6 +1865,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
     .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
+    .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
 
@@ -5522,6 +5527,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "Zemismart", .model_name = "SPM02-3Z3",
     .z2s_device_uid = 34200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SONOFF", .model_name = "MINI-ZBRBS",
+    .z2s_device_uid = 34300,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE,
     .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };

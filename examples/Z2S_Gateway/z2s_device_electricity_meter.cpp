@@ -125,7 +125,7 @@ void initZ2SDeviceElectricityMeter(
       active_power_divisor    = 10;
 
       energy_multiplier = 1;
-      energy_divisor  = 100;
+      energy_divisor  = 1; //100;?@slawek?
       
       ignore_zigbee_scaling = true;
     } break;

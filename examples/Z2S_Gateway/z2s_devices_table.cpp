@@ -7559,6 +7559,7 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
+      case Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE:
       case Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE:
 
         addZ2SDeviceVirtualRelay(

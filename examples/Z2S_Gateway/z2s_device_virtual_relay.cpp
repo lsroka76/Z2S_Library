@@ -16,43 +16,49 @@ void initZ2SDeviceVirtualRelay(
     switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
+      case Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE: {
+
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
+        z2s_rs_ignore_moving_direction = true;
+      } break;
+      
       case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR: 
-      case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
+      case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR: {
       
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR; 
-      break;
+      } break;
       
 
-      case Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE: 
+      case Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE: {
         
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; 
-      break;
+      } break;
 
 
-      case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER:
+      case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER: {
         
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT; 
         z2s_rs_ignore_moving_direction = true;
-      break;
+      } break;
 
 
-      case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1:
+      case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1: {
         
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE; 
         z2s_rs_ignore_moving_direction = true;
-      break;
+      } break;
 
 
-      case Z2S_DEVICE_DESC_MOES_COVER:
+      case Z2S_DEVICE_DESC_MOES_COVER: {
 
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_MOES_COVER;
-      break;
+      } break;
 
 
-      case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
+      case Z2S_DEVICE_DESC_CURRYSMARTER_COVER: {
 
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER;
-      break;
+      } break;
     }
     
 

@@ -331,8 +331,8 @@ static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM 
 	 { .manufacturer_code = DEVELCO_MANUFACTURER_CODE,	
 	 	 .manufacturer_name = "DEVELCO" },
 
-	 { .manufacturer_code = 0x1286,										
-	 	 .manufacturer_name = "SHENZHEN_COOLKIT_TECHNOLOGY_CO_LTD" },
+	 { .manufacturer_code = SONOFF_MANUFACTURER_CODE,										
+	 	 .manufacturer_name = "SHENZHEN_COOLKIT_TECHNOLOGY_CO_LTD (SONOFF)" },
 
 		{ .manufacturer_code = BOSCH_MANUFACTURER_CODE,										
 	 	 .manufacturer_name = "BOSCH" },
@@ -1367,6 +1367,26 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
 		.zigbee_attribute_name = "HUMIDITY CALIBRATION [-50°C..50°C/0.1°C/x100]" },
 
+	{ .zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_EXTERNAL_TRIGGER_MODE_ID, 
+		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "EXTERNAL TRIGGER MODE" },
+
+	{ .zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_MOTOR_CALIBRATION_ACTION_ID, 
+		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "MOTOR CALIBRATION ACTION" },
+
+	{ .zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_MOTOR_CALIBRATION_STATUS_ID, 
+		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "MOTOR CALIBRATION STATUS" },
+
+	{ .zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_MOTOR_RUN_STATUS_ID, 
+		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "MOTOR RUN STATUS" },
+
 	{ .zigbee_attribute_id  = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID, 
 		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
@@ -1635,6 +1655,60 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
 		.zigbee_attribute_value_name = "FAHRENHEIT",
 		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_EXTERNAL_TRIGGER_MODE_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "EDGE",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_EXTERNAL_TRIGGER_MODE_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "PULSE",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_EXTERNAL_TRIGGER_MODE_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "FOLLOWING (OFF)",
+		.zigbee_attribute_value = 0x02
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_EXTERNAL_TRIGGER_MODE_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "FOLLOWING (ON)",
+		.zigbee_attribute_value = 0x82
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_MOTOR_CALIBRATION_ACTION_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "START AUTOMATIC",
+		.zigbee_attribute_value = 0x02
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_MOTOR_CALIBRATION_ACTION_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "START MANUAL",
+		.zigbee_attribute_value = 0x03
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_MOTOR_CALIBRATION_ACTION_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "CLEAR",
+		.zigbee_attribute_value = 0x04
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_MOTOR_CALIBRATION_ACTION_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "MANUAL 2 FULLY OPENED",
+		.zigbee_attribute_value = 0x07
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_MOTOR_CALIBRATION_ACTION_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "MANUAL 3 FULLY CLOSED",
+		.zigbee_attribute_value = 0x08
 	},
 	{
 		.zigbee_attribute_id = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID,
@@ -2776,6 +2850,23 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Maximal temperature",
     .Tuya_datapoint_description = "Enter numeric value between 0 and 350<br>"
 																	"1 = 0.1°C" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP,
+    .Tuya_datapoint_id 		 			= TUYA_DIN_RCBO_EM_POWER_OUTAGE_MEMORY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Power outage memory",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => OFF<br>"
+																	"1 => ON<br>"
+																	"2 => RESTORE" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP,
+    .Tuya_datapoint_id 		 			= TUYA_DIN_RCBO_EM_CHILD_LOCK_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Child lock",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => OFF<br>"
+																	"1 => ON" },
 		
 };
 
