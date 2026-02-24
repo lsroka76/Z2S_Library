@@ -195,6 +195,8 @@
 #define DANFOSS_EXTERNAL_TEMPERATURE_INPUT_ID                 0x4015 //S16
 #define DANFOSS_RADIATOR_COVERED_ID                           0x4016 //BOOL
 
+#define ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT     0x840C 
+
 #define CUSTOM_CMD_SYNC                                       true
 #define CUSTOM_CMD_ASYNC                                      false
 

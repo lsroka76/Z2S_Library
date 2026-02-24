@@ -2670,6 +2670,21 @@ void Z2S_onConcentrationReceive(
     case ESP_ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE_MEASUREMENT: {
 
     } break;
+
+
+    case ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
+  
+      if (channel_number_slot < 0)
+        no_channel_found_error_func(short_addr);
+      else
+        msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PPM,
+        measured_value);
+    } break;
   }
 }
 
@@ -7736,6 +7751,8 @@ uint8_t Z2S_addZ2SDevice(
         } 
       } break;
 
+/******************************************************************************/
+
       case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER: {
 
         addZ2SDeviceIASzone(
@@ -7756,7 +7773,16 @@ uint8_t Z2S_addZ2SDevice(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
           "OPEN/CLOSE GATE", SUPLA_CHANNELFNC_CONTROLLINGTHEGATE);
       } break;
+
+/******************************************************************************/
     
+      case Z2S_DEVICE_DESC_ZIBI_CUSTOM_CO_SENSOR:
+
+        addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, NO_CUSTOM_CMD_SID, "CO CONCENTRATION", 
+              SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm"); 
+          break;
+
 /******************************************************************************/     
 
       default : {

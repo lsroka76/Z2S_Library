@@ -1169,7 +1169,8 @@ void ZigbeeGateway::zbAttributeReporting(
               cluster_id, attribute->id, attribute->data.type);
   } else 
     if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_PM2_5_MEASUREMENT) ||
-        (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE_MEASUREMENT)) {
+        (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE_MEASUREMENT) ||
+        (cluster_id == ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT)) {
       if ((attribute->id == 
           ESP_ZB_ZCL_ATTR_PM2_5_MEASUREMENT_MEASURED_VALUE_ID) &&
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_SINGLE)) {

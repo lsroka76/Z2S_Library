@@ -126,6 +126,9 @@
 #define Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR             0x2260
 #define Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR             0x2270
 
+#define Z2S_DEVICE_DESC_ZIBI_CUSTOM_CO_IAS_SENSOR           0x2280
+#define Z2S_DEVICE_DESC_ZIBI_CUSTOM_CO_SENSOR               0x2281
+
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR                0x2300
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1              0x2301
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5              0x2305
@@ -2169,7 +2172,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_USE_SEND_DATA,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }}
+                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ZIBI_CUSTOM_CO_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT }},
 };
 
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
@@ -2263,6 +2271,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
 	  .z2s_device_endpoints_count = 10,
     .z2s_device_endpoints = {{10, 0, 0, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR}}},
+
+    {	.manufacturer_name = "ZIBI", .model_name = "ESP32C6_CO_Sensor",
+    .z2s_device_uid = 40,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ZIBI_CUSTOM_CO_IAS_SENSOR,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 10, 0, 0, Z2S_DEVICE_DESC_ZIBI_CUSTOM_CO_SENSOR},
+                              { 11, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR }}},
 
   {	.manufacturer_name = "_TZ3000_akqdg6g7", .model_name = "TS0201",
     .z2s_device_uid = 100,
