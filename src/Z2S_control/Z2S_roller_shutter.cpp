@@ -347,7 +347,10 @@ void Supla::Control::Z2S_RollerShutter::ping() {
 
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR:
+      case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER:
+      case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER:
 
+        sendTuyaQueryCmd(&zbGateway, &_device);
       break;
     }
   }
@@ -436,7 +439,10 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
   if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (true) {
       
-      //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
+      //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr); 
+      if (_z2s_zb_device)
+        _last_seen_ms = _z2s_zb_device->last_seen_ms;
+      
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
