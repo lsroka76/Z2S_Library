@@ -1167,23 +1167,24 @@ void ZigbeeGateway::zbAttributeReporting(
     } else 
         log_i("humidity cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
               cluster_id, attribute->id, attribute->data.type);
-    } else if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_PM2_5_MEASUREMENT) {
+  } else 
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_PM2_5_MEASUREMENT) ||
+        (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE_MEASUREMENT)) {
+      if ((attribute->id == 
+          ESP_ZB_ZCL_ATTR_PM2_5_MEASUREMENT_MEASURED_VALUE_ID) &&
+          (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_SINGLE)) {
 
-    if ((attribute->id == 
-         ESP_ZB_ZCL_ATTR_PM2_5_MEASUREMENT_MEASURED_VALUE_ID) &&
-        (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_SINGLE)) {
+        float value = attribute->data.value ? 
+          *(float *)attribute->data.value : 0;
 
-      float value = attribute->data.value ? 
-        *(float *)attribute->data.value : 0;
-
-      log_i("PM 2.5 measurement %f", value);
+        log_i("Concentration cluster measured value %f", value);
       
-      if (_on_pm25_receive)
-        _on_pm25_receive(
-          src_address.u.short_addr, src_endpoint, cluster_id, value);
+        if (_on_concentration_receive)
+          _on_concentration_receive(
+            src_address.u.short_addr, src_endpoint, cluster_id, value);
     } else 
         log_i(
-          "PM 2.5 cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+          "Concentration cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
           cluster_id, attribute->id, attribute->data.type);
   } else 
   if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT) {
@@ -1270,8 +1271,8 @@ void ZigbeeGateway::zbAttributeReporting(
 
       log_i("binary input/output cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
             cluster_id, attribute->id, attribute->data.type);
-      if (_on_multistate_input_receive)
-        _on_multistate_input_receive(src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+      if (_on_binary_input_receive)
+        _on_binary_input_receive(src_address.u.short_addr, src_endpoint, cluster_id, attribute);
     } else
     if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT) ||
         (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT)) { 

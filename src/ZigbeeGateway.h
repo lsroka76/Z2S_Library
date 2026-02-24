@@ -200,6 +200,7 @@
 #define ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID 0x0021
 #define ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID              0x0020
 
+
 typedef struct findcb_userdata_s {
   uint8_t   _endpoint;
   uint8_t   _device_endpoint;
@@ -464,8 +465,8 @@ public:
   void onPressureReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, float)) {
     _on_pressure_receive = callback;
   }
-  void onPM25Receive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, float)) {
-    _on_pm25_receive = callback; 
+  void onConcentrationReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, float)) {
+    _on_concentration_receive = callback; 
   }
   void onIlluminanceReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint16_t)) {
     _on_illuminance_receive = callback;
@@ -482,6 +483,10 @@ public:
   void onElectricalMeasurementReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, 
                                       const esp_zb_zcl_attribute_t *)) {
     _on_electrical_measurement_receive = callback;
+  }
+  void onBinaryInputReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, 
+                                      const esp_zb_zcl_attribute_t *)) {
+    _on_binary_input_receive = callback;
   }
   void onMultistateInputReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, 
                                       const esp_zb_zcl_attribute_t *)) {
@@ -635,12 +640,13 @@ private:
   void (*_on_temperature_receive)(uint16_t short_addr, uint16_t, uint16_t, float);
   void (*_on_humidity_receive)(uint16_t short_addr, uint16_t, uint16_t, float);
   void (*_on_pressure_receive)(uint16_t short_addr, uint16_t, uint16_t, float);
-  void (*_on_pm25_receive)(uint16_t short_addr, uint16_t, uint16_t, float);
+  void (*_on_concentration_receive)(uint16_t short_addr, uint16_t, uint16_t, float);
   void (*_on_illuminance_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_flow_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_occupancy_receive)(uint16_t short_addr, uint16_t, uint16_t, uint8_t);
   void (*_on_on_off_receive)(uint16_t short_addr, uint16_t, uint16_t, bool);
   void (*_on_electrical_measurement_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_binary_input_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_multistate_input_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_analog_input_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_metering_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);

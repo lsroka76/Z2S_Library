@@ -471,9 +471,9 @@ void Z2S_onPressureReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   float pressure);
 
-void Z2S_onPM25Receive(
+void Z2S_onConcentrationReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  float pm25);
+  float measured_value);
 
 void Z2S_onIlluminanceReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
@@ -492,6 +492,10 @@ void Z2S_onOnOffReceive(
   bool state);
 
 void Z2S_onElectricalMeasurementReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onBinaryInputReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
 
