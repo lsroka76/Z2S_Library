@@ -1357,6 +1357,47 @@ if (Z2S_isGUIStarted())
 
                     switch (z2s_device_desc_id) {
 
+
+                      case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR:
+                      case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
+                      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR:
+                      case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR: 
+                      case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR:
+                      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
+                      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
+                      case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
+                      case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR:
+                      case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
+                      case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2:
+                      case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
+                      case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR: {
+
+                        log_i("IAS ZONE sensor - clearing CIE ADDRESS");
+                        
+                        esp_zb_ieee_addr_t gateway_ieee_addr;
+
+                        memset(
+                          gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
+
+                        zbGateway.sendAttributeWrite(
+                          joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,  
+                          ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+                          ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, 
+                          sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr);
+
+                        log_i("IAS ZONE sensor - writing gateway CIE ADDRESS");
+
+                        esp_zb_get_long_address(gateway_ieee_addr);
+
+                        zbGateway.sendAttributeWrite(
+                          joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
+                          ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
+                          ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, 
+                          sizeof(esp_zb_ieee_addr_t), &gateway_ieee_addr);
+
+                      } break;
+
+
                       case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
 
                         write_mask_16 = 0x000B;
@@ -1492,40 +1533,6 @@ if (Z2S_isGUIStarted())
 
                 case 0x0000: break;     
 
-                case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR:
-                case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
-                case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR:
-                case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR: 
-                case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR:
-                case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
-                case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
-                case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
-                case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR:
-                case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
-                case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2:
-                case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
-                case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR:
-{
-                  esp_zb_ieee_addr_t gateway_ieee_addr;
-
-                  memset(gateway_ieee_addr, 0, sizeof(esp_zb_ieee_addr_t));
-
-                  zbGateway.sendAttributeWrite(
-                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,  
-                    ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), 
-                    &gateway_ieee_addr);
-
-                  esp_zb_get_long_address(gateway_ieee_addr);
-
-                  zbGateway.sendAttributeWrite(
-                    joined_device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
-                    ESP_ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID,
-                    ESP_ZB_ZCL_ATTR_TYPE_IEEE_ADDR, sizeof(esp_zb_ieee_addr_t), 
-                    &gateway_ieee_addr);
-
-                } break;
-                
 
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR:
                 case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1:
