@@ -211,7 +211,8 @@ void msgZ2SDeviceActionTrigger(int16_t channel_number_slot) {
 
 /*****************************************************************************/
 
-void msgZ2SDeviceActionTriggerV2(int16_t channel_number_slot, int8_t sub_id) {
+void msgZ2SDeviceActionTriggerV2(
+  int16_t channel_number_slot, int8_t sub_id, uint8_t hold_start) {
 
   if (channel_number_slot < 0) {
     
@@ -254,9 +255,17 @@ void msgZ2SDeviceActionTriggerV2(int16_t channel_number_slot, int8_t sub_id) {
       virtual_button_data, 
       z2s_channels_table[channel_number_slot].endpoint, 
       z2s_channels_table[channel_number_slot].cluster_id, 
-      z2s_channels_table[channel_number_slot].model_id, sub_id))
-        Supla_Z2S_ActionTrigger->handleAction(
-          0, virtual_button_data.button_action_id);
+      z2s_channels_table[channel_number_slot].model_id, sub_id)) {
+
+        if (hold_start < 2)
+          Supla_Z2S_ActionTrigger->handleAction(
+            0, virtual_button_data.button_action_id);
+      
+      if (hold_start == 1)
+        Supla_Z2S_ActionTrigger->setHoldMs(400);
+      if ((hold_start % 2) == 0)
+        Supla_Z2S_ActionTrigger->setHoldMs(0);
+    }
   }
 }
 

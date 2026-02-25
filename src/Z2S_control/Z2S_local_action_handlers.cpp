@@ -421,6 +421,20 @@ Supla::Control::LocalActionTrigger::~LocalActionTrigger() {
 
 /*****************************************************************************/
 
+void Supla::Control::LocalActionTrigger::setHoldMs(uint32_t hold_ms) {
+
+  _hold_ms = hold_ms;
+}
+
+/*****************************************************************************/
+
+uint32_t Supla::Control::LocalActionTrigger::getHoldMs() {
+
+  return _hold_ms;
+}
+
+/*****************************************************************************/
+
 void Supla::Control::LocalActionTrigger::handleAction(int event, int action) {
 
   Supla::Control::ActionTrigger::handleAction(event, action);
@@ -432,6 +446,18 @@ void Supla::Control::LocalActionTrigger::handleAction(int event, int action) {
 
   //Supla::LocalAction::
   runAction(local_event);
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalActionTrigger::iterateAlways() {
+
+  if (_hold_ms && ((millis() - _last_hold_ms) > _hold_ms)) {
+
+    log_i("hold repeat");
+    _last_hold_ms = millis();
+    runAction(Supla::ON_HOLD);
+  }
 }
 
 /*****************************************************************************/

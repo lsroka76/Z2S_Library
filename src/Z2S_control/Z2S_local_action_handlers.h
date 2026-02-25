@@ -153,7 +153,17 @@ class LocalActionTrigger: public ActionTrigger, public LocalAction {
 
     LocalActionTrigger();
     virtual ~LocalActionTrigger();
+
+    void setHoldMs(uint32_t hold_ms);
+    uint32_t getHoldMs();
+
     void handleAction(int event, int action) override;
+    void iterateAlways();
+
+  protected:
+
+    uint32_t _hold_ms = 0;
+    uint32_t _last_hold_ms = 0;
 
 };
 

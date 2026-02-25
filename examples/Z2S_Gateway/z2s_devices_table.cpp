@@ -5568,7 +5568,68 @@ bool Z2S_onCustomCmdReceive(
           sub_id = IKEA_CUSTOM_CMD_BUTTON_3_PRESSED_SID;
         else if (compareBuffer(buffer, buffer_size, "00010D00"))
           sub_id = IKEA_CUSTOM_CMD_BUTTON_4_PRESSED_SID;
-      }  
+      }  else 
+        if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && 
+            (command_id == 0x09)) {
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+            IKEA_CUSTOM_CMD_BUTTON_3_HELD_SID);
+
+          if (channel_number_slot < 0)
+            log_i(
+              "No IKEA device channel found for address 0x%04X", short_addr);
+          else 
+            msgZ2SDeviceActionTriggerV2(
+              channel_number_slot, IKEA_CUSTOM_CMD_BUTTON_3_HELD_SID, 2);
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+            IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID);
+
+          if (channel_number_slot < 0)
+            log_i(
+              "No IKEA device channel found for address 0x%04X", short_addr);
+          else 
+            msgZ2SDeviceActionTriggerV2(
+              channel_number_slot, IKEA_CUSTOM_CMD_BUTTON_4_HELD_SID, 2);
+          return true;
+        } else
+          if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && 
+            (command_id == 0x07)) {
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+            IKEA_CUSTOM_CMD_BUTTON_1_HELD_SID);
+
+          if (channel_number_slot < 0)
+            log_i(
+              "No IKEA device channel found for address 0x%04X", short_addr);
+          else 
+            msgZ2SDeviceActionTriggerV2(
+              channel_number_slot, IKEA_CUSTOM_CMD_BUTTON_1_HELD_SID, 2);
+          return true;
+        } else
+          if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && 
+            (command_id == 0x03)) { 
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+            IKEA_CUSTOM_CMD_BUTTON_2_HELD_SID);
+
+          if (channel_number_slot < 0)
+            log_i(
+              "No IKEA device channel found for address 0x%04X", short_addr);
+          else 
+            msgZ2SDeviceActionTriggerV2(
+              channel_number_slot, IKEA_CUSTOM_CMD_BUTTON_2_HELD_SID, 2);
+          return true;
+      }
+        
       if (sub_id == 0x7F) return false;
 
       channel_number_slot = Z2S_findChannelNumberSlot(
@@ -5577,8 +5638,10 @@ bool Z2S_onCustomCmdReceive(
 
       if (channel_number_slot < 0)
         log_i("No IKEA device channel found for address 0x%04X", short_addr);
-      else 
-        msgZ2SDeviceActionTriggerV2(channel_number_slot, sub_id);
+      else {
+        uint8_t hold_start = ((sub_id % 2) == 1) ? 1 : 0;
+        msgZ2SDeviceActionTriggerV2(channel_number_slot, sub_id, hold_start);
+      }
       return true;
     } break;
 
