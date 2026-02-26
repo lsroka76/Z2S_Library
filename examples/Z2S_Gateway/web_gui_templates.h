@@ -1215,7 +1215,7 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	.zigbee_attribute_name = "SWITCH MODE (SWITCH/SCENE)"
 	},
 	{
-	.zigbee_attribute_id  = TUYA_PRIVATE_CLUSTER_1_SWITCH_MODE_ID, 
+	.zigbee_attribute_id  = TUYA_PRIVATE_CLUSTER_1_SWITCH_TYPE_ID, 
 	.zigbee_attribute_cluster_id = TUYA_PRIVATE_CLUSTER_1, 
 	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
 	.zigbee_attribute_name = "SWITCH TYPE"

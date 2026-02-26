@@ -798,7 +798,11 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 
 #define Z2S_REPORTING_SET_DESC_SONOFF_ONOFF_1                           0x0300
 
+#define Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1                 0x0400
+
 #define Z2S_REPORTING_SET_DESC_DANFOSS_TRV                              0x0500
+
+
 
 static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
 
@@ -917,7 +921,44 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_min_interval_value = 0, 
     .z2s_max_interval_value = 3600,
     .z2s_delta_value = 0,
-    .z2s_manufacturer_code = 0}
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 5, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 5,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 5, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 50,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 5, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U48,
+    .z2s_min_interval_value = 5, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 257,
+    .z2s_manufacturer_code = 0},
+
 
 };//Z2S_REPORTING_SETS_DESC
 
@@ -1048,14 +1089,14 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
     {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT ||
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
       Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
     
     {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT ||
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
       Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
@@ -2591,62 +2632,110 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_0hkmcrza", .model_name = "TS0203",
    .z2s_device_uid = 3800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_zz6u0auj", .model_name = "TS0203",
    .z2s_device_uid = 3805,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000", .model_name = "SNZB-03",
    .z2s_device_uid = 3810,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_996rpfy6", .model_name = "TS0203",
    .z2s_device_uid = 3815,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_yihvt3gp", .model_name = "TS0203",
     .z2s_device_uid = 3820,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "LINCUKOO", .model_name = "TS0203",
     .z2s_device_uid = 3825,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_mcxw5ehu", .model_name = "TS0202",
    .z2s_device_uid = 3900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TYZB01_jytabjkb", .model_name = "TS0202",
    .z2s_device_uid = 3905,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_lltemgsf", .model_name = "TS0202",
    .z2s_device_uid = 3910,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TYZB01_5nr7ncpl", .model_name = "TS0202",
    .z2s_device_uid = 3915,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_mg4dy6z6", .model_name = "TS0202",
    .z2s_device_uid = 3920,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_bsvqrxru", .model_name = "TS0202",
    .z2s_device_uid = 3925,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3040_fuhjqokx", .model_name = "TS0202",
    .z2s_device_uid = 3930,
@@ -2661,27 +2750,47 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_26fmupbb", .model_name = "TS0203",
     .z2s_device_uid = 4000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_rcuyhwe3", .model_name = "TS0203",
     .z2s_device_uid = 4100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_2mbfxlzr", .model_name = "TS0203",
     .z2s_device_uid = 4200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_x8q36xwf", .model_name = "TS0203",
     .z2s_device_uid = 4300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_zutizvyk", .model_name = "TS0203",
     .z2s_device_uid = 4400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZE200_bh3n6gk8", .model_name = "TS0601",
     .z2s_device_uid = 4500,
@@ -2691,27 +2800,56 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_k4ej3ww2", .model_name = "TS0207",
     .z2s_device_uid = 4600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_qhozxs2b", .model_name = "TS0207",
     .z2s_device_uid = 4605,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_rr1cqjwu", .model_name = "TS0207",
     .z2s_device_uid = 4610,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_ww9i3e0y", .model_name = "TS0207",
     .z2s_device_uid = 4615,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
+
+  {	.manufacturer_name = "_TZ3000_u9mio4qb", .model_name = "TS0207",
+    .z2s_device_uid = 4620,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_85czd6fy", .model_name = "TS0207",
     .z2s_device_uid = 4700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_upgcbody", .model_name = "TS0207",
     .z2s_device_uid = 4800,
@@ -2725,12 +2863,22 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_wuep9zng", .model_name = "TS0207",
     .z2s_device_uid = 4900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
+
 
   {	.manufacturer_name = "_TZ3000_otwpdq1d", .model_name = "TS0207",
     .z2s_device_uid = 5000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
+
 
   {	.manufacturer_name = "_TZ3000_upgcbody", .model_name = "SNZB-05",
     .z2s_device_uid = 5100,
@@ -2744,7 +2892,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_lf56vpxj", .model_name = "TS0202",
     .z2s_device_uid = 5200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_decxrtwa", .model_name = "TS0203",
     .z2s_device_uid = 5300,
@@ -2754,12 +2906,20 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_yxqnffam", .model_name = "TS0203",
     .z2s_device_uid = 5400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_lqpt3mvr", .model_name = "TS0210",
     .z2s_device_uid = 5500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "PARASOLL Door/Window Sensor",
     .z2s_device_uid = 5600,
@@ -2781,7 +2941,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_1bwpjvlz", .model_name = "TS0203",
    .z2s_device_uid = 5900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-04",
    .z2s_device_uid = 6000,
@@ -2801,17 +2965,29 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_au1rjicn", .model_name = "TS0203",
    .z2s_device_uid = 6100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_bb6xaihh", .model_name = "SNZB-03",
     .z2s_device_uid = 6200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "eWeLink", .model_name = "CK-TLSR8656-SS5-01(7002)",
     .z2s_device_uid = 6205,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-03",
     .z2s_device_uid = 6300,
@@ -2831,37 +3007,65 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_n2egfsli", .model_name = "SNZB-04",
     .z2s_device_uid = 6600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZE200_pay2byax", .model_name = "TS0601",
     .z2s_device_uid = 6700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZE200_n8dljorx", .model_name = "TS0601",
     .z2s_device_uid = 6800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3210_up3pngle", .model_name = "TS0205",
     .z2s_device_uid = 6900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_c8ozah8n", .model_name = "TS0202",
     .z2s_device_uid = 7000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_6zvw8ham", .model_name = "TS0203",
     .z2s_device_uid = 7100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3040_bb6xaihh", .model_name = "TS0202",
     .z2s_device_uid = 7200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "LUMI", .model_name = "lumi.magnet.ac01",
     .z2s_device_uid = 7300,
@@ -2916,27 +3120,47 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZE200_iba1ckek", .model_name = "TS0601",
     .z2s_device_uid = 8100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_6ygjfyll", .model_name = "TS0202",
     .z2s_device_uid = 8200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_7d8yme6f", .model_name = "TS0203",
     .z2s_device_uid = 8300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_bpkijo14", .model_name = "TS0203",
     .z2s_device_uid = 8400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_oxslv1c9", .model_name = "TS0203",
     .z2s_device_uid = 8500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "HEIMAN", .model_name = "SmokeSensor-EF-3.0",
     .z2s_device_uid = 8600,
@@ -3464,6 +3688,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_qnejhcsu", .model_name = "TS0001",
+    .z2s_device_uid = 12505,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A}},
+
   {	.manufacturer_name = "_TZ3000_2uollq9d", .model_name = "TS011F",
     .z2s_device_uid = 12600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
@@ -3497,7 +3730,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_kqvb5akv", .model_name = "TS0001",
     .z2s_device_uid = 13100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
-	  .z2s_device_endpoints_count = 1}, //A*1000
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A}},
 
   {	.manufacturer_name = "_TZ3000_zrm3oxsh", .model_name = "TS011F",
     .z2s_device_uid = 13105,
