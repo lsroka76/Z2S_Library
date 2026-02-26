@@ -3200,10 +3200,13 @@ void Z2S_onLumiCustomClusterReceive(
           channel_number_slot, ZBD_BATTERY_VOLTAGE_MSG, lumi_battery);
       }
 
+/*-----------Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER-----------*/
 /*----------Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1----------*/
 
-      if (z2s_channels_table[channel_number_slot].model_id == 
-            Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1) {
+      if ((z2s_channels_table[channel_number_slot].model_id == 
+            Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER) ||
+          (z2s_channels_table[channel_number_slot].model_id == 
+            Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1)) {
 
         channel_number_slot = Z2S_findChannelNumberSlot(
           short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
@@ -3219,10 +3222,14 @@ void Z2S_onLumiCustomClusterReceive(
 
             uint8_t lumi_rsd_battery = 
               (*(uint8_t*)(attribute->data.value + lumi_rsd_battery_position));
+
+            if (z2s_channels_table[channel_number_slot].model_id == 
+              Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1)
+              lumi_rsd_battery *= 2;
             
             updateSuplaBatteryLevel(
               channel_number_slot, ZBD_BATTERY_PERCENTAGE_MSG, 
-              lumi_rsd_battery * 2);
+              lumi_rsd_battery);
           }
           return;
         }
