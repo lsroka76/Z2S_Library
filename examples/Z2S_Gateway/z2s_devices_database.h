@@ -209,8 +209,8 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER      0x4200
 #define Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER     0x4300
+#define Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER      0x4350
 #define Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER       0x4400
-
 #define Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET              0x4450
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER        0x4500
@@ -5432,10 +5432,10 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "Shelly", .model_name = "2PM",
     .z2s_device_uid = 32900,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER,
 	  .z2s_device_endpoints_count = 2,
-    .z2s_device_endpoints ={{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER },
-                            { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER }}},
+    .z2s_device_endpoints ={{ 1, 0, 0, Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER },
+                            { 2, 0, 0, Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER }}},
 
   { .manufacturer_name = "_TZE204_jpyrsdp3", .model_name = "TS0601",
     .z2s_device_uid = 33000,

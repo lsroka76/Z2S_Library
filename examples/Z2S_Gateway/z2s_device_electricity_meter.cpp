@@ -78,6 +78,7 @@ void initZ2SDeviceElectricityMeter(
       }
     } break;
 
+
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
 
       _one_phase = false; 
@@ -94,6 +95,7 @@ void initZ2SDeviceElectricityMeter(
       ignore_zigbee_scaling = true;
     } break;
 
+
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
 
       _one_phase = true;
@@ -106,6 +108,29 @@ void initZ2SDeviceElectricityMeter(
 
       energy_multiplier = 1;
       energy_divisor  = 100;
+      
+      ignore_zigbee_scaling = true;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER: {
+
+      _one_phase = true;
+
+      voltage_multiplier = 1;
+      voltage_divisor    = 100;
+
+      ac_frequency_multiplier = 1;
+      ac_frequency_divisor = 100;
+
+      current_multiplier = 1;
+      current_divisor    = 1000;
+
+      active_power_multiplier = 1;
+      active_power_divisor    = 1;
+
+      energy_multiplier = 1;
+      energy_divisor  = 1000000;
       
       ignore_zigbee_scaling = true;
     } break;
