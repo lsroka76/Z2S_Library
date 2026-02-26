@@ -3250,12 +3250,27 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 	action.is_enabled = ESPUI.getControl(action_enabled_switcher)->getValueInt();
 
 	const char *action_name_str = ESPUI.getControl(action_name_text)->getValueCstr();
-	if (strlen(action_name_str) >= 0)
-		strncpy(action.action_name, action_name_str, 32);
+	if (strlen(action_name_str) >= 0) {
+
+		size_t action_name_size = strnlen(
+			action_name_str, ACTION_NAME_MAX_SIZE - 1);
+
+		strncpy(action.action_name, action_name_str, action_name_size);
+		action.action_name[action_name_size] = '\0';
+	}
 	else 
 		return false;
+	
+	size_t action_description_size = strnlen(
+			ESPUI.getControl(action_description_text)->getValueCstr(), 
+			ACTION_DESCRIPTION_MAX_SIZE - 1);
+		
+	strncpy(
+		action.action_description, 
+		ESPUI.getControl(action_description_text)->getValueCstr(), 
+		action_description_size);
 
-	strncpy(action.action_description, ESPUI.getControl(action_description_text)->getValueCstr(), 127);
+	action.action_description[action_description_size] = '\0';
 
 	int32_t selector_value = 
 		ESPUI.getControl(action_source_channel_selector)->getValueInt();
@@ -6134,10 +6149,18 @@ void editDeviceCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_UPDATE_DEVICE_NAME_FLAG : {
 
-				strncpy(z2s_zb_devices_table[device_slot].device_local_name, 
-								ESPUI.getControl(device_name_text)->getValueCstr(), 32);
+				size_t device_local_name_size = strnlen(
+					ESPUI.getControl(device_name_text)->getValueCstr(),
+					DEVICE_LOCAL_NAME_MAX_SIZE - 1);
 
-				z2s_zb_devices_table[device_slot].device_local_name[32] = '\0';
+				strncpy(
+					z2s_zb_devices_table[device_slot].device_local_name, 
+					ESPUI.getControl(device_name_text)->getValueCstr(), 
+					device_local_name_size);
+
+				z2s_zb_devices_table[device_slot].\
+					device_local_name[device_local_name_size] = '\0';
+
 				z2s_zb_devices_table[device_slot].user_data_flags &= 
 					~ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED;
 					
@@ -6265,10 +6288,17 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_UPDATE_CHANNEL_NAME_FLAG : {	
 
-				strncpy(z2s_channels_table[channel_slot].Supla_channel_name, 
-								ESPUI.getControl(channel_name_text)->getValueCstr(), 32);
+				size_t Supla_channel_name_size = strnlen(
+					ESPUI.getControl(channel_name_text)->getValueCstr(),
+					SUPLA_CHANNEL_NAME_MAX_SIZE - 1);
+	
+				strncpy(
+					z2s_channels_table[channel_slot].Supla_channel_name, 
+					ESPUI.getControl(channel_name_text)->getValueCstr(), 
+					Supla_channel_name_size);
 
-				z2s_channels_table[channel_slot].Supla_channel_name[32] = '\0';
+				z2s_channels_table[channel_slot].\
+					Supla_channel_name[Supla_channel_name_size] = '\0';
 
 				if (Z2S_saveChannelsTable()) {
 

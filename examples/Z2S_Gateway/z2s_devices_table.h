@@ -35,6 +35,9 @@
 
 #define MAX_ZB_DEVICE_SUPLA_CHANNELS                            0x10 //16
 
+#define ACTION_NAME_MAX_SIZE                                    33
+#define ACTION_DESCRIPTION_MAX_SIZE                             128
+
 #define ALL_SUPLA_CHANNEL_TYPES   -1
 
 #define ADD_Z2S_DEVICE_STATUS_OK                                0x00  //device added 100%
@@ -207,8 +210,8 @@ typedef struct z2s_channel_action_s {
   uint8_t dst_Supla_channel;
   Supla::Event src_Supla_event;
   Supla::Action dst_Supla_action;
-  char action_name[33];
-  char action_description[128];
+  char action_name[ACTION_NAME_MAX_SIZE];
+  char action_description[ACTION_DESCRIPTION_MAX_SIZE];
   bool is_condition;
   double min_value;
   double max_value;

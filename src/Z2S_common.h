@@ -1,6 +1,9 @@
 #ifndef SRC_Z2S_COMMON_H_
 #define SRC_Z2S_COMMON_H_
 
+#define DEVICE_LOCAL_NAME_MAX_SIZE            36
+#define SUPLA_CHANNEL_NAME_MAX_SIZE           32
+
 typedef struct z2s_zb_device_params_s {
 
   uint32_t record_id;
@@ -10,7 +13,7 @@ typedef struct z2s_zb_device_params_s {
   uint32_t device_gui_id;
   uint32_t reserved_0;
   uint32_t reserved_1;
-  char device_local_name[36];
+  char device_local_name[DEVICE_LOCAL_NAME_MAX_SIZE];
   esp_zb_ieee_addr_t ieee_addr;
   uint16_t short_addr;
   uint8_t endpoints_count;
@@ -57,7 +60,7 @@ union {
   uint8_t             Supla_remote_channel;
 };
   int32_t             Supla_channel_type;
-  char                Supla_channel_name[32];
+  char                Supla_channel_name[SUPLA_CHANNEL_NAME_MAX_SIZE];
   uint32_t            Supla_channel_func;
   int8_t              sub_id;
   uint8_t             reserved_4;

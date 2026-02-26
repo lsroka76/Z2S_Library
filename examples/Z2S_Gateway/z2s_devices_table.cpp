@@ -10424,8 +10424,7 @@ case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F: {
 
 /*****************************************************************************/
 
-    default: Z2S_addZ2SDevice(
-      joined_device, NO_CUSTOM_CMD_SID);
+    default: Z2S_addZ2SDevice(joined_device, NO_CUSTOM_CMD_SID);
   }
 }
 
