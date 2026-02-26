@@ -142,6 +142,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE        0x2335
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z         0x2340
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100         0x2345
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T        0x2350
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
@@ -2087,6 +2088,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -5789,7 +5796,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "SONOFF", .model_name = "MINI-ZBRBS",
     .z2s_device_uid = 34300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_b8vxct9l", .model_name = "TS0601",
+    .z2s_device_uid = 34400,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
+    .z2s_device_endpoints_count = 1},
+
 //DEVICES_END
 };
 #endif

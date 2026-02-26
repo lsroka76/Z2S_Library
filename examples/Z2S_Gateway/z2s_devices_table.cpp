@@ -7190,7 +7190,8 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z:
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100: {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100:
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T: {
         
         switch (sub_id) {
 
@@ -8924,6 +8925,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T:
     case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
@@ -9581,6 +9583,27 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_PRESENCE_SENSOR_RELAY_MODE_SID, "SWITCH AUTO MODE",
         SUPLA_CHANNELFNC_POWERSWITCH);
+    } break;
+
+/*****************************************************************************/                                         
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_PRESENCE_SID, "PRESENCE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID, 
+        "SWITCH (FOR MANUAL MODE)",SUPLA_CHANNELFNC_POWERSWITCH);
+
+      /*Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_RELAY_MODE_SID, "SWITCH AUTO MODE",
+        SUPLA_CHANNELFNC_POWERSWITCH);*/
     } break;
 
 /*****************************************************************************/                                         

@@ -2783,13 +2783,59 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Fading time",
     .Tuya_datapoint_description = "Enter numeric value: 5 - 1500 [s]/step 5 [s]" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_INSTALLATION_HEIGHT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Installation height",
+    .Tuya_datapoint_description = "Enter numeric value: 3 - 5 [m]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_RADAR_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Radar sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 9" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_FADING_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Fading time",
+    .Tuya_datapoint_description = "Enter numeric value: 5 - 300 [s]/step 1 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_RADAR_SWITCH_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Radar switch (notifications off/on)",
+    .Tuya_datapoint_description = "Enter numeric value: 0 (OFF) or 1(ON)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_LED_INDICATOR_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "LED indicator (off/on)",
+    .Tuya_datapoint_description = "Enter numeric value: 0 (OFF) or 1(ON)" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_RELAY_MODE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Relay mode",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => AUTO<br>"
+																	"1 => MANUAL"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_RADAR_MODE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Radar mode",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => PEOPLE ON<br>"
+																	"1 => PEOPLE OFF"},
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
     .Tuya_datapoint_id 		 			= TUYA_TS0601_TRV_TRV602Z_MOTOR_THRUST_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Motor thrust",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => strong<br>"
-																	"1 => middle"
+																	"1 => middle<br>"
 																	"2 => weak" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,
@@ -2798,7 +2844,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Display brightness",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => high<br>"
-																	"1 => medium"
+																	"1 => medium<br>"
 																	"2 => low" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z,

@@ -1963,6 +1963,15 @@ void processTuyaPresenceSensorDataReport(
       motion_state_dp_id = TUYA_PRESENCE_SENSOR_MWPS3Z_MOTION_STATE_DP;
       illuminance_dp_id = TUYA_PRESENCE_SENSOR_MWPS3Z_ILLUMINANCE_DP;
     } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T: {
+
+      presence_dp_id = TUYA_PRESENCE_SENSOR_SZLR08T_PRESENCE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_SZLR08T_ILLUMINANCE_DP;
+      relay_state_dp_id = TUYA_PRESENCE_SENSOR_SZLR08T_RELAY_SWITCH_DP;
+      presence_value_on = 0x01;
+    } break;
   }
   
   if (presence_dp_id) {
@@ -3016,6 +3025,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T:
 
       processTuyaPresenceSensorDataReport(
         channel_number_slot, payload_size, payload, model_id); 
