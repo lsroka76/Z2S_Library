@@ -1972,8 +1972,9 @@ void buildChannelsTabGUI() {
 
 	addClearLabel(
 		PSTR(
-			"&#10023; keepalive (s) &#10023; turn on delay (s) "
-			"[logical gates] &#10023;"),zb_channel_timings_label);
+			"&#10023; keepalive (s) &#10023; turn on delay (s) [logical gates] "
+			"&#10023;<br>&#10023; action trigger hold repeat (ms) &#10023;"),
+			zb_channel_timings_label);
 
 	timeout_number = ESPUI.addControl(
 		Control::Type::Number, PSTR(empty_str), (long int)0, 
@@ -2000,7 +2001,7 @@ void buildChannelsTabGUI() {
 
 	addClearLabel(
 		PSTR(
-			"&#10023; refresh(s) [ElectricityMeter] &#10023;<br>"
+			"&#10023; refresh(s) [ElectricityMeter] &#10023; "
 			"&#10023; autoset(s) [VirtualBinary] &#10023<br>;"
 			"&#10023; debounce(ms) [VirtualSceneSwitch] &#10023; <br>"
 			"&#10023; thermometers timeout(s) [Remote Thermometer] &#10023;"),
@@ -4939,12 +4940,17 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 		case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
 
-			enableChannelTimings(6); //timeout + debounce 
+			//action_trigger_hold_ms + timeout + debounce 
+			enableChannelTimings(1 + 2 + 4); 
+
+			ESPUI.updateNumber(keepalive_number, 	
+				z2s_channels_table[channel_slot].action_trigger_hold_ms);
+
 			ESPUI.updateNumber(timeout_number, 
 				z2s_channels_table[channel_slot].timeout_secs);
 
 			ESPUI.updateNumber(refresh_number, 
-				z2s_channels_table[channel_slot].refresh_secs);
+				z2s_channels_table[channel_slot].debounce_ms);
 	
 			enableChannelFlags(16); 
 		} break;

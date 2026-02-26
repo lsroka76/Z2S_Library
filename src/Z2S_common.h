@@ -109,7 +109,10 @@ union {
   };
   uint32_t            user_data_flags;
   uint32_t            timeout_secs;
+union {
   uint32_t            keep_alive_secs;
+  uint32_t            action_trigger_hold_ms;
+};
 union {  
   uint32_t            refresh_secs;
   uint32_t            debounce_ms;
