@@ -5927,6 +5927,13 @@ bool Z2S_onBTCBoundDevice(
         zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED)) {
 
     log_i("ZBD_USER_DATA_FLAG_BINDING_REQUIRED SET");
+
+    return false;
+  }
+  if (z2s_zb_devices_table[zb_device_slot].short_addr != device->short_addr) {
+
+    log_i("Device has new short address - reconfiguring");
+
     return false;
   }
   

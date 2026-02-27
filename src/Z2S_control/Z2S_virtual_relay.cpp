@@ -553,7 +553,8 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
 
         uint8_t realy_dp_id = _z2s_function_value_U8;
 
-        sendTuyaRequestCmdBool(&zbGateway, &_device, realy_dp_id, state);
+        //sendTuyaRequestCmdBool(&zbGateway, &_device, realy_dp_id, state);
+        sendTuyaQueryCmd(&zbGateway, &_device, false);
         
       } break;
 	}
@@ -574,7 +575,7 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
       
       if (_z2s_zb_device)
         _last_seen_ms = _z2s_zb_device->last_seen_ms;
-      //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();

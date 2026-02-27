@@ -796,6 +796,7 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 
 #define Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD               0x0200
 #define Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD    0x0201
+#define Z2S_REPORTING_SET_DESC_BATTERY_REPORTING_SONOFF                 0x0220
 
 #define Z2S_REPORTING_SET_DESC_SONOFF_ONOFF_1                           0x0300
 
@@ -850,6 +851,24 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_min_interval_value = 3600, 
     .z2s_max_interval_value = 65000,
     .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BATTERY_REPORTING_SONOFF,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 3600, 
+    .z2s_max_interval_value = 7200,
+    .z2s_delta_value_8 = 2,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BATTERY_REPORTING_SONOFF,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 3600, 
+    .z2s_max_interval_value = 7200,
+    .z2s_delta_value_8 = 1,
     .z2s_manufacturer_code = 0},
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD,
@@ -957,7 +976,7 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U48,
     .z2s_min_interval_value = 5, 
     .z2s_max_interval_value = 3600,
-    .z2s_delta_value = 257,
+    .z2s_delta_value_64 = 257,
     .z2s_manufacturer_code = 0},
 
 
@@ -1908,7 +1927,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
-  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_WINDOW_COVERING_SINGLE,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
@@ -3298,6 +3317,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 9625,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
 	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "SONOFF", .model_name = "SNZB-04PR2",
+    .z2s_device_uid = 9630,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_REPORTING_SONOFF, 
+      Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B}},
 
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-204Z",
     .z2s_device_uid = 9700,
