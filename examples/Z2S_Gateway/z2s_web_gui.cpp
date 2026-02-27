@@ -1,5 +1,7 @@
 #ifndef USE_SUPLA_WEB_SERVER
 
+#include <esp_partition.h>
+
 #include <ZigbeeGateway.h>
 
 #include "z2s_web_gui.h"
@@ -4009,7 +4011,7 @@ void Z2S_startWebGUIConfig() {
 
 void Z2S_startWebGUI() {
 
-  log_i("STOP WEB GUI");
+  log_i("STARTING WEB GUI");
 
 	ESPUI.setCustomJS(myCustomJS);
 	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
@@ -4017,11 +4019,73 @@ void Z2S_startWebGUI() {
 	ESPUI.begin("ZIGBEE <=> SUPLA CONTROL PANEL");
 	GUIstarted = true;
 	handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_STARTED);
+
+	if (ESPUI.WebServer())
+		ESPUI.WebServer()->on("/partition", HTTP_GET, [](AsyncWebServerRequest *request) {
+    const AsyncWebParameter *pLabel = request->getParam("label");
+    const AsyncWebParameter *pType = request->getParam("type");
+    const AsyncWebParameter *pSubtype = request->getParam("subtype");
+    const AsyncWebParameter *pRaw = request->getParam("raw");
+
+    if (!pLabel && !pType && !pSubtype) {
+      request->send(400, "text/plain", "Bad request: missing parameter");
+      return;
+    }
+
+    esp_partition_type_t type = ESP_PARTITION_TYPE_ANY;
+    esp_partition_subtype_t subtype = ESP_PARTITION_SUBTYPE_ANY;
+    const char *label = nullptr;
+    bool raw = true;
+
+    if (pLabel) {
+      label = pLabel->value().c_str();
+    }
+
+    if (pType) {
+      type = (esp_partition_type_t)pType->value().toInt();
+    }
+
+    if (pSubtype) {
+      subtype = (esp_partition_subtype_t)pSubtype->value().toInt();
+    }
+
+    if (pRaw && pRaw->value() == "false") {
+      raw = false;
+    }
+
+    const esp_partition_t *partition = esp_partition_find_first(type, subtype, label);
+
+    if (!partition) {
+      request->send(404, "text/plain", "Partition not found");
+      return;
+    }
+
+    AsyncWebServerResponse *response =
+      request->beginChunkedResponse("application/octet-stream", [partition, raw](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+        const size_t remaining = partition->size - index;
+        if (!remaining) {
+          return 0;
+        }
+        const size_t len = std::min(maxLen, remaining);
+        if (raw && esp_partition_read_raw(partition, index, buffer, len) == ESP_OK) {
+          return len;
+        }
+        if (!raw && esp_partition_read(partition, index, buffer, len) == ESP_OK) {
+          return len;
+        }
+        return 0;
+      });
+
+    response->addHeader("Content-Disposition", "attachment; filename=" + String(partition->label) + ".bin");
+    response->setContentLength(partition->size);
+
+    request->send(response);
+  });
 }
 
 void Z2S_stopWebGUI() {
 	
-	log_i("STOP WEB GUI");
+	log_i("STOPPING WEB GUI");
 
 	if (ESPUI.WebServer())
 		ESPUI.WebServer()->end();
