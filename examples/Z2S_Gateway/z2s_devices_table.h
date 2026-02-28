@@ -246,15 +246,18 @@ extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8];  //bit-index
 //const static char   Z2S_CHANNELS_ACTIONS_TABLE_SIZE []  PROGMEM = "Z2S_actions_ts";
 
 const static char Z2S_CHANNELS_ACTIONS_INDEX_TABLE[] PROGMEM = "Z2S_actions_i";
-const static char Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2[] PROGMEM = "actions_index_table.z2s";
+const static char Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2[] PROGMEM = 
+  "actions_index_table.z2s";
 const static char Z2S_CHANNELS_ACTIONS_PPREFIX[] PROGMEM = "Z2S_an_";
-const static char Z2S_CHANNELS_ACTIONS_PPREFIX_V2[] PROGMEM = "action_%04d.z2s";
+const static char Z2S_CHANNELS_ACTIONS_PPREFIX_V2[] PROGMEM = 
+  "action_%04d.z2s";
 const static char Z2S_CHANNELS_ACTIONS_NUMBER[] PROGMEM = "Z2S_actions_n";
 
 
 const static char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
 
-const static char Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2[] PROGMEM = "channel_ext_data_%03d_%02d.z2s";
+const static char Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2[] PROGMEM =
+  "channel_ext_data_%03d_%02d.z2s";
 
 extern bool sendIASNotifications;
 

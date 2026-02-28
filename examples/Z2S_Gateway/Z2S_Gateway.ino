@@ -1370,7 +1370,8 @@ if (Z2S_isGUIStarted())
                       case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1:
                       case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2:
                       case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM:
-                      case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR: {
+                      case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR:
+                      case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR: {
 
                         log_i("IAS ZONE sensor - clearing CIE ADDRESS");
                         

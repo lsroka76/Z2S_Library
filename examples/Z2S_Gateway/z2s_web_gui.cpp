@@ -3106,8 +3106,9 @@ void enableActionDetails(bool enable) {
 		ESPUI.updateSelect(action_event_selector, -1);
 		ESPUI.updateSelect(action_destination_channel_selector, -1); 
 		ESPUI.updateSelect(action_action_selector, -1);
-		ESPUI.updateNumber(action_condition_threshold_1_number, 0);
-		ESPUI.updateNumber(action_condition_threshold_2_number, 0);
+		working_str = "0.00";
+		ESPUI.updateText(action_condition_threshold_1_number, working_str);
+		ESPUI.updateText(action_condition_threshold_2_number, working_str);
 	}
 
 	enableControlStyle(action_enabled_switcher, enable);
@@ -3225,7 +3226,7 @@ void updateActionDetails(
 	
 	ESPUI.updateSelect(
 		action_source_channel_selector, empty_action ? 
-		-1 : action.src_Supla_channel);
+		-1 : Z2S_findTableSlotByChannelNumber(action.src_Supla_channel));
 
 	long action_id = empty_action ? -1 : action.is_condition ? 
 			(0xFFFF + action.src_Supla_event) : action.src_Supla_event;
@@ -3233,7 +3234,7 @@ void updateActionDetails(
 
 	ESPUI.updateSelect(
 		action_destination_channel_selector, empty_action ? 
-		-1 : action.dst_Supla_channel);
+		-1 : Z2S_findTableSlotByChannelNumber(action.dst_Supla_channel));
 
 	ESPUI.updateSelect(
 		action_action_selector, empty_action ? 
@@ -3279,7 +3280,8 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 		ESPUI.getControl(action_source_channel_selector)->getValueInt();
 
 	if ( selector_value >= 0)
-		action.src_Supla_channel = selector_value;
+		action.src_Supla_channel = 
+			z2s_channels_table[selector_value].Supla_channel;
 	else
 		return false;
 	 
@@ -3297,32 +3299,27 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 	} else
 		return false;
 	
-	selector_value = ESPUI.getControl(action_destination_channel_selector)->getValueInt();
+	selector_value = ESPUI.getControl(
+		action_destination_channel_selector)->getValueInt();
+
 	if ( selector_value >= 0)
-		action.dst_Supla_channel = selector_value;
+		action.dst_Supla_channel = 
+			z2s_channels_table[selector_value].Supla_channel;
 	else
 		return false;
 
 	selector_value = ESPUI.getControl(action_action_selector)->getValueInt();
+	
 	if ( selector_value >= 0)
 		action.dst_Supla_action = (Supla::Action)selector_value;
 	else
 		return false;
 
-	double threshold_value = 0;
-		ESPUI.getControl(action_condition_threshold_1_number)->getValue().toDouble();
-	action.min_value = threshold_value;
-	//else
-	//	return false;
+	action.min_value = ESPUI.getControl(
+		action_condition_threshold_1_number)->getValue().toDouble();
 
-	//threshold_value = 
-		//ESPUI.getControl(action_condition_threshold_2_number)->getValue().toDouble();
-	///if ( selector_value >= 0)
-	action.max_value = threshold_value;
-	//else
-	//	return false;
-
-	//action.is_condition = false;
+	action.max_value = ESPUI.getControl(
+		action_condition_threshold_2_number)->getValue().toDouble();
 
 	return true;
 }
@@ -3401,8 +3398,9 @@ void buildActionsChannelSelectors(
 			Control::Color::Emerald, parent_control_id, generalCallback);
 
 		//this have to be here to keep user friendly layout
+		working_str = "0.00";
 		action_condition_threshold_1_number = ESPUI.addControl(
-			Control::Type::Number, PSTR(empty_str), (long int)-1, 
+			Control::Type::Text, PSTR(empty_str), working_str, 
 			Control::Color::Emerald, parent_control_id, generalCallback);
 		
 		addClearLabel(
@@ -3413,7 +3411,7 @@ void buildActionsChannelSelectors(
 	
 		//this have to be here to keep user friendly layout
 		action_condition_threshold_2_number = ESPUI.addControl(
-			Control::Type::Number, PSTR(empty_str), (long int)-1, 
+			Control::Type::Text, PSTR(empty_str), working_str, 
 			Control::Color::Emerald, parent_control_id, generalCallback);
 
 		addClearLabel(
