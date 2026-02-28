@@ -25,8 +25,6 @@
 
 ESPAsyncHTTPUpdateServer updateServer;
 
-//extern ZigbeeGateway zbGateway;
-
 extern bool force_leave_global_flag;
 
 extern int8_t  _enable_gui_on_start;
@@ -3309,7 +3307,7 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 		return false;
 
 	selector_value = ESPUI.getControl(action_action_selector)->getValueInt();
-	
+
 	if ( selector_value >= 0)
 		action.dst_Supla_action = (Supla::Action)selector_value;
 	else
@@ -4059,7 +4057,8 @@ void Z2S_startWebGUI() {
     }
 
     AsyncWebServerResponse *response =
-      request->beginChunkedResponse("application/octet-stream", [partition, raw](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+      request->beginChunkedResponse(
+				"application/octet-stream", [partition, raw](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
         const size_t remaining = partition->size - index;
         if (!remaining) {
           return 0;
@@ -4186,7 +4185,6 @@ void clusterCallbackCmd() {
 }
 
 void Z2S_loopWebGUI() {
-
 
 	switch (gui_command) {
 

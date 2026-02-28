@@ -33,9 +33,9 @@ void Z2S_endLittleFs() {
   save_mutex = 0;
 }
 
-bool Z2S_saveFile(const char* z2s_file_name, 
-                  const uint8_t* z2s_file_data, 
-                  size_t z2s_file_size) {
+bool Z2S_saveFile(
+  const char* z2s_file_name, const uint8_t* z2s_file_data, 
+  size_t z2s_file_size) {
 
   log_d("Z2S LittleFs: saving file %s", z2s_file_name);
   
@@ -53,7 +53,8 @@ bool Z2S_saveFile(const char* z2s_file_name,
   
   if (!file) {
   
-    log_e("Z2S LittleFs: failed to open file \"%s\" for write", z2s_file_name);
+    log_e(
+      "Z2S LittleFs: failed to open file \"%s\" for write", z2s_file_name);
     
     Z2S_endLittleFs();
     return false;
@@ -65,9 +66,9 @@ bool Z2S_saveFile(const char* z2s_file_name,
   return true;
 }
 
-bool Z2S_loadFile(const char* z2s_file_name, 
-                  uint8_t* z2s_file_data, 
-                  size_t z2s_file_size) {
+bool Z2S_loadFile(
+  const char* z2s_file_name, uint8_t* z2s_file_data, 
+  size_t z2s_file_size) {
   
   if (!Z2S_initLittleFs()) {
     return false;

@@ -455,8 +455,6 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
 Supla::Device::StatusLed statusLed(RGB_BUILTIN, true);
 
 void setup() {
-  
-  //esp_log_set_vprintf(&spiffs_log_vprintf);
 
   log_i("setup start");
 
@@ -1165,12 +1163,8 @@ if (Z2S_isGUIStarted())
     while (!zbGateway.getJoinedDevices().empty()) {
 
       joined_device = zbGateway.getLastJoinedDevice();
-      
-      //rgbLed.setPixelColor(0, rgbLed.Color(0, 128, 128));
-      //rgbLed.show();
-      rgbLedWrite(RGB_BUILTIN, 0, 0, 255);  // Blue
 
-      //Z2S_stopWebGUI();
+      rgbLedWrite(RGB_BUILTIN, 0, 0, 255);  // Blue
 
       if (zpm->getState() == 2)
         zpm->notifySrpcAboutParingEnd(

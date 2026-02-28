@@ -1,7 +1,7 @@
 #include "z2s_device_virtual_relay.h"
 #include "TuyaDatapoints.h"
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void initZ2SDeviceVirtualRelay(
   ZigbeeGateway *gateway, zbg_device_params_t *device, 
@@ -383,7 +383,7 @@ void initZ2SDeviceVirtualRelay(
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void addZ2SDeviceVirtualRelay(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 

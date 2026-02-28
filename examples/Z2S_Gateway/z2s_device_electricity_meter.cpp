@@ -150,7 +150,7 @@ void initZ2SDeviceElectricityMeter(
       active_power_divisor    = 10;
 
       energy_multiplier = 1;
-      energy_divisor  = 1; //100;?@slawek?
+      energy_divisor  = 100;
       
       ignore_zigbee_scaling = true;
     } break;
@@ -469,11 +469,18 @@ void msgZ2SDeviceElectricityMeter(
 
       //this is special case, when meter report only changes in energy value
       case Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL: { 
-      
+        
+        int64_t fwd_energy_counter = 
+          z2s_channels_table[channel_number_slot].fwd_energy_counter;
+
         z2s_channels_table[channel_number_slot].fwd_energy_counter += em_value;
 
         Supla_ElectricityMeter->setFwdActEnergy2(
           0, z2s_channels_table[channel_number_slot].fwd_energy_counter); 
+        
+        if (z2s_channels_table[channel_number_slot].fwd_energy_counter -
+            fwd_energy_counter > 10)
+          Z2S_saveChannelsTable();
       }
       break;
 
