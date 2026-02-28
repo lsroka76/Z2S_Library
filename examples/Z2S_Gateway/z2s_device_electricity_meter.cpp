@@ -466,8 +466,18 @@ void msgZ2SDeviceElectricityMeter(
         
         Supla_ElectricityMeter->setPowerApparent2(0, em_value); 
       break;
-      
 
+      //this is special case, when meter report only changes in energy value
+      case Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL: { 
+      
+        z2s_channels_table[channel_number_slot].fwd_energy_counter += em_value;
+
+        Supla_ElectricityMeter->setFwdActEnergy2(
+          0, z2s_channels_table[channel_number_slot].fwd_energy_counter); 
+      }
+      break;
+
+      
       case Z2S_EM_VOLTAGE_B_SEL: 
         
         Supla_ElectricityMeter->setVoltage2(1, em_value); 

@@ -2825,7 +2825,7 @@ void processTuyaDINRCBOEMTemp(
 
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceElectricityMeter(
-      channel_number_slot_3, Z2S_EM_ACT_FWD_ENERGY_A_SEL, 
+      channel_number_slot_3, Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL, 
       (int32_t)Tuya_read_dp_result.dp_value);
   
   Z2S_readTuyaDPvalue(Tuya_read_dp_result,

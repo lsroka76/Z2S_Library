@@ -122,6 +122,9 @@ union {
     uint64_t          data_counter;
   };
   struct {
+    int64_t           fwd_energy_counter;
+  };
+  struct {
       uint32_t        last_temperature_measurement;//TEMP*100
     };
 };
