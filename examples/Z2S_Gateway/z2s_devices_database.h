@@ -401,6 +401,7 @@
 #define TUYA_PRESENCE_SENSOR_DISTANCE_SID                   0x05
 #define TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID               0x20
 #define TUYA_PRESENCE_SENSOR_RELAY_MODE_SID                 0x21
+#define TUYA_PRESENCE_SENSOR_RADAR_SWITCH_SID               0x22
 
 #define TUYA_SMOKE_DETECTOR_SMOKE_SID                       0x00
 #define TUYA_SMOKE_DETECTOR_TAMPER_SID                      0x01

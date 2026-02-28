@@ -9586,9 +9586,9 @@ void Z2S_buildSuplaChannels(
         joined_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID, 
         "SWITCH (FOR MANUAL MODE)",SUPLA_CHANNELFNC_POWERSWITCH);
 
-      /*Z2S_addZ2SDevice(
-        joined_device, TUYA_PRESENCE_SENSOR_RELAY_MODE_SID, "SWITCH AUTO MODE",
-        SUPLA_CHANNELFNC_POWERSWITCH);*/
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_RADAR_SWITCH_SID, "RADAR SWITCH",
+        SUPLA_CHANNELFNC_POWERSWITCH);
     } break;
 
 /*****************************************************************************/                                         

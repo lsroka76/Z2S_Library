@@ -324,11 +324,25 @@ void initZ2SDeviceVirtualRelay(
       break;
 
 
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T:
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T: {
 
-        Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
-          TUYA_PRESENCE_SENSOR_SZLR08T_RELAY_SWITCH_DP);
-      break;
+        switch (z2s_channels_table[channel_number_slot].sub_id) {
+
+
+          case TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID:
+
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
+              TUYA_PRESENCE_SENSOR_SZLR08T_RELAY_SWITCH_DP);
+          break;
+
+
+          case TUYA_PRESENCE_SENSOR_RADAR_SWITCH_SID:
+
+            Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
+              TUYA_PRESENCE_SENSOR_SZLR08T_RADAR_SWITCH_DP);
+          break;
+        };
+      } break;
 
 
     case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER:

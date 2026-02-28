@@ -2784,10 +2784,10 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Enter numeric value: 5 - 1500 [s]/step 5 [s]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
-    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_INSTALLATION_HEIGHT_DP,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_DETECTION_RANGE_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
-    .Tuya_datapoint_name 	 			= "Installation height",
-    .Tuya_datapoint_description = "Enter numeric value: 3 - 5 [m]" },
+    .Tuya_datapoint_name 	 			= "Detection range",
+    .Tuya_datapoint_description = "Enter numeric value: 0 - 600 [cm]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_SZLR08T_RADAR_SENSITIVITY_DP,
