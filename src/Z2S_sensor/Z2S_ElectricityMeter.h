@@ -25,17 +25,12 @@ namespace Sensor {
 
 class Z2S_ElectricityMeter : public ElectricityMeter {
  public:
-  Z2S_ElectricityMeter(ZigbeeGateway *gateway, 
-                       zbg_device_params_t *device, 
-                      bool isTuya, 
-		                  bool active_query = false, 
-                      bool one_phase = true) : 
+  Z2S_ElectricityMeter(
+    ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, 
+    bool active_query = false, bool one_phase = true) : 
     _gateway(gateway), _one_phase(one_phase) {
 	
     memcpy(&_device, device, sizeof(zbg_device_params_t));
-	
-    //_active_query = active_query;
-    //_isTuya       = isTuya;
 	
     if (active_query) 
       setRefreshSecs(30);

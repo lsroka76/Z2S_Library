@@ -27,6 +27,8 @@ void initZ2SDeviceElectricityMeter(
   uint32_t  energy_multiplier = 0;
   uint32_t  energy_divisor = 0;
 
+  int64_t  fwd_energy_counter = 0;
+
   bool ignore_zigbee_scaling = false;
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
@@ -153,6 +155,10 @@ void initZ2SDeviceElectricityMeter(
       energy_divisor  = 100;
       
       ignore_zigbee_scaling = true;
+
+      fwd_energy_counter = 
+        z2s_channels_table[channel_number_slot].fwd_energy_counter;
+      z2s_channels_table[channel_number_slot].fwd_energy_buffer = 0;  
     } break;
 
 
@@ -353,6 +359,10 @@ void initZ2SDeviceElectricityMeter(
 
   Supla_Z2S_ElectricityMeter->setEnergyMultiplier(energy_multiplier, false);
   Supla_Z2S_ElectricityMeter->setEnergyDivisor(energy_divisor, false);
+
+  if (fwd_energy_counter)
+    Supla_Z2S_ElectricityMeter->setFwdActEnergy2(0, fwd_energy_counter);
+  
 }
 
 /*****************************************************************************/
@@ -470,17 +480,18 @@ void msgZ2SDeviceElectricityMeter(
       //this is special case, when meter report only changes in energy value
       case Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL: { 
         
-        int64_t fwd_energy_counter = 
-          z2s_channels_table[channel_number_slot].fwd_energy_counter;
+        z2s_channels_table[channel_number_slot].fwd_energy_buffer += em_value;
 
         z2s_channels_table[channel_number_slot].fwd_energy_counter += em_value;
 
         Supla_ElectricityMeter->setFwdActEnergy2(
           0, z2s_channels_table[channel_number_slot].fwd_energy_counter); 
         
-        if (z2s_channels_table[channel_number_slot].fwd_energy_counter -
-            fwd_energy_counter > 10)
+        if (z2s_channels_table[channel_number_slot].fwd_energy_buffer > 100) {
+
+          z2s_channels_table[channel_number_slot].fwd_energy_buffer = 0;  
           Z2S_saveChannelsTable();
+        }
       }
       break;
 
