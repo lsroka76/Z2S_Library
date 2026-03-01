@@ -7196,6 +7196,7 @@ uint8_t Z2S_addZ2SDevice(
 
 
           case TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID:
+          case TUYA_PRESENCE_SENSOR_RADAR_SWITCH_SID:
 
             addZ2SDeviceVirtualRelay(
               &zbGateway, device, first_free_slot, sub_id, name, func); 
