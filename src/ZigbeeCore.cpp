@@ -12,6 +12,8 @@
 
 extern "C" void zb_set_ed_node_descriptor(bool power_src, bool rx_on_when_idle, bool alloc_addr);
 extern "C" void zb_bdb_set_legacy_device_support(zb_uint8_t state);
+extern "C" zb_ret_t zb_nvram_write_dataset(zb_nvram_dataset_types_t t);
+
 static bool edBatteryPowered = false;
 
 ZigbeeCore::ZigbeeCore() {
@@ -676,6 +678,32 @@ void ZigbeeCore::searchBindings() {
   log_d("Requesting binding table for address 0x%04x", mb_req->dst_addr);
   esp_zb_zdo_binding_table_req(mb_req, bindingTableCb, (void *)mb_req);
 }
+
+void ZigbeeCore::setNVRAMChannelMask(uint32_t mask) {
+  _primary_channel_mask = mask;
+  esp_zb_set_channel_mask(_primary_channel_mask);
+  zb_nvram_write_dataset(ZB_NVRAM_COMMON_DATA);
+  log_v("Channel mask set to 0x%08x", mask);
+}
+
+void ZigbeeCore::stop() {
+  if (started()) {
+    vTaskSuspend(xTaskGetHandle("Zigbee_main"));
+    log_v("Zigbee stack stopped");
+    _started = false;
+  }
+  return;
+}
+
+void ZigbeeCore::start() {
+  if (!started()) {
+    vTaskResume(xTaskGetHandle("Zigbee_main"));
+    log_v("Zigbee stack started");
+    _started = true;
+  }
+  return;
+}
+
 
 // Function to convert enum value to string
 const char *ZigbeeCore::getDeviceTypeString(esp_zb_ha_standard_devices_t deviceId) {

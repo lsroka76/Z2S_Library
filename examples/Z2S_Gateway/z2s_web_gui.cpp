@@ -6125,6 +6125,8 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 									zigbee_primary_channel_label, 
 									zigbee_primary_channel_update_str);
 
+								//Zigbee.setNVRAMChannelMask(1 << zb_primary_channel);
+
 								log_i(
 									"New Zigbee primary channel set to 0x%08X", 
 									(1 << zb_primary_channel));

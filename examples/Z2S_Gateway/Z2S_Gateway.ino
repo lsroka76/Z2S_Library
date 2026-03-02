@@ -42,10 +42,12 @@
 #include "z2s_devices_database.h"
 #include "z2s_devices_table.h"
 #include "z2s_device_general_purpose_measurement.h"
+#include "z2s_device_electricity_meter.h"
 #include "z2s_version_info.h"
 #include "priv_auth_data.h"
 #include "z2s_web_gui.h"
 #include "web_gui_templates.h"
+#include "z2s_little_fs.h"
 
 #ifdef USE_TELNET_CONSOLE
 
@@ -117,6 +119,8 @@ constexpr uint8_t NUM_LEDS  = 1;
 uint32_t refresh_time       = 0;
 uint8_t refresh_cycle       = 0;
 
+uint32_t test_loop_ms       = 0;
+
 uint32_t _init_devices_ms   = 0;
 
 uint32_t _time_cluster_last_refresh_ms = 0;
@@ -187,10 +191,20 @@ void supla_callback_bridge(int event, int action) {
 
     case Z2S_SUPLA_ACTION_DEVICE_STATUS_CHANGE: {
 
-      if (_restart_scheduled)
-        return;
+      //if (_restart_scheduled)
+      //  return;
 
       int8_t sd_current_status = SuplaDevice.getCurrentStatus();
+
+      if (sd_current_status == STATUS_SOFTWARE_RESET) {
+
+        log_i("software reset - stopping Zigbee stack");
+        Zigbee.stop();
+
+        log_i("software reset - saving tables");
+        Z2S_saveChannelsTable();
+        Z2S_saveZbDevicesTable();
+      }
 
       if (sd_current_status == STATUS_INITIALIZED) {
 
@@ -569,6 +583,23 @@ void setup() {
   }
 
   listDir(LittleFS,"/",3);
+  uint8_t file_test[1024] ;
+  
+  size_t ota_file_size = Z2S_getFileSize("main_ota_file.ota", false);
+  log_i("OTA file size %lu", ota_file_size);
+  
+  size_t ota_file_blocks = ota_file_size / 1024;
+  if (ota_file_size - (1024 * ota_file_blocks) > 0)
+    ota_file_blocks++;
+
+  for(size_t i = 0; i < ota_file_blocks; i++) {
+
+    size_t bytes_read = 
+      Z2S_loadBufferFromFile("main_ota_file.ota", i * 1024, 1024, file_test);
+    log_i("bytes read = %u", bytes_read);
+    //for (uint16_t j = 0; j < bytes_read; j++)
+    //  log_i("%02X", file_test[j]);
+  }
   LittleFS.end();
 
   Z2S_loadZbDevicesTable();
@@ -1032,9 +1063,16 @@ if (Z2S_isGUIStarted())
     _time_cluster_last_refresh_ms = millis();
   }
 
+  if (millis() - test_loop_ms > 5000) {
+
+    test_loop_ms = millis();
+    
+    //msgZ2SDeviceElectricityMeter(
+    //  1, Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL, random(8,13));
+  }
+
   if (millis() - refresh_time > REFRESH_PERIOD) {
 
-    
     if (refresh_cycle == 30) {
 
       log_i(
