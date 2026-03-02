@@ -4859,7 +4859,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 						"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>ud(3)</b></i> 0x%08X "
 						"<b>| <i>ud(4)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
 						"<b><i>ZB device</b></i> %s (%s::%s)<br>"
-						"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016X"),
+						"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX"),
 						ieee_addr_str,
 						z2s_channels_table[channel_slot].short_addr,
 						z2s_channels_table[channel_slot].endpoint,

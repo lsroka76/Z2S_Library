@@ -1979,10 +1979,16 @@ void Z2S_onDataSaveRequest(
   switch (data_save_mode) {
 
 
-    case 0: Z2S_saveChannelsTable(); break;
+    case 0: 
+    
+      Z2S_saveChannelsTable(); 
+    break;
 
 
-    case 1: Z2S_saveZbDevicesTable(); break;
+    case 1: 
+    
+      Z2S_saveZbDevicesTable(); 
+    break;
 
 
     case 2: {
@@ -2002,7 +2008,7 @@ void Z2S_onDataSaveRequest(
 
       Z2S_saveChannelExtendedData(
         channel_number_slot, extended_data_type, extended_data, false);  
-
+      Z2S_saveChannelsTable();
     } break;
   }
 }
