@@ -482,15 +482,19 @@ void msgZ2SDeviceElectricityMeter(
         
         z2s_channels_table[channel_number_slot].fwd_energy_buffer += em_value;
 
-        z2s_channels_table[channel_number_slot].fwd_energy_counter += em_value;
-
-        Supla_ElectricityMeter->setFwdActEnergy2(
-          0, z2s_channels_table[channel_number_slot].fwd_energy_counter); 
-        
+        //z2s_channels_table[channel_number_slot].fwd_energy_counter += em_value;
+         
         if (z2s_channels_table[channel_number_slot].fwd_energy_buffer > 100) {
 
+          z2s_channels_table[channel_number_slot].fwd_energy_counter +=
+            z2s_channels_table[channel_number_slot].fwd_energy_buffer;
+
           z2s_channels_table[channel_number_slot].fwd_energy_buffer = 0;  
+          
           Z2S_saveChannelsTable();
+
+          Supla_ElectricityMeter->setFwdActEnergy2(
+          0, z2s_channels_table[channel_number_slot].fwd_energy_counter);
         }
       }
       break;
