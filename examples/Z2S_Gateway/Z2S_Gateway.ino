@@ -1067,7 +1067,7 @@ if (Z2S_isGUIStarted())
   if (millis() - test_loop_ms > 10000) {
 
     test_loop_ms = millis();
-    
+    //if (Zigbee.started())
     //msgZ2SDeviceElectricityMeter(
     //  1, Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL, random(0,2));
     /*log_i(

@@ -76,6 +76,7 @@ union {
     };
     struct {
       uint32_t        fwd_energy_buffer;
+      uint32_t        fwd_energy_timer;
     };
     struct {
       uint32_t        rain_intensity_treshold;
