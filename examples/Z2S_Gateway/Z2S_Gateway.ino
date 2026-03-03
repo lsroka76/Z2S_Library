@@ -534,6 +534,7 @@ void setup() {
 
 #endif
 
+  Z2S_GatewayPreferences.begin("Z2S_GATEWAY", false);
   toggleNotifications = new Supla::Control::VirtualRelay();
   toggleNotifications->getChannel()->setChannelNumber(110);
   toggleNotifications->setInitialCaption("Gateway sensors notifications");
@@ -1063,12 +1064,17 @@ if (Z2S_isGUIStarted())
     _time_cluster_last_refresh_ms = millis();
   }
 
-  if (millis() - test_loop_ms > 5000) {
+  if (millis() - test_loop_ms > 10000) {
 
     test_loop_ms = millis();
     
     //msgZ2SDeviceElectricityMeter(
-    //  1, Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL, random(8,13));
+    //  1, Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL, random(0,2));
+    log_i(
+      "\n\rsaved millis\t\t%llu\n\rcurrent millis\t\t%llu", 
+      Z2S_GatewayPreferences.getULong64("EM_EC_A"), test_loop_ms);
+
+    Z2S_GatewayPreferences.putULong64("EM_EC_A", test_loop_ms);
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {

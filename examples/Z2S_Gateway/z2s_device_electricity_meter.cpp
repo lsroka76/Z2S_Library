@@ -156,9 +156,16 @@ void initZ2SDeviceElectricityMeter(
       
       ignore_zigbee_scaling = true;
 
-      fwd_energy_counter = 
-        z2s_channels_table[channel_number_slot].fwd_energy_counter;
-      z2s_channels_table[channel_number_slot].fwd_energy_buffer = 0;  
+      if (!Z2S_checkChannelFlags(
+        channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+        
+        fwd_energy_counter = 
+          z2s_channels_table[channel_number_slot].data_counter;
+
+        Z2S_initChannelExtendedDataCounter(channel_number_slot);
+        Z2S_setChannelExtendedDataCounter(
+          channel_number_slot, fwd_energy_counter);
+      }
     } break;
 
 
@@ -278,6 +285,25 @@ void initZ2SDeviceElectricityMeter(
 
     energy_multiplier = 1;
       energy_divisor  = 100;
+
+    ignore_zigbee_scaling = true;
+  }
+
+  if (strcmp(Z2S_getZbDeviceManufacturerName(
+       z2s_channels_table[channel_number_slot].Zb_device_id),
+      "ADEO") == 0) {
+
+    voltage_multiplier = 1;
+    voltage_divisor = 1;
+
+    current_multiplier = 1;
+    current_divisor    = 1000;
+
+    active_power_multiplier = 1;
+    active_power_divisor = 1;
+
+    energy_multiplier = 1;
+    energy_divisor  = 100;
 
     ignore_zigbee_scaling = true;
   }                                         
@@ -481,20 +507,19 @@ void msgZ2SDeviceElectricityMeter(
       case Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL: { 
         
         z2s_channels_table[channel_number_slot].fwd_energy_buffer += em_value;
-
-        //z2s_channels_table[channel_number_slot].fwd_energy_counter += em_value;
          
-        if (z2s_channels_table[channel_number_slot].fwd_energy_buffer > 100) {
+        if (z2s_channels_table[channel_number_slot].fwd_energy_buffer >= 100) {
 
-          z2s_channels_table[channel_number_slot].fwd_energy_counter +=
+          uint64_t fwd_energy_counter = 
+            Z2S_getChannelExtendedDataCounter(channel_number_slot) +
             z2s_channels_table[channel_number_slot].fwd_energy_buffer;
+
+          Z2S_setChannelExtendedDataCounter(
+            channel_number_slot, fwd_energy_counter);
 
           z2s_channels_table[channel_number_slot].fwd_energy_buffer = 0;  
           
-          Z2S_saveChannelsTable();
-
-          Supla_ElectricityMeter->setFwdActEnergy2(
-          0, z2s_channels_table[channel_number_slot].fwd_energy_counter);
+          Supla_ElectricityMeter->setFwdActEnergy2(0, fwd_energy_counter);
         }
       }
       break;

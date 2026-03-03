@@ -113,6 +113,9 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
     default: break;
   }
+
+  if (channel_number_slot == 1)
+    Z2S_initChannelExtendedDataCounter(channel_number_slot);
 } 
 
 /*****************************************************************************/
@@ -195,8 +198,8 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
     else
       z2s_channels_table[channel_number_slot].user_data_3 = millis();
   }
-  auto element = 
-    Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
+  auto element = Supla::Element::getElementByChannelNumber(
+    z2s_channels_table[channel_number_slot].Supla_channel);
   
   if (element && 
       (element->getChannel()->getChannelType() == 
@@ -206,6 +209,7 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
       reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
 
     Supla_GeneralPurposeMeasurement->setValue(value);
+    //Z2S_setChannelExtendedDataCounter(channel_number_slot, value);
   }  
 }
 
@@ -252,6 +256,7 @@ void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
     Supla_GeneralPurposeMeasurement->setUnitBeforeValue(unitBefore, true);*/
     uint64_t gpm_value = (uint64_t)Supla_GeneralPurposeMeasurement->getValue();
     
-    Supla_GeneralPurposeMeasurement->setValue(setU64Digits(gpm_value, first_digit, last_digit, digits_to_insert));
+    Supla_GeneralPurposeMeasurement->setValue(
+      setU64Digits(gpm_value, first_digit, last_digit, digits_to_insert));
   }  
 } 
