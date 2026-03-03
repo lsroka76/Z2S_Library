@@ -1070,11 +1070,11 @@ if (Z2S_isGUIStarted())
     
     //msgZ2SDeviceElectricityMeter(
     //  1, Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL, random(0,2));
-    log_i(
+    /*log_i(
       "\n\rsaved millis\t\t%llu\n\rcurrent millis\t\t%llu", 
       Z2S_GatewayPreferences.getULong64("EM_EC_A"), test_loop_ms);
 
-    Z2S_GatewayPreferences.putULong64("EM_EC_A", test_loop_ms);
+    Z2S_GatewayPreferences.putULong64("EM_EC_A", test_loop_ms);*/
   }
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
