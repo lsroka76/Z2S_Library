@@ -24,6 +24,8 @@ typedef enum gui_modes {
   gui_modes_number
 } gui_modes_t;
 
+size_t mbstrnlen(const char *mb_str, size_t max_bytes);
+
 bool Z2S_isGUIStarted();
 bool Z2S_isGUIBuilt();
 

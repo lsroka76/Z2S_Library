@@ -622,6 +622,45 @@ void fillMemoryUptimeInformation(char *buf);
 	return _dynamic_option_id++;
 }*/
 
+size_t mbstrnlen(const char *mb_str, size_t max_bytes) {
+
+	if (mb_str == nullptr)
+		return 0;
+
+	size_t mb_counter = 0;
+	size_t str_counter = 0;
+	while (*(mb_str + str_counter) != '\0') {
+
+		uint8_t next_char = *(mb_str + str_counter);
+		if (next_char <= 0x7F)
+			str_counter++;
+		else 
+		if ((next_char >= 0xC0) && (next_char <= 0xDF))
+			str_counter += 2;
+		else 
+		if ((next_char >= 0xE0) && (next_char <= 0xEF))
+			str_counter += 3;
+		else 
+		if ((next_char >= 0xF0) && (next_char <= 0xF7)) 
+			str_counter += 4;
+	else 
+		if ((next_char >= 0xF8) && (next_char <= 0xFB))
+			str_counter += 5;
+	else 
+		if ((next_char >= 0xFC) && (next_char <= 0xFD)) 
+			str_counter += 6;
+	else 
+		if ((next_char >= 0xFE) && (next_char <= 0xFF)) 
+			return 0;
+
+	if (str_counter > max_bytes)
+		return mb_counter; 
+	else
+		mb_counter = str_counter;
+	}
+	return mb_counter;
+}
+
 uint16_t getMaxClusterAttributesNumber() {
 
 	uint16_t prev_cluster = 0xFFFF;
@@ -1508,6 +1547,14 @@ void buildDevicesTabGUI() {
 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
+			size_t device_local_name_size_w = mbstrnlen(
+					z2s_zb_devices_table[devices_counter].device_local_name,
+					DEVICE_LOCAL_NAME_MAX_SIZE - 1);		
+			log_i("device_local_name_size_w = %u", device_local_name_size_w);
+
+			z2s_zb_devices_table[devices_counter].\
+				device_local_name[device_local_name_size_w] = '\0';
+		
 			z2s_zb_devices_table[devices_counter].device_gui_id = ESPUI.addControl(
 				Control::Type::Option, 
 				z2s_zb_devices_table[devices_counter].device_local_name, 
@@ -3330,6 +3377,13 @@ void buildAllChannelSelectors() {
 	
 			if (channel_selector < 0xFFFF) {
 
+				size_t Supla_channel_name_size_w = mbstrnlen(
+					z2s_channels_table[channels_counter].Supla_channel_name,
+					SUPLA_CHANNEL_NAME_MAX_SIZE - 1);
+
+				z2s_channels_table[channels_counter].\
+					Supla_channel_name[Supla_channel_name_size_w] = '\0';
+
 				z2s_channels_table[channels_counter].gui_control_id = ESPUI.addControl(
 					Control::Type::Option, 
 					z2s_channels_table[channels_counter].Supla_channel_name, 
@@ -4859,7 +4913,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 						"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>ud(3)</b></i> 0x%08X "
 						"<b>| <i>ud(4)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
 						"<b><i>ZB device</b></i> %s (%s::%s)<br>"
-						"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX"),
+						"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX (%s)"),
 						ieee_addr_str,
 						z2s_channels_table[channel_slot].short_addr,
 						z2s_channels_table[channel_slot].endpoint,
@@ -4887,7 +4941,8 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 						Z2S_getZbDeviceModelName(z2s_channels_table[channel_slot].Zb_device_id):
 						getZ2SDeviceLocalActionHandlerLogicOperatorName(channel_slot),
 						z2s_channels_table[channel_slot].gui_control_id,
-						z2s_channels_table[channel_slot].data_counter);
+						Z2S_getChannelExtendedDataCounter(channel_slot),
+						Z2S_Z2S_getChannelExtendedDataCounterKey(channel_slot));
 	
 	updateLabel_P(
 		zb_channel_info_label, general_purpose_gui_buffer);
@@ -6218,17 +6273,17 @@ void editDeviceCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_UPDATE_DEVICE_NAME_FLAG : {
 
-				size_t device_local_name_size = strnlen(
+				size_t device_local_name_size_w = mbstrnlen(
 					ESPUI.getControl(device_name_text)->getValueCstr(),
 					DEVICE_LOCAL_NAME_MAX_SIZE - 1);
 
 				strncpy(
 					z2s_zb_devices_table[device_slot].device_local_name, 
 					ESPUI.getControl(device_name_text)->getValueCstr(), 
-					device_local_name_size);
+					device_local_name_size_w);
 
 				z2s_zb_devices_table[device_slot].\
-					device_local_name[device_local_name_size] = '\0';
+					device_local_name[device_local_name_size_w] = '\0';
 
 				z2s_zb_devices_table[device_slot].user_data_flags &= 
 					~ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED;
@@ -6355,19 +6410,27 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 		switch ((uint32_t)param) {
 
+
 			case GUI_CB_UPDATE_CHANNEL_NAME_FLAG : {	
 
 				size_t Supla_channel_name_size = strnlen(
 					ESPUI.getControl(channel_name_text)->getValueCstr(),
 					SUPLA_CHANNEL_NAME_MAX_SIZE - 1);
-	
+
+				size_t Supla_channel_name_size_w = mbstrnlen(
+					ESPUI.getControl(channel_name_text)->getValueCstr(),
+					SUPLA_CHANNEL_NAME_MAX_SIZE - 1);
+				log_i(
+					"New channel name length %u, wide %u", Supla_channel_name_size,
+					Supla_channel_name_size_w);
+		
 				strncpy(
 					z2s_channels_table[channel_slot].Supla_channel_name, 
 					ESPUI.getControl(channel_name_text)->getValueCstr(), 
-					Supla_channel_name_size);
+					Supla_channel_name_size_w);
 
 				z2s_channels_table[channel_slot].\
-					Supla_channel_name[Supla_channel_name_size] = '\0';
+					Supla_channel_name[Supla_channel_name_size_w] = '\0';
 
 				if (Z2S_saveChannelsTable()) {
 
