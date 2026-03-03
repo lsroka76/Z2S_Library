@@ -43,6 +43,8 @@ uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8] = {};
 
 char GatewayMDNSLocalName[12] = "Z2S_gateway";
 
+Preferences Z2S_GatewayPreferences;
+
 bool force_leave_global_flag = false;
 
 static uint32_t Styrbar_timer = 0;
@@ -526,6 +528,8 @@ bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table) {
     Z2S_removeChannelActions(
       z2s_channels_table[channel_number_slot].Supla_channel, false);
     
+    Z2S_removeChannelExtendedDataCounter(channel_number_slot);
+
     memset(
       &z2s_channels_table[channel_number_slot], 0, 
       sizeof(z2s_device_params_t));
@@ -2575,6 +2579,109 @@ bool Z2S_loadChannelExtendedData(
   }
   log_e("no extended data found");
   return false;
+}
+
+/*****************************************************************************/
+
+bool Z2S_initChannelExtendedDataCounter(int16_t channel_number_slot) {
+
+  if (Z2S_checkChannelFlags(
+        channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      z2s_channels_table[channel_number_slot].extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len > 0) &&
+        (extended_data_counter_str_len < 8))
+      return false;
+  }
+  sprintf(
+    z2s_channels_table[channel_number_slot].extended_data_counter, "EDC_%03U",
+    channel_number_slot);
+
+  return Z2S_setChannelFlags(
+    channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER);
+}
+
+bool Z2S_removeChannelExtendedDataCounter(int16_t channel_number_slot) {
+  
+  if (Z2S_checkChannelFlags(
+        channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      z2s_channels_table[channel_number_slot].extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len > 0) &&
+        (extended_data_counter_str_len < 8))
+      Z2S_GatewayPreferences.remove(
+        z2s_channels_table[channel_number_slot].extended_data_counter);
+    return Z2S_clearChannelFlags(
+    channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER, false);
+  }
+  return false;
+}
+
+const char *Z2S_Z2S_getChannelExtendedDataCounterKey(
+  int16_t channel_number_slot) {
+
+  if (Z2S_checkChannelFlags(
+        channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      z2s_channels_table[channel_number_slot].extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len == 0) ||
+        (extended_data_counter_str_len == 8))
+      return invalid_extended_data_counter_key;
+
+    return (const char*)
+      z2s_channels_table[channel_number_slot].extended_data_counter;
+  }
+  return no_extended_data_counter_key;
+}
+
+uint64_t Z2S_getChannelExtendedDataCounter(int16_t channel_number_slot) {
+
+  if (Z2S_checkChannelFlags(
+        channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      z2s_channels_table[channel_number_slot].extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len == 0) ||
+        (extended_data_counter_str_len == 8))
+      return 0;
+
+    return Z2S_GatewayPreferences.getULong64(
+      z2s_channels_table[channel_number_slot].extended_data_counter);
+  } else {
+
+    return z2s_channels_table[channel_number_slot].data_counter;
+  } 
+}
+
+bool Z2S_setChannelExtendedDataCounter(
+  int16_t channel_number_slot, uint64_t extended_data_counter) {
+
+if (Z2S_checkChannelFlags(
+        channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      z2s_channels_table[channel_number_slot].extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len == 0) ||
+        (extended_data_counter_str_len == 8))
+      return false;
+
+    return Z2S_GatewayPreferences.putULong64(
+      z2s_channels_table[channel_number_slot].extended_data_counter,
+      extended_data_counter);
+  } else {
+
+    z2s_channels_table[channel_number_slot].data_counter = 
+      extended_data_counter;
+    return true;
+  }
 }
 
 /*****************************************************************************/

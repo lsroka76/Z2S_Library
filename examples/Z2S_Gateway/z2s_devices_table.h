@@ -1,6 +1,8 @@
 #ifndef Z2S_DEVICES_TABLE_H_
 #define Z2S_DEVICES_TABLE_H_
 
+#include <Preferences.h>
+
 #include <ZigbeeGateway.h>
 #include "z2s_devices_database.h"
 #include "priv_auth_data.h"
@@ -62,6 +64,7 @@
 #define USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS                 (1 << 12) // 0x1000
 #define USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0               (1 << 13) // 0x2000
 #define USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION              (1 << 14) // 0x4000
+#define USER_DATA_FLAG_EXTENDED_DATA_COUNTER                    (1 << 15) // 0x8000
 
 #define ZBD_USER_DATA_FLAG_VERSION_2_0                          (1 << 0)
 #define ZBD_USER_DATA_FLAG_BINDING_REQUIRED                     (1 << 1)
@@ -265,6 +268,8 @@ extern bool sendIASNotifications;
 
 extern char GatewayMDNSLocalName[12];
 
+extern Preferences Z2S_GatewayPreferences;
+
 //extern Supla::Sensor::GeneralPurposeMeasurement *Test_GeneralPurposeMeasurement;
 
 const static char Z2S_ZIGBEE_PRIMARY_CHANNEL[] PROGMEM = "Z2S_primary_ch";
@@ -462,6 +467,22 @@ bool Z2S_loadChannelExtendedData(
   int16_t channel_number_slot, uint8_t extended_data_type,
   uint8_t *extended_data);
 
+
+/*****************************************************************************/
+static const char *no_extended_data_counter_key = 
+  "no edc key";
+
+static const char *invalid_extended_data_counter_key = 
+  "invalid edc key";
+
+bool Z2S_initChannelExtendedDataCounter(int16_t channel_number_slot);
+bool Z2S_removeChannelExtendedDataCounter(int16_t channel_number_slot);
+const char *Z2S_Z2S_getChannelExtendedDataCounterKey(int16_t channel_number_slot);
+
+uint64_t  Z2S_getChannelExtendedDataCounter(int16_t channel_number_slot);
+
+bool Z2S_setChannelExtendedDataCounter(
+  int16_t channel_number_slot, uint64_t extended_data_counter);
 
 /*****************************************************************************/
 
