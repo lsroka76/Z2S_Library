@@ -32,6 +32,7 @@ extern uint8_t	_force_config_on_start;
 extern int32_t _gui_start_delay;
 extern uint8_t _rebuild_Supla_channels_on_start;
 extern uint8_t _use_new_at_model;
+extern uint32_t _auto_connection_reset_timeout;
 
 extern uint8_t _z2s_security_level;
 
@@ -62,7 +63,7 @@ uint16_t gateway_memory_info;
 uint16_t enable_gui_switcher;
 uint16_t force_config_switcher;
 uint16_t gui_start_delay_number;
-//uint16_t gui_start_delay_save_button;
+uint16_t auto_connection_reset_timeout_number;
 uint16_t gateway_mdns_name_text;
 uint16_t rebuild_Supla_channels_switcher;
 uint16_t use_new_at_model_switcher;
@@ -321,10 +322,11 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_ENABLE_GUI_FLAG										0x0100
 #define GUI_CB_FORCE_CONFIG_FLAG									0x0101
 #define GUI_CB_GUI_DELAY_FLAG											0x0102
-#define GUI_CB_SAVE_MDNS_NAME_FLAG								0x0103
-#define GUI_CB_REBUILD_CHANNELS_FLAG							0x0104
-#define GUI_CB_USE_NEW_AT_FLAG										0x0105
-#define GUI_CB_GUI_RESTART_FLAG										0x0106
+#define GUI_CB_ACR_TIMEOUT_FLAG										0x0103
+#define GUI_CB_SAVE_MDNS_NAME_FLAG								0x0104
+#define GUI_CB_REBUILD_CHANNELS_FLAG							0x0105
+#define GUI_CB_USE_NEW_AT_FLAG										0x0106
+#define GUI_CB_GUI_RESTART_FLAG										0x0107
 
 
 #define GUI_CB_SAVE_FLAG													0x1000
@@ -515,8 +517,8 @@ document.addEventListener("mouseup", function(e){
 	console.log(e.target.getAttribute("id"));
 	console.log(e.target.id);
 
-	if(e.target.id == "btn32") {
-		console.log("btn32");
+	if(e.target.id == "btn35") {
+		console.log("btn35");
 		e.stopImmediatePropagation();
     myFunction();
   }
@@ -526,8 +528,8 @@ document.addEventListener("touchend", function(e){
 	console.log(e.target.getAttribute("id"));	
 	console.log(e.target.id);
 
-	if(e.target.id == "btn32") {
-		console.log("btn32");
+	if(e.target.id == "btn35") {
+		console.log("btn35");
 		e.stopImmediatePropagation();
     myFunction();
   }
@@ -1137,6 +1139,21 @@ void buildGatewayTabGUI() {
 		Control::Color::Emerald, gui_start_delay_number, gatewayCallback,
 		(void*)GUI_CB_GUI_DELAY_FLAG);
 
+	auto_connection_reset_timeout_number = ESPUI.addControl(
+		Control::Type::Number, PSTR("Automatic connection reset timeout (s)"), 
+		(long int)0,
+		Control::Color::Emerald, gatewaytab, generalMinMaxCallback, (void*)3600);
+
+	working_str_ptr = PSTR("Save");
+	auto auto_connection_reset_timeout_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, auto_connection_reset_timeout_number, 
+		gatewayCallback, (void*)GUI_CB_ACR_TIMEOUT_FLAG);
+
+	addClearLabel(
+		PSTR("Setting this value to 0 s disables automatic connection reset."), 
+		auto_connection_reset_timeout_number);
+
 	working_str = empty_str;
 	gateway_mdns_name_text = ESPUI.addControl(
 		Control::Type::Text, PSTR("Gateway local mDNS name"), working_str, 
@@ -1216,6 +1233,8 @@ void buildGatewayTabGUI() {
 	working_str = _enable_gui_on_start;
 	ESPUI.updateSelect(gui_mode_selector, _enable_gui_on_start); 
 	ESPUI.updateNumber(gui_start_delay_number, _gui_start_delay);
+	ESPUI.updateNumber(
+		auto_connection_reset_timeout_number, _auto_connection_reset_timeout);
 	working_str = GatewayMDNSLocalName;
 	ESPUI.updateText(gateway_mdns_name_text, working_str);
 	ESPUI.updateNumber(force_config_switcher, _force_config_on_start);
@@ -7080,6 +7099,16 @@ void gatewayCallback(Control *sender, int type, void *param) {
 
 			if (Supla::Storage::ConfigInstance()->setInt32(Z2S_GUI_ON_START_DELAY_V2, 
 					ESPUI.getControl(gui_start_delay_number)->getValueInt()))
+      	Supla::Storage::ConfigInstance()->commit();
+		} break;
+
+
+		case GUI_CB_ACR_TIMEOUT_FLAG: {
+
+			if (Supla::Storage::ConfigInstance()->setInt32(
+				Z2S_AUTO_CONNECTION_RESET_TIMEOUT, 
+				ESPUI.getControl(
+					auto_connection_reset_timeout_number)->getValueInt()))
       	Supla::Storage::ConfigInstance()->commit();
 		} break;
 

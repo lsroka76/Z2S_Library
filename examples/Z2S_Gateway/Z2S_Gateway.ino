@@ -130,7 +130,8 @@ int8_t  _enable_gui_on_start  = 1;
 uint8_t	_force_config_on_start = 0;
 uint8_t _rebuild_Supla_channels_on_start = 0;
 uint8_t _use_new_at_model = 1;
-int32_t _gui_start_delay      = 0;
+int32_t _gui_start_delay = 0;
+int32_t _auto_connection_reset_timeout = 300;
 
 bool _initial_gui_check = true;
 
@@ -209,14 +210,10 @@ void supla_callback_bridge(int event, int action) {
       if (sd_current_status == STATUS_INITIALIZED) {
 
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED);
-        return;
-      }
 
-      if (sd_current_status == STATUS_REGISTERED_AND_READY)
-        handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);
-  
-      if ((!Zigbee.started()) && 
-          (sd_current_status == STATUS_REGISTERED_AND_READY)) {
+        if (!Zigbee.started()) {
+        //&& 
+        //  (sd_current_status == STATUS_REGISTERED_AND_READY)) {
   
         log_i("Starting Zigbee subsystem");
     
@@ -232,7 +229,14 @@ void supla_callback_bridge(int event, int action) {
         }
         zbGateway.clearLocalBindings();
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
-        
+        }
+        return;
+      }
+
+      if (sd_current_status == STATUS_REGISTERED_AND_READY) {
+
+        handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);
+      
         refresh_time = 0;
         _init_devices_ms = millis();
         
@@ -707,8 +711,24 @@ void setup() {
     Supla::Storage::ConfigInstance()->commit();
     Supla::Storage::ConfigInstance()->setInt32(Z2S_GUI_ON_START_DELAY_V2, 
 		  _gui_start_delay);
+		Supla::Storage::ConfigInstance()->commit();  
+  }
+
+  if (Supla::Storage::ConfigInstance()->getInt32(
+    Z2S_AUTO_CONNECTION_RESET_TIMEOUT, &_auto_connection_reset_timeout)) {
+
+    log_i(
+      "Z2S_AUTO_CONNECTION_RESET_TIMEOUT = %i s", 
+      _auto_connection_reset_timeout);
+  } else {
+
+    log_i(
+      "Z2S_AUTO_CONNECTION_RESET_TIMEOUT not configured - setting to 300 s");
+
+    _auto_connection_reset_timeout = 300;
+    Supla::Storage::ConfigInstance()->setInt32(
+      Z2S_AUTO_CONNECTION_RESET_TIMEOUT, _auto_connection_reset_timeout);
 		Supla::Storage::ConfigInstance()->commit();
-    
   }
 
   if (Supla::Storage::ConfigInstance()->
@@ -757,7 +777,9 @@ void setup() {
   SuplaDevice.setSwVersion(Z2S_VERSION);
   wifi.enableSSL(ENABLE_SSL);
 
-  SuplaDevice.setAutomaticResetOnConnectionProblem(300); //5 minutes
+  SuplaDevice.setAutomaticResetOnConnectionProblem(
+    _auto_connection_reset_timeout); 
+    
   //SuplaDevice.allowWorkInOfflineMode(2);
   SuplaDevice.setInitialMode(Supla::InitialMode::StartInCfgMode);
 
