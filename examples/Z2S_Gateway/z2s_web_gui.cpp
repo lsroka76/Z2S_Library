@@ -1005,7 +1005,7 @@ void fillGatewayGeneralnformation(char *buf) {
 				"<b><i>Z2S Gateway version:</i></b> <i>%s</i><br><br>"
 				"<b><i>Network extended PAN ID:</i></b> <i>%s</i><br>"
 				"<b><i>Network current channel:</i></b> <i>%u</i><br><br>"), 
-			suplaDeviceVersion,Supla_GUID_str, Z2S_VERSION, extended_pan_id_str,
+			suplaDeviceVersion, Supla_GUID_str, Z2S_VERSION, extended_pan_id_str,
 			esp_zb_get_current_channel());
 	
 		log_i("Device information %s", buf);
@@ -7105,11 +7105,19 @@ void gatewayCallback(Control *sender, int type, void *param) {
 
 		case GUI_CB_ACR_TIMEOUT_FLAG: {
 
+			int32_t auto_connection_reset_timeout = ESPUI.getControl(
+				auto_connection_reset_timeout_number)->getValueInt();
+
 			if (Supla::Storage::ConfigInstance()->setInt32(
 				Z2S_AUTO_CONNECTION_RESET_TIMEOUT, 
-				ESPUI.getControl(
-					auto_connection_reset_timeout_number)->getValueInt()))
+				auto_connection_reset_timeout)) {
+
       	Supla::Storage::ConfigInstance()->commit();
+				
+				_auto_connection_reset_timeout = auto_connection_reset_timeout;
+				SuplaDevice.setAutomaticResetOnConnectionProblem(
+    			_auto_connection_reset_timeout);
+				}
 		} break;
 
 

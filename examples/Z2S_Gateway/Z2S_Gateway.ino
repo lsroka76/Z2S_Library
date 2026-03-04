@@ -196,15 +196,19 @@ void supla_callback_bridge(int event, int action) {
       //  return;
 
       int8_t sd_current_status = SuplaDevice.getCurrentStatus();
+      log_i("Supla device status changed to %u", sd_current_status);
 
       if (sd_current_status == STATUS_SOFTWARE_RESET) {
 
         log_i("software reset - stopping Zigbee stack");
+  
         Zigbee.stop();
+        delay(500);
 
         log_i("software reset - saving tables");
         Z2S_saveChannelsTable();
         Z2S_saveZbDevicesTable();
+        return;
       }
 
       if (sd_current_status == STATUS_INITIALIZED) {
@@ -1284,7 +1288,7 @@ if (Z2S_isGUIStarted())
                   Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
 
               log_i("LIST matched %s::%s, entry # %d, endpoints # %d, "
-                    "endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
+                    "endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
                     Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, 
                     Z2S_DEVICES_LIST[devices_list_counter].model_name, 
                     devices_list_counter, 
@@ -1301,11 +1305,7 @@ if (Z2S_isGUIStarted())
                     Z2S_DEVICES_LIST[devices_list_counter].\
                       z2s_device_endpoints[2].endpoint_id, 
                     Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[2].z2s_device_desc_id,
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[3].endpoint_id, 
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[3].z2s_device_desc_id);
+                      z2s_device_endpoints[2].z2s_device_desc_id);
   
               for (uint8_t endpoint_counter = 0; 
                    endpoint_counter < Z2S_DEVICES_LIST[devices_list_counter].\
@@ -1319,6 +1319,18 @@ if (Z2S_isGUIStarted())
                     Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
                   endpoint_idx = 0;
 
+                if (Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_flags & 
+                    Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
+                  
+                  if (endpoint_counter < 
+                        Z2S_DEVICES_LIST[devices_list_counter].\
+                          z2s_device_endpoints_count_m1) 
+                    endpoint_idx = 0;
+                  else
+                    endpoint_idx = 1;
+                }
+
                 uint8_t endpoint_id = 
                   (Z2S_DEVICES_LIST[devices_list_counter].\
                     z2s_device_endpoints_count == 1) ? 
@@ -1331,6 +1343,20 @@ if (Z2S_isGUIStarted())
                       z2s_device_flags & 
                     Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
                   endpoint_id += endpoint_counter; 
+
+                if (Z2S_DEVICES_LIST[devices_list_counter].\
+                      z2s_device_flags & 
+                    Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
+                  
+                  if (endpoint_counter < 
+                        Z2S_DEVICES_LIST[devices_list_counter].\
+                          z2s_device_endpoints_count_m1) 
+                    endpoint_id += endpoint_counter;
+                  else
+                    endpoint_id += (endpoint_counter - 
+                      Z2S_DEVICES_LIST[devices_list_counter].\
+                        z2s_device_endpoints_count_m1);
+                }
                                         
                 uint32_t z2s_device_desc_id = 
                   (Z2S_DEVICES_LIST[devices_list_counter].\
@@ -1347,7 +1373,7 @@ if (Z2S_isGUIStarted())
                   if (z2s_device_desc_id == 
                         Z2S_DEVICES_DESC[devices_desc_counter].\
                           z2s_device_desc_id) {
-                    log_i("DESC matched 0x%x, %d, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, endpoint 0x%x ",
+                    log_i("DESC matched 0x%x, %d, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, endpoint 0x%x ",
                           Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id,   
                           Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count,
                           Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[0],
@@ -1355,9 +1381,6 @@ if (Z2S_isGUIStarted())
                           Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[2],
                           Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[3],
                           Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[4],
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[5],
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[6],
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[7],
                           endpoint_id);
 
                     device_recognized = true;

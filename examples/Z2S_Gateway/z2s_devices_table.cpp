@@ -915,12 +915,25 @@ bool Z2S_loadChannelsTable() {
                          endpoints_counter < z2s_device_endpoints_count; 
                          endpoints_counter++) {
 
-                      uint8_t endpoints_idx = 
-                        (Z2S_DEVICES_LIST[devices_list_idx].\
-                          z2s_device_flags & 
-                         Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS) ? 
-                         0 : endpoints_counter;
-                      
+                      uint8_t endpoints_idx = endpoints_counter;
+
+                      if (Z2S_DEVICES_LIST[devices_list_idx].\
+                            z2s_device_flags & 
+                          Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
+                        endpoints_idx = 0;
+
+                      if (Z2S_DEVICES_LIST[devices_list_idx].\
+                            z2s_device_flags & 
+                          Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
+                        
+                        if (endpoints_counter < 
+                              Z2S_DEVICES_LIST[devices_list_idx].\
+                                z2s_device_endpoints_count_m1) 
+                          endpoints_idx = 0;
+                        else
+                          endpoints_idx = 1;
+                      }
+
                       device_desc_id = Z2S_DEVICES_LIST[devices_list_idx].\
                         z2s_device_endpoints[endpoints_idx].z2s_device_desc_id;
 
@@ -934,6 +947,19 @@ bool Z2S_loadChannelsTable() {
                           Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
                         endpoint_id += endpoints_counter;
 
+                      if (Z2S_DEVICES_LIST[devices_list_idx].\
+                            z2s_device_flags & 
+                          Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
+                        
+                        if (endpoints_counter < 
+                            Z2S_DEVICES_LIST[devices_list_idx].\
+                              z2s_device_endpoints_count_m1)
+                          endpoint_id += endpoints_counter; 
+                        else
+                          endpoint_id += (endpoints_counter - 
+                            Z2S_DEVICES_LIST[devices_list_idx].\
+                              z2s_device_endpoints_count_m1);
+                          }
                       if ((z2s_channels_table[channels_counter].endpoint == 
                            endpoint_id) &&
                           (z2s_channels_table[channels_counter].model_id != 
