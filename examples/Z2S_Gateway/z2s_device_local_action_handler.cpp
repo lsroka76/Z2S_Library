@@ -190,7 +190,7 @@ void initZ2SDeviceLocalActionHandler(
         new Supla::Control::HvacBase(Supla_VirtualOutputInterface); 
       
       Supla_VirtualHvac->getChannel()->setChannelNumber(Supla_channel);
-      //Supla_VirtualHvac->getChannel()->setDefaultFunction(
+      Supla_VirtualHvac->enableDomesticHotWaterFunctionSupport();
       //  SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL);
      // Supla_VirtualHvac->setAndSaveFunction(
        // SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
@@ -452,7 +452,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_VirtualHvac->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
-      //Supla_VirtualHvac->getChannel()->setDefaultFunction(
+      Supla_VirtualHvac->enableDomesticHotWaterFunctionSupport();
       //  SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL);
       //Supla_VirtualHvac->setDefaultFunction(local_channel_func);
       //Supla_VirtualHvac->setAndSaveFunction(
