@@ -3530,6 +3530,10 @@ void Z2S_onLumiCustomClusterReceive(
           float lumi_energy = 
             *(float *)(attribute->data.value + lumi_em_position);
 
+          if (z2s_channels_table[channel_number_slot].model_id == 
+            Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER)
+              lumi_energy /= 1000;
+
           log_i("LUMI_ATTRIBUTE_ENERGY_ID %f4.2", lumi_energy);
 
           msgZ2SDeviceElectricityMeter(
@@ -4807,6 +4811,24 @@ void Z2S_onAnalogInputReceive(
       switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
+        case Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER: {
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
+            NO_CUSTOM_CMD_SID);    
+
+          if (channel_number_slot < 0) {
+    
+            log_e(
+              "no EM channel found for address 0x%04X", short_addr);
+            return;
+          }
+          msgZ2SDeviceElectricityMeter(
+            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, 
+            *(float *)attribute->data.value);
+        } break;
+
+        
         case Z2S_DEVICE_DESC_LUMI_AIR_QUALITY_SENSOR: {
 
           channel_number_slot = Z2S_findChannelNumberSlot(
@@ -6747,7 +6769,8 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER:
       case Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER:
       case Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET:
-      case Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER: {
+      case Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER:
+      case Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER: {
         
         addZ2SDeviceVirtualRelay(&zbGateway,device, first_free_slot);
         

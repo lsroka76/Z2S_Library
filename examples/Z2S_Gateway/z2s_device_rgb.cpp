@@ -1,16 +1,16 @@
 #include "z2s_device_rgb.h"
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 static uint32_t hue_saturation_counter = 0;
 static uint8_t last_hue_value = 0;
 static uint8_t last_saturation_value = 0;
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
-void initZ2SDeviceRGB(ZigbeeGateway *gateway, 
-                      zbg_device_params_t *device, 
-                      int16_t channel_number_slot) {
+void initZ2SDeviceRGB(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, 
+  int16_t channel_number_slot) {
 
   Supla::Control::Z2S_RGBInterface * Supla_Z2S_RGBInterface = nullptr;
 
@@ -91,7 +91,7 @@ void initZ2SDeviceRGB(ZigbeeGateway *gateway,
   }
 } //initZ2SDeviceRGB
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void addZ2SDeviceRGB(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot,
@@ -144,7 +144,7 @@ void addZ2SDeviceRGB(
       SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, -1, name, func);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void msgZ2SDeviceRGB(
   uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation,

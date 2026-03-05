@@ -43,6 +43,7 @@
 #include "z2s_devices_table.h"
 #include "z2s_device_general_purpose_measurement.h"
 #include "z2s_device_electricity_meter.h"
+#include "z2s_device_iaszone.h"
 #include "z2s_version_info.h"
 #include "priv_auth_data.h"
 #include "z2s_web_gui.h"
@@ -207,6 +208,8 @@ void supla_callback_bridge(int event, int action) {
           }
 
       if (sd_current_status == STATUS_SOFTWARE_RESET) {
+
+        disableZ2SNotifications();
 
         log_i("software reset - stopping Zigbee stack");
   
@@ -1092,10 +1095,11 @@ if (Z2S_isGUIStarted())
     _time_cluster_last_refresh_ms = millis();
   }
 
-  if (millis() - test_loop_ms > 10000) {
+  if (millis() - test_loop_ms > 1000) {
 
     test_loop_ms = millis();
     //if (Zigbee.started())
+      //msgZ2SDeviceIASzone(0, random(0,2));
     //msgZ2SDeviceElectricityMeter(
     //  1, Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL, random(0,2));
     /*log_i(

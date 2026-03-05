@@ -1,6 +1,6 @@
 #include "z2s_device_pressure.h"
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void initZ2SDevicePressure(int16_t channel_number_slot) {
   
@@ -23,7 +23,7 @@ void initZ2SDevicePressure(int16_t channel_number_slot) {
         z2s_channels_table[channel_number_slot].timeout_secs);
 }
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 void addZ2SDevicePressure(zbg_device_params_t *device, uint8_t free_slot) {
 

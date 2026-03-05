@@ -213,6 +213,7 @@
 #define Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER      0x4350
 #define Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER       0x4400
 #define Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET              0x4450
+#define Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER 0x4455
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER        0x4500
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1      0x4501
@@ -1106,8 +1107,8 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+    .z2s_device_clusters =  { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
     {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
     .z2s_device_clusters_count = 2,
@@ -1446,6 +1447,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                             // LUMI_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
@@ -5795,7 +5801,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   .z2s_device_endpoints = {
     { 1, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR },
     { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
-  }}
+  }},
+
+  { .manufacturer_name = "Aqara", .model_name = "lumi.switch.acn047",
+    .z2s_device_uid = 34600,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER },
+                             { 2, 0, 0, Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER }}},
 
 //DEVICES_END
 };
