@@ -199,6 +199,13 @@ void supla_callback_bridge(int event, int action) {
       int8_t sd_current_status = SuplaDevice.getCurrentStatus();
       log_i("Supla device status changed to %u", sd_current_status);
 
+      if ((sd_current_status == STATUS_UNKNOWN_SERVER_ADDRESS) || 
+          (sd_current_status == STATUS_MISSING_CREDENTIALS)) {
+
+            //_forced_config = true;
+            //_start_Zigbee = false;
+          }
+
       if (sd_current_status == STATUS_SOFTWARE_RESET) {
 
         log_i("software reset - stopping Zigbee stack");
@@ -215,14 +222,9 @@ void supla_callback_bridge(int event, int action) {
       if (sd_current_status == STATUS_INITIALIZED) {
 
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED);
-        log_i(
-          "_start_Zigbee %u, Zigbee.started() %u", _start_Zigbee, 
-          Zigbee.started());
-
+        
         if (_start_Zigbee && (!Zigbee.started())) {
-        //&& 
-        //  (sd_current_status == STATUS_REGISTERED_AND_READY)) {
-  
+        
         log_i("Starting Zigbee subsystem");
     
         esp_coex_wifi_i154_enable();
@@ -235,6 +237,7 @@ void supla_callback_bridge(int event, int action) {
           _restart_scheduled = true;
           SuplaDevice.scheduleSoftRestart(1000);
         }
+        esp_coex_wifi_i154_enable();
         zbGateway.clearLocalBindings();
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
         }
@@ -262,7 +265,7 @@ void supla_callback_bridge(int event, int action) {
       }
       if (sd_current_status == STATUS_CONFIG_MODE) {
 
-        if (!_forced_config) {//if (Zigbee.started()) {
+        if (!_forced_config) {
         
           if (Supla::Storage::ConfigInstance()->setUInt8(
                 Z2S_FORCE_CONFIG_ON_START, 1)) {
@@ -792,7 +795,7 @@ void setup() {
   SuplaDevice.setInitialMode(Supla::InitialMode::StartInCfgMode);
 
   if (_force_config_on_start) {
-    
+
     log_i("starting Supla WebServer");
     _start_Zigbee = false;
 
@@ -901,13 +904,6 @@ void loop() {
     _forced_config = true;
     SuplaDevice.enterConfigMode();
   }
-
-  /*if ((!Z2S_isGUIStarted()) && 
-      SuplaDevice.getCurrentStatus() == STATUS_CONFIG_MODE) {
-  
-    Z2S_startWebGUIConfig();
-    Z2S_startUpdateServer();
-  }*/ 
 
   /*if (do_once) {
 
