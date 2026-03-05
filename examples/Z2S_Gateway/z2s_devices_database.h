@@ -2933,7 +2933,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_decxrtwa", .model_name = "TS0203",
     .z2s_device_uid = 5300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 2},
+	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_yxqnffam", .model_name = "TS0203",
     .z2s_device_uid = 5400,
