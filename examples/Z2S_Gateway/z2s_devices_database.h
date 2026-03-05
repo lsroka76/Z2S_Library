@@ -5795,7 +5795,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   .z2s_device_endpoints = {
     { 1, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR },
     { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
-  }},
+  }}
 
 //DEVICES_END
 };

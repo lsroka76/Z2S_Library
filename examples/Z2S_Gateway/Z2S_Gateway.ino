@@ -144,6 +144,7 @@ Supla::Control::VirtualRelay *toggleNotifications = nullptr;
 
 bool _restart_scheduled = false;
 bool _forced_config = false;
+bool _start_Zigbee = true;
 
 void initGUI(gui_modes_t mode = minimal_gui_mode) {
 
@@ -215,7 +216,7 @@ void supla_callback_bridge(int event, int action) {
 
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED);
 
-        if (!Zigbee.started()) {
+        if (_start_Zigbee && (!Zigbee.started())) {
         //&& 
         //  (sd_current_status == STATUS_REGISTERED_AND_READY)) {
   
@@ -789,6 +790,8 @@ void setup() {
 
   if ((_force_config_on_start) || 
       (Supla::RegisterDevice::isEmailEmpty())) {
+
+    _start_Zigbee = false;
 
     SuplaDevice.setCustomHostnamePrefix("SUPLA-ZIGBEE-GATE");
 
