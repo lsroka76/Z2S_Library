@@ -114,8 +114,8 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
     default: break;
   }
 
-  if (channel_number_slot == 1)
-    Z2S_initChannelExtendedDataCounter(channel_number_slot);
+  //if (channel_number_slot == 1)
+  //  Z2S_initChannelExtendedDataCounter(channel_number_slot);
 } 
 
 /*****************************************************************************/

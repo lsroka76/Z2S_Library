@@ -3809,6 +3809,21 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 			} break;
 
 
+			case full_ad_gui_mode: {
+
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+					GUI_BUILD_CONTROL_FLAG_DEVICES |
+					GUI_BUILD_CONTROL_FLAG_CHANNELS |
+					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_CA |
+					GUI_BUILD_CONTROL_FLAG_AD |
+					GUI_BUILD_CONTROL_FLAG_TCC;
+			} break;
+
+
 			case developer_gui_mode: {
 
 				gui_build_control_flags = 

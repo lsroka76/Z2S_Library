@@ -21,6 +21,7 @@ typedef enum gui_modes {
   gateway_ca_tcc_mode = 9,
   gateway_devices_channels_mode = 10,
   gateway_no_local_actions_mode = 11,
+  full_ad_gui_mode = 12,
   gui_modes_number
 } gui_modes_t;
 

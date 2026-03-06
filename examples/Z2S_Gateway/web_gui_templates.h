@@ -113,7 +113,8 @@ static constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 	"Gateway + TCC",
 	"Gateway + C&A + TCC",
 	"Gateway + Devices + Channels",
-	"Gateway + Zigbee + Devices + Channels + C&A + TCC"
+	"Gateway + Zigbee + Devices + Channels + C&A + TCC",
+	"Full GUI + AD"
 };
 
 static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
