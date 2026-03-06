@@ -517,8 +517,8 @@ document.addEventListener("mouseup", function(e){
 	console.log(e.target.getAttribute("id"));
 	console.log(e.target.id);
 
-	if(e.target.id == "btn35") {
-		console.log("btn35");
+	if(e.target.id == "btn36") {
+		console.log("btn36");
 		e.stopImmediatePropagation();
     myFunction();
   }
@@ -528,8 +528,8 @@ document.addEventListener("touchend", function(e){
 	console.log(e.target.getAttribute("id"));	
 	console.log(e.target.id);
 
-	if(e.target.id == "btn35") {
-		console.log("btn35");
+	if(e.target.id == "btn36") {
+		console.log("btn36");
 		e.stopImmediatePropagation();
     myFunction();
   }

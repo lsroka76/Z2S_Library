@@ -497,6 +497,13 @@ void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
 
   switch (action) {
 
+    
+    case Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS:
+
+      turnOff(5);
+    break;
+
+
     case Z2S_SUPLA_ACTION_RESEND_RELAY_STATE:
 
       if (state) 

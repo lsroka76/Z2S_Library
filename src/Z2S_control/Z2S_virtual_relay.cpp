@@ -68,9 +68,9 @@ void Supla::Control::Z2S_VirtualRelay::onInit() {
 
 void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
   SUPLA_LOG_INFO(
-      "Relay[%d] turn ON (duration %d ms)",
-      channel.getChannelNumber(),
-      duration);
+    "Relay[%d] turn ON (duration %d ms)",
+    channel.getChannelNumber(),
+    duration);
 
   durationMs = duration;
   
