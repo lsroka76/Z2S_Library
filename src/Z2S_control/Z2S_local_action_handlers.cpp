@@ -17,6 +17,7 @@
 
 #include "Z2S_local_action_handlers.h"
 
+extern bool force_leave_global_flag;
 
 //using Supla::LocalActionHandler;
 //using Supla::LocalActionHandlerWithTrigger;
@@ -332,6 +333,18 @@ void GatewayEvents::handleAction(int event, int action) {
 
         if (Zigbee.isNetworkOpen())
           Zigbee.openNetwork(0);
+      break;
+
+
+      case Z2S_SUPLA_ACTION_SET_FORCE_BIND_DEVICE:
+
+        force_leave_global_flag = true;
+      break;
+
+
+      case Z2S_SUPLA_ACTION_CLEAR_FORCE_BIND_DEVICE:
+
+        force_leave_global_flag = false;
       break;
 
 

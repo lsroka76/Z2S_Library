@@ -427,6 +427,12 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CLOSE_ZIGBEE_NETWORK,
 		.Supla_action_name = "CLOSE ZIGBEE PAIRING" },
 
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_SET_FORCE_BIND_DEVICE,
+		.Supla_action_name = "SET FORCE DEVICE TO BIND GATEWAY" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CLEAR_FORCE_BIND_DEVICE,
+		.Supla_action_name = "CLEAR FORCE DEVICE TO BIND GATEWAY" },
+
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_START_GUI_MINIMAL,
 		.Supla_action_name = "START GUI (MINIMAL)" },
 

@@ -2607,6 +2607,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "LUMI", .model_name = "lumi.weather.v1",
+    .z2s_device_uid = 2905,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_bguser20", .model_name = "TS0201",
     .z2s_device_uid = 3000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
@@ -5799,7 +5804,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   .z2s_device_endpoints_count = 10,
   .z2s_device_endpoints_count_m1 = 4,
   .z2s_device_endpoints = {
-    { 1, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR },
+    { 1, 0, 0, Z2S_DEVICE_DESC_DIY_MAIL_SENSOR },
     { 5, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
   }},
 
