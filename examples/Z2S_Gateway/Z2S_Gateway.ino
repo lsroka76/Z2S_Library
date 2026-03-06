@@ -132,7 +132,8 @@ uint8_t	_force_config_on_start = 0;
 uint8_t _rebuild_Supla_channels_on_start = 0;
 uint8_t _use_new_at_model = 1;
 int32_t _gui_start_delay = 0;
-int32_t _auto_connection_reset_timeout = 300;
+//1.4.81-06/03/26 - 
+int32_t _auto_connection_reset_timeout = 0; 
 
 bool _initial_gui_check = true;
 
@@ -737,9 +738,9 @@ void setup() {
   } else {
 
     log_i(
-      "Z2S_AUTO_CONNECTION_RESET_TIMEOUT not configured - setting to 300 s");
+      "Z2S_AUTO_CONNECTION_RESET_TIMEOUT not configured - switching OFF");
 
-    _auto_connection_reset_timeout = 300;
+    _auto_connection_reset_timeout = 0;
     Supla::Storage::ConfigInstance()->setInt32(
       Z2S_AUTO_CONNECTION_RESET_TIMEOUT, _auto_connection_reset_timeout);
 		Supla::Storage::ConfigInstance()->commit();
