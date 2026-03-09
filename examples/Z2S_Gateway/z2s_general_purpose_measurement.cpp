@@ -111,7 +111,16 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
       Supla_GeneralPurposeMeasurement->setUnitAfterValue("kWh", true);
     } break;
 
-    default: break;
+
+    case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
+      
+      Supla_GeneralPurposeMeasurement->setValuePrecision(2, true);
+      Supla_GeneralPurposeMeasurement->setUnitAfterValue("V", true);
+    } break;
+
+
+    default: 
+    break;
   }
 
   //if (channel_number_slot == 1)

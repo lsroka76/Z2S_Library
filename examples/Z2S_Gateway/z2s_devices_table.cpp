@@ -4647,6 +4647,27 @@ void Z2S_onBinaryInputReceive(
 
 
     case ESP_ZB_ZCL_ATTR_BINARY_INPUT_PRESENT_VALUE_ID: {
+
+
+      switch (z2s_channels_table[channel_number_slot].model_id) {
+
+
+        case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+            NO_CUSTOM_CMD_SID);   
+
+          if (channel_number_slot < 0) {
+    
+            log_e(
+              "no binary sensor channel found for address 0x%04X", short_addr);
+            return;
+          }
+          msgZ2SDeviceIASzone(
+            channel_number_slot, *(bool *)attribute->data.value);
+        } break;
+      }
     } break;
   }
 }
@@ -4864,6 +4885,24 @@ void Z2S_onAnalogInputReceive(
           msgZ2SDeviceRollerShutter(
             channel_number_slot, RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG, 
             lift_percentage);
+        } break;
+
+
+        case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, cluster, 
+            SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+            NO_CUSTOM_CMD_SID);    
+
+          if (channel_number_slot < 0) {
+    
+            log_e("no GPM channel found for address 0x%04X", short_addr);
+            return;
+          }       
+          msgZ2SDeviceGeneralPurposeMeasurement(
+            channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+            *(float *)attribute->data.value);
         } break;
       }
 
@@ -7575,10 +7614,32 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_DIY_MAIL_SENSOR: {
         
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
-      break;
+      
     } break;
 
-/******************************************************************************/     
+/******************************************************************************/
+
+      case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
+        
+        addZ2SDeviceIASzone(
+          device, first_free_slot, NO_CUSTOM_CMD_SID, "ALARM", 
+          SUPLA_CHANNELFNC_BINARY_SENSOR); 
+
+        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
+        if (first_free_slot == 0xFF) {
+
+          devices_table_full_error_func();
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+      
+      addZ2SDeviceGeneralPurposeMeasurement(
+        device, first_free_slot, NO_CUSTOM_CMD_SID, "BATTERY VOLTAGE", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "V");
+      
+    } break;
+
+/******************************************************************************/
 
       case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
 
