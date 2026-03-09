@@ -215,6 +215,7 @@
 #define Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER       0x4400
 #define Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET              0x4450
 #define Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER 0x4455
+#define Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER        0x4460
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER        0x4500
 #define Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1      0x4501
@@ -1462,6 +1463,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                             // LUMI_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
@@ -3757,7 +3763,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "LUMI", .model_name = "lumi.plug.mmeu01",
     .z2s_device_uid = 12300,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3000_2putqrmw", .model_name = "TS011F",

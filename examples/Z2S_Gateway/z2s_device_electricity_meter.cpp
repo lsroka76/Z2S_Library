@@ -247,7 +247,8 @@ void initZ2SDeviceElectricityMeter(
     } break;
 
 
-    case Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET: {
+    case Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET:
+    case Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER: {
 
       ignore_zigbee_scaling = true;
 
