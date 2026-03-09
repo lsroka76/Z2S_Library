@@ -299,8 +299,9 @@ void setFreq2(uint32_t freq) {
   else
     em_freq = (freq * _ac_frequency_multiplier * 100) / _ac_frequency_divisor;
 
-  log_d("_ac_frequency_multiplier = %d, _ac_frequency_divisor = %d, em_freq = %ld", 
-        _ac_frequency_multiplier, _ac_frequency_divisor, em_freq);
+  log_d(
+    "_ac_frequency_multiplier = %d, _ac_frequency_divisor = %d, em_freq = %ld", 
+    _ac_frequency_multiplier, _ac_frequency_divisor, em_freq);
 
   setFreq(em_freq);
 }
@@ -318,6 +319,10 @@ void setFwdActEnergy2(int phase, unsigned _supla_int64_t energy) {
     energy -= total_forward_active_energy_counter[phase];
   else
     energy = 0;
+
+  log_d(
+    "_energy_multiplier = %d, _energy_divisor = %d, energy = %lld", 
+    _energy_multiplier, _energy_divisor, energy);
 
   setFwdActEnergy(phase, energy);
 }

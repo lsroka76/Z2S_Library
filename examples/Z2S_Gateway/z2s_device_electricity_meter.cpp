@@ -279,7 +279,7 @@ void initZ2SDeviceElectricityMeter(
       current_divisor_modifier = 100;
 
       active_power_multiplier = 1;
-      active_power_divisor    = 1000;
+      active_power_divisor    = 10;
 
       energy_multiplier = 1;
       energy_divisor  = 1000000;
@@ -492,8 +492,8 @@ void msgZ2SDeviceElectricityMeter(
        
     Supla_ElectricityMeter->pong();
         
-    log_i("selector 0x%x, value %lld", emv_selector, em_value);
-        
+    log_i("selector %u, value %lld", emv_selector, em_value);
+
     switch (emv_selector) {
       
 

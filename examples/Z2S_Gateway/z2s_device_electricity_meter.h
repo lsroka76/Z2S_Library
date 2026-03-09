@@ -72,6 +72,6 @@ void updateZ2SDeviceElectricityMeter(int16_t channel_number_slot);
 /*****************************************************************************/
 
 void msgZ2SDeviceElectricityMeter(
-  int16_t channel_number_slot, uint8_t selector, int64_t value);
+  int16_t channel_number_slot, uint8_t emv_selector, int64_t em_value);
 
 #endif
