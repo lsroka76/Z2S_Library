@@ -5841,6 +5841,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR,
     .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "DIY_george1255", .model_name = "ZBLevel_Sensor",
+    .z2s_device_uid = 34800, 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR,
+    .z2s_device_endpoints_count = 1,
+  .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR }}
+},
+
 //DEVICES_END
 };
 #endif

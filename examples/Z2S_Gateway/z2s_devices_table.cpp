@@ -7627,7 +7627,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
         
         addZ2SDeviceIASzone(
-          device, first_free_slot, NO_CUSTOM_CMD_SID, "ALARM", 
+          device, first_free_slot, /*NO_CUSTOM_CMD_SID*/0, "ALARM", 
           SUPLA_CHANNELFNC_BINARY_SENSOR); 
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
@@ -7639,7 +7639,7 @@ uint8_t Z2S_addZ2SDevice(
         }
       
       addZ2SDeviceGeneralPurposeMeasurement(
-        device, first_free_slot, NO_CUSTOM_CMD_SID, "BATTERY VOLTAGE", 
+        device, first_free_slot, /*NO_CUSTOM_CMD_SID*/1, "BATTERY VOLTAGE", 
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "V");
       
     } break;
@@ -9046,8 +9046,8 @@ void updateSuplaBatteryLevel(
     return;
   }*/
 
-  while (channel_number_slot >= 0)
-  {
+  while (channel_number_slot >= 0) {
+    
     auto element = 
       Supla::Element::getElementByChannelNumber(
         z2s_channels_table[channel_number_slot].Supla_channel);
