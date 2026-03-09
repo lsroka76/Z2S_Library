@@ -7627,7 +7627,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
         
         addZ2SDeviceIASzone(
-          device, first_free_slot, /*NO_CUSTOM_CMD_SID*/0, "ALARM", 
+          device, first_free_slot, NO_CUSTOM_CMD_SID, "ALARM", 
           SUPLA_CHANNELFNC_BINARY_SENSOR); 
 
         first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
@@ -7639,8 +7639,11 @@ uint8_t Z2S_addZ2SDevice(
         }
       
       addZ2SDeviceGeneralPurposeMeasurement(
-        device, first_free_slot, /*NO_CUSTOM_CMD_SID*/1, "BATTERY VOLTAGE", 
+        device, first_free_slot, NO_CUSTOM_CMD_SID, "BATTERY VOLTAGE", 
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "V");
+
+      Z2S_setChannelFlags(
+        first_free_slot, USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL);
       
     } break;
 
@@ -9054,7 +9057,9 @@ void updateSuplaBatteryLevel(
  
     if (element) {
       
-      if (battery_level < 0xFF)
+      if ((battery_level < 0xFF) && 
+          !Z2S_checkChannelFlags(
+            channel_number_slot,USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL))
         element->getChannel()->setBatteryLevel(battery_level);
 
         if (restore)
