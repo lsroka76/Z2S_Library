@@ -259,10 +259,29 @@ void initZ2SDeviceElectricityMeter(
       current_divisor_modifier = 100;
 
       active_power_multiplier = 1;
-      active_power_divisor    = 1;
+      active_power_divisor    = 100;
 
       energy_multiplier = 1;
       energy_divisor  = 1000;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER: {
+
+      ignore_zigbee_scaling = true;
+
+      voltage_multiplier = 1;
+      voltage_divisor    = 100;
+
+      current_multiplier = 1;
+      current_divisor    = 1000;
+      //current_divisor_modifier = 100;
+
+      active_power_multiplier = 1;
+      active_power_divisor    = 100;
+
+      energy_multiplier = 1;
+      energy_divisor  = 1000000;
     } break;
 
 

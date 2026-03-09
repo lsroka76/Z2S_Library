@@ -149,6 +149,7 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR                   0x2600
 #define Z2S_DEVICE_DESC_DIY_MAIL_SENSOR                     0x2610
+#define Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR         0x2615
 
 #define Z2S_DEVICE_DESC_RGBW_START                          0x3000
 
@@ -1185,6 +1186,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT,
+                             ESP_ZB_ZCL_CLUSTER_ID_BINARY_INPUT }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_3,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
@@ -1438,6 +1446,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT,
                              LUMI_CUSTOM_CLUSTER }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SWITCH,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+                            // ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT,
+                            // LUMI_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH,
     .z2s_device_clusters_count = 1,
@@ -5813,7 +5828,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER,
     .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER },
-                             { 2, 0, 0, Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER }}},
+                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+
+  { .manufacturer_name = "DIY_ZZRR", .model_name = "CarBatteryChargingEND",
+    .z2s_device_uid = 34700,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR,
+    .z2s_device_endpoints_count = 1},
 
 //DEVICES_END
 };

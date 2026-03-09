@@ -3530,11 +3530,11 @@ void Z2S_onLumiCustomClusterReceive(
           float lumi_energy = 
             *(float *)(attribute->data.value + lumi_em_position);
 
-          if (z2s_channels_table[channel_number_slot].model_id == 
+          /*if (z2s_channels_table[channel_number_slot].model_id == 
             Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER)
-              lumi_energy /= 1000;
+              lumi_energy /= 1000;*/
 
-          log_i("LUMI_ATTRIBUTE_ENERGY_ID %f4.2", lumi_energy);
+          log_i("LUMI_ATTRIBUTE_ENERGY_ID %4.2f", lumi_energy);
 
           msgZ2SDeviceElectricityMeter(
             channel_number_slot, Z2S_EM_ACT_FWD_ENERGY_A_SEL, 
@@ -3574,7 +3574,7 @@ void Z2S_onLumiCustomClusterReceive(
             *(float *)(attribute->data.value + lumi_em_position);
 
           msgZ2SDeviceElectricityMeter(
-            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, lumi_power); 
+            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, lumi_power * 100); 
         }
       }
 

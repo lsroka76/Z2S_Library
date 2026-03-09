@@ -422,6 +422,9 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_RESYNC_REMOTE_RELAY,
 		.Supla_action_name = "RESYNC REMOTE RELAY" },
 
+{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS,
+		.Supla_action_name = "TURN OFF RELAY FOR 5 SECONDS" },
+
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_OPEN_ZIGBEE_NETWORK,
 		.Supla_action_name = "START ZIGBEE PAIRING" },
 

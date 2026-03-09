@@ -500,7 +500,7 @@ void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
     
     case Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS:
 
-      turnOff(5);
+      turnOff(5000);
     break;
 
 
