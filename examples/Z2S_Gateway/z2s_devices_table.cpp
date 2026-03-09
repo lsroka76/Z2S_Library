@@ -4845,9 +4845,14 @@ void Z2S_onAnalogInputReceive(
               "no EM channel found for address 0x%04X", short_addr);
             return;
           }
+          float ac_power = *(float *)attribute->data.value;
+
+          if (z2s_channels_table[channel_number_slot].model_id ==
+              Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER)
+            ac_power *= 10;
+
           msgZ2SDeviceElectricityMeter(
-            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, 
-            *(float *)attribute->data.value);
+            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, ac_power);
         } break;
 
         

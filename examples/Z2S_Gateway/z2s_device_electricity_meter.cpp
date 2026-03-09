@@ -276,7 +276,7 @@ void initZ2SDeviceElectricityMeter(
 
       current_multiplier = 1;
       current_divisor    = 1000;
-      //current_divisor_modifier = 100;
+      current_divisor_modifier = 100;
 
       active_power_multiplier = 1;
       active_power_divisor    = 1000;
