@@ -184,7 +184,8 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
         z2s_channels_table[channel_number_slot].Supla_channel;
       
       auto Supla_SwitchBotRelay = 
-        new Supla::Control::SwitchBotRelay(); 
+        new Supla::Control::SwitchBotRelay(
+          z2s_channels_table[channel_number_slot].local_channel_func); 
       
       Supla_SwitchBotRelay->getChannel()->setChannelNumber(Supla_channel);
       Supla_SwitchBotRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
@@ -460,7 +461,6 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_LocalVirtualRelay->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
-      //Supla_VirtualRelay->setDefaultFunction(local_channel_func);
       Supla_LocalVirtualRelay->setDefaultFunction(
         SUPLA_CHANNELFNC_POWERSWITCH);
       Supla_LocalVirtualRelay->setDefaultStateRestore();
@@ -506,7 +506,8 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_LocalVirtualBinary->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
-      Supla_LocalVirtualBinary->setDefaultFunction(local_channel_func);
+      Supla_LocalVirtualBinary->setDefaultFunction(
+        SUPLA_CHANNELFNC_BINARY_SENSOR);
     } break;
 
 
@@ -532,7 +533,6 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_Z2S_RemoteRelay->setInitialCaption(
         z2s_channels_table[first_free_slot].Supla_channel_name);
 
-      //Supla_Z2S_RemoteRelay->setDefaultFunction(local_channel_func);
       Supla_Z2S_RemoteRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
       Supla_Z2S_RemoteRelay->setDefaultStateRestore();
     } break;
@@ -565,7 +565,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla::Storage::ConfigInstance()->commit();
 
       auto Supla_SwitchBotRelay = 
-        new Supla::Control::SwitchBotRelay(); 
+        new Supla::Control::SwitchBotRelay(local_channel_func); 
 
       z2s_channels_table[first_free_slot].Supla_channel = 
         Supla_SwitchBotRelay->getChannelNumber();
@@ -574,12 +574,15 @@ bool addZ2SDeviceLocalActionHandler(
         CHANNEL_EXTENDED_DATA_TYPE_SB;*/
       channel_extended_data_sb_t channel_extended_data_sb = {};
 
+      channel_extended_data_sb.device_id = local_channel_func;
+
       Z2S_saveChannelExtendedData(
         first_free_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
         (uint8_t*)&channel_extended_data_sb, false);
 
-      strcpy(
-        z2s_channels_table[first_free_slot].Supla_channel_name, "SWITCH BOT");
+      sprintf(
+        z2s_channels_table[first_free_slot].Supla_channel_name, 
+        "SWITCH BOT (%ux)", local_channel_func);
       
       Supla_SwitchBotRelay->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
@@ -601,7 +604,7 @@ bool addZ2SDeviceLocalActionHandler(
 
   z2s_channels_table[first_free_slot].sub_id = 0; 
   
-  z2s_channels_table[first_free_slot].Supla_channel_func = local_channel_func;
+  z2s_channels_table[first_free_slot].local_channel_func = local_channel_func;
 
   z2s_channels_table[first_free_slot].Zb_device_id = 0xFF;
   

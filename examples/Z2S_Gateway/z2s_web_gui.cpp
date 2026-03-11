@@ -266,6 +266,7 @@ uint16_t sb_channel_selector = 0xFFFF;
 uint16_t sb_device_id_text;
 uint16_t sb_token_text;
 uint16_t sb_json_payload_text;
+uint16_t sb_json_payload_2_text;
 uint16_t sb_status_label;
 
 
@@ -433,6 +434,9 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_ACTION_CANCEL_FLAG									0x9013
 #define GUI_CB_ACTION_REMOVE_FLAG									0x9014
 #define GUI_CB_ACTION_COPY_FLAG										0x9015
+
+#define GUI_CB_ADD_SB_1X_FLAG											0xA000
+#define GUI_CB_ADD_SB_2X_FLAG											0xA001
 
 static constexpr char* three_dots_str PROGMEM = "...";
 static constexpr char* empty_str PROGMEM = "";
@@ -612,7 +616,7 @@ void addLocalVirtualBinaryCallback(Control *sender, int type);
 void addLocalRemoteRelayCallback(Control *sender, int type);
 void addLocalRemoteThermometerCallback(Control *sender, int type);
 void addLocalVirtualHvacCallback(Control *sender, int type);
-void addSwitchbotCallback(Control *sender, int type);
+void addSwitchbotCallback(Control *sender, int type, void *param);
 void saveSwitchbotCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
@@ -1824,6 +1828,7 @@ void sbChannelCallback(Control *sender, int type) {
 		ESPUI.updateText(sb_device_id_text, working_str);
 		ESPUI.updateText(sb_token_text, working_str);
 		ESPUI.updateText(sb_json_payload_text, working_str);
+		ESPUI.updateText(sb_json_payload_2_text, working_str);
 	}
 	
 	channel_extended_data_sb_t channel_extended_data_sb = {};
@@ -1846,6 +1851,9 @@ void sbChannelCallback(Control *sender, int type) {
 
 		working_str = channel_extended_data_sb.json_payload; 
 		ESPUI.updateText(sb_json_payload_text, working_str);
+
+		working_str = channel_extended_data_sb.json_payload_2; 
+		ESPUI.updateText(sb_json_payload_2_text, working_str);
 	}
 }
 
@@ -1902,10 +1910,15 @@ void buildSwitchBotTabGUI() {
 		Control::Type::Text, PSTR(empty_str), working_str, 
 		Control::Color::Emerald, sb_device_id_text, generalCallback);
 
-	//ESPUI.setElementStyle(sb_json_payload_text, "overflow-y:scroll");
+	addClearLabel(
+		PSTR("&#10023; JSON payload (1) &#10023;"), sb_device_id_text);
+
+	sb_json_payload_2_text = ESPUI.addControl(
+		Control::Type::Text, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, sb_device_id_text, generalCallback);
 
 	addClearLabel(
-		PSTR("&#10023; JSON payload &#10023;"), sb_device_id_text);
+		PSTR("&#10023; JSON payload (2) &#10023;"), sb_device_id_text);
 
 	auto sb_save_button = ESPUI.addControl(
 		Control::Type::Button, PSTR(empty_str), PSTR("Save data"), 
@@ -1913,8 +1926,13 @@ void buildSwitchBotTabGUI() {
 
 	auto sb_panel = ESPUI.addControl(
 		Control::Type::Button, PSTR("Switchbot objects"), 
-		PSTR("Add BOT"), Control::Color::Emerald, sbchannelstab, 
-		addSwitchbotCallback);
+		PSTR("Add BOT (1x)"), Control::Color::Emerald, sbchannelstab, 
+		addSwitchbotCallback, (void*)GUI_CB_ADD_SB_1X_FLAG);
+
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), 
+		PSTR("Add BOT (2x)"), Control::Color::Emerald, sb_panel, 
+		addSwitchbotCallback, (void*)GUI_CB_ADD_SB_2X_FLAG);
 	
 	addEmptyLineLabel(sb_panel);
 	sb_status_label = ESPUI.addControl(
@@ -4420,6 +4438,8 @@ void clusterCallbackCmd() {
 
 void Z2S_loopWebGUI() {
 
+	uint32_t local_func = 0;
+	
 	switch (gui_command) {
 
 		case 34: {
@@ -4513,10 +4533,15 @@ void Z2S_loopWebGUI() {
 		} break;
 
 
-		case 100: {
+		case 100:
+		case 101: {
+
+			local_func = (gui_command == 100) ? 0 : 1;
 
 			gui_command = 0;
-			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_SWITCHBOT)) {
+			
+			if (addZ2SDeviceLocalActionHandler(
+						LOCAL_CHANNEL_TYPE_SWITCHBOT, local_func)) {
 				
 				ESPUI.updateLabel(
 				sb_status_label, PSTR(
@@ -4526,7 +4551,7 @@ void Z2S_loopWebGUI() {
 		} break;
 
 
-		case 101: {
+		case 110: {
 
 			gui_command = 0;
 			int16_t channel_slot = 
@@ -4554,6 +4579,13 @@ void Z2S_loopWebGUI() {
 					channel_extended_data_sb.json_payload, 
 					ESPUI.getControl(sb_json_payload_text)->getValueCstr(),
 					sizeof(channel_extended_data_sb.json_payload)); 
+
+				channel_extended_data_sb.json_payload_2_size = strlen(
+					ESPUI.getControl(sb_json_payload_2_text)->getValueCstr());
+				strncpy(
+					channel_extended_data_sb.json_payload_2, 
+					ESPUI.getControl(sb_json_payload_2_text)->getValueCstr(),
+					sizeof(channel_extended_data_sb.json_payload_2));
 				
 				Z2S_saveChannelExtendedData(
 					channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
@@ -8357,11 +8389,24 @@ void addLocalVirtualHvacCallback(Control *sender, int type) {
 	}
 }
 
-void addSwitchbotCallback(Control *sender, int type) {
+void addSwitchbotCallback(Control *sender, int type, void *param) {
 
 	if (type == B_UP) {
 
-		gui_command = 100;
+		switch ((uint32_t)param) {
+
+
+			case GUI_CB_ADD_SB_1X_FLAG:
+
+				gui_command = 100;
+			break;
+
+
+			case GUI_CB_ADD_SB_2X_FLAG:
+
+				gui_command = 101;
+			break;
+		}
 	}
 }
 
@@ -8369,7 +8414,7 @@ void saveSwitchbotCallback(Control *sender, int type) {
 
 	if (type == B_UP) {
 
-		gui_command = 101;
+		gui_command = 110;
 	}
 }
 
