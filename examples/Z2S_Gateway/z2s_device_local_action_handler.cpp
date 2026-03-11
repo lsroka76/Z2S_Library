@@ -54,6 +54,12 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
     break;
 
 
+case LOCAL_CHANNEL_TYPE_SWITCHBOT:
+      
+      return "Switchbot object";
+    break;
+
+
     case LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS:
 
       return "Gateway events";
@@ -89,6 +95,7 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
     case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON:
     case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC:
+    case LOCAL_CHANNEL_TYPE_SWITCHBOT:
     case LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS:
       
       return "No special functions";
@@ -120,22 +127,16 @@ void initZ2SDeviceGatewayEvents(int16_t channel_number_slot) {
   
   SuplaDevice.addAction(
     0x6000, Supla_GatewayEvents, Supla::ON_DEVICE_STATUS_CHANGE, false);
-
-
-      
 }
 
 /*****************************************************************************/
 
-void initZ2SDeviceLocalActionHandler(
-  int16_t channel_number_slot)  {
+void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
 
-  switch (z2s_channels_table[channel_number_slot].
-            local_channel_type) {
+  switch (z2s_channels_table[channel_number_slot].local_channel_type) {
 
 
     case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
-
 
       auto Supla_LocalActionHandlerWithTrigger = 
         new Supla::LocalActionHandlerWithTrigger(
@@ -152,7 +153,6 @@ void initZ2SDeviceLocalActionHandler(
 
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON: {
-
 
       auto Supla_LocalActionVirtualButton = 
         new Supla::LocalActionVirtualButton(); 
@@ -174,6 +174,42 @@ void initZ2SDeviceLocalActionHandler(
       Supla_LocalVirtualRelay->getChannel()->setChannelNumber(Supla_channel);
       Supla_LocalVirtualRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
       Supla_LocalVirtualRelay->setDefaultStateRestore();
+    }
+    break;
+
+
+    case LOCAL_CHANNEL_TYPE_SWITCHBOT: {
+      
+      uint8_t Supla_channel = 
+        z2s_channels_table[channel_number_slot].Supla_channel;
+      
+      auto Supla_SwitchBotRelay = 
+        new Supla::Control::SwitchBotRelay(); 
+      
+      Supla_SwitchBotRelay->getChannel()->setChannelNumber(Supla_channel);
+      Supla_SwitchBotRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      Supla_SwitchBotRelay->setDefaultStateRestore();
+
+      channel_extended_data_sb_t channel_extended_data_sb = {};
+  
+      if (Z2S_loadChannelExtendedData(
+            channel_number_slot, CHANNEL_EXTENDED_DATA_TYPE_SB,
+            (uint8_t*)&channel_extended_data_sb)) {
+
+        log_i(
+          "SwitchBot device BLE address: %s",
+          channel_extended_data_sb.ble_mac_address);
+        log_i(
+          "SwitchBot device token: %s (%u)",
+          channel_extended_data_sb.token, channel_extended_data_sb.token_size);
+        log_i(
+          "SwitchBot device json payload: %s (%u)",
+          channel_extended_data_sb.json_payload, 
+          channel_extended_data_sb.json_payload_size);
+
+        Supla_SwitchBotRelay->updateSwitchBotData(
+          channel_extended_data_sb, SB_UPDATE_DATA_LOAD_DIR);
+      }
     }
     break;
 
@@ -453,11 +489,6 @@ bool addZ2SDeviceLocalActionHandler(
           z2s_channels_table[first_free_slot].Supla_channel_name);
 
       Supla_VirtualHvac->enableDomesticHotWaterFunctionSupport();
-      //  SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL);
-      //Supla_VirtualHvac->setDefaultFunction(local_channel_func);
-      //Supla_VirtualHvac->setAndSaveFunction(
-       // SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
-
     } break;
 
 
@@ -491,15 +522,15 @@ bool addZ2SDeviceLocalActionHandler(
       z2s_channels_table[first_free_slot].Supla_channel = 
         Supla_Z2S_RemoteRelay->getChannelNumber();
 
-      Z2S_clearChannelFlags(first_free_slot, 
-                            USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS,
-                            false);
+      Z2S_clearChannelFlags(
+        first_free_slot, USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS, false);
 
-      strcpy(z2s_channels_table[first_free_slot].
-        Supla_channel_name, "LOCAL REMOTE RELAY");
+      strcpy(
+        z2s_channels_table[first_free_slot].Supla_channel_name, 
+        "LOCAL REMOTE RELAY");
       
       Supla_Z2S_RemoteRelay->setInitialCaption(
-          z2s_channels_table[first_free_slot].Supla_channel_name);
+        z2s_channels_table[first_free_slot].Supla_channel_name);
 
       //Supla_Z2S_RemoteRelay->setDefaultFunction(local_channel_func);
       Supla_Z2S_RemoteRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
@@ -525,6 +556,36 @@ bool addZ2SDeviceLocalActionHandler(
         CONNECTED_THERMOMETERS_FNC_AVG);
       Supla_Z2S_RemoteThermometer->setConnectedThermometerTimeoutSecs(
         MINUTES_30);
+    } break;
+
+
+    case LOCAL_CHANNEL_TYPE_SWITCHBOT: {
+
+      SuplaDevice.saveStateToStorage();
+      Supla::Storage::ConfigInstance()->commit();
+
+      auto Supla_SwitchBotRelay = 
+        new Supla::Control::SwitchBotRelay(); 
+
+      z2s_channels_table[first_free_slot].Supla_channel = 
+        Supla_SwitchBotRelay->getChannelNumber();
+
+      /*z2s_channels_table[first_free_slot].extended_data_type = 
+        CHANNEL_EXTENDED_DATA_TYPE_SB;*/
+      channel_extended_data_sb_t channel_extended_data_sb = {};
+
+      Z2S_saveChannelExtendedData(
+        first_free_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
+        (uint8_t*)&channel_extended_data_sb, false);
+
+      strcpy(
+        z2s_channels_table[first_free_slot].Supla_channel_name, "SWITCH BOT");
+      
+      Supla_SwitchBotRelay->setInitialCaption(
+          z2s_channels_table[first_free_slot].Supla_channel_name);
+
+      Supla_SwitchBotRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      Supla_SwitchBotRelay->setDefaultStateRestore();
     } break;
 
 

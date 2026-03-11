@@ -43,6 +43,7 @@ void Supla::Control::Z2S_RemoteRelay::onInit() {
   }*/
   //if (_timeout_enabled)
   //channel.setStateOffline();
+  initDone = true;
 }
 
 bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {

@@ -913,10 +913,11 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }  
     return;
   } else
-  if (strcmp(cmd,"UPDATE-DEVICE-FLAGS") == 0) {
+  if ((strcmp(cmd,"UPDATE-DEVICE-FLAGS") == 0) ||
+      (strcmp(cmd,"UPDATE-CHANNEL-FLAGS") == 0)) {
 
     if (params_number < 3)  {
-      telnet.println(">update-device-flags channel \"set\"/\"clear\" flag_bit");
+      telnet.println(">update-channel-flags channel \"set\"/\"clear\" flag_bit");
       return;
     }
 

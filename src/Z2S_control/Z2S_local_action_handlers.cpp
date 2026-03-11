@@ -522,6 +522,74 @@ void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
 
 /*****************************************************************************/
 
+
+Supla::Control::SwitchBotRelay::SwitchBotRelay():
+ Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) {
+
+}
+
+/*****************************************************************************/
+
+void Supla::Control::SwitchBotRelay::onInit() {
+
+  initDone = true;
+}
+
+/*****************************************************************************/
+
+void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
+
+  char sb_url[128];
+  
+  static const char *sb_url_template = 
+    "https://api.switch-bot.com/v1.0/devices/%s/commands";
+  HTTPClient https;
+
+  sprintf(sb_url, sb_url_template, sb_device_id.c_str());
+  https.begin(sb_url);
+	  
+	https.addHeader("Content-Type", "application/json");
+	https.addHeader("Authorization", sb_token);
+	int httpResponseCode = https.POST(json_payload);
+  https.end();
+}
+
+/*****************************************************************************/
+void Supla::Control::SwitchBotRelay::turnOff(_supla_int_t duration) {
+
+  
+}
+
+/*****************************************************************************/
+
+bool Supla::Control::SwitchBotRelay::updateSwitchBotData(
+  channel_extended_data_sb_t &channel_extended_data_sb, uint8_t direction) {
+
+    if (direction == SB_UPDATE_DATA_LOAD_DIR) {
+
+      sb_device_id = channel_extended_data_sb.ble_mac_address;
+      sb_token = channel_extended_data_sb.token;
+      json_payload = channel_extended_data_sb.json_payload;
+      return true;
+    }
+    if (direction == SB_UPDATE_DATA_SAVE_DIR) {
+
+      strncpy(
+        channel_extended_data_sb.ble_mac_address, sb_device_id.c_str(),
+        sizeof(channel_extended_data_sb.ble_mac_address));
+      strncpy(
+        channel_extended_data_sb.token, sb_token.c_str(),
+        sizeof(channel_extended_data_sb.token));
+      strncpy(
+        channel_extended_data_sb.json_payload, json_payload.c_str(),
+        sizeof(channel_extended_data_sb.json_payload));
+      return true;
+    }
+    return false;
+  }
+
+/*****************************************************************************/
+
 Supla::Sensor::LocalVirtualBinary::LocalVirtualBinary(
   bool keepStateInStorage) : VirtualBinary(keepStateInStorage) {
 

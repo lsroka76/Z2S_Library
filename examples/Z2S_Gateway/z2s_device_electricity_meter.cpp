@@ -446,7 +446,9 @@ void addZ2SDeviceElectricityMeter(
   
   channel_extended_data_em_t channel_extended_data_em = {};
 
-  memcpy(channel_extended_data_em.ieee_addr, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  memcpy(
+    channel_extended_data_em.ieee_addr, device->ieee_addr, 
+    sizeof(esp_zb_ieee_addr_t));
 
   Z2S_fillChannelsTableSlot(
     device, free_slot, Supla_Z2S_ElectricityMeter->getChannelNumber(), 

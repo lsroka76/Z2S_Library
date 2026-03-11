@@ -18,6 +18,8 @@
 #define LOCAL_ACTION_HANDLERS_H
 
 #include <Arduino.h>
+#include <HTTPClient.h>
+
 #include <ZigbeeGateway.h>
 #include <SuplaDevice.h>
 //#include <supla/storage/storage.h>
@@ -50,10 +52,27 @@
 #define LAVB_ROTATE_RIGHT_FUNC        0x04
 #define LAVB_ROTATE_LEFT_FUNC         0x05
 
-extern bool sendIASNotifications;
-extern Supla::Control::VirtualRelay *toggleNotifications;
+#define CHANNEL_EXTENDED_DATA_TYPE_SB 0x10
+
+#define SB_UPDATE_DATA_LOAD_DIR       0x00
+#define SB_UPDATE_DATA_SAVE_DIR       0x01
 
 typedef void (*_actionhandler_callback)(int event, int action);
+
+typedef struct channel_extended_data_sb_s {
+
+  uint8_t device_id;
+  uint16_t device_flags; //???
+  char  ble_mac_address[13]; 
+  uint32_t token_size;
+  char token[128];
+  uint32_t json_payload_size; 
+  char json_payload[512];
+} __attribute__ ((packed)) channel_extended_data_sb_t;
+
+
+extern bool sendIASNotifications;
+extern Supla::Control::VirtualRelay *toggleNotifications;
 
 namespace Supla {
 
@@ -177,6 +196,26 @@ class LocalVirtualRelay: public VirtualRelay {
 
     virtual ~LocalVirtualRelay();
     void handleAction(int event, int action) override; 
+};
+
+class SwitchBotRelay: public Relay {
+
+  public:
+
+    SwitchBotRelay();
+
+    void onInit() override;
+
+    bool updateSwitchBotData(
+      channel_extended_data_sb_t &channel_extended_data_sb, uint8_t direction);
+
+    void turnOn(_supla_int_t duration = 0) override;
+    void turnOff(_supla_int_t duration = 0) override;
+  
+  protected:
+    String sb_device_id;
+    String sb_token;
+    String json_payload;
 };
 }; //namespace Control
 

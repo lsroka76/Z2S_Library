@@ -43,8 +43,8 @@ class Z2S_RemoteRelay : public Relay {
 
  public:
   
-  Z2S_RemoteRelay(NetworkClient *remote_gateway, 
-                  uint8_t remote_Supla_channel);
+  Z2S_RemoteRelay(
+    NetworkClient *remote_gateway, uint8_t remote_Supla_channel);
 
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;

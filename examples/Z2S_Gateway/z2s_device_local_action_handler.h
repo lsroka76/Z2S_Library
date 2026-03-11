@@ -26,6 +26,8 @@
 
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC                   0x30
 
+#define LOCAL_CHANNEL_TYPE_SWITCHBOT                      0x40
+
 #define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                 0x80
 
 #define REMOTE_ADDRESS_TYPE_LOCAL                         0x00

@@ -1,6 +1,7 @@
 #ifndef USE_SUPLA_WEB_SERVER
 
 #include <esp_partition.h>
+#include <HTTPClient.h>
 
 #include <ZigbeeGateway.h>
 
@@ -261,6 +262,13 @@ uint16_t action_state_label;
 uint16_t action_source_channel_selector_first_option_id = 0xFFFF;
 uint16_t action_destination_channel_selector_first_option_id = 0xFFFF;
 
+uint16_t sb_channel_selector;
+uint16_t sb_device_id_text;
+uint16_t sb_token_text;
+uint16_t sb_json_payload_text;
+uint16_t sb_status_label;
+
+
 volatile bool data_ready = false;
 
 volatile uint8_t gui_command = 0;
@@ -285,6 +293,7 @@ volatile uint8_t	remove_all_devices_counter = 2;
 #define GUI_BUILD_CONTROL_FLAG_CA 					0x0040
 #define GUI_BUILD_CONTROL_FLAG_AD 					0x0080
 #define GUI_BUILD_CONTROL_FLAG_TCC 					0x0100
+#define GUI_BUILD_CONTROL_FLAG_SB 					0x0200
 
 volatile uint32_t gui_build_control_flags = 0x00;
 
@@ -517,8 +526,8 @@ document.addEventListener("mouseup", function(e){
 	console.log(e.target.getAttribute("id"));
 	console.log(e.target.id);
 
-	if(e.target.id == "btn36") {
-		console.log("btn36");
+	if(e.target.id == "btn37") {
+		console.log("btn37");
 		e.stopImmediatePropagation();
     myFunction();
   }
@@ -528,8 +537,8 @@ document.addEventListener("touchend", function(e){
 	console.log(e.target.getAttribute("id"));	
 	console.log(e.target.id);
 
-	if(e.target.id == "btn36") {
-		console.log("btn36");
+	if(e.target.id == "btn37") {
+		//console.log("btn37");
 		e.stopImmediatePropagation();
     myFunction();
   }
@@ -603,6 +612,8 @@ void addLocalVirtualBinaryCallback(Control *sender, int type);
 void addLocalRemoteRelayCallback(Control *sender, int type);
 void addLocalRemoteThermometerCallback(Control *sender, int type);
 void addLocalVirtualHvacCallback(Control *sender, int type);
+void addSwitchbotCallback(Control *sender, int type);
+void saveSwitchbotCallback(Control *sender, int type);
 
 void enableControlStyle(uint16_t control_id, bool enable);
 
@@ -1795,6 +1806,110 @@ void rebuildChannelsSelector(
 
 /*****************************************************************************/
 
+void sbChannelCallback(Control *sender, int type) {
+
+	int16_t sb_channel_slot = sender->getValueInt();
+
+	if (sb_channel_slot < 0) {
+
+		working_str = empty_str; 
+		ESPUI.updateText(sb_device_id_text, working_str);
+		ESPUI.updateText(sb_token_text, working_str);
+		ESPUI.updateText(sb_json_payload_text, working_str);
+	}
+	
+	channel_extended_data_sb_t channel_extended_data_sb = {};
+
+	if (Z2S_loadChannelExtendedData(
+				sb_channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
+				(uint8_t*)&channel_extended_data_sb)) {
+
+		working_str = channel_extended_data_sb.ble_mac_address; 
+		ESPUI.updateText(sb_device_id_text, working_str);
+
+		working_str = channel_extended_data_sb.token; 
+		ESPUI.updateText(sb_token_text, working_str);
+
+		working_str = channel_extended_data_sb.json_payload; 
+		ESPUI.updateText(sb_json_payload_text, working_str);
+	}
+}
+
+/*****************************************************************************/
+
+void buildSwitchBotTabGUI() {
+
+	auto sbchannelstab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), PSTR("Switchbot channels"),
+		Control::Color::Emerald, Control::noParent);
+
+	sb_channel_selector = ESPUI.addControl(
+		Control::Type::Select, PSTR("Switchbot channels"), (long int)-1, 
+		Control::Color::Emerald, sbchannelstab, sbChannelCallback);
+
+	ESPUI.addControl(
+		Control::Type::Option, PSTR("Select Switchbot channel..."), (long int)-1,
+		Control::Color::None, sb_channel_selector);
+
+		
+	ESPUI.setPanelWide(sb_channel_selector, true);
+
+	for (uint8_t channels_counter = 0; 
+		channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+
+  if ((z2s_channels_table[channels_counter].valid_record) &&
+			(z2s_channels_table[channels_counter].local_channel_type == 
+				LOCAL_CHANNEL_TYPE_SWITCHBOT)) {
+      
+		 ESPUI.addControl(
+				Control::Type::Option, 
+				z2s_channels_table[channels_counter].Supla_channel_name, 
+				channels_counter, Control::Color::None, sb_channel_selector);
+		}
+	}
+
+	working_str = PSTR(empty_str);
+
+	sb_device_id_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Switchbot data"), working_str, 
+		Control::Color::Emerald, sbchannelstab, generalCallback);
+
+	addClearLabel(
+		PSTR("&#10023; Device id (without ':') &#10023;"), sb_device_id_text);
+
+	sb_token_text = ESPUI.addControl(
+		Control::Type::Text, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, sb_device_id_text, generalCallback);
+
+	addClearLabel(
+		PSTR("&#10023; Switchbot token &#10023;"), sb_device_id_text);
+
+	sb_json_payload_text = ESPUI.addControl(
+		Control::Type::Text, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, sb_device_id_text, generalCallback);
+
+	//ESPUI.setElementStyle(sb_json_payload_text, "overflow-y:scroll");
+
+	addClearLabel(
+		PSTR("&#10023; JSON payload &#10023;"), sb_device_id_text);
+
+	auto sb_save_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), PSTR("Save data"), 
+		Control::Color::Emerald, sb_device_id_text, saveSwitchbotCallback);
+
+	auto sb_panel = ESPUI.addControl(
+		Control::Type::Button, PSTR("Switchbot objects"), 
+		PSTR("Add BOT"), Control::Color::Emerald, sbchannelstab, 
+		addSwitchbotCallback);
+	
+	addEmptyLineLabel(sb_panel);
+	sb_status_label = ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), three_dots_str,	
+		Control::Color::Emerald, sb_panel);
+}
+
+/*****************************************************************************/
+
 void buildChannelsTabGUI() {
 
 	char *working_str_ptr = PSTR("Zigbee channels");
@@ -2089,10 +2204,9 @@ void buildChannelsTabGUI() {
 		Control::Type::Label, PSTR("Status"), working_str, 
 		Control::Color::Alizarin, remove_channel_button);
 
-	working_str_ptr = PSTR("Add AND gate");
 	auto lah_panel = ESPUI.addControl(
-		Control::Type::Button, PSTR("Local logic components"), 
-		working_str_ptr, Control::Color::Emerald, channelstab, 
+		Control::Type::Button, PSTR("Local logic objects"), 
+		PSTR("Add AND gate"), Control::Color::Emerald, channelstab, 
 		addLocalActionHandlerCallback, (void*)GUI_CB_ADD_AND_HANDLER_FLAG);
 
 	working_str_ptr = PSTR("Add OR gate");
@@ -2137,9 +2251,8 @@ void buildChannelsTabGUI() {
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_OR3_HANDLER_FLAG);
 
-	working_str_ptr = PSTR("Add virtual relay");
 	ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Type::Button, PSTR(empty_str), PSTR("Add virtual relay"), 
 		Control::Color::Emerald, lah_panel, addLocalVirtualRelayCallback);
 
 	working_str_ptr = PSTR("Add virtual binary");
@@ -3824,6 +3937,21 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 			} break;
 
 
+			case full_sb_gui_mode: {
+
+				gui_build_control_flags = 
+					GUI_BUILD_CONTROL_FLAG_GATEWAY |
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE |
+					GUI_BUILD_CONTROL_FLAG_DEVICES |
+					GUI_BUILD_CONTROL_FLAG_CHANNELS |
+					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_CA |
+					GUI_BUILD_CONTROL_FLAG_SB |
+					GUI_BUILD_CONTROL_FLAG_TCC;
+			} break;
+
+
 			case developer_gui_mode: {
 
 				gui_build_control_flags = 
@@ -3934,6 +4062,10 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_TCC) {
 		buildTuyaCustomClusterTabGUI();
+	}
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_SB) {
+		buildSwitchBotTabGUI();
 	}
 
 	buildAllChannelSelectors();
@@ -4347,8 +4479,6 @@ void Z2S_loopWebGUI() {
 				PSTR(
 					"Local remote thermometer added - you may add next one."
 					"<br>When finished restart gateway manually to see new objects."));
-				//rebuildChannelsSelector(true);
-				//buildActionsChannelSelectors(true);
 			}
 		} break;
 
@@ -4365,8 +4495,56 @@ void Z2S_loopWebGUI() {
 				PSTR(
 					"Local virtual HVAC added - you may add next one."
 					"<br>When finished restart gateway manually to see new objects."));
-				//rebuildChannelsSelector(true);
-				//buildActionsChannelSelectors(true);
+			}
+		} break;
+
+
+		case 100: {
+
+			gui_command = 0;
+			if (addZ2SDeviceLocalActionHandler(LOCAL_CHANNEL_TYPE_SWITCHBOT)) {
+				
+				ESPUI.updateLabel(
+				sb_status_label, PSTR(
+					"Switchbot object added - you may add next one."
+					"<br>When finished restart gateway manually to see new objects."));
+			}
+		} break;
+
+
+		case 101: {
+
+			gui_command = 0;
+			int16_t channel_slot = 
+				ESPUI.getControl(sb_channel_selector)->getValueInt();
+
+			if (channel_slot >= 0) {
+
+				channel_extended_data_sb_t channel_extended_data_sb = {};
+
+				strncpy(
+					channel_extended_data_sb.ble_mac_address,
+					ESPUI.getControl(sb_device_id_text)->getValueCstr(),
+					sizeof(channel_extended_data_sb.ble_mac_address)); 
+
+				channel_extended_data_sb.token_size = strlen(
+					ESPUI.getControl(sb_token_text)->getValueCstr());
+				strncpy(
+					channel_extended_data_sb.token, 
+					ESPUI.getControl(sb_token_text)->getValueCstr(),
+					sizeof(channel_extended_data_sb.token)); 
+
+				channel_extended_data_sb.json_payload_size = strlen(
+					ESPUI.getControl(sb_json_payload_text)->getValueCstr());
+				strncpy(
+					channel_extended_data_sb.json_payload, 
+					ESPUI.getControl(sb_json_payload_text)->getValueCstr(),
+					sizeof(channel_extended_data_sb.json_payload)); 
+				
+				Z2S_saveChannelExtendedData(
+					channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
+					(uint8_t*)&channel_extended_data_sb, true);
+				
 			}
 		} break;
 	}
@@ -6281,10 +6459,32 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 
 			} break;
 
-			case GUI_CB_CLEAR_INSTALLATION_CODES_FLAG:
+			case GUI_CB_CLEAR_INSTALLATION_CODES_FLAG: {
 
 				esp_zb_secur_ic_remove_all_req();
-			break;
+
+				HTTPClient https;
+				char *token = 
+					"Bearer 2bacde17c0c23405d22e87bb2f401c96d3f5e1c52833007cd9194c58c747b7dd0"
+					"662ab0ccb8633a5169af773941a13cc";
+				char *json_cmd = 
+					"{\"command\":\"press\",\"parameter\":\"default\",\"commandType\":\"command\"}";
+				/*char *token_base64 = 
+					"Bearer K6zeF8DCNAXSLoe7L0AcltP14cUoMwB82RlMWMdHt90GYqsMy4YzpRaa93OUGhPM";*/
+				log_i("token size %u, cmd size %u", strlen(token), strlen(json_cmd));
+				https.begin(
+					"https://api.switch-bot.com/v1.0/devices/C93635305F3D/commands");
+				https.addHeader("Content-Type", "application/json");
+				https.addHeader("Authorization", String(token));
+				int httpResponseCode = https.POST(json_cmd);
+				https.end();
+				/*https.begin(
+					"https://api.switch-bot.com/v1.0/devices/C93635305F3D/commands");
+				https.addHeader("Content-Type", "application/json");
+				https.addHeader("Authorization", String(token_base64));
+				httpResponseCode = https.POST("{\"command\":\"press\",\"parameter\":\"default\",\"commandType\":\"command\"}");
+				https.end();*/
+			} break;
 		}
 	}
 }
@@ -8128,6 +8328,23 @@ void addLocalVirtualHvacCallback(Control *sender, int type) {
 		gui_command = 70;
 	}
 }
+
+void addSwitchbotCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+
+		gui_command = 100;
+	}
+}
+
+void saveSwitchbotCallback(Control *sender, int type) {
+
+	if (type == B_UP) {
+
+		gui_command = 101;
+	}
+}
+
 
 void GUI_onTuyaCustomClusterReceive(
 	uint8_t command_id, uint16_t payload_size, uint8_t * payload_data){
