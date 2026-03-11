@@ -582,7 +582,7 @@ bool addZ2SDeviceLocalActionHandler(
 
       sprintf(
         z2s_channels_table[first_free_slot].Supla_channel_name, 
-        "SWITCH BOT (%ux)", local_channel_func);
+        "SWITCH BOT (%ux)", local_channel_func + 1);
       
       Supla_SwitchBotRelay->setInitialCaption(
           z2s_channels_table[first_free_slot].Supla_channel_name);
