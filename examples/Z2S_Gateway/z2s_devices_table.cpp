@@ -526,6 +526,22 @@ Supla::Element *Z2S_getSuplaElementByChannelNumber(uint8_t channel_id) {
 
 /*****************************************************************************/
 
+Supla::Control::SwitchBotRelay *Z2S_getSwitchBotRelayInstance(
+  int16_t channel_number_slot, uint8_t channel_number) {
+
+  //if (channel_number_slot < 0) use channel_number
+  if (channel_number_slot >= 0)
+    channel_number = z2s_channels_table[channel_number_slot].Supla_channel;
+
+  auto element = Supla::Element::getElementByChannelNumber(channel_number);
+
+  if (element)
+    return reinterpret_cast<Supla::Control::SwitchBotRelay*>(element);
+  return nullptr;
+}
+
+/*****************************************************************************/
+
 void Z2S_fillChannelsTableSlot(
   zbg_device_params_t *device, uint8_t slot, uint8_t channel, 
   int32_t channel_type, int8_t sub_id, const char *name, uint32_t func, 
@@ -5013,7 +5029,7 @@ void Z2S_onAnalogInputReceive(
 
         case Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER:
         case Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER: {
-
+             
           channel_number_slot = Z2S_findChannelNumberSlot(
             short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
             NO_CUSTOM_CMD_SID);    

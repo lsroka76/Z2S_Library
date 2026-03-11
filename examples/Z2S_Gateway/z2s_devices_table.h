@@ -31,6 +31,8 @@
 #include <Z2S_common.h>
 #include "z2s_web_gui.h"
 
+#include <Z2S_control/Z2S_local_action_handlers.h>
+
 #define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  //32
 #define Z2S_CHANNELS_MAX_NUMBER                                 0x80  //128
 #define Z2S_ACTIONS_MAX_NUMBER                                  0x100 //256
@@ -422,6 +424,9 @@ bool Z2S_updateZbDeviceUidIdx(
 /*****************************************************************************/
 
 Supla::Element *Z2S_getSuplaElementByChannelNumber(uint8_t channel_id);
+
+Supla::Control::SwitchBotRelay *Z2S_getSwitchBotRelayInstance(
+  int16_t channel_number_slot, uint8_t channel_number = 0xFF);
 
 /*****************************************************************************/
 

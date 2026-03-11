@@ -1820,9 +1820,15 @@ void sbChannelCallback(Control *sender, int type) {
 	
 	channel_extended_data_sb_t channel_extended_data_sb = {};
 
-	if (Z2S_loadChannelExtendedData(
+	/*if (Z2S_loadChannelExtendedData(
 				sb_channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
-				(uint8_t*)&channel_extended_data_sb)) {
+				(uint8_t*)&channel_extended_data_sb)) {*/
+	auto sbInstance = Z2S_getSwitchBotRelayInstance(sb_channel_slot);
+	
+	if (sbInstance) {
+		
+		sbInstance->updateSwitchBotData(
+			channel_extended_data_sb, SB_UPDATE_DATA_SAVE_DIR);
 
 		working_str = channel_extended_data_sb.ble_mac_address; 
 		ESPUI.updateText(sb_device_id_text, working_str);
@@ -4544,7 +4550,11 @@ void Z2S_loopWebGUI() {
 				Z2S_saveChannelExtendedData(
 					channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
 					(uint8_t*)&channel_extended_data_sb, true);
-				
+
+				auto sbInstance = Z2S_getSwitchBotRelayInstance(channel_slot);
+				if (sbInstance)
+					sbInstance->updateSwitchBotData(
+						channel_extended_data_sb, SB_UPDATE_DATA_LOAD_DIR);
 			}
 		} break;
 	}

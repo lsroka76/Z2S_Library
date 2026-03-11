@@ -542,7 +542,7 @@ void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
   char sb_url[128];
   
   static const char *sb_url_template = 
-    "https://api.switch-bot.com/v1.0/devices/%s/commands";
+    "https://api.switch-bot.com/v1.1/devices/%s/commands";
   HTTPClient https;
 
   sprintf(sb_url, sb_url_template, sb_device_id.c_str());
@@ -551,6 +551,12 @@ void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
 	https.addHeader("Content-Type", "application/json");
 	https.addHeader("Authorization", sb_token);
 	int httpResponseCode = https.POST(json_payload);
+
+  if (httpResponseCode == HTTP_CODE_OK)
+    log_i("HTTP_CODE_OK, response: %s", https.getString().c_str());
+  else
+    log_e("HTTP error: %s", https.errorToString(httpResponseCode));
+
   https.end();
 }
 
