@@ -262,7 +262,7 @@ uint16_t action_state_label;
 uint16_t action_source_channel_selector_first_option_id = 0xFFFF;
 uint16_t action_destination_channel_selector_first_option_id = 0xFFFF;
 
-uint16_t sb_channel_selector;
+uint16_t sb_channel_selector = 0xFFFF;
 uint16_t sb_device_id_text;
 uint16_t sb_token_text;
 uint16_t sb_json_payload_text;
@@ -1504,7 +1504,7 @@ void removeDevicesSelectorDevice(uint8_t device_slot) {
 /*****************************************************************************/
 
 void removeChannelsSelectorChannel(
-	int16_t channel_number_slot,int32_t channel_option_id) {
+	int16_t channel_number_slot, int32_t channel_option_id) {
 
 	if ((channel_selector < 0xFFFF) || 
 			(action_source_channel_selector < 0xFFFF))
@@ -1514,6 +1514,14 @@ void removeChannelsSelectorChannel(
 
 		ESPUI.updateControlValue(action_source_channel_selector, -1);
 		ESPUI.updateControlValue(action_destination_channel_selector, -1);
+	}
+	if (sb_channel_selector < 0xFFFF) {
+
+		Control *first_option_id = ESPUI.getFirstOptionId(
+			sb_channel_selector, channel_number_slot);
+
+		if (first_option_id)
+			ESPUI.updateControlValue(first_option_id->GetId(), -2);
 	}
 
 	/*if (channel_selector == 0xFFFF);
@@ -1826,7 +1834,7 @@ void sbChannelCallback(Control *sender, int type) {
 	auto sbInstance = Z2S_getSwitchBotRelayInstance(sb_channel_slot);
 	
 	if (sbInstance) {
-		
+
 		sbInstance->updateSwitchBotData(
 			channel_extended_data_sb, SB_UPDATE_DATA_SAVE_DIR);
 
@@ -6690,6 +6698,16 @@ void editChannelCallback(Control *sender, int type, void *param) {
 							z2s_channels_table[channel_slot].gui_control_id, 
 							z2s_channels_table[channel_slot].Supla_channel_name);
 					
+					if (sb_channel_selector < 0xFFFF) {
+
+						Control *first_option_id = ESPUI.getFirstOptionId(
+							sb_channel_selector, channel_slot);
+
+						if (first_option_id)
+							ESPUI.updateControlLabel(
+								first_option_id->GetId(), 
+								z2s_channels_table[channel_slot].Supla_channel_name);
+					}
 
 					/*uint16_t actions_channels_selectors_option_index =
 						channel_selector_first_option_id < 0xFFFF ? 

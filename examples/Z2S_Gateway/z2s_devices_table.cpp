@@ -587,7 +587,8 @@ bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table) {
     if (z2s_channels_table[channel_number_slot].user_data_flags & 
         USER_DATA_FLAG_HAS_EXTENDED_DATA) 
       Z2S_removeChannelExtendedData(
-        z2s_channels_table[channel_number_slot].Supla_channel,
+        //z2s_channels_table[channel_number_slot].Supla_channel,
+        channel_number_slot,
         z2s_channels_table[channel_number_slot].extended_data_type, false);
     
     Z2S_removeChannelActions(
@@ -1139,7 +1140,8 @@ bool Z2S_removeAllChannels() {
     if (z2s_channels_table[channels_counter].user_data_flags & 
         USER_DATA_FLAG_HAS_EXTENDED_DATA) 
       Z2S_removeChannelExtendedData(
-        z2s_channels_table[channels_counter].Supla_channel,
+        //z2s_channels_table[channels_counter].Supla_channel,
+        channels_counter,
         z2s_channels_table[channels_counter].extended_data_type, false);
     } 
   }  
@@ -2392,12 +2394,14 @@ bool Z2S_loadActionsIndexTable() {
       (uint8_t *)z2s_actions_index_table, 
       sizeof(z2s_actions_index_table))) {
 
-    log_i ("Zigbee<=>Supla actions index table not found - writing new one: SUCCESS!");
+    log_i(
+      "Zigbee<=>Supla actions index table not found - writing new one: SUCCESS!");
     return true;
   
   } else {
   
-    log_i ("Zigbee<=>Supla actions index table not found - writing new one: FAILED!");
+    log_i(
+      "Zigbee<=>Supla actions index table not found - writing new one: FAILED!");
     return false;
   }
 }
@@ -2410,11 +2414,11 @@ bool Z2S_saveActionsIndexTable() {
 
   save_mutex = 1;*/
 
-  if (Z2S_saveFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
-                   (uint8_t *)z2s_actions_index_table, 
-                    sizeof(z2s_actions_index_table))) {
+  if (Z2S_saveFile(
+        Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
+        (uint8_t *)z2s_actions_index_table, sizeof(z2s_actions_index_table))) {
 
-    log_i ("Saving Zigbee<=>Supla actions index table: SUCCESS!");
+    log_i("Saving Zigbee<=>Supla actions index table: SUCCESS!");
 
     /*save_mutex = 0; */
     return true;
@@ -2477,7 +2481,8 @@ int16_t  Z2S_findFreeActionIndex() {
 
 int16_t  Z2S_findNextActionPosition(uint16_t action_position) {
 
-  for (uint16_t index = action_position; index < Z2S_ACTIONS_MAX_NUMBER; index++)
+  for (uint16_t index = action_position; index < Z2S_ACTIONS_MAX_NUMBER; 
+       index++)
     if (checkActionsIndexTablePosition(index))
       return index;
   
@@ -2510,12 +2515,11 @@ bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
   char file_name_buffer[50] = {};
   sprintf(file_name_buffer, Z2S_CHANNELS_ACTIONS_PPREFIX_V2, action_index);
   
-  if (Z2S_saveFile(file_name_buffer, 
-                   (uint8_t*) &action, 
-                   sizeof(z2s_channel_action_t))) {
+  if (Z2S_saveFile(
+        file_name_buffer, (uint8_t*) &action, sizeof(z2s_channel_action_t))) {
 
-    log_i ("Saving Zigbee<=>Supla action in file %s: SUCCESS", 
-           file_name_buffer);
+    log_i(
+      "Saving Zigbee<=>Supla action in file %s: SUCCESS", file_name_buffer);
 
     /*save_mutex = 0; */
 
@@ -2524,8 +2528,8 @@ bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
     return true;
   } else {
 
-    log_i ("Saving Zigbee<=>Supla action in file %s: FAILED", 
-           file_name_buffer);
+    log_i(
+      "Saving Zigbee<=>Supla action in file %s: FAILED", file_name_buffer);
 
     /*save_mutex = 0; */
     return false;
@@ -2545,11 +2549,13 @@ bool Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action) {
   if (Z2S_loadFile(
         file_name_buffer, (uint8_t*) &action, sizeof(z2s_channel_action_t))) {
 
-    log_i ("Loading Zigbee<=>Supla action from file %s: SUCCESS", file_name_buffer);
+    log_i(
+      "Loading Zigbee<=>Supla action from file %s: SUCCESS", file_name_buffer);
     return true;
   } else {
     
-    log_i ("Loading Zigbee<=>Supla action from file %s: FAILED", file_name_buffer);
+    log_i(
+      "Loading Zigbee<=>Supla action from file %s: FAILED", file_name_buffer);
     return false;
   }
 }
@@ -2619,10 +2625,10 @@ void Z2S_initSuplaActions() {
       Z2S_loadAction(index, new_action);
       if (new_action.is_enabled)
         Z2S_add_action(
-      new_action.action_name, new_action.src_Supla_channel,
-      new_action.dst_Supla_action, new_action.dst_Supla_channel, 
-      new_action.src_Supla_event, new_action.is_condition, 
-      new_action.min_value, new_action.max_value);
+          new_action.action_name, new_action.src_Supla_channel,
+          new_action.dst_Supla_action, new_action.dst_Supla_channel, 
+          new_action.src_Supla_event, new_action.is_condition, 
+          new_action.min_value, new_action.max_value);
 
       log_i(
         "Action name: %s, enabled: %s, src_Supla_channel %u, "
@@ -2640,7 +2646,7 @@ void Z2S_initSuplaActions() {
     }
   }
 }
-
+  
 /*****************************************************************************/
 
 uint16_t Z2S_getChannelExtendedDataTypeSize(uint8_t extended_data_type) {
@@ -2747,7 +2753,6 @@ bool Z2S_removeChannelExtendedData(
 
     return true;
   }
-
   log_e("no extended data found");
   return false;
 }
