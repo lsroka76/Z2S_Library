@@ -19,7 +19,10 @@
 
 HTTPClient https;
 
+WiFiClientSecure clientSec;
+
 extern bool force_leave_global_flag;
+
 
 //using Supla::LocalActionHandler;
 //using Supla::LocalActionHandlerWithTrigger;
@@ -535,6 +538,7 @@ Supla::Control::SwitchBotRelay::SwitchBotRelay(uint8_t device_type_id):
 void Supla::Control::SwitchBotRelay::onInit() {
 
   initDone = true;
+  clientSec.setInsecure();
 }
 
 /*****************************************************************************/
@@ -548,7 +552,7 @@ void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
   sprintf(sb_url, sb_url_template, _sb_device_id.c_str());
   
   if (!https.connected())
-      https.begin(sb_url);
+    https.begin(clientSec, sb_url);
 
 	https.addHeader("Content-Type", "application/json");
 	https.addHeader("Authorization", _sb_token);
@@ -560,6 +564,7 @@ void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
   else
     log_e("HTTP error: %s", https.errorToString(httpResponseCode).c_str());
 
+  clientSec.stop();
   //https.end();
 
   if (_device_type_id == SB_DEVICE_TYPE_ON_OFF_ID) {
@@ -584,7 +589,7 @@ void Supla::Control::SwitchBotRelay::turnOff(_supla_int_t duration) {
     sprintf(sb_url, sb_url_template, _sb_device_id.c_str());
     
     if (!https.connected())
-      https.begin(sb_url);
+      https.begin(clientSec, sb_url);
 	  
 	  https.addHeader("Content-Type", "application/json");
 	  https.addHeader("Authorization", _sb_token);
@@ -597,6 +602,7 @@ void Supla::Control::SwitchBotRelay::turnOff(_supla_int_t duration) {
       log_e("HTTP error: %s", https.errorToString(httpResponseCode).c_str());
 
     //https.end();
+    clientSec.stop();
     
     _state = false;
     channel.setNewValue(_state);

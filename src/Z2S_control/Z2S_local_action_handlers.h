@@ -19,6 +19,7 @@
 
 #include <Arduino.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 
 #include <ZigbeeGateway.h>
 #include <SuplaDevice.h>

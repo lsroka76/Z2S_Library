@@ -3358,12 +3358,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-04PR2",
     .z2s_device_uid = 9630,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1,
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_BATTERY_REPORTING_SONOFF, 
-      Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B}},
+      Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B}},
 
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-204Z",
     .z2s_device_uid = 9700,
