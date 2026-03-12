@@ -17,6 +17,8 @@
 
 #include "Z2S_local_action_handlers.h"
 
+HTTPClient https;
+
 extern bool force_leave_global_flag;
 
 //using Supla::LocalActionHandler;
@@ -541,11 +543,13 @@ void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
 
   char sb_url[128];
     
-  HTTPClient https;
+  //HTTPClient https;
 
   sprintf(sb_url, sb_url_template, _sb_device_id.c_str());
-  https.begin(sb_url);
-	  
+  
+  if (!https.connected())
+      https.begin(sb_url);
+
 	https.addHeader("Content-Type", "application/json");
 	https.addHeader("Authorization", _sb_token);
 
@@ -554,9 +558,9 @@ void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
   if (httpResponseCode == HTTP_CODE_OK)
     log_i("HTTP_CODE_OK, response: %s", https.getString().c_str());
   else
-    log_e("HTTP error: %s", https.errorToString(httpResponseCode));
+    log_e("HTTP error: %s", https.errorToString(httpResponseCode).c_str());
 
-  https.end();
+  //https.end();
 
   if (_device_type_id == SB_DEVICE_TYPE_ON_OFF_ID) {
 
@@ -575,10 +579,12 @@ void Supla::Control::SwitchBotRelay::turnOff(_supla_int_t duration) {
 
     char sb_url[128];
     
-    HTTPClient https;
+    //HTTPClient https;
 
     sprintf(sb_url, sb_url_template, _sb_device_id.c_str());
-    https.begin(sb_url);
+    
+    if (!https.connected())
+      https.begin(sb_url);
 	  
 	  https.addHeader("Content-Type", "application/json");
 	  https.addHeader("Authorization", _sb_token);
@@ -588,9 +594,9 @@ void Supla::Control::SwitchBotRelay::turnOff(_supla_int_t duration) {
     if (httpResponseCode == HTTP_CODE_OK)
       log_i("HTTP_CODE_OK, response: %s", https.getString().c_str());
     else
-      log_e("HTTP error: %s", https.errorToString(httpResponseCode));
+      log_e("HTTP error: %s", https.errorToString(httpResponseCode).c_str());
 
-    https.end();
+    //https.end();
     
     _state = false;
     channel.setNewValue(_state);

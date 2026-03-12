@@ -227,7 +227,9 @@ class SwitchBotRelay: public Relay {
     String _json_payload;
     String _json_payload_2;
     uint8_t _device_type_id = SB_DEVICE_TYPE_PRESS_ID;
+    //HTTPClient https;
     bool _state;
+    //bool _connected = false;
 };
 }; //namespace Control
 
