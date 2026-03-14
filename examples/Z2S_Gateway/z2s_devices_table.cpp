@@ -3018,10 +3018,7 @@ void Z2S_onIlluminanceReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,  
   uint16_t illuminance) {
 
-  char ieee_addr_str[24] = {};
-
-  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
-
+  
   log_i(
     "0x%04X, endpoint 0x%x, illuminance %u", short_addr, endpoint, 
     illuminance);
@@ -8186,7 +8183,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
-      case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR: {
+      case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
+      cae Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR: {
 
         switch (sub_id) {
 
@@ -9320,6 +9318,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_QUERY:
     case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
@@ -10489,7 +10488,8 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
-    case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR: {
+    case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR: {
       
       Z2S_addZ2SDevice(
         joined_device, Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID, 

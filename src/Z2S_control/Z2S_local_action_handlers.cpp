@@ -17,9 +17,20 @@
 
 #include "Z2S_local_action_handlers.h"
 
-HTTPClient https;
+#define SSLCLIENT_INSECURE_ONLY
+#define SSLCLIENT_HALF_DUPLEX
 
-WiFiClientSecure clientSec;
+#include <ESP_SSLClient.h>
+#include <WiFiClient.h>
+//#include <HTTPClient.h>
+
+ESP_SSLClient ssl_client;
+WiFiClient basic_client;
+
+//HTTPClient https;
+
+//WiFiClientSecure clientSec;
+
 
 extern bool force_leave_global_flag;
 
@@ -538,21 +549,85 @@ Supla::Control::SwitchBotRelay::SwitchBotRelay(uint8_t device_type_id):
 void Supla::Control::SwitchBotRelay::onInit() {
 
   initDone = true;
-  clientSec.setInsecure();
+  //clientSec.setInsecure();
+  ssl_client.setInsecure();
+  ssl_client.setBufferSizes(1024 /* rx */, 512 /* tx */);
+  ssl_client.setDebugLevel(3);
+  ssl_client.setSessionTimeout(120);
+  ssl_client.setClient(&basic_client);
 }
 
 /*****************************************************************************/
 
 void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
 
+  
+  /*static const char *test_host = "api.pushover.net";
+
+				int16_t connection_code = ssl_client.connect(test_host, 443);
+				log_i("connection_code = %d", connection_code);
+				if (!connection_code) {
+        
+					Serial.println("Connection failed!");
+    		} else {
+
+    			// Prepare the POST body
+    			String url = "/1/messages.json";
+    			String postData = "token=" + String("a7haupab8v7r3mo146s4b3838nx81a") +
+                      "&user=" + String("uneu9f8jhxt18sm6t4so87ev9xn7i5") +
+                      "&message=TEST MESSAGE";
+
+    			// Send HTTP request
+    			ssl_client.print(
+						String("POST ") + url + " HTTP/1.1\r\n" +
+            "Host: api.pushover.net\r\n" +
+            "Content-Type: application/x-www-form-urlencoded\r\n" +
+            "Content-Length: " + postData.length() + "\r\n" +
+            "Connection: close\r\n\r\n" +
+            postData);
+
+    			Serial.println("Notification sent!");
+				}
+				ssl_client.stop();
+
+  if (_device_type_id == SB_DEVICE_TYPE_ON_OFF_ID) {
+
+    _state = true;
+    channel.setNewValue(_state);
+    // Schedule save in 5 s after state change
+    Supla::Storage::ScheduleSave(5000);
+  }
+  
+  return;*/
+  
   char sb_url[128];
     
   //HTTPClient https;
 
-  sprintf(sb_url, sb_url_template, _sb_device_id.c_str());
+  //sprintf(sb_url, sb_url_template, _sb_device_id.c_str());
   
-  if (!https.connected())
-    https.begin(clientSec, sb_url);
+  sprintf(sb_url, sb_device_path, _sb_device_id.c_str());
+  if (ssl_client.connect(sb_host, 443)) {
+        
+    Serial.println(" ok");
+    Serial.println("Send POST request...");
+    Serial.println(sb_url);
+
+    ssl_client.print(sb_url);
+    ssl_client.print("Host: api.switch-bot.com\r\n");
+    ssl_client.print("Content-Type: application/json\r\n");
+    ssl_client.print("Authorization: ");
+    ssl_client.print(_sb_token);
+    ssl_client.print("\r\n");
+    ssl_client.print("Content-Length: ");
+    ssl_client.print(_json_payload.length());
+    ssl_client.print("\r\n\r\n");
+    ssl_client.print(_json_payload);
+  }
+  ssl_client.stop();
+
+  /*if (!https.connected())
+    https.begin(ssl_client, sb_url);
 
 	https.addHeader("Content-Type", "application/json");
 	https.addHeader("Authorization", _sb_token);
@@ -564,8 +639,9 @@ void Supla::Control::SwitchBotRelay::turnOn(_supla_int_t duration) {
   else
     log_e("HTTP error: %s", https.errorToString(httpResponseCode).c_str());
 
-  clientSec.stop();
-  //https.end();
+  ssl_client.stop();
+  //clientSec.stop();
+  //https.end();*/
 
   if (_device_type_id == SB_DEVICE_TYPE_ON_OFF_ID) {
 
@@ -582,7 +658,30 @@ void Supla::Control::SwitchBotRelay::turnOff(_supla_int_t duration) {
 
   if (_device_type_id == SB_DEVICE_TYPE_ON_OFF_ID) {
 
-    char sb_url[128];
+  char sb_url[128];
+
+  sprintf(sb_url, sb_device_path, _sb_device_id.c_str());
+  
+  if (ssl_client.connect(sb_host, 443)) {
+        
+    Serial.println(" ok");
+    Serial.println("Send POST request...");
+    Serial.println(sb_url);
+
+    ssl_client.print(sb_url);
+    ssl_client.print("Host: api.switch-bot.com\r\n");
+    ssl_client.print("Content-Type: application/json\r\n");
+    ssl_client.print("Authorization: ");
+    ssl_client.print(_sb_token);
+    ssl_client.print("\r\n");
+    ssl_client.print("Content-Length: ");
+    ssl_client.print(_json_payload_2.length());
+    ssl_client.print("\r\n\r\n");
+    ssl_client.print(_json_payload_2);
+  }
+  ssl_client.stop();  
+
+    /*char sb_url[128];
     
     //HTTPClient https;
 
@@ -602,7 +701,7 @@ void Supla::Control::SwitchBotRelay::turnOff(_supla_int_t duration) {
       log_e("HTTP error: %s", https.errorToString(httpResponseCode).c_str());
 
     //https.end();
-    clientSec.stop();
+    clientSec.stop();*/
     
     _state = false;
     channel.setNewValue(_state);

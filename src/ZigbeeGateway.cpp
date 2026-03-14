@@ -360,6 +360,11 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
 
   esp_zb_cluster_list_add_custom_cluster(
     _cluster_list, 
+    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_2),
+    ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+
+  esp_zb_cluster_list_add_custom_cluster(
+    _cluster_list, 
     esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
@@ -1652,7 +1657,8 @@ void ZigbeeGateway::zbAttributeReporting(
             src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, 
             value);
       } else
-      if ((attribute->id == ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID) && 
+      if ((attribute->id == 
+            ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8)) {
         
         uint8_t value = attribute->data.value ? 
@@ -1672,6 +1678,18 @@ void ZigbeeGateway::zbAttributeReporting(
           "attribute data type (0x%x)", cluster_id, attribute->id, 
           attribute->data.type); 
     } else 
+    if (cluster_id == TUYA_PRIVATE_CLUSTER_2) {
+
+      if (attribute->id == 0xE001) {
+
+        uint16_t value = attribute->data.value ? 
+          *(uint16_t *)attribute->data.value : 0;
+
+        if (_on_illuminance_receive)
+          _on_illuminance_receive(
+            src_address.u.short_addr, src_endpoint, cluster_id, value);
+      } 
+    } else
       log_i(
         "from (0x%x), endpoint (%d), cluster (0x%x), attribute id (0x%x), "
         "attribute data type (0x%x) ", src_address.u.short_addr, src_endpoint,

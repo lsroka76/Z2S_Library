@@ -74,7 +74,6 @@
 #define TUYA_TH_SENSOR_TEMPERATURE_CALIBRATION_DP                   0x17
 #define TUYA_TH_SENSOR_HUMIDITY_CALIBRATION_DP                      0x18
 
-
 #define TUYA_SMOKE_DETECTOR_SMOKE_DP                                0x01
 #define TUYA_SMOKE_DETECTOR_PPM_DP                                  0x02
 #define TUYA_SMOKE_DETECTOR_TAMPER_DP                               0x04
@@ -101,7 +100,6 @@
 #define MOES_SMOKE_DETECTOR_ZSSHMSSD01_BATTERY_STATE_DP              0x0E
 #define MOES_SMOKE_DETECTOR_ZSSHMSSD01_BATTERY_LEVEL_DP              0x0F
 #define MOES_SMOKE_DETECTOR_ZSSHMSSD01_SILENCE_DP                    0x10
-
 
 #define TUYA_CO_DETECTOR_CO_DP                                      0x01
 #define TUYA_CO_DETECTOR_CO_CONC_DP                                 0x02
@@ -160,7 +158,6 @@
 #define TUYA_PRESENCE_SENSOR_5_MOVE_DETECTION_MIN_DP                0x6E
 #define TUYA_PRESENCE_SENSOR_5_BREATH_DETECTION_MAX_DP              0x6F
 #define TUYA_PRESENCE_SENSOR_5_BREATH_DETECTION_MIN_DP              0x70
-
 
 #define TUYA_PRESENCE_SENSOR_4IN1_MOTION_DETECTION_SENSITIVITY_DP   0x02
 #define TUYA_PRESENCE_SENSOR_4IN1_HUMIDITY_DP                       0x65
@@ -374,7 +371,6 @@
 #define TUYA_ON_OFF_BATTERY_VALVE_STATE_DP                          0x08
 #define TUYA_ON_OFF_BATTERY_VALVE_BATTERY_LEVEL_DP                  0x65
 
-
 #define GIEX_WATER_VALVE_MODE_DP                                    0x01            
 #define GIEX_WATER_VALVE_STATE_DP                                   0x02
 #define GIEX_WATER_VALVE_IRRIGATION_START_TIME_DP                   0x65
@@ -390,12 +386,20 @@
 #define TUYA_ILLUMINANCE_SENSOR_ILLUMINANCE_DP                      0x02
 #define TUYA_ILLUMINANCE_SENSOR_BATTERY_DP                          0x04
 
+#define TUYA_TS020C_SENSOR_PIR_DP                                   0x01
+#define TUYA_TS020C_SENSOR_ILLUMINANCE_DP                           0x0C
+#define TUYA_TS020C_SENSOR_BATTERY_LEVEL_DP                         0x04
+#define TUYA_TS020C_SENSOR_SENSITIVITY_DP                           0x65 //ENUM
+#define TUYA_TS020C_SENSOR_KEEP_TIME_DP                             0x66 //ENUM
+#define TUYA_TS020C_ILLUMINANCE_INTERVAL_DP                         0x67 //VALUE
+
 #define TUYA_PIR_ILLUMINANCE_SENSOR_PIR_DP                          0x01
 #define TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_DP                  0x0C
 #define TUYA_PIR_ILLUMINANCE_SENSOR_BATTERY_LEVEL_DP                0x04
 #define TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP                  0x09 //ENUM
 #define TUYA_PIR_ILLUMINANCE_SENSOR_KEEP_TIME_DP                    0x0A //ENUM
 #define TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP         0x66 //VALUE
+
 
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP                          0x18
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_2_DP                          0x19

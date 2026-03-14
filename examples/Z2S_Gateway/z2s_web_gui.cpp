@@ -1,7 +1,6 @@
 #ifndef USE_SUPLA_WEB_SERVER
 
 #include <esp_partition.h>
-#include <HTTPClient.h>
 
 #include <ZigbeeGateway.h>
 
@@ -4113,9 +4112,33 @@ void Z2S_reloadWebGUI() {
 
 }
 
+const char* rootCACertificatePushover = \
+"-----BEGIN CERTIFICATE-----\n" \
+"MIIDjjCCAnagAwIBAgIQAzrx5qcRqaC7KGSxHQn65TANBgkqhkiG9w0BAQsFADBh\n" \
+"MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3\n" \
+"d3cuZGlnaWNlcnQuY29tMSAwHgYDVQQDExdEaWdpQ2VydCBHbG9iYWwgUm9vdCBH\n" \
+"MjAeFw0xMzA4MDExMjAwMDBaFw0zODAxMTUxMjAwMDBaMGExCzAJBgNVBAYTAlVT\n" \
+"MRUwEwYDVQQKEwxEaWdpQ2Vyd  SW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29t\n" \
+"MSAwHgYDVQQDExdEaWdpQ2VydCBHbG9iYWwgUm9vdCBHMjCCASIwDQYJKoZIhvcN\n" \
+"AQEBBQADggEPADCCAQoCggEBALStS1dknq5kB82RKf97p3R0W79ZAn0SGrYj4R7J\n" \
+"5Hh1kF88ZkZ40a/9D7gKAt4Yw6D4T139hXF1B1S8k7y8f6q8D/iHIsyJvUxlR6B2\n" \
+"8x8o1V583sM2D0P3t4R5u6t5r3xU5h9fGqSInE7v68sW1s8E6y6jVvI5f2e8D6Xh\n" \
+"E8fR3T4F01f8nI/u4U/Y6C3P1b6s7WqI4G6P2G4r/6M5W16hE0S1E6fS7n1K8V8x\n" \
+"0C5S6mU3n9Y8zYJ5lW6X3V8P3I7hWv3f6Y5sXW8D3xS6n3f6Y5sXW8D3xS6n3f6Y\n" \
+"5sXW8D3xS6n3f6Y5sXW8D3xS6n3f6Y5sXW8D3xS6n3f6Y5sXW8D3xS6n3f6Y5sXW\n" \
+"8D3xS6n3f6Y5sXW8D3xS6n3f6Y5sXW8D3xS6n3f6Y5sXW8D3xS6n3f6Y5sXW8D3x\n" \
+"-----END CERTIFICATE-----\n";
+
 void Z2S_startWebGUIConfig() {
 
 	//char general_purpose_gui_buffer[1024] = {};
+
+	//ssl_client_pushover.setInsecure();
+	//ssl_client_pushover.setCACert(rootCACertificatePushover);
+  //ssl_client_pushover.setBufferSizes(1024 /* rx */, 512 /* tx */);
+  //ssl_client_pushover.setDebugLevel(4);
+  //ssl_client_pushover.setSessionTimeout(120);
+  //ssl_client_pushover.setClient(&basic_client_pushover);
 	
 	fillGatewayGeneralnformation(general_purpose_gui_buffer);
 
@@ -4539,7 +4562,7 @@ void Z2S_loopWebGUI() {
 			local_func = (gui_command == 100) ? 0 : 1;
 
 			gui_command = 0;
-			
+
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_SWITCHBOT, local_func)) {
 				
@@ -6373,16 +6396,19 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 
 		switch ((uint32_t)param) {
 
+
 			case GUI_CB_PAIRING_FLAG : {		//open network
 
 				Zigbee.openNetwork(180); 
 			} break;
+
 
 			case GUI_CB_FACTORY_FLAG : {	//factory reset
 			
 				if (ESPUI.getControl(factory_reset_switcher)->getValueInt() > 0)
 					Zigbee.factoryReset(); 
 			} break;
+
 
 			case GUI_CB_GET_TX_FLAG : { //read TX power
 
@@ -6404,6 +6430,7 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 					ESPUI.updateText(zigbee_tx_power_text, zigbee_tx_power_text_str);
 			} break;
 
+
 			case GUI_CB_GET_PC_FLAG : { //read primary channel
 
 				uint32_t zb_primary_channel;
@@ -6422,6 +6449,7 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 				ESPUI.updateLabel(
 					zigbee_primary_channel_label, zigbee_primary_channel_info_str);		
 			} break;
+
 
 			case GUI_CB_SET_PC_FLAG : { //write primary channel
 					
@@ -6457,6 +6485,7 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 						zigbee_primary_channel_label, zigbee_primary_channel_info_str);
 			} break;
 
+
 			case GUI_CB_SET_INSTALLATION_CODE_FLAG: {
 
 				if (ESPUI.getControl(
@@ -6483,9 +6512,8 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 
 				for (uint8_t i = 0; i < 8; i++) {
 
-					working_str = 
-						ESPUI.getControl(
-							zigbee_installation_code_ieee_address)->getValue().substring(2*i, 2+ 2*i);
+					working_str = ESPUI.getControl(
+						zigbee_installation_code_ieee_address)->getValue().substring(2*i, 2+ 2*i);
 
 					device_ieee_addr[7 - i] = strtoul(working_str.c_str(), nullptr, 16);
 					log_i("device_ieee_addr[%u] = %02X", 7 - i, device_ieee_addr[7 - i]);
@@ -6493,47 +6521,27 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 
 				for (uint8_t i = 0; i < 18; i++) {
 
-					working_str = 
-						ESPUI.getControl(
+					working_str = ESPUI.getControl(
 							zigbee_installation_code_str)->getValue().substring(
-								2*i, 2+ 2*i);
+							2*i, 2+ 2*i);
 					
-					device_installation_code[i] = strtoul(working_str.c_str(), nullptr, 16);
-					log_i("device_installation_code[%u] = %02X", 
-								i, device_installation_code[i]);
+					device_installation_code[i] = 
+						strtoul(working_str.c_str(), nullptr, 16);
+					
+					log_i(
+						"device_installation_code[%u] = %02X", i, 
+						device_installation_code[i]);
 				}
 
-				esp_zb_secur_ic_add(device_ieee_addr, 
-                            ESP_ZB_IC_TYPE_128, 
-                            device_installation_code);
+				esp_zb_secur_ic_add(
+					device_ieee_addr, ESP_ZB_IC_TYPE_128, device_installation_code);
 
 			} break;
+
 
 			case GUI_CB_CLEAR_INSTALLATION_CODES_FLAG: {
 
 				esp_zb_secur_ic_remove_all_req();
-
-				HTTPClient https;
-				char *token = 
-					"Bearer 2bacde17c0c23405d22e87bb2f401c96d3f5e1c52833007cd9194c58c747b7dd0"
-					"662ab0ccb8633a5169af773941a13cc";
-				char *json_cmd = 
-					"{\"command\":\"press\",\"parameter\":\"default\",\"commandType\":\"command\"}";
-				/*char *token_base64 = 
-					"Bearer K6zeF8DCNAXSLoe7L0AcltP14cUoMwB82RlMWMdHt90GYqsMy4YzpRaa93OUGhPM";*/
-				log_i("token size %u, cmd size %u", strlen(token), strlen(json_cmd));
-				https.begin(
-					"https://api.switch-bot.com/v1.0/devices/C93635305F3D/commands");
-				https.addHeader("Content-Type", "application/json");
-				https.addHeader("Authorization", String(token));
-				int httpResponseCode = https.POST(json_cmd);
-				https.end();
-				/*https.begin(
-					"https://api.switch-bot.com/v1.0/devices/C93635305F3D/commands");
-				https.addHeader("Content-Type", "application/json");
-				https.addHeader("Authorization", String(token_base64));
-				httpResponseCode = https.POST("{\"command\":\"press\",\"parameter\":\"default\",\"commandType\":\"command\"}");
-				https.end();*/
 			} break;
 		}
 	}

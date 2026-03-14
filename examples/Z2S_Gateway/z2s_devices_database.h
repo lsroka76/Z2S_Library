@@ -106,6 +106,7 @@
 #define Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR            0x2041
 #define Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR        0x2050
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR         0x2060
+#define Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR                  0x2061
 
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR                 0x2200
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1               0x2201
@@ -1089,6 +1090,14 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00,
+                             TUYA_PRIVATE_CLUSTER_2 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR,
     .z2s_device_clusters_count = 5,
@@ -2810,6 +2819,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    .z2s_device_uid = 3935,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
 	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3040_o4mkahkc", .model_name = "TS0202",
+   .z2s_device_uid = 3940,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZ3000_26fmupbb", .model_name = "TS0203",
     .z2s_device_uid = 4000,
@@ -5845,7 +5863,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 34800, 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR,
     .z2s_device_endpoints_count = 1,
-  .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR }}
+  .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR }},
+
+   { .manufacturer_name = "_TZ3040_wc6kfjtc", .model_name = "TS020C",
+    .z2s_device_uid = 34900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR,
+    .z2s_device_endpoints_count = 1},
+
 },
 
 //DEVICES_END

@@ -18,8 +18,8 @@
 #define LOCAL_ACTION_HANDLERS_H
 
 #include <Arduino.h>
-#include <HTTPClient.h>
-#include <WiFiClientSecure.h>
+//#include <HTTPClient.h>
+//#include <WiFiClientSecure.h>
 
 #include <ZigbeeGateway.h>
 #include <SuplaDevice.h>
@@ -79,7 +79,11 @@ typedef struct channel_extended_data_sb_s {
 } __attribute__ ((packed)) channel_extended_data_sb_t;
 
 static const char *sb_url_template = 
-    "https://api.switch-bot.com/v1.1/devices/%s/commands";
+  "https://api.switch-bot.com/v1.1/devices/%s/commands";
+
+static const char *sb_host = "api.switch-bot.com";
+
+static const char *sb_device_path = "POST /v1.1/devices/%s/commands HTTP/1.1\r\n";
 
 extern bool sendIASNotifications;
 extern Supla::Control::VirtualRelay *toggleNotifications;

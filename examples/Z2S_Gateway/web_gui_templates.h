@@ -1824,6 +1824,27 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Brightness acquisition interval.<br>"
 																	"Enter numeric value between 1 and 720 [min]." },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_TS020C_SENSOR_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value: <br>"
+																	"0 => low, 1 => medium, 2 => high" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_TS020C_SENSOR_KEEP_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Keep Time",
+    .Tuya_datapoint_description = "Enter numeric value: <br>"
+																	"0 => 10s, 1 => 30s, 2 => 60 s, 3 => 120 s" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_TS020C_ILLUMINANCE_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Illuminance Interval",
+    .Tuya_datapoint_description = "Brightness acquisition interval.<br>"
+																	"Enter numeric value between 1 and 720 [min]." },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,

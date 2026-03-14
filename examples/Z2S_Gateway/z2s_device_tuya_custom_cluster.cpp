@@ -3112,6 +3112,7 @@ void processTuyaDataReport(
 
 
     case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR:
 
       processTuyaPIRIlluminanceSensorDataReport(
         channel_number_slot, payload_size, payload, model_id); 
