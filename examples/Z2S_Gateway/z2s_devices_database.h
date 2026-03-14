@@ -5868,9 +5868,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
    { .manufacturer_name = "_TZ3040_wc6kfjtc", .model_name = "TS020C",
     .z2s_device_uid = 34900,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR,
-    .z2s_device_endpoints_count = 1},
-
-},
+    .z2s_device_endpoints_count = 1}
 
 //DEVICES_END
 };
