@@ -8184,7 +8184,7 @@ uint8_t Z2S_addZ2SDevice(
 /******************************************************************************/     
 
       case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
-      cae Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR: {
+      case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR: {
 
         switch (sub_id) {
 
