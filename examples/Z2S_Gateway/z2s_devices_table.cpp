@@ -3770,7 +3770,7 @@ void Z2S_onLumiCustomClusterReceive(
           float lumi_power = 
             *(float *)(attribute->data.value + lumi_em_position);
           
-          if (z2s_channels_table[channel_number_slot].model_id) == 
+          if (z2s_channels_table[channel_number_slot].model_id == 
               Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER)
             lumi_power *= 1000;
           else lumi_power *= 10;
