@@ -5003,8 +5003,8 @@ void Z2S_onAnalogInputReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
-        ieee_addr_str, endpoint, attribute->id, attribute->data.size);
+  log_i("0x%04X, endpoint 0x%x, attribute id 0x%x, size %u", 
+        short_addr, endpoint, attribute->id, attribute->data.size);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, -1 /*all endpoints*/, cluster, 
