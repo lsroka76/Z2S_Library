@@ -247,8 +247,7 @@ void initZ2SDeviceElectricityMeter(
     } break;
 
 
-    case Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET:
-    case Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER: {
+    case Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET: {
 
       ignore_zigbee_scaling = true;
 
@@ -261,6 +260,25 @@ void initZ2SDeviceElectricityMeter(
 
       active_power_multiplier = 1;
       active_power_divisor    = 100;
+
+      energy_multiplier = 1;
+      energy_divisor  = 1000;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER: {
+
+      ignore_zigbee_scaling = true;
+
+      voltage_multiplier = 1;
+      voltage_divisor    = 100;
+
+      current_multiplier = 1;
+      current_divisor    = 1000;
+      current_divisor_modifier = 100;
+
+      active_power_multiplier = 1;
+      active_power_divisor    = 1000;
 
       energy_multiplier = 1;
       energy_divisor  = 1000;

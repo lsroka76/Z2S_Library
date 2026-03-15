@@ -5865,10 +5865,25 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints_count = 1,
     .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR }}},
 
-   { .manufacturer_name = "_TZ3040_wc6kfjtc", .model_name = "TS020C",
+  { .manufacturer_name = "_TZ3040_wc6kfjtc", .model_name = "TS020C",
     .z2s_device_uid = 34900,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "DIY_george1255", .model_name = "1ch_gate_module",
+    .z2s_device_uid = 35000,
+   .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+   .z2s_device_flags = 0,
+   .z2s_device_endpoints_count = 1,
+   .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+
+{ .manufacturer_name = "DIY_george1255", .model_name = "2ch_gate_module",
+  .z2s_device_uid = 35010,
+  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
+  .z2s_device_flags = 0,
+  .z2s_device_endpoints_count = 2,
+  .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+                           { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}}
 
 //DEVICES_END
 };

@@ -3769,9 +3769,14 @@ void Z2S_onLumiCustomClusterReceive(
 
           float lumi_power = 
             *(float *)(attribute->data.value + lumi_em_position);
+          
+          if (z2s_channels_table[channel_number_slot].model_id) == 
+              Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER)
+            lumi_power *= 1000;
+          else lumi_power *= 10;
 
           msgZ2SDeviceElectricityMeter(
-            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, lumi_power * 10); 
+            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, lumi_power); 
         }
       }
 
@@ -4998,15 +5003,11 @@ void Z2S_onAnalogInputReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
-  char ieee_addr_str[24] = {};
-
-  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
-
   log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
         ieee_addr_str, endpoint, attribute->id, attribute->data.size);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    short_addr, endpoint, cluster, 
+    short_addr, -1 /*all endpoints*/, cluster, 
     ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot < 0) {
@@ -5029,8 +5030,7 @@ void Z2S_onAnalogInputReceive(
       switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
-        case Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER:
-        case Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER: {
+        case Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER: {
              
           channel_number_slot = Z2S_findChannelNumberSlot(
             short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
@@ -5044,12 +5044,27 @@ void Z2S_onAnalogInputReceive(
           }
           float ac_power = *(float *)attribute->data.value;
 
-          /*if (z2s_channels_table[channel_number_slot].model_id ==
-              Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER)
-            ac_power *= 10;*/
-
           msgZ2SDeviceElectricityMeter(
             channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, ac_power);
+        } break;
+
+
+        case Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER: {
+             
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, -1 /*all endpoints*/, cluster, 
+            SUPLA_CHANNELTYPE_ELECTRICITY_METER, NO_CUSTOM_CMD_SID);    
+
+          if (channel_number_slot < 0) {
+    
+            log_e(
+              "no EM channel found for address 0x%04X", short_addr);
+            return;
+          }
+          float ac_power = *(float *)attribute->data.value;
+
+          msgZ2SDeviceElectricityMeter(
+            channel_number_slot, Z2S_EM_ACTIVE_POWER_A_SEL, ac_power * 1000);
         } break;
 
         
