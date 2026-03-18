@@ -59,6 +59,12 @@ void initZ2SDeviceVirtualRelay(
 
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER;
       } break;
+
+
+      case Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR: {
+
+        z2s_function = Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER;
+      } break;
     }
     
 

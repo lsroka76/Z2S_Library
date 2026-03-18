@@ -356,6 +356,14 @@
 
 #define CURRYSMARTER_COVER_BACKLIGHT_DP                             0x66
 
+#define TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP                0x01 //ENUM OPEN(0) STOP (1) CLOSE(2)
+#define TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_POSITION_DP             0x09
+#define TUYA_MB60L_SMART_BLINDS_MOTOR_DIRECTION_DP                  0x0B
+#define TUYA_MB60L_SMART_BLINDS_MOTOR_BATTERY_DP                    0x0D
+#define TUYA_MB60L_SMART_BLINDS_MOTOR_SET_LIMITS_DP                 0x10 //UP(0), DOWN(1), RESET(2)
+#define TUYA_MB60L_SMART_BLINDS_MOTOR_CHILD_LOCK_DP                 0x65
+#define TUYA_MB60L_SMART_BLINDS_MOTOR_TILT_MODE_DP                  0x67
+
 #define TUYA_VIBRATION_SENSOR_VIBRATION_DP                          0x01
 #define TUYA_VIBRATION_SENSOR_CONTACT_DP                            0x65
 #define TUYA_VIBRATION_SENSOR_BATTERY_DP                            0x04

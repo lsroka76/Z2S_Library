@@ -258,6 +258,7 @@
 #define Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR        0x4821
 #define Z2S_DEVICE_DESC_MOES_COVER                          0x4822
 #define Z2S_DEVICE_DESC_CURRYSMARTER_COVER                  0x4823
+#define Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR       0x4824
 #define Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE      0x4830
 #define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER                 0x4850
 #define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1               0x4851
@@ -275,6 +276,8 @@
 #define Z2S_DEVICE_DESC_TUYA_SWITCH_4X3                     0x5100
 
 #define Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3                0x5105
+#define Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_1X3                0x5106
+
 #define Z2S_DEVICE_DESC_TUYA_SOS_BUTTON                     0x5110
 
 #define Z2S_DEVICE_DESC_SMART_BUTTON_2F                     0x5150
@@ -2192,6 +2195,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_1X3,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOS_BUTTON,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -2251,6 +2259,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -4852,6 +4865,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
                               { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
+  {	.manufacturer_name = "_TZ3000_5sssic9d", .model_name = "TS0012",
+    .z2s_device_uid = 21305,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
   {	.manufacturer_name = "_TZ3000_jl7qyupf", .model_name = "TS0012",
     .z2s_device_uid = 21400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
@@ -5168,6 +5188,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { { 1, 0, 0, Z2S_DEVICE_DESC_SMART_BUTTON_2F },
                               { 2, 0, 0, Z2S_DEVICE_DESC_SMART_BUTTON_2F }}},*/
+
+  {	.manufacturer_name = "_TZ3000_axpdxqgu", .model_name = "TS0041",
+    .z2s_device_uid = 24350,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_1X3,
+	  .z2s_device_endpoints_count = 1},
 
   //{	.manufacturer_name = "_TZE200_nojsjtj2", .model_name = "TS0601",
   // .z2s_device_uid = 24400,
@@ -5883,7 +5908,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   .z2s_device_flags = 0,
   .z2s_device_endpoints_count = 2,
   .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
-                           { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}}
+                           { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+
+{ .manufacturer_name = "_TZE284_2gi1hy8s", .model_name = "TS0601",
+    .z2s_device_uid = 35100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR,
+    .z2s_device_endpoints_count = 1},
 
 //DEVICES_END
 };

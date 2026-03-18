@@ -1189,6 +1189,7 @@ void processTuyaEF00Switch2x3DataReport(
 
   Z2S_readTuyaDPvalue(Tuya_read_dp_result,
     TUYA_EF00_SWITCH_2X3_BUTTON_1_DP, payload_size, payload);
+
   if (Tuya_read_dp_result.is_success) {
     
     int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
@@ -2245,6 +2246,14 @@ void processMoesShadesDriveMotorDataReport(
         MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP;
       cover_battery_level_dp_id = TUYA_COVER_MOTOR_BATTERY_LEVEL_DP;
     } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR: {
+
+      cover_state_dp_id = TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP;
+      cover_position_dp_id = TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_POSITION_DP;
+      cover_battery_level_dp_id = TUYA_MB60L_SMART_BLINDS_MOTOR_BATTERY_DP;
+    } break;
     
     
     case Z2S_DEVICE_DESC_MOES_COVER:
@@ -3032,6 +3041,7 @@ void processTuyaDataReport(
     break;
 
 
+    case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_1X3:
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
 
       processTuyaEF00Switch2x3DataReport(
@@ -3071,6 +3081,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_MOES_COVER:
     case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
+    case Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR:
 
       processMoesShadesDriveMotorDataReport(
         channel_number_slot, payload_size, payload, model_id); 

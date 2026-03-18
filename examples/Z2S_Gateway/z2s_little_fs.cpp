@@ -163,7 +163,7 @@ bool Z2S_deleteFile(const char* z2s_file_name) {
 int Z2S_getFileSize(const char* z2s_file_name, bool init_fs) {
   
   if (init_fs && (!Z2S_initLittleFs())) {
-    return false;
+    return 0;
   }
 
   char file_name[50] = {};
@@ -179,7 +179,7 @@ int Z2S_getFileSize(const char* z2s_file_name, bool init_fs) {
     if (init_fs)
       Z2S_endLittleFs();
 
-    return false;
+    return 0;
   }
 
   int file_size = file.size();

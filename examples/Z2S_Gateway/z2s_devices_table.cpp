@@ -88,12 +88,26 @@ void devices_table_full_error_func() {
 /*****************************************************************************/
 
 uint32_t Z2S_getChannelsTableSize() {
-  uint32_t _z2s_channels_table_size;
+  
+  /*uint32_t _z2s_channels_table_size;
   if (Supla::Storage::ConfigInstance()->getUInt32(
         Z2S_CHANNELS_TABLE_SIZE_ID, &_z2s_channels_table_size))
     return _z2s_channels_table_size;
   else
-    return 0;
+    return 0;*/
+
+  Z2S_initLittleFs();
+
+  uint32_t _z2s_channels_table_size = Z2S_getFileSize(
+    Z2S_CHANNELS_TABLE_ID_V2, false);
+
+  if (_z2s_channels_table_size == 0)
+    _z2s_channels_table_size = Z2S_getFileSize(
+    Z2S_CHANNELS_TABLE_BACKUP_ID_V2, false);
+
+  Z2S_endLittleFs();
+
+  return _z2s_channels_table_size;
 }
 
 /*****************************************************************************/
@@ -710,7 +724,8 @@ bool Z2S_loadChannelsTable() {
         return false;
       } else { 
 
-        if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_CHANNELS_TABLE_SIZE_ID, sizeof(z2s_channels_table))) {
+        return true;  
+        /*if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_CHANNELS_TABLE_SIZE_ID, sizeof(z2s_channels_table))) {
           
           Supla::Storage::ConfigInstance()->commit();
           return true;
@@ -718,7 +733,7 @@ bool Z2S_loadChannelsTable() {
           
           log_i ("Channels table size write failed!");
           return false;
-        }
+        }*/
       }
   } else {
 
@@ -1106,7 +1121,8 @@ bool Z2S_saveChannelsTable() {
     return false;
   } else { 
     
-    if (Supla::Storage::ConfigInstance()->setUInt32(
+    return true;
+    /*if (Supla::Storage::ConfigInstance()->setUInt32(
           Z2S_CHANNELS_TABLE_SIZE_ID, 
           sizeof(z2s_channels_table))) {
 
@@ -1115,15 +1131,15 @@ bool Z2S_saveChannelsTable() {
 
       Supla::Storage::ConfigInstance()->commit();
 
-      /*save_mutex = 0; */
+      //save_mutex = 0;
       return true;
 
     } else { 
 
       log_i("Channels table size write failed!");
-      /*save_mutex = 0; */
+      //save_mutex = 0;
       return false;
-    }
+    }*/
   }
 }
 
@@ -1604,13 +1620,25 @@ void Z2S_printZbDevicesTableSlots(bool toTelnet) {
 
 uint32_t Z2S_getZbDevicesTableSize() {
   
-  uint32_t _z2s_zb_devices_table_size;
+  /*uint32_t _z2s_zb_devices_table_size;
   
   if (Supla::Storage::ConfigInstance()->getUInt32(
     Z2S_ZB_DEVICES_TABLE_SIZE, &_z2s_zb_devices_table_size))
     return _z2s_zb_devices_table_size;
   else
-    return 0;
+    return 0;*/
+  Z2S_initLittleFs();
+
+  uint32_t _z2s_zb_devices_table_size = Z2S_getFileSize(
+    Z2S_ZB_DEVICES_TABLE_ID_V2, false);
+
+  if (_z2s_zb_devices_table_size == 0)
+    _z2s_zb_devices_table_size = Z2S_getFileSize(
+    Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2, false);
+
+  Z2S_endLittleFs();
+
+  return _z2s_zb_devices_table_size;
 }
 
 /*****************************************************************************/
@@ -1635,13 +1663,20 @@ bool Z2S_loadZbDevicesTable() {
       
       memset(z2s_zb_devices_table, 0, sizeof(z2s_zb_devices_table));
               
-      if (!Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
-          (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
+      bool save_result = Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
+          (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table));
+
+      bool backup_result = Z2S_saveFile(Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2, 
+          (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table));
+          
+      if (!(save_result || backup_result)) {
 
         log_i ("Zigbee devices table write failed!");
         return false;
       } else { 
-        if (Supla::Storage::ConfigInstance()->setUInt32(
+
+        return true;
+        /*if (Supla::Storage::ConfigInstance()->setUInt32(
               Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
 
           Supla::Storage::ConfigInstance()->commit();
@@ -1650,7 +1685,7 @@ bool Z2S_loadZbDevicesTable() {
 
           log_i ("Zigbee devices table size write failed!");
           return false;
-        }
+        }*/
       }
   } else {
 
@@ -1871,40 +1906,46 @@ bool Z2S_loadZbDevicesTable() {
     }//end of failed size comparison
     else {
       
-        if (
-          !Z2S_loadFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
-          (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table))) {
+      bool load_result = Z2S_loadFile(Z2S_ZB_DEVICES_TABLE_ID_V2, 
+        (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table));
+        
+      if (!load_result) 
+        load_result = Z2S_loadFile(Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2, 
+        (uint8_t *)z2s_zb_devices_table, sizeof(z2s_zb_devices_table));
+      
+      if (!load_result) {
+        
+        log_i("Zigbee devices table load failed!");
+        return false;
+      } else {
+        
+        log_i("Zigbee devices table load success!");
+
+        for (uint8_t table_index = 0; 
+              table_index < Z2S_ZB_DEVICES_MAX_NUMBER; table_index++) {
           
-          log_i("Zigbee devices table load failed!");
-          return false;
-        } else {
-          log_i("Zigbee devices table load success!");
+          switch (z2s_zb_devices_table[table_index].record_id) {
 
-          for (uint8_t table_index = 0; 
-               table_index < Z2S_ZB_DEVICES_MAX_NUMBER; table_index++) {
-            
-            switch (z2s_zb_devices_table[table_index].record_id) {
+            case 1: 
+            case 2: {
 
-              case 1: 
-              case 2: {
+                log_e("Critical error - since 0.9.31 we never should landed here!");
+                continue;
+            } break;
 
-                  log_e("Critical error - since 0.9.31 we never should landed here!");
-                  continue;
-              } break;
+            case 3: {
 
-              case 3: {
+              if (!Z2S_updateZbDeviceUidIdx(table_index, nullptr, nullptr)) {
 
-                if (!Z2S_updateZbDeviceUidIdx(table_index, nullptr, nullptr)) {
-
-                  log_e("Critical error - couldn't get devices list idx!");
-                  continue;
-                }
-              } break;
-            }
+                log_e("Critical error - couldn't get devices list idx!");
+                continue;
+              }
+            } break;
           }
-          //Z2S_printZbDevicesTableSlots();
-          return true;
         }
+        //Z2S_printZbDevicesTableSlots();
+        return true;
+      }
     }
   }
 }
@@ -1917,9 +1958,16 @@ bool Z2S_saveZbDevicesTable() {
 
   save_mutex = 1;*/
 
-  if (!Z2S_saveFile(
+  bool save_result = Z2S_saveFile(
     Z2S_ZB_DEVICES_TABLE_ID_V2, (uint8_t *)z2s_zb_devices_table, 
-    sizeof(z2s_zb_devices_table))) {
+    sizeof(z2s_zb_devices_table));
+
+  bool backup_result = Z2S_saveFile(
+    Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2, (uint8_t *)z2s_zb_devices_table, 
+    sizeof(z2s_zb_devices_table));
+     
+    
+  if (!(save_result || backup_result)) {
 
     log_i ("Zigbee devices table write failed!");
 
@@ -1927,8 +1975,9 @@ bool Z2S_saveZbDevicesTable() {
     return false;
   }
   else { 
-    
-    if (Supla::Storage::ConfigInstance()->setUInt32(
+
+    return true;  
+    /*if (Supla::Storage::ConfigInstance()->setUInt32(
       Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
 
       log_i(
@@ -1937,7 +1986,7 @@ bool Z2S_saveZbDevicesTable() {
 
       Supla::Storage::ConfigInstance()->commit();
 
-      /*save_mutex = 0; */
+      //save_mutex = 0; 
       return true;
     }
     else { 
@@ -1946,7 +1995,7 @@ bool Z2S_saveZbDevicesTable() {
 
       //save mutex = 0;
       return false;
-    }
+    }*/
   }
 }
 
@@ -6867,6 +6916,7 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/     
 
+      case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_1X3:
       case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3: {
 
         static const char *button_name_function[] =  {  
@@ -8102,6 +8152,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
       case Z2S_DEVICE_DESC_MOES_COVER:
       case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
+      case Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR:
 
         addZ2SDeviceVirtualRelay(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
@@ -9368,6 +9419,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2:
+    case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_1X3:
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
@@ -9397,6 +9449,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_MOES_COVER:
     case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
+    case Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR:
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
     case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
@@ -9471,7 +9524,20 @@ void Z2S_buildSuplaChannels(
         joined_device, TUYA_CUSTOM_CMD_BUTTON_2_DOUBLE_PRESSED_SID);
 
       Z2S_addZ2SDevice(joined_device, TUYA_CUSTOM_CMD_BUTTON_2_HELD_SID);
-      } break;
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_1X3: {
+      
+      Z2S_addZ2SDevice(joined_device, TUYA_CUSTOM_CMD_BUTTON_1_PRESSED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_CUSTOM_CMD_BUTTON_1_DOUBLE_PRESSED_SID);
+
+      Z2S_addZ2SDevice(joined_device, TUYA_CUSTOM_CMD_BUTTON_1_HELD_SID);
+    } break;
+
 
 /*****************************************************************************/
     

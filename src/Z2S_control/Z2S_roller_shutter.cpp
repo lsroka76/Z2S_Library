@@ -101,13 +101,23 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
       case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER: {
 
 
-        sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP,0x02);
+        sendTuyaRequestCmdEnum8(
+          &zbGateway, &_device, MOES_COVER_STATE_DP,0x02);
       } break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
-        sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP, 0x02);
+        sendTuyaRequestCmdEnum8(
+          &zbGateway, &_device, MOES_COVER_STATE_DP, 0x02);
+      } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER: {
+
+        sendTuyaRequestCmdEnum8(
+          &zbGateway, &_device, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
+          0x00);
       } break;
 
 
@@ -168,6 +178,14 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
       } break;
 
 
+      case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER: {
+
+        sendTuyaRequestCmdEnum8(
+          &zbGateway, &_device, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
+          0x02);
+      } break;
+
+
       case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE: {
 
         float lift_cmd = 0;
@@ -212,6 +230,14 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
         sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP, 0x00);
+      } break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER: {
+
+        sendTuyaRequestCmdEnum8(
+          &zbGateway, &_device, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
+          0x01);
       } break;
 
 
@@ -268,14 +294,11 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
           }
         }
 
-        log_i("lift_percentage %u\n\r"
-              "_rs_target_position %d\n\r"
-              "_rs_current_position %d\n\r"
-              "newTargetPositionAvailable %d",
-              lift_percentage,
-              _rs_target_position,
-              _rs_current_position,
-              newTargetPositionAvailable); 
+        log_i(
+          "lift_percentage %u\n\r_rs_target_position %d\n\r"
+          "_rs_current_position %d\n\rnewTargetPositionAvailable %d",
+          lift_percentage, _rs_target_position, _rs_current_position,
+          newTargetPositionAvailable); 
 
         
         zbGateway.sendWindowCoveringCmd(
@@ -316,6 +339,15 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
       } break;
 
 
+      case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER: {
+
+        sendTuyaRequestCmdValue32(
+          &zbGateway, &_device, 
+          TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_POSITION_DP, 
+          100 - lift_percentage);
+      } break;
+
+
       case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE: {
 
         float lift_float = 100 - lift_percentage;
@@ -349,6 +381,7 @@ void Supla::Control::Z2S_RollerShutter::ping() {
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR:
       case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER:
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER:
+      case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER:
 
         sendTuyaQueryCmd(&zbGateway, &_device);
       break;

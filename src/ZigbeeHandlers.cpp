@@ -16,26 +16,74 @@ extern "C" {
 //&& CONFIG_ZB_ENABLED
 #if CONFIG_ZB_ENABLED
 
+
+static uint16_t s_ota_image_type;
+static uint16_t s_ota_manuf_code;
+static uint32_t s_ota_image_offset = 0;
+static uint32_t s_ota_image_size = 0;
+static const uint8_t *s_ota_image_start = NULL;
+
 // forward declaration of all implemented handlers
-static esp_err_t zb_attribute_set_handler(const esp_zb_zcl_set_attr_value_message_t *message);
-static esp_err_t zb_attribute_reporting_handler(const esp_zb_zcl_report_attr_message_t *message);
-static esp_err_t zb_cmd_read_attr_resp_handler(const esp_zb_zcl_cmd_read_attr_resp_message_t *message);
-static esp_err_t zb_cmd_write_attr_resp_handler(const esp_zb_zcl_cmd_write_attr_resp_message_t *message);
-static esp_err_t zb_configure_report_resp_handler(const esp_zb_zcl_cmd_config_report_resp_message_t *message);
-static esp_err_t zb_cmd_read_report_cfg_resp_handler(const esp_zb_zcl_cmd_read_report_config_resp_message_t *message);
-static esp_err_t zb_cmd_default_resp_handler(const esp_zb_zcl_cmd_default_resp_message_t *message);
-static esp_err_t zb_cmd_ias_zone_enroll_request_handler(const esp_zb_zcl_ias_zone_enroll_request_message_t *message);
-static esp_err_t zb_cmd_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message);
-static esp_err_t zb_core_cmd_disc_attr_resp_handler(esp_zb_zcl_cmd_discover_attributes_resp_message_t *message);
-static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_command_message_t *message);
-static esp_err_t zb_zcl_group_operation_resp(esp_zb_zcl_groups_operate_group_resp_message_t message);
+static esp_err_t zb_attribute_set_handler(
+  const esp_zb_zcl_set_attr_value_message_t *message);
+
+static esp_err_t zb_attribute_reporting_handler(
+  const esp_zb_zcl_report_attr_message_t *message);
+
+static esp_err_t zb_cmd_read_attr_resp_handler(
+  const esp_zb_zcl_cmd_read_attr_resp_message_t *message);
+
+static esp_err_t zb_cmd_write_attr_resp_handler(
+  const esp_zb_zcl_cmd_write_attr_resp_message_t *message);
+
+static esp_err_t zb_configure_report_resp_handler(
+  const esp_zb_zcl_cmd_config_report_resp_message_t *message);
+
+static esp_err_t zb_cmd_read_report_cfg_resp_handler(
+  const esp_zb_zcl_cmd_read_report_config_resp_message_t *message);
+
+static esp_err_t zb_cmd_default_resp_handler(
+  const esp_zb_zcl_cmd_default_resp_message_t *message);
+
+static esp_err_t zb_cmd_ias_zone_enroll_request_handler(
+  const esp_zb_zcl_ias_zone_enroll_request_message_t *message);
+
+static esp_err_t zb_cmd_ias_zone_status_change_handler(
+  const esp_zb_zcl_ias_zone_status_change_notification_message_t *message);
+
+static esp_err_t zb_core_cmd_disc_attr_resp_handler(
+  esp_zb_zcl_cmd_discover_attributes_resp_message_t *message);
+
+static esp_err_t zb_cmd_custom_cluster_req_handler(
+  esp_zb_zcl_custom_cluster_command_message_t *message);
+
+static esp_err_t zb_zcl_group_operation_resp(
+  esp_zb_zcl_groups_operate_group_resp_message_t message);
+
+static esp_err_t zb_window_covering_movement_resp_handler(
+  const esp_zb_zcl_window_covering_movement_message_t *message);
+
+static esp_err_t zb_ota_upgrade_server_status_handler(
+  const esp_zb_zcl_ota_upgrade_server_status_message_t *message);
+
+static esp_err_t zb_ota_upgrade_server_query_image_handler(
+  const esp_zb_zcl_ota_upgrade_server_query_image_message_t *message);
+
+
+/*static esp_err_t zb_ota_upgrade_status_handler(
+  const esp_zb_zcl_ota_upgrade_value_message_t *message);
+
+static esp_err_t zb_ota_upgrade_query_image_resp_handler(
+  const esp_zb_zcl_ota_upgrade_query_image_resp_message_t *message);*/
+
 static bool zb_raw_cmd_handler(uint8_t bufid); 
 //static uint8_t zb_broadcast_ep_handler(uint8_t bufid); 
 //static void set_zb_broadcast_ep_handler2();
 
 // Zigbee action handlers
 [[maybe_unused]]
-static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id, const void *message) {
+static esp_err_t zb_action_handler(
+  esp_zb_core_action_callback_id_t callback_id, const void *message) {
   
   esp_err_t ret = ESP_OK;
   
@@ -46,73 +94,134 @@ static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id,
 
     case ESP_ZB_CORE_SET_ATTR_VALUE_CB_ID:         
       
-      ret = zb_attribute_set_handler((esp_zb_zcl_set_attr_value_message_t *)message); break;
+      ret = zb_attribute_set_handler(
+        (esp_zb_zcl_set_attr_value_message_t *)message); 
+    break;
 
 
     case ESP_ZB_CORE_REPORT_ATTR_CB_ID:            
       
-      ret = zb_attribute_reporting_handler((esp_zb_zcl_report_attr_message_t *)message); break;
+      ret = zb_attribute_reporting_handler(
+        (esp_zb_zcl_report_attr_message_t *)message); 
+    break;
 
 
     case ESP_ZB_CORE_CMD_READ_ATTR_RESP_CB_ID:        
       
-      ret = zb_cmd_read_attr_resp_handler((esp_zb_zcl_cmd_read_attr_resp_message_t *)message); break;
+      ret = zb_cmd_read_attr_resp_handler(
+        (esp_zb_zcl_cmd_read_attr_resp_message_t *)message); 
+    break;
     
     
     case ESP_ZB_CORE_CMD_WRITE_ATTR_RESP_CB_ID:       
       
-      ret = zb_cmd_write_attr_resp_handler((esp_zb_zcl_cmd_write_attr_resp_message_t *)message); break;
+      ret = zb_cmd_write_attr_resp_handler(
+        (esp_zb_zcl_cmd_write_attr_resp_message_t *)message); 
+    break;
     
     
     case ESP_ZB_CORE_CMD_REPORT_CONFIG_RESP_CB_ID:    
     
-      ret = zb_configure_report_resp_handler((esp_zb_zcl_cmd_config_report_resp_message_t *)message); break;
+      ret = zb_configure_report_resp_handler(
+        (esp_zb_zcl_cmd_config_report_resp_message_t *)message); 
+    break;
     
     
     case ESP_ZB_CORE_CMD_READ_REPORT_CFG_RESP_CB_ID:  
       
-      ret = zb_cmd_read_report_cfg_resp_handler((esp_zb_zcl_cmd_read_report_config_resp_message_t *)message); break;
+      ret = zb_cmd_read_report_cfg_resp_handler(
+        (esp_zb_zcl_cmd_read_report_config_resp_message_t *)message);
+    break;
     
     
     case ESP_ZB_CORE_CMD_DEFAULT_RESP_CB_ID:          
       
-      ret = zb_cmd_default_resp_handler((esp_zb_zcl_cmd_default_resp_message_t *)message); break;
+      ret = zb_cmd_default_resp_handler(
+        (esp_zb_zcl_cmd_default_resp_message_t *)message); 
+    break;
     
     
     case ESP_ZB_CORE_CMD_DISC_ATTR_RESP_CB_ID:	      
       
-      ret = zb_core_cmd_disc_attr_resp_handler((esp_zb_zcl_cmd_discover_attributes_resp_message_t *)message); break;	
+      ret = zb_core_cmd_disc_attr_resp_handler(
+        (esp_zb_zcl_cmd_discover_attributes_resp_message_t *)message); 
+    break;	
     
     
     case ESP_ZB_CORE_CMD_IAS_ZONE_ZONE_ENROLL_REQUEST_ID:
     
-      ret = zb_cmd_ias_zone_enroll_request_handler((esp_zb_zcl_ias_zone_enroll_request_message_t *)message); break;
+      ret = zb_cmd_ias_zone_enroll_request_handler(
+        (esp_zb_zcl_ias_zone_enroll_request_message_t *)message); 
+    break;
     
     
     case ESP_ZB_CORE_CMD_IAS_ZONE_ZONE_STATUS_CHANGE_NOT_ID: 
       
-      ret = zb_cmd_ias_zone_status_change_handler((esp_zb_zcl_ias_zone_status_change_notification_message_t *)message); break;
+      ret = zb_cmd_ias_zone_status_change_handler(
+        (esp_zb_zcl_ias_zone_status_change_notification_message_t *)message); 
+    break;
     
     
     case ESP_ZB_CORE_CMD_CUSTOM_CLUSTER_REQ_CB_ID:    
       
-      ret = zb_cmd_custom_cluster_req_handler((esp_zb_zcl_custom_cluster_command_message_t *)message); break;
+      ret = zb_cmd_custom_cluster_req_handler(
+        (esp_zb_zcl_custom_cluster_command_message_t *)message); 
+    break;
     
     
     case ESP_ZB_CORE_CMD_CUSTOM_CLUSTER_RESP_CB_ID:   
       
-      ret = zb_cmd_custom_cluster_req_handler((esp_zb_zcl_custom_cluster_command_message_t *)message); break;
+      ret = zb_cmd_custom_cluster_req_handler(
+        (esp_zb_zcl_custom_cluster_command_message_t *)message); 
+    break;
 
     
     case ESP_ZB_CORE_CMD_OPERATE_GROUP_RESP_CB_ID:
 
-        ret = zb_zcl_group_operation_resp(*(esp_zb_zcl_groups_operate_group_resp_message_t *)message);
-        break;
+      ret = zb_zcl_group_operation_resp(
+        *(esp_zb_zcl_groups_operate_group_resp_message_t *)message);
+    break;
     
     
+    case ESP_ZB_CORE_WINDOW_COVERING_MOVEMENT_CB_ID:
+
+      ret = zb_window_covering_movement_resp_handler(
+        (esp_zb_zcl_window_covering_movement_message_t *)message);
+    break;
+
+
+    /*case ESP_ZB_CORE_OTA_UPGRADE_VALUE_CB_ID: 
+    
+      ret = zb_ota_upgrade_status_handler(
+        (esp_zb_zcl_ota_upgrade_value_message_t *)message); 
+    break;
+
+
+    case ESP_ZB_CORE_OTA_UPGRADE_QUERY_IMAGE_RESP_CB_ID:
+
+      ret = zb_ota_upgrade_query_image_resp_handler(
+        (esp_zb_zcl_ota_upgrade_query_image_resp_message_t *)message);
+    break;*/
+
+
+    case ESP_ZB_CORE_OTA_UPGRADE_SRV_STATUS_CB_ID:
+
+      ret = zb_ota_upgrade_server_status_handler(
+        (esp_zb_zcl_ota_upgrade_server_status_message_t *)message);
+    break;
+
+
+    case ESP_ZB_CORE_OTA_UPGRADE_SRV_QUERY_IMAGE_CB_ID:
+
+      ret = zb_ota_upgrade_server_query_image_handler(
+        (esp_zb_zcl_ota_upgrade_server_query_image_message_t *)message);
+    break;
+
+
     default:                                       
       
-      log_w("Receive unhandled Zigbee action(0x%x) callback", callback_id); break;
+      log_w("Receive unhandled Zigbee action(0x%x) callback", callback_id); 
+    break;
   }
   return ret;
 }
@@ -426,25 +535,31 @@ static esp_err_t zb_cmd_ias_zone_enroll_request_handler(const esp_zb_zcl_ias_zon
   return ESP_OK;
 }
 
-static esp_err_t zb_cmd_ias_zone_status_change_handler(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {
+static esp_err_t zb_cmd_ias_zone_status_change_handler(
+  const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {
+
    if (!message) {
     log_e("Empty message");
     return ESP_FAIL;
   }
+
   if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
     log_e("Received message: error status(%d)", message->info.status);
     return ESP_ERR_INVALID_ARG;
   }
+
   log_v(
-    "IAS Zone Status Notification: from address(0x%x) src endpoint(%d) to dst endpoint(%d) cluster(0x%x), zone status (0x%x), extended status (0x%x), zone id (0x%x), delay (0x%x)", 
-    message->info.src_address.u.short_addr, message->info.src_endpoint, message->info.dst_endpoint, message->info.cluster, message->zone_status, message->extended_status,
-    message->zone_id, message->delay); 
+    "IAS Zone Status Notification: from address(0x%x) src endpoint(%d) to "
+    "dst endpoint(%d) cluster(0x%x), zone status (0x%x), extended status "
+    "(0x%x), zone id (0x%x), delay (0x%x)", 
+    message->info.src_address.u.short_addr, message->info.src_endpoint, 
+    message->info.dst_endpoint, message->info.cluster, message->zone_status,
+     message->extended_status, message->zone_id, message->delay); 
 
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (true /*message->info.dst_endpoint == (*it)->getEndpoint()*/) {
         
 	      (*it)->zbIASZoneStatusChangeNotification(message);
-	
     }
   }
   return ESP_OK;
@@ -476,6 +591,7 @@ static esp_err_t zb_core_cmd_disc_attr_resp_handler(esp_zb_zcl_cmd_discover_attr
 }
 
 static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_command_message_t *message) {
+  
   if (!message) {
     log_e("Empty message");
     return ESP_FAIL;
@@ -508,23 +624,133 @@ static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_com
 static esp_err_t zb_zcl_group_operation_resp(esp_zb_zcl_groups_operate_group_resp_message_t message)
 {
     esp_err_t ret = ESP_OK;
+
     if (message.info.status == ESP_ZB_ZCL_STATUS_SUCCESS) {
-        switch (message.info.command.id) {
+
+      switch (message.info.command.id) {
+
+
         case ESP_ZB_ZCL_CMD_GROUPS_ADD_GROUP:
-            log_i("Succeed in adding endpoint: %d to group: %d", message.info.src_endpoint, message.group_id);
-            break;
+
+          log_i(
+            "Succeed in adding endpoint: %d to group: %d", 
+            message.info.src_endpoint, message.group_id);
+        break;
+
+
         case ESP_ZB_ZCL_CMD_GROUPS_REMOVE_GROUP:
-            log_i("Succeed in removing endpoint: %d from group: %d", message.info.src_endpoint, message.group_id);
-            break;
+
+          log_i(
+            "Succeed in removing endpoint: %d from group: %d", 
+            message.info.src_endpoint, message.group_id);
+        break;
+
+
         default:
-            log_i("Unknown response command: %d", message.info.command.id);
-            break;
-        }
+
+          log_i("Unknown response command: %d", message.info.command.id);
+        break;
+      }
     } else {
-        log_i("Failed to operate group with error code: %d", message.info.status);
+      
+      log_i("Failed to operate group with error code: %d", message.info.status);
     }
     return ret;
 }
+
+static esp_err_t zb_window_covering_movement_resp_handler(
+  const esp_zb_zcl_window_covering_movement_message_t *message) {
+
+  if (!message) {
+    
+    log_e("Empty message");
+    return ESP_FAIL;
+  }
+
+  if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
+    log_e("Received message: error status(%d)", message->info.status);
+    return ESP_ERR_INVALID_ARG;
+  }
+
+  log_v(
+    "Received message: endpoint(%d), cluster(0x%x), command(0x%x), payload(%d)", 
+    message->info.dst_endpoint, message->info.cluster, message->command,
+    message->payload);
+
+  // List through all Zigbee EPs and call the callback function, with the message
+  for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+    if (message->info.dst_endpoint == (*it)->getEndpoint()) {
+      //(*it)->zbWindowCoveringMovementCmd(message);  //method zbWindowCoveringMovementCmd must be implemented in specific EP class
+    }
+  }
+  return ESP_OK;
+}
+
+static esp_err_t zb_ota_upgrade_server_status_handler(
+  const esp_zb_zcl_ota_upgrade_server_status_message_t *message) {
+    
+  if (!message) {
+    
+    log_e("Empty message");
+    return ESP_FAIL;
+  }
+
+  if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
+    log_e("Received message: error status(%d)", message->info.status);
+    return ESP_FAIL;
+  }
+
+  log_i("OTA client address: 0x%x", message->zcl_addr.u.short_addr);
+  log_i("OTA version: 0x%lx, image type: 0x%x, server status: %d", 
+    message->version, message->image_type, message->server_status);
+
+  if (message->upgrade_time) {
+      
+      log_i("OTA upgrade time: 0x%lx", message->upgrade_time);
+  }
+  if (message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_ABORTED || 
+      message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_END) {
+      //s_ota_image_offset = 0;
+  }
+  return ESP_OK;
+}
+
+static esp_err_t zb_ota_upgrade_server_query_image_handler(
+  const esp_zb_zcl_ota_upgrade_server_query_image_message_t *message)
+{
+  if (!message) {
+    
+    log_e("Empty message");
+    return ESP_FAIL;
+  }
+
+  if (message->info.status != ESP_ZB_ZCL_STATUS_SUCCESS) {
+    log_e("Received message: error status(%d)", message->info.status);
+    return ESP_FAIL;
+  }
+
+  log_i("OTA upgrade server query image");
+  log_i("OTA client address: 0x%x", message->zcl_addr.u.short_addr);
+  log_i(
+    "OTA version: 0x%lx, image type: 0x%x, manufacturer code: %x, ", 
+    message->version, message->image_type, message->manufacturer_code);
+    
+    if (message->table_idx) {
+
+        log_i("OTA table index: 0x%x", message->table_idx);
+    }
+
+    if (message->image_type != s_ota_image_type || 
+        message->manufacturer_code != s_ota_manuf_code) {
+          
+      log_i("OTA query image mismatch");
+      return ESP_ERR_NOT_FOUND;
+    }
+
+    s_ota_image_offset = 0;
+    return ESP_OK;
+}
+
 #endif  //SOC_IEEE802154_SUPPORTED && CONFIG_ZB_ENABLED
 
 
