@@ -1751,10 +1751,10 @@ void buildDevicesTabGUI() {
 		Control::Type::Label, PSTR("Status"), working_str, 
 		Control::Color::Alizarin, remove_device_and_channels_button);
 
-	start_zigbee_ota_button = ESPUI.addControl(
+	/*start_zigbee_ota_button = ESPUI.addControl(
 		Control::Type::Button, PSTR(empty_str), 
 		PSTR("Start OTA (highly experimental!!!!)"), 
-		Control::Color::Alizarin, devicestab, startDeviceOTACallback); 
+		Control::Color::Alizarin, devicestab, startDeviceOTACallback); */
 
 
 	enableDeviceControls(false);
