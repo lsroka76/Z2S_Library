@@ -3,6 +3,19 @@
 //&& CONFIG_ZB_ENABLED
 #if CONFIG_ZB_ENABLED
 
+static uint16_t s_ota_image_type;
+static uint16_t s_ota_manuf_code;
+static uint32_t s_ota_image_offset = 0;
+static uint32_t s_ota_image_size = 0;
+static uint8_t s_ota_image_start[256];
+
+esp_zb_zcl_ota_upgrade_server_variable_t ota_server_variable = {
+    .query_jitter = OTA_UPGRADE_QUERY_JITTER,
+    .current_time = OTA_UPGRADE_CURRENT_TIME,
+    .file_count = OTA_UPGRADE_IMAGE_COUNT,
+};
+
+
 // Initialize the static instance of the class
 ZigbeeGateway *ZigbeeGateway::_instance = nullptr;
 
@@ -118,20 +131,17 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   _cluster_list = esp_zb_zcl_cluster_list_create();
 
   esp_zb_attribute_list_t *basic_cluster = 
-  esp_zb_basic_cluster_create(&(gateway_cfg.basic_cfg));
+    esp_zb_basic_cluster_create(&(gateway_cfg.basic_cfg));
 
   esp_zb_cluster_list_add_basic_cluster(
-    _cluster_list, basic_cluster, 
-    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+    _cluster_list, basic_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_basic_cluster(
-    _cluster_list, 
-    esp_zb_basic_cluster_create(NULL), 
+    _cluster_list, esp_zb_basic_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_identify_cluster(
-    _cluster_list, 
-    esp_zb_identify_cluster_create(NULL), 
+    _cluster_list, esp_zb_identify_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_identify_cluster(
@@ -140,48 +150,39 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_power_config_cluster(
-    _cluster_list, 
-    esp_zb_power_config_cluster_create(NULL), 
+    _cluster_list, esp_zb_power_config_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_scenes_cluster(
-    _cluster_list, 
-    esp_zb_scenes_cluster_create(NULL), 
+    _cluster_list, esp_zb_scenes_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_groups_cluster(
-    _cluster_list, 
-    esp_zb_groups_cluster_create(NULL), 
+    _cluster_list, esp_zb_groups_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_scenes_cluster(
-    _cluster_list, 
-    esp_zb_scenes_cluster_create(&scenes_cfg), 
+    _cluster_list, esp_zb_scenes_cluster_create(&scenes_cfg), 
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_groups_cluster(
-    _cluster_list, 
-    esp_zb_groups_cluster_create(&groups_cfg), 
+    _cluster_list, esp_zb_groups_cluster_create(&groups_cfg), 
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_level_cluster(
-    _cluster_list, 
-    esp_zb_level_cluster_create(NULL), 
+    _cluster_list, esp_zb_level_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_level_cluster(
-    _cluster_list, 
-    esp_zb_level_cluster_create(&level_cfg), 
+    _cluster_list, esp_zb_level_cluster_create(&level_cfg), 
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_color_control_cluster(
-    _cluster_list, 
-    esp_zb_color_control_cluster_create(NULL), 
+    _cluster_list, esp_zb_color_control_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_color_control_cluster(
-    _cluster_list, 
-    esp_zb_color_control_cluster_create(&color_control_cfg), 
+    _cluster_list, esp_zb_color_control_cluster_create(&color_control_cfg), 
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
 
@@ -196,236 +197,223 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
     esp_zb_zcl_attr_list_create(ESP_ZB_ZCL_CLUSTER_ID_TIME);
 
   esp_err_t ret = esp_zb_time_cluster_add_attr(
-    time_cluster_server, 
-    ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, 
+    time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ZONE_ID, 
     (void *)&time_zone);
 
    if (ret != ESP_OK) {
-     log_e("Failed to add time zone attribute: 0x%x: %s", 
-           ret, esp_err_to_name(ret));
+     log_e(
+      "Failed to add time zone attribute: 0x%x: %s", ret, 
+      esp_err_to_name(ret));
    }
   ret = esp_zb_time_cluster_add_attr(
-    time_cluster_server, 
-    ESP_ZB_ZCL_ATTR_TIME_TIME_ID, 
-    (void *)&utc_time);
+    time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_ID, (void *)&utc_time);
 
   if (ret != ESP_OK) {
-    log_e("Failed to add time attribute: 0x%x: %s", 
-          ret, esp_err_to_name(ret));
+    log_e(
+      "Failed to add time attribute: 0x%x: %s", ret, esp_err_to_name(ret));
   }
 
   ret = esp_zb_time_cluster_add_attr(
-    time_cluster_server, 
-    ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, 
+    time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, 
     (void *)&time_status);
 
   if (ret != ESP_OK) {
-    log_e("Failed to add time status attribute: 0x%x: %s", 
-          ret, esp_err_to_name(ret));
+    log_e(
+      "Failed to add time status attribute: 0x%x: %s", ret, 
+      esp_err_to_name(ret));
   }
 
   ret = esp_zb_time_cluster_add_attr(
-    time_cluster_server, 
-    ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, 
+    time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, 
     (void *)&local_time);
 
   if (ret != ESP_OK) {
-    log_e("Failed to add time local time attribute: 0x%x: %s", 
-          ret, esp_err_to_name(ret));
+    log_e(
+      "Failed to add time local time attribute: 0x%x: %s", ret, 
+      esp_err_to_name(ret));
   }
   ret = esp_zb_time_cluster_add_attr(
-    time_cluster_server, 
-    ESP_ZB_ZCL_ATTR_TIME_DST_START_ID, 
+    time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_DST_START_ID, 
     (void *)&dst_start);
 
   if (ret != ESP_OK) {
-    log_e("Failed to add time local time attribute: 0x%x: %s",
-          ret, esp_err_to_name(ret));
+    log_e(
+      "Failed to add time local time attribute: 0x%x: %s",ret, 
+      esp_err_to_name(ret));
   }
 
   ret = esp_zb_time_cluster_add_attr(
-    time_cluster_server, 
-    ESP_ZB_ZCL_ATTR_TIME_DST_END_ID, 
-    (void *)&dst_end);
+    time_cluster_server, ESP_ZB_ZCL_ATTR_TIME_DST_END_ID, (void *)&dst_end);
 
   if (ret != ESP_OK) {
-    log_e("Failed to add time local time attribute: 0x%x: %s", 
-          ret, esp_err_to_name(ret));
+    log_e(
+      "Failed to add time local time attribute: 0x%x: %s", ret, 
+      esp_err_to_name(ret));
   }
   // Add time clusters to cluster list
   ret = esp_zb_cluster_list_add_time_cluster(
-    _cluster_list, 
-    time_cluster_server, 
-    ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+    _cluster_list, time_cluster_server, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   
   if (ret != ESP_OK) {
-    log_e("Failed to add time cluster (server role): 0x%x: %s", 
-          ret, esp_err_to_name(ret));
+    log_e(
+      "Failed to add TIME cluster (server role): 0x%x: %s", ret, 
+      esp_err_to_name(ret));
+  }
+
+  esp_zb_attribute_list_t *ota_cluster = esp_zb_zcl_attr_list_create(
+    ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE);
+
+  ret = esp_zb_ota_cluster_add_attr(
+    ota_cluster, ESP_ZB_ZCL_ATTR_OTA_UPGRADE_SERVER_DATA_ID, 
+    (void *)&ota_server_variable);
+
+  if (ret != ESP_OK) {
+    log_e(
+      "Failed to add OTA upgrade server data attribute: 0x%x: %s", ret, 
+      esp_err_to_name(ret));
+  }
+
+  ret = esp_zb_cluster_list_add_ota_cluster(
+    _cluster_list, ota_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  if (ret != ESP_OK) {
+    log_e(
+      "Failed to add OTA cluster (server role): 0x%x: %s", ret, 
+      esp_err_to_name(ret));
   }
 
   esp_zb_cluster_list_add_ias_zone_cluster(
-    _cluster_list, 
-    esp_zb_ias_zone_cluster_create(NULL), 
+    _cluster_list, esp_zb_ias_zone_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_temperature_meas_cluster(
-    _cluster_list, 
-    esp_zb_temperature_meas_cluster_create(NULL), 
+    _cluster_list, esp_zb_temperature_meas_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_humidity_meas_cluster(
-    _cluster_list, 
-    esp_zb_humidity_meas_cluster_create(NULL), 
+    _cluster_list, esp_zb_humidity_meas_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_pressure_meas_cluster(
-    _cluster_list, 
-    esp_zb_pressure_meas_cluster_create(NULL), 
+    _cluster_list, esp_zb_pressure_meas_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_pm2_5_measurement_cluster(
-    _cluster_list, 
-    esp_zb_pm2_5_measurement_cluster_create(NULL), 
+    _cluster_list, esp_zb_pm2_5_measurement_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_on_off_cluster(
-    _cluster_list, 
-    esp_zb_on_off_cluster_create(&on_off_cfg), 
+    _cluster_list, esp_zb_on_off_cluster_create(&on_off_cfg), 
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_on_off_cluster(
-    _cluster_list, 
-    esp_zb_on_off_cluster_create(NULL), 
+    _cluster_list, esp_zb_on_off_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_on_off_switch_config_cluster(
-    _cluster_list, 
-    esp_zb_on_off_switch_config_cluster_create(NULL), 
+    _cluster_list, esp_zb_on_off_switch_config_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_electrical_meas_cluster(
-    _cluster_list, 
-    esp_zb_electrical_meas_cluster_create(NULL), 
+    _cluster_list, esp_zb_electrical_meas_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_flow_meas_cluster(
-    _cluster_list, 
-    esp_zb_flow_meas_cluster_create(NULL), 
+    _cluster_list, esp_zb_flow_meas_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_metering_cluster(
-    _cluster_list, 
-    esp_zb_metering_cluster_create(NULL), 
+    _cluster_list, esp_zb_metering_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_illuminance_meas_cluster(
-    _cluster_list, 
-    esp_zb_illuminance_meas_cluster_create(NULL), 
+    _cluster_list, esp_zb_illuminance_meas_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_occupancy_sensing_cluster(
-    _cluster_list, 
-    esp_zb_occupancy_sensing_cluster_create(NULL), 
+    _cluster_list, esp_zb_occupancy_sensing_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_thermostat_cluster(
-    _cluster_list, 
-    esp_zb_thermostat_cluster_create(NULL), 
+    _cluster_list, esp_zb_thermostat_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_window_covering_cluster(
-    _cluster_list, 
-    esp_zb_window_covering_cluster_create(NULL), 
+    _cluster_list, esp_zb_window_covering_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_ias_ace_cluster(
-    _cluster_list, 
-    esp_zb_ias_ace_cluster_create(NULL), 
+    _cluster_list, esp_zb_ias_ace_cluster_create(NULL), 
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(0x0020), 
+    _cluster_list, esp_zb_zcl_attr_list_create(0x0020), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
+    _cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
+    _cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_2),
+    _cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_2),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
+    _cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_0),
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
+    _cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_1),
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
+    _cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
+    _cluster_list, esp_zb_zcl_attr_list_create(TUYA_PRIVATE_CLUSTER_EF00),
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(0xFC80),
+    _cluster_list, esp_zb_zcl_attr_list_create(0xFC80),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(0xFC80),
+    _cluster_list, esp_zb_zcl_attr_list_create(0xFC80),
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(PHILIPS_CUSTOM_CLUSTER),
+    _cluster_list, esp_zb_zcl_attr_list_create(PHILIPS_CUSTOM_CLUSTER),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(0xFC7F),
+    _cluster_list, esp_zb_zcl_attr_list_create(0xFC7F),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(0xFC7F),
+    _cluster_list, esp_zb_zcl_attr_list_create(0xFC7F),
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(IKEA_CUSTOM_CLUSTER_FC7E),
+    _cluster_list, esp_zb_zcl_attr_list_create(IKEA_CUSTOM_CLUSTER_FC7E),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(ADEO_CUSTOM_CLUSTER),
+    _cluster_list, esp_zb_zcl_attr_list_create(ADEO_CUSTOM_CLUSTER),
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
+    _cluster_list, esp_zb_zcl_attr_list_create(
+      ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
     ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
 
   esp_zb_cluster_list_add_custom_cluster(
-    _cluster_list, 
-    esp_zb_zcl_attr_list_create(ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
+    _cluster_list, esp_zb_zcl_attr_list_create(
+      ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER), 
     ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   /*esp_zb_attribute_list_t *tyua_on_off_cluster = 
@@ -2720,6 +2708,179 @@ void ZigbeeGateway::sendDeviceLeaveRequest(
 
   delay(200);
   //xSemaphoreTake(gt_lock, pdMS_TO_TICKS(2000));
+}
+
+/*****************************************************************************/
+
+void ZigbeeGateway:: zbOTAUpgradeServerStatus(
+  const esp_zb_zcl_ota_upgrade_server_status_message_t *message) {
+
+  if (message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_ABORTED || 
+      message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_END) {
+    
+    s_ota_image_offset = 0;
+  }
+}
+  
+/*****************************************************************************/
+
+bool ZigbeeGateway::zbOTAUpgradeServerQueryImage(
+  const esp_zb_zcl_ota_upgrade_server_query_image_message_t *message) {
+
+    if ((message->image_type == s_ota_image_type) && 
+        (message->manufacturer_code == s_ota_manuf_code))
+      return true;
+    
+    log_e("OTA image mismatch!");
+    s_ota_image_offset  = 0;
+    return false;
+}
+
+/*****************************************************************************/
+static char test_buff[256];
+
+esp_err_t ZigbeeGateway::zb_ota_next_data_handler(
+  esp_zb_ota_zcl_information_t message, uint16_t index, uint8_t size, 
+  uint8_t **data) {
+
+  switch (index) {
+
+
+    case 0: {
+
+      log_i(
+        "-- OTA Server transmits data from 0x%x to 0x%x: progress [%ld/%ld]",
+        message.dst_short_addr, message.src_addr.u.short_addr,s_ota_image_offset, 
+        s_ota_image_size);
+
+
+      if (_instance->_on_fill_ota_buffer)
+        _instance->_on_fill_ota_buffer(
+          s_ota_image_start, s_ota_image_offset, size);
+      
+      *data = s_ota_image_start;
+
+      for (uint8_t i = 0; i < size; i++)
+        sprintf(test_buff + i*3, "%02X:", *((*data) + i));
+      log_i("size = %u\n\r %s",size, test_buff);
+
+      s_ota_image_offset += size;
+    } break;
+
+
+    default: {
+
+      log_w("Failed to locate the OTA image using the index (%d)", index);
+        
+      return ESP_FAIL;
+    } break;
+  }
+  
+  if (s_ota_image_offset >= s_ota_image_size) {
+    
+    s_ota_image_offset = 0;
+  }
+  
+  return (*data) ? ESP_OK : ESP_FAIL;
+}
+
+/*****************************************************************************/
+
+esp_err_t ZigbeeGateway::sendOTAUpgradeServerNotifyRequest(
+  esp_zb_ieee_addr_t ieee_addr, uint8_t *ota_file_start,
+  esp_zb_ota_next_data_callback_t esp_zb_ota_next_data_callback) {
+
+    const uint8_t *image_info = NULL;
+
+    esp_zb_ota_image_header_t ota_image_header = {0};
+    esp_zb_ota_file_header_t  ota_file_header = {0};
+
+    uint8_t length = sizeof(esp_zb_ota_image_header_t);
+
+    memcpy(&ota_image_header, ota_file_start, length);
+    if (ota_image_header.upgrade_file_id != OTA_UPGRADE_FILE_MAGIC_VALUE) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (ota_image_header.header_version != OTA_UPGRADE_FILE_HEADER_VERSION) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    /* Indicate mandatory information */
+    ota_file_header.manufacturer_code = ota_image_header.manufacturer_id;
+    ota_file_header.image_type = ota_image_header.image_type;
+    ota_file_header.file_version = ota_image_header.file_version;
+    ota_file_header.image_size = ota_image_header.image_size; // - ota_image_header.header_length;
+
+    /* Indicate whether additional optional information */
+    if (ota_image_header.field_control & 
+        ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_CREDENTIAL_VER) {
+
+      image_info = (const uint8_t *)(ota_file_start + length);
+      ZB_OTA_FILE_HEADER_OPTIONAL(
+        ota_file_header.optional, security_credential_version, length);
+      ota_file_header.field_control |= 
+        ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_CREDENTIAL_VER;
+    }
+
+    if (ota_image_header.field_control & 
+        ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_DEVICE_SPECIFIC) {
+
+      length += sizeof(esp_zb_ieee_addr_t);
+        }
+
+      //image_info = (const uint8_t *)(ota_file_start + length);
+      //ZB_OTA_FILE_HEADER_OPTIONAL(
+      //  ota_file_header.optional, upgrade_file_destination, length);
+      /*memcpy(
+        ota_file_header.optional.upgrade_file_destination, ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
+
+      ota_file_header.field_control |= 
+        ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_DEVICE_SPECIFIC;*/
+      
+    //}
+
+    if (ota_image_header.field_control & 
+        ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_HW_VER) {
+
+      image_info = (const uint8_t *)(ota_file_start + length);
+      ZB_OTA_FILE_HEADER_OPTIONAL(
+        ota_file_header.optional, minimum_hardware_version, length);
+      image_info = (const uint8_t *)(ota_file_start + length);
+      ZB_OTA_FILE_HEADER_OPTIONAL(
+        ota_file_header.optional, maximum_hardware_version, length);
+      ota_file_header.field_control |= 
+        ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_HW_VER;
+    }
+    uint16_t se_tag = *((uint16_t *)(ota_file_start + length));
+    length += 2;
+    uint32_t se_size = *((uint32_t *)(ota_file_start + length));
+    length += 4;
+    log_i(
+      "sub-element tag %u, sub-element size %lu, length %u", se_tag, se_size, 
+      length);
+
+    /* Indicate information is used to OTA server query image and retrieve the next data */
+    s_ota_image_type = ota_file_header.image_type;
+    s_ota_manuf_code = ota_file_header.manufacturer_code;
+    s_ota_image_size = se_size+length+10;//ota_image_header.image_size;
+    s_ota_image_offset = length; //ota_image_header.header_length;
+    ota_file_header.image_size = se_size;
+
+    esp_zb_ota_upgrade_server_notify_req_t req = {0};
+
+    req.endpoint = _instance->getEndpoint();
+    req.index = 0;
+    req.notify_on = true;
+    req.ota_upgrade_time = 0x005;
+    req.next_data_cb = zb_ota_next_data_handler;
+
+    memcpy(
+      &req.ota_file_header, &ota_file_header, 
+      sizeof(esp_zb_ota_file_header_t));
+
+    return esp_zb_ota_upgrade_server_notify_req(&req);
 }
 
 /*****************************************************************************/

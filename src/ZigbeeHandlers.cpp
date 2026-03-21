@@ -616,8 +616,6 @@ static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_com
 	
     }
   }
-  //sendDefaultResponse(message->info.command.id, message->info.header.tsn, message->info.src_address.u.short_addr, message->info.src_endpoint,
-  //                    message->info.profile, message->info.cluster);
   return ESP_OK;
 }
 
@@ -710,7 +708,12 @@ static esp_err_t zb_ota_upgrade_server_status_handler(
   }
   if (message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_ABORTED || 
       message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_END) {
-      //s_ota_image_offset = 0;
+  }
+  for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+    if (true /*message->info.dst_endpoint == (*it)->getEndpoint()*/) {
+        
+	    (*it)->zbOTAUpgradeServerStatus(message);
+    }
   }
   return ESP_OK;
 }
@@ -740,15 +743,15 @@ static esp_err_t zb_ota_upgrade_server_query_image_handler(
         log_i("OTA table index: 0x%x", message->table_idx);
     }
 
-    if (message->image_type != s_ota_image_type || 
-        message->manufacturer_code != s_ota_manuf_code) {
-          
-      log_i("OTA query image mismatch");
-      return ESP_ERR_NOT_FOUND;
+    for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+    if (true /*message->info.dst_endpoint == (*it)->getEndpoint()*/) {
+        
+	    if ((*it)->zbOTAUpgradeServerQueryImage(message))
+        return ESP_OK;
+      else
+        return ESP_ERR_NOT_FOUND;
     }
-
-    s_ota_image_offset = 0;
-    return ESP_OK;
+  }
 }
 
 #endif  //SOC_IEEE802154_SUPPORTED && CONFIG_ZB_ENABLED

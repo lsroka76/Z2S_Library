@@ -22,6 +22,42 @@
       }                                                                                        \
   }
 
+
+#define ESP_OTA_SERVER_ENDPOINT       1
+#define OTA_UPGRADE_QUERY_JITTER      0x64
+#define OTA_UPGRADE_CURRENT_TIME      0x0000
+#define OTA_UPGRADE_IMAGE_COUNT       1
+
+#define ZB_OTA_FILE_HEADER_OPTIONAL(fields, key, offset)                    \
+{                                                                           \
+    memcpy(&fields.key, image_info, sizeof(fields.key));                    \
+    offset += sizeof(fields.key);                                           \
+}
+
+#define OTA_UPGRADE_FILE_MAGIC_VALUE    0x0BEEF11E
+#define OTA_UPGRADE_FILE_HEADER_VERSION 0x0100
+
+typedef uint8_t HeaderString[32];
+
+/**
+ * @brief The Zigbee ZCL OTA file header struct.
+ *
+ */
+typedef struct esp_zb_ota_image_header_s {
+    uint32_t upgrade_file_id;
+    uint16_t header_version;
+    uint16_t header_length;
+    uint16_t field_control;
+    uint16_t manufacturer_id;
+    uint16_t image_type;
+    uint32_t file_version;
+    uint16_t stack_version;
+    HeaderString  header_string;
+    uint32_t image_size;
+} __attribute__ ((packed)) esp_zb_ota_image_header_t;
+
+
+
 #define ZBG_MAX_DEVICES                                       0x20 //32
 
 #define GATEWAY_ENDPOINT_NUMBER                               1
@@ -437,6 +473,10 @@ public:
     esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, bool remove_children,
     bool rejoin);
 
+  esp_err_t sendOTAUpgradeServerNotifyRequest(
+    esp_zb_ieee_addr_t ieee_addr, uint8_t *ota_file_start, 
+    esp_zb_ota_next_data_callback_t esp_zb_ota_next_data_callback);
+
   void clearLocalBindings();
 
   void sendSimpleDescriptorRequestCmd(
@@ -575,13 +615,13 @@ public:
   void onBoundDevice(void (*callback)(zbg_device_params_t *, bool)) {
     _on_bound_device = callback;
   }
-  void onBTCBoundDevice(bool (*callback)(zbg_device_params_t *, uint8_t count, uint8_t position)) {
+  void onBTCBoundDevice(
+    bool (*callback)(zbg_device_params_t *, uint8_t count, uint8_t position)) {
     _on_btc_bound_device = callback;
   }
-  void onDataSaveRequest(void (*callback)(uint8_t Supla_channel, 
-                                          uint8_t data_save_mode,  
-                                          uint8_t extended_data_type, 
-                                          uint8_t *extended_data)) {
+  void onDataSaveRequest(
+    void (*callback)(uint8_t Supla_channel, uint8_t data_save_mode,  
+    uint8_t extended_data_type, uint8_t *extended_data)) {
     _on_data_save_request = callback;
   }
   void onDeviceRejoin(void (*callback)(uint16_t, esp_zb_ieee_addr_t)) {
@@ -593,7 +633,9 @@ public:
   void onUpdateDeviceLastRssi(void (*callback)(uint16_t, int8_t)) {
     _on_update_device_last_rssi = callback;
   }
-  
+  void onFillOTABuffer(void (*callback)(uint8_t *, uint32_t, uint8_t)) {
+    _on_fill_ota_buffer = callback;
+  }  
 
 private:
   // save instance of the class in order to use it in static functions
@@ -688,6 +730,8 @@ private:
   void (*_on_device_rejoin)(uint16_t, esp_zb_ieee_addr_t);
   void (*_on_device_leave)(uint16_t, esp_zb_ieee_addr_t, uint8_t);
   void (*_on_update_device_last_rssi)(uint16_t, int8_t);
+  
+  void (*_on_fill_ota_buffer)(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t size);
 
   void findEndpoint(esp_zb_zdo_match_desc_req_param_t *cmd_req);
 
@@ -699,46 +743,88 @@ private:
     uint8_t *buffer);
 
   static void bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
-  static void find_Cb(esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, void *user_ctx);
-  static void ieee_Cb(esp_zb_zdp_status_t zdo_status, esp_zb_zdo_ieee_addr_rsp_t *resp, void *user_ctx);
+  static void find_Cb(
+    esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, 
+    void *user_ctx);
+  static void ieee_Cb(
+    esp_zb_zdp_status_t zdo_status, esp_zb_zdo_ieee_addr_rsp_t *resp, 
+    void *user_ctx);
   static void leave_Cb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
   static void simple_descriptor_req_Cb(
     esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, 
     void *user_ctx);
 
-  static void Z2S_active_ep_req_cb(esp_zb_zdp_status_t zdo_status, uint8_t ep_count, uint8_t *ep_id_list, void *user_ctx);
-  static void Z2S_simple_desc_req_cb(esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc, void *user_ctx);
+  static void Z2S_active_ep_req_cb(
+    esp_zb_zdp_status_t zdo_status, uint8_t ep_count, uint8_t *ep_id_list, 
+    void *user_ctx);
 
-  void zbAttributeReporting(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-                            const esp_zb_zcl_attribute_t *attribute) override;
+  static void Z2S_simple_desc_req_cb(
+    esp_zb_zdp_status_t zdo_status, esp_zb_af_simple_desc_1_1_t *simple_desc,
+    void *user_ctx);
+
+  void zbAttributeReporting(
+    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+    const esp_zb_zcl_attribute_t *attribute) override;
   
   void zbReadAttrResponse(
     uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 
     uint16_t src_endpoint, uint16_t cluster_id, esp_zb_zcl_status_t status,
     const esp_zb_zcl_attribute_t *attribute) override;
 
-  void zbWriteAttrResponse(uint8_t tsn, esp_zb_zcl_status_t status, uint16_t attribute_id) override;
-  void zbIASZoneEnrollRequest(const esp_zb_zcl_ias_zone_enroll_request_message_t *message) override;
-  void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) override;
-  void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-                            const esp_zb_zcl_disc_attr_variable_t *variable) override;
-  void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
-                             uint16_t cluster_id,uint8_t command_id, 
-                             uint16_t payload_size, uint8_t *payload) override;
-  void zbConfigReportResponse(uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
-                              uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
-                             uint16_t attribute_id) override;
-  void zbReadReportConfigResponse(const esp_zb_zcl_cmd_read_report_config_resp_message_t *message) override;
-  void zbCmdDefaultResponse(uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 
-                            uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, 
-                            esp_zb_zcl_status_t status_code) override;
+  void zbWriteAttrResponse(
+    uint8_t tsn, esp_zb_zcl_status_t status, uint16_t attribute_id) override;
+  
+  void zbIASZoneEnrollRequest(
+    const esp_zb_zcl_ias_zone_enroll_request_message_t *message) override;
+  
+  void zbIASZoneStatusChangeNotification(
+    const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) override;
 
-  void zbDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
-  void zbDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
-  void zbDeviceLeave(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) override;
+  void zbCmdDiscAttrResponse(
+    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+    const esp_zb_zcl_disc_attr_variable_t *variable) override;
+  
+  void zbCmdCustomClusterReq(
+    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,
+    uint8_t command_id, uint16_t payload_size, uint8_t *payload) override;
+  
+  void zbConfigReportResponse(
+    uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
+    uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
+    uint16_t attribute_id) override;
+  
+  void zbReadReportConfigResponse(
+    const esp_zb_zcl_cmd_read_report_config_resp_message_t *message) override;
 
-  void addBoundDevice(zb_device_params_t *device, uint16_t cluster_id, uint8_t count, uint8_t position) override;
-  bool isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
+  void zbCmdDefaultResponse(
+    uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 
+    uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, 
+    esp_zb_zcl_status_t status_code) override;
+
+  void zbOTAUpgradeServerStatus(
+    const esp_zb_zcl_ota_upgrade_server_status_message_t *message) override;
+  
+  bool zbOTAUpgradeServerQueryImage(
+    const esp_zb_zcl_ota_upgrade_server_query_image_message_t *message) 
+    override;
+
+  static esp_err_t zb_ota_next_data_handler(
+    esp_zb_ota_zcl_information_t message, uint16_t index, uint8_t size, 
+    uint8_t **data);
+
+  void zbDeviceAnnce(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
+  void zbDeviceRejoin(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
+  void zbDeviceLeave(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) 
+    override;
+
+  void addBoundDevice(
+    zb_device_params_t *device, uint16_t cluster_id, uint8_t count, 
+    uint8_t position) override;
+  bool isDeviceBound(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
 
 protected:
 

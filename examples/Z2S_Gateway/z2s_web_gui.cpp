@@ -13,6 +13,7 @@
 #include "TuyaDatapoints.h"
 
 #include "z2s_version_info.h"
+#include "z2s_little_fs.h"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -149,6 +150,7 @@ uint16_t device_attribute_value_selector_first_option_id = 0xFFFF;
 
 uint16_t remove_device_and_channels_button;
 uint16_t remove_all_devices_button;
+uint16_t start_zigbee_ota_button;
 
 uint16_t channel_selector = 0xFFFF;
 uint16_t channel_selector_first_option_id = 0xFFFF;
@@ -588,6 +590,7 @@ void TuyaDatapointTypeSelectorCallback(Control *sender, int type);
 void enableDeviceControls(bool enable);
 void enableClustersAttributesControls(bool enable);
 void removeDeviceCallback(Control *sender, int type, void *param);
+void startDeviceOTACallback(Control *sender, int type);
 void channelSelectorCallback(Control *sender, int type);
 void enableChannelControls(bool enable);
 void enableTuyaDevicesControls(bool enable);
@@ -1747,6 +1750,12 @@ void buildDevicesTabGUI() {
 	device_status_label = ESPUI.addControl(
 		Control::Type::Label, PSTR("Status"), working_str, 
 		Control::Color::Alizarin, remove_device_and_channels_button);
+
+	start_zigbee_ota_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), 
+		PSTR("Start OTA (highly experimental!!!!)"), 
+		Control::Color::Alizarin, devicestab, startDeviceOTACallback); 
+
 
 	enableDeviceControls(false);
 }
@@ -4738,6 +4747,7 @@ void enableDeviceControls(bool enable) {
 	//enableControlStyle(remove_device_button, enable);
 	enableControlStyle(remove_device_and_channels_button, enable);
 	enableControlStyle(remove_all_devices_button, true);
+	enableControlStyle(start_zigbee_ota_button, enable);
 
 	enable ? controls_enabled_flags |= DEVICES_CONTROLS_ENABLED_FLAG :
 					 controls_enabled_flags &= ~DEVICES_CONTROLS_ENABLED_FLAG;
@@ -6198,11 +6208,76 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 	}
 }
 
+//static uint8_t ota_data_buffer[256];
+
+/*static esp_err_t zb_ota_next_data_handler(
+	esp_zb_ota_zcl_information_t message, uint16_t index, uint8_t size, uint8_t **data) {
+
+		log_i("index = %u, size = %u", index, size);
+
+	}*/
+
+void Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t size) {
+
+	Z2S_initLittleFs();
+
+  	size_t bytes_read = Z2S_loadBufferFromFile(
+			"/zigbee_ota/trvzb_v1.4.1.ota", ota_offset, size, ota_buffer);
+
+		if (bytes_read != size)
+			log_e("OTA file read error %u <-> %u", size, bytes_read);
+
+	Z2S_endLittleFs();
+}
+
+void startDeviceOTACallback(Control *sender, int type){
+
+	if ((type == B_UP) && (
+		ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
+
+		uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
+
+		//esp_zb_ota_image_header_t esp_zb_ota_image_header;
+		uint8_t esp_zb_ota_image_header[62];
+  
+		Z2S_initLittleFs();
+
+  	size_t bytes_read = Z2S_loadBufferFromFile(
+			"/zigbee_ota/trvzb_v1.4.1.ota", 0, 62, esp_zb_ota_image_header); //sizeof(esp_zb_ota_image_header_t), 
+			//(uint8_t *)&esp_zb_ota_image_header);
+			
+		Z2S_endLittleFs();
+
+		/*log_i(
+    "upgrade_file_id = %lu, header_version = %u, header_length = %u\n\r"
+    "field_control = %u, manufacturer_id = %u, image_type = %u\n\r"
+    "file_version = %lu, stack_version = %u, image_size = %lu\n\r", 
+    esp_zb_ota_image_header.upgrade_file_id, 
+    esp_zb_ota_image_header.header_version, 
+    esp_zb_ota_image_header.header_length, 
+    esp_zb_ota_image_header.field_control, 
+    esp_zb_ota_image_header.manufacturer_id, 
+    esp_zb_ota_image_header.image_type, 
+    esp_zb_ota_image_header.file_version, 
+    esp_zb_ota_image_header.stack_version, 
+    esp_zb_ota_image_header.image_size);*/
+
+		zbGateway.onFillOTABuffer(Z2S_onFillOTABuffer);
+
+		if (zbGateway.sendOTAUpgradeServerNotifyRequest(
+			z2s_zb_devices_table[device_slot].ieee_addr, /*(uint8_t *)&*/esp_zb_ota_image_header, 
+			nullptr))
+		log_i("OTA upgrade server notify sent successfully!");
+
+	}
+}
+
 void removeDeviceCallback(Control *sender, int type, void *param) {
 
 	//char general_purpose_gui_buffer[1024] = {};
 
-	if ((type == B_UP) && (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
+	if ((type == B_UP) && (
+			ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
 
 		uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
 

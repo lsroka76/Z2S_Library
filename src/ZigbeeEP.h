@@ -158,36 +158,43 @@ public:
 
   //virtual void zbReadTimeCluster(const esp_zb_zcl_attribute_t *attribute);  //already implemented
 
-  virtual void zbConfigReportResponse(uint8_t tsn, 
-                                      esp_zb_zcl_addr_t src_address, 
-                                      uint16_t src_endpoint, 
-                                      uint16_t cluster_id, 
-                                      esp_zb_zcl_status_t status, 
-                                      uint8_t direction, 
-                                      uint16_t attribute_id) {};
+  virtual void zbConfigReportResponse(
+    uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
+    uint16_t cluster_id, esp_zb_zcl_status_t status, uint8_t direction, 
+    uint16_t attribute_id) {};
 
-  virtual void zbReadReportConfigResponse(const esp_zb_zcl_cmd_read_report_config_resp_message_t *message) {};
+  virtual void zbReadReportConfigResponse(
+    const esp_zb_zcl_cmd_read_report_config_resp_message_t *message) {};
 
-  virtual void zbIASZoneEnrollRequest(const esp_zb_zcl_ias_zone_enroll_request_message_t *message) {};
+  virtual void zbIASZoneEnrollRequest(
+    const esp_zb_zcl_ias_zone_enroll_request_message_t *message) {};
 
-  virtual void zbIASZoneStatusChangeNotification(const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {};
+  virtual void zbIASZoneStatusChangeNotification(
+    const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {
 
-  virtual void zbCmdDiscAttrResponse(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-                                     const esp_zb_zcl_disc_attr_variable_t *variable) {};
+    };
 
-  virtual void zbCmdCustomClusterReq(esp_zb_zcl_addr_t src_address, 
-                                     uint16_t src_endpoint, 
-                                     uint16_t cluster_id, 
-                                     uint8_t command_id, 
-                                     uint16_t payload_size, 
-                                     uint8_t *payload) {};
+  virtual void zbCmdDiscAttrResponse(
+    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+    const esp_zb_zcl_disc_attr_variable_t *variable) {};
 
-  virtual void zbCmdDefaultResponse( uint8_t tsn, int8_t rssi, 
-                                     esp_zb_zcl_addr_t src_address, 
-                                     uint16_t src_endpoint, 
-                                     uint16_t cluster_id, 
-                                     uint8_t resp_to_cmd, 
-                                     esp_zb_zcl_status_t status_code) {};
+  virtual void zbCmdCustomClusterReq(
+    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+    uint8_t command_id, uint16_t payload_size, uint8_t *payload) {};
+
+  virtual void zbCmdDefaultResponse(
+    uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 
+    uint16_t src_endpoint, uint16_t cluster_id, uint8_t resp_to_cmd, 
+    esp_zb_zcl_status_t status_code) {};
+
+  virtual void zbOTAUpgradeServerStatus(
+    const esp_zb_zcl_ota_upgrade_server_status_message_t *message) {};
+  
+  virtual bool zbOTAUpgradeServerQueryImage(
+    const esp_zb_zcl_ota_upgrade_server_query_image_message_t *message) {
+
+      return false;
+  };
 
   virtual void addBoundDevice(zb_device_params_t *device) {
 
@@ -195,23 +202,21 @@ public:
     _is_bound = true;
    }
 
-  virtual void addBoundDevice(zb_device_params_t *device, 
-                              uint16_t cluster_id, 
-                              uint8_t count, 
-                              uint8_t position) {};
+  virtual void addBoundDevice(
+    zb_device_params_t *device, uint16_t cluster_id, uint8_t count, 
+    uint8_t position) {};
 
-  virtual void zbDeviceAnnce(uint16_t short_addr, 
-                             esp_zb_ieee_addr_t ieee_addr) {};
+  virtual void zbDeviceAnnce(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
 
-  virtual void zbDeviceRejoin(uint16_t short_addr, 
-                              esp_zb_ieee_addr_t ieee_addr) {};
+  virtual void zbDeviceRejoin(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
 
-  virtual void zbDeviceLeave(uint16_t short_addr, 
-                             esp_zb_ieee_addr_t ieee_addr, 
-                             uint8_t rejoin) {};
+  virtual void zbDeviceLeave(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {};
 
-  virtual bool isDeviceBound(uint16_t short_addr, 
-                             esp_zb_ieee_addr_t ieee_addr) {
+  virtual bool isDeviceBound(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
 	  for (std::list<zb_device_params_t *>::iterator bound_device = _bound_devices.begin(); 
          bound_device != _bound_devices.end(); 

@@ -603,12 +603,32 @@ void setup() {
   }
 
   listDir(LittleFS,"/",3);
-  uint8_t file_test[1024] ;
+  //uint8_t file_test[1024] ;
+  esp_zb_ota_image_header_t esp_zb_ota_image_header;
   
-  size_t ota_file_size = Z2S_getFileSize("main_ota_file.ota", false);
+  size_t ota_file_size = Z2S_getFileSize("/zigbee_ota/trvzb_v1.4.1.ota", false);
+  
   log_i("OTA file size %lu", ota_file_size);
   
-  size_t ota_file_blocks = ota_file_size / 1024;
+  size_t bytes_read = 
+      Z2S_loadBufferFromFile("/zigbee_ota/trvzb_v1.4.4.ota", 0, 
+      sizeof(esp_zb_ota_image_header_t), (uint8_t *)&esp_zb_ota_image_header);
+
+  log_i(
+    "upgrade_file_id = %lu, header_version = %u, header_length = %u\n\r"
+    "field_control = %u, manufacturer_id = %u, image_type = %u\n\r"
+    "file_version = %lu, stack_version = %u, image_size = %lu\n\r", 
+    esp_zb_ota_image_header.upgrade_file_id, 
+    esp_zb_ota_image_header.header_version, 
+    esp_zb_ota_image_header.header_length, 
+    esp_zb_ota_image_header.field_control, 
+    esp_zb_ota_image_header.manufacturer_id, 
+    esp_zb_ota_image_header.image_type, 
+    esp_zb_ota_image_header.file_version, 
+    esp_zb_ota_image_header.stack_version, 
+    esp_zb_ota_image_header.image_size);
+
+  /*size_t ota_file_blocks = ota_file_size / 1024;
   if (ota_file_size - (1024 * ota_file_blocks) > 0)
     ota_file_blocks++;
 
@@ -619,7 +639,7 @@ void setup() {
     log_i("bytes read = %u", bytes_read);
     //for (uint16_t j = 0; j < bytes_read; j++)
     //  log_i("%02X", file_test[j]);
-  }
+  }*/
   LittleFS.end();
 
   Z2S_loadZbDevicesTable();

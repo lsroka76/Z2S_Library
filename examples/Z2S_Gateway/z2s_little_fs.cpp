@@ -110,11 +110,11 @@ size_t Z2S_loadBufferFromFile(
   size_t z2s_buffer_size, uint8_t* z2s_buffer_data) {
 
 
-  char file_name[50] = {};
+  //char file_name[50] = {};
   
-  snprintf(file_name, sizeof(file_name), "/z2s_gateway/%s", z2s_file_name);
+  //snprintf(file_name, sizeof(file_name), "/z2s_gateway/%s", z2s_file_name);
   
-  File file = LittleFS.open(file_name, "r");
+  File file = LittleFS.open(z2s_file_name, "r");
   
   if (!file) {
 
