@@ -19,7 +19,10 @@ size_t Z2S_loadBufferFromFile(
 
 bool Z2S_deleteFile(const char* z2s_file_name);
 
-int Z2S_getFileSize(const char* z2s_file_name, bool init_fs = true);
+int Z2S_getFileSize(
+  const char* z2s_file_name, bool init_fs = true, bool full_path = false);
+
+
 
 
 #endif //Z2S_LITTLE_FS_H_

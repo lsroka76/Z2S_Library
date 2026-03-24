@@ -150,7 +150,10 @@ uint16_t device_attribute_value_selector_first_option_id = 0xFFFF;
 
 uint16_t remove_device_and_channels_button;
 uint16_t remove_all_devices_button;
+//uint16_t upload_zigbee_ota_file_text;
+//uint16_t upload_zigbee_ota_file_button;
 uint16_t start_zigbee_ota_button;
+uint16_t zigbee_ota_status_label;
 
 uint16_t channel_selector = 0xFFFF;
 uint16_t channel_selector_first_option_id = 0xFFFF;
@@ -279,6 +282,10 @@ volatile uint32_t gui_callback_reentry_number = 0;
 
 volatile uint8_t	remove_all_devices_counter = 2; 
 
+volatile uint32_t ota_image_size = 0;
+volatile uint32_t ota_image_last_offset = 0;
+volatile uint32_t ota_image_last_update_ms = 0;
+//volatile uint32_t ota_image_last_offset = 0;
 
 #define GUI_COMMAND_DEVICE_NAME_CHANGE		10
 #define GUI_COMMAND_CHANNEL_NAME_CHANGE		11
@@ -482,6 +489,12 @@ static constexpr char* zigbee_primary_channel_update_str PROGMEM =
 	" and don't remove that device from gateway via Cloud/GUI - "
 	"all channels settings and actions will remain unchanged.";
 
+static constexpr char *OTA_server_notify_success_str PROGMEM = 
+	"OTA upgrade server notify sent successfully!";
+
+static constexpr char *OTA_server_notify_failure_str PROGMEM = 
+	"OTA upgrade server notify failed!";
+
 static char general_purpose_gui_buffer[1024] = {};
 
 static constexpr char* disabledstyle PROGMEM = 
@@ -500,7 +513,7 @@ static constexpr char* clearFlagsLabelStyle PROGMEM =
 //
 
 static const char* myCustomJS = R"=====(
-function myFunction() {
+function redirect2OTA() {
 	/*var a = document.createElement('a');
 	a.href='/update';
 	a.target = '_blank';
@@ -508,7 +521,10 @@ function myFunction() {
 	a.click();*/
 	//alert("CLICKED");
 	window.location.assign("/update");
-
+};
+function redirect2ZigbeeOTA() {
+	
+	window.location.assign("/zigbee_ota");
 };
 /*document.addEventListener("click", function(e){
   alert(e.target.id);
@@ -534,7 +550,12 @@ document.addEventListener("mouseup", function(e){
 	if(e.target.id == "btn37") {
 		console.log("btn37");
 		e.stopImmediatePropagation();
-    myFunction();
+    redirect2OTA();
+  }
+	if(e.target.id == "btn38") {
+		console.log("btn38");
+		e.stopImmediatePropagation();
+    redirect2ZigbeeOTA();
   }
 });
 document.addEventListener("touchend", function(e){
@@ -545,7 +566,12 @@ document.addEventListener("touchend", function(e){
 	if(e.target.id == "btn37") {
 		//console.log("btn37");
 		e.stopImmediatePropagation();
-    myFunction();
+    redirect2OTA();
+  }
+	if(e.target.id == "btn38") {
+		console.log("btn38");
+		e.stopImmediatePropagation();
+    redirect2ZigbeeOTA();
   }
 });
 )=====";
@@ -1241,10 +1267,13 @@ void buildGatewayTabGUI() {
 		Control::Color::Emerald, gatewaytab, gatewayCallback, 
 		(void*)GUI_CB_GUI_RESTART_FLAG);
 
-	working_str_ptr = PSTR("FIRMWARE UPDATE");
 	auto test_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Type::Button, PSTR(empty_str), PSTR("Gateway firmware update"), 
 		Control::Color::Emerald, gatewaytab);
+
+	auto upload_zigbee_ota_file_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), PSTR("Upload Zigbee OTA file"), 
+		Control::Color::Alizarin, test_button);
 
 	//ESPUI.updateNumber(enable_gui_switcher, _enable_gui_on_start);
 	working_str = _enable_gui_on_start;
@@ -1751,10 +1780,20 @@ void buildDevicesTabGUI() {
 		Control::Type::Label, PSTR("Status"), working_str, 
 		Control::Color::Alizarin, remove_device_and_channels_button);
 
-	/*start_zigbee_ota_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), 
-		PSTR("Start OTA (highly experimental!!!!)"), 
-		Control::Color::Alizarin, devicestab, startDeviceOTACallback); */
+	/*upload_zigbee_ota_file_text = ESPUI.addControl(
+		Control::Type::Text, PSTR(empty_str), 
+		PSTR("Upload OTA file (highly experimental!!!!)"), 
+		Control::Color::Alizarin, devicestab, generalCallback);*/
+
+	start_zigbee_ota_button = ESPUI.addControl(
+		Control::Type::Button, PSTR("OTA upgrade panel (highly experimental!!!)"), 
+		PSTR("Start OTA Upgrade"), 
+		Control::Color::Alizarin, devicestab, startDeviceOTACallback);
+		
+	working_str = three_dots_str;
+	zigbee_ota_status_label = ESPUI.addControl(
+		Control::Type::Label, PSTR(empty_str), working_str, 
+		Control::Color::Emerald, start_zigbee_ota_button);
 
 
 	enableDeviceControls(false);
@@ -4301,67 +4340,140 @@ void Z2S_startWebGUI() {
 	handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_STARTED);
 
 	if (ESPUI.WebServer())
+		ESPUI.WebServer()->on("/zigbee_ota", HTTP_GET, [](AsyncWebServerRequest *request) {
+    
+			static const char *html = 
+				"<!DOCTYPE HTML><html><head><title>ZigBee OTA file upload</title>"
+    		"<meta name='viewport' content='width=device-width, initial-scale=1'>"
+    		"<style>body{font-family:Arial; margin:20px;} th, td{padding:10px; text-align:left;}"
+				" a{color:red;}</style></head><body>"
+    		"<h2>ZigBee OTA file upload</h2>"
+    		"<section style='background:#f4f4f4; padding:15px;'>"
+    		"<strong>Upload File:</strong><br><br>"
+    		"<input type='file' id='file-input'><br><br>"
+    		"<button class='btn' onclick='uploadFile()'>Upload Now</button>"
+    		"<div class='progress-wrapper' id='p-wrap'><div id='progress-bar'>0%</div></div>"
+    		"<p id='status'></p></section><br>"
+    		"<script>"
+    		"function uploadFile() {"
+    		"  var file = document.getElementById('file-input').files[0];"
+    		"  if(!file) { alert('Select a file first!'); return; }"
+    		"  var formData = new FormData();"
+    		"  formData.append('data', file);"
+    		"  var xhr = new XMLHttpRequest();"
+    		"  document.getElementById('p-wrap').style.display = 'block';"
+    		"  xhr.upload.addEventListener('progress', function(e) {"
+    		"    var percent = (e.loaded / e.total) * 100;"
+    		"    var bar = document.getElementById('progress-bar');"
+    		"    bar.style.width = Math.round(percent) + '%';"
+    		"    bar.innerHTML = Math.round(percent) + '%';"
+    		"  });"
+    		"  xhr.onreadystatechange = function() {"
+    		"    if (xhr.readyState == 4) {"
+    		"      if(xhr.status == 200) {"
+    		"        document.getElementById('status').innerHTML = "
+				"'<b>Success: </b>' + xhr.responseText;"
+    		"        setTimeout(function(){ location.reload(); }, 2000);"
+    		"      } else { alert('Upload Failed'); }"
+    		"    }"
+    		"  };"
+    		"  xhr.open('POST', '/upload_zigbee_ota', true);"
+    		"  xhr.send(formData);"
+    		"}"
+    		"</script></body></html>"
+				"<div style='margin-bottom:20px;'>"
+    		"<button class='btn' onclick=\"window.location.href='/'\">Back to GUI page</button>"
+    		"</div>"
+    		"</body></html>";
+
+    	request->send(200, "text/html", html);
+  	});
+
+	if (ESPUI.WebServer())
+		ESPUI.WebServer()->on("/upload_zigbee_ota", HTTP_POST, [](AsyncWebServerRequest *request) {
+    	
+			//request->redirect("/"); // Go back to home after upload
+			request->send(200, "text/plain", "Upload OK");
+  		}, [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+    	
+			LittleFS.begin(false);
+
+			if (index) 
+				request->_tempFile = LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "a");
+			else
+      	request->_tempFile = LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "w");
+    
+    	if (len) {
+      	request->_tempFile.write(data, len);
+    	}
+    	//if (final) {
+      	request->_tempFile.close();
+    	//}
+			LittleFS.end();
+  	});
+
+	if (ESPUI.WebServer())
 		ESPUI.WebServer()->on("/partition", HTTP_GET, [](AsyncWebServerRequest *request) {
-    const AsyncWebParameter *pLabel = request->getParam("label");
-    const AsyncWebParameter *pType = request->getParam("type");
-    const AsyncWebParameter *pSubtype = request->getParam("subtype");
-    const AsyncWebParameter *pRaw = request->getParam("raw");
+			
+			const AsyncWebParameter *pLabel = request->getParam("label");
+			const AsyncWebParameter *pType = request->getParam("type");
+			const AsyncWebParameter *pSubtype = request->getParam("subtype");
+			const AsyncWebParameter *pRaw = request->getParam("raw");
 
-    if (!pLabel && !pType && !pSubtype) {
-      request->send(400, "text/plain", "Bad request: missing parameter");
-      return;
-    }
+			if (!pLabel && !pType && !pSubtype) {
+				request->send(400, "text/plain", "Bad request: missing parameter");
+				return;
+			}
 
-    esp_partition_type_t type = ESP_PARTITION_TYPE_ANY;
-    esp_partition_subtype_t subtype = ESP_PARTITION_SUBTYPE_ANY;
-    const char *label = nullptr;
-    bool raw = true;
+			esp_partition_type_t type = ESP_PARTITION_TYPE_ANY;
+			esp_partition_subtype_t subtype = ESP_PARTITION_SUBTYPE_ANY;
+			const char *label = nullptr;
+			bool raw = true;
 
-    if (pLabel) {
-      label = pLabel->value().c_str();
-    }
+			if (pLabel) {
+				label = pLabel->value().c_str();
+			}
 
-    if (pType) {
-      type = (esp_partition_type_t)pType->value().toInt();
-    }
+			if (pType) {
+				type = (esp_partition_type_t)pType->value().toInt();
+			}
 
-    if (pSubtype) {
-      subtype = (esp_partition_subtype_t)pSubtype->value().toInt();
-    }
+			if (pSubtype) {
+				subtype = (esp_partition_subtype_t)pSubtype->value().toInt();
+			}
 
-    if (pRaw && pRaw->value() == "false") {
-      raw = false;
-    }
+			if (pRaw && pRaw->value() == "false") {
+				raw = false;
+			}
 
-    const esp_partition_t *partition = esp_partition_find_first(type, subtype, label);
+			const esp_partition_t *partition = esp_partition_find_first(type, subtype, label);
 
-    if (!partition) {
-      request->send(404, "text/plain", "Partition not found");
-      return;
-    }
+			if (!partition) {
+				request->send(404, "text/plain", "Partition not found");
+				return;
+			}
 
-    AsyncWebServerResponse *response =
-      request->beginChunkedResponse(
+			AsyncWebServerResponse *response = request->beginChunkedResponse(
 				"application/octet-stream", [partition, raw](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-        const size_t remaining = partition->size - index;
-        if (!remaining) {
-          return 0;
-        }
-        const size_t len = std::min(maxLen, remaining);
-        if (raw && esp_partition_read_raw(partition, index, buffer, len) == ESP_OK) {
-          return len;
-        }
-        if (!raw && esp_partition_read(partition, index, buffer, len) == ESP_OK) {
-          return len;
-        }
-        return 0;
-      });
+				const size_t remaining = partition->size - index;
+					if (!remaining) {
+						return 0;
+				}
+				const size_t len = std::min(maxLen, remaining);
+				if (raw && esp_partition_read_raw(partition, index, buffer, len) == ESP_OK) {
+					return len;
+				}
+				if (!raw && esp_partition_read(partition, index, buffer, len) == ESP_OK) {
+					return len;
+				}
+				return 0;
+			});
 
-    response->addHeader("Content-Disposition", "attachment; filename=" + String(partition->label) + ".bin");
-    response->setContentLength(partition->size);
+			response->addHeader("Content-Disposition", "attachment; filename=" + String(partition->label) + ".bin");
+			response->setContentLength(partition->size);
 
-    request->send(response);
-  });
+			request->send(response);
+		});
 }
 
 void Z2S_stopWebGUI() {
@@ -6217,17 +6329,48 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 
 	}*/
 
-void Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t size) {
+size_t Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t size) {
+
+	if (ota_offset == 0) {
+
+		ota_image_last_update_ms = millis();
+		updateLabel_P(
+			zigbee_ota_status_label, PSTR("OTA file transmission started"));
+	}
 
 	Z2S_initLittleFs();
 
   	size_t bytes_read = Z2S_loadBufferFromFile(
-			"/zigbee_ota/trvzb_v1.4.1.ota", ota_offset, size, ota_buffer);
+			"/zigbee_ota/zigbee_ota_file.ota", ota_offset, size, ota_buffer);
 
-		if (bytes_read != size)
-			log_e("OTA file read error %u <-> %u", size, bytes_read);
+		/*if (bytes_read != size)
+			log_e("OTA file read error %u <-> %u", size, bytes_read);*/
 
 	Z2S_endLittleFs();
+
+	if (ota_offset - ota_image_last_offset > 1024) {
+
+		char progress_str[128];
+
+		uint32_t ota_etc_time_secs = 
+			((millis() - ota_image_last_update_ms) / 1000) * 
+			((ota_image_size - ota_offset) / 1024);
+
+		uint32_t ota_etc_hour = ota_etc_time_secs / 3600;
+		uint32_t ota_etc_min = (ota_etc_time_secs - (ota_etc_hour * 3600)) / 60;
+		uint32_t ota_etc_sec = ota_etc_time_secs % 60;
+
+		sprintf(
+			progress_str, "OTA progress: %lu/%lu, ETC: %02uh:%02um:%02us", ota_offset, 
+			ota_image_size, ota_etc_hour, ota_etc_min, ota_etc_sec);
+		 
+	working_str = progress_str;
+		ESPUI.updateLabel(zigbee_ota_status_label, working_str);
+
+		ota_image_last_offset = ota_offset;
+		ota_image_last_update_ms = millis();
+	}
+	return bytes_read;
 }
 
 void startDeviceOTACallback(Control *sender, int type){
@@ -6243,7 +6386,7 @@ void startDeviceOTACallback(Control *sender, int type){
 		Z2S_initLittleFs();
 
   	size_t bytes_read = Z2S_loadBufferFromFile(
-			"/zigbee_ota/trvzb_v1.4.1.ota", 0, 62, esp_zb_ota_image_header); //sizeof(esp_zb_ota_image_header_t), 
+			"/zigbee_ota/zigbee_ota_file.ota", 0, 62, esp_zb_ota_image_header); //sizeof(esp_zb_ota_image_header_t), 
 			//(uint8_t *)&esp_zb_ota_image_header);
 			
 		Z2S_endLittleFs();
@@ -6264,11 +6407,26 @@ void startDeviceOTACallback(Control *sender, int type){
 
 		zbGateway.onFillOTABuffer(Z2S_onFillOTABuffer);
 
+		ota_image_size = 
+			((esp_zb_ota_image_header_t *)esp_zb_ota_image_header)->image_size;
+
+		ota_image_last_offset = 0;
+
+		log_i("ota_image_size = %lu", ota_image_size);
+
 		if (zbGateway.sendOTAUpgradeServerNotifyRequest(
 			z2s_zb_devices_table[device_slot].ieee_addr, /*(uint8_t *)&*/esp_zb_ota_image_header, 
-			nullptr))
-		log_i("OTA upgrade server notify sent successfully!");
+			nullptr) == ESP_OK) {
+	
+			log_i("%s", OTA_server_notify_success_str);
+			
+			updateLabel_P(zigbee_ota_status_label, OTA_server_notify_success_str);
+		} else {
 
+			log_i("%s", OTA_server_notify_failure_str);
+			
+			updateLabel_P(zigbee_ota_status_label, OTA_server_notify_failure_str);
+		}
 	}
 }
 

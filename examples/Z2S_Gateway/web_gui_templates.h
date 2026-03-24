@@ -156,6 +156,9 @@ static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 	{ .zigbee_cluster_name = "TIME",										
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TIME },
 
+	{ .zigbee_cluster_name = "OTA UPGRADE",						
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE },
+
 	{ .zigbee_cluster_name = "POLL CONTROL",						
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL },
 

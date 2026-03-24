@@ -160,21 +160,23 @@ bool Z2S_deleteFile(const char* z2s_file_name) {
   return result;
 }
 
-int Z2S_getFileSize(const char* z2s_file_name, bool init_fs) {
+int Z2S_getFileSize(const char* z2s_file_name, bool init_fs, bool full_path) {
   
   if (init_fs && (!Z2S_initLittleFs())) {
     return 0;
   }
 
   char file_name[50] = {};
-  
-  snprintf(file_name, sizeof(file_name), "/z2s_gateway/%s", z2s_file_name);
+  if (full_path)
+    snprintf(file_name, sizeof(file_name), "%s", z2s_file_name);
+  else
+    snprintf(file_name, sizeof(file_name), "/z2s_gateway/%s", z2s_file_name);
   
   File file = LittleFS.open(file_name, "r");
   
   if (!file) {
 
-    log_e("Z2S LittleFs: failed to open file \"%s\"", z2s_file_name);
+    log_e("Z2S LittleFs: failed to open file \"%s\"", file_name);
 
     if (init_fs)
       Z2S_endLittleFs();
