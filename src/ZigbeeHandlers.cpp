@@ -287,7 +287,7 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
     if (true /*cmd_info->addr_data.common_data.dst_endpoint == (*it)->getEndpoint()*/) {
       
       if ((*it)->zbRawCmdHandler(
-        esp_zb_zcl_address, cmd_info->rssi, 
+        cmd_info->seq_number, esp_zb_zcl_address, cmd_info->rssi, 
         cmd_info->addr_data.common_data.src_endpoint, 
         cmd_info->addr_data.common_data.dst_endpoint, 
         cmd_info->cluster_id, cmd_info->cmd_id, cmd_info->is_common_command,
@@ -704,7 +704,7 @@ static esp_err_t zb_ota_upgrade_server_status_handler(
 
   if (message->upgrade_time) {
       
-      log_i("OTA upgrade time: 0x%lx", message->upgrade_time);
+      log_i("OTA upgrade time: 0x%lx", *message->upgrade_time);
   }
   if (message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_ABORTED || 
       message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_END) {
@@ -740,7 +740,7 @@ static esp_err_t zb_ota_upgrade_server_query_image_handler(
     
     if (message->table_idx) {
 
-        log_i("OTA table index: 0x%x", message->table_idx);
+        log_i("OTA table index: 0x%x", *message->table_idx);
     }
 
     for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {

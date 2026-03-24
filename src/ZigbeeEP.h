@@ -119,9 +119,9 @@ public:
 
   //list of all handlers function calls, to be override by EPs implementation
   virtual bool zbRawCmdHandler(
-    esp_zb_zcl_addr_t source, int8_t rssi, uint8_t src_endpoint, 
-    uint8_t dst_endpoint, uint16_t cluster_id, uint8_t cmd_id, 
-    bool is_common_command, bool disable_default_response, 
+    uint8_t seq_number, esp_zb_zcl_addr_t source, int8_t rssi, 
+    uint8_t src_endpoint, uint8_t dst_endpoint, uint16_t cluster_id, 
+    uint8_t cmd_id, bool is_common_command, bool disable_default_response, 
     bool is_manuf_specific, uint16_t manuf_specific, uint8_t buffer_size,
     uint8_t *buffer) { return false; };
 

@@ -5,9 +5,9 @@
 
 static uint16_t s_ota_image_type;
 static uint16_t s_ota_manuf_code;
-static uint32_t s_ota_image_offset = 0;
-static uint32_t s_ota_image_size = 0;
-static uint8_t s_ota_image_start[256];
+//static uint32_t s_ota_image_offset = 0;
+//static uint32_t s_ota_image_size = 0;
+//static uint8_t s_ota_image_start[256];
 
 esp_zb_zcl_ota_upgrade_server_variable_t ota_server_variable = {
     .query_jitter = OTA_UPGRADE_QUERY_JITTER,
@@ -2718,7 +2718,7 @@ void ZigbeeGateway:: zbOTAUpgradeServerStatus(
   if (message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_ABORTED || 
       message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_END) {
     
-    s_ota_image_offset = 0;
+    //s_ota_image_offset = 0;
   }
 }
   
@@ -2732,7 +2732,7 @@ bool ZigbeeGateway::zbOTAUpgradeServerQueryImage(
       return true;
     
     log_e("OTA image mismatch!");
-    s_ota_image_offset  = 0;
+    //s_ota_image_offset  = 0;
     return false;
 }
 
@@ -2742,6 +2742,19 @@ static char test_buff[256];
 esp_err_t ZigbeeGateway::zb_ota_next_data_handler(
   esp_zb_ota_zcl_information_t message, uint16_t index, uint8_t size, 
   uint8_t **data) {
+
+  log_e("shouldn't be called!?!");
+  return ESP_OK;
+};
+/*
+  log_i(
+    "cmd id %u, manufacturer specific %u", message.command_id, 
+    message.manufacturer_specific);
+
+  //if (*data)
+
+  if (s_ota_image_offset == 0)
+    size = 0x3F;
 
   switch (index) {
 
@@ -2783,7 +2796,7 @@ esp_err_t ZigbeeGateway::zb_ota_next_data_handler(
   
   return (*data) ? ESP_OK : ESP_FAIL;
 }
-
+*/
 /*****************************************************************************/
 
 esp_err_t ZigbeeGateway::sendOTAUpgradeServerNotifyRequest(
@@ -2810,7 +2823,7 @@ esp_err_t ZigbeeGateway::sendOTAUpgradeServerNotifyRequest(
     ota_file_header.manufacturer_code = ota_image_header.manufacturer_id;
     ota_file_header.image_type = ota_image_header.image_type;
     ota_file_header.file_version = ota_image_header.file_version;
-    ota_file_header.image_size = ota_image_header.image_size; // - ota_image_header.header_length;
+    ota_file_header.image_size = ota_image_header.image_size; 
 
     /* Indicate whether additional optional information */
     if (ota_image_header.field_control & 
@@ -2826,21 +2839,20 @@ esp_err_t ZigbeeGateway::sendOTAUpgradeServerNotifyRequest(
     if (ota_image_header.field_control & 
         ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_DEVICE_SPECIFIC) {
 
-      length += sizeof(esp_zb_ieee_addr_t);
-        }
+      image_info = (const uint8_t *)(ota_file_start + length);
+      ZB_OTA_FILE_HEADER_OPTIONAL(
+        ota_file_header.optional, upgrade_file_destination, length);
+    } else { 
 
-      //image_info = (const uint8_t *)(ota_file_start + length);
-      //ZB_OTA_FILE_HEADER_OPTIONAL(
-      //  ota_file_header.optional, upgrade_file_destination, length);
-      /*memcpy(
+      memcpy(
         ota_file_header.optional.upgrade_file_destination, ieee_addr, 
         sizeof(esp_zb_ieee_addr_t));
-
-      ota_file_header.field_control |= 
-        ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_DEVICE_SPECIFIC;*/
+      length += sizeof(esp_zb_ieee_addr_t);
+    }
+    
+    ota_file_header.field_control |= 
+      ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_DEVICE_SPECIFIC;
       
-    //}
-
     if (ota_image_header.field_control & 
         ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_HW_VER) {
 
@@ -2853,28 +2865,55 @@ esp_err_t ZigbeeGateway::sendOTAUpgradeServerNotifyRequest(
       ota_file_header.field_control |= 
         ESP_ZB_ZCL_OTA_UPGRADE_FILE_HEADER_FC_HW_VER;
     }
-    uint16_t se_tag = *((uint16_t *)(ota_file_start + length));
+    /*uint16_t se_tag = *((uint16_t *)(ota_file_start + length));
     length += 2;
     uint32_t se_size = *((uint32_t *)(ota_file_start + length));
     length += 4;
     log_i(
       "sub-element tag %u, sub-element size %lu, length %u", se_tag, se_size, 
-      length);
+      length);*/
 
     /* Indicate information is used to OTA server query image and retrieve the next data */
     s_ota_image_type = ota_file_header.image_type;
     s_ota_manuf_code = ota_file_header.manufacturer_code;
-    s_ota_image_size = se_size+length+10;//ota_image_header.image_size;
-    s_ota_image_offset = length; //ota_image_header.header_length;
-    ota_file_header.image_size = se_size;
+    //s_ota_image_size = ota_image_header.image_size;
+    //s_ota_image_offset = 0; //length; //ota_image_header.header_length;
 
     esp_zb_ota_upgrade_server_notify_req_t req = {0};
 
     req.endpoint = _instance->getEndpoint();
     req.index = 0;
     req.notify_on = true;
-    req.ota_upgrade_time = 0x005;
-    req.next_data_cb = zb_ota_next_data_handler;
+    req.ota_upgrade_time = 0x001;
+    req.next_data_cb = zb_ota_next_data_handler; //not used
+
+    char ieee_addr_str[24] = {};
+
+    sprintf_P(
+    ieee_addr_str, PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
+    ota_file_header.optional.upgrade_file_destination[7],
+    ota_file_header.optional.upgrade_file_destination[6], 
+    ota_file_header.optional.upgrade_file_destination[5],
+    ota_file_header.optional.upgrade_file_destination[4], 
+    ota_file_header.optional.upgrade_file_destination[3], 
+    ota_file_header.optional.upgrade_file_destination[2], 
+    ota_file_header.optional.upgrade_file_destination[1], 
+    ota_file_header.optional.upgrade_file_destination[0]);
+
+    //log_i("%s", ieee_addr_str);
+
+    log_i(
+      "\n\rota_file_header ready to send:\n\r"
+      "manufacturer_code: 0x%04X; image_type: 0x%04X; file_version: 0x%08X\n\r"
+      "image_size: 0x%08X (%lu); field_control: 0x%04X\n\r"
+      "security_credential_version: 0x%02X; upgrade_file_destination: %s\n\r"
+      "minimum_hardware_version: 0x%04X; maximum_hardware_version: 0x%04X",
+      ota_file_header.manufacturer_code,ota_file_header.image_type, 
+      ota_file_header.file_version, ota_file_header.image_size, 
+      ota_file_header.image_size, ota_file_header.field_control,
+      ota_file_header.optional.security_credential_version, ieee_addr_str,
+      ota_file_header.optional.minimum_hardware_version,
+      ota_file_header.optional.maximum_hardware_version);
 
     memcpy(
       &req.ota_file_header, &ota_file_header, 
@@ -3055,15 +3094,97 @@ void ZigbeeGateway::zbCmdCustomClusterReq(
 /*****************************************************************************/
 
 bool ZigbeeGateway::zbRawCmdHandler(
-    esp_zb_zcl_addr_t source, int8_t rssi, uint8_t src_endpoint, 
-    uint8_t dst_endpoint, uint16_t cluster_id, uint8_t cmd_id, 
-    bool is_common_command, bool disable_default_response, 
+    uint8_t seq_number, esp_zb_zcl_addr_t source, int8_t rssi, 
+    uint8_t src_endpoint, uint8_t dst_endpoint, uint16_t cluster_id, 
+    uint8_t cmd_id, bool is_common_command, bool disable_default_response, 
     bool is_manuf_specific, uint16_t manuf_specific, uint8_t buffer_size,
     uint8_t *buffer) {
   
     if (_on_update_device_last_rssi)
       _on_update_device_last_rssi(source.u.short_addr, rssi);
     
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE) && 
+        (cmd_id == 3)) {
+
+      log_i("trying to fix esp zigbee bug");
+
+      // Build ZCL header manually
+      uint8_t zcl_frame[255];
+      uint8_t *p = zcl_frame;
+
+      // Frame control (FrameType=Specific(1), ManufacturerSpecific=0, Direction=Server->Client(1), DisableDefaultResp=1)
+      uint8_t frame_control = 
+        (0x01) |            /* bits 0 and 1:  cluster-specific frame type, this is 2 bits, bit 1 is reserved and 0 */
+        ( 0 << 2) |         /* bit 2: include manufacture code */
+        (1 << 3) |          /* bit 3: direction server->client */
+        (1 << 4);           /* bit 4: disable default resp */
+      *p++ = frame_control;
+	
+	    /*if (include_mfr_code) {
+		    *p++ = MFG_CODE & 0x00FF;
+		    *p++ = (MFG_CODE & 0xFF00) >> 8;
+	    }*/
+
+      // Transaction Sequence Number (your custom TSN)
+      *p++ = seq_number;
+
+      // Command ID
+      *p++ = 0x05; //Image Block Response
+
+      // Payload
+
+      uint32_t file_offset = *((uint32_t *)(buffer + 9));
+      uint8_t max_data_size = *(buffer + 13);
+
+      log_i(
+        "file offset %lu, max_data_size = %u", file_offset, max_data_size);
+
+      *p++ = 0x00; //SUCESS CODE
+      memcpy(p, buffer + 1, 13);
+
+      p += 13;
+
+      if (_instance->_on_fill_ota_buffer) {
+        
+        size_t bytes_read = _instance->_on_fill_ota_buffer(
+          p, file_offset, max_data_size);
+
+        p += bytes_read;
+      }
+
+      uint8_t zcl_len = p - zcl_frame;
+
+      for (uint8_t i = 0; i < zcl_len; i++)
+        sprintf(test_buff + i*3, "%02X:", *(zcl_frame + i));
+      log_i("size = %u\n\r %s",zcl_len, test_buff);
+
+      // Fill APSDE data request
+      esp_zb_apsde_data_req_t aps_req = {
+        .dst_addr_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT,
+        .dst_addr = {
+			    .addr_short = source.u.short_addr,      // short address of destination
+		    },
+        .dst_endpoint = src_endpoint,
+        .profile_id = ESP_ZB_AF_HA_PROFILE_ID, // or your profile ID
+        .cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE,
+        .src_endpoint = dst_endpoint,
+        .asdu_length = zcl_len,
+        .asdu = zcl_frame,    // pointer to your built ZCL frame
+        .tx_options = ESP_ZB_APSDE_TX_OPT_ACK_TX, // request APS ACK
+		    .use_alias = false,
+        .radius = 30, // max hops
+      };
+
+      // Send via APSDE, not sure if I need the lock so get it anyway
+	    //esp_zb_lock_acquire(portMAX_DELAY);
+	    esp_err_t err = esp_zb_aps_data_request(&aps_req);
+	    //esp_zb_lock_release();
+      if (err != ESP_OK) {
+        log_e("Failed to send APSDE data req: %d", err);
+      }
+      return true;
+    }
+
     if (_on_custom_cmd_receive)
       return _on_custom_cmd_receive(
         source.u.short_addr, src_endpoint, cluster_id, cmd_id, buffer_size, 
