@@ -4402,7 +4402,7 @@ void Z2S_startWebGUI() {
 				request->_tempFile = LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "a");
 			else {
       	
-				if (!LittleFs.exists("/zigbee_ota/zigbee_ota_file.ota"))
+				if (!LittleFS.exists("/zigbee_ota/zigbee_ota_file.ota"))
 					LittleFS.mkdir("/zigbee_ota");
 
 				request->_tempFile = LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "w");
