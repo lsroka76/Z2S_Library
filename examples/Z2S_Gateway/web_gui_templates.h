@@ -2067,7 +2067,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
 																	"0 => low<br>"
 																	"1 => medium<br>"
 																	"2 => high" },
-																	
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_TEMPERATURE_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
@@ -2288,6 +2288,19 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "LED indicator",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => turn OFF, 1 => turn ON" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG104PLV,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG104PLV_SAMPLING_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Illuminance sampling interval",
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 1200 [s]<br>"
+																	"with step 5 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG104PLV,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG104PLV_SAMPLING_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Illuminance calibration",
+    .Tuya_datapoint_description = "Enter numeric value between -1000 and 1000 [lux]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2,
     .Tuya_datapoint_id 		 			= TUYA_RAIN_SENSOR_2_SENSITIVITY_DP,
