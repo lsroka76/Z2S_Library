@@ -2059,6 +2059,15 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Enter numeric value between 1 and 50: <br>"
 																	"1 => minimal, 50 => maximal sensitivity" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2,
+    .Tuya_datapoint_id 		 			= TUYA_VIBRATION_SENSOR_2_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => low<br>"
+																	"1 => medium<br>"
+																	"2 => high" },
+																	
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_TEMPERATURE_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,

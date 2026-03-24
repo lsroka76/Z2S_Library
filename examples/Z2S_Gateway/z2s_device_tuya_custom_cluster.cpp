@@ -2478,6 +2478,96 @@ void processTuyaVibrationSensorDataReport(
       Tuya_read_dp_result.dp_value);
   }  
 }
+/*******************************************************************************/
+
+void processTuyaVibrationSensor2DataReport(
+  int16_t channel_number_slot, uint16_t payload_size,uint8_t *payload, 
+  uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, TUYA_VIBRATION_SENSOR_VIBRATION_SID);
+
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT,
+    TUYA_VIBRATION_SENSOR_X_Y_Z_POSITION_SID);
+
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_VIBRATION_SENSOR_VIBRATION_STATE_SID);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result,TUYA_VIBRATION_SENSOR_VIBRATION_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceIASzone(
+        channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0));
+  }
+ 
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_VIBRATION_SENSOR_2_X_POSITION_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+  }
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_VIBRATION_SENSOR_2_Y_POSITION_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+  }
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_VIBRATION_SENSOR_2_Z_POSITION_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+  }
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_VIBRATION_SENSOR_2_VIBRATION_STATE_DP, 
+    payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+  }
+
+  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
+      TUYA_VIBRATION_SENSOR_BATTERY_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    updateSuplaBatteryLevel(
+      channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);
+  }  
+}
 
 /*******************************************************************************/
 
@@ -3118,6 +3208,13 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
 
       processTuyaVibrationSensorDataReport(
+        channel_number_slot, payload_size, payload, model_id); 
+    break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2:
+
+      processTuyaVibrationSensor2DataReport(
         channel_number_slot, payload_size, payload, model_id); 
     break;
 
