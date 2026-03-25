@@ -6336,6 +6336,16 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
 
 size_t Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t size) {
 
+	if (ota_buffer == nullptr) { //for status report
+
+		if (size == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_ABORTED)
+			updateLabel_P(
+			zigbee_ota_status_label, PSTR("OTA file transmission aborted"));
+		if (size == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_END)
+			updateLabel_P(
+			zigbee_ota_status_label, PSTR("OTA file transmission finished"));
+		return 0;
+	}
 	if (ota_offset == 0) {
 
 		ota_image_last_update_ms = millis();
