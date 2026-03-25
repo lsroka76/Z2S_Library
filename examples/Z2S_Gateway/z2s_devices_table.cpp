@@ -7466,13 +7466,15 @@ uint8_t Z2S_addZ2SDevice(
           SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
       } break;
 
+/*****************************************************************************/     
+
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
 
         addZ2SDeviceGeneralPurposeMeasurement(
           device, first_free_slot, -1, "ILLUMINANCE", 
           SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx"); 
-          break;
+        break;
 
 /*****************************************************************************/     
 

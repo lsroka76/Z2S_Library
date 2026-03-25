@@ -3149,6 +3149,9 @@ bool ZigbeeGateway::zbRawCmdHandler(
         size_t bytes_read = _instance->_on_fill_ota_buffer(
           p, file_offset, max_data_size);
 
+        if (bytes_read != max_data_size)
+          *(p - 1) = bytes_read;
+
         p += bytes_read;
       }
 
