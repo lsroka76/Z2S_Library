@@ -6,7 +6,7 @@
 static uint16_t s_ota_image_type;
 static uint16_t s_ota_manuf_code;
 //static uint32_t s_ota_image_offset = 0;
-//static uint32_t s_ota_image_size = 0;
+static uint32_t s_ota_image_size = 0;
 //static uint8_t s_ota_image_start[256];
 
 esp_zb_zcl_ota_upgrade_server_variable_t ota_server_variable = {
