@@ -2879,7 +2879,7 @@ esp_err_t ZigbeeGateway::sendOTAUpgradeServerNotifyRequest(
     /* Indicate information is used to OTA server query image and retrieve the next data */
     s_ota_image_type = ota_file_header.image_type;
     s_ota_manuf_code = ota_file_header.manufacturer_code;
-    //s_ota_image_size = ota_image_header.image_size;
+    s_ota_image_size = ota_image_header.image_size;
     //s_ota_image_offset = 0; //length; //ota_image_header.header_length;
 
     esp_zb_ota_upgrade_server_notify_req_t req = {0};
