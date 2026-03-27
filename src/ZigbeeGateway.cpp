@@ -2881,6 +2881,7 @@ esp_err_t ZigbeeGateway::sendOTAUpgradeServerNotifyRequest(
     s_ota_image_type = ota_file_header.image_type;
     s_ota_manuf_code = ota_file_header.manufacturer_code;
     s_ota_image_size = ota_image_header.image_size;
+    s_ota_image_size = ota_image_header.file_version;
     //s_ota_image_offset = 0; //length; //ota_image_header.header_length;
 
     esp_zb_ota_upgrade_server_notify_req_t req = {0};
@@ -3110,7 +3111,7 @@ bool ZigbeeGateway::zbRawCmdHandler(
     if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE) && 
         (cmd_id == 3)) {
 
-      log_i("trying to fix esp zigbee bug");
+      log_i("ZigbeeGateway custom Image Block Response");
 
       // Build ZCL header manually
       uint8_t zcl_frame[255];
@@ -3124,11 +3125,6 @@ bool ZigbeeGateway::zbRawCmdHandler(
         (1 << 4);           /* bit 4: disable default resp */
       *p++ = frame_control;
 	
-	    /*if (include_mfr_code) {
-		    *p++ = MFG_CODE & 0x00FF;
-		    *p++ = (MFG_CODE & 0xFF00) >> 8;
-	    }*/
-
       // Transaction Sequence Number (your custom TSN)
       *p++ = seq_number;
 
@@ -3163,7 +3159,91 @@ bool ZigbeeGateway::zbRawCmdHandler(
 
       for (uint8_t i = 0; i < zcl_len; i++)
         sprintf(test_buff + i*3, "%02X:", *(zcl_frame + i));
-      log_i("size = %u\n\r %s",zcl_len, test_buff);
+      log_i("ZCL frame size = %u\n\r %s",zcl_len, test_buff);
+
+      // Fill APSDE data request
+      esp_zb_apsde_data_req_t aps_req = {
+        .dst_addr_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT,
+        .dst_addr = {
+			    .addr_short = source.u.short_addr,      // short address of destination
+		    },
+        .dst_endpoint = src_endpoint,
+        .profile_id = ESP_ZB_AF_HA_PROFILE_ID, // or your profile ID
+        .cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE,
+        .src_endpoint = dst_endpoint,
+        .asdu_length = zcl_len,
+        .asdu = zcl_frame,    // pointer to your built ZCL frame
+        .tx_options = ESP_ZB_APSDE_TX_OPT_ACK_TX, // request APS ACK
+		    .use_alias = false,
+        .radius = 30, // max hops
+      };
+
+      // Send via APSDE, not sure if I need the lock so get it anyway
+	    //esp_zb_lock_acquire(portMAX_DELAY);
+	    esp_err_t err = esp_zb_aps_data_request(&aps_req);
+	    //esp_zb_lock_release();
+      if (err != ESP_OK) {
+        log_e("Failed to send APSDE data req: %d", err);
+      }
+      return true;
+    }
+
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE) && 
+        (cmd_id == 0x01)) {
+
+      log_i("ZigbeeGateway custom Query Next Image Response");
+
+      uint8_t req_field_control = *(buffer);
+      uint16_t req_manufacturer_code = *((uint16_t *)(buffer + 1));
+      uint16_t req_image_type = *((uint16_t *)(buffer + 3));
+      uint32_t req_current_file_version = *((uint32_t *)(buffer + 5));
+      
+
+      log_i(
+        "\n\rfield control = 0x%02X, manufacturer code = 0x%04X,"
+        " image type = 0x%04X, current file version = 0x%08X", 
+        req_field_control, req_manufacturer_code, req_image_type, 
+        req_current_file_version);
+
+
+      // Build ZCL header manually
+      uint8_t zcl_frame[255];
+      uint8_t *p = zcl_frame;
+
+      // Frame control (FrameType=Specific(1), ManufacturerSpecific=0, Direction=Server->Client(1), DisableDefaultResp=1)
+      uint8_t frame_control = 
+        (0x01) |            /* bits 0 and 1:  cluster-specific frame type, this is 2 bits, bit 1 is reserved and 0 */
+        ( 0 << 2) |         /* bit 2: include manufacture code */
+        (1 << 3) |          /* bit 3: direction server->client */
+        (1 << 4);           /* bit 4: disable default resp */
+      *p++ = frame_control;
+	
+      // Transaction Sequence Number (your custom TSN)
+      *p++ = seq_number;
+
+      // Command ID
+      *p++ = 0x02; //Query Next Image Response
+
+      // Payload
+
+      *p++ = 0x00; //SUCESS CODE
+      memcpy(p, buffer + 1, 4);
+
+      p += 4;
+
+      memcpy(p, &s_ota_image_file_version, 4);
+
+      p += 4;
+
+      memcpy(p, &s_ota_image_size, 4);
+
+      p += 4;
+
+      uint8_t zcl_len = p - zcl_frame;
+
+      for (uint8_t i = 0; i < zcl_len; i++)
+        sprintf(test_buff + i*3, "%02X:", *(zcl_frame + i));
+      log_i("ZCL frame size = %u\n\r %s",zcl_len, test_buff);
 
       // Fill APSDE data request
       esp_zb_apsde_data_req_t aps_req = {
