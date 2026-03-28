@@ -221,7 +221,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = false;
         
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_ALARM_MELODY_DP, Z2S_incValueU8(
+          &zbGateway, &_device, MOES_ALARM_VOLUME_DP, Z2S_incValueU8(
             MOES_ALARM_VOLUME_LOWEST, MOES_ALARM_VOLUME_HIGHEST));
         
         channel.setNewValue(state);
@@ -468,7 +468,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
         
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_ALARM_MELODY_DP, Z2S_decValueU8(
+          &zbGateway, &_device, MOES_ALARM_VOLUME_DP, Z2S_decValueU8(
             MOES_ALARM_VOLUME_LOWEST, MOES_ALARM_VOLUME_HIGHEST));
         
         channel.setNewValue(state);

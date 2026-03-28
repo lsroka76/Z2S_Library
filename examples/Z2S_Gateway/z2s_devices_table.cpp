@@ -10789,30 +10789,25 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_MOES_ALARM: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       MOES_ALARM_SWITCH_SID, 
-                       "ALARM SWITCH", 
-                      SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, MOES_ALARM_SWITCH_SID, "ALARM SWITCH", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       MOES_ALARM_MELODY_SID, 
-                       "ALARM MELODY", 
-                       SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, MOES_ALARM_MELODY_SID, "ALARM MELODY", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       MOES_ALARM_VOLUME_SID, 
-                       "ALARM VOLUME", 
-                       SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, MOES_ALARM_VOLUME_SID, "ALARM VOLUME", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       MOES_ALARM_DURATION_SID, 
-                       "ALARM DURATION", 
-                       SUPLA_CHANNELFNC_POWERSWITCH);
+      Z2S_addZ2SDevice(
+        joined_device, MOES_ALARM_DURATION_SID, "ALARM DURATION", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       MOES_ALARM_DISPLAY_SID, 
-                       "ALARM DISPLAY", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+      Z2S_addZ2SDevice(
+        joined_device, MOES_ALARM_DISPLAY_SID, "ALARM DISPLAY", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
     } break;
 
 /*****************************************************************************/
