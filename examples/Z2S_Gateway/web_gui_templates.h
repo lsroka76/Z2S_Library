@@ -3030,9 +3030,27 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_WATER_LEVEL_SENSOR_MIN_SET_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Minimal percentage",
-    .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]"}
-};
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]"},
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_LEVEL_SENSOR_MIN_SET_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Minimal percentage",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE,
+    .Tuya_datapoint_id 		 			= TUYA_DUAL_WATER_VALVE_V1_COUNTDOWN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Valve #1 countdown",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 1440 [min]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE,
+    .Tuya_datapoint_id 		 			= TUYA_DUAL_WATER_VALVE_V2_COUNTDOWN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Valve #2 countdown",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 1440 [min]"}
+};
+x
 #endif //WEB_GUI_TEMPLATES_H_
 
 
