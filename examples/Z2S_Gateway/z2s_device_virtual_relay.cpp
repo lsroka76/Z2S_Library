@@ -108,7 +108,8 @@ void initZ2SDeviceVirtualRelay(
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
       case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
       case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER:
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T: {
+      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T:
+      case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE: {
 
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY; 
       } break;
@@ -290,6 +291,14 @@ void initZ2SDeviceVirtualRelay(
 
         Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
           TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP +
+          z2s_channels_table[channel_number_slot].sub_id);
+      break;
+
+
+      case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE:
+
+        Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
+          TUYA_DUAL_WATER_VALVE_V1_STATE_DP +
           z2s_channels_table[channel_number_slot].sub_id);
       break;
 

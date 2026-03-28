@@ -716,47 +716,76 @@ void processTuyaSoilSensor3FReport(
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_SOIL_SENSOR_4F_ILLUMINANCE_SID);
 
+  int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_SID);
+
+  int16_t channel_number_slot_6 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_WARNING_SID);
+
   Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
-  uint8_t water_warning_dp = 0;
-  uint8_t temperature_dp   = 0;
-  uint8_t humidity_dp      = 0;
-  uint8_t soil_moisture_dp = 0;
-  uint8_t battery_dp       = 0;
-  uint8_t illuminance_dp   = 0;
-  uint8_t battery_state_dp = 0;
+  uint8_t water_warning_dp  = 0;
+  uint8_t soil_warning_dp   = 0;
+  uint8_t temperature_dp    = 0;
+  uint8_t humidity_dp       = 0;
+  uint8_t soil_moisture_dp  = 0;
+  uint8_t battery_dp        = 0;
+  uint8_t illuminance_dp    = 0;
+  uint8_t battery_state_dp  = 0;
+  uint8_t soil_fertility_dp = 0;
 
   switch (model_id) {
 
 
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F: {
     
-      water_warning_dp = TUYA_SOIL_SENSOR_3F_WATER_WARNING_DP;
-      temperature_dp   = TUYA_SOIL_SENSOR_3F_TEMPERATURE_DP;
-      humidity_dp      = TUYA_SOIL_SENSOR_3F_HUMIDITY_DP;
-      soil_moisture_dp = TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_DP;
-      battery_dp       = TUYA_SOIL_SENSOR_3F_BATTERY_DP;
+      water_warning_dp  = TUYA_SOIL_SENSOR_3F_WATER_WARNING_DP;
+      temperature_dp    = TUYA_SOIL_SENSOR_3F_TEMPERATURE_DP;
+      humidity_dp       = TUYA_SOIL_SENSOR_3F_HUMIDITY_DP;
+      soil_moisture_dp  = TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_DP;
+      battery_dp        = TUYA_SOIL_SENSOR_3F_BATTERY_DP;
     } break;
 
 
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2: {
   
-      water_warning_dp = TUYA_SOIL_SENSOR_3F_2_WATER_WARNING_DP;
-      temperature_dp   = TUYA_SOIL_SENSOR_3F_2_TEMPERATURE_DP;
-      humidity_dp      = TUYA_SOIL_SENSOR_3F_2_HUMIDITY_DP;
-      soil_moisture_dp = TUYA_SOIL_SENSOR_3F_2_SOIL_MOISTURE_DP;
-      battery_dp       = TUYA_SOIL_SENSOR_3F_2_BATTERY_DP;
+      water_warning_dp  = TUYA_SOIL_SENSOR_3F_2_WATER_WARNING_DP;
+      temperature_dp    = TUYA_SOIL_SENSOR_3F_2_TEMPERATURE_DP;
+      humidity_dp       = TUYA_SOIL_SENSOR_3F_2_HUMIDITY_DP;
+      soil_moisture_dp  = TUYA_SOIL_SENSOR_3F_2_SOIL_MOISTURE_DP;
+      battery_dp        = TUYA_SOIL_SENSOR_3F_2_BATTERY_DP;
     } break;
 
 
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F: {
   
-      water_warning_dp = TUYA_SOIL_SENSOR_4F_WATER_WARNING_DP;
-      temperature_dp   = TUYA_SOIL_SENSOR_4F_TEMPERATURE_DP;
-      humidity_dp      = TUYA_SOIL_SENSOR_4F_HUMIDITY_DP;
-      soil_moisture_dp = TUYA_SOIL_SENSOR_4F_SOIL_MOISTURE_DP;
-      illuminance_dp   = TUYA_SOIL_SENSOR_4F_ILLUMINANCE_DP;
-      battery_state_dp = TUYA_SOIL_SENSOR_4F_BATTERY_STATE_DP;
+      water_warning_dp  = TUYA_SOIL_SENSOR_4F_WATER_WARNING_DP;
+      temperature_dp    = TUYA_SOIL_SENSOR_4F_TEMPERATURE_DP;
+      humidity_dp       = TUYA_SOIL_SENSOR_4F_HUMIDITY_DP;
+      soil_moisture_dp  = TUYA_SOIL_SENSOR_4F_SOIL_MOISTURE_DP;
+      illuminance_dp    = TUYA_SOIL_SENSOR_4F_ILLUMINANCE_DP;
+      battery_state_dp  = TUYA_SOIL_SENSOR_4F_BATTERY_STATE_DP;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F: {
+  
+      water_warning_dp  = TUYA_SOIL_SENSOR_5F_WATER_WARNING_DP;
+      soil_warning_dp   = TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_WARNING_DP;
+      temperature_dp    = TUYA_SOIL_SENSOR_5F_TEMPERATURE_DP;
+      humidity_dp       = TUYA_SOIL_SENSOR_5F_HUMIDITY_DP;
+      soil_moisture_dp  = TUYA_SOIL_SENSOR_5F_SOIL_MOISTURE_DP;
+      illuminance_dp    = TUYA_SOIL_SENSOR_5F_ILLUMINANCE_DP;
+      battery_state_dp  = TUYA_SOIL_SENSOR_5F_BATTERY_STATE_DP;
+      soil_fertility_dp = TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_DP;
     } break;
 
 
@@ -771,6 +800,16 @@ void processTuyaSoilSensor3FReport(
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceIASzone(
         channel_number_slot_1, (Tuya_read_dp_result.dp_value == 1));
+  }
+
+  if (soil_warning_dp) {
+    
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, soil_warning_dp, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success)
+      msgZ2SDeviceIASzone(
+        channel_number_slot_6, (Tuya_read_dp_result.dp_value == 1));
   }
 
   if (temperature_dp) {
@@ -812,6 +851,17 @@ void processTuyaSoilSensor3FReport(
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceGeneralPurposeMeasurement(
         channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+        Tuya_read_dp_result.dp_value);
+  }
+
+  if (soil_fertility_dp) {
+    
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, soil_fertility_dp, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success)
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot_5, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
         Tuya_read_dp_result.dp_value);
   }
 
@@ -2982,6 +3032,173 @@ void processTuyaTS0603GateControllerDataReport(
       channel_number_slot_2, Tuya_read_dp_result.dp_value);  
 }
 
+/*******************************************************************************/
+
+void processTuyaDualWaterValveDataReport(
+  int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
+  uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_RELAY, TUYA_DUAL_WATER_VALVE_V1_STATE_SID);
+
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_RELAY, TUYA_DUAL_WATER_VALVE_V2_STATE_SID);
+  
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_DUAL_WATER_VALVE_V1_DURATION_SID);
+  
+  int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_DUAL_WATER_VALVE_V2_DURATION_SID);
+
+  int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_DUAL_WATER_VALVE_V1_STATUS_SID);
+  
+  int16_t channel_number_slot_6 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_DUAL_WATER_VALVE_V2_STATUS_SID);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_DUAL_WATER_VALVE_V1_STATE_DP, payload_size, 
+    payload);
+    
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceVirtualRelay(
+      channel_number_slot_1, Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_DUAL_WATER_VALVE_V2_STATE_DP, payload_size, 
+    payload);
+    
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceVirtualRelay(
+      channel_number_slot_2, Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_DUAL_WATER_VALVE_V1_DURATION_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_DUAL_WATER_VALVE_V2_DURATION_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_DUAL_WATER_VALVE_V1_STATUS_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_5, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_DUAL_WATER_VALVE_V2_STATUS_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_6, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result,TUYA_DUAL_WATER_VALVE_BATTERY_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    updateSuplaBatteryLevel(
+      channel_number_slot, ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);
+  }
+
+/*******************************************************************************/
+
+void processTuyaWaterLevelSensorDataReport(
+  int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
+  uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_WATER_LEVEL_SENSOR_DEPTH_SID);
+  
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_WATER_LEVEL_SENSOR_DEPTH_PERCENTAGE_SID);
+
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_WATER_LEVEL_SENSOR_DEPTH_STATE_SID);
+  
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_LEVEL_SENSOR_DEPTH_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_LEVEL_SENSOR_DEPTH_PERCENTAGE_DP, 
+    payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_LEVEL_SENSOR_STATE_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+}
+
 /*****************************************************************************/
 
 void processTuyaDataReport(
@@ -3052,6 +3269,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F:
 
       processTuyaSoilSensor3FReport(
         channel_number_slot, payload_size, payload, 10, model_id); 
@@ -3252,6 +3470,13 @@ void processTuyaDataReport(
     break;
 
 
+    case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE:
+
+      processTuyaDualWaterValveDataReport(
+        channel_number_slot, payload_size, payload, model_id); 
+    break;
+
+
     case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
 
       processFingerbotPlusDataReport(
@@ -3292,11 +3517,20 @@ void processTuyaDataReport(
         channel_number_slot, payload_size, payload, model_id);
     break;
 
+
     case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER:
 
       processTuyaTS0603GateControllerDataReport(
         channel_number_slot, payload_size, payload, model_id);
     break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR:
+
+      processTuyaWaterLevelSensorDataReport(
+        channel_number_slot, payload_size, payload, model_id);
+    break;
+
 
     default: 
       

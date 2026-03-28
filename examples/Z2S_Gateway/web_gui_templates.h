@@ -2214,6 +2214,43 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Soil moisture alarm value",
     .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]" },
 
+	//5F
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_5F_TEMPERATURE_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature calibration",
+    .Tuya_datapoint_description = "Enter numeric value between -20 and 20: <br>"
+																	"1 = 0.1°C" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_5F_HUMIDITY_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Humidity calibration",
+    .Tuya_datapoint_description = "Enter numeric value between -30% and 30%" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_5F_SOIL_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Soil moisture calibration",
+    .Tuya_datapoint_description = "Enter numeric value between -30% and 30%" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_5F_ILLUMINANCE_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Illuminance calibration",
+    .Tuya_datapoint_description = "Enter numeric value between -15 lx and 1000 lx" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_5F_SOIL_SAMPLING_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Soil moisture sampling interval",
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 3600 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F,
+    .Tuya_datapoint_id 		 			= TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_WARNING_LEVEL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Soil fertility alarm value",
+    .Tuya_datapoint_description = "Enter numeric value between 100 and 5000 [uS/cm]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_4IN1_MOTION_DETECTION_SENSITIVITY_DP,
@@ -2970,7 +3007,30 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => OFF<br>"
 																	"1 => ON" },
-		
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_LEVEL_SENSOR_INSTALLATION_HEIGHT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Distance between sensor and tank bottom",
+    .Tuya_datapoint_description = "Enter numeric value between 10 and 400 [cm]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_LEVEL_SENSOR_MAX_DEPTH_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Distance between sensor and maximal level",
+    .Tuya_datapoint_description = "Enter numeric value between 10 and 400 [cm]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_LEVEL_SENSOR_MAX_SET_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Maximal percentage",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_LEVEL_SENSOR_MIN_SET_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Minimal percentage",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]"}
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

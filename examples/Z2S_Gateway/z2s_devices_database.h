@@ -70,6 +70,7 @@
 #define Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F                 0x1110
 #define Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2               0x1111
 #define Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F                 0x1112
+#define Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F                 0x1113
 
 #define Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE           0x1150
 
@@ -152,6 +153,8 @@
 #define Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR                   0x2600
 #define Z2S_DEVICE_DESC_DIY_MAIL_SENSOR                     0x2610
 #define Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR         0x2615
+
+#define Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR             0x2700
 
 #define Z2S_DEVICE_DESC_RGBW_START                          0x3000
 
@@ -266,6 +269,7 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_VALVE                  0x4900
 #define Z2S_DEVICE_DESC_GIEX_SMART_VALVE                    0x4910
+#define Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE               0x4920
 
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F                0x5000
 #define Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_3F                0x5001
@@ -474,6 +478,8 @@
 #define TUYA_SOIL_SENSOR_3F_TH_SID                          0x01
 #define TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID               0x02
 #define TUYA_SOIL_SENSOR_4F_ILLUMINANCE_SID                 0x03
+#define TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_SID              0x04
+#define TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_WARNING_SID      0x05
 
 //#define IAS_ZONE_ALARM_1_SID                              0x00
 //#define IAS_ZONE_ALARM_2_SID                              0x01
@@ -619,6 +625,13 @@
 #define GIEX_SMART_VALVE_INTERVAL_SID                       0x04
 #define GIEX_SMART_VALVE_VOLUME_SID                         0x07
 
+#define TUYA_DUAL_WATER_VALVE_V1_STATE_SID                  0x00
+#define TUYA_DUAL_WATER_VALVE_V2_STATE_SID                  0x01
+#define TUYA_DUAL_WATER_VALVE_V1_DURATION_SID               0x02
+#define TUYA_DUAL_WATER_VALVE_V2_DURATION_SID               0x03
+#define TUYA_DUAL_WATER_VALVE_V1_STATUS_SID                 0x04
+#define TUYA_DUAL_WATER_VALVE_V2_STATUS_SID                 0x05
+
 #define SONOFF_PIR_SENSOR_OCCUPANCY_SID                     0x00
 #define SONOFF_PIR_SENSOR_ILLUMINANCE_SID                   0x01
 
@@ -691,6 +704,9 @@
 #define TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TH_SID           0x00
 #define TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMP_SID         0x01
 
+#define TUYA_WATER_LEVEL_SENSOR_DEPTH_SID                   0x00
+#define TUYA_WATER_LEVEL_SENSOR_DEPTH_PERCENTAGE_SID        0x01
+#define TUYA_WATER_LEVEL_SENSOR_DEPTH_STATE_SID             0x02
 
 [[maybe_unused]]
 static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
@@ -1919,6 +1935,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
@@ -2197,6 +2219,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00 }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -2248,6 +2276,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR,
     .z2s_device_clusters_count = 1,
@@ -5930,6 +5963,21 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "PIRIV01", .model_name = "Excellux",
     .z2s_device_uid = 35200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG104PLV,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_7yyuo8sr", .model_name = "TS0601",
+    .z2s_device_uid = 35300,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "A89G12C", .model_name = "Arteco",
+    .z2s_device_uid = 35400,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_fhvpaltk", .model_name = "TS0601",
+    .z2s_device_uid = 35500,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE,
     .z2s_device_endpoints_count = 1},
 
 //DEVICES_END

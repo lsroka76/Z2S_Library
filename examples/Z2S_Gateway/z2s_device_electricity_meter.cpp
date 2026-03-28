@@ -33,6 +33,7 @@ void initZ2SDeviceElectricityMeter(
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
     
+
     case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
 
       _isTuya = true; 
@@ -46,6 +47,24 @@ void initZ2SDeviceElectricityMeter(
             Z2S_getZbDeviceManufacturerName(
               z2s_channels_table[channel_number_slot].Zb_device_id),
               "_TZ3000_5f43h46b") == 0)) {
+
+        energy_multiplier = 1;
+        energy_divisor  = 100;
+      
+        ignore_zigbee_scaling = true;
+      }
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1: {
+
+      _isTuya = true; 
+      _active_query = false; //true;
+
+      if (strcmp(
+        Z2S_getZbDeviceManufacturerName(
+          z2s_channels_table[channel_number_slot].Zb_device_id),
+          "_TZ3210_rwmitwj4") == 0) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;

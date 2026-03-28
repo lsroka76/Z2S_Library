@@ -6676,12 +6676,14 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
       case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
-      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F: {
+      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F:
+      case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F: {
 
         switch (sub_id) {
 
 
           case TUYA_SOIL_SENSOR_3F_WATER_WARNING_SID:
+          case TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_WARNING_SID:
 
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func);
           break;
@@ -6696,6 +6698,7 @@ uint8_t Z2S_addZ2SDevice(
 
           case TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID:
           case TUYA_SOIL_SENSOR_4F_ILLUMINANCE_SID:
+          case TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_SID:
 
             addZ2SDeviceGeneralPurposeMeasurement(
               device, first_free_slot, sub_id, name, func, unit); 
@@ -7750,6 +7753,48 @@ uint8_t Z2S_addZ2SDevice(
           case SONOFF_SMART_VALVE_PAUSE_SID:
           case SONOFF_SMART_VALVE_VOLUME_SID:
 
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+        }
+      } break; 
+
+/******************************************************************************/     
+
+      case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE: {
+        
+        switch (sub_id) {
+          
+          case TUYA_DUAL_WATER_VALVE_V1_STATE_SID:
+          case TUYA_DUAL_WATER_VALVE_V2_STATE_SID:
+
+           addZ2SDeviceVirtualRelay(
+            &zbGateway, device, first_free_slot, sub_id, name, func); 
+          break;
+
+      
+          case TUYA_DUAL_WATER_VALVE_V1_DURATION_SID: 
+          case TUYA_DUAL_WATER_VALVE_V2_DURATION_SID:
+          case TUYA_DUAL_WATER_VALVE_V1_STATUS_SID:
+          case TUYA_DUAL_WATER_VALVE_V2_STATUS_SID:
+          
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+        }
+      } break; 
+
+/******************************************************************************/     
+
+      case Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR: {
+        
+        switch (sub_id) {
+        
+      
+          case TUYA_WATER_LEVEL_SENSOR_DEPTH_SID: 
+          case TUYA_WATER_LEVEL_SENSOR_DEPTH_PERCENTAGE_SID:
+          case TUYA_WATER_LEVEL_SENSOR_DEPTH_STATE_SID:
+          
             addZ2SDeviceGeneralPurposeMeasurement(
               device, first_free_slot, sub_id, name, func, unit); 
           break;
@@ -9399,6 +9444,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
     case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2:
@@ -9456,6 +9502,8 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR:
     case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
     case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
+    case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE:
+    case Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
     case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
     case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
@@ -10673,6 +10721,57 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
+    case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_DUAL_WATER_VALVE_V1_STATE_SID, "VALVE #1 ON/OFF", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_DUAL_WATER_VALVE_V2_STATE_SID, "VALVE #2 ON/OFF", 
+        SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_DUAL_WATER_VALVE_V1_DURATION_SID, 
+        "VALVE #1 LAST IRRIGATION TIME", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "s");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_DUAL_WATER_VALVE_V2_DURATION_SID, 
+        "VALVE #1 LAST IRRIGATION TIME", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "s");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_DUAL_WATER_VALVE_V1_STATUS_SID, "VALVE #1 STATUS", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "0MAN/1AUT/2IDL");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_DUAL_WATER_VALVE_V2_STATUS_SID, "VALVE #2 STATUS", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "0MAN/1AUT/2IDL");
+    } break;
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR: {
+      
+    
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_LEVEL_SENSOR_DEPTH_SID, 
+        "DEPTH", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "cm");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_LEVEL_SENSOR_DEPTH_PERCENTAGE_SID, 
+        "DEPTH %", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "%");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_LEVEL_SENSOR_DEPTH_STATE_SID, 
+        "LEVEL STATE", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "0N/1L/2H");
+    } break;
+
+/*****************************************************************************/
+
     case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
       
       Z2S_addZ2SDevice(joined_device, 
@@ -10934,13 +11033,19 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
-case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
-case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
-case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F: {
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F:
+    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F: {
 
       Z2S_addZ2SDevice(
         joined_device, TUYA_SOIL_SENSOR_3F_WATER_WARNING_SID, "WATER ALARM", 
         SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      if (joined_device->model_id == Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F)
+        Z2S_addZ2SDevice(
+          joined_device, TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_WARNING_SID,
+          "SOIL FERTILITY ALARM", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
             
       Z2S_addZ2SDevice(joined_device, TUYA_SOIL_SENSOR_3F_TH_SID, "T/H");
 
@@ -10948,10 +11053,16 @@ case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F: {
         joined_device, TUYA_SOIL_SENSOR_3F_SOIL_MOISTURE_SID,"SOIL MOISTURE",
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "%");
 
-      if (joined_device->model_id == Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F)
+      if ((joined_device->model_id == Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F) ||
+          (joined_device->model_id == Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F))
         Z2S_addZ2SDevice(
         joined_device, TUYA_SOIL_SENSOR_4F_ILLUMINANCE_SID,"ILLUMINANCE",
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+      if (joined_device->model_id == Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F)
+        Z2S_addZ2SDevice(
+        joined_device, TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_SID,"SOIL FERTILITY",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "uS/cm");
     } break;
 
 /*****************************************************************************/

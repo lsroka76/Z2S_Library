@@ -62,6 +62,22 @@
 #define TUYA_SOIL_SENSOR_4F_SOIL_SAMPLING_DP                        0x67
 #define TUYA_SOIL_SENSOR_4F_SOIL_WARNING_DP                         0x6E
 
+#define TUYA_SOIL_SENSOR_5F_WATER_WARNING_DP                        0x6F
+#define TUYA_SOIL_SENSOR_5F_TEMPERATURE_DP                          0x05
+#define TUYA_SOIL_SENSOR_5F_HUMIDITY_DP                             0x65
+#define TUYA_SOIL_SENSOR_5F_ILLUMINANCE_DP                          0x66
+#define TUYA_SOIL_SENSOR_5F_SOIL_MOISTURE_DP                        0x03
+#define TUYA_SOIL_SENSOR_5F_BATTERY_STATE_DP                        0x0E
+#define TUYA_SOIL_SENSOR_5F_TEMPERATURE_CALIBRATION_DP              0x6B
+#define TUYA_SOIL_SENSOR_5F_HUMIDITY_CALIBRATION_DP                 0x69
+#define TUYA_SOIL_SENSOR_5F_SOIL_CALIBRATION_DP                     0x68
+#define TUYA_SOIL_SENSOR_5F_ILLUMINANCE_CALIBRATION_DP              0x6A
+#define TUYA_SOIL_SENSOR_5F_SOIL_SAMPLING_DP                        0x67
+#define TUYA_SOIL_SENSOR_5F_SOIL_WARNING_DP                         0x6E
+#define TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_DP                       0x70
+#define TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_WARNING_LEVEL_DP         0x72
+#define TUYA_SOIL_SENSOR_5F_SOIL_FERTILITY_WARNING_DP               0x73
+
 #define TUYA_TH_SENSOR_TEMPERATURE_DP                               0x01
 #define TUYA_TH_SENSOR_HUMIDITY_DP                                  0x02
 #define TUYA_TH_SENSOR_BATTERY_STATE_DP                             0x03
@@ -507,6 +523,26 @@
 
 #define TUYA_TS0603_GATE_CONTROLER_STATE_DP                         0x01
 #define TUYA_TS0603_GATE_CONTROLER_CONTACT_DP                       0x03
+
+#define TUYA_WATER_LEVEL_SENSOR_STATE_DP                            0x01
+#define TUYA_WATER_LEVEL_SENSOR_DEPTH_DP                            0x02
+#define TUYA_WATER_LEVEL_SENSOR_MAX_SET_DP                          0x07
+#define TUYA_WATER_LEVEL_SENSOR_MIN_SET_DP                          0x08
+#define TUYA_WATER_LEVEL_SENSOR_INSTALLATION_HEIGHT_DP              0x13
+#define TUYA_WATER_LEVEL_SENSOR_MAX_DEPTH_DP                        0x15
+#define TUYA_WATER_LEVEL_SENSOR_DEPTH_PERCENTAGE_DP                 0x16
+
+#define TUYA_DUAL_WATER_VALVE_V1_STATE_DP                           0x01
+#define TUYA_DUAL_WATER_VALVE_V2_STATE_DP                           0x02
+#define TUYA_DUAL_WATER_VALVE_V1_COUNTDOWN_DP                       0x0D
+#define TUYA_DUAL_WATER_VALVE_V2_COUNTDOWN_DP                       0x0E
+#define TUYA_DUAL_WATER_VALVE_V1_DURATION_DP                        0x19
+#define TUYA_DUAL_WATER_VALVE_V2_DURATION_DP                        0x1A
+#define TUYA_DUAL_WATER_VALVE_V1_STATUS_DP                          0x68
+#define TUYA_DUAL_WATER_VALVE_V2_STATUS_DP                          0x69
+#define TUYA_DUAL_WATER_VALVE_BATTERY_DP                            0x3B
+
+
 
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_16  0x08 //16bit value /8 bytes/
