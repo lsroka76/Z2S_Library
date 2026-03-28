@@ -3050,7 +3050,7 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_name 	 			= "Valve #2 countdown",
     .Tuya_datapoint_description = "Enter numeric value between 0 and 1440 [min]"}
 };
-x
+
 #endif //WEB_GUI_TEMPLATES_H_
 
 
