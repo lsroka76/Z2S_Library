@@ -551,9 +551,9 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
 
       case Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY: {
 
-        uint8_t realy_dp_id = _z2s_function_value_U8;
+        uint8_t relay_dp_id = _z2s_function_value_U8;
 
-        //sendTuyaRequestCmdBool(&zbGateway, &_device, realy_dp_id, state);
+        //sendTuyaRequestCmdBool(&zbGateway, &_device, relay_dp_id, state);
         sendTuyaQueryCmd(&zbGateway, &_device, false);
         
       } break;
