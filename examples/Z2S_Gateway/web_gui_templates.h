@@ -48,7 +48,10 @@ typedef struct zigbee_attribute_value_s {
 	const uint16_t zigbee_attribute_id;
 	const uint16_t zigbee_cluster_id;
 	const char* zigbee_attribute_value_name;
+union {
 	const uint32_t zigbee_attribute_value;
+	const char* zigbee_attribute_value_str;
+};
 } zigbee_attribute_value_t;
 
 
@@ -285,7 +288,7 @@ static constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM =
 	   .zigbee_datatype_size = 0x00,	
 		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING },
 
-	 { .zigbee_datatype_name = "LSTRING",	
+	 { .zigbee_datatype_name = "CSTRING",	
 	   .zigbee_datatype_size = 0x00,	
 		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING },
 
@@ -1401,6 +1404,11 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "MOTOR RUN STATUS" },
 
+	{ .zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_DIMMER_CALIBRATION_ACTION_ID, 
+		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING,
+		.zigbee_attribute_name = "DIMMER CALIBRATION ACTION" },
+
 	{ .zigbee_attribute_id  = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID, 
 		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
@@ -1723,6 +1731,27 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
 		.zigbee_attribute_value_name = "MANUAL 3 FULLY CLOSED",
 		.zigbee_attribute_value = 0x08
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_DIMMER_CALIBRATION_ACTION_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "START CALIBRATION",
+		//.zigbee_attribute_value = 0x01010103;
+		.zigbee_attribute_value_str = "03010101"
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_DIMMER_CALIBRATION_ACTION_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "STOP CALIBRATION",
+		//.zigbee_attribute_value = 0x02010103;
+		.zigbee_attribute_value_str = "03010102"
+	},
+	{
+		.zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_DIMMER_CALIBRATION_ACTION_ID,
+		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "CLEAR CALIBRATION",
+		//.zigbee_attribute_value = 0x03010103;
+		.zigbee_attribute_value_str = "03010103"
 	},
 	{
 		.zigbee_attribute_id = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID,

@@ -7539,10 +7539,30 @@ void valueCallback(Control *sender, int type) {
 	int8_t sender_value = sender->getValueInt(); //max 128 attribute values
 
 	if (sender_value >= 0) {
+
+		int8_t attribute_type_idx = ESPUI.getControl(
+			clusters_attributes_table[device_attribute_type_selector])->getValueInt();
+
+		uint8_t attribute_type = attribute_type_idx >= 0 ? 
+			zigbee_datatypes[attribute_type_idx].zigbee_datatype_id : 0xFF;
+		/*log_i(
+			"attribute_type_idx %d, attribute_type %u", attribute_type_idx, 
+			attribute_type);*/
 	
-		ESPUI.updateNumber(
-			clusters_attributes_table[device_attribute_value_text], 
-			zigbee_attribute_values[sender_value].zigbee_attribute_value);
+		if (attribute_type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) {
+
+			ESPUI.updateNumber(
+				clusters_attributes_table[device_attribute_size_number],
+				strlen(
+				zigbee_attribute_values[sender_value].zigbee_attribute_value_str));
+			ESPUI.updateText(
+				clusters_attributes_table[device_attribute_value_text], 
+				zigbee_attribute_values[sender_value].zigbee_attribute_value_str);
+		}
+		else
+			ESPUI.updateNumber(
+				clusters_attributes_table[device_attribute_value_text], 
+				zigbee_attribute_values[sender_value].zigbee_attribute_value);
 	} else
 		ESPUI.updateNumber(
 			clusters_attributes_table[device_attribute_value_text], 0);

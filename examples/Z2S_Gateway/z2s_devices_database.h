@@ -366,6 +366,8 @@
 #define Z2S_DEVICE_DESC_TUYA_REPEATER                       0x7000
 #define Z2S_DEVICE_DESC_REPEATER                            0x7001
 
+#define Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER                 0x7100
+
 #define Z2S_DEVICE_DESC_ON_OFF                              0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                            0x8001
 
@@ -2336,6 +2338,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0,
     .z2s_device_clusters = { ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+                             SONOFF_CUSTOM_CLUSTER }},
 };
 
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
@@ -5979,6 +5988,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 35500,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SONOFF", .model_name = "MINI-ZBDIM",
+    .z2s_device_uid = 35600,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER,
+    .z2s_device_endpoints_count = 1},
+
 
 //DEVICES_END
 };
