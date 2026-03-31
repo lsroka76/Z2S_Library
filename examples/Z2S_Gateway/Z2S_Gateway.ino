@@ -1108,15 +1108,15 @@ if (Z2S_isGUIStarted())
 
   if (millis() - test_loop_ms > 1000) {
 
-    uint8_t ota_buffer[128];
+    //uint8_t ota_buffer[128];
     test_loop_ms = millis();
-    if (Z2S_initLittleFs()) {
+    /*if (Z2S_initLittleFs()) {
 
   	  size_t bytes_read = Z2S_loadBufferFromFile(
 			  "/zigbee_ota/zigbee_ota_file.ota", 400, 63, ota_buffer);
       Z2S_endLittleFs(); 
     } else
-      log_i("Z2S_initLittleFs() failed!");
+      log_i("Z2S_initLittleFs() failed!");*/
     //if (Zigbee.started())
       //msgZ2SDeviceIASzone(0, random(0,2));
     //msgZ2SDeviceElectricityMeter(
