@@ -3,9 +3,11 @@
 
 static uint32_t save_mutex = 0;
 
+extern bool _restart_scheduled;
+
 bool Z2S_initLittleFs() {
 
-  if (save_mutex == 1) return false;
+  if (_restart_scheduled || (save_mutex == 1)) return false;
   else save_mutex = 1;
 
   bool result = LittleFS.begin();

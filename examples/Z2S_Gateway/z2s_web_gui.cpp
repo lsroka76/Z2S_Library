@@ -6353,17 +6353,14 @@ size_t Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t siz
 			zigbee_ota_status_label, PSTR("OTA file transmission started"));
 	}
 
-	Z2S_initLittleFs();
+	if (Z2S_initLittleFs()) {
 
   	size_t bytes_read = Z2S_loadBufferFromFile(
 			"/zigbee_ota/zigbee_ota_file.ota", ota_offset, size, ota_buffer);
 
-		/*if (bytes_read != size)
-			log_e("OTA file read error %u <-> %u", size, bytes_read);*/
-
-	Z2S_endLittleFs();
-
-	if (ota_offset - ota_image_last_offset > 1024) {
+		Z2S_endLittleFs();
+	
+		if (ota_offset - ota_image_last_offset > 1024) {
 
 		char progress_str[128];
 
@@ -6371,21 +6368,24 @@ size_t Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t siz
 			((millis() - ota_image_last_update_ms) / 1000) * 
 			((ota_image_size - ota_offset) / 1024);
 
-		uint32_t ota_etc_hour = ota_etc_time_secs / 3600;
-		uint32_t ota_etc_min = (ota_etc_time_secs - (ota_etc_hour * 3600)) / 60;
-		uint32_t ota_etc_sec = ota_etc_time_secs % 60;
+			uint32_t ota_etc_hour = ota_etc_time_secs / 3600;
+			uint32_t ota_etc_min = (ota_etc_time_secs - (ota_etc_hour * 3600)) / 60;
+			uint32_t ota_etc_sec = ota_etc_time_secs % 60;
 
-		sprintf(
-			progress_str, "OTA progress: %lu/%lu, ETC: %02uh:%02um:%02us", ota_offset, 
-			ota_image_size, ota_etc_hour, ota_etc_min, ota_etc_sec);
+			sprintf(
+				progress_str, "OTA progress: %lu/%lu, ETC: %02uh:%02um:%02us", 
+				ota_offset, ota_image_size, ota_etc_hour, ota_etc_min, ota_etc_sec);
 		 
-	working_str = progress_str;
-		ESPUI.updateLabel(zigbee_ota_status_label, working_str);
+			working_str = progress_str;
+			ESPUI.updateLabel(zigbee_ota_status_label, working_str);
 
-		ota_image_last_offset = ota_offset;
-		ota_image_last_update_ms = millis();
-	}
-	return bytes_read;
+			ota_image_last_offset = ota_offset;
+			ota_image_last_update_ms = millis();
+		}
+		return bytes_read;
+	} else 
+		log_e("Z2S_initLittleFs() failed!");
+	return 0;
 }
 
 void startDeviceOTACallback(Control *sender, int type){
@@ -7554,7 +7554,7 @@ void valueCallback(Control *sender, int type) {
 			ESPUI.updateNumber(
 				clusters_attributes_table[device_attribute_size_number],
 				strlen(
-				zigbee_attribute_values[sender_value].zigbee_attribute_value_str));
+				zigbee_attribute_values[sender_value].zigbee_attribute_value_str)/2);
 			ESPUI.updateText(
 				clusters_attributes_table[device_attribute_value_text], 
 				zigbee_attribute_values[sender_value].zigbee_attribute_value_str);

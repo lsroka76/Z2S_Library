@@ -144,7 +144,7 @@ Supla::Control::VirtualRelay *toggleNotifications = nullptr;
 
 
 
-static bool _restart_scheduled = false;
+bool _restart_scheduled = false;
 static bool _forced_config = false;
 static bool _start_Zigbee = true;
 
@@ -220,6 +220,7 @@ void supla_callback_bridge(int event, int action) {
         log_i("software reset - saving tables");
         Z2S_saveChannelsTable();
         Z2S_saveZbDevicesTable();
+        _restart_scheduled = true;
         return;
       }
 
@@ -1107,7 +1108,15 @@ if (Z2S_isGUIStarted())
 
   if (millis() - test_loop_ms > 1000) {
 
+    uint8_t ota_buffer[128];
     test_loop_ms = millis();
+    if (Z2S_initLittleFs()) {
+
+  	  size_t bytes_read = Z2S_loadBufferFromFile(
+			  "/zigbee_ota/zigbee_ota_file.ota", 400, 63, ota_buffer);
+      Z2S_endLittleFs(); 
+    } else
+      log_i("Z2S_initLittleFs() failed!");
     //if (Zigbee.started())
       //msgZ2SDeviceIASzone(0, random(0,2));
     //msgZ2SDeviceElectricityMeter(

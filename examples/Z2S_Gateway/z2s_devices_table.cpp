@@ -96,18 +96,19 @@ uint32_t Z2S_getChannelsTableSize() {
   else
     return 0;*/
 
-  Z2S_initLittleFs();
+  if (Z2S_initLittleFs()) {
 
-  uint32_t _z2s_channels_table_size = Z2S_getFileSize(
-    Z2S_CHANNELS_TABLE_ID_V2, false);
+    uint32_t _z2s_channels_table_size = Z2S_getFileSize(
+      Z2S_CHANNELS_TABLE_ID_V2, false);
 
-  if (_z2s_channels_table_size == 0)
-    _z2s_channels_table_size = Z2S_getFileSize(
-    Z2S_CHANNELS_TABLE_BACKUP_ID_V2, false);
+    if (_z2s_channels_table_size == 0)
+      _z2s_channels_table_size = Z2S_getFileSize(
+      Z2S_CHANNELS_TABLE_BACKUP_ID_V2, false);
 
-  Z2S_endLittleFs();
-
-  return _z2s_channels_table_size;
+    Z2S_endLittleFs();
+    return _z2s_channels_table_size;
+  }
+  return 0;
 }
 
 /*****************************************************************************/
@@ -697,10 +698,8 @@ bool Z2S_loadChannelsTable() {
 
   log_i("Z2S_getChannelsTableSize %d, sizeof(z2s_channels_table) %d, "
         "sizeof(z2s_device_params_t) %d, sizeof(bool)%d",
-        z2s_channels_table_size, 
-        sizeof(z2s_channels_table), 
-        sizeof(z2s_device_params_t), 
-        sizeof(bool));
+        z2s_channels_table_size, sizeof(z2s_channels_table), 
+        sizeof(z2s_device_params_t), sizeof(bool));
 
   if (z2s_channels_table_size == 0) {
 
@@ -1627,18 +1626,19 @@ uint32_t Z2S_getZbDevicesTableSize() {
     return _z2s_zb_devices_table_size;
   else
     return 0;*/
-  Z2S_initLittleFs();
+  if (Z2S_initLittleFs()) {
 
-  uint32_t _z2s_zb_devices_table_size = Z2S_getFileSize(
-    Z2S_ZB_DEVICES_TABLE_ID_V2, false);
+    uint32_t _z2s_zb_devices_table_size = Z2S_getFileSize(
+      Z2S_ZB_DEVICES_TABLE_ID_V2, false);
 
-  if (_z2s_zb_devices_table_size == 0)
-    _z2s_zb_devices_table_size = Z2S_getFileSize(
-    Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2, false);
+    if (_z2s_zb_devices_table_size == 0)
+      _z2s_zb_devices_table_size = Z2S_getFileSize(
+      Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2, false);
 
-  Z2S_endLittleFs();
-
-  return _z2s_zb_devices_table_size;
+    Z2S_endLittleFs();
+    return _z2s_zb_devices_table_size;
+  }
+  return 0;
 }
 
 /*****************************************************************************/
