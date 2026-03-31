@@ -54,6 +54,7 @@ void initZ2SDeviceDimmer(
         case Z2S_DEVICE_DESC_LED_DIMMER:
         case Z2S_DEVICE_DESC_DIMMER_CT_BULB:
         case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
+        case Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER:
 
           dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER; 
         break;
