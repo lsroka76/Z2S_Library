@@ -4332,6 +4332,8 @@ void Z2S_startWebGUI() {
 
   log_i("STARTING WEB GUI");
 
+	esp_log_level_set("async_ws", ESP_LOG_ERROR);
+
 	ESPUI.setCustomJS(myCustomJS);
 	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
 	
@@ -6122,20 +6124,14 @@ void getClustersAttributesQueryCallback(Control *sender, int type, void *param) 
       	
 				if (value) {
 					
-					bool result = zbGateway.sendAttributeWrite(&device, 
-																										 cluster_id,
-																										 attribute_id, 
-																										 (esp_zb_zcl_attr_type_t)attribute_type, 
-																										 attribute_size, 
-																										 value, 
-																										 sync_cmd, 
-																										 manuf_specific, 
-																										 manuf_code);
+					bool result = zbGateway.sendAttributeWrite(
+						&device, cluster_id, attribute_id, 
+						(esp_zb_zcl_attr_type_t)attribute_type, attribute_size, value, 
+						sync_cmd, manuf_specific, manuf_code);
 					
 					if (result) {
 						if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-						
 							sprintf_P(general_purpose_gui_buffer, 
 												PSTR("Write attribute successful! <br>"
 												"Attribute id   = 0x%04X<br>"
