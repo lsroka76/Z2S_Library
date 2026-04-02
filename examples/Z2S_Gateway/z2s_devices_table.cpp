@@ -8984,7 +8984,8 @@ void updateRemoteThermometer(
       (element->getChannel()->getChannelType() == 
         SUPLA_CHANNELTYPE_THERMOMETER) &&
       (z2s_channels_table[channel_number_slot].local_channel_type ==
-        LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER)) {
+        LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) &&
+      (value_type == RTH_VALUE_TYPE_TEMPERATURE)) {
 
     auto Z2S_RemoteThermometer = 
       reinterpret_cast<Supla::Sensor::Z2S_RemoteThermometer *>(element);
