@@ -35,20 +35,20 @@ Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(
 }
 
 /*****************************************************************************/
-
+/*
 void Supla::Control::Z2S_VirtualRelay::setZ2SZbDevice(
   z2s_zb_device_params_t *z2s_zb_device) {
 
     _z2s_zb_device = z2s_zb_device;
   }
-
+*/
 /*****************************************************************************/
-
+/*
 z2s_zb_device_params_t *Supla::Control::Z2S_VirtualRelay::getZ2SZbDevice() {
 
     return _z2s_zb_device;
 }
-  
+  */
 /*****************************************************************************/
 
 
@@ -60,7 +60,7 @@ void Supla::Control::Z2S_VirtualRelay::onInit() {
   } else {
     turnOff(duration);
   }*/
-  if (_timeout_enabled)
+  if (_timeout_ms)
     channel.setStateOffline();
   
   initDone = true;
@@ -570,7 +570,7 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
   if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
     ping();
 
-  if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (true) {
       
       if (_z2s_zb_device)
@@ -586,7 +586,7 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
       }
     }
   }
-  if (_timeout_enabled && channel.isStateOnline() && 
+  if (_timeout_ms && channel.isStateOnline() && 
       ((millis() - _last_seen_ms) > _timeout_ms)) {
 	  
     log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
@@ -756,22 +756,15 @@ void Supla::Control::Z2S_VirtualRelay::setKeepAliveSecs(
   uint32_t keep_alive_secs) {
 
   _keep_alive_ms = keep_alive_secs * 1000;
-  if (_keep_alive_ms == 0)
-    _keep_alive_enabled = false;
-  else 
-    _keep_alive_enabled = true;
 }
 
 void Supla::Control::Z2S_VirtualRelay::setTimeoutSecs(
   uint32_t timeout_secs) {
 
   _timeout_ms = timeout_secs * 1000;
-  if (_timeout_ms == 0) {
-    _timeout_enabled = false;
+  
+  if (_timeout_ms == 0)
     channel.setStateOnline();
-  }
-  else
-   _timeout_enabled = true;
 }
 
 uint32_t Supla::Control::Z2S_VirtualRelay::getKeepAliveSecs() {

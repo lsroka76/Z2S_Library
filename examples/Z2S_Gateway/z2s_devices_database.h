@@ -97,6 +97,7 @@
 #define Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR                  0x2010
 #define Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR                  0x2011
 #define Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2                0x2012 
+#define Z2S_DEVICE_DESC_LUMI_VIBRATION_SENSOR               0x2015 
 
 #define Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B        0x2020
 
@@ -609,6 +610,14 @@
 
 #define LUMI_MOTION_SENSOR_OCCUPANCY_SID                    0x00
 #define LUMI_MOTION_SENSOR_ILLUMINANCE_SID                  0x01
+
+#define LUMI_VIBRATION_SENSOR_VIBRATION_SID                 0x00
+#define LUMI_VIBRATION_SENSOR_STRENGTH_SID                  0x01
+#define LUMI_VIBRATION_SENSOR_ACTION_SID                    0x02
+#define LUMI_VIBRATION_SENSOR_ANGLE_SID                     0x03
+#define LUMI_VIBRATION_SENSOR_X_AXIS_SID                    0x04
+#define LUMI_VIBRATION_SENSOR_Y_AXIS_SID                    0x05
+#define LUMI_VIBRATION_SENSOR_Z_AXIS_SID                    0x06
 
 #define SONOFF_SMART_VALVE_ON_OFF_SID                       0x00
 #define SONOFF_SMART_VALVE_RUN_PROGRAM_SID                  0x01
@@ -1249,6 +1258,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING,
+                             ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_VIBRATION_SENSOR,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_DOOR_LOCK,
                              ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY,
@@ -6028,6 +6043,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 35600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.vibration.aq1",
+    .z2s_device_uid = 35700,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_VIBRATION_SENSOR,
+    .z2s_device_endpoints_count = 1}
+
 
 
 //DEVICES_END

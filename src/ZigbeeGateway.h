@@ -129,6 +129,8 @@ typedef struct esp_zb_ota_image_header_s {
 #define SONOFF_CUSTOM_CLUSTER_MOTOR_RUN_STATUS_ID             0x5013 //U8
 /*MINI-ZBDIM*/
 #define SONOFF_CUSTOM_CLUSTER_DIMMER_CALIBRATION_ACTION_ID    0x001D//CHAR_STR
+/*SNZB-02DR2*/
+#define SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT         0x6018 //U16
 
 #define SONOFF_CUSTOM_CLUSTER_2                               0xFC12
 
@@ -145,12 +147,15 @@ typedef struct esp_zb_ota_image_header_s {
 #define LUMI_CUSTOM_CLUSTER                                   0xFCC0
 #define LUMI_MANUFACTURER_CODE                                0x115F
 
+#define LUMI_DOOR_LOCK_CLUSTER_VIBRATION_ACTION_ID            0x0055 //U16
+#define LUMI_DOOR_LOCK_CLUSTER_VIBRATION_STRENGTH_ID          0x0503 //U16
+#define LUMI_DOOR_LOCK_CLUSTER_ANGLE_ID                       0x0505 //U16?
+#define LUMI_DOOR_LOCK_CLUSTER_X_Y_Z_ID                       0x0508 //U48
+
 #define LUMI_CUSTOM_CLUSTER_MODE_ID                           0x0009 //U8
 #define LUMI_CUSTOM_CLUSTER_ILLUMINANCE_ID                    0x0112 //U32
 #define LUMI_CUSTOM_CLUSTER_DISPLAY_UNIT_ID                   0x0114 //U8
 #define LUMI_CUSTOM_CLUSTER_AIR_QUALITY_ID                    0x0129 //U8
-
-
 
 #define LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID                0x0271 //U8
 #define LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID                     0x0272 //U8 manual: 0, auto: 1, away: 2
@@ -576,9 +581,19 @@ public:
   void onThermostatTemperaturesReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, int16_t)) {
     _on_thermostat_temperatures_receive = callback;
   }
-  void onThermostatModesReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, uint16_t)) {
+  void onThermostatModesReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, uint16_t)) {
+
     _on_thermostat_modes_receive = callback;
   }
+
+  void onDoorLockReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t, 
+    const esp_zb_zcl_attribute_t *)) {
+
+    _on_door_lock_receive = callback;
+  }
+
   void onWindowCoveringReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, uint16_t)) {
     _on_window_covering_receive = callback;
   }
@@ -712,6 +727,7 @@ private:
   void (*_on_color_temperature_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_thermostat_temperatures_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, int16_t);
   void (*_on_thermostat_modes_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, uint16_t);
+  void (*_on_door_lock_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_window_covering_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, uint16_t);
   void (*_on_sonoff_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_develco_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);

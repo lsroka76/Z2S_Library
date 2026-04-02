@@ -7,6 +7,8 @@
 #define REMOTE_ADDRESS_TYPE_IP4                 0x01
 #define REMOTE_ADDRESS_TYPE_MDNS                0x02
 
+//#define VALUE_TYPE_TEMPERATURE                  0x01
+//#define VALUE_TYPE_HUMIDITY                     0x02
 
 NetworkClient RemoteThermometer;
 IPAddress ip_address;
@@ -140,6 +142,75 @@ Supla::Sensor::Z2S_VirtualThermHygroMeter* getZ2SDeviceTempHumidityPtr(
 
 /*****************************************************************************/
 
+void resendTHValue(
+  uint8_t channel_number_slot, uint8_t value_type, int32_t value) {
+
+  uint8_t remote_Supla_channel =
+    z2s_channels_table[channel_number_slot].Supla_remote_channel;
+    
+  uint8_t remote_address_type = 
+    Z2S_checkChannelFlags(
+      channel_number_slot, USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
+        REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
+
+  log_i(
+    "Resending T/H value: type = %u, address flag = %s, channel = %u",
+    value_type, (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) ? 
+    "MDNS" : "IP4", remote_Supla_channel);
+
+  switch(remote_address_type) {
+
+
+    case REMOTE_ADDRESS_TYPE_IP4: {
+
+      ip_address = z2s_channels_table[channel_number_slot].\
+        remote_channel_data.remote_ip_address;
+    } break;
+
+
+    case REMOTE_ADDRESS_TYPE_MDNS: {
+
+      ip_address = MDNS.queryHost(
+        z2s_channels_table[channel_number_slot].remote_channel_data.mDNS_name);
+
+      z2s_channels_table[channel_number_slot].\
+        remote_channel_data.remote_ip_address = ip_address;
+    } break;
+  }
+
+  if (z2s_channels_table[channel_number_slot].\
+        remote_channel_data.remote_ip_address == 0) {
+
+    updateRemoteThermometer(
+      remote_Supla_channel, ip_address,
+      z2s_channels_table[channel_number_slot].Supla_channel,
+      value_type, (int32_t)(value*100));
+
+    return;
+  }
+
+  if (RemoteThermometer.connect(ip_address, 1234)) {
+
+    uint8_t cmd_id = (value_type == RTH_VALUE_TYPE_TEMPERATURE) ? 0x10 : 0x11;
+
+    RemoteThermometer.printf(
+      "Z2SCMD%02u%03u%03u%08ld\n", cmd_id, remote_Supla_channel,
+      z2s_channels_table[channel_number_slot].Supla_channel,
+      (int32_t)(value*100));
+    
+    String response = RemoteThermometer.readStringUntil('\n');
+      
+    if (response == "OK") 
+      log_i("T/H value forwarded");
+        
+    RemoteThermometer.stop();
+  } else
+    log_e(
+      "T/H value forwarding FAILED - no connection to remote thremometer"); 
+}
+
+/*****************************************************************************/
+
 void msgZ2SDeviceTempHumidityTemp(
   int16_t channel_number_slot, double temp, bool refresh_only) {
 
@@ -193,71 +264,8 @@ void msgZ2SDeviceTempHumidityTemp(
     return;
 
   if (z2s_channels_table[channel_number_slot].user_data_flags &
-			USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) {
-
-    uint8_t remote_Supla_channel =
-      z2s_channels_table[channel_number_slot].Supla_remote_channel;
-    
-    uint8_t remote_address_type = 
-      Z2S_checkChannelFlags(
-        channel_number_slot, USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
-      REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
-
-    log_i("Resending temperature, address flag = %s, channel = %u",
-          (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) ?
-          "MDNS" : "IP4", remote_Supla_channel);
-
-    switch(remote_address_type) {
-
-
-      case REMOTE_ADDRESS_TYPE_IP4: {
-
-        ip_address = 
-          z2s_channels_table[channel_number_slot].\
-            remote_channel_data.remote_ip_address;
-      }
-      break;
-
-
-      case REMOTE_ADDRESS_TYPE_MDNS: {
-
-        ip_address = MDNS.queryHost(
-          z2s_channels_table[channel_number_slot].\
-          remote_channel_data.mDNS_name);
-
-        z2s_channels_table[channel_number_slot].\
-            remote_channel_data.remote_ip_address = ip_address;
-      } break;
-    }
-
-    if (z2s_channels_table[channel_number_slot].
-        remote_channel_data.remote_ip_address == 0) {
-
-        updateRemoteThermometer(
-          remote_Supla_channel, ip_address,
-          z2s_channels_table[channel_number_slot].Supla_channel,
-          (int32_t)(temp*100));
-
-        return;
-      }
-
-    if (RemoteThermometer.connect(ip_address, 1234)) {
-
-      RemoteThermometer.printf(
-        "Z2SCMD%02u%03u%03u%08ld\n", 0x10, remote_Supla_channel,
-        z2s_channels_table[channel_number_slot].Supla_channel,
-        (int32_t)(temp*100));
-    
-      String response = RemoteThermometer.readStringUntil('\n');
-      
-      if (response == "OK") 
-        log_i("Temperature forwarded");
-        
-      RemoteThermometer.stop();
-    } else
-      log_e(
-        "Temperature forwarding FAILED - no connection to remote thremometer"); 
-  }
+			USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)
+    resendTHValue(channel_number_slot, RTH_VALUE_TYPE_TEMPERATURE, temp);
 }
 
 /*****************************************************************************/
@@ -292,5 +300,9 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi) {
     
     Supla_Z2S_VirtualThermHygroMeter->setHumi(humi);
     Supla_Z2S_VirtualThermHygroMeter->Refresh();
+
+    if (z2s_channels_table[channel_number_slot].user_data_flags &
+			  USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)
+      resendTHValue(channel_number_slot, RTH_VALUE_TYPE_HUMIDITY, humi);
   }
 }

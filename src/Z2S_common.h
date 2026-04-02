@@ -141,4 +141,29 @@ union {
   uint8_t             reserved_9;
 } z2s_device_params_t;
 
+class Z2S_Core {
+
+public:
+
+  void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device) {
+
+    _z2s_zb_device = z2s_zb_device;
+  };
+
+  z2s_zb_device_params_t *getZ2SZbDevice() {
+
+    return _z2s_zb_device;
+};
+
+  void test_func() { 
+  
+  log_i("sent from core!"); 
+};
+
+protected:
+
+  zbg_device_params_t _device;
+  z2s_zb_device_params_t *_z2s_zb_device = nullptr;
+};
+
 #endif //SRC_Z2S_COMMON_H_

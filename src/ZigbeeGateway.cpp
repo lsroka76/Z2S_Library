@@ -1505,11 +1505,9 @@ void ZigbeeGateway::zbAttributeReporting(
         log_i("thermostat running state %d",value);
         
         if (_on_thermostat_modes_receive)
-          _on_thermostat_modes_receive(src_address.u.short_addr, 
-                                       src_endpoint, 
-                                       cluster_id, 
-                                       attribute->id, 
-                                       value);
+          _on_thermostat_modes_receive(
+            src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, 
+            value);
       
       } else
       if ((attribute->id == BOSCH_HEATING_DEMAND_ID) && 
@@ -1520,11 +1518,9 @@ void ZigbeeGateway::zbAttributeReporting(
         log_i("BOSCH thermostat PI heating demand %d",value);
           
         if (_on_thermostat_modes_receive)
-          _on_thermostat_modes_receive(src_address.u.short_addr, 
-                                       src_endpoint, 
-                                       cluster_id, 
-                                       attribute->id, 
-                                       value);
+          _on_thermostat_modes_receive(
+            src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, 
+            value);
       } else
       if ((attribute->id == BOSCH_TRV_OPERATING_MODE_ID) && 
           (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM)) {
@@ -1604,6 +1600,15 @@ void ZigbeeGateway::zbAttributeReporting(
           "SONOFF_CUSTOM_CLUSTER endpoint (0x%x), cluster (0x%x), "
           "attribute id (0x%x), attribute data type (0x%x)", 
           src_endpoint, cluster_id, attribute->id, attribute->data.type);      
+    } else
+    if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_DOOR_LOCK) {
+
+      log_i(
+        "Door lock cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
+        cluster_id, attribute->id, attribute->data.type);
+      if (_on_door_lock_receive)
+        _on_door_lock_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING) {
 

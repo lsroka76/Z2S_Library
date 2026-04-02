@@ -71,16 +71,16 @@ static const uint32_t RELAY_FLAGS =
 
 namespace Supla {
 namespace Control {
-class Z2S_VirtualRelay : public Relay {
+class Z2S_VirtualRelay : public Relay, public Z2S_Core {
 
- public:
+public:
   
   Z2S_VirtualRelay(
     ZigbeeGateway *gateway, zbg_device_params_t *device,
     uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
 
-  void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device);
-  z2s_zb_device_params_t *getZ2SZbDevice();
+  //void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device);
+  //z2s_zb_device_params_t *getZ2SZbDevice();
 
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;
@@ -117,9 +117,9 @@ class Z2S_VirtualRelay : public Relay {
 
   bool state = false;
   //ZigbeeGateway *_gateway = nullptr;
-  zbg_device_params_t 	_device;
+  //zbg_device_params_t 	_device;
 
-  z2s_zb_device_params_t *_z2s_zb_device = nullptr;
+  //z2s_zb_device_params_t *_z2s_zb_device = nullptr;
 
   uint8_t _z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
   
@@ -130,11 +130,11 @@ class Z2S_VirtualRelay : public Relay {
 
   bool _fresh_start = true;
 
-  bool _keep_alive_enabled = true;
-  bool _timeout_enabled    = true;
+  //bool _keep_alive_enabled = true;
+  //bool _timeout_enabled    = true;
 
-  uint32_t _keep_alive_ms = 45000;
-  uint32_t _timeout_ms    = 60000;
+  uint32_t _keep_alive_ms = 0;
+  uint32_t _timeout_ms    = 0;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
  

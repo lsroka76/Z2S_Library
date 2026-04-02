@@ -3338,6 +3338,118 @@ void Z2S_onThermostatModesReceive(
   }
 }
 
+/******************************************************************************/
+
+void Z2S_onDoorLockReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute) {
+
+  
+  log_i("short address 0x%04X, endpoint 0x%x, attribute id 0x%x, size %u", 
+        short_addr, endpoint, attribute->id, attribute->data.size);
+
+  switch (attribute->id) {
+
+
+    case LUMI_DOOR_LOCK_CLUSTER_VIBRATION_ACTION_ID: {
+
+      uint16_t value = attribute->data.value ? 
+        *(uint16_t *)attribute->data.value : 0;
+
+      if (value == 1) {
+
+        int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+          LUMI_VIBRATION_SENSOR_VIBRATION_SID);
+        
+        if (channel_number_slot >= 0)
+          msgZ2SDeviceIASzone(channel_number_slot, 1);
+      }
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        LUMI_VIBRATION_SENSOR_ACTION_SID);
+      
+      if (channel_number_slot >= 0)
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+          value);
+    } break;
+
+
+    case LUMI_DOOR_LOCK_CLUSTER_VIBRATION_STRENGTH_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        LUMI_VIBRATION_SENSOR_STRENGTH_SID);
+      
+      if (channel_number_slot >= 0)
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+          *(uint16_t*)attribute->data.value);
+    } break;
+    
+
+    case LUMI_DOOR_LOCK_CLUSTER_ANGLE_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        LUMI_VIBRATION_SENSOR_ANGLE_SID);
+      
+      if (channel_number_slot >= 0)
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+          *(uint16_t*)attribute->data.value);
+    } break;
+
+
+    case LUMI_DOOR_LOCK_CLUSTER_X_Y_Z_ID: {
+
+      int16_t channel_number_slot_x = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        LUMI_VIBRATION_SENSOR_X_AXIS_SID);
+
+      int16_t channel_number_slot_y = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        LUMI_VIBRATION_SENSOR_Y_AXIS_SID);
+
+      int16_t channel_number_slot_z = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        LUMI_VIBRATION_SENSOR_Z_AXIS_SID);
+      
+      if (channel_number_slot_x >= 0)
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot_x, 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+          *((uint16_t*)attribute->data.value));
+
+      if (channel_number_slot_y >= 0)
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot_y, 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+          *((uint16_t*)(attribute->data.value + 2)));
+
+      if (channel_number_slot_z >= 0)
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot_z, 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+          *((uint16_t*)(attribute->data.value + 4)));
+
+    } break;
+
+
+    default: break;
+  }
+}
+
+/******************************************************************************/
+
 void Z2S_onWindowCoveringReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t id, uint16_t value) {
@@ -3379,13 +3491,9 @@ void Z2S_onDevelcoCustomClusterReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
-  char ieee_addr_str[24] = {};
-
-  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
-
   
-  log_i("%s, endpoint 0x%x, attribute id 0x%x, size %u", 
-        ieee_addr_str, endpoint,attribute->id, attribute->data.size);
+  log_i("short address 0x%04X, endpoint 0x%x, attribute id 0x%x, size %u", 
+        short_addr, endpoint,attribute->id, attribute->data.size);
 
   switch (attribute->id) {
 
@@ -6450,7 +6558,8 @@ void Z2S_onDeviceLeave(
       "Device %s(0x%04X) has left network - marked for binding on next join!",
       ieee_addr_str, short_addr);
     
-    Z2S_setZbDeviceFlags(device_number_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
+    Z2S_setZbDeviceFlags(
+      device_number_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
   }
 }
 
@@ -6545,20 +6654,20 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
       &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_SMOKE_ALARM_ID, false, 
       ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
     zbGateway.sendAttributeRead(
-      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_SMOKE_DENSITY_ID, false, 
-      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_SMOKE_DENSITY_ID, 
+      false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
     zbGateway.sendAttributeRead(
-      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_HEARTBEAT_INDICATOR_ID, false, 
-      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_HEARTBEAT_INDICATOR_ID, 
+      false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
     zbGateway.sendAttributeRead(
-      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_MANUAL_ALARM_ID, false, 
-      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_MANUAL_ALARM_ID, 
+      false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
     zbGateway.sendAttributeRead(
       &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID, false, 
       ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
     zbGateway.sendAttributeRead(
-      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_LINKAGE_ALARM_ID, false, 
-      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE); 
+      &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_LINKAGE_ALARM_ID, 
+      false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE); 
   }
 }
 
@@ -7913,6 +8022,7 @@ uint8_t Z2S_addZ2SDevice(
         
         switch (sub_id) {
           
+
           case LUMI_MOTION_SENSOR_OCCUPANCY_SID:
 
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
@@ -7920,6 +8030,32 @@ uint8_t Z2S_addZ2SDevice(
 
 
           case LUMI_MOTION_SENSOR_ILLUMINANCE_SID: 
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+        }
+      } break;
+
+/******************************************************************************/     
+
+      case Z2S_DEVICE_DESC_LUMI_VIBRATION_SENSOR: {
+        
+        switch (sub_id) {
+          
+
+          case LUMI_VIBRATION_SENSOR_VIBRATION_SID:
+
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
+          break;
+
+
+          case LUMI_VIBRATION_SENSOR_STRENGTH_SID:
+          case LUMI_VIBRATION_SENSOR_ACTION_SID:
+          case LUMI_VIBRATION_SENSOR_ANGLE_SID:
+          case LUMI_VIBRATION_SENSOR_X_AXIS_SID:
+          case LUMI_VIBRATION_SENSOR_Y_AXIS_SID:
+          case LUMI_VIBRATION_SENSOR_Z_AXIS_SID: 
 
             addZ2SDeviceGeneralPurposeMeasurement(
               device, first_free_slot, sub_id, name, func, unit); 
@@ -8814,14 +8950,15 @@ void updateRemoteRelaySuplaChannel(
 
 void updateRemoteThermometer(
   uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
-  uint32_t connected_thermometer_channel, 
-  int32_t connected_thermometer_temperature) {
+  uint32_t connected_thermometer_channel, uint8_t value_type,
+  int32_t connected_thermometer_value) {
 
 
   log_i(
-    "Supla_channel %u, connected_thermometer_channel %u, "
+    "Supla_channel %u, connected_thermometer_channel %u, value type %u, "
     "connected_thermometer_temperature %lu", Supla_channel, 
-    connected_thermometer_channel, connected_thermometer_temperature);
+    connected_thermometer_channel, value_type, 
+    connected_thermometer_value);
 
   if (Supla_channel > 0x7F) {
 
@@ -8853,9 +8990,8 @@ void updateRemoteThermometer(
       reinterpret_cast<Supla::Sensor::Z2S_RemoteThermometer *>(element);
 
       Z2S_RemoteThermometer->setConnectedThermometerTemperature(
-        connected_thermometer_ip_address,
-        connected_thermometer_channel,
-        connected_thermometer_temperature);      
+        connected_thermometer_ip_address, connected_thermometer_channel,
+        connected_thermometer_value);      
   } else
   if (element && 
       (element->getChannel()->getChannelType() == 
@@ -8878,18 +9014,32 @@ void updateRemoteThermometer(
     device.model_id = z2s_channels_table[channel_number_slot].model_id;
 
     zbGateway.sendAttributeWrite(
-      &device, SONOFF_CUSTOM_CLUSTER, TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
-      ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
+      &device, SONOFF_CUSTOM_CLUSTER, 
+      SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, ESP_ZB_ZCL_ATTR_TYPE_U8,
+      1, &temperature_selector);
 
-    int16_t sonoff_external_temperature = connected_thermometer_temperature;
-    zbGateway.sendAttributeWrite(
-      &device, SONOFF_CUSTOM_CLUSTER, TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT, 
-      ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &sonoff_external_temperature);
-    /*auto Supla_Z2S_VirtualThermHygroMeter = 
-        reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+    int16_t sonoff_external_value = connected_thermometer_value;
 
-    Supla_Z2S_VirtualThermHygroMeter->setExternalTemperature(
-      connected_thermometer_temperature);*/
+    switch (value_type) {
+
+
+      case RTH_VALUE_TYPE_TEMPERATURE: {
+  
+        zbGateway.sendAttributeWrite(
+          &device, SONOFF_CUSTOM_CLUSTER, 
+          SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
+          ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &sonoff_external_value);
+      } break;
+
+
+      case RTH_VALUE_TYPE_HUMIDITY: {
+  
+        zbGateway.sendAttributeWrite(
+          &device, SONOFF_CUSTOM_CLUSTER, 
+          SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
+          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &sonoff_external_value);
+      } break;
+    }
   }
 }
 
@@ -10679,6 +10829,39 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, LUMI_MOTION_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_LUMI_VIBRATION_SENSOR: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_VIBRATION_SENSOR_VIBRATION_SID, "VIBRATION", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_VIBRATION_SENSOR_STRENGTH_SID, "STRENGTH", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_VIBRATION_SENSOR_ACTION_SID, "ACTION", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "1=V/2=T/3=D");
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_VIBRATION_SENSOR_ANGLE_SID, "ANGLE", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "DEG");
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_VIBRATION_SENSOR_X_AXIS_SID, "X AXIS", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+      
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_VIBRATION_SENSOR_Y_AXIS_SID, "Y AXIS", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_VIBRATION_SENSOR_Z_AXIS_SID, "Z AXIS", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
     } break;
 
 /*****************************************************************************/

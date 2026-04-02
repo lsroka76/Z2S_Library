@@ -10,7 +10,6 @@ extern "C" {
 }
 
 #include "ZigbeeCore.h"
-#include "send_default_resp.h"
 
 //#if SOC_IEEE802154_SUPPORTED 
 //&& CONFIG_ZB_ENABLED

@@ -38,6 +38,7 @@
 
 #include <Z2S_control/action_handler_with_callbacks.h>
 #include <Z2S_control/Z2S_remote_relay.h>
+#include <Z2S_control/Z2S_virtual_relay.h>
 
 #include "z2s_devices_database.h"
 #include "z2s_devices_table.h"
@@ -380,6 +381,7 @@ void enableZ2SNotifications() {
   zbGateway.onThermostatTemperaturesReceive(Z2S_onThermostatTemperaturesReceive);
   zbGateway.onThermostatModesReceive(Z2S_onThermostatModesReceive);
   zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
+  zbGateway.onDoorLockReceive(Z2S_onDoorLockReceive);
   zbGateway.onSonoffCustomClusterReceive(Z2S_onSonoffCustomClusterReceive);
   zbGateway.onDevelcoCustomClusterReceive(Z2S_onDevelcoCustomClusterReceive);
   zbGateway.onLumiCustomClusterReceive(Z2S_onLumiCustomClusterReceive);
@@ -423,6 +425,7 @@ void disableZ2SNotifications() {
   zbGateway.onThermostatTemperaturesReceive(nullptr);
   zbGateway.onThermostatModesReceive(nullptr);
   zbGateway.onWindowCoveringReceive(nullptr);
+  zbGateway.onDoorLockReceive(nullptr);
   zbGateway.onSonoffCustomClusterReceive(nullptr);
   zbGateway.onDevelcoCustomClusterReceive(nullptr);
   zbGateway.onLumiCustomClusterReceive(nullptr);
@@ -639,6 +642,22 @@ void setup() {
   Z2S_loadChannelsTable();
 
   Z2S_initSuplaChannels();
+
+  auto test_element = Supla::Element::getElementByChannelNumber(8);
+
+  Supla::Control::Z2S_VirtualRelay *test_relay = static_cast<
+    Supla::Control::Z2S_VirtualRelay *>(test_element);
+  Supla::Control::Z2S_VirtualRelay *test_relay2 = reinterpret_cast<
+    Supla::Control::Z2S_VirtualRelay *>(test_element);
+  Z2S_Core *test_core = static_cast<Z2S_Core *>(test_relay);
+  Z2S_Core *test_core2 = reinterpret_cast<Z2S_Core *>(test_relay);
+
+  log_i(
+    "\n\rTEST POINTERS: element: 0x%08X\n\rrelay(static): 0x%08X, " 
+    "relay(reinterpret): 0x%08X\n\rcore(static): 0x%08X, core(reinterpret): "
+    "0x%08X", test_element, test_relay, test_relay2, test_core, test_core2);
+    
+  test_core->test_func();
 
   if (Supla::Storage::ConfigInstance()->getUInt8(
         Z2S_REBUILD_CHANNELS_ON_START, &_rebuild_Supla_channels_on_start)) {
@@ -1035,7 +1054,32 @@ if (client2 && client2.connected()) {
 
           updateRemoteThermometer(
             cmd_dst_channel, client2.remoteIP(), cmd_src_channel, 
-            cmd_thermometer_value);
+            RTH_VALUE_TYPE_TEMPERATURE, cmd_thermometer_value);
+        } break;
+
+
+        case  0x11: { //remote humidity
+
+          helper = request.substring(cmd_pos + 11, cmd_pos + 14);
+          uint32_t cmd_src_channel = helper.toInt();
+          
+          helper = request.substring(cmd_pos + 14, cmd_pos + 22);
+          uint32_t cmd_humidity_value = helper.toInt();
+
+          log_i("\n\rZ2S TCP humidity command received id = %u"
+                "\n\rremote IP = %s"
+                "\n\rfrom channel = %u"
+                "\n\rto local channel = %u"
+                "\n\rwith value = %lu",
+                cmd_id,
+                client2.remoteIP().toString(),
+                cmd_src_channel,
+                cmd_dst_channel,
+                cmd_humidity_value);
+
+          updateRemoteThermometer(
+            cmd_dst_channel, client2.remoteIP(), cmd_src_channel, 
+            RTH_VALUE_TYPE_HUMIDITY, cmd_humidity_value);
         } break;
       }      
       client2.print("OK\n");
