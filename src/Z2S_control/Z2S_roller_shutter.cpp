@@ -30,35 +30,35 @@ Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(
 }
 
 /*****************************************************************************/
-
+/*
 void Supla::Control::Z2S_RollerShutter::setZ2SZbDevice(
   z2s_zb_device_params_t *z2s_zb_device) {
 
     _z2s_zb_device = z2s_zb_device;
   }
-
+*/
 /*****************************************************************************/
-
+/*
 z2s_zb_device_params_t *Supla::Control::Z2S_RollerShutter::getZ2SZbDevice() {
 
     return _z2s_zb_device;
 }
-  
+*/
 /*****************************************************************************/
-
+/*
 void Supla::Control::Z2S_RollerShutter::setZ2SChannel(
   z2s_device_params_t *z2s_channel) {
 
     _z2s_channel = z2s_channel;
   }
-
+*/
 /*****************************************************************************/
-
+/*
 z2s_device_params_t *Supla::Control::Z2S_RollerShutter::getZ2SChannel() {
 
     return _z2s_channel;
 }
-  
+*/
 /*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::onInit() {

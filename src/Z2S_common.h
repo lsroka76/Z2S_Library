@@ -153,7 +153,22 @@ public:
   z2s_zb_device_params_t *getZ2SZbDevice() {
 
     return _z2s_zb_device;
-};
+  };
+
+  void setZ2SChannel(z2s_device_params_t *z2s_channel) {
+
+    _z2s_channel = z2s_channel;
+  }
+
+  z2s_device_params_t *getZ2SChannel() {
+
+    return _z2s_channel;
+  };
+
+  void updateShortAddress(uint16_t short_addr)  {
+
+    _device.short_addr = short_addr;
+  }
 
   void test_func() { 
   
@@ -164,6 +179,7 @@ protected:
 
   zbg_device_params_t _device;
   z2s_zb_device_params_t *_z2s_zb_device = nullptr;
+  z2s_device_params_t *_z2s_channel = nullptr;
 };
 
 #endif //SRC_Z2S_COMMON_H_

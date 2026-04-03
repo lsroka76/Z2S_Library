@@ -25,6 +25,8 @@
 #include "ZigbeeGateway.h"
 #include "TuyaDatapoints.h"
 
+#include "Z2S_common.h"
+
 #define Z2S_COLOR_HS_RGB            0x01
 #define Z2S_COLOR_HS_XY_RGB         0x02
 #define Z2S_COLOR_XY_RGB            0x03
@@ -42,11 +44,13 @@
 
 namespace Supla {
 namespace Control {
-class Z2S_RGBInterface : public ChannelElement, public ActionHandler {
+class Z2S_RGBInterface : public ChannelElement, public ActionHandler, 
+  public Z2S_Core {
 
 public:
 
-  Z2S_RGBInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t rgb_mode = Z2S_COLOR_HS_RGB);
+  Z2S_RGBInterface(ZigbeeGateway *gateway, zbg_device_params_t *device, 
+    uint8_t rgb_mode = Z2S_COLOR_HS_RGB);
 
   void setDimmerChannel(uint8_t dimmer_channel) {
     /*_dimmer_channel = dimmer_channel;
@@ -83,8 +87,8 @@ public:
 
 protected:
 
-  ZigbeeGateway *_gateway = nullptr;
-  zbg_device_params_t 	_device;
+  //ZigbeeGateway *_gateway = nullptr;
+  //zbg_device_params_t 	_device;
   uint8_t _rgb_mode = Z2S_COLOR_HS_RGB;
 
   bool _fresh_start = true;

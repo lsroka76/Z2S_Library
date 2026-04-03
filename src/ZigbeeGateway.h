@@ -149,7 +149,7 @@ typedef struct esp_zb_ota_image_header_s {
 
 #define LUMI_DOOR_LOCK_CLUSTER_VIBRATION_ACTION_ID            0x0055 //U16
 #define LUMI_DOOR_LOCK_CLUSTER_VIBRATION_STRENGTH_ID          0x0503 //U16
-#define LUMI_DOOR_LOCK_CLUSTER_ANGLE_ID                       0x0505 //U16?
+#define LUMI_DOOR_LOCK_CLUSTER_ANGLE_ID                       0x0505 //U32
 #define LUMI_DOOR_LOCK_CLUSTER_X_Y_Z_ID                       0x0508 //U48
 
 #define LUMI_CUSTOM_CLUSTER_MODE_ID                           0x0009 //U8

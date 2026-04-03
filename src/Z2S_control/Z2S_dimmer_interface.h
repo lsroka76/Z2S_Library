@@ -25,18 +25,21 @@
 #include "ZigbeeGateway.h"
 #include "TuyaDatapoints.h"
 
+#include "Z2S_common.h"
+
 #define Z2S_SEND_TO_LEVEL_DIMMER              0x00
 #define Z2S_COLOR_TEMPERATURE_DIMMER          0x01
 #define Z2S_TUYA_COLOR_TEMPERATURE_DIMMER     0x02
 #define Z2S_TUYA_F0_CMD_DIMMER                0x03 //LEVEL CONTROL 0 - 1000
 #define Z2S_TUYA_E0_CMD_DIMMER                0x04 //COLOR CLUSTER 0 - 1000
-#define Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER  0x05
+  #define Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER  0x05
 #define Z2S_TUYA_BRIGHTNESS_DP_DIMMER         0x06 //DP 0-1000
 #define Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER  0x07 //DP 0-1000
 
 namespace Supla {
 namespace Control {
-class Z2S_DimmerInterface : public ChannelElement, public ActionHandler {
+class Z2S_DimmerInterface : public ChannelElement, public ActionHandler,
+  public Z2S_Core {
 
 public:
 
@@ -80,8 +83,8 @@ public:
 
 protected:
 
-  ZigbeeGateway *_gateway = nullptr;
-  zbg_device_params_t 	_device;
+  //ZigbeeGateway *_gateway = nullptr;
+  //zbg_device_params_t 	_device;
   uint8_t _dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER;
 
   bool _fresh_start = true;

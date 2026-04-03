@@ -20,7 +20,10 @@
 #define SRC_SUPLA_CONTROL_Z2S_VIRTUAL_VALVE_H_
 
 #include <supla/control/valve_base.h>
+
 #include "ZigbeeGateway.h"
+
+#include "Z2S_common.h"
 
 #define Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF  0x00
 
@@ -30,7 +33,7 @@
 namespace Supla {
 namespace Control {
 
-class Z2S_VirtualValve : public ValveBase {
+class Z2S_VirtualValve : public ValveBase, public Z2S_Core {
  public:
    /**
     * Constructor
@@ -71,8 +74,8 @@ class Z2S_VirtualValve : public ValveBase {
  protected:
   uint8_t valveOpenState = 0;
 
-  ZigbeeGateway *_gateway = nullptr;
-  zbg_device_params_t 	_device;
+  //ZigbeeGateway *_gateway = nullptr;
+  //zbg_device_params_t 	_device;
 
   uint8_t _z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF;
   

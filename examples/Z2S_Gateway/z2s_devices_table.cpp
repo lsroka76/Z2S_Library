@@ -508,6 +508,146 @@ z2s_device_params_t *Z2S_getChannelPtr(int16_t channel_number_slot) {
 
 /*****************************************************************************/
 
+Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
+
+  if ((channel_number_slot >= 0) && 
+      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) &&
+      z2s_channels_table[channel_number_slot].valid_record) {
+    
+    auto Supla_element = Supla::Element::getElementByChannelNumber(
+      z2s_channels_table[channel_number_slot].Supla_channel);
+    
+    if (!Supla_element)
+      return nullptr;
+
+    switch (Supla_element->getChannel()->getChannelType()) {
+
+
+      /*case SUPLA_CHANNELTYPE_BINARYSENSOR: {
+
+        auto Supla_Z2S_VirtualBinary = static_cast<
+          Supla::Sensor::Z2S_VirtualBinary *>(Supla_element);
+        
+        return static_cast<Z2S_Core *>(Supla_Z2S_VirtualBinary);
+      } break;*/
+
+
+      /*case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
+
+        auto Supla_Z2S_VirtualThermHygroMeter = static_cast<
+          Supla::Sensor::Z2S_VirtualThermHygroMeter *>(Supla_element);
+
+        return static_cast<Z2S_Core *>(Supla_Z2S_VirtualThermHygroMeter);
+      } break;*/
+
+
+      /*case SUPLA_CHANNELTYPE_THERMOMETER: {
+
+        if (z2s_channels_table[channel_number_slot].local_channel_type ==
+            LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
+
+          auto Supla_Z2S_RemoteThermometer = static_cast<
+            Supla::Sensor::Z2S_RemoteThermometer *>(Supla_element);
+          
+          return static_cast<Z2S_Core *>(Supla_Z2S_RemoteThermometer);
+
+        }
+
+        auto Supla_Z2S_VirtualThermometer = static_cast<
+          Supla::Sensor::Z2S_VirtualThermometer *>(Supla_element);
+
+        return static_cast<Z2S_Core *>(Supla_Z2S_VirtualThermometer);
+      } break;*/
+
+
+      /*case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
+
+        auto Supla_Z2S_VirtualPressure = static_cast<
+          Supla::Sensor::Z2S_VirtualPressure *>(Supla_element);
+
+        return static_cast<Z2S_Core *>(Z2S_VirtualPressure);
+      } break;*/
+
+
+      case SUPLA_CHANNELTYPE_RELAY: {
+
+        if (Supla_element->getChannel()->isRollerShutterRelayType()) {
+
+          auto Supla_Z2S_RollerShutter = static_cast<
+            Supla::Control::Z2S_RollerShutter *>(Supla_element);
+
+          return static_cast<Z2S_Core *>(Supla_Z2S_RollerShutter);
+        } else {
+
+          auto Supla_Z2S_VirtualRelay = static_cast<
+            Supla::Control::Z2S_VirtualRelay *>(Supla_element);
+
+          return static_cast<Z2S_Core *>(Supla_Z2S_VirtualRelay);
+        }
+      } break;
+      
+
+      /*case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
+
+        auto Supla_Z2S_ElectricityMeter = static_cast<
+          Supla::Sensor::Z2S_ElectricityMeter *>(Supla_element);
+
+        return static_cast<Z2S_Core *>(Supla_Z2S_ElectricityMeter);
+      } break;*/
+
+
+      case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE: {
+
+        auto Supla_Z2S_VirtualValve = static_cast<
+          Supla::Control::Z2S_VirtualValve *>(Supla_element);
+
+        return static_cast<Z2S_Core *>(Supla_Z2S_VirtualValve);
+      } break;
+
+
+      case SUPLA_CHANNELTYPE_DIMMER: {
+
+        auto Supla_Z2S_DimmerInterface = static_cast<
+          Supla::Control::Z2S_DimmerInterface *>(Supla_element);
+
+        return static_cast<Z2S_Core *>(Supla_Z2S_DimmerInterface);
+      } break;
+
+
+      case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: {
+
+        auto Supla_Z2S_RGBInterface = static_cast<
+          Supla::Control::Z2S_RGBInterface *>(Supla_element);
+        
+        return static_cast<Z2S_Core *>(Supla_Z2S_RGBInterface);
+      } break;
+
+      case SUPLA_CHANNELTYPE_HVAC: {
+
+        auto Supla_Z2S_HvacBaseEE = static_cast<
+          Supla::Control::HvacBaseEE*>(Supla_element);
+
+        auto Supla_Z2S_TRVInterface = static_cast<
+        Supla::Control::Z2S_TRVInterface*>(
+          Supla_Z2S_HvacBaseEE->getPrimaryOutputEE());
+        
+        return static_cast<Z2S_Core *>(Supla_Z2S_TRVInterface);
+      } break;
+
+      /*case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
+
+        auto Supla_Z2S_ActionTrigger = static_cast<
+          Supla::Control::VirtualRelaySceneSwitch *>(element);
+     
+        return static_cast<Z2S_Core *>(Supla_Z2S_ActionTrigger);
+      } break;*/
+    }
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
 int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id) {
   
   for (uint8_t channels_counter = 0; 
@@ -3402,7 +3542,7 @@ void Z2S_onDoorLockReceive(
       if (channel_number_slot >= 0)
         msgZ2SDeviceGeneralPurposeMeasurement(
           channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-          *(uint16_t*)attribute->data.value);
+          *(uint32_t*)attribute->data.value);
     } break;
 
 
@@ -8565,16 +8705,22 @@ uint8_t Z2S_addZ2SDevice(
 
     while (channel_number_slot >= 0) {
 
-      log_i("Device (0x%x), endpoint (0x%x) already "
-            "in z2s_channels_table (index 0x%x)", 
-            device->short_addr, device->endpoint, channel_number_slot);
+      log_i(
+        "Device (0x%x), endpoint (0x%x) already in z2s_channels_table "
+        "(index 0x%x)", device->short_addr, device->endpoint, 
+        channel_number_slot);
 
       if (z2s_channels_table[channel_number_slot].short_addr != 
           device->short_addr) {
       
         z2s_channels_table[channel_number_slot].short_addr = 
           device->short_addr;
-        //Z2S_saveChannelsTable();
+        
+        auto Z2S_Core_Ptr = Z2S_getChannelZ2SCorePtr(channel_number_slot);
+
+        if (Z2S_Core_Ptr)
+          Z2S_Core_Ptr->updateShortAddress(device->short_addr);
+
         channels_table_save_required = true;
 
         log_i("Device short address updated");
@@ -8591,9 +8737,8 @@ uint8_t Z2S_addZ2SDevice(
       }
 
       channel_number_slot = Z2S_findChannelNumberNextSlot(
-        channel_number_slot, 
-        device->ieee_addr, device->endpoint, device->cluster_id, 
-        ALL_SUPLA_CHANNEL_TYPES, sub_id);
+        channel_number_slot, device->ieee_addr, device->endpoint, 
+        device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, sub_id);
     }
     
     if (channels_table_save_required)
@@ -8698,11 +8843,11 @@ void updateTimeout(
 
       case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
-        auto Supla_Z2S_VirtualThermometer = 
-          reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
+        auto Supla_Z2S_Z2S_VirtualPressure = 
+          reinterpret_cast<Supla::Sensor::Z2S_VirtualPressure *>(element);
 
         if (selector & 2)
-          Supla_Z2S_VirtualThermometer->setTimeoutSecs(timings_secs);
+          Supla_Z2S_Z2S_VirtualPressure->setTimeoutSecs(timings_secs);
       } break;
 
 
@@ -9000,8 +9145,7 @@ void updateRemoteThermometer(
       (strcmp(Z2S_getZbDeviceModelName(
         z2s_channels_table[channel_number_slot].Zb_device_id), 
         "SNZB-02DR2") == 0))  {
-
-     log_i("here we are");      
+     
     uint8_t temperature_selector = 1;
 
     zbg_device_params_t device = {};
@@ -9016,8 +9160,8 @@ void updateRemoteThermometer(
 
     zbGateway.sendAttributeWrite(
       &device, SONOFF_CUSTOM_CLUSTER, 
-      SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, ESP_ZB_ZCL_ATTR_TYPE_U8,
-      1, &temperature_selector);
+      SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
+      ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
 
     int16_t sonoff_external_value = connected_thermometer_value;
 

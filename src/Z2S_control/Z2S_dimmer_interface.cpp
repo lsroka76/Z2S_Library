@@ -21,12 +21,12 @@
 
 Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dimmer_mode) 
-  : _gateway(gateway), _dimmer_mode(dimmer_mode) {
+  : /*_gateway(gateway),*/ _dimmer_mode(dimmer_mode) {
   
   if (device)
     memcpy(&_device, device, sizeof(zbg_device_params_t));  
   else   
-  memset(&_device, 0, sizeof(zbg_device_params_t));  
+    memset(&_device, 0, sizeof(zbg_device_params_t));  
 
   channel.setType(SUPLA_CHANNELTYPE_DIMMER);
   channel.setDefault(SUPLA_CHANNELFNC_DIMMER);
@@ -86,21 +86,21 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
 void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
   uint8_t brightness) {
 
-  if (_gateway && Zigbee.started()) {
+  if (Zigbee.started()) {
     switch (_dimmer_mode) {
 
 
       case Z2S_SEND_TO_LEVEL_DIMMER: {
 
         uint8_t level = map(brightness, 0, 100, 1, 254);
-        _gateway->sendLevelMoveToLevelCmd(&_device, level, 1);
+        zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
       } break;
 
 
       case Z2S_COLOR_TEMPERATURE_DIMMER: {
 
         uint16_t color_temperature = map(brightness, 0, 100, 454, 200);
-	      _gateway->sendColorMoveToColorTemperatureCmd(
+	      zbGateway.sendColorMoveToColorTemperatureCmd(
           &_device, color_temperature, 1);
       } break;
 
@@ -110,7 +110,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
         uint16_t color_temperature = map(brightness, 0, 100, 500, 153);
 	      
-        _gateway->sendColorMoveToColorTemperatureCmd(
+        zbGateway.sendColorMoveToColorTemperatureCmd(
           &_device, color_temperature, 1);
       } break;
 
@@ -119,12 +119,12 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
         uint16_t F0_brightness = map(brightness, 0, 100, 0, 1000);
 	      
-        _gateway->sendCustomClusterCmd(
+        zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&F0_brightness, 
           false);
         if (F0_brightness == 0)
-          _gateway->sendOnOffCmd(&_device, false);
+          zbGateway.sendOnOffCmd(&_device, false);
       } break;
 
 
@@ -132,7 +132,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
         uint16_t E0_color_temperature = map(brightness, 0, 100, 0, 1000);
 	      
-        _gateway->sendCustomClusterCmd(
+        zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&E0_color_temperature, 
           false);
@@ -145,10 +145,10 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
         
         //WHITE mode
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, TUYA_RGBWCT_LED_EF00_MODE_DP, 0); 
+          &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_MODE_DP, 0); 
 
         sendTuyaRequestCmdValue32(
-          _gateway, &_device, TUYA_RGBWCT_LED_EF00_BRIGHTNESS_DP, 
+          &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_BRIGHTNESS_DP, 
           dp_brightness, false);
       } break;
 
@@ -159,10 +159,10 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
         //WHITE mode
         sendTuyaRequestCmdEnum8(
-          _gateway, &_device, TUYA_RGBWCT_LED_EF00_MODE_DP, 0);
+          &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_MODE_DP, 0);
           
         sendTuyaRequestCmdValue32(
-          _gateway, &_device, TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP, 
+          &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP, 
           dp_color_temperature, false);
       } break;
     } 
@@ -199,9 +199,9 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(uint16_t value) {
 
 void Supla::Control::Z2S_DimmerInterface::ping() {
 
-  if (_gateway && Zigbee.started()) {
+  if (Zigbee.started()) {
     _fresh_start = false;
-    _gateway->sendAttributeRead(
+    zbGateway.sendAttributeRead(
       &_device, 
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, 
@@ -225,9 +225,9 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
     ping();
 
   if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
-    if (_gateway) {
+    if (true) {
       
-      //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+      //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
@@ -240,7 +240,7 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
   }
   if (_timeout_enabled && channel.isStateOnline() && ((millis() - _last_seen_ms) > _timeout_ms)) {
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
-    //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
     if ((millis() - _last_seen_ms) > _timeout_ms)
       channel.setStateOffline();

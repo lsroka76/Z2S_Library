@@ -22,6 +22,7 @@
 #define SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_
 
 #include <supla/control/relay.h>
+
 #include "ZigbeeGateway.h"
 
 #include "Z2S_common.h"

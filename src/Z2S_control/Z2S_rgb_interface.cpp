@@ -25,7 +25,7 @@ Supla::Control::Z2S_RGBInterface::Z2S_RGBInterface(
   ZigbeeGateway *gateway, 
   zbg_device_params_t *device, 
   uint8_t rgb_mode) 
-  : _gateway(gateway), _rgb_mode(rgb_mode) {
+  : /*_gateway(gateway),*/ _rgb_mode(rgb_mode) {
 
   if (device)
     memcpy(&_device, device, sizeof(zbg_device_params_t));  
@@ -120,21 +120,21 @@ void Supla::Control::Z2S_RGBInterface::setValueOnServer(
 void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
   uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness) {
 
-  if (_gateway && Zigbee.started()) {
+  if (Zigbee.started()) {
 
     switch (turnOnOff) {
 
 
       case 0: {
 
-        _gateway->sendOnOffCmd(&_device, false);
+        zbGateway.sendOnOffCmd(&_device, false);
         return;
       } break;
 
       
       case 1: {
 
-        _gateway->sendOnOffCmd(&_device, true);
+        zbGateway.sendOnOffCmd(&_device, true);
         //return;
       } break;
 
@@ -175,7 +175,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
       case Z2S_COLOR_HS_RGB:
       case Z2S_PHILIPS_COLOR_HS_RGB:
 
-        _gateway->sendColorMoveToHueAndSaturationCmd(
+        zbGateway.sendColorMoveToHueAndSaturationCmd(
           &_device, _hue, _saturation, 1); 
       break;
 
@@ -189,25 +189,25 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
 
         log_i("XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
         
-        _gateway->sendColorMoveToColorCmd(
+        zbGateway.sendColorMoveToColorCmd(
           &_device, xy_color.x, xy_color.y, 1);
       } break;
 
 
       case Z2S_TUYA_COLOR_HS_RGB: {
         
-        _gateway->sendCustomClusterCmd(
+        zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode ,false);
 
-        _gateway->sendColorMoveToHueAndSaturationCmd(
+        zbGateway.sendColorMoveToHueAndSaturationCmd(
           &_device, _hue, _saturation, 1);
       } break;
 
 
       case Z2S_TUYA_COLOR_XY_RGB: {
         
-        _gateway->sendCustomClusterCmd(
+        zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode, false);
 
@@ -217,7 +217,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
 
         log_i("Tuya XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
         
-        _gateway->sendColorMoveToColorCmd(
+        zbGateway.sendColorMoveToColorCmd(
           &_device, xy_color.x, xy_color.y, 1);
       } break;
 
@@ -257,7 +257,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
         test_buffer[15] = (_color_brightness_1000 >> 8) & 0x00FF;
         test_buffer[16] = _color_brightness_1000 & 0x00FF;//BRIGHTNESS
 
-        _gateway->sendCustomClusterCmd(
+        zbGateway.sendCustomClusterCmd(
           &_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
           ESP_ZB_ZCL_ATTR_TYPE_SET, 17, test_buffer, false);
       } break;
@@ -268,9 +268,9 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
 
 void Supla::Control::Z2S_RGBInterface::ping() {
 
-  if (_gateway && Zigbee.started()) {
+  if (Zigbee.started()) {
     _fresh_start = false;
-    _gateway->sendAttributeRead(
+    zbGateway.sendAttributeRead(
       &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
   }
@@ -292,10 +292,10 @@ void Supla::Control::Z2S_RGBInterface::iterateAlways() {
     ping();
 
   if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
-    if (_gateway) {
+    if (true) {
       
       //_last_seen_ms = 
-       // _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+       // zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
 
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
@@ -313,7 +313,7 @@ void Supla::Control::Z2S_RGBInterface::iterateAlways() {
 
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
 
-    //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
 
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
 
