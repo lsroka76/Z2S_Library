@@ -646,12 +646,20 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
 
     //Wait for response or timeout
     if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(wait_ticks)/*ZB_CMD_TIMEOUT*/) != pdTRUE) {
-      log_e("Error while querying basic cluster attribute 0x%x", attributes[attribute_number]);
+
+      log_e(
+        "Error while querying basic cluster attribute 0x%x", 
+        attributes[attribute_number]);
+
       if ((attributes[attribute_number] == 
             ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) || 
           (attributes[attribute_number] == 
             ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID )) {
-          return false;
+        return false;
+
+      if (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID)
+        sprintf(_last_device_query.software_build_ID, "!ERROR!");
+        
       /*read_req.zcl_basic_cmd.dst_endpoint = 0x23; //temporary solution for Develco
 
       esp_zb_lock_acquire(portMAX_DELAY);

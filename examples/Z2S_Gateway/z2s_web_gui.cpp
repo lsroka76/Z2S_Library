@@ -5733,7 +5733,7 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 			case GUI_CB_SWBUILD_FLAG: { //software build ID
 
 				zbGateway.clearQueryBasicClusterData();
-				
+
 				if (zbGateway.zbQueryDeviceBasicCluster(
 							&device, true, ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID)) {
 
@@ -5742,6 +5742,8 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 						updateLabel_P(
 							rssilabel, 
 							zbGateway.getQueryBasicClusterData()->software_build_ID);
+					else
+						updateLabel_P(rssilabel, three_dots_str);
 				} else
 						updateLabel_C(rssilabel, device_query_failed_str);
 			} break;

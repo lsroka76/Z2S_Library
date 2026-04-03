@@ -9691,6 +9691,9 @@ void updateSuplaBatteryLevel(
     return;
   }*/
 
+  z2s_zb_devices_table[zb_device_number_slot].battery_percentage = 
+    battery_level;
+
   while (channel_number_slot >= 0) {
     
     auto element = 
