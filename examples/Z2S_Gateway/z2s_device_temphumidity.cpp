@@ -183,8 +183,8 @@ void resendTHValue(
 
     updateRemoteThermometer(
       remote_Supla_channel, ip_address,
-      z2s_channels_table[channel_number_slot].Supla_channel,
-      value_type, (int32_t)(value*100));
+      z2s_channels_table[channel_number_slot].Supla_channel, value_type, 
+      value);
 
     return;
   }
@@ -195,8 +195,7 @@ void resendTHValue(
 
     RemoteThermometer.printf(
       "Z2SCMD%02u%03u%03u%08ld\n", cmd_id, remote_Supla_channel,
-      z2s_channels_table[channel_number_slot].Supla_channel,
-      (int32_t)(value*100));
+      z2s_channels_table[channel_number_slot].Supla_channel, value);
     
     String response = RemoteThermometer.readStringUntil('\n');
       
@@ -265,7 +264,7 @@ void msgZ2SDeviceTempHumidityTemp(
 
   if (z2s_channels_table[channel_number_slot].user_data_flags &
 			USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)
-    resendTHValue(channel_number_slot, RTH_VALUE_TYPE_TEMPERATURE, temp);
+    resendTHValue(channel_number_slot, RTH_VALUE_TYPE_TEMPERATURE, temp * 100);
 }
 
 /*****************************************************************************/
@@ -303,6 +302,6 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi) {
 
     if (z2s_channels_table[channel_number_slot].user_data_flags &
 			  USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)
-      resendTHValue(channel_number_slot, RTH_VALUE_TYPE_HUMIDITY, humi);
+      resendTHValue(channel_number_slot, RTH_VALUE_TYPE_HUMIDITY, humi * 100);
   }
 }
