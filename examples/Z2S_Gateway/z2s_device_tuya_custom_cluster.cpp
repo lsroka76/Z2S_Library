@@ -2575,6 +2575,16 @@ void processTuyaVibrationSensor2DataReport(
     msgZ2SDeviceIASzone(
         channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0));
   }
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_VIBRATION_SENSOR_CONTACT_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceIASzone(
+      channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0));
+  }
  
   Z2S_readTuyaDPvalue(
     Tuya_read_dp_result, TUYA_VIBRATION_SENSOR_2_X_POSITION_DP, payload_size, 
