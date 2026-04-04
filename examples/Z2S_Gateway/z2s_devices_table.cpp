@@ -4549,7 +4549,7 @@ void Z2S_onSonoffCustomClusterReceive(
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
         short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
-        SONOFF_ELECTRICITY_METER_SID);
+        NO_CUSTOM_CMD_SID); //SONOFF_ELECTRICITY_METER_SID);
       
       if (channel_number_slot < 0) {
         no_channel_found_error_func(short_addr);

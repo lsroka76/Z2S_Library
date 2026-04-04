@@ -214,7 +214,8 @@ void initZ2SDeviceElectricityMeter(
     } break;
 
 
-    case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
+    case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER:
+    case Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER: {
 
       current_multiplier = 1;
       current_divisor    = 1000;
