@@ -117,7 +117,7 @@ void Supla::Control::DimmerInputInterface::iterateAlways() {
   
   if (_lastMsgReceivedMs != 0) {//&& millis() - _lastMsgReceivedMs >= 400) {
     _lastMsgReceivedMs = 0;
-    channel.setNewValue(0, 0, 0, 0, _brightness);
+    channel.setNewValue(0, 0, 0, 0, _brightness, -1);
     sendValueToDevice(_brightness);
   }
 }

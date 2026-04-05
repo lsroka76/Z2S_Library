@@ -3,8 +3,8 @@
 //&& CONFIG_ZB_ENABLED
 #if CONFIG_ZB_ENABLED
 
-static uint16_t s_ota_image_type;
-static uint16_t s_ota_manuf_code;
+static uint16_t s_ota_image_type = 0;
+static uint16_t s_ota_manuf_code = 0;
 //static uint32_t s_ota_image_offset = 0;
 static uint32_t s_ota_image_size = 0;
 static uint32_t s_ota_image_file_version = 0;
@@ -3240,18 +3240,27 @@ bool ZigbeeGateway::zbRawCmdHandler(
 
       // Payload
 
-      *p++ = 0x00; //SUCESS CODE
-      memcpy(p, buffer + 1, 4);
+      if ((req_image_type == s_ota_image_type) && 
+          (req_manufacturer_code == s_ota_manuf_code)) {
 
-      p += 4;
+        *p++ = ESP_ZB_ZCL_STATUS_SUCCESS;
+        memcpy(p, buffer + 1, 4);
 
-      memcpy(p, &s_ota_image_file_version, 4);
+        p += 4;
 
-      p += 4;
+        memcpy(p, &s_ota_image_file_version, 4);
 
-      memcpy(p, &s_ota_image_size, 4);
+        p += 4;
 
-      p += 4;
+        memcpy(p, &s_ota_image_size, 4);
+
+        p += 4;
+      } else {
+
+        log_i("requested OTA image not found");
+
+        *p++ = ESP_ZB_ZCL_STATUS_NO_IMAGE_AVAILABLE;
+      }
 
       uint8_t zcl_len = p - zcl_frame;
 
@@ -3263,8 +3272,8 @@ bool ZigbeeGateway::zbRawCmdHandler(
       esp_zb_apsde_data_req_t aps_req = {
         .dst_addr_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT,
         .dst_addr = {
-			    .addr_short = source.u.short_addr,      // short address of destination
-		    },
+          .addr_short = source.u.short_addr,      // short address of destination
+        },
         .dst_endpoint = src_endpoint,
         .profile_id = ESP_ZB_AF_HA_PROFILE_ID, // or your profile ID
         .cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE,
@@ -3272,18 +3281,18 @@ bool ZigbeeGateway::zbRawCmdHandler(
         .asdu_length = zcl_len,
         .asdu = zcl_frame,    // pointer to your built ZCL frame
         .tx_options = ESP_ZB_APSDE_TX_OPT_ACK_TX, // request APS ACK
-		    .use_alias = false,
+        .use_alias = false,
         .radius = 30, // max hops
       };
 
       // Send via APSDE, not sure if I need the lock so get it anyway
-	    //esp_zb_lock_acquire(portMAX_DELAY);
-	    esp_err_t err = esp_zb_aps_data_request(&aps_req);
-	    //esp_zb_lock_release();
+      //esp_zb_lock_acquire(portMAX_DELAY);
+      esp_err_t err = esp_zb_aps_data_request(&aps_req);
+      //esp_zb_lock_release();
       if (err != ESP_OK) {
         log_e("Failed to send APSDE data req: %d", err);
       }
-      return true;
+      return true; 
     }
 
     if (_on_custom_cmd_receive)

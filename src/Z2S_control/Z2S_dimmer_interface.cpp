@@ -213,9 +213,9 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
 
   if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 400) {
     _lastMsgReceivedMs = 0;
-    channel.setNewValue(0, 0, 0, 0, _brightness);
+    channel.setNewValue(0, 0, 0, 0, _brightness, -1);
     if ((_turn_rgb_off) && _rgb) {
-      _rgb->getChannel()->setNewValue(0, 0, 0, 0, 0);
+      _rgb->getChannel()->setNewValue(0, 0, 0, 0, 0, -1);
       _turn_rgb_off = false;
     }
     sendValueToDevice(_brightness);

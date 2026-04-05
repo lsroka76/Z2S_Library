@@ -73,11 +73,11 @@ int32_t Supla::Control::Z2S_DimmerBase::handleNewValueFromServer(TSD_SuplaChanne
 void Supla::Control::Z2S_DimmerBase::setValueOnServer(uint32_t brightness) {
 
   uint8_t _brightness = map(brightness, 1, 254, 0, 100);
-  channel.setNewValue(0, 0, 0, 0, _brightness);
+  channel.setNewValue(0, 0, 0, 0, _brightness, -1);
 }
 
 void Supla::Control::Z2S_DimmerBase::setStateOnServer(bool state) {
-  channel.setNewValue(0, 0, 0, 0, (state ? _last_brightness : 0));
+  channel.setNewValue(0, 0, 0, 0, (state ? _last_brightness : 0), -1);
 }
 
 void Supla::Control::Z2S_DimmerBase::handleAction(int event, int action) {
@@ -89,7 +89,7 @@ void Supla::Control::Z2S_DimmerBase::iterateAlways() {
   if ((_last_channel_update_ms !=0) && (millis() - _last_channel_update_ms >= 400)) {
     
     _last_channel_update_ms = 0;
-    channel.setNewValue(0, 0, 0, 0, _current_brightness);
+    channel.setNewValue(0, 0, 0, 0, _current_brightness, -1);
   }
 
   if (millis() - _last_ping_ms >= 10000) {
@@ -101,12 +101,12 @@ void Supla::Control::Z2S_DimmerBase::iterateAlways() {
          log_i("Zigbee device offline"); //(0x%x) offline...", _device.short_addr);
        else {
          channel.setStateOnline();
-         channel.setNewValue(0, 0, 0, 0, (isOn() ? _last_brightness : 0));
+         channel.setNewValue(0, 0, 0, 0, (isOn() ? _last_brightness : 0), -1);
        }
     } else {
         if (!ping()) {
           log_i("Zigbee device offline"); //(0x%x) offline...", _device.short_addr);
-          channel.setNewValue(0, 0, 0, 0, 0);
+          channel.setNewValue(0, 0, 0, 0, 0, -1);
           channel.setStateOffline(); 
         }
     }

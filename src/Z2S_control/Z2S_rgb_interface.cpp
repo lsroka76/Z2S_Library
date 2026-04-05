@@ -35,6 +35,16 @@ Supla::Control::Z2S_RGBInterface::Z2S_RGBInterface(
   channel.setType(SUPLA_CHANNELTYPE_RGBLEDCONTROLLER);
   channel.setDefault(SUPLA_CHANNELFNC_RGBLIGHTING);
   //channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
+
+  /*channel.setType(SUPLA_CHANNELTYPE_DIMMERANDRGBLED);
+  channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
+  channel.setFlag(SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE);
+  channel.setFuncList(
+      SUPLA_RGBW_BIT_FUNC_DIMMER | SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING |
+      SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING |
+      SUPLA_RGBW_BIT_FUNC_DIMMER_CCT | SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB);
+  channel.setDefault(SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB);
+  usedConfigTypes.set(SUPLA_CONFIG_TYPE_DEFAULT);*/
 }
 
 int32_t Supla::Control::Z2S_RGBInterface::handleNewValueFromServer(
@@ -280,9 +290,9 @@ void Supla::Control::Z2S_RGBInterface::iterateAlways() {
 
   if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 400) {
     _lastMsgReceivedMs = 0;
-    channel.setNewValue(_red, _green, _blue, _colorBrightness, 0);
+    channel.setNewValue(_red, _green, _blue, _colorBrightness, 0, -1);
     if ((_turn_dimmer_off) && _dimmer) {
-      _dimmer->getChannel()->setNewValue(0, 0, 0, 0, 0);
+      _dimmer->getChannel()->setNewValue(0, 0, 0, 0, 0, -1);
       _turn_dimmer_off = false;
     }
     sendValueToDevice(_red, _green, _blue, _colorBrightness);

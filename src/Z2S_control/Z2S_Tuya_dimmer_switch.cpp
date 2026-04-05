@@ -149,7 +149,7 @@ _gateway->sendCustomClusterCmd(&_device, TUYA_PRIVATE_CLUSTER_EF00, 0x06, ESP_ZB
 void Supla::Control::Z2S_TuyaDimmerSwitch::setValueOnServer(uint32_t brightness) {
 
   uint8_t _brightness = map(brightness, 1, 254, 0, 100);
-  channel.setNewValue(0, 0, 0, 0, _brightness);
+  channel.setNewValue(0, 0, 0, 0, _brightness, -1);
 }
 
 void Supla::Control::Z2S_TuyaDimmerSwitch::setStateOnServer(bool state) {
