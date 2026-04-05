@@ -33,6 +33,7 @@ jobs:
           arduino-cli lib install --git-url https://github.com/lsroka76/AsyncTCP.git
           arduino-cli lib install --git-url https://github.com/mobizt/ESP_SSLClient.git
           arduino-cli lib install --git-url https://github.com/milesburton/Arduino-Temperature-Control-Library.git
+          arduino-cli lib install --git-url https://github.com/PaulStoffregen/OneWire.git
       - name: Copy boards.txt with C6 config
         run: | 
           cp ./partitions/boards336.txt ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/boards.txt
