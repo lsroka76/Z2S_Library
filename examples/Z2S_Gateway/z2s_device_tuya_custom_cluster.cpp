@@ -2566,7 +2566,7 @@ void processTuyaVibrationSensor2DataReport(
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     TUYA_VIBRATION_SENSOR_VIBRATION_STATE_SID);
 
-  Z2S_readTuyaDPvalue(
+  /*Z2S_readTuyaDPvalue(
     Tuya_read_dp_result,TUYA_VIBRATION_SENSOR_VIBRATION_DP, payload_size, 
     payload);
 
@@ -2584,7 +2584,7 @@ void processTuyaVibrationSensor2DataReport(
 
     msgZ2SDeviceIASzone(
       channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0));
-  }
+  }*/
  
   Z2S_readTuyaDPvalue(
     Tuya_read_dp_result, TUYA_VIBRATION_SENSOR_2_X_POSITION_DP, payload_size, 
@@ -2622,6 +2622,9 @@ void processTuyaVibrationSensor2DataReport(
     payload_size, payload);
 
   if (Tuya_read_dp_result.is_success) {
+
+    msgZ2SDeviceIASzone(
+        channel_number_slot_1, (Tuya_read_dp_result.dp_value > 0));
 
     msgZ2SDeviceGeneralPurposeMeasurement(
       channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
