@@ -73,7 +73,14 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
           "DIMMER SVR ON: _last_brightness = %u, _brightness = %u", 
           _last_brightness, _brightness);
 
-        _brightness = _last_brightness;
+        
+        if (brightness == 100)
+          _brightness = _last_brightness;
+        else {
+          
+          _last_brightness = _brightness;
+          _brightness = brightness;
+        }
         sendTurnOnOffCmd = 2;
       }
       else {
@@ -94,6 +101,29 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
   return -1;
 }
 
+void Supla::Control::Z2S_DimmerInterface::turnOff() {
+
+  sendTurnOnOffCmd = 1;
+  _last_brightness = _brightness;
+  _brightness = 0;
+
+  _lastMsgReceivedMs = millis();
+}
+
+void Supla::Control::Z2S_DimmerInterface::turnOn() {
+
+  if (_last_brightness > 0)
+    _brightness = _last_brightness;
+  else {
+    _last_brightness = _brightness;
+    _brightness = 100;
+  }
+  sendTurnOnOffCmd = 2;
+
+  _lastMsgReceivedMs = millis();
+}
+
+
 void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
   uint8_t brightness) {
 
@@ -107,6 +137,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
           _state = false;
           zbGateway.sendOnOffCmd(&_device, false);
+          sendTurnOnOffCmd = 0;
           break;
         }
 
@@ -114,6 +145,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
           _state = true;
           zbGateway.sendOnOffCmd(&_device, true);
+          sendTurnOnOffCmd = 0;
         }
         
         uint8_t level = mapFloat(_brightness, 1, 100, 1, 254);
@@ -392,16 +424,31 @@ void Supla::Control::Z2S_DimmerInterface::handleAction(int event, int action) {
   (void)(event);
   
   switch (action) {
-    case DIM_W: {
+
+
+    case TURN_ON:
+
+      if (!isOn())
+        turnOn();
+     break;
+
+
+    case TURN_OFF:
+
+      if (isOn())
+        turnOff();
+     break;
+
+
+    case DIM_W:
 
       increaseBrightness(-10);
-      break;
-    }
+    break;
 
-    case BRIGHTEN_W: {
+
+    case BRIGHTEN_W: 
       
       increaseBrightness(10);
-      break;
-    }
+    break;
   }
 }

@@ -54,6 +54,14 @@ public:
   //void onInit() override;
   void iterateAlways() override;
 
+  bool isOn() {
+
+    return _state;
+  }
+
+  void turnOn();
+  void turnOff();
+
   virtual void handleAction(int event, int action) override;
 
   virtual void sendValueToDevice(uint8_t brightness); //= 0;
