@@ -29,8 +29,9 @@ void ActionHandlerWithCallbacks::handleAction(int event, int action)
   if (actionhandler_callback != nullptr)  actionhandler_callback(event, action);  
 }
 
-void ActionHandlerWithCallbacks::setActionHandlerCallback(_actionhandler_callback actionhandler_callback)
-{
+void ActionHandlerWithCallbacks::setActionHandlerCallback(
+  _actionhandler_callback actionhandler_callback) {
+    
     this->actionhandler_callback = actionhandler_callback;
 }
     //void iterateAlways();

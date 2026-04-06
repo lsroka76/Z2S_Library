@@ -18,6 +18,9 @@ struct ColorHSV
     float m_v;
 };
 
+int32_t mapFloat(
+    float x, float in_min, float in_max, float out_min, float out_max);
+
 // all normalized
 ColorHSV rgbToHsv(ColorRGB rgb);
 

@@ -21,6 +21,7 @@
 #include "z2s_device_hvac.h"
 #include "z2s_device_dimmer.h"
 #include "z2s_device_rgb.h"
+#include "z2s_device_rgbcct.h"
 #include "z2s_device_temphumidity.h"
 #include "z2s_device_pressure.h"
 #include "z2s_device_tuya_custom_cluster.h"
@@ -2458,6 +2459,12 @@ void Z2S_initSuplaChannels() {
         break;
 
 
+        case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: 
+
+          initZ2SDeviceRGBCCT(&device, channels_counter); 
+        break;
+
+
         case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE: 
         
           initZ2SDeviceVirtualValve(&zbGateway, &device, channels_counter); 
@@ -4754,6 +4761,15 @@ void Z2S_onOnOffReceive(
 
     msgZ2SDeviceVirtualRelay(
       channel_number_slot, state); //default On/Off channel
+    //return;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
+    DIMMER_FUNC_BRIGHTNESS_SID);
+
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceDimmer(channel_number_slot, -1, state);
     return;
   }
 
@@ -4775,13 +4791,6 @@ void Z2S_onOnOffReceive(
     return;
   }
 
-  channel_number_slot = Z2S_findChannelNumberSlot(
-    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, NO_CUSTOM_CMD_SID);
-
-  if (channel_number_slot >= 0) {
-    msgZ2SDeviceDimmer(channel_number_slot, -1, state);
-    return;
-  }
   
   channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
@@ -5564,11 +5573,9 @@ void Z2S_onMeteringReceive(
 void Z2S_onCurrentLevelReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t level) {
 
-  char ieee_addr_str[24] = {};
-
-  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
-
-  log_i("%s, endpoint 0x%x, cluster 0x%x, level 0x%x", ieee_addr_str, endpoint, cluster, level);
+  log_i(
+    "0x%04X, endpoint 0x%02X, cluster 0x%04X, current level 0x%02X", 
+    short_addr, endpoint, cluster, level);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
@@ -5578,18 +5585,16 @@ void Z2S_onCurrentLevelReceive(
     msgZ2SDeviceDimmer(channel_number_slot, level, true);
     return;
   }
-  //log_i(_no_channel_found_str, ieee_addr);
+  
   no_channel_found_error_func(short_addr);
 }
 
 void Z2S_onColorHueReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint8_t hue) {
 
-  char ieee_addr_str[24] = {};
-
-  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
-
-  log_i("%s, endpoint 0x%x, cluster 0x%x, hue 0x%x", ieee_addr_str, endpoint, cluster, hue);
+  log_i(
+    "0x%04X, endpoint 0x%02X, cluster 0x%04X, hue 0x%02X", 
+    short_addr, endpoint, cluster, hue);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
@@ -5601,19 +5606,18 @@ void Z2S_onColorHueReceive(
       z2s_channels_table[channel_number_slot].Supla_channel, hue, 0xFF, true);
     return;
   }
-  //log_i(_no_channel_found_str, ieee_addr);
+  
   no_channel_found_error_func(short_addr);
 }
 
 void Z2S_onColorSaturationReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint8_t saturation) {
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  uint8_t saturation) {
 
-  char ieee_addr_str[24] = {};
+  log_i(
+    "0x%04X, endpoint 0x%02X, cluster 0x%04X, saturation 0x%02X", 
+    short_addr, endpoint, cluster, saturation);
 
-  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
-
-  log_i("%s, endpoint 0x%x, cluster 0x%x, saturation 0x%x", ieee_addr_str, endpoint, cluster, saturation);
-  
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
     NO_CUSTOM_CMD_SID);
@@ -5625,18 +5629,17 @@ void Z2S_onColorSaturationReceive(
       true);
     return;
   }
-  //log_i(_no_channel_found_str, ieee_addr);
+  
   no_channel_found_error_func(short_addr);
 }
 
 void Z2S_onColorTemperatureReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t color_temperature) {
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t color_temperature) {
 
-  char ieee_addr_str[24] = {};
-
-  //ieee_addr_to_str(ieee_addr_str, ieee_addr);
-
-  log_i("%s, endpoint 0x%x, cluster 0x%x, color temparature 0x%x", ieee_addr_str, endpoint, cluster, color_temperature);
+  log_i(
+    "0x%04X, endpoint 0x%02X, cluster 0x%04X, color temperature 0x%04X", 
+    short_addr, endpoint, cluster, color_temperature);
   
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
@@ -5648,7 +5651,7 @@ void Z2S_onColorTemperatureReceive(
       color_temperature, true);
     return;
   }
-  //log_i(_no_channel_found_str, ieee_addr);
+  
   no_channel_found_error_func(short_addr);
 }
 
@@ -7637,6 +7640,15 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/     
 
+      case Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB: {
+        
+        addZ2SDeviceRGBCCT(
+          device, first_free_slot, "RGBCCT", 
+          SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB); 
+      } break; 
+
+/*****************************************************************************/     
+
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
       case Z2S_DEVICE_DESC_LED_DIMMER:
       case Z2S_DEVICE_DESC_IKEA_WW_BULB:
@@ -8660,7 +8672,7 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER: {
 
-        addZ2SDeviceVirtualRelay(
+        /*addZ2SDeviceVirtualRelay(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
           "DIMMER SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
@@ -8670,7 +8682,7 @@ uint8_t Z2S_addZ2SDevice(
           
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
-        }
+        }*/
 
         addZ2SDeviceDimmer(
           &zbGateway, device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, 

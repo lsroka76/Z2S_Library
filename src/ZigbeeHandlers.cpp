@@ -349,11 +349,13 @@ static esp_err_t zb_attribute_reporting_handler(const esp_zb_zcl_report_attr_mes
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (true /*message->dst_endpoint == (*it)->getEndpoint()*/) {
       if (message->cluster == ESP_ZB_ZCL_CLUSTER_ID_BASIC) {
-        (*it)->zbReadBasicCluster(message->src_address, message->src_endpoint, 
-                                  message->cluster, (esp_zb_zcl_attribute_t *)&message->attribute);  //method zbReadBasicCluster implemented in the common EP class
+        (*it)->zbReadBasicCluster(
+          message->src_address, message->src_endpoint, message->cluster, 
+          (esp_zb_zcl_attribute_t *)&message->attribute);  //method zbReadBasicCluster implemented in the common EP class
       } else {
-        (*it)->zbAttributeReporting(message->src_address, message->src_endpoint, 
-                                    message->cluster, &message->attribute);  //method zbAttributeRead must be implemented in specific EP class
+        (*it)->zbAttributeReporting(
+          message->src_address, message->src_endpoint, message->cluster, 
+          &message->attribute);  //method zbAttributeRead must be implemented in specific EP class
       }  
     }
   }

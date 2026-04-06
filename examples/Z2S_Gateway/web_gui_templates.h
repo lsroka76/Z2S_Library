@@ -713,6 +713,12 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "CURRENT LEVEL"
 	},
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_CMD_LEVEL_CONTROL_MOVE_TO_LEVEL, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET,
+		.zigbee_attribute_name = "MOVE TO LEVEL (CMD)"
+	},
 
 
   //POLL CONTROL

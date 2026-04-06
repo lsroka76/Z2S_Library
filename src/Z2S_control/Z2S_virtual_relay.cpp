@@ -591,7 +591,8 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
 	  
     log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
     
-    //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    if (_z2s_zb_device)
+      _last_seen_ms = _z2s_zb_device->last_seen_ms;
     
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), 
           _last_seen_ms);

@@ -882,6 +882,8 @@ const char* getSuplaChannelTypeName(int32_t channelType) {
 			return "Dimmer";
 		case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER:
 			return "RGB controller";
+		case SUPLA_CHANNELTYPE_DIMMERANDRGBLED:
+			return "Dimmer and RGB controller";
 		case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
 			return "Electricity meter";
 		case SUPLA_CHANNELTYPE_THERMOSTAT:

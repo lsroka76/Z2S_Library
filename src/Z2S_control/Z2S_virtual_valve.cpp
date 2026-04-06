@@ -116,7 +116,9 @@ void Z2S_VirtualValve::iterateAlways() {
   if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (true) {
       
-      //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
+      if (_z2s_zb_device)
+        _last_seen_ms = _z2s_zb_device->last_seen_ms;
+
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
@@ -132,6 +134,9 @@ void Z2S_VirtualValve::iterateAlways() {
 
 	  log_i(
       "current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
+
+    if (_z2s_zb_device)
+      _last_seen_ms = _z2s_zb_device->last_seen_ms;
 
     log_i(
       "current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);

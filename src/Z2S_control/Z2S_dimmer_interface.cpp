@@ -16,6 +16,7 @@
 //#ifdef Z2S_GATEWAY
 
 #include "Z2S_dimmer_interface.h"
+#include "rgbhsv.h"
 
 #include <supla/log_wrapper.h>
 
@@ -47,14 +48,8 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
   SUPLA_LOG_DEBUG(
       "Z2S_DimmerInterface[%d]: red=%d, green=%d, blue=%d, "
       "colorBrightness=%d, brightness=%d, command=%d, toggleOnOff=%d",
-      getChannelNumber(),
-      red,
-      green,
-      blue,
-      colorBrightness,
-      brightness,
-      command,
-      toggleOnOff);
+      getChannelNumber(), red, green, blue, colorBrightness, brightness,
+      command, toggleOnOff);
 
   if (brightness > 100) {
     brightness = 100;
@@ -62,21 +57,37 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
   
   if (brightness != _brightness) {
     if (brightness == 0) {
-      log_i("DIMMER OFF");
+      
+      sendTurnOnOffCmd = 1;
+      _last_brightness = _brightness;
+      _brightness = brightness;
+
+      log_i(
+        "DIMMER SVR OFF: _last_brightness = %u, _brightness = %u", 
+        _last_brightness, _brightness);
     }
     else {
       if (_brightness == 0) {
-        log_i("DIMMER ON - SEND ON(ONOFF) + SEND LEVEL(brightness");
+
+        log_i(
+          "DIMMER SVR ON: _last_brightness = %u, _brightness = %u", 
+          _last_brightness, _brightness);
+
+        _brightness = _last_brightness;
+        sendTurnOnOffCmd = 2;
       }
       else {
-        log_i("DIMMER ALREADY ON - SEND LEVEL(brightness");
+
+        _last_brightness = _brightness;
+        _brightness = brightness;
+        sendTurnOnOffCmd = 0;
+
+        log_i(
+          "DIMMER SVR MSG: _last_brightness = %u, _brightness = %u", 
+          _last_brightness, _brightness);
       }
     }
   }
-
-  _last_brightness = _brightness;
-
-  _brightness = brightness;
 
   _lastMsgReceivedMs = millis();
 
@@ -92,14 +103,27 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
       case Z2S_SEND_TO_LEVEL_DIMMER: {
 
-        uint8_t level = map(brightness, 0, 100, 1, 254);
+        if (sendTurnOnOffCmd == 1) {
+
+          _state = false;
+          zbGateway.sendOnOffCmd(&_device, false);
+          break;
+        }
+
+        if (sendTurnOnOffCmd == 2) {
+
+          _state = true;
+          zbGateway.sendOnOffCmd(&_device, true);
+        }
+        
+        uint8_t level = mapFloat(_brightness, 1, 100, 1, 254);
         zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
       } break;
 
 
       case Z2S_COLOR_TEMPERATURE_DIMMER: {
 
-        uint16_t color_temperature = map(brightness, 0, 100, 454, 200);
+        uint16_t color_temperature = mapFloat(brightness, 1, 100, 454, 200);
 	      zbGateway.sendColorMoveToColorTemperatureCmd(
           &_device, color_temperature, 1);
       } break;
@@ -108,7 +132,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
       case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER:
       case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER: {
 
-        uint16_t color_temperature = map(brightness, 0, 100, 500, 153);
+        uint16_t color_temperature = mapFloat(brightness, 1, 100, 500, 153);
 	      
         zbGateway.sendColorMoveToColorTemperatureCmd(
           &_device, color_temperature, 1);
@@ -117,20 +141,31 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
       case Z2S_TUYA_F0_CMD_DIMMER: {
 
-        uint16_t F0_brightness = map(brightness, 0, 100, 0, 1000);
+        if (sendTurnOnOffCmd == 1) {
+
+          _state = false;
+          zbGateway.sendOnOffCmd(&_device, false);
+          break;
+        }
+
+        if (sendTurnOnOffCmd == 2) {
+
+          _state = true;
+          zbGateway.sendOnOffCmd(&_device, true);
+        }
+
+        uint16_t F0_brightness = mapFloat(brightness, 1, 100, 1, 1000);
 	      
         zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&F0_brightness, 
           false);
-        if (F0_brightness == 0)
-          zbGateway.sendOnOffCmd(&_device, false);
       } break;
 
 
       case Z2S_TUYA_E0_CMD_DIMMER: {
 
-        uint16_t E0_color_temperature = map(brightness, 0, 100, 0, 1000);
+        uint16_t E0_color_temperature = mapFloat(brightness, 1, 100, 1, 1000);
 	      
         zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
@@ -141,7 +176,22 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
       case Z2S_TUYA_BRIGHTNESS_DP_DIMMER: {
 
-        uint16_t dp_brightness = map(brightness, 0, 100, 0, 1000);
+        if (sendTurnOnOffCmd == 1) {
+
+          _state = false;
+          sendTuyaRequestCmdBool(
+            &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 0);
+          break;
+        }
+
+        if (sendTurnOnOffCmd == 2) {
+
+          _state = true;
+          sendTuyaRequestCmdBool(
+            &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 1);
+        }
+
+        uint16_t dp_brightness = mapFloat(brightness, 1, 100, 1, 1000);
         
         //WHITE mode
         sendTuyaRequestCmdEnum8(
@@ -155,7 +205,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
 
       case Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER: {
 
-        uint16_t dp_color_temperature = map(brightness, 0, 100, 0, 1000);
+        uint16_t dp_color_temperature = mapFloat(brightness, 1, 100, 1, 1000);
 
         //WHITE mode
         sendTuyaRequestCmdEnum8(
@@ -169,65 +219,100 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
   }
 }
 
-void Supla::Control::Z2S_DimmerInterface::setValueOnServer(uint16_t value) {
+void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
+  int16_t value, bool new_state) {
 
-  return; //temp solution
+  //return; //temp solution
+
+  if (value < 0) {
+
+    if ((!new_state) && _state) {
+
+      _last_brightness = _brightness;
+      _brightness = 0;
+      _state = false;
+      channel.setNewValue(-1, -1, -1, -1, _brightness, -1);
+
+      return;
+    }
+
+    if (new_state && (!_state)) {
+
+      _brightness = _last_brightness;
+      _state = true;
+      channel.setNewValue(-1, -1, -1, -1, _brightness, -1);
+      return;
+    }
+    return;
+  }
+
+  if ((!_state) || (value == 0))
+    return;
+
   _last_brightness = _brightness;
 
   switch (_dimmer_mode) {
 
+
       case Z2S_SEND_TO_LEVEL_DIMMER:  
-        _brightness = map(value, 1, 254, 0, 100); break;
+        
+        _brightness = mapFloat(value, 1, 254, 1, 100); 
+      break;
+
 
       case Z2S_COLOR_TEMPERATURE_DIMMER: 
-        _brightness = map(value, 250, 454, 0, 100); break;
-      
+
+        _brightness = mapFloat(value, 250, 454, 0, 100); 
+      break;
+
+
       case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER: 
-        _brightness = map(value, 153, 500, 0, 100); break;
+      case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER:
+
+        _brightness = mapFloat(value, 153, 500, 0, 100); 
+      break;
     }
 
-  uint8_t diff = (_brightness > _last_brightness) ? 
-    (_brightness - _last_brightness) : (_last_brightness - _brightness);
-
-  if (diff < 2)
-    _brightness = _last_brightness;
-
-  _lastMsgReceivedMs = millis();
-
+  //_lastMsgReceivedMs = millis();
+  channel.setNewValue(-1, -1, -1, -1, _brightness, -1);
 
 }
 
 void Supla::Control::Z2S_DimmerInterface::ping() {
 
   if (Zigbee.started()) {
+
     _fresh_start = false;
+    
     zbGateway.sendAttributeRead(
-      &_device, 
-      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-      ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, 
+      &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, 
       false);
+
+    zbGateway.sendAttributeRead(
+      &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
+      ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);
   }
 }
 
 void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
 
-  if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 400) {
+  if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 1000) {
+
     _lastMsgReceivedMs = 0;
     channel.setNewValue(0, 0, 0, 0, _brightness, -1);
-    if ((_turn_rgb_off) && _rgb) {
-      _rgb->getChannel()->setNewValue(0, 0, 0, 0, 0, -1);
-      _turn_rgb_off = false;
-    }
+
     sendValueToDevice(_brightness);
   }
 
   if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
     ping();
 
-  if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (true) {
       
-      //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
+      if (_z2s_zb_device)
+        _last_seen_ms = _z2s_zb_device->last_seen_ms;
+
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
@@ -238,9 +323,14 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
       }
     }
   }
-  if (_timeout_enabled && channel.isStateOnline() && ((millis() - _last_seen_ms) > _timeout_ms)) {
-	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
-    //_last_seen_ms = zbGateway.getZbgDeviceUnitLastSeenMs(_device.short_addr);
+  if (_timeout_ms && channel.isStateOnline() && 
+      ((millis() - _last_seen_ms) > _timeout_ms)) {
+	  
+    log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
+
+    if (_z2s_zb_device)
+      _last_seen_ms = _z2s_zb_device->last_seen_ms;
+
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
     if ((millis() - _last_seen_ms) > _timeout_ms)
       channel.setStateOffline();
@@ -261,21 +351,13 @@ uint8_t Supla::Control::Z2S_DimmerInterface::getDimmerMode() {
 void Supla::Control::Z2S_DimmerInterface::setKeepAliveSecs(uint32_t keep_alive_secs) {
 
   _keep_alive_ms = keep_alive_secs * 1000;
-  if (_keep_alive_ms == 0)
-    _keep_alive_enabled = false;
-  else 
-    _keep_alive_enabled = true;
 }
 
 void Supla::Control::Z2S_DimmerInterface::setTimeoutSecs(uint32_t timeout_secs) {
 
   _timeout_ms = timeout_secs * 1000;
-  if (_timeout_ms == 0) {
-    _timeout_enabled = false;
+  if (_timeout_ms == 0) 
     channel.setStateOnline();
-  }
-  else
-   _timeout_enabled = true;
 }
 
 uint32_t Supla::Control::Z2S_DimmerInterface::getKeepAliveSecs() {

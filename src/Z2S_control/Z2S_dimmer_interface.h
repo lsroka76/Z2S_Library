@@ -36,6 +36,7 @@
 #define Z2S_TUYA_BRIGHTNESS_DP_DIMMER         0x06 //DP 0-1000
 #define Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER  0x07 //DP 0-1000
 
+
 namespace Supla {
 namespace Control {
 class Z2S_DimmerInterface : public ChannelElement, public ActionHandler,
@@ -47,14 +48,6 @@ public:
     ZigbeeGateway *gateway, zbg_device_params_t *device, 
     uint8_t dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER);
 
-  void setRGBChannel(uint8_t rgb_channel) {
-    _rgb_channel = rgb_channel;
-    if (_rgb_channel < 0xFF) {
-      _rgb = Supla::Element::getElementByChannelNumber(_rgb_channel);
-    }
-    else _rgb = nullptr;
-  }
-
   int32_t handleNewValueFromServer(
     TSD_SuplaChannelNewValue *newValue) override;
   
@@ -65,7 +58,7 @@ public:
 
   virtual void sendValueToDevice(uint8_t brightness); //= 0;
 
-  virtual void setValueOnServer(uint16_t value);
+  virtual void setValueOnServer(int16_t value, bool new_state);
 
   //virtual void setStateOnServer(bool state);
 
@@ -85,26 +78,26 @@ protected:
 
   //ZigbeeGateway *_gateway = nullptr;
   //zbg_device_params_t 	_device;
+
   uint8_t _dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER;
 
   bool _fresh_start = true;
 
-  bool _keep_alive_enabled = true;
-  bool _timeout_enabled    = true;
-
-  uint32_t _keep_alive_ms = 45000;
-  uint32_t _timeout_ms    = 60000;
-  uint32_t _last_ping_ms  = 0;
-  uint32_t _last_seen_ms  = 0;
-
-  uint8_t _rgb_channel = 0xFF;
-  bool _turn_rgb_off = false;
-  Element *_rgb = nullptr;
+  uint8_t sendTurnOnOffCmd = 0;
 
   uint8_t _last_brightness = 0;
   uint8_t _brightness = 0;
+  uint8_t _state = false;
+
+  uint32_t _keep_alive_ms = 0;
+  uint32_t _timeout_ms    = 0;
+  uint32_t _last_ping_ms  = 0;
+  uint32_t _last_seen_ms  = 0;
 
   uint32_t _lastMsgReceivedMs = 0;
+
+  
+  
 
   void increaseBrightness(int8_t add_to_brightness);
 

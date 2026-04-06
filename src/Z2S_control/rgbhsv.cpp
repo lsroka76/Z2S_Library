@@ -1,5 +1,12 @@
 #include "rgbhsv.h"
 
+int32_t mapFloat(
+    float x, float in_min, float in_max, float out_min, float out_max) {
+
+  return round(
+    (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+}
+
 // all normalized
 ColorHSV rgbToHsv(ColorRGB rgb)
 {
