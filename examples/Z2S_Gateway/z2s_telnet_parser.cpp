@@ -150,12 +150,13 @@ void remoteNeighbourhoodTableCb(
 
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
   
-    log_d("Remote neighbourhood table info: total %d, index %d, count %d", 
-          rsp->neighbor_table_entries, 
-          rsp->start_index, 
-          rsp->neighbor_table_list_count);
+    log_d(
+      "Remote neighbourhood table info: total %d, index %d, count %d", 
+      rsp->neighbor_table_entries, rsp->start_index, 
+      rsp->neighbor_table_list_count);
 
     if (rsp->neighbor_table_entries == 0) {
+      
       log_d("No remote neighbourhood table entries found");
       return;
     }
@@ -165,26 +166,21 @@ void remoteNeighbourhoodTableCb(
 
     for (int i = 0; i < rsp->neighbor_table_list_count; i++) {
     
-      sprintf_P(log_line, 
-              PSTR("Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t"
-                  "%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n\r"
-                  "DEVICE TYPE\t\t0x%x\n\rDEPTH\t\t\t0x%x\n\rRX_ON_WHEN_IDLE"
-                  "\t\t0x%x\n\rRELATIONSHIP\t\t0x%x\n\rLQI\t\t\t%d\n\r"), 
+      sprintf_P(
+        log_line, 
+        PSTR(
+          "Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t"
+          "%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n\r"
+          "DEVICE TYPE\t\t0x%x\n\rDEPTH\t\t\t0x%x\n\rRX_ON_WHEN_IDLE"
+          "\t\t0x%x\n\rRELATIONSHIP\t\t0x%x\n\rLQI\t\t\t%d\n\r"), 
         rsp->start_index + rsp->neighbor_table_list_count, 
-        nwk_neighbour->extended_addr[7], 
-        nwk_neighbour->extended_addr[6], 
-        nwk_neighbour->extended_addr[5], 
-        nwk_neighbour->extended_addr[4], 
-        nwk_neighbour->extended_addr[3], 
-        nwk_neighbour->extended_addr[2], 
-        nwk_neighbour->extended_addr[1], 
-        nwk_neighbour->extended_addr[0],
-        nwk_neighbour->network_addr, 
-        nwk_neighbour->device_type,
-        nwk_neighbour->depth, 
-        nwk_neighbour->rx_when_idle, 
-        nwk_neighbour->relationship,
-        nwk_neighbour->lqi);
+        nwk_neighbour->extended_addr[7], nwk_neighbour->extended_addr[6], 
+        nwk_neighbour->extended_addr[5], nwk_neighbour->extended_addr[4], 
+        nwk_neighbour->extended_addr[3], nwk_neighbour->extended_addr[2], 
+        nwk_neighbour->extended_addr[1], nwk_neighbour->extended_addr[0],
+        nwk_neighbour->network_addr, nwk_neighbour->device_type,
+        nwk_neighbour->depth, nwk_neighbour->rx_when_idle, 
+        nwk_neighbour->relationship, nwk_neighbour->lqi);
 
     log_i_telnet2(log_line, true); //toTelnet);  
 

@@ -8807,6 +8807,18 @@ void updateTimeout(
 
       case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
+        if (z2s_channels_table[channel_number_slot].local_channel_type ==
+            LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY) {
+
+          auto Supla_LocalVirtualBinary = static_cast<
+            Supla::Sensor::LocalVirtualBinary *>(element);
+          
+          if (selector & 4)
+            Supla_LocalVirtualBinary->setAutoClearSecs(timings_secs);
+
+          return;     
+        }
+
         auto Supla_Z2S_VirtualBinary = 
           reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
         

@@ -249,6 +249,9 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
       if (Supla::Notification::RegisterNotification(
             Supla_channel, false, true))
         Supla_LocalVirtualBinary->registerNotification();
+      
+      Supla_LocalVirtualBinary->setAutoClearSecs(
+        z2s_channels_table[channel_number_slot].refresh_secs);
     }
     break;
 

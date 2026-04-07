@@ -247,7 +247,13 @@ class LocalVirtualBinary: public VirtualBinary {
     LocalVirtualBinary(bool keepStateInStorage);
     virtual ~LocalVirtualBinary();
 
+    void setAutoClearSecs(uint32_t auto_clear_secs) {
+
+      _auto_clear_ms = auto_clear_secs * 1000;
+    }
+
     void handleAction(int event, int action) override;
+    void iterateAlways() override;
 
     void registerNotification();
     void enableNotifications();
@@ -257,6 +263,9 @@ class LocalVirtualBinary: public VirtualBinary {
 
     bool _notification_registered = false;
     bool _notifications_enabled = false;
+
+    uint32_t _auto_clear_ms = 0;
+    uint32_t _last_clear_ms = 0;
 
     void sendNotification();
 

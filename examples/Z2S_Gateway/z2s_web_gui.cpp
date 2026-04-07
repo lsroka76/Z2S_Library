@@ -7140,15 +7140,17 @@ void editChannelCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_UPDATE_TIMEOUT_FLAG : {		
 
-				updateTimeout(channel_slot, 0, 2, 
-											ESPUI.getControl(timeout_number)->getValueInt());
+				updateTimeout(
+					channel_slot, 0, 2, 
+					ESPUI.getControl(timeout_number)->getValueInt());
 			} break;
 
 
 			case GUI_CB_UPDATE_REFRESH_FLAG : {		
 
-				updateTimeout(channel_slot, 0, 4, 
-											ESPUI.getControl(refresh_number)->getValueInt());
+				updateTimeout(
+					channel_slot, 0, 4, 
+					ESPUI.getControl(refresh_number)->getValueInt());
 			} break;	
 		}
 		gui_callback_reentry_number--;

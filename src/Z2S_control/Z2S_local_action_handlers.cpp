@@ -780,6 +780,10 @@ void Supla::Sensor::LocalVirtualBinary::handleAction(int event, int action) {
     
     
     case SET:
+
+      if (_auto_clear_ms)
+        _last_clear_ms = millis();
+    [[fallthrough]];
     case CLEAR:
     case TOGGLE: 
       
@@ -787,6 +791,20 @@ void Supla::Sensor::LocalVirtualBinary::handleAction(int event, int action) {
     break;
   }
 }  
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualBinary::iterateAlways() {
+
+  Supla::Sensor::VirtualBinary::iterateAlways();
+
+  if (_auto_clear_ms && _last_clear_ms && 
+      ((millis() - _last_clear_ms) > _auto_clear_ms)) {
+
+    _last_clear_ms = 0;
+    clear();
+  }
+}
 
 /*****************************************************************************/
 

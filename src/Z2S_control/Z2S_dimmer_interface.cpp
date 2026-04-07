@@ -30,6 +30,11 @@ Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
     memset(&_device, 0, sizeof(zbg_device_params_t));  
 
   channel.setType(SUPLA_CHANNELTYPE_DIMMER);
+  channel.setFuncList(
+      SUPLA_RGBW_BIT_FUNC_DIMMER | SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING |
+      SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING |
+      SUPLA_RGBW_BIT_FUNC_DIMMER_CCT | SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB);
+  channel.setDefault(SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB);
   channel.setDefault(SUPLA_CHANNELFNC_DIMMER);
   //channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
 }
