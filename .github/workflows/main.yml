@@ -41,19 +41,21 @@ jobs:
           cp ./core/HTTPUpdateServer.h ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/libraries/HTTPUpdateServer/src/HTTPUpdateServer.h 
       - name: Compile Gateway_4MB_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=.  
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc,DebugLevel=verbose -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1"
+  
       - name: Rename binaries 4MB_logs
         working-directory: .
         run: |
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.update_only.WARNING_NEW_SIZE.bin
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.full_version.bin
       - name: Compile Gateway_4MB_no_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=.
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1"
+
       - name: Rename binaries 4MB_no_logs
         working-directory: .
         run: |
-          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.update_only.WARNING_NEW_SIZE.bin
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.full_version.bin
       - name: Compile Gateway_8MB_logs
         working-directory: .
@@ -86,9 +88,9 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
-          artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.update_only.bin,
+          artifacts: ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.update_only.WARNING_NEW_SIZE.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.logs.full_version.bin,
-                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.update_only.bin,
+                    ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.update_only.WARNING_NEW_SIZE.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.4MB.no_OTA.no_logs.full_version.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.logs.update_only.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.logs.full_version.bin,
