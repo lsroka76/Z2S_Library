@@ -245,6 +245,7 @@ void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot)  {
         new Supla::Sensor::LocalVirtualBinary(true); 
       
       Supla_LocalVirtualBinary->getChannel()->setChannelNumber(Supla_channel);
+      Supla_LocalVirtualBinary->setDefaultFunction(SUPLA_CHANNELFNC_BINARY_SENSOR);
 
       if (Supla::Notification::RegisterNotification(
             Supla_channel, false, true))
