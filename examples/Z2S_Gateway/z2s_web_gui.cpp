@@ -5428,6 +5428,15 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 					z2s_channels_table[channel_slot].refresh_secs);
 
 			}
+			if (z2s_channels_table[channel_slot].local_channel_type == 
+					LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY) {
+
+				enableChannelTimings(4);
+
+				ESPUI.updateNumber(
+					refresh_number, 
+					z2s_channels_table[channel_slot].refresh_secs);
+			}
 		} break;
 		
 

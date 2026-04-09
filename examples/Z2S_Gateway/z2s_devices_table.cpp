@@ -2470,6 +2470,7 @@ void Z2S_initSuplaChannels() {
           initZ2SDeviceVirtualValve(&zbGateway, &device, channels_counter); 
         break;
 
+
         case 0x000:
 
           initZ2SDeviceLocalActionHandler(channels_counter); 
