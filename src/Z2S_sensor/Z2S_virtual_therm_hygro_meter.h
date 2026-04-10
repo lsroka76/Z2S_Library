@@ -64,6 +64,8 @@ public:
     log_i("temperature = %f4.2", val);
     _forced_temperature = false;
     temperature = val;
+
+    channel.setNewValue(temperature);
     Refresh();
   }
 
@@ -72,6 +74,7 @@ public:
     log_i("temperature = %f4.2", val);
     _forced_temperature = true;
     temperature = val;
+
     Refresh();
   }
 
@@ -92,7 +95,8 @@ public:
       channel.setNewValue(getTemp(), getHumi());
     }
 
-    if ((_timeout_ms > 0) && (millis() - _last_timeout_ms > _timeout_ms)) {
+    if ((_timeout_ms > 0) && 
+        (millis() - _last_timeout_ms > _timeout_ms)) {
       
       _last_timeout_ms = millis();
 
@@ -102,8 +106,6 @@ public:
         channel.setStateOffline();
     }
   }
-
-
     
  protected:
   bool     _rwns_flag;

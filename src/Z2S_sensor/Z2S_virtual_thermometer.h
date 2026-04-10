@@ -73,6 +73,8 @@ public:
     log_i("temperature = %f4.2", val);
     _forced_temperature = false;
     temperature = val;
+
+    channel.setNewValue(temperature);
     Refresh();
   }
 
@@ -81,6 +83,7 @@ public:
     log_i("temperature = %f4.2", val);
     _forced_temperature = true;
     temperature = val;
+
     Refresh();
   }
 
@@ -101,7 +104,8 @@ public:
 
     if (_timeout_ms) {
       
-      if (_z2s_zb_device && (_z2s_zb_device->last_seen_ms > _last_timeout_ms)) {
+      if (_z2s_zb_device && 
+          (_z2s_zb_device->last_seen_ms > _last_timeout_ms)) {
 
         _last_timeout_ms = _z2s_zb_device->last_seen_ms;
         channel.setStateOnline();
