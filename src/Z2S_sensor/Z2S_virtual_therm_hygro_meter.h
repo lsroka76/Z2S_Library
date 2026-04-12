@@ -65,7 +65,7 @@ public:
     _forced_temperature = false;
     temperature = val;
 
-    channel.setNewValue(temperature);
+    channel.setNewValue(temperature, getHumi());
     Refresh();
   }
 
