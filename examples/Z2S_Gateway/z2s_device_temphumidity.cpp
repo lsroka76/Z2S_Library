@@ -242,7 +242,7 @@ void msgZ2SDeviceTempHumidityTemp(
       else
         Supla_Z2S_VirtualThermHygroMeter->setTemperature(temp);
 
-      temp = Supla_Z2S_VirtualThermHygroMeter->getChannel()->getValueDouble();
+      temp = Supla_Z2S_VirtualThermHygroMeter->getChannel()->getValueDoubleFirst();
       
     } break;
 
