@@ -3276,6 +3276,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2,
 	  .z2s_device_endpoints_count = 1},
 
+ {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-223Z",
+    .z2s_device_uid = 7805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "Heiman", .model_name = "SMOK_V16",
     .z2s_device_uid = 7900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
