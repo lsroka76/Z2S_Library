@@ -5281,6 +5281,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
+{	.manufacturer_name = "_TZE204_clrdrnya", .model_name = "TS0601",
+    .z2s_device_uid = 24010,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_9kbbfeho", .model_name = "TS0222",
     .z2s_device_uid = 24100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR,
