@@ -5788,11 +5788,6 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
     .z2s_device_endpoints_count = 1},
 
-{ .manufacturer_name = "_TZE284_qf5mzewi", .model_name = "TS0601",
-    .z2s_device_uid = 31005,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
-    .z2s_device_endpoints_count = 1},
-
   { .manufacturer_name = "_TZE204_lpedvtvr", .model_name = "TS0601",
     .z2s_device_uid = 31100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR,
@@ -5820,6 +5815,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_9ern5sfh", .model_name = "TS0601",
     .z2s_device_uid = 31600,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_qf5mzewi", .model_name = "TS0601",
+    .z2s_device_uid = 31605,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3,
     .z2s_device_endpoints_count = 1},
 
