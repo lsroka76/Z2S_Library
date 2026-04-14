@@ -8,7 +8,8 @@
 #define TUYA_DATA_REPORT_CMD      0x02
 #define TUYA_MCU_SYNC_TIME        0x24
 #define TUYA_MCU_VERSION_REQUEST  0x10                
-#define TUYA_MCU_VERSION_RESPONSE 0x11            
+#define TUYA_MCU_VERSION_RESPONSE 0x11
+#define TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST 0x25
 
 typedef struct Tuya_read_dp_result_s {
   bool     is_success;
