@@ -3697,8 +3697,9 @@ void processTuyaCustomCluster(
         &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_VERSION_REQUEST,
         ESP_ZB_ZCL_ATTR_TYPE_SET, 2, seq, false);
     } break;
+    
 
-    case 0x25: {
+    case TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST: {
 
       uint8_t seq[1];
     
@@ -3733,8 +3734,9 @@ void processTuyaCustomCluster(
       seq[0] = 01;
 
       log_i("Sending TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST");
+      
       zbGateway.sendCustomClusterCmd(
-        &device, TUYA_PRIVATE_CLUSTER_EF00, 0x25, 
+        &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST, 
         ESP_ZB_ZCL_ATTR_TYPE_SET, 1, seq, false);
     } break;
     
