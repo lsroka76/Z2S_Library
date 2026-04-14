@@ -3671,7 +3671,7 @@ void processTuyaCustomCluster(
       if (channel_number_slot < 0) {
 
         log_i(
-          "TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST failed - "
+          "TUYA_MCU_VERSION_RESPONSE failed - "
           "no Supla channel for that device");
         return;
       }
