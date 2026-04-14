@@ -3670,8 +3670,9 @@ void processTuyaCustomCluster(
 
       if (channel_number_slot < 0) {
 
-        log_i("TUYA_MCU_VERSION_REQUEST failed - "
-              "no Supla channel for that device");
+        log_i(
+          "TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST failed - "
+          "no Supla channel for that device");
         return;
       }
 
@@ -3690,10 +3691,51 @@ void processTuyaCustomCluster(
       seq[0] = 00;
       seq[1] = 02;
 
-      log_i("Sending TUYA_VERSION_REQUEST");
+      log_i("Sending TUYA_MCU_VERSION_REQUEST");
+      
       zbGateway.sendCustomClusterCmd(
-        &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_VERSION_REQUEST, 
+        &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_VERSION_REQUEST,
         ESP_ZB_ZCL_ATTR_TYPE_SET, 2, seq, false);
+    } break;
+
+    case 0x25: {
+
+      uint8_t seq[1];
+    
+      uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
+
+      zbg_device_params_t device = {};
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+          short_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
+          ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+
+      if (channel_number_slot < 0) {
+
+        log_i(
+          "TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST failed - "
+          "no Supla channel for that device");
+        return;
+      }
+
+      device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
+
+      device.cluster_id = z2s_channels_table[channel_number_slot].cluster_id;
+
+      memcpy(
+        device.ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr, 
+        sizeof(esp_zb_ieee_addr_t));
+
+      device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
+
+      device.model_id = z2s_channels_table[channel_number_slot].model_id;
+  
+      seq[0] = 01;
+
+      log_i("Sending TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST");
+      zbGateway.sendCustomClusterCmd(
+        &device, TUYA_PRIVATE_CLUSTER_EF00, 0x25, 
+        ESP_ZB_ZCL_ATTR_TYPE_SET, 1, seq, false);
     } break;
     
 
