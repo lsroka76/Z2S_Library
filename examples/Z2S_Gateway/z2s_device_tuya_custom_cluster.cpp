@@ -3741,8 +3741,11 @@ void processTuyaCustomCluster(
     } break;
     
 
-    default: log_i("Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", 
-                   command_id); 
+    default: 
+    
+      log_i(
+        "Tuya custom cluster 0xEF00 command id 0x%x wasn't processed", 
+        command_id); 
     break;
   }
 }

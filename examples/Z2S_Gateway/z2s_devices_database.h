@@ -5820,7 +5820,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_qf5mzewi", .model_name = "TS0601",
     .z2s_device_uid = 31605,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
     .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-01M",
