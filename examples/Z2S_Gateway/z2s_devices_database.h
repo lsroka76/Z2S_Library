@@ -54,6 +54,7 @@
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1     0x1011
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2     0x1012
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3     0x1013
+#define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4     0x1014
 
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10         0x1020
 
@@ -1995,6 +1996,14 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY 
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 	  
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE,
     .z2s_device_clusters_count = 2,
@@ -5820,7 +5829,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE284_qf5mzewi", .model_name = "TS0601",
     .z2s_device_uid = 31605,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4,
     .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-01M",
