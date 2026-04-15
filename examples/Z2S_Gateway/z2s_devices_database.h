@@ -108,6 +108,8 @@
 #define Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR                0x2040   
 #define Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR            0x2041
 #define Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_TEMP_SENSOR        0x2050
+#define Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR  0x2051
+
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR         0x2060
 #define Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR                  0x2061
 
@@ -493,6 +495,9 @@
 //#define IAS_ZONE_TAMPER_SID                               0x02
 #define ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID                0x10
 #define ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID             0x11
+
+#define DEVELCO_PIRTL_SENSOR_TEMP_SID                       0x10
+#define DEVELCO_PIRTL_SENSOR_ILLUMINANCE_SID                0x11
 
 #define SONOFF_ON_OFF_SID                                   0X00
 #define SONOFF_ELECTRICITY_METER_SID                        0x01
@@ -2000,8 +2005,8 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY |
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY | 
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY | 
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 	  
@@ -2379,6 +2384,14 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
                              SONOFF_CUSTOM_CLUSTER }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR,
+    .z2s_device_clusters_count = 4,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 };
 
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
@@ -3428,6 +3441,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {{ 35, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B },
                              { 38, 0, 0, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR }}},
+
+  {	.manufacturer_name = "frient A/S", .model_name = "MOSZB-153",
+    .z2s_device_uid = 9375,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {{ 35, 0, 0, Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR },
+                             { 1, 0, 0, Z2S_DEVICE_DESC_NULL }}},
 
   {	.manufacturer_name = "Develco Products A/S", .model_name = "SPLZB-132",
     .z2s_device_uid = 9400,

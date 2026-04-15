@@ -8171,6 +8171,32 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
+      case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR: {
+        
+        switch (sub_id) {
+          
+          case IAS_ZONE_ALARM_1_SID:
+
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
+          break;
+          
+
+          case DEVELCO_PIRTL_SENSOR_ILLUMINANCE_SID: 
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+
+
+          case DEVELCO_PIRTL_SENSOR_TEMP_SID: 
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func, false); 
+          break;
+        }
+      } break;
+
+/******************************************************************************/     
+
       case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
       case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR_2: {
         
@@ -10812,23 +10838,42 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID, 
-                       "TH");
+      
+      Z2S_addZ2SDevice(
+        joined_device, ADEO_SMART_PIRTH_SENSOR_TEMPHUMI_SID, "TH");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID, 
-                       "ILLUMINANCE", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "lx");
 
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, 
-                       "ALARM_1", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, ADEO_SMART_PIRTH_SENSOR_ILLUMINANCE_SID, 
+        "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
 
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, 
-                       "TAMPER", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);  
+
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_ALARM_1_SID, "ALARM_1", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);  
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR: {
+      
+      
+      Z2S_addZ2SDevice(joined_device, DEVELCO_PIRTL_SENSOR_TEMP_SID);
+
+
+      Z2S_addZ2SDevice(
+        joined_device, DEVELCO_PIRTL_SENSOR_ILLUMINANCE_SID, 
+        "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_ALARM_1_SID, "ALARM", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*****************************************************************************/
@@ -11304,34 +11349,30 @@ void Z2S_buildSuplaChannels(
 
     case Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       DEVELCO_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
-                       "TEMPHUMIDITY");
+      Z2S_addZ2SDevice(
+        joined_device, DEVELCO_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
+        "TEMPHUMIDITY");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       DEVELCO_AIR_QUALITY_SENSOR_VOC_SID, 
-                       "VOC", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
-                       "ppb");
+      Z2S_addZ2SDevice(
+        joined_device, DEVELCO_AIR_QUALITY_SENSOR_VOC_SID, "VOC", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppb");
     } break;
 
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_IKEA_AIR_QUALITY_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, 
-                       IKEA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
-                       "TEMPHUMIDITY");
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_AIR_QUALITY_SENSOR_TEMPHUMIDITY_SID, 
+        "TEMPHUMIDITY");
 
-      Z2S_addZ2SDevice(joined_device, 
-                       IKEA_AIR_QUALITY_SENSOR_PM25_SID, 
-                       "PM 2.5", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_AIR_QUALITY_SENSOR_PM25_SID, "PM 2.5", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
 
-      Z2S_addZ2SDevice(joined_device, 
-                       IKEA_AIR_QUALITY_SENSOR_VOC_SID, 
-                       "VOC", 
-                       SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_AIR_QUALITY_SENSOR_VOC_SID, "VOC", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
     } break;
 
 /*****************************************************************************/
