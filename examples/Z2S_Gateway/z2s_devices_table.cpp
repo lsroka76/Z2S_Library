@@ -5827,7 +5827,7 @@ bool processPhilipsCommands(
       "endpoint (0x%x), command id (0x%x), buffer_size (0x%x)", 
       endpoint, command_id, buffer_size);
 
-    if ((command_id == 0) && (buffer_size ==8)) {
+    if ((command_id == 0) && (buffer_size == 8)) {
 
       uint8_t button_id = *buffer;
       uint8_t action_id = *(buffer + 4);
@@ -6838,6 +6838,7 @@ uint8_t Z2S_addZ2SDevice(
         devices_table_full_error_func();
         return ADD_Z2S_DEVICE_STATUS_DT_FULL;
     }
+
     log_i(
       "model id 0x%04X, first free slot %d", device->model_id, 
       first_free_slot);
@@ -7256,12 +7257,15 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/     
 
-      case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1:
+      //case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1:
       case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
 
         char button_name_function[30];
         sprintf(
           button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
+
+        log_i("PHILIPS button = %s", button_name_function);
+        
         addZ2SDeviceActionTrigger(
           device, first_free_slot, sub_id, button_name_function, 
           SUPLA_CHANNELFNC_POWERSWITCH);
