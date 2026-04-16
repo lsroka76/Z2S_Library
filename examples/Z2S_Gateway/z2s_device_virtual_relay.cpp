@@ -171,6 +171,12 @@ void initZ2SDeviceVirtualRelay(
 
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE; 
           break;
+
+
+          case TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_SID:
+
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE; 
+          break;
         }
       } break;
 
@@ -253,7 +259,7 @@ void initZ2SDeviceVirtualRelay(
 
     switch (z2s_channels_table[channel_number_slot].model_id) {
 
-
+      
       case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
 
 

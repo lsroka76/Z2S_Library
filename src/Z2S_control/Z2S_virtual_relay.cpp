@@ -256,6 +256,19 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
 /*****************************************************************************/
 
+case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
+
+        state = true;
+
+        sendTuyaRequestCmdEnum8(
+          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_DP, 
+          state ? 0 : 1); //ON = 0
+        
+        channel.setNewValue(state);
+      } break;
+
+/*****************************************************************************/
+
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 
         state = true;
@@ -497,6 +510,19 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         sendTuyaRequestCmdEnum8(
           &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
           state ? 1 : 0);
+        
+        channel.setNewValue(state);
+      } break;
+
+/*****************************************************************************/
+
+case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
+
+        state = false;
+
+        sendTuyaRequestCmdEnum8(
+          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_DP, 
+          state ? 0 : 1); //ON = 0
         
         channel.setNewValue(state);
       } break;

@@ -427,6 +427,7 @@
 #define TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID               0x20
 #define TUYA_PRESENCE_SENSOR_RELAY_MODE_SID                 0x21
 #define TUYA_PRESENCE_SENSOR_RADAR_SWITCH_SID               0x22
+#define TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_SID         0x23
 
 #define TUYA_SMOKE_DETECTOR_SMOKE_SID                       0x00
 #define TUYA_SMOKE_DETECTOR_TAMPER_SID                      0x01
@@ -5595,12 +5596,17 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-204ZL",
     .z2s_device_uid = 26905,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR ,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE200_qxyh4r7g", .model_name = "TS0601",
     .z2s_device_uid = 26910,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR ,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "Sonoff", .model_name = "ZG-204ZL-z",
+    .z2s_device_uid = 26915,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "LUMI", .model_name = "lumi.airmonitor.acn01",

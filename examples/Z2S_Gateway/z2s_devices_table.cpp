@@ -7265,7 +7265,7 @@ uint8_t Z2S_addZ2SDevice(
           button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
 
         log_i("PHILIPS button = %s", button_name_function);
-        
+
         addZ2SDeviceActionTrigger(
           device, first_free_slot, sub_id, button_name_function, 
           SUPLA_CHANNELFNC_POWERSWITCH);
@@ -8663,6 +8663,7 @@ uint8_t Z2S_addZ2SDevice(
 
           case TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID:
           case TUYA_PRESENCE_SENSOR_RELAY_MODE_SID:
+          case TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_SID:
 
             addZ2SDeviceVirtualRelay(
               &zbGateway, device, first_free_slot, sub_id, name, func); 
@@ -10529,6 +10530,10 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_PRESENCE_SENSOR_RELAY_MODE_SID, "SWITCH AUTO MODE",
         SUPLA_CHANNELFNC_POWERSWITCH);
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_SID, 
+        "SENSOR STATE", SUPLA_CHANNELFNC_POWERSWITCH);
     } break;
 
 /*****************************************************************************/                                         
