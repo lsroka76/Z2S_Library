@@ -429,6 +429,12 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_RESYNC_REMOTE_RELAY,
 		.Supla_action_name = "RESYNC REMOTE RELAY" },
 
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_COPY_RELAY_ON_STATE,
+		.Supla_action_name = "COPY RELAY ON STATE" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_COPY_RELAY_OFF_STATE,
+		.Supla_action_name = "COPY RELAY OFF STATE" },
+
 { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS,
 		.Supla_action_name = "TURN OFF RELAY FOR 5 SECONDS" },
 
@@ -557,6 +563,12 @@ static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS,
 		.Supla_event_name =  "ON EVERY 24 HOURS" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_COPY_ON_STATE,
+		.Supla_event_name =  "ON COPY ON STATE" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE,
+		.Supla_event_name =  "ON COPY OFF STATE" },
 
 	{ .Supla_event_id = Supla::ON_LESS,
 		.is_condition = true,

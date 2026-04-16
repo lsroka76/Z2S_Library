@@ -211,6 +211,7 @@ void Supla::Control::Z2S_RemoteRelay::handleAction(int event, int action)  {
 
   switch (action) {
 
+
     case Z2S_SUPLA_ACTION_RESEND_RELAY_STATE:
 
       if (state) 
@@ -226,6 +227,20 @@ void Supla::Control::Z2S_RemoteRelay::handleAction(int event, int action)  {
         turnOn();
       else
         turnOff();
+    break;
+
+
+    case Z2S_SUPLA_ACTION_COPY_RELAY_ON_STATE:
+
+      if (state) 
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_COPY_RELAY_OFF_STATE:
+
+      if (!state) 
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
     break;
 
 

@@ -529,6 +529,20 @@ void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
     break;
 
 
+    case Z2S_SUPLA_ACTION_COPY_RELAY_ON_STATE:
+
+      if (state) 
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_COPY_RELAY_OFF_STATE:
+
+      if (!state) 
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
+    break;
+
+
     case Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED:
 
       channel.setStateOffline();

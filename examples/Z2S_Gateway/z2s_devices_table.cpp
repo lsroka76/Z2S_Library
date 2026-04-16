@@ -7260,10 +7260,11 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
 
         char button_name_function[30];
-        sprintf(button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
-        addZ2SDeviceActionTrigger(device, first_free_slot, sub_id, 
-                                  button_name_function, 
-                                  SUPLA_CHANNELFNC_POWERSWITCH);
+        sprintf(
+          button_name_function, PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[sub_id]);
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, button_name_function, 
+          SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
 /*****************************************************************************/     
@@ -7739,6 +7740,7 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
       case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR:
+      case Z2S_DEVICE_DESC_ILLUMINANCE_SENSOR:
 
         addZ2SDeviceGeneralPurposeMeasurement(
           device, first_free_slot, -1, "ILLUMINANCE", 
@@ -10233,6 +10235,7 @@ void Z2S_buildSuplaChannels(
     } break;
 
 /*****************************************************************************/
+
     case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
       
       Z2S_addZ2SDevice(joined_device, PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_SID);

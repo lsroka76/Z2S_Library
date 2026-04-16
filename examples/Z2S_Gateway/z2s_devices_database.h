@@ -79,6 +79,8 @@
 #define Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR                0x1205
 #define Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_DP_SENSOR          0x1210
 
+#define Z2S_DEVICE_DESC_ILLUMINANCE_SENSOR                  0x1220
+
 #define Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR                    0x1300
 #define Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2                  0x1305
 
@@ -112,6 +114,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR         0x2060
 #define Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR                  0x2061
+
+#define Z2S_DEVICE_DESC_OCCUPANCY_SENSOR                    0x2100
 
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR                 0x2200
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1               0x2201
@@ -1106,6 +1110,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ILLUMINANCE_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -1229,6 +1238,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_OCCUPANCY_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_MAIL_SENSOR,
     .z2s_device_clusters_count = 2,
@@ -3444,9 +3458,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "frient A/S", .model_name = "MOSZB-153",
     .z2s_device_uid = 9375,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR,
-	  .z2s_device_endpoints_count = 2,
-    .z2s_device_endpoints = {{ 35, 0, 0, Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR },
-                             { 1, 0, 0, Z2S_DEVICE_DESC_NULL }}},
+	  .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = {{ 0x23, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B },
+                             { 0x26, 0, 0, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR },
+                             { 0x27, 0, 0, Z2S_DEVICE_DESC_ILLUMINANCE_SENSOR }}},
+                             //{ 0x22, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR },
+                             //{ 0x28, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR },
+                             //{ 0x29, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR }}},
 
   {	.manufacturer_name = "Develco Products A/S", .model_name = "SPLZB-132",
     .z2s_device_uid = 9400,
