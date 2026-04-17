@@ -230,14 +230,14 @@ void Supla::Control::Z2S_RemoteRelay::handleAction(int event, int action)  {
     break;
 
 
-    case Z2S_SUPLA_ACTION_COPY_RELAY_ON_STATE:
+    case Z2S_SUPLA_ACTION_COPY_ON_STATE:
 
       if (state) 
         runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
     break;
 
 
-    case Z2S_SUPLA_ACTION_COPY_RELAY_OFF_STATE:
+    case Z2S_SUPLA_ACTION_COPY_OFF_STATE:
 
       if (!state) 
         runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
