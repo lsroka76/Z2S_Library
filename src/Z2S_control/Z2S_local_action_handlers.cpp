@@ -529,14 +529,14 @@ void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
     break;
 
 
-    case Z2S_SUPLA_ACTION_COPY_RELAY_ON_STATE:
+    case Z2S_SUPLA_ACTION_COPY_ON_STATE:
 
       if (state) 
         runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
     break;
 
 
-    case Z2S_SUPLA_ACTION_COPY_RELAY_OFF_STATE:
+    case Z2S_SUPLA_ACTION_COPY_OFF_STATE:
 
       if (!state) 
         runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
@@ -775,21 +775,23 @@ void Supla::Sensor::LocalVirtualBinary::handleAction(int event, int action) {
 
   Supla::Sensor::VirtualBinary::handleAction(event, action);
 
-  if (!_notification_registered)
-    return;
+  /*if (!_notification_registered)
+    return;*/
 
   switch (action) {
     
     
     case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_ON:
 
-      enableNotifications();
+      if (_notification_registered)
+        enableNotifications();
     break;
 
 
     case Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF:
 
-      disableNotifications();
+      if (_notification_registered)
+        disableNotifications();
     break;
     
     
@@ -801,8 +803,24 @@ void Supla::Sensor::LocalVirtualBinary::handleAction(int event, int action) {
     case CLEAR:
     case TOGGLE: 
       
-      sendNotification();
+      if (_notification_registered)
+        sendNotification();
     break;
+
+
+    case Z2S_SUPLA_ACTION_COPY_ON_STATE:
+
+      if (state) 
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_COPY_OFF_STATE:
+
+      if (!state) 
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
+    break;
+
   }
 }  
 

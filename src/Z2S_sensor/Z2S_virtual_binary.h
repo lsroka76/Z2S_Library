@@ -92,6 +92,27 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
 	    extSet();
   }
 
+  void handleAction(int event, int action) override {
+
+    Supla::Sensor::VirtualBinary::handleAction(event, action);
+
+    switch (action) {
+  
+
+      case Z2S_SUPLA_ACTION_COPY_ON_STATE:
+
+        if (state) 
+          runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
+      break;
+
+
+      case Z2S_SUPLA_ACTION_COPY_OFF_STATE:
+
+        if (!state) 
+          runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
+      break;
+    }
+  }  
 
     
  protected:
