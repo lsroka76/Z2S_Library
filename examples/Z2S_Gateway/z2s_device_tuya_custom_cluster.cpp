@@ -3639,13 +3639,8 @@ void processTuyaCustomCluster(
             time_sync[5], time_sync[6], time_sync[7], time_sync[8], time_sync[9]);
 
       zbGateway.sendCustomClusterCmd(
-        &device, 
-        TUYA_PRIVATE_CLUSTER_EF00, 
-        TUYA_MCU_SYNC_TIME, 
-        ESP_ZB_ZCL_ATTR_TYPE_SET, 
-        10, 
-        time_sync, 
-        false);
+        &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_SYNC_TIME, 
+        ESP_ZB_ZCL_ATTR_TYPE_SET, 10, time_sync, false);
     } break;
 
 
@@ -3702,7 +3697,7 @@ void processTuyaCustomCluster(
 
     case TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST: {
 
-      uint8_t seq[1];
+      uint8_t seq[5];
     
       uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
 
@@ -3732,13 +3727,18 @@ void processTuyaCustomCluster(
 
       device.model_id = z2s_channels_table[channel_number_slot].model_id;
   
-      seq[0] = 01;
+      seq[0] = 01;//*payload;
+      seq[1] = 00;//*(payload + 1);
+      seq[2] = 01;
+      //seq[3] = 01;
+      //seq[4] = 01;
 
       log_i("Sending TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST");
       
       zbGateway.sendCustomClusterCmd(
-        &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST, 
-        ESP_ZB_ZCL_ATTR_TYPE_SET, 1, seq, false);
+        &device, TUYA_PRIVATE_CLUSTER_EF00, 
+        TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST, ESP_ZB_ZCL_ATTR_TYPE_SET,
+        3, seq, true);
     } break;
     
 

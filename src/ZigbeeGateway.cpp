@@ -3290,10 +3290,76 @@ bool ZigbeeGateway::zbRawCmdHandler(
       esp_err_t err = esp_zb_aps_data_request(&aps_req);
       //esp_zb_lock_release();
       if (err != ESP_OK) {
-        log_e("Failed to send APSDE data req: %d", err);
+        log_e("Failed to send APSDE data req: %                                                                                                                                                            d", err);
       }
       return true; 
     }
+
+    /*if ((cluster_id == TUYA_PRIVATE_CLUSTER_EF00) && 
+        (cmd_id == 0x25)) {
+
+      log_i("ZigbeeGateway custom TuyaGatewayConnectionStatus");
+
+      // Build ZCL header manually
+      uint8_t zcl_frame[255];
+      uint8_t *p = zcl_frame;
+
+      // Frame control (FrameType=Specific(1), ManufacturerSpecific=0, Direction=Server->Client(1), DisableDefaultResp=1)
+      uint8_t frame_control = 
+        (0x01) |            // bits 0 and 1:  cluster-specific frame type, this is 2 bits, bit 1 is reserved and 0 
+        ( 0 << 2) |         // bit 2: include manufacture code 
+        (1 << 3) |          // bit 3: direction server->client 
+        (0 << 4);           // bit 4: disable default resp 
+      *p++ = frame_control;
+	
+      // Transaction Sequence Number (your custom TSN)
+      *p++ = seq_number;
+
+      // Command ID
+      *p++ = 0x25; 
+
+      // Payload
+
+      //*p++ = 0x21;
+      *p++ = 0x01;
+      //memcpy(p, buffer, 2);
+      //p += 2;
+      *p++ = 0x00;
+      //*p++ = 0x20;
+      *p++ = 0x01;
+
+      uint8_t zcl_len = p - zcl_frame;
+
+      for (uint8_t i = 0; i < zcl_len; i++)
+        sprintf(test_buff + i*3, "%02X:", *(zcl_frame + i));
+      log_i("ZCL frame size = %u\n\r %s",zcl_len, test_buff);
+
+      // Fill APSDE data request
+      esp_zb_apsde_data_req_t aps_req = {
+        .dst_addr_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT,
+        .dst_addr = {
+          .addr_short = source.u.short_addr,      // short address of destination
+        },
+        .dst_endpoint = src_endpoint,
+        .profile_id = ESP_ZB_AF_HA_PROFILE_ID, // or your profile ID
+        .cluster_id = TUYA_PRIVATE_CLUSTER_EF00,
+        .src_endpoint = dst_endpoint,
+        .asdu_length = zcl_len,
+        .asdu = zcl_frame,    // pointer to your built ZCL frame
+        .tx_options = ESP_ZB_APSDE_TX_OPT_ACK_TX, // request APS ACK
+        .use_alias = false,
+        .radius = 30, // max hops
+      };
+
+      // Send via APSDE, not sure if I need the lock so get it anyway
+      //esp_zb_lock_acquire(portMAX_DELAY);
+      esp_err_t err = esp_zb_aps_data_request(&aps_req);
+      //esp_zb_lock_release();
+      if (err != ESP_OK) {
+        log_e("Failed to send APSDE data req: %d", err);
+      }
+      return true; 
+    }*/
 
     if (_on_custom_cmd_receive)
       return _on_custom_cmd_receive(

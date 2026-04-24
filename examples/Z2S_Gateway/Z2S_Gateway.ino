@@ -1679,9 +1679,6 @@ if (Z2S_isGUIStarted())
                   joined_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
                   ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr);
 
-              
-
-
               switch (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id) { //(joined_device->model_id) {
 
                 case 0x0000: break;     
