@@ -3295,7 +3295,7 @@ bool ZigbeeGateway::zbRawCmdHandler(
       return true; 
     }
 
-    /*if ((cluster_id == TUYA_PRIVATE_CLUSTER_EF00) && 
+    if ((cluster_id == TUYA_PRIVATE_CLUSTER_EF00) && 
         (cmd_id == 0x25)) {
 
       log_i("ZigbeeGateway custom TuyaGatewayConnectionStatus");
@@ -3306,10 +3306,10 @@ bool ZigbeeGateway::zbRawCmdHandler(
 
       // Frame control (FrameType=Specific(1), ManufacturerSpecific=0, Direction=Server->Client(1), DisableDefaultResp=1)
       uint8_t frame_control = 
-        (0x01) |            // bits 0 and 1:  cluster-specific frame type, this is 2 bits, bit 1 is reserved and 0 
-        ( 0 << 2) |         // bit 2: include manufacture code 
-        (1 << 3) |          // bit 3: direction server->client 
-        (0 << 4);           // bit 4: disable default resp 
+        (1 << 1) |            // bits 0 and 1:  cluster-specific frame type, this is 2 bits, bit 1 is reserved and 0 
+        (0 << 2) |         // bit 2: include manufacture code 
+        (0 << 3) |          // bit 3: direction server->client 
+        (1 << 4);           // bit 4: disable default resp 
       *p++ = frame_control;
 	
       // Transaction Sequence Number (your custom TSN)
@@ -3359,7 +3359,7 @@ bool ZigbeeGateway::zbRawCmdHandler(
         log_e("Failed to send APSDE data req: %d", err);
       }
       return true; 
-    }*/
+    }
 
     if (_on_custom_cmd_receive)
       return _on_custom_cmd_receive(

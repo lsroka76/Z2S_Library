@@ -6763,21 +6763,21 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
     }*/
 
 
-    log_i("IAS zone status query after rejoin");
+    /*log_i("IAS zone status query after rejoin");
   
     zbGateway.sendAttributeRead(
       &device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
-      ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, false);
+      ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, false);*/
   //}
 
   //if (Z2S_checkZbDeviceFlags(device_number_slot, 
    //   ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN)) {
     
-    log_i("On/Off state query after rejoin");
+    /*log_i("On/Off state query after rejoin");
   
     zbGateway.sendAttributeRead(
       &device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-      ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+      ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);*/
   //}
 
   if (Z2S_checkZbDeviceFlags(device_number_slot, 
@@ -6786,6 +6786,20 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
     log_i("Tuya query after rejoin");
     
     device.cluster_id = TUYA_PRIVATE_CLUSTER_EF00;
+
+    /*log_i("Tuya magic");
+
+    uint16_t tuya_init_attributes[6] = { 
+      ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,
+      ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
+      ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, 
+      ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,
+      ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
+      0xFFFE };
+
+    zbGateway.sendAttributesRead(
+      &device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 6, 
+      tuya_init_attributes);*/
 
     zbGateway.sendCustomClusterCmd(
       &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 

@@ -435,7 +435,7 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_COPY_OFF_STATE,
 		.Supla_action_name = "COPY OFF STATE" },
 
-{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS,
 		.Supla_action_name = "TURN OFF RELAY FOR 5 SECONDS" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_OPEN_ZIGBEE_NETWORK,

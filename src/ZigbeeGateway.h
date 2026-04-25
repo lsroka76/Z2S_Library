@@ -77,6 +77,8 @@ typedef struct esp_zb_ota_image_header_s {
 #define TUYA_SEND_CMD                                         0x04 //TUYA_PRIVATE_CLUSTER_EF00
 #define TUYA_SETUP_CMD                                        0xF0 //ESP_ZB_ZCL_CLUSTER_ID_BASIC 
 
+#define TUYA_MANUFACTURER_CODE                                0x125D
+
 #define IKEA_PRIVATE_CLUSTER                                  0xFC7F
 #define IKEA_PRIVATE_CLUSTER_2                                0xFC80
 #define IKEA_CUSTOM_CLUSTER_FC7E                              0xFC7E

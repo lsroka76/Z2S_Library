@@ -3610,8 +3610,8 @@ void processTuyaCustomCluster(
         z2s_channels_table[channel_number_slot].model_id;
   
 
-      time_sync[0] = *payload;
-      time_sync[1] = *(payload + 1);
+      time_sync[0] = 0x08; //*payload;
+      time_sync[1] = 0x00; //*(payload + 1);
 
       time( &secs );  // Current time in GMT
       // Remember that localtime/gmtime overwrite same location
@@ -3624,15 +3624,18 @@ void processTuyaCustomCluster(
       log_i("local secs: %llu, gmt_secs: %llu, diff: %llu\n\r", 
             local_secs, gmt_secs, diff_secs);
 
+      if (device.model_id == Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4)
+        gmt_secs -= (8 * 3600);
+
       time_sync[2] = uint8_t(gmt_secs>>24); 
       time_sync[3] = uint8_t(gmt_secs>>16); 
       time_sync[4] = uint8_t(gmt_secs>>8);
       time_sync[5] = uint8_t(gmt_secs);
       
-      time_sync[6] = uint8_t(local_secs>>24); 
-      time_sync[7] = uint8_t(local_secs>>16); 
-      time_sync[8] = uint8_t(local_secs>>8);
-      time_sync[9] = uint8_t(local_secs);
+      time_sync[6] = 0;//uint8_t(local_secs>>24); 
+      time_sync[7] = 0;//uint8_t(local_secs>>16); 
+      time_sync[8] = 0;//uint8_t(local_secs>>8);
+      time_sync[9] = 0;//uint8_t(local_secs);
 
       log_i("TUYA_MCU_SYNC_TIME response payload: %X%X:%X%X%X%X:%X%X%X%X",
             time_sync[0], time_sync[1], time_sync[2],time_sync[3], time_sync[4], 
@@ -3684,7 +3687,7 @@ void processTuyaCustomCluster(
 
       device.model_id = z2s_channels_table[channel_number_slot].model_id;
   
-      seq[0] = 00;
+      seq[0] = 02;
       seq[1] = 02;
 
       log_i("Sending TUYA_MCU_VERSION_REQUEST");
@@ -3696,7 +3699,7 @@ void processTuyaCustomCluster(
     
 
     case TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST: {
-
+      
       uint8_t seq[5];
     
       uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
@@ -3727,18 +3730,18 @@ void processTuyaCustomCluster(
 
       device.model_id = z2s_channels_table[channel_number_slot].model_id;
   
-      seq[0] = 01;//*payload;
-      seq[1] = 00;//*(payload + 1);
-      seq[2] = 01;
-      //seq[3] = 01;
-      //seq[4] = 01;
+      //seq[0] = *payload;
+      //seq[1] = *(payload + 1);
+      seq[2] = 0x01;
+      seq[3] = 0x00;
+      seq[4] = 0x01;
 
       log_i("Sending TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST");
       
       zbGateway.sendCustomClusterCmd(
         &device, TUYA_PRIVATE_CLUSTER_EF00, 
         TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST, ESP_ZB_ZCL_ATTR_TYPE_SET,
-        3, seq, true);
+        3, seq+2, false); //, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, TUYA_MANUFACTURER_CODE);
     } break;
     
 
