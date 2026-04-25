@@ -10,8 +10,9 @@ void initZ2SDevicePressure(int16_t channel_number_slot);
 
 /*****************************************************************************/
 
-void addZ2SDevicePressure(zbg_device_params_t *device, 
-                          uint8_t free_slot);
+void addZ2SDevicePressure(
+  zbg_device_params_t *device, uint8_t free_slot, 
+  int8_t sub_id = NO_CUSTOM_CMD_SID);
 
 /*****************************************************************************/
 

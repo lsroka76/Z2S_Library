@@ -241,6 +241,23 @@ typedef struct esp_zb_ota_image_header_s {
 #define DANFOSS_EXTERNAL_TEMPERATURE_INPUT_ID                 0x4015 //S16
 #define DANFOSS_RADIATOR_COVERED_ID                           0x4016 //BOOL
 
+#define SHELLY_MANUFACTURER_CODE                              0x1490
+
+#define SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND                    0xFC01
+
+#define SHELLY_WS90_WIND_WIND_SPEED_ID                        0x0000 //U16
+#define SHELLY_WS90_WIND_WIND_DIRECTION_ID                    0x0004 //U16
+#define SHELLY_WS90_WIND_GUST_SPEED_ID                        0x0007 //U16
+
+#define SHELLY_CUSTOM_CLUSTER_ID_WS90_UV                      0xFC02
+
+#define SHELLY_WS90_UV_UV_INDEX_ID                            0x0000 //U8
+
+#define SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN                    0xFC03
+
+#define SHELLY_WS90_RAIN_RAIN_STATUS_ID                       0x0000 //BOOL
+#define SHELLY_WS90_RAIN_PRECIPITATION_ID                     0x0001 //U24
+
 #define ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT     0x840C 
 
 #define CUSTOM_CMD_SYNC                                       true

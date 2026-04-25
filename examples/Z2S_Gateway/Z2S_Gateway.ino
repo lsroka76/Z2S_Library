@@ -50,6 +50,7 @@
 #include "z2s_web_gui.h"
 #include "web_gui_templates.h"
 #include "z2s_little_fs.h"
+#include "z2s_device_tuya_custom_cluster.h"
 
 #ifdef USE_TELNET_CONSOLE
 
@@ -1133,6 +1134,18 @@ if (Z2S_isGUIStarted())
     log_i("\n\rLocal Time Cluster Time status attribute %u"
           "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
           time_status_attribute, utc_time_attribute, local_time_attribute);
+
+    for (uint8_t devices_counter = 0; 
+         devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+
+      if (Z2S_checkZbDeviceFlags(
+            devices_counter, ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC)) {
+        
+        processTuyaCustomCluster(
+          z2s_zb_devices_table[devices_counter].short_addr, 1, 
+          TUYA_MCU_SYNC_TIME, 0, nullptr);
+      }
+    }
 
     /*for (uint8_t channels_counter = 0; 
              channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++)

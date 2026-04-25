@@ -379,13 +379,15 @@
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER                 0x7100
 
+#define Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION         0x7200
+
 #define Z2S_DEVICE_DESC_ON_OFF                              0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                            0x8001
 
 #define Z2S_DEVICE_DESC_LAST_ID                             0xFFFF
 
 #define MAX_BOUND_ENDPOINTS                                 0x03
-#define MAX_BOUND_CLUSTERS                                  0x05
+#define MAX_BOUND_CLUSTERS                                  0x08
 
 #define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_PRESS_ID              0xFD
 #define TUYA_ON_OFF_CUSTOM_CMD_BUTTON_ROTATE_ID             0xFC
@@ -733,6 +735,16 @@
 #define TUYA_WATER_LEVEL_SENSOR_DEPTH_PERCENTAGE_SID        0x01
 #define TUYA_WATER_LEVEL_SENSOR_DEPTH_STATE_SID             0x02
 
+#define SHELLY_WS90_WEATHER_STATION_RAIN_STATUS_SID         0x00
+#define SHELLY_WS90_WEATHER_STATION_RAIN_PRECIPITATION_SID  0x01
+#define SHELLY_WS90_WEATHER_STATION_TEMP_HUMI_SID           0x02
+#define SHELLY_WS90_WEATHER_STATION_PRESSURE_SID            0x03
+#define SHELLY_WS90_WEATHER_STATION_ILLUMINANCE_SID         0x04
+#define SHELLY_WS90_WEATHER_STATION_WIND_SPEED_SID          0x05
+#define SHELLY_WS90_WEATHER_STATION_WIND_DIRECTION_SID      0x06
+#define SHELLY_WS90_WEATHER_STATION_GUST_SPEED_SID          0x07
+#define SHELLY_WS90_WEATHER_STATION_UV_INDEX_SID            0x08
+
 [[maybe_unused]]
 static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
     "ON PRESSED", 
@@ -855,7 +867,7 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 
 #define Z2S_REPORTING_SET_DESC_DANFOSS_TRV                              0x0500
 
-
+#define Z2S_REPORTING_SET_DESC_SHELLY_WS90                              0x0600
 
 static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
 
@@ -1030,6 +1042,95 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_delta_value_64 = 257,
     .z2s_manufacturer_code = 0},
 
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 50,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 5,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ILLUMINANCE_MEASUREMENT_MEASURED_VALUE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 5,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND,
+    .z2s_attribute_id = SHELLY_WS90_WIND_WIND_SPEED_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 1,
+    .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = SHELLY_WS90_WIND_WIND_DIRECTION_ID,
+    .z2s_attribute_id = SHELLY_WS90_WIND_WIND_SPEED_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 1,
+    .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND,
+    .z2s_attribute_id = SHELLY_WS90_WIND_GUST_SPEED_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 1,
+    .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = SHELLY_CUSTOM_CLUSTER_ID_WS90_UV,
+    .z2s_attribute_id = SHELLY_WS90_UV_UV_INDEX_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 1,
+    .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN,
+    .z2s_attribute_id = SHELLY_WS90_RAIN_RAIN_STATUS_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 1,
+    .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
+    .z2s_cluster_id = SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN,
+    .z2s_attribute_id = SHELLY_WS90_RAIN_PRECIPITATION_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U24,
+    .z2s_min_interval_value = 10, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_32 = 1,
+    .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE}
 
 };//Z2S_REPORTING_SETS_DESC
 
@@ -2021,7 +2122,8 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 0,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY | 
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY |
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC
                               ,//| Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 	  
@@ -2407,6 +2509,18 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
                              ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION,
+    .z2s_device_clusters_count = 4,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
+                             ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT,
+                             SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND,
+                             SHELLY_CUSTOM_CLUSTER_ID_WS90_UV,
+                             SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN}},
 };
 
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
@@ -5028,6 +5142,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
                               { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
+  {	.manufacturer_name = "_TZ3000_l9brjwau", .model_name = "TS0002",
+    .z2s_device_uid = 21115,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+                              { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
   {	.manufacturer_name = "_TZ3000_zmy4lslw", .model_name = "TS0002",
     .z2s_device_uid = 21200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
@@ -6146,7 +6267,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "LUMI", .model_name = "lumi.vibration.aq1",
     .z2s_device_uid = 35700,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_VIBRATION_SENSOR,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Shelly", .model_name = "Ecowitt WS90",
+    .z2s_device_uid = 35800,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_SHELLY_WS90, 
+      Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION}},
 
 
 

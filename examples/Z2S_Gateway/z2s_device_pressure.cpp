@@ -25,14 +25,15 @@ void initZ2SDevicePressure(int16_t channel_number_slot) {
 
 /*****************************************************************************/
 
-void addZ2SDevicePressure(zbg_device_params_t *device, uint8_t free_slot) {
+void addZ2SDevicePressure(
+  zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id) {
 
   auto Supla_Z2S_VirtualPressure = 
     new Supla::Sensor::Z2S_VirtualPressure();
   
   Z2S_fillChannelsTableSlot(
     device, free_slot, Supla_Z2S_VirtualPressure->getChannelNumber(), 
-    SUPLA_CHANNELTYPE_PRESSURESENSOR, NO_CUSTOM_CMD_SID, "PRESSURE", 
+    SUPLA_CHANNELTYPE_PRESSURESENSOR, sub_id, "PRESSURE", 
     SUPLA_CHANNELFNC_PRESSURESENSOR);
 }
 

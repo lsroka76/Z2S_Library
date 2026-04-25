@@ -8748,6 +8748,40 @@ uint8_t Z2S_addZ2SDevice(
           &zbGateway, device, false, false, first_free_slot);
       } break;
 
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION:
+
+        switch (sub_id) {
+
+
+          case SHELLY_WS90_WEATHER_STATION_RAIN_STATUS_SID:
+
+            addZ2SDeviceIASzone(
+              device, first_free_slot, sub_id, name, func); 
+          break;
+
+
+          case SHELLY_WS90_WEATHER_STATION_PRESSURE_SID: 
+
+            addZ2SDevicePressure(device, first_free_slot, sub_id); 
+          break;
+
+      
+          case SHELLY_WS90_WEATHER_STATION_TEMP_HUMI_SID: 
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func, true);
+          break;
+
+
+          default: 
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+        } break;
+
 /******************************************************************************/     
 
       default : {
@@ -11483,6 +11517,47 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMP_SID,
         "TEMPERATURE PROBE");
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION: {
+            
+      
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_TEMP_HUMI_SID, "T/H");
+
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_PRESSURE_SID, "PRESSURE");
+
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_ILLUMINANCE_SID, 
+        "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_WIND_SPEED_SID, 
+        "WIND SPEED", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "m/s");
+
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_WIND_DIRECTION_SID, 
+        "WIND DIRECTION", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "°");
+
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_GUST_SPEED_SID, 
+        "GUST SPEED", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "m/s");
+
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_UV_INDEX_SID, 
+        "UV INDEX");
+
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_RAIN_STATUS_SID, 
+        "RAIN STATUS");
+
+      Z2S_addZ2SDevice(
+        joined_device, SHELLY_WS90_WEATHER_STATION_RAIN_PRECIPITATION_SID, 
+        "RAIN PRECIPITATION", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+        "mm");
     } break;
 
 /*****************************************************************************/
