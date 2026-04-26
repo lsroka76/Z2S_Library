@@ -834,7 +834,10 @@ typedef struct z2s_device_entity_s {
   uint8_t z2s_device_flags;
   uint8_t z2s_device_endpoints_count;
   uint8_t z2s_device_endpoints_count_m1;
+union {
   z2s_device_endpoint_t z2s_device_endpoints[MAX_BOUND_ENDPOINTS];
+  const z2s_device_endpoint_t *z2s_device_endpoints_ext;
+};
 } z2s_device_entity_t;
 
 /*constexpr uint32_t val_32_const = 0x811c9dc5;
@@ -2523,6 +2526,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN}},
 };
 
+static const z2s_device_endpoint_t test_ep[] PROGMEM = {
+  { 10, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR },
+  { 25, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
+};
+
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 //DEVICES_START
   {	.manufacturer_name = "Unknown", .model_name = "Unknown",
@@ -2537,10 +2545,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS,
     .z2s_device_endpoints_count = 10,
     .z2s_device_endpoints_count_m1 = 4,
-    .z2s_device_endpoints = {
+    .z2s_device_endpoints_ext = test_ep }, 
+    /*.z2s_device_endpoints = {
       { 10, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR },
       { 25, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
-    }},
+    }},*/
 
   {	.manufacturer_name = "ZIBI", .model_name = "ESP32C6_THP_Sensor",
     .z2s_device_uid = 10,

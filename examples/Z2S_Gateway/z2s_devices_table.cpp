@@ -3159,10 +3159,45 @@ void Z2S_onPressureReceive(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_PRESSURESENSOR, 
     NO_CUSTOM_CMD_SID);
   
-  if (channel_number_slot < 0)
-    no_channel_found_error_func(short_addr);
-  else
+  if (channel_number_slot >= 0) {
+
     msgZ2SDevicePressure(channel_number_slot, pressure);
+    return;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {                         
+    
+    no_channel_found_error_func(short_addr);  
+    return;
+  }
+
+  int8_t sub_id = NO_CUSTOM_CMD_SID;
+
+  switch (z2s_channels_table[channel_number_slot].model_id) {
+
+
+    case Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION:
+
+      sub_id = SHELLY_WS90_WEATHER_STATION_PRESSURE_SID;
+    break;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id);
+
+  if (channel_number_slot >= 0) {
+    
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot, 
+      ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      pressure); 
+  } else
+    no_channel_found_error_func(short_addr);
 }
 
 void Z2S_onConcentrationReceive(
@@ -3653,39 +3688,163 @@ void Z2S_onWindowCoveringReceive(
 
 /******************************************************************************/
 
-void Z2S_onDevelcoCustomClusterReceive(
+void Z2S_onFCXXCustomClusterReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
   
-  log_i("short address 0x%04X, endpoint 0x%x, attribute id 0x%x, size %u", 
-        short_addr, endpoint,attribute->id, attribute->data.size);
+  log_i(
+    "short address 0x%04X, endpoint 0x%x, cluster id 0x%04X, attribute id "
+    "0x%x, size %u", short_addr, endpoint, cluster, attribute->id, 
+    attribute->data.size);
 
-  switch (attribute->id) {
+  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {                         
+    
+    no_channel_found_error_func(short_addr);  
+    return;
+  }
+
+  switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
-    case DEVELCO_CUSTOM_CLUSTER_MEASURED_VALUE_ID: {
+    case Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION: {
 
-      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-        short_addr, endpoint, cluster,
-        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-        DEVELCO_AIR_QUALITY_SENSOR_VOC_SID);
+      int8_t sub_id = NO_CUSTOM_CMD_SID;
+      bool status;
+      double value;
+      
+      switch (cluster) {
 
-      if (channel_number_slot < 0) {
-        no_channel_found_error_func(short_addr);
-        return;
+
+        case SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND: {
+
+          switch (attribute->id) {
+
+
+            case SHELLY_WS90_WIND_WIND_SPEED_ID:
+
+              sub_id = SHELLY_WS90_WEATHER_STATION_WIND_SPEED_SID; 
+              value = *(uint16_t *)attribute->data.value;
+            break;
+
+
+            case SHELLY_WS90_WIND_WIND_DIRECTION_ID:
+
+              sub_id = SHELLY_WS90_WEATHER_STATION_WIND_DIRECTION_SID;
+              value = *(uint16_t *)attribute->data.value;
+            break;
+
+
+            case SHELLY_WS90_WIND_GUST_SPEED_ID:
+
+              sub_id = SHELLY_WS90_WEATHER_STATION_GUST_SPEED_SID;
+              value = *(uint16_t *)attribute->data.value;
+            break;
+          }
+        } break;
+
+
+        case SHELLY_CUSTOM_CLUSTER_ID_WS90_UV: {
+
+          switch (attribute->id) {
+
+
+            case SHELLY_WS90_UV_UV_INDEX_ID:
+
+              sub_id = SHELLY_WS90_WEATHER_STATION_UV_INDEX_SID;
+              value = *(uint8_t *)attribute->data.value;
+            break;
+          }
+        } break;
+
+
+        case SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN: {
+        
+          switch (attribute->id) {
+
+
+            case SHELLY_WS90_RAIN_RAIN_STATUS_ID:
+
+              sub_id = SHELLY_WS90_WEATHER_STATION_RAIN_STATUS_SID;
+              status = *(bool *)attribute->data.value;
+            break;
+
+            case SHELLY_WS90_RAIN_PRECIPITATION_ID:
+
+              sub_id = SHELLY_WS90_WEATHER_STATION_RAIN_PRECIPITATION_SID;
+              uint32_t value_32 = 0;
+              memcpy(&value_32, attribute->data.value, 3);
+              value = value_32; //*(esp_zb_uint24_t *)attribute->data.value;
+            break;
+          }
+        } break;
       }
+      if (sub_id == SHELLY_WS90_WEATHER_STATION_RAIN_STATUS_SID) {
 
-      msgZ2SDeviceGeneralPurposeMeasurement(
-        channel_number_slot, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-        *(uint16_t*)attribute->data.value);
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
+          SHELLY_WS90_WEATHER_STATION_RAIN_STATUS_SID);
+
+        if (channel_number_slot < 0) {
+            
+            no_channel_found_error_func(short_addr);
+            return;
+        }
+
+        msgZ2SDeviceIASzone(channel_number_slot, !status);
+      }
+      else {
+
+        channel_number_slot = Z2S_findChannelNumberSlot(
+          short_addr, endpoint, cluster,
+          SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id); 
+
+        if (channel_number_slot < 0) {
+            
+            no_channel_found_error_func(short_addr);
+            return;
+        }
+
+        msgZ2SDeviceGeneralPurposeMeasurement(
+          channel_number_slot, 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, value / 10); 
+      }
     } break;
 
+    case Z2S_DEVICE_DESC_DEVELCO_AIR_QUALITY_SENSOR: {
 
-    case DEVELCO_CUSTOM_CLUSTER_RESOLUTION_ID: {
+      switch (attribute->id) {
 
-      log_i("resolution = %u", *(uint16_t*)attribute->data.value);
-    } break;
+
+        case DEVELCO_CUSTOM_CLUSTER_MEASURED_VALUE_ID: {
+
+          channel_number_slot = Z2S_findChannelNumberSlot(
+            short_addr, endpoint, cluster,
+            SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+            DEVELCO_AIR_QUALITY_SENSOR_VOC_SID);
+
+          if (channel_number_slot < 0) {
+            
+            no_channel_found_error_func(short_addr);
+            return;
+          }
+
+          msgZ2SDeviceGeneralPurposeMeasurement(
+            channel_number_slot, 
+            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+            *(uint16_t*)attribute->data.value);
+        } break;
+
+
+        case DEVELCO_CUSTOM_CLUSTER_RESOLUTION_ID: {
+
+          log_i("resolution = %u", *(uint16_t*)attribute->data.value);
+        } break;
+      }
+    }
   }
 }
 

@@ -384,7 +384,7 @@ void enableZ2SNotifications() {
   zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
   zbGateway.onDoorLockReceive(Z2S_onDoorLockReceive);
   zbGateway.onSonoffCustomClusterReceive(Z2S_onSonoffCustomClusterReceive);
-  zbGateway.onDevelcoCustomClusterReceive(Z2S_onDevelcoCustomClusterReceive);
+  zbGateway.onFCXXCustomClusterReceive(Z2S_onFCXXCustomClusterReceive);
   zbGateway.onLumiCustomClusterReceive(Z2S_onLumiCustomClusterReceive);
   zbGateway.onIkeaCustomClusterReceive(Z2S_onIkeaCustomClusterReceive);
   zbGateway.onBatteryReceive(Z2S_onBatteryReceive);
@@ -428,7 +428,7 @@ void disableZ2SNotifications() {
   zbGateway.onWindowCoveringReceive(nullptr);
   zbGateway.onDoorLockReceive(nullptr);
   zbGateway.onSonoffCustomClusterReceive(nullptr);
-  zbGateway.onDevelcoCustomClusterReceive(nullptr);
+  zbGateway.onFCXXCustomClusterReceive(nullptr);
   zbGateway.onLumiCustomClusterReceive(nullptr);
   zbGateway.onIkeaCustomClusterReceive(nullptr);
   zbGateway.onBatteryReceive(nullptr);

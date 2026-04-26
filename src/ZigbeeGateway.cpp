@@ -1322,12 +1322,13 @@ void ZigbeeGateway::zbAttributeReporting(
       if (_on_metering_receive)
         _on_metering_receive(src_address.u.short_addr, src_endpoint, cluster_id, attribute);
     } else
-    if (cluster_id == DEVELCO_CUSTOM_CLUSTER) {
+    if ((cluster_id >= 0xFC00) && (cluster_id <= 0xFCFF)) {
 
-      log_i("Develco custom cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
-            cluster_id, attribute->id, attribute->data.type);
-      if (_on_develco_custom_cluster_receive)
-        _on_develco_custom_cluster_receive(src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+      log_i(
+        "FCXX custom cluster (0x%x), attribute id (0x%x), attribute data type"
+        " (0x%x)", cluster_id, attribute->id, attribute->data.type);
+      if (_on_fcxx_custom_cluster_receive)
+        _on_fcxx_custom_cluster_receive(src_address.u.short_addr, src_endpoint, cluster_id, attribute);
     } else
     if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
 

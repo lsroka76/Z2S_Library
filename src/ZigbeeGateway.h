@@ -626,8 +626,8 @@ public:
   void onSonoffCustomClusterReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *)) {
     _on_sonoff_custom_cluster_receive = callback;
   }
-  void onDevelcoCustomClusterReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *)) {
-    _on_develco_custom_cluster_receive = callback;
+  void onFCXXCustomClusterReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *)) {
+    _on_fcxx_custom_cluster_receive = callback;
   }
   void onLumiCustomClusterReceive(
     void (*callback)(uint16_t short_addr, uint16_t, uint16_t, 
@@ -756,7 +756,7 @@ private:
   void (*_on_door_lock_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_window_covering_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, uint16_t);
   void (*_on_sonoff_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
-  void (*_on_develco_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  void (*_on_fcxx_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_lumi_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_ikea_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
 
