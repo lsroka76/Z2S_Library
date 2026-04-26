@@ -611,6 +611,7 @@ static esp_err_t zb_cmd_custom_cluster_req_handler(esp_zb_zcl_custom_cluster_com
     if (true /*message->info.dst_endpoint == (*it)->getEndpoint()*/) {
         
 	      (*it)->zbCmdCustomClusterReq(
+          message->info.header.tsn,
           message->info.src_address, message->info.src_endpoint, 
           message->info.cluster,message->info.command.id,message->data.size, 
           (uint8_t*) message->data.value);

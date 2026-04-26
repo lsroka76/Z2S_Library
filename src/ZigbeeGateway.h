@@ -519,6 +519,13 @@ public:
     uint8_t disable_default_response = 0, uint8_t manuf_specific = 0, 
     uint16_t manuf_code = 0);
 
+  bool sendAPSDEDataRequestCmd(
+    uint16_t short_addr, uint8_t tsn, uint8_t dst_endpoint, 
+    uint16_t cluster_id, uint8_t command_id, uint8_t payload_size, 
+    uint8_t *payload_data, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+    uint8_t disable_default_response = 0, uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0);
+
   void requestDataSave(
     uint8_t Supla_channel, uint8_t data_save_mode, 
     uint8_t extended_data_type = 0, uint8_t *extended_data = nullptr) {
@@ -643,9 +650,9 @@ public:
     _on_custom_cmd_receive = callback;
   }
   void onCmdCustomClusterReceive(
-    void (*callback)(esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, 
-    uint16_t endpoint_id, uint16_t cluster_id, uint8_t command_id, 
-    uint16_t payload_size, uint8_t *payload)) {
+    void (*callback)(uint8_t tsn, esp_zb_ieee_addr_t ieee_addr, 
+    uint16_t short_addr, uint16_t endpoint_id, uint16_t cluster_id, 
+    uint8_t command_id, uint16_t payload_size, uint8_t *payload)) {
     _on_cmd_custom_cluster_receive = callback;
   }
   void onBoundDevice(void (*callback)(zbg_device_params_t *, bool)) {
@@ -756,8 +763,8 @@ private:
   bool (*_on_custom_cmd_receive)(uint16_t short_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
 
   void (*_on_cmd_custom_cluster_receive)(
-    esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, uint8_t, 
-    uint16_t, uint8_t *);
+    uint8_t, esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, 
+    uint8_t, uint16_t, uint8_t *);
 
   void (*_on_bound_device)(zbg_device_params_t *, bool);
   bool (*_on_btc_bound_device)(zbg_device_params_t *, uint8_t count, uint8_t position);
@@ -822,8 +829,9 @@ private:
     const esp_zb_zcl_disc_attr_variable_t *variable) override;
   
   void zbCmdCustomClusterReq(
-    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,
-    uint8_t command_id, uint16_t payload_size, uint8_t *payload) override;
+    uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
+    uint16_t cluster_id, uint8_t command_id, uint16_t payload_size, 
+    uint8_t *payload) override;
   
   void zbConfigReportResponse(
     uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 

@@ -3093,8 +3093,9 @@ bool ZigbeeGateway::sendCustomClusterCmd(
 /*****************************************************************************/
 
 void ZigbeeGateway::zbCmdCustomClusterReq(
-  esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,
-  uint8_t command_id, uint16_t payload_size, uint8_t *payload) {
+  uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
+  uint16_t cluster_id, uint8_t command_id, uint16_t payload_size, 
+  uint8_t *payload) {
 
   esp_zb_zcl_cmd_info_t info = {};
 
@@ -3106,7 +3107,7 @@ void ZigbeeGateway::zbCmdCustomClusterReq(
 
   if (_on_cmd_custom_cluster_receive)
     _on_cmd_custom_cluster_receive(
-      info.src_address.u.ieee_addr, short_addr, src_endpoint, cluster_id, 
+      tsn, info.src_address.u.ieee_addr, short_addr, src_endpoint, cluster_id, 
       command_id, payload_size, payload);
 }
 
@@ -3295,8 +3296,16 @@ bool ZigbeeGateway::zbRawCmdHandler(
       return true; 
     }
 
+  
+
     if ((cluster_id == TUYA_PRIVATE_CLUSTER_EF00) && 
-        (cmd_id == 0x25)) {
+        ((cmd_id == 0x24) || (cmd_id == 0x25))) {
+
+      if (_on_cmd_custom_cluster_receive)
+        _on_cmd_custom_cluster_receive(
+          seq_number, source.u.ieee_addr, source.u.short_addr, src_endpoint, 
+          cluster_id, cmd_id, buffer_size, buffer);
+      return true;
 
       log_i("ZigbeeGateway custom TuyaGatewayConnectionStatus");
 
@@ -3320,12 +3329,8 @@ bool ZigbeeGateway::zbRawCmdHandler(
 
       // Payload
 
-      //*p++ = 0x21;
       *p++ = 0x01;
-      //memcpy(p, buffer, 2);
-      //p += 2;
       *p++ = 0x00;
-      //*p++ = 0x20;
       *p++ = 0x01;
 
       uint8_t zcl_len = p - zcl_frame;
@@ -3360,12 +3365,89 @@ bool ZigbeeGateway::zbRawCmdHandler(
       }
       return true; 
     }
-
+    
     if (_on_custom_cmd_receive)
       return _on_custom_cmd_receive(
         source.u.short_addr, src_endpoint, cluster_id, cmd_id, buffer_size, 
         buffer);
     else return false;
+}
+
+bool ZigbeeGateway::sendAPSDEDataRequestCmd(
+    uint16_t short_addr, uint8_t tsn, uint8_t dst_endpoint, 
+    uint16_t cluster_id, uint8_t command_id, uint8_t payload_size, 
+    uint8_t *payload_data,  uint8_t direction, 
+    uint8_t disable_default_response, uint8_t manuf_specific, 
+    uint16_t manuf_code) {
+
+
+  // Build ZCL header manually
+  uint8_t zcl_frame[255];
+  uint8_t *p = zcl_frame;
+
+  // Frame control
+  uint8_t frame_control = 
+    (1 << 1) |          
+    (manuf_specific << 2) |           // bit 2: include manufacture code 
+    (direction << 3) |                // bit 3: direction server->client 
+    (disable_default_response << 4); // bit 4: disable default resp 
+      
+  *p++ = frame_control;
+
+  if (manuf_specific) {
+
+    memcpy(p, &manuf_code, 2);
+    p += 2;
+  } 
+	
+  // Transaction Sequence Number (your custom TSN)
+  *p++ = tsn;
+
+  // Command ID
+  *p++ = command_id; 
+
+  // Payload
+
+  memcpy(p, payload_data, payload_size);
+  
+  p += payload_size;
+  
+  uint8_t zcl_len = p - zcl_frame;
+
+  for (uint8_t i = 0; i < zcl_len; i++)
+    sprintf(test_buff + i*3, "%02X:", *(zcl_frame + i));
+  
+  log_i("ZCL frame size = %u\n\r %s",zcl_len, test_buff);
+  log_i(
+    "cluster id 0x%04X, short address 0x%04X", cluster_id, short_addr);
+
+  // Fill APSDE data request
+      
+  esp_zb_apsde_data_req_t aps_req = {0};
+
+  aps_req.dst_addr_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+  aps_req.dst_addr.addr_short = short_addr;
+  aps_req.dst_endpoint = dst_endpoint;
+  aps_req.profile_id = ESP_ZB_AF_HA_PROFILE_ID;
+  aps_req.cluster_id = cluster_id;
+  aps_req.src_endpoint = _endpoint;
+  aps_req.asdu_length = zcl_len;
+  aps_req.asdu = zcl_frame;    // pointer to your built ZCL frame
+  aps_req.tx_options = ESP_ZB_APSDE_TX_OPT_ACK_TX; // request APS ACK
+  aps_req.use_alias = false;
+  aps_req.radius = 30; // max hops
+
+  // Send via APSDE, not sure if I need the lock so get it anyway
+  //esp_zb_lock_acquire(portMAX_DELAY);  
+  esp_err_t err = esp_zb_aps_data_request(&aps_req);
+  //esp_zb_lock_release();
+  delay(200);
+  if (err != ESP_OK) {
+    
+    log_e("Failed to send APSDE data req: %d", err);
+    return false;
+  }
+  return true;
 }
 
 ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);

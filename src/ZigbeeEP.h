@@ -179,8 +179,9 @@ public:
     const esp_zb_zcl_disc_attr_variable_t *variable) {};
 
   virtual void zbCmdCustomClusterReq(
-    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-    uint8_t command_id, uint16_t payload_size, uint8_t *payload) {};
+    uint8_t tsn, esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
+    uint16_t cluster_id, uint8_t command_id, uint16_t payload_size, 
+    uint8_t *payload) {};
 
   virtual void zbCmdDefaultResponse(
     uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 

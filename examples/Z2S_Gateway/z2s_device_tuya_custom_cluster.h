@@ -24,7 +24,7 @@ union {
 } Tuya_read_dp_result_t;
 
 void processTuyaCustomCluster(
-  uint16_t short_addr, uint16_t endpoint, uint8_t command_id, 
+  uint8_t tsn, uint16_t short_addr, uint16_t endpoint, uint8_t command_id, 
   uint16_t payload_size, uint8_t *payload);
 
 void processZosungCustomCluster(

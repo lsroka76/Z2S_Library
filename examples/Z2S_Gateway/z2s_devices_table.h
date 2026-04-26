@@ -608,9 +608,9 @@ bool Z2S_onCustomCmdReceive(
   uint8_t command_id, uint8_t buffer_size, uint8_t *buffer);
 
 void Z2S_onCmdCustomClusterReceive(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, uint16_t endpoint, 
-  uint16_t cluster, uint8_t command_id, uint16_t payload_size, 
-  uint8_t *payload);
+  uint8_t tsn, esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, 
+  uint16_t endpoint, uint16_t cluster, uint8_t command_id, 
+  uint16_t payload_size, uint8_t *payload);
 
 void Z2S_onIASzoneStatusChangeNotification(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
