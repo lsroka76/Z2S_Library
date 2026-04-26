@@ -1141,9 +1141,13 @@ if (Z2S_isGUIStarted())
       if (Z2S_checkZbDeviceFlags(
             devices_counter, ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC)) {
         
+        esp_zb_lock_acquire(portMAX_DELAY);
+
         processTuyaCustomCluster(
           1, z2s_zb_devices_table[devices_counter].short_addr, 1, 
           TUYA_MCU_SYNC_TIME, 0, nullptr);
+        
+        esp_zb_lock_release();
       }
     }
 

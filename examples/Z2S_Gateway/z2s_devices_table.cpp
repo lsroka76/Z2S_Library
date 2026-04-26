@@ -3218,53 +3218,71 @@ void Z2S_onIlluminanceReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,  
   uint16_t illuminance) {
 
-  
   log_i(
     "0x%04X, endpoint 0x%x, illuminance %u", short_addr, endpoint, 
     illuminance);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, 
-    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-    TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID);
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {                         
+    
+    no_channel_found_error_func(short_addr);  
+    return;
+  }
+
+  int8_t sub_id = NO_CUSTOM_CMD_SID;
+
+  switch (z2s_channels_table[channel_number_slot].model_id) {
+
+
+    case Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION:
+
+      sub_id = SHELLY_WS90_WEATHER_STATION_ILLUMINANCE_SID;
+    break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR: {
+
+      sub_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID;
+      illuminance /= 10;  
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1: 
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG104PLV:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY: {
+
+      sub_id = TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID;
+      illuminance /= 10;  
+    } break;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id);
 
   if (channel_number_slot >= 0) {
     
     msgZ2SDeviceGeneralPurposeMeasurement(
       channel_number_slot, 
-      ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, 
-      illuminance/10); 
-    return;
-  }
-
-  channel_number_slot = Z2S_findChannelNumberSlot(
-    short_addr, endpoint, cluster, 
-    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-    Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID);
-
-  if (channel_number_slot >= 0) {
-    
-    msgZ2SDeviceGeneralPurposeMeasurement(
-      channel_number_slot, 
-      ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, 
-      illuminance/10); 
-    return;
-  }
-  
-  channel_number_slot = Z2S_findChannelNumberSlot(
-    short_addr, endpoint, cluster, 
-    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-    NO_CUSTOM_CMD_SID);
-
-  if (channel_number_slot >= 0) {                         
-    
-    msgZ2SDeviceGeneralPurposeMeasurement(
-      channel_number_slot,
       ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE, 
       illuminance); 
-    return;
-  }
-  no_channel_found_error_func(short_addr);
+  } else
+    no_channel_found_error_func(short_addr);
 }
 
 void Z2S_onFlowReceive(
@@ -8762,10 +8780,10 @@ uint8_t Z2S_addZ2SDevice(
           break;
 
 
-          case SHELLY_WS90_WEATHER_STATION_PRESSURE_SID: 
+          /*case SHELLY_WS90_WEATHER_STATION_PRESSURE_SID: 
 
             addZ2SDevicePressure(device, first_free_slot, sub_id); 
-          break;
+          break;*/
 
       
           case SHELLY_WS90_WEATHER_STATION_TEMP_HUMI_SID: 
@@ -11528,7 +11546,8 @@ void Z2S_buildSuplaChannels(
         joined_device, SHELLY_WS90_WEATHER_STATION_TEMP_HUMI_SID, "T/H");
 
       Z2S_addZ2SDevice(
-        joined_device, SHELLY_WS90_WEATHER_STATION_PRESSURE_SID, "PRESSURE");
+        joined_device, SHELLY_WS90_WEATHER_STATION_PRESSURE_SID, "PRESSURE",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kPa");
 
       Z2S_addZ2SDevice(
         joined_device, SHELLY_WS90_WEATHER_STATION_ILLUMINANCE_SID, 

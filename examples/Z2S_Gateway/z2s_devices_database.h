@@ -1088,8 +1088,8 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE},
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_WS90,
-    .z2s_cluster_id = SHELLY_WS90_WIND_WIND_DIRECTION_ID,
-    .z2s_attribute_id = SHELLY_WS90_WIND_WIND_SPEED_ID,
+    .z2s_cluster_id = SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND,
+    .z2s_attribute_id = SHELLY_WS90_WIND_WIND_DIRECTION_ID,
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
     .z2s_min_interval_value = 10, 
     .z2s_max_interval_value = 3600,
@@ -2123,7 +2123,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY | 
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY
-                               //| Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC
+                               | Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC
                               ,//| Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 	  
@@ -2511,7 +2511,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION,
-    .z2s_device_clusters_count = 4,
+    .z2s_device_clusters_count = 8,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
