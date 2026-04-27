@@ -1148,6 +1148,15 @@ bool Z2S_loadChannelsTable() {
                 } else {
                   if (z2s_device_endpoints_count > 1) {
 
+                    const z2s_device_endpoint_t *z2s_device_endpoints_ptr = 
+                      Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints;
+
+                    if (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_flags & 
+                        Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS)
+                      z2s_device_endpoints_ptr = 
+                      Z2S_DEVICES_LIST[devices_list_idx].\
+                        z2s_device_endpoints_ext;
+
                     for (uint8_t endpoints_counter = 0; 
                          endpoints_counter < z2s_device_endpoints_count; 
                          endpoints_counter++) {
@@ -1171,11 +1180,11 @@ bool Z2S_loadChannelsTable() {
                           endpoints_idx = 1;
                       }
 
-                      device_desc_id = Z2S_DEVICES_LIST[devices_list_idx].\
-                        z2s_device_endpoints[endpoints_idx].z2s_device_desc_id;
+                      device_desc_id = (z2s_device_endpoints_ptr + 
+                        endpoints_idx)->z2s_device_desc_id;
 
-                      uint8_t endpoint_id = Z2S_DEVICES_LIST[devices_list_idx].\
-                        z2s_device_endpoints[endpoints_idx].endpoint_id;
+                      uint8_t endpoint_id = (z2s_device_endpoints_ptr + 
+                        endpoints_idx)->endpoint_id;
 
                       //mirrored endpoints must be numbered in sequential order 
                       //starting from 1st endpoint id, i.e. 7, 8, 9...
@@ -3349,25 +3358,42 @@ void Z2S_onOccupancyReceive(
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
-    SONOFF_PIR_SENSOR_OCCUPANCY_SID);
-  
-  if (channel_number_slot >= 0) {
+    NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot < 0) {                         
     
-    msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0));
+    no_channel_found_error_func(short_addr);  
     return;
   }
 
-  channel_number_slot = Z2S_findChannelNumberSlot(
-    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
-    NO_CUSTOM_CMD_SID);
-  
-  if (channel_number_slot >= 0) {
-    
-    msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0));
-    return;
+  int8_t sub_id = NO_CUSTOM_CMD_SID;
+
+  switch (z2s_channels_table[channel_number_slot].model_id) {
+
+
+    case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR:
+
+      sub_id = DEVELCO_PIRTL_SENSOR_OCCUPANCY_SID;
+    break;
+
+
+    case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR:
+
+      sub_id = SONOFF_PIR_SENSOR_OCCUPANCY_SID;
+    break;
   }
-  no_channel_found_error_func(short_addr);
+
+  
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, sub_id);
+  
+  if (channel_number_slot >= 0)
+    msgZ2SDeviceIASzone(channel_number_slot, (occupancy > 0));
+  else
+    no_channel_found_error_func(short_addr);
 }
+
+/*****************************************************************************/
 
 void Z2S_onThermostatTemperaturesReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, 
@@ -6703,21 +6729,43 @@ void Z2S_rebuildZbDeviceSuplaChannels(uint8_t device_number_slot) {
   uint32_t devices_list_idx = 
     z2s_zb_devices_table[device_number_slot].devices_list_idx;
 
+  const z2s_device_endpoint_t *z2s_device_endpoints_ptr = 
+    Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints;
+
+  if (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_flags & 
+      Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS)
+      z2s_device_endpoints_ptr = Z2S_DEVICES_LIST[devices_list_idx].\
+        z2s_device_endpoints_ext;
+
   for (int endpoint_counter = 0; 
        endpoint_counter < 
         Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count; 
        endpoint_counter++) {
 
+    uint8_t endpoints_idx = endpoint_counter;
+
+    if (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_flags & 
+        Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
+      endpoints_idx = 0;
+
+    if (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_flags & 
+        Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
+                        
+      if (endpoint_counter < Z2S_DEVICES_LIST[devices_list_idx].\
+            z2s_device_endpoints_count_m1) 
+        endpoints_idx = 0;
+      else
+        endpoints_idx = 1;
+    }
+
     uint8_t endpoint_id = 
       (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count == 1) ? 
-      1 : Z2S_DEVICES_LIST[devices_list_idx].\
-        z2s_device_endpoints[endpoint_counter].endpoint_id; 
+      1 : (z2s_device_endpoints_ptr + endpoints_idx)->endpoint_id; 
                                         
     uint32_t z2s_device_desc_id = 
       (Z2S_DEVICES_LIST[devices_list_idx].z2s_device_endpoints_count == 1) ?
       Z2S_DEVICES_LIST[devices_list_idx].z2s_device_desc_id :
-      Z2S_DEVICES_LIST[devices_list_idx].\
-        z2s_device_endpoints[endpoint_counter].z2s_device_desc_id;
+      (z2s_device_endpoints_ptr + endpoints_idx)->z2s_device_desc_id;
 
     device.endpoint = endpoint_id;
     device.model_id = z2s_device_desc_id;
@@ -7049,6 +7097,7 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR:
       case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_POLL:
+      case Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_1:
 
         addZ2SDeviceTempHumidity(
           device, first_free_slot, sub_id, name, func, false); //thermometer only
@@ -7944,6 +7993,15 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/     
 
+      case Z2S_DEVICE_DESC_OCCUPANCY_SENSOR: {
+
+        addZ2SDeviceIASzone(
+          device, first_free_slot, -1, "OCCUPANCY", 
+          SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      } break;
+
+/*****************************************************************************/     
+
       case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH:
 
         switch (sub_id) {
@@ -8367,12 +8425,14 @@ uint8_t Z2S_addZ2SDevice(
       } break;
 
 /******************************************************************************/     
-
+/*
       case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR: {
         
         switch (sub_id) {
           
           case IAS_ZONE_ALARM_1_SID:
+          case IAS_ZONE_LOW_BATTERY_SID:
+          case DEVELCO_PIRTL_SENSOR_OCCUPANCY_SID:
 
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
@@ -8391,7 +8451,7 @@ uint8_t Z2S_addZ2SDevice(
           break;
         }
       } break;
-
+*/
 /******************************************************************************/     
 
       case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
@@ -10154,6 +10214,10 @@ void onTuyaCustomClusterReceive(void (*callback)(
 void Z2S_buildSuplaChannels(
   zbg_device_params_t *joined_device, uint8_t endpoint_counter) {
 
+  log_i(
+    "endpoint counter = 0x%02X, endpoint id = 0x%02X, model id = 0x%04X", 
+    endpoint_counter, joined_device->endpoint, joined_device->model_id);
+
   switch (joined_device->model_id) {
                       
     case Z2S_DEVICE_DESC_TUYA_SWITCH_4X3: {
@@ -11096,38 +11160,64 @@ void Z2S_buildSuplaChannels(
     } break;
 
 /*****************************************************************************/
-
+/*
     case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR: {
       
-      
-      Z2S_addZ2SDevice(joined_device, DEVELCO_PIRTL_SENSOR_TEMP_SID);
+      switch (joined_device->endpoint) {
 
 
-      Z2S_addZ2SDevice(
-        joined_device, DEVELCO_PIRTL_SENSOR_ILLUMINANCE_SID, 
-        "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+        case 0x22:
+        case 0x28:
+        case 0x29:
+
+            Z2S_addZ2SDevice(
+              joined_device, DEVELCO_PIRTL_SENSOR_OCCUPANCY_SID, "OCCUPANCY", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        break;
 
 
-      Z2S_addZ2SDevice(
-        joined_device, IAS_ZONE_ALARM_1_SID, "ALARM", 
-        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        case 0x23: {
+
+          Z2S_addZ2SDevice(
+            joined_device, IAS_ZONE_ALARM_1_SID, "ALARM", 
+            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+          Z2S_addZ2SDevice(
+            joined_device, IAS_ZONE_LOW_BATTERY_SID, "LOW BATTERY", 
+            SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        } break;
+
+
+        case 0x26:
+
+          Z2S_addZ2SDevice(joined_device, DEVELCO_PIRTL_SENSOR_TEMP_SID);
+        break;
+
+
+        case 0x27:
+
+          Z2S_addZ2SDevice(
+            joined_device, DEVELCO_PIRTL_SENSOR_ILLUMINANCE_SID, 
+            "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
+            "lx");
+      }      
     } break;
-
+*/
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: {
       
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_1_SID, 
-                       "CONTACT", 
-                       SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_ALARM_1_SID, "CONTACT", 
+        SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR);
 
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_ALARM_2_SID, 
-                       "VIBRATION", 
-                      SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_ALARM_2_SID, "VIBRATION", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
 
-      Z2S_addZ2SDevice(joined_device, IAS_ZONE_TAMPER_SID, 
-                       "TAMPER", 
-                       SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+      Z2S_addZ2SDevice(
+        joined_device, IAS_ZONE_TAMPER_SID, "TAMPER", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*****************************************************************************/

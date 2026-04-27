@@ -5,7 +5,7 @@
 
 #define Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS         (1 << 0)
 #define Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS           (1 << 1)
-#define Z2S_DEVICE_CONFIG_FLAG_RESERVED_2                   (1 << 2)
+#define Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS                (1 << 2)
 #define Z2S_DEVICE_CONFIG_FLAG_RESERVED_3                   (1 << 3)
 #define Z2S_DEVICE_CONFIG_FLAG_RESERVED_4                   (1 << 4)
 #define Z2S_DEVICE_CONFIG_FLAG_RESERVED_5                   (1 << 5)
@@ -49,6 +49,7 @@
 #define Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_POLL             0x1003
 
 #define Z2S_DEVICE_DESC_TEMPERATURE_SENSOR                  0x1005
+#define Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_1                0x1006
 
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR       0x1010
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1     0x1011
@@ -505,6 +506,7 @@
 
 #define DEVELCO_PIRTL_SENSOR_TEMP_SID                       0x10
 #define DEVELCO_PIRTL_SENSOR_ILLUMINANCE_SID                0x11
+#define DEVELCO_PIRTL_SENSOR_OCCUPANCY_SID                  0x12
 
 #define SONOFF_ON_OFF_SID                                   0X00
 #define SONOFF_ELECTRICITY_METER_SID                        0x01
@@ -1187,6 +1189,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
                             ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_1,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10,
     .z2s_device_clusters_count = 3,
@@ -2505,13 +2512,26 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
                              SONOFF_CUSTOM_CLUSTER }},
 
-  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR,
-    .z2s_device_clusters_count = 4,
+  /*{	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_PIRTL_SENSOR_IAS_ZONE,
+    .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_PIRTL_SENSOR_TEMPERATURE,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_PIRTL_SENSOR_ILLUMINANCE,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_PIRTL_SENSOR_OCCUPANCY,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},*/
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION,
     .z2s_device_clusters_count = 8,
@@ -2530,6 +2550,29 @@ static const z2s_device_endpoint_t test_ep[] PROGMEM = {
   { 10, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR },
   { 25, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
 };
+
+
+static const z2s_device_endpoint_t tuya_switch_8[] PROGMEM = {
+  { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+  { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+  { 3, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+  { 4, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+  { 5, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+  { 6, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+  { 7, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
+  { 8, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }
+};
+
+static const z2s_device_endpoint_t 
+  DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR_ENDPOINTS[] PROGMEM = {
+  { 0x23, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B },
+  { 0x26, 0, 0, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_1 },
+  { 0x27, 0, 0, Z2S_DEVICE_DESC_ILLUMINANCE_SENSOR },
+  { 0x22, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR },
+  { 0x28, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR },
+  { 0x29, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR }
+};
+
 
 static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 //DEVICES_START
@@ -3583,13 +3626,9 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "frient A/S", .model_name = "MOSZB-153",
     .z2s_device_uid = 9375,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR,
-	  .z2s_device_endpoints_count = 3,
-    .z2s_device_endpoints = {{ 0x23, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B },
-                             { 0x26, 0, 0, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR },
-                             { 0x27, 0, 0, Z2S_DEVICE_DESC_ILLUMINANCE_SENSOR }}},
-                             //{ 0x22, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR },
-                             //{ 0x28, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR },
-                             //{ 0x29, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR }}},
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS,
+	  .z2s_device_endpoints_count = 6,
+    .z2s_device_endpoints_ext = DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR_ENDPOINTS },
 
   {	.manufacturer_name = "Develco Products A/S", .model_name = "SPLZB-132",
     .z2s_device_uid = 9400,
@@ -4273,9 +4312,10 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3000_sj7jbgks", .model_name = "TS0043",
     .z2s_device_uid = 13900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
-    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS, //Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
 	  .z2s_device_endpoints_count = 3,
-    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+    .z2s_device_endpoints_ext = tuya_switch_8 },
+    //.z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
   {	.manufacturer_name = "_TZ3000_tzvbimpq", .model_name = "TS0042",
     .z2s_device_uid = 13950,

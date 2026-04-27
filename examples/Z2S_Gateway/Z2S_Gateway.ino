@@ -1373,6 +1373,16 @@ if (Z2S_isGUIStarted())
                 (strcmp(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name, 
                   Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
 
+              const z2s_device_endpoint_t *z2s_device_endpoints_ptr = 
+                Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints;
+
+              if (Z2S_DEVICES_LIST[devices_list_counter].\
+                    z2s_device_flags & 
+                  Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS)
+                z2s_device_endpoints_ptr = 
+                  Z2S_DEVICES_LIST[devices_list_counter].\
+                  z2s_device_endpoints_ext;
+
               log_i("LIST matched %s::%s, entry # %d, endpoints # %d, "
                     "endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
                     Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, 
@@ -1380,18 +1390,12 @@ if (Z2S_isGUIStarted())
                     devices_list_counter, 
                     Z2S_DEVICES_LIST[devices_list_counter].\
                       z2s_device_endpoints_count,
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[0].endpoint_id, 
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[0].z2s_device_desc_id,
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[1].endpoint_id, 
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[1].z2s_device_desc_id,
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[2].endpoint_id, 
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[2].z2s_device_desc_id);
+                    z2s_device_endpoints_ptr->endpoint_id, 
+                    z2s_device_endpoints_ptr->z2s_device_desc_id,
+                    (z2s_device_endpoints_ptr + 1)->endpoint_id, 
+                    (z2s_device_endpoints_ptr + 1)->z2s_device_desc_id,
+                    (z2s_device_endpoints_ptr + 2)->endpoint_id, 
+                    (z2s_device_endpoints_ptr + 2)->z2s_device_desc_id);
   
               for (uint8_t endpoint_counter = 0; 
                    endpoint_counter < Z2S_DEVICES_LIST[devices_list_counter].\
@@ -1420,8 +1424,7 @@ if (Z2S_isGUIStarted())
                 uint8_t endpoint_id = 
                   (Z2S_DEVICES_LIST[devices_list_counter].\
                     z2s_device_endpoints_count == 1) ? 
-                  1 : Z2S_DEVICES_LIST[devices_list_counter].\
-                    z2s_device_endpoints[endpoint_idx].endpoint_id; 
+                  1 : (z2s_device_endpoints_ptr + endpoint_idx)->endpoint_id; 
 
                 //mirrored endpoints must be numbered in sequential order 
                 //starting from 1st endpoint id, i.e. 7, 8, 9...
@@ -1449,8 +1452,7 @@ if (Z2S_isGUIStarted())
                     z2s_device_endpoints_count == 1) ?
                   Z2S_DEVICES_LIST[devices_list_counter].\
                     z2s_device_desc_id :
-                  Z2S_DEVICES_LIST[devices_list_counter].\
-                  z2s_device_endpoints[endpoint_idx].z2s_device_desc_id; 
+                  (z2s_device_endpoints_ptr + endpoint_idx)->z2s_device_desc_id; 
 
                 for (uint32_t devices_desc_counter = 0; 
                      devices_desc_counter < devices_desc_table_number; 
@@ -1643,8 +1645,7 @@ if (Z2S_isGUIStarted())
                 }
                 //here starts new reporting code
 
-                if (Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints[endpoint_counter].reporting_flags &
+                if ((z2s_device_endpoints_ptr + endpoint_idx)->reporting_flags &
                     Z2S_REPORTING_SET_FLAG_STANDARD) {
 
                   log_i("new configure reporting at pairing started");
@@ -1656,9 +1657,8 @@ if (Z2S_isGUIStarted())
 
                     if (Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
                           z2s_reporting_set_id == 
-                        Z2S_DEVICES_LIST[devices_list_counter].\
-                          z2s_device_endpoints[endpoint_idx].\
-                          z2s_reporting_set_id) {
+                        (z2s_device_endpoints_ptr + 
+                          endpoint_idx)->z2s_reporting_set_id) {
 
                       log_i(
                         "reporting set matched #%u", 
@@ -1731,7 +1731,7 @@ if (Z2S_isGUIStarted())
 
                 case  Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
 
-                  joined_device->endpoint = Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[0].endpoint_id; //2
+                  joined_device->endpoint = z2s_device_endpoints_ptr->endpoint_id; //2
                   
                   bool sync_cmd = true;
                   zbGateway.setClusterReporting(
@@ -1873,7 +1873,7 @@ if (Z2S_isGUIStarted())
 
                     /*joined_device->endpoint = 
                       ( Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count == 1) ? 
-                        1 : Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints[n].endpoint_id;*/
+                        1 : z2s_device_endpoints_ptr + n)->endpoint_id;*/
 
                       //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD010, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); 
                       //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD030, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
