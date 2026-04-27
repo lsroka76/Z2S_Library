@@ -7995,8 +7995,10 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_OCCUPANCY_SENSOR: {
 
+        char temp_name[25];
+        sprintf(temp_name, "OCCUPANCY (EP# 0x%02X)", device->endpoint);
         addZ2SDeviceIASzone(
-          device, first_free_slot, -1, "OCCUPANCY", 
+          device, first_free_slot, -1, temp_name, 
           SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
       } break;
 

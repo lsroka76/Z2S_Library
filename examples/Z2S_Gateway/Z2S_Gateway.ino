@@ -593,6 +593,15 @@ void setup() {
   LittleFS.begin(false);
   listDir(LittleFS,"/",3);
 
+  File verfile = LittleFS.open("/version.dat", "w");
+
+  char ver_buffer[30];
+  sprintf(ver_buffer, "SV-%s", Z2S_VERSION);
+
+  verfile.println(ver_buffer);
+
+  verfile.close();
+
   if (LittleFS.exists("/supla/Z2S_devs_table")) {
 
     log_i("/supla/Z2S_devs_table found - moving to /z2s_gateway/channels_table_v2.z2s");
