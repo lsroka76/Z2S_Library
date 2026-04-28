@@ -78,7 +78,7 @@ uint16_t save_button;
 uint16_t save_label;
 
 uint16_t pairing_mode_switcher = 0xFFFF;
-uint16_t force_leave_switcher;
+uint16_t force_leave_switcher = 0xFFFF;
 uint16_t zigbee_tx_power_text;
 //uint16_t zigbee_get_tx_power_button;
 //uint16_t zigbee_set_tx_power_button;
@@ -8776,7 +8776,15 @@ void GUI_onLastBindingFailure(bool binding_failed) {
 
 void GUI_onZigbeeOpenNetwork(bool is_network_open) {
 
-	if (pairing_mode_switcher < 0xFFFF)
+	if (pairing_mode_switcher < 0xFFFF) {
+
 		ESPUI.updateNumber(pairing_mode_switcher, is_network_open ? 1 : 0);
+	
+		if (!is_network_open) {
+
+			force_leave_global_flag = false;
+			ESPUI.updateNumber(force_leave_switcher, 0);
+		}
+	}
 }
 #endif //USE_SUPLA_WEB_SERVER

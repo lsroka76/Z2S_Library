@@ -3624,18 +3624,21 @@ void processTuyaCustomCluster(
       log_i("local secs: %llu, gmt_secs: %llu, diff: %llu\n\r", 
             local_secs, gmt_secs, diff_secs);
 
-      if (device.model_id == Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4)
+      if (device.model_id == Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4) {
+
         gmt_secs -= (8 * 3600);
+        local_secs -= (8 * 3600);
+      }
 
       time_sync[2] = uint8_t(gmt_secs>>24); 
       time_sync[3] = uint8_t(gmt_secs>>16); 
       time_sync[4] = uint8_t(gmt_secs>>8);
       time_sync[5] = uint8_t(gmt_secs);
       
-      time_sync[6] = 0;//uint8_t(local_secs>>24); 
-      time_sync[7] = 0;//uint8_t(local_secs>>16); 
-      time_sync[8] = 0;//uint8_t(local_secs>>8);
-      time_sync[9] = 0;//uint8_t(local_secs);
+      time_sync[6] = uint8_t(local_secs>>24); 
+      time_sync[7] = uint8_t(local_secs>>16); 
+      time_sync[8] = uint8_t(local_secs>>8);
+      time_sync[9] = uint8_t(local_secs);
 
       log_i(
         "TUYA_MCU_SYNC_TIME response payload: %X%X:%X%X%X%X:%X%X%X%X",
