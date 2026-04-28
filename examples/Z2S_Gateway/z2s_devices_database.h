@@ -2552,7 +2552,6 @@ static const z2s_device_endpoint_t test_ep[] PROGMEM = {
   { 25, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
 };
 
-
 static const z2s_device_endpoint_t tuya_switch_8[] PROGMEM = {
   { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
   { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },

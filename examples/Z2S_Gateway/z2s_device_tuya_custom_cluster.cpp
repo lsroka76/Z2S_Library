@@ -3637,9 +3637,10 @@ void processTuyaCustomCluster(
       time_sync[8] = 0;//uint8_t(local_secs>>8);
       time_sync[9] = 0;//uint8_t(local_secs);
 
-      log_i("TUYA_MCU_SYNC_TIME response payload: %X%X:%X%X%X%X:%X%X%X%X",
-            time_sync[0], time_sync[1], time_sync[2],time_sync[3], time_sync[4], 
-            time_sync[5], time_sync[6], time_sync[7], time_sync[8], time_sync[9]);
+      log_i(
+        "TUYA_MCU_SYNC_TIME response payload: %X%X:%X%X%X%X:%X%X%X%X",
+        time_sync[0], time_sync[1], time_sync[2],time_sync[3], time_sync[4], 
+        time_sync[5], time_sync[6], time_sync[7], time_sync[8], time_sync[9]);
 
       /*zbGateway.sendCustomClusterCmd(
         &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_SYNC_TIME, 

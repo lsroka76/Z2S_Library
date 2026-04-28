@@ -6921,7 +6921,7 @@ void Z2S_onDeviceLeave(
 
   uint8_t device_number_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
-  if (device_number_slot < 0xFF)  {
+  if ((rejoin == 0) && (device_number_slot < 0xFF))  {
 
     log_i(
       "Device %s(0x%04X) has left network - marked for binding on next join!",
