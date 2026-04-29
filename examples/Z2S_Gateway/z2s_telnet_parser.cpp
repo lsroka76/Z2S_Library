@@ -995,6 +995,47 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }
     return;
   } else
+    if (strcmp(cmd,"BIND-ZB-DEVICES") == 0) {
+
+    if (params_number < 5)  {
+      telnet.println(
+        ">bind-zb-devices src_zb_device_slot dst_zb_device_slot src_endpoint"
+        "dst_endpoint cluster_id");
+      return;
+    }
+
+    uint8_t src_device_slot = strtoul(*(param), nullptr, 0);
+    uint8_t dst_device_slot = strtoul(*(param + 1), nullptr, 0);
+    uint8_t src_endpoint = strtoul(*(param + 2), nullptr, 0);
+    uint8_t dst_endpoint = strtoul(*(param + 3), nullptr, 0);
+    uint16_t cluster_id = strtoul(*(param + 4), nullptr, 0);
+    bool unbind = false;
+    if (params_number >= 6)
+      unbind = strtoul(*(param + 5), nullptr, 0);
+    
+    if ((src_device_slot >= 0) && 
+        (src_device_slot < Z2S_ZB_DEVICES_MAX_NUMBER) &&
+        (dst_device_slot >= 0) && 
+        (dst_device_slot < Z2S_ZB_DEVICES_MAX_NUMBER)) {
+
+      if ((z2s_zb_devices_table[src_device_slot].record_id > 0) &&
+          (z2s_zb_devices_table[dst_device_slot].record_id > 0)) {
+          
+          zbGateway.bindDevices(
+					  z2s_zb_devices_table[src_device_slot].ieee_addr, 
+					  z2s_zb_devices_table[dst_device_slot].ieee_addr, 
+					  z2s_zb_devices_table[src_device_slot].short_addr, src_endpoint, 
+            dst_endpoint, cluster_id, unbind);
+      } else {
+        telnet.printf("Error - invalid device_slot (source or destination)");
+      }
+    } else {
+      telnet.printf(
+        "Error - device slot not in range [0..%u]\n\r>", 
+        Z2S_ZB_DEVICES_MAX_NUMBER);
+    }
+    return;
+  } else
   if (strcmp(cmd,"UPDATE-DEVICE-PARAMS") == 0) {
 
     if (params_number < 3)  {

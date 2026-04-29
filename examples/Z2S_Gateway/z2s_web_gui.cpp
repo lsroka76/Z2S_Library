@@ -6809,6 +6809,11 @@ void generalZigbeeCallback(Control *sender, int type, void *param){
 
 			case GUI_CB_CLEAR_INSTALLATION_CODES_FLAG: {
 
+				/*zbGateway.bindDevices(
+					z2s_zb_devices_table[1].ieee_addr, 
+					z2s_zb_devices_table[4].ieee_addr, 
+					z2s_zb_devices_table[1].short_addr, 1, 1, 6);
+				break;*/
 				esp_zb_secur_ic_remove_all_req();
 			} break;
 		}

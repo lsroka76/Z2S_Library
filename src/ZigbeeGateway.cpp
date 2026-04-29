@@ -429,6 +429,20 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
                 .app_device_version = 0 };
 }
 
+void ZigbeeGateway::bindDevicesCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
+  
+  
+  bool unbind = (bool)user_ctx;
+
+  if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) 
+    log_i("Devices direct %sbinding success!", unbind ? "un" : "");
+  else
+    log_e(
+      "Devices direct %sbinding error (0x%02X)!", unbind ? "un" : "", 
+      zdo_status);
+}
+
+
 void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
   
   
@@ -774,7 +788,7 @@ void ZigbeeGateway::zbReadBasicCluster(
 }
 
 void ZigbeeGateway::bindDeviceCluster(
-  zbg_device_params_t * device, int16_t cluster_id, uint8_t groupcast_flag) {
+  zbg_device_params_t * device, uint16_t cluster_id, uint8_t groupcast_flag) {
 
   esp_zb_zdo_bind_req_param_t bind_req = {};
     
@@ -886,9 +900,38 @@ void ZigbeeGateway::bindDeviceCluster(
   free(bind_device);
 }
 
+void ZigbeeGateway::bindDevices(
+  esp_zb_ieee_addr_t src_ieee_addr, esp_zb_ieee_addr_t dst_ieee_addr,
+  uint16_t dst_short_addr, uint8_t src_endpoint, uint8_t dst_endpoint, 
+  uint16_t cluster_id, bool unbind) {
+
+  esp_zb_zdo_bind_req_param_t bind_req = {0};
+    
+  bind_req.req_dst_addr = dst_short_addr;
+
+  /* populate the src information of the binding */
+  memcpy(bind_req.src_address, src_ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  bind_req.src_endp = src_endpoint;
+  bind_req.cluster_id = cluster_id; 
+  
+  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+  memcpy(
+    bind_req.dst_address_u.addr_long, dst_ieee_addr, 
+    sizeof(esp_zb_ieee_addr_t));
+  bind_req.dst_endp = dst_endpoint; 
+
+  esp_zb_lock_acquire(portMAX_DELAY);
+  if (unbind)
+    esp_zb_zdo_device_unbind_req(&bind_req, bindDevicesCb, (void *)unbind);
+  else
+    esp_zb_zdo_device_bind_req(&bind_req, bindDevicesCb, (void *)unbind);
+  esp_zb_lock_release();
+  delay(200);
+}
+
 
 void ZigbeeGateway::bindDeviceCluster2(
-  zbg_device_params_t * device, int16_t cluster_id) {
+  zbg_device_params_t * device, uint16_t cluster_id) {
 
   esp_zb_zdo_bind_req_param_t bind_req = {};
     
@@ -957,7 +1000,7 @@ void ZigbeeGateway::bindDeviceCluster2(
 }
 
 void ZigbeeGateway::unbindLocalDeviceCluster(
-  zbg_device_params_t * device, int16_t cluster_id) {
+  zbg_device_params_t * device, uint16_t cluster_id) {
 
   esp_zb_zdo_bind_req_param_t bind_req = {};
     

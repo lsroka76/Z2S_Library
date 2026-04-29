@@ -369,6 +369,7 @@ public:
     return &_read_report_config_resp_variable_last_result;
   }
 
+
   static esp_zb_zcl_status_t * getReadAttrStatusLastResult() {
     return &_read_attr_status_last_result;
   }
@@ -396,12 +397,17 @@ public:
   void zbPrintDeviceDiscovery (zbg_device_params_t * device);
 
   static void bindDeviceCluster(
-    zbg_device_params_t *, int16_t cluster_id, uint8_t groupcast_flag = 0);
+    zbg_device_params_t *, uint16_t cluster_id, uint8_t groupcast_flag = 0);
 
-  static void bindDeviceCluster2(zbg_device_params_t *, int16_t cluster_id);
+  static void bindDeviceCluster2(zbg_device_params_t *, uint16_t cluster_id);
+
+  static void bindDevices(
+  esp_zb_ieee_addr_t src_ieee_addr, esp_zb_ieee_addr_t dst_ieee_addr,
+  uint16_t dst_short_addr, uint8_t src_endpoint, uint8_t dst_endpoint, 
+  uint16_t cluster_id, bool unbind = false);
 
   static void unbindLocalDeviceCluster(
-    zbg_device_params_t *, int16_t cluster_id);
+    zbg_device_params_t *, uint16_t cluster_id);
 
   bool zbQueryDeviceBasicCluster(
     zbg_device_params_t * device, bool single_attribute = false, 
@@ -787,6 +793,7 @@ private:
     uint8_t *buffer);
 
   static void bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
+  static void bindDevicesCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
   static void find_Cb(
     esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, 
     void *user_ctx);
