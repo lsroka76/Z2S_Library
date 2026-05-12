@@ -11189,7 +11189,7 @@ void Z2S_buildSuplaChannels(
               SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
         break;
       }
-    }
+    } break;
 
 /*****************************************************************************/
 /*
