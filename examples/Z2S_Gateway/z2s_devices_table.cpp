@@ -5367,7 +5367,8 @@ void Z2S_onBinaryInputReceive(
       switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
-        case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
+        case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR:
+        case Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR: {
 
           channel_number_slot = Z2S_findChannelNumberSlot(
             short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
@@ -8876,11 +8877,14 @@ uint8_t Z2S_addZ2SDevice(
 /******************************************************************************/     
 
       case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
-      case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR: {
+      case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR:
+      case Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR: {
 
         switch (sub_id) {
 
           case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID:
+          case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_USB_SID:
+          case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_SW_SID:
 
             addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
           break;
@@ -10111,6 +10115,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
@@ -11162,6 +11167,30 @@ void Z2S_buildSuplaChannels(
     } break;
 
 /*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR: {
+      
+      switch (joined_device->endpoint) {
+
+
+        case 0x01:
+
+            Z2S_addZ2SDevice(
+              joined_device, NO_CUSTOM_CMD_SID, "USB POWER SOURCE", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        break;
+
+
+        case 0x02:
+
+            Z2S_addZ2SDevice(
+              joined_device, NO_CUSTOM_CMD_SID, "230V POWER SOURCE", 
+              SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+        break;
+      }
+    }
+
+/*****************************************************************************/
 /*
     case Z2S_DEVICE_DESC_DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR: {
       
@@ -11365,6 +11394,29 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID,  
         "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+    
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID, 
+        "PIR", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID,  
+        "ILLUMINANCE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
+
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_USB_SID, 
+        "USB POWER", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_SW_SID, 
+        "SENSOR SWITCH", SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
     } break;
 
 /*****************************************************************************/

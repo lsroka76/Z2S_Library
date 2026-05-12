@@ -435,6 +435,13 @@
 #define TUYA_PIR_ILLUMINANCE_SENSOR_KEEP_TIME_DP                    0x0A //ENUM
 #define TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_INTERVAL_DP         0x66 //VALUE
 
+#define TUYA_SZLM04U_SENSOR_PIR_DP                                  0x01
+#define TUYA_SZLM04U_SENSOR_BATTERY_LEVEL_DP                        0x04
+#define TUYA_SZLM04U_SENSOR_ILLUMINANCE_DP                          0x65
+#define TUYA_SZLM04U_SENSOR_USB_POWER_DP                            0x66
+#define TUYA_SZLM04U_SENSOR_SWITCH_DP                               0x67
+#define TUYA_SZLM04U_SENSOR_FADING_TIME_DP                          0x68
+
 
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_1_DP                          0x18
 #define TUYA_LCD_PANEL_3_RELAYS_RELAY_2_DP                          0x19

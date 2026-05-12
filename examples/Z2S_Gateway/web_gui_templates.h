@@ -1895,6 +1895,12 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Brightness acquisition interval.<br>"
 																	"Enter numeric value between 1 and 720 [min]." },
 
+		{ .z2s_device_desc_id 	 		= Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SZLM04U_SENSOR_FADING_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Fading Time",
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 300 [s]" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,

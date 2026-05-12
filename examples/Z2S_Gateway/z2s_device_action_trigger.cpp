@@ -1836,6 +1836,34 @@ bool getVirtualButtonNumber(
     break;
 
 
+    case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F: 
+    case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F: 
+        
+      switch (sub_id) {
+
+
+        case NO_CUSTOM_CMD_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          return true;
+        } break;
+
+
+        default: {
+
+          log_e(
+            "unknown combination: model id = 0x%04X, sub id = 0x%02X", 
+            model_id, sub_id);
+          return false;
+        } break;
+      }
+    break;
+
+
     case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM: 
         
       switch (sub_id) {
@@ -1910,10 +1938,11 @@ bool getVirtualButtonNumber(
 
     default: {
 
-          log_e(
-            "unknown combination: model id = 0x%04X, sub id = 0x%02X", 
-            model_id, sub_id);
-          return 0;
-        } break;
+      log_e(
+        "unknown combination: model id = 0x%04X, sub id = 0x%02X", 
+        model_id, sub_id);
+      
+      return false;
+    } break;
   }
 }

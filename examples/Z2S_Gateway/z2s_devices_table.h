@@ -480,7 +480,6 @@ bool Z2S_loadChannelExtendedData(
   int16_t channel_number_slot, uint8_t extended_data_type,
   uint8_t *extended_data);
 
-
 /*****************************************************************************/
 static const char *no_extended_data_counter_key = 
   "no edc key";

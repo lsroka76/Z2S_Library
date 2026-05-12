@@ -115,6 +115,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR         0x2060
 #define Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR                  0x2061
+#define Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR                 0x2062
 
 #define Z2S_DEVICE_DESC_OCCUPANCY_SENSOR                    0x2100
 
@@ -162,6 +163,7 @@
 #define Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR                   0x2600
 #define Z2S_DEVICE_DESC_DIY_MAIL_SENSOR                     0x2610
 #define Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR         0x2615
+#define Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR             0x2620
 
 #define Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR             0x2700
 
@@ -420,6 +422,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID 0x00
 #define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID  0x01
+#define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_USB_SID 0x02
+#define Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_SW_SID  0x03
 
 #define TUYA_PRESENCE_SENSOR_PRESENCE_SID                   0x00
 //#define TUYA_PRESENCE_SENSOR_PRESENCE_SID                   0x01
@@ -1259,6 +1263,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00,
                              TUYA_PRIVATE_CLUSTER_2 }},
+  
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR,
     .z2s_device_clusters_count = 5,
@@ -1368,6 +1377,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT,
                              ESP_ZB_ZCL_CLUSTER_ID_BINARY_INPUT }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BINARY_INPUT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_3,
     .z2s_device_clusters_count = 1,
@@ -6262,13 +6276,22 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 34600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER,
     .z2s_device_endpoints_count = 2,
-    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER },
-                             { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+    .z2s_device_endpoints = {
+      { 1, 0, 0, Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER },
+      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
 
   { .manufacturer_name = "DIY_ZZRR", .model_name = "CarBatteryChargingEND",
     .z2s_device_uid = 34700,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "DIY_ZZRR", .model_name = "ChangePowerMonitor",
+    .z2s_device_uid = 34705,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR,
+    .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {
+      { 1, 0, 0, Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR },
+      { 2, 0, 0, Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR }}},
 
   { .manufacturer_name = "DIY_george1255", .model_name = "ZBLevel_Sensor",
     .z2s_device_uid = 34800, 
@@ -6293,8 +6316,29 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
     .z2s_device_flags = 0,
     .z2s_device_endpoints_count = 2,
-    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
-                           { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+    .z2s_device_endpoints = {
+      { 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+
+  { .manufacturer_name = "DIY_george1255", .model_name = "1ch_gate_router_contact",
+    .z2s_device_uid = 35015, 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+    .z2s_device_flags = 0,
+    .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = {
+      { 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
+      { 2, 0, 0, Z2S_DEVICE_DESC_DIY_MAIL_SENSOR }}},
+
+  { .manufacturer_name = "DIY_george1255", .model_name = "2ch_gate_router_contact",
+    .z2s_device_uid = 35020, 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
+    .z2s_device_flags = 0,
+    .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints_count_m1 = 2,
+    .z2s_device_endpoints = {
+      { 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },          
+      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },          
+      { 3, 0, 0, Z2S_DEVICE_DESC_DIY_MAIL_SENSOR }}},
 
   { .manufacturer_name = "_TZE284_2gi1hy8s", .model_name = "TS0601",
     .z2s_device_uid = 35100,
@@ -6344,6 +6388,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_SHELLY_WS90, 
       Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION}},
+
+  { .manufacturer_name = "_TZE284_bquwrqh1", .model_name = "TS0601",
+    .z2s_device_uid = 35900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR,
+    .z2s_device_endpoints_count = 1},
 
 
 

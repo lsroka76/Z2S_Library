@@ -2707,55 +2707,128 @@ void processTuyaTempHumidityTempProbeSensorDataReport(
 /*******************************************************************************/
 
 void processTuyaPIRIlluminanceSensorDataReport(
-  int16_t channel_number_slot, 
-  uint16_t payload_size, uint8_t *payload, 
+  int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
   uint32_t model_id) {
 
-  int16_t channel_number_slot_1, channel_number_slot_2;
   Tuya_read_dp_result_t Tuya_read_dp_result = {};
 
-  channel_number_slot_1 = Z2S_findChannelNumberSlot(
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].short_addr, 
     z2s_channels_table[channel_number_slot].endpoint, 
     z2s_channels_table[channel_number_slot].cluster_id, 
     SUPLA_CHANNELTYPE_BINARYSENSOR, 
     Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_PIR_SID);
 
-  channel_number_slot_2 = Z2S_findChannelNumberSlot(
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
     z2s_channels_table[channel_number_slot].short_addr, 
     z2s_channels_table[channel_number_slot].endpoint, 
     z2s_channels_table[channel_number_slot].cluster_id, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
     Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_IL_SID);
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      TUYA_PIR_ILLUMINANCE_SENSOR_PIR_DP, payload_size, payload);
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_USB_SID);
 
-  if (Tuya_read_dp_result.is_success) {
+  int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_BINARYSENSOR, 
+    Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR_SW_SID);
 
-    msgZ2SDeviceIASzone(
-      channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0));
+
+  uint8_t pir_dp_id = 0x00;
+  uint8_t illuminance_dp_id = 0x00;
+  uint8_t battery_level_dp_id = 0x00;
+  uint8_t usb_power_dp_id = 0x00;
+  uint8_t sensor_switch_dp_id = 0x00;
+
+  switch (model_id) {
+
+
+    case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR: {
+
+      pir_dp_id = TUYA_PIR_ILLUMINANCE_SENSOR_PIR_DP;
+      illuminance_dp_id = TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_DP;
+      battery_level_dp_id = TUYA_PIR_ILLUMINANCE_SENSOR_BATTERY_LEVEL_DP;
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR: {
+
+      pir_dp_id = TUYA_SZLM04U_SENSOR_PIR_DP;
+      illuminance_dp_id = TUYA_SZLM04U_SENSOR_ILLUMINANCE_DP;
+      battery_level_dp_id = TUYA_SZLM04U_SENSOR_BATTERY_LEVEL_DP;
+      usb_power_dp_id = TUYA_SZLM04U_SENSOR_USB_POWER_DP;
+      sensor_switch_dp_id = TUYA_SZLM04U_SENSOR_SWITCH_DP;
+    } break;
   }
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      TUYA_PIR_ILLUMINANCE_SENSOR_ILLUMINANCE_DP, payload_size, payload);
+  if (pir_dp_id) {
 
-  if (Tuya_read_dp_result.is_success) {
+    Z2S_readTuyaDPvalue(Tuya_read_dp_result, pir_dp_id, payload_size, payload);
 
-    msgZ2SDeviceGeneralPurposeMeasurement(
-      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-      Tuya_read_dp_result.dp_value);
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceIASzone(
+        channel_number_slot_1, (Tuya_read_dp_result.dp_value == 0));
+    }
   }
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-      TUYA_PIR_ILLUMINANCE_SENSOR_BATTERY_LEVEL_DP, payload_size, payload);
+  if (illuminance_dp_id) {
+  
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, illuminance_dp_id, payload_size, payload);
 
-  if (Tuya_read_dp_result.is_success) {
+    if (Tuya_read_dp_result.is_success) {
 
-    updateSuplaBatteryLevel(
-      channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
-      Tuya_read_dp_result.dp_value);
-  }  
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+        Tuya_read_dp_result.dp_value);
+    }
+  }
+
+  if (battery_level_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, battery_level_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) {
+
+      updateSuplaBatteryLevel(
+        channel_number_slot_1, ZBD_BATTERY_LEVEL_MSG, 
+        Tuya_read_dp_result.dp_value);
+    }
+  }
+
+  if (usb_power_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, usb_power_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceIASzone(
+        channel_number_slot_3, (Tuya_read_dp_result.dp_value == 0));
+    }
+  } 
+  
+  if (sensor_switch_dp_id) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, sensor_switch_dp_id, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceIASzone(
+        channel_number_slot_4, (Tuya_read_dp_result.dp_value == 0));
+    }
+  } 
 }
 
 /*******************************************************************************/
@@ -3463,6 +3536,7 @@ void processTuyaDataReport(
 
     case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR:
 
       processTuyaPIRIlluminanceSensorDataReport(
         channel_number_slot, payload_size, payload, model_id); 
