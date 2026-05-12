@@ -5854,6 +5854,21 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
     .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZ3210_dse8ogfy", .model_name = "TS0001",
+    .z2s_device_uid = 29010,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_7vgttna6", .model_name = "TS0001",
+    .z2s_device_uid = 29015,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZ3210_cm9mbpr1", .model_name = "TS0001",
+    .z2s_device_uid = 29020,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS,
+    .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZE284_aaeaifez", .model_name = "TS0601",
     .z2s_device_uid = 29100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
