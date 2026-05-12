@@ -2744,7 +2744,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_yupc0pb7", .model_name = "TS0201",
     .z2s_device_uid = 150,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10,
 	  .z2s_device_endpoints_count = 1 },
 
   {	.manufacturer_name = "_TZ3000_dowj6gyi", .model_name = "TS0201",
