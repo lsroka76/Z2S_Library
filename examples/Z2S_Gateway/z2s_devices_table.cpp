@@ -5024,7 +5024,7 @@ void Z2S_onOnOffReceive(
 
   if (channel_number_slot >= 0) {
     if (state)
-      msgZ2SDeviceActionTriggerV2(channel_number_slot, sub_id);
+      msgZ2SDeviceActionTriggerV2(channel_number_slot, NO_CUSTOM_CMD_SID);
       //msgZ2SDeviceActionTrigger(channel_number_slot);
     return;
   }
