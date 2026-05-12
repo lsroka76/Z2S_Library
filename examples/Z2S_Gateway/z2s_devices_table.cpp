@@ -7216,6 +7216,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
       case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B:
+      case Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR:
 
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
       break;
