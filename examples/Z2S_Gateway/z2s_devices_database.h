@@ -5368,6 +5368,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
 	  .z2s_device_endpoints_count = 4,
     .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1}}},
+
+  {	.manufacturer_name = "_TZ3210_imaccztn", .model_name = "TS0004",
+    .z2s_device_uid = 22405,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
+	  .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1}}},
                              
   {	.manufacturer_name = "_TZ3000_h1ipgkwn", .model_name = "TS0002",
     .z2s_device_uid = 22500,
