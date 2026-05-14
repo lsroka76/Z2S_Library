@@ -226,7 +226,7 @@ public:
         special_thermometer_calculated_temperature = 
           _connected_thermometers[connected_thermometers_counter].\
             connected_thermometer_temperature;
-        break;
+        continue;
       }
 
       if (connected_thermometer_channel < 0x7F) {
@@ -246,7 +246,7 @@ public:
 
           _connected_thermometers[connected_thermometers_counter].
           connected_thermometer_channel = 0xFF;
-          break; //skip that thermometer - already unregistered
+          continue; //skip that thermometer - already unregistered
         }
 
         switch (_connected_thermometers_function) {
