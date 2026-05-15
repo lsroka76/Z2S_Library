@@ -2256,12 +2256,12 @@ void processTuyaRainSensor2DataReport(
       channel_number_slot_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
       Tuya_read_dp_result.dp_value);
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
+  /*Z2S_readTuyaDPvalue(Tuya_read_dp_result,
     TUYA_RAIN_SENSOR_2_RAIN_DP, payload_size, payload);
 
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceIASzone(
-      channel_number_slot_2, Tuya_read_dp_result.dp_value);
+      channel_number_slot_2, Tuya_read_dp_result.dp_value);*/
 
   Z2S_readTuyaDPvalue(Tuya_read_dp_result,
     TUYA_RAIN_SENSOR_2_BATTERY_DP, payload_size, payload);
