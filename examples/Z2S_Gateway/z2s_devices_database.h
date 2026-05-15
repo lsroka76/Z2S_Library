@@ -1524,92 +1524,114 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2,
     .z2s_device_clusters_count = 3, .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             SONOFF_CUSTOM_CLUSTER }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      SONOFF_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x00, //Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             LUMI_CUSTOM_CLUSTER }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      LUMI_CUSTOM_CLUSTER }},
 
    {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER,
      .z2s_device_clusters_count = 3,
      .z2s_device_config_flags = 0x0,
-     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                              ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                              ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+     .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING }},
 
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
     .z2s_device_clusters_count = 3,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_SETUP,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,  
-                             ESP_ZB_ZCL_CLUSTER_ID_METERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+    .z2s_device_config_flags = 
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_SETUP,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,  
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON,
     .z2s_device_clusters_count = 4,
