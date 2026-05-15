@@ -1224,10 +1224,15 @@ bool Z2S_loadChannelsTable() {
                   }   
                 }
               }
-              if ((z2s_channels_table[channels_counter].model_id >= 
+              //fix for SID 0x01 -> 0x00 
+              if ((((z2s_channels_table[channels_counter].model_id >= 
                     Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR) &&
                   (z2s_channels_table[channels_counter].model_id <= 
-                    Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY) &&
+                    Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY)) ||
+                  (z2s_channels_table[channels_counter].model_id == 
+                    Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR) ||
+                  (z2s_channels_table[channels_counter].model_id == 
+                    Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2)) &&
                   (z2s_channels_table[channels_counter].sub_id == 0x01)) {
 
                 z2s_channels_table[channels_counter].sub_id = 0x00;
@@ -4646,6 +4651,10 @@ void Z2S_onBasicReceive(
         return;
       }       
 
+      if (z2s_channels_table[channel_number_slot].model_id ==
+          Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2)
+        return; //onPressureReceive gets more accurate results
+
       uint8_t lumi_pressure_position = scanLumiPayload(
         LUMI_ATTRIBUTE_PRESSURE_ID, ESP_ZB_ZCL_ATTR_TYPE_S32,
         attribute->data.size, (uint8_t*)attribute->data.value);
@@ -7126,7 +7135,8 @@ uint8_t Z2S_addZ2SDevice(
 /*****************************************************************************/
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: 
-      case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR: {
+      case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
+      case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2: {
 
         addZ2SDeviceTempHumidity(
           device, first_free_slot, sub_id, name, func);
