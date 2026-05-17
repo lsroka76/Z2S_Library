@@ -1365,7 +1365,7 @@ void ZigbeeGateway::zbAttributeReporting(
       if (_on_metering_receive)
         _on_metering_receive(src_address.u.short_addr, src_endpoint, cluster_id, attribute);
     } else
-    if ((cluster_id >= 0xFC00) && (cluster_id <= 0xFCFF)) {
+    if ((cluster_id >= 0xFC01) && (cluster_id <= 0xFC03)) {
 
       log_i(
         "FCXX custom cluster (0x%x), attribute id (0x%x), attribute data type"
