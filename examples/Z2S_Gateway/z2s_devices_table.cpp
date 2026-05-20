@@ -9509,7 +9509,10 @@ void updateRemoteThermometer(
       (strcmp(Z2S_getZbDeviceModelName(
         z2s_channels_table[channel_number_slot].Zb_device_id), 
         "SNZB-02DR2") == 0))  {
-     
+
+    auto Z2S_SNZB02DR2ThermHygroMeter = 
+      static_cast<Supla::Sensor::Z2S_SNZB02DR2ThermHygroMeter *>(element);
+
     uint8_t temperature_selector = 1;
 
     zbg_device_params_t device = {};
@@ -9538,6 +9541,9 @@ void updateRemoteThermometer(
           &device, SONOFF_CUSTOM_CLUSTER, 
           SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
           ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &sonoff_external_value);
+
+        Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature(
+          sonoff_external_value);
       } break;
 
 
@@ -9547,6 +9553,8 @@ void updateRemoteThermometer(
           &device, SONOFF_CUSTOM_CLUSTER, 
           SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &sonoff_external_value);
+        Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity(
+          sonoff_external_value);
       } break;
     }
   }
