@@ -32,8 +32,8 @@ void initZ2SDeviceTempHumidity(
 
       Supla_Z2S_VirtualThermHygroMeter = Z2S_SNZB02DR2ThermHygroMeter;
 
-      Z2S_SNZB02DR2ThermHygroMeter->setResentSecs(
-        z2s_channels_table[channel_number_slot].refresh_secs);
+      Z2S_SNZB02DR2ThermHygroMeter->setResentSecs(300);
+        //z2s_channels_table[channel_number_slot].refresh_secs);
     }
     else 
       Supla_Z2S_VirtualThermHygroMeter = 
