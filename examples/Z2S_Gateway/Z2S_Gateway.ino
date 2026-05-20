@@ -1760,26 +1760,23 @@ if (Z2S_isGUIStarted())
                     ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID,
                     ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 50, sync_cmd);
 
-                   zbGateway.setClusterReporting(joined_device, 
-                                                 ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
-                                                 ESP_ZB_ZCL_ATTR_TYPE_U16, 
-                                                 0, 0, 10, 
-                                                 sync_cmd);
+                   zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 10, sync_cmd);
 
-                   zbGateway.setClusterReporting(joined_device, 
-                                                 ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID,
-                                                  ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                                                  0, 0, 1, 
-                                                  sync_cmd);
+                   zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 0, 1, sync_cmd);
 
-                    zbGateway.setClusterReporting(joined_device, 
-                                                  ESP_ZB_ZCL_CLUSTER_ID_METERING, 
-                                                  ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
-                                                  ESP_ZB_ZCL_ATTR_TYPE_U48, 
-                                                  0, 0, 1, 
-                                                  sync_cmd);
+                    zbGateway.setClusterReporting(
+                      joined_device, 
+                      ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+                      ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
+                      ESP_ZB_ZCL_ATTR_TYPE_U48, 0, 0, 1, sync_cmd);
 
                 } break; //[[fallthrough]];
 

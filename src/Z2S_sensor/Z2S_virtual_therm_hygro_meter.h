@@ -24,10 +24,12 @@
 
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 
+#define TH_ID_SNZB_02DR2        0x1000
+
 namespace Supla {
 namespace Sensor {
 class Z2S_VirtualThermHygroMeter : 
-  public Supla::Sensor::VirtualThermHygroMeter {
+  public Supla::Sensor::VirtualThermHygroMeter, public Z2S_Core {
   
 public:
     
@@ -35,14 +37,6 @@ public:
   {
 
   }
-
-  /*Z2S_VirtualThermHygroMeter(
-    ZigbeeGateway *gateway, zbg_device_params_t *device, 
-    bool rwns_flag = false) : _gateway(gateway), _rwns_flag(rwns_flag) {
-
-      memcpy(&_device, device, sizeof(zbg_device_params_t));     
-    }*/
-
 
   void setRWNSFlag(bool rwns_flag) {
 
@@ -83,27 +77,34 @@ public:
     return _forced_temperature;
   }
 
-  /*bool setExternalTemperature(int32_t external_temperature) {
-
-    _external_temperature = external_temperature;
-  }*/
-
   void iterateAlways() override {
 
-    if (millis() - lastReadTime > refreshIntervalMs) {
-      lastReadTime = millis();
+    uint32_t millis_ms = millis();
+
+    if (millis_ms - lastReadTime > refreshIntervalMs) {
+
+      lastReadTime = millis_ms;
       channel.setNewValue(getTemp(), getHumi());
     }
 
-    if ((_timeout_ms > 0) && 
-        (millis() - _last_timeout_ms > _timeout_ms)) {
+    if (_timeout_ms) {
       
-      _last_timeout_ms = millis();
+      if (_z2s_zb_device && 
+          (_z2s_zb_device->last_seen_ms > _last_timeout_ms)) {
 
-      if (_rwns_flag) 
-        channel.setStateOfflineRemoteWakeupNotSupported();
-      else
-        channel.setStateOffline();
+        _last_timeout_ms = _z2s_zb_device->last_seen_ms;
+        channel.setStateOnline();
+      }
+
+      if ((millis_ms - _last_timeout_ms) > _timeout_ms) {
+      
+        _last_timeout_ms = millis_ms;
+
+        if (_rwns_flag) 
+          channel.setStateOfflineRemoteWakeupNotSupported();
+        else
+          channel.setStateOffline();
+      }
     }
   }
     
@@ -111,13 +112,90 @@ public:
   bool     _rwns_flag;
   bool     _forced_temperature = false;
 
-  //ZigbeeGateway *_gateway = nullptr;
-  //zbg_device_params_t _device;
-
-  //uint32_t _external_temperature = INT32_MIN;
-
   uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;
+};
+
+class Z2S_SNZB02DR2ThermHygroMeter : 
+  public Supla::Sensor::Z2S_VirtualThermHygroMeter {
+  
+public:
+    
+  Z2S_SNZB02DR2ThermHygroMeter(bool rwns_flag = false) 
+    : Z2S_VirtualThermHygroMeter(rwns_flag) 
+  {
+  }
+
+  void setResentSecs(uint32_t resent_secs) {
+    
+    _resent_ms = resent_secs * 1000;
+  }
+
+  void setSonoffExternalTemperature(int16_t sonoff_external_temperature) {
+
+    _sonoff_external_temperature = sonoff_external_temperature;
+  }
+
+  void setSonoffExternalHumidity(uint16_t sonoff_external_humidity) {
+
+    _sonoff_external_humidity = sonoff_external_humidity;
+  }
+
+  void updateSNZB02DR2ExtValues() {
+
+    if (!Zigbee.started())
+      return;
+
+    uint8_t temperature_selector = 1;
+
+    zbg_device_params_t device = {};
+
+    device.endpoint = 0x01;
+    device.cluster_id = SONOFF_CUSTOM_CLUSTER;
+    memcpy(
+      device.ieee_addr, _z2s_channel->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+    device.short_addr = _z2s_channel->short_addr;
+    device.model_id = _z2s_channel->model_id;
+
+    zbGateway.sendAttributeWrite(
+      &device, SONOFF_CUSTOM_CLUSTER, 
+      SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
+      ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
+
+  
+    if (_sonoff_external_temperature > INT16_MIN)
+      zbGateway.sendAttributeWrite(
+        &device, SONOFF_CUSTOM_CLUSTER, 
+        SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
+        ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &_sonoff_external_temperature);
+  
+    if (_sonoff_external_humidity < UINT16_MAX)
+      zbGateway.sendAttributeWrite(
+        &device, SONOFF_CUSTOM_CLUSTER, 
+        SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
+        ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &_sonoff_external_humidity);
+  }
+
+  void iterateAlways() override {
+
+    VirtualThermHygroMeter::iterateAlways();
+
+    if (_resent_ms && (millis() - _last_resent_ms > _resent_ms))
+      updateSNZB02DR2ExtValues();
+       
+  }
+
+  uint32_t getID() override {
+    
+    return TH_ID_SNZB_02DR2;
+  }
+    
+ protected:
+
+  int16_t  _sonoff_external_temperature = INT16_MIN;
+  uint16_t  _sonoff_external_humidity = UINT16_MAX;
+  uint32_t  _resent_ms = 0;
+  uint32_t  _last_resent_ms = 0;
 };
 };  // namespace Sensor
 };  // namespace Supla

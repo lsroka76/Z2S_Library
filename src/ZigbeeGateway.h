@@ -447,7 +447,7 @@ public:
     uint16_t manuf_code = 0);
 
   bool sendAttributeRead(
-    zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, 
+    zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
     bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
     uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, 
     uint16_t manuf_code = 0);

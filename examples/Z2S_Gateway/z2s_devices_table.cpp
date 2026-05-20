@@ -533,13 +533,13 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
       } break;*/
 
 
-      /*case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
+      case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
         auto Supla_Z2S_VirtualThermHygroMeter = static_cast<
           Supla::Sensor::Z2S_VirtualThermHygroMeter *>(Supla_element);
 
         return static_cast<Z2S_Core *>(Supla_Z2S_VirtualThermHygroMeter);
-      } break;*/
+      } break;
 
 
       /*case SUPLA_CHANNELTYPE_THERMOMETER: {
@@ -7148,7 +7148,10 @@ uint8_t Z2S_addZ2SDevice(
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        addZ2SDevicePressure(device, first_free_slot);
+        //addZ2SDevicePressure(device, first_free_slot); 
+        addZ2SDeviceGeneralPurposeMeasurement(
+          device, first_free_slot, NO_CUSTOM_CMD_SID, "PRESSURE", 
+          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kPa"); 
       } break;
 
 /*****************************************************************************/
