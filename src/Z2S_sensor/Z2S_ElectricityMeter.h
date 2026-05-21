@@ -5,6 +5,7 @@
 #include <supla/log_wrapper.h>
 #include <supla/sensor/electricity_meter.h>
 #include "ZigbeeGateway.h"
+#include "TuyaDatapoints.h"
 
 #define CHANNEL_EXTENDED_DATA_TYPE_EM 0x01
 
@@ -508,9 +509,9 @@ void resetStorage() {
       ESP_ZB_ZCL_CLUSTER_ID_METERING, 
       ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, 
       false);
+
+	sendTuyaRequestCmdEnum8(_gateway, &_device, 0x23, 1);
   }
-
-
 }
 
 void pong() {
