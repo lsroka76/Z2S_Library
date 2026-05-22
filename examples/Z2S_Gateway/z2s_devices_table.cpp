@@ -9743,7 +9743,7 @@ bool Z2S_add_action(
       case Supla::ON_BETWEEN:
 
         if (em_condition_getter)
-          Supla_condition = OnBetween(threshold_1, threshold_1, treshold_2, em_condition_getter);
+          Supla_condition = OnBetween(threshold_1, threshold_2, em_condition_getter);
         else
           Supla_condition = OnBetween(threshold_1, threshold_2); 
       break;
@@ -9752,7 +9752,7 @@ bool Z2S_add_action(
       case Supla::ON_BETWEEN_EQ:
         
         if (em_condition_getter)
-          Supla_condition = OnBetweenEq(threshold_1, threshold_2, em_condition_get6ter);
+          Supla_condition = OnBetweenEq(threshold_1, threshold_2, em_condition_getter);
         else
           Supla_condition = OnBetweenEq(threshold_1, threshold_2); 
       break;
