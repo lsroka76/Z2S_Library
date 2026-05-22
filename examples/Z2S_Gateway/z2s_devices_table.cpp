@@ -9694,29 +9694,79 @@ bool Z2S_add_action(
 
   if (condition) {
 
+    Supla::ConditionGetter *em_condition_getter = nullptr;
+    
+    if (src_element->getChannel() && 
+       (src_element->getChannel()->getChannelType() ==
+        SUPLA_CHANNELTYPE_ELECTRICITY_METER)) 
+      em_condition_getter = EmTotalPowerActiveW();
+    
     switch (Supla_event) {
 
-      case Supla::ON_LESS:  
-        Supla_condition = OnLess(threshold_1); break;
+      
+      case Supla::ON_LESS:
+        
+        if (em_condition_getter)
+          Supla_condition = OnLess(threshold_1, em_condition_getter);
+        else 
+          Supla_condition = OnLess(threshold_1); 
+      break;
+
       
       case Supla::ON_LESS_EQ:
-        Supla_condition = OnLessEq(threshold_1); break;
+        
+        if (em_condition_getter)
+          Supla_condition = OnLessEq(threshold_1, em_condition_getter);
+        else
+          Supla_condition = OnLessEq(threshold_1); 
+      break;
+
       
       case Supla::ON_GREATER:
-        Supla_condition = OnGreater(threshold_1); break;
+        
+        if (em_condition_getter)
+          Supla_condition = OnGreater(threshold_1, em_condition_getter);
+        else
+          Supla_condition = OnGreater(threshold_1); 
+      break;
+
       
       case Supla::ON_GREATER_EQ:
-        Supla_condition = OnGreaterEq(threshold_1); break;
+        
+        if (em_condition_getter)
+          Supla_condition = OnGreaterEq(threshold_1, em_condition_getter);
+        else
+          Supla_condition = OnGreaterEq(threshold_1); 
+      break;
+
       
       case Supla::ON_BETWEEN:
-        Supla_condition = OnBetween(threshold_1, threshold_2); break;
+
+        if (em_condition_getter)
+          Supla_condition = OnBetween(threshold_1, threshold_1, treshold_2, em_condition_getter);
+        else
+          Supla_condition = OnBetween(threshold_1, threshold_2); 
+      break;
+
       
       case Supla::ON_BETWEEN_EQ:
-        Supla_condition = OnBetweenEq(threshold_1, threshold_2); break;
+        
+        if (em_condition_getter)
+          Supla_condition = OnBetweenEq(threshold_1, threshold_2, em_condition_get6ter);
+        else
+          Supla_condition = OnBetweenEq(threshold_1, threshold_2); 
+      break;
+
       
       case Supla::ON_EQUAL:
-        Supla_condition = OnEqual(threshold_1); break;
+        
+        if (em_condition_getter)
+          Supla_condition = OnEqual(threshold_1, em_condition_getter);
+        else
+          Supla_condition = OnEqual(threshold_1); 
+      break;
     }
+    
     if (Supla_condition == nullptr) {
 
       log_i("unknown Supla condition - adding failed!");
