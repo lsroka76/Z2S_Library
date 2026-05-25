@@ -12,6 +12,12 @@ void initZ2SDeviceIASzone(int16_t channel_number_slot) {
   Supla_Z2S_VirtualBinary->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
 
+  Supla_Z2S_VirtualBinary->setZ2SZbDevice(
+      Z2S_getChannelZbDevicePtr(channel_number_slot));
+
+  Supla_Z2S_VirtualBinary->setZ2SChannel(
+    Z2S_getChannelPtr(channel_number_slot));
+
   if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
     Supla_Z2S_VirtualBinary->setInitialCaption(
       z2s_channels_table[channel_number_slot].Supla_channel_name);

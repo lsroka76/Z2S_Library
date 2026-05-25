@@ -10,6 +10,13 @@ void initZ2SDevicePressure(int16_t channel_number_slot) {
   Supla_VirtualPressure->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
 
+  Supla_VirtualPressure->setZ2SZbDevice(
+      Z2S_getChannelZbDevicePtr(channel_number_slot));
+
+  Supla_VirtualPressure->setZ2SChannel(
+    Z2S_getChannelPtr(channel_number_slot));
+
+
   if (z2s_channels_table[channel_number_slot].user_data_flags & 
       USER_DATA_FLAG_SET_SORWNS_ON_START) {
       

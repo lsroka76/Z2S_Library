@@ -34,7 +34,8 @@
 
 namespace Supla {
 namespace Sensor {
-class Z2S_VirtualThermometer : public Supla::Sensor::VirtualThermometer {
+class Z2S_VirtualThermometer : public Supla::Sensor::VirtualThermometer,
+  public Z2S_Core {
   
 public:
     
@@ -45,18 +46,6 @@ public:
     _rwns_flag = rwns_flag;
   }
 
-  
-  void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device) {
-
-    _z2s_zb_device = z2s_zb_device;
-  }
-
-
-  z2s_zb_device_params_t *getZ2SZbDevice() {
-
-    return _z2s_zb_device;
-  }
-  
   void setTimeoutSecs(uint32_t timeout_secs) {
     
     _timeout_ms = timeout_secs * 1000;
@@ -124,8 +113,6 @@ public:
   }
     
  protected:
-
-  z2s_zb_device_params_t *_z2s_zb_device = nullptr;
 
   bool     _rwns_flag;
   bool     _forced_temperature = false;

@@ -89,6 +89,9 @@ void initZ2SDeviceVirtualRelay(
     
     Supla_Z2S_RollerShutter->setRSIgnoreMovingDirection(
       z2s_rs_ignore_moving_direction);
+
+    Supla_Z2S_RollerShutter->setZ2SZbDevice(
+      Z2S_getChannelZbDevicePtr(channel_number_slot));
     
     Supla_Z2S_RollerShutter->setZ2SChannel(
       Z2S_getChannelPtr(channel_number_slot));
@@ -255,6 +258,9 @@ void initZ2SDeviceVirtualRelay(
 
     Supla_Z2S_VirtualRelay->setZ2SZbDevice(
       Z2S_getChannelZbDevicePtr(channel_number_slot));
+
+    Supla_Z2S_VirtualRelay->setZ2SChannel(
+      Z2S_getChannelPtr(channel_number_slot));
 
 
     switch (z2s_channels_table[channel_number_slot].model_id) {
