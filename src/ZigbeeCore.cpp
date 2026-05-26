@@ -43,9 +43,10 @@ ZigbeeCore::ZigbeeCore() {
 ZigbeeCore::~ZigbeeCore() {}
 
 //forward declaration
-static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id, 
-                                   const void *message);
+static esp_err_t zb_action_handler(
+  esp_zb_core_action_callback_id_t callback_id, const void *message);
 bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind);
+static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm);
 
 static void set_zb_broadcast_ep_handler2();
 
@@ -537,7 +538,7 @@ bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind) {
   return false;  //False to let the stack process the message as usual
 }
 
-void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm)
+static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm)
 {
      // Nothing to do
 }
