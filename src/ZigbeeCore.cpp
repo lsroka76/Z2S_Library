@@ -153,7 +153,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
     log_e("Failed to set overall network size");
     return false;
   }
-  err = esp_zb_io_buffer_size_set(254);
+  err = esp_zb_io_buffer_size_set(192);
   if (err != ESP_OK) {  
     log_e("Failed to set IO buffer size");
     return false;
@@ -233,6 +233,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
 
   // Register APSDATA INDICATION handler to catch bind/unbind requests
   esp_zb_aps_data_indication_handler_register(zb_apsde_data_indication_handler);
+  esp_zb_aps_data_confirm_handler_register(zb_apsde_data_confirm_handler);
 
   //Erase NVRAM before creating connection to new Coordinator
   if (erase_nvs) {
@@ -534,6 +535,11 @@ bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind) {
     log_e("APSDE INDICATION - Invalid status of APSDE-DATA indication, error code: %d", ind.status);
   }*/
   return false;  //False to let the stack process the message as usual
+}
+
+static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm)
+{
+     // Nothing to do
 }
 
 void ZigbeeCore::factoryReset() {
