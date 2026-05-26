@@ -537,7 +537,7 @@ bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind) {
   return false;  //False to let the stack process the message as usual
 }
 
-static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm)
+void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm)
 {
      // Nothing to do
 }
