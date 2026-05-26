@@ -1017,6 +1017,9 @@ if (client2 && client2.connected()) {
 
      if (cmd_pos >= 0 ) {
 
+      client2.print("OK\n");
+      client2.stop();
+
       Serial.printf("cmd pos %u\n\r", cmd_pos);
       String helper;
       helper.reserve(64);
@@ -1092,9 +1095,8 @@ if (client2 && client2.connected()) {
             RTH_VALUE_TYPE_HUMIDITY, cmd_humidity_value);
         } break;
       }      
-      client2.print("OK\n");
-     }
-     client2.stop();
+     } else
+      client2.stop();
    }
 
 if (Z2S_isGUIStarted())

@@ -524,13 +524,13 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
     switch (Supla_element->getChannel()->getChannelType()) {
 
 
-      /*case SUPLA_CHANNELTYPE_BINARYSENSOR: {
+      case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
         auto Supla_Z2S_VirtualBinary = static_cast<
           Supla::Sensor::Z2S_VirtualBinary *>(Supla_element);
         
         return static_cast<Z2S_Core *>(Supla_Z2S_VirtualBinary);
-      } break;*/
+      } break;
 
 
       case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
@@ -542,15 +542,16 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
       } break;
 
 
-      /*case SUPLA_CHANNELTYPE_THERMOMETER: {
+      case SUPLA_CHANNELTYPE_THERMOMETER: {
 
         if (z2s_channels_table[channel_number_slot].local_channel_type ==
             LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
 
-          auto Supla_Z2S_RemoteThermometer = static_cast<
+          /*auto Supla_Z2S_RemoteThermometer = static_cast<
             Supla::Sensor::Z2S_RemoteThermometer *>(Supla_element);
           
-          return static_cast<Z2S_Core *>(Supla_Z2S_RemoteThermometer);
+          return static_cast<Z2S_Core *>(Supla_Z2S_RemoteThermometer);*/
+          return nullptr;
 
         }
 
@@ -558,16 +559,16 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
           Supla::Sensor::Z2S_VirtualThermometer *>(Supla_element);
 
         return static_cast<Z2S_Core *>(Supla_Z2S_VirtualThermometer);
-      } break;*/
+      } break;
 
 
-      /*case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
+      case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
         auto Supla_Z2S_VirtualPressure = static_cast<
           Supla::Sensor::Z2S_VirtualPressure *>(Supla_element);
 
-        return static_cast<Z2S_Core *>(Z2S_VirtualPressure);
-      } break;*/
+        return static_cast<Z2S_Core *>(Supla_Z2S_VirtualPressure);
+      } break;
 
 
       case SUPLA_CHANNELTYPE_RELAY: {
@@ -588,13 +589,13 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
       } break;
       
 
-      /*case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
+      case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
         auto Supla_Z2S_ElectricityMeter = static_cast<
           Supla::Sensor::Z2S_ElectricityMeter *>(Supla_element);
 
         return static_cast<Z2S_Core *>(Supla_Z2S_ElectricityMeter);
-      } break;*/
+      } break;
 
 
       case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE: {
