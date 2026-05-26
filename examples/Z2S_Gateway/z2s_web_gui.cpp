@@ -1069,12 +1069,15 @@ void fillMemoryUptimeInformation(char *buf) {
 		snprintf_P(buf, 1024, PSTR("<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
 						"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
 						"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
-						"<b><i>uxTaskGetStackHighWaterMark:</b></i> %u B <br>"
+						"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
+						"uxTaskGetStackHighWaterMark (Zigbee):</b></i> %u B<br>"
 						"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
 						"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s"), 
 						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), 
-						ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), 
-						uxTaskGetStackHighWaterMark(NULL),
+						ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), 
+						ESP.getMaxAllocHeap(), 
+						uxTaskGetStackHighWaterMark(NULL), 
+						uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()),
 						ESP.getPsramSize(), ESP.getFreePsram(), 
 						ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
 
