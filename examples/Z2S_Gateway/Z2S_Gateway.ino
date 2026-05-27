@@ -1099,10 +1099,9 @@ if (client2 && client2.connected()) {
       client2.stop();
    }
 
-if (Z2S_isGUIStarted())
-      Z2S_loopWebGUI();
+  if (Z2S_isGUIStarted())
+    Z2S_loopWebGUI();
 
-  
   if (Zigbee.started() && 
      (millis() - _time_cluster_last_refresh_ms > TIME_CLUSTER_REFRESH_MS)) {
 
