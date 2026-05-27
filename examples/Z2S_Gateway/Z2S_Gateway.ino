@@ -1126,8 +1126,6 @@ if (client2 && client2.connected()) {
     esp_zb_zcl_set_attribute_val(
       1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
       ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &new_local_time, false);
-
-    esp_zb_lock_release();
     
     uint32_t utc_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(
       1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
@@ -1141,9 +1139,12 @@ if (client2 && client2.connected()) {
       1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
       ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID)->data_p);
 
-    log_i("\n\rLocal Time Cluster Time status attribute %u"
-          "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
-          time_status_attribute, utc_time_attribute, local_time_attribute);
+    esp_zb_lock_release();
+
+    log_i(
+      "\n\rLocal Time Cluster Time status attribute %u"
+      "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
+      time_status_attribute, utc_time_attribute, local_time_attribute);
 
     for (uint8_t devices_counter = 0; 
          devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
@@ -1171,8 +1172,8 @@ if (client2 && client2.connected()) {
 
     
 
-    if (Z2S_isGUIStarted())
-      Z2S_updateWebGUI();
+    //if (Z2S_isGUIStarted())
+    //  Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
   }
@@ -1203,14 +1204,14 @@ if (client2 && client2.connected()) {
 
     if (refresh_cycle == 30) {
 
-      log_i(
+      /*log_i(
         "\n\rMemory information:\n\rFlash chip real size: %u B"
         "\n\rFree Sketch Space: %u B\n\rHeapSize: %u B\n\rFree Heap: %u B"
         "\n\rMaxAllocHeap: %u B\n\rMinimal Free Heap: %u B"
 				"\n\rSupla uptime: %lu s", ESP.getFlashChipSize(), 
         ESP.getFreeSketchSpace(), ESP.getHeapSize(), ESP.getFreeHeap(), 
         ESP.getMaxAllocHeap(), ESP.getMinFreeHeap(),  
-        SuplaDevice.uptime.getUptime());
+        SuplaDevice.uptime.getUptime());*/
 
       //printTaskInfo();
     }
