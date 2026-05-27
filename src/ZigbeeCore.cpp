@@ -242,7 +242,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
   }
 
   // Create Zigbee task and start Zigbee stack
-  xTaskCreate(esp_zb_task, "Zigbee_main", 8192, NULL, 10, &_zigbee_task_handle);
+  xTaskCreate(esp_zb_task, "Zigbee_main", 8192, NULL, 15, &_zigbee_task_handle);
 
   return true;
 }
