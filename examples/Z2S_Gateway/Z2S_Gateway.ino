@@ -1212,7 +1212,7 @@ if (client2 && client2.connected()) {
         ESP.getMaxAllocHeap(), ESP.getMinFreeHeap(),  
         SuplaDevice.uptime.getUptime());
 
-      printTaskInfo();
+      //printTaskInfo();
     }
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
