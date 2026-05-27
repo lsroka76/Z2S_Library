@@ -653,7 +653,7 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
-  auto test_element = Supla::Element::getElementByChannelNumber(8);
+  /*auto test_element = Supla::Element::getElementByChannelNumber(6);
 
   Supla::Control::Z2S_VirtualRelay *test_relay = static_cast<
     Supla::Control::Z2S_VirtualRelay *>(test_element);
@@ -667,7 +667,7 @@ void setup() {
     "relay(reinterpret): 0x%08X\n\rcore(static): 0x%08X, core(reinterpret): "
     "0x%08X", test_element, test_relay, test_relay2, test_core, test_core2);
     
-  test_core->test_func();
+  test_core->test_func();*/
 
   if (Supla::Storage::ConfigInstance()->getUInt8(
         Z2S_REBUILD_CHANNELS_ON_START, &_rebuild_Supla_channels_on_start)) {
