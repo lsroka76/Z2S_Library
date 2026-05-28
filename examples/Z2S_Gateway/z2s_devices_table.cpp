@@ -524,13 +524,13 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
     switch (Supla_element->getChannel()->getChannelType()) {
 
 
-      case SUPLA_CHANNELTYPE_BINARYSENSOR: {
+      /*case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
         auto Supla_Z2S_VirtualBinary = static_cast<
           Supla::Sensor::Z2S_VirtualBinary *>(Supla_element);
         
         return static_cast<Z2S_Core *>(Supla_Z2S_VirtualBinary);
-      } break;
+      } break;*/
 
 
       case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
@@ -542,16 +542,15 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
       } break;
 
 
-      case SUPLA_CHANNELTYPE_THERMOMETER: {
+      /*case SUPLA_CHANNELTYPE_THERMOMETER: {
 
         if (z2s_channels_table[channel_number_slot].local_channel_type ==
             LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
 
-          /*auto Supla_Z2S_RemoteThermometer = static_cast<
+          auto Supla_Z2S_RemoteThermometer = static_cast<
             Supla::Sensor::Z2S_RemoteThermometer *>(Supla_element);
           
-          return static_cast<Z2S_Core *>(Supla_Z2S_RemoteThermometer);*/
-          return nullptr;
+          return static_cast<Z2S_Core *>(Supla_Z2S_RemoteThermometer);
 
         }
 
@@ -559,16 +558,16 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
           Supla::Sensor::Z2S_VirtualThermometer *>(Supla_element);
 
         return static_cast<Z2S_Core *>(Supla_Z2S_VirtualThermometer);
-      } break;
+      } break;*/
 
 
-      case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
+      /*case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
         auto Supla_Z2S_VirtualPressure = static_cast<
           Supla::Sensor::Z2S_VirtualPressure *>(Supla_element);
 
-        return static_cast<Z2S_Core *>(Supla_Z2S_VirtualPressure);
-      } break;
+        return static_cast<Z2S_Core *>(Z2S_VirtualPressure);
+      } break;*/
 
 
       case SUPLA_CHANNELTYPE_RELAY: {
@@ -589,13 +588,13 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
       } break;
       
 
-      case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
+      /*case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
         auto Supla_Z2S_ElectricityMeter = static_cast<
           Supla::Sensor::Z2S_ElectricityMeter *>(Supla_element);
 
         return static_cast<Z2S_Core *>(Supla_Z2S_ElectricityMeter);
-      } break;
+      } break;*/
 
 
       case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE: {
@@ -9695,79 +9694,29 @@ bool Z2S_add_action(
 
   if (condition) {
 
-    Supla::ConditionGetter *em_condition_getter = nullptr;
-    
-    if (src_element->getChannel() && 
-       (src_element->getChannel()->getChannelType() ==
-        SUPLA_CHANNELTYPE_ELECTRICITY_METER)) 
-      em_condition_getter = EmTotalPowerActiveW();
-    
     switch (Supla_event) {
 
-      
-      case Supla::ON_LESS:
-        
-        if (em_condition_getter)
-          Supla_condition = OnLess(threshold_1, em_condition_getter);
-        else 
-          Supla_condition = OnLess(threshold_1); 
-      break;
-
+      case Supla::ON_LESS:  
+        Supla_condition = OnLess(threshold_1); break;
       
       case Supla::ON_LESS_EQ:
-        
-        if (em_condition_getter)
-          Supla_condition = OnLessEq(threshold_1, em_condition_getter);
-        else
-          Supla_condition = OnLessEq(threshold_1); 
-      break;
-
+        Supla_condition = OnLessEq(threshold_1); break;
       
       case Supla::ON_GREATER:
-        
-        if (em_condition_getter)
-          Supla_condition = OnGreater(threshold_1, em_condition_getter);
-        else
-          Supla_condition = OnGreater(threshold_1); 
-      break;
-
+        Supla_condition = OnGreater(threshold_1); break;
       
       case Supla::ON_GREATER_EQ:
-        
-        if (em_condition_getter)
-          Supla_condition = OnGreaterEq(threshold_1, em_condition_getter);
-        else
-          Supla_condition = OnGreaterEq(threshold_1); 
-      break;
-
+        Supla_condition = OnGreaterEq(threshold_1); break;
       
       case Supla::ON_BETWEEN:
-
-        if (em_condition_getter)
-          Supla_condition = OnBetween(threshold_1, threshold_2, em_condition_getter);
-        else
-          Supla_condition = OnBetween(threshold_1, threshold_2); 
-      break;
-
+        Supla_condition = OnBetween(threshold_1, threshold_2); break;
       
       case Supla::ON_BETWEEN_EQ:
-        
-        if (em_condition_getter)
-          Supla_condition = OnBetweenEq(threshold_1, threshold_2, em_condition_getter);
-        else
-          Supla_condition = OnBetweenEq(threshold_1, threshold_2); 
-      break;
-
+        Supla_condition = OnBetweenEq(threshold_1, threshold_2); break;
       
       case Supla::ON_EQUAL:
-        
-        if (em_condition_getter)
-          Supla_condition = OnEqual(threshold_1, em_condition_getter);
-        else
-          Supla_condition = OnEqual(threshold_1); 
-      break;
+        Supla_condition = OnEqual(threshold_1); break;
     }
-    
     if (Supla_condition == nullptr) {
 
       log_i("unknown Supla condition - adding failed!");
