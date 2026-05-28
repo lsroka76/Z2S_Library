@@ -5,7 +5,6 @@
 
 
 #include <esp_task_wdt.h>
-#include <driver/rtc_io.h>
 #include <rtc_wdt.h>
 
 #include <ESPmDNS.h>
