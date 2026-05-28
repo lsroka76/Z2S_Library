@@ -5,7 +5,7 @@
 
 
 #include <esp_task_wdt.h>
-#include <rtc_wdt.h>
+//#include <rtc_wdt.h>
 
 #include <ESPmDNS.h>
 #include <esp_coexist.h>
@@ -934,8 +934,8 @@ void setup() {
   //disableCore1WDT();
   disableLoopWDT();
   esp_task_wdt_delete(NULL);
-  rtc_wdt_protect_off();
-  rtc_wdt_disable();
+  //rtc_wdt_protect_off();
+  //rtc_wdt_disable();
 }
 
 zbg_device_params_t *gateway_device;
