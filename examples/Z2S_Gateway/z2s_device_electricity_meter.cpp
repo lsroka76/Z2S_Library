@@ -90,7 +90,11 @@ void initZ2SDeviceElectricityMeter(
           (strcmp(
             Z2S_getZbDeviceManufacturerName(
               z2s_channels_table[channel_number_slot].Zb_device_id),
-              "_TZ3210_2uollq9d") == 0)) {
+              "_TZ3210_2uollq9d") == 0) ||
+          (strcmp(
+            Z2S_getZbDeviceManufacturerName(
+              z2s_channels_table[channel_number_slot].Zb_device_id),
+              "_TZ3000_w0qqde0g") == 0)) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;
@@ -338,6 +342,13 @@ void initZ2SDeviceElectricityMeter(
 
   auto Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(
     gateway, device, _isTuya, _active_query, _one_phase);
+
+  Supla_Z2S_ElectricityMeter->setZ2SZbDevice(
+    Z2S_getChannelZbDevicePtr(channel_number_slot));
+
+  Supla_Z2S_ElectricityMeter->setZ2SChannel(
+    Z2S_getChannelPtr(channel_number_slot));
+
     
   if (strcmp(Z2S_getZbDeviceManufacturerName(
        z2s_channels_table[channel_number_slot].Zb_device_id),
@@ -411,8 +422,7 @@ void initZ2SDeviceElectricityMeter(
 
     ieee_addr_to_str(ieee_addr_str, channel_extended_data_em.ieee_addr);
 
-    log_i("em ext data ieee address: %s", 
-          ieee_addr_str);
+    log_i("em ext data ieee address: %s", ieee_addr_str);
       
 
     if (memcmp(

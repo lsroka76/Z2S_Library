@@ -10,16 +10,24 @@ void initZ2SDeviceVirtualValve(
 
   switch (z2s_channels_table[channel_number_slot].model_id) {
 
-    case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY: 
-      z2s_function = Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY; break;
-  }
 
+    case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY: 
+      
+      z2s_function = Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY; 
+    break;
+  }
   
   auto Supla_Z2S_VirtualValve = 
     new Supla::Control::Z2S_VirtualValve(gateway, device, true, z2s_function);
   
   Supla_Z2S_VirtualValve->getChannel()->setChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
+
+  Supla_Z2S_VirtualValve->setZ2SZbDevice(
+      Z2S_getChannelZbDevicePtr(channel_number_slot));
+
+  Supla_Z2S_VirtualValve->setZ2SChannel(
+    Z2S_getChannelPtr(channel_number_slot));
 
   if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
     Supla_Z2S_VirtualValve->setInitialCaption(

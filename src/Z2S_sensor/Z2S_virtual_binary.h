@@ -23,7 +23,7 @@
 
 namespace Supla {
 namespace Sensor {
-class Z2S_VirtualBinary : public Supla::Sensor::VirtualBinary {
+class Z2S_VirtualBinary : public Supla::Sensor::VirtualBinary, public Z2S_Core {
   
 public:
     
@@ -73,22 +73,34 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
 
   void iterateAlways() override {
 
-    if (millis() - lastReadTime > readIntervalMs) {
-      lastReadTime = millis();
+    uint32_t millis_ms = millis();
+
+    if (millis_ms - lastReadTime > readIntervalMs) {
+      lastReadTime = millis_ms;
       channel.setNewValue(getValue());
     }
     
-    if ((_timeout_ms > 0) && (millis() - _last_timeout_ms > _timeout_ms)) {
+    if (_timeout_ms) {
       
-      _last_timeout_ms = millis();
+      if (_z2s_zb_device && 
+          (_z2s_zb_device->last_seen_ms > _last_timeout_ms)) {
 
-      if (_rwns_flag) 
-        channel.setStateOfflineRemoteWakeupNotSupported();
-      else
-        channel.setStateOffline();
+        _last_timeout_ms = _z2s_zb_device->last_seen_ms;
+        channel.setStateOnline();
+      }
+
+      if ((millis_ms - _last_timeout_ms) > _timeout_ms) {
+      
+        _last_timeout_ms = millis_ms;
+
+        if (_rwns_flag) 
+          channel.setStateOfflineRemoteWakeupNotSupported();
+        else
+          channel.setStateOffline();
+      }
     }
-
-    if (_auto_set_ms && _last_clear_ms && (millis() - _last_clear_ms > _auto_set_ms))
+    if (_auto_set_ms && _last_clear_ms && 
+        (millis_ms - _last_clear_ms > _auto_set_ms))
 	    extSet();
   }
 

@@ -69,6 +69,9 @@ void initZ2SDeviceTempHumidity(
     Supla_Z2S_VirtualThermHygroMeter->setTimeoutSecs(
       z2s_channels_table[channel_number_slot].timeout_secs);
 
+    Supla_Z2S_VirtualThermHygroMeter->setZ2SZbDevice(
+    Z2S_getChannelZbDevicePtr(channel_number_slot));
+
     Supla_Z2S_VirtualThermHygroMeter->setZ2SChannel(
       Z2S_getChannelPtr(channel_number_slot));
 
@@ -109,6 +112,9 @@ void initZ2SDeviceTempHumidity(
 
     Supla_Z2S_VirtualThermometer->setZ2SZbDevice(
       Z2S_getChannelZbDevicePtr(channel_number_slot));
+
+    Supla_Z2S_VirtualThermometer->setZ2SChannel(
+      Z2S_getChannelPtr(channel_number_slot));
   }
 }
 

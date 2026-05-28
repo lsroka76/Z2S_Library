@@ -24,7 +24,7 @@
 
 namespace Supla {
 namespace Sensor {
-class Z2S_VirtualPressure : public Pressure {
+class Z2S_VirtualPressure : public Pressure, public Z2S_Core {
  
 public:
   
@@ -47,21 +47,33 @@ public:
   }
 
   void iterateAlways() override {
+
+    uint32_t millis_ms = millis();
     
-    if (millis() - lastReadTime > 10000) {
+    if (millis_ms - lastReadTime > 10000) {
       
-      lastReadTime = millis();
+      lastReadTime = millis_ms;
       channel.setNewValue(getValue());
     }
 
-    if ((_timeout_ms > 0) && (millis() - _last_timeout_ms > _timeout_ms)) {
+    if (_timeout_ms) {
       
-      _last_timeout_ms = millis();
+      if (_z2s_zb_device && 
+          (_z2s_zb_device->last_seen_ms > _last_timeout_ms)) {
 
-      if (_rwns_flag) 
-        channel.setStateOfflineRemoteWakeupNotSupported();
-      else
-        channel.setStateOffline();
+        _last_timeout_ms = _z2s_zb_device->last_seen_ms;
+        channel.setStateOnline();
+      }
+
+      if ((millis_ms - _last_timeout_ms) > _timeout_ms) {
+      
+        _last_timeout_ms = millis_ms;
+
+        if (_rwns_flag) 
+          channel.setStateOfflineRemoteWakeupNotSupported();
+        else
+          channel.setStateOffline();
+      }
     }
   }
 
