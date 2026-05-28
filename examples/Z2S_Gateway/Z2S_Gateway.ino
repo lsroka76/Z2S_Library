@@ -3,6 +3,11 @@
 
 #define Z2S_GATEWAY
 
+
+#include <esp_task_wdt.h>
+#include <driver/rtc_io.h>
+//#include "soc/rtc_wdt.h"
+
 #include <ESPmDNS.h>
 #include <esp_coexist.h>
 #include <esp_heap_caps.h>
@@ -925,6 +930,13 @@ void setup() {
     test_joined_device.model_id = Z2S_DEVICE_DESC_TEMPERATURE_SENSOR;
     
     Z2S_addZ2SDevice(&test_joined_device);*/
+
+  disableCore0WDT();
+  disableCore1WDT();
+  disableLoopWDT();
+  esp_task_wdt_delete(NULL);
+  rtc_wdt_protect_off();
+  rtc_wdt_disable();
 }
 
 zbg_device_params_t *gateway_device;
@@ -1172,8 +1184,8 @@ if (client2 && client2.connected()) {
 
     
 
-    //if (Z2S_isGUIStarted())
-    //  Z2S_updateWebGUI();
+    if (Z2S_isGUIStarted())
+      Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
   }
