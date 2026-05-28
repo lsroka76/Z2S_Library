@@ -6,7 +6,7 @@
 
 #include <esp_task_wdt.h>
 #include <driver/rtc_io.h>
-//#include "soc/rtc_wdt.h"
+#include "rtc_wdt.h"
 
 #include <ESPmDNS.h>
 #include <esp_coexist.h>
@@ -932,7 +932,7 @@ void setup() {
     Z2S_addZ2SDevice(&test_joined_device);*/
 
   disableCore0WDT();
-  disableCore1WDT();
+  //disableCore1WDT();
   disableLoopWDT();
   esp_task_wdt_delete(NULL);
   rtc_wdt_protect_off();
