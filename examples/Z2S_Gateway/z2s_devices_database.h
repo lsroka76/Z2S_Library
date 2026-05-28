@@ -3349,7 +3349,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
-      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},  
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
+
+  {	.manufacturer_name = "_TZ3000_ocjlo4ea", .model_name = "TS0207",
+    .z2s_device_uid = 4805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B}},  
 
   {	.manufacturer_name = "_TZ3000_wuep9zng", .model_name = "TS0207",
     .z2s_device_uid = 4900,
