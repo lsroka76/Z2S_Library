@@ -533,13 +533,13 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
       } break;*/
 
 
-      case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
+      /*case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
         auto Supla_Z2S_VirtualThermHygroMeter = static_cast<
           Supla::Sensor::Z2S_VirtualThermHygroMeter *>(Supla_element);
 
         return static_cast<Z2S_Core *>(Supla_Z2S_VirtualThermHygroMeter);
-      } break;
+      } break;*/
 
 
       /*case SUPLA_CHANNELTYPE_THERMOMETER: {
@@ -7148,10 +7148,7 @@ uint8_t Z2S_addZ2SDevice(
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
         }
 
-        //addZ2SDevicePressure(device, first_free_slot); 
-        addZ2SDeviceGeneralPurposeMeasurement(
-          device, first_free_slot, NO_CUSTOM_CMD_SID, "PRESSURE", 
-          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kPa"); 
+        addZ2SDevicePressure(device, first_free_slot);
       } break;
 
 /*****************************************************************************/
@@ -9509,10 +9506,7 @@ void updateRemoteThermometer(
       (strcmp(Z2S_getZbDeviceModelName(
         z2s_channels_table[channel_number_slot].Zb_device_id), 
         "SNZB-02DR2") == 0))  {
-
-    auto Z2S_SNZB02DR2ThermHygroMeter = 
-      static_cast<Supla::Sensor::Z2S_SNZB02DR2ThermHygroMeter *>(element);
-
+     
     uint8_t temperature_selector = 1;
 
     zbg_device_params_t device = {};
@@ -9541,9 +9535,6 @@ void updateRemoteThermometer(
           &device, SONOFF_CUSTOM_CLUSTER, 
           SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
           ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &sonoff_external_value);
-
-        Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature(
-          sonoff_external_value);
       } break;
 
 
@@ -9553,8 +9544,6 @@ void updateRemoteThermometer(
           &device, SONOFF_CUSTOM_CLUSTER, 
           SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &sonoff_external_value);
-        Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity(
-          sonoff_external_value);
       } break;
     }
   }

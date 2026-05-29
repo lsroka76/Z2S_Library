@@ -120,7 +120,6 @@ union {
 union {  
   uint32_t            refresh_secs;
   uint32_t            debounce_ms;
-  uint32_t            resent_secs;
 };
 union {
   struct {
@@ -169,17 +168,12 @@ public:
   void updateShortAddress(uint16_t short_addr)  {
 
     _device.short_addr = short_addr;
-  };
+  }
 
   void test_func() { 
   
-    log_i("sent from core!"); 
-  };
-
-  virtual uint32_t getID() {
-
-    return 0;
-  };
+  log_i("sent from core!"); 
+};
 
 protected:
 

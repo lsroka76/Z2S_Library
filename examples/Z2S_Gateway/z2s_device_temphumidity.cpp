@@ -20,25 +20,9 @@ void initZ2SDeviceTempHumidity(
   
   if (thermhygrometer) {
 
-    Supla::Sensor::Z2S_VirtualThermHygroMeter 
-      *Supla_Z2S_VirtualThermHygroMeter = nullptr;
+    auto Supla_Z2S_VirtualThermHygroMeter = 
+      new Supla::Sensor::Z2S_VirtualThermHygroMeter();
 
-    if (strcmp(Z2S_getZbDeviceModelName(
-        z2s_channels_table[channel_number_slot].Zb_device_id), 
-        "SNZB-02DR2") == 0) {
-
-      auto Z2S_SNZB02DR2ThermHygroMeter = 
-        new Supla::Sensor::Z2S_SNZB02DR2ThermHygroMeter;
-
-      Supla_Z2S_VirtualThermHygroMeter = Z2S_SNZB02DR2ThermHygroMeter;
-
-      Z2S_SNZB02DR2ThermHygroMeter->setResentSecs(300);
-        //z2s_channels_table[channel_number_slot].refresh_secs);
-    }
-    else 
-      Supla_Z2S_VirtualThermHygroMeter = 
-        new Supla::Sensor::Z2S_VirtualThermHygroMeter;
-    
     Supla_Z2S_VirtualThermHygroMeter->getChannel()->setChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
 
@@ -68,9 +52,6 @@ void initZ2SDeviceTempHumidity(
 
     Supla_Z2S_VirtualThermHygroMeter->setTimeoutSecs(
       z2s_channels_table[channel_number_slot].timeout_secs);
-
-    Supla_Z2S_VirtualThermHygroMeter->setZ2SChannel(
-      Z2S_getChannelPtr(channel_number_slot));
 
   } else {
 
