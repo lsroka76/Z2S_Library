@@ -338,10 +338,6 @@ void initZ2SDeviceHvac(
 
   Supla_Z2S_TRVInterface->setZ2SZbDevice(
     Z2S_getChannelZbDevicePtr(channel_number_slot));
-
-  Supla_Z2S_TRVInterface->setZ2SChannel(
-    Z2S_getChannelPtr(channel_number_slot));
-
 }
 
 /*****************************************************************************/

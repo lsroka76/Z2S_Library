@@ -5,8 +5,6 @@
 #include <supla/log_wrapper.h>
 #include <supla/sensor/electricity_meter.h>
 #include "ZigbeeGateway.h"
-#include "TuyaDatapoints.h"
-#include "Z2S_common.h"
 
 #define CHANNEL_EXTENDED_DATA_TYPE_EM 0x01
 
@@ -25,12 +23,12 @@ typedef struct channel_extended_data_em_s {
 namespace Supla {
 namespace Sensor {
 
-class Z2S_ElectricityMeter : public ElectricityMeter, public Z2S_Core {
+class Z2S_ElectricityMeter : public ElectricityMeter {
  public:
   Z2S_ElectricityMeter(
     ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, 
     bool active_query = false, bool one_phase = true) : 
-    _one_phase(one_phase) {
+    _gateway(gateway), _one_phase(one_phase) {
 	
     memcpy(&_device, device, sizeof(zbg_device_params_t));
 	
@@ -397,7 +395,7 @@ void setRvrBalancedEnergy2(uint64_t energy) {
 
 void onInit() override {
   
-  if (_timeout_ms)
+  if (_timeout_enabled)
     getChannel()->setStateOffline();
 }
 
@@ -447,15 +445,23 @@ void resetStorage() {
   channel_extended_data_em.total_reverse_active_energy_balanced_counter = 
     total_reverse_active_energy_balanced_counter;
 
-  zbGateway.requestDataSave(
+  _gateway->requestDataSave(
     getChannelNumber(), 16, CHANNEL_EXTENDED_DATA_TYPE_EM, 
     (uint8_t *)&channel_extended_data_em);
+
+/*
+  _energy_initial_counter = emValue.total_forward_active_energy[0];
+  if (_data_counter) {
+  
+  *_data_counter = _energy_initial_counter;
+  _gateway->requestDataSave(0);
+  }*/
 }
 
 
   void initZigbee() {
 	
-    if (Zigbee.started()) {
+    if (_gateway && Zigbee.started()) {
       
       uint16_t em_attributes[8] = { 
         ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, 
@@ -471,11 +477,11 @@ void resetStorage() {
                                     ESP_ZB_ZCL_ATTR_METERING_DIVISOR_ID };
                                   
 
-      zbGateway.sendAttributesRead(
+      _gateway->sendAttributesRead(
         &_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 8, 
         &em_attributes[0]);
 
-      zbGateway.sendAttributesRead(
+      _gateway->sendAttributesRead(
         &_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 2, &sm_attributes[0]);
       
       if (_init_ms < 3600000)
@@ -490,27 +496,21 @@ void resetStorage() {
     ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
     ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID  };
 
-  if (Zigbee.started()) {
+  if (_gateway && Zigbee.started()) {
 
-    zbGateway.sendAttributesRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 3, 
-      &attributes[0]);
+    _gateway->sendAttributesRead(
+      &_device, 
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+      3, &attributes[0]);
 
-    zbGateway.sendAttributeRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+    _gateway->sendAttributeRead(
+      &_device, 
+      ESP_ZB_ZCL_CLUSTER_ID_METERING, 
       ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, 
       false);
-
-	  switch (getZbDeviceModelID()) {
-      
-      
-      case 0x4550:
-      case 0x4551:
-      
-        sendTuyaRequestCmdEnum8(&zbGateway, &_device, 0x23, 1);
-      break;
-    }
   }
+
+
 }
 
 void pong() {
@@ -526,19 +526,31 @@ void pong() {
 void setKeepAliveSecs(uint32_t keep_alive_secs) {
 
   _keep_alive_ms = keep_alive_secs * 1000;
+  if (_keep_alive_ms == 0) {
+    _keep_alive_enabled = false;
+    //getChannel()->setStateOnline();
+  } else
+    _keep_alive_enabled = true;
 }
 
   void setTimeoutSecs(uint32_t timeout_secs) {
 
   _timeout_ms = timeout_secs * 1000;
-
-  if (_timeout_ms == 0) 
+  if (_timeout_ms == 0) {
+    _timeout_enabled = false;
     getChannel()->setStateOnline();
+  } else
+    _timeout_enabled = true;
 }
 
 void setRefreshSecs(uint32_t refresh_secs) {
 
   _refresh_ms = refresh_secs * 1000;
+  if (_refresh_ms == 0) 
+    _refresh_enabled = false; 
+  else 
+    _refresh_enabled = true;
+ 
 }
 
 void setEnergyInitialCounters(
@@ -549,11 +561,12 @@ void setEnergyInitialCounters(
     total_forward_active_energy_counter[i] = 
       channel_extended_data_em->total_forward_active_energy_counter[i];
 
-    log_i(
-      "total_forward_active_energy_counter[%u] = %llu, " 
-      "channel_extended_data_em->total_forward_active_energy_counter[%u]"
-      " = %llu", i, total_forward_active_energy_counter[i], i,
-      channel_extended_data_em->total_forward_active_energy_counter[i]);
+    log_i("total_forward_active_energy_counter[%u] = %llu, " 
+          "channel_extended_data_em->total_forward_active_energy_counter[%u] = %llu",
+          i,
+          total_forward_active_energy_counter[i],
+          i,
+          channel_extended_data_em->total_forward_active_energy_counter[i]);
 
     total_reverse_active_energy_counter[i] = 
       channel_extended_data_em->total_reverse_active_energy_counter[i];
@@ -605,11 +618,10 @@ void iterateAlways() override {
     }
   }
 
-  if ((_refresh_ms) && ((millis() - _last_refresh_ms) > _refresh_ms)) {
-    if (true) {
+  if ((_refresh_enabled) && ((millis() - _last_refresh_ms) > _refresh_ms)) {
+    if (_gateway) {
       
-      if (_z2s_zb_device)
-        _last_seen_ms = _z2s_zb_device->last_seen_ms;
+      //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
       //if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
@@ -621,12 +633,10 @@ void iterateAlways() override {
     }
     _last_refresh_ms = millis();
   } else
-  if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
-    if (true) {
+  if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+    if (_gateway) {
       
-      if (_z2s_zb_device)
-        _last_seen_ms = _z2s_zb_device->last_seen_ms;
-
+      //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
         _last_ping_ms = millis();
@@ -637,23 +647,18 @@ void iterateAlways() override {
       }
     }
   }
-  if (_timeout_ms && getChannel()->isStateOnline() &&
-     ((millis() - _last_seen_ms) > _timeout_ms)) {
-
+  if (_timeout_enabled && getChannel()->isStateOnline() && ((millis() - _last_seen_ms) > _timeout_ms)) {
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
-
-    if (_z2s_zb_device)
-        _last_seen_ms = _z2s_zb_device->last_seen_ms;
-
-    log_i(
-      "current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
-
+    //_last_seen_ms = _gateway->getZbgDeviceUnitLastSeenMs(_device.short_addr);
+    log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
     if ((millis() - _last_seen_ms) > _timeout_ms)
       getChannel()->setStateOffline();
   }
 }
 
   protected:
+    ZigbeeGateway 	     *_gateway = nullptr;
+    zbg_device_params_t  _device;  
 
     //uint64_t		         *_data_counter = nullptr;
     //channel_extended_data_em_t *_ext_data = nullptr;
@@ -685,6 +690,10 @@ void iterateAlways() override {
     uint16_t _current_multiplier_modifier = 1;
     uint16_t _current_divisor_modifier    = 1;
 
+    bool _keep_alive_enabled = true;
+    bool _timeout_enabled    = true;
+    bool _refresh_enabled    = true;
+
     uint64_t  total_forward_active_energy_counter[3];
     uint64_t  total_reverse_active_energy_counter[3];
     uint64_t  total_forward_reactive_energy_counter[3];
@@ -692,9 +701,9 @@ void iterateAlways() override {
     uint64_t  total_forward_active_energy_balanced_counter;
     uint64_t  total_reverse_active_energy_balanced_counter;
     
-    uint32_t _refresh_ms    = 0;
-    uint32_t _keep_alive_ms = 0;
-    uint32_t _timeout_ms    = 0;
+    uint32_t _refresh_ms    = 30000;
+    uint32_t _keep_alive_ms = 30000;
+    uint32_t _timeout_ms    = 60000;
     uint32_t _init_ms       = 30000;
     
     uint32_t _last_ping_ms    = 0;

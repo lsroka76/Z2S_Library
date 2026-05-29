@@ -43,10 +43,9 @@ ZigbeeCore::ZigbeeCore() {
 ZigbeeCore::~ZigbeeCore() {}
 
 //forward declaration
-static esp_err_t zb_action_handler(
-  esp_zb_core_action_callback_id_t callback_id, const void *message);
+static esp_err_t zb_action_handler(esp_zb_core_action_callback_id_t callback_id, 
+                                   const void *message);
 bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind);
-static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm);
 
 static void set_zb_broadcast_ep_handler2();
 
@@ -234,7 +233,6 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
 
   // Register APSDATA INDICATION handler to catch bind/unbind requests
   esp_zb_aps_data_indication_handler_register(zb_apsde_data_indication_handler);
-  esp_zb_aps_data_confirm_handler_register(zb_apsde_data_confirm_handler);
 
   //Erase NVRAM before creating connection to new Coordinator
   if (erase_nvs) {
@@ -242,7 +240,7 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
   }
 
   // Create Zigbee task and start Zigbee stack
-  xTaskCreate(esp_zb_task, "Zigbee_main", 8192, NULL, 15, &_zigbee_task_handle);
+  xTaskCreate(esp_zb_task, "Zigbee_main", 8192, NULL, 5, NULL);
 
   return true;
 }
@@ -536,11 +534,6 @@ bool zb_apsde_data_indication_handler(esp_zb_apsde_data_ind_t ind) {
     log_e("APSDE INDICATION - Invalid status of APSDE-DATA indication, error code: %d", ind.status);
   }*/
   return false;  //False to let the stack process the message as usual
-}
-
-static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm)
-{
-     // Nothing to do
 }
 
 void ZigbeeCore::factoryReset() {

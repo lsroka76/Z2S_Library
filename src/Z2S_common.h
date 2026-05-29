@@ -176,19 +176,9 @@ public:
     log_i("sent from core!"); 
   };
 
-  /*virtual uint32_t getID() {
+  virtual uint32_t getID() {
 
     return 0;
-  };*/
-
-  uint32_t getZbDeviceModelID() {
-
-    return  _z2s_zb_device ? _z2s_zb_device->desc_id : 0;
-  };
-
-  uint32_t getChannelModelID() {
-
-    return _z2s_channel ? _z2s_channel->model_id : 0;
   };
 
 protected:
