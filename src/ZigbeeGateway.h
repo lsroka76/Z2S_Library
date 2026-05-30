@@ -453,11 +453,11 @@ public:
     uint16_t manuf_code = 0);
 
   void sendAttributesRead(
-    zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, 
+    zbg_device_params_t * device, uint16_t cluster_id, uint8_t attr_number, 
     uint16_t *attribute_ids);
 
   bool sendAttributeWrite(
-    zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, 
+    zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
     esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, 
     void *attribute_value, bool ack = false, uint8_t manuf_specific = 0, 
     uint16_t manuf_code = 0);
@@ -680,7 +680,8 @@ public:
     _on_device_leave = callback;
   }
   void onUpdateDeviceLastRssi(void (*callback)(uint16_t, int8_t)) {
-    _on_update_device_last_rssi = callback;
+    //_on_update_device_last_rssi = callback;
+    _on_update_device_last_rssi = nullptr;
   }
   void onFillOTABuffer(size_t (*callback)(uint8_t *, uint32_t, uint8_t)) {
     _on_fill_ota_buffer = callback;

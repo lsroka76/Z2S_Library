@@ -2255,7 +2255,7 @@ bool ZigbeeGateway::sendAttributeRead(
 }
 
 void ZigbeeGateway::sendAttributesRead(
-  zbg_device_params_t * device, int16_t cluster_id, uint8_t attr_number, 
+  zbg_device_params_t * device, uint16_t cluster_id, uint8_t attr_number, 
   uint16_t *attribute_ids) {
   
   if (_active_pairing)
@@ -2299,7 +2299,7 @@ void ZigbeeGateway::sendAttributesRead(
 /*****************************************************************************/
 
 bool ZigbeeGateway::sendAttributeWrite(
-  zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, 
+  zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
   esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, 
   void *attribute_value, bool ack, uint8_t manuf_specific, 
   uint16_t manuf_code) {
