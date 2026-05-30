@@ -2198,7 +2198,7 @@ void ZigbeeGateway::zbReadReportConfigResponse(
 }
 
 bool ZigbeeGateway::sendAttributeRead(
-  zbg_device_params_t * device, int16_t cluster_id, uint16_t attribute_id, 
+  zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
   bool ack, uint8_t direction,uint8_t disable_default_response, 
   uint8_t manuf_specific, uint16_t manuf_code) {
 

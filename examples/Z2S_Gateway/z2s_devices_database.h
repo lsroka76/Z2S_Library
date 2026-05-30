@@ -3349,6 +3349,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
+
+  {	.manufacturer_name = "_TZ3000_ocjlo4ea", .model_name = "TS0207",
+    .z2s_device_uid = 4805,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
       Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},  
 
   {	.manufacturer_name = "_TZ3000_wuep9zng", .model_name = "TS0207",
@@ -5926,6 +5935,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_cygcaxvv", .model_name = "TS0001",
+    .z2s_device_uid = 26430,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
     .z2s_device_uid = 26500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY,
@@ -6521,12 +6535,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "DIY_george1255", .model_name = "2ch_gate_router_contact",
     .z2s_device_uid = 35020, 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
-    .z2s_device_flags = 0,
-    .z2s_device_endpoints_count = 3,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS,
+    .z2s_device_endpoints_count = 4,
     .z2s_device_endpoints_count_m1 = 2,
     .z2s_device_endpoints = {
-      { 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },          
-      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },          
+      { 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },              
       { 3, 0, 0, Z2S_DEVICE_DESC_DIY_MAIL_SENSOR }}},
 
   { .manufacturer_name = "_TZE284_2gi1hy8s", .model_name = "TS0601",

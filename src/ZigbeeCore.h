@@ -106,6 +106,8 @@ private:
   zigbee_scan_result_t *_scan_result;
   SemaphoreHandle_t lock;
 
+  TaskHandle_t _zigbee_task_handle = NULL;
+
   bool zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs);
   static void scanCompleteCallback(esp_zb_zdp_status_t zdo_status, uint8_t count, esp_zb_network_descriptor_t *nwk_descriptor);
   const char *getDeviceTypeString(esp_zb_ha_standard_devices_t deviceId);
@@ -138,6 +140,11 @@ public:
   void setNetworkOpen(bool permit_joining) {
 
     _permit_joining = permit_joining;
+  }
+
+  TaskHandle_t getZigbeeTaskHandle() {
+
+    return _zigbee_task_handle;
   }
 
   void addEndpoint(ZigbeeEP *ep);

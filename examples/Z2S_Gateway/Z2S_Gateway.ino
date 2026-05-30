@@ -3,6 +3,10 @@
 
 #define Z2S_GATEWAY
 
+
+#include <esp_task_wdt.h>
+//#include <rtc_wdt.h>
+
 #include <ESPmDNS.h>
 #include <esp_coexist.h>
 #include <esp_heap_caps.h>
@@ -653,7 +657,7 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
-  auto test_element = Supla::Element::getElementByChannelNumber(8);
+  /*auto test_element = Supla::Element::getElementByChannelNumber(6);
 
   Supla::Control::Z2S_VirtualRelay *test_relay = static_cast<
     Supla::Control::Z2S_VirtualRelay *>(test_element);
@@ -667,7 +671,7 @@ void setup() {
     "relay(reinterpret): 0x%08X\n\rcore(static): 0x%08X, core(reinterpret): "
     "0x%08X", test_element, test_relay, test_relay2, test_core, test_core2);
     
-  test_core->test_func();
+  test_core->test_func();*/
 
   if (Supla::Storage::ConfigInstance()->getUInt8(
         Z2S_REBUILD_CHANNELS_ON_START, &_rebuild_Supla_channels_on_start)) {
@@ -925,6 +929,13 @@ void setup() {
     test_joined_device.model_id = Z2S_DEVICE_DESC_TEMPERATURE_SENSOR;
     
     Z2S_addZ2SDevice(&test_joined_device);*/
+
+  disableCore0WDT();
+  //disableCore1WDT();
+  disableLoopWDT();
+  esp_task_wdt_delete(NULL);
+  //rtc_wdt_protect_off();
+  //rtc_wdt_disable();
 }
 
 zbg_device_params_t *gateway_device;
@@ -1017,6 +1028,9 @@ if (client2 && client2.connected()) {
 
      if (cmd_pos >= 0 ) {
 
+      client2.print("OK\n");
+      client2.stop();
+
       Serial.printf("cmd pos %u\n\r", cmd_pos);
       String helper;
       helper.reserve(64);
@@ -1092,15 +1106,13 @@ if (client2 && client2.connected()) {
             RTH_VALUE_TYPE_HUMIDITY, cmd_humidity_value);
         } break;
       }      
-      client2.print("OK\n");
-     }
-     client2.stop();
+     } else
+      client2.stop();
    }
 
-if (Z2S_isGUIStarted())
-      Z2S_loopWebGUI();
+  if (Z2S_isGUIStarted())
+    Z2S_loopWebGUI();
 
-  
   if (Zigbee.started() && 
      (millis() - _time_cluster_last_refresh_ms > TIME_CLUSTER_REFRESH_MS)) {
 
@@ -1125,8 +1137,6 @@ if (Z2S_isGUIStarted())
     esp_zb_zcl_set_attribute_val(
       1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
       ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &new_local_time, false);
-
-    esp_zb_lock_release();
     
     uint32_t utc_time_attribute = (*(uint32_t *)esp_zb_zcl_get_attribute(
       1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
@@ -1140,9 +1150,12 @@ if (Z2S_isGUIStarted())
       1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE, 
       ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID)->data_p);
 
-    log_i("\n\rLocal Time Cluster Time status attribute %u"
-          "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
-          time_status_attribute, utc_time_attribute, local_time_attribute);
+    esp_zb_lock_release();
+
+    log_i(
+      "\n\rLocal Time Cluster Time status attribute %u"
+      "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
+      time_status_attribute, utc_time_attribute, local_time_attribute);
 
     for (uint8_t devices_counter = 0; 
          devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
@@ -1202,16 +1215,16 @@ if (Z2S_isGUIStarted())
 
     if (refresh_cycle == 30) {
 
-      log_i(
+      /*log_i(
         "\n\rMemory information:\n\rFlash chip real size: %u B"
         "\n\rFree Sketch Space: %u B\n\rHeapSize: %u B\n\rFree Heap: %u B"
         "\n\rMaxAllocHeap: %u B\n\rMinimal Free Heap: %u B"
 				"\n\rSupla uptime: %lu s", ESP.getFlashChipSize(), 
         ESP.getFreeSketchSpace(), ESP.getHeapSize(), ESP.getFreeHeap(), 
         ESP.getMaxAllocHeap(), ESP.getMinFreeHeap(),  
-        SuplaDevice.uptime.getUptime());
+        SuplaDevice.uptime.getUptime());*/
 
-      printTaskInfo();
+      //printTaskInfo();
     }
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
 
@@ -1760,26 +1773,23 @@ if (Z2S_isGUIStarted())
                     ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID,
                     ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 50, sync_cmd);
 
-                   zbGateway.setClusterReporting(joined_device, 
-                                                 ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
-                                                 ESP_ZB_ZCL_ATTR_TYPE_U16, 
-                                                 0, 0, 10, 
-                                                 sync_cmd);
+                   zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_U16, 0, 0, 10, sync_cmd);
 
-                   zbGateway.setClusterReporting(joined_device, 
-                                                 ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-                                                 ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID,
-                                                  ESP_ZB_ZCL_ATTR_TYPE_S16, 
-                                                  0, 0, 1, 
-                                                  sync_cmd);
+                   zbGateway.setClusterReporting(
+                    joined_device, 
+                    ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
+                    ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID,
+                    ESP_ZB_ZCL_ATTR_TYPE_S16, 0, 0, 1, sync_cmd);
 
-                    zbGateway.setClusterReporting(joined_device, 
-                                                  ESP_ZB_ZCL_CLUSTER_ID_METERING, 
-                                                  ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
-                                                  ESP_ZB_ZCL_ATTR_TYPE_U48, 
-                                                  0, 0, 1, 
-                                                  sync_cmd);
+                    zbGateway.setClusterReporting(
+                      joined_device, 
+                      ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+                      ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
+                      ESP_ZB_ZCL_ATTR_TYPE_U48, 0, 0, 1, sync_cmd);
 
                 } break; //[[fallthrough]];
 
