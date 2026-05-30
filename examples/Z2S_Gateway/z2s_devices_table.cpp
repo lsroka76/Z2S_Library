@@ -1702,6 +1702,8 @@ uint8_t Z2S_addZbDeviceTableSlot(
 void  Z2S_updateZbDeviceLastSeenMs(
   esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms){
 
+  return; //30.05 test
+  
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
   if (zb_device_slot == 0xFF) {
@@ -1716,6 +1718,7 @@ void  Z2S_updateZbDeviceLastSeenMs(
 void  Z2S_updateZbDeviceLastSeenMs(
   uint16_t short_addr, uint32_t last_seen_ms) {
 
+  return; //30.05 test
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
 
   if (zb_device_slot == 0xFF) {
@@ -6901,9 +6904,14 @@ void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
 
   if (device_number_slot < 0xFF)  {
 
+    if (z2s_zb_devices_table[device_number_slot].last_seen_ms - 
+        millis() < 1000)
+    return;
+
     log_i("short addr 0x%04X, rssi %i", short_addr, rssi);
     z2s_zb_devices_table[device_number_slot].rssi = rssi;
     z2s_zb_devices_table[device_number_slot].last_seen_ms = millis();
+
 
     int16_t channel_number_slot = Z2S_findChannelNumberNextSlot(-1, short_addr);
     uint8_t rssi_percentage = map(rssi, -100, -30, 0, 100);
