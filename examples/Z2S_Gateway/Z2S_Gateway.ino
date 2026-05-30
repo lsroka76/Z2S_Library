@@ -1183,8 +1183,8 @@ if (client2 && client2.connected()) {
 
     
 
-    if (Z2S_isGUIStarted())
-      Z2S_updateWebGUI();
+    //if (Z2S_isGUIStarted())
+    //  Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
   }
