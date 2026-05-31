@@ -1224,6 +1224,13 @@ if (client2 && client2.connected()) {
         ESP.getMaxAllocHeap(), ESP.getMinFreeHeap(),  
         SuplaDevice.uptime.getUptime());*/
 
+      Serial.println("Memory info");
+      Serial.println(ESP.getHeapSize());
+      Serial.println(ESP.getFreeHeap());
+      Serial.println(ESP.getMaxAllocHeap());
+      Serial.println(ESP.getMinFreeHeap());  
+      Serial.println(SuplaDevice.uptime.getUptime());
+
       //printTaskInfo();
     }
     for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
