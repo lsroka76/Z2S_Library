@@ -495,7 +495,7 @@ static constexpr char *OTA_server_notify_success_str PROGMEM =
 static constexpr char *OTA_server_notify_failure_str PROGMEM = 
 	"OTA upgrade server notify failed!";
 
-static char general_purpose_gui_buffer[1024] = {};
+//static char general_purpose_gui_buffer[1024] = {};
 
 static constexpr char* disabledstyle PROGMEM = 
 	"background-color: #bbb; border-bottom: #999 3px solid;";
@@ -658,7 +658,7 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot);
 void buildAllChannelSelectors();
 
 void fillGatewayGeneralnformation(char *buf);
-void fillMemoryUptimeInformation(char *buf);
+void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len = 512);
 
 /*****************************************************************************/
 
@@ -1060,14 +1060,14 @@ void fillGatewayGeneralnformation(char *buf) {
 
 /*****************************************************************************/
 
-void fillMemoryUptimeInformation(char *buf) {
+void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 
 	if (buf) {
 		time_t local_time_info;
 		time(&local_time_info);
 
 		uint16_t meminfbuf_size = snprintf_P(
-			buf, 1024, PSTR(
+			buf, buf_max_len, PSTR(
 				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
 				"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
 				"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
@@ -1117,7 +1117,7 @@ void updateLabel_C(Control::ControlId_t id, const char* value) {
 
 void buildGatewayTabGUI() {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	char *working_str_ptr = PSTR("Gateway");
 	auto gatewaytab = ESPUI.addControl(
@@ -1298,7 +1298,7 @@ void buildGatewayTabGUI() {
 
 void buildCredentialsGUI() {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	char *working_str_ptr = PSTR("WiFi & Supla credentials");
 	auto wifitab = ESPUI.addControl(
@@ -3312,7 +3312,7 @@ const char* getSuplaConditionName(Supla::Conditions condition_id) {
 
 void sprintfAction(z2s_channel_action_t &action) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	if (action.is_condition)
 		sprintf(general_purpose_gui_buffer, 
@@ -3754,7 +3754,7 @@ void buildActionsChannelSelectors(
 
 void buildActionsTabGUI() {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	char *working_str_ptr = "Local actions";
 	auto actions_tab = ESPUI.addControl(
@@ -3916,15 +3916,6 @@ void buildActionsTabGUI() {
 		Control::Color::Emerald, action_edit_button);
 	
 	enableActionDetails(false);
-}
-
-void mem_log(const char *tab_name) {
-
-		//char general_purpose_gui_buffer[1024] = {};
-
-		delay(500);
-	  fillMemoryUptimeInformation(general_purpose_gui_buffer);
-	  log_i("mem_log[%s]:\n\r%s", tab_name, general_purpose_gui_buffer);
 }
 
 void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
@@ -4184,7 +4175,7 @@ const char* rootCACertificatePushover = \
 
 void Z2S_startWebGUIConfig() {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	//ssl_client_pushover.setInsecure();
 	//ssl_client_pushover.setCACert(rootCACertificatePushover);
@@ -4530,9 +4521,9 @@ void Z2S_startUpdateServer() {
 
 void Z2S_updateWebGUI() {
 
-	char memory_info_gui_buffer[1024] = {};
+	char memory_info_gui_buffer[512] = {};
 
-	fillMemoryUptimeInformation(memory_info_gui_buffer);
+	fillMemoryUptimeInformation(memory_info_gui_buffer, 512);
 
 	updateLabel_P(gateway_memory_info, memory_info_gui_buffer);
 }
@@ -4920,12 +4911,12 @@ void enableClustersAttributesControls(bool enable) {
 
 void updateDeviceInfoLabel(uint8_t device_slot) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[1024] = {};
 	char ieee_addr_str[24] = {};
 
 	//uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
 
-  sprintf_P(ieee_addr_str, 
+  snprintf_P(ieee_addr_str, 24,
 						PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
 						z2s_zb_devices_table[device_slot].ieee_addr[7],
 						z2s_zb_devices_table[device_slot].ieee_addr[6], 
@@ -4936,10 +4927,11 @@ void updateDeviceInfoLabel(uint8_t device_slot) {
 						z2s_zb_devices_table[device_slot].ieee_addr[1], 
 						z2s_zb_devices_table[device_slot].ieee_addr[0]);
 
-	uint8_t battery_percentage = z2s_zb_devices_table[device_slot].battery_percentage >= 0x80 ? 
-												  		 z2s_zb_devices_table[device_slot].battery_percentage - 0x80 : 0xFF;
+	uint8_t battery_percentage = 
+		z2s_zb_devices_table[device_slot].battery_percentage >= 0x80 ? 
+		z2s_zb_devices_table[device_slot].battery_percentage - 0x80 : 0xFF;
 
-	sprintf_P(general_purpose_gui_buffer,
+	snprintf_P(general_purpose_gui_buffer, 1024,
 						PSTR("<b><i><style=color:black>Slot#</b></i> %02u <b>| <i>"
 						"Manufacturer name<style=;></i></b> %s "
 								"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
@@ -5009,7 +5001,7 @@ void selectGuiModeCallback(Control *sender, int type) {
 
 void deviceSelectorCallback(Control *sender, int type) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	int sender_value = type;
 	
@@ -5030,7 +5022,7 @@ void deviceSelectorCallback(Control *sender, int type) {
 
 void clustersattributesdeviceSelectorCallback(Control *sender, int type) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	int sender_value = type;
 	
@@ -5253,7 +5245,7 @@ void enableChannelParams(uint8_t params_mask) {
 
 void fillRemoteAddressData(uint8_t channel_slot) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	uint8_t remote_address_type = 
       Z2S_checkChannelFlags(channel_slot, 
@@ -5301,7 +5293,7 @@ working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;
 
 void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[1024] = {};
 
 	char ieee_addr_str[24] 		= {};
 
@@ -5310,7 +5302,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 	log_i("channel slot %i", channel_slot);
 
-  sprintf_P(ieee_addr_str, 
+  snprintf_P(ieee_addr_str, 24, 
 						PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
 						z2s_channels_table[channel_slot].ieee_addr[7],
 						z2s_channels_table[channel_slot].ieee_addr[6], 
@@ -5321,7 +5313,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 						z2s_channels_table[channel_slot].ieee_addr[1], 
 						z2s_channels_table[channel_slot].ieee_addr[0]);
 	
-	sprintf_P(general_purpose_gui_buffer,
+	snprintf_P(general_purpose_gui_buffer, 1024,
 						PSTR("<meta charset=\"UTF-8\">"
 						"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X "
 						"<b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
@@ -5719,7 +5711,7 @@ void channelSelectorCallback(Control *sender, int type) {
 
 void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	if ((type == B_UP) && (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
 
@@ -5782,7 +5774,7 @@ void getZigbeeDeviceQueryCallback(Control *sender, int type, void *param) {
 
 void getClustersAttributesQueryCallback(Control *sender, int type, void *param) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	if ((type == B_UP) && 
 			(ESPUI.getControl(
@@ -6470,7 +6462,7 @@ void startDeviceOTACallback(Control *sender, int type){
 
 void removeDeviceCallback(Control *sender, int type, void *param) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	if ((type == B_UP) && (
 			ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
@@ -6551,7 +6543,7 @@ void removeDeviceCallback(Control *sender, int type, void *param) {
 
 void removeChannelCallback(Control *sender, int type) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	if ((type == B_UP) && 
 			(ESPUI.getControl(channel_selector)->getValueInt() >= 0)) {
@@ -7600,7 +7592,7 @@ void valueCallback(Control *sender, int type) {
 
 void advancedDeviceSelectorCallback(Control *sender, int type) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	int sender_value = type;
 	
@@ -7740,7 +7732,7 @@ void gatewayCallback(Control *sender, int type, void *param) {
 
 void TuyaCustomCmdCallback(Control *sender, int type, void *param) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	if ((type == B_UP) && 
 			(ESPUI.getControl(Tuya_devices_tab_controls_table[Tuya_device_selector])->getValueInt() >= 0)) {
@@ -8553,7 +8545,7 @@ void valveCallback(Control *sender, int type, void *param) {
 
 void TuyaDeviceSelectorCallback(Control *sender, int type) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 
 	int sender_value = type;
 	
@@ -8771,7 +8763,7 @@ void GUI_onTuyaCustomClusterReceive(
 
 void GUI_onLastBindingFailure(bool binding_failed) {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[512] = {};
 	
 	sprintf_P(
 		general_purpose_gui_buffer, 
