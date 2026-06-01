@@ -1465,8 +1465,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   uint32_t millis_ms = millis();
   
-  uint32_t z2s_zb_device_last_seen_ms = _z2s_zb_device ? 
-    _z2s_zb_device->last_seen_ms : 0;
+  uint32_t z2s_zb_device_last_seen_ms = getZbDeviceLastSeenMs();
 
   if (z2s_zb_device_last_seen_ms) {
 

@@ -4,6 +4,8 @@
 #define DEVICE_LOCAL_NAME_MAX_SIZE            36
 #define SUPLA_CHANNEL_NAME_MAX_SIZE           32
 
+extern portMUX_TYPE Z2S_globalMutex;
+
 typedef struct z2s_zb_device_params_s {
 
   uint32_t record_id;
@@ -183,12 +185,46 @@ public:
 
   uint32_t getZbDeviceModelID() {
 
-    return  _z2s_zb_device ? _z2s_zb_device->desc_id : 0;
+    portENTER_CRITICAL(Z2S_globalMutex);
+
+    uint32_t model_id = _z2s_zb_device ? _z2s_zb_device->desc_id : 0;
+
+    portEXIT_CRITICAL(Z2S_globalMutex);
+
+    return model_id;
   };
 
   uint32_t getChannelModelID() {
 
-    return _z2s_channel ? _z2s_channel->model_id : 0;
+    portENTER_CRITICAL(Z2S_globalMutex);
+
+    uint32_t model_id = _z2s_channel ? _z2s_channel->model_id : 0;
+
+    portEXIT_CRITICAL(Z2S_globalMutex);
+
+    return model_id;
+  };
+
+  uint32_t getZbDeviceLastSeenMs() {
+
+    portENTER_CRITICAL(Z2S_globalMutex);
+
+    uint32_t last_seen_ms = _z2s_zb_device ? _z2s_zb_device->last_seen_ms : 0;
+
+    portEXIT_CRITICAL(Z2S_globalMutex);
+
+    return last_seen_ms;
+  };
+
+  int8_t getZbDeviceLastRSSI() {
+
+    portENTER_CRITICAL(Z2S_globalMutex);
+
+    int8_t last_rssi = _z2s_zb_device ? _z2s_zb_device->rssi : 0;
+
+    portEXIT_CRITICAL(Z2S_globalMutex);
+
+    return last_rssi;
   };
 
 protected:

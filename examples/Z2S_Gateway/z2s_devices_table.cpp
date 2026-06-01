@@ -34,6 +34,8 @@
 
 //extern ZigbeeGateway zbGateway;
 
+portMUX_TYPE Z2S_globalMutex = portMUX_INITIALIZER_UNLOCKED;
+
 extern uint8_t _rebuild_Supla_channels_on_start;
 
 z2s_device_params_t    z2s_channels_table[Z2S_CHANNELS_MAX_NUMBER] = {};
@@ -1701,16 +1703,22 @@ uint8_t Z2S_addZbDeviceTableSlot(
 
 void  Z2S_updateZbDeviceLastSeenMs(
   esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms){
-
-  return; //30.05 test
   
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
   if (zb_device_slot == 0xFF) {
+
     log_e("Unknown ZB device - update not possible!");
     return;
-  } else
+  } 
+  else {
+    
+    portENTER_CRITICAL(Z2S_globalMutex);
+
     z2s_zb_devices_table[zb_device_slot].last_seen_ms = last_seen_ms;
+
+    portEXIT_CRITICAL(Z2S_globalMutex);
+  }
 }
 
 /*****************************************************************************/
@@ -1718,14 +1726,21 @@ void  Z2S_updateZbDeviceLastSeenMs(
 void  Z2S_updateZbDeviceLastSeenMs(
   uint16_t short_addr, uint32_t last_seen_ms) {
 
-  return; //30.05 test
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
 
   if (zb_device_slot == 0xFF) {
+    
     log_e("Unknown ZB device - update not possible!");
     return;
-  } else
+  } 
+  else {
+    
+    portENTER_CRITICAL(Z2S_globalMutex);
+
     z2s_zb_devices_table[zb_device_slot].last_seen_ms = last_seen_ms;
+
+    portEXIT_CRITICAL(Z2S_globalMutex);
+  }
 }
 
 /*****************************************************************************/
@@ -6904,16 +6919,20 @@ void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
 
   if (device_number_slot < 0xFF)  {
 
+    uint32_t millis_ms = millis();
+
+    portENTER_CRITICAL(Z2S_globalMutex);
+
     if (z2s_zb_devices_table[device_number_slot].last_seen_ms - 
-        millis() < 1000)
-    return;
+        millis_ms > 1000) {
 
-    log_i("short addr 0x%04X, rssi %i", short_addr, rssi);
-    z2s_zb_devices_table[device_number_slot].rssi = rssi;
-    z2s_zb_devices_table[device_number_slot].last_seen_ms = millis();
+      z2s_zb_devices_table[device_number_slot].rssi = rssi;
+      z2s_zb_devices_table[device_number_slot].last_seen_ms = millis_ms;
+    }
 
+    portEXIT_CRITICAL(Z2S_globalMutex);
 
-    int16_t channel_number_slot = Z2S_findChannelNumberNextSlot(-1, short_addr);
+    /*int16_t channel_number_slot = Z2S_findChannelNumberNextSlot(-1, short_addr);
     uint8_t rssi_percentage = map(rssi, -100, -30, 0, 100);
     
     while (channel_number_slot >= 0) {
@@ -6927,7 +6946,7 @@ void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
 
       channel_number_slot = Z2S_findChannelNumberNextSlot(
         channel_number_slot, short_addr);
-    }
+    }*/
   }
 }
 

@@ -472,8 +472,8 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
   if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (true) {
       
-      if (_z2s_zb_device)
-        _last_seen_ms = _z2s_zb_device->last_seen_ms;
+      
+      _last_seen_ms = getZbDeviceLastSeenMs();
       
       if ((millis() - _last_seen_ms) > _keep_alive_ms) {
       	ping();
@@ -491,8 +491,8 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), 
     _last_seen_ms);
 
-    if (_z2s_zb_device)
-      _last_seen_ms = _z2s_zb_device->last_seen_ms;
+    
+    _last_seen_ms = getZbDeviceLastSeenMs();
 
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), 
           _last_seen_ms);

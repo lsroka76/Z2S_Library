@@ -93,10 +93,11 @@ public:
 
     if (_timeout_ms) {
       
-      if (_z2s_zb_device && 
-          (_z2s_zb_device->last_seen_ms > _last_timeout_ms)) {
+      uint32_t _zb_device_last_seen_ms = getZbDeviceLastSeenMs();
+      
+      if (_zb_device_last_seen_ms > _last_timeout_ms) {
 
-        _last_timeout_ms = _z2s_zb_device->last_seen_ms;
+        _last_timeout_ms = _zb_device_last_seen_ms;
         channel.setStateOnline();
       }
 

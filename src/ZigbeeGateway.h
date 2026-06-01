@@ -680,8 +680,8 @@ public:
     _on_device_leave = callback;
   }
   void onUpdateDeviceLastRssi(void (*callback)(uint16_t, int8_t)) {
-    //_on_update_device_last_rssi = callback;
-    _on_update_device_last_rssi = nullptr;
+    _on_update_device_last_rssi = callback;
+    //_on_update_device_last_rssi = nullptr;
   }
   void onFillOTABuffer(size_t (*callback)(uint8_t *, uint32_t, uint8_t)) {
     _on_fill_ota_buffer = callback;
