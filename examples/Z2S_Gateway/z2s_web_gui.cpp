@@ -1066,19 +1066,21 @@ void fillMemoryUptimeInformation(char *buf) {
 		time_t local_time_info;
 		time(&local_time_info);
 
-		snprintf_P(buf, 1024, PSTR("<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
-						"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
-						"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
-						"<b><i>uxTaskGetStackHighWaterMark:</b></i> %u B <br>"
-						"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
-						"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s"), 
-						ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), 
-						ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), 
-						uxTaskGetStackHighWaterMark(NULL),
-						ESP.getPsramSize(), ESP.getFreePsram(), 
-						ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
+		uint16_t meminfbuf_size = snprintf_P(
+			buf, 1024, PSTR(
+				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
+				"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
+				"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
+				"<b><i>uxTaskGetStackHighWaterMark:</b></i> %u B <br>"
+				"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
+				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s"), 
+				ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), 
+				ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), 
+				uxTaskGetStackHighWaterMark(NULL),
+				ESP.getPsramSize(), ESP.getFreePsram(), 
+				ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
 
-		log_i("Memory & uptime information %s", buf);
+		log_i("Memory & uptime information (%u) %s", meminfbuf_size, buf);
 	}
 }
 
@@ -1150,6 +1152,7 @@ void buildGatewayTabGUI() {
 	gateway_memory_info = ESPUI.addControl(
 		Control::Type::Label, PSTR("Memory & Uptime"), working_str, 
 		Control::Color::Emerald, gatewaytab);
+	//ESPUI.getControl(gateway_memory_info)->getValue().reserve(1024);
 
 	ESPUI.setElementStyle(
 		gateway_memory_info, 
@@ -4527,11 +4530,11 @@ void Z2S_startUpdateServer() {
 
 void Z2S_updateWebGUI() {
 
-	//char general_purpose_gui_buffer[1024] = {};
+	char memory_info_gui_buffer[1024] = {};
 
-	fillMemoryUptimeInformation(general_purpose_gui_buffer);
+	fillMemoryUptimeInformation(memory_info_gui_buffer);
 
-	updateLabel_P(gateway_memory_info, general_purpose_gui_buffer);
+	updateLabel_P(gateway_memory_info, memory_info_gui_buffer);
 }
 
 void clusterCallbackCmd() {
