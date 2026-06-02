@@ -1080,10 +1080,25 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 				ESP.getPsramSize(), ESP.getFreePsram(), 
 				ctime(&local_time_info),  SuplaDevice.uptime.getUptime());*/
 
+		char current_time_buffer[25];
+
+		strftime(
+			current_time_buffer, 25, "%H:%M [%d.%m.%Y]%t", 
+			localtime(&local_time_info));
+
+		uint32_t Supla_uptime_s = SuplaDevice.uptime.getUptime();
+
+		uint32_t Supla_uptime_d = Supla_uptime_s / 86400;
+		uint32_t Supla_uptime_h = (Supla_uptime_s % 86400) / 3600;
+		uint32_t Supla_uptime_m = (Supla_uptime_s % 3600) / 60;
+		uint32_t Supla_uptime_ss = Supla_uptime_s % 60;
+
 		uint16_t meminfbuf_size = snprintf_P(
 			buf, buf_max_len, PSTR(
-				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s"), 
-				ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
+				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
+				"%lu dni %02lu:%02lu:%02lu (%lu seconds)"), current_time_buffer, 
+				Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
+				Supla_uptime_s);
 
 		//log_i("Memory & uptime information (%u) %s", meminfbuf_size, buf);
 	}
@@ -1155,14 +1170,15 @@ void buildGatewayTabGUI() {
 
 	working_str = general_purpose_gui_buffer;
 	gateway_memory_info = ESPUI.addControl(
-		Control::Type::Label, PSTR("Memory & Uptime"), working_str, 
+		Control::Type::Label, PSTR(""), working_str, 
 		Control::Color::Emerald, gatewaytab);
 	//ESPUI.getControl(gateway_memory_info)->getValue().reserve(1024);
 
 	ESPUI.setElementStyle(
 		gateway_memory_info, 
-		"color:black;text-align: justify; font-family:tahoma;"
-		" font-size: 4 px; font-style: normal; font-weight: normal;");
+		"color:black;text-align: center; font-family:tahoma;"
+		"background-color: unset; font-size: 8 px; font-style: normal; "
+		"font-weight: normal;");
 	ESPUI.setPanelWide(gateway_memory_info, true);
 
 	auto gui_mode_selector = ESPUI.addControl(
