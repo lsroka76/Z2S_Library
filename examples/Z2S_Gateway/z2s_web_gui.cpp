@@ -1066,7 +1066,7 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		time_t local_time_info;
 		time(&local_time_info);
 
-		uint16_t meminfbuf_size = snprintf_P(
+		/*uint16_t meminfbuf_size = snprintf_P(
 			buf, buf_max_len, PSTR(
 				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
 				"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
@@ -1078,9 +1078,14 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 				ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), 
 				uxTaskGetStackHighWaterMark(NULL),
 				ESP.getPsramSize(), ESP.getFreePsram(), 
+				ctime(&local_time_info),  SuplaDevice.uptime.getUptime());*/
+
+		uint16_t meminfbuf_size = snprintf_P(
+			buf, buf_max_len, PSTR(
+				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s"), 
 				ctime(&local_time_info),  SuplaDevice.uptime.getUptime());
 
-		log_i("Memory & uptime information (%u) %s", meminfbuf_size, buf);
+		//log_i("Memory & uptime information (%u) %s", meminfbuf_size, buf);
 	}
 }
 
