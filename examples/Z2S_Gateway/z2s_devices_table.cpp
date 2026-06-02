@@ -9553,11 +9553,11 @@ void updateRemoteThermometer(
     device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
     device.model_id = z2s_channels_table[channel_number_slot].model_id;
 
-    zbGateway.sendAttributeWrite(
+    /*zbGateway.sendAttributeWrite(
       &device, SONOFF_CUSTOM_CLUSTER, 
       SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
       ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
-
+    */
     int16_t sonoff_external_value = connected_thermometer_value;
 
     switch (value_type) {
@@ -9565,10 +9565,10 @@ void updateRemoteThermometer(
 
       case RTH_VALUE_TYPE_TEMPERATURE: {
   
-        zbGateway.sendAttributeWrite(
+        /*zbGateway.sendAttributeWrite(
           &device, SONOFF_CUSTOM_CLUSTER, 
           SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
-          ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &sonoff_external_value);
+          ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &sonoff_external_value);*/
 
         Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature(
           sonoff_external_value);
@@ -9577,10 +9577,10 @@ void updateRemoteThermometer(
 
       case RTH_VALUE_TYPE_HUMIDITY: {
   
-        zbGateway.sendAttributeWrite(
+        /*zbGateway.sendAttributeWrite(
           &device, SONOFF_CUSTOM_CLUSTER, 
           SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
-          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &sonoff_external_value);
+          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &sonoff_external_value);*/
         Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity(
           sonoff_external_value);
       } break;

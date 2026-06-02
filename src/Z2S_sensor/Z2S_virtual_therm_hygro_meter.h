@@ -135,11 +135,13 @@ public:
   void setSonoffExternalTemperature(int16_t sonoff_external_temperature) {
 
     _sonoff_external_temperature = sonoff_external_temperature;
+    _last_resent_ms = 0;
   }
 
   void setSonoffExternalHumidity(uint16_t sonoff_external_humidity) {
 
     _sonoff_external_humidity = sonoff_external_humidity;
+    _last_resent_ms = 0;
   }
 
   void updateSNZB02DR2ExtValues() {
