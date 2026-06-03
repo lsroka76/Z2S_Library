@@ -1086,13 +1086,15 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
 				"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
 				"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
-				"<b><i>uxTaskGetStackHighWaterMark:</b></i> %u B <br>"
+				"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
+				"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br>"
 				"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
 				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
 				"%lu dni %02lu:%02lu:%02lu (%lu seconds)"), 
 				ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), 
 				ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), 
 				ESP.getMaxAllocHeap(), uxTaskGetStackHighWaterMark(NULL),
+				uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle), 
 				ESP.getPsramSize(), ESP.getFreePsram(), current_time_buffer, 
 				Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
 				Supla_uptime_s);
@@ -1181,7 +1183,7 @@ void buildGatewayTabGUI() {
 
 	ESPUI.setElementStyle(
 		gateway_memory_info, 
-		"color:black;text-align: center; font-family:tahoma;"
+		"color:black;text-align: justify; font-family:tahoma;"
 		"background-color: unset; font-size: 8 px; font-style: normal; "
 		"font-weight: normal;");
 	ESPUI.setPanelWide(gateway_memory_info, true);
