@@ -5321,7 +5321,7 @@ working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;
 
 void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
-	char general_purpose_gui_buffer[768] = {};
+	char general_purpose_gui_buffer[896] = {};
 
 	char ieee_addr_str[24] 		= {};
 
@@ -5341,7 +5341,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 						z2s_channels_table[channel_slot].ieee_addr[1], 
 						z2s_channels_table[channel_slot].ieee_addr[0]);
 	
-	snprintf_P(general_purpose_gui_buffer, 1024,
+	snprintf_P(general_purpose_gui_buffer, 896,
 						PSTR("<meta charset=\"UTF-8\">"
 						"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X "
 						"<b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
