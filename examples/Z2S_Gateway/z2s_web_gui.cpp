@@ -1144,7 +1144,7 @@ void updateLabel_C(Control::ControlId_t id, const char* value) {
 
 void buildGatewayTabGUI() {
 
-	char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[768] = {};
 
 	char *working_str_ptr = PSTR("Gateway");
 	auto gatewaytab = ESPUI.addControl(
@@ -1169,7 +1169,7 @@ void buildGatewayTabGUI() {
 
 	ESPUI.setPanelWide(gateway_general_info, true);
 
-	fillMemoryUptimeInformation(general_purpose_gui_buffer, 1024);
+	fillMemoryUptimeInformation(general_purpose_gui_buffer, 768);
 	
 	ESPUI.addControl(
 		Control::Type::Separator, PSTR("Status"), empty_str, Control::Color::None,
@@ -4203,7 +4203,7 @@ const char* rootCACertificatePushover = \
 
 void Z2S_startWebGUIConfig() {
 
-	char general_purpose_gui_buffer[512] = {};
+	char general_purpose_gui_buffer[768] = {};
 
 	//ssl_client_pushover.setInsecure();
 	//ssl_client_pushover.setCACert(rootCACertificatePushover);
@@ -4222,7 +4222,7 @@ void Z2S_startWebGUIConfig() {
 		Control::Type::Label, "Device information", general_purpose_gui_buffer, 
 		Control::Color::Emerald);
 
-	fillMemoryUptimeInformation(general_purpose_gui_buffer);
+	fillMemoryUptimeInformation(general_purpose_gui_buffer, 768);
 	
 	ESPUI.addControl(
 		Control::Type::Separator, PSTR("Status"), empty_str, 
@@ -4549,9 +4549,9 @@ void Z2S_startUpdateServer() {
 
 void Z2S_updateWebGUI() {
 
-	char memory_info_gui_buffer[512] = {};
+	char memory_info_gui_buffer[768] = {};
 
-	fillMemoryUptimeInformation(memory_info_gui_buffer, 512);
+	fillMemoryUptimeInformation(memory_info_gui_buffer, 768);
 
 	updateLabel_P(gateway_memory_info, memory_info_gui_buffer);
 }
@@ -4939,7 +4939,7 @@ void enableClustersAttributesControls(bool enable) {
 
 void updateDeviceInfoLabel(uint8_t device_slot) {
 
-	char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[768] = {};
 	char ieee_addr_str[24] = {};
 
 	//uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
@@ -5321,7 +5321,7 @@ working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;
 
 void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
-	char general_purpose_gui_buffer[1024] = {};
+	char general_purpose_gui_buffer[768] = {};
 
 	char ieee_addr_str[24] 		= {};
 
