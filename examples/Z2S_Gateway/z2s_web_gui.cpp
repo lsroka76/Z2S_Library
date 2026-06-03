@@ -1094,7 +1094,7 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 				ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), 
 				ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), 
 				ESP.getMaxAllocHeap(), uxTaskGetStackHighWaterMark(NULL),
-				uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle), 
+				uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()), 
 				ESP.getPsramSize(), ESP.getFreePsram(), current_time_buffer, 
 				Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
 				Supla_uptime_s);
