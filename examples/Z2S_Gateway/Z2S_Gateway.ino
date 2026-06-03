@@ -1213,6 +1213,8 @@ if (client2 && client2.connected()) {
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
 
+    log_i("refresh cycle = %u", refresh_cycle);
+    
     if (refresh_cycle == 30) {
 
       /*log_i(
@@ -1330,10 +1332,10 @@ if (client2 && client2.connected()) {
     //}
     }
     
-    if (!zbGateway.getGatewayDevices().empty()) {
+    //if (!zbGateway.getGatewayDevices().empty()) {
       refresh_time = millis();
       refresh_cycle = (refresh_cycle + 1) % 31;
-    }
+    //}
   }
 
   if ((!zbGateway.getJoinedDevices().empty()) && 

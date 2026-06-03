@@ -802,6 +802,11 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);
+
+      zbGateway.sendAttributeRead(
+        &_device, 
+        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID);
     }
 
     if (_trv_commands_set == DANFOSS_CMD_SET) {
@@ -1465,16 +1470,19 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   uint32_t millis_ms = millis();
   
-  uint32_t z2s_zb_device_last_seen_ms = getZbDeviceLastSeenMs();
+  //uint32_t z2s_zb_device_last_seen_ms = getZbDeviceLastSeenMs();
 
-  if (z2s_zb_device_last_seen_ms) {
 
-    if (z2s_zb_device_last_seen_ms > _last_keep_alive_ms)
-      _last_keep_alive_ms = z2s_zb_device_last_seen_ms;
+  _last_seen_ms = getZbDeviceLastSeenMs();
+  
+  if (_last_seen_ms) {
+
+    if (_last_seen_ms > _last_keep_alive_ms)
+      _last_keep_alive_ms = _last_seen_ms;
     
-    if (z2s_zb_device_last_seen_ms > _last_cmd_sent_ms) {
+    if (_last_seen_ms > _last_cmd_sent_ms) {
 
-      _last_keep_alive_ms = z2s_zb_device_last_seen_ms;
+      _last_keep_alive_ms = _last_seen_ms;
       
       _last_cmd_sent_ms = 0;
       if (_trv_hvac)
@@ -1501,6 +1509,9 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       _trv_hvac->getChannel()->setStateOffline();
   }
   
+  if (_last_seen_ms == 0)
+    return;
+
   int16_t hvacLastTemperature = INT16_MIN;
 
   if ((_init_sequence == 2) && (millis_ms - _last_refresh_ms > _refresh_ms)) {

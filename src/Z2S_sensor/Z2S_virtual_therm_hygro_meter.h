@@ -183,8 +183,11 @@ public:
 
     VirtualThermHygroMeter::iterateAlways();
 
-    if (_resent_ms && (millis() - _last_resent_ms > _resent_ms))
+    if (_resent_ms && (millis() - _last_resent_ms > _resent_ms)) {
+      
       updateSNZB02DR2ExtValues();
+      _last_resent_ms = millis();
+    }
        
   }
 

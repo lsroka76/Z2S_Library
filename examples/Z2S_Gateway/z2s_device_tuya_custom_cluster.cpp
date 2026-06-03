@@ -3683,9 +3683,15 @@ void processTuyaCustomCluster(
       device.model_id = 
         z2s_channels_table[channel_number_slot].model_id;
   
+      if (payload) {
 
-      time_sync[0] = 0x08; //*payload;
-      time_sync[1] = 0x00; //*(payload + 1);
+        time_sync[0] = *payload;
+        time_sync[1] = *(payload + 1);
+      } else {
+
+        time_sync[0] = 0x08;
+        time_sync[1] = 0x00;
+      }
 
       time( &secs );  // Current time in GMT
       // Remember that localtime/gmtime overwrite same location

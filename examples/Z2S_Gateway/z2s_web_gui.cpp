@@ -1063,22 +1063,9 @@ void fillGatewayGeneralnformation(char *buf) {
 void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 
 	if (buf) {
+
 		time_t local_time_info;
 		time(&local_time_info);
-
-		/*uint16_t meminfbuf_size = snprintf_P(
-			buf, buf_max_len, PSTR(
-				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
-				"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
-				"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
-				"<b><i>uxTaskGetStackHighWaterMark:</b></i> %u B <br>"
-				"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
-				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> %lu s"), 
-				ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), 
-				ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), 
-				uxTaskGetStackHighWaterMark(NULL),
-				ESP.getPsramSize(), ESP.getFreePsram(), 
-				ctime(&local_time_info),  SuplaDevice.uptime.getUptime());*/
 
 		char current_time_buffer[25];
 
@@ -1093,12 +1080,30 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		uint32_t Supla_uptime_m = (Supla_uptime_s % 3600) / 60;
 		uint32_t Supla_uptime_ss = Supla_uptime_s % 60;
 
+
 		uint16_t meminfbuf_size = snprintf_P(
+			buf, buf_max_len, PSTR(
+				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
+				"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
+				"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
+				"<b><i>uxTaskGetStackHighWaterMark:</b></i> %u B <br>"
+				"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
+				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
+				"%lu dni %02lu:%02lu:%02lu (%lu seconds)"), 
+				ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), 
+				ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), 
+				ESP.getMaxAllocHeap(), uxTaskGetStackHighWaterMark(NULL),
+				ESP.getPsramSize(), ESP.getFreePsram(), current_time_buffer, 
+				Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
+				Supla_uptime_s);
+
+		
+		/*uint16_t meminfbuf_size = snprintf_P(
 			buf, buf_max_len, PSTR(
 				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
 				"%lu dni %02lu:%02lu:%02lu (%lu seconds)"), current_time_buffer, 
 				Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
-				Supla_uptime_s);
+				Supla_uptime_s);*/
 
 		//log_i("Memory & uptime information (%u) %s", meminfbuf_size, buf);
 	}

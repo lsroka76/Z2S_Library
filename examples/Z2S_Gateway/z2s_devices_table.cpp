@@ -1511,7 +1511,7 @@ void Z2S_initZbDevices(uint32_t init_ms) {
        devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
 
-      z2s_zb_devices_table[devices_counter].last_seen_ms = init_ms;
+      z2s_zb_devices_table[devices_counter].last_seen_ms = 0; //init_ms;
       z2s_zb_devices_table[devices_counter].rssi = 0;
     }
 }

@@ -1896,7 +1896,10 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC, 
+                              //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION, 
+                              //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+                              //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 

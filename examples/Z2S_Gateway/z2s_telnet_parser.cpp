@@ -494,7 +494,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
   log_i("cmd: %s, param %s, param %s", cmd, *param != NULL ? *param : "-",
         *(param+1) != NULL ? *(param+1) : "-" );
-  
+  telnet.printf("\n\rmillis %lu\n\r", millis());
   if (strcmp(cmd, "OPEN-NETWORK") == 0) {
 
     uint8_t time = 180;
@@ -658,6 +658,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   if (strcmp(cmd, "MEMORY") == 0) {
   
     telnet.printf(
+      "\n\rmillis %lu"
       "\n\rMemory information:"
       "\n\rFlash chip real size: %u B"
       "\n\rFree Sketch Space: %u B"
@@ -665,14 +666,17 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 			"\n\rFree Heap: %u B"
       "\n\rMaxAllocHeap: %u B"
       "\n\rMinimal Free Heap: %u B"
-			"\n\rSupla uptime: %lu s\n\r\n\r>", 
+			"\n\rSupla uptime: %lu s"
+      "\n\rmillis %lu\n\r\n\r>", 
+      millis(),
 			ESP.getFlashChipSize(), 
       ESP.getFreeSketchSpace(), 
       ESP.getHeapSize(),
       ESP.getFreeHeap(), 
       ESP.getMaxAllocHeap(),
       ESP.getMinFreeHeap(), 
-      SuplaDevice.uptime.getUptime());
+      SuplaDevice.uptime.getUptime(),
+      millis());
     return;
   } else
   if ((strcmp(cmd, "LIST-DEVICES") == 0) ||

@@ -65,6 +65,7 @@ public:
   
   void onInit() override {
 
+    refreshIntervalMs = 30000;
     channel.setNewValue(getTemp());
   }
 
