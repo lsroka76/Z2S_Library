@@ -4959,7 +4959,7 @@ void updateDeviceInfoLabel(uint8_t device_slot) {
 		z2s_zb_devices_table[device_slot].battery_percentage >= 0x80 ? 
 		z2s_zb_devices_table[device_slot].battery_percentage - 0x80 : 0xFF;
 
-	snprintf_P(general_purpose_gui_buffer, 1024,
+	snprintf_P(general_purpose_gui_buffer, 768,
 						PSTR("<b><i><style=color:black>Slot#</b></i> %02u <b>| <i>"
 						"Manufacturer name<style=;></i></b> %s "
 								"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
