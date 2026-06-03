@@ -1144,7 +1144,7 @@ void updateLabel_C(Control::ControlId_t id, const char* value) {
 
 void buildGatewayTabGUI() {
 
-	char general_purpose_gui_buffer[512] = {};
+	char general_purpose_gui_buffer[1024] = {};
 
 	char *working_str_ptr = PSTR("Gateway");
 	auto gatewaytab = ESPUI.addControl(
@@ -1169,7 +1169,7 @@ void buildGatewayTabGUI() {
 
 	ESPUI.setPanelWide(gateway_general_info, true);
 
-	fillMemoryUptimeInformation(general_purpose_gui_buffer);
+	fillMemoryUptimeInformation(general_purpose_gui_buffer, 1024);
 	
 	ESPUI.addControl(
 		Control::Type::Separator, PSTR("Status"), empty_str, Control::Color::None,
