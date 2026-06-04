@@ -242,10 +242,10 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
   }
 
   // Create Zigbee task and start Zigbee stack
-  xTaskCreate(esp_zb_task, "Zigbee_main", 8192, NULL, 5, &_zigbee_task_handle);
+  xTaskCreate(esp_zb_task, "Zigbee_main", 5120, NULL, 15, &_zigbee_task_handle);
 
   return true;
-}
+} 
 
 void ZigbeeCore::setRadioConfig(esp_zb_radio_config_t config) {
   _radio_config = config;
