@@ -4,7 +4,7 @@
 #define Z2S_GATEWAY
 
 
-//#include <esp_task_wdt.h>
+#include <esp_task_wdt.h>
 //#include <rtc_wdt.h>
 
 #include <ESPmDNS.h>
@@ -930,10 +930,11 @@ void setup() {
     
     Z2S_addZ2SDevice(&test_joined_device);*/
 
-  //disableCore0WDT();
+  disableCore0WDT();
   //disableCore1WDT();
-  //disableLoopWDT();
-  //esp_task_wdt_delete(NULL);
+  disableLoopWDT();
+  esp_task_wdt_delete(NULL);
+  esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
   //rtc_wdt_protect_off();
   //rtc_wdt_disable();
 }
