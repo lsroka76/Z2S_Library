@@ -4,7 +4,7 @@
 #define Z2S_GATEWAY
 
 
-//#include <esp_task_wdt.h>
+#include <esp_task_wdt.h>
 //#include <rtc_wdt.h>
 
 #include <ESPmDNS.h>
