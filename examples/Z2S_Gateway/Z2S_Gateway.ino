@@ -10,7 +10,6 @@
 #include <ESPmDNS.h>
 #include <esp_coexist.h>
 #include <esp_heap_caps.h>
-#include <esp_heap_trace.h>
 
 #include <ZigbeeGateway.h>
 #include <Z2S_custom_actions_events.h>
@@ -1183,9 +1182,9 @@ if (client2 && client2.connected()) {
           Z2S_getChannelZbDevicePtr(channels_counter)->device_local_name,
           Z2S_getChannelZbDevicePtr(channels_counter)->last_seen_ms / 1000);*/
 
-    
-    if (!heap_caps_check_integrity_all(true))
-      heap_trace_dump();
+    log_i("now attempting to check heap integrity");
+      
+    heap_caps_check_integrity_all(true);
 
     if (Z2S_isGUIStarted())
       Z2S_updateWebGUI();
