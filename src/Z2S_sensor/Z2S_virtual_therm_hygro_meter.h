@@ -191,10 +191,10 @@ public:
        
   }
 
-  /*uint32_t getID() override {
+  uint32_t getID() override {
     
     return TH_ID_SNZB_02DR2;
-  }*/
+  }
     
  protected:
 
