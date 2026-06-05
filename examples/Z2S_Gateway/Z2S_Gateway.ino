@@ -1125,6 +1125,10 @@ if (client2 && client2.connected()) {
           new_utc_time, 
           new_local_time);
     
+    log_i("now attempting to check heap integrity #1");
+    heap_caps_check_integrity_all(true);
+
+
     esp_zb_lock_acquire(portMAX_DELAY);
 
     esp_zb_zcl_set_attribute_val(
@@ -1158,6 +1162,10 @@ if (client2 && client2.connected()) {
       "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
       time_status_attribute, utc_time_attribute, local_time_attribute);
 
+    log_i("now attempting to check heap integrity #2");
+    heap_caps_check_integrity_all(true);
+
+
     for (uint8_t devices_counter = 0; 
          devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
 
@@ -1182,8 +1190,8 @@ if (client2 && client2.connected()) {
           Z2S_getChannelZbDevicePtr(channels_counter)->device_local_name,
           Z2S_getChannelZbDevicePtr(channels_counter)->last_seen_ms / 1000);*/
 
-    log_i("now attempting to check heap integrity");
-      
+    log_i("now attempting to check heap integrity #3");
+
     heap_caps_check_integrity_all(true);
 
     if (Z2S_isGUIStarted())
