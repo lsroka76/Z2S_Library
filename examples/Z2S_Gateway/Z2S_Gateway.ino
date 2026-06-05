@@ -1183,7 +1183,8 @@ if (client2 && client2.connected()) {
           Z2S_getChannelZbDevicePtr(channels_counter)->last_seen_ms / 1000);*/
 
     
-
+    heap_caps_check_integrity_all(true);
+    
     if (Z2S_isGUIStarted())
       Z2S_updateWebGUI();
 

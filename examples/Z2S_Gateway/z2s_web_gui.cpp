@@ -1080,6 +1080,7 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		uint32_t Supla_uptime_m = (Supla_uptime_s % 3600) / 60;
 		uint32_t Supla_uptime_ss = Supla_uptime_s % 60;
 
+		log_i("\n\rcurrent time %s\n\r",	current_time_buffer);
 
 		uint16_t meminfbuf_size = snprintf_P(
 			buf, buf_max_len, PSTR(
@@ -1159,13 +1160,14 @@ void buildGatewayTabGUI() {
 
 	working_str = general_purpose_gui_buffer;
 	gateway_general_info = ESPUI.addControl(
-		Control::Type::Label, PSTR("Device information"), working_str, 
+		Control::Type::Label, PSTR("GATEWAY FIRMWARE"), working_str,
 		Control::Color::Emerald, gatewaytab);
 
 	ESPUI.setElementStyle(
 		gateway_general_info, 
 		"color:black;text-align: justify; font-family:tahoma;"
-		" font-size: 4 px; font-style: normal; font-weight: normal;");
+		" background-color: unset; font-size: 4 px; font-style: normal;"
+		" font-weight: normal;");
 
 	ESPUI.setPanelWide(gateway_general_info, true);
 
@@ -1177,7 +1179,7 @@ void buildGatewayTabGUI() {
 
 	working_str = general_purpose_gui_buffer;
 	gateway_memory_info = ESPUI.addControl(
-		Control::Type::Label, PSTR(""), working_str, 
+		Control::Type::Label, PSTR("GATEWAY MEMORY & TIME"), working_str,
 		Control::Color::Emerald, gatewaytab);
 	//ESPUI.getControl(gateway_memory_info)->getValue().reserve(1024);
 
@@ -3343,7 +3345,7 @@ void sprintfAction(z2s_channel_action_t &action) {
 	char general_purpose_gui_buffer[512] = {};
 
 	if (action.is_condition)
-		sprintf(general_purpose_gui_buffer, 
+		snprintf(general_purpose_gui_buffer, 512,
 						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
 						"<b>Action name:</b> <i>%s (%s)</i><br><br>"
 						"<b>Condition:</b> <i>{%s}</i><br>"
@@ -3363,7 +3365,7 @@ void sprintfAction(z2s_channel_action_t &action) {
 						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
 								action.dst_Supla_channel)].Supla_channel_name);
 	else
-		sprintf(general_purpose_gui_buffer, 
+		snprintf(general_purpose_gui_buffer, 512, 
 						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
 						"<b>Action name:</b> <i>%s (%s)</i><br><br>"
 						"<b>Event:</b> <i>{%s}</i><br>"
@@ -4554,6 +4556,7 @@ void Z2S_updateWebGUI() {
 	fillMemoryUptimeInformation(memory_info_gui_buffer, 768);
 
 	updateLabel_P(gateway_memory_info, memory_info_gui_buffer);
+	//ESPUI.updateLabel(gateway_memory_info, memory_info_gui_buffer);
 }
 
 void clusterCallbackCmd() {

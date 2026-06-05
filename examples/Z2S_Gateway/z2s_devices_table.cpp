@@ -3407,7 +3407,6 @@ void Z2S_onOccupancyReceive(
     break;
   }
 
-  
   channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, sub_id);
   
