@@ -10,6 +10,7 @@
 #include <ESPmDNS.h>
 #include <esp_coexist.h>
 #include <esp_heap_caps.h>
+#include <esp_heap_trace.h>
 
 #include <ZigbeeGateway.h>
 #include <Z2S_custom_actions_events.h>
