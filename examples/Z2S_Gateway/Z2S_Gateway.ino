@@ -944,7 +944,7 @@ zbg_device_params_t *joined_device;
 
 size_t getArduinoLoopTaskStackSize(void) {
 
-  return 16384;
+  return 8192;
 }
 
 void loop() {
