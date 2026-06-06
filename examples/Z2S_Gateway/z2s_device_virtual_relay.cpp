@@ -475,9 +475,6 @@ void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, bool state) {
     return;
   }
 
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());
-
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
 
@@ -501,9 +498,6 @@ void msgZ2SDeviceVirtualRelayValue(
     log_e("error: invalid channel number slot");
     return;
   }
-
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());
 
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
@@ -559,9 +553,6 @@ void msgZ2SDeviceRollerShutter(
     log_e("msgZ2SDeviceRollerShutter - invalid channel number slot");
     return;
   }
-
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());
 
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);

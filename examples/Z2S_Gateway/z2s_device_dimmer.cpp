@@ -210,9 +210,6 @@ void msgZ2SDeviceDimmer(
     return;
   }
   
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());
-
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
 

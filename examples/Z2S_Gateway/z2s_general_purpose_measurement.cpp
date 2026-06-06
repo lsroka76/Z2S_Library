@@ -160,9 +160,6 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
         z2s_channels_table[channel_number_slot].Supla_channel, 
         value);
   
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].ieee_addr, millis());
-
   /*switch (z2s_channels_table[channel_number_slot].model_id) {
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
         int8_t sub_id = -1;
@@ -241,9 +238,6 @@ void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
           first_digit, last_digit);
     return;
   }
-
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].ieee_addr, millis());
 
   auto element = 
     Supla::Element::getElementByChannelNumber(

@@ -185,15 +185,6 @@ void addZ2SDeviceActionTriggerV2(
 
 void msgZ2SDeviceActionTrigger(int16_t channel_number_slot) {
 
-  /*if (channel_number_slot < 0) {
-    
-    log_e("invalid channel number slot");
-    return;
-  }
-
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].ieee_addr, millis());*/
-  
   auto element = 
     Supla::Element::getElementByChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
@@ -218,9 +209,6 @@ void msgZ2SDeviceActionTriggerV2(
     return;
   }
 
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());
-  
   if (!(z2s_channels_table[channel_number_slot].user_data_flags &
       USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0)) {
     msgZ2SDeviceActionTrigger(channel_number_slot);

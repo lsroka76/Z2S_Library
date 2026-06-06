@@ -1650,7 +1650,8 @@ uint8_t Z2S_addZbDeviceTableSlot(
 
     log_i("ZB device already in ZB devices table");
 
-    if (z2s_zb_devices_table[zb_device_slot].user_data_flags | ZBD_USER_DATA_FLAG_VERSION_2_0) {
+    if (z2s_zb_devices_table[zb_device_slot].user_data_flags | 
+        ZBD_USER_DATA_FLAG_VERSION_2_0) {
       
       if (!Z2S_updateZbDeviceUidIdx(
         zb_device_slot, nullptr, nullptr)) {
@@ -1696,54 +1697,6 @@ uint8_t Z2S_addZbDeviceTableSlot(
           short_addr);
     }
     return zb_device_slot;
-  }
-}
-
-/*****************************************************************************/
-
-void  Z2S_updateZbDeviceLastSeenMs(
-  esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms){
-
-  return;
-  
-  uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
-
-  if (zb_device_slot == 0xFF) {
-
-    log_e("Unknown ZB device - update not possible!");
-    return;
-  } 
-  else {
-    
-    portENTER_CRITICAL(Z2S_globalMutex);
-
-    z2s_zb_devices_table[zb_device_slot].last_seen_ms = last_seen_ms;
-
-    portEXIT_CRITICAL(Z2S_globalMutex);
-  }
-}
-
-/*****************************************************************************/
-
-void  Z2S_updateZbDeviceLastSeenMs(
-  uint16_t short_addr, uint32_t last_seen_ms) {
-
-  return;
-  
-  uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
-
-  if (zb_device_slot == 0xFF) {
-    
-    log_e("Unknown ZB device - update not possible!");
-    return;
-  } 
-  else {
-    
-    portENTER_CRITICAL(Z2S_globalMutex);
-
-    z2s_zb_devices_table[zb_device_slot].last_seen_ms = last_seen_ms;
-
-    portEXIT_CRITICAL(Z2S_globalMutex);
   }
 }
 
@@ -1797,13 +1750,6 @@ void Z2S_printZbDevicesTableSlots(bool toTelnet) {
 
 uint32_t Z2S_getZbDevicesTableSize() {
   
-  /*uint32_t _z2s_zb_devices_table_size;
-  
-  if (Supla::Storage::ConfigInstance()->getUInt32(
-    Z2S_ZB_DEVICES_TABLE_SIZE, &_z2s_zb_devices_table_size))
-    return _z2s_zb_devices_table_size;
-  else
-    return 0;*/
   if (Z2S_initLittleFs()) {
 
     uint32_t _z2s_zb_devices_table_size = Z2S_getFileSize(

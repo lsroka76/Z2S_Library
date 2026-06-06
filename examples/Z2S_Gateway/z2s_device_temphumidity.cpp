@@ -255,9 +255,6 @@ void msgZ2SDeviceTempHumidityTemp(
     return;
   }
 
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());
-
   auto element = 
     Supla::Element::getElementByChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
@@ -274,13 +271,6 @@ void msgZ2SDeviceTempHumidityTemp(
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
 
 
-      auto Supla_Z2S_VirtualThermHygroMeter_1 = 
-        static_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
-
-      log_i(
-        "reinterpret_cast %lu, static cast %lu", 
-        Supla_Z2S_VirtualThermHygroMeter, Supla_Z2S_VirtualThermHygroMeter_1);
-    
       if (refresh_only)
         Supla_Z2S_VirtualThermHygroMeter->Refresh();
       else
@@ -295,15 +285,6 @@ void msgZ2SDeviceTempHumidityTemp(
 
       auto Supla_Z2S_VirtualThermometer = 
         reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
-
-      auto Supla_Z2S_VirtualThermometer_1 = 
-        static_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
-    
-      //Supla_Z2S_VirtualThermometer->setValue(temp);
-
-      log_i(
-        "reinterpret_cast %lu, static cast %lu", 
-        Supla_Z2S_VirtualThermometer, Supla_Z2S_VirtualThermometer_1);
       
       if (refresh_only)
         Supla_Z2S_VirtualThermometer->Refresh();
@@ -330,9 +311,6 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi) {
     log_e("msgZ2SDeviceTempHumidityHumi - invalid channel number slot");
     return;
   }
-
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());
 
   auto Supla_Z2S_VirtualThermHygroMeter = 
     getZ2SDeviceTempHumidityPtr(
