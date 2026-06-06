@@ -1160,8 +1160,8 @@ void buildGatewayTabGUI() {
 
 	working_str = general_purpose_gui_buffer;
 	gateway_general_info = ESPUI.addControl(
-		Control::Type::Label, PSTR("GATEWAY FIRMWARE"), working_str,
-		Control::Color::Emerald, gatewaytab);
+		Control::Type::Label, empty_str, working_str,Control::Color::Emerald,
+		gatewaytab);
 
 	ESPUI.setElementStyle(
 		gateway_general_info, 
@@ -1179,9 +1179,9 @@ void buildGatewayTabGUI() {
 
 	working_str = general_purpose_gui_buffer;
 	gateway_memory_info = ESPUI.addControl(
-		Control::Type::Label, PSTR("GATEWAY MEMORY & TIME"), working_str,
-		Control::Color::Emerald, gatewaytab);
-	//ESPUI.getControl(gateway_memory_info)->getValue().reserve(1024);
+		Control::Type::Label, empty_str, working_str,Control::Color::Emerald, 
+		gatewaytab);
+	
 
 	ESPUI.setElementStyle(
 		gateway_memory_info, 
