@@ -931,12 +931,9 @@ void setup() {
     Z2S_addZ2SDevice(&test_joined_device);*/
 
   disableCore0WDT();
-  //disableCore1WDT();
   disableLoopWDT();
   esp_task_wdt_delete(NULL);
   esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
-  //rtc_wdt_protect_off();
-  //rtc_wdt_disable();
 }
 
 zbg_device_params_t *gateway_device;
