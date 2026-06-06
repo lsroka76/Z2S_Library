@@ -1703,6 +1703,8 @@ uint8_t Z2S_addZbDeviceTableSlot(
 
 void  Z2S_updateZbDeviceLastSeenMs(
   esp_zb_ieee_addr_t  ieee_addr, uint32_t last_seen_ms){
+
+  return;
   
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(ieee_addr);
 
@@ -1726,6 +1728,8 @@ void  Z2S_updateZbDeviceLastSeenMs(
 void  Z2S_updateZbDeviceLastSeenMs(
   uint16_t short_addr, uint32_t last_seen_ms) {
 
+  return;
+  
   uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
 
   if (zb_device_slot == 0xFF) {
