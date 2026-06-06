@@ -89,8 +89,6 @@ public:
 
 
     if (_timeout_ms) {
-
-      log_i("_timeout_ms %lu", _timeout_ms);
       
       uint32_t _zb_device_last_seen_ms = getZbDeviceLastSeenMs();
       

@@ -4958,10 +4958,6 @@ void updateDeviceInfoLabel(uint8_t device_slot) {
 						z2s_zb_devices_table[device_slot].ieee_addr[1], 
 						z2s_zb_devices_table[device_slot].ieee_addr[0]);
 
-	uint8_t battery_percentage = 
-		z2s_zb_devices_table[device_slot].battery_percentage >= 0x80 ? 
-		z2s_zb_devices_table[device_slot].battery_percentage - 0x80 : 0xFF;
-
 	snprintf_P(general_purpose_gui_buffer, 768,
 						PSTR("<b><i><style=color:black>Slot#</b></i> %02u <b>| <i>"
 						"Manufacturer name<style=;></i></b> %s "
@@ -4981,11 +4977,9 @@ void updateDeviceInfoLabel(uint8_t device_slot) {
 						ieee_addr_str,
 						z2s_zb_devices_table[device_slot].short_addr,
 						z2s_zb_devices_table[device_slot].power_source,
-						battery_percentage,
+						z2s_zb_devices_table[device_slot].battery_percentage,
 						z2s_zb_devices_table[device_slot].last_seen_ms,
 						z2s_zb_devices_table[device_slot].rssi,
-						//zbGateway.getZbgDeviceUnitLastSeenMs(z2s_zb_devices_table[device_slot].short_addr),
-						//zbGateway.getZbgDeviceUnitLastRssi(z2s_zb_devices_table[device_slot].short_addr),
 						z2s_zb_devices_table[device_slot].user_data_flags,
 						z2s_zb_devices_table[device_slot].user_data_1,
 						z2s_zb_devices_table[device_slot].user_data_2);

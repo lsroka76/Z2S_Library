@@ -942,6 +942,10 @@ void setup() {
 zbg_device_params_t *gateway_device;
 zbg_device_params_t *joined_device;
 
+size_t getArduinoLoopTaskStackSize(void) {
+
+  return 16384;
+}
 
 void loop() {
 
