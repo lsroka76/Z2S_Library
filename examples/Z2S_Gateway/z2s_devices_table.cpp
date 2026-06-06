@@ -10056,10 +10056,6 @@ void updateSuplaBatteryLevel(
     break;
   }
 
-  //if (!restore)
-  Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());
-
   if (zb_device_number_slot < 0xFF) {
 
     if (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & 
@@ -10075,21 +10071,8 @@ void updateSuplaBatteryLevel(
         (z2s_zb_devices_table[zb_device_number_slot].user_data_flags & 
         ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG))
       battery_level = 0xFF;
-
-    /*if (battery_level < 0x65) //0x00...0x64 0-100%
-      z2s_zb_devices_table[zb_device_number_slot].battery_percentage = 0x80 + battery_level;
-    else 
-      z2s_zb_devices_table[zb_device_number_slot].battery_percentage = 0xFF;
-    */
-    //Z2S_saveZbDevicesTable(); //switched off - restore not working
   } 
     
-  /*if ((z2s_channels_table[channel_number_slot].model_id == Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10) &&
-      (id == ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID)) {
-    log_i("Temporary fix for inaccurate voltage scaling"); //TODO add battery_voltage_max, battery_voltage_min for different models
-    return;
-  }*/
-
   z2s_zb_devices_table[zb_device_number_slot].battery_percentage = 
     battery_level;
 
