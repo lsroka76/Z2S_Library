@@ -329,7 +329,9 @@ uint8_t Z2S_findZbDeviceTableSlot(uint16_t short_addr);
 uint8_t Z2S_countChannelsWithZbDeviceId(uint8_t Zb_device_id);
 bool Z2S_hasZbDevice(uint32_t desc_id);
 void Z2S_initZbDevices(uint32_t init_ms);
-
+void  Z2S_updateZbDeviceLastSeenMs(
+  uint16_t short_addr, uint32_t last_seen_ms);
+  
 uint8_t Z2S_addZbDeviceTableSlot(
   esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr,
   const char *manufacturer_name, const char *model_name,

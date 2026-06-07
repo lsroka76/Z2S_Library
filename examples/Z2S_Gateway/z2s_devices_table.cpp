@@ -1702,6 +1702,28 @@ uint8_t Z2S_addZbDeviceTableSlot(
 
 /*****************************************************************************/
 
+void  Z2S_updateZbDeviceLastSeenMs(
+  uint16_t short_addr, uint32_t last_seen_ms) {
+
+  uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
+
+  if (zb_device_slot == 0xFF) {
+    
+    log_e("Unknown ZB device - update not possible!");
+    return;
+  } 
+  else {
+    
+    portENTER_CRITICAL(Z2S_globalMutex);
+
+    z2s_zb_devices_table[zb_device_slot].last_seen_ms = last_seen_ms;
+
+    portEXIT_CRITICAL(Z2S_globalMutex);
+  }
+}
+
+/*****************************************************************************/
+
 void Z2S_printZbDevicesTableSlots(bool toTelnet) {
   
   for (uint8_t devices_counter = 0; 
@@ -10001,7 +10023,7 @@ void updateSuplaBatteryLevel(
   uint8_t battery_level = 0xFF;  
 
   uint8_t zb_device_number_slot = 
-    Z2S_findZbDeviceTableSlot(z2s_channels_table[channel_number_slot].ieee_addr);
+    Z2S_findZbDeviceTableSlot(z2s_channels_table[channel_number_slot].short_addr);
 
   uint8_t battery_voltage_max  = 33;
   uint8_t battery_voltage_min  = 28;
@@ -10104,12 +10126,12 @@ void updateSuplaBatteryLevel(
           } break;
 
 
-          case SUPLA_CHANNELTYPE_THERMOMETER:{
+          case SUPLA_CHANNELTYPE_THERMOMETER: {
 
-            auto Supla_Z2S_VirtualThermHygroMeter = 
-              reinterpret_cast<Supla::Sensor::Z2S_VirtualThermHygroMeter *>(element);
+            auto Supla_Z2S_VirtualThermometer = 
+              reinterpret_cast<Supla::Sensor::Z2S_VirtualThermometer *>(element);
 
-            Supla_Z2S_VirtualThermHygroMeter->Refresh();
+            Supla_Z2S_VirtualThermometer->Refresh();
           } break;
 
 
