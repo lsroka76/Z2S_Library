@@ -178,10 +178,10 @@ public:
     log_i("sent from core!"); 
   };
 
-  virtual uint32_t getID() {
+  /*virtual uint32_t getID() {
 
     return 0;
-  };
+  };*/
 
   uint32_t getZbDeviceModelID() {
 
