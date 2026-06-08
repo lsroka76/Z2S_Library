@@ -210,6 +210,11 @@ class LocalVirtualRelay: public VirtualRelay {
 
     virtual ~LocalVirtualRelay();
     void handleAction(int event, int action) override; 
+    void iterateAlways() override;
+  protected:
+
+    uint32_t timer_update_ms = 0;
+    uint32_t test_ms = 300 * 1000;
 };
 
 class SwitchBotRelay: public Relay {
