@@ -16,13 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef Z2S_VIRTUAL_THERMOMETER_H_
-#define Z2S_VIRTUAL_THERMOMETER_H_
+#ifndef Z2S_GENERAL_PURPOSE_MEASUREMENT_H_
+#define Z2S_GENERAL_PURPOSE_MEASUREMENT_H_
 
 #include <NetworkClient.h>
 #include <ESPmDNS.h>
 
-#include <supla/sensor/virtual_thermometer.h>
+#include <supla/sensor/general_purpose_channel_base.h>
 
 #include "Z2S_common.h"
 
@@ -34,12 +34,17 @@
 
 namespace Supla {
 namespace Sensor {
-class Z2S_VirtualThermometer : public Supla::Sensor::VirtualThermometer,
+class Z2S_GeneralPurposeMeasurement : public Supla::Sensor::GeneralPurposeChannelBase,
   public Z2S_Core {
   
 public:
     
-  Z2S_VirtualThermometer(bool rwns_flag = false) : _rwns_flag(rwns_flag) {}
+  Z2S_GeneralPurposeMeasurement(bool rwns_flag = false) : 
+    GeneralPurposeChannelBase(nullptr, false), _rwns_flag(rwns_flag) {
+
+    channel.setType(SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT);
+    channel.setDefaultFunction(SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+  }
 
   void setRWNSFlag(bool rwns_flag) {
 
@@ -57,39 +62,23 @@ public:
     channel.setStateOnline();
   }
 
-  void setTemperature(double val) {
+  void setValue(double value) {
     
-    log_i("temperature = %f4.2", val);
-    _forced_temperature = false;
-    temperature = val;
-
-    channel.setNewValue(temperature);
-    Refresh();
-  }
-
-  void setForcedTemperature(double val) {
-    
-    log_i("temperature = %f4.2", val);
-    _forced_temperature = true;
-    temperature = val;
+    _value = value;
 
     Refresh();
   }
 
-  bool isForcedTemperature() {
+  double getValue() {
 
-    return _forced_temperature;
+    return _value;
   }
 
   void iterateAlways() override {
     
+    GeneralPurposeChannelBase::iterateAlways();
+    
     uint32_t millis_ms = millis();
-
-    if (millis_ms - lastReadTime > refreshIntervalMs) {
-      
-      lastReadTime = millis_ms;
-      channel.setNewValue(getTemp());
-    }
 
     if (_timeout_ms) {
       
@@ -114,9 +103,8 @@ public:
   }
     
  protected:
-
-  bool     _rwns_flag;
-  bool     _forced_temperature = false;
+  double _value = NAN;
+  bool   _rwns_flag;
 
   uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;
@@ -124,4 +112,4 @@ public:
 };  // namespace Sensor
 };  // namespace Supla
 
-#endif  // Z2S_VIRTUAL_THERMOMETER_H_
+#endif  // Z2S_GENERAL_PURPOSE_MEASUREMENT_H_

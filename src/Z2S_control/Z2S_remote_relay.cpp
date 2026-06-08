@@ -53,7 +53,7 @@ bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
     if(_remote_gateway_ip == 0) {
 
       if (_remote_gateway_mDNS_name)
-        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name, 1000);
+        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name, 500);
       else
         return false;
 
@@ -62,14 +62,14 @@ bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
         return false;
     }
 
-    if (!Z2S_NetworkClient.connect(_remote_gateway_ip, REMOTE_RELAY_PORT)) {
+    if (!Z2S_NetworkClient.connect(_remote_gateway_ip, REMOTE_RELAY_PORT, 500)) {
 
       if (_remote_gateway_mDNS_name)
-        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name, 1000);
+        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name, 500);
       else
         return false;
 
-      if (!Z2S_NetworkClient.connect(_remote_gateway_ip, REMOTE_RELAY_PORT))
+      if (!Z2S_NetworkClient.connect(_remote_gateway_ip, REMOTE_RELAY_PORT, 500))
       return false;
     } else   
       return true;
