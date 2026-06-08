@@ -549,6 +549,26 @@ void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
     break;
   }
 }
+/*****************************************************************************/
+
+void Supla::Control::LocalVirtualRelay::iterateAlways() {
+
+  Supla::Control::VirtualRelay::iterateAlways();
+
+  /*if (millis() - timer_update_ms > 1000) {
+
+    for (auto proto = Supla::Protocol::ProtocolLayer::first();
+        proto != nullptr; proto = proto->next()) {
+      proto->sendRemainingTimeValue(
+        getChannelNumber(), test_ms, state, 0);
+    }  
+    timer_update_ms = millis();
+    if (test_ms >= 1000)
+      test_ms -= 1000;
+    else test_ms = 300000;
+  }*/
+}
+
 
 /*****************************************************************************/
 
