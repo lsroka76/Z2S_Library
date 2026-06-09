@@ -2,7 +2,8 @@
 #define Z2S_DEVICE_GENERAL_PURPOSE_MEASUREMENT_H_
 
 #include "z2s_devices_table.h"
-#include <supla/sensor/general_purpose_measurement.h>
+#include <Z2S_sensor/Z2S_general_purpose_measurement.h>
+//#include <supla/sensor/general_purpose_measurement.h>
 
 /*****************************************************************************/
 

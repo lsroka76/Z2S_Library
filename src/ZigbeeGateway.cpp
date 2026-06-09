@@ -1142,21 +1142,10 @@ void ZigbeeGateway::printJoinedDevices() {
   }
 }
 
-void ZigbeeGateway::zbAttributeReporting(
+void ZigbeeGateway::zbProcessAttributeReporting(
   esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
   const esp_zb_zcl_attribute_t *attribute) {
   
-  uint16_t short_addr = src_address.u.short_addr;
-  log_i("short address 0x%04X", short_addr);
-  //esp_zb_ieee_address_by_short(short_addr, src_address.u.ieee_addr);
-  //log_i(
-    //"short address after esp_zb_ieee_address_by_short 0x%04X", short_addr);
-
-  esp_zb_ieee_addr_t ieee_addr_test = {};
-  esp_zb_ieee_address_by_short(short_addr, ieee_addr_test);
-  for (uint8_t i = 0; i < 8; i++)
-  log_i("ieee_addr[%u] = %02X", i, ieee_addr_test[7-i]);
-
   if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT) {
     
     if ((attribute->id == ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID) && 
@@ -1171,9 +1160,11 @@ void ZigbeeGateway::zbAttributeReporting(
         _on_temperature_receive(
           src_address.u.short_addr, src_endpoint, cluster_id, 
           ((float)value)/100);
-    } else log_i("\n\rtemperature cluster (0x%x)"
-                 "\n\rattribute id (0x%x)"
-                "\n\rattribute data type (0x%x)", 
+    } else 
+      log_i(
+        "\n\rtemperature cluster (0x%x)"
+        "\n\rattribute id (0x%x)"
+        "\n\rattribute data type (0x%x)", 
                 cluster_id, attribute->id,  attribute->data.type);
 
     } else if (cluster_id == 
@@ -1743,6 +1734,28 @@ void ZigbeeGateway::zbAttributeReporting(
         cluster_id, attribute->id, attribute->data.type);
 }
 
+void ZigbeeGateway::zbAttributeReporting(
+  esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+  const esp_zb_zcl_attribute_t *attribute) {
+  
+  uint16_t short_addr = src_address.u.short_addr;
+  log_i("short address 0x%04X", short_addr);
+  //esp_zb_ieee_address_by_short(short_addr, src_address.u.ieee_addr);
+  //log_i(
+    //"short address after esp_zb_ieee_address_by_short 0x%04X", short_addr);
+
+  //esp_zb_ieee_addr_t ieee_addr_test = {};
+  //esp_zb_ieee_address_by_short(short_addr, ieee_addr_test);
+  //for (uint8_t i = 0; i < 8; i++)
+  //log_i("ieee_addr[%u] = %02X", i, ieee_addr_test[7-i]);
+
+  //if (_on_update_device_last_rssi)
+  //  _on_update_device_last_rssi(short_addr, 0);
+
+  zbProcessAttributeReporting(
+    src_address, src_endpoint, cluster_id, attribute);
+}
+
 void ZigbeeGateway::zbReadAttrResponse(
   uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 
   uint16_t src_endpoint, uint16_t cluster_id,  esp_zb_zcl_status_t status, 
@@ -1777,9 +1790,10 @@ void ZigbeeGateway::zbReadAttrResponse(
     if (status == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
       if (_on_update_device_last_rssi)
-      _on_update_device_last_rssi(src_address.u.short_addr, rssi);
+        _on_update_device_last_rssi(src_address.u.short_addr, rssi);
 
-      zbAttributeReporting(src_address, src_endpoint, cluster_id, attribute);
+      zbProcessAttributeReporting(
+        src_address, src_endpoint, cluster_id, attribute);
     }
   }
 }
@@ -1836,10 +1850,6 @@ void ZigbeeGateway::zbIASZoneStatusChangeNotification(
     const esp_zb_zcl_ias_zone_status_change_notification_message_t *message) {
 
   esp_zb_zcl_cmd_info_t info = message->info;
-
-  //esp_zb_ieee_address_by_short(
-  //  info.src_address.u.short_addr, info.src_address.u.ieee_addr);
-  
 
   if (_on_IAS_zone_status_change_notification)
     _on_IAS_zone_status_change_notification(

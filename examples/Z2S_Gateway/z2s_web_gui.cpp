@@ -5571,8 +5571,8 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 		case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT: {
 
-			enableChannelTimings(0);
-			enableChannelFlags(16);
+			enableChannelTimings(2); //timeout 
+			enableChannelFlags(4 + 16);
 			enableChannelParams(3);
 
 			char *working_str_ptr = PSTR(

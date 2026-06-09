@@ -87,6 +87,8 @@ void msgZ2SDeviceIASzone(
 
   /*Z2S_updateZbDeviceLastSeenMs(
     z2s_channels_table[channel_number_slot].short_addr, millis());*/
+  Z2S_updateZbDeviceLastSeenMsById(
+    z2s_channels_table[channel_number_slot].Zb_device_id);  
 
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
@@ -98,7 +100,7 @@ void msgZ2SDeviceIASzone(
         auto Supla_Z2S_VirtualBinary = 
           reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
         
-        Supla_Z2S_VirtualBinary->Refresh();
+        //Supla_Z2S_VirtualBinary->Refresh();
 
         bool state_changed = 
           (state == !Supla_Z2S_VirtualBinary->getValue()) ? false : true;

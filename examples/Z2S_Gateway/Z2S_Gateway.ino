@@ -102,15 +102,7 @@ static uint8_t test_device_install_code[18] =
    0x38, 0x2E, 0x1A, 0x74, 0x4F, 0xDB};*/
 
 static NetworkServer TestServer(REMOTE_RELAY_PORT);
-//static NetworkServer ThermometerServer(REMOTE_RELAY_PORT);
-static NetworkClient TestClient;
 static NetworkClient client2;
-//static Supla::Control::Z2S_RemoteRelay *testRemoteRelay;
-//Supla::Sensor::VirtualThermometer *TEST_VT;
-
-static bool tcp_server_started = false;
-
-//ZigbeeGateway zbGateway = ZigbeeGateway(GATEWAY_ENDPOINT_NUMBER);
 
 Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi;
@@ -120,15 +112,17 @@ Supla::EspWebServer *suplaServer;
 
 ZbPairingManager *zpm = nullptr;
 
-constexpr uint8_t LED_PIN   = 8;
-constexpr uint8_t NUM_LEDS  = 1;
+constexpr uint8_t LED_PIN = 8;
+constexpr uint8_t NUM_LEDS = 1;
 
-uint32_t refresh_time       = 0;
-uint8_t refresh_cycle       = 0;
+uint32_t refresh_time = 0;
+uint8_t refresh_cycle = 0;
 
-uint32_t test_loop_ms       = 0;
+//uint32_t test_loop_ms = 0;
 
-uint32_t _init_devices_ms   = 0;
+//uint32_t _init_devices_ms = 0;
+
+uint32_t _z2s_iterate_ms = 0;
 
 uint32_t _time_cluster_last_refresh_ms = 0;
 
@@ -260,7 +254,7 @@ void supla_callback_bridge(int event, int action) {
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);
       
         refresh_time = 0;
-        _init_devices_ms = millis();
+        //_init_devices_ms = millis();
         
         #ifdef USE_TELNET_CONSOLE
 
@@ -1011,6 +1005,11 @@ void loop() {
   }
  
   SuplaDevice.iterate();
+  
+  vTaskDelay(pdMS_TO_TICKS(10));
+
+  if (millis() - _z2s_iterate_ms > 5000)
+    _z2s_iterate_ms = Z2S_iterateSuplaChannels(_z2s_iterate_ms);
 
 #ifdef USE_TELNET_CONSOLE
 
@@ -1122,13 +1121,11 @@ if (client2 && client2.connected()) {
     uint32_t new_local_time = time(NULL) - 946684800;
     uint8_t time_status = 0x02;
         
-    log_i("New UTC time %lu, new local time %lu", 
-          new_utc_time, 
-          new_local_time);
+    log_i(
+      "New UTC time %lu, new local time %lu", new_utc_time, new_local_time);
     
     log_i("now attempting to check heap integrity #1");
     heap_caps_check_integrity_all(true);
-
 
     esp_zb_lock_acquire(portMAX_DELAY);
 
@@ -1163,10 +1160,6 @@ if (client2 && client2.connected()) {
       "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
       time_status_attribute, utc_time_attribute, local_time_attribute);
 
-    log_i("now attempting to check heap integrity #2");
-    heap_caps_check_integrity_all(true);
-
-
     for (uint8_t devices_counter = 0; 
          devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
 
@@ -1183,171 +1176,10 @@ if (client2 && client2.connected()) {
       }
     }
 
-    /*for (uint8_t channels_counter = 0; 
-             channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++)
-      if (Z2S_getChannelZbDevicePtr(channels_counter))
-        log_i(
-          "DEVICE: %s, LAST SEEN (S) %lu", 
-          Z2S_getChannelZbDevicePtr(channels_counter)->device_local_name,
-          Z2S_getChannelZbDevicePtr(channels_counter)->last_seen_ms / 1000);*/
-
-    log_i("now attempting to check heap integrity #3");
-
-    heap_caps_check_integrity_all(true);
-
     if (Z2S_isGUIStarted())
       Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
-  }
-
-  if (millis() - test_loop_ms > 1000) {
-
-    //uint8_t ota_buffer[128];
-    test_loop_ms = millis();
-    /*if (Z2S_initLittleFs()) {
-
-  	  size_t bytes_read = Z2S_loadBufferFromFile(
-			  "/zigbee_ota/zigbee_ota_file.ota", 400, 63, ota_buffer);
-      Z2S_endLittleFs(); 
-    } else
-      log_i("Z2S_initLittleFs() failed!");*/
-    //if (Zigbee.started())
-      //msgZ2SDeviceIASzone(0, random(0,2));
-    //msgZ2SDeviceElectricityMeter(
-    //  1, Z2S_EM_ACT_FWD_ENERGY_A_DELTA_SEL, random(0,2));
-    /*log_i(
-      "\n\rsaved millis\t\t%llu\n\rcurrent millis\t\t%llu", 
-      Z2S_GatewayPreferences.getULong64("EM_EC_A"), test_loop_ms);
-
-    Z2S_GatewayPreferences.putULong64("EM_EC_A", test_loop_ms);*/
-  }
-
-  if (millis() - refresh_time > REFRESH_PERIOD) {
-
-    log_i("refresh cycle = %u", refresh_cycle);
-    
-    if (refresh_cycle == 30) {
-
-      /*log_i(
-        "\n\rMemory information:\n\rFlash chip real size: %u B"
-        "\n\rFree Sketch Space: %u B\n\rHeapSize: %u B\n\rFree Heap: %u B"
-        "\n\rMaxAllocHeap: %u B\n\rMinimal Free Heap: %u B"
-				"\n\rSupla uptime: %lu s", ESP.getFlashChipSize(), 
-        ESP.getFreeSketchSpace(), ESP.getHeapSize(), ESP.getFreeHeap(), 
-        ESP.getMaxAllocHeap(), ESP.getMinFreeHeap(),  
-        SuplaDevice.uptime.getUptime());*/
-
-      Serial.println("Memory info");
-      Serial.println(ESP.getHeapSize());
-      Serial.println(ESP.getFreeHeap());
-      Serial.println(ESP.getMaxAllocHeap());
-      Serial.println(ESP.getMinFreeHeap());  
-      Serial.println(SuplaDevice.uptime.getUptime());
-
-      //printTaskInfo();
-    }
-    for ([[maybe_unused]]const auto &device : zbGateway.getGatewayDevices()) {       
-
-      if (refresh_cycle % 12 == 0) {//print every 120 seconds - only for debug purposes 
-        //uint32_t app_device_id = 0;
-        //zbGateway.sendSimpleDescriptorRequestCmd(device->short_addr, 1, &app_device_id);
-        //log_i("app_device_id %u", app_device_id);
-        /*log_i("Device on endpoint(0x%x), short address(0x%x), model id(0x%x), cluster id(0x%x), rejoined(%s)", 
-              device->endpoint, device->short_addr, device->model_id, device->cluster_id, device->rejoined ? "YES" : "NO");
-        log_i("Gateway version: %s", Z2S_VERSION);*/
-        //int8_t zb_tx_power;
-        //esp_zb_get_tx_power(&zb_tx_power);
-        //log_i("Zigbee TX power: %d", zb_tx_power);
-        //Z2S_updateWebGUI();
-      /*  if (Test_GeneralPurposeMeasurement) {
-          char display_buffer[15] = {};
-          char test_gpm_buf[15];
-          sprintf(test_gpm_buf, "%llu", time(NULL));
-          //Test_GeneralPurposeMeasurement->setNoSpaceBeforeValue(0, true);
-          //Test_GeneralPurposeMeasurement->setNoSpaceAfterValue(0, true);
-          //Test_GeneralPurposeMeasurement->setValue(0.2800);
-          //Test_GeneralPurposeMeasurement->setUnitBeforeValue("0123456789ABCD", true);
-          //sprintf(test_gpm_buf, "%llu", millis());
-          //Test_GeneralPurposeMeasurement->setUnitAfterValue("EF0123456789AB", true);*/
-          /*display_buffer[0] = random(0,2) + '0';
-          msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 1, 1, display_buffer);
-          sprintf(display_buffer, "%02u", 1 + random(0,18));
-          msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 3, 2, display_buffer);
-          sprintf(display_buffer, "%u", random(0,3));
-          msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 6, 1, display_buffer);
-          sprintf(display_buffer, "%04u", random(0,1801));
-          msgZ2SDeviceGeneralPurposeMeasurementDisplay(0, 8, 4, display_buffer);*/
-          //sprintf(display_buffer, "A%1uM%02uV%1uD%04u", random(0,2), 1 + random(0,18), random(0,3), random(0,1801));
-          //Test_GeneralPurposeMeasurement->setValue(random(0,10));
-          //Test_GeneralPurposeMeasurement->setUnitBeforeValue(display_buffer, true);
-
-        //}
-      }
-
-    if (refresh_cycle % 12 == 0) {
-
-      //heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
-      //heap_caps_dump_all();
-  
-    }
-   
-        /*switch (tcp_connect_state) {
-          
-          case 0: {
-            
-            Serial.printf("Connecting...\n");
-            if (!client.connect("192.168.1.36", 1234)) {
-            
-              Serial.printf("Failed to connect!\n");
-              delay(1000);  // to not flood logs
-            } else {
-              tcp_connect_state = 1;
-            } break;
-          }
-
-          case 1: {
-
-            Serial.printf("Still connecting...\n");
-            delay(500);  // to not flood logs
-          } break;
-
-          case 2: {
-
-            tpc_send_buffer[0] = 'A';
-            tpc_send_buffer[1] = 'B';
-            tpc_send_buffer[2] = 0;
-            client.write(tpc_send_buffer, 3);
-          }
-        }*/
-      //}
-      if (refresh_cycle % 3 == 0) {
-        //log_i("getZbgDeviceUnitLastSeenMs %d, current millis %d", zbGateway.getZbgDeviceUnitLastSeenMs(device->short_addr), millis());
-        /*uint32_t random_temperature = (21 + random(-5, 5)) * 100;
-        uint8_t random_src_channel = 1 + random(0,127);
-        if (TestClient.connect(MDNS.queryHost("bramka_36"), 1234)) {
-
-          TestClient.printf("Z2SCMD%02u%03u%03u%08ld\n", 
-                            0x10, 
-                            5,
-                            random_src_channel,
-                            random_temperature);
-    
-    
-          String response = TestClient.readStringUntil('\n');
-          if (response == "OK") 
-            log_i("Temperature sent");
-        
-          TestClient.stop();
-        }*/
-      }
-    //}
-    }
-    
-    //if (!zbGateway.getGatewayDevices().empty()) {
-      refresh_time = millis();
-      refresh_cycle = (refresh_cycle + 1) % 31;
-    //}
   }
 
   if ((!zbGateway.getJoinedDevices().empty()) && 

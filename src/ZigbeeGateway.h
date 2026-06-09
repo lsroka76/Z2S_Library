@@ -817,6 +817,10 @@ private:
   void zbAttributeReporting(
     esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
     const esp_zb_zcl_attribute_t *attribute) override;
+
+  void zbProcessAttributeReporting(
+    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
+    const esp_zb_zcl_attribute_t *attribute);
   
   void zbReadAttrResponse(
     uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 

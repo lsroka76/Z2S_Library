@@ -1498,7 +1498,6 @@ z2s_zb_device_params_t *Z2S_getChannelZbDevicePtr(
       return (z2s_zb_devices_table + Zb_device_id);
     else
       return nullptr;
-      
   }
   return nullptr;
 }
@@ -1714,12 +1713,42 @@ void  Z2S_updateZbDeviceLastSeenMs(
   } 
   else {
     
-    portENTER_CRITICAL(Z2S_globalMutex);
+    //portENTER_CRITICAL(Z2S_globalMutex);
 
     z2s_zb_devices_table[zb_device_slot].last_seen_ms = last_seen_ms;
 
-    portEXIT_CRITICAL(Z2S_globalMutex);
+    //portEXIT_CRITICAL(Z2S_globalMutex);
   }
+}
+
+/*****************************************************************************/
+
+void  Z2S_updateZbDeviceLastSeenMsById(uint8_t Zb_device_id) {
+
+  //portENTER_CRITICAL(Z2S_globalMutex);
+
+  z2s_zb_devices_table[Zb_device_id].last_seen_ms = millis();
+
+  //portEXIT_CRITICAL(Z2S_globalMutex);
+}
+
+/*****************************************************************************/
+
+uint32_t Z2S_getZbDeviceDescID(int16_t channel_number_slot) {
+
+  if ((channel_number_slot >= 0) && 
+      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) &&
+      z2s_channels_table[channel_number_slot].valid_record) {
+
+    uint8_t Zb_device_id = 
+      z2s_channels_table[channel_number_slot].Zb_device_id;
+    
+    if ((Zb_device_id >= 0) && (Zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER))
+      return z2s_zb_devices_table[Zb_device_id].desc_id;
+    else
+      return 0;
+  }
+  return 0;
 }
 
 /*****************************************************************************/
@@ -2535,6 +2564,54 @@ void Z2S_initSuplaChannels() {
   else
     addZ2SDeviceGatewayEvents(GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT);
 
+}
+
+/*****************************************************************************/
+
+uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms) {
+
+  uint32_t millis_ms = millis();
+  
+  for (uint8_t devices_counter = 0; 
+       devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+    
+    if ((z2s_zb_devices_table[devices_counter].record_id > 0) &&
+        (z2s_zb_devices_table[devices_counter].last_seen_ms > 
+            last_iterate_ms)) {
+      
+      uint8_t rssi_percentage = map(
+            z2s_zb_devices_table[devices_counter].rssi, -100, -30, 0, 100);
+      uint8_t battery_level = 
+        z2s_zb_devices_table[devices_counter].battery_percentage;
+
+      for (uint8_t channels_counter = 0; 
+           channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+
+        if ((z2s_channels_table[channels_counter].valid_record) &&
+            (z2s_channels_table[channels_counter].Zb_device_id == 
+              devices_counter)) {
+          
+          auto element = Supla::Element::getElementByChannelNumber(
+          z2s_channels_table[channels_counter].Supla_channel);
+          if (element) {
+
+            element->getChannel()->setStateOnline();
+            element->getChannel()->setBridgeSignalStrength(rssi_percentage);
+            if ((battery_level < 0xFF) && 
+                ((z2s_channels_table[channels_counter].user_data_flags &
+                  USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL) == 0)) {
+              
+              element->getChannel()->setBatteryLevel(battery_level);
+            }
+          }
+        }
+      }
+    }
+  }
+  /*uint32_t iterate_ms = millis() - millis_ms;
+  log_i(
+    "last_iterate_ms = %lu, iterate_ms = %lu", last_iterate_ms, iterate_ms);*/
+  return millis_ms;
 }
 
 /*****************************************************************************/
@@ -4641,7 +4718,7 @@ void Z2S_onBasicReceive(
         return;
       }       
 
-      if (z2s_channels_table[channel_number_slot].model_id ==
+      if (Z2S_getZbDeviceDescID(channel_number_slot) ==
           Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2)
         return; //onPressureReceive gets more accurate results
 
@@ -6892,16 +6969,18 @@ void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
 
     uint32_t millis_ms = millis();
 
-    portENTER_CRITICAL(Z2S_globalMutex);
+    //portENTER_CRITICAL(Z2S_globalMutex);
 
-    if (z2s_zb_devices_table[device_number_slot].last_seen_ms - 
-        millis_ms > 1000) {
+    //if (z2s_zb_devices_table[device_number_slot].last_seen_ms - 
+    //    millis_ms > 1000) {
 
-      z2s_zb_devices_table[device_number_slot].rssi = rssi;
+      if (rssi < 0)
+        z2s_zb_devices_table[device_number_slot].rssi = rssi;
+      
       z2s_zb_devices_table[device_number_slot].last_seen_ms = millis_ms;
-    }
+    //}
 
-    portEXIT_CRITICAL(Z2S_globalMutex);
+    //portEXIT_CRITICAL(Z2S_globalMutex);
 
     /*int16_t channel_number_slot = Z2S_findChannelNumberNextSlot(-1, short_addr);
     uint8_t rssi_percentage = map(rssi, -100, -30, 0, 100);
@@ -9204,6 +9283,7 @@ void updateTimeout(
           Supla_Z2S_VirtualThermometer->setTimeoutSecs(timings_secs);
       } break;
 
+
       case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 
         auto Supla_Z2S_Z2S_VirtualPressure = 
@@ -9211,6 +9291,16 @@ void updateTimeout(
 
         if (selector & 2)
           Supla_Z2S_Z2S_VirtualPressure->setTimeoutSecs(timings_secs);
+      } break;
+
+
+      case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT: {
+
+        auto Supla_Z2S_GeneralPurposeMeasurement = reinterpret_cast<
+          Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
+
+        if (selector & 2)
+          Supla_Z2S_GeneralPurposeMeasurement->setTimeoutSecs(timings_secs);
       } break;
 
 
@@ -9311,8 +9401,13 @@ void updateTimeout(
         Supla_Z2S_TRVInterface->setTimeoutSecs(timings_secs);
       } break;
 
+
       case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
 
+        if (z2s_channels_table[channel_number_slot].user_data_flags &
+              USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0)
+          break;
+          
         auto Supla_Z2S_ActionTrigger = 
           reinterpret_cast<Supla::Control::VirtualRelaySceneSwitch *>(element);
      
@@ -10022,8 +10117,8 @@ void updateSuplaBatteryLevel(
 
   uint8_t battery_level = 0xFF;  
 
-  uint8_t zb_device_number_slot = 
-    Z2S_findZbDeviceTableSlot(z2s_channels_table[channel_number_slot].short_addr);
+  uint8_t zb_device_number_slot = Z2S_findZbDeviceTableSlot(
+    z2s_channels_table[channel_number_slot].short_addr);
 
   uint8_t battery_voltage_max  = 33;
   uint8_t battery_voltage_min  = 28;
@@ -10052,9 +10147,8 @@ void updateSuplaBatteryLevel(
 
     case ZBD_BATTERY_VOLTAGE_MSG:
 
-      battery_level = 
-        
-        (1000 - (battery_voltage_step * (battery_voltage_max - msg_value))) /10; 
+      battery_level = (1000 - (battery_voltage_step * 
+        (battery_voltage_max - msg_value))) /10; 
     break;
 
 
@@ -10098,7 +10192,7 @@ void updateSuplaBatteryLevel(
   z2s_zb_devices_table[zb_device_number_slot].battery_percentage = 
     battery_level;
 
-  while (channel_number_slot >= 0) {
+  /*while (channel_number_slot >= 0) {
     
     auto element = 
       Supla::Element::getElementByChannelNumber(
@@ -10157,7 +10251,7 @@ void updateSuplaBatteryLevel(
         channel_number_slot, 
         z2s_channels_table[channel_number_slot].ieee_addr, 
         -1, -1, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-  }
+  }*/
 }
 
 bool hasTuyaCustomCluster(uint32_t model_id) {
@@ -12040,7 +12134,7 @@ void printSizeOfClasses() {
   log_i("\n\rRelay %u - VirtualRelay %u - Z2S_VirtualRelay %u"
         "\n\rHvacBase %u - HvacBaseEE %u - Z2S_trv_interface %u"
         "\n\rVirtualSceneSwitch %u"
-        "\n\rGPM %u"
+        "\n\rZ2S_GPM %u"
         "\n\rIPAddress %u"
         "\n\rNetworkServer %u"
         "\n\rNetworkClient %u"
@@ -12052,7 +12146,7 @@ void printSizeOfClasses() {
         sizeof(Supla::Control::HvacBaseEE),
         sizeof(Supla::Control::Z2S_TRVInterface),
         sizeof(Supla::Control::VirtualRelaySceneSwitch),
-        sizeof(Supla::Sensor::GeneralPurposeMeasurement),
+        sizeof(Supla::Sensor::Z2S_GeneralPurposeMeasurement),
         sizeof(IPAddress),
         sizeof(NetworkServer),
         sizeof(NetworkClient),

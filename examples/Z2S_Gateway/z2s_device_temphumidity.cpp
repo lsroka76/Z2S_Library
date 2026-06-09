@@ -127,6 +127,8 @@ void initZ2SDeviceTempHumidity(
       Supla_Z2S_VirtualThermometer->getZbDeviceModelID(),
       Supla_Z2S_VirtualThermometer->getChannelModelID());
   }
+
+  RemoteThermometer.setTimeout(1000);
 }
 
 void addZ2SDeviceTempHumidity(
@@ -201,6 +203,16 @@ void resendTHValue(
 
       ip_address = z2s_channels_table[channel_number_slot].\
         remote_channel_data.remote_ip_address;
+
+      if (z2s_channels_table[channel_number_slot].\
+        remote_channel_data.remote_ip_address == 0) {
+
+        updateRemoteThermometer(
+          remote_Supla_channel, ip_address,
+          z2s_channels_table[channel_number_slot].Supla_channel, value_type, 
+          value);
+        return;
+      }
     } break;
 
 
@@ -214,18 +226,7 @@ void resendTHValue(
     } break;
   }
 
-  if (z2s_channels_table[channel_number_slot].\
-        remote_channel_data.remote_ip_address == 0) {
-
-    updateRemoteThermometer(
-      remote_Supla_channel, ip_address,
-      z2s_channels_table[channel_number_slot].Supla_channel, value_type, 
-      value);
-
-    return;
-  }
-
-  if (RemoteThermometer.connect(ip_address, 1234)) {
+  if (RemoteThermometer.connect(ip_address, 1234, 500)) {
 
     uint8_t cmd_id = (value_type == RTH_VALUE_TYPE_TEMPERATURE) ? 0x10 : 0x11;
 
@@ -337,7 +338,7 @@ void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi) {
     }
     
     Supla_Z2S_VirtualThermHygroMeter->setHumi(humi);
-    Supla_Z2S_VirtualThermHygroMeter->Refresh();
+    //Supla_Z2S_VirtualThermHygroMeter->Refresh();
 
     if (z2s_channels_table[channel_number_slot].user_data_flags &
 			  USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)

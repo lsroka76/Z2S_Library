@@ -37,19 +37,37 @@ uint64_t setU64Digits(
 
 void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
-  auto Supla_GeneralPurposeMeasurement = 
-    new Supla::Sensor::GeneralPurposeMeasurement();
+  auto Supla_Z2S_GeneralPurposeMeasurement = 
+    new Supla::Sensor::Z2S_GeneralPurposeMeasurement();
 
-  Supla_GeneralPurposeMeasurement->getChannel()->setChannelNumber(
+  Supla_Z2S_GeneralPurposeMeasurement->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
 
   if (z2s_channels_table[channel_number_slot].Supla_channel_name)
-    Supla_GeneralPurposeMeasurement->setInitialCaption(
+    Supla_Z2S_GeneralPurposeMeasurement->setInitialCaption(
       z2s_channels_table[channel_number_slot].Supla_channel_name);
 
   if (z2s_channels_table[channel_number_slot].Supla_channel_func != 0)
-    Supla_GeneralPurposeMeasurement->setDefaultFunction(
+    Supla_Z2S_GeneralPurposeMeasurement->setDefaultFunction(
       z2s_channels_table[channel_number_slot].Supla_channel_func);
+
+  if (z2s_channels_table[channel_number_slot].user_data_flags & 
+        USER_DATA_FLAG_SET_SORWNS_ON_START) {
+      
+    Supla_Z2S_GeneralPurposeMeasurement->getChannel()->
+      setStateOfflineRemoteWakeupNotSupported();
+
+    Supla_Z2S_GeneralPurposeMeasurement->setRWNSFlag(true);
+  }
+
+  Supla_Z2S_GeneralPurposeMeasurement->setTimeoutSecs(
+    z2s_channels_table[channel_number_slot].timeout_secs);
+
+  Supla_Z2S_GeneralPurposeMeasurement->setZ2SZbDevice(
+    Z2S_getChannelZbDevicePtr(channel_number_slot));
+
+  Supla_Z2S_GeneralPurposeMeasurement->setZ2SChannel(
+    Z2S_getChannelPtr(channel_number_slot));
 
   if (z2s_channels_table[channel_number_slot].user_data_2 > 0)
     z2s_channels_table[channel_number_slot].user_data_3 = millis();
@@ -59,20 +77,20 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
       
-      Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("ppm"); 
+      Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue("ppm"); 
     break;
 
 
     case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
 
-      Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); 
+      Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); 
     break;
 
 
     case Z2S_DEVICE_DESC_IKEA_VALLHORN_3:
 
-      Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); 
+      Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); 
     break;
 
 
@@ -83,13 +101,14 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
         case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID:
 
-          Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); 
+          Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue("lx"); 
         break;
 
 
         case TUYA_PRESENCE_SENSOR_MOTION_STATE_SID:
           
-          Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue("[0..5]"); 
+          Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue(
+            "[0..5]"); 
         break;
 
 
@@ -99,23 +118,23 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
     case Z2S_DEVICE_DESC_MOES_ALARM: {
       
-      Supla_GeneralPurposeMeasurement->setValue(90000000000);
+      Supla_Z2S_GeneralPurposeMeasurement->setValue(90000000000);
       //Supla_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
     } break;
 
 
     case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
       
-      Supla_GeneralPurposeMeasurement->setValuePrecision(3, true);
-      Supla_GeneralPurposeMeasurement->setValueDivider(1000000, true);
-      Supla_GeneralPurposeMeasurement->setUnitAfterValue("kWh", true);
+      Supla_Z2S_GeneralPurposeMeasurement->setValuePrecision(3, true);
+      Supla_Z2S_GeneralPurposeMeasurement->setValueDivider(1000000, true);
+      Supla_Z2S_GeneralPurposeMeasurement->setUnitAfterValue("kWh", true);
     } break;
 
 
     case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
       
-      Supla_GeneralPurposeMeasurement->setValuePrecision(2, true);
-      Supla_GeneralPurposeMeasurement->setUnitAfterValue("V", true);
+      Supla_Z2S_GeneralPurposeMeasurement->setValuePrecision(2, true);
+      Supla_Z2S_GeneralPurposeMeasurement->setUnitAfterValue("V", true);
     } break;
 
 
@@ -133,17 +152,17 @@ void addZ2SDeviceGeneralPurposeMeasurement(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
   const char *name, uint32_t func, const char *unit) {
   
-  auto Supla_GeneralPurposeMeasurement = 
-    new Supla::Sensor::GeneralPurposeMeasurement();
+  auto Supla_Z2S_GeneralPurposeMeasurement = 
+    new Supla::Sensor::Z2S_GeneralPurposeMeasurement();
   
   if (name == nullptr)
     name = (char*)default_gpm_name;
 
   Z2S_fillChannelsTableSlot(
-    device, free_slot, Supla_GeneralPurposeMeasurement->getChannelNumber(), 
+    device, free_slot, Supla_Z2S_GeneralPurposeMeasurement->getChannelNumber(), 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id, name, func);
   
-  Supla_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
+  Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
 }
 
 /*****************************************************************************/
@@ -214,10 +233,11 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
       (element->getChannel()->getChannelType() == 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT)) {
 
-    auto Supla_GeneralPurposeMeasurement = 
-      reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
+    auto Supla_Z2S_GeneralPurposeMeasurement = 
+      reinterpret_cast<
+        Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
 
-    Supla_GeneralPurposeMeasurement->setValue(value);
+    Supla_Z2S_GeneralPurposeMeasurement->setValue(value);
     //Z2S_setChannelExtendedDataCounter(channel_number_slot, value);
   }  
 }
@@ -255,17 +275,19 @@ void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
       (element->getChannel()->getChannelType() == 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT)) {
 
-    auto Supla_GeneralPurposeMeasurement = 
-      reinterpret_cast<Supla::Sensor::GeneralPurposeMeasurement *>(element);
+    auto Supla_Z2S_GeneralPurposeMeasurement = 
+      reinterpret_cast<
+        Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
       
     /*char unitBefore[SUPLA_GENERAL_PURPOSE_UNIT_SIZE] = {};
     Supla_GeneralPurposeMeasurement->getUnitBeforeValue(unitBefore);
     memcpy (unitBefore + str_position, str_display, str_length);
     Supla_GeneralPurposeMeasurement->setValue((uint8_t)(Supla_GeneralPurposeMeasurement->getValue() + 1) % 10);
     Supla_GeneralPurposeMeasurement->setUnitBeforeValue(unitBefore, true);*/
-    uint64_t gpm_value = (uint64_t)Supla_GeneralPurposeMeasurement->getValue();
+    uint64_t gpm_value = 
+      (uint64_t)Supla_Z2S_GeneralPurposeMeasurement->getValue();
     
-    Supla_GeneralPurposeMeasurement->setValue(
+    Supla_Z2S_GeneralPurposeMeasurement->setValue(
       setU64Digits(gpm_value, first_digit, last_digit, digits_to_insert));
   }  
 } 

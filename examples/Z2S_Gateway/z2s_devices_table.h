@@ -331,7 +331,10 @@ bool Z2S_hasZbDevice(uint32_t desc_id);
 void Z2S_initZbDevices(uint32_t init_ms);
 void  Z2S_updateZbDeviceLastSeenMs(
   uint16_t short_addr, uint32_t last_seen_ms);
-  
+void  Z2S_updateZbDeviceLastSeenMsById(uint8_t Zb_device_id);
+
+uint32_t Z2S_getZbDeviceDescID(int16_t channel_number_slot);
+
 uint8_t Z2S_addZbDeviceTableSlot(
   esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr,
   const char *manufacturer_name, const char *model_name,
@@ -437,6 +440,8 @@ Supla::Control::SwitchBotRelay *Z2S_getSwitchBotRelayInstance(
 void Z2S_initSuplaChannels();
 
 void Z2S_rebuildSuplaChannels();
+
+uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms);
 
 /*****************************************************************************/
 
