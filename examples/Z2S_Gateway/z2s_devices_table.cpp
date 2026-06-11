@@ -1632,16 +1632,20 @@ uint8_t Z2S_addZbDeviceTableSlot(
         return 0xFF;
       }
       
-      z2s_zb_devices_table[zb_device_slot].user_data_flags |= ZBD_USER_DATA_FLAG_VERSION_2_0;
+      z2s_zb_devices_table[zb_device_slot].user_data_flags |= 
+        ZBD_USER_DATA_FLAG_VERSION_2_0;
 
       char device_name[36];
       sprintf(device_name, "Device #%02u", zb_device_slot);
-      memcpy(z2s_zb_devices_table[zb_device_slot].device_local_name, device_name, sizeof(device_name));
+      memcpy(
+        z2s_zb_devices_table[zb_device_slot].device_local_name, device_name, 
+        sizeof(device_name));
 
       z2s_zb_devices_table[zb_device_slot].short_addr = short_addr;
       z2s_zb_devices_table[zb_device_slot].endpoints_count = endpoints_count;
       z2s_zb_devices_table[zb_device_slot].desc_id = desc_id;
       z2s_zb_devices_table[zb_device_slot].power_source = power_source;
+      z2s_zb_devices_table[zb_device_slot].battery_percentage = 0xFF;
 
       Z2S_saveZbDevicesTable();
       return zb_device_slot;
