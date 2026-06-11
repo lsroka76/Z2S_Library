@@ -892,6 +892,26 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }  
     return;
   } else
+  if (strcmp(cmd,"CLEAR-BATTERY-LEVEL") == 0) {
+
+    if (params_number < 1)  {
+      telnet.println(">clear-battery-level channel");
+      return;
+    }
+
+    uint8_t channel_id = strtoul(*(param), nullptr, 0);
+          
+    auto element = Supla::Element::getElementByChannelNumber(channel_id);
+
+    if (element) {
+      element->getChannel()->setBatteryLevel(0xFF);
+      telnet.printf(
+        ">Battery level %u\n\r>", element->getChannel()->getBatteryLevel());  
+    }
+    else 
+      telnet.printf(">Invalid channel number %u\n\r>", channel_id);  
+    return;
+  } else
   if (strcmp(cmd,"UPDATE-CHANNEL-FUNC") == 0) {
 
     if (params_number < 2)  {

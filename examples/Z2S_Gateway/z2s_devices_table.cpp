@@ -2598,7 +2598,7 @@ uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms) {
 
             element->getChannel()->setStateOnline();
             element->getChannel()->setBridgeSignalStrength(rssi_percentage);
-            if ((battery_level < 0xFF) && 
+            if ((battery_level < 0xFF) &&
                 ((z2s_channels_table[channels_counter].user_data_flags &
                   USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL) == 0)) {
               
