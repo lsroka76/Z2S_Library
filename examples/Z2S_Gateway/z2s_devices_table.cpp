@@ -1512,6 +1512,7 @@ void Z2S_initZbDevices(uint32_t init_ms) {
 
       z2s_zb_devices_table[devices_counter].last_seen_ms = 0; //init_ms;
       z2s_zb_devices_table[devices_counter].rssi = 0;
+      z2s_zb_devices_table[devices_counter].battery_percentage = 0xFF;
     }
 }
 
