@@ -5077,10 +5077,7 @@ void Z2S_onOnOffReceive(
     NO_CUSTOM_CMD_SID);
 
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGB(
-      z2s_channels_table[channel_number_slot].model_id, 
-      z2s_channels_table[channel_number_slot].Supla_channel, 
-      0xFF, 0xFF, state);
+    msgZ2SDeviceRGB(channel_number_slot, 0xFF, 0xFF, state);
     return;
   }
 
@@ -5882,9 +5879,7 @@ void Z2S_onColorHueReceive(
     NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGB(
-      z2s_channels_table[channel_number_slot].model_id, 
-      z2s_channels_table[channel_number_slot].Supla_channel, hue, 0xFF, true);
+    msgZ2SDeviceRGB(channel_number_slot, hue, 0xFF, true);
     return;
   }
   
@@ -5904,10 +5899,7 @@ void Z2S_onColorSaturationReceive(
     NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot >= 0) {
-    msgZ2SDeviceRGB(
-      z2s_channels_table[channel_number_slot].model_id, 
-      z2s_channels_table[channel_number_slot].Supla_channel, 0xFF, saturation,
-      true);
+    msgZ2SDeviceRGB(channel_number_slot, 0xFF, saturation, true);
     return;
   }
   
@@ -9208,9 +9200,11 @@ void updateTimeout(
 
       auto Supla_LocalActionHandlerWithTrigger = 
         reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>
-          (z2s_channels_table[channel_number_slot].local_action_handler_data.Supla_element); 
+          (z2s_channels_table[channel_number_slot].\
+            local_action_handler_data.Supla_element); 
 
-      Supla_LocalActionHandlerWithTrigger->setPostponedTurnOnSecs(timings_secs);
+      Supla_LocalActionHandlerWithTrigger->setPostponedTurnOnSecs(
+        timings_secs);
       return;
     }
  

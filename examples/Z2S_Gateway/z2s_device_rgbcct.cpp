@@ -149,22 +149,24 @@ void addZ2SDeviceRGBCCT(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceRGBCCT(
-  uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation,
-  bool state) {
+void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, uint8_t hue, 
+  uint8_t saturation, bool state) {
 
-  auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
+  Z2S_updateZbDeviceLastSeenMsById(
+    z2s_channels_table[channel_number_slot].Zb_device_id);
 
-  if (element && 
-      element->getChannel()->getChannelType() == 
-        SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
+  auto element = Supla::Element::getElementByChannelNumber(
+    z2s_channels_table[channel_number_slot].Supla_channel);
+
+  if (element && element->getChannel()->getChannelType() == 
+      SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
 
     auto Supla_Z2S_RGBCCTInterface = 
       reinterpret_cast<Supla::Control::Z2S_RGBCCTInterface *>(element);
 
     Supla_Z2S_RGBCCTInterface->getChannel()->setStateOnline();
 
-    switch (model_id) {
+    switch (z2s_channels_table[channel_number_slot].model_id) {
 
 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:

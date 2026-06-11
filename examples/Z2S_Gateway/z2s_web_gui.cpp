@@ -412,6 +412,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_ADD_NOR_HANDLER_FLAG								0x4055
 #define GUI_CB_ADD_AND3_HANDLER_FLAG							0x4056
 #define GUI_CB_ADD_OR3_HANDLER_FLAG								0x4057
+#define GUI_CB_ADD_NOP_HANDLER_FLAG								0x4058
 
 #define GUI_CB_SAVE_PROGRAM_FLAG									0x5000
 #define GUI_CB_LOAD_PROGRAM_FLAG									0x5001
@@ -1045,11 +1046,14 @@ void fillGatewayGeneralnformation(char *buf) {
 		
 		snprintf_P(
 			buf, 1024, PSTR(
+				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:"
+				"</b></i> %u B <b>| <i>HeapSize:</b></i> %u B"
 				"<br><b><i>Supla Device SDK version:</i></b> <i>%s</i><br>"
 				"<b><i>Supla GUID:</i></b> <i>%s</i><br><br>"
 				"<b><i>Z2S Gateway version:</i></b> <i>%s</i><br><br>"
 				"<b><i>Network extended PAN ID:</i></b> <i>%s</i><br>"
-				"<b><i>Network current channel:</i></b> <i>%u</i><br><br>"), 
+				"<b><i>Network current channel:</i></b> <i>%u</i><br><br>"),
+			ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getHeapSize(), 
 			suplaDeviceVersion, Supla_GUID_str, Z2S_VERSION, extended_pan_id_str,
 			esp_zb_get_current_channel());
 	
@@ -1084,19 +1088,18 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 
 		uint16_t meminfbuf_size = snprintf_P(
 			buf, buf_max_len, PSTR(
-				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:</b></i> %u B<br>"
-				"<b><i>HeapSize:</b></i> %u B <b>| <i>FreeHeap:</b></i> %u B <b>| <i>"
+				"FreeHeap:</b></i> %u B <b>| <i>"
 				"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
-				"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
-				"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br>"
-				"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
+				//"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
+				//"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br>"
+				//"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
 				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
 				"%lu dni %02lu:%02lu:%02lu (%lu seconds)"), 
-				ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), 
-				ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMinFreeHeap(), 
-				ESP.getMaxAllocHeap(), uxTaskGetStackHighWaterMark(NULL),
-				uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()), 
-				ESP.getPsramSize(), ESP.getFreePsram(), current_time_buffer, 
+				ESP.getFreeHeap(), ESP.getMinFreeHeap(), 
+				ESP.getMaxAllocHeap(), //uxTaskGetStackHighWaterMark(NULL),
+				//uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()), 
+				//ESP.getPsramSize(), ESP.getFreePsram(), 
+				current_time_buffer, 
 				Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
 				Supla_uptime_s);
 
@@ -2364,6 +2367,12 @@ void buildChannelsTabGUI() {
 		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
 		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
 		(void*)GUI_CB_ADD_OR3_HANDLER_FLAG);
+
+	working_str_ptr = PSTR("Add NOP gate");
+	ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), working_str_ptr, 
+		Control::Color::Emerald, lah_panel, addLocalActionHandlerCallback,
+		(void*)GUI_CB_ADD_NOP_HANDLER_FLAG);
 
 	ESPUI.addControl(
 		Control::Type::Button, PSTR(empty_str), PSTR("Add virtual relay"), 
@@ -5403,12 +5412,8 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			if (z2s_channels_table[channel_slot].local_channel_type == 
 					LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
 
-				enableChannelTimings(1); //keepalive
+				enableChannelTimings(1); //turn on delay
 				ESPUI.updateNumber(keepalive_number, 	z2s_channels_table[channel_slot].keep_alive_secs);
-				//ESPUI.updateNumber(refresh_number, z2s_channels_table[channel_slot].refresh_secs);
-	
-				//enableChannelFlags(0);
-				enableChannelTimings(0);
 			}
 
 			if (z2s_channels_table[channel_slot].local_channel_type == 
@@ -8288,9 +8293,11 @@ void valveCallback(Control *sender, int type, void *param) {
 					default: return;
 				}
 		
-				uint8_t valve_cmd_payload[11] = {0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+				uint8_t valve_cmd_payload[11] = 
+					{0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-				valve_cmd_payload[2] = ESPUI.getControl(valve_cycles_number)->getValueInt();
+				valve_cmd_payload[2] = ESPUI.getControl(
+					valve_cycles_number)->getValueInt();
 		
 				if (attribute_id == 0x5008) 
 					value_32 = ESPUI.getControl(valve_worktime_number)->getValueInt();
@@ -8309,13 +8316,9 @@ void valveCallback(Control *sender, int type, void *param) {
 				for (int i = 0; i < 11; i++)
 					log_i("valve payload [%u] = 0x%02x", i,valve_cmd_payload[i]);
 
-				if (zbGateway.sendAttributeWrite(&device, 
-																				 SONOFF_CUSTOM_CLUSTER, 
-																				 attribute_id, 
-																				 ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 
-																				 11, 
-																				 &valve_cmd_payload, 
-																				 true)) {
+				if (zbGateway.sendAttributeWrite(
+					&device, SONOFF_CUSTOM_CLUSTER, attribute_id, 
+					ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, &valve_cmd_payload, true)) {
 
 					if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS)
 						
@@ -8335,11 +8338,10 @@ void valveCallback(Control *sender, int type, void *param) {
 
 			case GUI_CB_SEND_PROGRAM_FLAG: {
 
-				int16_t channel_number_slot = Z2S_findChannelNumberSlot(z2s_zb_devices_table[device_slot].ieee_addr, 
-																																-1, 
-																																SONOFF_CUSTOM_CLUSTER, 
-																																SUPLA_CHANNELTYPE_RELAY, 
-																																SONOFF_SMART_VALVE_RUN_PROGRAM_SID);
+				int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+					z2s_zb_devices_table[device_slot].ieee_addr, -1, 
+					SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, 
+					SONOFF_SMART_VALVE_RUN_PROGRAM_SID);
   
   			if (channel_number_slot < 0) {
 					
@@ -8355,13 +8357,12 @@ void valveCallback(Control *sender, int type, void *param) {
 						z2s_channels_table[channel_number_slot].smart_valve_data.value = 
 							ESPUI.getControl(valve_worktime_number)->getValueInt();
 
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
-																					VRV_S8_ID, 
-																					1);
+						msgZ2SDeviceVirtualRelayValue(
+							channel_number_slot, VRV_S8_ID, 1);
 
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
-																					VRV_S32_ID,
-																					ESPUI.getControl(valve_worktime_number)->getValueInt());
+						msgZ2SDeviceVirtualRelayValue(
+							channel_number_slot, VRV_S32_ID,
+							ESPUI.getControl(valve_worktime_number)->getValueInt());
 					} break;
 
 					case 2: {
@@ -8370,13 +8371,12 @@ void valveCallback(Control *sender, int type, void *param) {
 						z2s_channels_table[channel_number_slot].smart_valve_data.value = 
 							ESPUI.getControl(valve_volume_number)->getValueInt();
 
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
-																					VRV_S8_ID, 
-																					2);
+						msgZ2SDeviceVirtualRelayValue(
+							channel_number_slot, VRV_S8_ID, 2);
 
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
-																					VRV_S32_ID,
-																					ESPUI.getControl(valve_volume_number)->getValueInt());
+						msgZ2SDeviceVirtualRelayValue(
+							channel_number_slot, VRV_S32_ID,
+							ESPUI.getControl(valve_volume_number)->getValueInt());
 					} break;
 
 					default: {
@@ -8384,10 +8384,8 @@ void valveCallback(Control *sender, int type, void *param) {
 						z2s_channels_table[channel_number_slot].smart_valve_data.cycles = 0;
 						z2s_channels_table[channel_number_slot].smart_valve_data.value = 0;
 
-						msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
-																					VRV_S8_ID, 
-																					0);
-
+						msgZ2SDeviceVirtualRelayValue(
+							channel_number_slot, VRV_S8_ID, 0);
 						Z2S_saveChannelsTable();
 						return;
 					} break;
@@ -8401,13 +8399,13 @@ void valveCallback(Control *sender, int type, void *param) {
 
 				Z2S_saveChannelsTable();
 
-				msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
-																			VRV_U8_ID,
-																			ESPUI.getControl(valve_cycles_number)->getValueInt());
+				msgZ2SDeviceVirtualRelayValue(
+					channel_number_slot, VRV_U8_ID,
+					ESPUI.getControl(valve_cycles_number)->getValueInt());
 																			
-				msgZ2SDeviceVirtualRelayValue(channel_number_slot, 
-																			VRV_U32_ID, 
-																			ESPUI.getControl(valve_pause_number)->getValueInt());
+				msgZ2SDeviceVirtualRelayValue(
+					channel_number_slot, VRV_U32_ID, 
+					ESPUI.getControl(valve_pause_number)->getValueInt());
 			} break;
 
 			case GUI_CB_SEND_RINGTONE_FLAG: { //write gas detector alarm ringtone
@@ -8635,24 +8633,34 @@ void addLocalActionHandlerCallback(Control *sender, int type, void *param) {
 				logic_operator = PIN_LOGIC_OPERATOR_NOT;
 			break;
 
+
 			case GUI_CB_ADD_NAND_HANDLER_FLAG:
 
 				logic_operator = PIN_LOGIC_OPERATOR_NAND;
 			break;
+
 
 			case GUI_CB_ADD_NOR_HANDLER_FLAG:
 
 				logic_operator = PIN_LOGIC_OPERATOR_NOR;
 			break;
 
+
 			case GUI_CB_ADD_AND3_HANDLER_FLAG:
 
 				logic_operator = PIN_LOGIC_OPERATOR_AND3;
 			break;
 
+
 			case GUI_CB_ADD_OR3_HANDLER_FLAG:
 
 				logic_operator = PIN_LOGIC_OPERATOR_OR3;
+			break;
+
+
+			case GUI_CB_ADD_NOP_HANDLER_FLAG:
+
+				logic_operator = PIN_LOGIC_OPERATOR_NOP;
 			break;
 		}
 
@@ -8662,12 +8670,9 @@ void addLocalActionHandlerCallback(Control *sender, int type, void *param) {
 			
 			delay(200);				
 			ESPUI.updateLabel(
-				lah_status_label, 
-				PSTR(
+				lah_status_label, PSTR(
 					"Local logical object added - you may add next one."
 					"<br>When finished restart gateway manually to see new objects."));												
-			//rebuildChannelsSelector(true);
-			//buildActionsChannelSelectors(true);
 		}
 	}
 }
@@ -8756,7 +8761,8 @@ void GUI_onTuyaCustomClusterReceive(
 	
 	hex_chunk[3] = 0x00;
 
-	Tuya_dp_zcl_payload_t *Tuya_dp_zcl_payload = (Tuya_dp_zcl_payload_t *)payload_data;
+	Tuya_dp_zcl_payload_t *Tuya_dp_zcl_payload = 
+		(Tuya_dp_zcl_payload_t *)payload_data;
 
 	
 	//uint16_t	tsn_id = (((uint16_t)(*payload_data)) << 16) + (*(payload_data + 1));
@@ -8776,13 +8782,11 @@ void GUI_onTuyaCustomClusterReceive(
 	}
 	payload_buffer[payload_size * 3] = '}';
 	payload_buffer[(payload_size * 3) + 1] = ' ';
-	sprintf(payload_buffer + ((payload_size * 3) + 2), 
-					"<br>datapoint id 	 = %u(0x%02X)"
-					"<br>datapoint value = %u(0x%08X)",
-					Tuya_dp_zcl_payload->dp_id,
-					Tuya_dp_zcl_payload->dp_id,
-					dp_value,
-					dp_value);
+	sprintf(
+		payload_buffer + ((payload_size * 3) + 2), 
+		"<br>datapoint id 	 = %u(0x%02X)<br>datapoint value = %u(0x%08X)",
+		Tuya_dp_zcl_payload->dp_id, Tuya_dp_zcl_payload->dp_id, dp_value,
+		dp_value);
 	updateLabel_P(current_Tuya_payload_label, payload_buffer);	
 }
 

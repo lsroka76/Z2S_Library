@@ -73,6 +73,9 @@ void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state) {
     return;
   }
 
+  Z2S_updateZbDeviceLastSeenMsById(
+    z2s_channels_table[channel_number_slot].Zb_device_id);
+
   auto element = 
     Supla::Element::getElementByChannelNumber(
         z2s_channels_table[channel_number_slot].Supla_channel);

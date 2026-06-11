@@ -17,8 +17,7 @@ void addZ2SDeviceRGBCCT(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceRGBCCT(
-  uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, 
-  bool state);
+void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, uint8_t hue, 
+  uint8_t saturation, bool state);
 
 #endif

@@ -366,7 +366,8 @@ void addZ2SDeviceHvac(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value) {
+void msgZ2SDeviceHvac(
+  int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value) {
 
   if (channel_number_slot < 0) {
     
@@ -374,7 +375,9 @@ void msgZ2SDeviceHvac(int16_t channel_number_slot, uint8_t msg_id, int32_t msg_v
     return;
   }
 
-  
+  Z2S_updateZbDeviceLastSeenMsById(
+    z2s_channels_table[channel_number_slot].Zb_device_id);
+
   auto element = 
     Supla::Element::getElementByChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);

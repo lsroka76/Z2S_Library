@@ -85,8 +85,6 @@ void msgZ2SDeviceIASzone(
     return;
   }
 
-  /*Z2S_updateZbDeviceLastSeenMs(
-    z2s_channels_table[channel_number_slot].short_addr, millis());*/
   Z2S_updateZbDeviceLastSeenMsById(
     z2s_channels_table[channel_number_slot].Zb_device_id);  
 
@@ -104,6 +102,8 @@ void msgZ2SDeviceIASzone(
 
         bool state_changed = 
           (state == !Supla_Z2S_VirtualBinary->getValue()) ? false : true;
+        //log_i(
+        //  "state %u, value %u", state, Supla_Z2S_VirtualBinary->getValue());
 
         if (state) Supla_Z2S_VirtualBinary->extClear(); 
         else Supla_Z2S_VirtualBinary->extSet();

@@ -3661,48 +3661,45 @@ void processTuyaCustomCluster(
 
       if (channel_number_slot < 0) {
 
-        log_i("TUYA_MCU_SYNC_TIME failed - "
-              "no Supla channel for that device");
+        log_i(
+          "TUYA_MCU_SYNC_TIME failed - no Supla channel for that device");
         return;
       }
 
-      device.endpoint = 
-        z2s_channels_table[channel_number_slot].endpoint;
-
-      device.cluster_id = 
-        z2s_channels_table[channel_number_slot].cluster_id;
-
+      device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
+      device.cluster_id = z2s_channels_table[channel_number_slot].cluster_id;
       memcpy(
-        device.ieee_addr, 
-        z2s_channels_table[channel_number_slot].ieee_addr, 
+        device.ieee_addr,z2s_channels_table[channel_number_slot].ieee_addr, 
         sizeof(esp_zb_ieee_addr_t));
-
-      device.short_addr = 
-        z2s_channels_table[channel_number_slot].short_addr;
-
-      device.model_id = 
-        z2s_channels_table[channel_number_slot].model_id;
+      device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
+      device.model_id = z2s_channels_table[channel_number_slot].model_id;
   
       if (payload) {
 
+        Z2S_updateZbDeviceLastSeenMsById(
+        z2s_channels_table[channel_number_slot].Zb_device_id);
+
         time_sync[0] = *payload;
         time_sync[1] = *(payload + 1);
-      } else {
+      } 
+      else {
 
         time_sync[0] = 0x08;
         time_sync[1] = 0x00;
       }
 
-      time( &secs );  // Current time in GMT
+      time( &secs);  // Current time in GMT
       // Remember that localtime/gmtime overwrite same location
-      tptr = localtime( &secs );
-      local_secs = mktime( tptr );
-      tptr = gmtime( &secs );
-      if (!tptr) log_e("gmtime not supported\n\r");
+      tptr = localtime( &secs);
+      local_secs = mktime(tptr);
+      tptr = gmtime(&secs);
+      if (!tptr) 
+        log_e("gmtime not supported\n\r");
       gmt_secs = mktime( tptr );
       long diff_secs = long(local_secs - gmt_secs);
-      log_i("local secs: %llu, gmt_secs: %llu, diff: %llu\n\r", 
-            local_secs, gmt_secs, diff_secs);
+      log_i(
+        "local secs: %llu, gmt_secs: %llu, diff: %llu\n\r", local_secs, 
+        gmt_secs, diff_secs);
 
       if (device.model_id == Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4) {
 
@@ -3724,10 +3721,6 @@ void processTuyaCustomCluster(
         "TUYA_MCU_SYNC_TIME response payload: %X%X:%X%X%X%X:%X%X%X%X",
         time_sync[0], time_sync[1], time_sync[2],time_sync[3], time_sync[4], 
         time_sync[5], time_sync[6], time_sync[7], time_sync[8], time_sync[9]);
-
-      /*zbGateway.sendCustomClusterCmd(
-        &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_MCU_SYNC_TIME, 
-        ESP_ZB_ZCL_ATTR_TYPE_SET, 10, time_sync, false);*/
 
       zbGateway.sendAPSDEDataRequestCmd(
         short_addr, tsn, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
@@ -3753,27 +3746,26 @@ void processTuyaCustomCluster(
       zbg_device_params_t device = {};
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-          short_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
-          ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+        short_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
+        ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
 
       if (channel_number_slot < 0) {
 
         log_i(
-          "TUYA_MCU_VERSION_RESPONSE failed - "
-          "no Supla channel for that device");
+          "TUYA_MCU_VERSION_RESPONSE failed - no Supla channel for that"
+          " device");
         return;
       }
 
+      Z2S_updateZbDeviceLastSeenMsById(
+        z2s_channels_table[channel_number_slot].Zb_device_id);
+
       device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
-
       device.cluster_id = z2s_channels_table[channel_number_slot].cluster_id;
-
       memcpy(
         device.ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr, 
         sizeof(esp_zb_ieee_addr_t));
-
       device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
-
       device.model_id = z2s_channels_table[channel_number_slot].model_id;
   
       seq[0] = 00;
@@ -3796,8 +3788,8 @@ void processTuyaCustomCluster(
       zbg_device_params_t device = {};
 
       int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-          short_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
-          ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+        short_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
+        ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
 
       if (channel_number_slot < 0) {
 
@@ -3807,17 +3799,15 @@ void processTuyaCustomCluster(
         return;
       }
 
+      Z2S_updateZbDeviceLastSeenMsById(
+        z2s_channels_table[channel_number_slot].Zb_device_id);
+
       connection_status[0] = 0x01;
       connection_status[1] = 0x00; //UINT16 payload size = 1
       connection_status[2] = 0x01; //1 = connected to internet
       
       log_i("Sending TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST");
       
-      /*zbGateway.sendCustomClusterCmd(
-        &device, TUYA_PRIVATE_CLUSTER_EF00, 
-        TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST, ESP_ZB_ZCL_ATTR_TYPE_SET,
-        3, seq+2, false); //, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, TUYA_MANUFACTURER_CODE);*/
-
       zbGateway.sendAPSDEDataRequestCmd(
         short_addr, tsn, endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
         TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST, 3, connection_status, 

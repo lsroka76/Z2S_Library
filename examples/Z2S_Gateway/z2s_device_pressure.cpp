@@ -74,13 +74,15 @@ void msgZ2SDevicePressure(int16_t channel_number_slot,
     return;
   }
 
-  auto Supla_Z2S_VirtualPressure = 
-    getZ2SDevicePressurePtr(
+  Z2S_updateZbDeviceLastSeenMsById(
+    z2s_channels_table[channel_number_slot].Zb_device_id);
+
+  auto Supla_Z2S_VirtualPressure = getZ2SDevicePressurePtr(
       z2s_channels_table[channel_number_slot].Supla_channel);
   
   if (Supla_Z2S_VirtualPressure) {
     
     Supla_Z2S_VirtualPressure->setPressure(pressure);
-    Supla_Z2S_VirtualPressure->Refresh();
+    //Supla_Z2S_VirtualPressure->Refresh();
   }
 }

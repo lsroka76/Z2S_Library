@@ -19,8 +19,6 @@ void addZ2SDeviceRGB(
 /*****************************************************************************/
 
 void msgZ2SDeviceRGB(
-  uint32_t model_id, uint8_t Supla_channel, uint8_t hue, uint8_t saturation, 
-  bool state);
-
+  int16_t channel_number_slot, uint8_t hue, uint8_t saturation, bool state);
 
 #endif

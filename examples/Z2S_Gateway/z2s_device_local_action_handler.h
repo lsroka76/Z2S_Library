@@ -44,7 +44,8 @@ static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
   "NAND GATE",
   "NOR GATE",
   "AND GATE (3 INPUTS)",
-  "OR GATE (3 INPUTS)"
+  "OR GATE (3 INPUTS)",
+  "NOP GATE"
 };
 
 static constexpr char* CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {

@@ -62,11 +62,19 @@ LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
     switch (_pin_logic_operator) {
 
 
+      case PIN_LOGIC_OPERATOR_NOT:
+      case PIN_LOGIC_OPERATOR_NOP:
+
+        _pin_b = 0xFF;
+      break;
+
+      
       case PIN_LOGIC_OPERATOR_AND3:
       case PIN_LOGIC_OPERATOR_OR3:
 
         _pin_c = 0;
       break;
+
 
       default:
 
@@ -155,40 +163,57 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   switch (_pin_logic_operator) {
 
 
+    case PIN_LOGIC_OPERATOR_NOP:
+
+      logic_operation_result = _pin_a; 
+    break;
+
+
     case PIN_LOGIC_OPERATOR_AND:
 
-      logic_operation_result = _pin_a && _pin_b; break;
+      logic_operation_result = _pin_a && _pin_b;
+    break;
 
 
     case PIN_LOGIC_OPERATOR_OR:
 
-      logic_operation_result = _pin_a || _pin_b; break;
+      logic_operation_result = _pin_a || _pin_b; 
+    break;
 
 
     case PIN_LOGIC_OPERATOR_XOR:
 
-      logic_operation_result = _pin_a ^ _pin_b; break;
+      logic_operation_result = _pin_a ^ _pin_b; 
+    break;
 
     
     case PIN_LOGIC_OPERATOR_NOT:
 
-      logic_operation_result = !_pin_a; break;
+      logic_operation_result = !_pin_a; 
+    break;
+
 
     case PIN_LOGIC_OPERATOR_NAND:
 
-      logic_operation_result = !(_pin_a & _pin_b); break;
+      logic_operation_result = !(_pin_a & _pin_b); 
+    break;
+
 
     case PIN_LOGIC_OPERATOR_NOR:
 
-      logic_operation_result = !(_pin_a | _pin_b); break;
+      logic_operation_result = !(_pin_a | _pin_b); 
+    break;
+
 
     case PIN_LOGIC_OPERATOR_AND3:
 
-      logic_operation_result = (_pin_a & _pin_b & _pin_c); break;
+      logic_operation_result = (_pin_a & _pin_b & _pin_c); 
+    break;
 
     case PIN_LOGIC_OPERATOR_OR3:
 
-      logic_operation_result = (_pin_a | _pin_b | _pin_c); break;
+      logic_operation_result = (_pin_a | _pin_b | _pin_c); 
+    break;
   }
   
   log_i(

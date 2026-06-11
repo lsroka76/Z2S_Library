@@ -527,12 +527,14 @@ void updateZ2SDeviceElectricityMeter(int16_t channel_number_slot) {
 void msgZ2SDeviceElectricityMeter(
   int16_t channel_number_slot, uint8_t emv_selector, int64_t em_value) {
 
+  Z2S_updateZbDeviceLastSeenMsById(
+    z2s_channels_table[channel_number_slot].Zb_device_id);
+  
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
 
-  if (element != nullptr && 
-      element->getChannel()->getChannelType() == 
-        SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+  if (element != nullptr && element->getChannel()->getChannelType() == 
+      SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
 
     auto Supla_ElectricityMeter = 
       reinterpret_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);

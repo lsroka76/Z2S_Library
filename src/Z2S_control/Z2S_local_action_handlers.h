@@ -48,6 +48,7 @@
 #define PIN_LOGIC_OPERATOR_NOR        0x06
 #define PIN_LOGIC_OPERATOR_AND3       0x07
 #define PIN_LOGIC_OPERATOR_OR3        0x08
+#define PIN_LOGIC_OPERATOR_NOP        0x09
 
 #define LAVB_SINGLE_PRESS_FUNC        0x01
 #define LAVB_DOUBLE_PRESS_FUNC        0x02
@@ -105,15 +106,6 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler {
     LocalActionHandlerWithTrigger(uint8_t pin_logic_operator);
     virtual ~LocalActionHandlerWithTrigger();
     void handleAction(int event, int action);
-    /*void addAction(uint16_t action,
-                   ActionHandler &client,   // NOLINT(runtime/references)
-                   uint16_t event,
-                   bool alwaysEnabled = false) override;
-    void addAction(uint16_t action, 
-                   ActionHandler *client, 
-                   uint16_t event,
-                   bool alwaysEnabled = false) override;*/
-    //void  setActionHandlerCallback(_actionhandler_callback actionhandler_callback);
     void iterateAlways() override;
     void setPostponedTurnOnSecs(uint32_t _postponed_turn_on_secs) {
 

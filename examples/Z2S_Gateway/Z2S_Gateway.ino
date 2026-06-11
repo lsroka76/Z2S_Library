@@ -955,41 +955,6 @@ void loop() {
     SuplaDevice.enterConfigMode();
   }
 
-  /*if (do_once) {
-
-    if ((SuplaDevice.getCurrentStatus() == STATUS_REGISTERED_AND_READY) &&
-        (zpm->getState() == 2)) {
-
-      //do_once = false;
-
-      char unknown_device_name[128];
-        sprintf(
-          unknown_device_name,"%s::%s", 
-          "MANUFACTURER NAME",
-          "MODEL NAME");
-        zpm->notifySrpcAboutParingEnd(
-          SUPLA_CALCFG_PAIRINGRESULT_SUCCESS,
-          //SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED,
-          unknown_device_name);
-
-      zbg_device_params_t test_joined_device = {};
-
-      test_joined_device.model_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3;
-
-      for (uint8_t i = 1; i < 5; i++) {
-
-        test_joined_device.endpoint = i;
-
-        Z2S_addZ2SDevice(&test_joined_device, 
-          TUYA_CUSTOM_CMD_BUTTON_PRESSED_SID);
-
-        Z2S_addZ2SDevice(
-          &test_joined_device, TUYA_CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID);
-
-        Z2S_addZ2SDevice(&test_joined_device, TUYA_CUSTOM_CMD_BUTTON_HELD_SID);
-      }
-    }
-  }*/
   
   if (_initial_gui_check && (!Z2S_isGUIStarted()) && 
       (_enable_gui_on_start != no_gui_mode) && 
