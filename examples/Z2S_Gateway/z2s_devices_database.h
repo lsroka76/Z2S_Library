@@ -5405,6 +5405,46 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
       { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
+  {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-301Z-2CH",
+    .z2s_device_uid = 21205,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+      { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  {	.manufacturer_name = "_TZ3000_01gpyda5", .model_name = "TS0002",
+    .z2s_device_uid = 21210,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+      { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  {	.manufacturer_name = "_TZ3000_bvrlqyj7", .model_name = "TS0002",
+    .z2s_device_uid = 21215,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+      { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  {	.manufacturer_name = "_TZ3000_7ed9cqgi", .model_name = "TS0002",
+    .z2s_device_uid = 21220,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+      { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  {	.manufacturer_name = "_TZ3000_ruxexjfz", .model_name = "TS0002",
+    .z2s_device_uid = 21225,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+      { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
   {	.manufacturer_name = "_TZ3000_p8alo7qa", .model_name = "TS0012",
     .z2s_device_uid = 21300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,

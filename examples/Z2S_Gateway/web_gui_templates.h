@@ -1421,6 +1421,11 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "MOTOR RUN STATUS" },
+	
+	{ .zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_DIMMER_CALIBRATION_ACTION_ID, 
+		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING,
+		.zigbee_attribute_name = "DIMMER CALIBRATION ACTION" },
 
 	{ .zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_RT_IRRIGATION_DURATION_ID, 
 		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
@@ -1431,11 +1436,6 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
 		.zigbee_attribute_name = "SWV REAL TIME VOLUME" },
-
-	{ .zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_DIMMER_CALIBRATION_ACTION_ID, 
-		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
-		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING,
-		.zigbee_attribute_name = "DIMMER CALIBRATION ACTION" },
 
 	{ .zigbee_attribute_id  = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID, 
 		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
