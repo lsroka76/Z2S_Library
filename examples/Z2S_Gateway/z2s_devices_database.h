@@ -5792,7 +5792,10 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "SONOFF", .model_name = "SWV",
     .z2s_device_uid = 24800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_VALVE,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, Z2S_REPORTING_SET_DESC_SONOFF_SWV, 
+      Z2S_DEVICE_DESC_SONOFF_SMART_VALVE}},
 
    {	.manufacturer_name = "_TZE204_a7sghmms", .model_name = "TS0601",
     .z2s_device_uid = 24900,
