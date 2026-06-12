@@ -237,7 +237,29 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
       reinterpret_cast<
         Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
 
-    Supla_Z2S_GeneralPurposeMeasurement->setValue(value);
+    switch (function) {
+
+
+      case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_INIT_VALUE: {
+
+        Supla_Z2S_GeneralPurposeMeasurement->setValue(value);
+        z2s_channels_table[channel_number_slot].initial_gpm_value = value; 
+      } break;
+
+
+      case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_DEC_VALUE: {
+
+        if (z2s_channels_table[channel_number_slot].initial_gpm_value >= value)
+        Supla_Z2S_GeneralPurposeMeasurement->setValue(
+          z2s_channels_table[channel_number_slot].initial_gpm_value - value);
+      } break;
+
+
+      default:
+
+        Supla_Z2S_GeneralPurposeMeasurement->setValue(value);
+      break;
+    }  
     //Z2S_setChannelExtendedDataCounter(channel_number_slot, value);
   }  
 }

@@ -653,6 +653,7 @@
 #define SONOFF_SMART_VALVE_TIME_SID                         0x06
 #define SONOFF_SMART_VALVE_PAUSE_SID                        0x07
 #define SONOFF_SMART_VALVE_VOLUME_SID                       0x08
+#define SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID                0x09
 
 #define GIEX_SMART_VALVE_STATE_SID                          0x00
 #define GIEX_SMART_VALVE_MODE_SID                           0x01

@@ -14,6 +14,9 @@
 #define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_PM25         0x06
 #define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_VOC          0x07
 
+#define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_INIT_VALUE   0x10
+#define ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_DEC_VALUE    0x11
+
 /*****************************************************************************/
 
 static const char* default_gpm_name = "GPM";

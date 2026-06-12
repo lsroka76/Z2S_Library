@@ -4957,6 +4957,34 @@ void Z2S_onSonoffCustomClusterReceive(
     } break;
 
 
+    case SONOFF_CUSTOM_CLUSTER_RT_IRRIGATION_DURATION_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        SONOFF_SMART_VALVE_TIME_SID);
+
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot, 
+        ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_DEC_VALUE, 
+        *(uint32_t*)attribute->data.value);
+    } break;
+
+
+    case SONOFF_CUSTOM_CLUSTER_RT_IRRIGATION_VOLUME_ID: {
+
+      int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        SONOFF_SMART_VALVE_VOLUME_SID);
+
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        channel_number_slot, 
+        ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_DEC_VALUE, 
+        *(uint32_t*)attribute->data.value);
+    } break;
+    
+    
     case SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID:
     case SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID:  {
 
@@ -5017,13 +5045,14 @@ void Z2S_onSonoffCustomClusterReceive(
 
       if (attribute->id == SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID)
         msgZ2SDeviceGeneralPurposeMeasurement(
-        channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+        channel_number_slot_3, 
+        ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_INIT_VALUE, 
         __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_data));
 
       if (attribute->id == SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID)
         msgZ2SDeviceGeneralPurposeMeasurement(
           channel_number_slot_5, 
-          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_INIT_VALUE, 
           __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_data));
       
       msgZ2SDeviceGeneralPurposeMeasurement(
@@ -8352,6 +8381,7 @@ uint8_t Z2S_addZ2SDevice(
           
           case SONOFF_SMART_VALVE_ON_OFF_SID:
           case SONOFF_SMART_VALVE_RUN_PROGRAM_SID:
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID:
 
            addZ2SDeviceVirtualRelay(
             &zbGateway, device, first_free_slot, sub_id, name, func); 
@@ -11652,9 +11682,13 @@ void Z2S_buildSuplaChannels(
         SUPLA_CHANNELFNC_POWERSWITCH);
 
       Z2S_addZ2SDevice(
-        joined_device, SONOFF_SMART_VALVE_RUN_PROGRAM_SID, "RUN SAVED PROGRAM", 
-        SUPLA_CHANNELFNC_POWERSWITCH);
+        joined_device, SONOFF_SMART_VALVE_RUN_PROGRAM_SID, 
+        "RUN SAVED PROGRAM (1)", SUPLA_CHANNELFNC_POWERSWITCH);
                         
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID, 
+        "RUN SAVED PROGRAM (2)", SUPLA_CHANNELFNC_POWERSWITCH);
+
       Z2S_addZ2SDevice(
         joined_device, SONOFF_SMART_VALVE_FLOW_SID, "FLOW", 
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "m³/h");

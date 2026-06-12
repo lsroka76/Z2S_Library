@@ -200,6 +200,8 @@ uint16_t save_program_button;
 uint16_t load_program_button; 
 uint16_t start_program_button; 
 uint16_t stop_program_button;
+uint16_t send_program_button;
+uint16_t send_program_2_button;
 uint16_t valve_info_label;
 
 uint16_t gas_alarm_ringtone_selector; 
@@ -419,6 +421,7 @@ volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
 #define GUI_CB_START_PROGRAM_FLAG									0x5002
 #define GUI_CB_STOP_PROGRAM_FLAG									0x5003
 #define GUI_CB_SEND_PROGRAM_FLAG									0x5004
+#define GUI_CB_SEND_PROGRAM_2_FLAG								0x5005
 
 #define GUI_CB_SELF_TEST_FLAG											0x6000
 #define GUI_CB_SILENCE_FLAG												0x6001
@@ -2794,10 +2797,15 @@ void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
 		Control::Color::Emerald, valve_program_selector, valveCallback, 
 		(void*)GUI_CB_STOP_PROGRAM_FLAG);
 
-	stop_program_button = ESPUI.addControl(
-		Control::Type::Button, PSTR(empty_str), "Save program in Supla channel", 
-		Control::Color::Emerald, valve_program_selector, valveCallback, 
-		(void*)GUI_CB_SEND_PROGRAM_FLAG);
+	send_program_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), 
+		"Save program in Supla channel (#1)", Control::Color::Emerald, 
+		valve_program_selector, valveCallback, (void*)GUI_CB_SEND_PROGRAM_FLAG);
+
+	send_program_2_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), 
+		"Save program in Supla channel (#2)", Control::Color::Emerald, 
+		valve_program_selector, valveCallback, (void*)GUI_CB_SEND_PROGRAM_2_FLAG);
 
 	working_str = three_dots_str;																		 
 	valve_info_label =  ESPUI.addControl(
@@ -2822,6 +2830,8 @@ void enableSonoffValveGUI(bool enable) {
 	enableControlStyle(load_program_button, enable);
 	enableControlStyle(start_program_button, enable);
 	enableControlStyle(stop_program_button, enable);
+	enableControlStyle(send_program_button, enable);
+	enableControlStyle(send_program_2_button, enable);
 	enableControlStyle(valve_info_label, enable);	
 }
 
@@ -8211,7 +8221,9 @@ void valveCallback(Control *sender, int type, void *param) {
 
 		uint32_t value_32;
 
-		switch ((uint32_t)param) {
+		uint32_t flag_id = (uint32_t)param;
+
+		switch (flag_id) {
 			
 			case GUI_CB_SAVE_PROGRAM_FLAG: { //save valve program
 
@@ -8336,12 +8348,17 @@ void valveCallback(Control *sender, int type, void *param) {
 				zbGateway.sendOnOffCmd(&device, false);
 			} break;
 
-			case GUI_CB_SEND_PROGRAM_FLAG: {
+			case GUI_CB_SEND_PROGRAM_FLAG:
+			case GUI_CB_SEND_PROGRAM_2_FLAG: {
+
+				int8_t channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_SID;
+				
+				if (flag_id == GUI_CB_SEND_PROGRAM_2_FLAG)
+					channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID;
 
 				int16_t channel_number_slot = Z2S_findChannelNumberSlot(
 					z2s_zb_devices_table[device_slot].ieee_addr, -1, 
-					SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, 
-					SONOFF_SMART_VALVE_RUN_PROGRAM_SID);
+					SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, channel_sid);
   
   			if (channel_number_slot < 0) {
 					
@@ -8397,7 +8414,9 @@ void valveCallback(Control *sender, int type, void *param) {
 				z2s_channels_table[channel_number_slot].smart_valve_data.pause_time = 
 				ESPUI.getControl(valve_pause_number)->getValueInt();
 
-				Z2S_saveChannelsTable();
+				if (Z2S_saveChannelsTable())
+					updateLabel_C(
+				valve_info_label, PSTR("Valve program send to Supla channel."));
 
 				msgZ2SDeviceVirtualRelayValue(
 					channel_number_slot, VRV_U8_ID,

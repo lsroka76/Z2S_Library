@@ -135,8 +135,11 @@ union {
     char              extended_data_counter[8];
   };
   struct {
-      uint32_t        last_temperature_measurement;//TEMP*100
+    uint32_t          last_temperature_measurement;//TEMP*100
     };
+  struct {
+    double            initial_gpm_value;
+  };
 };
   uint8_t             Zb_device_id;
   uint8_t             reserved_7;
