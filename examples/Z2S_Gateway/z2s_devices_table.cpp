@@ -7930,6 +7930,7 @@ uint8_t Z2S_addZ2SDevice(
               &zbGateway, device, first_free_slot, sub_id, name, func);
           } break;
 
+
           case DIMMER_FUNC_BRIGHTNESS_SID:
           case DIMMER_FUNC_COLOR_TEMPERATURE_SID: {
 
@@ -7937,6 +7938,14 @@ uint8_t Z2S_addZ2SDevice(
               &zbGateway, device, first_free_slot, sub_id, name, func);
           } break;
         }
+      } break; 
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE: {
+
+        addZ2SDeviceDimmer(
+          device, first_free_slot, sub_id, name, func);
       } break; 
 
 /*****************************************************************************/     
@@ -12006,6 +12015,15 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, DIMMER_FUNC_COLOR_TEMPERATURE_SID, "COLOR TEMPERATURE",
         SUPLA_CHANNELFNC_DIMMER);
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE: {
+
+      Z2S_addZ2SDevice(
+        joined_device, DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID, 
+        "DIMMER + CCT", SUPLA_CHANNELFNC_DIMMER_CCT);
     } break;
 
 /*****************************************************************************/

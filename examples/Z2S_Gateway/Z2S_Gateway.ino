@@ -905,19 +905,19 @@ void setup() {
 
   /*zbg_device_params_t test_joined_device = {};
 
-  test_joined_device.model_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z;
+  test_joined_device.model_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE;
   esp_zb_ieee_addr_t ieee_addr_test = {};
 
-  const char *manuf = "_TZE204_ltwbm23f";
-  const char *model = "TS0601";
+  const char *manuf = "Paulmann Licht GmbH";
+  const char *model = "CCT-I";
   Z2S_addZbDeviceTableSlot(
-    ieee_addr_test, 0x1250, manuf, model, 1, 
-    Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z, 0);
+    ieee_addr_test, 0x36000, manuf, model, 1, 
+    Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE, 0);
 
     test_joined_device.endpoint = 1;
-    test_joined_device.model_id = Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z;
+    test_joined_device.model_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE;
     
-    Z2S_addZ2SDevice(&test_joined_device);*/
+    Z2S_buildSuplaChannels(&test_joined_device, 1);*/
 
     /*test_joined_device.endpoint = 38;
     test_joined_device.model_id = Z2S_DEVICE_DESC_TEMPERATURE_SENSOR;

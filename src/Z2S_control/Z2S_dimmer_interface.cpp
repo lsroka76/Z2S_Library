@@ -30,18 +30,35 @@ Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
     memset(&_device, 0, sizeof(zbg_device_params_t));  
 
   channel.setType(SUPLA_CHANNELTYPE_DIMMER);
-  channel.setFuncList(
+  /*channel.setFuncList(
       SUPLA_RGBW_BIT_FUNC_DIMMER | SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING |
       SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING |
-      SUPLA_RGBW_BIT_FUNC_DIMMER_CCT | SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB);
-  channel.setDefault(SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB);
+      SUPLA_RGBW_BIT_FUNC_DIMMER_CCT | SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB);*/
+  //channel.setDefault(SUPLA_RGBW_BIT_FUNC_DIMMER);
   channel.setDefault(SUPLA_CHANNELFNC_DIMMER);
+  _cct_mode = _dimmer_mode;
   //channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
 }
+
+Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
+  zbg_device_params_t *device, uint8_t dimmer_function, uint8_t dimmer_mode,
+  uint8_t cct_mode) : _dimmer_function(dimmer_function), 
+  _dimmer_mode(dimmer_mode), _cct_mode(cct_mode) {
+  
+  if (device)
+    memcpy(&_device, device, sizeof(zbg_device_params_t));  
+  else   
+    memset(&_device, 0, sizeof(zbg_device_params_t));  
+
+  channel.setType(SUPLA_CHANNELTYPE_DIMMER);
+  channel.setDefault(dimmer_function);
+}
+
 
 int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
   TSD_SuplaChannelNewValue *newValue) {
 
+  uint8_t whiteTemperature = static_cast<uint8_t>(newValue->value[7]);
   uint8_t command = static_cast<uint8_t>(newValue->value[6]);
   uint8_t toggleOnOff = static_cast<uint8_t>(newValue->value[5]);
   uint8_t red = static_cast<uint8_t>(newValue->value[4]);
@@ -51,10 +68,10 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
   uint8_t brightness = static_cast<uint8_t>(newValue->value[0]);
 
   SUPLA_LOG_DEBUG(
-      "Z2S_DimmerInterface[%d]: red=%d, green=%d, blue=%d, "
-      "colorBrightness=%d, brightness=%d, command=%d, toggleOnOff=%d",
+      "Z2S_DimmerInterface[%d]: red=%d, green=%d, blue=%d, colorBrightness=%d"
+      ", brightness=%d, whiteTemperature=%d, command=%d, toggleOnOff=%d",
       getChannelNumber(), red, green, blue, colorBrightness, brightness,
-      command, toggleOnOff);
+      whiteTemperature, command, toggleOnOff);
 
   if (brightness > 100) {
     brightness = 100;
@@ -101,6 +118,9 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
     }
   }
 
+  _last_whiteTemperature = _whiteTemperature;
+  _whiteTemperature = whiteTemperature;
+
   _lastMsgReceivedMs = millis();
 
   return -1;
@@ -129,7 +149,7 @@ void Supla::Control::Z2S_DimmerInterface::turnOn() {
 }
 
 
-void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
+void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
   uint8_t brightness) {
 
   if (Zigbee.started()) {
@@ -143,6 +163,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
           _state = false;
           zbGateway.sendOnOffCmd(&_device, false);
           sendTurnOnOffCmd = 0;
+          setValueOnServer(-1, _state);
           break;
         }
 
@@ -151,28 +172,12 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
           _state = true;
           zbGateway.sendOnOffCmd(&_device, true);
           sendTurnOnOffCmd = 0;
+          setValueOnServer(-1, _state);
         }
         
         uint8_t level = mapFloat(_brightness, 1, 100, 1, 254);
         zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
-      } break;
-
-
-      case Z2S_COLOR_TEMPERATURE_DIMMER: {
-
-        uint16_t color_temperature = mapFloat(brightness, 1, 100, 454, 200);
-	      zbGateway.sendColorMoveToColorTemperatureCmd(
-          &_device, color_temperature, 1);
-      } break;
-
-
-      case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER:
-      case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER: {
-
-        uint16_t color_temperature = mapFloat(brightness, 1, 100, 500, 153);
-	      
-        zbGateway.sendColorMoveToColorTemperatureCmd(
-          &_device, color_temperature, 1);
+        setValueOnServer(level, _state);
       } break;
 
 
@@ -196,17 +201,6 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
         zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&F0_brightness, 
-          false);
-      } break;
-
-
-      case Z2S_TUYA_E0_CMD_DIMMER: {
-
-        uint16_t E0_color_temperature = mapFloat(brightness, 1, 100, 1, 1000);
-	      
-        zbGateway.sendCustomClusterCmd(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
-          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&E0_color_temperature, 
           false);
       } break;
 
@@ -238,11 +232,54 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
           &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_BRIGHTNESS_DP, 
           dp_brightness, false);
       } break;
+    } 
+  }
+}
+
+void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
+  uint8_t whiteTemperature) {
+
+  if (Zigbee.started()) {
+    switch (_cct_mode) {
+
+
+      case Z2S_COLOR_TEMPERATURE_DIMMER: {
+
+        uint16_t color_temperature = mapFloat(
+          whiteTemperature, 1, 100, 454, 200);
+
+	      zbGateway.sendColorMoveToColorTemperatureCmd(
+          &_device, color_temperature, 1);
+      } break;
+
+
+      case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER:
+      case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER: {
+
+        uint16_t color_temperature = mapFloat(
+          whiteTemperature, 1, 100, 500, 153);
+	      
+        zbGateway.sendColorMoveToColorTemperatureCmd(
+          &_device, color_temperature, 1);
+      } break;
+
+
+      case Z2S_TUYA_E0_CMD_DIMMER: {
+
+        uint16_t E0_color_temperature = mapFloat(
+          whiteTemperature, 1, 100, 1, 1000);
+	      
+        zbGateway.sendCustomClusterCmd(
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
+          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&E0_color_temperature, 
+          false);
+      } break;
 
 
       case Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER: {
 
-        uint16_t dp_color_temperature = mapFloat(brightness, 1, 100, 1, 1000);
+        uint16_t dp_color_temperature = mapFloat(
+          whiteTemperature, 1, 100, 1, 1000);
 
         //WHITE mode
         sendTuyaRequestCmdEnum8(
@@ -252,7 +289,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDevice(
           &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP, 
           dp_color_temperature, false);
       } break;
-    } 
+    }
   }
 }
 
@@ -268,7 +305,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       _last_brightness = _brightness;
       _brightness = 0;
       _state = false;
-      channel.setNewValue(-1, -1, -1, -1, _brightness, -1);
+      channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
 
       return;
     }
@@ -277,7 +314,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
       _brightness = _last_brightness;
       _state = true;
-      channel.setNewValue(-1, -1, -1, -1, _brightness, -1);
+      channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
       return;
     }
     return;
@@ -311,7 +348,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
     }
 
   //_lastMsgReceivedMs = millis();
-  channel.setNewValue(-1, -1, -1, -1, _brightness, -1);
+  channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
 
 }
 
@@ -336,9 +373,17 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
   if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 1000) {
 
     _lastMsgReceivedMs = 0;
-    channel.setNewValue(0, 0, 0, 0, _brightness, -1);
-
-    sendValueToDevice(_brightness);
+    if (channel.getDefaultFunction() == SUPLA_CHANNELFNC_DIMMER_CCT) {
+      log_i("SUPLA_CHANNELFNC_DIMMER_CCT");
+      channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+      sendValueToDimmer(_brightness);
+      sendValueToCCT(_whiteTemperature);
+    }
+    else {
+      channel.setNewValue(0, 0, 0, 0, _brightness, 0);
+      sendValueToDimmer(_brightness);
+      sendValueToCCT(_brightness);
+    }
   }
 
   if (_fresh_start && ((millis() - _last_ping_ms) > 5000))

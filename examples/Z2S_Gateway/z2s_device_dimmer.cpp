@@ -7,14 +7,10 @@ void initZ2SDeviceDimmer(
   int16_t channel_number_slot) {
 
   
-  if (device->model_id == 
-        Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH) {
+  if (device->model_id == Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH) {
 
-    auto Supla_Z2S_TuyaDimmerSwitch = 
-      new Supla::Control::Z2S_TuyaDimmerSwitch(
-        gateway, 
-        device, 
-        z2s_channels_table[channel_number_slot].sub_id);
+    auto Supla_Z2S_TuyaDimmerSwitch = new Supla::Control::Z2S_TuyaDimmerSwitch(
+      gateway, device, z2s_channels_table[channel_number_slot].sub_id);
 
     Supla_Z2S_TuyaDimmerSwitch->getChannel()->setChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
@@ -28,9 +24,15 @@ void initZ2SDeviceDimmer(
       z2s_channels_table[channel_number_slot].Supla_channel_func);
 
     return;
-  }  
+  }  //Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH
 
-  uint8_t dimmer_mode = 0xFF;  
+  //if (device->model_id == Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE) {
+  //}
+
+  uint8_t dimmer_function = SUPLA_RGBW_BIT_FUNC_DIMMER;
+  uint8_t dimmer_mode = 0xFF;
+  uint8_t cct_mode = 0xFF;
+  bool new_interface = false;
 
   switch (z2s_channels_table[channel_number_slot].sub_id) {
 
@@ -71,7 +73,8 @@ void initZ2SDeviceDimmer(
 
           dimmer_mode = Z2S_TUYA_BRIGHTNESS_DP_DIMMER;
         break;
-      } break;
+      } 
+    break;
 
 
     case DIMMER_FUNC_COLOR_TEMPERATURE_SID:
@@ -111,18 +114,43 @@ void initZ2SDeviceDimmer(
 
           dimmer_mode = Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER;
         break;
-      } break;
+      } 
+    break;
+
+
+      case DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID:
+      
+      switch (device->model_id) {
+
+        
+        case Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE: {
+
+          dimmer_function = SUPLA_CHANNELFNC_DIMMER_CCT;
+          dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER; 
+          cct_mode = Z2S_COLOR_TEMPERATURE_DIMMER;
+          new_interface = true;
+        } break;
+      
+      }
+    break;
   }
   
   if (dimmer_mode == 0xFF) {
 
-    log_e("initZ2SDeviceDimmer error - dimmer id 0x%x, model id 0x%x", 
-          z2s_channels_table[channel_number_slot].sub_id, device->model_id);
+    log_e(
+      "initZ2SDeviceDimmer error - dimmer id 0x%x, model id 0x%x", 
+      z2s_channels_table[channel_number_slot].sub_id, device->model_id);
     return;
   }
 
-  auto Supla_Z2S_DimmerInterface = new Supla::Control::Z2S_DimmerInterface(
-    gateway, device, dimmer_mode); 
+  Supla::Control::Z2S_DimmerInterface *Supla_Z2S_DimmerInterface = nullptr;
+  
+  if (new_interface)
+    Supla_Z2S_DimmerInterface = new Supla::Control::Z2S_DimmerInterface(
+    device, dimmer_function, dimmer_mode, cct_mode);
+  else 
+    Supla_Z2S_DimmerInterface = new Supla::Control::Z2S_DimmerInterface(
+    gateway, device, dimmer_mode);
 
   Supla_Z2S_DimmerInterface->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
@@ -200,7 +228,19 @@ void addZ2SDeviceDimmer(
 }
 
 /*****************************************************************************/
+void addZ2SDeviceDimmer(
+  zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
+  const char *name, uint32_t function) {
 
+  auto Supla_Z2S_DimmerInterface = new Supla::Control::Z2S_DimmerInterface(
+    device, function); 
+  
+  if (Supla_Z2S_DimmerInterface)
+    Z2S_fillChannelsTableSlot(
+      device, free_slot, Supla_Z2S_DimmerInterface->getChannelNumber(), 
+      SUPLA_CHANNELTYPE_DIMMER, sub_id, name, function);
+}
+/*****************************************************************************/
 void msgZ2SDeviceDimmer(
   int16_t channel_number_slot, int16_t level, bool state) {
 

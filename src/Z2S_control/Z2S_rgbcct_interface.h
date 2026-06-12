@@ -27,19 +27,29 @@
 
 #include "Z2S_common.h"
 
-#define Z2S_COLOR_HS_RGB            0x01
-#define Z2S_COLOR_HS_XY_RGB         0x02
-#define Z2S_COLOR_XY_RGB            0x03
+#define Z2S_SEND_TO_LEVEL_DIMMER              0x00
+#define Z2S_COLOR_TEMPERATURE_DIMMER          0x01
+#define Z2S_TUYA_COLOR_TEMPERATURE_DIMMER     0x02
+#define Z2S_TUYA_F0_CMD_DIMMER                0x03 //LEVEL CONTROL 0 - 1000
+#define Z2S_TUYA_E0_CMD_DIMMER                0x04 //COLOR CLUSTER 0 - 1000
+#define Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER  0x05
+#define Z2S_TUYA_BRIGHTNESS_DP_DIMMER         0x06 //DP 0-1000
+#define Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER  0x07 //DP 0-1000
 
-#define Z2S_TUYA_COLOR_HS_RGB       0x11
-#define Z2S_TUYA_COLOR_HS_XY_RGB    0x12
-#define Z2S_TUYA_COLOR_XY_RGB       0x13
 
-#define Z2S_PHILIPS_COLOR_HS_RGB    0x21
-#define Z2S_PHILIPS_COLOR_HS_XY_RGB 0x22
-#define Z2S_PHILIPS_COLOR_XY_RGB    0x23
+#define Z2S_COLOR_HS_RGB                      0x01
+#define Z2S_COLOR_HS_XY_RGB                   0x02
+#define Z2S_COLOR_XY_RGB                      0x03
 
-#define Z2S_TUYA_DP_COLOR_HS_RGB    0x30
+#define Z2S_TUYA_COLOR_HS_RGB                 0x11
+#define Z2S_TUYA_COLOR_HS_XY_RGB              0x12
+#define Z2S_TUYA_COLOR_XY_RGB                 0x13
+
+#define Z2S_PHILIPS_COLOR_HS_RGB              0x21
+#define Z2S_PHILIPS_COLOR_HS_XY_RGB           0x22
+#define Z2S_PHILIPS_COLOR_XY_RGB              0x23
+
+#define Z2S_TUYA_DP_COLOR_HS_RGB              0x30
 
 
 namespace Supla {

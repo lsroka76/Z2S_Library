@@ -48,6 +48,12 @@ public:
     ZigbeeGateway *gateway, zbg_device_params_t *device, 
     uint8_t dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER);
 
+  Z2S_DimmerInterface(
+    zbg_device_params_t *device, 
+    uint8_t dimmer_function = SUPLA_RGBW_BIT_FUNC_DIMMER,
+    uint8_t dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER,
+    uint8_t cct_mode = Z2S_COLOR_TEMPERATURE_DIMMER);
+
   int32_t handleNewValueFromServer(
     TSD_SuplaChannelNewValue *newValue) override;
   
@@ -64,7 +70,8 @@ public:
 
   virtual void handleAction(int event, int action) override;
 
-  virtual void sendValueToDevice(uint8_t brightness); //= 0;
+  virtual void sendValueToDimmer(uint8_t brightness); 
+  virtual void sendValueToCCT(uint8_t whiteTemperature); 
 
   virtual void setValueOnServer(int16_t value, bool new_state);
 
@@ -84,10 +91,9 @@ public:
 
 protected:
 
-  //ZigbeeGateway *_gateway = nullptr;
-  //zbg_device_params_t 	_device;
-
+  uint8_t _dimmer_function = SUPLA_RGBW_BIT_FUNC_DIMMER;
   uint8_t _dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER;
+  uint8_t _cct_mode = Z2S_COLOR_TEMPERATURE_DIMMER;
 
   bool _fresh_start = true;
 
@@ -95,6 +101,8 @@ protected:
 
   uint8_t _last_brightness = 0;
   uint8_t _brightness = 0;
+  uint8_t _last_whiteTemperature = 0;
+  uint8_t _whiteTemperature = 0;
   uint8_t _state = false;
 
   uint32_t _keep_alive_ms = 0;

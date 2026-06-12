@@ -29,6 +29,13 @@ void addZ2SDeviceDimmer(
 
 /*****************************************************************************/
 
+void addZ2SDeviceDimmer(
+  zbg_device_params_t *device, uint8_t free_slot, 
+  int8_t sub_id = NO_CUSTOM_CMD_SID,const char *name = nullptr, 
+  uint32_t function = SUPLA_CHANNELFNC_DIMMER);
+
+/*****************************************************************************/
+
 void msgZ2SDeviceDimmer(
   int16_t channel_number_slot, int16_t level, bool state);
 

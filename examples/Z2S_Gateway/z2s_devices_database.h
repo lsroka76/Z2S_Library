@@ -205,6 +205,8 @@
 #define Z2S_DEVICE_DESC_TUYA_LED_DIMMER                     0x3230
 #define Z2S_DEVICE_DESC_DIMMER_CT_BULB                      0x3235
 
+#define Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE              0x3250
+
 #define Z2S_DEVICE_DESC_RGBW_END                            0x3299
 
 #define Z2S_DEVICE_DESC_TUYA_DIMMER_SWITCH                  0x3300
@@ -675,6 +677,7 @@
 #define DIMMER_FUNC_BRIGHTNESS_SID                          0x00
 #define DIMMER_FUNC_COLOR_TEMPERATURE_SID                   0x01
 #define DIMMER_ON_OFF_SWITCH_SID                            0x02
+#define DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID        0x10
 
 #define IAS_WD_SILENT_ALARM_SID                             0x00
 #define IAS_WD_LOUD_ALARM_SID                               0x01
@@ -2051,9 +2054,22 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB,
     .z2s_device_clusters_count = 3, 
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
-                             ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL 
+    }
+  },
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
+    .z2s_device_clusters_count = 3, 
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL 
+    }
+  },
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGB_BULB,
     .z2s_device_clusters_count = 3,
@@ -6668,6 +6684,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 35900,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Paulmann Licht GmbH", .model_name = "CCT-I",
+    .z2s_device_uid = 36000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
+
 
 
 
