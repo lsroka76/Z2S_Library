@@ -273,7 +273,8 @@ void initZ2SDeviceVirtualRelay(
         switch (z2s_channels_table[channel_number_slot].sub_id) {
           
 
-          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: {
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID:
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID: {
 
             if (z2s_channels_table[channel_number_slot].smart_valve_data.program > 0) {
               
