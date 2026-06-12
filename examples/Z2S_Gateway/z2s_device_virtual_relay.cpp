@@ -151,6 +151,7 @@ void initZ2SDeviceVirtualRelay(
 
 
           case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: 
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID: 
 
             z2s_function = Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM; 
           break;
