@@ -882,6 +882,7 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 #define Z2S_REPORTING_SET_DESC_DANFOSS_TRV                              0x0500
 
 #define Z2S_REPORTING_SET_DESC_SHELLY_WS90                              0x0600
+#define Z2S_REPORTING_SET_DESC_SONOFF_SWV                               0x0610
 
 static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
 
@@ -1189,7 +1190,23 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_min_interval_value = 10, 
     .z2s_max_interval_value = 3600,
     .z2s_delta_value_32 = 1,
-    .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE}
+    .z2s_manufacturer_code = SHELLY_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SONOFF_SWV,
+    .z2s_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .z2s_attribute_id = SONOFF_CUSTOM_CLUSTER_RT_IRRIGATION_DURATION_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U32,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 60,
+    .z2s_delta_value_32 = 5},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SONOFF_SWV,
+    .z2s_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .z2s_attribute_id = SONOFF_CUSTOM_CLUSTER_RT_IRRIGATION_VOLUME_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U32,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 60,
+    .z2s_delta_value_32 = 1}
 
 };//Z2S_REPORTING_SETS_DESC
 
