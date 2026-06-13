@@ -152,6 +152,8 @@ void Supla::Control::Z2S_DimmerInterface::turnOn() {
 void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
   uint8_t brightness) {
 
+  log_i("_dimmer_mode = %u, brightness = %u", _dimmer_mode, brightness);
+
   if (Zigbee.started()) {
     switch (_dimmer_mode) {
 
@@ -163,7 +165,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
           _state = false;
           zbGateway.sendOnOffCmd(&_device, false);
           sendTurnOnOffCmd = 0;
-          setValueOnServer(-1, _state);
+          //setValueOnServer(-1, _state); 
           break;
         }
 
@@ -172,12 +174,12 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
           _state = true;
           zbGateway.sendOnOffCmd(&_device, true);
           sendTurnOnOffCmd = 0;
-          setValueOnServer(-1, _state);
+          //setValueOnServer(-1, _state);
         }
         
         uint8_t level = mapFloat(_brightness, 1, 100, 1, 254);
         zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
-        setValueOnServer(level, _state);
+        //setValueOnServer(level, _state);
       } break;
 
 
@@ -238,6 +240,8 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
 void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
   uint8_t whiteTemperature) {
+
+  log_i("_cct_mode = %u, whiteTemperature = %u", _cct_mode, whiteTemperature);
 
   if (Zigbee.started()) {
     switch (_cct_mode) {

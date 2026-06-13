@@ -208,7 +208,7 @@ void addZ2SDeviceDimmer(
     default:
 
       channel_element = new Supla::Control::Z2S_DimmerInterface(
-        gateway, device, sub_id); 
+        gateway, device); 
     break;
   }
   

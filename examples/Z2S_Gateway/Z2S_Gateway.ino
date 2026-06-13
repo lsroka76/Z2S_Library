@@ -905,17 +905,17 @@ void setup() {
 
   /*zbg_device_params_t test_joined_device = {};
 
-  test_joined_device.model_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE;
-  esp_zb_ieee_addr_t ieee_addr_test = {};
+  test_joined_device.model_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB;
+  esp_zb_ieee_addr_t ieee_addr_test = {1,2,3,4,5,6,7,8};
 
-  const char *manuf = "Paulmann Licht GmbH";
-  const char *model = "CCT-I";
+  const char *manuf = "AwoX"; //"Paulmann Licht GmbH";
+  const char *model = "TLSR82xx"; //"CCT-I";
   Z2S_addZbDeviceTableSlot(
-    ieee_addr_test, 0x36000, manuf, model, 1, 
-    Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE, 0);
+    ieee_addr_test, 0x30100, manuf, model, 1, 
+    Z2S_DEVICE_DESC_DIMMER_CT_BULB, 0);
 
     test_joined_device.endpoint = 1;
-    test_joined_device.model_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE;
+    test_joined_device.model_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB;
     
     Z2S_buildSuplaChannels(&test_joined_device, 1);*/
 
