@@ -23,6 +23,7 @@ typedef enum gui_modes {
   gateway_no_local_actions_mode = 11,
   full_ad_gui_mode = 12,
   full_sb_gui_mode = 13,
+  standard_ad_gui_mode = 14,
   gui_modes_number
 } gui_modes_t;
 
