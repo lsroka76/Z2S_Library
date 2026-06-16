@@ -94,7 +94,7 @@ void initZ2SDeviceElectricityMeter(
           (strcmp(
             Z2S_getZbDeviceManufacturerName(
               z2s_channels_table[channel_number_slot].Zb_device_id),
-              "_TZ3210_2uollq9d") == 0)) ||
+              "_TZ3210_2uollq9d") == 0) ||
           (strcmp(
             Z2S_getZbDeviceManufacturerName(
               z2s_channels_table[channel_number_slot].Zb_device_id),
