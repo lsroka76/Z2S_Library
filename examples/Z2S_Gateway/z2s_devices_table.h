@@ -222,6 +222,8 @@ typedef struct z2s_channel_action_s {
   char action_name[ACTION_NAME_MAX_SIZE];
   char action_description[ACTION_DESCRIPTION_MAX_SIZE];
   bool is_condition;
+  uint16_t subaction_id;
+  uint32_t reserved32;
   double min_value;
   double max_value;
 } z2s_channel_action_t;

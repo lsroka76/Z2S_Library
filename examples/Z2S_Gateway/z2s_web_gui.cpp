@@ -255,6 +255,7 @@ uint16_t action_source_channel_selector 			 = 0xFFFF;
 uint16_t action_destination_channel_selector	 = 0xFFFF;
 uint16_t action_event_selector;
 uint16_t action_action_selector; 
+uint16_t action_subaction_number;
 uint16_t action_condition_threshold_1_number;
 uint16_t action_condition_threshold_2_number; 
 uint16_t action_save_button;
@@ -642,6 +643,7 @@ void valueCallback(BasicControl *sender, int type, void *param);
 void valveCallback(BasicControl *sender, int type, void *param);
 void TuyaCustomCmdCallback(BasicControl *sender, int type, void *param);
 void actionsTableCallback(BasicControl *sender, int type, void *param);
+void actionSelectorCallback(BasicControl *sender, int type, void *param);
 void addLocalActionHandlerCallback(BasicControl *sender, int type, void *param);
 void addLocalVirtualRelayCallback(BasicControl *sender, int type, void *param);
 void addLocalVirtualBinaryCallback(BasicControl *sender, int type, void *param);
@@ -3336,8 +3338,8 @@ void buildAdvancedDevicesTabGUI() {
 
 const char* getSuplaActionName(Supla::Action action_id) {
 
-	uint16_t actions_number = sizeof(Supla_actions) /
-														sizeof(Supla_action_type_t);
+	uint16_t actions_number = 
+		sizeof(Supla_actions) / sizeof(Supla_action_type_t);
 
 	for (uint16_t i = 0; i < actions_number; i++)
 		if (Supla_actions[i].Supla_action_id == action_id)
@@ -3381,7 +3383,7 @@ void sprintfAction(z2s_channel_action_t &action) {
 						"with <b>value(s) = </b> <i>%.2f, %.2f </i><br>"
 						"<b>for source channel:</b> <i>[%s]</i><br><br>"
 						"<b>Action:</b> <i>{%s}</i> <b><br>"
-						"on destination channel:</b> <i>[%s]</i>",
+						"on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
 						current_action_counter, Z2S_getActionsNumber(),
 						action.action_name, 
 						action.is_enabled ? "enabled" : "disabled",
@@ -3392,7 +3394,8 @@ void sprintfAction(z2s_channel_action_t &action) {
 								action.src_Supla_channel)].Supla_channel_name, 
 						getSuplaActionName(action.dst_Supla_action),
 						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
-								action.dst_Supla_channel)].Supla_channel_name);
+								action.dst_Supla_channel)].Supla_channel_name,
+						action.subaction_id, action.reserved32);
 	else
 		snprintf(general_purpose_gui_buffer, 512, 
 						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
@@ -3400,7 +3403,7 @@ void sprintfAction(z2s_channel_action_t &action) {
 						"<b>Event:</b> <i>{%s}</i><br>"
 						"<b>from source channel:</b> <i>[%s]</i><br><br>"
 						"<b>Action:</b> <i>{%s}</i> <b><br>"
-						"on destination channel:</b> <i>[%s]</i>",
+						"on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
 						current_action_counter, Z2S_getActionsNumber(),
 						action.action_name, 
 						action.is_enabled ? "enabled" : "disabled",
@@ -3409,7 +3412,8 @@ void sprintfAction(z2s_channel_action_t &action) {
 								action.src_Supla_channel)].Supla_channel_name, 
 						getSuplaActionName(action.dst_Supla_action),
 						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
-								action.dst_Supla_channel)].Supla_channel_name);
+								action.dst_Supla_channel)].Supla_channel_name,
+						action.subaction_id, action.reserved32);
 
 	working_str = general_purpose_gui_buffer;
 }
@@ -3426,6 +3430,7 @@ void enableActionDetails(bool enable) {
 		ESPUI.updateSelect(action_event_selector, -1);
 		ESPUI.updateSelect(action_destination_channel_selector, -1); 
 		ESPUI.updateSelect(action_action_selector, -1);
+		ESPUI.updateNumber(action_subaction_number, 0);
 		working_str = "0.00";
 		ESPUI.updateText(action_condition_threshold_1_number, working_str);
 		ESPUI.updateText(action_condition_threshold_2_number, working_str);
@@ -3438,8 +3443,11 @@ void enableActionDetails(bool enable) {
 	enableControlStyle(action_event_selector, enable);
 	enableControlStyle(action_destination_channel_selector, enable);
 	enableControlStyle(action_action_selector, enable);
+	enableControlStyle(action_subaction_number, enable);
 	enableControlStyle(action_condition_threshold_1_number, enable);
 	enableControlStyle(action_condition_threshold_2_number, enable);
+	if (enable)
+		actionSelectorCallback(nullptr, -1, nullptr);
 }
 
 void enableActionControls(bool enable) {
@@ -3557,8 +3565,13 @@ void updateActionDetails(
 		-1 : Z2S_findTableSlotByChannelNumber(action.dst_Supla_channel));
 
 	ESPUI.updateSelect(
-		action_action_selector, empty_action ? 
-		-1 : action.dst_Supla_action);
+		action_action_selector, empty_action ? -1 : action.dst_Supla_action);
+
+	actionSelectorCallback(
+		nullptr, empty_action ? -1 : action.dst_Supla_action, nullptr);
+
+	ESPUI.updateNumber(action_subaction_number, empty_action ? 
+		0 : action.subaction_id);
 
 	working_str = empty_action ? 
 		String(0, 2) : String(action.min_value, 2);
@@ -3635,6 +3648,13 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 	else
 		return false;
 
+	selector_value = ESPUI.getControl(action_subaction_number)->getValueInt();
+
+	if ( selector_value >= 0)
+		action.subaction_id = selector_value;
+	else
+		return false;
+
 	action.min_value = ESPUI.getControl(
 		action_condition_threshold_1_number)->getValue().toDouble();
 
@@ -3642,6 +3662,42 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 		action_condition_threshold_2_number)->getValue().toDouble();
 
 	return true;
+}
+
+uint16_t getSubactionsNumber(Supla::Action action_id) {
+
+	uint16_t actions_number = 
+		sizeof(Supla_actions) / sizeof(Supla_action_type_t);
+
+	for (uint16_t i = 0; i < actions_number; i++)
+		if (Supla_actions[i].Supla_action_id == action_id)
+			return Supla_actions[i].max_subactions_number;
+	return 0;
+}
+
+void actionSelectorCallback(BasicControl *sender, int type, void *param) {
+	
+	int sender_value = type;
+	
+	if (sender)
+		sender_value = sender->getValueInt();
+
+	if ((sender_value < 0) || (sender_value > UINT16_MAX)) {
+
+		enableControlStyle(action_subaction_number, false);
+		return;
+	}
+	
+	uint16_t max_subactions_number = 
+		getSubactionsNumber((Supla::Action)sender_value);
+	
+	if (max_subactions_number) {
+
+		enableControlStyle(action_subaction_number, true);
+		ESPUI.getControl(
+			action_subaction_number)->setUserData((void*)max_subactions_number);
+	} else
+		enableControlStyle(action_subaction_number, false);
 }
 
 void buildAllChannelSelectors() {
@@ -3722,7 +3778,15 @@ void buildActionsChannelSelectors(
 		//this have to be here to keep user friendly layout
 		action_action_selector = ESPUI.addControl(
 			Control::Type::Select, PSTR(empty_str), (long int)-1,
-			Control::Color::Emerald, parent_control_id, generalCallback);
+			Control::Color::Emerald, parent_control_id, actionSelectorCallback);
+
+		action_subaction_number = ESPUI.addControl(
+		Control::Type::Number, PSTR("Subaction ID"), (long int)0,
+		Control::Color::Emerald, parent_control_id, generalMinMaxCallback, 
+		(void*)100);
+
+		addClearLabel(
+			PSTR("&#10023;Enter subaction ID &#10023;"), parent_control_id);
 
 		//this have to be here to keep user friendly layout
 		working_str = "0.00";

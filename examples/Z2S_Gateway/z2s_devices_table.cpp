@@ -2913,9 +2913,10 @@ void Z2S_initSuplaActions() {
       if (new_action.is_enabled)
         Z2S_add_action(
           new_action.action_name, new_action.src_Supla_channel,
-          new_action.dst_Supla_action, new_action.dst_Supla_channel, 
-          new_action.src_Supla_event, new_action.is_condition, 
-          new_action.min_value, new_action.max_value);
+          new_action.dst_Supla_action + new_action.subaction_id, 
+          new_action.dst_Supla_channel, new_action.src_Supla_event, 
+          new_action.is_condition, new_action.min_value, 
+          new_action.max_value);
 
       log_i(
         "Action name: %s, enabled: %s, src_Supla_channel %u, "
@@ -2924,7 +2925,7 @@ void Z2S_initSuplaActions() {
         new_action.action_name, 
         new_action.is_enabled ? "YES" : "NO", 
         new_action.src_Supla_channel, 
-        new_action.dst_Supla_action, 
+        new_action.dst_Supla_action +  + new_action.subaction_id, 
         new_action.dst_Supla_channel, 
         new_action.src_Supla_event, 
         new_action.is_condition, 
@@ -12189,7 +12190,9 @@ void printSizeOfClasses() {
         "\n\rIPAddress %u"
         "\n\rNetworkServer %u"
         "\n\rNetworkClient %u"
-        "\n\rZigbeeGateway %u",
+        "\n\rZigbeeGateway %u"
+        "\n\rSupla::Action %u"
+        "\n\rSupla::Event %u",
         sizeof(Supla::Control::Relay),
         sizeof(Supla::Control::VirtualRelay),
         sizeof(Supla::Control::Z2S_VirtualRelay),
@@ -12201,7 +12204,9 @@ void printSizeOfClasses() {
         sizeof(IPAddress),
         sizeof(NetworkServer),
         sizeof(NetworkClient),
-        sizeof(ZigbeeGateway));
+        sizeof(ZigbeeGateway),
+        sizeof(Supla::Action),
+        sizeof(Supla::Event));
 }
 
 void printTaskInfo(bool toTelnet) {

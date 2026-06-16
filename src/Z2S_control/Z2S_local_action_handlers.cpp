@@ -822,6 +822,7 @@ void Supla::Sensor::LocalVirtualBinary::handleAction(int event, int action) {
 
   /*if (!_notification_registered)
     return;*/
+  log_i("event %u, action %u", event, action);
 
   switch (action) {
     

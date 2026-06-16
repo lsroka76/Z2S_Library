@@ -86,6 +86,7 @@ typedef struct Supla_action_type_s {
 
 	const Supla::Action	Supla_action_id;
 	const char* Supla_action_name;
+	const uint16_t max_subactions_number;
 } Supla_action_type_t;
 
 
@@ -473,7 +474,11 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "TURN ON GATEWAY SENSOR NOTIFICATIONS" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF,
-		.Supla_action_name = "TURN OFF GATEWAY SENSOR NOTIFICATIONS" }
+		.Supla_action_name = "TURN OFF GATEWAY SENSOR NOTIFICATIONS" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_FIRST_TEST_ACTION,
+		.Supla_action_name = "FIRST TEST ACTION (0-256)" ,
+		.max_subactions_number = 256 }
 };
 
 static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
