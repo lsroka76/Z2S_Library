@@ -1872,7 +1872,7 @@ void rebuildChannelsSelector(
 
 	
 		ESPUI.addControl(
-			Control::Type::Option, PSTR("Select Zigbee channel..."), (long int)-1,
+			Control::Type::Option, PSTR("Select Supla channel..."), (long int)-1,
 			Control::Color::None, channel_selector);
 
 		
@@ -2037,7 +2037,7 @@ void buildSwitchBotTabGUI() {
 
 void buildChannelsTabGUI() {
 
-	char *working_str_ptr = PSTR("ZigBee channels");
+	char *working_str_ptr = PSTR("Supla channels");
 	auto channelstab = ESPUI.addControl(
 		Control::Type::Tab, PSTR(empty_str), working_str_ptr,
 		Control::Color::Emerald, Control::noParent, onChannelsTabCallback);
