@@ -265,16 +265,12 @@ const static char Z2S_ZB_DEVICES_TABLE_SIZE[] PROGMEM = "Z2S_zbd_ts";
 
 extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8];  //bit-indexed table
 
-//const static char   Z2S_CHANNELS_ACTIONS_TABLE      []  PROGMEM = "Z2S_actions";
-//const static char   Z2S_CHANNELS_ACTIONS_TABLE_SIZE []  PROGMEM = "Z2S_actions_ts";
-
 const static char Z2S_CHANNELS_ACTIONS_INDEX_TABLE[] PROGMEM = "Z2S_actions_i";
 const static char Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2[] PROGMEM = 
   "actions_index_table.z2s";
 const static char Z2S_CHANNELS_ACTIONS_PPREFIX[] PROGMEM = "Z2S_an_";
 const static char Z2S_CHANNELS_ACTIONS_PPREFIX_V2[] PROGMEM = 
   "action_%04d.z2s";
-const static char Z2S_CHANNELS_ACTIONS_NUMBER[] PROGMEM = "Z2S_actions_n";
 
 //8 bit-indexed table
 extern uint8_t z2s_pushover_messages_index_table[
@@ -284,8 +280,6 @@ const static char Z2S_PUSHOVER_MESSAGES_INDEX_TABLE_V2[] PROGMEM =
   "pushover_messages_index_table.z2s";
 const static char Z2S_PUSHOVER_MESSAGES_PPREFIX_V2[] PROGMEM = 
   "pushover_message_%04d.z2s";
-const static char Z2S_PUSHOVER_MESSAGES_NUMBER[] PROGMEM = "Z2S_pom_n";
-
 
 const static char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
 
@@ -645,6 +639,11 @@ void Z2S_onColorHueReceive(
 void Z2S_onColorSaturationReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint8_t saturation);
+
+Z2S_onColorTemperatureReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  uint16_t color_temperature)
+
 
 void Z2S_onThermostatTemperaturesReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 

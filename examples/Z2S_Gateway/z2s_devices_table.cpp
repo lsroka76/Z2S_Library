@@ -44,6 +44,9 @@ z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZB_DEVICES_MAX_NUMBER] = {};
 
 uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8] = {};
 
+uint8_t z2s_pushover_messages_index_table[
+  Z2S_PUSHOVER_MESSAGES_MAX_NUMBER / 8] = {};
+
 char GatewayMDNSLocalName[12] = "Z2S_gateway";
 
 Preferences Z2S_GatewayPreferences;
@@ -6245,7 +6248,6 @@ void Z2S_onColorTemperatureReceive(
       color_temperature, true, true);
     return;
   }
-  
   no_channel_found_error_func(short_addr);
 }
 

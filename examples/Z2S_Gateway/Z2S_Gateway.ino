@@ -377,6 +377,7 @@ void enableZ2SNotifications() {
   zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
   zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
   zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
+  zbGateway.onColorTemperatureReceive(Z2S_onColorTemperatureReceive);
   zbGateway.onThermostatTemperaturesReceive(Z2S_onThermostatTemperaturesReceive);
   zbGateway.onThermostatModesReceive(Z2S_onThermostatModesReceive);
   zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
@@ -421,6 +422,7 @@ void disableZ2SNotifications() {
   zbGateway.onCurrentLevelReceive(nullptr);
   zbGateway.onColorHueReceive(nullptr);
   zbGateway.onColorSaturationReceive(nullptr);
+  zbGateway.onColorTemperatureReceive(nullptr);
   zbGateway.onThermostatTemperaturesReceive(nullptr);
   zbGateway.onThermostatModesReceive(nullptr);
   zbGateway.onWindowCoveringReceive(nullptr);
