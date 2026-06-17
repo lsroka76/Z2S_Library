@@ -109,7 +109,7 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
 
         _last_brightness = _brightness;
         _brightness = brightness;
-        sendTurnOnOffCmd = 0;
+        //sendTurnOnOffCmd = 0;
 
         log_i(
           "DIMMER SVR MSG: _last_brightness = %u, _brightness = %u", 
@@ -188,6 +188,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
         if (sendTurnOnOffCmd == 1) {
 
           _state = false;
+		  sendTurnOnOffCmd = 0;
           zbGateway.sendOnOffCmd(&_device, false);
           break;
         }
@@ -195,6 +196,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
         if (sendTurnOnOffCmd == 2) {
 
           _state = true;
+		  sendTurnOnOffCmd = 0;
           zbGateway.sendOnOffCmd(&_device, true);
         }
 
@@ -212,6 +214,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
         if (sendTurnOnOffCmd == 1) {
 
           _state = false;
+		  sendTurnOnOffCmd = 0;
           sendTuyaRequestCmdBool(
             &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 0);
           break;
@@ -220,6 +223,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
         if (sendTurnOnOffCmd == 2) {
 
           _state = true;
+		  sendTurnOnOffCmd = 0;
           sendTuyaRequestCmdBool(
             &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 1);
         }
