@@ -36,11 +36,16 @@
 #define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  //32
 #define Z2S_CHANNELS_MAX_NUMBER                                 0x80  //128
 #define Z2S_ACTIONS_MAX_NUMBER                                  0x100 //256
+#define Z2S_PUSHOVER_MESSAGES_MAX_NUMBER                        0x100 //256
 
 #define MAX_ZB_DEVICE_SUPLA_CHANNELS                            0x10 //16
 
 #define ACTION_NAME_MAX_SIZE                                    33
 #define ACTION_DESCRIPTION_MAX_SIZE                             128
+
+#define PUSHOVER_MESSAGE_NAME_MAX_SIZE                          33
+#define PUSHOVER_MESSAGE_TEXT_MAX_SIZE                          128
+
 
 #define ALL_SUPLA_CHANNEL_TYPES   -1
 
@@ -228,6 +233,13 @@ typedef struct z2s_channel_action_s {
   double max_value;
 } z2s_channel_action_t;
 
+typedef struct z2s_pushover_message_s {
+  uint32_t pushover_message_flags;
+  uint16_t pushover_message_subaction_id; 
+  char pushover_message_name[PUSHOVER_MESSAGE_NAME_MAX_SIZE];
+  char pushover_message_text[PUSHOVER_MESSAGE_TEXT_MAX_SIZE];
+} z2s_pushover_message_t;
+
 typedef struct sonoff_smart_valve_cycle_data_s {
   uint8_t id;
   uint8_t cycle_number;
@@ -263,6 +275,16 @@ const static char Z2S_CHANNELS_ACTIONS_PPREFIX[] PROGMEM = "Z2S_an_";
 const static char Z2S_CHANNELS_ACTIONS_PPREFIX_V2[] PROGMEM = 
   "action_%04d.z2s";
 const static char Z2S_CHANNELS_ACTIONS_NUMBER[] PROGMEM = "Z2S_actions_n";
+
+//8 bit-indexed table
+extern uint8_t z2s_pushover_messages_index_table[
+    Z2S_PUSHOVER_MESSAGES_MAX_NUMBER / 8];
+
+const static char Z2S_PUSHOVER_MESSAGES_INDEX_TABLE_V2[] PROGMEM = 
+  "pushover_messages_index_table.z2s";
+const static char Z2S_PUSHOVER_MESSAGES_PPREFIX_V2[] PROGMEM = 
+  "pushover_message_%04d.z2s";
+const static char Z2S_PUSHOVER_MESSAGES_NUMBER[] PROGMEM = "Z2S_pom_n";
 
 
 const static char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
@@ -447,6 +469,35 @@ uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms);
 
 /*****************************************************************************/
 
+bool checkIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index);
+bool setIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index);
+bool clearIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index);
+
+bool Z2S_loadIndexTable();
+bool Z2S_saveIndexTable();
+uint16_t Z2S_getIndexTableEntriesNumber();
+int16_t Z2S_getIndexTablePositionCounter(uint16_t index_position);
+
+int16_t Z2S_findFreeEntryIndex();
+int16_t Z2S_findNextIndexPosition(uint16_t index_position = 0);
+int16_t Z2S_findPrevIndexPosition(uint16_t action_position);
+
+bool Z2S_saveObject(
+  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
+  size_t object_size);
+
+bool Z2S_loadObject(
+  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
+  size_t object_size);
+
+bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix);
+
+
+/*****************************************************************************/
+
 bool checkActionsIndexTablePosition(uint16_t index_position);
 bool setActionsIndexTablePosition(uint16_t index_position);
 bool clearActionsIndexTablePosition(uint16_t index_position);
@@ -467,6 +518,30 @@ bool Z2S_removeAction(uint16_t action_index);
 void Z2S_removeChannelActions(uint8_t channel_id, bool all_channels = false);
 
 void Z2S_initSuplaActions();
+
+/*****************************************************************************/
+
+bool checkPushoverMessagesIndexTablePosition(uint16_t index_position);
+bool setPushoverMessagesIndexTablePosition(uint16_t index_position);
+bool clearPushoverMessagesIndexTablePosition(uint16_t index_position);
+
+bool Z2S_loadPushoverMessageIndexTable();
+bool Z2S_savePushoverMessagesIndexTable();
+uint16_t Z2S_getPushoverMessagesNumber();
+int16_t Z2S_getPushoverMessageCounter(uint16_t message_position);
+
+int16_t Z2S_findFreePushoverMessageIndex();
+int16_t Z2S_findNextPushoverMessagePosition(uint16_t message_position = 0);
+int16_t Z2S_findPrevPushoverMessagePosition(
+  uint16_t message_position = Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+
+bool Z2S_savePushoverMessage(
+  uint16_t message_index, z2s_pushover_message_t &message);
+bool Z2S_loadPushoverMessage(
+  uint16_t message_index, z2s_pushover_message_t &message);
+bool Z2S_removePushoverMessage(uint16_t message_index);
+
+void Z2S_initPushoverMessages();
 
 /*****************************************************************************/
 

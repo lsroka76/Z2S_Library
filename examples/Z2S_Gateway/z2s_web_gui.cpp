@@ -306,6 +306,7 @@ volatile uint32_t ota_image_last_update_ms = 0;
 #define GUI_BUILD_CONTROL_FLAG_AD 					0x0080
 #define GUI_BUILD_CONTROL_FLAG_TCC 					0x0100
 #define GUI_BUILD_CONTROL_FLAG_SB 					0x0200
+#define GUI_BUILD_CONTROL_FLAG_PO 					0x0400
 
 volatile uint32_t gui_build_control_flags = 0x00;
 
@@ -597,6 +598,7 @@ void buildDevicesTabGUI();
 void buildChannelsTabGUI();
 void buildAdvancedDevicesTabGUI();
 void buildTuyaCustomClusterTabGUI();
+void buildPushoverTabGUI();
 
 void updateChannelInfoLabel(
 	uint8_t label_number, int16_t channel_slot = -2);
@@ -4124,7 +4126,9 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_ACTIONS |
 					GUI_BUILD_CONTROL_FLAG_CA |
 					//GUI_BUILD_CONTROL_FLAG_AD |
-					GUI_BUILD_CONTROL_FLAG_TCC;
+					GUI_BUILD_CONTROL_FLAG_TCC;// |
+					//GUI_BUILD_CONTROL_FLAG_PO;
+
 			} break;
 
 
@@ -4248,43 +4252,58 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	Tuya_devices_tab_controls_table[Tuya_device_selector] = 0xFFFF;
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_GATEWAY) {
+		
 		buildGatewayTabGUI();
 	}
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CREDENTIALS) {
+		
 		buildCredentialsGUI();
 	}
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_ZIGBEE) {
+		
 		buildZigbeeTabGUI();
 	}
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_DEVICES) {
+		
 		buildDevicesTabGUI();
 	}
 	
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CHANNELS) {
+		
 		buildChannelsTabGUI();
 	}
 	
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_ACTIONS) {
+		
 		buildActionsTabGUI();
 	}
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CA) {
+		
 		buildClustersAttributesTab();
 	}
 	
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_AD) {
+		
 		buildAdvancedDevicesTabGUI();
 	}
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_TCC) {
+		
 		buildTuyaCustomClusterTabGUI();
 	}
 
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_SB) {
+		
 		buildSwitchBotTabGUI();
+	}
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_PO) {
+		
+		buildPushoverTabGUI();
 	}
 
 	buildAllChannelSelectors();
@@ -8864,6 +8883,89 @@ void saveSwitchbotCallback(BasicControl *sender, int type, void *param) {
 
 		gui_command = 110;
 	}
+}
+
+/*****************************************************************************/
+static uint16_t pushover_messages_counter = 0;
+static uint16_t pushover_messages_selector;
+static uint16_t pushover_message_body_text;
+
+void pushoverSelectorCallback(BasicControl *sender, int type, void *param) {
+
+	if (sender) {
+
+		char pushover_message_buffer[1024];
+
+		snprintf(
+			pushover_message_buffer, 1024, "pushover message %u", 
+			sender->getValueInt());
+		working_str = pushover_message_buffer;
+		ESPUI.updateText(pushover_message_body_text, working_str); 
+		//log_i("pushover message value %u", sender->getValueInt());
+		//kupa
+	}
+}
+
+void addPushoverMessageCallback(BasicControl *sender, int type, void *param) {
+
+	if (type == B_UP) {
+
+		auto pushover_message_option = ESPUI.addControl(
+			Control::Type::Option, PSTR("Select Pushover message"), 
+			pushover_messages_counter, Control::Color::None, 
+			pushover_messages_selector);
+		//ESPUI.updateControl(pushover_message_option); 
+		pushover_messages_counter++;
+	}
+}
+
+void buildPushoverTabGUI() {
+
+	//char general_purpose_gui_buffer[768] = {};
+
+	auto pushovertab = ESPUI.addControl(
+		Control::Type::Tab, PSTR(empty_str), PSTR("Pushover"), 
+		Control::Color::Emerald, Control::noParent, generalCallback);
+
+	auto pushover_api_token_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Pushover API token"), emptyString, 
+		Control::Color::Emerald, pushovertab, generalCallback);
+	ESPUI.getControl(pushover_api_token_text)->reserve(33);
+
+	auto pushover_user_token_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Pushover user token"), emptyString, 
+		Control::Color::Emerald, pushovertab, generalCallback);
+	ESPUI.getControl(pushover_user_token_text)->reserve(33);
+
+	pushover_messages_selector = ESPUI.addControl(
+		Control::Type::Select, PSTR("Pushover messages"), 
+		(long int)-1, Control::Color::Emerald, pushovertab, pushoverSelectorCallback);
+
+	ESPUI.addControl(
+			Control::Type::Option, PSTR("Select Pushover message"), (long)-1, 
+			Control::Color::None, pushover_messages_selector);
+
+	auto pushover_subaction_number = ESPUI.addControl(
+		Control::Type::Number, PSTR("Subaction ID"), (long int)0,
+		Control::Color::Emerald, pushover_messages_selector, generalMinMaxCallback, 
+		(void*)256);
+
+	auto pushover_message_name_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Pushover message name (maximum 32 characters)"), 
+		emptyString, Control::Color::Emerald, pushover_messages_selector, 
+		generalCallback);
+	ESPUI.getControl(pushover_user_token_text)->reserve(34);
+
+
+	pushover_message_body_text = ESPUI.addControl(
+		Control::Type::Text, PSTR("Pushover message (maximum 1024 characters)"), 
+		emptyString, Control::Color::Emerald, pushover_messages_selector, 
+		generalCallback);
+	ESPUI.getControl(pushover_message_body_text)->reserve(128);
+
+	auto add_pushover_button = ESPUI.addControl(
+		Control::Type::Button, PSTR(empty_str), PSTR("Add new Pushover message"), 
+		Control::Color::Emerald, pushovertab, addPushoverMessageCallback);
 }
 
 

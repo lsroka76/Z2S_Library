@@ -2621,15 +2621,16 @@ uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms) {
 
 /*****************************************************************************/
 
-bool checkActionsIndexTablePosition(uint16_t index_position) {
+bool checkIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index) {
 
-  if (index_position >= Z2S_ACTIONS_MAX_NUMBER)
+  if (index_position >= max_index)
     return false;
 
   uint8_t byte_index = index_position / 8;
   uint8_t bit_index = index_position % 8;
 
-  if (z2s_actions_index_table[byte_index] & (1 << bit_index))
+  if (*(index_table + byte_index) & (1 << bit_index))
     return true;
   else
     return false;
@@ -2637,128 +2638,120 @@ bool checkActionsIndexTablePosition(uint16_t index_position) {
 
 /*****************************************************************************/
 
-bool setActionsIndexTablePosition(uint16_t index_position) {
+bool setIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index) {
 
-  if (index_position >= Z2S_ACTIONS_MAX_NUMBER)
+  if (index_position >= max_index)
     return false;
 
   uint8_t byte_index = index_position / 8;
   uint8_t bit_index = index_position % 8;
 
-  z2s_actions_index_table[byte_index] |= (1 << bit_index);
+  *(index_table + byte_index) |= (1 << bit_index);
   return true;
 }
 
 /*****************************************************************************/
 
-bool clearActionsIndexTablePosition(uint16_t index_position) {
+bool clearIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index) {
 
-  if (index_position >= Z2S_ACTIONS_MAX_NUMBER)
+  if (index_position >= max_index)
     return false;
 
   uint8_t byte_index = index_position / 8;
   uint8_t bit_index = index_position % 8;
 
-  z2s_actions_index_table[byte_index] &= ~(1 << bit_index);
+  *(index_table + byte_index) &= ~(1 << bit_index);
   return true;
 }
 
 /*****************************************************************************/
 
-bool Z2S_loadActionsIndexTable() {
+bool Z2S_loadIndexTable(
+  uint8_t *index_table, size_t table_size, const char *file_name) {
 
-  memset(z2s_actions_index_table, 0, sizeof(z2s_actions_index_table));
+  memset(index_table, 0, table_size);
 
-  if (Z2S_loadFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
-      (uint8_t *)z2s_actions_index_table, 
-      sizeof(z2s_actions_index_table))) {
+  if (Z2S_loadFile(file_name, index_table, table_size)) {
 
-    log_i ("Zigbee<=>Supla actions index table load SUCCESS!");
+    log_i("Index table (%s) load SUCCESS!", file_name);
     return true;
-
-  } else
-  if (Z2S_saveFile(Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
-      (uint8_t *)z2s_actions_index_table, 
-      sizeof(z2s_actions_index_table))) {
-
-    log_i(
-      "Zigbee<=>Supla actions index table not found - writing new one: SUCCESS!");
-    return true;
+  } 
+  else {
   
-  } else {
-  
-    log_i(
-      "Zigbee<=>Supla actions index table not found - writing new one: FAILED!");
+    if (Z2S_saveFile(file_name, index_table, table_size)) {
+
+      log_i(
+        "Index table (%s) not found - writing new one: SUCCESS!", file_name);
+      return true;
+    } else {
+    
+      log_i(
+        "Index table (%s) not found - writing new one: FAILED!", file_name);
     return false;
+    }
   }
 }
 
 /*****************************************************************************/
 
-bool Z2S_saveActionsIndexTable() {
+bool Z2S_saveIndexTable(
+  uint8_t *index_table, size_t table_size, const char *file_name) {
 
-  /*if (save_mutex == 1) return false;
+  if (Z2S_saveFile(file_name, index_table, table_size)) {
 
-  save_mutex = 1;*/
-
-  if (Z2S_saveFile(
-        Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2, 
-        (uint8_t *)z2s_actions_index_table, sizeof(z2s_actions_index_table))) {
-
-    log_i("Saving Zigbee<=>Supla actions index table: SUCCESS!");
-
-    /*save_mutex = 0; */
+    log_i("Saving index table (%s): SUCCESS!", file_name);
     return true;
 
   } else {
     
-    log_i ("Saving Zigbee<=>Supla actions index table: FAILED!");
-
-    /*save_mutex = 0; */
+    log_i ("Saving index table (%s): FAILED!", file_name);
     return false;
   }
 }
 
 /*****************************************************************************/
 
-uint16_t Z2S_getActionsNumber() {
+uint16_t Z2S_getIndexTableEntriesNumber(
+  uint8_t *index_table, uint16_t max_index) {
 
-  uint16_t actions_number = 0;
+  uint16_t entries_number = 0;
 
-  for (uint16_t index = 0; index < Z2S_ACTIONS_MAX_NUMBER; index++)
-    if (checkActionsIndexTablePosition(index))
-      actions_number++;
+  for (uint16_t index = 0; index < max_index; index++)
+    if (checkIndexTablePosition(index_table, index, max_index))
+      entries_number++;
   
-  return actions_number;
+  return entries_number;
 }
 
 /*****************************************************************************/
 
-int16_t  Z2S_getActionCounter(uint16_t action_position) {
+int16_t Z2S_getIndexTablePositionCounter(
+  uint8_t *index_table, uint16_t index_position, uint16_t max_index) {
 
-  if (!checkActionsIndexTablePosition(action_position))
+  if (!checkIndexTablePosition(index_table, index_position, max_index))
       return -1;
   
-  uint16_t action_counter = 0;
+  uint16_t position_counter = 0;
 
-  for (uint16_t index = 0; index < Z2S_ACTIONS_MAX_NUMBER; index++) {
+  for (uint16_t index = 0; index < max_index; index++) {
     
-    if (action_position == index)
-      return action_counter + 1;
+    if (index_position == index)
+      return position_counter + 1;
 
-    if (checkActionsIndexTablePosition(index))
-      action_counter++;
+    if (checkIndexTablePosition(index_table, index, max_index))
+      position_counter++;
   }
-
   return -1;
 }
-  
-/*****************************************************************************/  
 
-int16_t  Z2S_findFreeActionIndex() {
+/*****************************************************************************/
 
-  for (uint16_t index = 0; index < Z2S_ACTIONS_MAX_NUMBER; index++)
-    if (!checkActionsIndexTablePosition(index))
+int16_t Z2S_findFreeEntryIndex(uint8_t *index_table, uint16_t max_index) {
+
+  for (uint16_t index = 0; index < max_index; index++)
+    if (!checkIndexTablePosition(index_table, index, max_index))
       return index;
   
   return -1; 
@@ -2766,11 +2759,11 @@ int16_t  Z2S_findFreeActionIndex() {
 
 /*****************************************************************************/
 
-int16_t  Z2S_findNextActionPosition(uint16_t action_position) {
+int16_t Z2S_findNextIndexPosition(
+  uint8_t *index_table, uint16_t index_position, uint16_t max_index) {
 
-  for (uint16_t index = action_position; index < Z2S_ACTIONS_MAX_NUMBER; 
-       index++)
-    if (checkActionsIndexTablePosition(index))
+  for (uint16_t index = index_position; index < max_index; index++)
+    if (checkIndexTablePosition(index_table, index, max_index))
       return index;
   
   return -1;
@@ -2778,13 +2771,164 @@ int16_t  Z2S_findNextActionPosition(uint16_t action_position) {
 
 /*****************************************************************************/
 
-int16_t  Z2S_findPrevActionPosition(uint16_t action_position) {
+int16_t Z2S_findPrevIndexPosition(
+  uint8_t *index_table, uint16_t index_position, uint16_t max_index) {
 
-for (uint16_t index = action_position; index >= 0; index--)
-    if (checkActionsIndexTablePosition(index))
+  for (uint16_t index = index_position; index >= 0; index--)
+    if (checkIndexTablePosition(index_table, index, max_index))
       return index;
   
   return -1;
+}
+
+/*****************************************************************************/
+
+bool Z2S_saveObject(
+  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
+  size_t object_size) {
+
+  char file_name_buffer[50] = {};
+  sprintf(file_name_buffer, file_name_prefix, object_index);
+  
+  if (Z2S_saveFile(file_name_buffer, object_data, object_size)) {
+
+    log_i(
+      "Saving object in file %s: SUCCESS", file_name_buffer);
+
+   return true;
+  } 
+  else {
+
+    log_i(
+      "Saving object in file %s: FAILED", file_name_buffer);
+    return false;
+  }
+}
+
+/*****************************************************************************/
+
+bool Z2S_loadObject(
+  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
+  size_t object_size) {
+
+  char file_name_buffer[50] = {};
+  
+  sprintf(file_name_buffer, file_name_prefix, object_index);
+  
+  if (Z2S_loadFile(file_name_buffer, object_data, object_size)) {
+
+    log_i(
+      "Loading object from file %s: SUCCESS", file_name_buffer);
+   return true;
+  } 
+  else {
+
+    log_i(
+      "Loading object from file %s: FAILED", file_name_buffer);
+    return false;
+  }
+}
+
+/*****************************************************************************/
+
+bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix) {
+
+  char file_name_buffer[50] = {};
+
+  sprintf(file_name_buffer, file_name_prefix, object_index);
+  
+  if (Z2S_deleteFile(file_name_buffer)) {
+    
+    log_i("Removing object file %s: SUCCESS", file_name_buffer);
+    return true;
+  }
+  else {
+
+    log_i("Removing object file %s: FAILED", file_name_buffer);
+    return false;
+  }
+}
+
+/*****************************************************************************/
+
+bool checkActionsIndexTablePosition(uint16_t index_position) {
+
+  return checkIndexTablePosition(
+    z2s_actions_index_table, index_position, Z2S_ACTIONS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool setActionsIndexTablePosition(uint16_t index_position) {
+
+  return setIndexTablePosition(
+    z2s_actions_index_table, index_position, Z2S_ACTIONS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool clearActionsIndexTablePosition(uint16_t index_position) {
+
+  return clearIndexTablePosition(
+    z2s_actions_index_table, index_position, Z2S_ACTIONS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool Z2S_loadActionsIndexTable() {
+
+  return Z2S_loadIndexTable(
+    z2s_actions_index_table, sizeof(z2s_actions_index_table), 
+    Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2);
+}
+
+/*****************************************************************************/
+
+bool Z2S_saveActionsIndexTable() {
+
+  return Z2S_saveIndexTable(
+    z2s_actions_index_table, sizeof(z2s_actions_index_table), 
+    Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2);
+}
+
+/*****************************************************************************/
+
+uint16_t Z2S_getActionsNumber() {
+
+  return Z2S_getIndexTableEntriesNumber(
+    z2s_actions_index_table, Z2S_ACTIONS_MAX_NUMBER);
+}
+
+/****************************************************************************/
+
+int16_t  Z2S_getActionCounter(uint16_t action_position) {
+
+  return Z2S_getIndexTablePositionCounter(
+    z2s_actions_index_table, action_position, Z2S_ACTIONS_MAX_NUMBER);
+}
+  
+/*****************************************************************************/  
+
+int16_t  Z2S_findFreeActionIndex() {
+
+  return Z2S_findFreeEntryIndex(
+    z2s_actions_index_table, Z2S_ACTIONS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+int16_t  Z2S_findNextActionPosition(uint16_t action_position) {
+
+  return Z2S_findNextIndexPosition(
+    z2s_actions_index_table, action_position, Z2S_ACTIONS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+int16_t  Z2S_findPrevActionPosition(uint16_t action_position) {
+
+return Z2S_findPrevIndexPosition(
+    z2s_actions_index_table, action_position, Z2S_ACTIONS_MAX_NUMBER);
 }
 
 /*****************************************************************************/
@@ -2792,35 +2936,17 @@ for (uint16_t index = action_position; index >= 0; index--)
 bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
 
   
-  /*if (save_mutex == 1) return false;
-
-  save_mutex = 1;*/
-
   if (action_index >= Z2S_ACTIONS_MAX_NUMBER)
     return false;
 
-  char file_name_buffer[50] = {};
-  sprintf(file_name_buffer, Z2S_CHANNELS_ACTIONS_PPREFIX_V2, action_index);
-  
-  if (Z2S_saveFile(
-        file_name_buffer, (uint8_t*) &action, sizeof(z2s_channel_action_t))) {
-
-    log_i(
-      "Saving Zigbee<=>Supla action in file %s: SUCCESS", file_name_buffer);
-
-    /*save_mutex = 0; */
-
+  if (Z2S_saveObject(action_index, Z2S_CHANNELS_ACTIONS_PPREFIX_V2, 
+        (uint8_t*) &action, sizeof(z2s_channel_action_t))) {
+    
     setActionsIndexTablePosition(action_index);
-    Z2S_saveActionsIndexTable();
-    return true;
-  } else {
-
-    log_i(
-      "Saving Zigbee<=>Supla action in file %s: FAILED", file_name_buffer);
-
-    /*save_mutex = 0; */
-    return false;
+    Z2S_saveActionsIndexTable();  
+    return true;    
   }
+  return false;
 }
 
 /*****************************************************************************/
@@ -2830,21 +2956,11 @@ bool Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action) {
   if (action_index >= Z2S_ACTIONS_MAX_NUMBER)
     return false;
 
-  char file_name_buffer[50] = {};
-  sprintf(file_name_buffer, Z2S_CHANNELS_ACTIONS_PPREFIX_V2, action_index);
-  
-  if (Z2S_loadFile(
-        file_name_buffer, (uint8_t*) &action, sizeof(z2s_channel_action_t))) {
-
-    log_i(
-      "Loading Zigbee<=>Supla action from file %s: SUCCESS", file_name_buffer);
+  if (Z2S_loadObject(action_index, Z2S_CHANNELS_ACTIONS_PPREFIX_V2, 
+        (uint8_t*) &action, sizeof(z2s_channel_action_t))) 
     return true;
-  } else {
-    
-    log_i(
-      "Loading Zigbee<=>Supla action from file %s: FAILED", file_name_buffer);
+  else    
     return false;
-  }
 }
 
 /*****************************************************************************/
@@ -2853,19 +2969,14 @@ bool Z2S_removeAction(uint16_t action_index) {
 
   if (action_index >= Z2S_ACTIONS_MAX_NUMBER)
     return false;
-
-  char file_name_buffer[50] = {};
-  sprintf(file_name_buffer, Z2S_CHANNELS_ACTIONS_PPREFIX_V2, action_index);
   
-  if (Z2S_deleteFile(file_name_buffer)) 
-    log_i("Removing Zigbee<=>Supla action file %s: SUCCESS", file_name_buffer);
-  else 
-    log_i("Removing Zigbee<=>Supla action file %s: FAILED", file_name_buffer);
-
-  clearActionsIndexTablePosition(action_index);
-  Z2S_saveActionsIndexTable();
-
-  return true;
+  if (Z2S_removeObject(action_index, Z2S_CHANNELS_ACTIONS_PPREFIX_V2)) {
+  
+    clearActionsIndexTablePosition(action_index);
+    Z2S_saveActionsIndexTable();
+    return true;
+  }
+  return false;
 }
 
 /*****************************************************************************/
@@ -2935,6 +3046,152 @@ void Z2S_initSuplaActions() {
   }
 }
   
+/*****************************************************************************/
+
+bool checkPushoverMessagesIndexTablePosition(uint16_t index_position){
+  
+  return checkIndexTablePosition(
+    z2s_pushover_messages_index_table, index_position, 
+    Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool setPushoverMessagesIndexTablePosition(uint16_t index_position){
+
+  return setIndexTablePosition(
+    z2s_pushover_messages_index_table, index_position, 
+    Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool clearPushoverMessagesIndexTablePosition(uint16_t index_position) {
+
+  return clearIndexTablePosition(
+    z2s_pushover_messages_index_table, index_position, 
+    Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool Z2S_loadPushoverMessageIndexTable() {
+
+  return Z2S_loadIndexTable(
+    z2s_pushover_messages_index_table, 
+    sizeof(z2s_pushover_messages_index_table), 
+    Z2S_PUSHOVER_MESSAGES_INDEX_TABLE_V2);
+}
+
+/*****************************************************************************/
+
+bool Z2S_savePushoverMessagesIndexTable() {
+
+  return Z2S_saveIndexTable(
+    z2s_pushover_messages_index_table, 
+    sizeof(z2s_pushover_messages_index_table), 
+    Z2S_PUSHOVER_MESSAGES_INDEX_TABLE_V2);
+}
+
+/*****************************************************************************/
+
+uint16_t Z2S_getPushoverMessagesNumber() {
+
+  return Z2S_getIndexTableEntriesNumber(
+    z2s_pushover_messages_index_table, Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+int16_t Z2S_getPushoverMessageCounter(uint16_t message_position) {
+
+  return Z2S_getIndexTablePositionCounter(
+    z2s_pushover_messages_index_table, message_position, 
+    Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+int16_t Z2S_findFreePushoverMessageIndex() {
+
+  return Z2S_findFreeEntryIndex(
+    z2s_pushover_messages_index_table, Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+int16_t Z2S_findNextPushoverMessagePosition(uint16_t message_position) {
+
+  return Z2S_findNextIndexPosition(
+    z2s_pushover_messages_index_table, message_position, 
+    Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+int16_t Z2S_findPrevPushoverMessagePosition(uint16_t message_position) {
+
+return Z2S_findPrevIndexPosition(
+    z2s_pushover_messages_index_table, message_position, 
+    Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool Z2S_savePushoverMessage(
+  uint16_t message_index, z2s_pushover_message_t &message) {
+
+  
+  if (message_index >= Z2S_PUSHOVER_MESSAGES_MAX_NUMBER)
+    return false;
+
+  if (Z2S_saveObject(message_index, Z2S_PUSHOVER_MESSAGES_PPREFIX_V2, 
+        (uint8_t*) &message, sizeof(z2s_pushover_message_t))) {
+    
+    setPushoverMessagesIndexTablePosition(message_index);
+    Z2S_savePushoverMessagesIndexTable();  
+    return true;    
+  }
+  return false;
+}
+
+/*****************************************************************************/
+
+bool Z2S_loadPushoverMessage(
+  uint16_t message_index, z2s_pushover_message_t &message) {
+
+  if (message_index >= Z2S_PUSHOVER_MESSAGES_MAX_NUMBER)
+    return false;
+
+  if (Z2S_loadObject(message_index, Z2S_PUSHOVER_MESSAGES_PPREFIX_V2, 
+        (uint8_t*) &message, sizeof(z2s_pushover_message_t))) 
+    return true;
+  else    
+    return false;
+}
+
+/*****************************************************************************/
+
+bool Z2S_removePushoverMessage(uint16_t message_index) {
+
+  if (message_index >= Z2S_PUSHOVER_MESSAGES_MAX_NUMBER)
+    return false;
+  
+  if (Z2S_removeObject(message_index, Z2S_PUSHOVER_MESSAGES_PPREFIX_V2)) {
+  
+    clearPushoverMessagesIndexTablePosition(message_index);
+    Z2S_savePushoverMessagesIndexTable();
+    return true;
+  }
+  return false;
+}
+
+/*****************************************************************************/
+
+void Z2S_initPushoverMessages() {
+
+}
+
 /*****************************************************************************/
 
 uint16_t Z2S_getChannelExtendedDataTypeSize(uint8_t extended_data_type) {
@@ -5089,6 +5346,15 @@ void Z2S_onOnOffReceive(
   }
 
   channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
+    DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID);
+
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceDimmer(channel_number_slot, -1, state);
+    return;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     NO_CUSTOM_CMD_SID);
 
@@ -5893,6 +6159,15 @@ void Z2S_onCurrentLevelReceive(
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
     DIMMER_FUNC_BRIGHTNESS_SID);
+  
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceDimmer(channel_number_slot, level, true);
+    return;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
+    DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID);
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(channel_number_slot, level, true);
