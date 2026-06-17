@@ -302,9 +302,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
 }
 
 void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
-  int16_t value, bool new_state) {
-
-  //return; //temp solution
+  int16_t value, bool new_state, bool isCCT) {
 
   if (value < 0) {
 
@@ -333,7 +331,33 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
   _last_brightness = _brightness;
 
-  switch (_dimmer_mode) {
+  if (isCCT) {
+
+    switch (_cct_mode) {
+
+      _last_whiteTemperature = _whiteTemperature;
+      
+      case Z2S_COLOR_TEMPERATURE_DIMMER: 
+
+        _whiteTemperature = mapFloat(value, 250, 454, 0, 100); 
+      break;
+
+
+      case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER: 
+      case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER:
+
+        _whiteTemperature = mapFloat(value, 153, 500, 0, 100); 
+      break;
+
+
+      case Z2S_TUYA_E0_CMD_DIMMER:
+      case Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER: //TODO
+      break;
+    }
+  }
+  else {
+
+    switch (_dimmer_mode) {
 
 
       case Z2S_SEND_TO_LEVEL_DIMMER:  
@@ -354,10 +378,8 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
         _brightness = mapFloat(value, 153, 500, 0, 100); 
       break;
     }
-
-  //_lastMsgReceivedMs = millis();
+  }
   channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
-
 }
 
 void Supla::Control::Z2S_DimmerInterface::ping() {

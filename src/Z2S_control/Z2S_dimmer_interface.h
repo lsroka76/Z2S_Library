@@ -73,7 +73,7 @@ public:
   virtual void sendValueToDimmer(uint8_t brightness); 
   virtual void sendValueToCCT(uint8_t whiteTemperature); 
 
-  virtual void setValueOnServer(int16_t value, bool new_state);
+  virtual void setValueOnServer(int16_t value, bool new_state, bool isCCT = false);
 
   //virtual void setStateOnServer(bool state);
 

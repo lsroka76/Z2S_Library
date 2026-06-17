@@ -37,7 +37,7 @@ void addZ2SDeviceDimmer(
 /*****************************************************************************/
 
 void msgZ2SDeviceDimmer(
-  int16_t channel_number_slot, int16_t level, bool state);
+  int16_t channel_number_slot, int16_t level, bool state, bool isCCT = false);
 
 
 #endif

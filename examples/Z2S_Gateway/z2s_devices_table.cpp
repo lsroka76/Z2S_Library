@@ -6234,6 +6234,17 @@ void Z2S_onColorTemperatureReceive(
       color_temperature, true);
     return;
   }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
+    DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID);
+  
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceDimmer(
+      z2s_channels_table[channel_number_slot].Supla_channel, 
+      color_temperature, true, true);
+    return;
+  }
   
   no_channel_found_error_func(short_addr);
 }
