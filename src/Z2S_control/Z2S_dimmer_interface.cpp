@@ -395,6 +395,10 @@ void Supla::Control::Z2S_DimmerInterface::ping() {
     zbGateway.sendAttributeRead(
       &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
       ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);
+
+    zbGateway.sendAttributeRead(
+      &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+      ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, false);
   }
 }
 
