@@ -5589,6 +5589,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 3,
     .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1}}},
 
+  {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-301Z-3CH",
+    .z2s_device_uid = 22015,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
+	  .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1}}},
+
   {	.manufacturer_name = "_TZ3000_ltgngnqz", .model_name = "TS0002",
     .z2s_device_uid = 22100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
