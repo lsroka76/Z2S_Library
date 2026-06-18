@@ -36,8 +36,8 @@
 
 #define Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS         0x5110
 
-#define Z2S_SUPLA_ACTION_FIRST_TEST_ACTION                0x8000
-#define Z2S_SUPLA_ACTION_LAST_TEST_ACTION                 0x8064 //100 subactiona
+#define Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION            0x8000
+#define Z2S_SUPLA_ACTION_PUSHOVER_LAST_ACTION             0x8100 //256 subactiona
 
 #define Z2S_SUPLA_EVENT_BASE                              0x4000
 

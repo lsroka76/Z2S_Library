@@ -653,6 +653,8 @@ void setup() {
 
   Z2S_initSuplaChannels();
 
+  Z2S_initPushoverMessages();
+
   /*auto test_element = Supla::Element::getElementByChannelNumber(6);
 
   Supla::Control::Z2S_VirtualRelay *test_relay = static_cast<

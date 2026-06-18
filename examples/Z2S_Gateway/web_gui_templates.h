@@ -30,6 +30,7 @@ enum PushoverMessageGUIState {
 	COPY_PUSHOVER_MESSAGE
 };
 
+
 typedef struct zigbee_cluster_s {
 
 	const char* zigbee_cluster_name;
@@ -487,8 +488,8 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_IAS_NOTIFICATIONS_OFF,
 		.Supla_action_name = "TURN OFF GATEWAY SENSOR NOTIFICATIONS" },
 
-	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_FIRST_TEST_ACTION,
-		.Supla_action_name = "FIRST TEST ACTION (0-256)" ,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION,
+		.Supla_action_name = "SEND PUSHOVER MESSAGE (USE SUBACTION 0-256)",
 		.max_subactions_number = 256 }
 };
 

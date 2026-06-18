@@ -535,6 +535,9 @@ bool Z2S_loadPushoverMessage(
   uint16_t message_index, z2s_pushover_message_t &message);
 bool Z2S_removePushoverMessage(uint16_t message_index);
 
+bool Z2S_sendPushoverMessage(uint16_t message_index);
+bool Z2S_fillPushoverMessage(uint16_t message_index, char *message_buffer);
+
 void Z2S_initPushoverMessages();
 
 /*****************************************************************************/

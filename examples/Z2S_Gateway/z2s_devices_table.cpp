@@ -3188,11 +3188,55 @@ bool Z2S_removePushoverMessage(uint16_t message_index) {
   }
   return false;
 }
+/*****************************************************************************/
+
+bool Z2S_sendPushoverMessage(uint16_t message_index) {
+
+}
+
+/*****************************************************************************/
+
+bool Z2S_fillPushoverMessage(uint16_t message_index, char *message_buffer) {
+
+  z2s_pushover_message_t new_message = {};
+
+  if (!Z2S_loadPushoverMessage(message_index, new_message))
+    return false;
+
+  char pushover_api_token[31];
+  char pushover_user_token[31];
+  Z2S_GatewayPreferences.getString("PUSHOVER_API", pushover_api_token, 31);
+  Z2S_GatewayPreferences.getString("PUSHOVER_USER", pushover_user_token, 31);
+  
+  sprintf(
+    message_buffer, "token=%s&user=%s&message=%s", pushover_api_token,
+    pushover_user_token, new_message.pushover_message_text);
+
+  size_t post_data_length = strlen(message_buffer);
+  log_i("%s, %u", message_buffer, post_data_length);
+
+  sprintf(
+    message_buffer, 
+    "POST /1/messages.json HTTP/1.1\r\nHost: api.pushover.net\r\n"
+    "Content-Type: application/x-www-form-urlencoded\r\n"
+    "Content-Length: %u\r\nConnection: close\r\n\r\n"
+    "token=%s&user=%s&message=%s", post_data_length,
+    pushover_api_token, pushover_user_token,
+    new_message.pushover_message_text);
+    
+  log_i("%s, %u", message_buffer, strlen(message_buffer));
+  return true;
+}
+
 
 /*****************************************************************************/
 
 void Z2S_initPushoverMessages() {
 
+  Z2S_loadPushoverMessageIndexTable();
+  log_i(
+    "Pushover messages index table loaded, messages count = %u", 
+    Z2S_getPushoverMessagesNumber());
 }
 
 /*****************************************************************************/

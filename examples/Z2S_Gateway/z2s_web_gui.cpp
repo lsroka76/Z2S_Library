@@ -283,7 +283,7 @@ uint16_t pushover_message_last_button;
 
 //uint16_t action_name_text;
 //uint16_t action_description_text;
-uint16_t pushover_message_subaction_number;
+uint16_t pushover_message_subaction_label;
 uint16_t pushover_message_save_button;
 uint16_t pushover_message_cancel_button;
 uint16_t pushover_message_edit_button; 
@@ -4149,8 +4149,8 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_ACTIONS |
 					GUI_BUILD_CONTROL_FLAG_CA |
 					//GUI_BUILD_CONTROL_FLAG_AD |
-					GUI_BUILD_CONTROL_FLAG_TCC; 
-					//| GUI_BUILD_CONTROL_FLAG_PO;
+					GUI_BUILD_CONTROL_FLAG_TCC 
+					| GUI_BUILD_CONTROL_FLAG_PO;
 
 			} break;
 
@@ -8908,16 +8908,22 @@ void saveSwitchbotCallback(BasicControl *sender, int type, void *param) {
 
 /*****************************************************************************/
 static uint16_t pushover_tab;
+static uint16_t pushover_api_token_text;
+static uint16_t pushover_user_token_text;
 static uint16_t pushover_message_name_text;
 static uint16_t pushover_message_body_text;
 static uint16_t pushover_message_counter_label;
-char pushover_message_counter[16];
+char pushover_message_counter[16] ;
 
 void updatePushoverMessageCounter() {
 
-	snprintf(
-		pushover_message_counter, 16, "Message %03u/%03u", current_message_counter,
-		Z2S_getPushoverMessagesNumber());
+	if (Z2S_getPushoverMessagesNumber() > 0)
+		snprintf(
+			pushover_message_counter, 16, "Message %03u/%03u", current_message_counter,
+			Z2S_getPushoverMessagesNumber());
+	else
+		snprintf(
+			pushover_message_counter, 16, "No Pushover messages");
 	ESPUI.updateLabel(pushover_message_counter_label, pushover_message_counter);
 }
 
@@ -8926,7 +8932,7 @@ void enablePushoverMessageDetails(bool enable) {
 	if (!enable) { 
 
 	}
-	enableControlStyle(pushover_message_subaction_number, enable);
+	enableControlStyle(pushover_message_subaction_label, enable);
 	enableControlStyle(pushover_message_name_text, enable);
 	enableControlStyle(pushover_message_body_text, enable);
 }
@@ -9015,6 +9021,8 @@ void updatePushoverMessageButtons() {
 		pushover_message_remove_button, pushover_message_remove_button_enable);
 	enableControlStyle(
 		pushover_message_copy_button, pushover_message_remove_button_enable);
+
+	updatePushoverMessageCounter();
 }
 
 void updatePushoverMessageDetails(
@@ -9031,9 +9039,9 @@ void updatePushoverMessageDetails(
 		enablePushoverMessageControls(false);
 
 	
-	long subaction = empty_message ? 
-		0 : message.pushover_message_subaction_id;
-	ESPUI.updateNumber(pushover_message_subaction_number, subaction);
+	working_str = empty_message ? Z2S_findFreePushoverMessageIndex() : 
+		message.pushover_message_subaction_id;
+	ESPUI.updateLabel(pushover_message_subaction_label, working_str);
 	
 	working_str = empty_message ? empty_str : message.pushover_message_name;
 	ESPUI.updateText(pushover_message_name_text, working_str);
@@ -9078,7 +9086,7 @@ bool fillPushoverMessageDetails(z2s_pushover_message_t &message) {
 	
 	
 	long selector_value = ESPUI.getControl(
-		pushover_message_subaction_number)->getValueInt();
+		pushover_message_subaction_label)->getValueInt();
 
 	if ( selector_value >= 0)
 		message.pushover_message_subaction_id = selector_value;
@@ -9096,6 +9104,16 @@ void pushoverMessagesCallback(BasicControl *sender, int type, void *param) {
 		z2s_pushover_message_t new_message = {};
 		
 		switch ((uint32_t)param) {
+
+			case GUI_CB_PUSHOVER_SAVE_DATA_FLAG: {
+
+				Z2S_GatewayPreferences.putString(
+					"PUSHOVER_API", ESPUI.getControl(
+						pushover_api_token_text)->getValue());
+				Z2S_GatewayPreferences.putString(
+					"PUSHOVER_USER", ESPUI.getControl(
+						pushover_user_token_text)->getValue());
+			} break;
 
 
 			case GUI_CB_PUSHOVER_MESSAGE_FIRST_FLAG: {
@@ -9359,19 +9377,26 @@ void buildPushoverTabGUI() {
 		Control::Type::Tab, empty_str, PSTR("Pushover"), 
 		Control::Color::Emerald, Control::noParent, generalCallback);
 
-	auto pushover_api_token_text = ESPUI.addControl(
+	pushover_api_token_text = ESPUI.addControl(
 		Control::Type::Text, "PUSHOVER GENERAL PARAMETERS", emptyString, 
 		Control::Color::Emerald, pushover_tab, generalCallback);
 	ESPUI.getControl(pushover_api_token_text)->reserve(33);
 
 	addClearLabel("Pushover API token", pushover_api_token_text);
 
-	auto pushover_user_token_text = ESPUI.addControl(
+	pushover_user_token_text = ESPUI.addControl(
 		Control::Type::Text, empty_str, emptyString, Control::Color::Emerald, 
 		pushover_api_token_text, generalCallback);
 	ESPUI.getControl(pushover_user_token_text)->reserve(33);
 
 	addClearLabel("Pushover user token", pushover_api_token_text);
+
+	ESPUI.updateText(
+		pushover_api_token_text, Z2S_GatewayPreferences.getString(
+			"PUSHOVER_API",empty_str));
+	ESPUI.updateText(
+		pushover_user_token_text, Z2S_GatewayPreferences.getString(
+			"PUSHOVER_USER", empty_str));
 
 	auto pushover_save_data_button = ESPUI.addControl(
 		Control::Type::Button, empty_str, "SAVE", 
@@ -9406,6 +9431,70 @@ void buildPushoverTabGUI() {
 	pushover_message_counter_label = addClearLabel(
 		pushover_message_counter, pushover_message_first_button);
 
+	pushover_message_subaction_label = ESPUI.addControl(
+		Control::Type::Label, "PUSHOVER MESSAGE DETAILS", (long int)0,
+		Control::Color::Emerald, pushover_tab, generalMinMaxCallback, (void*)256);
+		
+		addClearLabel(
+			"Pushover message subaction ID", pushover_message_subaction_label);
+		
+		ESPUI.setPanelWide(pushover_message_subaction_label, true);
+
+	//addEmptyLineLabel(pushover_message_first_button);
+
+	pushover_message_name_text = ESPUI.addControl(
+		Control::Type::Text,empty_str, emptyString, Control::Color::Emerald, 
+		pushover_message_subaction_label, generalCallback);
+	ESPUI.getControl(pushover_user_token_text)->reserve(34);
+
+	addClearLabel(
+		"Pushover message name (maximum 32 characters)", 
+		pushover_message_subaction_label);
+
+	pushover_message_body_text = ESPUI.addControl(
+		Control::Type::Text, empty_str, emptyString, Control::Color::Emerald, 
+		pushover_message_subaction_label, generalCallback);
+	ESPUI.getControl(pushover_message_body_text)->reserve(128);
+
+	addClearLabel(
+		"Pushover message (maximum 1024 characters), "
+		"i.e <b>my message</b> or <b>my message&title=title&sound=siren&html=1</b>", 
+		pushover_message_subaction_label);
+
+	pushover_message_new_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, "NEW MESSAGE", 
+		Control::Color::Emerald, pushover_message_subaction_label, 
+		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_NEW_FLAG);
+
+	pushover_message_edit_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, "EDIT MESSAGE", 
+		Control::Color::Emerald, pushover_message_subaction_label, 
+		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_EDIT_FLAG);						
+								
+	pushover_message_copy_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, "COPY MESSAGE", 
+		Control::Color::Emerald, pushover_message_subaction_label, 
+		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_COPY_FLAG);
+																										
+	pushover_message_save_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, "SAVE MESSAGE", 
+		Control::Color::Emerald, pushover_message_subaction_label, 
+		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_SAVE_FLAG);
+							
+	pushover_message_cancel_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, "CANCEL CHANGES", 
+		Control::Color::Emerald, pushover_message_subaction_label, 
+		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_CANCEL_FLAG);
+							
+	pushover_message_remove_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, "DELETE MESSAGE", 
+		Control::Color::Emerald, pushover_message_subaction_label, 
+		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_REMOVE_FLAG);
+
+	pushover_message_state_label = ESPUI.addControl(
+		Control::Type::Label, empty_str, three_dots_str, Control::Color::Emerald, 
+		pushover_message_subaction_label);
+
 	z2s_pushover_message_t new_pushover_message;
 	
 	int16_t first_message = Z2S_findNextPushoverMessagePosition(0);
@@ -9413,74 +9502,15 @@ void buildPushoverTabGUI() {
 
 			current_message_id = first_message;
 			current_message_counter = Z2S_getPushoverMessageCounter(first_message);
-
       Z2S_loadPushoverMessage(first_message, new_pushover_message);
-			fillPushoverMessageDetails(new_pushover_message);
-			updatePushoverMessageCounter();
+			updatePushoverMessageDetails(new_pushover_message);
+			updatePushoverMessageCounter();		
 	}
+	else {
 
-	pushover_message_subaction_number = ESPUI.addControl(
-		Control::Type::Number, "PUSHOVER MESSAGE DETAILS", (long int)0,
-		Control::Color::Emerald, pushover_tab, generalMinMaxCallback, (void*)256);
-		
-		addClearLabel(
-			"Pushover message subaction ID", pushover_message_subaction_number);
-		
-		ESPUI.setPanelWide(pushover_message_subaction_number, true);
-
-	//addEmptyLineLabel(pushover_message_first_button);
-
-	pushover_message_name_text = ESPUI.addControl(
-		Control::Type::Text,empty_str, emptyString, Control::Color::Emerald, 
-		pushover_message_subaction_number, generalCallback);
-	ESPUI.getControl(pushover_user_token_text)->reserve(34);
-
-	addClearLabel(
-		"Pushover message name (maximum 32 characters)", 
-		pushover_message_subaction_number);
-
-	pushover_message_body_text = ESPUI.addControl(
-		Control::Type::Text, empty_str, emptyString, Control::Color::Emerald, 
-		pushover_message_subaction_number, generalCallback);
-	ESPUI.getControl(pushover_message_body_text)->reserve(128);
-
-	addClearLabel(
-		"Pushover message (maximum 1024 characters)", 
-		pushover_message_subaction_number);
-
-	pushover_message_new_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, "NEW MESSAGE", 
-		Control::Color::Emerald, pushover_message_subaction_number, 
-		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_NEW_FLAG);
-					
-	pushover_message_edit_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, "EDIT MESSAGE", 
-		Control::Color::Emerald, pushover_message_subaction_number, 
-		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_EDIT_FLAG);						
-								
-	pushover_message_copy_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, "COPY MESSAGE", 
-		Control::Color::Emerald, pushover_message_subaction_number, 
-		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_COPY_FLAG);
-																										
-	pushover_message_save_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, "SAVE MESSAGE", 
-		Control::Color::Emerald, pushover_message_subaction_number, 
-		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_SAVE_FLAG);
-							
-	pushover_message_cancel_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, "CANCEL CHANGES", 
-		Control::Color::Emerald, pushover_message_subaction_number, 
-		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_CANCEL_FLAG);
-							
-	pushover_message_remove_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, "DELETE MESSAGE", 
-		Control::Color::Emerald, pushover_message_subaction_number, 
-		pushoverMessagesCallback, (void*)GUI_CB_PUSHOVER_MESSAGE_REMOVE_FLAG);
-
-	pushover_message_state_label = ESPUI.addControl(
-		Control::Type::Label, empty_str, three_dots_str, Control::Color::Emerald, 
-		pushover_message_subaction_number);
+			updatePushoverMessageDetails(new_pushover_message, true);
+			updatePushoverMessageCounter();		
+	}
 	
 	enablePushoverMessageDetails(false);
 	updatePushoverMessageButtons();

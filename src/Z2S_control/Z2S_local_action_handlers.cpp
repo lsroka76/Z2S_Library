@@ -34,6 +34,10 @@ WiFiClient basic_client;
 
 extern bool force_leave_global_flag;
 
+extern bool Z2S_sendPushoverMessage(uint16_t message_index);
+extern bool Z2S_fillPushoverMessage(
+  uint16_t message_index, char *message_buffer);
+
 
 //using Supla::LocalActionHandler;
 //using Supla::LocalActionHandlerWithTrigger;
@@ -299,6 +303,12 @@ void LocalActionVirtualButton::handleAction(int event, int action) {
 void GatewayEvents::onInit() {
 
   _cyclic_event_ms = millis();
+
+  ssl_client.setInsecure();
+  ssl_client.setBufferSizes(1024 /* rx */, 512 /* tx */);
+  ssl_client.setDebugLevel(3);
+  ssl_client.setSessionTimeout(120);
+  ssl_client.setClient(&basic_client);
 }
 
 /*****************************************************************************/
@@ -315,13 +325,51 @@ void GatewayEvents::setActionHandlerCallback(
 void GatewayEvents::handleAction(int event, int action) {
 
   log_i(
-    "&&&&&&&&&&&&&&&&&&&&&&&&&&"
-    "event %u, action %u", event, action);
+    "&&&&&&&&&&&&&&&&&&&&&&&&&& event %u, action %u", event, action);
 
   if (_disable_actions)
     return;
 
   if (action) {
+
+    if ((action >= Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION) &&
+        (action <= Z2S_SUPLA_ACTION_PUSHOVER_LAST_ACTION)) {
+
+      static const char *test_host = "api.pushover.net";
+
+			int16_t connection_code = ssl_client.connect(test_host, 443);
+			
+      log_i("connection_code = %d", connection_code);
+			
+      if (!connection_code) {
+        
+				Serial.println("Connection failed!");
+    	} 
+      else {
+
+    	  // Prepare the POST body
+    		/*String url = "/1/messages.json";
+    		String postData = "token=" + String("a7haupab8v7r3mo146s4b3838nx81a") +
+                      "&user=" + String("uneu9f8jhxt18sm6t4so87ev9xn7i5") +
+                      "&message=TEST MESSAGE";*/
+
+    		// Send HTTP request
+    		/*ssl_client.print(
+			  String("POST ") + url + " HTTP/1.1\r\n" +
+        "Host: api.pushover.net\r\n" +
+        "Content-Type: application/x-www-form-urlencoded\r\n" +
+        "Content-Length: " + postData.length() + "\r\n" +
+        "Connection: close\r\n\r\n" +
+        postData);*/
+        char pushover_message[1200];
+        if (Z2S_fillPushoverMessage(
+          action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message))
+        ssl_client.print(pushover_message);
+
+    		Serial.println("Notification sent!");
+			}
+			ssl_client.stop();
+    }
 
     switch (action) {
 
@@ -609,11 +657,11 @@ void Supla::Control::SwitchBotRelay::onInit() {
 
   initDone = true;
   //clientSec.setInsecure();
-  ssl_client.setInsecure();
-  ssl_client.setBufferSizes(1024 /* rx */, 512 /* tx */);
-  ssl_client.setDebugLevel(3);
-  ssl_client.setSessionTimeout(120);
-  ssl_client.setClient(&basic_client);
+  //ssl_client.setInsecure();
+  //ssl_client.setBufferSizes(1024 /* rx */, 512 /* tx */);
+  //ssl_client.setDebugLevel(3);
+  //ssl_client.setSessionTimeout(120);
+  //ssl_client.setClient(&basic_client);
 }
 
 /*****************************************************************************/
