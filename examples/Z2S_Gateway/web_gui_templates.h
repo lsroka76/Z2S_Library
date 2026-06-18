@@ -19,6 +19,17 @@ enum ActionGUIState {
 	COPY_ACTION
 };
 
+enum PushoverMessageGUIState {
+
+	VIEW_PUSHOVER_MESSAGE,
+	NEW_PUSHOVER_MESSAGE,
+	EDIT_PUSHOVER_MESSAGE,
+	SAVE_PUSHOVER_MESSAGE,
+	CANCEL_PUSHOVER_MESSAGE,
+	REMOVE_PUSHOVER_MESSAGE,
+	COPY_PUSHOVER_MESSAGE
+};
+
 typedef struct zigbee_cluster_s {
 
 	const char* zigbee_cluster_name;
