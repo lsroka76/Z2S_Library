@@ -5849,7 +5849,7 @@ void Z2S_onMultistateInputReceive(
       uint16_t present_value = *(uint16_t *)attribute->data.value;
       log_i("present value = %d", present_value);
 
-      uin32_t model_id = z2s_channels_table[channel_number_slot].model_id;
+      uint32_t model_id = z2s_channels_table[channel_number_slot].model_id;
 
       switch (model_id) {
 
