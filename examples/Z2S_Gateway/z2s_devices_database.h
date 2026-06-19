@@ -335,6 +335,7 @@
 #define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_1F                0x5610
 #define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F                0x5611
 #define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM       0x5612
+#define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM       0x5613
 
 #define Z2S_DEVICE_DESC_HVAC_START                          0x6000
 
@@ -1985,6 +1986,10 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM,
+    .z2s_device_clusters_count = 0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM,
     .z2s_device_clusters_count = 0,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT},
 
@@ -6567,6 +6572,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "LUMI", .model_name = "lumi.sensor_switch.aq3",
     .z2s_device_uid = 33600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "LUMI", .model_name = "lumi.remote.b1acn01",
+    .z2s_device_uid = 33650,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "LUMI", .model_name = "lumi.relay.c2acn01",

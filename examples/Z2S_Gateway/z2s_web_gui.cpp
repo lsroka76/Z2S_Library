@@ -9057,13 +9057,13 @@ bool fillPushoverMessageDetails(z2s_pushover_message_t &message) {
 
 	if (strlen(pushover_message_name_str) >= 0) {
 
-		size_t pushover_message_name_size = strnlen(
+		size_t pushover_message_name_size_w = mbstrnlen(
 			pushover_message_name_str, PUSHOVER_MESSAGE_NAME_MAX_SIZE - 1);
 
 		strncpy(
 			message.pushover_message_name, pushover_message_name_str, 
-			pushover_message_name_size);
-		message.pushover_message_name[pushover_message_name_size] = '\0';
+			pushover_message_name_size_w);
+		message.pushover_message_name[pushover_message_name_size_w] = '\0';
 	}
 	else 
 		return false;
@@ -9073,13 +9073,13 @@ bool fillPushoverMessageDetails(z2s_pushover_message_t &message) {
 
 	if (strlen(pushover_message_body_str) >= 0) {
 
-		size_t pushover_message_body_size = strnlen(
+		size_t pushover_message_body_size_w = mbstrnlen(
 			pushover_message_body_str, PUSHOVER_MESSAGE_TEXT_MAX_SIZE - 1);
 
 		strncpy(
 			message.pushover_message_text, pushover_message_body_str, 
-			pushover_message_body_size);
-		message.pushover_message_text[pushover_message_body_size] = '\0';
+			pushover_message_body_size_w);
+		message.pushover_message_text[pushover_message_body_size_w] = '\0';
 	}
 	else 
 		return false;
