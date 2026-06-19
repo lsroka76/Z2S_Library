@@ -153,6 +153,12 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
   uint8_t brightness) {
 
   log_i("_dimmer_mode = %u, brightness = %u", _dimmer_mode, brightness);
+  log_i(
+    "_brightness = %u, _last_brightness = %u",_brightness, _last_brightness);
+  log_i(
+    "_whiteTemperature = %u, _last_whiteTemperature = %u",_whiteTemperature, 
+    _last_whiteTemperature);
+  
 
   if (Zigbee.started()) {
     switch (_dimmer_mode) {
@@ -246,7 +252,12 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
   uint8_t whiteTemperature) {
 
   log_i("_cct_mode = %u, whiteTemperature = %u", _cct_mode, whiteTemperature);
-
+  log_i(
+    "_brightness = %u, _last_brightness = %u",_brightness, _last_brightness);
+  log_i(
+    "_whiteTemperature = %u, _last_whiteTemperature = %u",_whiteTemperature, 
+    _last_whiteTemperature);
+  
   if (Zigbee.started()) {
     switch (_cct_mode) {
 
@@ -304,6 +315,13 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
 void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
   int16_t value, bool new_state, bool isCCT) {
 
+  log_i("value =%d, new_state = %u, isCCT = %u, _state = %u");
+  log_i(
+    "_brightness = %u, _last_brightness = %u",_brightness, _last_brightness);
+  log_i(
+    "_whiteTemperature = %u, _last_whiteTemperature = %u",_whiteTemperature, 
+    _last_whiteTemperature);
+    
   if (value < 0) {
 
     if ((!new_state) && (_state != DIMMER_STATE_OFF)) {

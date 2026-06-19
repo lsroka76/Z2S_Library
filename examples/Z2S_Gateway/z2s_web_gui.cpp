@@ -9458,8 +9458,9 @@ void buildPushoverTabGUI() {
 
 	addClearLabel(
 		"Pushover message (maximum 1024 characters), "
-		"i.e <b>my message</b> or <b>my message&title=title&sound=siren&html=1</b>", 
-		pushover_message_subaction_label);
+		"i.e: my message&priority=1 OR my message&title=title&sound=siren OR"
+		"<br>my message&url=https://forum.supla.org&url_title="
+		"Click here to visit Forum Supla", pushover_message_subaction_label);
 
 	pushover_message_new_button = ESPUI.addControl(
 		Control::Type::Button, empty_str, "NEW MESSAGE", 
