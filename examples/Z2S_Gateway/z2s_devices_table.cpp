@@ -5849,7 +5849,9 @@ void Z2S_onMultistateInputReceive(
       uint16_t present_value = *(uint16_t *)attribute->data.value;
       log_i("present value = %d", present_value);
 
-      switch (z2s_channels_table[channel_number_slot].model_id) {
+      uin32_t model_id = z2s_channels_table[channel_number_slot].model_id;
+
+      switch (model_id) {
 
 
         case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1: {
@@ -5882,38 +5884,68 @@ void Z2S_onMultistateInputReceive(
         } break;
 
 
-        case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM: {
+        case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM:
+        case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM: {
 
           int8_t sub_id = 0x7F;
 
-          switch (present_value) {
+          if (model_id == Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM) {
 
-            case 0:
-            case 16:
+            switch (present_value) {
 
-              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_HELD_SID;
-            break;
+              case 0:
+              case 16:
 
-            case 1:
+                sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_HELD_SID;
+              break;
+
+              case 1:
               
-              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_PRESSED_SID;
-            break;
+                sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_PRESSED_SID;
+              break;
 
-            case 2:
+              case 2:
               
-              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_DOUBLE_PRESSED_SID;
-            break;
+                sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_DOUBLE_PRESSED_SID;
+              break;
 
-            case 0xFF:
-            case 0x11:
+              case 0xFF:
+              case 0x11:
               
-              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_RELEASED_SID;
-            break;
+                sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_RELEASED_SID;
+              break;
 
-            case 0x12:
+              case 0x12:
               
-              sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_SHAKED_SID;
-            break;
+                sub_id = LUMI_SMART_BUTTON_5F_WXKG12LM_SHAKED_SID;
+              break;
+            }
+          }
+
+          if (model_id == Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM) {
+
+            switch (present_value) {
+
+              case 0:
+
+                sub_id = LUMI_SMART_BUTTON_6F_WXKG11LM_HELD_SID;
+              break;
+
+              case 1:
+              
+                sub_id = LUMI_SMART_BUTTON_6F_WXKG11LM_PRESSED_SID;
+              break;
+
+              case 2:
+              
+                sub_id = LUMI_SMART_BUTTON_6F_WXKG11LM_DOUBLE_PRESSED_SID;
+              break;
+
+              case 0xFF:
+              
+                sub_id = LUMI_SMART_BUTTON_6F_WXKG11LM_RELEASED_SID;
+              break;
+            }
           }
 
           channel_number_slot = Z2S_findChannelNumberSlot(
@@ -8016,7 +8048,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/     
 
-      case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM: {
+      case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM:
+      case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM: {
 
         addZ2SDeviceActionTrigger(
           device, first_free_slot, sub_id, name, func);
@@ -11117,6 +11150,30 @@ void Z2S_buildSuplaChannels(
 
       Z2S_addZ2SDevice(
         joined_device, LUMI_SMART_BUTTON_5F_WXKG12LM_SHAKED_SID);
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_6F_WXKG11LM_PRESSED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_6F_WXKG11LM_DOUBLE_PRESSED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_6F_WXKG11LM_TRIPLE_PRESSED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_6F_WXKG11LM_QUADRUPLE_PRESSED_SID);
+
+
+      Z2S_addZ2SDevice(joined_device, LUMI_SMART_BUTTON_6F_WXKG11LM_HELD_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, LUMI_SMART_BUTTON_6F_WXKG11LM_RELEASED_SID);
+
     } break;
 
 /*****************************************************************************/

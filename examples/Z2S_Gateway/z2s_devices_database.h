@@ -626,6 +626,15 @@
 #define LUMI_SMART_BUTTON_5F_WXKG12LM_RELEASED_SID          0x03
 #define LUMI_SMART_BUTTON_5F_WXKG12LM_SHAKED_SID            0x04
 
+#define LUMI_SMART_BUTTON_5F_WXKG11LM_PRESSED_SID           0x00
+#define LUMI_SMART_BUTTON_5F_WXKG11LM_DOUBLE_PRESSED_SID    0x01
+#define LUMI_SMART_BUTTON_5F_WXKG11LM_TRIPLE_PRESSED_SID    0x02
+#define LUMI_SMART_BUTTON_5F_WXKG11LM_QUADRUPLE_PRESSED_SID 0x04
+#define LUMI_SMART_BUTTON_5F_WXKG11LM_HELD_SID              0x05
+#define LUMI_SMART_BUTTON_5F_WXKG11LM_RELEASED_SID          0x06
+
+
+
 #define LUMI_DOUBLE_SWITCH_LEFT_PRESSED_SID                 0x00
 #define LUMI_DOUBLE_SWITCH_LEFT_DOUBLE_PRESSED_SID          0x01
 #define LUMI_DOUBLE_SWITCH_RIGHT_PRESSED_SID                0x02
@@ -1991,7 +2000,9 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM,
     .z2s_device_clusters_count = 0,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT},
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_BUTTON_5F,
     .z2s_device_clusters_count = 2,
