@@ -326,16 +326,12 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
     return;
   }
 
-  if ((!_state) || (value == 0))
-    return;
-
-  _last_brightness = _brightness;
-
   if (isCCT) {
 
-    switch (_cct_mode) {
-
       _last_whiteTemperature = _whiteTemperature;
+	  
+	  switch (_cct_mode) {
+
       
       case Z2S_COLOR_TEMPERATURE_DIMMER: 
 
@@ -357,6 +353,11 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
   }
   else {
 
+	if ((!_state) || (value == 0))
+      return;
+
+    _last_brightness = _brightness;
+	  
     switch (_dimmer_mode) {
 
 
