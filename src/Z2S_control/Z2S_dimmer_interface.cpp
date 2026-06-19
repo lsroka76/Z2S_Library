@@ -162,7 +162,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
         if (sendTurnOnOffCmd == 1) {
 
-          _state = false;
+          _state = DIMMER_STATE_OFF;
           zbGateway.sendOnOffCmd(&_device, false);
           sendTurnOnOffCmd = 0;
           //setValueOnServer(-1, _state); 
@@ -171,7 +171,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
         if (sendTurnOnOffCmd == 2) {
 
-          _state = true;
+          _state = DIMMER_STATE_ON;
           zbGateway.sendOnOffCmd(&_device, true);
           sendTurnOnOffCmd = 0;
           //setValueOnServer(-1, _state);
@@ -187,16 +187,16 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
         if (sendTurnOnOffCmd == 1) {
 
-          _state = false;
-		  sendTurnOnOffCmd = 0;
+          _state = DIMMER_STATE_OFF;
+		      sendTurnOnOffCmd = 0;
           zbGateway.sendOnOffCmd(&_device, false);
           break;
         }
 
         if (sendTurnOnOffCmd == 2) {
 
-          _state = true;
-		  sendTurnOnOffCmd = 0;
+          _state = DIMMER_STATE_ON;
+		      sendTurnOnOffCmd = 0;
           zbGateway.sendOnOffCmd(&_device, true);
         }
 
@@ -213,8 +213,8 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
         if (sendTurnOnOffCmd == 1) {
 
-          _state = false;
-		  sendTurnOnOffCmd = 0;
+          _state = DIMMER_STATE_OFF;
+		      sendTurnOnOffCmd = 0;
           sendTuyaRequestCmdBool(
             &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 0);
           break;
@@ -222,8 +222,8 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
         if (sendTurnOnOffCmd == 2) {
 
-          _state = true;
-		  sendTurnOnOffCmd = 0;
+          _state = DIMMER_STATE_ON;
+		      sendTurnOnOffCmd = 0;
           sendTuyaRequestCmdBool(
             &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 1);
         }
@@ -306,20 +306,20 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
   if (value < 0) {
 
-    if ((!new_state) && _state) {
+    if ((!new_state) && (_state != DIMMER_STATE_OFF)) {
 
       _last_brightness = _brightness;
       _brightness = 0;
-      _state = false;
+      _state = DIMMER_STATE_OFF;
       channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
 
       return;
     }
 
-    if (new_state && (!_state)) {
+    if (new_state && (_state != DIMMER_STATE_ON)) {
 
       _brightness = _last_brightness;
-      _state = true;
+      _state = DIMMER_STATE_ON;
       channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
       return;
     }

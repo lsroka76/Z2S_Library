@@ -36,6 +36,10 @@
 #define Z2S_TUYA_BRIGHTNESS_DP_DIMMER         0x06 //DP 0-1000
 #define Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER  0x07 //DP 0-1000
 
+#define DIMMER_STATE_OFF                      0x00
+#define DIMMER_STATE_ON                       0x01
+#define DIMMER_STATE_UNKNOWN                  0xFF
+
 
 namespace Supla {
 namespace Control {
@@ -103,7 +107,7 @@ protected:
   uint8_t _brightness = 0;
   uint8_t _last_whiteTemperature = 0;
   uint8_t _whiteTemperature = 0;
-  uint8_t _state = false;
+  uint8_t _state = DIMMER_STATE_UNKNOWN;
 
   uint32_t _keep_alive_ms = 0;
   uint32_t _timeout_ms    = 0;
