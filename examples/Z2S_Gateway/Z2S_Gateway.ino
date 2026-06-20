@@ -494,6 +494,14 @@ Supla::Device::StatusLed statusLed(RGB_BUILTIN, true);
 
 void setup() {
 
+  /*esp_task_wdt_config_t twdt_config = {
+    .timeout_ms = 10000,
+    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+    .trigger_panic = true
+  };
+
+  esp_task_wdt_reconfigure(&twdt_config);*/
+
   log_i("setup start");
 
   printSizeOfClasses();

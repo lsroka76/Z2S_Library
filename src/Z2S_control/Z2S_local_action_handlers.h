@@ -166,6 +166,7 @@ class GatewayEvents: public LocalActionHandler {
     bool      _cyclic_event_enabled = false;
     uint32_t  _cyclic_event_ms = 0;
     uint32_t  _cyclic_event_counter = 0;
+    //char pushover_payload[1024];
     
     _actionhandler_callback actionhandler_callback = nullptr;
 };
@@ -182,6 +183,11 @@ class LocalActionTrigger: public ActionTrigger, public LocalAction {
     void setHoldMs(uint32_t hold_ms);
     uint32_t getHoldMs();
 
+    void setAction(int32_t action) {
+      
+        _action = action; 
+    }
+
     void handleAction(int event, int action) override;
     void iterateAlways();
 
@@ -189,6 +195,7 @@ class LocalActionTrigger: public ActionTrigger, public LocalAction {
 
     uint32_t _hold_ms = 0;
     uint32_t _last_hold_ms = 0;
+    int32_t _action = -1;
 
 };
 

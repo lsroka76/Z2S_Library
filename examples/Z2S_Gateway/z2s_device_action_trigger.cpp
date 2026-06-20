@@ -250,8 +250,8 @@ void msgZ2SDeviceActionTriggerV2(
       z2s_channels_table[channel_number_slot].model_id, sub_id)) {
 
         if (hold_start < 2)
-          Supla_Z2S_ActionTrigger->handleAction(
-            0, virtual_button_data.button_action_id);
+          Supla_Z2S_ActionTrigger->setAction(
+        virtual_button_data.button_action_id);
       
       if (hold_start == 1) {
 

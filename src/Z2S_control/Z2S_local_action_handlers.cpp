@@ -309,6 +309,7 @@ void GatewayEvents::onInit() {
   ssl_client.setDebugLevel(3);
   ssl_client.setSessionTimeout(120);
   ssl_client.setClient(&basic_client);
+  //ssl_client.setTimeout(5000);
 }
 
 /*****************************************************************************/
@@ -335,13 +336,13 @@ void GatewayEvents::handleAction(int event, int action) {
     if ((action >= Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION) &&
         (action <= Z2S_SUPLA_ACTION_PUSHOVER_LAST_ACTION)) {
 
-      static const char *test_host = "api.pushover.net";
+      static const char *pushover_host = "api.pushover.net";
 	  char pushover_message[1200] = {};
 		
-      Z2S_fillPushoverMessage(
-       action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message);
+    Z2S_fillPushoverMessage(
+      action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message);
 
-	  int16_t connection_code = ssl_client.connect(test_host, 443);
+	  int16_t connection_code = ssl_client.connect(pushover_host, 443);
 			
       log_i("connection_code = %d", connection_code);
 			
@@ -545,6 +546,11 @@ void Supla::Control::LocalActionTrigger::iterateAlways() {
     log_i("hold repeat");
     _last_hold_ms = millis();
     runAction(Supla::ON_HOLD);
+  }
+
+  if (_action >= 0) {
+    handleAction(0, _action);
+    _action = -1;
   }
 }
 
