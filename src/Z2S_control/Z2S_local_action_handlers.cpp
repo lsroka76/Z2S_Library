@@ -336,8 +336,12 @@ void GatewayEvents::handleAction(int event, int action) {
         (action <= Z2S_SUPLA_ACTION_PUSHOVER_LAST_ACTION)) {
 
       static const char *test_host = "api.pushover.net";
+	  char pushover_message[1200] = {};
+		
+      Z2S_fillPushoverMessage(
+       action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message);
 
-			int16_t connection_code = ssl_client.connect(test_host, 443);
+	  int16_t connection_code = ssl_client.connect(test_host, 443);
 			
       log_i("connection_code = %d", connection_code);
 			
@@ -346,24 +350,6 @@ void GatewayEvents::handleAction(int event, int action) {
 				Serial.println("Connection failed!");
     	} 
       else {
-
-    	  // Prepare the POST body
-    		/*String url = "/1/messages.json";
-    		String postData = "token=" + String("a7haupab8v7r3mo146s4b3838nx81a") +
-                      "&user=" + String("uneu9f8jhxt18sm6t4so87ev9xn7i5") +
-                      "&message=TEST MESSAGE";*/
-
-    		// Send HTTP request
-    		/*ssl_client.print(
-			  String("POST ") + url + " HTTP/1.1\r\n" +
-        "Host: api.pushover.net\r\n" +
-        "Content-Type: application/x-www-form-urlencoded\r\n" +
-        "Content-Length: " + postData.length() + "\r\n" +
-        "Connection: close\r\n\r\n" +
-        postData);*/
-        char pushover_message[1200];
-        if (Z2S_fillPushoverMessage(
-          action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message))
         ssl_client.print(pushover_message);
 
     		Serial.println("Notification sent!");
