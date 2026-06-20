@@ -9227,6 +9227,7 @@ void pushoverMessagesCallback(BasicControl *sender, int type, void *param) {
 					current_pushover_message_gui_state;
 				current_pushover_message_gui_state = COPY_PUSHOVER_MESSAGE;
 				Z2S_loadPushoverMessage(current_message_id, new_message);
+				new_message.pushover_message_subaction_id = new_message_id;
 				enablePushoverMessageDetails(true);
 				updatePushoverMessageDetails(new_message);
 				updatePushoverMessageButtons();
