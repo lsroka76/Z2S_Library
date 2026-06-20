@@ -44,7 +44,7 @@
 #define ACTION_DESCRIPTION_MAX_SIZE                             128
 
 #define PUSHOVER_MESSAGE_NAME_MAX_SIZE                          33
-#define PUSHOVER_MESSAGE_TEXT_MAX_SIZE                          1024
+#define PUSHOVER_MESSAGE_TEXT_MAX_SIZE                          512
 
 
 #define ALL_SUPLA_CHANNEL_TYPES   -1
