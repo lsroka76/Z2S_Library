@@ -73,9 +73,6 @@ jobs:
         run: |
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.full_version.bin
-      - name: Compile Scanner
-        working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Device_Scanner -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,DebugLevel=verbose,CDCOnBoot=cdc -e --library=. 
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
@@ -96,7 +93,6 @@ jobs:
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.logs.full_version.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.full_version.bin,
-                    ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.bin,
-                     ./examples/Z2S_Device_Scanner/build/esp32.esp32.esp32c6/Z2S_Device_Scanner.ino.merged.bin
+  
 
 
