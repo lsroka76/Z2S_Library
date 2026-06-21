@@ -96,8 +96,12 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
           _last_brightness, _brightness);
 
         
-        if (brightness == 100)
+        if (brightness == 100) {
+
+          if (_last_brightness > 100)
+            _last_brightness = 100;
           _brightness = _last_brightness;
+        }
         else {
           
           _last_brightness = _brightness;
@@ -170,8 +174,11 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
           _state = DIMMER_STATE_OFF;
           zbGateway.sendOnOffCmd(&_device, false);
+          zbGateway.sendAttributeRead(
+            &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+
           sendTurnOnOffCmd = 0;
-          //setValueOnServer(-1, _state); 
           break;
         }
 
@@ -179,13 +186,18 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
           _state = DIMMER_STATE_ON;
           zbGateway.sendOnOffCmd(&_device, true);
+          zbGateway.sendAttributeRead(
+            &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);          
           sendTurnOnOffCmd = 0;
-          //setValueOnServer(-1, _state);
         }
         
         uint8_t level = mapFloat(_brightness, 1, 100, 1, 254);
         zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
-        //setValueOnServer(level, _state);
+        zbGateway.sendAttributeRead(
+          &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
+          ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);
+
       } break;
 
 
@@ -284,7 +296,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
 	      
         zbGateway.sendColorMoveToColorTemperatureCmd(
           &_device, color_temperature, 1);
-          
+
         zbGateway.sendAttributeRead(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
           ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, false);
@@ -336,19 +348,24 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
     if ((!new_state) && (_state != DIMMER_STATE_OFF)) {
 
-      _last_brightness = _brightness;
-      _brightness = 0;
+      //if (_brightness > 0)
+      //  _last_brightness = _brightness;
+      //_brightness = 0;
       _state = DIMMER_STATE_OFF;
-      channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+      //_lastDeviceMsgReceivedMs = millis();
+      //channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
 
       return;
     }
 
     if (new_state && (_state != DIMMER_STATE_ON)) {
 
-      _brightness = _last_brightness;
+      //if (_last_brightness > 100)
+      //  _last_brightness = 100;
+      //_brightness = _last_brightness;
       _state = DIMMER_STATE_ON;
-      channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+      //_lastDeviceMsgReceivedMs = millis();
+      //channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
       return;
     }
     return;
@@ -380,6 +397,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       case Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER: //TODO
       break;
     }
+    _deviceWhiteTemperature = value;
   }
   else {
 
@@ -405,60 +423,88 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
         sent_brightness = mapFloat(value, 153, 500, 0, 100); 
       break;
     }
-  }
-  if ((!_state) || (value == 0)) {
+    _deviceBrightness = value;
 
-    _last_brightness = sent_brightness;
-  }
-  else {
+    if ((!_state) || (value == 0)) {
 
-    _last_brightness = _brightness;
-    _brightness = sent_brightness;
+      _last_brightness = sent_brightness;
+    }
+    else {
+
+      _last_brightness = _brightness;
+      _brightness = sent_brightness;
+    }
   }
-	
-  channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+  //channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+  _lastDeviceMsgReceivedMs = millis();
 }
 
 void Supla::Control::Z2S_DimmerInterface::ping() {
 
   if (Zigbee.started()) {
 
-    _fresh_start = false;
+    uint8_t ping_counter = 0;
     
-    zbGateway.sendAttributeRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, 
-      false);
+    if (_state == DIMMER_STATE_UNKNOWN) 
+      zbGateway.sendAttributeRead(
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+        ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+    else
+      ping_counter++;
 
-    zbGateway.sendAttributeRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
-      ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);
+    if (_deviceBrightness == 0xFF)
+      zbGateway.sendAttributeRead(
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
+        ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);
+    else
+      ping_counter++;
 
-    zbGateway.sendAttributeRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
-      ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, false);
+    if (_deviceWhiteTemperature == 0xFFFF)
+      zbGateway.sendAttributeRead(
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+        ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, false);
+    else
+      ping_counter++;
+
+    //if ((_last_whiteTemperature != 0xFF) && (_last_brightness != 0xFF))
+    if (ping_counter == 3)
+      _fresh_start = false;
   }
 }
 
 void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
 
-  if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 1000) {
+  if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 400) {
 
     _lastMsgReceivedMs = 0;
     if (channel.getDefaultFunction() == SUPLA_CHANNELFNC_DIMMER_CCT) {
       log_i("SUPLA_CHANNELFNC_DIMMER_CCT");
-      channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
-      sendValueToDimmer(_brightness);
+      //channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+      if ((sendTurnOnOffCmd == 0) && (_brightness == 0))
+      ;//skip
+      else
+        sendValueToDimmer(_brightness);
+
       sendValueToCCT(_whiteTemperature);
     }
     else {
-      channel.setNewValue(0, 0, 0, 0, _brightness, 0);
+      //channel.setNewValue(0, 0, 0, 0, _brightness, 0);
       sendValueToDimmer(_brightness);
       sendValueToCCT(_brightness);
     }
   }
 
-  if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
+  if (_lastDeviceMsgReceivedMs && millis() - _lastDeviceMsgReceivedMs >= 400) {
+
+    _lastDeviceMsgReceivedMs = 0;
+    channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+  }
+
+  if (_fresh_start && ((millis() - _last_ping_ms) > 5000)) {
+
+    _last_ping_ms = millis();
     ping();
+  }
 
   if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (true) {

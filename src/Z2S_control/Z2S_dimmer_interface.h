@@ -103,10 +103,12 @@ protected:
 
   uint8_t sendTurnOnOffCmd = 0;
 
-  uint8_t _last_brightness = 0;
+  uint8_t _last_brightness = 0xFF;
   uint8_t _brightness = 0;
+  uint8_t _deviceBrightness = 0xFF;
   uint8_t _last_whiteTemperature = 0;
   uint8_t _whiteTemperature = 0;
+  uint16_t _deviceWhiteTemperature = 0xFFFF;
   uint8_t _state = DIMMER_STATE_UNKNOWN;
 
   uint32_t _keep_alive_ms = 0;
@@ -115,7 +117,7 @@ protected:
   uint32_t _last_seen_ms  = 0;
 
   uint32_t _lastMsgReceivedMs = 0;
-
+  uint32_t _lastDeviceMsgReceivedMs = 0;
   
   
 

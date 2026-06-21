@@ -251,7 +251,7 @@ void msgZ2SDeviceActionTriggerV2(
 
         if (hold_start < 2)
           Supla_Z2S_ActionTrigger->setAction(
-        virtual_button_data.button_action_id);
+            virtual_button_data.button_action_id);
       
       if (hold_start == 1) {
 
