@@ -346,6 +346,39 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
     
   if (value < 0) {
 
+    if (_state == DIMMER_STATE_UNKNOWN) {
+
+      if (new_state)
+        _state = DIMMER_STATE_ON;
+      else
+      _state = DIMMER_STATE_OFF;
+      return;
+    }
+
+    if ((new_state) && (_state == DIMMER_STATE_OFF) && 
+        (_last_brightness > 0)) {
+
+      if (_last_brightness > 100)
+        _last_brightness = 100;
+        _brightness = _last_brightness;
+        _state = DIMMER_STATE_ON;
+        //_lastDeviceMsgReceivedMs = millis();
+        _lastMsgReceivedMs = millis();
+      return;
+    }
+
+    if ((!new_state) && (_state == DIMMER_STATE_ON)) {
+
+      if (_brightness > 0)
+        _last_brightness = _brightness;
+      _brightness = 0;
+      _state = DIMMER_STATE_OFF;
+      //_lastDeviceMsgReceivedMs = millis();
+      _lastMsgReceivedMs = millis();
+      return;
+    }
+    return;
+
     if ((!new_state) && (_state != DIMMER_STATE_OFF)) {
 
       //if (_brightness > 0)
@@ -363,7 +396,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       //if (_last_brightness > 100)
       //  _last_brightness = 100;
       //_brightness = _last_brightness;
-      _state = DIMMER_STATE_ON;
+      _state = DIMMER_STATE_ON  ;
       //_lastDeviceMsgReceivedMs = millis();
       //channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
       return;
@@ -445,21 +478,21 @@ void Supla::Control::Z2S_DimmerInterface::ping() {
 
     uint8_t ping_counter = 0;
     
-    if (_state == DIMMER_STATE_UNKNOWN) 
+    if (!_fresh_start || (_state == DIMMER_STATE_UNKNOWN)) 
       zbGateway.sendAttributeRead(
         &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
         ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
     else
       ping_counter++;
 
-    if (_deviceBrightness == 0xFF)
+    if (!_fresh_start || (_deviceBrightness == 0xFF))
       zbGateway.sendAttributeRead(
         &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
         ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);
     else
       ping_counter++;
 
-    if (_deviceWhiteTemperature == 0xFFFF)
+    if (!_fresh_start || (_deviceWhiteTemperature == 0xFFFF))
       zbGateway.sendAttributeRead(
         &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
         ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, false);
