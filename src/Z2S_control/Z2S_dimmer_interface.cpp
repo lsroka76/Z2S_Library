@@ -408,7 +408,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
   if (isCCT) {
 
-      _last_whiteTemperature = _whiteTemperature;
+    _last_whiteTemperature = _whiteTemperature;
 	  
 	  switch (_cct_mode) {
 
@@ -431,6 +431,14 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       break;
     }
     _deviceWhiteTemperature = value;
+    if (value == 0) {
+
+      log_i("device sent color temperature with zero value!");
+      if (_last_whiteTemperature > 100)
+        _last_whiteTemperature = 0;
+      _whiteTemperature =  _last_whiteTemperature;
+      _lastMsgReceivedMs = millis();
+    } 
   }
   else {
 

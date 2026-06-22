@@ -67,9 +67,9 @@ void Supla::Control::Z2S_VirtualRelay::onInit() {
 }
 
 void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
+  
   SUPLA_LOG_INFO(
-    "Relay[%d] turn ON (duration %d ms)",
-    channel.getChannelNumber(),
+    "Relay[%d] turn ON (duration %d ms)", channel.getChannelNumber(), 
     duration);
 
   durationMs = duration;
@@ -339,6 +339,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
             ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, _z2s_function_data, true);
         }
         state = false;
+        runAction(ON_TURN_ON);
         channel.setNewValue(state);
       } break;
     }  
