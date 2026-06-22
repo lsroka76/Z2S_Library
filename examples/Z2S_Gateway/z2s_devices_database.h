@@ -206,6 +206,7 @@
 #define Z2S_DEVICE_DESC_DIMMER_CT_BULB                      0x3235
 
 #define Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE              0x3250
+#define Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE         0x3255
 
 #define Z2S_DEVICE_DESC_RGBW_END                            0x3299
 
@@ -2081,6 +2082,16 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
     .z2s_device_clusters_count = 3, 
     .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL 
+    }
+  },
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE,
+    .z2s_device_clusters_count = 3, 
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { 
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
@@ -5078,8 +5089,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZB210_ue01a0s2", .model_name = "TS0502B",
     .z2s_device_uid = 18755,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
-    //Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3210_pgq2qvyv", .model_name = "TS0502B",
@@ -5339,18 +5349,18 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "GLEDOPTO", .model_name = "GL-C-008P",
     .z2s_device_uid = 20405,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB_XY,
+	  .z2s_device_desc_id = /*Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,*/Z2S_DEVICE_DESC_RGBW_BULB_XY,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {
-      { 11, 0, 0, Z2S_DEVICE_DESC_RGBW_BULB_XY },
+      { 11, 0, 0, /*Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,*/Z2S_DEVICE_DESC_RGBW_BULB_XY },
       { 1, 0, 0, Z2S_DEVICE_DESC_NULL }}},
   
   {	.manufacturer_name = "GLEDOPTO", .model_name = "GL-C-007P",
     .z2s_device_uid = 20406,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB_XY,
+	  .z2s_device_desc_id = /*Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,*/Z2S_DEVICE_DESC_RGBW_BULB_XY,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {
-      { 11, 0, 0, Z2S_DEVICE_DESC_RGBW_BULB_XY },
+      { 11, 0, 0, /*Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,*/Z2S_DEVICE_DESC_RGBW_BULB_XY },
       { 1, 0, 0, Z2S_DEVICE_DESC_NULL }}},
 
   {	.manufacturer_name = "GLEDOPTO", .model_name = "GL-C-009P",
@@ -6711,7 +6721,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
     .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS,
     .z2s_device_endpoints_count = 4,
-    .z2s_device_endpoints_count_m1 = 2,
+    .z2s_device_endpoints_count_m1 = 3,
     .z2s_device_endpoints = {
       { 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },              
       { 3, 0, 0, Z2S_DEVICE_DESC_DIY_MAIL_SENSOR }}},
