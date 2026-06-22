@@ -343,6 +343,13 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
   log_i(
     "_whiteTemperature = %u, _last_whiteTemperature = %u",_whiteTemperature, 
     _last_whiteTemperature);
+
+  _last_ping_ms = millis();
+  _last_seen_ms = _last_ping_ms;
+  
+  if (!channel.isStateOnline()) 
+	  channel.setStateOnline();
+
     
   if (value < 0) {
 
@@ -559,7 +566,7 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
       } else {
         _last_ping_ms = _last_seen_ms;
         if (!channel.isStateOnline()) 
-	  channel.setStateOnline();
+	        channel.setStateOnline();
       }
     }
   }

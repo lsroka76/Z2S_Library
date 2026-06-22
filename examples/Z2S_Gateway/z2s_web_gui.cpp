@@ -4121,7 +4121,8 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_ZIGBEE |
 					GUI_BUILD_CONTROL_FLAG_DEVICES |
 					GUI_BUILD_CONTROL_FLAG_CHANNELS |
-					GUI_BUILD_CONTROL_FLAG_ACTIONS;
+					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_PO;
 			} break;
 
 
@@ -4134,6 +4135,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_DEVICES |
 					GUI_BUILD_CONTROL_FLAG_CHANNELS |
 					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_PO |
 					GUI_BUILD_CONTROL_FLAG_CA;
 			} break;
 
@@ -4147,10 +4149,9 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_DEVICES |
 					GUI_BUILD_CONTROL_FLAG_CHANNELS |
 					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_PO |
 					GUI_BUILD_CONTROL_FLAG_CA |
-					//GUI_BUILD_CONTROL_FLAG_AD |
-					GUI_BUILD_CONTROL_FLAG_TCC 
-					| GUI_BUILD_CONTROL_FLAG_PO;
+					GUI_BUILD_CONTROL_FLAG_TCC;
 
 			} break;
 
@@ -4164,6 +4165,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_DEVICES |
 					GUI_BUILD_CONTROL_FLAG_CHANNELS |
 					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_PO |
 					GUI_BUILD_CONTROL_FLAG_CA |
 					GUI_BUILD_CONTROL_FLAG_AD |
 					GUI_BUILD_CONTROL_FLAG_TCC;
@@ -4204,6 +4206,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_CREDENTIALS |
 					GUI_BUILD_CONTROL_FLAG_CHANNELS |
 					GUI_BUILD_CONTROL_FLAG_ACTIONS;
+					GUI_BUILD_CONTROL_FLAG_PO;
 			} break;
 
 
@@ -4266,6 +4269,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 					GUI_BUILD_CONTROL_FLAG_DEVICES |
 					GUI_BUILD_CONTROL_FLAG_CHANNELS |
 					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_PO |
 					GUI_BUILD_CONTROL_FLAG_AD;
 			} break;
 		}
@@ -4304,6 +4308,11 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 		buildActionsTabGUI();
 	}
 
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_PO) {
+		
+		buildPushoverTabGUI();
+	}
+
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_CA) {
 		
 		buildClustersAttributesTab();
@@ -4322,11 +4331,6 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_SB) {
 		
 		buildSwitchBotTabGUI();
-	}
-
-	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_PO) {
-		
-		buildPushoverTabGUI();
 	}
 
 	buildAllChannelSelectors();
@@ -6360,7 +6364,6 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 								esp_zb_zcl_status_to_name(
 									*zbGateway.getWriteAttrStatusLastResult()),
 									*zbGateway.getWriteAttrStatusLastResult(),
-									*zbGateway.getWriteAttrStatusLastResult(),
       		        *zbGateway.getWriteAttrAttributeIdLastResult(),
 									getZigbeeDataTypeName(attribute_type), attribute_type,
 									attribute_size, attribute_size);
@@ -6386,7 +6389,7 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 
 			case GUI_CB_CUSTOM_CMD_FLAG : {	//custom command
 					
-				uint8_t *custom_cmd_payload = nullptr;
+				//uint8_t *custom_cmd_payload = nullptr;
 
 				uint16_t payload_size = 
 					ESPUI.getControl(clusters_attributes_table[device_attribute_size_number])->getValueInt();
@@ -6396,6 +6399,8 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 												device_query_attr_size_error_str);
 					return;
 				}
+
+				uint8_t custom_cmd_payload[payload_size];
 
 				const char* payload_value = ESPUI.getControl(
 					clusters_attributes_table[device_attribute_value_text])->getValueCstr();
@@ -6415,13 +6420,13 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 
         		char byte_str[3];
         		byte_str[2] = '\0';
-						custom_cmd_payload = (uint8_t*)malloc(payload_size); //2 by
+						//custom_cmd_payload = (uint8_t*)malloc(payload_size); //2 by
 
-						if (custom_cmd_payload == nullptr) {
+						/*if (custom_cmd_payload == nullptr) {
 							updateLabel_C(clusters_attributes_table[device_read_attribute_label], 
 														PSTR("Error allocating custom command payload buffer!"));
 							return;
-						}
+						}*/
 
 						memset(custom_cmd_payload, 0, payload_size);
 					
@@ -6449,17 +6454,12 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 						current_Tuya_payload_label = clusters_attributes_table[device_Tuya_payload_label];
 					}
 
-					bool result = zbGateway.sendCustomClusterCmd(&device, 
-																											 cluster_id, 
-																											 attribute_id, 
-																											 (esp_zb_zcl_attr_type_t)attribute_type, 
-																											 payload_size, 
-																											 custom_cmd_payload, 
-																											 sync_cmd,
-																											 ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-																											 1, 
-																											 manuf_specific, 
-																											 manuf_code);
+					bool result = zbGateway.sendCustomClusterCmd(
+						&device, cluster_id, attribute_id, 
+						(esp_zb_zcl_attr_type_t)attribute_type, 
+						payload_size, custom_cmd_payload, sync_cmd, 
+						ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+						1, manuf_specific, manuf_code);
 					
 					if (result) {
 
@@ -6481,20 +6481,15 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 														general_purpose_gui_buffer);
 						} else {
 
-							sprintf_P(general_purpose_gui_buffer, 
-												PSTR("Custom command failed! <br>"
-												"Status = %s(0x%02X)"
-												"Command id = 0x%04X<br>"
-												"Data type = %s(0x%04X)<br>"
-												"Payload size = %u(0x#04X)"),
-												esp_zb_zcl_status_to_name(*zbGateway.getCustomCmdStatusLastResult()),
-												*zbGateway.getCustomCmdStatusLastResult(),
-												*zbGateway.getCustomCmdStatusLastResult(),
-      		       	     *zbGateway.getCustomCmdRespToCmdLastResult(),
-												getZigbeeDataTypeName(attribute_type),
-												attribute_type,
-												payload_size,
-												payload_size);
+							sprintf_P(
+								general_purpose_gui_buffer, "Custom command failed! <br>"
+								"Status = %s(0x%02X)<br>Command id = 0x%04X<br>"
+								"Data type = %s(0x%04X)<br>Payload size = %u(0x#04X)",
+								esp_zb_zcl_status_to_name(*zbGateway.getCustomCmdStatusLastResult()),
+								*zbGateway.getCustomCmdStatusLastResult(),
+      		      *zbGateway.getCustomCmdRespToCmdLastResult(),
+								getZigbeeDataTypeName(attribute_type), attribute_type, 
+								payload_size, payload_size);
 
 							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
 														general_purpose_gui_buffer);
@@ -6508,8 +6503,8 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 														device_async_query_str);
 					}
 				}
-				if (custom_cmd_payload) 
-					free(custom_cmd_payload);
+				/*if (custom_cmd_payload) 
+					free(custom_cmd_payload);*/
 			} break;
 
 

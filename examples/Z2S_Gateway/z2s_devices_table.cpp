@@ -8308,7 +8308,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/     
 
-      case Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE: {
+      case Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE:
+      case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE: {
 
         addZ2SDeviceDimmer(
           device, first_free_slot, sub_id, name, func);
@@ -12409,7 +12410,8 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
-    case Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE: {
+    case Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE:
+    case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE: {
 
       Z2S_addZ2SDevice(
         joined_device, DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID, 

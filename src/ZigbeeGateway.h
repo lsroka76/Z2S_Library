@@ -470,7 +470,8 @@ public:
   void sendOnOffCmd(zbg_device_params_t *device, bool value); 
 
   void sendLevelMoveToLevelCmd(
-    zbg_device_params_t *device, uint8_t level, uint16_t transition_time);
+    zbg_device_params_t *device, uint8_t level, uint16_t transition_time, 
+    bool withOnOff = false);
 
   void sendColorMoveToHueCmd(
     zbg_device_params_t *device, uint8_t hue, uint8_t directon, 

@@ -1811,8 +1811,8 @@ void ZigbeeGateway::zbWriteAttrResponse(
 
     _write_attr_status_last_result = status;
     _write_attr_attribute_id_last_result = attribute_id;
-    //log_i("check 0x%x vs 0x%x", _read_attr_last_result.id, attribute->id);
-    delay(200);
+    //log_i("check 0x%x vs 0x%x", _read_attr_last_result.id, attribute_id);
+    delay(10);
     //_custom_cmd_last_tsn_flag = ZCL_CMD_TSN_UNKNOWN;
     xSemaphoreGive(gt_lock);  
   }
@@ -2364,7 +2364,7 @@ bool ZigbeeGateway::sendAttributeWrite(
     else 
       _write_attr_last_tsn_flag = ZCL_CMD_TSN_ASYNC;
     
-    delay(200);
+    //delay(50);
 
     if (ack && xSemaphoreTake(gt_lock, pdMS_TO_TICKS(2000)) != pdTRUE) {
       log_e("Semaphore timeout writing attribute 0x%x - device 0x%x, endpoint 0x%x, cluster 0x%x", 
@@ -2372,7 +2372,7 @@ bool ZigbeeGateway::sendAttributeWrite(
 
       return false;
     } 
-    
+    log_i ("returning from WA");
     return ack;
 }
 
@@ -2492,7 +2492,8 @@ void ZigbeeGateway::sendAddGroupRequestCmd(
 /*****************************************************************************/
 
 void ZigbeeGateway::sendLevelMoveToLevelCmd(
-  zbg_device_params_t *device, uint8_t level, uint16_t transition_time) {
+  zbg_device_params_t *device, uint8_t level, uint16_t transition_time, 
+  bool withOnOff) {
   
     esp_zb_zcl_move_to_level_cmd_t cmd_req = {};
 
@@ -2517,8 +2518,10 @@ void ZigbeeGateway::sendLevelMoveToLevelCmd(
       esp_zb_zcl_level_step_cmd_t cmd_req;*/
 
     esp_zb_lock_acquire(portMAX_DELAY);
-    //esp_zb_zcl_level_move_to_level_with_onoff_cmd_req(&cmd_req);
-    esp_zb_zcl_level_move_to_level_cmd_req(&cmd_req);
+    if (withOnOff)
+      esp_zb_zcl_level_move_to_level_with_onoff_cmd_req(&cmd_req);
+    else
+      esp_zb_zcl_level_move_to_level_cmd_req(&cmd_req);
     esp_zb_lock_release();
     delay(200);
 }
