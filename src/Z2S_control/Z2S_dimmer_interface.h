@@ -58,6 +58,10 @@ public:
     uint8_t dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER,
     uint8_t cct_mode = Z2S_COLOR_TEMPERATURE_DIMMER);
 
+  void onLoadState() override;
+  void onSaveState() override;
+
+
   int32_t handleNewValueFromServer(
     TSD_SuplaChannelNewValue *newValue) override;
   
@@ -79,7 +83,7 @@ public:
 
   virtual void setValueOnServer(int16_t value, bool new_state, bool isCCT = false);
 
-  //virtual void setStateOnServer(bool state);
+  virtual void syncDevice();
 
   virtual void ping();
 
@@ -115,6 +119,7 @@ protected:
   uint32_t _timeout_ms    = 0;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
+  uint32_t  _last_sync_ms = 0;
 
   uint32_t _lastMsgReceivedMs = 0;
   uint32_t _lastDeviceMsgReceivedMs = 0;

@@ -240,6 +240,8 @@ bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
   if (erase_nvs) {
     esp_zb_nvram_erase_at_start(true);
   }
+  //uint8_t my_extended_panid[] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+  //esp_zb_set_extended_pan_id(my_extended_panid);
 
   // Create Zigbee task and start Zigbee stack
   xTaskCreate(esp_zb_task, "Zigbee_main", 8192, NULL, 15, &_zigbee_task_handle);

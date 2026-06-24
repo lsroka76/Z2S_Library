@@ -19,6 +19,7 @@
 #include "rgbhsv.h"
 
 #include <supla/log_wrapper.h>
+#include <supla/storage/storage.h>
 
 Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dimmer_mode) 
@@ -54,6 +55,30 @@ Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
   channel.setDefault(dimmer_function);
 }
 
+void Supla::Control::Z2S_DimmerInterface::onLoadState() {
+
+    Supla::Storage::ReadState(
+      (unsigned char *)&_brightness, sizeof(_brightness));
+    Supla::Storage::ReadState(
+      (unsigned char *)&_last_brightness, sizeof(_last_brightness));
+
+    Supla::Storage::ReadState(
+      (unsigned char *)&_whiteTemperature, sizeof(_whiteTemperature));
+    Supla::Storage::ReadState(
+      (unsigned char *)&_last_whiteTemperature, 
+      sizeof(_last_whiteTemperature));
+}
+
+  void Supla::Control::Z2S_DimmerInterface::onSaveState() {
+
+    Supla::Storage::WriteState(
+      (unsigned char *)&_brightness, sizeof(_brightness));
+    Supla::Storage::WriteState(
+      (unsigned char *)&_last_brightness, sizeof(_last_brightness));
+
+    Supla::Storage::WriteState(
+      (unsigned char *)&_last_whiteTemperature, sizeof(_last_whiteTemperature));
+  }
 
 int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
   TSD_SuplaChannelNewValue *newValue) {
@@ -126,6 +151,7 @@ int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
   _whiteTemperature = whiteTemperature;
 
   _lastMsgReceivedMs = millis();
+  Supla::Storage::ScheduleSave(5000, 2000);
 
   return -1;
 }
@@ -192,7 +218,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
           sendTurnOnOffCmd = 0;
         }
         
-        uint8_t level = mapFloat(_brightness, 1, 100, 1, 254);
+        uint8_t level = mapFloat(brightness, 1, 100, 1, 254);
         zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
         zbGateway.sendAttributeRead(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
@@ -475,9 +501,17 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
     if ((!_state) || (value == 0)) {
 
+      log_i(
+        "_last_brightness %u, sent_brightness = %u", _last_brightness, 
+        sent_brightness);
+
       _last_brightness = sent_brightness;
     }
     else {
+
+      log_i(
+        "_brightness %u,_last_brightness %u, sent_brightness = %u", 
+        _brightness, _last_brightness, sent_brightness);
 
       _last_brightness = _brightness;
       _brightness = sent_brightness;
@@ -485,6 +519,43 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
   }
   //channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
   _lastDeviceMsgReceivedMs = millis();
+}
+
+void Supla::Control::Z2S_DimmerInterface::syncDevice() {
+
+  if (Zigbee.started()) {
+
+    uint8_t sync_counter = 0;
+    
+    if (_state == DIMMER_STATE_UNKNOWN) {
+      sendTurnOnOffCmd = (_brightness == 0) ? 1 : 2;
+      if (_brightness == 0)
+        sendValueToDimmer(_last_brightness);
+      else
+        sendValueToDimmer(_brightness);
+
+    }
+    else
+      sync_counter++;
+
+    if (_deviceBrightness == 0xFF) {
+
+      if (_brightness == 0)
+        sendValueToDimmer(_last_brightness);
+      else
+        sendValueToDimmer(_brightness);
+    }
+    else
+      sync_counter++;
+
+    if (_deviceWhiteTemperature == 0xFFFF)
+      sendValueToCCT(_whiteTemperature);
+    else
+      sync_counter++;
+
+    if (sync_counter == 3)
+      _fresh_start = false;
+  }
 }
 
 void Supla::Control::Z2S_DimmerInterface::ping() {
@@ -522,6 +593,13 @@ void Supla::Control::Z2S_DimmerInterface::ping() {
 
 void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
 
+  if (_fresh_start && ((millis() - _last_sync_ms) > 5000)) {
+
+    _last_sync_ms = millis();
+    syncDevice();
+    return;
+  }
+
   if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 400) {
 
     _lastMsgReceivedMs = 0;
@@ -546,13 +624,14 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
 
     _lastDeviceMsgReceivedMs = 0;
     channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+    Supla::Storage::ScheduleSave(5000, 2000);
   }
 
-  if (_fresh_start && ((millis() - _last_ping_ms) > 5000)) {
+  /*if (_fresh_start && ((millis() - _last_ping_ms) > 5000)) {
 
     _last_ping_ms = millis();
     ping();
-  }
+  }*/
 
   if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (true) {
