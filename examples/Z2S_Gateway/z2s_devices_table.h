@@ -509,7 +509,7 @@ int16_t Z2S_findPrevActionPosition(
 bool Z2S_saveAction(
   uint16_t action_index, z2s_channel_action_t &action, bool activate = false);
 bool Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action);
-bool Z2S_removeAction(uint16_t action_index);
+bool Z2S_removeAction(uint16_t action_index, z2s_channel_action_t &action);
 void Z2S_removeChannelActions(uint8_t channel_id, bool all_channels = false);
 
 void Z2S_initSuplaActions();
@@ -773,7 +773,7 @@ uint32_t getSuplaChannelType(uint8_t Supla_channel_number);
 
 Supla::ActionHandlerClient *getActionClientPtr(
   uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, 
-  uint16_t Supla_event, bool condition = false);
+  uint16_t Supla_event, bool condition, bool enabled_only);
 
 bool Z2S_add_action(
   const char *action_name, uint8_t src_channel_id, uint16_t Supla_action,

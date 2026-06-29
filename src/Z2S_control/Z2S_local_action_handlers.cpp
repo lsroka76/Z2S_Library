@@ -326,24 +326,25 @@ void GatewayEvents::sendPushoverMessage(uint32_t action) {
   static const char *pushover_host = "api.pushover.net";
 	char pushover_message[1200] = {};
 		
-  Z2S_fillPushoverMessage(
-    action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message);
+  if (Z2S_fillPushoverMessage(
+        action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message)) {
 
-	int16_t connection_code = ssl_client.connect(pushover_host, 443);
+	  int16_t connection_code = ssl_client.connect(pushover_host, 443);
 			
-  log_i("connection_code = %d", connection_code);
+    log_i("connection_code = %d", connection_code);
 			
-  if (!connection_code) {
+    if (!connection_code) {
         
-	  log_e("Connection failed!");
-  } 
-  else {
+	    log_e("Connection failed!");
+    } 
+    else {
         
-  ssl_client.print(pushover_message);
+    ssl_client.print(pushover_message);
   
-  log_i("Pushover notification sent!");
-	}
-	ssl_client.stop();
+    log_i("Pushover notification sent!");
+	  }
+	  ssl_client.stop();
+  }
 }
 
 /*****************************************************************************/

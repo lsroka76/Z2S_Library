@@ -455,7 +455,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER: 
       case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER:
 
-        _whiteTemperature = mapFloat(value, 500, 153, 1, 100); 
+        _whiteTemperature = mapFloat(value, 500, 153, 0, 100); 
       break;
 
 

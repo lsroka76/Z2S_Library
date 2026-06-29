@@ -8273,8 +8273,17 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 
 					current_action_counter = Z2S_getActionCounter(current_action_id);
 				}
-				else
-					save_result = Z2S_saveAction(current_action_id, new_action, false);
+				else {
+
+					Z2S_loadAction(current_action_id, new_action);
+					Z2S_removeAction(current_action_id, new_action);
+
+					fillActionDetails(new_action);
+
+					is_new_action = true;
+
+					save_result = Z2S_saveAction(current_action_id, new_action, true);
+				}
 
 				current_action_gui_state = VIEW_ACTION;
 
@@ -8321,7 +8330,9 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 
 				previous_action_gui_state = REMOVE_ACTION;
 
-				bool remove_result = Z2S_removeAction(current_action_id);
+				Z2S_loadAction(current_action_id, new_action);
+
+				bool remove_result = Z2S_removeAction(current_action_id, new_action);
 				current_action_id = Z2S_findNextActionPosition(0);
 
 				if (current_action_id >= 0) {
@@ -8345,8 +8356,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 				if (remove_result)
 					ESPUI.updateLabel(
 						action_state_label, "Removing Z2S Action: SUCCESS! <br>"
-						"Action still active in Supla Device - "
-						"restart gateway to deactivate it!");
+						"Action has been deactivated!");
 				else
 					ESPUI.updateLabel(action_state_label, "Removing Z2S Action: FAILED!");
 			} break;
