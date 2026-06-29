@@ -475,7 +475,7 @@ void GatewayEvents::iterateAlways() {
 
   uint32_t millis_ms = millis();
 
-  if (_action >= 0) {
+  if ((_action >= 0) && Supla::Network::IsReady()) {
 
     sendPushoverMessage(_action);
     _action = -1;

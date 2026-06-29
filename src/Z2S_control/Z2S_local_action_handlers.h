@@ -36,6 +36,7 @@
 #include <supla/device/notifications.h>
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
+#include <supla/network/network.h>
 
 #include "Z2S_custom_actions_events.h"
 
