@@ -19,7 +19,7 @@
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
 
-#include <supla/actions.h>
+#include <Z2S_custom_actions_events.h>
 #include <supla/events.h>
 
 #include <supla/time.h>

@@ -20,7 +20,7 @@
 #define SRC_SUPLA_CONTROL_Z2S_DIMMER_BASE_H_
 
 #include <supla/action_handler.h>
-#include <supla/actions.h>
+#include <Z2S_custom_actions_events.h>
 #include <supla/channel_element.h>
 
 

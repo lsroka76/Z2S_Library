@@ -20,7 +20,7 @@
 //#include <Arduino.h>
 //#include <SuplaDevice.h>
 //#include <supla/storage/storage.h>
-#include <supla/actions.h>
+#include <Z2S_custom_actions_events.h>
 #include <supla/action_handler.h>
 #include <supla/element.h>
 #include <supla/local_action.h>

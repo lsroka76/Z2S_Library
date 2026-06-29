@@ -3,8 +3,8 @@
 
 #include "z2s_devices_table.h"
 
-#include <supla/actions.h>
-#include <supla/events.h>
+#include <Z2S_custom_actions_events.h>
+//#include <supla/events.h>
 #include <Z2S_control/hvac_base_ee.h>
 #include <Z2S_control/Z2S_trv_interface.h>
 

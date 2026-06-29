@@ -2936,7 +2936,8 @@ return Z2S_findPrevIndexPosition(
 
 /*****************************************************************************/
 
-bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
+bool Z2S_saveAction(
+  uint16_t action_index, z2s_channel_action_t &action, bool activate) {
 
   
   if (action_index >= Z2S_ACTIONS_MAX_NUMBER)
@@ -2947,6 +2948,28 @@ bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action) {
     
     setActionsIndexTablePosition(action_index);
     Z2S_saveActionsIndexTable();  
+
+    if (activate) {
+
+      Supla::Action dst_Supla_action = convertZ2SActionToSuplaAction(
+        action.dst_Supla_action);
+
+      Supla::Event src_Supla_event = action.src_Supla_event;
+
+      if (!action.is_condition)
+        src_Supla_event = convertZ2SEventToSuplaEvent(src_Supla_event);
+      
+      if (action.is_enabled) 
+
+        Z2S_add_action(
+          action.action_name, action.src_Supla_channel,
+          dst_Supla_action + action.subaction_id, 
+          action.dst_Supla_channel, action.src_Supla_event, 
+          action.is_condition, action.min_value, 
+          action.max_value);
+
+    }
+      
     return true;    
   }
   return false;
@@ -3023,8 +3046,69 @@ void Z2S_initSuplaActions() {
   for (uint16_t index = 0; index < Z2S_ACTIONS_MAX_NUMBER; index++) {
     
     if (checkActionsIndexTablePosition(index)) {
+
       Z2S_loadAction(index, new_action);
-      if (new_action.is_enabled)
+
+      if (new_action.dst_Supla_action < Z2S_SUPLA_ACTION_FIRST_ACTION) {
+
+        log_i("legacy Supla action detected - CONVERTING");
+      
+        Supla::Action converted_action = (Supla::Action)
+          convertSuplaActionToZ2SAction(new_action.dst_Supla_action);
+
+        if (converted_action) {
+
+          new_action.dst_Supla_action = converted_action;
+
+          if (Z2S_saveAction(index, new_action))
+            log_i("Supla action conversion successful");
+          else 
+            log_e("Supla action conversion failed");
+        }
+        else {
+          log_e(
+            "Supla action conversion is not possible for action %u", 
+            new_action.dst_Supla_action);
+        }
+      }
+
+      if ((!new_action.is_condition) && (new_action.src_Supla_event < 
+            Z2S_SUPLA_EVENT_FIRST_EVENT)) {
+
+        log_i("legacy Supla event detected - CONVERTING");
+      
+        Supla::Event converted_event = (Supla::Event)
+          convertSuplaEventToZ2SEvent(new_action.src_Supla_event);
+
+        if (converted_event) {
+
+          new_action.src_Supla_event = converted_event;
+
+          if (Z2S_saveAction(index, new_action))
+            log_i("Supla event conversion successful");
+          else 
+            log_e("Supla event conversion failed");
+        }
+        else {
+          log_e(
+            "Supla event conversion is not possible for event %u", 
+            new_action.src_Supla_event);
+        }
+      }
+
+      log_i("action = %u", new_action.dst_Supla_action);
+      log_i("event = %u", new_action.src_Supla_event);
+
+      new_action.dst_Supla_action = convertZ2SActionToSuplaAction(
+        new_action.dst_Supla_action);
+
+      if (!new_action.is_condition)
+        new_action.src_Supla_event = convertZ2SEventToSuplaEvent(
+          new_action.src_Supla_event);
+
+      
+      if (new_action.is_enabled) {
+
         Z2S_add_action(
           new_action.action_name, new_action.src_Supla_channel,
           new_action.dst_Supla_action + new_action.subaction_id, 
@@ -3032,19 +3116,24 @@ void Z2S_initSuplaActions() {
           new_action.is_condition, new_action.min_value, 
           new_action.max_value);
 
+        auto ac_ptr = getActionClientPtr(
+          new_action.src_Supla_channel,
+          new_action.dst_Supla_action + new_action.subaction_id,
+          new_action.dst_Supla_channel, new_action.src_Supla_event);
+
+        if (ac_ptr)
+          log_i("enabled %u", ac_ptr->isEnabled());
+      }
+
       log_i(
         "Action name: %s, enabled: %s, src_Supla_channel %u, "
         "dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, " 
         "is_condition %u, min_value %f, max_value %f", 
-        new_action.action_name, 
-        new_action.is_enabled ? "YES" : "NO", 
+        new_action.action_name, new_action.is_enabled ? "YES" : "NO", 
         new_action.src_Supla_channel, 
-        new_action.dst_Supla_action +  + new_action.subaction_id, 
-        new_action.dst_Supla_channel, 
-        new_action.src_Supla_event, 
-        new_action.is_condition, 
-        new_action.min_value, 
-        new_action.max_value);    
+        new_action.dst_Supla_action + new_action.subaction_id, 
+        new_action.dst_Supla_channel, new_action.src_Supla_event, 
+        new_action.is_condition, new_action.min_value, new_action.max_value);    
     }
   }
 }
@@ -10165,354 +10254,300 @@ void updateDeviceTemperature(
 
 /*****************************************************************************/
 
+Supla::LocalAction *getLocalActionPtr(uint8_t Supla_channel_number) {
+
+  auto Supla_element = Z2S_getSuplaElementByChannelNumber(
+    Supla_channel_number);
+
+  auto Supla_channel = Supla_element->getChannel();
+
+  if (Supla_channel)
+    return static_cast<Supla::LocalAction *>(Supla_channel);
+  else
+    return static_cast<Supla::LocalActionHandler *>(Supla_element);
+}
+
+Supla::ElementWithChannelActions *getElementWithChannelActionsPtr(
+  uint8_t Supla_channel_number) {
+
+  auto Supla_element = Z2S_getSuplaElementByChannelNumber(
+    Supla_channel_number);
+
+  auto Supla_channel = Supla_element->getChannel();
+
+  if (Supla_channel && 
+      (Supla_channel->getChannelType() != SUPLA_CHANNELTYPE_ACTIONTRIGGER))
+    return static_cast<Supla::ElementWithChannelActions *>(Supla_element);
+  else
+    return nullptr;
+}
+
+
+Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
+
+  auto Supla_element = Z2S_getSuplaElementByChannelNumber(
+    Supla_channel_number);
+
+  auto Supla_channel = Supla_element->getChannel();
+  
+  if (Supla_channel) {
+
+    switch (Supla_channel->getChannelType()) {
+
+
+      case SUPLA_CHANNELTYPE_RELAY:
+        
+        return (static_cast<Supla::Control::Relay *>(
+          Supla_element))->getRealClient();
+
+
+      case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
+        
+        return (static_cast<Supla::Control::ValveBase *>(
+          Supla_element))->getRealClient();
+
+
+      case SUPLA_CHANNELTYPE_HVAC:
+
+        return (static_cast<Supla::Control::HvacBase *>(
+          Supla_element))->getRealClient();
+
+
+      case SUPLA_CHANNELTYPE_DIMMER:
+
+        return (static_cast<Supla::Control::Z2S_DimmerInterface *>(
+          Supla_element))->getRealClient();
+
+      
+      case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER:
+
+        return (static_cast<Supla::Control::Z2S_RGBInterface *>(
+          Supla_element))->getRealClient();
+
+
+      case SUPLA_CHANNELTYPE_DIMMERANDRGBLED:
+
+        return (static_cast<Supla::Control::Z2S_RGBCCTInterface *>(
+          Supla_element))->getRealClient();
+
+      
+      case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
+
+        return (static_cast<Supla::Control::ActionTrigger *>(
+          Supla_element))->getRealClient();
+
+
+      case SUPLA_CHANNELTYPE_BINARYSENSOR:
+
+        return (static_cast<Supla::Sensor::VirtualBinary *>(
+          Supla_element))->getRealClient();
+
+      
+      case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
+
+        return (static_cast<Supla::Sensor::ElectricityMeter *>(
+          Supla_element))->getRealClient();
+
+
+      /*case SUPLA_CHANNELTYPE_THERMOMETER:
+
+        return (static_cast<Supla::Sensor::VirtualThermometer *>(
+          Supla_element))->getRealClient();
+
+
+      case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
+
+        return (static_cast<Supla::Sensor::VirtualThermHygroMeter *>(
+          Supla_element))->getRealClient();
+
+      
+      case SUPLA_CHANNELTYPE_PRESSURESENSOR:
+
+        return (static_cast<Supla::Sensor::Pressure *>(
+          Supla_element))->getRealClient();
+
+      
+      case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
+
+        return (static_cast<Supla::Sensor::GeneralPurposeChannelBase *>(
+          Supla_element))->getRealClient();*/
+
+
+      default:
+
+        return nullptr;
+    }
+  } 
+  else {
+
+    return (static_cast<Supla::LocalActionHandler *>(
+      Supla_element))->getRealClient();
+  } 
+}
+
+Supla::ActionHandlerClient *getActionClientPtr(
+  uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, 
+  uint16_t Supla_event, bool condition) {
+  
+  auto ptr = Supla::LocalAction::getClientListPtr();
+  auto local_action_ptr = getLocalActionPtr(src_channel_id);
+  auto action_handler_ptr = getActionHandlerPtr(dst_channel_id);
+
+  if (condition)
+    Supla_event = Supla::ON_CHANGE;
+  
+  while (ptr) {
+
+    /*log_i(
+      "\n\local_action_ptr\t0x%08X\taction_handler_ptr\t0x%08X\n\r"
+      "trigger\t0x%08X\tclient\t0x%08X\n\r",
+      local_action_ptr, action_handler_ptr, ptr->trigger, ptr->client);*/
+
+    if ((ptr->trigger && ptr->trigger == local_action_ptr) && 
+        (ptr->onEvent == Supla_event) &&
+        (ptr->client && ptr->client->getRealClient() == action_handler_ptr) && 
+        (ptr->action == Supla_action)) {
+      return ptr;
+    }
+    ptr = ptr->next;
+  }
+  return nullptr;
+}
+
+uint32_t getSuplaChannelType(uint8_t Supla_channel_number) {
+
+  auto Supla_element = Z2S_getSuplaElementByChannelNumber(
+    Supla_channel_number);
+
+  if (Supla_element && Supla_element->getChannel())
+      return (Supla_element->getChannel()->getChannelType());
+  else
+    return 0;
+}
+
+Supla::Condition *getSuplaCondition(
+  uint16_t supla_condition, uint32_t supla_channel_type, double threshold_1, 
+  double threshold_2) {
+
+  Supla::Condition *Supla_condition = nullptr;
+
+  Supla::ConditionGetter *em_condition_getter = nullptr;
+    
+  if (supla_channel_type == SUPLA_CHANNELTYPE_ELECTRICITY_METER)
+    em_condition_getter = EmTotalPowerActiveW();
+    
+  switch (supla_condition) {
+
+    
+    case Supla::ON_LESS:
+      
+      if (em_condition_getter)
+        Supla_condition = OnLess(threshold_1, em_condition_getter);
+      else 
+        Supla_condition = OnLess(threshold_1); 
+    break;
+
+    
+    case Supla::ON_LESS_EQ:
+      
+      if (em_condition_getter)
+        Supla_condition = OnLessEq(threshold_1, em_condition_getter);
+      else
+        Supla_condition = OnLessEq(threshold_1); 
+    break;
+
+    
+    case Supla::ON_GREATER:
+      
+      if (em_condition_getter)
+        Supla_condition = OnGreater(threshold_1, em_condition_getter);
+      else
+        Supla_condition = OnGreater(threshold_1); 
+    break;
+
+    
+    case Supla::ON_GREATER_EQ:
+      
+      if (em_condition_getter)
+        Supla_condition = OnGreaterEq(threshold_1, em_condition_getter);
+      else
+        Supla_condition = OnGreaterEq(threshold_1); 
+    break;
+
+    
+    case Supla::ON_BETWEEN:
+
+      if (em_condition_getter)
+        Supla_condition = OnBetween(threshold_1, threshold_2, em_condition_getter);
+      else
+        Supla_condition = OnBetween(threshold_1, threshold_2); 
+    break;
+
+    
+    case Supla::ON_BETWEEN_EQ:
+      
+      if (em_condition_getter)
+        Supla_condition = OnBetweenEq(threshold_1, threshold_2, em_condition_getter);
+      else
+        Supla_condition = OnBetweenEq(threshold_1, threshold_2); 
+    break;
+
+    
+    case Supla::ON_EQUAL:
+      
+      if (em_condition_getter)
+        Supla_condition = OnEqual(threshold_1, em_condition_getter);
+      else
+        Supla_condition = OnEqual(threshold_1); 
+    break;
+  }
+  return Supla_condition;
+}
+
 bool Z2S_add_action(
   const char *action_name, uint8_t src_channel_id, uint16_t Supla_action, 
   uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
   double threshold_1, double threshold_2) {
 
-  auto src_element = Z2S_getSuplaElementByChannelNumber(src_channel_id);
-  
-  if (src_element == nullptr) {
-    
-    log_e("Invalid source Supla channel %d", src_channel_id);
+  auto local_action_ptr = getLocalActionPtr(src_channel_id);
+  auto action_handler_ptr = getActionHandlerPtr(dst_channel_id);
+
+  if (!(local_action_ptr && action_handler_ptr)) {
+
+    log_e(
+      "local_action_ptr = 0x%08X\t\taction_handler_ptr = 0x%08X",
+      local_action_ptr, action_handler_ptr);
     return false;
   }
-
-  auto dst_element = Z2S_getSuplaElementByChannelNumber(dst_channel_id);
-
-  if (dst_element == nullptr) {
-    
-    log_e("Invalid destination Supla channel %d", dst_channel_id);
-    return false;
-  }
-  log_i(
-    "Action name %s, src channel %u, dst channel %u, event %u, action %u", 
-    action_name, src_channel_id, dst_channel_id, Supla_event, Supla_action);
-  
-  Supla::Condition *Supla_condition = nullptr;
 
   if (condition) {
 
-    Supla::ConditionGetter *em_condition_getter = nullptr;
-    
-    if (src_element->getChannel() && 
-       (src_element->getChannel()->getChannelType() ==
-        SUPLA_CHANNELTYPE_ELECTRICITY_METER)) 
-      em_condition_getter = EmTotalPowerActiveW();
-    
-    switch (Supla_event) {
+    auto element_with_channel_actions =  getElementWithChannelActionsPtr(
+      src_channel_id);
 
-      
-      case Supla::ON_LESS:
-        
-        if (em_condition_getter)
-          Supla_condition = OnLess(threshold_1, em_condition_getter);
-        else 
-          Supla_condition = OnLess(threshold_1); 
-      break;
+    if (!element_with_channel_actions) {
 
-      
-      case Supla::ON_LESS_EQ:
-        
-        if (em_condition_getter)
-          Supla_condition = OnLessEq(threshold_1, em_condition_getter);
-        else
-          Supla_condition = OnLessEq(threshold_1); 
-      break;
-
-      
-      case Supla::ON_GREATER:
-        
-        if (em_condition_getter)
-          Supla_condition = OnGreater(threshold_1, em_condition_getter);
-        else
-          Supla_condition = OnGreater(threshold_1); 
-      break;
-
-      
-      case Supla::ON_GREATER_EQ:
-        
-        if (em_condition_getter)
-          Supla_condition = OnGreaterEq(threshold_1, em_condition_getter);
-        else
-          Supla_condition = OnGreaterEq(threshold_1); 
-      break;
-
-      
-      case Supla::ON_BETWEEN:
-
-        if (em_condition_getter)
-          Supla_condition = OnBetween(threshold_1, threshold_2, em_condition_getter);
-        else
-          Supla_condition = OnBetween(threshold_1, threshold_2); 
-      break;
-
-      
-      case Supla::ON_BETWEEN_EQ:
-        
-        if (em_condition_getter)
-          Supla_condition = OnBetweenEq(threshold_1, threshold_2, em_condition_getter);
-        else
-          Supla_condition = OnBetweenEq(threshold_1, threshold_2); 
-      break;
-
-      
-      case Supla::ON_EQUAL:
-        
-        if (em_condition_getter)
-          Supla_condition = OnEqual(threshold_1, em_condition_getter);
-        else
-          Supla_condition = OnEqual(threshold_1); 
-      break;
-    }
-    
-    if (Supla_condition == nullptr) {
-
-      log_i("unknown Supla condition - adding failed!");
+      log_e("Supla condition requires ElementWithChannelActions object!");
       return false;
     }
-  }
-  
-  //local action handlers, no conditions
-  if ((src_channel_id >= 0x80) && (dst_channel_id >= 0x80)) { 
-    
 
-    auto Supla_Z2S_ActionHandler = 
-      reinterpret_cast<Supla::LocalActionHandler *>(src_element);
-      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(src_element);
+    Supla::Condition *Supla_condition = getSuplaCondition(
+    Supla_event, getSuplaChannelType(src_channel_id), threshold_1, 
+    threshold_2);
 
-    auto Supla_Z2S_ActionClient = 
-      reinterpret_cast<Supla::LocalActionHandler *>(dst_element);
-      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
-    
-    Supla_Z2S_ActionHandler->addAction(
-      Supla_action, Supla_Z2S_ActionClient, Supla_event);
+    if (!Supla_condition) {
+
+      log_e("unknown Supla condition (%u)- adding failed!", Supla_event);
+      return false;
+    }
+
+    element_with_channel_actions->addAction(
+      Supla_action, action_handler_ptr, Supla_condition);
     return true;
   }
 
-  //channel -> local action handler
-  if ((src_channel_id < 0x80) && (dst_channel_id >= 0x80)) { 
-
-    auto Supla_Z2S_ActionHandler = 
-      reinterpret_cast<Supla::ElementWithChannelActions *>(src_element);
-
-    auto Supla_Z2S_ActionClient = 
-      reinterpret_cast<Supla::LocalActionHandler *>(dst_element);
-      //reinterpret_cast<Supla::LocalActionHandlerWithTrigger *>(dst_element);
-
-    auto Supla_Z2S_LocalActionTrigger = 
-    reinterpret_cast<Supla::Control::LocalActionTrigger *>(src_element);
-
-  if (src_element->getChannel())
-    if (src_element->getChannel()->getChannelType() ==
-          SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-      
-      log_i("1x nullptr");
-
-      Supla_Z2S_ActionHandler = nullptr;
-    } else
-      Supla_Z2S_LocalActionTrigger = nullptr;
-  else
-    Supla_Z2S_LocalActionTrigger = nullptr;
-
-    
-    if (Supla_Z2S_ActionHandler) {
-
-      if (condition)
-        Supla_Z2S_ActionHandler->addAction(
-          Supla_action, Supla_Z2S_ActionClient, Supla_condition);
-      else
-        Supla_Z2S_ActionHandler->addAction(
-          Supla_action, Supla_Z2S_ActionClient, Supla_event);
-      return true;
-    }
-    if (Supla_Z2S_LocalActionTrigger) {
-
-      Supla_Z2S_LocalActionTrigger->addAction(
-        Supla_action, Supla_Z2S_ActionClient, Supla_event);
-      return true;
-    }
-  }
-        
-  auto Supla_Z2S_ChannelActionHandler = 
-    reinterpret_cast<Supla::ElementWithChannelActions *>(src_element);
-
-  if (src_channel_id >= 0x80)
-    Supla_Z2S_ChannelActionHandler = nullptr;
-
-  auto Supla_Z2S_ActionHandler = 
-    reinterpret_cast<Supla::LocalActionHandler *>(src_element);
-
-  auto Supla_Z2S_LocalActionTrigger = 
-    reinterpret_cast<Supla::Control::LocalActionTrigger *>(src_element);
-
-  if (src_element->getChannel())
-    if (src_element->getChannel()->getChannelType() ==
-          SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-      
-      log_i("2x nullptr");
-      Supla_Z2S_ChannelActionHandler = nullptr;
-      Supla_Z2S_ActionHandler = nullptr;
-    } else
-      Supla_Z2S_LocalActionTrigger = nullptr;
-  else
-    Supla_Z2S_LocalActionTrigger = nullptr;
-
-  auto Supla_Z2S_ChannelActionClient = 
-    reinterpret_cast<Supla::ElementWithChannelActions *>(dst_element);
-
-  log_i("Supla_Z2S_ChannelActionClient->getChannel()->getChannelType() = %u",
-        Supla_Z2S_ChannelActionClient->getChannel()->getChannelType());
-
-  switch (Supla_Z2S_ChannelActionClient->getChannel()->getChannelType()) {
-
+  local_action_ptr->addAction(Supla_action, action_handler_ptr, Supla_event);
   
-    case SUPLA_CHANNELTYPE_RELAY: {
-      
-      log_i("ah->relay action");
-      auto Supla_Z2S_ChannelActionClient = 
-        reinterpret_cast<Supla::Control::Relay *>(dst_element);
-      
-      if (condition && Supla_Z2S_ChannelActionHandler) {
-
-        log_i("adding condition for SUPLA_CHANNELTYPE_RELAY");
-        Supla_Z2S_ChannelActionHandler->addAction(
-          Supla_action, Supla_Z2S_ChannelActionClient, Supla_condition);
-      }
-      else {
-
-        if (Supla_Z2S_ChannelActionHandler)
-          Supla_Z2S_ChannelActionHandler->addAction(
-            Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-        else {
-
-          if (Supla_Z2S_ActionHandler) {
-            
-            log_i("local action handler"); delay(200);
-          
-            Supla_Z2S_ActionHandler->addAction(
-              Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-          }
-
-          if (Supla_Z2S_LocalActionTrigger) {
-
-            log_i("local action trigger"); delay(200);
-          
-            Supla_Z2S_LocalActionTrigger->addAction(
-              Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-          }
-        }
-      }
-    } break; 
-
-
-    case SUPLA_CHANNELTYPE_BINARYSENSOR: {
-      
-      auto Supla_Z2S_ChannelActionClient = 
-        reinterpret_cast<Supla::Sensor::VirtualBinary *>(dst_element);
-      
-      if (condition && Supla_Z2S_ChannelActionHandler)
-        Supla_Z2S_ChannelActionHandler->addAction(
-          Supla_action, Supla_Z2S_ChannelActionClient, Supla_condition);
-      else {
-
-        if (Supla_Z2S_ChannelActionHandler)
-          Supla_Z2S_ChannelActionHandler->addAction(
-            Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-        else {
-
-          if (Supla_Z2S_ActionHandler) {
-            
-            log_i("local action handler"); delay(200);
-          
-            Supla_Z2S_ActionHandler->addAction(
-              Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-          }
-
-          if (Supla_Z2S_LocalActionTrigger) {
-
-            log_i("local action trigger"); delay(200);
-          
-            Supla_Z2S_LocalActionTrigger->addAction(
-              Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-          }
-        }
-      }
-    } break;
-
-
-    case SUPLA_CHANNELTYPE_HVAC: {
-      
-      auto Supla_Z2S_ChannelActionClient = 
-        reinterpret_cast<Supla::Control::HvacBase*>(dst_element);
-      
-      if (condition && Supla_Z2S_ChannelActionHandler)
-        Supla_Z2S_ChannelActionHandler->addAction(
-          Supla_action, Supla_Z2S_ChannelActionClient, Supla_condition);
-      else {
-
-        if (Supla_Z2S_ChannelActionHandler)
-          Supla_Z2S_ChannelActionHandler->addAction(
-            Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-        else {
-
-          if (Supla_Z2S_ActionHandler) {
-            
-            log_i("local action handler"); delay(200);
-          
-            Supla_Z2S_ActionHandler->addAction(
-              Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-          }
-
-          if (Supla_Z2S_LocalActionTrigger) {
-
-            log_i("local action trigger"); delay(200);
-          
-            Supla_Z2S_LocalActionTrigger->addAction(
-              Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-          }
-        }
-      }
-    } break;
-
-
-    case SUPLA_CHANNELTYPE_DIMMER: {
-      
-      auto Supla_Z2S_ChannelActionClient = 
-        reinterpret_cast<Supla::Control::Z2S_DimmerInterface*>(dst_element);
-      
-      if (condition && Supla_Z2S_ChannelActionHandler)
-        Supla_Z2S_ChannelActionHandler->addAction(
-          Supla_action, Supla_Z2S_ChannelActionClient, Supla_condition);
-      else {
-
-        if (Supla_Z2S_ChannelActionHandler)
-          Supla_Z2S_ChannelActionHandler->addAction(
-            Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-        else {
-
-          if (Supla_Z2S_ActionHandler) {
-            
-            log_i("local action handler"); delay(200);
-          
-            Supla_Z2S_ActionHandler->addAction(
-              Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-          }
-
-          if (Supla_Z2S_LocalActionTrigger) {
-
-            log_i("local action trigger"); delay(200);
-          
-            Supla_Z2S_LocalActionTrigger->addAction(
-              Supla_action, Supla_Z2S_ChannelActionClient, Supla_event);
-          }
-        }
-      }
-    } break;
-
-    default: 
-      return false; 
-  } 
   return true;
 }
 

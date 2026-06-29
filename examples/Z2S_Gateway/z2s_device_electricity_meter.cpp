@@ -98,7 +98,11 @@ void initZ2SDeviceElectricityMeter(
           (strcmp(
             Z2S_getZbDeviceManufacturerName(
               z2s_channels_table[channel_number_slot].Zb_device_id),
-              "_TZ3210_2putqrmw") == 0)) {
+              "_TZ3210_2putqrmw") == 0) || 
+          (strcmp(
+            Z2S_getZbDeviceManufacturerName(
+              z2s_channels_table[channel_number_slot].Zb_device_id),
+              "_TZ3008_1a8m8wd6") == 0)) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;

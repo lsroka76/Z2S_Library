@@ -21,7 +21,7 @@
 
 #include <supla/control/output_interface.h>
 #include <supla/local_action.h>
-#include <supla/actions.h>
+#include <Z2S_custom_actions_events.h>
 
 namespace Supla {
 

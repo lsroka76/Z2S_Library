@@ -24,7 +24,7 @@
 #include <ZigbeeGateway.h>
 #include <SuplaDevice.h>
 //#include <supla/storage/storage.h>
-#include <supla/actions.h>
+#include <Z2S_custom_actions_events.h>
 #include <supla/action_handler.h>
 #include <supla/element.h>
 #include <supla/local_action.h>
@@ -155,6 +155,8 @@ class GatewayEvents: public LocalActionHandler {
     void iterateAlways();
     void setActionHandlerCallback(_actionhandler_callback actionhandler_callback);
 
+    void sendPushoverMessage(uint32_t action);
+
     void disableActions() {
 
       _disable_actions = true;
@@ -166,14 +168,14 @@ class GatewayEvents: public LocalActionHandler {
     bool      _cyclic_event_enabled = false;
     uint32_t  _cyclic_event_ms = 0;
     uint32_t  _cyclic_event_counter = 0;
-    //char pushover_payload[1024];
+    int32_t   _action = -1;
     
     _actionhandler_callback actionhandler_callback = nullptr;
 };
 
 namespace Control {
 
-class LocalActionTrigger: public ActionTrigger, public LocalAction {
+class LocalActionTrigger: public ActionTrigger { //, public LocalAction {
 
   public:
 

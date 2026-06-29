@@ -12,7 +12,6 @@
 #include <esp_heap_caps.h>
 
 #include <ZigbeeGateway.h>
-#include <Z2S_custom_actions_events.h>
 
 #include <SuplaDevice.h>
 #include <supla/network/esp_wifi.h>
@@ -20,7 +19,7 @@
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
 #include <supla/clock/clock.h>
-#include <supla/actions.h>
+//#include <supla/actions.h>
 #include <supla/control/button.h>
 #include <supla/device/enter_cfg_mode_after_power_cycle.h>
 #include <supla/control/virtual_relay.h>
@@ -40,6 +39,7 @@
 #include <supla/network/html/custom_text_parameter.h>
 #include <supla/network/html/select_input_parameter.h>
 
+#include <Z2S_custom_actions_events.h>  
 #include <Z2S_control/action_handler_with_callbacks.h>
 #include <Z2S_control/Z2S_remote_relay.h>
 #include <Z2S_control/Z2S_virtual_relay.h>

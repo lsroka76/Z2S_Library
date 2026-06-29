@@ -3,7 +3,7 @@
 
 #include "z2s_devices_table.h"
 #include <supla/control/action_trigger.h>
-#include <supla/actions.h>
+#include <Z2S_custom_actions_events.h>
 #include <Z2S_control/Z2S_virtual_relay_scene_switch.h>
 #include <Z2S_control/Z2S_local_action_handlers.h>
 

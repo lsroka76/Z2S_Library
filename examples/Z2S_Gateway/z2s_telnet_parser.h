@@ -5,8 +5,8 @@
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
 #include <supla/channels/channel.h>
-#include <supla/actions.h>
-#include <supla/events.h>
+#include <Z2S_custom_actions_events.h>
+//#include <supla/events.h>
 
 #include "z2s_devices_table.h"
 #include "z2s_version_info.h"

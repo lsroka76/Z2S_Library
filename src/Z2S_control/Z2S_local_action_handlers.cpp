@@ -321,6 +321,31 @@ void GatewayEvents::setActionHandlerCallback(
 }
 
 
+void GatewayEvents::sendPushoverMessage(uint32_t action) {
+
+  static const char *pushover_host = "api.pushover.net";
+	char pushover_message[1200] = {};
+		
+  Z2S_fillPushoverMessage(
+    action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message);
+
+	int16_t connection_code = ssl_client.connect(pushover_host, 443);
+			
+  log_i("connection_code = %d", connection_code);
+			
+  if (!connection_code) {
+        
+	  log_e("Connection failed!");
+  } 
+  else {
+        
+  ssl_client.print(pushover_message);
+  
+  log_i("Pushover notification sent!");
+	}
+	ssl_client.stop();
+}
+
 /*****************************************************************************/
 
 void GatewayEvents::handleAction(int event, int action) {
@@ -334,29 +359,8 @@ void GatewayEvents::handleAction(int event, int action) {
   if (action) {
 
     if ((action >= Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION) &&
-        (action <= Z2S_SUPLA_ACTION_PUSHOVER_LAST_ACTION)) {
-
-      static const char *pushover_host = "api.pushover.net";
-	  char pushover_message[1200] = {};
-		
-    Z2S_fillPushoverMessage(
-      action - Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION, pushover_message);
-
-	  int16_t connection_code = ssl_client.connect(pushover_host, 443);
-			
-      log_i("connection_code = %d", connection_code);
-			
-      if (!connection_code) {
-        
-				Serial.println("Connection failed!");
-    	} 
-      else {
-        ssl_client.print(pushover_message);
-
-    		Serial.println("Notification sent!");
-			}
-			ssl_client.stop();
-    }
+        (action <= Z2S_SUPLA_ACTION_PUSHOVER_LAST_ACTION))
+      _action = action; 
 
     switch (action) {
 
@@ -471,6 +475,12 @@ void GatewayEvents::iterateAlways() {
 
   uint32_t millis_ms = millis();
 
+  if (_action >= 0) {
+
+    sendPushoverMessage(_action);
+    _action = -1;
+  }
+
   if (!_cyclic_event_enabled)
     return;
 
@@ -534,7 +544,7 @@ void Supla::Control::LocalActionTrigger::handleAction(int event, int action) {
   log_i("event %u, action %u, local event %u", event, action, local_event);
 
   //Supla::LocalAction::
-  runAction(local_event);
+  channel.runAction(local_event);
 }
 
 /*****************************************************************************/
@@ -545,7 +555,7 @@ void Supla::Control::LocalActionTrigger::iterateAlways() {
 
     log_i("hold repeat");
     _last_hold_ms = millis();
-    runAction(Supla::ON_HOLD);
+    channel.runAction(Supla::ON_HOLD);
   }
 
   if (_action >= 0) {

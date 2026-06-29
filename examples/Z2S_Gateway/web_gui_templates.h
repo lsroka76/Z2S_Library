@@ -1,8 +1,8 @@
 #ifndef WEB_GUI_TEMPLATES_H_
 #define WEB_GUI_TEMPLATES_H_
 
-#include <supla/actions.h>
-#include <supla/events.h>
+//#include <supla/actions.h>
+//#include <supla/events.h>
 
 #include "TuyaDatapoints.h"
 #include "Z2S_custom_actions_events.h"
@@ -368,64 +368,64 @@ static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM 
 
 static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	
-	{ .Supla_action_id = Supla::TURN_ON,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TURN_ON,
 		.Supla_action_name = "TURN ON" },
 
-	{ .Supla_action_id = Supla::TURN_OFF,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TURN_OFF,
 		.Supla_action_name = "TURN OFF" },
 
-	{ .Supla_action_id = Supla::TOGGLE,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TOGGLE,
 		.Supla_action_name = "TOGGLE" },
 
-	{ .Supla_action_id = Supla::SET,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_SET,
 		.Supla_action_name = "SET" },
 
-	{ .Supla_action_id = Supla::CLEAR,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_CLEAR,
 		.Supla_action_name = "CLEAR" },
 
-	{ .Supla_action_id = Supla::OPEN,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_OPEN,
 		.Supla_action_name = "OPEN" },
 
-	{ .Supla_action_id = Supla::CLOSE,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_CLOSE,
 		.Supla_action_name = "CLOSE" },
 
-	{ .Supla_action_id = Supla::STOP,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_STOP,
 		.Supla_action_name = "STOP" },
 
-	{ .Supla_action_id = Supla::BRIGHTEN_ALL,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_BRIGHTEN_ALL,
 		.Supla_action_name = "BRIGHTEN ALL" },
 
-	{ .Supla_action_id = Supla::BRIGHTEN_W,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_BRIGHTEN_W,
 		.Supla_action_name = "BRIGHTEN WHITE" },
 
-	{ .Supla_action_id = Supla::DIM_ALL,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_DIM_ALL,
 		.Supla_action_name = "DIM ALL" },
 
-	{ .Supla_action_id = Supla::DIM_W,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_DIM_W,
 		.Supla_action_name = "DIM WHITE" },
 
-	{ .Supla_action_id = Supla::ENTER_CONFIG_MODE,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_ENTER_CONFIG_MODE,
 		.Supla_action_name = "ENTER CONFIG MODE" },
 
-	{ .Supla_action_id = Supla::SOFT_RESTART,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_SOFT_RESTART,
 		.Supla_action_name = "SOFT RESTART" },
 
-	{ .Supla_action_id = Supla::INCREASE_TEMPERATURE,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_INCREASE_TEMPERATURE,
 		.Supla_action_name = "INCREASE TEMPERATURE" },
 
-	{ .Supla_action_id = Supla::DECREASE_TEMPERATURE,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_DECREASE_TEMPERATURE,
 		.Supla_action_name = "DECREASE TEMPERATURE" },
 
-	{ .Supla_action_id = Supla::TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES,
 		.Supla_action_name = "TOGGLE_MANUAL_WEEKLY_SCHEDULE_MODES" },
 
-	{ .Supla_action_id = Supla::TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TOGGLE_OFF_MANUAL_WEEKLY_SCHEDULE_MODES,
 		.Supla_action_name = "TOGGLE_OFF/MANUAL/WEEKLY SCHEDULE MODES" },
 
-	{ .Supla_action_id = Supla::SWITCH_TO_MANUAL_MODE,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_SWITCH_TO_MANUAL_MODE,
 		.Supla_action_name = "SWITCH TO MANUAL MODE" },
 
-	{ .Supla_action_id = Supla::SWITCH_TO_WEEKLY_SCHEDULE_MODE,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_SWITCH_TO_WEEKLY_SCHEDULE_MODE,
 		.Supla_action_name = "SWITCH TO WEEKLY SCHEDULE MODE" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_ON_MAX_TEMPERATURE,
@@ -495,61 +495,58 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 
 static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 		
-	{ .Supla_event_id = Supla::ON_CHANGE,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CHANGE,
 		.Supla_event_name =  "ON CHANGE" },
 
-	{ .Supla_event_id = Supla::ON_HOLD,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_HOLD,
 		.Supla_event_name =  "ON HOLD" },
 
-	{ .Supla_event_id = Supla::ON_CLICK_1,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CLICK_1,
 		.Supla_event_name =  "ON CLICK 1" },
 
-	{ .Supla_event_id = Supla::ON_CLICK_2,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CLICK_2,
 		.Supla_event_name =  "ON CLICK 2" },
 
-	{ .Supla_event_id = Supla::ON_CLICK_3,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CLICK_3,
 		.Supla_event_name =  "ON CLICK 3" },
 
-	{ .Supla_event_id = Supla::ON_CLICK_3,
-		.Supla_event_name =  "ON CLICK 3" },
-
-	{ .Supla_event_id = Supla::ON_CLICK_4,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CLICK_4,
 		.Supla_event_name =  "ON CLICK 4" },
 
-	{ .Supla_event_id = Supla::ON_CLICK_5,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CLICK_5,
 		.Supla_event_name =  "ON CLICK 5" },
 
-	{ .Supla_event_id = Supla::ON_TURN_ON,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_TURN_ON,
 		.Supla_event_name =  "ON TURN ON" },
 
-	{ .Supla_event_id = Supla::ON_TURN_OFF,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_TURN_OFF,
 		.Supla_event_name =  "ON TURN OFF" },
 
-	{ .Supla_event_id = Supla::ON_OPEN,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_OPEN,
 		.Supla_event_name =  "ON VALVE OPEN" },
 
-	{ .Supla_event_id = Supla::ON_CLOSE,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CLOSE,
 		.Supla_event_name =  "ON VALVE CLOSE" },
 
-	{ .Supla_event_id = Supla::ON_HVAC_HEATING,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_HVAC_HEATING,
 		.Supla_event_name =  "ON HVAC HEATING" },
 
-	{ .Supla_event_id = Supla::ON_HVAC_STANDBY,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_HVAC_STANDBY,
 		.Supla_event_name =  "ON HVAC STANDBY" },
 
-	{ .Supla_event_id = Supla::ON_HVAC_WEEKLY_SCHEDULE_ENABLED,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_HVAC_WEEKLY_SCHEDULE_ENABLED,
 		.Supla_event_name =  "ON HVAC WEEKLY SCHEDULE ENABLED" },
 
-	{ .Supla_event_id = Supla::ON_HVAC_WEEKLY_SCHEDULE_DISABLED,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_HVAC_WEEKLY_SCHEDULE_DISABLED,
 		.Supla_event_name =  "ON HVAC WEEKLY SCHEDULE DISABLED" },
 
-	{ .Supla_event_id = Supla::ON_HVAC_MODE_OFF,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_HVAC_MODE_OFF,
 		.Supla_event_name =  "ON HVAC MODE OFF" },
 
-	{ .Supla_event_id = Supla::ON_HVAC_MODE_HEAT,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_HVAC_MODE_HEAT,
 		.Supla_event_name =  "ON HVAC MODE HEAT" },
 
-	{ .Supla_event_id = Supla::ON_DEVICE_STATUS_CHANGE,
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_DEVICE_STATUS_CHANGE,
 		.Supla_event_name =  "ON DEVICE STATUS CHANGE" },
 
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED,

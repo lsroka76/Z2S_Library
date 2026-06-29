@@ -14,8 +14,8 @@
 #endif  //USE_TELNET_CONSOLE
 
 #include <supla/tools.h>
-#include <supla/actions.h>
-#include <supla/events.h>
+#include <Z2S_custom_actions_events.h>
+//#include <supla/events.h>
 #include <supla/element.h>
 #include <supla/protocol/supla_srpc.h>
 #include <supla/device/register_device.h>
@@ -506,7 +506,8 @@ int16_t Z2S_findNextActionPosition(uint16_t action_position = 0);
 int16_t Z2S_findPrevActionPosition(
   uint16_t action_position = Z2S_ACTIONS_MAX_NUMBER);
 
-bool Z2S_saveAction(uint16_t action_index, z2s_channel_action_t &action);
+bool Z2S_saveAction(
+  uint16_t action_index, z2s_channel_action_t &action, bool activate = false);
 bool Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action);
 bool Z2S_removeAction(uint16_t action_index);
 void Z2S_removeChannelActions(uint8_t channel_id, bool all_channels = false);
@@ -760,6 +761,19 @@ void updateDeviceTemperature(
 void updateSuplaBatteryLevel(
   int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value,
   bool restore = false);
+
+Supla::LocalAction *getLocalActionPtr(uint8_t Supla_channel_number);
+
+Supla::ElementWithChannelActions *getElementWithChannelActionsPtr(
+  uint8_t Supla_channel_number);
+
+Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number);
+
+uint32_t getSuplaChannelType(uint8_t Supla_channel_number);
+
+Supla::ActionHandlerClient *getActionClientPtr(
+  uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, 
+  uint16_t Supla_event, bool condition = false);
 
 bool Z2S_add_action(
   const char *action_name, uint8_t src_channel_id, uint16_t Supla_action,

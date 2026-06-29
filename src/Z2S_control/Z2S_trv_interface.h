@@ -26,7 +26,7 @@
 #include "Z2S_common.h"
 
 #include <supla/element.h>
-#include <supla/actions.h>
+#include <Z2S_custom_actions_events.h>
 #include <supla/action_handler.h>
 #include <supla/control/remote_output_interface.h>
 #include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>

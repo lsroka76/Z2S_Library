@@ -3399,7 +3399,7 @@ const char* getSuplaEventName(Supla::Event event_id, bool is_condition) {
 	return "Unknown";	
 }
 
-const char* getSuplaConditionName(Supla::Conditions condition_id) {
+/*const char* getSuplaConditionName(Supla::Conditions condition_id) {
 
 	uint16_t conditions_number = sizeof(Supla_conditions) / 
 															 sizeof(Supla_condition_type_t);
@@ -3409,7 +3409,7 @@ const char* getSuplaConditionName(Supla::Conditions condition_id) {
 		if (Supla_conditions[i].Supla_condition_id == condition_id)
 			return Supla_conditions[i].Supla_condition_name;
 	return "Unknown";	
-}
+}*/
 
 void sprintfAction(z2s_channel_action_t &action) {
 
@@ -8257,21 +8257,24 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					return;
 				}
 
+				bool save_result = false;
+				bool is_new_action = false;
+
 				previous_action_gui_state = SAVE_ACTION;
 				
 				if ((current_action_gui_state == NEW_ACTION) ||
 				 		(current_action_gui_state == COPY_ACTION)) {
 					
-					current_action_id = new_action_id;
-				}
-
-				bool save_result = Z2S_saveAction(current_action_id, new_action);
-
-				if ((current_action_gui_state == NEW_ACTION) ||
-						(current_action_gui_state == COPY_ACTION)) {
+					is_new_action = true;
 					
+					current_action_id = new_action_id;
+
+					save_result = Z2S_saveAction(current_action_id, new_action, true);
+
 					current_action_counter = Z2S_getActionCounter(current_action_id);
 				}
+				else
+					save_result = Z2S_saveAction(current_action_id, new_action, false);
 
 				current_action_gui_state = VIEW_ACTION;
 
@@ -8281,10 +8284,17 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 				ESPUI.updateLabel(actions_table_label, working_str);
 				updateActionButtons();
 
-				if (save_result)
-					ESPUI.updateLabel(
-						action_state_label, "Saving Z2S Action: SUCCESS!<br>"
-						"Restart gateway to activate action!");
+				if (save_result) {
+					
+					if (is_new_action) 
+						ESPUI.updateLabel(
+							action_state_label, "Saving Z2S Action: SUCCESS!<br>"
+							"Action has been activated!");
+					else
+						ESPUI.updateLabel(
+							action_state_label, "Saving Z2S Action: SUCCESS!<br>"
+							"Restart gateway to activate action changes!");
+				}
 				else
 					ESPUI.updateLabel(action_state_label, "Saving Z2S Action: FAILED!");
 			} break;
