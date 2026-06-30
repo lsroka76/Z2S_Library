@@ -5551,6 +5551,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
       { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
+  {	.manufacturer_name = "_TZ3000_lmlsduws", .model_name = "TS0002",
+    .z2s_device_uid = 21230,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+      { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
   {	.manufacturer_name = "_TZ3000_p8alo7qa", .model_name = "TS0012",
     .z2s_device_uid = 21300,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
@@ -5756,6 +5764,26 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                               
   {	.manufacturer_name = "_TZE204_jtbgusdc", .model_name = "TS0601",
     .z2s_device_uid = 22700,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE284_jtbgusdc", .model_name = "TS0601",
+    .z2s_device_uid = 22705,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE204_o9gyszw2", .model_name = "TS0601",
+    .z2s_device_uid = 22710,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE204_fjms2pi9", .model_name = "TS0601",
+    .z2s_device_uid = 22715,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE284_fjms2pi9", .model_name = "TS0601",
+    .z2s_device_uid = 22720,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH,
 	  .z2s_device_endpoints_count = 1},
 

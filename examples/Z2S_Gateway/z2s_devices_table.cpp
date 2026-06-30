@@ -8548,7 +8548,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_IKEA_WW_BULB:
       case Z2S_DEVICE_DESC_PHILIPS_WW_BULB: {
         
-        addZ2SDeviceVirtualRelay(
+        /*addZ2SDeviceVirtualRelay(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
           "LIGHT SWITCH", SUPLA_CHANNELFNC_LIGHTSWITCH);
 
@@ -8558,7 +8558,7 @@ uint8_t Z2S_addZ2SDevice(
           
           devices_table_full_error_func();
           return ADD_Z2S_DEVICE_STATUS_DT_FWA;
-        }
+        }*/
 
         addZ2SDeviceDimmer(
           &zbGateway, device, first_free_slot, DIMMER_FUNC_BRIGHTNESS_SID, 
