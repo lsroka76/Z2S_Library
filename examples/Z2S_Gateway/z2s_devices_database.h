@@ -5106,7 +5106,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "TZB210_eiwanbeb", .model_name = "TS0502B",
+  {	.manufacturer_name = "_TZB210_eiwanbeb", .model_name = "TS0502B",
     .z2s_device_uid = 18765,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE,
 	  .z2s_device_endpoints_count = 1},
