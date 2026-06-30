@@ -2936,8 +2936,38 @@ return Z2S_findPrevIndexPosition(
 
 /*****************************************************************************/
 
+ActionCompareResult Z2S_compareAction(
+  z2s_channel_action_t &src_action, z2s_channel_action_t &dst_action) {
+
+    if ((src_action.src_Supla_channel != dst_action.src_Supla_channel) ||
+        (src_action.dst_Supla_channel != dst_action.dst_Supla_channel) ||
+        (src_action.is_condition != dst_action.is_condition) ||
+        (src_action.src_Supla_event != dst_action.src_Supla_event) ||
+        (src_action.dst_Supla_action != dst_action.dst_Supla_action) ||
+        (src_action.subaction_id != dst_action.subaction_id) ||
+        (src_action.min_value != dst_action.min_value) ||
+        (src_action.max_value != dst_action.max_value))
+      return CR_SAVE_REBUILD;
+    
+    if ((memcmp(
+          src_action.action_name, dst_action.action_name, 
+          sizeof(src_action.action_name)) != 0) ||
+        (memcmp(
+          src_action.action_description, dst_action.action_description, 
+          sizeof(src_action.action_description)) != 0))
+      return CR_SAVE_ONLY;
+
+    if (src_action.is_enabled != dst_action.is_enabled)
+      return dst_action.is_enabled ? CR_SAVE_ENABLE : CR_SAVE_DISABLE;
+
+    return CR_NO_CHANGES;
+}
+
+/*****************************************************************************/
+
 bool Z2S_saveAction(
-  uint16_t action_index, z2s_channel_action_t &action, bool activate) {
+  uint16_t action_index, z2s_channel_action_t &action, 
+  ActionCompareResult compare_result) {
 
   
   if (action_index >= Z2S_ACTIONS_MAX_NUMBER)
@@ -2947,9 +2977,9 @@ bool Z2S_saveAction(
         (uint8_t*) &action, sizeof(z2s_channel_action_t))) {
     
     setActionsIndexTablePosition(action_index);
-    Z2S_saveActionsIndexTable();  
-
-    if (activate) {
+    Z2S_saveActionsIndexTable(); 
+ 
+    if (compare_result > CR_SAVE_ONLY) {
 
       Supla::Action dst_Supla_action = convertZ2SActionToSuplaAction(
         action.dst_Supla_action);
@@ -2959,20 +2989,26 @@ bool Z2S_saveAction(
       if (!action.is_condition)
         src_Supla_event = convertZ2SEventToSuplaEvent(src_Supla_event);
       
-      if (action.is_enabled) {
-
+      if (compare_result == CR_SAVE_REBUILD)
         Z2S_add_action(
-          action.action_name, action.src_Supla_channel,
-          dst_Supla_action + action.subaction_id, 
-          action.dst_Supla_channel, src_Supla_event, 
-          action.is_condition, action.min_value, 
-          action.max_value);
+          action.action_name, action.src_Supla_channel,dst_Supla_action + 
+          action.subaction_id, action.dst_Supla_channel, src_Supla_event, 
+          action.is_condition, action.min_value, action.max_value);
 
-        log_i(
-          "%u, %u, %u, %u, %u", action.src_Supla_channel, 
-          dst_Supla_action + action.subaction_id, action.dst_Supla_channel,
-          action.src_Supla_event, action.is_condition);
-      }
+      auto ac_ptr = getActionClientPtr(
+        action.src_Supla_channel, dst_Supla_action + action.subaction_id,
+        action.dst_Supla_channel, src_Supla_event, action.is_condition, 
+        false);
+
+      if (ac_ptr && (compare_result == CR_SAVE_ENABLE))
+        ac_ptr->enable();
+      if (ac_ptr && (compare_result == CR_SAVE_DISABLE))
+        ac_ptr->disable();
+
+      log_i(
+        "%u, %u, %u, %u, %u", action.src_Supla_channel, 
+        dst_Supla_action + action.subaction_id, action.dst_Supla_channel,
+        action.src_Supla_event, action.is_condition);
     }
     return true;    
   }
@@ -3010,8 +3046,7 @@ bool Z2S_removeAction(uint16_t action_index, z2s_channel_action_t &action) {
 
   auto ac_ptr = getActionClientPtr(
     action.src_Supla_channel, dst_Supla_action + action.subaction_id,
-    action.dst_Supla_channel, src_Supla_event, action.is_condition, 
-    true);
+    action.dst_Supla_channel, src_Supla_event, action.is_condition, false);
   if (ac_ptr) {
 
     delete ac_ptr;
@@ -3130,26 +3165,29 @@ void Z2S_initSuplaActions() {
         new_action.src_Supla_event = convertZ2SEventToSuplaEvent(
           new_action.src_Supla_event);
 
-      
-      if (new_action.is_enabled) {
+      Z2S_add_action(
+        new_action.action_name, new_action.src_Supla_channel,
+        new_action.dst_Supla_action + new_action.subaction_id, 
+        new_action.dst_Supla_channel, new_action.src_Supla_event, 
+        new_action.is_condition, new_action.min_value, 
+        new_action.max_value);
 
-        Z2S_add_action(
-          new_action.action_name, new_action.src_Supla_channel,
-          new_action.dst_Supla_action + new_action.subaction_id, 
-          new_action.dst_Supla_channel, new_action.src_Supla_event, 
-          new_action.is_condition, new_action.min_value, 
-          new_action.max_value);
+      auto ac_ptr = getActionClientPtr(
+        new_action.src_Supla_channel,
+        new_action.dst_Supla_action + new_action.subaction_id,
+        new_action.dst_Supla_channel, new_action.src_Supla_event,
+        new_action.is_condition, false);
 
-        auto ac_ptr = getActionClientPtr(
-          new_action.src_Supla_channel,
-          new_action.dst_Supla_action + new_action.subaction_id,
-          new_action.dst_Supla_channel, new_action.src_Supla_event,
-          new_action.is_condition, false);
+      if (ac_ptr) {
+        
+        if (new_action.is_enabled)
+          ac_ptr->enable();
+        else
+          ac_ptr->disable();
 
-        if (ac_ptr)
-          log_i("enabled %u", ac_ptr->isEnabled());
+        log_i("enabled %u", ac_ptr->isEnabled());
       }
-
+      
       log_i(
         "Action name: %s, enabled: %s, src_Supla_channel %u, "
         "dst_Supla_action %u, dst_Supla_channel %u, src_Supla_event %u, " 

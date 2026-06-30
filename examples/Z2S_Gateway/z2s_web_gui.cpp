@@ -8258,31 +8258,103 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 				}
 
 				bool save_result = false;
-				bool is_new_action = false;
+
+				const char *save_result_success_str = "Saving Z2S Action: SUCCESS!"
+					"<br>Action has been activated!";
+				const char *save_result_enabled_str = "Saving Z2S Action: SUCCESS!"
+					"<br>Action has been enabled!";
+				const char *save_result_disabled_str = "Saving Z2S Action: SUCCESS!"
+					"<br>Action has been disabled!";
+				const char *save_result_saved_str = "Saving Z2S Action: SUCCESS!";
+				const char *save_result_failed_str = "Saving Z2S Action: FAILED!";
+				const char *save_result_no_changes_str = "No changes detected!";
+
+				const char *save_result_str = save_result_success_str;
+					
 
 				previous_action_gui_state = SAVE_ACTION;
 				
 				if ((current_action_gui_state == NEW_ACTION) ||
 				 		(current_action_gui_state == COPY_ACTION)) {
 					
-					is_new_action = true;
-					
 					current_action_id = new_action_id;
 
-					save_result = Z2S_saveAction(current_action_id, new_action, true);
+					save_result = Z2S_saveAction(
+						current_action_id, new_action, CR_SAVE_REBUILD);
+
+					if (!save_result)
+						save_result_str = save_result_failed_str;
 
 					current_action_counter = Z2S_getActionCounter(current_action_id);
 				}
 				else {
 
-					Z2S_loadAction(current_action_id, new_action);
-					Z2S_removeAction(current_action_id, new_action);
+					z2s_channel_action_t old_action = {};
+					Z2S_loadAction(current_action_id, old_action);
+					ActionCompareResult compare_result = Z2S_compareAction(
+						old_action, new_action);
 
-					fillActionDetails(new_action);
+					switch (compare_result) {
 
-					is_new_action = true;
 
-					save_result = Z2S_saveAction(current_action_id, new_action, true);
+							case CR_SAVE_REBUILD: {
+
+								Z2S_removeAction(current_action_id, old_action);
+								save_result = Z2S_saveAction(
+									current_action_id, new_action, compare_result);
+								if (!save_result)
+									save_result_str = save_result_failed_str;
+
+								log_i("Edit action: delete, save, activate");
+							} break;
+
+
+							case CR_SAVE_ONLY: {
+
+								save_result = Z2S_saveAction(
+									current_action_id, new_action, compare_result);
+								if (save_result)
+									save_result_str = save_result_saved_str;
+								else
+									save_result_str = save_result_failed_str;
+
+								log_i("Edit action: only save required");
+							} break;
+
+
+							case CR_SAVE_ENABLE: {
+
+								save_result = Z2S_saveAction(
+									current_action_id, new_action, compare_result);
+								if (save_result)
+									save_result_str = save_result_enabled_str;
+								else
+									save_result_str = save_result_failed_str;
+
+								log_i("Edit action: enabled.");
+							} break;
+
+
+							case CR_SAVE_DISABLE: {
+
+								save_result = Z2S_saveAction(
+									current_action_id, new_action, compare_result);
+								if (save_result)
+									save_result_str = save_result_disabled_str;
+								else
+									save_result_str = save_result_failed_str;
+
+								log_i("Edit action: disabled.");
+							} break;
+
+
+							case CR_NO_CHANGES: {
+
+								save_result_str = save_result_no_changes_str;
+
+								log_i("Edit action: no changes detected");
+							} break;
+					}
 				}
 
 				current_action_gui_state = VIEW_ACTION;
@@ -8292,20 +8364,9 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 				sprintfAction(new_action);
 				ESPUI.updateLabel(actions_table_label, working_str);
 				updateActionButtons();
-
-				if (save_result) {
-					
-					if (is_new_action) 
-						ESPUI.updateLabel(
-							action_state_label, "Saving Z2S Action: SUCCESS!<br>"
-							"Action has been activated!");
-					else
-						ESPUI.updateLabel(
-							action_state_label, "Saving Z2S Action: SUCCESS!<br>"
-							"Restart gateway to activate action changes!");
-				}
-				else
-					ESPUI.updateLabel(action_state_label, "Saving Z2S Action: FAILED!");
+	
+				ESPUI.updateLabel(action_state_label, save_result_str);
+		
 			} break;
 
 			case GUI_CB_ACTION_CANCEL_FLAG: {

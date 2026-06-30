@@ -320,6 +320,15 @@ enum Conditions {
 };
 };
 
+enum ActionCompareResult {
+
+  CR_NO_CHANGES,
+  CR_SAVE_ONLY,
+  CR_SAVE_ENABLE,
+  CR_SAVE_DISABLE,
+  CR_SAVE_REBUILD
+};
+
 void ieee_addr_to_str(char *ieee_addr_str, esp_zb_ieee_addr_t ieee_addr);
 
 /*****************************************************************************/
@@ -507,8 +516,16 @@ int16_t Z2S_findPrevActionPosition(
   uint16_t action_position = Z2S_ACTIONS_MAX_NUMBER);
 
 bool Z2S_saveAction(
-  uint16_t action_index, z2s_channel_action_t &action, bool activate = false);
+  uint16_t action_index, z2s_channel_action_t &action, 
+  ActionCompareResult compare_result = CR_SAVE_ONLY);
+
+ActionCompareResult Z2S_compareAction(
+  z2s_channel_action_t &src_action, z2s_channel_action_t &dst_action);
+
 bool Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action);
+
+//bool Z2S_enableAction()
+
 bool Z2S_removeAction(uint16_t action_index, z2s_channel_action_t &action);
 void Z2S_removeChannelActions(uint8_t channel_id, bool all_channels = false);
 
