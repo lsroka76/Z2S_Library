@@ -1383,8 +1383,8 @@ void ZigbeeGateway::zbProcessAttributeReporting(
         
         log_i("level control cluster Tuya 0xF000 brightness 0x%x",value);
         
-        if (_on_current_level_receive)
-          _on_current_level_receive(src_address.u.short_addr, src_endpoint, cluster_id, value);
+        //if (_on_current_level_receive)
+        //  _on_current_level_receive(src_address.u.short_addr, src_endpoint, cluster_id, value);
       } else 
         log_i("level control cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
               cluster_id, attribute->id, attribute->data.type);
