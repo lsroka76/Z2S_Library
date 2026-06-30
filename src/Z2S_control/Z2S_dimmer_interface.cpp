@@ -303,7 +303,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
       case Z2S_COLOR_TEMPERATURE_DIMMER: {
 
         uint16_t color_temperature = mapFloat(
-          whiteTemperature, 0, 100, 158, 500); //454, 200);
+          whiteTemperature, 0, 100, 500, 158); //454, 200);
 
 	      zbGateway.sendColorMoveToColorTemperatureCmd(
           &_device, color_temperature, 1);
@@ -318,7 +318,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
       case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER: {
 
         uint16_t color_temperature = mapFloat(
-          whiteTemperature, 1, 100, 500, 153);
+          whiteTemperature, 0, 100, 500, 153);
 	      
         zbGateway.sendColorMoveToColorTemperatureCmd(
           &_device, color_temperature, 1);
@@ -332,7 +332,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
       case Z2S_TUYA_E0_CMD_DIMMER: {
 
         uint16_t E0_color_temperature = mapFloat(
-          whiteTemperature, 1, 100, 1, 1000);
+          whiteTemperature, 0, 100, 1, 1000);
 	      
         zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
@@ -344,7 +344,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
       case Z2S_TUYA_COLOR_TEMPERATURE_DP_DIMMER: {
 
         uint16_t dp_color_temperature = mapFloat(
-          whiteTemperature, 1, 100, 1, 1000);
+          whiteTemperature, 0, 100, 1, 1000);
 
         //WHITE mode
         sendTuyaRequestCmdEnum8(
@@ -448,7 +448,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       
       case Z2S_COLOR_TEMPERATURE_DIMMER: 
 
-        _whiteTemperature = mapFloat(value, /*454*/158, /*200*/500, 0, 100); 
+        _whiteTemperature = mapFloat(value, /*454*/500, /*200*/158, 0, 100); 
       break;
 
 
@@ -487,14 +487,14 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       case Z2S_COLOR_TEMPERATURE_DIMMER: 
 
         //_brightness = mapFloat(value, 250, 454, 0, 100); 
-        sent_brightness = mapFloat(value, /*454*/158, /*200*/500, 0, 100); 
+        sent_brightness = mapFloat(value, /*454*/500, /*200*/158, 0, 100); 
       break;
 
 
       case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER: 
       case Z2S_PHILIPS_COLOR_TEMPERATURE_DIMMER:
 
-        sent_brightness = mapFloat(value, 153, 500, 0, 100); 
+        sent_brightness = mapFloat(value, 500, 153, 0, 100); 
       break;
     }
     _deviceBrightness = value;

@@ -32,6 +32,7 @@ void initZ2SDeviceRGBCCT(
 
 
     case Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB:
+    case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
         device, Z2S_COLOR_HS_RGB); 

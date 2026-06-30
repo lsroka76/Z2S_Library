@@ -174,7 +174,8 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       } break;
 
 
-      default: break;
+      default: 
+      break;
     }
     if (colorBrightness > 0) {
 
@@ -311,7 +312,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       log_i(
         "SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB - sending white temperature!");
 
-      uint16_t color_temperature = mapFloat(whiteTemperature, 1, 100, 454, 200);
+      uint16_t color_temperature = mapFloat(whiteTemperature, 0, 100, 454, 200);
 	    zbGateway.sendColorMoveToColorTemperatureCmd(
         &_device, color_temperature, 1);
     }

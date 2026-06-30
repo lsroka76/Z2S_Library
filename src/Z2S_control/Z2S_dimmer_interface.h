@@ -115,6 +115,9 @@ protected:
   uint16_t _deviceWhiteTemperature = 0xFFFF;
   uint8_t _state = DIMMER_STATE_UNKNOWN;
 
+  uint16_t min_mireds = 153;
+  uint16_t max_mireds = 500;
+
   uint32_t _keep_alive_ms = 0;
   uint32_t _timeout_ms    = 0;
   uint32_t _last_ping_ms  = 0;
