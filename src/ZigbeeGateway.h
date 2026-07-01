@@ -610,8 +610,10 @@ public:
   void onColorSaturationReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint8_t)) {
     _on_color_saturation_receive = callback;
   }
-  void onColorTemperatureReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint16_t)) {
-    _on_color_temperature_receive = callback;
+  void onColorTemperatureReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, 
+    uint16_t)) {
+      _on_color_temperature_receive = callback;
   }
   void onThermostatTemperaturesReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, int16_t)) {
     _on_thermostat_temperatures_receive = callback;
@@ -760,7 +762,8 @@ private:
   void (*_on_current_level_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t);
   void (*_on_color_hue_receive)(uint16_t short_addr, uint16_t, uint16_t, uint8_t);
   void (*_on_color_saturation_receive)(uint16_t short_addr, uint16_t, uint16_t, uint8_t);
-  void (*_on_color_temperature_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t);
+  void (*_on_color_temperature_receive)(
+    uint16_t short_addr, uint16_t, uint16_t, uint16_t, uint16_t);
   void (*_on_thermostat_temperatures_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, int16_t);
   void (*_on_thermostat_modes_receive)(uint16_t short_addr, uint16_t, uint16_t, uint16_t, uint16_t);
   void (*_on_door_lock_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);

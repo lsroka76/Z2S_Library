@@ -117,8 +117,8 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
   _last_brightness = _brightness;
   _brightness = brightness;
 
-  if ((_whiteTemperature == 0) && (whiteTemperature > 0)) 
-    _colorBrightness = 0;
+  //if ((_whiteTemperature == 0) && (whiteTemperature > 0)) 
+  //  _colorBrightness = 0;
 
   _last_whiteTemperature = _whiteTemperature;
   _whiteTemperature = whiteTemperature;
@@ -193,18 +193,45 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       rgb.m_g = (float)green_cb / 255;
       rgb.m_b = (float)blue_cb / 255;
 
+      log_i(
+        "rgb.m_r = %.4f, m_g = %.4f, m_b = %.4f", rgb.m_r, rgb.m_g, rgb.m_b);
+
       hsv = rgbToHsv(rgb);
+
+      log_i(
+        "hsv.m_h = %.4f, m_s = %.4f, m_v = %.4f", hsv.m_h, hsv.m_s, hsv.m_v);
 
       uint16_t _hue = hsv.m_h*360;
       uint16_t _hue_360 = _hue;
-      uint8_t  _saturation = hsv.m_s*100; //colorBrightness;
+      uint8_t  _saturation = hsv.m_s * 100; //colorBrightness;
+      uint8_t _value = hsv.m_v * 100;
       uint16_t  _saturation_1000 = hsv.m_s*1000;
 
-      log_i("hue %d, saturation %d before mapping", _hue, _saturation);
-      _hue = map(_hue, 0, 360, 0, 254);
-      _saturation = map(_saturation, 0, 100, 0, 254);
-      log_i("hue %d, saturation %d after mapping", _hue, _saturation);
+      log_i("hue %d, saturation %d (before mapping)", _hue, _saturation);
+      _hue = mapFloat(_hue, 0, 360, 0, 254);
+      _saturation = mapFloat(_saturation, 0, 100, 0, 254);
+      log_i("hue %d, saturation %d (after mapping)", _hue, _saturation);
+      _value = mapFloat(_value, 0, 100, 1, 254);
+
+      uint16_t rev_hue = mapFloat(_hue, 0, 254, 0, 360);
+      uint8_t rev_saturation = mapFloat(_saturation, 0, 254, 0, 100);
+      log_i("hue %d, saturation %d (reversed)", rev_hue, rev_saturation);
+
+      hsv.m_h = (float)rev_hue / 360;
+      hsv.m_s = (float)rev_saturation / 100;
+
+      log_i(
+        "hsv.m_h = %.4f, m_s = %.4f, m_v = %.4f", hsv.m_h, hsv.m_s, hsv.m_v);
       
+      rgb = hsvToRgb(hsv);
+
+      log_i(
+        "rgb.m_r = %.4f, m_g = %.4f, m_b = %.4f", rgb.m_r, rgb.m_g, rgb.m_b);
+
+      log_i(
+        "rgb.m_r = %.4f, m_g = %.4f, m_b = %.4f", rgb.m_r * 255, 
+        rgb.m_g * 255, rgb.m_b * 255);
+
       uint8_t light_mode = 0x01;
 
       switch (_rgb_mode) {
@@ -214,6 +241,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
 
           zbGateway.sendColorMoveToHueAndSaturationCmd(
             &_device, _hue, _saturation, 1); 
+          zbGateway.sendLevelMoveToLevelCmd(&_device, _value, 1);
         break;
 
 
@@ -312,7 +340,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       log_i(
         "SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB - sending white temperature!");
 
-      uint16_t color_temperature = mapFloat(whiteTemperature, 0, 100, 454, 200);
+      uint16_t color_temperature = mapFloat(whiteTemperature, 0, 100, 500, 153);
 	    zbGateway.sendColorMoveToColorTemperatureCmd(
         &_device, color_temperature, 1);
     }
@@ -332,8 +360,10 @@ void Supla::Control::Z2S_RGBCCTInterface::ping() {
 
 void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
-  if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 400) {
+  if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 1000) {
+    
     _lastMsgReceivedMs = 0;
+
     channel.setNewValue(
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
     

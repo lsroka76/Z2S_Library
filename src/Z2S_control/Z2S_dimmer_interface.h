@@ -40,6 +40,14 @@
 #define DIMMER_STATE_ON                       0x01
 #define DIMMER_STATE_UNKNOWN                  0xFF
 
+enum DimmerMessage {
+
+  LEGACY_MSG,
+  LEVEL_CONTROL_MSG,
+  COLOR_TEMPERATURE_MSG,
+  F000_LEVEL_MSG,
+  E000_CCT_MSG
+};
 
 namespace Supla {
 namespace Control {
@@ -81,7 +89,8 @@ public:
   virtual void sendValueToDimmer(uint8_t brightness); 
   virtual void sendValueToCCT(uint8_t whiteTemperature); 
 
-  virtual void setValueOnServer(int16_t value, bool new_state, bool isCCT = false);
+  virtual void setValueOnServer(
+    int16_t value, bool new_state, DimmerMessage dimmer_msg = LEGACY_MSG);
 
   virtual void syncDevice();
 

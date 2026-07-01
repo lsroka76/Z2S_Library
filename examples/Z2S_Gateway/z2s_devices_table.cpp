@@ -6449,12 +6449,13 @@ void Z2S_onColorSaturationReceive(
 
 void Z2S_onColorTemperatureReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t color_temperature) {
+  uint16_t attribute_id, uint16_t color_temperature) {
 
   log_i(
-    "0x%04X, endpoint 0x%02X, cluster 0x%04X, color temperature 0x%04X", 
-    short_addr, endpoint, cluster, color_temperature);
-  
+    "0x%04X, endpoint 0x%02X, cluster 0x%04X, attribute id 0x%04X, "
+    "color temperature 0x%04X", short_addr, endpoint, cluster, 
+    attribute_id, color_temperature);
+
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
     DIMMER_FUNC_COLOR_TEMPERATURE_SID);
@@ -6462,10 +6463,15 @@ void Z2S_onColorTemperatureReceive(
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(
       z2s_channels_table[channel_number_slot].Supla_channel, 
-      color_temperature, true);
+      color_temperature, true, LEGACY_MSG);
     return;
   }
 
+  DimmerMessage dimmer_msg = COLOR_TEMPERATURE_MSG;
+
+  if (attribute_id == 0xE000)
+    dimmer_msg = E000_CCT_MSG;
+  
   channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
     DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID);
@@ -6473,7 +6479,7 @@ void Z2S_onColorTemperatureReceive(
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(
       z2s_channels_table[channel_number_slot].Supla_channel, 
-      color_temperature, true, true);
+      color_temperature, true, dimmer_msg);
     return;
   }
   no_channel_found_error_func(short_addr);

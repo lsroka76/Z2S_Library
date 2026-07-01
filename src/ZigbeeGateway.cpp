@@ -1421,7 +1421,8 @@ void ZigbeeGateway::zbProcessAttributeReporting(
         log_i("color control cluster color temperature 0x%x",value);
         
         if (_on_color_temperature_receive)
-          _on_color_temperature_receive(src_address.u.short_addr, src_endpoint, cluster_id, value);
+          _on_color_temperature_receive(
+            src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, value);
 
       } else
       if ((attribute->id == 0xE000) && 
@@ -1431,8 +1432,9 @@ void ZigbeeGateway::zbProcessAttributeReporting(
         
         log_i("color control cluster Tuya 0xE000 color temperature 0x%x",value);
         
-        //if (_on_color_temperature_receive)
-        //  _on_color_temperature_receive(src_address.u.short_addr, src_endpoint, cluster_id, value);
+        if (_on_color_temperature_receive)
+          _on_color_temperature_receive(
+            src_address.u.short_addr, src_endpoint, cluster_id, attribute->id, value);
       } else 
         log_i("color control cluster (0x%x), attribute id (0x%x), attribute data type (0x%x)", 
                cluster_id, attribute->id, attribute->data.type);

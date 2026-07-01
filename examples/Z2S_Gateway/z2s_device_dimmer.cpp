@@ -247,7 +247,8 @@ void addZ2SDeviceDimmer(
 }
 /*****************************************************************************/
 void msgZ2SDeviceDimmer(
-  int16_t channel_number_slot, int16_t level, bool state, bool isCCT) {
+  int16_t channel_number_slot, int16_t level, bool state, 
+  DimmerMessage dimmer_msg) {
 
   if (channel_number_slot < 0) {
     
@@ -300,7 +301,7 @@ void msgZ2SDeviceDimmer(
         auto Supla_Z2S_DimmerInterface = 
           reinterpret_cast<Supla::Control::Z2S_DimmerInterface *>(element);
         
-        Supla_Z2S_DimmerInterface->setValueOnServer(level, state, isCCT);
+        Supla_Z2S_DimmerInterface->setValueOnServer(level, state, dimmer_msg);
       } break;
     }
   }

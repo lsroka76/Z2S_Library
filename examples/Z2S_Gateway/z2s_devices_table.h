@@ -663,7 +663,7 @@ void Z2S_onColorSaturationReceive(
   
 void Z2S_onColorTemperatureReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t color_temperature);
+  uint16_t attribute_id, uint16_t color_temperature);
 
 void Z2S_onThermostatTemperaturesReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
