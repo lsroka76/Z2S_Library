@@ -549,6 +549,23 @@
 #define TUYA_DUAL_WATER_VALVE_V2_STATUS_DP                          0x69
 #define TUYA_DUAL_WATER_VALVE_BATTERY_DP                            0x3B
 
+#define TUYA_SMART_POOL_SENSOR_TDS_DP                               0x01
+#define TUYA_SMART_POOL_SENSOR_TEMPERATURE_DP                       0x02
+#define TUYA_SMART_POOL_SENSOR_BATTERY_DP                           0x07
+#define TUYA_SMART_POOL_SENSOR_PH_DP                                0x0A
+#define TUYA_SMART_POOL_SENSOR_EC_DP                                0x0B
+#define TUYA_SMART_POOL_SENSOR_ORP_DP                               0x65
+#define TUYA_SMART_POOL_SENSOR_FREE_CHLORINE_DP                     0x66
+#define TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP                         0x69
+#define TUYA_SMART_POOL_SENSOR_PH_MAX_DP                            0x6A
+#define TUYA_SMART_POOL_SENSOR_PH_MIN_DP                            0x6B
+#define TUYA_SMART_POOL_SENSOR_EC_MAX_DP                            0x6C
+#define TUYA_SMART_POOL_SENSOR_EC_MIN_DP                            0x6D
+#define TUYA_SMART_POOL_SENSOR_ORP_MAX_DP                           0x6E
+#define TUYA_SMART_POOL_SENSOR_ORP_MIN_DP                           0x6F
+#define TUYA_SMART_POOL_SENSOR_FREE_CHLORINE_MAX_DP                 0x70
+#define TUYA_SMART_POOL_SENSOR_FREE_CHLORINE_MIN_DP                 0x71
+#define TUYA_SMART_POOL_SENSOR_SALINITY_DP                          0x75
 
 
 #define TUYA_DP_ZCL_PAYLOAD_32  0x0A //32bit value /10 bytes/
