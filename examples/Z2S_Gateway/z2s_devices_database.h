@@ -5851,7 +5851,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "DYGSM", .model_name = "DY-RQ500A",
+  {	.manufacturer_name = "_TZE28C1000000_chbyv06x", .model_name = "TS0601",
     .z2s_device_uid = 23420,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR,
 	  .z2s_device_endpoints_count = 1},
