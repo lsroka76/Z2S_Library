@@ -332,7 +332,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
       case Z2S_TUYA_E0_CMD_DIMMER: {
 
         uint16_t E0_color_temperature = mapFloat(
-          whiteTemperature, 0, 100, 1, 1000);
+          whiteTemperature, 0, 100, 0, 1000);
 	      
         zbGateway.sendCustomClusterCmd(
           &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
