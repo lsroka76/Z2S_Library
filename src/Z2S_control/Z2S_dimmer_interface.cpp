@@ -470,7 +470,8 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       break;
     }
     _deviceWhiteTemperature = value;
-    if (value == 0) {
+	  
+    if ((dimmer_msg == COLOR_TEMPERATURE_MSG) && (value == 0)) {
 
       log_i("device sent color temperature with zero value!");
       if (_last_whiteTemperature > 100)
