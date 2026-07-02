@@ -3171,7 +3171,61 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_DUAL_WATER_VALVE_V2_COUNTDOWN_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Valve #2 countdown",
-    .Tuya_datapoint_description = "Enter numeric value between 0 and 1440 [min]"}
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 1440 [min]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_PH_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "pH maximal value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 140"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_PH_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "pH minimal value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 140"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_EC_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Electrical Conductivity maximal value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 20000 [uS/cm]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_EC_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Electrical Conductivity minimal value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 20000 [uS/cm]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_ORP_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Oxidation Reduction Potential maximal value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 1200 [mV]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_ORP_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Oxidation Reduction Potential minimal value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 1200 [mV]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_ORP_MAX_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Free Chlorine maximal value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 40 [mg/L]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_ORP_MIN_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Free Chlorine minimal value",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 40 [mg/L]"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Backlight",
+    .Tuya_datapoint_description = "Enter numeric value between 0 (OFF) and 1 (ON)"}
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

@@ -69,7 +69,7 @@
 #define WIFI_ENABLE                 3
 #define WIFI_ANT_CONFIG             14
 
-#define REFRESH_PERIOD              10 * 1000 //miliseconds
+#define REFRESH_PERIOD              30 * 60 * 1000 //miliseconds
 
 #define TIME_CLUSTER_REFRESH_MS     60 * 1000 //miliseconds
 
@@ -1149,6 +1149,32 @@ if (client2 && client2.connected()) {
       Z2S_updateWebGUI();
 
     _time_cluster_last_refresh_ms = millis();
+  }
+
+  if (millis() - refresh_time > REFRESH_PERIOD) {
+
+    for (uint8_t devices_counter = 0; 
+         devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+
+      if (z2s_zb_devices_table[devices_counter].desc_id == 
+          Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR) {
+
+        zbg_device_params_t device = {};
+
+        device.endpoint = 1;
+        device.short_addr = z2s_zb_devices_table[devices_counter].short_addr;
+    
+        sendTuyaRequestCmdValue32(
+          &zbGateway, &device, TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP, 1, true);
+        
+        delay(2000); //== vTaskDelay
+
+        sendTuyaRequestCmdValue32(
+          &zbGateway, &device, TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP, 0, true);
+      }
+      
+      refresh_time = millis();
+    }
   }
 
   if ((!zbGateway.getJoinedDevices().empty()) && 

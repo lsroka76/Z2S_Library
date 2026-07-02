@@ -391,6 +391,7 @@
 #define Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER                 0x7100
 
 #define Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION         0x7200
+#define Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR              0x7300
 
 #define Z2S_DEVICE_DESC_ON_OFF                              0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                            0x8001
@@ -770,6 +771,15 @@
 #define SHELLY_WS90_WEATHER_STATION_WIND_DIRECTION_SID      0x06
 #define SHELLY_WS90_WEATHER_STATION_GUST_SPEED_SID          0x07
 #define SHELLY_WS90_WEATHER_STATION_UV_INDEX_SID            0x08
+
+#define TUYA_SMART_POOL_SENSOR_TEMPERATURE_SID              0x00
+#define TUYA_SMART_POOL_SENSOR_TDS_SID                      0x01
+#define TUYA_SMART_POOL_SENSOR_PH_SID                       0x02
+#define TUYA_SMART_POOL_SENSOR_EC_SID                       0x03
+#define TUYA_SMART_POOL_SENSOR_ORP_SID                      0x04
+#define TUYA_SMART_POOL_SENSOR_FREE_CHLORINE_SID            0x05
+#define TUYA_SMART_POOL_SENSOR_SALINITY_SID                 0x06
+#define TUYA_SMART_POOL_SENSOR_BACKLIGHT_SID                0X07
 
 [[maybe_unused]]
 static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
@@ -2696,14 +2706,22 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION,
     .z2s_device_clusters_count = 8,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT,
-                             SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND,
-                             SHELLY_CUSTOM_CLUSTER_ID_WS90_UV,
-                             SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN}},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
+      ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT,
+      SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND,
+      SHELLY_CUSTOM_CLUSTER_ID_WS90_UV,
+      SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN}},
+  
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 };
 
 static const z2s_device_endpoint_t test_ep[] PROGMEM = {
@@ -6844,7 +6862,10 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
     .z2s_device_endpoints_count = 1},
 
-
+  { .manufacturer_name = "_TZE200_v1jqz5cy", .model_name = "TS0601",
+    .z2s_device_uid = 36100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .z2s_device_endpoints_count = 1}  
 
 
 //DEVICES_END

@@ -3284,6 +3284,131 @@ void processTuyaWaterLevelSensorDataReport(
       Tuya_read_dp_result.dp_value);
 }
 
+/*******************************************************************************/
+
+void processTuyaSmartPoolSensorDataReport(
+  int16_t channel_number_slot, uint16_t payload_size, uint8_t *payload, 
+  uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_THERMOMETER,
+    TUYA_SMART_POOL_SENSOR_TEMPERATURE_SID);
+  
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SMART_POOL_SENSOR_TDS_SID);
+
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SMART_POOL_SENSOR_PH_SID);
+  
+  int16_t channel_number_slot_4 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SMART_POOL_SENSOR_EC_SID);
+
+  int16_t channel_number_slot_5 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SMART_POOL_SENSOR_ORP_SID);
+
+  int16_t channel_number_slot_6 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SMART_POOL_SENSOR_FREE_CHLORINE_SID);
+  
+  int16_t channel_number_slot_7 = Z2S_findChannelNumberSlot(
+    z2s_channels_table[channel_number_slot].short_addr, 
+    z2s_channels_table[channel_number_slot].endpoint, 
+    z2s_channels_table[channel_number_slot].cluster_id, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_SMART_POOL_SENSOR_SALINITY_SID);  
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_TEMPERATURE_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceTempHumidityTemp(
+      channel_number_slot_1, (float)Tuya_read_dp_result.dp_value);
+    
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_TDS_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_PH_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_EC_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_ORP_DP, payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_5, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_FREE_CHLORINE_DP, 
+    payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_6, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_SALINITY_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      channel_number_slot_7, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+    
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result,TUYA_SMART_POOL_SENSOR_BATTERY_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    updateSuplaBatteryLevel(
+      channel_number_slot, ZBD_BATTERY_LEVEL_MSG, 
+      Tuya_read_dp_result.dp_value);
+}
+
 /*****************************************************************************/
 
 void processTuyaDataReport(
@@ -3615,6 +3740,13 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR:
 
       processTuyaWaterLevelSensorDataReport(
+        channel_number_slot, payload_size, payload, model_id);
+    break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR:
+
+      processTuyaSmartPoolSensorDataReport(
         channel_number_slot, payload_size, payload, model_id);
     break;
 

@@ -9679,6 +9679,27 @@ uint8_t Z2S_addZ2SDevice(
           break;
         } break;
 
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR:
+
+        switch (sub_id) {
+      
+
+          case TUYA_SMART_POOL_SENSOR_TEMPERATURE_SID: 
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func, false);
+          break;
+
+
+          default: 
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+        } break;
+
 /******************************************************************************/     
 
       default : {
@@ -12576,6 +12597,42 @@ void Z2S_buildSuplaChannels(
         joined_device, SHELLY_WS90_WEATHER_STATION_RAIN_PRECIPITATION_SID, 
         "RAIN PRECIPITATION", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 
         "mm");
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR: {
+            
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMART_POOL_SENSOR_TEMPERATURE_SID, "TEMPERATURE");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMART_POOL_SENSOR_TDS_SID, 
+        "TOTAL DISSOLVED SOLIDS",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMART_POOL_SENSOR_PH_SID, "pH", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMART_POOL_SENSOR_EC_SID, 
+        "ELECTRICAL CONDUCTIVITY", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "uS/cm");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMART_POOL_SENSOR_ORP_SID, 
+        "OXIDATION REDUCTION POTENTIAL", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mV");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMART_POOL_SENSOR_FREE_CHLORINE_SID, 
+        "FREE CHLORINE", SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "mg/L");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_SMART_POOL_SENSOR_SALINITY_SID, "SALT VALUE", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
     } break;
 
 /*****************************************************************************/

@@ -6413,10 +6413,11 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 					if (payload_size > 0) {
 						
 						if ((strlen(payload_value) / 2) != payload_size) {
-							updateLabel_C(clusters_attributes_table[device_read_attribute_label], 
-														device_query_attr_size_mismatch_str);
+							updateLabel_C(
+								clusters_attributes_table[device_read_attribute_label], 
+								device_query_attr_size_mismatch_str);
 							return;
-						}
+						}	
 
         		char byte_str[3];
         		byte_str[2] = '\0';
