@@ -618,7 +618,10 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
       else
         sendValueToDimmer(_brightness);
 
-      sendValueToCCT(_whiteTemperature);
+      if ((sendTurnOnOffCmd == 0) && (_whiteTemperature == 0))
+      ;//skip
+      else
+        sendValueToCCT(_whiteTemperature);
     }
     else {
       //channel.setNewValue(0, 0, 0, 0, _brightness, 0);
