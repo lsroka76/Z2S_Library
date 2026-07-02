@@ -395,8 +395,8 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
         _last_brightness = 100;
         _brightness = _last_brightness;
         _state = DIMMER_STATE_ON;
-        //_lastDeviceMsgReceivedMs = millis();
-        _lastMsgReceivedMs = millis();
+        _lastDeviceMsgReceivedMs = millis();
+        //_lastMsgReceivedMs = millis();
       return;
     }
 
@@ -406,8 +406,8 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
         _last_brightness = _brightness;
       _brightness = 0;
       _state = DIMMER_STATE_OFF;
-      //_lastDeviceMsgReceivedMs = millis();
-      _lastMsgReceivedMs = millis();
+      _lastDeviceMsgReceivedMs = millis();
+      //_lastMsgReceivedMs = millis();
       return;
     }
     return;
