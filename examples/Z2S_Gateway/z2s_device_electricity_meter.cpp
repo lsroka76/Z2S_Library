@@ -98,16 +98,30 @@ void initZ2SDeviceElectricityMeter(
           (strcmp(
             Z2S_getZbDeviceManufacturerName(
               z2s_channels_table[channel_number_slot].Zb_device_id),
-              "_TZ3210_2putqrmw") == 0) || 
-          (strcmp(
-            Z2S_getZbDeviceManufacturerName(
-              z2s_channels_table[channel_number_slot].Zb_device_id),
-              "_TZ3008_1a8m8wd6") == 0)) {
+              "_TZ3210_2putqrmw") == 0)) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;
       
         ignore_zigbee_scaling = true;
+      }
+      
+      if (strcmp(
+            Z2S_getZbDeviceManufacturerName(
+              z2s_channels_table[channel_number_slot].Zb_device_id),
+              "_TZ3008_1a8m8wd6") == 0) {
+
+        voltage_multiplier = 1;
+        voltage_divisor    = 10;
+
+        active_power_multiplier = 1;
+        active_power_divisor    = 10;
+
+        energy_multiplier = 1;
+        energy_divisor  = 100;
+      
+        ignore_zigbee_scaling = true;
+
       }
     } break;
 
@@ -366,7 +380,7 @@ void initZ2SDeviceElectricityMeter(
     current_divisor    = 1000;
 
     energy_multiplier = 1;
-      energy_divisor  = 100;
+    energy_divisor  = 100;
 
     ignore_zigbee_scaling = true;
   }

@@ -4353,7 +4353,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
 
   {	.manufacturer_name = "_TZ3210_2putqrmw", .model_name = "TS011F",
     .z2s_device_uid = 12405,
@@ -4362,7 +4362,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
 
   {	.manufacturer_name = "_TZ3000_ksw8qtmt", .model_name = "TS011F",
     .z2s_device_uid = 12410,
@@ -4371,7 +4371,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
 
   {	.manufacturer_name = "_TZ3000_yujkchbz", .model_name = "TS011F",
     .z2s_device_uid = 12415,
@@ -4380,7 +4380,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
 
   {	.manufacturer_name = "_TZ3000_ss98ec5d", .model_name = "TS011F",
     .z2s_device_uid = 12420,
@@ -4389,7 +4389,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
 
   {	.manufacturer_name = "_TZ3008_1a8m8wd6", .model_name = "TS011F",
     .z2s_device_uid = 12425,
@@ -4398,7 +4398,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
 
   {	.manufacturer_name = "Zbeacon", .model_name = "TS011F",
     .z2s_device_uid = 12500,
