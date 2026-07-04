@@ -11119,6 +11119,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
     case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
+    case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR:
       return true;
     default:
       return false;
