@@ -928,7 +928,7 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
-		.zigbee_attribute_name = "CURRENT Y"
+		.zigbee_attribute_name = "CURRENT COLOR TEMPERATURE"
 	},
   {
 		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_MODE_ID, 
@@ -1337,16 +1337,22 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	.zigbee_attribute_name = "VALVE CLOSING DEGREE [0-100%] (TRVZB)"
 	},
 	{
-	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
-	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
-	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
-	.zigbee_attribute_name = "EXTERNAL TEMPERATURE INPUT (TRVZB)"
-	},
-	{
 	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
 	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
-	.zigbee_attribute_name = "TEMPERATURE SENSOR SELECT (TRVZB)"
+	.zigbee_attribute_name = "TEMPERATURE SENSOR SELECT (TRVZB/ZB02DR2)"
+	},
+	{
+	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
+	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+	.zigbee_attribute_name = "EXTERNAL TEMPERATURE INPUT (TRVZBZ/ZB02DR2)"
+	},
+	{
+	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
+	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+	.zigbee_attribute_name = "EXTERNAL HUMIDITY INPUT (TRVZB/ZB02DR2)"
 	},
 	{
 	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_TEMPERATURE_ACCURACY, 

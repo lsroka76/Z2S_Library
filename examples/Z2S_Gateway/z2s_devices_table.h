@@ -625,6 +625,40 @@ void Z2S_onOnOffReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   bool state);
 
+/*
+void Z2S_onTemperatureReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onHumidityReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onPressureReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onConcentrationReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onIlluminanceReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onFlowReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onOccupancyReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onOnOffReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute);
+*/
+
 void Z2S_onElectricalMeasurementReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
@@ -672,6 +706,26 @@ void Z2S_onThermostatTemperaturesReceive(
 void Z2S_onThermostatModesReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   uint16_t id, uint16_t mode);
+
+/*
+void Z2S_onCurrentLevelReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onColorControlReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onThermostatReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute);
+
+void Z2S_onThermostatUIReceive(
+    uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute);
+
+
+*/
 
 void Z2S_onDoorLockReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 

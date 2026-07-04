@@ -1736,6 +1736,242 @@ void ZigbeeGateway::zbProcessAttributeReporting(
         cluster_id, attribute->id, attribute->data.type);
 }
 
+/*
+void ZigbeeGateway::zbProcessAttributeReporting(
+  esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,
+  const esp_zb_zcl_attribute_t* attribute) {
+
+  switch (cluster_id) {
+
+    case ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT: {
+
+      if (_on_temperature_receive)
+        _on_temperature_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT: {
+
+      if (_on_humidity_receive)
+        _on_humidity_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT: {
+
+      if (_on_pressure_receive)
+        _on_pressure_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_PM2_5_MEASUREMENT:
+    case ESP_ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE_MEASUREMENT:
+    case ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT: {
+
+      if (_on_concentration_receive)
+        _on_concentration_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT: {
+
+      if (_on_illuminance_receive)
+        _on_illuminance_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT: {
+
+      if (_on_flow_receive)
+        _on_flow_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING: {
+
+      if (_on_occupancy_receive)
+        _on_occupancy_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_ON_OFF: {
+
+      if (_on_on_off_receive)
+        _on_on_off_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT: {
+
+      if (_on_electrical_measurement_receive)
+        _on_electrical_measurement_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT:
+    case ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT: {
+
+      if (_on_multistate_input_receive)
+        _on_multistate_input_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_BINARY_INPUT:
+    case ESP_ZB_ZCL_CLUSTER_ID_BINARY_OUTPUT: {
+
+      if (_on_binary_input_receive)
+        _on_binary_input_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT:
+    case ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT: {
+
+      if (_on_analog_input_receive)
+        _on_analog_input_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case LUMI_CUSTOM_CLUSTER: {
+
+      if (_on_lumi_custom_cluster_receive)
+        _on_lumi_custom_cluster_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case IKEA_CUSTOM_CLUSTER_FC7E: {
+
+      if (_on_ikea_custom_cluster_receive)
+        _on_ikea_custom_cluster_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_METERING: {
+
+      if (_on_metering_receive)
+        _on_metering_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL: {
+
+      if (_on_current_level_receive)
+        _on_current_level_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL: {
+
+      if (_on_color_control_receive)
+        _on_color_control_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG: {
+
+      if (_on_battery_receive)
+        _on_battery_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE: {
+
+      if (_on_IAS_zone_status_change_notification)
+        _on_IAS_zone_status_change_notification(
+          src_address.u.short_addr, src_endpoint, cluster_id, nullptr, 
+          attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT: {
+
+      if (_on_thermostat_receive)
+        _on_thermostat_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG: {
+
+      if (_on_thermostat_ui_receive)
+        _on_thermostat_ui_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case SONOFF_CUSTOM_CLUSTER:
+    case SONOFF_CUSTOM_CLUSTER_2: {
+
+      if (_on_sonoff_custom_cluster_receive)
+        _on_sonoff_custom_cluster_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_DOOR_LOCK: {
+
+      if (_on_door_lock_receive)
+        _on_door_lock_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING: {
+
+     _on_IAS_zone_status_change_notification if (_on_window_covering_receive)
+        _on_window_covering_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    case TUYA_PRIVATE_CLUSTER_2: {
+
+      if (_on_illuminance_receive)
+        _on_illuminance_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+    default: {
+
+      if (cluster_id >= 0xFC01 && cluster_id <= 0xFC03) {
+
+        if (_on_fcxx_custom_cluster_receive)
+          _on_fcxx_custom_cluster_receive(
+            src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+      } else {
+
+        log_i(
+          "\n\rUnknown report from device (0x%04X):\n\r"
+          "endpoint (0x02X)\tcluster (0x%04X)\n\r"
+          "attribute id = 0x%04X\tattribute datatype = 0x%02X\n\r",
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute->id,
+          attribute->data.type);
+      }
+    } break;
+  }
+}
+*/
+
 void ZigbeeGateway::zbAttributeReporting(
   esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
   const esp_zb_zcl_attribute_t *attribute) {
@@ -1856,7 +2092,12 @@ void ZigbeeGateway::zbIASZoneStatusChangeNotification(
   if (_on_IAS_zone_status_change_notification)
     _on_IAS_zone_status_change_notification(
       info.src_address.u.short_addr, info.src_endpoint, message->info.cluster, 
-      message->zone_status);  
+      message->zone_status);
+  /*if (_on_IAS_zone_status_change_notification)
+    _on_IAS_zone_status_change_notification(
+      info.src_address.u.short_addr, info.src_endpoint, message->info.cluster, 
+      message, nullptr);
+  */
 }
 
 void ZigbeeGateway::zbCmdDiscAttrResponse(

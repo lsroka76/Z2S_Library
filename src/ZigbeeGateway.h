@@ -550,6 +550,7 @@ public:
   void onTemperatureReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, float)) {
     _on_temperature_receive = callback; 
   }
+  
   void onHumidityReceive(void (*callback)(uint16_t short_addr, uint16_t, uint16_t, float)) {
     _on_humidity_receive = callback;
   }
@@ -653,6 +654,165 @@ public:
 
     _on_ikea_custom_cluster_receive = callback;
   }
+
+  /*
+  void onTemperatureReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_temperature_receive = callback;
+}
+
+  void onHumidityReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_humidity_receive = callback;
+  }
+
+  void onPressureReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_pressure_receive = callback;
+  }
+
+  void onConcentrationReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_concentration_receive = callback;
+  }
+
+  void onIlluminanceReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_illuminance_receive = callback;
+  }
+
+  void onFlowReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_flow_receive = callback;
+  }
+
+  void onOccupancyReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_occupancy_receive = callback;
+  }
+
+  void onOnOffReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_on_off_receive = callback;
+  }
+
+  void onElectricalMeasurementReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_electrical_measurement_receive = callback;
+  }
+
+  void onBinaryInputReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_binary_input_receive = callback;
+  }
+
+  void onMultistateInputReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_multistate_input_receive = callback;
+  }
+
+  void onAnalogInputReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_analog_input_receive = callback;
+  }
+
+  void onMeteringReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_metering_receive = callback;
+  }
+
+  void onBasicReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_basic_receive = callback;
+  }
+
+  void onCurrentSummationReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_current_summation_receive = callback;
+  }
+
+  void onBatteryReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_battery_receive = callback;
+  }
+
+  void onCurrentLevelReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_current_level_receive = callback;
+  }
+
+  void onColorControlReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_color_control_receive = callback;
+  }
+
+  void onThermostatReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_thermostat_receive = callback;
+  }
+
+  void onThermostatUIReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_thermostat_ui_receive = callback;
+  }
+
+  void onDoorLockReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_door_lock_receive = callback;
+  }
+
+  void onWindowCoveringReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_window_covering_receive = callback;
+  }
+
+  void onSonoffCustomClusterReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_sonoff_custom_cluster_receive = callback;
+  }
+
+  void onFCXXCustomClusterReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_fcxx_custom_cluster_receive = callback;
+  }
+
+  void onLumiCustomClusterReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_lumi_custom_cluster_receive = callback;
+  }
+
+  void onIkeaCustomClusterReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+      _on_ikea_custom_cluster_receive = callback;
+  }
+
+  */
 
   void onCustomCmdReceive(
     bool (*callback)(uint16_t short_addr, uint16_t endpoint_id, 
@@ -772,6 +932,79 @@ private:
   void (*_on_fcxx_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_lumi_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
   void (*_on_ikea_custom_cluster_receive)(uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+  /*
+  void (*_on_IAS_zone_status_change_notification)(
+    uint16_t short_addr, uint16_t, uint16_t, 
+    const esp_zb_zcl_ias_zone_status_change_notification_message_t, 
+    const esp_zb_zcl_attribute_t *);
+
+void (*_on_temperature_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_humidity_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_pressure_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_concentration_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_illuminance_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_flow_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_occupancy_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_on_off_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_electrical_measurement_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_binary_input_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_multistate_input_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_analog_input_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_metering_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_basic_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_current_summation_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_battery_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_current_level_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_color_control_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_thermostat_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_thermostat_ui_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_door_lock_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+void (*_on_window_covering_receive)(
+  uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+  */
 
   bool (*_on_custom_cmd_receive)(uint16_t short_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
 

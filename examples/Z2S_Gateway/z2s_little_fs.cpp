@@ -51,12 +51,15 @@ bool Z2S_saveFile(
   
   snprintf(file_name, sizeof(file_name), "/z2s_gateway/%s", z2s_file_name);
   
-  File file = LittleFS.open(file_name, "w");
+  File file = LittleFS.open(file_name, "r+");
+  
+  file.seek(0, SeekSet);
   
   if (!file) {
   
     log_e(
-      "Z2S LittleFs: failed to open file \"%s\" for write", z2s_file_name);
+      "Z2S LittleFs: failed to open file \"%s\" for read/write", 
+      z2s_file_name);
     
     Z2S_endLittleFs();
     return false;

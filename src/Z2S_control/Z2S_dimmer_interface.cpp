@@ -162,7 +162,7 @@ void Supla::Control::Z2S_DimmerInterface::turnOff() {
   _last_brightness = _brightness;
   _brightness = 0;
 
-  _lastMsgReceivedMs = millis();
+  _lastMsgReceivedMs = 1; //millis();
 }
 
 void Supla::Control::Z2S_DimmerInterface::turnOn() {
@@ -474,10 +474,11 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
     if ((dimmer_msg == COLOR_TEMPERATURE_MSG) && (value == 0)) {
 
       log_i("device sent color temperature with zero value!");
-      if (_last_whiteTemperature > 100)
+      /*if (_last_whiteTemperature > 100)
         _last_whiteTemperature = 0;
-      _whiteTemperature =  _last_whiteTemperature;
-      _lastMsgReceivedMs = millis();
+      _whiteTemperature =  _last_whiteTemperature;*/
+      turnOff();
+      //_lastMsgReceivedMs = millis();
     } 
   }
   else {
@@ -562,6 +563,8 @@ void Supla::Control::Z2S_DimmerInterface::syncDevice() {
 
     if (sync_counter == 3)
       _fresh_start = false;
+
+    log_i("sync counter %u", sync_counter);
   }
 }
 
@@ -618,13 +621,15 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
       else
         sendValueToDimmer(_brightness);
 
-      if ((sendTurnOnOffCmd == 0) && (_whiteTemperature == 0))
+      //if ((sendTurnOnOffCmd == 0) && (_whiteTemperature == 0))
       ;//skip
-      else
+      //else
+      if (_state)
         sendValueToCCT(_whiteTemperature);
     }
     else {
       //channel.setNewValue(0, 0, 0, 0, _brightness, 0);
+      log_i("SUPLA_CHANNELFNC_DIMMER");
       sendValueToDimmer(_brightness);
       sendValueToCCT(_brightness);
     }

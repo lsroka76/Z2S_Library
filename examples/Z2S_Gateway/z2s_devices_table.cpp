@@ -63,6 +63,15 @@ void (*_on_Tuya_custom_cluster_receive)
 
 /*****************************************************************************/
 
+template <typename T>
+T readAttr(const esp_zb_zcl_attribute_t* attribute) {
+    if (!attribute || !attribute->data.value)
+        return T{};
+    return *reinterpret_cast<const T*>(attribute->data.value);
+}
+
+/*****************************************************************************/
+
 void no_channel_found_error_func(char *ieee_addr_str) {
 
   log_e("No channel found for address %s", ieee_addr_str);
@@ -3929,6 +3938,222 @@ void Z2S_onOccupancyReceive(
 
 /*****************************************************************************/
 
+/*int32_t getZigbeeAttributeS32Value(const esp_zb_zcl_attribute_t *attribute) {
+
+  switch (getZigbeeTypeSize(attribute->data.type)) {
+
+
+    case 1:
+      
+      return readAttr<int8_t>(attribute);
+    
+
+    case 2:
+      
+      return readAttr<int16_t>(attribute);
+
+
+    case 4:
+      return readAttr<int32_t>(attribute);
+  }
+} */
+
+void Z2S_onThermostatReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute) {
+
+  
+  /*switch (attribute->data.type) {
+
+    case ESP_ZB_ZCL_ATTR_TYPE_16BITMAP:
+    case ESP_ZB_ZCL_ATTR_TYPE_S16:
+    case ESP_ZB_ZCL_ATTR_TYPE_S8:
+    case ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM:
+    case ESP_ZB_ZCL_ATTR_TYPE_U8:
+    case ESP_ZB_ZCL_ATTR_TYPE_U24:
+
+  }*/
+  log_i(
+    "0x%04X, endpoint 0x%02X, attribute id 0x%04X, attribute type 0x%02X", 
+    short_addr, endpoint, attribute->id, attribute->data.type);
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, 
+    NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot_1 < 0)
+    channel_number_slot_1 = Z2S_findChannelNumberSlot(
+      short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_THERMOMETER, 
+      NO_CUSTOM_CMD_SID);
+
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
+    NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot_2 < 0) {
+
+    log_i("no thermostat channel found for address 0x%04X", short_addr);
+    return;
+  }
+
+  switch (attribute->id) {
+
+    //ESP_ZB_ZCL_ATTR_TYPE_S16
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID: {
+
+      if (channel_number_slot_1 >= 0)
+        msgZ2SDeviceTempHumidityTemp(
+          channel_number_slot_1, (float)(readAttr<int16_t>(attribute)) / 100);
+
+      else log_e("Missing thermometer channel for thermostat device!");
+
+      msgZ2SDeviceHvac(
+        channel_number_slot_2, TRV_LOCAL_TEMPERATURE_MSG, 
+        readAttr<int16_t>(attribute));
+    } break;
+
+    //ESP_ZB_ZCL_ATTR_TYPE_S16
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID: {
+
+      msgZ2SDeviceHvac(
+        channel_number_slot_2, TRV_HEATING_SETPOINT_MSG, 
+        readAttr<int16_t>(attribute));
+    } break;
+
+    //ESP_ZB_ZCL_ATTR_TYPE_S8
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID: {
+
+      msgZ2SDeviceHvac(
+        channel_number_slot_2, TRV_TEMPERATURE_CALIBRATION_MSG, 
+        readAttr<int8_t>(attribute) * 10);
+    } break;
+
+    //ESP_ZB_ZCL_ATTR_TYPE_16BITMAP
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID: {
+
+      uint8_t running_mode = readAttr<uint16_t>(attribute) & 1;
+      
+      msgZ2SDeviceHvac(
+        channel_number_slot_2, TRV_RUNNING_STATE_MSG, running_mode);
+    } break;
+
+    //ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM
+    case BOSCH_HEATING_DEMAND_ID:
+    //ESP_ZB_ZCL_ATTR_TYPE_U8
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID: {
+
+      //uint8_t running_mode = (readAttr<uint8_t>(attribute) > 0) ? 1 : 0;
+      
+      msgZ2SDeviceHvac(
+        channel_number_slot_2, TRV_RUNNING_STATE_MSG, 
+        readAttr<uint8_t>(attribute));
+    } break;
+
+    //ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID: {
+
+      switch (readAttr<uint8_t>(attribute)) {
+
+
+        case 0: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0); 
+        break;
+
+
+        case 4: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1); 
+        break;
+        
+
+        case 1: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 2); 
+        break;
+      }
+    } break;
+
+
+    //ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM
+    case BOSCH_TRV_OPERATING_MODE_ID: {
+
+      switch (readAttr<uint8_t>(attribute)) {
+
+
+        case 5: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0); 
+        break;
+
+
+        case 1: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1); 
+        break;
+        
+
+        case 0: 
+          
+          msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 2); 
+        break;
+      }
+    } break;
+
+    
+    case EUROTRONIC_HOST_FLAGS_ID: {
+
+      esp_zb_int24_t host_flags_24 = readAttr<esp_zb_int24_t>(attribute);
+      uint32_t mode = (host_flags_24.high * 0x10000) + host_flags_24.low;
+
+      if (mode & 0x20)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 0);
+      if (mode & 0x04)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SYSTEM_MODE_MSG, 1);
+      if (mode & 0x10)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_SCHEDULE_MODE_MSG, 2);
+      if (mode & 0x80)
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_CHILD_LOCK_MSG, 1);
+      else
+        msgZ2SDeviceHvac(channel_number_slot_2, TRV_CHILD_LOCK_MSG, 0);
+    } break;
+  }
+}
+
+/*****************************************************************************/
+
+void Z2S_onThermostatUIReceive(
+    uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute) {
+
+  log_i("0x%04X, endpoint 0x%02X, attribute id 0x%04X", 
+        short_addr, endpoint, attribute->id);
+
+  int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster,SUPLA_CHANNELTYPE_HVAC, 
+    NO_CUSTOM_CMD_SID);
+
+  if (channel_number_slot_2 < 0) {
+
+    log_i("no thermostat channel found for address 0x%04X", short_addr);
+    return;
+  }
+  
+  switch (attribute->id) {
+
+    //ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM
+    case ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID: {
+
+      msgZ2SDeviceHvac(
+        channel_number_slot_2, TRV_CHILD_LOCK_MSG, 
+        readAttr<uint8_t>(attribute));
+    }
+  }
+}
+
+
+/*****************************************************************************/
+
 void Z2S_onThermostatTemperaturesReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, uint16_t id, 
   int16_t temperature) {
@@ -4474,6 +4699,24 @@ uint8_t getZigbeeTypeSize(uint8_t zigbee_type) {
 
   }
 }
+
+/******************************************************************************/
+
+/*int32_t getZigbeeAttributeValue(const esp_zb_zcl_attribute_t *attribute) {
+
+  //int32_t return_value = INT32_MIN;
+
+  if (attribute) {
+  
+    switch (getZigbeeTypeSize(attribute)) {
+
+
+        case 1:
+
+          return ()
+    }
+  }
+}*/
 
 /******************************************************************************/
 
