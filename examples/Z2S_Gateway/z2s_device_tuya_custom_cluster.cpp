@@ -3347,7 +3347,7 @@ void processTuyaSmartPoolSensorDataReport(
 
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceTempHumidityTemp(
-      channel_number_slot_1, (float)Tuya_read_dp_result.dp_value);
+      channel_number_slot_1, (float)Tuya_read_dp_result.dp_value / 10);
     
   Z2S_readTuyaDPvalue(
     Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_TDS_DP, payload_size, payload);
@@ -3363,7 +3363,9 @@ void processTuyaSmartPoolSensorDataReport(
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceGeneralPurposeMeasurement(
       channel_number_slot_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-      Tuya_read_dp_result.dp_value);
+      Tuya_read_dp_result.dp_value > 99 ? 
+      (float)Tuya_read_dp_result.dp_value /100 : 
+      (float)Tuya_read_dp_result.dp_value / 10);
 
   Z2S_readTuyaDPvalue(
     Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_EC_DP, payload_size, payload);
@@ -3388,7 +3390,7 @@ void processTuyaSmartPoolSensorDataReport(
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceGeneralPurposeMeasurement(
       channel_number_slot_6, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-      Tuya_read_dp_result.dp_value);
+      (float)Tuya_read_dp_result.dp_value / 10);
 
   Z2S_readTuyaDPvalue(
     Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_SALINITY_DP, payload_size, 
