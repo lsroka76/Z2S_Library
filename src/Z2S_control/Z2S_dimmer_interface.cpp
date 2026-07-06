@@ -551,7 +551,7 @@ void Supla::Control::Z2S_DimmerInterface::syncDevice() {
     if (_deviceBrightness == 0xFF) {
 
       if (_brightness == 0)
-        //sendValueToDimmer(_last_brightness);
+        sync_counter++;//sendValueToDimmer(_last_brightness);
       else
         sendValueToDimmer(_brightness);
     }
@@ -560,7 +560,9 @@ void Supla::Control::Z2S_DimmerInterface::syncDevice() {
 
     if (_deviceWhiteTemperature == 0xFFFF) {
 
-      if (_brightness != 0)
+      if (_brightness == 0)
+	    sync_counter++;
+	  else
         sendValueToCCT(_whiteTemperature);
     }
     else
