@@ -3958,21 +3958,84 @@ void Z2S_onOccupancyReceive(
   }
 } */
 
+void Z2S_onColorControlReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
+  const esp_zb_zcl_attribute_t *attribute) {
+
+  log_i(
+    "0x%04X, endpoint 0x%02X, attribute id 0x%04X, attribute type 0x%02X", 
+    short_addr, endpoint, attribute->id, attribute->data.type);
+
+  int16_t channel_number_slot_1 = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
+    NO_CUSTOM_CMD_SID);
+  
+  if (channel_number_slot_1 < 0) {
+
+    log_i("no RGB/CCT channel found for address 0x%04X", short_addr);
+    return;
+  }
+
+  switch (attribute->id) {
+
+    //ESP_ZB_ZCL_ATTR_TYPE_U8
+    case ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_HUE_ID: {
+
+      if (channel_number_slot_1 >= 0)
+        msgZ2SDeviceRGB(
+          channel_number_slot_1, readAttr<uint8_t>(attribute), 0xFF, true);
+      else 
+        log_e("Missing RGB/RGBCCT channel for RGB/RGBCCT device!");
+    } break;
+
+
+    //ESP_ZB_ZCL_ATTR_TYPE_U8
+    case ESP_ZB_ZCL_ATTR_COLOR_CONTROL_CURRENT_SATURATION_ID: {
+
+      if (channel_number_slot_1 >= 0)
+        msgZ2SDeviceRGB(
+          channel_number_slot_1, 0xFF, readAttr<uint8_t>(attribute), true);
+      else log_e("Missing RGB/RGBCCT channel for RGB/RGBCCT device!");
+    } break;
+
+    //ESP_ZB_ZCL_ATTR_TYPE_U16
+    case ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID: 
+    case 0xE000: {
+      
+      int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
+        DIMMER_FUNC_COLOR_TEMPERATURE_SID);
+  
+      if (channel_number_slot >= 0) {
+        msgZ2SDeviceDimmer(
+          channel_number_slot_2, readAttr<uint16_t>(attribute), true, 
+          LEGACY_MSG);
+        return;
+      }
+
+      DimmerMessage dimmer_msg = COLOR_TEMPERATURE_MSG;
+
+      if (attribute->id == 0xE000)
+        dimmer_msg = E000_CCT_MSG;
+  
+      channel_number_slot_2 = Z2S_findChannelNumberSlot(
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
+        DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID);
+  
+      if (channel_number_slot >= 0) {
+        msgZ2SDeviceDimmer(
+          channel_number_slot_2, readAttr<uint16_t>(attribute), true, 
+          dimmer_msg);
+        return;
+      }
+    } break;
+  }
+}
+
 void Z2S_onThermostatReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
-  
-  /*switch (attribute->data.type) {
-
-    case ESP_ZB_ZCL_ATTR_TYPE_16BITMAP:
-    case ESP_ZB_ZCL_ATTR_TYPE_S16:
-    case ESP_ZB_ZCL_ATTR_TYPE_S8:
-    case ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM:
-    case ESP_ZB_ZCL_ATTR_TYPE_U8:
-    case ESP_ZB_ZCL_ATTR_TYPE_U24:
-
-  }*/
   log_i(
     "0x%04X, endpoint 0x%02X, attribute id 0x%04X, attribute type 0x%02X", 
     short_addr, endpoint, attribute->id, attribute->data.type);
@@ -6705,8 +6768,7 @@ void Z2S_onColorTemperatureReceive(
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(
-      z2s_channels_table[channel_number_slot].Supla_channel, 
-      color_temperature, true, LEGACY_MSG);
+      zchannel_number_slot, color_temperature, true, LEGACY_MSG);
     return;
   }
 
@@ -6721,8 +6783,7 @@ void Z2S_onColorTemperatureReceive(
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(
-      z2s_channels_table[channel_number_slot].Supla_channel, 
-      color_temperature, true, dimmer_msg);
+      channel_number_slot, color_temperature, true, dimmer_msg);
     return;
   }
   no_channel_found_error_func(short_addr);
