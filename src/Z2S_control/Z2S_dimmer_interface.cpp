@@ -538,9 +538,11 @@ void Supla::Control::Z2S_DimmerInterface::syncDevice() {
     if (_state == DIMMER_STATE_UNKNOWN) {
       sendTurnOnOffCmd = (_brightness == 0) ? 1 : 2;
       if (_brightness == 0)
-        sendValueToDimmer(_last_brightness);
+        sendValueToDimmer(_brightness);
       else
         sendValueToDimmer(_brightness);
+
+      return;
 
     }
     else
@@ -549,15 +551,18 @@ void Supla::Control::Z2S_DimmerInterface::syncDevice() {
     if (_deviceBrightness == 0xFF) {
 
       if (_brightness == 0)
-        sendValueToDimmer(_last_brightness);
+        //sendValueToDimmer(_last_brightness);
       else
         sendValueToDimmer(_brightness);
     }
     else
       sync_counter++;
 
-    if (_deviceWhiteTemperature == 0xFFFF)
-      sendValueToCCT(_whiteTemperature);
+    if (_deviceWhiteTemperature == 0xFFFF) {
+
+      if (_brightness != 0)
+        sendValueToCCT(_whiteTemperature);
+    }
     else
       sync_counter++;
 
