@@ -6768,7 +6768,7 @@ void Z2S_onColorTemperatureReceive(
   
   if (channel_number_slot >= 0) {
     msgZ2SDeviceDimmer(
-      zchannel_number_slot, color_temperature, true, LEGACY_MSG);
+      channel_number_slot, color_temperature, true, LEGACY_MSG);
     return;
   }
 
