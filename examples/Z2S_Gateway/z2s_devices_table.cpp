@@ -3958,7 +3958,7 @@ void Z2S_onOccupancyReceive(
   }
 } */
 
-void Z2S_onColorControlReceive(
+/*void Z2S_onColorControlReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
 
@@ -4030,7 +4030,7 @@ void Z2S_onColorControlReceive(
       }
     } break;
   }
-}
+}*/
 
 void Z2S_onThermostatReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
