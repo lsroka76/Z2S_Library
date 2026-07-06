@@ -8784,7 +8784,8 @@ uint8_t Z2S_addZ2SDevice(
 /*****************************************************************************/     
 
       case Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB:
-      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE: {
+      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE:
+      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY: {
         
         addZ2SDeviceRGBCCT(
           device, first_free_slot, "RGBCCT", 

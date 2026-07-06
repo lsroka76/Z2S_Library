@@ -39,6 +39,13 @@ void initZ2SDeviceRGBCCT(
     break;
 
 
+    case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY:
+
+      Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
+        device, Z2S_COLOR_XY_RGB); 
+    break;
+
+
     case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
     case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
