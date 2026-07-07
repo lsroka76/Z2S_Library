@@ -76,6 +76,9 @@ void Supla::Control::Z2S_DimmerInterface::onLoadState() {
     Supla::Storage::WriteState(
       (unsigned char *)&_last_brightness, sizeof(_last_brightness));
 
+	Supla::Storage::WriteState(
+      (unsigned char *)&_whiteTemperature, sizeof(_whiteTemperature));  
+
     Supla::Storage::WriteState(
       (unsigned char *)&_last_whiteTemperature, sizeof(_last_whiteTemperature));
   }
