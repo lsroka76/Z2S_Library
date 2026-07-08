@@ -51,14 +51,14 @@ bool Z2S_saveFile(
   
   snprintf(file_name, sizeof(file_name), "/z2s_gateway/%s", z2s_file_name);
    
-  if (!LittleFS.exists(file_name)) {
+  /*if (!LittleFS.exists(file_name)) {
     File f = LittleFS.open(file_name, "w");
     f.close();
-  }
+  }*/
   
-  File file = LittleFS.open(file_name, "r+");
+  File file = LittleFS.open(file_name, "w");
   
-  file.seek(0, SeekSet);
+  //file.seek(0, SeekSet);
   
   if (!file) {
   
