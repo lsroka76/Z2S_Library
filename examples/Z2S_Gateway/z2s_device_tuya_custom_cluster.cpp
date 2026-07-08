@@ -1951,6 +1951,7 @@ void processTuyaPresenceSensorDataReport(
       presence_value_on = 0x00;
     } break;
 
+
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO: {
 
       presence_dp_id = TUYA_PRESENCE_SENSOR_PRESENCE_DP;
@@ -1960,12 +1961,25 @@ void processTuyaPresenceSensorDataReport(
       presence_value_on = 0x00;
     } break;
 
+
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z: {
 
       motion_state_dp_id = TUYA_PRESENCE_SENSOR_ZG205Z_PRESENCE_DP;//ENUM
       distance_dp_id = TUYA_PRESENCE_SENSOR_ZG205Z_TARGET_DISTANCE_DP;
       illuminance_dp_id = TUYA_PRESENCE_SENSOR_ZG205Z_ILLUMINANCE_DP;
     } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZA: {
+
+      presence_dp_id = TUYA_PRESENCE_SENSOR_ZG205ZA_PRESENCE_DP;
+      motion_state_dp_id = TUYA_PRESENCE_SENSOR_ZG205ZA_MOTION_STATE_DP;//ENUM
+      distance_dp_id = TUYA_PRESENCE_SENSOR_ZG205ZA_TARGET_DISTANCE_DP;
+      illuminance_dp_id = TUYA_PRESENCE_SENSOR_ZG205ZA_ILLUMINANCE_DP;
+
+      presence_value_on = 0x00;
+    } break;
+
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2: {
 
@@ -2029,6 +2043,7 @@ void processTuyaPresenceSensorDataReport(
 
       presence_dp_id = TUYA_PRESENCE_SENSOR_SZLR08T_PRESENCE_DP;
       illuminance_dp_id = TUYA_PRESENCE_SENSOR_SZLR08T_ILLUMINANCE_DP;
+      
       relay_state_dp_id = TUYA_PRESENCE_SENSOR_SZLR08T_RELAY_SWITCH_DP;
       presence_value_on = 0x01;
     } break;
@@ -3560,6 +3575,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZA:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:

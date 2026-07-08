@@ -150,6 +150,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO            0x2320
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z         0x2325
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZL        0x2326
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZA        0x2327
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2       0x2330
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3    0x2331
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE        0x2335
@@ -2505,6 +2506,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZL,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZA,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -6883,6 +6890,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_v1jqz5cy", .model_name = "TS0601",
     .z2s_device_uid = 36100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_crq3r3la", .model_name = "CK-BL702-MWS-01(7016)",
+    .z2s_device_uid = 36200,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZA,
     .z2s_device_endpoints_count = 1}  
 
 
