@@ -6902,11 +6902,10 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZA,
     .z2s_device_endpoints_count = 1},
 
-  { .manufacturer_name = "_TZE200_crq3r3la", .model_name = "CK-BL702-MWS-01(7016)",
+  { .manufacturer_name = "_TZE284_d2zfgtij", .model_name = "TS0601",
     .z2s_device_uid = 36300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER,
     .z2s_device_endpoints_count = 1} 
-
 
 //DEVICES_END
 };
