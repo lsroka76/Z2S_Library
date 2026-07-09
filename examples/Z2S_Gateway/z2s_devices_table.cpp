@@ -7611,8 +7611,8 @@ void Z2S_onCmdCustomClusterReceive(
       processTuyaCustomCluster(
         tsn, short_addr, endpoint, command_id, payload_size, payload); 
       
-      //if (_on_Tuya_custom_cluster_receive) 
-      //  _on_Tuya_custom_cluster_receive(command_id, payload_size, payload);
+      if (_on_Tuya_custom_cluster_receive) 
+        _on_Tuya_custom_cluster_receive(command_id, payload_size, payload);
     } break;
 
     case ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER:
