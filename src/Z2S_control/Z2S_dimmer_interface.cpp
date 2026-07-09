@@ -480,7 +480,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       /*if (_last_whiteTemperature > 100)
         _last_whiteTemperature = 0;
       _whiteTemperature =  _last_whiteTemperature;*/
-      turnOff();
+      //turnOff();
       //_lastMsgReceivedMs = millis();
     } 
   }
@@ -636,6 +636,11 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
       //else
       if (_state)
         sendValueToCCT(_whiteTemperature);
+      else {
+
+        channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+        Supla::Storage::ScheduleSave(5000, 2000);
+      }
     }
     else {
       //channel.setNewValue(0, 0, 0, 0, _brightness, 0);
