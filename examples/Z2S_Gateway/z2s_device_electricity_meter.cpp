@@ -143,7 +143,8 @@ void initZ2SDeviceElectricityMeter(
     } break;
 
 
-    case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
+    case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
+    case Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER: {
 
       _one_phase = true;
 

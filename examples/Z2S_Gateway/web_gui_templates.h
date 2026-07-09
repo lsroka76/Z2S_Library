@@ -2087,6 +2087,12 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_3PHASES_ELECTRICITY_METER_UPDATE_FREQUENCY_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
     .Tuya_datapoint_name 	 			= "Measurement update frequency",
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 3600 [s]" },
+		
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER,
+    .Tuya_datapoint_id 		 			= TUYA_1PHASE_V1_ELECTRICITY_METER_UPDATE_FREQUENCY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Measurement update frequency",
     .Tuya_datapoint_description = "Enter numeric value between 30 and 3600 [s]" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR,

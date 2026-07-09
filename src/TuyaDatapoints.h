@@ -363,6 +363,9 @@
 #define TUYA_1PHASE_ELECTRICITY_METER_CURRENT_A_DP                  0x67//[103, "current_a", tuya.valueConverter.divideBy1000],
 #define TUYA_1PHASE_ELECTRICITY_METER_POWER_A_DP                    0x68//[104, "power", tuya.valueConverter.raw]
 
+#define TUYA_1PHASE_V1_ELECTRICITY_METER_VCP_RAW_DP                 0x06//[6, null, tuya.valueConverter.phaseVariant3],
+#define TUYA_1PHASE_V1_ELECTRICITY_METER_UPDATE_FREQUENCY_DP        0x66//[102, "update_frequency", tuya.valueConverterBasic.divideBy(1)],
+
 #define MOES_ALARM_BATTERY_PERCENTAGE_DP                            0x0F //15 02 04
 #define MOES_ALARM_MELODY_DP                                        0x15 //21 ENUM
 #define MOES_ALARM_DURATION_DP                                      0x07 //07 02 04
