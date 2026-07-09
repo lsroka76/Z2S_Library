@@ -257,6 +257,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER      0x4550
 #define Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER       0x4551
+#define Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER    0x4552
 
 #define Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1                  0x4600
 #define Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2                  0x4601
@@ -2601,6 +2602,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -6150,7 +6156,6 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_ENKI_REMOTE_CONTROL,
 	  .z2s_device_endpoints_count = 1},
 
-
   {	.manufacturer_name = "ADEO", .model_name = "LDSENK08",
     .z2s_device_uid = 24700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR,
@@ -6895,7 +6900,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_crq3r3la", .model_name = "CK-BL702-MWS-01(7016)",
     .z2s_device_uid = 36200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZA,
-    .z2s_device_endpoints_count = 1}  
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_crq3r3la", .model_name = "CK-BL702-MWS-01(7016)",
+    .z2s_device_uid = 36300,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1} 
 
 
 //DEVICES_END
