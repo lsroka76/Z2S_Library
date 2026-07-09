@@ -8634,7 +8634,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/
 
-      case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER: {
+      case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
+      case Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER: {
 
         addZ2SDeviceElectricityMeter(
           &zbGateway, device, false, false, first_free_slot, NO_CUSTOM_CMD_SID,
@@ -11144,6 +11145,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
+    case Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER:
     case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:
