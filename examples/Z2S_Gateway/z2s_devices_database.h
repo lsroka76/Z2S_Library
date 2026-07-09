@@ -6905,6 +6905,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE284_d2zfgtij", .model_name = "TS0601",
     .z2s_device_uid = 36300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZB210_yatkpuha", .model_name = "TS0505B",
+    .z2s_device_uid = 36400,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
     .z2s_device_endpoints_count = 1} 
 
 //DEVICES_END
