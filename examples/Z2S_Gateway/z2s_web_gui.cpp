@@ -6258,7 +6258,7 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 					ESPUI.getControl(
 							clusters_attributes_table[device_attribute_size_number])->getValueInt();
 				
-				if (attribute_size > 255) {
+				if (attribute_size > 512) {
 
 					updateLabel_P(
 							clusters_attributes_table[device_read_attribute_label], 
