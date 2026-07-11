@@ -40,6 +40,7 @@
 
 #define Z2S_DEVICE_DESC_NULL                                0x0000
 #define Z2S_DEVICE_DESC_TUYA_QUERY                          0x0080
+#define Z2S_DEVICE_DESC_SHELLY_RPC                          0x0090
 
 #define Z2S_DEVICE_DESC_LOCAL_ACTION_HANDLER                0x0100
 
@@ -1252,6 +1253,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY,
     .z2s_device_clusters = {TUYA_PRIVATE_CLUSTER_EF00 }},
+
+	{	.z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_RPC, 
+    .z2s_device_clusters_count = 1, 
+    .z2s_device_config_flags =  0,
+    .z2s_device_clusters = { 0xFC01 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
     .z2s_device_clusters_count = 3,
@@ -2784,7 +2790,8 @@ static const z2s_device_endpoint_t
     Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER },
   { 0x04, Z2S_REPORTING_SET_FLAG_STANDARD, 
     Z2S_REPORTING_SET_DESC_SHELLY_POWER_STRIP_EM, 
-    Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER }
+    Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER },
+  { 0xEF,0, 0, Z2S_DEVICE_DESC_SHELLY_RPC }
 };
 
 
@@ -6635,7 +6642,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 32950,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_POWER_STRIP_EM,
     .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS,
-	  .z2s_device_endpoints_count = 4,
+	  .z2s_device_endpoints_count = 5,
     .z2s_device_endpoints_ext = SHELLY_RELAY_ELECTRICITY_METER_ENDPOINTS },
 
   { .manufacturer_name = "_TZE204_jpyrsdp3", .model_name = "TS0601",
