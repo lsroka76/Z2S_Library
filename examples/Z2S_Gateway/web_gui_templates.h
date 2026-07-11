@@ -229,6 +229,9 @@ static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 	
 	{ .zigbee_cluster_name = "TUYA (0xEF00)",						
 		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_EF00 },
+
+    { .zigbee_cluster_name = "SHELLY RPC CLUSTER (0xFC01)",				
+		.zigbee_cluster_id = 0xFC01 },
 	
 	{ .zigbee_cluster_name = "DEVELCO (0xFC03)",				
 		.zigbee_cluster_id = DEVELCO_CUSTOM_CLUSTER },
