@@ -62,6 +62,12 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
     colorBrightness = 100;
   }
 
+  if ((colorBrightness == 0) && (brightness == 0)) {
+
+    log_i("OFF");
+    turnOnOff = 0;
+  }
+
   if ((_colorBrightness > 0) && (colorBrightness == 0)) {
       
     log_i("RGB OFF");
@@ -76,8 +82,10 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
     
     if (turnOnOff == 0)
       turnOnOff = 1;
-    else turnOnOff = 2;
-
+    else 
+      turnOnOff = 2;
+    
+    brightness = 0; // TURN OFF DIMMER
     whiteTemperature = 0; //TURN OFF CCT
   }
       
@@ -110,8 +118,10 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
     
     if (turnOnOff == 0)
       turnOnOff = 1;
-    else turnOnOff = 2;
-    //_colorBrightness = 0;
+    else 
+      turnOnOff = 2;
+    
+    _colorBrightness = 0;
   }
 
   _last_brightness = _brightness;
@@ -171,6 +181,12 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
 
         zbGateway.sendOnOffCmd(&_device, true);
         //return;
+      } break;
+
+      case 3: {
+
+        zbGateway.sendOnOffCmd(&_device, true);
+        turnOnOff = 2;
       } break;
 
 
@@ -333,9 +349,9 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
 
       uint8_t level = mapFloat(brightness, 1, 100, 1, 254);
       zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
-    }
+    //}
 
-    if (whiteTemperature > 0) {
+    //if (whiteTemperature > 0) {
 
       log_i(
         "SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB - sending white temperature!");

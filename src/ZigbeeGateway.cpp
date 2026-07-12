@@ -1142,7 +1142,7 @@ void ZigbeeGateway::printJoinedDevices() {
   }
 }
 
-void ZigbeeGateway::zbProcessAttributeReporting(
+/*void ZigbeeGateway::zbProcessAttributeReporting(
   esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
   const esp_zb_zcl_attribute_t *attribute) {
   
@@ -1734,9 +1734,9 @@ void ZigbeeGateway::zbProcessAttributeReporting(
         "from (0x%x), endpoint (%d), cluster (0x%x), attribute id (0x%x), "
         "attribute data type (0x%x) ", src_address.u.short_addr, src_endpoint,
         cluster_id, attribute->id, attribute->data.type);
-}
+}*/
 
-/*
+
 void ZigbeeGateway::zbProcessAttributeReporting(
   esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,
   const esp_zb_zcl_attribute_t* attribute) {
@@ -1936,7 +1936,7 @@ void ZigbeeGateway::zbProcessAttributeReporting(
 
     case ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING: {
 
-     _on_IAS_zone_status_change_notification if (_on_window_covering_receive)
+     if (_on_window_covering_receive)
         _on_window_covering_receive(
           src_address.u.short_addr, src_endpoint, cluster_id, attribute);
 
@@ -1950,27 +1950,29 @@ void ZigbeeGateway::zbProcessAttributeReporting(
 
     } break;
 
+
+    case 0xFC01:
+    case 0xFC02:
+    case 0xFC03: {
+
+      if (_on_fcxx_custom_cluster_receive)
+        _on_fcxx_custom_cluster_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+
+    } break;
+
+
     default: {
-
-      if (cluster_id >= 0xFC01 && cluster_id <= 0xFC03) {
-
-        if (_on_fcxx_custom_cluster_receive)
-          _on_fcxx_custom_cluster_receive(
-            src_address.u.short_addr, src_endpoint, cluster_id, attribute);
-
-      } else {
-
-        log_i(
-          "\n\rUnknown report from device (0x%04X):\n\r"
-          "endpoint (0x02X)\tcluster (0x%04X)\n\r"
-          "attribute id = 0x%04X\tattribute datatype = 0x%02X\n\r",
-          src_address.u.short_addr, src_endpoint, cluster_id, attribute->id,
-          attribute->data.type);
-      }
+    
+      log_i(
+        "\n\rUnknown report from device (0x%04X):\n\r"
+        "endpoint (0x02X)\tcluster (0x%04X)\n\r"
+        "attribute id = 0x%04X\tattribute datatype = 0x%02X\n\r",
+        src_address.u.short_addr, src_endpoint, cluster_id, attribute->id,
+        attribute->data.type);
     } break;
   }
 }
-*/
 
 void ZigbeeGateway::zbAttributeReporting(
   esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
@@ -2089,15 +2091,14 @@ void ZigbeeGateway::zbIASZoneStatusChangeNotification(
 
   esp_zb_zcl_cmd_info_t info = message->info;
 
-  if (_on_IAS_zone_status_change_notification)
-    _on_IAS_zone_status_change_notification(
-      info.src_address.u.short_addr, info.src_endpoint, message->info.cluster, 
-      message->zone_status);
   /*if (_on_IAS_zone_status_change_notification)
     _on_IAS_zone_status_change_notification(
       info.src_address.u.short_addr, info.src_endpoint, message->info.cluster, 
+      message->zone_status);*/
+  if (_on_IAS_zone_status_change_notification)
+    _on_IAS_zone_status_change_notification(
+      info.src_address.u.short_addr, info.src_endpoint, message->info.cluster, 
       message, nullptr);
-  */
 }
 
 void ZigbeeGateway::zbCmdDiscAttrResponse(

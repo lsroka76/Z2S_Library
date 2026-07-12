@@ -165,7 +165,7 @@ void Supla::Control::Z2S_DimmerInterface::turnOff() {
   _last_brightness = _brightness;
   _brightness = 0;
 
-  _lastMsgReceivedMs = millis();
+  _lastMsgReceivedMs = 1; //millis();
 }
 
 void Supla::Control::Z2S_DimmerInterface::turnOn() {
@@ -202,34 +202,39 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
         if (sendTurnOnOffCmd == 1) {
 
           _state = DIMMER_STATE_OFF;
-          zbGateway.sendOnOffCmd(&_device, false);
-
-          /*zbGateway.sendAttributeRead(
-            &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-            ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);*/
+          //zbGateway.sendOnOffCmd(&_device, false);
+          //zbGateway.sendAttributeRead(
+          //  &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+          //  ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
 
           sendTurnOnOffCmd = 0;
-          break;
+          //break;
         }
 
         if (sendTurnOnOffCmd == 2) {
 
           _state = DIMMER_STATE_ON;
-          zbGateway.sendOnOffCmd(&_device, true);
-          
-          /*zbGateway.sendAttributeRead(
-            &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-            ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);*/          
-          
+          //zbGateway.sendOnOffCmd(&_device, true);
+                    
           sendTurnOnOffCmd = 0;
         }
         
-        uint8_t level = mapFloat(brightness, 1, 100, 1, 254);
-        zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
+        if (brightness >= 0) {
 
-        /*zbGateway.sendAttributeRead(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
-          ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);*/
+          uint8_t level = mapFloat(brightness, 0, 100, 1, 254);
+          
+          zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1, true);
+          /*zbGateway.sendAttributeRead(
+            &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+          zbGateway.sendAttributeRead(
+            &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
+            ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);*/
+        }
+        else
+        zbGateway.sendAttributeRead(
+            &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
       } break;
 
 
@@ -382,13 +387,6 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
   if (!channel.isStateOnline()) 
 	  channel.setStateOnline();
 
-  /*if ((dimmer_msg == LEVEL_CONTROL_MSG) && (_state == DIMMER_STATE_OFF) &&
-      (value > 0)) {
-
-        log_i("brightness while off - turning off");
-        turnOff();
-        return;
-      }*/
     
   if (value < 0) {
 
@@ -442,7 +440,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
       //if (_last_brightness > 100)
       //  _last_brightness = 100;
       //_brightness = _last_brightness;
-      _state = DIMMER_STATE_ON;
+      _state = DIMMER_STATE_ON  ;
       //_lastDeviceMsgReceivedMs = millis();
       //channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
       return;
@@ -501,9 +499,10 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
       case Z2S_SEND_TO_LEVEL_DIMMER:  
         
-        if (dimmer_msg == LEVEL_CONTROL_MSG)
-          sent_brightness = mapFloat(value, 1, 254, 1, 100); 
-        else return;
+        if (dimmer_msg == LEGACY_MSG)
+          sent_brightness = mapFloat(value, 1, 254, 0, 100); 
+        //if (dimmer_msg == F000_LEVEL_MSG)
+        //  sent_brightness = mapFloat(value, 0, 1000, 0, 100); 
       break;
 
 
@@ -511,14 +510,6 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
         //_brightness = mapFloat(value, 250, 454, 0, 100); 
         sent_brightness = mapFloat(value, /*454*/500, /*200*/158, 0, 100); 
-      break;
-
-
-      case Z2S_TUYA_F0_CMD_DIMMER:  
-        
-        if (dimmer_msg == F000_LEVEL_MSG)
-          sent_brightness = mapFloat(value, 1, 1000, 1, 100); 
-        else return;
       break;
 
 
@@ -530,18 +521,17 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
     }
     _deviceBrightness = value;
 
-    //if ((!_state) || (value == 0)) {
-    if ((!_state) && (sent_brightness > 0)) {
+    if ((!_state) || (value == 0)) {
+
       log_i(
         "_last_brightness %u, sent_brightness = %u", _last_brightness, 
         sent_brightness);
 
-      _last_brightness = sent_brightness;
-      //_state = DIMMER_STATE_ON;
-      //_last_brightness = _brightness;
-      //_brightness = 0;
+      //_last_brightness = sent_brightness; 
       //turnOff();
-      //return;
+
+      _last_brightness = _brightness;
+      _brightness = sent_brightness;
     }
     else {
 
@@ -579,7 +569,7 @@ void Supla::Control::Z2S_DimmerInterface::syncDevice() {
     if (_deviceBrightness == 0xFF) {
 
       if (_brightness == 0)
-        sync_counter++;//sendValueToDimmer(_last_brightness);
+        sendValueToDimmer(_brightness);//sync_counter++;//sendValueToDimmer(_last_brightness);
       else
         sendValueToDimmer(_brightness);
     }
@@ -677,6 +667,10 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
 
   if (_lastDeviceMsgReceivedMs && millis() - _lastDeviceMsgReceivedMs >= 400) {
 
+    log_i(
+      "_lastDeviceMsgReceivedMs %lu, _brightness %u, _whiteTemperature %u", 
+      _lastDeviceMsgReceivedMs, _brightness, _whiteTemperature);
+      
     _lastDeviceMsgReceivedMs = 0;
     channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
     Supla::Storage::ScheduleSave(5000, 2000);

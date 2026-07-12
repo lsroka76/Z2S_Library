@@ -1257,7 +1257,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 	{	.z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_RPC, 
     .z2s_device_clusters_count = 1, 
     .z2s_device_config_flags =  0,
-    .z2s_device_clusters = { 0xFC01 }},
+    .z2s_device_clusters = { SHELLY_CUSTOM_CLUSTER_ID_RPC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
     .z2s_device_clusters_count = 3,

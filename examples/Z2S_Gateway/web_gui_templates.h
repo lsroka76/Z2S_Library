@@ -230,8 +230,8 @@ static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 	{ .zigbee_cluster_name = "TUYA (0xEF00)",						
 		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_EF00 },
 
-    { .zigbee_cluster_name = "SHELLY RPC CLUSTER (0xFC01)",				
-		.zigbee_cluster_id = 0xFC01 },
+  { .zigbee_cluster_name = "SHELLY RPC CLUSTER (0xFC01)",				
+		.zigbee_cluster_id = SHELLY_CUSTOM_CLUSTER_ID_RPC },
 	
 	{ .zigbee_cluster_name = "DEVELCO (0xFC03)",				
 		.zigbee_cluster_id = DEVELCO_CUSTOM_CLUSTER },
@@ -347,29 +347,29 @@ static constexpr Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM =
 
 static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM = {
 
-	 { .manufacturer_code = PHILIPS_MANUFACTURER_CODE,	
-		 .manufacturer_name = "PHILIPS" },
+	{ .manufacturer_code = PHILIPS_MANUFACTURER_CODE,	
+		.manufacturer_name = "PHILIPS" },
 
-	 { .manufacturer_code = LUMI_MANUFACTURER_CODE,		
-	 	 .manufacturer_name = "LUMI" },
+	{ .manufacturer_code = LUMI_MANUFACTURER_CODE,		
+	 	.manufacturer_name = "LUMI" },
 
-	 { .manufacturer_code = DEVELCO_MANUFACTURER_CODE,	
-	 	 .manufacturer_name = "DEVELCO" },
+	{ .manufacturer_code = DEVELCO_MANUFACTURER_CODE,	
+	 	.manufacturer_name = "DEVELCO" },
 
-	 { .manufacturer_code = SONOFF_MANUFACTURER_CODE,										
-	 	 .manufacturer_name = "SHENZHEN_COOLKIT_TECHNOLOGY_CO_LTD (SONOFF)" },
+	{ .manufacturer_code = SONOFF_MANUFACTURER_CODE,										
+	 	.manufacturer_name = "SHENZHEN_COOLKIT_TECHNOLOGY_CO_LTD (SONOFF)" },
 
-		{ .manufacturer_code = BOSCH_MANUFACTURER_CODE,										
-	 	 .manufacturer_name = "BOSCH" },
+	{ .manufacturer_code = BOSCH_MANUFACTURER_CODE,										
+	 	.manufacturer_name = "BOSCH" },
 
-		{ .manufacturer_code = EUROTRONIC_MANUFACTURER_CODE,										
-	 	 .manufacturer_name = "EUROTRONIC" },
+	{ .manufacturer_code = EUROTRONIC_MANUFACTURER_CODE,										
+	 	.manufacturer_name = "EUROTRONIC" },
 
-		{ .manufacturer_code = DANFOSS_MANUFACTURER_CODE,										
-	 	 .manufacturer_name = "DANFOSS" },
+	{ .manufacturer_code = DANFOSS_MANUFACTURER_CODE,										
+	 	.manufacturer_name = "DANFOSS" },
 
-        { .manufacturer_code = 0x1490,										
-	 	 .manufacturer_name = "SHELLY" }
+  { .manufacturer_code = SHELLY_MANUFACTURER_CODE,										
+	.manufacturer_name = "SHELLY" }
 	};
 
 static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {

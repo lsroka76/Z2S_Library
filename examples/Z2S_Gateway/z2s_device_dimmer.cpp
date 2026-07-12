@@ -132,7 +132,7 @@ void initZ2SDeviceDimmer(
         case Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE: {
 
           dimmer_function = SUPLA_CHANNELFNC_DIMMER_CCT;
-          dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER; 
+          dimmer_mode = Z2S_TUYA_F0_CMD_DIMMER; //Z2S_SEND_TO_LEVEL_DIMMER; 
           cct_mode = Z2S_TUYA_COLOR_TEMPERATURE_DIMMER;
           new_interface = true;
         } break;
