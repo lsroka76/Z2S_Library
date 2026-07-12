@@ -592,38 +592,6 @@ bool Z2S_setChannelExtendedDataCounter(
   int16_t channel_number_slot, uint64_t extended_data_counter);
 
 /*****************************************************************************/
-/*
-void Z2S_onTemperatureReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  float temperature);
-
-void Z2S_onHumidityReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  float humidity);
-
-void Z2S_onPressureReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  float pressure);
-
-void Z2S_onConcentrationReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  float measured_value);
-
-void Z2S_onIlluminanceReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t illuminance);
-
-void Z2S_onFlowReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t flow);
-
-void Z2S_onOccupancyReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint8_t occupancy);
-
-void Z2S_onOnOffReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  bool state);*/
 
 void Z2S_onTemperatureReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
@@ -681,31 +649,6 @@ void Z2S_onBasicReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute);
 
-/*void Z2S_onCurrentLevelReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t level);
-
-void Z2S_onColorHueReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint8_t hue);
-
-void Z2S_onColorSaturationReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint8_t saturation);
-  
-void Z2S_onColorTemperatureReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t attribute_id, uint16_t color_temperature);
-
-void Z2S_onThermostatTemperaturesReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t id, int16_t temperature);
-
-void Z2S_onThermostatModesReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t id, uint16_t mode);
-*/
-
 void Z2S_onCurrentLevelReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute);
@@ -754,14 +697,6 @@ void Z2S_onLumiCustomClusterReceive(
 void Z2S_onIkeaCustomClusterReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
-
-/*void Z2S_onWindowCoveringReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t id, uint16_t value);
-
-void Z2S_onBatteryReceive(
-  uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  uint16_t id, uint8_t battery_remaining);*/
 
 bool Z2S_onCustomCmdReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 

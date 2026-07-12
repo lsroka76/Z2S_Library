@@ -50,7 +50,7 @@ void initZ2SDeviceRGBCCT(
     case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_COLOR_XY_RGB); //Z2S_COLOR_HS_RGB); 
+        device, Z2S_COLOR_HS_RGB); 
       break;
 
 
