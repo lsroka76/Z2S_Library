@@ -208,6 +208,8 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
 
 void Supla::Control::Z2S_RGBCCTInterface::setStateOnServer(bool state) {
 
+  log_i("state %u", state);
+
   if (state)
     _device_state = RGBCCT_STATE_ON;
   else
@@ -271,8 +273,9 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
     }
     if (colorBrightness > 0) {
 
-      log_i("red %d, green %d, blue %d, color brightness %d",
-            red, green, blue, colorBrightness);
+      log_i(
+        "red %d, green %d, blue %d, color brightness %d", red, green, blue, 
+        colorBrightness);
       
       ColorHSV hsv;
       ColorRGB rgb;
@@ -470,6 +473,11 @@ void Supla::Control::Z2S_RGBCCTInterface::syncDevice() {
 
       _fresh_start = false;
       //if ((_device_state == RGBCCT_STATE_ON))
+      log_i("sync done...");
+      if ((_brightness > 0) || (_colorBrightness > 0))
+        turnOnOff = 1;
+      else
+        turnOnOff = 0;
       _lastServerMsgReceivedMs = 1;
     }
   }
@@ -500,6 +508,12 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
     
     _lastServerMsgReceivedMs = 0;
 
+    log_i(
+        "[S] red %d, green %d, blue %d, color brightness %d, brightness %d", 
+        "whiteTemperature %d", _red, _green, _blue, _colorBrightness, 
+        _brightness, _whiteTemperature);
+      
+
     channel.setNewValue(
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
     
@@ -509,8 +523,13 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
   if ((_lastDeviceMsgReceivedMs != 0) && 
       (millis() - _lastDeviceMsgReceivedMs >= 400)) {
-    
+  
     _lastDeviceMsgReceivedMs = 0;
+
+    log_i(
+        "[D] red %d, green %d, blue %d, color brightness %d, brightness %d", 
+        "whiteTemperature %d", _red, _green, _blue, _colorBrightness, 
+        _brightness, _whiteTemperature);
 
     channel.setNewValue(
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);

@@ -181,7 +181,10 @@ void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, RGBCCTMessage rgbcct_msg,
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: 
-      case Z2S_DEVICE_DESC_ADEO_RGBW_BULB: {
+      case Z2S_DEVICE_DESC_ADEO_RGBW_BULB: 
+      case Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB:
+      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE: 
+      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY: {
         
         switch (rgbcct_msg) {
           
