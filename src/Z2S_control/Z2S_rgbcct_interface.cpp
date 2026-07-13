@@ -190,18 +190,23 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
       turnOnOff = 2;
     
     _colorBrightness = 0;
+    
+    
+    if (whiteTemperature == 0)
+      whiteTemperature = _last_whiteTemperature;
+
+    if (brightness == 100)
+      brightness = _last_brightness;
   }
 
   _last_brightness = _brightness;
   _brightness = brightness;
 
-  //if ((_whiteTemperature == 0) && (whiteTemperature > 0)) 
-  //  _colorBrightness = 0;
-
   _last_whiteTemperature = _whiteTemperature;
   _whiteTemperature = whiteTemperature;
 
   _lastServerMsgReceivedMs = millis();
+  Supla::Storage::ScheduleSave(5000, 2000);
 
   return -1;
 }
@@ -516,6 +521,8 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
     channel.setNewValue(
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
+
+    Supla::Storage::ScheduleSave(5000, 2000);
     
     sendValueToDevice(
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
@@ -533,6 +540,8 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
     channel.setNewValue(
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
+      
+    Supla::Storage::ScheduleSave(5000, 2000);
   }
 
   //if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
