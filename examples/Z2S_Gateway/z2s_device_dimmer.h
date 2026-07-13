@@ -38,7 +38,6 @@ void addZ2SDeviceDimmer(
 
 void msgZ2SDeviceDimmer(
   int16_t channel_number_slot, int16_t level, bool state, 
-  DimmerMessage dimmer_msg = LEGACY_MSG);
-
-
+  DimmerMessage dimmer_msg = DimmerMessage::LEGACY_MSG);
+  
 #endif

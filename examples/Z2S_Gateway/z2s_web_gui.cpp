@@ -495,14 +495,20 @@ static constexpr char* empty_str PROGMEM = "";
 
 static constexpr char* device_query_failed_str 								PROGMEM = 
 	"Device data query failed - try to wake it up first!";
+
 static constexpr char* device_async_query_str 								PROGMEM = 
 	"Device data query sent asynchronously";
-static constexpr char* device_query_attr_size_error_str 			PROGMEM = 
-	"Error - attribute size has to be in range 0..255";
+
+constexpr	const char device_query_attr_size_error_str[] 			PROGMEM = 
+	PAYLOAD_ERROR_MSG("Error - attribute size has to be in range 0...", 
+	MAX_ZIGBEE_PAYLOAD_SIZE);
+
 static constexpr char* Tuya_device_payload_size_error_str 		PROGMEM = 
 	"Error - Tuya DP payload size has to be in range 0..58";
+
 static constexpr char* device_query_attr_size_mismatch_str 		PROGMEM = 
 	"Error - attribute size and attribute value length mismatch";
+
 static constexpr char* Tuya_device_payload_size_mismatch_str	PROGMEM = 
 	"Error - Tuya payload type length and payload value length mismatch";
 
@@ -2539,7 +2545,7 @@ void buildClustersAttributesTab() {
 		Control::Type::Number, empty_str, (long int)0, 
 		Control::Color::Emerald, 
 		clusters_attributes_table[device_endpoint_number], generalMinMaxCallback, 
-		(void*)255);
+		(void*)MAX_ZIGBEE_PAYLOAD_SIZE);
 
 	addClearLabel(
 		PSTR(
@@ -6252,13 +6258,11 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 				uint16_t write_mask_16;
 				uint32_t write_mask_32;
 
-				uint8_t *write_attribute_payload = nullptr;
-
 				uint16_t attribute_size = 
 					ESPUI.getControl(
 							clusters_attributes_table[device_attribute_size_number])->getValueInt();
 				
-				if (attribute_size > 512) {
+				if (attribute_size > MAX_ZIGBEE_PAYLOAD_SIZE) {
 
 					updateLabel_P(
 							clusters_attributes_table[device_read_attribute_label], 
@@ -6266,11 +6270,14 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 					return;
 				}
 
+				uint8_t write_attribute_payload[attribute_size];
+
 				const char* attribute_value = ESPUI.getControl(
 					clusters_attributes_table[device_attribute_value_text])->getValueCstr();
 
-				log_i("attribute_value = %s, length = %u", attribute_value, 
-							strlen(attribute_value));
+				log_i(
+					"attribute_value = %s, length = %u", attribute_value, 
+					strlen(attribute_value));
 
       	if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
 						(attribute_type <= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
@@ -6285,15 +6292,15 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 
         	char byte_str[3];
         	byte_str[2] = '\0';
-					write_attribute_payload = (uint8_t*)malloc(attribute_size); //2 by
+					//write_attribute_payload = (uint8_t*)malloc(attribute_size); //2 by
 
-					if (write_attribute_payload == nullptr) {
+					/*if (write_attribute_payload == nullptr) {
 
 						updateLabel_P(
 							clusters_attributes_table[device_read_attribute_label], 
 							PSTR("Error allocating attribute write buffer!"));
 						return;
-					}
+					}*/
 
 					memset(write_attribute_payload, 0, attribute_size);
 					
@@ -6339,10 +6346,10 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 						if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
 
 							sprintf_P(general_purpose_gui_buffer, 
-												PSTR("Write attribute successful! <br>"
+												"Write attribute successful! <br>"
 												"Attribute id   = 0x%04X<br>"
 												"Attribute type = %s(0x%02X)<br>"
-												"Attribute size = %u(0x%04X)"),
+												"Attribute size = %u(0x%04X)",
       		            	attribute_id,
 												getZigbeeDataTypeName(attribute_type),
 												attribute_type,
@@ -6356,11 +6363,11 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 
 							sprintf_P(
 								general_purpose_gui_buffer, 
-								PSTR("Write attribute failed! <br>"
+								"Write attribute failed! <br>"
 								"Status = %s(0x%02X)<br>"
 								"Attribute id = 0x%04X<br>"
 								"Attribute type = %s(0x%04X)<br>"
-								"Attribute size = %u(0x%04X)"),
+								"Attribute size = %u(0x%04X)",
 								esp_zb_zcl_status_to_name(
 									*zbGateway.getWriteAttrStatusLastResult()),
 									*zbGateway.getWriteAttrStatusLastResult(),
@@ -6383,20 +6390,19 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 								device_async_query_str);
 					}
 				}
-				if (write_attribute_payload) 
-					free(write_attribute_payload);
+				/*if (write_attribute_payload) 
+					free(write_attribute_payload);*/
 			} break;
 
 			case GUI_CB_CUSTOM_CMD_FLAG : {	//custom command
 					
-				//uint8_t *custom_cmd_payload = nullptr;
-
-				uint16_t payload_size = 
-					ESPUI.getControl(clusters_attributes_table[device_attribute_size_number])->getValueInt();
+				uint16_t payload_size = ESPUI.getControl(
+					clusters_attributes_table[device_attribute_size_number])->getValueInt();
 				
-				if (payload_size > 255) {
-					updateLabel_C(clusters_attributes_table[device_read_attribute_label], 
-												device_query_attr_size_error_str);
+				if (payload_size > MAX_ZIGBEE_PAYLOAD_SIZE) {
+					updateLabel_C(
+						clusters_attributes_table[device_read_attribute_label], 
+						device_query_attr_size_error_str);
 					return;
 				}
 
@@ -6405,8 +6411,9 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 				const char* payload_value = ESPUI.getControl(
 					clusters_attributes_table[device_attribute_value_text])->getValueCstr();
 
-				log_i("payload_value = %s, length = %u", payload_value, 
-				strlen(payload_value));
+				log_i(
+					"payload_value = %s, length = %u", payload_value, 
+					strlen(payload_value));
 
       	//if ((attribute_type >= ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && (attribute_type <= ESP_ZB_ZCL_ATTR_TYPE_BAG))  {
 				if (true) {	
@@ -6442,8 +6449,9 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 						log_i("Payload size equals 0"); 
       	} else {
 
-        	updateLabel_C(clusters_attributes_table[device_read_attribute_label], 
-												PSTR("Invalid data type for custom command!"));
+        	updateLabel_C(
+						clusters_attributes_table[device_read_attribute_label], 
+						"Invalid data type for custom command!");
 					return;
       	}
       	if (true) {
@@ -6468,18 +6476,19 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 
 						
 							sprintf_P(general_purpose_gui_buffer, 
-												PSTR("Custom command successful! <br>"
+												"Custom command successful! <br>"
 												"Command id   = 0x%04X<br>"
 												"Data type = %s(0x%02X)<br>"
-												"Payload size = %u(0x%04X)"),
+												"Payload size = %u(0x%04X)",
       		            	attribute_id,
 												getZigbeeDataTypeName(attribute_type),
 												attribute_type,
 												payload_size,
 												payload_size);
 
-							updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-														general_purpose_gui_buffer);
+							updateLabel_P(
+								clusters_attributes_table[device_read_attribute_label], 
+								general_purpose_gui_buffer);
 						} else {
 
 							sprintf_P(

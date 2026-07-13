@@ -4035,6 +4035,10 @@ void Z2S_onColorControlReceive(
   int16_t channel_number_slot_2 = Z2S_findChannelNumberSlot(
         short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
         DIMMER_FUNC_COLOR_TEMPERATURE_SID);
+
+  int16_t channel_number_slot_3 = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, 
+    NO_CUSTOM_CMD_SID);
   
   
   //if (channel_number_slot_1 < 0) {
@@ -4073,14 +4077,14 @@ void Z2S_onColorControlReceive(
       if (channel_number_slot_2 >= 0) {
         msgZ2SDeviceDimmer(
           channel_number_slot_2, readAttr<uint16_t>(attribute), true, 
-          LEGACY_MSG);
+          DimmerMessage::LEGACY_MSG);
         return;
       }
 
-      DimmerMessage dimmer_msg = COLOR_TEMPERATURE_MSG;
+      DimmerMessage dimmer_msg = DimmerMessage::COLOR_TEMPERATURE_MSG;
 
       if (attribute->id == 0xE000)
-        dimmer_msg = E000_CCT_MSG;
+        dimmer_msg = DimmerMessage::E000_CCT_MSG;
   
       channel_number_slot_2 = Z2S_findChannelNumberSlot(
         short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
@@ -4090,6 +4094,18 @@ void Z2S_onColorControlReceive(
         msgZ2SDeviceDimmer(
           channel_number_slot_2, readAttr<uint16_t>(attribute), true, 
           dimmer_msg);
+        return;
+      }
+    } break;
+
+
+    //ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM
+    case ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_MODE_ID: {
+  
+      if (channel_number_slot_3 >= 0) {
+        msgZ2SDeviceRGBCCT(
+          channel_number_slot_3, RGBCCTMessage::COLOR_MODE_MSG, 
+          readAttr<uint8_t>(attribute));
         return;
       }
     } break;
@@ -5778,10 +5794,20 @@ void Z2S_onOnOffReceive(
  
   channel_number_slot = Z2S_findChannelNumberSlot(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
-    NO_CUSTOM_CMD_SID);
+    NO_CUSTOM_CMD_SID); 
 
   if (channel_number_slot >= 0) {
     msgZ2SDeviceRGB(channel_number_slot, 0xFF, 0xFF, state);
+    return;
+  }
+
+  channel_number_slot = Z2S_findChannelNumberSlot(
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMERANDRGBLED, 
+    NO_CUSTOM_CMD_SID); 
+
+  if (channel_number_slot >= 0) {
+    msgZ2SDeviceRGBCCT(
+      channel_number_slot, RGBCCTMessage::ON_OFF_STATE_MSG, state);
     return;
   }
 
@@ -6607,13 +6633,17 @@ void Z2S_onCurrentLevelReceive(
 
       if (channel_number_slot_1 >= 0) {
         
-        msgZ2SDeviceDimmer(channel_number_slot_1, level, true, LEVEL_CONTROL_MSG);
+        msgZ2SDeviceDimmer(
+          channel_number_slot_1, level, true, 
+          DimmerMessage::LEVEL_CONTROL_MSG);
         return;
       }
 
       if (channel_number_slot_2 >= 0) {
         
-        msgZ2SDeviceDimmer(channel_number_slot_2, level, true, LEVEL_CONTROL_MSG);
+        msgZ2SDeviceDimmer(
+          channel_number_slot_2, level, true, 
+          DimmerMessage::LEVEL_CONTROL_MSG);
         return;
       }  
       no_channel_found_error_func(short_addr);
@@ -6630,7 +6660,8 @@ void Z2S_onCurrentLevelReceive(
 
       if (channel_number_slot_2 >= 0) {
         
-        msgZ2SDeviceDimmer(channel_number_slot_2, level, true, F000_LEVEL_MSG);
+        msgZ2SDeviceDimmer(
+          channel_number_slot_2, level, true, DimmerMessage::F000_LEVEL_MSG);
         return;
       }
       no_channel_found_error_func(short_addr);

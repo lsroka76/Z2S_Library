@@ -20,6 +20,8 @@
 #include "rgbhsv.h"
 
 #include <supla/log_wrapper.h>
+#include <supla/storage/storage.h>
+
 
 Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface(
   zbg_device_params_t *device, uint8_t rgb_mode) : _rgb_mode(rgb_mode) {
@@ -38,6 +40,72 @@ Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface(
       SUPLA_RGBW_BIT_FUNC_DIMMER_CCT | SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB);
   channel.setDefault(SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB);
   usedConfigTypes.set(SUPLA_CONFIG_TYPE_DEFAULT);
+}
+
+void Supla::Control::Z2S_RGBCCTInterface::onLoadState() {
+
+    Supla::Storage::ReadState(
+      (unsigned char *)&_brightness, sizeof(_brightness));
+    Supla::Storage::ReadState(
+      (unsigned char *)&_last_brightness, sizeof(_last_brightness));
+
+    Supla::Storage::ReadState(
+      (unsigned char *)&_colorBrightness, sizeof(_colorBrightness));
+    Supla::Storage::ReadState(
+      (unsigned char *)&_last_colorBrightness, sizeof(_last_colorBrightness));
+
+    Supla::Storage::ReadState(
+      (unsigned char *)&_whiteTemperature, sizeof(_whiteTemperature));
+    Supla::Storage::ReadState(
+      (unsigned char *)&_last_whiteTemperature, 
+      sizeof(_last_whiteTemperature));
+
+    Supla::Storage::ReadState((unsigned char *)&_red, sizeof(_red));
+    Supla::Storage::ReadState((unsigned char *)&_last_red, sizeof(_last_red));
+
+    Supla::Storage::ReadState((unsigned char *)&_green, sizeof(_green));
+    Supla::Storage::ReadState(
+      (unsigned char *)&_last_green, sizeof(_last_green));
+
+    Supla::Storage::ReadState((unsigned char *)&_blue, sizeof(_blue));
+    Supla::Storage::ReadState(
+      (unsigned char *)&_last_blue, sizeof(_last_blue));
+}
+
+void Supla::Control::Z2S_RGBCCTInterface::onSaveState() {
+
+  Supla::Storage::WriteState(
+    (unsigned char *)&_brightness, sizeof(_brightness));
+  Supla::Storage::WriteState(
+    (unsigned char *)&_last_brightness, sizeof(_last_brightness));
+
+  Supla::Storage::WriteState(
+      (unsigned char *)&_colorBrightness, sizeof(_colorBrightness));
+    Supla::Storage::WriteState(
+      (unsigned char *)&_last_colorBrightness, sizeof(_last_colorBrightness));
+
+    Supla::Storage::WriteState(
+      (unsigned char *)&_whiteTemperature, sizeof(_whiteTemperature));
+    Supla::Storage::WriteState(
+      (unsigned char *)&_last_whiteTemperature, 
+      sizeof(_last_whiteTemperature));
+
+    Supla::Storage::WriteState((unsigned char *)&_red, sizeof(_red));
+    Supla::Storage::WriteState(
+      (unsigned char *)&_last_red, sizeof(_last_red));
+
+    Supla::Storage::WriteState((unsigned char *)&_green, sizeof(_green));
+    Supla::Storage::WriteState(
+      (unsigned char *)&_last_green, sizeof(_last_green));
+
+    Supla::Storage::WriteState((unsigned char *)&_blue, sizeof(_blue));
+    Supla::Storage::WriteState(
+      (unsigned char *)&_last_blue, sizeof(_last_blue));
+}
+
+void Supla::Control::Z2S_RGBCCTInterface::onInit() {
+
+  //at this stage ZigBee is still not active
 }
 
 int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
@@ -133,9 +201,17 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
   _last_whiteTemperature = _whiteTemperature;
   _whiteTemperature = whiteTemperature;
 
-  _lastMsgReceivedMs = millis();
+  _lastServerMsgReceivedMs = millis();
 
   return -1;
+}
+
+void Supla::Control::Z2S_RGBCCTInterface::setStateOnServer(bool state) {
+
+  if (state)
+    _device_state = RGBCCT_STATE_ON;
+  else
+    _device_state = RGBCCT_STATE_OFF;
 }
 
 void Supla::Control::Z2S_RGBCCTInterface::setValueOnServer(
@@ -156,7 +232,7 @@ void Supla::Control::Z2S_RGBCCTInterface::setValueOnServer(
   _brightness = brightness;
   _whiteTemperature = whiteTemperature;
   
-  _lastMsgReceivedMs = millis();
+  _lastDeviceMsgReceivedMs = millis();
 }
 
 void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
@@ -363,6 +439,42 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
   }
 }
 
+void Supla::Control::Z2S_RGBCCTInterface::syncDevice() {
+
+  if (Zigbee.started()) {
+
+    uint8_t sync_counter = 0;
+
+    if (_device_state == RGBCCT_STATE_UNKNOWN) {
+
+      log_i("syncing RGBCCT device state...");
+
+      zbGateway.sendAttributeRead(
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+        ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+    }
+    else
+      sync_counter++;
+
+    if (_device_color_mode == RGBCCT_COLOR_MODE_UNKNOWN) {
+
+      log_i("syncing RGBCCT device color mode...");
+
+      zbGateway.sendAttributeRead(
+        &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+        ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_MODE_ID, false);
+    }
+    else
+      sync_counter++;
+    if (sync_counter == 2) {
+
+      _fresh_start = false;
+      //if ((_device_state == RGBCCT_STATE_ON))
+      _lastServerMsgReceivedMs = 1;
+    }
+  }
+}
+
 
 void Supla::Control::Z2S_RGBCCTInterface::ping() {
 
@@ -376,9 +488,17 @@ void Supla::Control::Z2S_RGBCCTInterface::ping() {
 
 void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
-  if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 1000) {
+  if (_fresh_start && ((millis() - _last_sync_ms) > 5000)) {
+
+    _last_sync_ms = millis();
+    syncDevice();
+    return;
+  }
+
+  if ((_lastServerMsgReceivedMs != 0) && 
+      (millis() - _lastServerMsgReceivedMs >= 400)) {
     
-    _lastMsgReceivedMs = 0;
+    _lastServerMsgReceivedMs = 0;
 
     channel.setNewValue(
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
@@ -387,8 +507,17 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
   }
 
-  if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
-    ping();
+  if ((_lastDeviceMsgReceivedMs != 0) && 
+      (millis() - _lastDeviceMsgReceivedMs >= 400)) {
+    
+    _lastDeviceMsgReceivedMs = 0;
+
+    channel.setNewValue(
+      _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
+  }
+
+  //if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
+  //  ping();
 
   if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
     if (true) {

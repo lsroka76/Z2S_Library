@@ -51,6 +51,26 @@
 
 #define Z2S_TUYA_DP_COLOR_HS_RGB              0x30
 
+#define RGBCCT_STATE_OFF                      0x00
+#define RGBCCT_STATE_ON                       0x01
+#define RGBCCT_STATE_UNKNOWN                  0xFF
+
+#define RGBCCT_COLOR_MODE_HS                  0x00
+#define RGBCCT_COLOR_MODE_XY                  0x01
+#define RGBCCT_COLOR_MODE_CT                  0x02
+#define RGBCCT_COLOR_MODE_UNKNOWN             0xFF
+
+enum class RGBCCTMessage {
+
+  LEGACY_MSG,
+  ON_OFF_STATE_MSG,
+  LEVEL_CONTROL_MSG,
+  COLOR_TEMPERATURE_MSG,
+  HUE_MSG,
+  SATURATION_MSG,
+  COLOR_MODE_MSG
+};
+
 
 namespace Supla {
 namespace Control {
@@ -62,9 +82,12 @@ public:
   Z2S_RGBCCTInterface(zbg_device_params_t *device, 
     uint8_t rgb_mode = Z2S_COLOR_HS_RGB);
 
+  void onLoadState() override;
+  void onSaveState() override;
+
   int32_t handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue) override;
 
-  //void onInit() override;
+  void onInit() override;
   void iterateAlways() override;
 
   virtual void handleAction(int event, int action) override {};
@@ -73,9 +96,17 @@ public:
     uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness, 
     uint8_t brightness, uint8_t whiteTemperature);
 
+  virtual void setStateOnServer(bool state);
+  virtual void setDeviceColorMode(uint8_t device_color_mode) {
+    
+    _device_color_mode = device_color_mode;
+  }
+
   virtual void setValueOnServer(
     uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness,
     uint8_t brightness, uint8_t whiteTemperature);
+
+  void syncDevice();
 
   void setRGBMode(uint8_t rgb_mode);
   uint8_t getRGBMode();
@@ -95,10 +126,14 @@ protected:
 
   bool _fresh_start = true;
 
+  uint8_t _device_state = RGBCCT_STATE_UNKNOWN;
+  uint8_t _device_color_mode = RGBCCT_COLOR_MODE_UNKNOWN;
+
   uint32_t _keep_alive_ms = 0;
   uint32_t _timeout_ms    = 0;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
+  uint32_t _last_sync_ms  = 0; 
 
   uint8_t turnOnOff = 0x00;
 
@@ -115,7 +150,8 @@ protected:
   uint8_t _brightness = 0;
   uint8_t _whiteTemperature = 0;
   
-  uint32_t _lastMsgReceivedMs = 0;
+  uint32_t _lastServerMsgReceivedMs = 0;
+  uint32_t _lastDeviceMsgReceivedMs = 0;
 
 }; //Z2S_RGBCCTInterface
 

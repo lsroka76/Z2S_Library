@@ -157,8 +157,8 @@ void addZ2SDeviceRGBCCT(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, uint8_t hue, 
-  uint8_t saturation, bool state) {
+void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, RGBCCTMessage rgbcct_msg,
+  uint32_t value) {
 
   Z2S_updateZbDeviceLastSeenMsById(
     z2s_channels_table[channel_number_slot].Zb_device_id);
@@ -183,22 +183,20 @@ void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, uint8_t hue,
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: 
       case Z2S_DEVICE_DESC_ADEO_RGBW_BULB: {
         
-        if ((hue == 0xFF) && (saturation == 0xFF))
-        {
-        //  Supla_Z2S_TuyaRGBBulb->setStateOnServer(state);
-          //Supla_Z2S_TuyaRGBBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
+        switch (rgbcct_msg) {
+          
+          
+          case RGBCCTMessage::ON_OFF_STATE_MSG: {
+
+            Supla_Z2S_RGBCCTInterface->setStateOnServer((bool)value);
+          } break;
+
+
+          case RGBCCTMessage::COLOR_MODE_MSG: {
+
+            Supla_Z2S_RGBCCTInterface->setDeviceColorMode((uint8_t)value);
+          } break;
         }
-        else {
-          if (hue == 0xFF)
-            last_saturation_value = saturation;
-          else last_hue_value = hue;
-          hue_saturation_counter++;
-          if ((hue_saturation_counter % 2) == 0)
-          {
-          //  Supla_Z2S_TuyaRGBBulb->setValueOnServer(last_hue_value, last_saturation_value);
-            //Supla_Z2S_TuyaRGBBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-          }
-        }  
       } break;
 
       default: break;

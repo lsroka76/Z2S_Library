@@ -1,6 +1,8 @@
 #include <LittleFS.h>
 #include "z2s_little_fs.h"
 
+//static const char* _TEMP_FILE_NAME[] PROGMEM = "/z2s_gateway/save_file.tmp";
+
 static uint32_t save_mutex = 0;
 
 extern bool _restart_scheduled;
@@ -56,6 +58,8 @@ bool Z2S_saveFile(
     f.close();
   }*/
   
+
+
   File file = LittleFS.open(file_name, "w");
   
   //file.seek(0, SeekSet);

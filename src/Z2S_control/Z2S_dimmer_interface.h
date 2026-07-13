@@ -40,7 +40,7 @@
 #define DIMMER_STATE_ON                       0x01
 #define DIMMER_STATE_UNKNOWN                  0xFF
 
-enum DimmerMessage {
+enum class DimmerMessage {
 
   LEGACY_MSG,
   LEVEL_CONTROL_MSG,
@@ -90,7 +90,8 @@ public:
   virtual void sendValueToCCT(uint8_t whiteTemperature); 
 
   virtual void setValueOnServer(
-    int16_t value, bool new_state, DimmerMessage dimmer_msg = LEGACY_MSG);
+    int16_t value, bool new_state, 
+    DimmerMessage dimmer_msg = DimmerMessage::LEGACY_MSG);
 
   virtual void syncDevice();
 

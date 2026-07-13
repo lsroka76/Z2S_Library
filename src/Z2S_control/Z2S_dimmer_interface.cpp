@@ -69,19 +69,19 @@ void Supla::Control::Z2S_DimmerInterface::onLoadState() {
       sizeof(_last_whiteTemperature));
 }
 
-  void Supla::Control::Z2S_DimmerInterface::onSaveState() {
+void Supla::Control::Z2S_DimmerInterface::onSaveState() {
 
-    Supla::Storage::WriteState(
-      (unsigned char *)&_brightness, sizeof(_brightness));
-    Supla::Storage::WriteState(
-      (unsigned char *)&_last_brightness, sizeof(_last_brightness));
+  Supla::Storage::WriteState(
+    (unsigned char *)&_brightness, sizeof(_brightness));
+  Supla::Storage::WriteState(
+    (unsigned char *)&_last_brightness, sizeof(_last_brightness));
 
-	Supla::Storage::WriteState(
-      (unsigned char *)&_whiteTemperature, sizeof(_whiteTemperature));  
+Supla::Storage::WriteState(
+    (unsigned char *)&_whiteTemperature, sizeof(_whiteTemperature));  
 
-    Supla::Storage::WriteState(
-      (unsigned char *)&_last_whiteTemperature, sizeof(_last_whiteTemperature));
-  }
+  Supla::Storage::WriteState(
+    (unsigned char *)&_last_whiteTemperature, sizeof(_last_whiteTemperature));
+}
 
 int32_t Supla::Control::Z2S_DimmerInterface::handleNewValueFromServer(
   TSD_SuplaChannelNewValue *newValue) {
@@ -452,7 +452,8 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
   uint8_t sent_brightness = 0;
 
-  if ((dimmer_msg == COLOR_TEMPERATURE_MSG) || (dimmer_msg == E000_CCT_MSG)) {
+  if ((dimmer_msg == DimmerMessage::COLOR_TEMPERATURE_MSG) || 
+      (dimmer_msg == DimmerMessage::E000_CCT_MSG)) {
 
     _last_whiteTemperature = _whiteTemperature;
 	  
@@ -467,7 +468,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
       case Z2S_TUYA_COLOR_TEMPERATURE_DIMMER: 
 
-        if (dimmer_msg == E000_CCT_MSG)
+        if (dimmer_msg == DimmerMessage::E000_CCT_MSG)
           _whiteTemperature = mapFloat(value, 0, 1000, 0, 100); 
       break;
 
@@ -484,7 +485,8 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
     }
     _deviceWhiteTemperature = value;
 	  
-    if ((dimmer_msg == COLOR_TEMPERATURE_MSG) && (value == 0)) {
+    if ((dimmer_msg == DimmerMessage::COLOR_TEMPERATURE_MSG) && 
+        (value == 0)) {
 
       log_i("device sent color temperature with zero value!");
       /*if (_last_whiteTemperature > 100)
@@ -501,7 +503,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
       case Z2S_SEND_TO_LEVEL_DIMMER:  
         
-        if (dimmer_msg == LEVEL_CONTROL_MSG)
+        if (dimmer_msg == DimmerMessage::LEVEL_CONTROL_MSG)
           sent_brightness = mapFloat(value, 1, 254, 1, 100); 
         else return;
       break;
@@ -516,7 +518,7 @@ void Supla::Control::Z2S_DimmerInterface::setValueOnServer(
 
       case Z2S_TUYA_F0_CMD_DIMMER:  
         
-        if (dimmer_msg == F000_LEVEL_MSG)
+        if (dimmer_msg == DimmerMessage::F000_LEVEL_MSG)
           sent_brightness = mapFloat(value, 1, 1000, 1, 100); 
         else return;
       break;

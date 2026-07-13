@@ -7,6 +7,11 @@
 #include <ESPmDNS.h>
 #include "ESPAsyncHTTPUpdateServer.h"
 
+#define MAX_ZIGBEE_PAYLOAD_SIZE         512
+
+#define PAYLOAD_ERROR_MSG_HELPER(MSG, MSG2) MSG # MSG2
+#define PAYLOAD_ERROR_MSG(MSG, MSG2) PAYLOAD_ERROR_MSG_HELPER(MSG, MSG2)
+
 typedef enum gui_modes {
 
   no_gui_mode = 0,
