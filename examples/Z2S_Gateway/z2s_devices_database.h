@@ -5269,7 +5269,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E27 WS globe 1055lm",
     .z2s_device_uid = 19650,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE, //Z2S_DEVICE_DESC_IKEA_WS_BULB,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI_bulb_GU10_WS_345lm",
@@ -6236,6 +6236,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_cygcaxvv", .model_name = "TS0001",
     .z2s_device_uid = 26430,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_wn65ixz9", .model_name = "TS0001",
+    .z2s_device_uid = 26435,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
 	  .z2s_device_endpoints_count = 1},
 
