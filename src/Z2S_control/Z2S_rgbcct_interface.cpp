@@ -49,6 +49,9 @@ void Supla::Control::Z2S_RGBCCTInterface::onLoadState() {
     Supla::Storage::ReadState(
       (unsigned char *)&_last_brightness, sizeof(_last_brightness));
 
+    if ((_brightness == 0) && (_last_brightness == 0))
+      _last_brightness = 100;
+
     Supla::Storage::ReadState(
       (unsigned char *)&_colorBrightness, sizeof(_colorBrightness));
     Supla::Storage::ReadState(
@@ -178,6 +181,9 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
 
     if (turnOnOff > 0)
       turnOnOff--;
+
+    _last_brightness = _brightness;
+    _last_whiteTemperature = _whiteTemperature;
   }
   
   if ((_brightness == 0) && (brightness > 0)) {
@@ -199,10 +205,8 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
       brightness = _last_brightness;
   }
 
-  _last_brightness = _brightness;
   _brightness = brightness;
 
-  _last_whiteTemperature = _whiteTemperature;
   _whiteTemperature = whiteTemperature;
 
   _lastServerMsgReceivedMs = millis();
