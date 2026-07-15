@@ -679,7 +679,9 @@ static esp_err_t zb_window_covering_movement_resp_handler(
 
   // List through all Zigbee EPs and call the callback function, with the message
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
-    if (message->info.dst_endpoint == (*it)->getEndpoint()) {
+    if (true /*message->info.dst_endpoint == (*it)->getEndpoint()*/) {
+      
+      log_i("zbWindowCoveringMovementCmd RECEIVED!!!!!!!!!!!!!!!!!!!!");
       //(*it)->zbWindowCoveringMovementCmd(message);  //method zbWindowCoveringMovementCmd must be implemented in specific EP class
     }
   }

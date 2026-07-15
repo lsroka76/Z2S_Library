@@ -37,6 +37,7 @@ volatile uint8_t ZigbeeGateway::_read_config_last_tsn = 0;
 volatile uint8_t ZigbeeGateway::_read_config_last_tsn_flag = 0xFF;
 volatile uint8_t ZigbeeGateway::_write_attr_last_tsn = 0;
 volatile uint8_t ZigbeeGateway::_write_attr_last_tsn_flag = 0xFF;  
+volatile uint8_t ZigbeeGateway::_write_ext_current_tsn = 0;
 //zbg_device_unit_t ZigbeeGateway::zbg_device_units[ZBG_MAX_DEVICES];
 
 esp_zb_zcl_attribute_t ZigbeeGateway::_read_attr_last_result = {};
@@ -130,12 +131,20 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   
 
   _cluster_list = esp_zb_zcl_cluster_list_create();
+  _cluster_list_2 = esp_zb_zcl_cluster_list_create();
 
   esp_zb_attribute_list_t *basic_cluster = 
     esp_zb_basic_cluster_create(&(gateway_cfg.basic_cfg));
 
+  esp_zb_attribute_list_t *basic_cluster_2 = 
+    esp_zb_basic_cluster_create(&(gateway_cfg.basic_cfg));
+
+
   esp_zb_cluster_list_add_basic_cluster(
     _cluster_list, basic_cluster, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+
+  esp_zb_cluster_list_add_basic_cluster(
+    _cluster_list_2, basic_cluster_2, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 
   esp_zb_cluster_list_add_basic_cluster(
     _cluster_list, esp_zb_basic_cluster_create(NULL), 
@@ -425,6 +434,10 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   
   _ep_config = {.endpoint = _endpoint, 
                 .app_profile_id = ESP_ZB_AF_HA_PROFILE_ID, 
+                .app_device_id = ESP_ZB_HA_REMOTE_CONTROL_DEVICE_ID, 
+                .app_device_version = 0 };
+  _ep_config_2 = {.endpoint = _endpoint + 1, 
+                .app_profile_id = 0xC001, 
                 .app_device_id = ESP_ZB_HA_REMOTE_CONTROL_DEVICE_ID, 
                 .app_device_version = 0 };
 }
@@ -1858,7 +1871,7 @@ void ZigbeeGateway::zbReadReportConfigResponse(
 bool ZigbeeGateway::sendAttributeRead(
   zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
   bool ack, uint8_t direction,uint8_t disable_default_response, 
-  uint8_t manuf_specific, uint16_t manuf_code) {
+  uint8_t manuf_specific, uint16_t manuf_code, uint8_t src_endpoint) {
 
     if (_active_pairing)
       return false;
@@ -1876,7 +1889,7 @@ bool ZigbeeGateway::sendAttributeRead(
       memcpy(read_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
     }
 
-    read_req.zcl_basic_cmd.src_endpoint = _endpoint;
+    read_req.zcl_basic_cmd.src_endpoint = src_endpoint;
     read_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
 
     read_req.clusterID = cluster_id;
@@ -1960,7 +1973,7 @@ bool ZigbeeGateway::sendAttributeWrite(
   zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
   esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, 
   void *attribute_value, bool ack, uint8_t manuf_specific, 
-  uint16_t manuf_code) {
+  uint16_t manuf_code, bool disable_default_response,uint8_t src_endpoint) {
 
     if (_active_pairing)
       return false;
@@ -1980,7 +1993,7 @@ bool ZigbeeGateway::sendAttributeWrite(
     }
 
     write_req.zcl_basic_cmd.dst_endpoint = device->endpoint;
-    write_req.zcl_basic_cmd.src_endpoint = _endpoint;
+    write_req.zcl_basic_cmd.src_endpoint = src_endpoint;
     write_req.clusterID = cluster_id;
     write_req.attr_number = 1;
     write_req.attr_field = &attribute_field[0];
@@ -1991,7 +2004,7 @@ bool ZigbeeGateway::sendAttributeWrite(
     attribute_field[0].data.value = attribute_value;
 
     write_req.manuf_specific = manuf_specific;
-    write_req.dis_default_resp = 0;
+    write_req.dis_default_resp = disable_default_response;
     write_req.direction = 0;
     write_req.manuf_code = manuf_code;
 
@@ -2007,6 +2020,48 @@ bool ZigbeeGateway::sendAttributeWrite(
     _write_attr_last_tsn  = esp_zb_zcl_write_attr_cmd_req(&write_req);
     esp_zb_lock_release();
 
+    if (ack) 
+      _write_attr_last_tsn_flag = ZCL_CMD_TSN_SYNC;
+    else 
+      _write_attr_last_tsn_flag = ZCL_CMD_TSN_ASYNC;
+    
+    //delay(50);
+
+    if (ack && xSemaphoreTake(gt_lock, pdMS_TO_TICKS(2000)) != pdTRUE) {
+      log_e("Semaphore timeout writing attribute 0x%x - device 0x%x, endpoint 0x%x, cluster 0x%x", 
+             attribute_id, device->short_addr, device->endpoint, cluster_id);
+
+      return false;
+    } 
+    log_i ("returning from WA");
+    return ack;
+}
+/*****************************************************************************/
+
+bool ZigbeeGateway::sendAttributeWriteExt(
+    zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
+    esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, 
+    void *attribute_value, bool ack, uint8_t manuf_specific, 
+    uint16_t manuf_code, bool disable_default_response, uint16_t profile_id) {
+
+    uint8_t payload_data[255];
+
+    memcpy(payload_data, &attribute_id, 2);
+    payload_data[2] = attribute_type;
+    memcpy(payload_data + 3, attribute_value, attribute_size);
+  
+    _write_attr_last_tsn = _write_ext_current_tsn;
+    
+    esp_zb_lock_acquire(portMAX_DELAY);
+    sendAPSDEDataRequestCmd(
+      device->short_addr, _write_ext_current_tsn, device->endpoint, 
+      cluster_id, 0x02, attribute_size + 3, payload_data,  
+      ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, disable_default_response, 
+      manuf_specific, manuf_code, true, profile_id);
+    esp_zb_lock_release();
+    
+    _write_ext_current_tsn++;
+  
     if (ack) 
       _write_attr_last_tsn_flag = ZCL_CMD_TSN_SYNC;
     else 
@@ -3082,7 +3137,7 @@ bool ZigbeeGateway::sendAPSDEDataRequestCmd(
     uint16_t cluster_id, uint8_t command_id, uint8_t payload_size, 
     uint8_t *payload_data,  uint8_t direction, 
     uint8_t disable_default_response, uint8_t manuf_specific, 
-    uint16_t manuf_code) {
+    uint16_t manuf_code, bool is_global, uint16_t profile_id) {
 
 
   // Build ZCL header manually
@@ -3090,8 +3145,9 @@ bool ZigbeeGateway::sendAPSDEDataRequestCmd(
   uint8_t *p = zcl_frame;
 
   // Frame control
+  uint8_t frame_type = is_global ? 0 : 1;
   uint8_t frame_control = 
-    (1 << 1) |          
+    (frame_type) |          
     (manuf_specific << 2) |           // bit 2: include manufacture code 
     (direction << 3) |                // bit 3: direction server->client 
     (disable_default_response << 4); // bit 4: disable default resp 
@@ -3132,7 +3188,7 @@ bool ZigbeeGateway::sendAPSDEDataRequestCmd(
   aps_req.dst_addr_mode = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
   aps_req.dst_addr.addr_short = short_addr;
   aps_req.dst_endpoint = dst_endpoint;
-  aps_req.profile_id = ESP_ZB_AF_HA_PROFILE_ID;
+  aps_req.profile_id = profile_id;
   aps_req.cluster_id = cluster_id;
   aps_req.src_endpoint = _endpoint;
   aps_req.asdu_length = zcl_len;

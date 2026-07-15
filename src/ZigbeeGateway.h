@@ -243,6 +243,8 @@ typedef struct esp_zb_ota_image_header_s {
 #define DANFOSS_EXTERNAL_TEMPERATURE_INPUT_ID                 0x4015 //S16
 #define DANFOSS_RADIATOR_COVERED_ID                           0x4016 //BOOL
 
+#define SHELLY_RPC_CLUSTER_ENDPOINT_ID                        0xEF
+
 #define SHELLY_MANUFACTURER_CODE                              0x1490
 
 #define SHELLY_CUSTOM_CLUSTER_ID_RPC                          0xFC01
@@ -453,7 +455,7 @@ public:
     zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
     bool ack = false, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
     uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, 
-    uint16_t manuf_code = 0);
+    uint16_t manuf_code = 0, uint8_t src_endpoint = GATEWAY_ENDPOINT_NUMBER);
 
   void sendAttributesRead(
     zbg_device_params_t * device, uint16_t cluster_id, uint8_t attr_number, 
@@ -463,7 +465,15 @@ public:
     zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
     esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, 
     void *attribute_value, bool ack = false, uint8_t manuf_specific = 0, 
-    uint16_t manuf_code = 0);
+    uint16_t manuf_code = 0, bool disable_default_response = false,
+    uint8_t src_endpoint = GATEWAY_ENDPOINT_NUMBER);
+
+  bool sendAttributeWriteExt(
+    zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
+    esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, 
+    void *attribute_value, bool ack = false, uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0, bool disable_default_response = false, 
+    uint16_t profile_id = ESP_ZB_AF_HA_PROFILE_ID);
 
   void sendIASzoneEnrollResponseCmd(
     zbg_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
@@ -534,7 +544,8 @@ public:
     uint16_t cluster_id, uint8_t command_id, uint8_t payload_size, 
     uint8_t *payload_data, uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
     uint8_t disable_default_response = 0, uint8_t manuf_specific = 0, 
-    uint16_t manuf_code = 0);
+    uint16_t manuf_code = 0, bool is_global = false, 
+    uint16_t profile_id = ESP_ZB_AF_HA_PROFILE_ID);
 
   void requestDataSave(
     uint8_t Supla_channel, uint8_t data_save_mode, 
@@ -792,6 +803,8 @@ private:
   static volatile uint8_t _read_config_last_tsn_flag;
   static volatile uint8_t _write_attr_last_tsn;
   static volatile uint8_t _write_attr_last_tsn_flag;
+
+  static volatile uint8_t _write_ext_current_tsn;
   
   void (*_on_sonoff_custom_cluster_receive)(
     uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);

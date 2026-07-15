@@ -105,6 +105,7 @@ void ZigbeeCore::addEndpoint(ZigbeeEP *ep) {
   }
 
   esp_zb_ep_list_add_ep(_zb_ep_list, ep->_cluster_list, ep->_ep_config);
+  esp_zb_ep_list_add_ep(_zb_ep_list, ep->_cluster_list_2, ep->_ep_config_2);
 }
 
 void ZigbeeCore::addGatewayEndpoint(ZigbeeEP *ep) {

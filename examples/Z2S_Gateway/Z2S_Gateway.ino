@@ -714,8 +714,8 @@ void setup() {
   zbGateway.setManufacturerAndModel("Supla", "Z2SGateway");
   zbGateway.allowMultipleBinding(true);
 
-  Zigbee.addGatewayEndpoint(&zbGateway);
-  //Zigbee.addEndpoint(&zbGateway); //???
+  //Zigbee.addGatewayEndpoint(&zbGateway);
+  Zigbee.addEndpoint(&zbGateway); //???
 
   uint32_t zb_primary_channel_mask;
 

@@ -259,7 +259,9 @@ protected:
   uint8_t _endpoint;
   esp_zb_ha_standard_devices_t _device_id;
   esp_zb_endpoint_config_t _ep_config;
+  esp_zb_endpoint_config_t _ep_config_2;
   esp_zb_cluster_list_t *_cluster_list;
+  esp_zb_cluster_list_t *_cluster_list_2;
   static bool _is_bound;
   static bool _allow_multiple_binding;
   std::list<zb_device_params_t *> _bound_devices;

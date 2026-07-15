@@ -6008,7 +6008,15 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 		
 		uint16_t manuf_code = (ESPUI.getControl(
 			clusters_attributes_table[manufacturer_code_selector])->getValueInt() > 0) ? 
-			ESPUI.getControl(clusters_attributes_table[manufacturer_code_selector])->getValueInt() : 0;
+			ESPUI.getControl(
+				clusters_attributes_table[manufacturer_code_selector])->getValueInt() : 0;
+
+		uint8_t src_endpoint = GATEWAY_ENDPOINT_NUMBER;
+					
+		if ((device.endpoint == SHELLY_RPC_CLUSTER_ENDPOINT_ID) && 
+				(cluster_id == SHELLY_CUSTOM_CLUSTER_ID_RPC) && manuf_specific &&
+			  (manuf_code == SHELLY_MANUFACTURER_CODE))
+			src_endpoint++;
 
 		switch ((uint32_t)param) {
 			
@@ -6017,9 +6025,12 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 					
 				bool result = zbGateway.sendAttributeRead(
 					&device, cluster_id, attribute_id, sync_cmd,
-					ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, manuf_specific, manuf_code);
+					ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, manuf_specific, manuf_code, 
+					src_endpoint);
+
 				if (result) {
-					if (*zbGateway.getReadAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
+					if (*zbGateway.getReadAttrStatusLastResult() == 
+								ESP_ZB_ZCL_STATUS_SUCCESS) {
 
 						uint64_t readAttrValue;
 						esp_zb_uint48_t readAttrValue48;
@@ -6069,27 +6080,29 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 							break;
 						}
 					
-						sprintf_P(general_purpose_gui_buffer, 
-											PSTR("Reading attribute successful!<br>Data value is %llu(0x%llX)"
-														"<br>Data type is %s(0x%X)<br>Data size is 0x%X"), 
-										readAttrValue, 
-										readAttrValue, 
-										getZigbeeDataTypeName(zbGateway.getReadAttrLastResult()->data.type), 
-										zbGateway.getReadAttrLastResult()->data.type,
-										zbGateway.getReadAttrLastResult()->data.size);
+						sprintf_P(
+							general_purpose_gui_buffer, 
+							"Reading attribute successful!<br>Data value is %llu(0x%llX)"
+							"<br>Data type is %s(0x%X)<br>Data size is 0x%X", 
+							readAttrValue, 
+							readAttrValue, 
+							getZigbeeDataTypeName(zbGateway.getReadAttrLastResult()->data.type), 
+							zbGateway.getReadAttrLastResult()->data.type,
+							zbGateway.getReadAttrLastResult()->data.size);
 
 						updateLabel_P(
 							clusters_attributes_table[device_read_attribute_label], 
 							general_purpose_gui_buffer);
 					} else {
 
-						sprintf_P(general_purpose_gui_buffer, 
-											PSTR("Reading attribute failed!<br>"
-											"Status = %s(0x%02X)<br>"
-											"Attribute id = 0x%04X"),
-											esp_zb_zcl_status_to_name(*zbGateway.getReadAttrStatusLastResult()),
-										*zbGateway.getReadAttrStatusLastResult(),
-										zbGateway.getReadAttrLastResult()->id);
+						sprintf_P(
+							general_purpose_gui_buffer, 
+							"Reading attribute failed!<br>"
+							"Status = %s(0x%02X)<br>"
+							"Attribute id = 0x%04X",
+							esp_zb_zcl_status_to_name(*zbGateway.getReadAttrStatusLastResult()),
+							*zbGateway.getReadAttrStatusLastResult(),
+							zbGateway.getReadAttrLastResult()->id);
 
 						updateLabel_P(
 							clusters_attributes_table[device_read_attribute_label], 
@@ -6340,7 +6353,7 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 					bool result = zbGateway.sendAttributeWrite(
 						&device, cluster_id, attribute_id, 
 						(esp_zb_zcl_attr_type_t)attribute_type, attribute_size, value, 
-						sync_cmd, manuf_specific, manuf_code);
+						sync_cmd, manuf_specific, manuf_code, false, src_endpoint);
 					
 					if (result) {
 						if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
