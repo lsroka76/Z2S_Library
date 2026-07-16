@@ -1124,8 +1124,35 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_manufacturer_code = 0},
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_POWER_STRIP_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_APPARENT_POWER_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 5, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 6,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_POWER_STRIP_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_POWER_FACTOR_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 5, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 1,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_POWER_STRIP_EM,
     .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING,
     .z2s_attribute_id = ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U48,
+    .z2s_min_interval_value = 5, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_64 = 125000,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SHELLY_POWER_STRIP_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_RECEIVED_ID,
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U48,
     .z2s_min_interval_value = 5, 
     .z2s_max_interval_value = 3600,
@@ -3867,6 +3894,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_8yhypbo7", .model_name = "TS0203",
     .z2s_device_uid = 9000,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3000_au2o5e6q", .model_name = "TS0203",
+    .z2s_device_uid = 9005,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1},
 

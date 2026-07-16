@@ -5744,15 +5744,19 @@ void Z2S_onOnOffReceive(
   
   bool state = readAttr<bool>(attribute);
 
+  bool channel_found = false;
+
   log_i("0x%04X, endpoint 0x%x, state 0x%x", short_addr, endpoint, state);
 
   int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
+    short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+    NO_CUSTOM_CMD_SID);
   
   if (channel_number_slot >= 0) {
 
     msgZ2SDeviceVirtualRelay(
       channel_number_slot, state); //default On/Off channel
+      channel_found = true;
     //return;
   }
 
@@ -5831,8 +5835,8 @@ void Z2S_onOnOffReceive(
       //msgZ2SDeviceActionTrigger(channel_number_slot);
     return;
   }
-
-  no_channel_found_error_func(short_addr);
+  if (!channel_found)
+    no_channel_found_error_func(short_addr);
 }
 
 /*****************************************************************************/

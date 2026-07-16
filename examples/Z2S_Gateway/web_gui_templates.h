@@ -1217,12 +1217,6 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	.zigbee_attribute_name = "POWER FACTOR"
 	},
 	{
-	.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_POWER_FACTOR_ID, 
-	.zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
-	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8,
-	.zigbee_attribute_name = "POWER FACTOR"
-	},
-	{
 	.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACVOLTAGE_MULTIPLIER_ID, 
 	.zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 
 	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
