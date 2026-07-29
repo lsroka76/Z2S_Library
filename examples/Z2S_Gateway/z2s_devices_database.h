@@ -3312,6 +3312,15 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
       Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
 
+  {	.manufacturer_name = "TUYATEC-53o41joc", .model_name = "RH3040",
+    .z2s_device_uid = 3830,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
+
   {	.manufacturer_name = "_TZ3000_mcxw5ehu", .model_name = "TS0202",
    .z2s_device_uid = 3900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
@@ -6967,7 +6976,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZB210_yatkpuha", .model_name = "TS0505B",
     .z2s_device_uid = 36400,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
-    .z2s_device_endpoints_count = 1} 
+    .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "LEDVANCE", .model_name = "PLUG EU EM T",
+    .z2s_device_uid = 36500,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
+	  .z2s_device_endpoints_count = 1},
 
 //DEVICES_END
 };
