@@ -2416,6 +2416,47 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_description = "Enter numeric value:<br>"
 																	"0 => turn OFF, 1 => turn ON" },
 
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZK_MD_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Motion Detection Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 10: <br>"
+																	"0 => minimal, 10 => maximal sensitivity" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZK_SD_SENSITIVITY_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Static Detection Sensitivity",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 10: <br>"
+																	"0 => minimal, 10 => maximal sensitivity" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZK_DETECTION_DISTANCE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Detection Distance",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 500 [cm]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZK_FADING_TIME_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Motion Keep Time",
+    .Tuya_datapoint_description = "Time to keep sensor active after detection.<br>"
+																	"Enter numeric value between 10 and 28800 [s]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZK_LED_INDICATOR_MODE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "LED indicator",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => turn OFF, 1 => turn ON" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
+    .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG204ZK_ANTI_INTERFERENCE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
+    .Tuya_datapoint_name 	 			= "Anti-interference function",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => turn OFF, 1 => turn ON" },
+
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG104PLV,
     .Tuya_datapoint_id 		 			= TUYA_PRESENCE_SENSOR_ZG104PLV_SAMPLING_INTERVAL_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,

@@ -156,6 +156,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3    0x2331
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE        0x2335
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG104PLV       0x2336
+#define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK        0x2337
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z         0x2340
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100         0x2345
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T        0x2350
@@ -2582,6 +2583,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG104PLV,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -6982,6 +6989,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 36500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER,
 	  .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_ka8l86iu", .model_name = "TS0601",
+    .z2s_device_uid = 36600,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
+    .z2s_device_endpoints_count = 1}
 
 //DEVICES_END
 };
