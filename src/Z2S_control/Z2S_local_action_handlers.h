@@ -38,6 +38,7 @@
 #include <supla/storage/storage.h>
 #include <supla/network/network.h>
 
+#include "Z2S_common.h"
 #include "Z2S_custom_actions_events.h"
 
 #define PIN_LOGIC_OPERATOR_NONE       0x00
@@ -176,7 +177,7 @@ class GatewayEvents: public LocalActionHandler {
 
 namespace Control {
 
-class LocalActionTrigger: public ActionTrigger { //, public LocalAction {
+class LocalActionTrigger: public ActionTrigger, public Z2S_Core {
 
   public:
 

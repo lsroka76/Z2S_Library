@@ -289,9 +289,9 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       ColorHSV hsv;
       ColorRGB rgb;
 
-      uint8_t red_cb = (red*colorBrightness) / 100;
-      uint8_t green_cb = (green*colorBrightness) / 100;
-      uint8_t blue_cb = (blue*colorBrightness) / 100;
+      uint8_t red_cb = red; //(red*colorBrightness) / 100;
+      uint8_t green_cb = green; //(green*colorBrightness) / 100;
+      uint8_t blue_cb = blue; //(blue*colorBrightness) / 100;
 
       rgb.m_r = (float)red_cb / 255;
       rgb.m_g = (float)green_cb / 255;
@@ -315,7 +315,9 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       _hue = mapFloat(_hue, 0, 360, 0, 254);
       _saturation = mapFloat(_saturation, 0, 100, 0, 254);
       log_i("hue %d, saturation %d (after mapping)", _hue, _saturation);
-      _value = mapFloat(_value, 0, 100, 1, 254);
+      //_value = mapFloat(_value, 0, 100, 1, 254);
+
+      _value = mapFloat(colorBrightness, 1, 100, 1, 254);
 
       uint16_t rev_hue = mapFloat(_hue, 0, 254, 0, 360);
       uint8_t rev_saturation = mapFloat(_saturation, 0, 254, 0, 100);
@@ -356,10 +358,13 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
           xy_color.x = map(xy_color.x, 0 ,0xFFFF, 0, 0xFEFF);
           xy_color.y = map(xy_color.y, 0 ,0xFFFF, 0, 0xFEFF);
 
+          _value = mapFloat(colorBrightness, 1, 100, 1, 254);
+
           log_i("XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
           
           zbGateway.sendColorMoveToColorCmd(
             &_device, xy_color.x, xy_color.y, 1);
+          zbGateway.sendLevelMoveToLevelCmd(&_device, _value, 1);
         } break;
 
 
@@ -444,7 +449,9 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       log_i(
         "SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB - sending white temperature!");
 
-      uint16_t color_temperature = mapFloat(whiteTemperature, 0, 100, 500, 153);
+      uint16_t color_temperature = mapFloat(
+        whiteTemperature, 0, 100, _max_warm_cct, _min_cool_cct);
+        
 	    zbGateway.sendColorMoveToColorTemperatureCmd(
         &_device, color_temperature, 1);
     }

@@ -5,12 +5,15 @@
 
 #include "supla/control/virtual_relay.h"
 
-namespace Supla
-{
-    namespace Control
-    {
-        class VirtualRelaySceneSwitch : public VirtualRelay
-        {
+#include "ZigbeeGateway.h"
+
+#include "Z2S_common.h"
+
+namespace Supla {
+  namespace Control {
+
+    class VirtualRelaySceneSwitch : public VirtualRelay, public Z2S_Core {
+
         public:
             /// @brief Creates Virtual Relay channel with deboucing capabilities
             /// @param functions Supla channel functions.

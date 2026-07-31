@@ -2581,6 +2581,8 @@ void Z2S_initSuplaChannels() {
   else
     addZ2SDeviceGatewayEvents(GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT);
 
+  auto core_it = Z2S_Cores.begin();
+  (*core_it)->listCores();
 }
 
 /*****************************************************************************/
@@ -8749,7 +8751,8 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB:
       case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE:
-      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY: {
+      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY:
+      case Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE: {
         
         addZ2SDeviceRGBCCT(
           device, first_free_slot, "RGBCCT", 
@@ -13110,8 +13113,7 @@ bool ZbConflictResolver::onChannelConflictReport(
           Z2S_removeChannel(channel_number_slot, true);
           removeChannelsSelectorChannel(channel_number_slot, gui_control_id);
           
-          auto element =
-            Supla::Element::getElementByChannelNumber(i);
+          auto element = Supla::Element::getElementByChannelNumber(i);
           
           if (element) {
 

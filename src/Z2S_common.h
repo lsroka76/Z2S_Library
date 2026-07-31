@@ -1,6 +1,7 @@
 #ifndef SRC_Z2S_COMMON_H_
 #define SRC_Z2S_COMMON_H_
 
+
 #define DEVICE_LOCAL_NAME_MAX_SIZE            36
 #define SUPLA_CHANNEL_NAME_MAX_SIZE           32
 
@@ -147,9 +148,50 @@ union {
   uint8_t             reserved_9;
 } z2s_device_params_t;
 
+class Z2S_Core;
+
+inline std::vector<Z2S_Core*> Z2S_Cores;
+
 class Z2S_Core {
 
 public:
+
+  Z2S_Core() {
+
+    _z2s_core_ptr = this;
+    Z2S_Cores.push_back(_z2s_core_ptr);
+  };
+
+  ~Z2S_Core() {
+
+    auto core_it = Z2S_Cores.begin();
+    while (core_it != Z2S_Cores.end()) {
+
+      if (*core_it == this)
+        core_it = Z2S_Cores.erase(core_it);
+      else core_it++;
+    }
+    listCores();
+  };
+
+  void listCores() {
+
+    auto core_it = Z2S_Cores.begin();
+    while (core_it != Z2S_Cores.end()) {
+
+      log_i(
+        "Core ptr 0x%08X, name %s, short address 0x%04X\n\r", *core_it, 
+        (*core_it)->_z2s_channel ? 
+        (*core_it)->_z2s_channel->Supla_channel_name : "missing", 
+        (*core_it)->_short_addr);
+      core_it++;
+    }
+  }
+
+  Z2S_Core* getZ2SCorePtr() {
+    
+    return _z2s_core_ptr;
+  }
 
   void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device) {
 
@@ -164,6 +206,10 @@ public:
   void setZ2SChannel(z2s_device_params_t *z2s_channel) {
 
     _z2s_channel = z2s_channel;
+    if (_z2s_channel)
+      setZ2SChannelUID(
+        _z2s_channel->short_addr, _z2s_channel->endpoint, 
+        _z2s_channel->sub_id);
   }
 
   z2s_device_params_t *getZ2SChannel() {
@@ -171,8 +217,18 @@ public:
     return _z2s_channel;
   };
 
+  void setZ2SChannelUID(uint16_t short_addr, uint8_t endpoint, int8_t sub_id) {
+
+    _short_addr = short_addr;
+    _endpoint = endpoint;
+    _sub_id = sub_id;
+  
+    log_i("_z2s_channel_uid 0x%08X", _z2s_channel_uid);
+  }
+
   void updateShortAddress(uint16_t short_addr)  {
 
+    _short_addr = short_addr;
     _device.short_addr = short_addr;
   };
 
@@ -235,6 +291,16 @@ protected:
   zbg_device_params_t _device;
   z2s_zb_device_params_t *_z2s_zb_device = nullptr;
   z2s_device_params_t *_z2s_channel = nullptr;
+  union {
+    struct {
+      uint16_t _short_addr;
+      uint8_t  _endpoint;
+      int8_t  _sub_id;
+    };
+    uint32_t _z2s_channel_uid;
+  };
+  Z2SCore* _z2s_core_ptr = nullptr;
 };
+
 
 #endif //SRC_Z2S_COMMON_H_

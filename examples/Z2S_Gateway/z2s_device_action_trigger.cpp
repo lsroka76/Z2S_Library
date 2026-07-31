@@ -23,6 +23,11 @@ void initZ2SDeviceActionTrigger(int16_t channel_number_slot) {
   auto Supla_Z2S_ActionTrigger = 
     new Supla::Control::VirtualRelaySceneSwitch(
       0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, debounce_time_ms);
+
+  Supla_Z2S_ActionTrigger->setZ2SChannelUID(
+      z2s_channels_table[channel_number_slot].short_addr,
+      z2s_channels_table[channel_number_slot].endpoint,
+      z2s_channels_table[channel_number_slot].sub_id);
   
   Supla_Z2S_ActionTrigger->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
@@ -57,6 +62,11 @@ void initZ2SDeviceActionTriggerV2(int16_t channel_number_slot) {
     virtual_button_data.button_last_seen_ms = 0;
 
   auto Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
+
+  Supla_Z2S_ActionTrigger->setZ2SChannelUID(
+      z2s_channels_table[channel_number_slot].short_addr,
+      z2s_channels_table[channel_number_slot].endpoint,
+      z2s_channels_table[channel_number_slot].sub_id);
   
   Supla_Z2S_ActionTrigger->getChannel()->setChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);

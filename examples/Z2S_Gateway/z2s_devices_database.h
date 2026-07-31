@@ -197,6 +197,7 @@
 
 #define Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE                 0x3150
 #define Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY              0x3155
+#define Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE            0x3160
 
 #define Z2S_DEVICE_DESC_DIMMER_BULB                         0x3200
 #define Z2S_DEVICE_DESC_LED_DIMMER                          0x3201
@@ -2212,16 +2213,26 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
-                             ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
-                             ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
+      ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
     .z2s_device_clusters_count = 2,
@@ -6993,7 +7004,25 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_ka8l86iu", .model_name = "TS0601",
     .z2s_device_uid = 36600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Aqara", .model_name = "lumi.light.agl003",
+    .z2s_device_uid = 36700,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "", .model_name = "lumi.light.agl003",
+    .z2s_device_uid = 36705,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "SONOFF", .model_name = "SWV-ZF2",
+    .z2s_device_uid = 36800,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_RELAY},
+      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY }}}
 
 //DEVICES_END
 };

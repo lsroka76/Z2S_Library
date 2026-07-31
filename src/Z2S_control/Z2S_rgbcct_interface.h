@@ -110,6 +110,16 @@ public:
 
   void setRGBMode(uint8_t rgb_mode);
   uint8_t getRGBMode();
+
+  void setMinCoolCCT(uint16_t min_cool_cct) {
+
+    _min_cool_cct = min_cool_cct;
+  };
+
+  void setMaxWarmCCT(uint16_t max_warm_cct) {
+
+    _max_warm_cct = max_warm_cct;
+  };
   
   virtual void ping();
 
@@ -128,6 +138,9 @@ protected:
 
   uint8_t _device_state = RGBCCT_STATE_UNKNOWN;
   uint8_t _device_color_mode = RGBCCT_COLOR_MODE_UNKNOWN;
+
+  uint16_t _min_cool_cct = 153;
+  uint16_t _max_warm_cct = 500;
 
   uint32_t _keep_alive_ms = 0;
   uint32_t _timeout_ms    = 0;

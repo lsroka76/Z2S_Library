@@ -46,6 +46,17 @@ void initZ2SDeviceRGBCCT(
     break;
 
 
+    case Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE: {
+
+      Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
+        device, Z2S_COLOR_XY_RGB); 
+      if (Supla_Z2S_RGBCCTInterface) {
+        Supla_Z2S_RGBCCTInterface->setMaxWarmCCT(500);
+        Supla_Z2S_RGBCCTInterface->setMinCoolCCT(111);
+      }
+    } break;
+
+
     case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
     case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
@@ -78,6 +89,11 @@ void initZ2SDeviceRGBCCT(
 
   if (Supla_Z2S_RGBCCTInterface) {
 
+    Supla_Z2S_RGBCCTInterface->setZ2SChannelUID(
+      z2s_channels_table[channel_number_slot].short_addr,
+      z2s_channels_table[channel_number_slot].endpoint,
+      z2s_channels_table[channel_number_slot].sub_id);
+    
     Supla_Z2S_RGBCCTInterface->getChannel()->setChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
    
@@ -184,7 +200,8 @@ void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, RGBCCTMessage rgbcct_msg,
       case Z2S_DEVICE_DESC_ADEO_RGBW_BULB: 
       case Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB:
       case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE: 
-      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY: {
+      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY:
+      case Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE: {
         
         switch (rgbcct_msg) {
           
