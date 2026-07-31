@@ -299,7 +299,7 @@ protected:
     };
     uint32_t _z2s_channel_uid;
   };
-  Z2SCore* _z2s_core_ptr = nullptr;
+  Z2S_Core* _z2s_core_ptr = nullptr;
 };
 
 
