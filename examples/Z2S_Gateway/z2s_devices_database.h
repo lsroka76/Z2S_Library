@@ -6310,6 +6310,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "HOBEIAN", .model_name = "CK-BL702-ROUTER-01(7018)",
+    .z2s_device_uid = 26440,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
     .z2s_device_uid = 26500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY,
@@ -7022,7 +7027,23 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { 
       { 1, 0, 0, Z2S_DEVICE_DESC_RELAY},
-      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY }}}
+      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY }}},
+
+  { .manufacturer_name = "Adeo", .model_name = "ZBEK-14",
+    .z2s_device_uid = 36900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Adeo", .model_name = "ZBEK-2",
+    .z2s_device_uid = 37000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "", .model_name = "ZBEK-2",
+    .z2s_device_uid = 37005,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1}
+
 
 //DEVICES_END
 };
