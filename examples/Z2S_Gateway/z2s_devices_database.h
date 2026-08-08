@@ -6829,6 +6829,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER,
     .z2s_device_endpoints_count = 1},
 
+ { .manufacturer_name = "_TZE608_c75zqghm", .model_name = "TS0603",
+    .z2s_device_uid = 34105,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER,
+    .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "Zemismart", .model_name = "SPM02-3Z3",
     .z2s_device_uid = 34200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER,
