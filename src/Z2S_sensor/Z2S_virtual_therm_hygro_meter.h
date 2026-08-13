@@ -33,7 +33,8 @@ class Z2S_VirtualThermHygroMeter :
   
 public:
     
-  Z2S_VirtualThermHygroMeter(bool rwns_flag = false) : _rwns_flag(rwns_flag) 
+  Z2S_VirtualThermHygroMeter(bool rwns_flag = false) 
+    : Z2S_Core(this), _rwns_flag(rwns_flag) 
   {
 
   }
@@ -152,30 +153,30 @@ public:
 
     uint8_t temperature_selector = 1;
 
-    zbg_device_params_t device = {};
+    /*zbg_device_params_t device = {};
 
     device.endpoint = 0x01;
     device.cluster_id = SONOFF_CUSTOM_CLUSTER;
     memcpy(
       device.ieee_addr, _z2s_channel->ieee_addr, sizeof(esp_zb_ieee_addr_t));
     device.short_addr = _z2s_channel->short_addr;
-    device.model_id = _z2s_channel->model_id;
+    device.model_id = _z2s_channel->model_id;*/
 
     zbGateway.sendAttributeWrite(
-      &device, SONOFF_CUSTOM_CLUSTER, 
+      _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
       SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
       ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
 
   
     if (_sonoff_external_temperature > INT16_MIN)
       zbGateway.sendAttributeWrite(
-        &device, SONOFF_CUSTOM_CLUSTER, 
+        _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
         SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
         ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &_sonoff_external_temperature);
   
     if (_sonoff_external_humidity < UINT16_MAX)
       zbGateway.sendAttributeWrite(
-        &device, SONOFF_CUSTOM_CLUSTER, 
+        _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
         SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
         ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &_sonoff_external_humidity);
   }

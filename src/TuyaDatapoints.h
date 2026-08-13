@@ -67,7 +67,7 @@
 #define TUYA_SOIL_SENSOR_5F_HUMIDITY_DP                             0x65
 #define TUYA_SOIL_SENSOR_5F_ILLUMINANCE_DP                          0x66
 #define TUYA_SOIL_SENSOR_5F_SOIL_MOISTURE_DP                        0x03
-#define TUYA_SOIL_SENSOR_5F_BATTERY_STATE_DP                        0x0E
+#define TUYA_SOIL_SENSOR_5F_BATTERY_LEVEL_DP                        0x0E
 #define TUYA_SOIL_SENSOR_5F_TEMPERATURE_CALIBRATION_DP              0x6B
 #define TUYA_SOIL_SENSOR_5F_HUMIDITY_CALIBRATION_DP                 0x69
 #define TUYA_SOIL_SENSOR_5F_SOIL_CALIBRATION_DP                     0x68
@@ -600,7 +600,7 @@
 #define TUYA_DP_ZCL_PAYLOAD_8   0x07 //8 bit value /7 bytes/
 #define TUYA_DP_ZCL_PAYLOAD_0   0x00 //
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 typedef struct Tuya_dp_zcl_payload_s {
 
@@ -640,7 +640,7 @@ union {
 };
 } __attribute__((packed)) Tuya_dp_data_t;
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 inline int32_t getTuyaDPValue(Tuya_dp_zcl_payload_s *Tuya_dp_zcl_payload) {
 
@@ -673,7 +673,7 @@ inline int32_t getTuyaDPValue(Tuya_dp_zcl_payload_s *Tuya_dp_zcl_payload) {
   return dp_value;
 }
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 inline void makeTuyaDPValue32(
     Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t dp_id, 
@@ -689,7 +689,7 @@ inline void makeTuyaDPValue32(
     dp_value_32_little_endian);
 }
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 inline void makeTuyaDPBool(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, 
                            uint8_t dp_id, 
@@ -704,7 +704,7 @@ inline void makeTuyaDPBool(Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload,
   Tuya_dp_zcl_payload.dp_value_8             =  value_8;
 }
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 inline void makeTuyaDPEnum8(
     Tuya_dp_zcl_payload_s &Tuya_dp_zcl_payload, uint8_t dp_id, 
@@ -719,38 +719,69 @@ inline void makeTuyaDPEnum8(
   Tuya_dp_zcl_payload.dp_value_8             =  value_8;
 }
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 bool sendTuyaRequestCmdBool(
-    ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dp_id, 
-    bool dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
-    uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
+  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dp_id, 
+  bool dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
+  uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
+
+bool sendTuyaRequestCmdBool(
+  uint16_t short_addr, uint8_t dst_endpoint, uint8_t dp_id, bool dp_value, 
+  bool cmd_sync = CUSTOM_CMD_ASYNC, uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
+
+/*****************************************************************************/
 
 bool sendTuyaRequestCmdEnum8(
-    ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dp_id, 
-    uint8_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
-    uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
+  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dp_id, 
+  uint8_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
+  uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
+
+bool sendTuyaRequestCmdEnum8(
+  uint16_t short_addr, uint8_t dst_endpoint, uint8_t dp_id, uint8_t dp_value, 
+  bool cmd_sync = CUSTOM_CMD_ASYNC, uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
+
+/*****************************************************************************/
 
 bool sendTuyaRequestCmdValue32(
     ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dp_id, 
     uint32_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
     uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
+
+bool sendTuyaRequestCmdValue32(
+  uint16_t short_addr, uint8_t dst_endpoint, uint8_t dp_id, uint32_t dp_value, 
+  bool cmd_sync = CUSTOM_CMD_ASYNC, uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
+
+/*****************************************************************************/
 
 bool sendTuyaRequestCmdData(
-    ZigbeeGateway *gateway, zbg_device_params_t *device,uint8_t dp_id, 
-    uint8_t dp_type, uint32_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
-    uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
+  ZigbeeGateway *gateway, zbg_device_params_t *device,uint8_t dp_id, 
+  uint8_t dp_type, uint32_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
+  uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
+
+bool sendTuyaRequestCmdData(
+  uint16_t short_addr, uint8_t dst_endpoint, uint8_t dp_id, uint8_t dp_type,
+  uint32_t dp_value, bool cmd_sync = CUSTOM_CMD_ASYNC, 
+  uint8_t Tuya_cmd = TUYA_REQUEST_CMD);
+
+/*****************************************************************************/
 
 bool sendTuyaQueryCmd(
-    ZigbeeGateway *gateway, zbg_device_params_t *device, 
-    bool cmd_sync = CUSTOM_CMD_ASYNC);
+  ZigbeeGateway *gateway, zbg_device_params_t *device, 
+  bool cmd_sync = CUSTOM_CMD_ASYNC);
 
+/*****************************************************************************/
+
+bool sendTuyaQueryCmd(
+  uint16_t short_addr, uint8_t dst_endpoint, bool cmd_sync = CUSTOM_CMD_ASYNC);
+
+/*****************************************************************************/
 #endif //TUYA_DATAPOINTS_H_

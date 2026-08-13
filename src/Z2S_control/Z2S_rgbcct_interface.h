@@ -79,8 +79,7 @@ class Z2S_RGBCCTInterface : public ChannelElement, public ActionHandler,
 
 public:
 
-  Z2S_RGBCCTInterface(zbg_device_params_t *device, 
-    uint8_t rgb_mode = Z2S_COLOR_HS_RGB);
+  Z2S_RGBCCTInterface(uint8_t rgb_mode = Z2S_COLOR_HS_RGB);
 
   void onLoadState() override;
   void onSaveState() override;
@@ -90,7 +89,15 @@ public:
   void onInit() override;
   void iterateAlways() override;
 
-  virtual void handleAction(int event, int action) override {};
+  virtual void handleAction(int event, int action) override;
+
+  bool isOn() {
+
+    return _colorBrightness || _brightness;
+  }
+
+  void turnOn() {};
+  void turnOff() {};
 
   virtual void sendValueToDevice(
     uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness, 
@@ -131,6 +138,8 @@ public:
   
 
 protected:
+
+  void increaseBrightness(int8_t add_to_brightness);
 
   uint8_t _rgb_mode = Z2S_COLOR_HS_RGB;
 

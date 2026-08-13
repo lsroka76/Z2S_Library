@@ -509,7 +509,8 @@ void GatewayEvents::iterateAlways() {
 /*****************************************************************************/
 
 
-Supla::Control::LocalActionTrigger::LocalActionTrigger() {
+Supla::Control::LocalActionTrigger::LocalActionTrigger() 
+  : Z2S_Core(this) {
 
 }
 

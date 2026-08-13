@@ -3,9 +3,10 @@
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
 
-Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(_supla_int_t functions, uint32_t debounceTimeMs)
-    : Supla::Control::VirtualRelay(functions)
-{
+Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(
+  _supla_int_t functions, uint32_t debounceTimeMs)
+    : Supla::Control::VirtualRelay(functions), Z2S_Core(this) {
+      
     _lastChangeTimeMs = millis();
     _debounceTimeMs   = debounceTimeMs;
 }

@@ -25,41 +25,19 @@
 #include <Z2S_custom_actions_events.h>
 #include <supla/events.h>
 
+/*****************************************************************************/
 
-Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function)
-  : Relay(-1, true, RELAY_FLAGS ),
-  /*_gateway(gateway),*/ _z2s_function(z2s_function) {
+Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(uint8_t z2s_function)
+  : Relay(-1, true, RELAY_FLAGS ), Z2S_Core(this), 
+  _z2s_function(z2s_function) {
 
-    memcpy(&_device, device, sizeof(zbg_device_params_t));     
 }
 
-/*****************************************************************************/
-/*
-void Supla::Control::Z2S_VirtualRelay::setZ2SZbDevice(
-  z2s_zb_device_params_t *z2s_zb_device) {
-
-    _z2s_zb_device = z2s_zb_device;
-  }
-*/
-/*****************************************************************************/
-/*
-z2s_zb_device_params_t *Supla::Control::Z2S_VirtualRelay::getZ2SZbDevice() {
-
-    return _z2s_zb_device;
-}
-  */
 /*****************************************************************************/
 
 
 void Supla::Control::Z2S_VirtualRelay::onInit() {
-  /*uint32_t duration = durationMs;
-  if (stateOnInit == STATE_ON_INIT_ON ||
-      stateOnInit == STATE_ON_INIT_RESTORED_ON) {
-    turnOn(duration);
-  } else {
-    turnOff(duration);
-  }*/
+  
   if (_timeout_ms)
     channel.setStateOffline();
   
@@ -99,7 +77,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
       case Z2S_VIRTUAL_RELAY_FNC_NONE: {
         
         state = true;
-        zbGateway.sendOnOffCmd(&_device, state);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);
         channel.setNewValue(state);
       } break;
 
@@ -110,7 +88,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = true;
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_z2s_function_value_U8, false, 1,
           LUMI_MANUFACTURER_CODE);
       } break;
@@ -122,7 +100,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = true;
         
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
           ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &state, false, 1, 
           LUMI_MANUFACTURER_CODE);
       } break;
@@ -136,14 +114,14 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         _z2s_function_value_U32 = 0x3C01;
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_1_ID,
-          ESP_ZB_ZCL_ATTR_TYPE_U32, 4, &_z2s_function_value_U32, false, 1,
-          LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_BUZZER_1_ID, ESP_ZB_ZCL_ATTR_TYPE_U32, 4, 
+          &_z2s_function_value_U32, false, 1, LUMI_MANUFACTURER_CODE);
 
         _z2s_function_value_U8 = 0;
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,
           ESP_ZB_ZCL_ATTR_TYPE_U8, 4, &_z2s_function_value_U8, false, 1,
           LUMI_MANUFACTURER_CODE);
       } break;
@@ -166,9 +144,9 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
         //log_i("_z2s_function = %u, short addr = 0x%X",_z2s_function, _device.short_addr);
         zbGateway.sendCustomClusterCmd(
-          &_device, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, 
+          _short_addr, _endpoint, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, 
           _z2s_function_data);
-        zbGateway.sendOnOffCmd(&_device, state);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);
 
         channel.setNewValue(state);
 
@@ -181,7 +159,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = true;
 
         sendTuyaRequestCmdBool(
-          &zbGateway, &_device, MOES_ALARM_SWITCH_DP, state);
+          _short_addr, _endpoint, MOES_ALARM_SWITCH_DP, state);
       
         channel.setNewValue(state);
 
@@ -194,7 +172,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdValue32(
-          &zbGateway, &_device, MOES_ALARM_DURATION_DP, Z2S_incValueU32(
+          _short_addr, _endpoint, MOES_ALARM_DURATION_DP, Z2S_incValueU32(
             MOES_ALARM_MELODY_MIN_DURATION, MOES_ALARM_MELODY_MAX_DURATION, 
             10));
         channel.setNewValue(state);
@@ -208,7 +186,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_ALARM_MELODY_DP, Z2S_incValueU8(
+          _short_addr, _endpoint, MOES_ALARM_MELODY_DP, Z2S_incValueU8(
             MOES_ALARM_MELODY_FIRST_MELODY, MOES_ALARM_MELODY_LAST_MELODY));
 
         channel.setNewValue(state);
@@ -221,7 +199,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = false;
         
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_ALARM_VOLUME_DP, Z2S_incValueU8(
+          _short_addr, _endpoint, MOES_ALARM_VOLUME_DP, Z2S_incValueU8(
             MOES_ALARM_VOLUME_LOWEST, MOES_ALARM_VOLUME_HIGHEST));
         
         channel.setNewValue(state);
@@ -235,7 +213,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         state = true;
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
+          _short_addr, _endpoint, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
           state ? 1 : 0);
         
         channel.setNewValue(state);
@@ -248,7 +226,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
         state = true;
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
+          _short_addr, _endpoint, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
           state ? 1 : 0); //automatic = local mode = 1
         
         channel.setNewValue(state);
@@ -261,7 +239,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         state = true;
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_DP, 
+          _short_addr, _endpoint, TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_DP, 
           state ? 0 : 1); //ON = 0
         
         channel.setNewValue(state);
@@ -274,7 +252,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         state = true;
 
         sendTuyaRequestCmdBool(
-          &zbGateway, &_device, GIEX_WATER_VALVE_STATE_DP, state);
+          _short_addr, _endpoint, GIEX_WATER_VALVE_STATE_DP, state);
         
         channel.setNewValue(state);
       } break;
@@ -288,7 +266,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         uint8_t realy_dp_id = _z2s_function_value_U8;
 
         sendTuyaRequestCmdBool(
-          &zbGateway, &_device, realy_dp_id, state);
+          _short_addr, _endpoint, realy_dp_id, state);
         
         channel.setNewValue(state);
       } break;
@@ -335,7 +313,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
           _z2s_function_data[10] = _z2s_function_value_U32 & 0xFF;
 		
           zbGateway.sendAttributeWrite(
-            &_device, SONOFF_CUSTOM_CLUSTER, attribute_id, 
+            _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, attribute_id, 
             ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, _z2s_function_data, true);
         }
         state = false;
@@ -373,7 +351,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
       case Z2S_VIRTUAL_RELAY_FNC_NONE: {
         state = false;
-        zbGateway.sendOnOffCmd(&_device, state);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);
         channel.setNewValue(state);
       } break;
 
@@ -384,7 +362,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &_z2s_function_value_S8, false, 1,
           LUMI_MANUFACTURER_CODE);
       } break;
@@ -396,7 +374,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
         
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER,_z2s_function_value_U32,
           ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &state, false, 1, 
           LUMI_MANUFACTURER_CODE);
       } break;
@@ -410,14 +388,14 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         _z2s_function_value_U32 = 0x3C00;
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_1_ID,
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_1_ID,
           ESP_ZB_ZCL_ATTR_TYPE_U32, 4, &_z2s_function_value_U32, false, 1,
           LUMI_MANUFACTURER_CODE);
 
         _z2s_function_value_U8 = 1;
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,
           ESP_ZB_ZCL_ATTR_TYPE_U8, 4, &_z2s_function_value_U8, false, 1,
           LUMI_MANUFACTURER_CODE);
       } break;
@@ -435,9 +413,9 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         _z2s_function_data[3] = 0x00; //strobe duty cycle
         _z2s_function_data[4] = 0x00; //strobe level field
 
-        zbGateway.sendOnOffCmd(&_device, state);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);
         zbGateway.sendCustomClusterCmd(
-          &_device, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, 
+          _short_addr, _endpoint, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, 
           _z2s_function_data);
         channel.setNewValue(state);
 
@@ -448,7 +426,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdBool(
-          &zbGateway, &_device, MOES_ALARM_SWITCH_DP, state);
+          _short_addr, _endpoint, MOES_ALARM_SWITCH_DP, state);
 
         channel.setNewValue(state);
 
@@ -459,7 +437,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdValue32(
-          &zbGateway, &_device, MOES_ALARM_DURATION_DP, Z2S_decValueU32(
+          _short_addr, _endpoint, MOES_ALARM_DURATION_DP, Z2S_decValueU32(
             MOES_ALARM_MELODY_MIN_DURATION, MOES_ALARM_MELODY_MAX_DURATION, 
             10));
 
@@ -471,7 +449,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_ALARM_MELODY_DP, Z2S_decValueU8(
+          _short_addr, _endpoint, MOES_ALARM_MELODY_DP, Z2S_decValueU8(
             MOES_ALARM_MELODY_FIRST_MELODY, MOES_ALARM_MELODY_LAST_MELODY));
 
         channel.setNewValue(state);
@@ -482,7 +460,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
         
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_ALARM_VOLUME_DP, Z2S_decValueU8(
+          _short_addr, _endpoint, MOES_ALARM_VOLUME_DP, Z2S_decValueU8(
             MOES_ALARM_VOLUME_LOWEST, MOES_ALARM_VOLUME_HIGHEST));
         
         channel.setNewValue(state);
@@ -496,7 +474,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
+          _short_addr, _endpoint, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_STATE_DP, 
           state ? 1 : 0);
         
         channel.setNewValue(state);
@@ -509,7 +487,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
+          _short_addr, _endpoint, TUYA_PRESENCE_SENSOR_RELAY_SWITCH_MODE_DP, 
           state ? 1 : 0);
         
         channel.setNewValue(state);
@@ -522,7 +500,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         state = false;
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_DP, 
+          _short_addr, _endpoint, TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_DP, 
           state ? 0 : 1); //ON = 0
         
         channel.setNewValue(state);
@@ -535,7 +513,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         state = false;
 
         sendTuyaRequestCmdBool(
-          &zbGateway, &_device, GIEX_WATER_VALVE_STATE_DP, state);
+          _short_addr, _endpoint, GIEX_WATER_VALVE_STATE_DP, state);
         
         channel.setNewValue(state);
 
@@ -550,7 +528,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         uint8_t realy_dp_id = _z2s_function_value_U8;
 
         sendTuyaRequestCmdBool(
-          &zbGateway, &_device, realy_dp_id, state);
+          _short_addr, _endpoint, realy_dp_id, state);
         
         channel.setNewValue(state);
       } break;
@@ -570,7 +548,7 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
     _fresh_start = false;
     
     zbGateway.sendAttributeRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+      _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
 
 	switch (_z2s_function) {
@@ -580,8 +558,8 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
 
         uint8_t relay_dp_id = _z2s_function_value_U8;
 
-        //sendTuyaRequestCmdBool(&zbGateway, &_device, relay_dp_id, state);
-        sendTuyaQueryCmd(&zbGateway, &_device, false);
+        //sendTuyaRequestCmdBool(_short_addr, _endpoint, relay_dp_id, state);
+        sendTuyaQueryCmd(_short_addr, _endpoint, false);
         
       } break;
 	}
@@ -663,12 +641,6 @@ void Supla::Control::Z2S_VirtualRelay::handleAction(int event, int action) {
 
 bool Supla::Control::Z2S_VirtualRelay::isOn() {
   
-  /*if (Zigbee.started()) {   
-    if (zbGateway.sendAttributeRead(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-          ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, true))
-      state = *((bool *)zbGateway.getReadAttrLastResult()->data.value);
-  }*/
    return state;
 }
 

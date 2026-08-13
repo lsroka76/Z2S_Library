@@ -28,9 +28,6 @@
 
 #define MSINHOUR (60*60*1000)
 
-//extern NetworkClient Z2S_NetworkClient;
-//extern IPAddress     Z2S_IPAddress;
-
 
 namespace Supla {
 namespace Sensor {
@@ -39,7 +36,8 @@ class Z2S_VirtualThermometer : public Supla::Sensor::VirtualThermometer,
   
 public:
     
-  Z2S_VirtualThermometer(bool rwns_flag = false) : _rwns_flag(rwns_flag) {}
+  Z2S_VirtualThermometer(bool rwns_flag = false) 
+    : Z2S_Core(this), _rwns_flag(rwns_flag) {}
 
   void setRWNSFlag(bool rwns_flag) {
 

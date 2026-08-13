@@ -22,43 +22,11 @@
 
 #include <supla/time.h>
 
-Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t z2s_function)
-  : /*_gateway(gateway),*/ _z2s_function(z2s_function) {
-
-      memcpy(&_device, device, sizeof(zbg_device_params_t));     
+Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(uint8_t z2s_function)
+  : Z2S_Core(this), _z2s_function(z2s_function) {
+   
 }
 
-/*****************************************************************************/
-/*
-void Supla::Control::Z2S_RollerShutter::setZ2SZbDevice(
-  z2s_zb_device_params_t *z2s_zb_device) {
-
-    _z2s_zb_device = z2s_zb_device;
-  }
-*/
-/*****************************************************************************/
-/*
-z2s_zb_device_params_t *Supla::Control::Z2S_RollerShutter::getZ2SZbDevice() {
-
-    return _z2s_zb_device;
-}
-*/
-/*****************************************************************************/
-/*
-void Supla::Control::Z2S_RollerShutter::setZ2SChannel(
-  z2s_device_params_t *z2s_channel) {
-
-    _z2s_channel = z2s_channel;
-  }
-*/
-/*****************************************************************************/
-/*
-z2s_device_params_t *Supla::Control::Z2S_RollerShutter::getZ2SChannel() {
-
-    return _z2s_channel;
-}
-*/
 /*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::onInit() {
@@ -77,7 +45,7 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
 
         zbGateway.sendWindowCoveringCmd(
-          &_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_UP_OPEN, nullptr); 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_UP_OPEN, nullptr); 
       break;
 
 
@@ -86,7 +54,7 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
         uint8_t lift_percentage = 0;
         
         zbGateway.sendWindowCoveringCmd(
-          &_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
           &lift_percentage); 
       } break;
 
@@ -94,7 +62,7 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x02);
+          _short_addr, _endpoint, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x02);
       } break;
 
 
@@ -102,21 +70,21 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_COVER_STATE_DP,0x02);
+          _short_addr, _endpoint, MOES_COVER_STATE_DP,0x02);
       } break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_COVER_STATE_DP, 0x02);
+          _short_addr, _endpoint, MOES_COVER_STATE_DP, 0x02);
       } break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER: {
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
+          _short_addr, _endpoint, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
           0x00);
       } break;
 
@@ -126,7 +94,7 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
         float lift_cmd = 100;
 
         zbGateway.sendAttributeWrite(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
           ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_cmd, false, 0, 0);
       } break;
     }
@@ -143,7 +111,7 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
 
         zbGateway.sendWindowCoveringCmd(
-          &_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_DOWN_CLOSE, nullptr); 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_DOWN_CLOSE, nullptr); 
       break;
 
 
@@ -152,7 +120,7 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
         uint8_t lift_percentage = 100;
 
         zbGateway.sendWindowCoveringCmd(
-          &_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
           &lift_percentage); 
       } break;
 
@@ -160,7 +128,7 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x00);
+          _short_addr, _endpoint, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x00);
       } break;
 
 
@@ -168,20 +136,20 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
 
         uint8_t lift_percentage = 100;
 
-        sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP, 0x00);
+        sendTuyaRequestCmdEnum8(_short_addr, _endpoint, MOES_COVER_STATE_DP, 0x00);
       } break;
  
 
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
-        sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP, 0x01);
+        sendTuyaRequestCmdEnum8(_short_addr, _endpoint, MOES_COVER_STATE_DP, 0x01);
       } break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER: {
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
+          _short_addr, _endpoint, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
           0x02);
       } break;
 
@@ -191,7 +159,7 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
         float lift_cmd = 0;
 
         zbGateway.sendAttributeWrite(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
           ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_cmd, false, 0, 0);
       } break;
     }
@@ -209,34 +177,34 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT:
 
         zbGateway.sendWindowCoveringCmd(
-          &_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_STOP, nullptr); 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_STOP, nullptr); 
       break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
         
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x01);
+          _short_addr, _endpoint, MOES_SHADES_DRIVE_MOTOR_STATE_DP, 0x01);
       } break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER: {
         
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, MOES_COVER_STATE_DP, 0x01);
+          _short_addr, _endpoint, MOES_COVER_STATE_DP, 0x01);
       } break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
 
-        sendTuyaRequestCmdEnum8(&zbGateway, &_device, MOES_COVER_STATE_DP, 0x00);
+        sendTuyaRequestCmdEnum8(_short_addr, _endpoint, MOES_COVER_STATE_DP, 0x00);
       } break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER: {
 
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
+          _short_addr, _endpoint, TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_STATE_DP,
           0x01);
       } break;
 
@@ -246,7 +214,7 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
         uint8_t lift_cmd = 2;
 
         zbGateway.sendAttributeWrite(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT, 0x55, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT, 0x55, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &lift_cmd, false, 0, 0);
       } break;
     }
@@ -264,7 +232,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER:
 
         zbGateway.sendWindowCoveringCmd(
-          &_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
           &lift_percentage);
 
 
@@ -302,7 +270,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
         
         zbGateway.sendWindowCoveringCmd(
-          &_device, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
           &lift_percentage); 
 
       }break;
@@ -311,7 +279,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
       case Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR: {
 
         sendTuyaRequestCmdValue32(
-          &zbGateway, &_device, MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, 
+          _short_addr, _endpoint, MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP, 
           100 - lift_percentage);
       } break;
 
@@ -319,7 +287,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
       case Z2S_ROLLER_SHUTTER_FNC_MOES_COVER: {
 
         sendTuyaRequestCmdValue32(
-          &zbGateway, &_device, MOES_COVER_STATE_COVER_POSITION_DP, 
+          _short_addr, _endpoint, MOES_COVER_STATE_COVER_POSITION_DP, 
           lift_percentage);
       } break;
 
@@ -334,7 +302,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
         rsStop();
         
         sendTuyaRequestCmdValue32(
-          &zbGateway, &_device, MOES_COVER_STATE_COVER_POSITION_DP, 
+          _short_addr, _endpoint, MOES_COVER_STATE_COVER_POSITION_DP, 
           lift_percentage);
       } break;
 
@@ -342,7 +310,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
       case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER: {
 
         sendTuyaRequestCmdValue32(
-          &zbGateway, &_device, 
+          _short_addr, _endpoint, 
           TUYA_MB60L_SMART_BLINDS_MOTOR_COVER_POSITION_DP, 
           100 - lift_percentage);
       } break;
@@ -352,7 +320,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
         float lift_float = 100 - lift_percentage;
         zbGateway.sendAttributeWrite(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55, 
           ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_float, false, 0, 0);
       } break;
     }
@@ -372,7 +340,7 @@ void Supla::Control::Z2S_RollerShutter::ping() {
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT:
 
         zbGateway.sendAttributeRead(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING, 
           ESP_ZB_ZCL_ATTR_WINDOW_COVERING_CURRENT_POSITION_LIFT_PERCENTAGE_ID, 
           false);
       break;
@@ -383,7 +351,7 @@ void Supla::Control::Z2S_RollerShutter::ping() {
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER:
       case Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER:
 
-        sendTuyaQueryCmd(&zbGateway, &_device);
+        sendTuyaQueryCmd(_short_addr, _endpoint);
       break;
     }
   }
@@ -459,7 +427,7 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
     if (Zigbee.started()) {
 
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
     }
   }*/
   

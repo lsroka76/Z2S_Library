@@ -19,8 +19,9 @@
 
 using Supla::Control::HvacBaseEE;
 
-HvacBaseEE::HvacBaseEE(Supla::Control::OutputInterface *primaryOutput,
-                   Supla::Control::OutputInterface *secondaryOutput) : 
+HvacBaseEE::HvacBaseEE(
+  Supla::Control::OutputInterface *primaryOutput,
+  Supla::Control::OutputInterface *secondaryOutput) : 
   HvacBase(primaryOutput, secondaryOutput) {}
 
 HvacBaseEE::~HvacBaseEE() {}
@@ -31,8 +32,6 @@ int32_t HvacBaseEE::handleNewValueFromServer(
   
   int32_t handleNewValueFromServer_result = 
     HvacBase::handleNewValueFromServer(newValue);
-  //if (handleNewValueFromServer_result)
-  //  runAction(Supla::ON_CHANGE);
   
   return handleNewValueFromServer_result; 
 }
@@ -72,4 +71,3 @@ void HvacBaseEE::handleAction(int event, int action) {
     break;
   }
 }
-

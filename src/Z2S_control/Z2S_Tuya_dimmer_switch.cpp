@@ -22,15 +22,17 @@
 
 
 Supla::Control::Z2S_TuyaDimmerSwitch::Z2S_TuyaDimmerSwitch(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, int8_t dimmer_number)
-    : _gateway(gateway), _dimmer_number(dimmer_number) {
-    memcpy(&_device, device, sizeof(zbg_device_params_t)); 
+  int8_t dimmer_number)
+  : Z2S_Core(this), _dimmer_number(dimmer_number) {
+  
 }
 
 void Supla::Control::Z2S_TuyaDimmerSwitch::turnOn() {
 
-  if (_gateway && Zigbee.started()) {
-   log_i("TuyaDimmerSwitch turnON");
+  if (Zigbee.started()) {
+
+    log_i("TuyaDimmerSwitch turnON");
+
     uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
     _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
@@ -41,9 +43,9 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::turnOn() {
     _Tuya_dp_data[5] = 0x01;
     _Tuya_dp_data[6] = 0x01;
 
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, 
-      _Tuya_dp_data, false);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
 
     _tsn_number = random(0x0000, 0xFFFF);
     _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
@@ -54,9 +56,9 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::turnOn() {
     _Tuya_dp_data[5] = 0x01;
     _Tuya_dp_data[6] = 0x02;
 
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, 
-      _Tuya_dp_data, false);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
 
     _tsn_number = random(0x0000, 0xFFFF);
 
@@ -68,9 +70,9 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::turnOn() {
     _Tuya_dp_data[5] = 0x01;
     _Tuya_dp_data[6] = 0xFF;
 
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, 
-      _Tuya_dp_data, false);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
 
 
     _tsn_number = random(0x0000, 0xFFFF);
@@ -83,17 +85,16 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::turnOn() {
     _Tuya_dp_data[5] = 0x01;
     _Tuya_dp_data[6] = 0x01;
 
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, 
-      _Tuya_dp_data, false);
-
-    //channel.setNewValue(true);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
  }
 }
 
 void Supla::Control::Z2S_TuyaDimmerSwitch::turnOff() {
 
-  if (_gateway && Zigbee.started()) {
+  if (Zigbee.started()) {
+
     uint16_t _tsn_number = random(0x0000, 0xFFFF); 
     _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
     _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
@@ -103,9 +104,9 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::turnOff() {
     _Tuya_dp_data[5] = 0x01;
     _Tuya_dp_data[6] = 0x00;
 
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, 
-      _Tuya_dp_data, false);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
   }
 }
 
@@ -123,7 +124,8 @@ return true;
 
 void Supla::Control::Z2S_TuyaDimmerSwitch::sendValueToDevice(uint32_t brightness) {
 
-  if (_gateway && Zigbee.started()) {
+  if (Zigbee.started()) {
+    
     uint16_t _tsn_number = random(0x0000, 0xFFFF); 
     _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
     _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
@@ -136,9 +138,9 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::sendValueToDevice(uint32_t brightness
     _Tuya_dp_data[8] = 0x00;
     _Tuya_dp_data[9] = map(brightness, 0, 100, 0, 254);
 
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, 
-      _Tuya_dp_data, false);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
 
     _tsn_number = random(0x0000, 0xFFFF); 
     _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
@@ -152,15 +154,15 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::sendValueToDevice(uint32_t brightness
     _Tuya_dp_data[8] = 0x00;
     _Tuya_dp_data[9] = 0x00;  
 
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x01, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, 
-      _Tuya_dp_data, false);
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x05, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, 
-      _Tuya_dp_data, false);
-    _gateway->sendCustomClusterCmd(
-      &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x06, ESP_ZB_ZCL_ATTR_TYPE_SET, 10, 
-      _Tuya_dp_data, false);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x01, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x05, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
+    zbGateway.sendCustomClusterCmd(
+      _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x06, 
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
   }
 }
 

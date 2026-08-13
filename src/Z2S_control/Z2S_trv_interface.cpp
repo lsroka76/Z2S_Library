@@ -21,13 +21,10 @@
 /*****************************************************************************/
 
 Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, 
   uint8_t trv_commands_set, bool onOffOnly) 
-  : RemoteOutputInterface(onOffOnly), 
-  //_gateway(gateway), 
+  : RemoteOutputInterface(onOffOnly), Z2S_Core(this),
   _trv_commands_set(trv_commands_set) {
 
-  memcpy(&_device, device, sizeof(zbg_device_params_t));     
 
   if ((_trv_commands_set >= saswell_cmd_set) &&
         (_trv_commands_set < ts0601_cmd_sets_number)) { 
@@ -97,21 +94,6 @@ Supla::Control::HvacBaseEE *Supla::Control::Z2S_TRVInterface::getTRVHvac(){
   return _trv_hvac;
 }
 
-/*****************************************************************************/
-/*
-void Supla::Control::Z2S_TRVInterface::setZ2SZbDevice(
-  z2s_zb_device_params_t *z2s_zb_device) {
-
-    _z2s_zb_device = z2s_zb_device;
-  }
-*/
-/*****************************************************************************/
-/*
-z2s_zb_device_params_t *Supla::Control::Z2S_TRVInterface::getZ2SZbDevice() {
-
-    return _z2s_zb_device;
-}
-*/
 /*****************************************************************************/
 
 bool Supla::Control::Z2S_TRVInterface::inInitSequence(){
@@ -242,7 +224,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
           temperature_setpoint /= 100;
 
           sendTuyaRequestCmdValue32(
-            &zbGateway, &_device, ts0601_command_sets_table[_trv_commands_set].\
+            _short_addr, _endpoint, ts0601_command_sets_table[_trv_commands_set].\
             ts0601_cmd_set_target_heatsetpoint_dp_id, temperature_setpoint);
         }
       } else
@@ -257,13 +239,13 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
         (_trv_commands_set == DANFOSS_CMD_SET)) {
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &temperature_setpoint);
 
       zbGateway.sendAttributeRead(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID);
     }
@@ -271,7 +253,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
     if (_trv_commands_set == EUROTRONIC_CMD_SET) {
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         EUROTRONIC_CURRENT_HEATING_SETPOINT_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &temperature_setpoint,
@@ -296,7 +278,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
     if ((_trv_commands_set >= saswell_cmd_set) &&
         (_trv_commands_set < ts0601_cmd_sets_number)) { 
 
-      //sendTuyaQueryCmd(&zbGateway, &_device, false);
+      //sendTuyaQueryCmd(_short_addr, _endpoint, false);
 
       /*if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == 
           _trv_commands_set) {
@@ -310,7 +292,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
           local_temperature /= 100;
 
           sendTuyaRequestCmdValue32(
-            &zbGateway, &_device, 
+            _short_addr, _endpoint, 
             ts0601_command_sets_table[_trv_commands_set].\
               ts0601_cmd_set_local_temperature_dp_id,
             local_temperature);
@@ -328,7 +310,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
         (_trv_commands_set == DANFOSS_CMD_SET)) {
 
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID);
     }
 
@@ -361,8 +343,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
 
           temperature_calibration /= 100;
 
-          sendTuyaRequestCmdValue32(&zbGateway, 
-                                    &_device, 
+          sendTuyaRequestCmdValue32(_short_addr, _endpoint, 
                                     ts0601_command_sets_table[_trv_commands_set].
                                       ts0601_cmd_set_temperature_calibration_dp_id,
                                     temperature_calibration);
@@ -382,7 +363,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
       
       temperature_calibration = temperature_calibration / 10;
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_CALIBRATION_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_S8, 1, &temperature_calibration);
@@ -425,10 +406,9 @@ void buildLumiFFF2CmdHeader(uint8_t* fff2_cmd_data_buffer,
   lumi_fff2_cmd_header->integrity = integrity;
 }
 
-uint8_t buildLumiFFF2CmdLinkParams1(uint8_t* fff2_cmd_data_buffer,
-                                    uint8_t counter,
-                                    time_t timestamp,
-                                    esp_zb_ieee_addr_t ieee_addr) {
+uint8_t buildLumiFFF2CmdLinkParams1(
+  uint8_t* fff2_cmd_data_buffer, uint8_t counter, time_t timestamp,
+  esp_zb_ieee_addr_t ieee_addr) {
   
   uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
   uint8_t lumi_sensor_link_params_1_size = 
@@ -436,14 +416,13 @@ uint8_t buildLumiFFF2CmdLinkParams1(uint8_t* fff2_cmd_data_buffer,
 
   *fff2_cmd_data_buffer = fff2_header_size + lumi_sensor_link_params_1_size;
 
-  buildLumiFFF2CmdHeader(fff2_cmd_data_buffer + 1,
-                         counter, 
-                         LUMI_FFF2_CMD_ACTION_LINK_SENSOR,
-                         lumi_sensor_link_params_1_size);
+  buildLumiFFF2CmdHeader(
+    fff2_cmd_data_buffer + 1, counter, LUMI_FFF2_CMD_ACTION_LINK_SENSOR,
+    lumi_sensor_link_params_1_size);
     
-  memcpy(fff2_cmd_data_buffer + fff2_header_size + 1, 
-         &lumi_sensor_link_params_1_template,
-         lumi_sensor_link_params_1_size);
+  memcpy(
+    fff2_cmd_data_buffer + fff2_header_size + 1, 
+    &lumi_sensor_link_params_1_template, lumi_sensor_link_params_1_size);
 
   lumi_sensor_link_params_1_t *lumi_sensor_link_params_1 = 
     (lumi_sensor_link_params_1_t*)(fff2_cmd_data_buffer + fff2_header_size + 1);
@@ -590,12 +569,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
       uint8_t temperature_selector = 1;
 
       zbGateway.sendAttributeWrite(
-        &_device, SONOFF_CUSTOM_CLUSTER, 
+        _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
         TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
 
       zbGateway.sendAttributeWrite(
-        &_device, SONOFF_CUSTOM_CLUSTER, 
+        _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
         TRVZB_CMD_SET_EXTERNAL_TEMPERATURE_INPUT, 
         ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &external_sensor_temperature);
     }
@@ -604,7 +583,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
       
     
       zbGateway.sendAttributeWrite(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         BOSCH_TRV_EXTERNAL_TEMPERATURE_INPUT_ID, ESP_ZB_ZCL_ATTR_TYPE_S16, 
         2, &external_sensor_temperature, true, 1, BOSCH_MANUFACTURER_CODE);
     }
@@ -613,7 +592,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
       
     
       zbGateway.sendAttributeWrite(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         DANFOSS_EXTERNAL_TEMPERATURE_INPUT_ID, ESP_ZB_ZCL_ATTR_TYPE_S16, 
         2, &external_sensor_temperature, true, 1, DANFOSS_MANUFACTURER_CODE);
     }
@@ -633,7 +612,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
                                               external_sensor_temperature);
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         LUMI_CUSTOM_CLUSTER, 
         LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
@@ -642,7 +621,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
         1, LUMI_MANUFACTURER_CODE);  
 
       zbGateway.sendAttributeRead(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
         false);
@@ -668,7 +647,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
       uint8_t temperature_selector = trv_external_sensor_present ? 1 : 0;
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         SONOFF_CUSTOM_CLUSTER, 
         TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
@@ -683,45 +662,45 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
       if (trv_external_sensor_present) {
       
         uint8_t buffer_size = buildLumiFFF2CmdLinkParams1(
-          fff2_cmd_data_buffer, 0x12, timestamp, _device.ieee_addr);
+          fff2_cmd_data_buffer, 0x12, timestamp, _z2s_channel->ieee_addr);
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
           &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         buffer_size =buildLumiFFF2CmdLinkParams2(
-          fff2_cmd_data_buffer, 0x13, timestamp, _device.ieee_addr);
+          fff2_cmd_data_buffer, 0x13, timestamp, _z2s_channel->ieee_addr);
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
           &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, false);
 
       } else {
 
         uint8_t buffer_size = buildLumiFFF2CmdUnlinkParams(
-          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, _device.ieee_addr);
+          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, _z2s_channel->ieee_addr);
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
           &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         buffer_size = buildLumiFFF2CmdUnlinkParams(
-          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, _device.ieee_addr);
+          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, _z2s_channel->ieee_addr);
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
           &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, true);
       } 
     }
@@ -785,7 +764,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
         }
 
         sendTuyaRequestCmdData(
-          &zbGateway, &_device, system_mode_dp_id, system_mode_dp_type, 
+          _short_addr, _endpoint, system_mode_dp_id, system_mode_dp_type, 
           system_mode_value); 
 
       } else
@@ -798,13 +777,13 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
       trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);
 
       zbGateway.sendAttributeRead(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID);
     }
@@ -814,7 +793,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
       trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode);
@@ -825,7 +804,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
       trv_system_mode = (trv_system_mode == 0) ? 5 : 1; //
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         BOSCH_TRV_OPERATING_MODE_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_system_mode,
@@ -843,7 +822,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
       log_i("EUROTRONIC host flags = 0x%04X", eurotronic_host_flags.low);
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_U24, 3, &eurotronic_host_flags,
@@ -855,7 +834,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
       trv_system_mode = (trv_system_mode == 0) ? 0 : 1; //
 
       zbGateway.sendAttributeWrite(
-        &_device, 
+        _short_addr, _endpoint, 
         LUMI_CUSTOM_CLUSTER, 
         LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_system_mode,
@@ -921,11 +900,9 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
           } break;
         }
         
-        sendTuyaRequestCmdData(&zbGateway, 
-                               &_device, 
-                               schedule_mode_dp_id,
-                               schedule_mode_dp_type,
-                               schedule_mode_value);
+        sendTuyaRequestCmdData(
+          _short_addr, _endpoint, schedule_mode_dp_id, schedule_mode_dp_type, 
+          schedule_mode_value);
 
             
       } else
@@ -939,7 +916,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
       trv_schedule_mode = (trv_schedule_mode == 0) ? 4 : 1; //
 
       zbGateway.sendAttributeWrite(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_schedule_mode);
     }
@@ -949,7 +926,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
       trv_schedule_mode = (trv_schedule_mode == 0) ? 1 : 0; //
 
       zbGateway.sendAttributeWrite(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         BOSCH_TRV_OPERATING_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, 
         &trv_schedule_mode, false, 1, BOSCH_MANUFACTURER_CODE);
     }
@@ -968,7 +945,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
       log_i("EUROTRONIC host flags = 0x%04X", eurotronic_host_flags.low);
       
       zbGateway.sendAttributeWrite(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_U24, 
         3, &eurotronic_host_flags, false, 1, EUROTRONIC_MANUFACTURER_CODE);
     }
@@ -978,7 +955,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
       trv_schedule_mode = (trv_schedule_mode == 0) ? 0 : 1; //
 
       zbGateway.sendAttributeWrite(
-        &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID, 
+        _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID, 
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_schedule_mode,false, 1, 
         LUMI_MANUFACTURER_CODE);
     }
@@ -1030,7 +1007,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
         }
       
         sendTuyaRequestCmdData(
-          &zbGateway, &_device, child_lock_dp_id, child_lock_dp_type, 
+          _short_addr, _endpoint, child_lock_dp_id, child_lock_dp_type, 
           child_lock_value);
    
       } else
@@ -1044,13 +1021,13 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
       if (send_value) {
 
         zbGateway.sendAttributeWrite(
-          &_device, SONOFF_CUSTOM_CLUSTER, SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+          _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_BOOL, 1, &trv_child_lock);
         delay(200);
       }
 
       zbGateway.sendAttributeRead(
-        &_device, SONOFF_CUSTOM_CLUSTER, SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
+        _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
         false);
     }
 
@@ -1060,14 +1037,14 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
       if (send_value) {
 
         zbGateway.sendAttributeWrite(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
           ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &trv_child_lock);
         delay(200);
       }
 
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG, 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID, 
         false);
     }
@@ -1086,7 +1063,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
       if (send_value) {
 
         zbGateway.sendAttributeWrite(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
           ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID, ESP_ZB_ZCL_ATTR_TYPE_U24, 
           3, &eurotronic_host_flags,false, 1, 
           EUROTRONIC_MANUFACTURER_CODE);
@@ -1098,14 +1075,14 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
       if (send_value) {
 
         zbGateway.sendAttributeWrite(
-          &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID, 
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID, 
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_child_lock,false, 1, 
           LUMI_MANUFACTURER_CODE);
         delay(200);
       }
 
       zbGateway.sendAttributeRead(
-        &_device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID,
+        _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID,
         false);
       
     }
@@ -1142,7 +1119,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
           temperature_histeresis /= 100;
           
           sendTuyaRequestCmdValue32(
-            &zbGateway, &_device, 
+            _short_addr, _endpoint, 
             ts0601_command_sets_table[_trv_commands_set].\
               ts0601_cmd_set_temperature_histeresis_dp_id,
             temperature_histeresis);
@@ -1155,14 +1132,14 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
 
     if (_trv_commands_set == TRVZB_CMD_SET) {
 
-      /*zbGateway.sendAttributeWrite(&_device, 
+      /*zbGateway.sendAttributeWrite(_short_addr, _endpoint, 
                                    SONOFF_CUSTOM_CLUSTER, 
                                    SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
                                    ESP_ZB_ZCL_ATTR_TYPE_BOOL, 
                                    1, 
                                    &trv_child_lock);
       delay(200);
-      zbGateway.sendAttributeRead(&_device, 
+      zbGateway.sendAttributeRead(_short_addr, _endpoint, 
                                   SONOFF_CUSTOM_CLUSTER, 
                                   SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
                                   false);*/
@@ -1196,7 +1173,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
         ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID };
 
     zbGateway.sendAttributesRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 5, &attributes[0]);
+      _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 5, &attributes[0]);
     }
 
     bool _trv_state_updated = _trv_system_mode_updated && 
@@ -1206,7 +1183,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
     if ((!_trv_state_updated) && (_trv_commands_set >= saswell_cmd_set) &&
         (_trv_commands_set < ts0601_cmd_sets_number)) { 
       
-      //sendTuyaQueryCmd(&zbGateway, &_device, false);
+      //sendTuyaQueryCmd(_short_addr, _endpoint, false);
     }
       
     if (_last_cmd_sent_ms == 0)
@@ -1363,8 +1340,8 @@ void Supla::Control::Z2S_TRVInterface::turnOffTRVScheduleMode() {
   _in_schedule_mode = 1;
   _in_schedule_mode_timer = millis();
 
-  _schedule_stored_temperature_setpoint = 
-    _trv_hvac->getTemperatureSetpointHeat();
+  _schedule_stored_temperature_setpoint = _trv_hvac->\
+    getTemperatureSetpointHeat();
   
   log_i("in schedule mode begin: _schedule_stored_temperature_setpoint %d",
   _schedule_stored_temperature_setpoint);

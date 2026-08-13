@@ -28,19 +28,17 @@
 
 #define MSINHOUR (60*60*1000)
 
-//extern NetworkClient Z2S_NetworkClient;
-//extern IPAddress     Z2S_IPAddress;
-
 
 namespace Supla {
 namespace Sensor {
-class Z2S_GeneralPurposeMeasurement : public Supla::Sensor::GeneralPurposeChannelBase,
-  public Z2S_Core {
+class Z2S_GeneralPurposeMeasurement 
+  : public Supla::Sensor::GeneralPurposeChannelBase, public Z2S_Core {
   
 public:
     
   Z2S_GeneralPurposeMeasurement(bool rwns_flag = false) : 
-    GeneralPurposeChannelBase(nullptr, false), _rwns_flag(rwns_flag) {
+    GeneralPurposeChannelBase(nullptr, false), Z2S_Core(this), 
+    _rwns_flag(rwns_flag) {
 
     channel.setType(SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT);
     channel.setDefaultFunction(SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);

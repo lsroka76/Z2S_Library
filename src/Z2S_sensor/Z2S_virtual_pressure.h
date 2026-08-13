@@ -28,7 +28,10 @@ class Z2S_VirtualPressure : public Pressure, public Z2S_Core {
  
 public:
   
-  Z2S_VirtualPressure(bool rwns_flag = false) : _rwns_flag(rwns_flag) {}
+  Z2S_VirtualPressure(bool rwns_flag = false) 
+    : Z2S_Core(this), _rwns_flag(rwns_flag) {
+
+  }
 
   void setRWNSFlag(bool rwns_flag) {
 

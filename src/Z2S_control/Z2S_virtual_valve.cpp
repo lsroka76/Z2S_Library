@@ -21,12 +21,11 @@
 
 using Supla::Control::Z2S_VirtualValve;
 
-Z2S_VirtualValve::Z2S_VirtualValve(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose, 
-  uint8_t z2s_function) : ValveBase(openClose), 
-  /*_gateway(gateway),*/ _z2s_function(z2s_function) {
 
-      memcpy(&_device, device, sizeof(zbg_device_params_t));     
+
+Z2S_VirtualValve::Z2S_VirtualValve(
+  bool openClose, uint8_t z2s_function) : 
+  ValveBase(openClose), Z2S_Core(this), _z2s_function(z2s_function) {
 }
 
 void Z2S_VirtualValve::setValueOnDevice(uint8_t openLevel) {
@@ -40,26 +39,16 @@ void Z2S_VirtualValve::setValueOnDevice(uint8_t openLevel) {
       case Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF: {
 
         bool state = (openLevel == 0) ? false : true;
-        zbGateway.sendOnOffCmd(&_device, state); 
+
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, state); 
 
       } break;
 
       case Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY: {
 
-        uint8_t Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[] = 
-        { 00, 00, TUYA_ON_OFF_BATTERY_VALVE_SWITCH_DP, TUYA_DP_TYPE_BOOL, 
-          00, 01, 00};
-
-        uint16_t _tsn_number = random(0x0000, 0xFFFF); 
-
-        Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[0] = (_tsn_number & 0xFF00) >> 8;
-        Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[1] = (_tsn_number & 0x00FF);
-        Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD[6] = (openLevel == 0) ? 0 : 1;
-
-        zbGateway.sendCustomClusterCmd(
-          &_device, TUYA_PRIVATE_CLUSTER_EF00, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, 
-          Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY_SWITCH_CMD, false);
-
+        sendTuyaRequestCmdBool(
+          _short_addr, _endpoint, TUYA_ON_OFF_BATTERY_VALVE_SWITCH_DP, 
+          (valveOpenState == 0) ? 0 : 1);
       } break;
     }
   }
@@ -89,7 +78,7 @@ void Z2S_VirtualValve::ping() {
       case Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF:
 
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
         ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
       break;
 
@@ -97,9 +86,8 @@ void Z2S_VirtualValve::ping() {
       case Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY: 
 
         sendTuyaRequestCmdBool(
-          &zbGateway, &_device, TUYA_ON_OFF_BATTERY_VALVE_SWITCH_DP, 
+          _short_addr, _endpoint, TUYA_ON_OFF_BATTERY_VALVE_SWITCH_DP, 
           (valveOpenState == 0) ? 0 : 1);
-
     }
   }
 }

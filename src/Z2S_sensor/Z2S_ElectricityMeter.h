@@ -27,12 +27,8 @@ namespace Sensor {
 
 class Z2S_ElectricityMeter : public ElectricityMeter, public Z2S_Core {
  public:
-  Z2S_ElectricityMeter(
-    ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, 
-    bool active_query = false, bool one_phase = true) : 
-    _one_phase(one_phase) {
-	
-    memcpy(&_device, device, sizeof(zbg_device_params_t));
+  Z2S_ElectricityMeter(bool active_query = false, bool one_phase = true) 
+    :  Z2S_Core(this), _one_phase(one_phase) {
 	
     if (active_query) 
       setRefreshSecs(30);
@@ -410,7 +406,7 @@ void resetStorage() {
   channel_extended_data_em_t channel_extended_data_em = {};
 
   memcpy(
-    channel_extended_data_em.ieee_addr, _device.ieee_addr, 
+    channel_extended_data_em.ieee_addr, _z2s_channel->ieee_addr, 
     sizeof(esp_zb_ieee_addr_t));
 
   for (uint8_t i = 0; i <3; i++) {
@@ -472,11 +468,11 @@ void resetStorage() {
                                   
 
       zbGateway.sendAttributesRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 8, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 8, 
         &em_attributes[0]);
 
       zbGateway.sendAttributesRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 2, &sm_attributes[0]);
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_METERING, 2, &sm_attributes[0]);
       
       if (_init_ms < 3600000)
         _init_ms *= 2;
@@ -493,21 +489,21 @@ void resetStorage() {
   if (Zigbee.started()) {
 
     zbGateway.sendAttributesRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 3, 
+      _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT, 3, 
       &attributes[0]);
 
     zbGateway.sendAttributeRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_METERING, 
+      _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_METERING, 
       ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID, 
       false);
 
-	  switch (getZbDeviceModelID()) {
+	  switch (getZbDeviceModelId()) {
       
       
       case 0x4550:
       case 0x4551:
       
-        sendTuyaRequestCmdEnum8(&zbGateway, &_device, 0x23, 1);
+        sendTuyaRequestCmdEnum8(_short_addr, _endpoint, 0x23, 1);
       break;
     }
   }

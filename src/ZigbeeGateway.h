@@ -71,6 +71,7 @@ typedef struct esp_zb_ota_image_header_s {
 #define TUYA_PRIVATE_CLUSTER_1_SWITCH_TYPE_ID                 0xD030
 
 #define TUYA_PRIVATE_CLUSTER_EF00                             0xEF00
+#define TUYA_CUSTOM_CLUSTER_EF00                              0xEF00
 
 #define TUYA_REQUEST_CMD                                      0x00 //TUYA_PRIVATE_CLUSTER_EF00
 #define TUYA_QUERY_CMD                                        0x03 //TUYA_PRIVATE_CLUSTER_EF00
@@ -263,7 +264,14 @@ typedef struct esp_zb_ota_image_header_s {
 #define SHELLY_WS90_RAIN_RAIN_STATUS_ID                       0x0000 //BOOL
 #define SHELLY_WS90_RAIN_PRECIPITATION_ID                     0x0001 //U24
 
-#define ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT     0x840C 
+#define ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MEASUREMENT    0x840C
+
+#define SLACKY_DIY_CUSTOM_CLUSTER                             0xFF65
+
+#define SLACKY_DIY_CUSTOM_CLUSTER_TX_POWER_ID                 0x0000 //ENUM8
+
+#define SLACKY_DIY_MANUFACTURER_CODE                          0x6565
+
 
 #define CUSTOM_CMD_SYNC                                       true
 #define CUSTOM_CMD_ASYNC                                      false
@@ -457,15 +465,34 @@ public:
     uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, 
     uint16_t manuf_code = 0, uint8_t src_endpoint = GATEWAY_ENDPOINT_NUMBER);
 
+  bool sendAttributeRead(
+    uint16_t short_addr, uint8_t dst_endpoint, uint16_t cluster_id, 
+    uint16_t attribute_id, bool ack = false, 
+    uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+    uint8_t disable_default_response = 1, uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0, uint8_t src_endpoint = GATEWAY_ENDPOINT_NUMBER);
+
   void sendAttributesRead(
     zbg_device_params_t * device, uint16_t cluster_id, uint8_t attr_number, 
     uint16_t *attribute_ids);
+
+  void sendAttributesRead(
+    uint16_t short_addr, uint8_t dst_endpoint, uint16_t cluster_id,
+    uint8_t attr_number, uint16_t *attribute_ids);
 
   bool sendAttributeWrite(
     zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id, 
     esp_zb_zcl_attr_type_t attribute_type, uint16_t attribute_size, 
     void *attribute_value, bool ack = false, uint8_t manuf_specific = 0, 
     uint16_t manuf_code = 0, bool disable_default_response = false,
+    uint8_t src_endpoint = GATEWAY_ENDPOINT_NUMBER);
+
+  bool sendAttributeWrite(
+    uint16_t short_addr, uint8_t dst_endpoint, uint16_t cluster_id, 
+    uint16_t attribute_id, esp_zb_zcl_attr_type_t attribute_type, 
+    uint16_t attribute_size, void *attribute_value, bool ack = false, 
+    uint8_t manuf_specific = 0, uint16_t manuf_code = 0, 
+    bool disable_default_response = false,
     uint8_t src_endpoint = GATEWAY_ENDPOINT_NUMBER);
 
   bool sendAttributeWriteExt(
@@ -478,37 +505,71 @@ public:
   void sendIASzoneEnrollResponseCmd(
     zbg_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
 
-  void sendOnOffCmd(zbg_device_params_t *device, bool value); 
+  void sendOnOffCmd(zbg_device_params_t *device, bool value);
+
+  void sendOnOffCmd(uint16_t short_addr, uint8_t dst_endpoint, bool value); 
 
   void sendLevelMoveToLevelCmd(
     zbg_device_params_t *device, uint8_t level, uint16_t transition_time, 
     bool withOnOff = false);
 
+  void sendLevelMoveToLevelCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, uint8_t level, 
+    uint16_t transition_time, bool withOnOff = false);
+
   void sendColorMoveToHueCmd(
     zbg_device_params_t *device, uint8_t hue, uint8_t directon, 
     uint16_t transition_time);
 
+  void sendColorMoveToHueCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, uint8_t hue, uint8_t directon, 
+    uint16_t transition_time);
+
   void sendColorMoveToSaturationCmd(
     zbg_device_params_t *device, uint8_t saturation, uint16_t transition_time);
+  
+  void sendColorMoveToSaturationCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, uint8_t saturation, 
+    uint16_t transition_time);
 
   void sendColorMoveToHueAndSaturationCmd(
     zbg_device_params_t *device, uint8_t hue, uint8_t saturation, 
     uint16_t transition_time);
 
+  void sendColorMoveToHueAndSaturationCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, uint8_t hue, 
+    uint8_t saturation, uint16_t transition_time);
+
   void sendColorEnhancedMoveToHueAndSaturationCmd(
     zbg_device_params_t *device, uint16_t enhanced_hue, uint8_t saturation, 
     uint16_t transition_time);
+
+  void sendColorEnhancedMoveToHueAndSaturationCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, uint16_t enhanced_hue, 
+    uint8_t saturation, uint16_t transition_time);
 
   void sendColorMoveToColorCmd(
     zbg_device_params_t *device, uint16_t color_x, uint16_t color_y, 
     uint16_t transition_time);
 
+  void sendColorMoveToColorCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, uint16_t color_x, 
+    uint16_t color_y, uint16_t transition_time);
+
   void sendColorMoveToColorTemperatureCmd(
     zbg_device_params_t *device, uint16_t color_temperature, 
     uint16_t transition_time);
 
+  void sendColorMoveToColorTemperatureCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, uint16_t color_temperature, 
+    uint16_t transition_time);
+
   void sendWindowCoveringCmd(
     zbg_device_params_t *device, uint8_t cmd_id, void *cmd_value);
+
+  void sendWindowCoveringCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, uint8_t cmd_id, 
+    void *cmd_value);
 
   void sendAddGroupRequestCmd(
     zbg_device_params_t *device, uint16_t group_id, bool local = false);
@@ -533,6 +594,14 @@ public:
 
   bool sendCustomClusterCmd(
     zbg_device_params_t * device, int16_t custom_cluster_id, 
+    uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
+    uint16_t custom_data_size, uint8_t *custom_data, bool ack = false, 
+    uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
+    uint8_t disable_default_response = 0, uint8_t manuf_specific = 0, 
+    uint16_t manuf_code = 0);
+
+  bool sendCustomClusterCmd(
+    uint16_t short_addr, uint8_t dst_endpoint, int16_t custom_cluster_id, 
     uint16_t custom_command_id, esp_zb_zcl_attr_type_t data_type, 
     uint16_t custom_data_size, uint8_t *custom_data, bool ack = false, 
     uint8_t direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 

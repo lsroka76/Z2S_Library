@@ -21,15 +21,15 @@
 
 #include "Z2S_dimmer_base.h"
 #include "ZigbeeGateway.h"
-
+#include "Z2S_common.h"
 
 namespace Supla {
 namespace Control {
-class Z2S_TuyaDimmerSwitch: public Z2S_DimmerBase {
+class Z2S_TuyaDimmerSwitch: public Z2S_DimmerBase, public Z2S_Core {
 
 public:
 
-  Z2S_TuyaDimmerSwitch(ZigbeeGateway *gateway, zbg_device_params_t *device, int8_t dimmer_number);
+  Z2S_TuyaDimmerSwitch(int8_t dimmer_number);
 
   void turnOn() override;
   void turnOff() override;

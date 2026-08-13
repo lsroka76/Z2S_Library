@@ -21,30 +21,11 @@
 
 #include <supla/log_wrapper.h>
 
-Supla::Control::Z2S_RGBInterface::Z2S_RGBInterface(
-  ZigbeeGateway *gateway, 
-  zbg_device_params_t *device, 
-  uint8_t rgb_mode) 
-  : /*_gateway(gateway),*/ _rgb_mode(rgb_mode) {
+Supla::Control::Z2S_RGBInterface::Z2S_RGBInterface(uint8_t rgb_mode) 
+  : Z2S_Core(this), _rgb_mode(rgb_mode) {
 
-  if (device)
-    memcpy(&_device, device, sizeof(zbg_device_params_t));  
-  else   
-  memset(&_device, 0, sizeof(zbg_device_params_t));  
-  
   channel.setType(SUPLA_CHANNELTYPE_RGBLEDCONTROLLER);
   channel.setDefault(SUPLA_CHANNELFNC_RGBLIGHTING);
-  //channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
-
-  /*channel.setType(SUPLA_CHANNELTYPE_DIMMERANDRGBLED);
-  channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
-  channel.setFlag(SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE);
-  channel.setFuncList(
-      SUPLA_RGBW_BIT_FUNC_DIMMER | SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING |
-      SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING |
-      SUPLA_RGBW_BIT_FUNC_DIMMER_CCT | SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB);
-  channel.setDefault(SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB);
-  usedConfigTypes.set(SUPLA_CONFIG_TYPE_DEFAULT);*/
 }
 
 int32_t Supla::Control::Z2S_RGBInterface::handleNewValueFromServer(
@@ -137,14 +118,14 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
 
       case 0: {
 
-        zbGateway.sendOnOffCmd(&_device, false);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, false);
         return;
       } break;
 
       
       case 1: {
 
-        zbGateway.sendOnOffCmd(&_device, true);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
         //return;
       } break;
 
@@ -186,7 +167,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
       case Z2S_PHILIPS_COLOR_HS_RGB:
 
         zbGateway.sendColorMoveToHueAndSaturationCmd(
-          &_device, _hue, _saturation, 1); 
+          _short_addr, _endpoint, _hue, _saturation, 1); 
       break;
 
 
@@ -200,25 +181,25 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
         log_i("XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
         
         zbGateway.sendColorMoveToColorCmd(
-          &_device, xy_color.x, xy_color.y, 1);
+          _short_addr, _endpoint, xy_color.x, xy_color.y, 1);
       } break;
 
 
       case Z2S_TUYA_COLOR_HS_RGB: {
         
         zbGateway.sendCustomClusterCmd(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode ,false);
 
         zbGateway.sendColorMoveToHueAndSaturationCmd(
-          &_device, _hue, _saturation, 1);
+          _short_addr, _endpoint, _hue, _saturation, 1);
       } break;
 
 
       case Z2S_TUYA_COLOR_XY_RGB: {
         
         zbGateway.sendCustomClusterCmd(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode, false);
 
         espXyColor_t xy_color = espRgbToXYColor(red_cb, green_cb, blue_cb);
@@ -228,7 +209,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
         log_i("Tuya XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
         
         zbGateway.sendColorMoveToColorCmd(
-          &_device, xy_color.x, xy_color.y, 1);
+          _short_addr, _endpoint, xy_color.x, xy_color.y, 1);
       } break;
 
 
@@ -268,7 +249,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
         test_buffer[16] = _color_brightness_1000 & 0x00FF;//BRIGHTNESS
 
         zbGateway.sendCustomClusterCmd(
-          &_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
+          _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
           ESP_ZB_ZCL_ATTR_TYPE_SET, 17, test_buffer, false);
       } break;
     }
@@ -281,7 +262,7 @@ void Supla::Control::Z2S_RGBInterface::ping() {
   if (Zigbee.started()) {
     _fresh_start = false;
     zbGateway.sendAttributeRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+      _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
   }
 }

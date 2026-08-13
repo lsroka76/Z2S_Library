@@ -23,14 +23,9 @@
 #include <supla/storage/storage.h>
 
 
-Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface(
-  zbg_device_params_t *device, uint8_t rgb_mode) : _rgb_mode(rgb_mode) {
+Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface(uint8_t rgb_mode) 
+  : Z2S_Core(this), _rgb_mode(rgb_mode) {
 
-  if (device)
-    memcpy(&_device, device, sizeof(zbg_device_params_t));  
-  else   
-  memset(&_device, 0, sizeof(zbg_device_params_t));  
-  
   channel.setType(SUPLA_CHANNELTYPE_DIMMERANDRGBLED);
   channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
   channel.setFlag(SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE);
@@ -259,20 +254,20 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
 
       case 0: {
 
-        zbGateway.sendOnOffCmd(&_device, false);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, false);
         return;
       } break;
 
       
       case 1: {
 
-        zbGateway.sendOnOffCmd(&_device, true);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
         //return;
       } break;
 
       case 3: {
 
-        zbGateway.sendOnOffCmd(&_device, true);
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
         turnOnOff = 2;
       } break;
 
@@ -346,8 +341,8 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
         case Z2S_PHILIPS_COLOR_HS_RGB:
 
           zbGateway.sendColorMoveToHueAndSaturationCmd(
-            &_device, _hue, _saturation, 1); 
-          zbGateway.sendLevelMoveToLevelCmd(&_device, _value, 1);
+            _short_addr, _endpoint, _hue, _saturation, 1); 
+          zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, _value, 1);
         break;
 
 
@@ -363,26 +358,26 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
           log_i("XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
           
           zbGateway.sendColorMoveToColorCmd(
-            &_device, xy_color.x, xy_color.y, 1);
-          zbGateway.sendLevelMoveToLevelCmd(&_device, _value, 1);
+            _short_addr, _endpoint, xy_color.x, xy_color.y, 1);
+          zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, _value, 1);
         } break;
 
 
         case Z2S_TUYA_COLOR_HS_RGB: {
           
           zbGateway.sendCustomClusterCmd(
-            &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
+            _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
             ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode ,false);
 
           zbGateway.sendColorMoveToHueAndSaturationCmd(
-            &_device, _hue, _saturation, 1);
+            _short_addr, _endpoint, _hue, _saturation, 1);
         } break;
 
 
         case Z2S_TUYA_COLOR_XY_RGB: {
           
           zbGateway.sendCustomClusterCmd(
-            &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
+            _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
             ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode, false);
 
           espXyColor_t xy_color = espRgbToXYColor(red_cb, green_cb, blue_cb);
@@ -392,7 +387,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
           log_i("Tuya XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
           
           zbGateway.sendColorMoveToColorCmd(
-            &_device, xy_color.x, xy_color.y, 1);
+            _short_addr, _endpoint, xy_color.x, xy_color.y, 1);
         } break;
 
 
@@ -432,7 +427,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
           test_buffer[16] = _color_brightness_1000 & 0x00FF;//BRIGHTNESS
 
           zbGateway.sendCustomClusterCmd(
-            &_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
+            _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
             ESP_ZB_ZCL_ATTR_TYPE_SET, 17, test_buffer, false);
         } break;
       }
@@ -441,7 +436,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
     if (brightness > 0) {
 
       uint8_t level = mapFloat(brightness, 1, 100, 1, 254);
-      zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
+      zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, level, 1);
     //}
 
     //if (whiteTemperature > 0) {
@@ -453,7 +448,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
         whiteTemperature, 0, 100, _max_warm_cct, _min_cool_cct);
         
 	    zbGateway.sendColorMoveToColorTemperatureCmd(
-        &_device, color_temperature, 1);
+        _short_addr, _endpoint, color_temperature, 1);
     }
   }
 }
@@ -469,7 +464,7 @@ void Supla::Control::Z2S_RGBCCTInterface::syncDevice() {
       log_i("syncing RGBCCT device state...");
 
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
         ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
     }
     else
@@ -480,7 +475,7 @@ void Supla::Control::Z2S_RGBCCTInterface::syncDevice() {
       log_i("syncing RGBCCT device color mode...");
 
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
         ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_MODE_ID, false);
     }
     else
@@ -505,7 +500,7 @@ void Supla::Control::Z2S_RGBCCTInterface::ping() {
   if (Zigbee.started()) {
     _fresh_start = false;
     zbGateway.sendAttributeRead(
-      &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+      _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
   }
 }
@@ -622,4 +617,59 @@ uint32_t Supla::Control::Z2S_RGBCCTInterface::getKeepAliveSecs() {
 uint32_t Supla::Control::Z2S_RGBCCTInterface::getTimeoutSecs() {
 
   return _timeout_ms / 1000;
+}
+
+void Supla::Control::Z2S_RGBCCTInterface::increaseBrightness(
+  int8_t add_to_brightness) {
+
+  _last_brightness = _brightness;
+
+  int16_t new_brightness = _brightness + add_to_brightness;
+
+  if (new_brightness < 0)
+    new_brightness = 0;
+
+  if (new_brightness > 100)
+    new_brightness = 100;
+
+  _brightness = new_brightness;
+
+  _lastServerMsgReceivedMs = millis();
+  Supla::Storage::ScheduleSave(5000, 2000);
+}
+
+
+void Supla::Control::Z2S_RGBCCTInterface::handleAction(
+  int event, int action) {
+
+  (void)(event);
+  
+  switch (action) {
+
+
+    case TURN_ON:
+
+      if (!isOn())
+        turnOn();
+     break;
+
+
+    case TURN_OFF:
+
+      if (isOn())
+        turnOff();
+     break;
+
+
+    case DIM_W:
+
+      increaseBrightness(-10);
+    break;
+
+
+    case BRIGHTEN_W: 
+      
+      increaseBrightness(10);
+    break;
+  }
 }

@@ -392,7 +392,15 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
     case ESP_ZB_ZDO_SIGNAL_DEVICE_ANNCE:  // Coordinator
       if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
         dev_annce_params = (esp_zb_zdo_signal_device_annce_params_t *)esp_zb_app_signal_get_params(p_sg_p);
+
+        if (dev_annce_params->device_short_addr == 0x000) {
+
+          log_i("ESP_ZB_ZDO_SIGNAL_DEVICE_ANNCE loopback");
+          break;
+        }
+
         log_i("New device commissioned or rejoined (short: 0x%04hx)", dev_annce_params->device_short_addr);
+
         esp_zb_zdo_match_desc_req_param_t cmd_req;
         cmd_req.dst_nwk_addr = dev_annce_params->device_short_addr;
         cmd_req.addr_of_interest = dev_annce_params->device_short_addr;

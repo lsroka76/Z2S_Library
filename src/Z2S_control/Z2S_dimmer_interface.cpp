@@ -21,36 +21,19 @@
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
 
-Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t dimmer_mode) 
-  : /*_gateway(gateway),*/ _dimmer_mode(dimmer_mode) {
+/*Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(uint8_t dimmer_mode) 
+  : Z2S_Core(this), _dimmer_mode(dimmer_mode) {
   
-  if (device)
-    memcpy(&_device, device, sizeof(zbg_device_params_t));  
-  else   
-    memset(&_device, 0, sizeof(zbg_device_params_t));  
-
   channel.setType(SUPLA_CHANNELTYPE_DIMMER);
-  /*channel.setFuncList(
-      SUPLA_RGBW_BIT_FUNC_DIMMER | SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING |
-      SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING |
-      SUPLA_RGBW_BIT_FUNC_DIMMER_CCT | SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB);*/
-  //channel.setDefault(SUPLA_RGBW_BIT_FUNC_DIMMER);
   channel.setDefault(SUPLA_CHANNELFNC_DIMMER);
   _cct_mode = _dimmer_mode;
-  //channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
-}
+}*/
 
 Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
-  zbg_device_params_t *device, uint8_t dimmer_function, uint8_t dimmer_mode,
-  uint8_t cct_mode) : _dimmer_function(dimmer_function), 
+  uint8_t dimmer_function, uint8_t dimmer_mode, uint8_t cct_mode) 
+  : Z2S_Core(this), _dimmer_function(dimmer_function), 
   _dimmer_mode(dimmer_mode), _cct_mode(cct_mode) {
   
-  if (device)
-    memcpy(&_device, device, sizeof(zbg_device_params_t));  
-  else   
-    memset(&_device, 0, sizeof(zbg_device_params_t));  
-
   channel.setType(SUPLA_CHANNELTYPE_DIMMER);
   channel.setDefault(dimmer_function);
 }
@@ -202,10 +185,10 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
         if (sendTurnOnOffCmd == 1) {
 
           _state = DIMMER_STATE_OFF;
-          zbGateway.sendOnOffCmd(&_device, false);
+          zbGateway.sendOnOffCmd(_short_addr, _endpoint, false);
 
           /*zbGateway.sendAttributeRead(
-            &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
             ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);*/
 
           sendTurnOnOffCmd = 0;
@@ -215,20 +198,20 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
         if (sendTurnOnOffCmd == 2) {
 
           _state = DIMMER_STATE_ON;
-          zbGateway.sendOnOffCmd(&_device, true);
+          zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
           
           /*zbGateway.sendAttributeRead(
-            &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+            _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
             ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);*/          
           
           sendTurnOnOffCmd = 0;
         }
         
         uint8_t level = mapFloat(brightness, 1, 100, 1, 254);
-        zbGateway.sendLevelMoveToLevelCmd(&_device, level, 1);
+        zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, level, 1);
 
         /*zbGateway.sendAttributeRead(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
           ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);*/
       } break;
 
@@ -239,7 +222,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
           _state = DIMMER_STATE_OFF;
 		      sendTurnOnOffCmd = 0;
-          zbGateway.sendOnOffCmd(&_device, false);
+          zbGateway.sendOnOffCmd(_short_addr, _endpoint, false);
           break;
         }
 
@@ -247,13 +230,13 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
           _state = DIMMER_STATE_ON;
 		      sendTurnOnOffCmd = 0;
-          zbGateway.sendOnOffCmd(&_device, true);
+          zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
         }
 
         uint16_t F0_brightness = mapFloat(brightness, 1, 100, 1, 1000);
 	      
         zbGateway.sendCustomClusterCmd(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 0xF0, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 0xF0, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&F0_brightness, 
           false);
       } break;
@@ -266,7 +249,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
           _state = DIMMER_STATE_OFF;
 		      sendTurnOnOffCmd = 0;
           sendTuyaRequestCmdBool(
-            &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 0);
+            _short_addr, _endpoint, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 0);
           break;
         }
 
@@ -275,17 +258,17 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
           _state = DIMMER_STATE_ON;
 		      sendTurnOnOffCmd = 0;
           sendTuyaRequestCmdBool(
-            &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 1);
+            _short_addr, _endpoint, TUYA_RGBWCT_LED_EF00_SWITCH_DP, 1);
         }
 
         uint16_t dp_brightness = mapFloat(brightness, 1, 100, 1, 1000);
         
         //WHITE mode
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_MODE_DP, 0); 
+          _short_addr, _endpoint, TUYA_RGBWCT_LED_EF00_MODE_DP, 0); 
 
         sendTuyaRequestCmdValue32(
-          &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_BRIGHTNESS_DP, 
+          _short_addr, _endpoint, TUYA_RGBWCT_LED_EF00_BRIGHTNESS_DP, 
           dp_brightness, false);
       } break;
     } 
@@ -312,10 +295,10 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
           whiteTemperature, 0, 100, 500, 158); //454, 200);
 
 	      zbGateway.sendColorMoveToColorTemperatureCmd(
-          &_device, color_temperature, 1);
+          _short_addr, _endpoint, color_temperature, 1);
         
         zbGateway.sendAttributeRead(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
           ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, false);
       } break;
 
@@ -326,10 +309,10 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
           whiteTemperature, 0, 100, 500, 153);
 	      
         zbGateway.sendColorMoveToColorTemperatureCmd(
-          &_device, color_temperature, 1);
+          _short_addr, _endpoint, color_temperature, 1);
 
         zbGateway.sendAttributeRead(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
           ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, false);
       } break;
 
@@ -341,7 +324,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
           whiteTemperature, 0, 100, 0, 1000);
 	      
         zbGateway.sendCustomClusterCmd(
-          &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xE0, 
           ESP_ZB_ZCL_ATTR_TYPE_U16, 2, (uint8_t *)&E0_color_temperature, 
           false);
       } break;
@@ -354,10 +337,10 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToCCT(
 
         //WHITE mode
         sendTuyaRequestCmdEnum8(
-          &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_MODE_DP, 0);
+          _short_addr, _endpoint, TUYA_RGBWCT_LED_EF00_MODE_DP, 0);
           
         sendTuyaRequestCmdValue32(
-          &zbGateway, &_device, TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP, 
+          _short_addr, _endpoint, TUYA_RGBWCT_LED_EF00_COLOR_TEMPERATURE_DP, 
           dp_color_temperature, false);
       } break;
     }
@@ -613,21 +596,21 @@ void Supla::Control::Z2S_DimmerInterface::ping() {
     
     if (!_fresh_start || (_state == DIMMER_STATE_UNKNOWN)) 
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
         ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
     else
       ping_counter++;
 
     if (!_fresh_start || (_deviceBrightness == 0xFF))
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL, 
         ESP_ZB_ZCL_ATTR_LEVEL_CONTROL_CURRENT_LEVEL_ID, false);
     else
       ping_counter++;
 
     if (!_fresh_start || (_deviceWhiteTemperature == 0xFFFF))
       zbGateway.sendAttributeRead(
-        &_device, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 
         ESP_ZB_ZCL_ATTR_COLOR_CONTROL_COLOR_TEMPERATURE_ID, false);
     else
       ping_counter++;
@@ -753,7 +736,8 @@ uint32_t Supla::Control::Z2S_DimmerInterface::getTimeoutSecs() {
   return _timeout_ms / 1000;
 }
 
-void Supla::Control::Z2S_DimmerInterface::increaseBrightness(int8_t add_to_brightness) {
+void Supla::Control::Z2S_DimmerInterface::increaseBrightness(
+  int8_t add_to_brightness) {
 
   _last_brightness = _brightness;
 
