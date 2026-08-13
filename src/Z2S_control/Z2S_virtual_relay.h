@@ -77,12 +77,7 @@ class Z2S_VirtualRelay : public Relay, public Z2S_Core {
 
 public:
   
-  Z2S_VirtualRelay(
-    ZigbeeGateway *gateway, zbg_device_params_t *device,
-    uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
-
-  //void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device);
-  //z2s_zb_device_params_t *getZ2SZbDevice();
+  Z2S_VirtualRelay(uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
 
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;

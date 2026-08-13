@@ -41,13 +41,7 @@ namespace Control {
 class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
  public:
   Z2S_RollerShutter(
-    ZigbeeGateway *gateway, zbg_device_params_t *device, 
     uint8_t z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
-
-  /*void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device);
-  z2s_zb_device_params_t *getZ2SZbDevice();
-  void setZ2SChannel(z2s_device_params_t *z2s_channel);
-  z2s_device_params_t *getZ2SChannel();*/
 
   void onInit() override;
   void onTimer() override;

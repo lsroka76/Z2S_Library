@@ -5,10 +5,19 @@
 void initZ2SDeviceVirtualValve(
   ZigbeeGateway *gateway, zbg_device_params_t *device, 
   int16_t channel_number_slot) {
+    initZ2SDeviceVirtualValve(
+      channel_number_slot, z2s_channels_table + channel_number_slot);
+}
+
+/*****************************************************************************/
+
+void initZ2SDeviceVirtualValve(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+
   
   uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF;
 
-  switch (z2s_channels_table[channel_number_slot].model_id) {
+  switch (_z2s_channel->model_id) {
 
 
     case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY: 
@@ -18,29 +27,27 @@ void initZ2SDeviceVirtualValve(
   }
   
   auto Supla_Z2S_VirtualValve = 
-    new Supla::Control::Z2S_VirtualValve(gateway, device, true, z2s_function);
+    new Supla::Control::Z2S_VirtualValve(true, z2s_function);
   
   Supla_Z2S_VirtualValve->getChannel()->setChannelNumber(
-      z2s_channels_table[channel_number_slot].Supla_channel);
+    _z2s_channel->Supla_channel);
 
-  Supla_Z2S_VirtualValve->setZ2SZbDevice(
-      Z2S_getChannelZbDevicePtr(channel_number_slot));
+  Supla_Z2S_VirtualValve->setZ2SZbDevice(Z2S_getZbDevicePtr(
+    _z2s_channel->Zb_device_id));
 
-  Supla_Z2S_VirtualValve->setZ2SChannel(
-    Z2S_getChannelPtr(channel_number_slot));
+  Supla_Z2S_VirtualValve->setZ2SChannel(channel_index, _z2s_channel);
 
-  if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
+  if (strlen(_z2s_channel->Supla_channel_name) > 0) 
     Supla_Z2S_VirtualValve->setInitialCaption(
-      z2s_channels_table[channel_number_slot].Supla_channel_name);  
+      _z2s_channel->Supla_channel_name);  
 
-  if (z2s_channels_table[channel_number_slot].Supla_channel_func !=0) 
+  if (_z2s_channel->Supla_channel_func !=0) 
     Supla_Z2S_VirtualValve->setDefaultFunction(
-      z2s_channels_table[channel_number_slot].Supla_channel_func);
+      _z2s_channel->Supla_channel_func);
 
-  Supla_Z2S_VirtualValve->setKeepAliveSecs(
-    z2s_channels_table[channel_number_slot].keep_alive_secs);
-  Supla_Z2S_VirtualValve->setTimeoutSecs(
-    z2s_channels_table[channel_number_slot].timeout_secs);
+  Supla_Z2S_VirtualValve->setKeepAliveSecs(_z2s_channel->keep_alive_secs);
+
+  Supla_Z2S_VirtualValve->setTimeoutSecs(_z2s_channel->timeout_secs);
 }
 
 /*****************************************************************************/
@@ -50,7 +57,7 @@ void addZ2SDeviceVirtualValve(
   int8_t sub_id, const char *name, uint32_t func) {
   
  auto Supla_Z2S_VirtualValve = 
-  new Supla::Control::Z2S_VirtualValve(gateway,device, true);
+  new Supla::Control::Z2S_VirtualValve(true);
 
   if (name) 
     Supla_Z2S_VirtualValve->setInitialCaption(name);
@@ -65,7 +72,7 @@ void addZ2SDeviceVirtualValve(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state) {
+/*void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state) {
 
   if (channel_number_slot < 0) {
     
@@ -73,20 +80,20 @@ void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state) {
     return;
   }
 
-  Z2S_updateZbDeviceLastSeenMsById(
-    z2s_channels_table[channel_number_slot].Zb_device_id);
+  auto element = Supla::Element::getElementByChannelNumber(
+    z2s_channels_table[channel_number_slot].Supla_channel);
+  
+  msgZ2SDeviceVirtualValve(element, state);
+}*/
 
-  auto element = 
-    Supla::Element::getElementByChannelNumber(
-        z2s_channels_table[channel_number_slot].Supla_channel);
+/*****************************************************************************/
 
-  if (element && 
-      (element->getChannel()->getChannelType() == 
-        SUPLA_CHANNELTYPE_VALVE_OPENCLOSE)) {
+void msgZ2SDeviceVirtualValve(Supla::Element* element, bool state) {
     
-    auto Supla_Z2S_VirtualValve = 
-      reinterpret_cast<Supla::Control::Z2S_VirtualValve *>(element);
-    
-    Supla_Z2S_VirtualValve->setValueOnServer(state);          
-  }
+  auto Supla_Z2S_VirtualValve = static_cast<
+    Supla::Control::Z2S_VirtualValve *>(element);
+
+  Supla_Z2S_VirtualValve->setZbDeviceLastSeenMs(millis());   
+
+  Supla_Z2S_VirtualValve->setValueOnServer(state);          
 }

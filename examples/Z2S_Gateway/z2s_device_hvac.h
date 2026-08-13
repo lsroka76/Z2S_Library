@@ -29,25 +29,38 @@
 
 /*****************************************************************************/
 
-uint8_t getZ2SDeviceHvacCmdSet(int16_t channel_number_slot);
+uint8_t getZ2SDeviceHvacCmdSet(z2s_device_params_t* _z2s_channel);
 
 /*****************************************************************************/
 
-void initZ2SDeviceHvac(ZigbeeGateway *gateway, 
-                       zbg_device_params_t *device, 
-                       int16_t channel_number_slot);
+uint8_t getZ2SDeviceHvacCmdSet(Supla::Element* element);
 
 /*****************************************************************************/
 
-void addZ2SDeviceHvac(ZigbeeGateway *gateway, 
-                      zbg_device_params_t *device, 
-                      uint8_t free_slot, 
-                      uint8_t trv_thermometer_slot);
+void initZ2SDeviceHvac(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, 
+  int16_t channel_number_slot);
 
 /*****************************************************************************/
 
-void msgZ2SDeviceHvac(int16_t channel_number_slot, 
-                      uint8_t msg_id, 
-                      int32_t msg_value);
+void initZ2SDeviceHvac(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
 
+/*****************************************************************************/
+
+void addZ2SDeviceHvac(
+  ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
+  uint8_t trv_thermometer_slot);
+
+/*****************************************************************************/
+
+/*void msgZ2SDeviceHvac(
+  int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value);*/
+
+/*****************************************************************************/
+
+void msgZ2SDeviceHvac(
+  Supla::Element* element, uint8_t msg_id, int32_t msg_value);
+
+/*****************************************************************************/
 #endif

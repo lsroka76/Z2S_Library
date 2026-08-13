@@ -60,6 +60,11 @@ void initZ2SDeviceElectricityMeter(
 
 /*****************************************************************************/
 
+void initZ2SDeviceElectricityMeter(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
+
 void addZ2SDeviceElectricityMeter(
   ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, 
   bool active_query, uint8_t free_slot,int8_t sub_id = -1, 
@@ -73,5 +78,12 @@ void updateZ2SDeviceElectricityMeter(int16_t channel_number_slot);
 
 void msgZ2SDeviceElectricityMeter(
   int16_t channel_number_slot, uint8_t emv_selector, int64_t em_value);
+
+/*****************************************************************************/
+
+void msgZ2SDeviceElectricityMeter(
+  Supla::Element* element, uint8_t emv_selector, int64_t em_value);
+
+/*****************************************************************************/
 
 #endif

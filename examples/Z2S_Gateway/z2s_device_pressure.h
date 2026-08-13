@@ -10,6 +10,11 @@ void initZ2SDevicePressure(int16_t channel_number_slot);
 
 /*****************************************************************************/
 
+void initZ2SDevicePressure(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
+
 void addZ2SDevicePressure(
   zbg_device_params_t *device, uint8_t free_slot, 
   int8_t sub_id = NO_CUSTOM_CMD_SID);
@@ -18,4 +23,9 @@ void addZ2SDevicePressure(
 
 void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure);
 
+/*****************************************************************************/
+
+void msgZ2SDevicePressure(Supla::Element *element, double pressure);
+
+/*****************************************************************************/
 #endif

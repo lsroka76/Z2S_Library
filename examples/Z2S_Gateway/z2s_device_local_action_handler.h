@@ -55,15 +55,38 @@ static constexpr char* CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {
 "CONNECTED_THERMOMETERS_FNC_MAXIMUM"
 };
 
+/*****************************************************************************/
+
 const char* getZ2SDeviceLocalActionHandlerTypeName(
   int16_t channel_number_slot);
+
+const char* getZ2SDeviceLocalActionHandlerTypeName(
+  z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
 
 const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
   int16_t channel_number_slot);
 
+const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
+  z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
+
 void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot);
 
+void initZ2SDeviceLocalActionHandler(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+  
+/*****************************************************************************/
+
 void initZ2SDeviceGatewayEvents(int16_t channel_number_slot);
+
+void initZ2SDeviceGatewayEvents(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
+
 bool addZ2SDeviceGatewayEvents(int16_t channel_number_slot);
 
 bool addZ2SDeviceLocalActionHandler(

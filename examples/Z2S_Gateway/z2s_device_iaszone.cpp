@@ -1,46 +1,52 @@
 #include "z2s_device_iaszone.h"
 #include <supla/device/notifications.h>
 
+
+
 /*****************************************************************************/
 
 void initZ2SDeviceIASzone(int16_t channel_number_slot) {
-  
-  //uint8_t timeout = z2s_channels_table[channel_number_slot].timeout_secs / 3600;
+
+  initZ2SDeviceIASzone(
+    channel_number_slot, z2s_channels_table + channel_number_slot);
+}
+
+/*****************************************************************************/
+
+void initZ2SDeviceIASzone(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
   
   auto Supla_Z2S_VirtualBinary = new Supla::Sensor::Z2S_VirtualBinary(true);
   
   Supla_Z2S_VirtualBinary->getChannel()->setChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
+    _z2s_channel->Supla_channel);
 
-  Supla_Z2S_VirtualBinary->setZ2SZbDevice(
-      Z2S_getChannelZbDevicePtr(channel_number_slot));
+  Supla_Z2S_VirtualBinary->setZ2SZbDevice(Z2S_getZbDevicePtr(
+    _z2s_channel->Zb_device_id));
 
-  Supla_Z2S_VirtualBinary->setZ2SChannel(
-    Z2S_getChannelPtr(channel_number_slot));
+  Supla_Z2S_VirtualBinary->setZ2SChannel(channel_index, _z2s_channel);
 
-  if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
+  if (strlen(_z2s_channel->Supla_channel_name) > 0) 
     Supla_Z2S_VirtualBinary->setInitialCaption(
-      z2s_channels_table[channel_number_slot].Supla_channel_name);
+      _z2s_channel->Supla_channel_name);
   
-  if (z2s_channels_table[channel_number_slot].Supla_channel_func != 0) 
+  if (_z2s_channel->Supla_channel_func != 0) 
     Supla_Z2S_VirtualBinary->setDefaultFunction(
-      z2s_channels_table[channel_number_slot].Supla_channel_func);
+      _z2s_channel->Supla_channel_func);
 
-  Supla_Z2S_VirtualBinary->setAutoSetSecs(
-    z2s_channels_table[channel_number_slot].refresh_secs);
+  Supla_Z2S_VirtualBinary->setAutoSetSecs(_z2s_channel->refresh_secs);
 
-  if (z2s_channels_table[channel_number_slot].user_data_flags & 
-      USER_DATA_FLAG_SET_SORWNS_ON_START) {
+  if (_z2s_channel->user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) {
     
-    Supla_Z2S_VirtualBinary->getChannel()->setStateOfflineRemoteWakeupNotSupported();
+    Supla_Z2S_VirtualBinary->getChannel()->\
+      setStateOfflineRemoteWakeupNotSupported();
     Supla_Z2S_VirtualBinary->setRWNSFlag(true);
   }
 
-  Supla_Z2S_VirtualBinary->setTimeoutSecs(
-    z2s_channels_table[channel_number_slot].timeout_secs);
+  Supla_Z2S_VirtualBinary->setTimeoutSecs(_z2s_channel->timeout_secs);
 
   Supla::Notification::RegisterNotification(
-    z2s_channels_table[channel_number_slot].Supla_channel, false, true);
+    _z2s_channel->Supla_channel, false, true);
 }
 
 /*****************************************************************************/
@@ -68,7 +74,7 @@ void addZ2SDeviceIASzone(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceIASzone(
+/*void msgZ2SDeviceIASzone(
   int16_t channel_number_slot, bool state, bool check_flags) {
 
   if (channel_number_slot < 0) {
@@ -77,45 +83,47 @@ void msgZ2SDeviceIASzone(
     return;
   }
 
-  if (check_flags && 
-     (z2s_channels_table[channel_number_slot].user_data_flags & 
+  auto element = Supla::Element::getElementByChannelNumber(
+    z2s_channels_table[channel_number_slot].Supla_channel);
+
+  msgZ2SDeviceIASzone(element, state, check_flags);
+}*/
+
+/*****************************************************************************/
+
+void msgZ2SDeviceIASzone(
+  Supla::Element* element, bool state, bool check_flags) {
+
+
+  auto Supla_Z2S_VirtualBinary = static_cast<
+    Supla::Sensor::Z2S_VirtualBinary *>(element);
+        
+  if (check_flags && (Supla_Z2S_VirtualBinary->getChannelUserDataFlags() & 
       USER_DATA_FLAG_MSG_DISABLED)) {
 
     log_i("Warning: USER_DATA_FLAG_MSG_DISABLED set, no message is sent");
     return;
   }
 
-  Z2S_updateZbDeviceLastSeenMsById(
-    z2s_channels_table[channel_number_slot].Zb_device_id);  
+  Supla_Z2S_VirtualBinary->setZbDeviceLastSeenMs(millis());
 
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  if ((element != nullptr) && 
-      (element->getChannel()->getChannelType() == 
-       SUPLA_CHANNELTYPE_BINARYSENSOR)) {
-
-        auto Supla_Z2S_VirtualBinary = 
-          reinterpret_cast<Supla::Sensor::Z2S_VirtualBinary *>(element);
+  bool state_changed = (state == !Supla_Z2S_VirtualBinary->getValue()) ?
+   false : true;
         
-        //Supla_Z2S_VirtualBinary->Refresh();
-
-        bool state_changed = 
-          (state == !Supla_Z2S_VirtualBinary->getValue()) ? false : true;
-        //log_i(
-        //  "state %u, value %u", state, Supla_Z2S_VirtualBinary->getValue());
-
-        if (state) Supla_Z2S_VirtualBinary->extClear(); 
-        else Supla_Z2S_VirtualBinary->extSet();
+  if (state) 
+    Supla_Z2S_VirtualBinary->extClear(); 
+  else 
+    Supla_Z2S_VirtualBinary->extSet();
               
-        if (state_changed && sendIASNotifications && 
-            (~(z2s_channels_table[channel_number_slot].user_data_flags & 
-              USER_DATA_FLAG_DISABLE_NOTIFICATIONS))) {
+  if (state_changed && sendIASNotifications && 
+      (~(Supla_Z2S_VirtualBinary->getChannelUserDataFlags() & 
+      USER_DATA_FLAG_DISABLE_NOTIFICATIONS))) {
 
-          Supla::Notification::SendF(
-            z2s_channels_table[channel_number_slot].Supla_channel, 
-            z2s_channels_table[channel_number_slot].Supla_channel_name,
-            "State changed - now is %s", state ? "ON" : "OFF");
-        }
-    }
+    Supla::Notification::SendF(
+      Supla_Z2S_VirtualBinary->getChannelNumber(), 
+      Supla_Z2S_VirtualBinary->getZ2SChannelName(),
+      "State changed - now is %s", state ? "ON" : "OFF");
+  }
 }
+
+/*****************************************************************************/

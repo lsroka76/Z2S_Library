@@ -41,8 +41,8 @@ class Z2S_VirtualValve : public ValveBase, public Z2S_Core {
     * @param openClose true = open/close, false = 0-100 percentage
     */
   explicit Z2S_VirtualValve(
-    ZigbeeGateway *gateway, zbg_device_params_t *device, bool openClose = true,
-     uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF);
+    bool openClose = true, 
+    uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF);
 
   /**
    * Sets the value of the valve virtual device
@@ -73,9 +73,6 @@ class Z2S_VirtualValve : public ValveBase, public Z2S_Core {
 
  protected:
   uint8_t valveOpenState = 0;
-
-  //ZigbeeGateway *_gateway = nullptr;
-  //zbg_device_params_t 	_device;
 
   uint8_t _z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF;
   

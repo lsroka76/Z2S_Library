@@ -15,6 +15,11 @@ void initZ2SDeviceIASzone(int16_t channel_number_slot);
 
 /*****************************************************************************/
 
+void initZ2SDeviceIASzone(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
+
 void addZ2SDeviceIASzone(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id = -1, 
   const char *name = nullptr, uint32_t func = 0);
@@ -24,4 +29,10 @@ void addZ2SDeviceIASzone(
 void msgZ2SDeviceIASzone(
   int16_t channel_number_slot, bool state, bool check_flags = true); 
 
+/*****************************************************************************/
+
+void msgZ2SDeviceIASzone(
+  Supla::Element* element, bool state, bool check_flags = true); 
+
+/*****************************************************************************/
 #endif

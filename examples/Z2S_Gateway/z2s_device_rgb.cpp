@@ -12,25 +12,31 @@ void initZ2SDeviceRGB(
   ZigbeeGateway *gateway, zbg_device_params_t *device, 
   int16_t channel_number_slot) {
 
+  initZ2SDeviceRGB(
+    channel_number_slot, z2s_channels_table + channel_number_slot);
+
+}
+
+void initZ2SDeviceRGB(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+
   Supla::Control::Z2S_RGBInterface * Supla_Z2S_RGBInterface = nullptr;
 
-  switch (device->model_id) {
+  switch (_z2s_channel->model_id) {
 
 
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
 
-      Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(
-          gateway, device, Z2S_TUYA_COLOR_HS_RGB);
+      Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(
+        Z2S_TUYA_COLOR_HS_RGB);
     break;
 
 
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
 
-      Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(
-          gateway, device, Z2S_TUYA_COLOR_XY_RGB); 
+      Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(
+        Z2S_TUYA_COLOR_XY_RGB); 
     break;
 
 
@@ -38,7 +44,7 @@ void initZ2SDeviceRGB(
     case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
       Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(
-          gateway, device, Z2S_COLOR_HS_RGB); 
+        Z2S_COLOR_HS_RGB); 
       break;
 
 
@@ -46,48 +52,51 @@ void initZ2SDeviceRGB(
     case Z2S_DEVICE_DESC_RGBW_BULB_XY:
 
       Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(
-          gateway, device, Z2S_COLOR_XY_RGB); 
+        Z2S_COLOR_XY_RGB); 
     break;
 
 
     case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
 
-      Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(
-          gateway, device, Z2S_PHILIPS_COLOR_XY_RGB); 
+      Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(
+        Z2S_PHILIPS_COLOR_XY_RGB); 
     break;
 
 
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
 
-      Supla_Z2S_RGBInterface = 
-        new Supla::Control::Z2S_RGBInterface(
-          gateway, device, Z2S_TUYA_DP_COLOR_HS_RGB); 
+      Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface(
+        Z2S_TUYA_DP_COLOR_HS_RGB); 
     break;
   }
 
   if (Supla_Z2S_RGBInterface) {
 
-    Supla_Z2S_RGBInterface->getChannel()->setChannelNumber(
-      z2s_channels_table[channel_number_slot].Supla_channel);
-   
-    if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
-      Supla_Z2S_RGBInterface->setInitialCaption(
-        z2s_channels_table[channel_number_slot].Supla_channel_name);
-        
-    if (z2s_channels_table[channel_number_slot].Supla_channel_func !=0) 
-      Supla_Z2S_RGBInterface->setDefaultFunction(
-        z2s_channels_table[channel_number_slot].Supla_channel_func);
+    Supla_Z2S_RGBInterface->setZ2SZbDevice(Z2S_getZbDevicePtr(
+    _z2s_channel->Zb_device_id));
 
-    if (z2s_channels_table[channel_number_slot].user_data_1 > 0) 
+    Supla_Z2S_RGBInterface->setZ2SChannel(channel_index, _z2s_channel);
+  
+    Supla_Z2S_RGBInterface->getChannel()->setChannelNumber(
+      _z2s_channel->Supla_channel);
+   
+    if (strlen(_z2s_channel->Supla_channel_name) > 0) 
+      Supla_Z2S_RGBInterface->setInitialCaption(
+        _z2s_channel->Supla_channel_name);
+        
+    if (_z2s_channel->Supla_channel_func !=0) 
+      Supla_Z2S_RGBInterface->setDefaultFunction(
+        _z2s_channel->Supla_channel_func);
+
+    if (_z2s_channel->user_data_1 > 0) 
       Supla_Z2S_RGBInterface->setRGBMode(
-        z2s_channels_table[channel_number_slot].user_data_1);
+        _z2s_channel->user_data_1);
 
     Supla_Z2S_RGBInterface->setKeepAliveSecs(
-      z2s_channels_table[channel_number_slot].keep_alive_secs);
+      _z2s_channel->keep_alive_secs);
 
     Supla_Z2S_RGBInterface->setTimeoutSecs(
-      z2s_channels_table[channel_number_slot].timeout_secs);
+      _z2s_channel->timeout_secs);
   }
 } //initZ2SDeviceRGB
 
@@ -136,7 +145,7 @@ void addZ2SDeviceRGB(
     
   }
   channel_element = 
-    new Supla::Control::Z2S_RGBInterface(gateway, device, sub_id);
+    new Supla::Control::Z2S_RGBInterface(sub_id);
 
   if (channel_element)
     Z2S_fillChannelsTableSlot(
@@ -149,48 +158,19 @@ void addZ2SDeviceRGB(
 void msgZ2SDeviceRGB(int16_t channel_number_slot, uint8_t hue, 
   uint8_t saturation, bool state) {
 
-  Z2S_updateZbDeviceLastSeenMsById(
-    z2s_channels_table[channel_number_slot].Zb_device_id);
-
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
 
-  if (element && element->getChannel()->getChannelType() == 
-      SUPLA_CHANNELTYPE_RGBLEDCONTROLLER) {
+  msgZ2SDeviceRGB(element, hue, saturation, state);
+}
 
-    auto Supla_Z2S_RGBInterface = 
-      reinterpret_cast<Supla::Control::Z2S_RGBInterface *>(element);
+/*****************************************************************************/
 
-    Supla_Z2S_RGBInterface->getChannel()->setStateOnline();
+void msgZ2SDeviceRGB(Supla::Element *element, uint8_t hue, uint8_t saturation, 
+  bool state) {
 
-    switch (z2s_channels_table[channel_number_slot].model_id) {
+  auto Supla_Z2S_RGBInterface = static_cast<
+    Supla::Control::Z2S_RGBInterface *>(element);
 
-
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
-      case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: 
-      case Z2S_DEVICE_DESC_ADEO_RGBW_BULB: {
-        
-        if ((hue == 0xFF) && (saturation == 0xFF))
-        {
-        //  Supla_Z2S_TuyaRGBBulb->setStateOnServer(state);
-          //Supla_Z2S_TuyaRGBBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-        }
-        else {
-          if (hue == 0xFF)
-            last_saturation_value = saturation;
-          else last_hue_value = hue;
-          hue_saturation_counter++;
-          if ((hue_saturation_counter % 2) == 0)
-          {
-          //  Supla_Z2S_TuyaRGBBulb->setValueOnServer(last_hue_value, last_saturation_value);
-            //Supla_Z2S_TuyaRGBBulb->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(rssi));
-          }
-        }  
-      } break;
-
-      default: break;
-    }
-  }
+  Supla_Z2S_RGBInterface->setZbDeviceLastSeenMs(millis());
 }

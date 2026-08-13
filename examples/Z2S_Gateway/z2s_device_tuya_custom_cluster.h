@@ -13,6 +13,7 @@
 
 typedef struct Tuya_read_dp_result_s {
   bool     is_success;
+  uint8_t  bytes_read;
   uint8_t  dp_id;
   uint8_t  dp_type;
   uint16_t dp_size;

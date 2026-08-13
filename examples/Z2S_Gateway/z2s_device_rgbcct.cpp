@@ -11,15 +11,22 @@ static uint8_t last_saturation_value = 0;
 void initZ2SDeviceRGBCCT(
   zbg_device_params_t *device, int16_t channel_number_slot) {
 
-  Supla::Control::Z2S_RGBCCTInterface * Supla_Z2S_RGBCCTInterface = nullptr;
+  initZ2SDeviceRGBCCT(
+    channel_number_slot, z2s_channels_table + channel_number_slot);
+}
 
-  switch (device->model_id) {
+void initZ2SDeviceRGBCCT(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+
+  Supla::Control::Z2S_RGBCCTInterface* Supla_Z2S_RGBCCTInterface = nullptr;
+
+  switch (_z2s_channel->model_id) {
 
 
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A: 
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_TUYA_COLOR_HS_RGB);
+        Z2S_TUYA_COLOR_HS_RGB);
     break;
 
 
@@ -27,7 +34,7 @@ void initZ2SDeviceRGBCCT(
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_TUYA_COLOR_XY_RGB); 
+        Z2S_TUYA_COLOR_XY_RGB); 
     break;
 
 
@@ -35,21 +42,22 @@ void initZ2SDeviceRGBCCT(
     case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_COLOR_HS_RGB); 
+        Z2S_COLOR_HS_RGB); 
     break;
 
 
     case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_COLOR_XY_RGB); 
+        Z2S_COLOR_XY_RGB); 
     break;
 
 
     case Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE: {
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_COLOR_XY_RGB); 
+        Z2S_COLOR_XY_RGB);
+
       if (Supla_Z2S_RGBCCTInterface) {
         Supla_Z2S_RGBCCTInterface->setMaxWarmCCT(500);
         Supla_Z2S_RGBCCTInterface->setMinCoolCCT(111);
@@ -61,7 +69,7 @@ void initZ2SDeviceRGBCCT(
     case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_COLOR_HS_RGB); 
+        Z2S_COLOR_HS_RGB); 
       break;
 
 
@@ -69,51 +77,49 @@ void initZ2SDeviceRGBCCT(
     case Z2S_DEVICE_DESC_RGBW_BULB_XY:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_COLOR_XY_RGB); 
+        Z2S_COLOR_XY_RGB); 
     break;
 
 
     case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_PHILIPS_COLOR_XY_RGB); 
+        Z2S_PHILIPS_COLOR_XY_RGB); 
     break;
 
 
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
 
       Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
-        device, Z2S_TUYA_DP_COLOR_HS_RGB); 
+        Z2S_TUYA_DP_COLOR_HS_RGB); 
     break;
   }
 
   if (Supla_Z2S_RGBCCTInterface) {
 
-    Supla_Z2S_RGBCCTInterface->setZ2SChannelUID(
-      z2s_channels_table[channel_number_slot].short_addr,
-      z2s_channels_table[channel_number_slot].endpoint,
-      z2s_channels_table[channel_number_slot].sub_id);
+    Supla_Z2S_RGBCCTInterface->setZ2SZbDevice(Z2S_getZbDevicePtr(
+      _z2s_channel->Zb_device_id));
+
+    Supla_Z2S_RGBCCTInterface->setZ2SChannel(channel_index, _z2s_channel);
     
     Supla_Z2S_RGBCCTInterface->getChannel()->setChannelNumber(
-      z2s_channels_table[channel_number_slot].Supla_channel);
+      _z2s_channel->Supla_channel);
    
-    if (strlen(z2s_channels_table[channel_number_slot].Supla_channel_name) > 0) 
+    if (strlen(_z2s_channel->Supla_channel_name) > 0) 
       Supla_Z2S_RGBCCTInterface->setInitialCaption(
-        z2s_channels_table[channel_number_slot].Supla_channel_name);
+        _z2s_channel->Supla_channel_name);
         
-    if (z2s_channels_table[channel_number_slot].Supla_channel_func !=0) 
+    if (_z2s_channel->Supla_channel_func !=0) 
       Supla_Z2S_RGBCCTInterface->setDefaultFunction(
-        z2s_channels_table[channel_number_slot].Supla_channel_func);
+        _z2s_channel->Supla_channel_func);
 
-    if (z2s_channels_table[channel_number_slot].user_data_1 > 0) 
-      Supla_Z2S_RGBCCTInterface->setRGBMode(
-        z2s_channels_table[channel_number_slot].user_data_1);
+    if (_z2s_channel->user_data_1 > 0) 
+      Supla_Z2S_RGBCCTInterface->setRGBMode(_z2s_channel->user_data_1);
 
     Supla_Z2S_RGBCCTInterface->setKeepAliveSecs(
-      z2s_channels_table[channel_number_slot].keep_alive_secs);
+      _z2s_channel->keep_alive_secs);
 
-    Supla_Z2S_RGBCCTInterface->setTimeoutSecs(
-      z2s_channels_table[channel_number_slot].timeout_secs);
+    Supla_Z2S_RGBCCTInterface->setTimeoutSecs(_z2s_channel->timeout_secs);
   }
 } //initZ2SDeviceRGB
 
@@ -163,7 +169,7 @@ void addZ2SDeviceRGBCCT(
     
   }
   channel_element = 
-    new Supla::Control::Z2S_RGBCCTInterface(device, sub_id);
+    new Supla::Control::Z2S_RGBCCTInterface(sub_id);
 
   if (channel_element)
     Z2S_fillChannelsTableSlot(
@@ -173,53 +179,43 @@ void addZ2SDeviceRGBCCT(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, RGBCCTMessage rgbcct_msg,
+/*void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, RGBCCTMessage rgbcct_msg,
   uint32_t value) {
-
-  Z2S_updateZbDeviceLastSeenMsById(
-    z2s_channels_table[channel_number_slot].Zb_device_id);
 
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
+  
+  msgZ2SDeviceRGBCCT(element, rgbcct_msg, value);
+}*/
 
-  if (element && element->getChannel()->getChannelType() == 
-      SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
+/*****************************************************************************/
 
-    auto Supla_Z2S_RGBCCTInterface = 
-      reinterpret_cast<Supla::Control::Z2S_RGBCCTInterface *>(element);
+void msgZ2SDeviceRGBCCT(
+  Supla::Element* element, RGBCCTMessage rgbcct_msg, uint32_t value) {
 
-    Supla_Z2S_RGBCCTInterface->getChannel()->setStateOnline();
+  auto Supla_Z2S_RGBCCTInterface = static_cast<
+    Supla::Control::Z2S_RGBCCTInterface *>(element);
+    
+  Supla_Z2S_RGBCCTInterface->setZbDeviceLastSeenMs(millis());
 
-    switch (z2s_channels_table[channel_number_slot].model_id) {
+  switch (rgbcct_msg) {
+    
+    
+    case RGBCCTMessage::ON_OFF_STATE_MSG: {
 
-
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
-      case Z2S_DEVICE_DESC_IKEA_RGBW_BULB: 
-      case Z2S_DEVICE_DESC_ADEO_RGBW_BULB: 
-      case Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB:
-      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE: 
-      case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY:
-      case Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE: {
-        
-        switch (rgbcct_msg) {
-          
-          
-          case RGBCCTMessage::ON_OFF_STATE_MSG: {
-
-            Supla_Z2S_RGBCCTInterface->setStateOnServer((bool)value);
-          } break;
+      Supla_Z2S_RGBCCTInterface->setStateOnServer((bool)value);
+    } break;
 
 
-          case RGBCCTMessage::COLOR_MODE_MSG: {
+    case RGBCCTMessage::COLOR_MODE_MSG: {
 
-            Supla_Z2S_RGBCCTInterface->setDeviceColorMode((uint8_t)value);
-          } break;
-        }
-      } break;
+      Supla_Z2S_RGBCCTInterface->setDeviceColorMode((uint8_t)value);
+    } break;
 
-      default: break;
-    }
+
+    default:
+
+      log_e("Unknown RGBCCT MSG %02u", rgbcct_msg);
+    break;
   }
 }

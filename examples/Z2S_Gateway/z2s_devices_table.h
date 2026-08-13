@@ -47,49 +47,14 @@
 #define PUSHOVER_MESSAGE_TEXT_MAX_SIZE                          1024
 
 
-#define ALL_SUPLA_CHANNEL_TYPES   -1
+#define ALL_SUPLA_CHANNEL_TYPES                                 -1
+#define ALL_ENDPOINTS                                           -1
 
 #define ADD_Z2S_DEVICE_STATUS_OK                                0x00  //device added 100%
 #define ADD_Z2S_DEVICE_STATUS_DUN                               0x01  //device unknown
 #define ADD_Z2S_DEVICE_STATUS_DT_FULL                           0x02  //device table full = device not added
 #define ADD_Z2S_DEVICE_STATUS_DT_FWA                            0x03  //device table full while adding = device added partialy
 #define ADD_Z2S_DEVICE_STATUS_DAP                               0x04  //device already present
-
-#define USER_DATA_FLAG_SED_TIMEOUT                              (1 << 0)  // 0x00001
-#define USER_DATA_FLAG_MSG_DISABLED                             (1 << 1)  // 0x00002
-
-#define USER_DATA_FLAG_CORRECTIONS_DISABLED                     (1 << 2)  // 0x00004
-#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE                     (1 << 3)  // 0x00008
-#define USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG                      (1 << 4)  // 0x00010
-#define USER_DATA_FLAG_DISABLE_NOTIFICATIONS                    (1 << 5)  // 0x00020
-#define USER_DATA_FLAG_SET_SORWNS_ON_START                      (1 << 6)  // 0x00040
-#define USER_DATA_FLAG_HAS_EXTENDED_DATA                        (1 << 7)  // 0x00080
-#define USER_DATA_FLAG_TRV_FIXED_CORRECTION                     (1 << 8)  // 0x00100
-#define USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL              (1 << 9)  // 0x00200
-#define USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK                (1 << 10) // 0x00400
-#define USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE                (1 << 11) // 0x00800
-#define USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS                 (1 << 12) // 0x01000
-#define USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0               (1 << 13) // 0x02000
-#define USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION              (1 << 14) // 0x04000
-#define USER_DATA_FLAG_EXTENDED_DATA_COUNTER                    (1 << 15) // 0x08000
-#define USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL             (1 << 16) // 0x10000
-
-#define ZBD_USER_DATA_FLAG_VERSION_2_0                          (1 << 0)
-#define ZBD_USER_DATA_FLAG_BINDING_REQUIRED                     (1 << 1)
-#define ZBD_USER_DATA_FLAG_RESERVED_2                           (1 << 2)
-#define ZBD_USER_DATA_FLAG_RESERVED_3                           (1 << 3)
-#define ZBD_USER_DATA_FLAG_RESERVED_4                           (1 << 4)
-#define ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED                 (1 << 5)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_MSG                  (1 << 6)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG       (1 << 7)
-#define ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG          (1 << 8)
-
-#define ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA                   (1 << 13)
-#define ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC                 (1 << 14)
-#define ZBD_USER_DATA_FLAG_TUYA_MCU_VERSION_REQUEST             (1 << 15)
-#define ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN              (1 << 16)
-#define ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN   (1 << 17)
-#define ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN      (1 << 18)
 
 #define ZBD_BATTERY_PERCENTAGE_MSG                              0x01
 #define ZBD_BATTERY_VOLTAGE_MSG                                 0x02
@@ -374,6 +339,7 @@ bool Z2S_removeAllZbDeviceWithAllChannels();
 
 z2s_zb_device_params_t *Z2S_getChannelZbDevicePtr(
   int16_t channel_number_slot);
+z2s_zb_device_params_t *Z2S_getZbDevicePtr(uint8_t Zb_device_id);
 
 
 /*****************************************************************************/
@@ -383,6 +349,14 @@ int16_t Z2S_findChannelNumberSlot(
   int32_t channel_type, int8_t sub_id);
 
 int16_t Z2S_findChannelNumberSlot(
+  uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
+  int32_t channel_type, int8_t sub_id);
+
+Supla::Element* Z2S_findZ2SElement(
+  uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
+  int32_t channel_type, int8_t sub_id);
+
+Z2S_Core* Z2S_findZ2SCore(
   uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id);
 
@@ -774,6 +748,10 @@ void updateDeviceTemperature(
 
 void updateSuplaBatteryLevel(
   int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value,
+  bool restore = false);
+
+void updateSuplaBatteryLevel(
+  uint16_t short_addr, uint8_t msg_id, uint32_t msg_value,
   bool restore = false);
 
 Supla::LocalAction *getLocalActionPtr(uint8_t Supla_channel_number);

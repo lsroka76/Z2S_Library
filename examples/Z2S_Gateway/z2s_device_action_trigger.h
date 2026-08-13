@@ -26,7 +26,17 @@ void initZ2SDeviceActionTrigger(int16_t channel_number_slot);
 
 /*****************************************************************************/
 
+void initZ2SDeviceActionTrigger(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
+
 void initZ2SDeviceActionTriggerV2(int16_t channel_number_slot);
+
+/*****************************************************************************/
+
+void initZ2SDeviceActionTriggerV2(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
 
 /*****************************************************************************/
 
@@ -52,9 +62,18 @@ void msgZ2SDeviceActionTrigger(int16_t channel_number_slot);
 
 /*****************************************************************************/
 
+void msgZ2SDeviceActionTrigger(Supla::Element* element);
+
+/*****************************************************************************/
+
 void msgZ2SDeviceActionTriggerV2(
   int16_t channel_number_slot, int8_t sub_id, uint8_t hold_start = 0);
 
+/*****************************************************************************/
+
+void msgZ2SDeviceActionTriggerV2(
+  Supla::Element* element, bool isActionTriggerV2, int8_t sub_id, 
+  uint8_t hold_start = 0);
 
 /*****************************************************************************/
 

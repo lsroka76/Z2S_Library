@@ -17,6 +17,11 @@ void initZ2SDeviceDimmer(
 
 /*****************************************************************************/
 
+void initZ2SDeviceDimmer(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
+
 void addZ2SDeviceDimmer(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
   int8_t sub_id, const char *name = nullptr, uint32_t func = 0);
@@ -40,4 +45,12 @@ void msgZ2SDeviceDimmer(
   int16_t channel_number_slot, int16_t level, bool state, 
   DimmerMessage dimmer_msg = DimmerMessage::LEGACY_MSG);
   
+/*****************************************************************************/
+
+void msgZ2SDeviceDimmer(
+  Supla::Element* element, uint32_t model_id, int16_t level, bool state, 
+  DimmerMessage dimmer_msg = DimmerMessage::LEGACY_MSG);
+  
+/*****************************************************************************/
+
 #endif

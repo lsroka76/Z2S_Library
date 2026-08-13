@@ -393,6 +393,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_REPEATER                       0x7000
 #define Z2S_DEVICE_DESC_REPEATER                            0x7001
+#define Z2S_DEVICE_DESC_SLACKY_DIY_REPEATER                 0x7010
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER                 0x7100
 
@@ -785,7 +786,11 @@
 #define TUYA_SMART_POOL_SENSOR_ORP_SID                      0x04
 #define TUYA_SMART_POOL_SENSOR_FREE_CHLORINE_SID            0x05
 #define TUYA_SMART_POOL_SENSOR_SALINITY_SID                 0x06
-#define TUYA_SMART_POOL_SENSOR_BACKLIGHT_SID                0X07
+#define TUYA_SMART_POOL_SENSOR_BACKLIGHT_SID                0x07
+
+#define SLACKY_DIY_REPEATER_UPTIME_SID                      0x00
+#define SLACKY_DIY_REPEATER_VOLTAGE_SID                     0x01
+
 
 [[maybe_unused]]
 static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
@@ -915,6 +920,8 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 
 #define Z2S_REPORTING_SET_DESC_SHELLY_WS90                              0x0600
 #define Z2S_REPORTING_SET_DESC_SONOFF_SWV                               0x0610
+
+#define Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER                      0x0700
 
 static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
 
@@ -1265,7 +1272,25 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U32,
     .z2s_min_interval_value = 0, 
     .z2s_max_interval_value = 60,
-    .z2s_delta_value_32 = 1}
+    .z2s_delta_value_32 = 1},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 5, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TIME,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_TIME_TIME_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_UTC_TIME,
+    .z2s_min_interval_value = 60, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_32 = 15,
+    .z2s_manufacturer_code = 0}
 
 };//Z2S_REPORTING_SETS_DESC
 
@@ -1904,6 +1929,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SLACKY_DIY_REPEATER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_TIME }},
+
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -2237,8 +2268,10 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL 
+  }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
     .z2s_device_clusters_count = 2,
@@ -2745,7 +2778,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ZIBI_CUSTOM_CO_SENSOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0,
-    .z2s_device_clusters = { ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MESUREMENT }},
+    .z2s_device_clusters = { ZIBI_CUSTOM_CLUSTER_ID_CARBON_MONOXIDE_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER,
     .z2s_device_clusters_count = 3,
@@ -6317,8 +6350,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "Slacky-DIY", .model_name = "Router-ZG-807Z-SlD",
     .z2s_device_uid = 26445,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SLACKY_DIY_REPEATER,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER,
+      Z2S_DEVICE_DESC_SLACKY_DIY_REPEATER }},
 
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
     .z2s_device_uid = 26500,
@@ -7053,8 +7090,6 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 37005,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
     .z2s_device_endpoints_count = 1}
-
-
 //DEVICES_END
 };
 #endif

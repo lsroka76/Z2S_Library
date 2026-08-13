@@ -37,21 +37,30 @@ uint64_t setU64Digits(
 
 void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
+  initZ2SDeviceGeneralPurposeMeasurement(
+    channel_number_slot, z2s_channels_table + channel_number_slot);
+}
+
+/*****************************************************************************/
+
+void initZ2SDeviceGeneralPurposeMeasurement(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+
   auto Supla_Z2S_GeneralPurposeMeasurement = 
     new Supla::Sensor::Z2S_GeneralPurposeMeasurement();
 
   Supla_Z2S_GeneralPurposeMeasurement->getChannel()->setChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
+    _z2s_channel->Supla_channel);
 
-  if (z2s_channels_table[channel_number_slot].Supla_channel_name)
+  if (_z2s_channel->Supla_channel_name)
     Supla_Z2S_GeneralPurposeMeasurement->setInitialCaption(
-      z2s_channels_table[channel_number_slot].Supla_channel_name);
+      _z2s_channel->Supla_channel_name);
 
-  if (z2s_channels_table[channel_number_slot].Supla_channel_func != 0)
+  if (_z2s_channel->Supla_channel_func != 0)
     Supla_Z2S_GeneralPurposeMeasurement->setDefaultFunction(
-      z2s_channels_table[channel_number_slot].Supla_channel_func);
+      _z2s_channel->Supla_channel_func);
 
-  if (z2s_channels_table[channel_number_slot].user_data_flags & 
+  if (_z2s_channel->user_data_flags & 
         USER_DATA_FLAG_SET_SORWNS_ON_START) {
       
     Supla_Z2S_GeneralPurposeMeasurement->getChannel()->
@@ -61,18 +70,18 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
   }
 
   Supla_Z2S_GeneralPurposeMeasurement->setTimeoutSecs(
-    z2s_channels_table[channel_number_slot].timeout_secs);
+    _z2s_channel->timeout_secs);
 
-  Supla_Z2S_GeneralPurposeMeasurement->setZ2SZbDevice(
-    Z2S_getChannelZbDevicePtr(channel_number_slot));
+  Supla_Z2S_GeneralPurposeMeasurement->setZ2SZbDevice(Z2S_getZbDevicePtr(
+    _z2s_channel->Zb_device_id));
 
   Supla_Z2S_GeneralPurposeMeasurement->setZ2SChannel(
-    Z2S_getChannelPtr(channel_number_slot));
+    channel_index, _z2s_channel);
 
-  if (z2s_channels_table[channel_number_slot].user_data_2 > 0)
-    z2s_channels_table[channel_number_slot].user_data_3 = millis();
+  if (_z2s_channel->user_data_2 > 0)
+    _z2s_channel->user_data_3 = millis();
 
-  switch (z2s_channels_table[channel_number_slot].model_id) {
+  switch (_z2s_channel->model_id) {
 
 
     case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
@@ -96,7 +105,7 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
 
     case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
 
-      switch (z2s_channels_table[channel_number_slot].sub_id) {
+      switch (_z2s_channel->sub_id) {
 
 
         case TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID:
@@ -119,7 +128,6 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
     case Z2S_DEVICE_DESC_MOES_ALARM: {
       
       Supla_Z2S_GeneralPurposeMeasurement->setValue(90000000000);
-      //Supla_GeneralPurposeMeasurement->setUnitBeforeValue("AxMxxVxDxxxx", true);
     } break;
 
 
@@ -141,9 +149,6 @@ void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
     default: 
     break;
   }
-
-  //if (channel_number_slot == 1)
-  //  Z2S_initChannelExtendedDataCounter(channel_number_slot);
 } 
 
 /*****************************************************************************/
@@ -167,7 +172,7 @@ void addZ2SDeviceGeneralPurposeMeasurement(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceGeneralPurposeMeasurement(
+/*void msgZ2SDeviceGeneralPurposeMeasurement(
   int16_t channel_number_slot, uint8_t function, double value) {
 
   if (channel_number_slot < 0) {
@@ -175,98 +180,79 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
     log_e("error: invalid channel number slot");
     return;
   }
-  log_i("channel(%u), value: %f", 
-        z2s_channels_table[channel_number_slot].Supla_channel, 
-        value);
-  
-  Z2S_updateZbDeviceLastSeenMsById(
-    z2s_channels_table[channel_number_slot].Zb_device_id);
 
-  /*switch (z2s_channels_table[channel_number_slot].model_id) {
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR: {
-        int8_t sub_id = -1;
-        switch (function) {
-          case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_ILLUMINANCE: sub_id = TUYA_PRESENCE_SENSOR_ILLUMINANCE_SID; break;
-          case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_MOTION_STATE: sub_id = TUYA_PRESENCE_SENSOR_MOTION_STATE_SID; break;
-        }
-      
-        int16_t func_channel_number_slot = Z2S_findChannelNumberSlot(z2s_channels_table[channel_number_slot].ieee_addr, 
-                                                                      z2s_channels_table[channel_number_slot].endpoint, 
-                                                                      z2s_channels_table[channel_number_slot].cluster_id, 
-                                                                      SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-                                                                      sub_id); 
-        if (func_channel_number_slot < 0) {
-          log_e("msgZ2SDeviceGeneralPurposeMeasurement - no channel numer slot for device model id 0x%x, function 0x%x",
-                z2s_channels_table[channel_number_slot].model_id, function);
-          return;
-        }
-        channel_number_slot = func_channel_number_slot;
-      } break; 
-      default: break;
-  } */
+  log_i(
+    "channel(%u), value: %f", 
+    z2s_channels_table[channel_number_slot].Supla_channel, value);
 
-  uint32_t gpm_time_threshold = 
-    z2s_channels_table[channel_number_slot].user_data_2;
-
-    uint32_t gpm_value_threshold = 
-    z2s_channels_table[channel_number_slot].user_data_1;
-  
-  if ((gpm_time_threshold > 0) &&
-  (value >= gpm_value_threshold)) {
-
-    uint32_t gpm_time_delta = 
-      millis() - z2s_channels_table[channel_number_slot].user_data_3;
-
-    log_i(
-      "gpm_time_threshold: %lu, gpm_time_delta: %lu", 
-      gpm_time_threshold * 1000, gpm_time_delta);
-
-    if (gpm_time_delta < gpm_time_threshold * 1000)
-    return;
-    else
-      z2s_channels_table[channel_number_slot].user_data_3 = millis();
-  }
   auto element = Supla::Element::getElementByChannelNumber(
     z2s_channels_table[channel_number_slot].Supla_channel);
   
-  if (element && 
-      (element->getChannel()->getChannelType() == 
-        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT)) {
+  msgZ2SDeviceGeneralPurposeMeasurement(element, function, value);
+}*/
+/*****************************************************************************/
 
-    auto Supla_Z2S_GeneralPurposeMeasurement = 
-      reinterpret_cast<
-        Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
+void msgZ2SDeviceGeneralPurposeMeasurement(
+  Supla::Element * element, uint8_t function, double value) {
 
-    switch (function) {
+  auto Supla_Z2S_GeneralPurposeMeasurement = static_cast<
+    Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
+
+  Supla_Z2S_GeneralPurposeMeasurement->setZbDeviceLastSeenMs(millis());
+  
+  uint32_t gpm_time_threshold = 
+    Supla_Z2S_GeneralPurposeMeasurement->getChannelUserData2() * 1000;
+
+  uint32_t gpm_value_threshold = 
+    Supla_Z2S_GeneralPurposeMeasurement->getChannelUserData1();
+  
+  if ((gpm_time_threshold > 0) && (value >= gpm_value_threshold)) {
+
+    uint32_t gpm_time_delta = millis() - 
+      Supla_Z2S_GeneralPurposeMeasurement->getChannelUserData3();
+
+    log_i(
+      "gpm_time_threshold: %lu, gpm_time_delta: %lu", gpm_time_threshold, 
+      gpm_time_delta);
+
+    if (gpm_time_delta < gpm_time_threshold)
+      return;
+    else
+      Supla_Z2S_GeneralPurposeMeasurement->setChannelUserData3(millis());
+  }
+
+  switch (function) {
 
 
-      case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_INIT_VALUE: {
+    case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_INIT_VALUE: {
 
-        Supla_Z2S_GeneralPurposeMeasurement->setValue(value);
-        z2s_channels_table[channel_number_slot].initial_gpm_value = value; 
-      } break;
+      Supla_Z2S_GeneralPurposeMeasurement->setValue(value);
+      Supla_Z2S_GeneralPurposeMeasurement->setChannelInitialGPMValue(value);
+    } break;
 
 
-      case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_DEC_VALUE: {
+    case ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_DEC_VALUE: {
 
-        if (z2s_channels_table[channel_number_slot].initial_gpm_value >= value)
+      double initial_gpm_value = 
+        Supla_Z2S_GeneralPurposeMeasurement->getChannelInitialGPMValue();
+
+      if (initial_gpm_value >= value)
         Supla_Z2S_GeneralPurposeMeasurement->setValue(
-          z2s_channels_table[channel_number_slot].initial_gpm_value - value);
-      } break;
+          initial_gpm_value - value);
+    } break;
 
 
-      default:
+    default:
 
-        Supla_Z2S_GeneralPurposeMeasurement->setValue(value);
-      break;
-    }  
-    //Z2S_setChannelExtendedDataCounter(channel_number_slot, value);
+      Supla_Z2S_GeneralPurposeMeasurement->setValue(value);
+    break;
   }  
-}
+}  
+
 
 /*****************************************************************************/
 
-void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
+/*void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
   int16_t channel_number_slot, uint8_t first_digit, uint8_t last_digit, 
   uint64_t digits_to_insert) {
 
@@ -283,33 +269,26 @@ void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
           first_digit, last_digit);
     return;
   }
-
-  Z2S_updateZbDeviceLastSeenMsById(
-    z2s_channels_table[channel_number_slot].Zb_device_id);
-    
-  auto element = 
-    Supla::Element::getElementByChannelNumber(
+  
+  auto element = Supla::Element::getElementByChannelNumber(
       z2s_channels_table[channel_number_slot].Supla_channel);
 
-  //auto element = Supla::Element::getElementByChannelNumber(102);
-  
-  if (element && 
-      (element->getChannel()->getChannelType() == 
-        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT)) {
+  msgZ2SDeviceGeneralPurposeMeasurementDisplay(
+    element, first_digit, last_digit, digits_to_insert); 
+}*/
 
-    auto Supla_Z2S_GeneralPurposeMeasurement = 
-      reinterpret_cast<
-        Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
-      
-    /*char unitBefore[SUPLA_GENERAL_PURPOSE_UNIT_SIZE] = {};
-    Supla_GeneralPurposeMeasurement->getUnitBeforeValue(unitBefore);
-    memcpy (unitBefore + str_position, str_display, str_length);
-    Supla_GeneralPurposeMeasurement->setValue((uint8_t)(Supla_GeneralPurposeMeasurement->getValue() + 1) % 10);
-    Supla_GeneralPurposeMeasurement->setUnitBeforeValue(unitBefore, true);*/
-    uint64_t gpm_value = 
-      (uint64_t)Supla_Z2S_GeneralPurposeMeasurement->getValue();
+/*****************************************************************************/
+
+void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
+  Supla::Element* element, uint8_t first_digit, uint8_t last_digit, 
+  uint64_t digits_to_insert) {
+
+  auto Supla_Z2S_GeneralPurposeMeasurement = static_cast<
+    Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
+  
+  uint64_t gpm_value = (uint64_t)
+    Supla_Z2S_GeneralPurposeMeasurement->getValue();
     
-    Supla_Z2S_GeneralPurposeMeasurement->setValue(
-      setU64Digits(gpm_value, first_digit, last_digit, digits_to_insert));
-  }  
+  Supla_Z2S_GeneralPurposeMeasurement->setValue(
+    setU64Digits(gpm_value, first_digit, last_digit, digits_to_insert));  
 } 

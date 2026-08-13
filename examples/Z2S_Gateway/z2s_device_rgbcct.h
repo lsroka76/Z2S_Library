@@ -11,13 +11,25 @@ void initZ2SDeviceRGBCCT(
 
 /*****************************************************************************/
 
+void initZ2SDeviceRGBCCT(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+
+/*****************************************************************************/
+
+
 void addZ2SDeviceRGBCCT(
   zbg_device_params_t *device, uint8_t free_slot, const char *name = nullptr, 
   uint32_t func = 0);
 
 /*****************************************************************************/
 
-void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, RGBCCTMessage rgbcct_msg,
-  uint32_t value);
+void msgZ2SDeviceRGBCCT(
+  int16_t channel_number_slot, RGBCCTMessage rgbcct_msg, uint32_t value);
 
+/*****************************************************************************/
+
+void msgZ2SDeviceRGBCCT(
+  Supla::Element* element, RGBCCTMessage rgbcct_msg, uint32_t value);
+
+/*****************************************************************************/
 #endif

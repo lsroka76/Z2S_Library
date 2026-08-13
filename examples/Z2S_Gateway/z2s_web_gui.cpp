@@ -4795,12 +4795,9 @@ void Z2S_loopWebGUI() {
 						LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
 
 				ESPUI.updateLabel(
-				lah_status_label, 
-				PSTR(
+					lah_status_label, 
 					"Local virtual relay added - you may add next one.<br>"
-					"When finished restart gateway manually to see new objects."));
-				//rebuildChannelsSelector(true);
-				//buildActionsChannelSelectors(true);
+					"When finished restart gateway manually to see new objects.");
 			}
 		} break;
 
@@ -4814,12 +4811,9 @@ void Z2S_loopWebGUI() {
 
 			
 				ESPUI.updateLabel(
-				lah_status_label, 
-				PSTR(
+					lah_status_label, 
 					"Local virtual binary added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects."));
-				//rebuildChannelsSelector(true);
-				//buildActionsChannelSelectors(true);
+					"<br>When finished restart gateway manually to see new objects.");
 			}
 		} break;
 
@@ -4831,12 +4825,10 @@ void Z2S_loopWebGUI() {
 						LOCAL_CHANNEL_TYPE_REMOTE_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
 
 				ESPUI.updateLabel(
-				lah_status_label, 
-				PSTR(
+					lah_status_label, 
 					"Local remote relay added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects."));
-				//rebuildChannelsSelector(true);
-				//buildActionsChannelSelectors(true);
+					"<br>When finished restart gateway manually to see new objects.");
+				
 			}
 		} break;
 
@@ -4846,13 +4838,12 @@ void Z2S_loopWebGUI() {
 			gui_command = 0;
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER, 
-						SUPLA_CHANNELFNC_THERMOMETER)) {
+						CONNECTED_THERMOMETERS_FNC_AVG)) {
 
 				ESPUI.updateLabel(
-				lah_status_label, 
-				PSTR(
+					lah_status_label, 
 					"Local remote thermometer added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects."));
+					"<br>When finished restart gateway manually to see new objects.");
 			}
 		} break;
 
@@ -4865,10 +4856,9 @@ void Z2S_loopWebGUI() {
 						SUPLA_CHANNELFNC_HVAC_THERMOSTAT)) {
 				
 				ESPUI.updateLabel(
-				lah_status_label, 
-				PSTR(
+					lah_status_label, 
 					"Local virtual HVAC added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects."));
+					"<br>When finished restart gateway manually to see new objects.");
 			}
 		} break;
 
@@ -4884,9 +4874,9 @@ void Z2S_loopWebGUI() {
 						LOCAL_CHANNEL_TYPE_SWITCHBOT, local_func)) {
 				
 				ESPUI.updateLabel(
-				sb_status_label, PSTR(
+					sb_status_label, 
 					"Switchbot object added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects."));
+					"<br>When finished restart gateway manually to see new objects.");
 			}
 		} break;
 
@@ -5019,10 +5009,8 @@ void endpointCallback(BasicControl *sender, int type, void *param) {
 	Serial.print(sender->GetId());
 	if (sender->getValueInt() < 1)
 		ESPUI.updateNumber(sender->GetId(), 1);
-	//uint8_t device_endpoints = z2s_zb_devices_table[ESPUI.getControl(device_selector)->getValueInt()].endpoints_count;
-	if (sender->getValueInt() > 255) //device_endpoints)
-		ESPUI.updateNumber(sender->GetId(), 255); //device_endpoints);
-
+	if (sender->getValueInt() > 255) 
+		ESPUI.updateNumber(sender->GetId(), 255); 
 }
 
 void enableDeviceControls(bool enable) {
@@ -5063,8 +5051,8 @@ void enableDeviceControls(bool enable) {
 
 void enableClustersAttributesControls(bool enable) {
 
-	if (enable == 
-				(controls_enabled_flags & CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG))
+	if (enable == (controls_enabled_flags & 
+				CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG))
 		return;
 
 	updateLabel_P(
@@ -5106,8 +5094,6 @@ void updateDeviceInfoLabel(uint8_t device_slot) {
 
 	char general_purpose_gui_buffer[768] = {};
 	char ieee_addr_str[24] = {};
-
-	//uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
 
   snprintf_P(ieee_addr_str, 24,
 						PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
@@ -5211,7 +5197,8 @@ void deviceSelectorCallback(BasicControl *sender, int type, void *param) {
 	updateDeviceInfoLabel(sender_value);
 }
 
-void clustersattributesdeviceSelectorCallback(BasicControl *sender, int type, void *param) {
+void clustersattributesdeviceSelectorCallback(
+	BasicControl *sender, int type, void *param) {
 
 	char general_purpose_gui_buffer[512] = {};
 
@@ -5233,18 +5220,16 @@ void clustersattributesdeviceSelectorCallback(BasicControl *sender, int type, vo
 
 		uint8_t device_slot = sender_value;
 
-		sprintf_P(general_purpose_gui_buffer,
-							PSTR("<b><i>Manufacturer name</i></b> %s "
-							"<b>| <i>model ID</b></i> %s"), 
-							Z2S_getZbDeviceManufacturerName(device_slot),
-							Z2S_getZbDeviceModelName(device_slot));
+		sprintf_P(
+			general_purpose_gui_buffer, "<b><i>Manufacturer name</i></b> %s <b>| "
+			"<i>model ID</b></i> %s", Z2S_getZbDeviceManufacturerName(device_slot),
+			Z2S_getZbDeviceModelName(device_slot));
 
 		updateLabel_P(
 			clusters_attributes_table[clusters_attributes_device_info_label], 
 			general_purpose_gui_buffer);
 		clusterCallbackCmd();
 	}
-
 }
 
 
@@ -7250,8 +7235,8 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 					ESPUI.getControl(channel_local_function)->getValueInt();
 				
 				if (connected_thermometers_function > 0)
-					setRemoteThermometerFunction(channel_slot, 
-																			 connected_thermometers_function);
+					setRemoteThermometerFunction(
+						channel_slot, connected_thermometers_function);
 			} break;
 
 

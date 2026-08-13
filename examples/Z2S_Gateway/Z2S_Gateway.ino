@@ -1188,9 +1188,7 @@ if (client2 && client2.connected()) {
       (zbGateway.isNewDeviceJoined())) {
 
     disableZ2SNotifications();
-    //zbGateway.setActivePairing(true); //TODO - rethink that idea
     
-    //zbGateway.clearNewDeviceJoined();
     zbGateway.printJoinedDevices();
 
     while (!zbGateway.getJoinedDevices().empty()) {
@@ -1244,119 +1242,114 @@ if (client2 && client2.connected()) {
           for (uint32_t devices_list_counter = 0; 
                devices_list_counter < devices_list_table_number; 
                devices_list_counter++) { 
+
+            const auto& z2s_device_list = Z2S_DEVICES_LIST[
+              devices_list_counter];
             
             if ((strcmp(zbGateway.getQueryBasicClusterData()->zcl_model_name, 
-                  Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
+                  z2s_device_list.model_name) == 0) &&
                 (strcmp(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name, 
-                  Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
+                  z2s_device_list.manufacturer_name) == 0)) {
 
+              
               const z2s_device_endpoint_t *z2s_device_endpoints_ptr = 
-                Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints;
+                z2s_device_list.z2s_device_endpoints;
 
-              if (Z2S_DEVICES_LIST[devices_list_counter].\
-                    z2s_device_flags & 
+              if (z2s_device_list.z2s_device_flags & 
                   Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS)
                 z2s_device_endpoints_ptr = 
-                  Z2S_DEVICES_LIST[devices_list_counter].\
-                  z2s_device_endpoints_ext;
+                  z2s_device_list.z2s_device_endpoints_ext;
 
-              log_i("LIST matched %s::%s, entry # %d, endpoints # %d, "
-                    "endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
-                    Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, 
-                    Z2S_DEVICES_LIST[devices_list_counter].model_name, 
-                    devices_list_counter, 
-                    Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_endpoints_count,
-                    z2s_device_endpoints_ptr->endpoint_id, 
-                    z2s_device_endpoints_ptr->z2s_device_desc_id,
-                    (z2s_device_endpoints_ptr + 1)->endpoint_id, 
-                    (z2s_device_endpoints_ptr + 1)->z2s_device_desc_id,
-                    (z2s_device_endpoints_ptr + 2)->endpoint_id, 
-                    (z2s_device_endpoints_ptr + 2)->z2s_device_desc_id);
+              log_i(
+                "LIST matched %s::%s, entry # %d, endpoints # %d, "
+                "endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
+                z2s_device_list.manufacturer_name, z2s_device_list.model_name, 
+                devices_list_counter, 
+                z2s_device_list.z2s_device_endpoints_count,
+                z2s_device_endpoints_ptr->endpoint_id, 
+                z2s_device_endpoints_ptr->z2s_device_desc_id,
+                (z2s_device_endpoints_ptr + 1)->endpoint_id, 
+                (z2s_device_endpoints_ptr + 1)->z2s_device_desc_id,
+                (z2s_device_endpoints_ptr + 2)->endpoint_id, 
+                (z2s_device_endpoints_ptr + 2)->z2s_device_desc_id);
   
               for (uint8_t endpoint_counter = 0; 
-                   endpoint_counter < Z2S_DEVICES_LIST[devices_list_counter].\
-                    z2s_device_endpoints_count; 
+                   endpoint_counter < 
+                    z2s_device_list.z2s_device_endpoints_count; 
                    endpoint_counter++) {
               
                 uint8_t endpoint_idx = endpoint_counter;
 
-                if (Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_flags & 
+                if (z2s_device_list.z2s_device_flags & 
                     Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
                   endpoint_idx = 0;
 
-                if (Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_flags & 
+                if (z2s_device_list.z2s_device_flags & 
                     Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
                   
                   if (endpoint_counter < 
-                        Z2S_DEVICES_LIST[devices_list_counter].\
-                          z2s_device_endpoints_count_m1) 
+                        z2s_device_list.z2s_device_endpoints_count_m1) 
                     endpoint_idx = 0;
                   else
                     endpoint_idx = 1;
                 }
 
                 uint8_t endpoint_id = 
-                  (Z2S_DEVICES_LIST[devices_list_counter].\
-                    z2s_device_endpoints_count == 1) ? 
+                  (z2s_device_list.z2s_device_endpoints_count == 1) ? 
                   1 : (z2s_device_endpoints_ptr + endpoint_idx)->endpoint_id; 
 
                 //mirrored endpoints must be numbered in sequential order 
                 //starting from 1st endpoint id, i.e. 7, 8, 9...
-                if (Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_flags & 
+                if (z2s_device_list.z2s_device_flags & 
                     Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
                   endpoint_id += endpoint_counter; 
 
-                if (Z2S_DEVICES_LIST[devices_list_counter].\
-                      z2s_device_flags & 
+                if (z2s_device_list.z2s_device_flags & 
                     Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
                   
                   if (endpoint_counter < 
-                        Z2S_DEVICES_LIST[devices_list_counter].\
-                          z2s_device_endpoints_count_m1) 
+                        z2s_device_list.z2s_device_endpoints_count_m1) 
                     endpoint_id += endpoint_counter;
                   else
                     endpoint_id += (endpoint_counter - 
-                      Z2S_DEVICES_LIST[devices_list_counter].\
-                        z2s_device_endpoints_count_m1);
+                      z2s_device_list.z2s_device_endpoints_count_m1);
                 }
                                         
                 uint32_t z2s_device_desc_id = 
-                  (Z2S_DEVICES_LIST[devices_list_counter].\
-                    z2s_device_endpoints_count == 1) ?
-                  Z2S_DEVICES_LIST[devices_list_counter].\
-                    z2s_device_desc_id :
+                  (z2s_device_list.z2s_device_endpoints_count == 1) ?
+                  z2s_device_list.z2s_device_desc_id :
                   (z2s_device_endpoints_ptr + endpoint_idx)->z2s_device_desc_id; 
 
                 for (uint32_t devices_desc_counter = 0; 
                      devices_desc_counter < devices_desc_table_number; 
                      devices_desc_counter++) {
 
+                  const auto& z2s_device_desc = Z2S_DEVICES_DESC[
+                    devices_desc_counter];
+
                   if (z2s_device_desc_id == 
-                        Z2S_DEVICES_DESC[devices_desc_counter].\
-                          z2s_device_desc_id) {
-                    log_i("DESC matched 0x%x, %d, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, endpoint 0x%x ",
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id,   
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count,
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[0],
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[1],
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[2],
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[3],
-                          Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters[4],
-                          endpoint_id);
+                        z2s_device_desc.z2s_device_desc_id) {
+
+                    log_i(
+                      "DESC matched 0x%x, %d, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x,"
+                      " endpoint 0x%x ",z2s_device_desc.z2s_device_desc_id,   
+                      z2s_device_desc.z2s_device_clusters_count,
+                      z2s_device_desc.z2s_device_clusters[0],
+                      z2s_device_desc.z2s_device_clusters[1],
+                      z2s_device_desc.z2s_device_clusters[2],
+                      z2s_device_desc.z2s_device_clusters[3],
+                      z2s_device_desc.z2s_device_clusters[4],
+                      endpoint_id);
 
                     device_recognized = true;
 
                     joined_device->endpoint = endpoint_id;
                     joined_device->model_id = 
-                      Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id;
+                      z2s_device_desc.z2s_device_desc_id;
                         
                     if (endpoint_counter == 0) { 
 
-                      if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
+                      if (z2s_device_desc.z2s_device_config_flags & 
                           Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT) {
 
                         log_i("Tuya magic");
@@ -1374,7 +1367,7 @@ if (client2 && client2.connected()) {
                           tuya_init_attributes);  
                       }
 
-                      if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
+                      if (z2s_device_desc.z2s_device_config_flags & 
                           Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_SETUP) {
 
                         log_i("Tuya setup");
@@ -1386,7 +1379,7 @@ if (client2 && client2.connected()) {
                           1, 0, 0); //disable default response, no manufacurer code  
                       }
 
-                      if (Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_config_flags & 
+                      if (z2s_device_desc.z2s_device_config_flags & 
                           Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT) {
 
                         log_i("LUMI magic");
@@ -1450,23 +1443,7 @@ if (client2 && client2.connected()) {
                       case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
 
                         write_mask_16 = 0x000B;
-                            //joined_device->endpoint = 2;
-                            /*if (zbGateway.sendAttributeRead(joined_device, 
-                                                              ESP_ZB_ZCL_CLUSTER_ID_BASIC, 
-                                                              0x0031, 
-                                                              true, 
-                                                              ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
-                                                              1, 
-                                                              1, 
-                                                              PHILIPS_MANUFACTURER_CODE)) {
-
-                              uint16_t philips_0031 = *(uint16_t *)zbGateway.getReadAttrLastResult()->data.value;
-                              log_i("Philips basic cluster attribute 0x0031 has been read id 0x%x, value 0x%x", 
-                                    zbGateway.getReadAttrLastResult()->id, 
-                                    philips_0031);
-                              if (philips_0031 != write_mask_16)
-                              write_mask_16 = 0x0000;
-                            }*/
+                            
                         zbGateway.sendAttributeWrite(
                           joined_device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 0x0031, 
                           ESP_ZB_ZCL_ATTR_TYPE_16BITMAP, 2, &write_mask_16, 
@@ -1475,21 +1452,19 @@ if (client2 && client2.connected()) {
                     }
 
                     for (int clusters_bind_counter = 0; 
-                         clusters_bind_counter < Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_clusters_count; 
+                         clusters_bind_counter < 
+                         z2s_device_desc.z2s_device_clusters_count; 
                          clusters_bind_counter++) {
                       
-                      if (Z2S_DEVICES_DESC[devices_desc_counter].\
-                            z2s_device_config_flags &
+                      if (z2s_device_desc.z2s_device_config_flags &
                           Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_5)
                         zbGateway.bindDeviceCluster(
-                          joined_device, 
-                          Z2S_DEVICES_DESC[devices_desc_counter].\
-                            z2s_device_clusters[clusters_bind_counter], 3);  
+                          joined_device, z2s_device_desc.z2s_device_clusters[
+                            clusters_bind_counter], 3);  
                       
                       zbGateway.bindDeviceCluster(
-                        joined_device, 
-                        Z2S_DEVICES_DESC[devices_desc_counter].\
-                          z2s_device_clusters[clusters_bind_counter]);
+                        joined_device, z2s_device_desc.z2s_device_clusters[
+                          clusters_bind_counter]);
                     }
 
                     if (endpoint_counter == 0) {//(endpoint_id == 1)
@@ -1504,8 +1479,8 @@ if (client2 && client2.connected()) {
                         joined_device->ieee_addr,joined_device->short_addr,
                         zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
                         zbGateway.getQueryBasicClusterData()->zcl_model_name,
-                        Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count,
-                        Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id,
+                        z2s_device_list.z2s_device_endpoints_count,
+                        z2s_device_list.z2s_device_desc_id,
                         zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
 
                       if (zb_device_slot < 0xFF) {
@@ -1532,48 +1507,39 @@ if (client2 && client2.connected()) {
                         reporting_sets_desc_table_number; 
                       reporting_sets_table_counter++) {
 
-                    if (Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_reporting_set_id == 
+                    const auto& reporting_set = Z2S_REPORTING_SETS_DESC[
+                        reporting_sets_table_counter];
+
+                    if (reporting_set.z2s_reporting_set_id == 
                         (z2s_device_endpoints_ptr + 
                           endpoint_idx)->z2s_reporting_set_id) {
 
                       log_i(
                         "reporting set matched #%u", 
                         reporting_sets_table_counter);
-
+                      
                       zbGateway.setClusterReportingExt(
-                        joined_device, 
-                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_cluster_id,
-                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_attribute_id,
-                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_attribute_type,
-                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_min_interval_value,
-                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_max_interval_value,
-                        (void *)
-                        &Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_delta_value,
-                        false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1,
-                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_manufacturer_code > 0 ? 1 : 0,
-                        Z2S_REPORTING_SETS_DESC[reporting_sets_table_counter].\
-                          z2s_manufacturer_code);
+                        joined_device, reporting_set.z2s_cluster_id,
+                        reporting_set.z2s_attribute_id,
+                        reporting_set.z2s_attribute_type,
+                        reporting_set.z2s_min_interval_value,
+                        reporting_set.z2s_max_interval_value,
+                        (void *)&reporting_set.z2s_delta_value, false, 
+                        ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1,
+                        reporting_set.z2s_manufacturer_code > 0 ? 1 : 0,
+                        reporting_set.z2s_manufacturer_code);
                     }
                   }
                 } 
               } //endpoint counter
               //here we can configure reporting and restart ESP32
 
-              if (hasTuyaCustomCluster(
-                    Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id))
+              if (hasTuyaCustomCluster(z2s_device_list.z2s_device_desc_id))
                 zbGateway.sendCustomClusterCmd(
                   joined_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
                   ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr);
 
-              switch (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_desc_id) { //(joined_device->model_id) {
+              switch (z2s_device_list.z2s_device_desc_id) { 
 
                 case 0x0000: break;     
 
@@ -1740,18 +1706,7 @@ if (client2 && client2.connected()) {
                     joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                     0x8002, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); 
                     //Tuya special
-
-                  for(int n = 0; 
-                      n < Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count; 
-                      n++) {
-
-                    /*joined_device->endpoint = 
-                      ( Z2S_DEVICES_LIST[devices_list_counter].z2s_device_endpoints_count == 1) ? 
-                        1 : z2s_device_endpoints_ptr + n)->endpoint_id;*/
-
-                      //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD010, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask); 
-                      //zbGateway.sendAttributeWrite(joined_device, 0xE001, 0xD030, ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM, 1, &write_mask);
-                  }
+                  
                   zbGateway.setClusterReporting(
                     joined_device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
                     ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
@@ -1958,10 +1913,6 @@ if (client2 && client2.connected()) {
               }
               break;
             }   
-            /*else log_i("LIST checking %s::%s, entry # %d",
-                          Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name, 
-                          Z2S_DEVICES_LIST[devices_list_counter].model_name, 
-                          devices_list_counter);*/
           }
       if (!device_recognized) {
         log_d(

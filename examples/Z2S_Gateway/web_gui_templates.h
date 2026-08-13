@@ -155,6 +155,9 @@ static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 	{ .zigbee_cluster_name = "ON/OFF",									
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF },
 
+	{ .zigbee_cluster_name = "ON/OFF SWITCH CONFIG",									
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG },
+
 	{ .zigbee_cluster_name = "LEVEL CONTROL",						
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL },
 
@@ -240,7 +243,10 @@ static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER },
 	
 	{ .zigbee_cluster_name = "LUMI (0xFCC0)",						
-		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER }
+		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER },
+
+	{ .zigbee_cluster_name = "SLACKY DIY (0xFF65)",						
+		.zigbee_cluster_id = SLACKY_DIY_CUSTOM_CLUSTER }
 };
 
 static constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
@@ -315,7 +321,11 @@ static constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM =
 
 	 { .zigbee_datatype_name = "SET",			
 	   .zigbee_datatype_size = 0x00,	
-		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET }
+		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET },
+
+		{ .zigbee_datatype_name = "UTC TIME",			
+	   .zigbee_datatype_size = 0x04,	
+		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_UTC_TIME }
 	};
 
 static constexpr Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM = 
@@ -369,7 +379,10 @@ static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM 
 	 	.manufacturer_name = "DANFOSS" },
 
   { .manufacturer_code = SHELLY_MANUFACTURER_CODE,										
-	.manufacturer_name = "SHELLY" }
+		.manufacturer_name = "SHELLY" },
+
+	{ .manufacturer_code = SLACKY_DIY_MANUFACTURER_CODE,										
+		.manufacturer_name = "SLACKY DIY" }
 	};
 
 static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
@@ -737,7 +750,20 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_NULL,
 		.zigbee_attribute_name = "TOGGLE (CMD)"
 	},
+	//ON/OFF SWITCH CONFIG
 
+	{
+		.zigbee_attribute_id  = 0x0000, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "SWITCH TYPE"
+	},
+	{
+		.zigbee_attribute_id  = 0x0010, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "SWITCH ACTIONS"
+	},
 
   //LEVEL CONTROL
 	{
@@ -753,7 +779,13 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_name = "MOVE TO LEVEL (CMD)"
 	},
 
-
+	//TIME
+	{
+		.zigbee_attribute_id  = ESP_ZB_ZCL_ATTR_TIME_TIME_ID, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TIME, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_UTC_TIME,
+		.zigbee_attribute_name = "TIME"
+	},
   //POLL CONTROL
 	{
 		.zigbee_attribute_id  = 0x0000, 
@@ -1491,7 +1523,12 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 	{ .zigbee_attribute_id  = LUMI_CUSTOM_CURTAIN_CALIBRATION_CMD_ID, 
 		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
-		.zigbee_attribute_name = "CURTAIN CALIBRATION CMD" }
+		.zigbee_attribute_name = "CURTAIN CALIBRATION CMD" },
+
+	{ .zigbee_attribute_id  = SLACKY_DIY_CUSTOM_CLUSTER_TX_POWER_ID, 
+		.zigbee_attribute_cluster_id = SLACKY_DIY_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+		.zigbee_attribute_name = "TX POWER (MANUFACTURER CODE)" }
 		
 };
 	 
@@ -1569,6 +1606,42 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
 		.zigbee_attribute_value_name = "ON",
 		.zigbee_attribute_value = 1
+	},
+	{
+		.zigbee_attribute_id = 0x0000,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG,
+		.zigbee_attribute_value_name = "TOGGLE",
+		.zigbee_attribute_value = 0
+	},
+	{
+		.zigbee_attribute_id = 0x0000,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG,
+		.zigbee_attribute_value_name = "MOMENTARY",
+		.zigbee_attribute_value = 1
+	},
+	{
+		.zigbee_attribute_id = 0x0000,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG,
+		.zigbee_attribute_value_name = "MULTIFUNCTION",
+		.zigbee_attribute_value = 2
+	},
+	{
+		.zigbee_attribute_id = 0x0010,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG,
+		.zigbee_attribute_value_name = "ON -> OFF",
+		.zigbee_attribute_value = 0
+	},
+	{
+		.zigbee_attribute_id = 0x0010,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG,
+		.zigbee_attribute_value_name = "OFF -> ON",
+		.zigbee_attribute_value = 1
+	},
+	{
+		.zigbee_attribute_id = 0x0010,
+		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF_SWITCH_CONFIG,
+		.zigbee_attribute_value_name = "TOGGLE",
+		.zigbee_attribute_value = 2
 	},
 	{
 		.zigbee_attribute_id = 0xF001,
@@ -1879,6 +1952,24 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,
 		.zigbee_attribute_value_name = "RESET",
 		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = SLACKY_DIY_CUSTOM_CLUSTER_TX_POWER_ID,
+		.zigbee_cluster_id = SLACKY_DIY_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "0 dBm",
+		.zigbee_attribute_value = 0x00
+	},
+	{
+		.zigbee_attribute_id = SLACKY_DIY_CUSTOM_CLUSTER_TX_POWER_ID,
+		.zigbee_cluster_id = SLACKY_DIY_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "5 dBm",
+		.zigbee_attribute_value = 0x01
+	},
+	{
+		.zigbee_attribute_id = SLACKY_DIY_CUSTOM_CLUSTER_TX_POWER_ID,
+		.zigbee_cluster_id = SLACKY_DIY_CUSTOM_CLUSTER,
+		.zigbee_attribute_value_name = "10 dBm",
+		.zigbee_attribute_value = 0x02
 	}
 };
 
