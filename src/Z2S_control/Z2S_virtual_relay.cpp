@@ -588,6 +588,23 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
   }
 }
 
+void Supla::Control::Z2S_VirtualRelay::iterateConnected() {
+
+  Supla::Control::Relay::iterateConnected();
+
+  if (_timer_ms > 0) {
+
+    int32_t senderId = 0;
+
+    for (auto proto = Supla::Protocol::ProtocolLayer::first();
+         proto != nullptr; proto = proto->next()) {
+      proto->sendRemainingTimeValue(
+        getChannelNumber(), _timer_ms, state, senderId);
+    }
+  }
+}
+
+
 void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
 
   Supla::Control::Relay::iterateAlways();

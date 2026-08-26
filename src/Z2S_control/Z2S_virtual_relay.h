@@ -85,6 +85,20 @@ public:
   void turnOn(_supla_int_t duration = 0) override;
   void turnOff(_supla_int_t duration = 0) override;
   void iterateAlways() override;
+  void iterateConnected() override;
+
+  void startTimer(uint32_t timer_ms) {
+
+    _timer_ms = timer_ms;
+  }
+  void stopTimer() {
+
+    _timer_ms = 0;
+  }
+  void updateTimer(uint32_t timer_ms) {
+
+    _timer_ms = timer_ms;
+  }
 
   void handleAction(int event, int action) override;
 
@@ -131,6 +145,8 @@ public:
 
   //bool _keep_alive_enabled = true;
   //bool _timeout_enabled    = true;
+
+  uint32_t _timer_ms = 0;
 
   uint32_t _keep_alive_ms = 0;
   uint32_t _timeout_ms    = 0;
