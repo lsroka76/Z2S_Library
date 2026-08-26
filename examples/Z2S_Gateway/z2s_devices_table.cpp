@@ -5390,6 +5390,40 @@ void Z2S_onSonoffCustomClusterReceive(
         element_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
         __builtin_bswap32(sonoff_smart_valve_cycle_data.cycle_pause));
     } break;
+
+
+    case SONOFF_CUSTOM_CLUSTER_IRRIGATION_SCHEDULE_STATUS_ID: {
+
+      sonoff_duo_irrigation_status_data_t *status_data = 
+        (sonoff_duo_irrigation_status_data_t *)(attribute->data.value);
+      
+      if (status_data) {
+
+        Supla::Element* element_1 = Z2S_findZ2SElement(
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+        SONOFF_SMART_VALVE_RUN_PROGRAM_SID);
+
+        //constexpr char *irrigation_status
+        log_i(
+          "Irrigation Status Report received:\n\rStatus %u<>Type %u<>Mode %u"
+          "\n\rExpected Duration %lu\n\r", status_data->schedule_status,
+          status_data->schedule_type, status_data->schedule_mode,
+          __builtin_bswap32(status_data->expected_end_time) - 
+          __builtin_bswap32(status_data->expected_start_time));
+
+        switch (status_data->schedule_status) {
+
+
+          case 0x02:
+
+            msgZ2SDeviceVirtualRelayValue(
+              element_1, VRV_TIMER_ID, __builtin_bswap32(
+                status_data->actual_end_time) - __builtin_bswap32(
+              status_data->expected_start_time));
+          break;
+        }
+      }      
+    } break;
   }
 }
 

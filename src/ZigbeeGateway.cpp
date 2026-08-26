@@ -1404,17 +1404,6 @@ void ZigbeeGateway::zbAttributeReporting(
   
   uint16_t short_addr = src_address.u.short_addr;
   log_i("short address 0x%04X", short_addr);
-  //esp_zb_ieee_address_by_short(short_addr, src_address.u.ieee_addr);
-  //log_i(
-    //"short address after esp_zb_ieee_address_by_short 0x%04X", short_addr);
-
-  //esp_zb_ieee_addr_t ieee_addr_test = {};
-  //esp_zb_ieee_address_by_short(short_addr, ieee_addr_test);
-  //for (uint8_t i = 0; i < 8; i++)
-  //log_i("ieee_addr[%u] = %02X", i, ieee_addr_test[7-i]);
-
-  //if (_on_update_device_last_rssi)
-  //  _on_update_device_last_rssi(short_addr, 0);
 
   zbProcessAttributeReporting(
     src_address, src_endpoint, cluster_id, attribute);
@@ -3429,27 +3418,45 @@ bool ZigbeeGateway::zbRawCmdHandler(
     if (_on_update_device_last_rssi)
       _on_update_device_last_rssi(source.u.short_addr, rssi);
     
-    if ((cluster_id == SONOFF_CUSTOM_CLUSTER) && (cmd_id == 1)) {
+    if ((cluster_id == SONOFF_CUSTOM_CLUSTER) && ((cmd_id == 0x01) || 
+          (cmd_id == 0x0A))) {
         
       uint16_t attribute_id = (*buffer) + ((*(buffer + 1)) << 8);
       
       if ((attribute_id == 0x501D) || (attribute_id == 0x501F)) {
 
-        log_i("Sonoff broken array attribute reporting detected - fixing!");
+        log_i(
+          "Sonoff broken array attribute reporting/read response detected -"
+          " fixing!");
+        if (cmd_id == 0x01) {
 
-        esp_zb_zcl_status_t esp_status = (esp_zb_zcl_status_t)(*(buffer + 2));
+          esp_zb_zcl_status_t esp_status = (esp_zb_zcl_status_t)
+            (*(buffer + 2));
 
-        esp_zb_zcl_attribute_t attribute = {};
+          esp_zb_zcl_attribute_t attribute = {};
 
-        attribute.id = attribute_id;
-        attribute.data.type = (esp_zb_zcl_attr_type_t)(*(buffer + 3));
-        attribute.data.size = buffer_size - 4;
-        attribute.data.value = (buffer + 4); 
+          attribute.id = attribute_id;
+          attribute.data.type = (esp_zb_zcl_attr_type_t)(*(buffer + 3));
+          attribute.data.size = buffer_size - 4;
+          attribute.data.value = (buffer + 4); 
 
-        zbReadAttrResponse(
-          seq_number, rssi, source, src_endpoint, cluster_id, esp_status, 
-          (const esp_zb_zcl_attribute_t*)&attribute);
+          zbReadAttrResponse(
+            seq_number, rssi, source, src_endpoint, cluster_id, esp_status, 
+            (const esp_zb_zcl_attribute_t*)&attribute);
+        }
+        if (cmd_id == 0x0A) {
 
+          esp_zb_zcl_attribute_t attribute = {};
+
+          attribute.id = attribute_id;
+          attribute.data.type = (esp_zb_zcl_attr_type_t)(*(buffer + 2));
+          attribute.data.size = buffer_size - 3;
+          attribute.data.value = (buffer + 3); 
+
+          zbProcessAttributeReporting(
+            source, src_endpoint, cluster_id, 
+            (const esp_zb_zcl_attribute_t*)&attribute);
+        }
         if (!disable_default_response) {
 
           uint8_t payload_data[2];

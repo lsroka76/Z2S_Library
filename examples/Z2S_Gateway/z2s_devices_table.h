@@ -213,6 +213,31 @@ typedef struct sonoff_smart_valve_cycle_data_s {
   uint32_t cycle_pause;
 } ESP_ZB_PACKED_STRUCT sonoff_smart_valve_cycle_data_t;
 
+typedef struct sonoff_duo_irrigation_status_data_s {
+
+  uint8_t data_type; //0x20 U8
+  uint16_t data_size; //0x0F (start, standby), 0x15 (running, end)
+  uint8_t schedule_status; //0x00 start, 0x01 end, 0x02 running, 0x03 standby
+  uint8_t schedule_index;
+  uint8_t schedule_type; //0x00 automatic, 0x01 manual
+  uint8_t schedule_mode; //0x00 duration, 0x01 volume, 0x02 duration/interval
+  uint32_t expected_start_time;
+  uint32_t expected_end_time;
+union {
+  struct {
+    uint8_t volume_unit;
+    uint16_t expected_volume;
+  };
+  struct {
+    uint32_t actual_end_time;
+    uint8_t volume_unit_2;
+    uint16_t expected_volume_2;
+    uint16_t actual_volume;
+  };
+};
+} ESP_ZB_PACKED_STRUCT sonoff_duo_irrigation_status_data_t;
+
+
 extern z2s_device_params_t z2s_channels_table[Z2S_CHANNELS_MAX_NUMBER];
 
 const static char Z2S_CHANNELS_TABLE_ID[] PROGMEM = "Z2S_devs_table";

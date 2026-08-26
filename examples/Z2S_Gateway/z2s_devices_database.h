@@ -7112,13 +7112,22 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "Adeo", .model_name = "ZBEK-2",
     .z2s_device_uid = 37000,
-    .z2s_device_desc_id = //Z2S_DEVICE_DESC_IKEA_WW_BULB,
-                          Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "", .model_name = "ZBEK-2",
     .z2s_device_uid = 37005,
-    .z2s_device_desc_id = //Z2S_DEVICE_DESC_IKEA_WW_BULB, 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Adeo", .model_name = "ZBEK-3",
+    .z2s_device_uid = 37010,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
+  
+  { .manufacturer_name = "Adeo", .model_name = "ZBEK-4",
+    .z2s_device_uid = 37015,
+    .z2s_device_desc_id = //Z2S_DEVICE_DESC_IKEA_WW_BULB,
                           Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
     .z2s_device_endpoints_count = 1},
 

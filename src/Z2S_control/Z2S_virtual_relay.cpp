@@ -601,6 +601,7 @@ bool Supla::Control::Z2S_VirtualRelay::iterateConnected() {
       proto->sendRemainingTimeValue(
         getChannelNumber(), _timer_ms, state, senderId);
     }
+    _timer_ms = 0;
   }
 
   return Supla::Control::Relay::iterateConnected();

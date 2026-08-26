@@ -571,6 +571,12 @@ void msgZ2SDeviceVirtualRelayValue(
     break;
 
 
+    case VRV_TIMER_ID:
+
+      Supla_Z2S_VirtualRelay->updateTimer(value);
+    break;
+
+
     default:
       
       log_e("error: invalid VRV_ID"); 

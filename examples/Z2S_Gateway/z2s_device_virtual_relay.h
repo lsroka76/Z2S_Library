@@ -16,6 +16,8 @@
 #define VRV_U32_ID                              0x03
 #define VRV_S32_ID                              0x04
 
+#define VRV_TIMER_ID                            0x10
+
 /*****************************************************************************/
 
 static const char *default_relay_name = "Relay";
@@ -42,6 +44,7 @@ void addZ2SDeviceVirtualRelay(
 /*****************************************************************************/
 
 void msgZ2SDeviceVirtualRelay(Supla::Element* element, bool state);
+
 
 /*****************************************************************************/
 
