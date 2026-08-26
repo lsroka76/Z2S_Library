@@ -172,28 +172,14 @@ void addZ2SDeviceGeneralPurposeMeasurement(
 
 /*****************************************************************************/
 
-/*void msgZ2SDeviceGeneralPurposeMeasurement(
-  int16_t channel_number_slot, uint8_t function, double value) {
-
-  if (channel_number_slot < 0) {
-    
-    log_e("error: invalid channel number slot");
-    return;
-  }
-
-  log_i(
-    "channel(%u), value: %f", 
-    z2s_channels_table[channel_number_slot].Supla_channel, value);
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-  
-  msgZ2SDeviceGeneralPurposeMeasurement(element, function, value);
-}*/
-/*****************************************************************************/
-
 void msgZ2SDeviceGeneralPurposeMeasurement(
   Supla::Element * element, uint8_t function, double value) {
+  
+  if (!element) {
+
+    log_e("missing Supla::Element object!");
+    return;
+  }
 
   auto Supla_Z2S_GeneralPurposeMeasurement = static_cast<
     Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
@@ -248,34 +234,6 @@ void msgZ2SDeviceGeneralPurposeMeasurement(
     break;
   }  
 }  
-
-
-/*****************************************************************************/
-
-/*void msgZ2SDeviceGeneralPurposeMeasurementDisplay(
-  int16_t channel_number_slot, uint8_t first_digit, uint8_t last_digit, 
-  uint64_t digits_to_insert) {
-
-  if (channel_number_slot < 0) {
-    
-    log_e("error: invalid channel number slot");
-    return;
-  }
-  
-  if ((first_digit > 10) || ((last_digit)> 10))  {
-    
-    log_e(
-      "error: invalid first digit position (%u) and/or last digit position (%u)", 
-          first_digit, last_digit);
-    return;
-  }
-  
-  auto element = Supla::Element::getElementByChannelNumber(
-      z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceGeneralPurposeMeasurementDisplay(
-    element, first_digit, last_digit, digits_to_insert); 
-}*/
 
 /*****************************************************************************/
 

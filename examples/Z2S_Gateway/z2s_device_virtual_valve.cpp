@@ -72,22 +72,6 @@ void addZ2SDeviceVirtualValve(
 
 /*****************************************************************************/
 
-/*void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state) {
-
-  if (channel_number_slot < 0) {
-    
-    log_e("Invalid channel number slot!");
-    return;
-  }
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-  
-  msgZ2SDeviceVirtualValve(element, state);
-}*/
-
-/*****************************************************************************/
-
 void msgZ2SDeviceVirtualValve(Supla::Element* element, bool state) {
     
   auto Supla_Z2S_VirtualValve = static_cast<

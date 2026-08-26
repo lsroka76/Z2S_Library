@@ -24,10 +24,6 @@ void addZ2SDeviceVirtualValve(
 
 /*****************************************************************************/
 
-//void msgZ2SDeviceVirtualValve(int16_t channel_number_slot, bool state);
-
-/*****************************************************************************/
-
 void msgZ2SDeviceVirtualValve(Supla::Element* element, bool state);
 
 /*****************************************************************************/

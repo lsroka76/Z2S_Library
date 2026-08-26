@@ -184,7 +184,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
         if (sendTurnOnOffCmd == 1) {
 
-          _state = DIMMER_STATE_OFF;
+          //_state = DIMMER_STATE_OFF;
           zbGateway.sendOnOffCmd(_short_addr, _endpoint, false);
 
           /*zbGateway.sendAttributeRead(
@@ -197,7 +197,7 @@ void Supla::Control::Z2S_DimmerInterface::sendValueToDimmer(
 
         if (sendTurnOnOffCmd == 2) {
 
-          _state = DIMMER_STATE_ON;
+          //_state = DIMMER_STATE_ON;
           zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
           
           /*zbGateway.sendAttributeRead(
@@ -573,9 +573,10 @@ void Supla::Control::Z2S_DimmerInterface::syncDevice() {
 
     if (_deviceWhiteTemperature == 0xFFFF) {
 
-      if (_brightness == 0)
-	    sync_counter++;
-	  else
+      if ((_brightness == 0) || 
+          (channel.getDefaultFunction() == SUPLA_CHANNELFNC_DIMMER))
+	      sync_counter++;
+	    else
         sendValueToCCT(_whiteTemperature);
     }
     else
@@ -634,8 +635,9 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
 
     _lastMsgReceivedMs = 0;
     if (channel.getDefaultFunction() == SUPLA_CHANNELFNC_DIMMER_CCT) {
+
       log_i("SUPLA_CHANNELFNC_DIMMER_CCT");
-      //channel.setNewValue(0, 0, 0, 0, _brightness, _whiteTemperature);
+      
       if ((sendTurnOnOffCmd == 0) && (_brightness == 0))
       ;//skip
       else
@@ -654,7 +656,9 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
     }
     else {
       //channel.setNewValue(0, 0, 0, 0, _brightness, 0);
+      
       log_i("SUPLA_CHANNELFNC_DIMMER");
+      
       sendValueToDimmer(_brightness);
       sendValueToCCT(_brightness);
     }

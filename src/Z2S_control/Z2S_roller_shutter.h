@@ -70,12 +70,6 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
   void rsStop();
   void rsMoveToLiftPercentage(uint8_t lift_percentage);
 
-  //ZigbeeGateway *_gateway = nullptr;
-  //zbg_device_params_t 	_device;
-
-  //z2s_zb_device_params_t *_z2s_zb_device = nullptr;
-  //z2s_device_params_t *_z2s_channel = nullptr;
-
   bool state = false;
   
   uint8_t _z2s_function = 

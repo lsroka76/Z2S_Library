@@ -25,24 +25,13 @@
 #include <supla/time.h>
 
 Supla::Control::Z2S_RemoteRelay::Z2S_RemoteRelay(
-  NetworkClient *remote_gateway, uint8_t remote_Supla_channel) :
-    Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER), 
-    //_remote_gateway(remote_gateway), 
-    _remote_Supla_channel(remote_Supla_channel) {
-
+  NetworkClient *remote_gateway, uint8_t remote_Supla_channel) 
+  : Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER), 
+    Z2S_Core(this), _remote_Supla_channel(remote_Supla_channel) {
 }
 
 void Supla::Control::Z2S_RemoteRelay::onInit() {
   
-  /*uint32_t duration = durationMs;
-  if (stateOnInit == STATE_ON_INIT_ON ||
-      stateOnInit == STATE_ON_INIT_RESTORED_ON) {
-    turnOn(duration);
-  } else {
-    turnOff(duration);
-  }*/
-  //if (_timeout_enabled)
-  //channel.setStateOffline();
   initDone = true;
 }
 
@@ -57,7 +46,6 @@ bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
       else
         return false;
 
-      //if(_remote_gateway_ip == INADDR_NONE)
       if(_remote_gateway_ip == 0)
         return false;
     }

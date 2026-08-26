@@ -295,6 +295,7 @@
 #define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1               0x4851
 
 #define Z2S_DEVICE_DESC_SONOFF_SMART_VALVE                  0x4900
+#define Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE             0x4905
 #define Z2S_DEVICE_DESC_GIEX_SMART_VALVE                    0x4910
 #define Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE               0x4920
 
@@ -399,6 +400,7 @@
 
 #define Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION         0x7200
 #define Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR              0x7300
+#define Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR          0x7310
 
 #define Z2S_DEVICE_DESC_ON_OFF                              0x8000
 #define Z2S_DEVICE_DESC_ON_OFF_1                            0x8001
@@ -791,6 +793,12 @@
 #define SLACKY_DIY_REPEATER_UPTIME_SID                      0x00
 #define SLACKY_DIY_REPEATER_VOLTAGE_SID                     0x01
 
+#define TUYA_WATER_QUALITY_MONITOR_PROBE_TEMPERATURE_SID    0x00
+#define TUYA_WATER_QUALITY_MONITOR_TH_SID                   0x01
+#define TUYA_WATER_QUALITY_MONITOR_TDS_SID                  0X02
+#define TUYA_WATER_QUALITY_MONITOR_SALINITY_SID             0x03
+#define TUYA_WATER_QUALITY_MONITOR_EC_SID                   0x04
+#define TUYA_WATER_QUALITY_MONITOR_SG_SID                   0x05
 
 [[maybe_unused]]
 static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
@@ -1773,16 +1781,14 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2,
-    .z2s_device_clusters_count = 2,
+    .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { IKEA_PRIVATE_CLUSTER_2,
-                             IKEA_PRIVATE_CLUSTER_2 }},
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3,
-    .z2s_device_clusters_count = 2,
+    .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { IKEA_PRIVATE_CLUSTER_2,
-                             IKEA_PRIVATE_CLUSTER }},
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1,
     .z2s_device_clusters_count = 2,
@@ -2708,12 +2714,19 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_VALVE,
-    .z2s_device_clusters_count = 3,
+    .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT }},
+    .z2s_device_clusters = 
+      { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+        ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+        ESP_ZB_ZCL_CLUSTER_ID_FLOW_MEASUREMENT }},
 
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = 
+      { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL}},
+  
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_GIEX_SMART_VALVE,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
@@ -2827,6 +2840,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY |
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }}
 };
 
 static const z2s_device_endpoint_t test_ep[] PROGMEM = {
@@ -3962,6 +3980,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "Wing", .model_name = "TS0203",
+    .z2s_device_uid = 9010,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-222Z",
     .z2s_device_uid = 9100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
@@ -4265,6 +4288,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "S26R2ZB",
     .z2s_device_uid = 10700,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "GLEDOPTO", .model_name = "GL-C-210P",
+    .z2s_device_uid = 10750,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
 	  .z2s_device_endpoints_count = 1},
 
@@ -4913,9 +4941,10 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 15600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1,
 	  .z2s_device_endpoints_count = 3,
-    .z2s_device_endpoints =  {{ 1, 0, 0, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1 },
-                              { 2, 0, 0, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2 },
-                              { 3, 0, 0, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3 }}},
+    .z2s_device_endpoints =  {
+      { 1, 0, 0, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1 },
+      { 2, 0, 0, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2 },
+      { 3, 0, 0, Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3 }}},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "SYMFONISK Sound Controller",
     .z2s_device_uid = 15700,
@@ -7070,11 +7099,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "SWV-ZF2",
     .z2s_device_uid = 36800,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { 
-      { 1, 0, 0, Z2S_DEVICE_DESC_RELAY},
-      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY }}},
+      { 1, 0, 0, Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE},
+      { 2, 0, 0, Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE }}},
 
   { .manufacturer_name = "Adeo", .model_name = "ZBEK-14",
     .z2s_device_uid = 36900,
@@ -7083,12 +7112,19 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "Adeo", .model_name = "ZBEK-2",
     .z2s_device_uid = 37000,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_desc_id = //Z2S_DEVICE_DESC_IKEA_WW_BULB,
+                          Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
     .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "", .model_name = "ZBEK-2",
     .z2s_device_uid = 37005,
-    .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_desc_id = //Z2S_DEVICE_DESC_IKEA_WW_BULB, 
+                          Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "DTS1XM9", .model_name = "Excellux",
+    .z2s_device_uid = 37100,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR,
     .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };

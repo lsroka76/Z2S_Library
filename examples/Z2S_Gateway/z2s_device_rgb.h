@@ -21,10 +21,6 @@ void addZ2SDeviceRGB(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
   const char *name = nullptr, uint32_t func = 0);
 
-/*****************************************************************************/
-
-void msgZ2SDeviceRGB(
-  int16_t channel_number_slot, uint8_t hue, uint8_t saturation, bool state);
 
 /*****************************************************************************/
 

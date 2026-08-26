@@ -69,28 +69,6 @@ Supla::Sensor::Z2S_VirtualPressure* getZ2SDevicePressurePtr(uint8_t Supla_channe
 
 /*****************************************************************************/
 
-/*void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure) {
-
-  if (channel_number_slot < 0) {
-    
-    log_e("msgZ2SDevicePressure - invalid channel number slot");
-    return;
-  }
-
-  Z2S_updateZbDeviceLastSeenMsById(
-    z2s_channels_table[channel_number_slot].Zb_device_id);
-
-  auto Supla_Z2S_VirtualPressure = getZ2SDevicePressurePtr(
-      z2s_channels_table[channel_number_slot].Supla_channel);
-  
-  if (Supla_Z2S_VirtualPressure) {
-    
-    Supla_Z2S_VirtualPressure->setPressure(pressure);
-  }
-}*/
-
-/*****************************************************************************/
-
 void msgZ2SDevicePressure(Supla::Element *element, double pressure) {
 
   auto Supla_Z2S_VirtualPressure = static_cast<

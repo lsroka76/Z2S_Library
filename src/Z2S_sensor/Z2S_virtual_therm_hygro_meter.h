@@ -153,15 +153,6 @@ public:
 
     uint8_t temperature_selector = 1;
 
-    /*zbg_device_params_t device = {};
-
-    device.endpoint = 0x01;
-    device.cluster_id = SONOFF_CUSTOM_CLUSTER;
-    memcpy(
-      device.ieee_addr, _z2s_channel->ieee_addr, sizeof(esp_zb_ieee_addr_t));
-    device.short_addr = _z2s_channel->short_addr;
-    device.model_id = _z2s_channel->model_id;*/
-
     zbGateway.sendAttributeWrite(
       _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
       SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 

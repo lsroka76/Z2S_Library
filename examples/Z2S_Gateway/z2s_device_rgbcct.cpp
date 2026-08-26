@@ -179,17 +179,6 @@ void addZ2SDeviceRGBCCT(
 
 /*****************************************************************************/
 
-/*void msgZ2SDeviceRGBCCT(int16_t channel_number_slot, RGBCCTMessage rgbcct_msg,
-  uint32_t value) {
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-  
-  msgZ2SDeviceRGBCCT(element, rgbcct_msg, value);
-}*/
-
-/*****************************************************************************/
-
 void msgZ2SDeviceRGBCCT(
   Supla::Element* element, RGBCCTMessage rgbcct_msg, uint32_t value) {
 

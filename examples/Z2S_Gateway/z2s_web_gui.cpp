@@ -715,50 +715,6 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len = 512);
 
 /*****************************************************************************/
 
-/*uint32_t getNextDynamicOptionId() {
-
-	return _dynamic_option_id++;
-}*/
-
-size_t mbstrnlen(const char *mb_str, size_t max_bytes) {
-
-	if (mb_str == nullptr)
-		return 0;
-
-	size_t mb_counter = 0;
-	size_t str_counter = 0;
-	while (*(mb_str + str_counter) != '\0') {
-
-		uint8_t next_char = *(mb_str + str_counter);
-		if (next_char <= 0x7F)
-			str_counter++;
-		else 
-		if ((next_char >= 0xC0) && (next_char <= 0xDF))
-			str_counter += 2;
-		else 
-		if ((next_char >= 0xE0) && (next_char <= 0xEF))
-			str_counter += 3;
-		else 
-		if ((next_char >= 0xF0) && (next_char <= 0xF7)) 
-			str_counter += 4;
-	else 
-		if ((next_char >= 0xF8) && (next_char <= 0xFB))
-			str_counter += 5;
-	else 
-		if ((next_char >= 0xFC) && (next_char <= 0xFD)) 
-			str_counter += 6;
-	else 
-		if ((next_char >= 0xFE) && (next_char <= 0xFF)) 
-			return 0;
-
-	if (str_counter > max_bytes)
-		return mb_counter; 
-	else
-		mb_counter = str_counter;
-	}
-	return mb_counter;
-}
-
 uint16_t getMaxClusterAttributesNumber() {
 
 	uint16_t prev_cluster = 0xFFFF;
@@ -1900,19 +1856,9 @@ void rebuildChannelsSelector(
 
 	if (rebuild_channels_list) {
 
-		/*if (channel_selector_first_option_id < 0xFFFF) {
-
-			for (uint8_t options_id_counter = channel_selector_first_option_id; 
-					 options_id_counter <= channel_selector_last_option_id; 
-					 options_id_counter++) {
-
-    		if (options_id_counter < 0xFFFF) {
-      		ESPUI.removeControl(options_id_counter, false);
-			}
-		}
-	}*/
 		ESPUI.updateControlValue(channel_selector, -1); 
-	} else {
+	} 
+	else {
 
 		channel_selector = ESPUI.addControl(
 			Control::Type::Select, PSTR("Channels"), (long int)-1, 
@@ -1927,34 +1873,11 @@ void rebuildChannelsSelector(
 		ESPUI.setPanelWide(channel_selector, true);
 	}
 
-	
-	uint16_t current_option_id = 0xFFFF;
-
 	channel_selector_first_option_id 	= 0xFFFF;
-
-	/*for (uint8_t channels_counter = 0; 
-			 channels_counter < Z2S_CHANNELS_MAX_NUMBER; 
-			 channels_counter++) {
-
-    if (z2s_channels_table[channels_counter].valid_record) {
-      
-			z2s_channels_table[channels_counter].gui_control_id  = 
-			current_option_id = ESPUI.addControl(
-				Control::Type::Option, 
-				z2s_channels_table[channels_counter].Supla_channel_name, 
-				channels_counter, Control::Color::None, channel_selector);
-
-			if (channel_selector_first_option_id == 0xFFFF)
-				channel_selector_first_option_id = current_option_id;
-			
-			
-			z2s_channels_table[channels_counter].gui_control_id = 
-				current_option_id; //for channel name update
-		}
-	}*/
 	
 	if (rebuild_channels_list)
-		channelSelectorCallback(ESPUI.getControl(channel_selector), SL_VALUE, nullptr);
+		channelSelectorCallback(
+			ESPUI.getControl(channel_selector), SL_VALUE, nullptr);
 }
 
 /*****************************************************************************/
@@ -2017,18 +1940,20 @@ void buildSwitchBotTabGUI() {
 		
 	ESPUI.setPanelWide(sb_channel_selector, true);
 
-	for (uint8_t channels_counter = 0; 
-		channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+	auto core_it = Z2S_Cores.begin();
 
-  if ((z2s_channels_table[channels_counter].valid_record) &&
-			(z2s_channels_table[channels_counter].local_channel_type == 
-				LOCAL_CHANNEL_TYPE_SWITCHBOT)) {
-      
-		 ESPUI.addControl(
-				Control::Type::Option, 
-				z2s_channels_table[channels_counter].Supla_channel_name, 
-				channels_counter, Control::Color::None, sb_channel_selector);
+	while (core_it != Z2S_Cores.end()) {
+
+    Z2S_Core* z2s_core = *core_it;
+
+		if (z2s_core->getZ2SLocalChannelType() == LOCAL_CHANNEL_TYPE_SWITCHBOT) {
+		
+			ESPUI.addControl(
+				Control::Type::Option, z2s_core->getZ2SChannelName(), 
+				z2s_core->getZ2SChannelIndex(), Control::Color::None, 
+				sb_channel_selector);
 		}
+		core_it++;
 	}
 
 	working_str = empty_str;
@@ -3421,45 +3346,43 @@ void sprintfAction(z2s_channel_action_t &action) {
 
 	char general_purpose_gui_buffer[512] = {};
 
+	Z2S_Core *src_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(
+		action.src_Supla_channel);
+	
+	Z2S_Core *dst_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(
+		action.dst_Supla_channel);
+
 	if (action.is_condition)
-		snprintf(general_purpose_gui_buffer, 512,
-						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
-						"<b>Action name:</b> <i>%s (%s)</i><br><br>"
-						"<b>Condition:</b> <i>{%s}</i><br>"
-						"with <b>value(s) = </b> <i>%.2f, %.2f </i><br>"
-						"<b>for source channel:</b> <i>[%s]</i><br><br>"
-						"<b>Action:</b> <i>{%s}</i> <b><br>"
-						"on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
-						current_action_counter, Z2S_getActionsNumber(),
-						action.action_name, 
-						action.is_enabled ? "enabled" : "disabled",
-						getSuplaEventName(action.src_Supla_event, action.is_condition),
-						action.min_value,
-						action.max_value,
-						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
-								action.src_Supla_channel)].Supla_channel_name, 
-						getSuplaActionName(action.dst_Supla_action),
-						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
-								action.dst_Supla_channel)].Supla_channel_name,
-						action.subaction_id, action.reserved32);
+		snprintf(
+			general_purpose_gui_buffer, 512,
+			"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
+			"<b>Action name:</b> <i>%s (%s)</i><br><br>"
+			"<b>Condition:</b> <i>{%s}</i><br>"
+			"with <b>value(s) = </b> <i>%.2f, %.2f </i><br>"
+			"<b>for source channel:</b> <i>[%s]</i><br><br>"
+			"<b>Action:</b> <i>{%s}</i> <b><br>"
+			"on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
+				current_action_counter, Z2S_getActionsNumber(), action.action_name, 
+				action.is_enabled ? "enabled" : "disabled",
+				getSuplaEventName(action.src_Supla_event, action.is_condition),
+				action.min_value, action.max_value, src_core->getZ2SChannelName(), 
+				getSuplaActionName(action.dst_Supla_action), 
+				dst_core->getZ2SChannelName(), action.subaction_id, action.reserved32);
 	else
-		snprintf(general_purpose_gui_buffer, 512, 
-						"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
-						"<b>Action name:</b> <i>%s (%s)</i><br><br>"
-						"<b>Event:</b> <i>{%s}</i><br>"
-						"<b>from source channel:</b> <i>[%s]</i><br><br>"
-						"<b>Action:</b> <i>{%s}</i> <b><br>"
-						"on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
-						current_action_counter, Z2S_getActionsNumber(),
-						action.action_name, 
-						action.is_enabled ? "enabled" : "disabled",
-						getSuplaEventName(action.src_Supla_event, action.is_condition),
-						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
-								action.src_Supla_channel)].Supla_channel_name, 
-						getSuplaActionName(action.dst_Supla_action),
-						z2s_channels_table[Z2S_findTableSlotByChannelNumber(
-								action.dst_Supla_channel)].Supla_channel_name,
-						action.subaction_id, action.reserved32);
+		snprintf(
+			general_purpose_gui_buffer, 512, 
+			"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
+			"<b>Action name:</b> <i>%s (%s)</i><br><br>"
+			"<b>Event:</b> <i>{%s}</i><br>"
+			"<b>from source channel:</b> <i>[%s]</i><br><br>"
+			"<b>Action:</b> <i>{%s}</i> <b><br>"
+			"on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
+			current_action_counter, Z2S_getActionsNumber(), action.action_name,
+			action.is_enabled ? "enabled" : "disabled", getSuplaEventName(
+				action.src_Supla_event, action.is_condition), 
+			src_core->getZ2SChannelName(), getSuplaActionName(
+				action.dst_Supla_action), dst_core->getZ2SChannelName(),
+			action.subaction_id, action.reserved32);
 
 	working_str = general_purpose_gui_buffer;
 }
@@ -3658,9 +3581,12 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 	int32_t selector_value = 
 		ESPUI.getControl(action_source_channel_selector)->getValueInt();
 
-	if ( selector_value >= 0)
-		action.src_Supla_channel = 
-			z2s_channels_table[selector_value].Supla_channel;
+	if ( selector_value >= 0) {
+
+		Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(selector_value);
+
+		action.src_Supla_channel = z2s_core->getZ2SChannelNumber();
+	}
 	else
 		return false;
 	 
@@ -3681,9 +3607,12 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 	selector_value = ESPUI.getControl(
 		action_destination_channel_selector)->getValueInt();
 
-	if ( selector_value >= 0)
-		action.dst_Supla_channel = 
-			z2s_channels_table[selector_value].Supla_channel;
+	if ( selector_value >= 0) {
+
+		Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(selector_value);
+
+		action.dst_Supla_channel = z2s_core->getZ2SChannelNumber();
+	}
 	else
 		return false;
 
@@ -3748,52 +3677,45 @@ void actionSelectorCallback(BasicControl *sender, int type, void *param) {
 
 void buildAllChannelSelectors() {
 
-	for (uint8_t channels_counter = 0; 
-			 channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
-    if (z2s_channels_table[channels_counter].valid_record) {
-	
-			if (channel_selector < 0xFFFF) {
+	auto core_it = Z2S_Cores.begin();
 
-				size_t Supla_channel_name_size_w = mbstrnlen(
-					z2s_channels_table[channels_counter].Supla_channel_name,
-					SUPLA_CHANNEL_NAME_MAX_SIZE - 1);
+  while (core_it != Z2S_Cores.end()) {
 
-				z2s_channels_table[channels_counter].\
-					Supla_channel_name[Supla_channel_name_size_w] = '\0';
+    Z2S_Core* z2s_core = *core_it;
 
-				z2s_channels_table[channels_counter].gui_control_id = ESPUI.addControl(
-					Control::Type::Option, 
-					z2s_channels_table[channels_counter].Supla_channel_name, 
-					channels_counter, Control::Color::None, channel_selector);
+		if (channel_selector < 0xFFFF) {
 
-				if (action_source_channel_selector < 0xFFFF) {
+			uint16_t gui_control_id = ESPUI.addControl(
+				Control::Type::Option, z2s_core->getZ2SChannelName(), 
+				z2s_core->getZ2SChannelIndex(), Control::Color::None, 
+				channel_selector);
 
-					ESPUI.getControl(
-						z2s_channels_table[channels_counter].\
-							gui_control_id)->secondParent = action_source_channel_selector;
-					ESPUI.getControl(
-						z2s_channels_table[channels_counter].\
-							gui_control_id)->thirdParent = 
-								action_destination_channel_selector;
-				}
-			} else {
+			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
 
-				if (action_source_channel_selector < 0xFFFF) {
+			if (action_source_channel_selector < 0xFFFF) {
 
-					z2s_channels_table[channels_counter].gui_control_id = 
-						ESPUI.addControl(
-							Control::Type::Option, 
-							z2s_channels_table[channels_counter].Supla_channel_name, 
-							channels_counter, Control::Color::None, 
-							action_source_channel_selector);
+				ESPUI.getControl(gui_control_id)->secondParent = 
+					action_source_channel_selector;
+				ESPUI.getControl(gui_control_id)->thirdParent = 
+					action_destination_channel_selector;
+			}
+		} 
+		else {
 
-					ESPUI.getControl(
-						z2s_channels_table[channels_counter].\
-							gui_control_id)->secondParent = 
-								action_destination_channel_selector;
-				}
+			if (action_source_channel_selector < 0xFFFF) {
+
+				uint16_t gui_control_id = ESPUI.addControl(
+					Control::Type::Option, z2s_core->getZ2SChannelName(), 
+					z2s_core->getZ2SChannelIndex(), Control::Color::None, 
+					action_source_channel_selector);
+
+				z2s_core->setZ2SChannelGUIControlId(gui_control_id);
+
+				ESPUI.getControl(gui_control_id)->secondParent = 
+					action_destination_channel_selector;
 			}
 		}
+		core_it++;
 	}
 }
 
@@ -3863,62 +3785,7 @@ void buildActionsChannelSelectors(
 		ESPUI.addControl(
 			Control::Type::Option, PSTR("Select destination channel..."), 
 			(long int)-1, Control::Color::None, action_destination_channel_selector);
-	}
-
-	uint16_t current_option_id 			= 0xFFFF;
-
-	for (uint8_t channels_counter = 0; 
-			 channels_counter < Z2S_CHANNELS_MAX_NUMBER; 
-			 channels_counter++) {
-
-    if (z2s_channels_table[channels_counter].valid_record) {
-      
-			/*current_option_id = ESPUI.addControl(
-				Control::Type::Option,  
-				z2s_channels_table[channels_counter].Supla_channel_name, 
-				z2s_channels_table[channels_counter].Supla_channel, 
-				Control::Color::None, action_source_channel_selector);
-
-			if (action_source_channel_selector_first_option_id == 0xFFFF) 
-				action_source_channel_selector_first_option_id = current_option_id;*/			
-		}
-	}
-
-	current_option_id = 0xFFFF; 
-	
-	/*for (uint8_t channels_counter = 0; 
-			 channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
-    if (z2s_channels_table[channels_counter].valid_record) {
-	
-			current_option_id = ESPUI.addControl(
-					Control::Type::Option, 
-					z2s_channels_table[channels_counter].Supla_channel_name, 
-					z2s_channels_table[channels_counter].Supla_channel,
-					Control::Color::None, action_destination_channel_selector);
-
-			if (action_destination_channel_selector_first_option_id == 0xFFFF) 
-				action_destination_channel_selector_first_option_id = current_option_id;
-
-			z2s_channels_table[channels_counter].gui_control_id = ESPUI.addControl(
-				Control::Type::Option, 
-				z2s_channels_table[channels_counter].Supla_channel_name, 
-				channels_counter, Control::Color::None, channel_selector);
-
-			ESPUI.getControl(
-				z2s_channels_table[channels_counter].gui_control_id)->secondParent =
-					action_source_channel_selector;
-			ESPUI.getControl(
-				z2s_channels_table[channels_counter].gui_control_id)->thirdParent =
-					action_destination_channel_selector;
-
-			log_i(
-				"2nd Parent %u, 3rd Parent = %u",
-				ESPUI.getControl(
-				z2s_channels_table[channels_counter].gui_control_id)->secondParent,
-				ESPUI.getControl(
-				z2s_channels_table[channels_counter].gui_control_id)->thirdParent);
-		}
-	}*/
+	} 	
 }
 
 void buildActionsTabGUI() {
@@ -4586,8 +4453,9 @@ void Z2S_startWebGUI() {
 			request->send(200, "text/plain", "Upload OK");
   		}, [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
     	
-			LittleFS.begin(false);
-
+			//LittleFS.begin(false);
+			Z2S_initLittleFs();
+			
 			if (index) 
 				request->_tempFile = LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "a");
 			else {
@@ -4604,7 +4472,7 @@ void Z2S_startWebGUI() {
     	//if (final) {
       	request->_tempFile.close();
     	//}
-			LittleFS.end();
+			//LittleFS.end();
   	});
 
 	if (ESPUI.WebServer())
@@ -5423,48 +5291,34 @@ void fillRemoteAddressData(uint8_t channel_slot) {
 
 	char general_purpose_gui_buffer[512] = {};
 
-	uint8_t remote_address_type = 
-      Z2S_checkChannelFlags(channel_slot, 
-                            USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
-      REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
+	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
+
+	uint8_t remote_address_type = z2s_core->checkChannelUserDataFlags(
+		USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?REMOTE_ADDRESS_TYPE_MDNS : 
+		REMOTE_ADDRESS_TYPE_IP4;
 
 	
 	if (remote_address_type == REMOTE_ADDRESS_TYPE_IP4) {
 
-		IPAddress ip(z2s_channels_table[channel_slot].\
-								 remote_channel_data.remote_ip_address);
+		IPAddress ip(z2s_core->getRemoteIPAddress());
 
 		ESPUI.updateText(param_1_number, ip.toString());
 
-		ESPUI.updateNumber(
-			param_2_number, 
-			z2s_channels_table[channel_slot].Supla_remote_channel
-		);
-	} else if (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) {
+		ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
+	} 
+	else {
+		if (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) {
 
-		sprintf(general_purpose_gui_buffer, 
-						"mdns://%s",
-						z2s_channels_table[channel_slot].\
-							remote_channel_data.mDNS_name
-					 );
+			sprintf(
+				general_purpose_gui_buffer, "mdns://%s", z2s_core->getMDNSName());
 				 
-		working_str = general_purpose_gui_buffer;
-		ESPUI.updateText(param_1_number, working_str);
+			working_str = general_purpose_gui_buffer;
+			ESPUI.updateText(param_1_number, working_str);
 				
-		ESPUI.updateNumber(
-			param_2_number, 
-			z2s_channels_table[channel_slot].Supla_remote_channel);
+			ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
+		}
 	}
 }
-
-/*
-working_str = PSTR("&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
-										 "for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
-	ESPUI.updateText(param_1_desc_label, working_str);
-
-	working_str = PSTR("&#10023; Enter remote relay channel # &#10023;");
-	ESPUI.updateText(param_2_desc_label, working_str);
-*/
 
 
 void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
@@ -5478,64 +5332,70 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 	log_i("channel slot %i", channel_slot);
 
-  snprintf_P(ieee_addr_str, 24, 
-						PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
-						z2s_channels_table[channel_slot].ieee_addr[7],
-						z2s_channels_table[channel_slot].ieee_addr[6], 
-						z2s_channels_table[channel_slot].ieee_addr[5], 
-						z2s_channels_table[channel_slot].ieee_addr[4], 
-	 	        z2s_channels_table[channel_slot].ieee_addr[3],
-						z2s_channels_table[channel_slot].ieee_addr[2],
-						z2s_channels_table[channel_slot].ieee_addr[1], 
-						z2s_channels_table[channel_slot].ieee_addr[0]);
+	auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
 	
-	snprintf_P(general_purpose_gui_buffer, 896,
-						PSTR("<meta charset=\"UTF-8\">"
-						"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X "
-						"<b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
-						"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u "
-						"<b>| <i>secondary channel</i></b> #%u<br><b><i>Type</b></i> %s "
-						"<b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
-						"<b><i>Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X "
-						"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>ud(3)</b></i> 0x%08X "
-						"<b>| <i>ud(4)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
-						"<b><i>ZB device</b></i> %s (%s::%s)<br>"
-						"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX (%s)"),
-						ieee_addr_str,
-						z2s_channels_table[channel_slot].short_addr,
-						z2s_channels_table[channel_slot].endpoint,
-        		z2s_channels_table[channel_slot].cluster_id,
-						getZ2SDeviceDescName(z2s_channels_table[channel_slot].model_id),
-        		z2s_channels_table[channel_slot].model_id,
-        		z2s_channels_table[channel_slot].Supla_channel,
-        		z2s_channels_table[channel_slot].Supla_secondary_channel,
-						getSuplaChannelTypeName(z2s_channels_table[channel_slot].Supla_channel_type),
-        		z2s_channels_table[channel_slot].Supla_channel_func > 0 ? 
-						getSuplaChannelFuncName(z2s_channels_table[channel_slot].Supla_channel_type, 
-																		z2s_channels_table[channel_slot].Supla_channel_func) : "none",
-        		z2s_channels_table[channel_slot].sub_id,
-						z2s_channels_table[channel_slot].user_data_flags,
-						z2s_channels_table[channel_slot].user_data_1,
-						z2s_channels_table[channel_slot].user_data_2,
-						z2s_channels_table[channel_slot].user_data_3,
-						z2s_channels_table[channel_slot].user_data_4,
-						z2s_channels_table[channel_slot].extended_data_type,
-						Z2S_getZbDeviceLocalName(z2s_channels_table[channel_slot].Zb_device_id),
-						(z2s_channels_table[channel_slot].local_channel_type == 0) ?
-						Z2S_getZbDeviceManufacturerName(z2s_channels_table[channel_slot].Zb_device_id):
-						getZ2SDeviceLocalActionHandlerTypeName(channel_slot),
-						(z2s_channels_table[channel_slot].local_channel_type == 0) ?
-						Z2S_getZbDeviceModelName(z2s_channels_table[channel_slot].Zb_device_id):
-						getZ2SDeviceLocalActionHandlerLogicOperatorName(channel_slot),
-						z2s_channels_table[channel_slot].gui_control_id,
-						Z2S_getChannelExtendedDataCounter(channel_slot),
-						Z2S_Z2S_getChannelExtendedDataCounterKey(channel_slot));
+	if (!z2s_core)
+		return;
+
+	z2s_device_params_t z2s_channel = {};
+
+	if (!z2s_core->fillZ2SChannelStruct(z2s_channel))
+		return;
+
+  snprintf_P(
+		ieee_addr_str, 24, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
+		z2s_channel.ieee_addr[7], z2s_channel.ieee_addr[6], 
+		z2s_channel.ieee_addr[5], z2s_channel.ieee_addr[4], 
+	 	z2s_channel.ieee_addr[3], z2s_channel.ieee_addr[2],
+		z2s_channel.ieee_addr[1], z2s_channel.ieee_addr[0]);
+
+	log_i("z2s_channel ieee addr %s", ieee_addr_str);
+	
+	/*snprintf_P(
+		ieee_addr_str, 24, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
+		*(z2s_core->getIEEEAddress() + 7), *(z2s_core->getIEEEAddress() + 6), 
+		*(z2s_core->getIEEEAddress() + 5), *(z2s_core->getIEEEAddress() + 4), 
+	 	*(z2s_core->getIEEEAddress() + 3), *(z2s_core->getIEEEAddress() + 2),
+		*(z2s_core->getIEEEAddress() + 1), *(z2s_core->getIEEEAddress() + 0));
+
+	log_i("z2s_channel ieee addr %s", ieee_addr_str);*/
+	
+
+	snprintf_P(
+		general_purpose_gui_buffer, 896, "<meta charset=\"UTF-8\">"
+		"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X "
+		"<b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
+		"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u "
+		"<b>| <i>secondary channel</i></b> #%u<br><b><i>Type</b></i> %s "
+		"<b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
+		"<b><i>Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X "
+		"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>ud(3)</b></i> 0x%08X "
+		"<b>| <i>ud(4)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
+		"<b><i>ZB device</b></i> %s (%s::%s)<br>"
+		"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX (%s)",
+		ieee_addr_str, z2s_channel.short_addr, z2s_channel.endpoint,
+		z2s_channel.cluster_id, getZ2SDeviceDescName(z2s_channel.model_id),
+    z2s_channel.model_id, z2s_channel.Supla_channel,
+    z2s_channel.Supla_secondary_channel, getSuplaChannelTypeName(
+			z2s_channel.Supla_channel_type), z2s_channel.Supla_channel_func > 0 ? 
+		getSuplaChannelFuncName(z2s_channel.Supla_channel_type, 
+			z2s_channel.Supla_channel_func) : "none", z2s_channel.sub_id,
+		z2s_channel.user_data_flags, z2s_channel.user_data_1, 
+		z2s_channel.user_data_2, z2s_channel.user_data_3, z2s_channel.user_data_4,
+		z2s_channel.extended_data_type, Z2S_getZbDeviceLocalName(
+			z2s_channel.Zb_device_id), (z2s_channel.local_channel_type == 0) ?
+		Z2S_getZbDeviceManufacturerName(z2s_channel.Zb_device_id):
+		getZ2SDeviceLocalActionHandlerTypeName(&z2s_channel),
+		(z2s_channel.local_channel_type == 0) ?
+		Z2S_getZbDeviceModelName(z2s_channel.Zb_device_id):
+		getZ2SDeviceLocalActionHandlerLogicOperatorName(&z2s_channel),
+		z2s_channel.gui_control_id, Z2S_getChannelExtendedDataCounter(channel_slot),
+		Z2S_Z2S_getChannelExtendedDataCounterKey(channel_slot));
 	
 	updateLabel_P(
 		zb_channel_info_label, general_purpose_gui_buffer);
 	
-	working_str = z2s_channels_table[channel_slot].\
-		Supla_channel_name;
+	working_str = z2s_core->getZ2SChannelName();
 
 	ESPUI.updateText(channel_name_text, working_str);
 	
@@ -5544,65 +5404,57 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 	ESPUI.updateSelect(channel_local_function, -1); 
 	enableControlStyle(channel_local_function, false);
 
-	switch (z2s_channels_table[channel_slot].Supla_channel_type) {
+	switch (z2s_channel.Supla_channel_type) {
 
 		case 0x0000: {
 
 			
 			enableChannelFlags(0);
 
-			if (z2s_channels_table[channel_slot].local_channel_type == 
+			if (z2s_channel.local_channel_type == 
 					LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
 
 				enableChannelTimings(1); //turn on delay
-				ESPUI.updateNumber(keepalive_number, 	z2s_channels_table[channel_slot].keep_alive_secs);
+				ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
 			}
 
-			if (z2s_channels_table[channel_slot].local_channel_type == 
-					LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
+			if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
 
 				enableChannelTimings(0);
 				enableChannelParams(3);
 				fillRemoteAddressData(channel_slot);
 
-				char *working_str_ptr = PSTR(
-					"&#10023; Enter remote relay IP address or mDNS name &#10023;<br>"
-					"for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway");
+				char *working_str_ptr = "&#10023; Enter remote relay IP address or "
+					"mDNS name &#10023;<br>for mDNS use <b><i>mdns://</i></b> prefix"
+					" ie. mdns://my_gateway";
 
 				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 
-				working_str_ptr = PSTR(
-					"&#10023; Enter remote relay channel # &#10023;");
+				working_str_ptr = "&#10023; Enter remote relay channel # &#10023;";
 				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
 			}
 
-			if (z2s_channels_table[channel_slot].local_channel_type == 
+			if (z2s_channel.local_channel_type == 
 					LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
 
 				enableChannelTimings(2+4);
 
 				enableControlStyle(channel_local_function, true);
-				working_str = z2s_channels_table[channel_slot].local_channel_func;
+				working_str = z2s_channel.local_channel_func;
 				ESPUI.updateSelect(
-					channel_local_function, z2s_channels_table[channel_slot].local_channel_func); //working_str);
+					channel_local_function, z2s_channel.local_channel_func); 
 
-				ESPUI.updateNumber(
-					timeout_number, 
-					z2s_channels_table[channel_slot].timeout_secs);
+				ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
 
-				ESPUI.updateNumber(
-					refresh_number, 
-					z2s_channels_table[channel_slot].refresh_secs);
+				ESPUI.updateNumber(refresh_number, z2s_channel.refresh_secs);
 
 			}
-			if (z2s_channels_table[channel_slot].local_channel_type == 
+			if (z2s_channel.local_channel_type == 
 					LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY) {
 
 				enableChannelTimings(4);
 
-				ESPUI.updateNumber(
-					refresh_number, 
-					z2s_channels_table[channel_slot].refresh_secs);
+				ESPUI.updateNumber(refresh_number, z2s_channel.refresh_secs);
 			}
 		} break;
 		
@@ -5610,32 +5462,24 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
 			enableChannelTimings(6); //timeout+debounce
-			ESPUI.updateNumber(
-				timeout_number, 
-				z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
 
-			ESPUI.updateNumber(
-				refresh_number, 
-				z2s_channels_table[channel_slot].refresh_secs);
+			ESPUI.updateNumber(refresh_number, z2s_channel.refresh_secs);
 	
 			enableChannelFlags(5 + 16);
 			
 			ESPUI.updateNumber(
-				disable_channel_notifications_switcher, 
-				(z2s_channels_table[channel_slot].user_data_flags & 
+				disable_channel_notifications_switcher, (z2s_channel.user_data_flags &
 				USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0);
 
 			ESPUI.updateNumber(
-				set_sorwns_on_start_switcher, 
-				(z2s_channels_table[channel_slot].user_data_flags & 
+				set_sorwns_on_start_switcher, (z2s_channel.user_data_flags & 
 				USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
 
 			enableChannelParams(1);
 
 			ESPUI.updateNumber(
-				param_1_number, 
-				z2s_channels_table[channel_slot].\
-				rain_intensity_treshold);
+				param_1_number, z2s_channel.rain_intensity_treshold);
 
 			char *working_str_ptr = PSTR(
 				"&#10023; Virtual Binary custom param<br>"
@@ -5651,14 +5495,11 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			//action_trigger_hold_ms + timeout + debounce 
 			enableChannelTimings(1 + 2 + 4); 
 
-			ESPUI.updateNumber(keepalive_number, 	
-				z2s_channels_table[channel_slot].action_trigger_hold_ms);
+			ESPUI.updateNumber(keepalive_number, z2s_channel.action_trigger_hold_ms);
 
-			ESPUI.updateNumber(timeout_number, 
-				z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
 
-			ESPUI.updateNumber(refresh_number, 
-				z2s_channels_table[channel_slot].debounce_ms);
+			ESPUI.updateNumber(refresh_number, z2s_channel.debounce_ms);
 	
 			enableChannelFlags(16); 
 		} break;
@@ -5672,22 +5513,16 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			enableChannelTimings(2); //timeout only
 
 			ESPUI.updateNumber(
-				set_sorwns_on_start_switcher, 
-				(z2s_channels_table[channel_slot].user_data_flags & 
-				USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0
-			);
+				set_sorwns_on_start_switcher, (z2s_channel.user_data_flags & 
+				USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
 
-			uint8_t enable_resend_temperature_flag = 
-				(z2s_channels_table[channel_slot].user_data_flags &
-				 USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) ? 1 : 0;
+			uint8_t enable_resend_temperature_flag = (z2s_channel.user_data_flags &
+				USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) ? 1 : 0;
 
 			ESPUI.updateNumber(
-				enable_resend_temperature_switcher, 
-				enable_resend_temperature_flag
-			); 
+				enable_resend_temperature_switcher, enable_resend_temperature_flag); 
 
-			ESPUI.updateNumber(
-				timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
 		
 			if (enable_resend_temperature_flag) {
 				
@@ -5727,9 +5562,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 			ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 
-			working_str_ptr = PSTR(
-					"&#10023; Enter GPM temporary deactivation duration [s] &#10023;");
-				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+			working_str_ptr = "&#10023; Enter GPM temporary deactivation duration "
+				"[s] &#10023;";
+			ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
 		} break;
 		
 		
@@ -5737,38 +5572,31 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			
 			enableChannelTimings(1 + 2); //keepalive + timeout
 
-			ESPUI.updateNumber(
-				keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
+			ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
 
-			ESPUI.updateNumber(
-				timeout_number, z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
 	
 			enableChannelFlags(2 + 16);
 			ESPUI.updateNumber(
-				trv_auto_to_schedule_switcher, 
-				(z2s_channels_table[channel_slot].user_data_flags &
-				 USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
+				trv_auto_to_schedule_switcher, (z2s_channel.user_data_flags &
+				USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
 
-			uint8_t fixed_correction_flag = 
-				(z2s_channels_table[channel_slot].user_data_flags &
+			uint8_t fixed_correction_flag = (z2s_channel.user_data_flags &
 				USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0;
 
 			ESPUI.updateNumber(
 				trv_fixed_calibration_switcher, fixed_correction_flag);
 
 			ESPUI.updateNumber(
-				trv_auto_to_schedule_manual_switcher, 
-				(z2s_channels_table[channel_slot].user_data_flags &
+				trv_auto_to_schedule_manual_switcher, (z2s_channel.user_data_flags &
 				USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
 
 			ESPUI.updateNumber(
-				trv_auto_to_schedule_manual_switcher, 
-				(z2s_channels_table[channel_slot].user_data_flags &
+				trv_auto_to_schedule_manual_switcher, (z2s_channel.user_data_flags &
 				USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
 
 			ESPUI.updateNumber(
-				trv_cooperative_childlock_switcher, 
-				(z2s_channels_table[channel_slot].user_data_flags &
+				trv_cooperative_childlock_switcher, (z2s_channel.user_data_flags &
 				USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK) ? 1 : 0);
 
 			if (fixed_correction_flag) {
@@ -5776,13 +5604,11 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 				enableChannelParams(1);
 
 				ESPUI.updateNumber(
-					param_1_number, 
-					z2s_channels_table[channel_slot].hvac_fixed_temperature_correction);
+					param_1_number, z2s_channel.hvac_fixed_temperature_correction);
 
-				char *working_str_ptr = PSTR(
-					"&#10023; Thermostat custom parameter<br>"
+				char *working_str_ptr = "&#10023; Thermostat custom parameter<br>"
 					"enter calibration fixed value (temperature x100)<br>"
-					"ie. to set correction to -1 enter -100 &#10023;");
+					"ie. to set correction to -1 enter -100 &#10023;";
 				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 			} else
 				enableChannelParams(0);
@@ -5793,20 +5619,18 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 			enableChannelTimings(3); //timeout + keepalive
 
-			ESPUI.updateNumber(keepalive_number, 
-				z2s_channels_table[channel_slot].keep_alive_secs);
+			ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
 
-			ESPUI.updateNumber(timeout_number, 
-				z2s_channels_table[channel_slot].timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
 
 			enableChannelParams(1);
 
-			ESPUI.updateNumber(param_1_number, 
-										 		 z2s_channels_table[channel_slot].rgb_color_mode);
-			char *working_str_ptr = PSTR(
-				"&#10023; RGB custom param<br>"
+			ESPUI.updateNumber(param_1_number, z2s_channel.rgb_color_mode);
+
+			char *working_str_ptr = "&#10023; RGB custom param<br>"
 				"enter numeric value to select RGB MODE<br>"
-				"ie. to set correction to -1 enter -100 &#10023;");
+				"ie. to set correction to -1 enter -100 &#10023;";
+
 			ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 
 			enableChannelFlags(16);
@@ -5817,15 +5641,13 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
 		case SUPLA_CHANNELTYPE_DIMMER: {
 
-			if (z2s_channels_table[channel_slot].local_channel_type == 0) {
+			if (z2s_channel.local_channel_type == 0) {
 
 				enableChannelTimings(3); //timeout + keepalive
 
-				ESPUI.updateNumber(keepalive_number, 
-					z2s_channels_table[channel_slot].keep_alive_secs);
+				ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
 
-				ESPUI.updateNumber(timeout_number, 
-					z2s_channels_table[channel_slot].timeout_secs);
+				ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
 
 				enableChannelFlags(16);
 			}
@@ -5835,12 +5657,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
 			enableChannelTimings(7); //timeout + keepalive + refresh
-			ESPUI.updateNumber(
-				keepalive_number, z2s_channels_table[channel_slot].keep_alive_secs);
-			ESPUI.updateNumber(
-				timeout_number, z2s_channels_table[channel_slot].timeout_secs);
-			ESPUI.updateNumber(
-				refresh_number, z2s_channels_table[channel_slot].refresh_secs);
+			ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
+			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
+			ESPUI.updateNumber(refresh_number, z2s_channel.refresh_secs);
 
 			enableChannelFlags(16);
 		} break;
@@ -5852,10 +5671,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			enableChannelFlags(16);
 		} break;
 	}
-	if (z2s_channels_table[channel_slot].local_channel_type != 0)
+	if (z2s_channel.local_channel_type != 0)
 		ESPUI.updateNumber(
-			skip_subdevice_registation_switcher, 
-			(z2s_channels_table[channel_slot].user_data_flags & 
+			skip_subdevice_registation_switcher, (z2s_channel.user_data_flags & 
 			USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION) ? 1 : 0);
 }
 
@@ -5868,9 +5686,7 @@ void channelSelectorCallback(BasicControl *sender, int type, void *param) {
 
 	log_i("selector value = %u", sender_value);
 
-	if (/*(!isNumber(sender->getValue())) ||*/ 
-			(sender_value < 0) || 
-			(sender_value >= Z2S_CHANNELS_MAX_NUMBER)) {
+	if ((sender_value < 0) || (sender_value >= Z2S_CHANNELS_MAX_NUMBER)) {
 
 		enableChannelControls(false);
 		return;
@@ -6020,8 +5836,25 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 						uint64_t readAttrValue;
 						esp_zb_uint48_t readAttrValue48;
 						esp_zb_uint24_t readAttrValue24;
+						uint8_t attribute_size = 
+							zbGateway.getReadAttrLastResult()->data.size;
 
-						switch (zbGateway.getReadAttrLastResult()->data.size) {
+						uint8_t *data_value = 
+							(uint8_t *)zbGateway.getReadAttrLastResult()->data.value;
+
+						char read_attribute_str[(attribute_size * 2) + 1];
+						const char hex_chars[] = "0123456789ABCDEF";
+
+    				for (uint8_t i = 0; i < attribute_size; ++i) {
+        			
+							read_attribute_str[i * 2]     = hex_chars[
+								((*(data_value + i)) >> 4) & 0x0F];
+        			read_attribute_str[i * 2 + 1] = hex_chars[
+								(*(data_value + i)) & 0x0F];
+    				}
+    				read_attribute_str[attribute_size * 2] = '\0';
+
+						/*switch (attribute_size) {
 
 
 							case 1: 
@@ -6063,15 +5896,14 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 								readAttrValue = 
 									*(uint64_t *)zbGateway.getReadAttrLastResult()->data.value; 
 							break;
-						}
+						}*/
 					
 						sprintf_P(
 							general_purpose_gui_buffer, 
-							"Reading attribute successful!<br>Data value is %llu(0x%llX)"
-							"<br>Data type is %s(0x%X)<br>Data size is 0x%X", 
-							readAttrValue, 
-							readAttrValue, 
-							getZigbeeDataTypeName(zbGateway.getReadAttrLastResult()->data.type), 
+							"Reading attribute successful!<br>Data value is:<br> %s"
+							"<br>Data type is %s(0x%X)<br>Data size is 0x%02X", 
+							read_attribute_str, getZigbeeDataTypeName(
+								zbGateway.getReadAttrLastResult()->data.type), 
 							zbGateway.getReadAttrLastResult()->data.type,
 							zbGateway.getReadAttrLastResult()->data.size);
 
@@ -6108,58 +5940,57 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 			case GUI_CB_READ_CONFIG_FLAG : { //read attribute config report
 
 				bool result = zbGateway.readClusterReportCfgCmd(
-					&device, 
-					cluster_id, 
-					attribute_id, 
-					sync_cmd,
-					ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-					1, 
-					manuf_specific, 
-					manuf_code);
+					&device, cluster_id, attribute_id, sync_cmd,
+					ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, manuf_specific, manuf_code);
 
 				if (result) {
 
 					if (zbGateway.getReportConfigRespVariableLastResult()->status == 
 							ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-						sprintf_P(general_purpose_gui_buffer, 
-											PSTR("Reading attribute config report successful! <br>"
-											"Attribute id is 0x%X<br>Data type is %s(0x%X)<br>"
-											"Min interval is %u(0x%x)<br>Max interval is %u(0x%X)<br>"
-											"Delta is %u(0x%X)"), 
-											zbGateway.getReportConfigRespVariableLastResult()->attribute_id,
-											getZigbeeDataTypeName(zbGateway.getReportConfigRespVariableLastResult()->client.attr_type),
-											zbGateway.getReportConfigRespVariableLastResult()->client.attr_type,
-											zbGateway.getReportConfigRespVariableLastResult()->client.min_interval,
-											zbGateway.getReportConfigRespVariableLastResult()->client.min_interval,
-											zbGateway.getReportConfigRespVariableLastResult()->client.max_interval,
-											zbGateway.getReportConfigRespVariableLastResult()->client.max_interval,
-											zbGateway.getReportConfigRespVariableLastResult()->client.delta[0],
-											zbGateway.getReportConfigRespVariableLastResult()->client.delta[0]);
+						sprintf_P(
+							general_purpose_gui_buffer, "Reading attribute config report"
+							" successful! <br>Attribute id is 0x%X<br>Data type is %s(0x%X)"
+							"<br>Min interval is %u(0x%x)<br>Max interval is %u(0x%X)<br>"
+							"Delta is %u(0x%X)", 
+							zbGateway.getReportConfigRespVariableLastResult()->attribute_id,
+							getZigbeeDataTypeName(
+								zbGateway.getReportConfigRespVariableLastResult()->client.attr_type),
+							zbGateway.getReportConfigRespVariableLastResult()->client.attr_type,
+							zbGateway.getReportConfigRespVariableLastResult()->client.min_interval,
+							zbGateway.getReportConfigRespVariableLastResult()->client.min_interval,
+							zbGateway.getReportConfigRespVariableLastResult()->client.max_interval,
+							zbGateway.getReportConfigRespVariableLastResult()->client.max_interval,
+							zbGateway.getReportConfigRespVariableLastResult()->client.delta[0],
+							zbGateway.getReportConfigRespVariableLastResult()->client.delta[0]);
 
-						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-													general_purpose_gui_buffer);
+						updateLabel_P(
+							clusters_attributes_table[device_read_attribute_label], 
+							general_purpose_gui_buffer);
 					} else {
 
-						sprintf_P(general_purpose_gui_buffer, 
-										PSTR("Reading attribute config report failed!<br>"
-										"Status = %s(0x%02X)<br>"
-										"Attribute id = 0x%04X<br>"),
-										esp_zb_zcl_status_to_name(zbGateway.getReportConfigRespVariableLastResult()->status),
-										zbGateway.getReportConfigRespVariableLastResult()->status,
-										zbGateway.getReportConfigRespVariableLastResult()->status,
-										zbGateway.getReportConfigRespVariableLastResult()->attribute_id);
+						sprintf_P(
+							general_purpose_gui_buffer, "Reading attribute config report "
+							"failed!<br>Status = %s(0x%02X)<br>Attribute id = 0x%04X<br>",
+							esp_zb_zcl_status_to_name(
+								zbGateway.getReportConfigRespVariableLastResult()->status),
+							zbGateway.getReportConfigRespVariableLastResult()->status,
+							zbGateway.getReportConfigRespVariableLastResult()->status,
+							zbGateway.getReportConfigRespVariableLastResult()->attribute_id);
 
-						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-													general_purpose_gui_buffer);
+						updateLabel_P(
+							clusters_attributes_table[device_read_attribute_label], 
+							general_purpose_gui_buffer);
 					}
 				} else {
 					if (sync_cmd)
-						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-													device_query_failed_str);
+						updateLabel_P(
+							clusters_attributes_table[device_read_attribute_label], 
+							device_query_failed_str);
 					else
-						updateLabel_P(clusters_attributes_table[device_read_attribute_label], 
-													device_async_query_str);
+						updateLabel_P(
+							clusters_attributes_table[device_read_attribute_label], 
+							device_async_query_str);
 				}
 			} break;
 
@@ -6202,33 +6033,26 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 					1, manuf_specific, manuf_code);
 					
 				if (result) {
-					if (*zbGateway.getConfigReportStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
+					if (*zbGateway.getConfigReportStatusLastResult() == 
+							ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-						sprintf_P(general_purpose_gui_buffer, 
-											PSTR("Configure reporting successful! <br>"
-											"Attribute id is 0x%X, data type is %s(0x%X)<br>"
-											"Min interval is %u(0x%x), max interval is %u(0x%X)<br>"
-											"Delta is %u(0x%X)"), 
-          	        	attribute_id,
-											getZigbeeDataTypeName(attribute_type),
-											attribute_type,
-											min_interval,
-											min_interval,
-											max_interval,
-											max_interval,
-											delta,
-											delta);
+						sprintf_P(
+							general_purpose_gui_buffer, "Configure reporting successful! "
+							"<br>Attribute id is 0x%X, data type is %s(0x%X)<br>Min "
+							"interval is %u(0x%x), max interval is %u(0x%X)<br>"
+							"Delta is %u(0x%X)", attribute_id,getZigbeeDataTypeName(
+								attribute_type), attribute_type, min_interval, min_interval,
+							max_interval, max_interval, delta, delta);
 
 						updateLabel_P(
 							clusters_attributes_table[device_read_attribute_label], 
 							general_purpose_gui_buffer);
 					} else {
 						sprintf_P(
-							general_purpose_gui_buffer, 
-							PSTR("Configure reporting failed! <br>"
-							"Status = %s(0x%02X)<br>"
-							"Attribute id = 0x%04X<br>"),
-							esp_zb_zcl_status_to_name(*zbGateway.getConfigReportStatusLastResult()),
+							general_purpose_gui_buffer, "Configure reporting failed! <br>"
+							"Status = %s(0x%02X)<br>Attribute id = 0x%04X<br>",
+							esp_zb_zcl_status_to_name(
+								*zbGateway.getConfigReportStatusLastResult()),
 							*zbGateway.getConfigReportStatusLastResult(),
 							*zbGateway.getConfigReportStatusLastResult(), attribute_id);
 
@@ -6290,25 +6114,16 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 
         	char byte_str[3];
         	byte_str[2] = '\0';
-					//write_attribute_payload = (uint8_t*)malloc(attribute_size); //2 by
-
-					/*if (write_attribute_payload == nullptr) {
-
-						updateLabel_P(
-							clusters_attributes_table[device_read_attribute_label], 
-							PSTR("Error allocating attribute write buffer!"));
-						return;
-					}*/
 
 					memset(write_attribute_payload, 0, attribute_size);
 					
         	for (int i = 0; i < attribute_size; i++) {
 
           	memcpy(byte_str, attribute_value + (i * 2), 2);
-          	*(write_attribute_payload + i) = strtoul(byte_str, nullptr, 16); //here hex base must be explicit
-						log_i("write_attribute_payload[%u] = %u(0x%02X)", i, 
-									*(write_attribute_payload + i), 
-									*(write_attribute_payload + i));
+          	write_attribute_payload[i] = strtoul(byte_str, nullptr, 16);
+						log_i(
+							"write_attribute_payload[%u] = %u(0x%02X)", i, 
+							write_attribute_payload[i], write_attribute_payload[i]);
         	}
         	
 					value = write_attribute_payload;
@@ -6335,24 +6150,22 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
       	
 				if (value) {
 					
-					bool result = zbGateway.sendAttributeWrite(
+					bool result = zbGateway.sendAttributeWriteExt(
 						&device, cluster_id, attribute_id, 
 						(esp_zb_zcl_attr_type_t)attribute_type, attribute_size, value, 
-						sync_cmd, manuf_specific, manuf_code, false, src_endpoint);
+						sync_cmd, manuf_specific, manuf_code, false, 
+						ESP_ZB_AF_HA_PROFILE_ID);
 					
 					if (result) {
-						if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
+						if (*zbGateway.getWriteAttrStatusLastResult() == 
+								ESP_ZB_ZCL_STATUS_SUCCESS) {
 
-							sprintf_P(general_purpose_gui_buffer, 
-												"Write attribute successful! <br>"
-												"Attribute id   = 0x%04X<br>"
-												"Attribute type = %s(0x%02X)<br>"
-												"Attribute size = %u(0x%04X)",
-      		            	attribute_id,
-												getZigbeeDataTypeName(attribute_type),
-												attribute_type,
-												attribute_size,
-												attribute_size);
+							sprintf_P(
+								general_purpose_gui_buffer, "Write attribute successful! <br>"
+								"Attribute id   = 0x%04X<br>Attribute type = %s(0x%02X)<br>"
+								"Attribute size = %u(0x%04X)", attribute_id,
+								getZigbeeDataTypeName(attribute_type), attribute_type,
+								attribute_size, attribute_size);
 
 							updateLabel_P(
 								clusters_attributes_table[device_read_attribute_label], 
@@ -6360,18 +6173,15 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 						} else {
 
 							sprintf_P(
-								general_purpose_gui_buffer, 
-								"Write attribute failed! <br>"
-								"Status = %s(0x%02X)<br>"
-								"Attribute id = 0x%04X<br>"
-								"Attribute type = %s(0x%04X)<br>"
-								"Attribute size = %u(0x%04X)",
+								general_purpose_gui_buffer, "Write attribute failed! <br>"
+								"Status = %s(0x%02X)<br>Attribute id = 0x%04X<br>"
+								"Attribute type = %s(0x%04X)<br>Attribute size = %u(0x%04X)",
 								esp_zb_zcl_status_to_name(
 									*zbGateway.getWriteAttrStatusLastResult()),
-									*zbGateway.getWriteAttrStatusLastResult(),
-      		        *zbGateway.getWriteAttrAttributeIdLastResult(),
-									getZigbeeDataTypeName(attribute_type), attribute_type,
-									attribute_size, attribute_size);
+								*zbGateway.getWriteAttrStatusLastResult(),
+      		      *zbGateway.getWriteAttrAttributeIdLastResult(),
+								getZigbeeDataTypeName(attribute_type), attribute_type,
+								attribute_size, attribute_size);
 
 							updateLabel_P(
 								clusters_attributes_table[device_read_attribute_label], 
@@ -6388,8 +6198,6 @@ void getClustersAttributesQueryCallback(BasicControl *sender, int type, void *pa
 								device_async_query_str);
 					}
 				}
-				/*if (write_attribute_payload) 
-					free(write_attribute_payload);*/
 			} break;
 
 			case GUI_CB_CUSTOM_CMD_FLAG : {	//custom command
@@ -6740,82 +6548,35 @@ void removeChannelCallback(BasicControl *sender, int type, void *param) {
 
 		uint8_t channel_slot = ESPUI.getControl(channel_selector)->getValueInt();
 
-    bool is_zigbee_channel = 
-			(z2s_channels_table[channel_slot].local_channel_type == 0);
+		Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
+
+    bool is_zigbee_channel = (z2s_core->getZ2SLocalChannelType() == 0);
 
 		if (is_zigbee_channel) {
 
 			sprintf_P(
-					general_purpose_gui_buffer, PSTR(
-						"Single channel removal is depreciated - "
-						"use SKIP_SUBDEVICE_REGISTRATION flag"));
+				general_purpose_gui_buffer, "Single channel removal is depreciated "
+				"- use SKIP_SUBDEVICE_REGISTRATION flag");
 
-      	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
-		} else {
+      updateLabel_P(channel_status_label, general_purpose_gui_buffer);
+		} 
+		else {
 
-			uint16_t gui_control_id = 
-				z2s_channels_table[channel_slot].gui_control_id;
+			uint16_t gui_control_id = z2s_core->getZ2SChannelGUIControlId();
 
 			if (Z2S_removeChannel(channel_slot, true)) {
 
 				removeChannelsSelectorChannel(channel_slot, gui_control_id);
 
-				/*ESPUI.updateControlValue(gui_control_id, -2);
-
-				int16_t next_channel_slot = 
-					Z2S_findChannelNumberNextSlot(channel_slot);
-
-				if (next_channel_slot >= 0)
-					ESPUI.updateSelect(channel_selector, next_channel_slot);
-				else
-					ESPUI.updateSelect(channel_selector, (long int)-1);
-
-				channelSelectorCallback(nullptr, next_channel_slot);*/
-
 				sprintf_P(
-					general_purpose_gui_buffer, PSTR(
-						":Local channel # %02u with all actions removed."), channel_slot);
+					general_purpose_gui_buffer, ":Local channel # %02u with all "
+					"actions removed.", channel_slot);
 
       	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
 			}
 		}
-		/*if (Z2S_removeChannel(channel_slot, true)) {
-
-			if (is_zigbee_channel) {
-				
-				sprintf_P(
-					general_purpose_gui_buffer, 
-					PSTR("Channel # %02u with all actions removed. Restarting..."),
-					channel_slot);
-
-      	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
-      	SuplaDevice.scheduleSoftRestart(1000);
-			} else {
-				
-				sprintf_P(
-					general_purpose_gui_buffer, 
-					PSTR("Channel # %02u with all actions removed."), channel_slot);
-
-      	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
-				
-			}
-		}*/
 	}
 }
-
-/*void removeAllChannelsCallback(BasicControl *sender, int type, void *param) {
-
-	if (type == B_UP) {
-		
-		if (Z2S_removeAllChannels()) {
-
-      updateLabel_C(
-				channel_status_label, 
-				PSTR("All channels and actions removed!. Restarting..."));
-      SuplaDevice.scheduleSoftRestart(1000);
-		}
-	}
-}*/
 
 void pairingSwitcherCallback(BasicControl *sender, int type, void *param){
 
@@ -7089,60 +6850,51 @@ uint32_t saveRemoteAddressData(uint8_t channel_slot) {
 
 	int8_t prefix_pos = working_str.indexOf("mdns://");
 
+	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
+
 	if (prefix_pos >= 0) {
 
-		Z2S_setChannelFlags(channel_slot, 
-												USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS,
-												false);
-
-		memcpy(\
-			z2s_channels_table[channel_slot].\
-				remote_channel_data.mDNS_name,\
-				working_str.c_str() + 7, 11); // cut "mdns://" before save
-			
-		z2s_channels_table[channel_slot].\
-			remote_channel_data.mDNS_name[11] = '\0';
-	} else {
+		z2s_core->setChannelUserDataFlags(
+			USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS, false);
+		z2s_core->setMDNSName(working_str.c_str());
+	} 
+	else {
 
 		IPAddress ip;
 		ip.fromString(working_str);
 
-		Z2S_clearChannelFlags(channel_slot, 
-													USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS,
-													false);
-			
-		z2s_channels_table[channel_slot].\
-			remote_channel_data.remote_ip_address = ip;
+		z2s_core->clearChannelUserDataFlags(
+			USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS, false);
+
+		z2s_core->setRemoteIPAddress(ip);
 	}
 		
 	if (Z2S_saveChannelsTable()) {
 
 		log_i("remote channel mDNS/IP address saved successfuly!");
-				//		z2s_channels_table[channel_slot].user_data_1);
 	}
 
 	return
-    Z2S_checkChannelFlags(channel_slot, 
-                          USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
-    REMOTE_ADDRESS_TYPE_MDNS : REMOTE_ADDRESS_TYPE_IP4;
-
+    z2s_core->checkChannelUserDataFlags(
+			USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?REMOTE_ADDRESS_TYPE_MDNS : 
+			REMOTE_ADDRESS_TYPE_IP4;
 }
 
 uint8_t	saveRemoteChannelData(uint8_t channel_slot){
 
-	uint8_t remote_Supla_channel = 
-		ESPUI.getControl(param_2_number)->getValueInt();
+	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
+	
+	uint8_t Supla_remote_channel = ESPUI.getControl(
+		param_2_number)->getValueInt();
 
-		z2s_channels_table[channel_slot].Supla_remote_channel =\
-				remote_Supla_channel;								
+	z2s_core->setSuplaRemoteChannel(Supla_remote_channel);								
 
 	if (Z2S_saveChannelsTable()) {
 
-		log_i("remote_Supla_channel saved successfuly to %lu", 
-					remote_Supla_channel);
+		log_i(
+			"remote_Supla_channel saved successfuly to %lu", Supla_remote_channel);
 	}
-	return 
-		remote_Supla_channel;
+	return Supla_remote_channel;
 }
 
 void editChannelCallback(BasicControl *sender, int type, void *param) {
@@ -7157,44 +6909,24 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 		uint8_t channel_slot = 
 			ESPUI.getControl(channel_selector)->getValueInt();
+		
+		Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
 
 		switch ((uint32_t)param) {
 
 
 			case GUI_CB_UPDATE_CHANNEL_NAME_FLAG : {	
 
-				size_t Supla_channel_name_size = strnlen(
-					ESPUI.getControl(channel_name_text)->getValueCstr(),
-					SUPLA_CHANNEL_NAME_MAX_SIZE - 1);
-
-				size_t Supla_channel_name_size_w = mbstrnlen(
-					ESPUI.getControl(channel_name_text)->getValueCstr(),
-					SUPLA_CHANNEL_NAME_MAX_SIZE - 1);
-				log_i(
-					"New channel name length %u, wide %u", Supla_channel_name_size,
-					Supla_channel_name_size_w);
-		
-				strncpy(
-					z2s_channels_table[channel_slot].Supla_channel_name, 
-					ESPUI.getControl(channel_name_text)->getValueCstr(), 
-					Supla_channel_name_size_w);
-
-				z2s_channels_table[channel_slot].\
-					Supla_channel_name[Supla_channel_name_size_w] = '\0';
-
+				z2s_core->setZ2SChannelName(
+					ESPUI.getControl(channel_name_text)->getValueCstr());
+				
 				if (Z2S_saveChannelsTable()) {
 
-					log_i(
-						"%d, %s", 
-						z2s_channels_table[channel_slot].gui_control_id, 
-						z2s_channels_table[channel_slot].Supla_channel_name);
-
-					//if (channel_selector_first_option_id < 0xFFFF)
 					if ((channel_selector < 0xFFFF) || 
 							(action_source_channel_selector < 0xFFFF))
 						ESPUI.updateControlLabel(
-							z2s_channels_table[channel_slot].gui_control_id, 
-							z2s_channels_table[channel_slot].Supla_channel_name);
+							z2s_core->getZ2SChannelGUIControlId(), 
+							z2s_core->getZ2SChannelName());
 					
 					if (sb_channel_selector < 0xFFFF) {
 
@@ -7203,28 +6935,8 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 						if (first_option_id)
 							ESPUI.updateControlLabel(
-								first_option_id->GetId(), 
-								z2s_channels_table[channel_slot].Supla_channel_name);
+								first_option_id->GetId(), z2s_core->getZ2SChannelName());
 					}
-
-					/*uint16_t actions_channels_selectors_option_index =
-						channel_selector_first_option_id < 0xFFFF ? 
-							z2s_channels_table[channel_slot].gui_control_id -
-							channel_selector_first_option_id : 
-							z2s_channels_table[channel_slot].gui_control_id;
-
-					if (action_source_channel_selector_first_option_id < 0xFFFF) {
-
-						ESPUI.updateControlLabel(
-							action_source_channel_selector_first_option_id +
-							actions_channels_selectors_option_index, 
-							z2s_channels_table[channel_slot].Supla_channel_name);
-
-						ESPUI.updateControlLabel(
-							action_destination_channel_selector_first_option_id +
-							actions_channels_selectors_option_index, 
-							z2s_channels_table[channel_slot].Supla_channel_name);
-					} */
 				}
 			} break;
 
@@ -7243,25 +6955,15 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_UPDATE_PARAM_1_FLAG : {	
 
 
-				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
+				switch (z2s_core->getZ2SChannelType()) {
 
 
 					case 0x0000: {
 
-						if (z2s_channels_table[channel_slot].local_channel_type ==
+						if (z2s_core->getZ2SLocalChannelType() ==
 								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
 
-							if (saveRemoteAddressData(channel_slot) ==
-									REMOTE_ADDRESS_TYPE_MDNS)
-								updateRemoteRelayMDNSName(
-									channel_slot,
-									z2s_channels_table[channel_slot].\
-									remote_channel_data.mDNS_name);
-							else
-								updateRemoteRelayIPAddress(
-									channel_slot,
-									z2s_channels_table[channel_slot].\
-										remote_channel_data.remote_ip_address);
+							saveRemoteAddressData(channel_slot);
 						}
 					} break;
 
@@ -7283,13 +6985,14 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 					default: {
 
-						z2s_channels_table[channel_slot].user_data_1 = 
-							ESPUI.getControl(param_1_number)->getValueInt();
+						z2s_core->setChannelUserData1(
+							ESPUI.getControl(param_1_number)->getValueInt());
 						
 						if (Z2S_saveChannelsTable()) {
 
-							log_i("channel user data 1 updated successfuly to %lu", 
-										z2s_channels_table[channel_slot].user_data_1);
+							log_i(
+								"channel user data 1 updated successfuly to %lu", 
+								z2s_core->getChannelUserData1());
 						}
 					} break;
 				}
@@ -7298,13 +7001,13 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_UPDATE_PARAM_2_FLAG : {	
 
 
-				switch (z2s_channels_table[channel_slot].Supla_channel_type) {
+				switch (z2s_core->getZ2SChannelType()) {
 
 
 					case 0x0000: {
 
-						updateRemoteRelaySuplaChannel(channel_slot,
-																					saveRemoteChannelData(channel_slot));
+						updateRemoteRelaySuplaChannel(
+							channel_slot, saveRemoteChannelData(channel_slot));
 					} break;
 
 
@@ -7317,13 +7020,14 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 					default: {
 
-						z2s_channels_table[channel_slot].user_data_2 = 
-							ESPUI.getControl(param_2_number)->getValueInt();
+						z2s_core->setChannelUserData1( 
+							ESPUI.getControl(param_2_number)->getValueInt());
 						
 						if (Z2S_saveChannelsTable()) {
 
-							log_i("channel user data 2 updated successfuly to %lu", 
-										z2s_channels_table[channel_slot].user_data_2);
+							log_i(
+								"channel user data 2 updated successfuly to %lu", 
+								z2s_core->getChannelUserData1());
 						}
 					} break;
 				}
@@ -7332,24 +7036,24 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_UPDATE_KEEPALIVE_FLAG : {	
 
 				updateTimeout(
-					channel_slot, 0, 1, 
-					ESPUI.getControl(keepalive_number)->getValueInt());
+					channel_slot, 0, 1, ESPUI.getControl(
+						keepalive_number)->getValueInt());
 			} break;
 
 
 			case GUI_CB_UPDATE_TIMEOUT_FLAG : {		
 
 				updateTimeout(
-					channel_slot, 0, 2, 
-					ESPUI.getControl(timeout_number)->getValueInt());
+					channel_slot, 0, 2, ESPUI.getControl(
+						timeout_number)->getValueInt());
 			} break;
 
 
 			case GUI_CB_UPDATE_REFRESH_FLAG : {		
 
 				updateTimeout(
-					channel_slot, 0, 4, 
-					ESPUI.getControl(refresh_number)->getValueInt());
+					channel_slot, 0, 4, ESPUI.getControl(
+						refresh_number)->getValueInt());
 			} break;	
 		}
 		gui_callback_reentry_number--;
@@ -7362,50 +7066,52 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 
 		uint8_t channel_slot = ESPUI.getControl(channel_selector)->getValueInt();
 
+		auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
+
 		switch ((uint32_t)param) {
 
 
 				case GUI_CB_DISABLE_CHANNEL_NOTIFICATIONS_FLAG: {
 
 						if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, 
-																	USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
+							Z2S_setChannelFlags(
+								channel_slot, USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 						else
-							Z2S_clearChannelFlags(channel_slot, 
-																		USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
+							Z2S_clearChannelFlags(
+								channel_slot, USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 				} break;
 
 
 				case GUI_CB_TRV_AUTO_TO_SCHEDULE_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, 
-																	USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
+							Z2S_setChannelFlags(
+							channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 						else
-							Z2S_clearChannelFlags(channel_slot, 
-																		USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
+							Z2S_clearChannelFlags(
+								channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 				} break;
 
 
 				case GUI_CB_TRV_AUTO_TO_SCHEDULE_MANUAL_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, 
-																	USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+							Z2S_setChannelFlags(
+								channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
 						else
-							Z2S_clearChannelFlags(channel_slot, 
-																		USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+							Z2S_clearChannelFlags(
+								channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
 				} break;
 
 
 				case GUI_CB_TRV_FIXED_CALIBRATION_FLAG: {
 
 					if (type == S_ACTIVE)
-							Z2S_setChannelFlags(channel_slot, 
-																	USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+							Z2S_setChannelFlags(
+								channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 						else {
-							Z2S_clearChannelFlags(channel_slot, 
-																		USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+							Z2S_clearChannelFlags(
+								channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 
 							updateHvacFixedCalibrationTemperature(channel_slot, 0);
 						}
@@ -7429,13 +7135,11 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 							Z2S_setChannelFlags(
-						channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
+								channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
 						else {
 
-							z2s_channels_table[channel_slot].\
-								remote_channel_data.remote_ip_address = 0;
-
-							z2s_channels_table[channel_slot].Supla_remote_channel = 0xFF;
+							z2s_core->setRemoteIPAddress(0);
+							z2s_core->setSuplaRemoteChannel(0xFF);
 
 							Z2S_clearChannelFlags(
 								channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE |
@@ -8563,12 +8267,15 @@ void valveCallback(BasicControl *sender, int type, void *param) {
 					&device, SONOFF_CUSTOM_CLUSTER, attribute_id, 
 					ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 11, &valve_cmd_payload, true)) {
 
-					if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS)
+					if (*zbGateway.getWriteAttrStatusLastResult() == 
+							ESP_ZB_ZCL_STATUS_SUCCESS)
 						
-						ESPUI.updateLabel(valve_info_label, PSTR("Valve program start success!"));
+						ESPUI.updateLabel(
+							valve_info_label, PSTR("Valve program start success!"));
 					else
 						
-						ESPUI.updateLabel(valve_info_label, PSTR("Valve program start error!"));
+						ESPUI.updateLabel(
+							valve_info_label, PSTR("Valve program start error!"));
 				} else
 					
 					ESPUI.updateLabel(valve_info_label, device_query_failed_str);
@@ -8587,7 +8294,7 @@ void valveCallback(BasicControl *sender, int type, void *param) {
 				if (flag_id == GUI_CB_SEND_PROGRAM_2_FLAG)
 					channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID;
 
-				int16_t channel_number_slot = Z2S_findChannelNumberSlot(
+				/*int16_t channel_number_slot = Z2S_findChannelNumberSlot(
 					z2s_zb_devices_table[device_slot].ieee_addr, -1, 
 					SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, channel_sid);
   
@@ -8595,66 +8302,78 @@ void valveCallback(BasicControl *sender, int type, void *param) {
 					
 					log_i("no Supla channel for Sonoff program run");
 					return;
+				}*/
+
+				auto z2s_core = Z2S_findZ2SCore(
+					z2s_zb_devices_table[device_slot].short_addr, ALL_ENDPOINTS, 
+					SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, channel_sid);
+  
+  			if (!z2s_core) {
+					
+					log_i("no Supla channel for Sonoff program run");
+					return;
 				}
+
 
 				switch (ESPUI.getControl(valve_program_selector)->getValueInt()) {
 
 					case 1: {
 						
-						z2s_channels_table[channel_number_slot].smart_valve_data.program = 1;
-						z2s_channels_table[channel_number_slot].smart_valve_data.value = 
-							ESPUI.getControl(valve_worktime_number)->getValueInt();
+						z2s_core->setSmartValveProgram(1);
+						z2s_core->setSmartValveValue(
+							ESPUI.getControl(valve_worktime_number)->getValueInt());
 
 						msgZ2SDeviceVirtualRelayValue(
-							channel_number_slot, VRV_S8_ID, 1);
+							z2s_core->getZ2SElementPtr(), VRV_S8_ID, 1);
 
 						msgZ2SDeviceVirtualRelayValue(
-							channel_number_slot, VRV_S32_ID,
+							z2s_core->getZ2SElementPtr(), VRV_S32_ID,
 							ESPUI.getControl(valve_worktime_number)->getValueInt());
 					} break;
 
 					case 2: {
 						
-						z2s_channels_table[channel_number_slot].smart_valve_data.program = 2;
-						z2s_channels_table[channel_number_slot].smart_valve_data.value = 
-							ESPUI.getControl(valve_volume_number)->getValueInt();
+						z2s_core->setSmartValveProgram(2);
+						z2s_core->setSmartValveValue(
+							ESPUI.getControl(valve_volume_number)->getValueInt());
 
 						msgZ2SDeviceVirtualRelayValue(
-							channel_number_slot, VRV_S8_ID, 2);
+							z2s_core->getZ2SElementPtr(), VRV_S8_ID, 2);
 
 						msgZ2SDeviceVirtualRelayValue(
-							channel_number_slot, VRV_S32_ID,
+							z2s_core->getZ2SElementPtr(), VRV_S32_ID,
 							ESPUI.getControl(valve_volume_number)->getValueInt());
 					} break;
 
 					default: {
-						z2s_channels_table[channel_number_slot].smart_valve_data.program = 0;
-						z2s_channels_table[channel_number_slot].smart_valve_data.cycles = 0;
-						z2s_channels_table[channel_number_slot].smart_valve_data.value = 0;
+						z2s_core->setSmartValveProgram(0);
+						z2s_core->setSmartValveCycles(0);
+						z2s_core->setSmartValveValue(0);
 
 						msgZ2SDeviceVirtualRelayValue(
-							channel_number_slot, VRV_S8_ID, 0);
+							z2s_core->getZ2SElementPtr(), VRV_S8_ID, 0);
+
 						Z2S_saveChannelsTable();
 						return;
 					} break;
 				}
 
-				z2s_channels_table[channel_number_slot].smart_valve_data.cycles = 
-					ESPUI.getControl(valve_cycles_number)->getValueInt();
+				z2s_core->setSmartValveCycles( 
+					ESPUI.getControl(valve_cycles_number)->getValueInt());
 
-				z2s_channels_table[channel_number_slot].smart_valve_data.pause_time = 
-				ESPUI.getControl(valve_pause_number)->getValueInt();
+				z2s_core->setSmartValvePauseTime( 
+				ESPUI.getControl(valve_pause_number)->getValueInt());
 
 				if (Z2S_saveChannelsTable())
 					ESPUI.updateLabel(
-				valve_info_label, PSTR("Valve program send to Supla channel."));
+						valve_info_label, PSTR("Valve program send to Supla channel."));
 
 				msgZ2SDeviceVirtualRelayValue(
-					channel_number_slot, VRV_U8_ID,
+					z2s_core->getZ2SElementPtr(), VRV_U8_ID,
 					ESPUI.getControl(valve_cycles_number)->getValueInt());
 																			
 				msgZ2SDeviceVirtualRelayValue(
-					channel_number_slot, VRV_U32_ID, 
+					z2s_core->getZ2SElementPtr(), VRV_U32_ID, 
 					ESPUI.getControl(valve_pause_number)->getValueInt());
 			} break;
 

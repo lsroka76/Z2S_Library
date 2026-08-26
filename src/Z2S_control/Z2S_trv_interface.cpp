@@ -439,10 +439,9 @@ uint8_t buildLumiFFF2CmdLinkParams1(
   return fff2_header_size + lumi_sensor_link_params_1_size + 1;
 }
 
-uint8_t buildLumiFFF2CmdLinkParams2(uint8_t* fff2_cmd_data_buffer,
-                                    uint8_t counter,
-                                    time_t timestamp,
-                                    esp_zb_ieee_addr_t ieee_addr) {
+uint8_t buildLumiFFF2CmdLinkParams2(
+  uint8_t* fff2_cmd_data_buffer, uint8_t counter, time_t timestamp,
+  esp_zb_ieee_addr_t ieee_addr) {
 
   uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
   uint8_t lumi_sensor_link_params_2_size = 
@@ -450,23 +449,18 @@ uint8_t buildLumiFFF2CmdLinkParams2(uint8_t* fff2_cmd_data_buffer,
 
   *fff2_cmd_data_buffer = fff2_header_size + lumi_sensor_link_params_2_size;
 
-  buildLumiFFF2CmdHeader(fff2_cmd_data_buffer + 1, 
-                         counter, 
-                         LUMI_FFF2_CMD_ACTION_LINK_SENSOR,
-                         lumi_sensor_link_params_2_size);
+  buildLumiFFF2CmdHeader(
+    fff2_cmd_data_buffer + 1, counter, LUMI_FFF2_CMD_ACTION_LINK_SENSOR,
+    lumi_sensor_link_params_2_size);
     
-  memcpy(fff2_cmd_data_buffer + fff2_header_size + 1, 
-         &lumi_sensor_link_params_2_template,
-         lumi_sensor_link_params_2_size);
+  memcpy(
+    fff2_cmd_data_buffer + fff2_header_size + 1, 
+    &lumi_sensor_link_params_2_template, lumi_sensor_link_params_2_size);
 
   lumi_sensor_link_params_2_t *lumi_sensor_link_params_2 = 
     (lumi_sensor_link_params_2_t*)(fff2_cmd_data_buffer + fff2_header_size + 1);
       
   lumi_sensor_link_params_2->timestamp  = timestamp;
-
-  /*memcpy(lumi_sensor_link_params_2->device_address,
-        ieee_addr, 
-        sizeof(esp_zb_ieee_addr_t));*/
 
   for (uint8_t i = 0; i < sizeof(esp_zb_ieee_addr_t); i++)
     lumi_sensor_link_params_2->device_address[i] = ieee_addr[7 - i];
@@ -474,37 +468,31 @@ uint8_t buildLumiFFF2CmdLinkParams2(uint8_t* fff2_cmd_data_buffer,
   return fff2_header_size + lumi_sensor_link_params_2_size + 1;
 }
 
-uint8_t buildLumiFFF2CmdUnlinkParams(uint8_t* fff2_cmd_data_buffer,
-                                     uint8_t counter,
-                                     time_t timestamp,
-                                     uint8_t link_id,
-                                     esp_zb_ieee_addr_t ieee_addr) {
+uint8_t buildLumiFFF2CmdUnlinkParams(
+  uint8_t* fff2_cmd_data_buffer, uint8_t counter, time_t timestamp,
+  uint8_t link_id, esp_zb_ieee_addr_t ieee_addr) {
 
   uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
-  uint8_t lumi_sensor_unlink_params_size = 
-    sizeof(lumi_sensor_unlink_params_t);
+  uint8_t lumi_sensor_unlink_params_size = sizeof(
+    lumi_sensor_unlink_params_t);
 
   *fff2_cmd_data_buffer = fff2_header_size + lumi_sensor_unlink_params_size;
 
-  buildLumiFFF2CmdHeader(fff2_cmd_data_buffer + 1, 
-                         counter, 
-                         LUMI_FFF2_CMD_ACTION_UNLINK_SENSOR,
-                         lumi_sensor_unlink_params_size);
+  buildLumiFFF2CmdHeader(
+    fff2_cmd_data_buffer + 1, counter, LUMI_FFF2_CMD_ACTION_UNLINK_SENSOR,
+    lumi_sensor_unlink_params_size);
     
-  memcpy(fff2_cmd_data_buffer + fff2_header_size + 1, 
-         &lumi_sensor_unlink_params_template,
-         lumi_sensor_unlink_params_size);
+  memcpy(
+    fff2_cmd_data_buffer + fff2_header_size + 1, 
+    &lumi_sensor_unlink_params_template, lumi_sensor_unlink_params_size);
 
   lumi_sensor_unlink_params_t *lumi_sensor_unlink_params = 
-    (lumi_sensor_unlink_params_t*)(fff2_cmd_data_buffer + fff2_header_size + 1);
+    (lumi_sensor_unlink_params_t*)(fff2_cmd_data_buffer + 
+      fff2_header_size + 1);
       
   lumi_sensor_unlink_params->timestamp  = timestamp;
   lumi_sensor_unlink_params->link_id    = link_id;
 
-  /*memcpy(lumi_sensor_unlink_params->device_address,
-        ieee_addr, 
-        sizeof(esp_zb_ieee_addr_t));*/
-  
   for (uint8_t i = 0; i < sizeof(esp_zb_ieee_addr_t); i++)
     lumi_sensor_unlink_params->device_address[i] = ieee_addr[7 - i];
 
@@ -526,30 +514,31 @@ float ReverseFloat( const float inFloat ) {
 }
 
 
-uint8_t buildLumiFFF2CmdSendTemperatureParams(uint8_t* fff2_cmd_data_buffer,
-                                              float temperature_100) {
+uint8_t buildLumiFFF2CmdSendTemperatureParams(
+  uint8_t* fff2_cmd_data_buffer, float temperature_100) {
   
   uint8_t fff2_header_size = sizeof(lumi_fff2_cmd_header_t);
-  uint8_t lumi_sensor_send_temperature_params_size = 
-    sizeof(lumi_sensor_send_temperature_params_t);
+  uint8_t lumi_sensor_send_temperature_params_size = sizeof(
+    lumi_sensor_send_temperature_params_t);
 
-  *fff2_cmd_data_buffer = fff2_header_size + lumi_sensor_send_temperature_params_size;
+  *fff2_cmd_data_buffer = fff2_header_size + 
+    lumi_sensor_send_temperature_params_size;
 
-  buildLumiFFF2CmdHeader(fff2_cmd_data_buffer + 1, 
-                         0x10, 
-                         LUMI_FFF2_CMD_ACTION_SEND_TEMPERATURE,
-                         lumi_sensor_send_temperature_params_size);
+  buildLumiFFF2CmdHeader(
+    fff2_cmd_data_buffer + 1, 0x10, LUMI_FFF2_CMD_ACTION_SEND_TEMPERATURE,
+    lumi_sensor_send_temperature_params_size);
     
-  memcpy(fff2_cmd_data_buffer + fff2_header_size + 1, 
-         &lumi_sensor_send_temperature_params_template,
-         lumi_sensor_send_temperature_params_size);
+  memcpy(
+    fff2_cmd_data_buffer + fff2_header_size + 1, 
+    &lumi_sensor_send_temperature_params_template,
+    lumi_sensor_send_temperature_params_size);
 
   lumi_sensor_send_temperature_params_t *lumi_sensor_send_temperature_params = 
     (lumi_sensor_send_temperature_params_t*)(fff2_cmd_data_buffer + 
       fff2_header_size + 1);
       
-  lumi_sensor_send_temperature_params->temperature_100  = 
-    ReverseFloat(temperature_100);
+  lumi_sensor_send_temperature_params->temperature_100  = ReverseFloat(
+    temperature_100);
 
   return fff2_header_size + lumi_sensor_send_temperature_params_size + 1;
 }
@@ -607,24 +596,17 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorTemperature(
           (_trv_temperature_sensor_type == 0xFF))
         sendTRVExternalSensorInput(true);
       
-      uint8_t buffer_size = 
-        buildLumiFFF2CmdSendTemperatureParams(fff2_cmd_data_buffer, 
-                                              external_sensor_temperature);
+      uint8_t buffer_size = buildLumiFFF2CmdSendTemperatureParams(
+          fff2_cmd_data_buffer, external_sensor_temperature);
 
       zbGateway.sendAttributeWrite(
-        _short_addr, _endpoint, 
-        LUMI_CUSTOM_CLUSTER, 
-        LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-        ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
-        buffer_size, &fff2_cmd_data_buffer,
-        true,
-        1, LUMI_MANUFACTURER_CODE);  
+        _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+        LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+        buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);  
 
       zbGateway.sendAttributeRead(
-        _short_addr, _endpoint, 
-        ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
-        false);
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, false);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -647,10 +629,9 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
       uint8_t temperature_selector = trv_external_sensor_present ? 1 : 0;
 
       zbGateway.sendAttributeWrite(
-        _short_addr, _endpoint, 
-        SONOFF_CUSTOM_CLUSTER, 
-        TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, 
-        ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
+        _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
+        TRVZB_CMD_SET_TEMPERATURE_SENSOR_SELECT, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, 
+        &temperature_selector);
     }
 
     if (_trv_commands_set == LUMI_CMD_SET) {
@@ -659,23 +640,26 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
 
       time_t timestamp = time(nullptr);
 
+      //esp_zb_ieee_addr_t ieee_addr;
+      
+
       if (trv_external_sensor_present) {
       
         uint8_t buffer_size = buildLumiFFF2CmdLinkParams1(
-          fff2_cmd_data_buffer, 0x12, timestamp, _z2s_channel->ieee_addr);
+          fff2_cmd_data_buffer, 0x12, timestamp, getIEEEAddress());
 
         zbGateway.sendAttributeWrite(
-          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
-          &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING,
+          buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         buffer_size =buildLumiFFF2CmdLinkParams2(
-          fff2_cmd_data_buffer, 0x13, timestamp, _z2s_channel->ieee_addr);
+          fff2_cmd_data_buffer, 0x13, timestamp, getIEEEAddress());
 
         zbGateway.sendAttributeWrite(
-          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
-          &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+          buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         zbGateway.sendAttributeRead(
         _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
@@ -684,24 +668,24 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
       } else {
 
         uint8_t buffer_size = buildLumiFFF2CmdUnlinkParams(
-          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, _z2s_channel->ieee_addr);
+          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, getIEEEAddress());
 
         zbGateway.sendAttributeWrite(
-          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
-          &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+          buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         buffer_size = buildLumiFFF2CmdUnlinkParams(
-          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, _z2s_channel->ieee_addr);
+          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, getIEEEAddress());
 
         zbGateway.sendAttributeWrite(
-          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, buffer_size, 
-          &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID, ESP_ZB_ZCL_ATTR_TYPE_OCTET_STRING, 
+          buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         zbGateway.sendAttributeRead(
-        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
-        ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, true);
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
+          ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, true);
       } 
     }
 

@@ -74,23 +74,6 @@ void addZ2SDeviceIASzone(
 
 /*****************************************************************************/
 
-/*void msgZ2SDeviceIASzone(
-  int16_t channel_number_slot, bool state, bool check_flags) {
-
-  if (channel_number_slot < 0) {
-
-    log_e("msgZ2SDeviceIASzone - invalid channel number slot");
-    return;
-  }
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceIASzone(element, state, check_flags);
-}*/
-
-/*****************************************************************************/
-
 void msgZ2SDeviceIASzone(
   Supla::Element* element, bool state, bool check_flags) {
 

@@ -1,6 +1,7 @@
 #ifndef SRC_Z2S_COMMON_H_
 #define SRC_Z2S_COMMON_H_
 
+/***********************************************************************************/
 
 #define USER_DATA_FLAG_SED_TIMEOUT                              (1 << 0)  // 0x00001
 #define USER_DATA_FLAG_MSG_DISABLED                             (1 << 1)  // 0x00002
@@ -21,6 +22,8 @@
 #define USER_DATA_FLAG_EXTENDED_DATA_COUNTER                    (1 << 15) // 0x08000
 #define USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL             (1 << 16) // 0x10000
 
+/***********************************************************************************/
+
 #define ZBD_USER_DATA_FLAG_VERSION_2_0                          (1 << 0)
 #define ZBD_USER_DATA_FLAG_BINDING_REQUIRED                     (1 << 1)
 #define ZBD_USER_DATA_FLAG_RESERVED_2                           (1 << 2)
@@ -38,10 +41,37 @@
 #define ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN   (1 << 17)
 #define ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN      (1 << 18)
 
-#define DEVICE_LOCAL_NAME_MAX_SIZE            36
-#define SUPLA_CHANNEL_NAME_MAX_SIZE           32
+/***********************************************************************************/
+
+#define DEVICE_LOCAL_NAME_MAX_SIZE                              36
+#define SUPLA_CHANNEL_NAME_MAX_SIZE                             32
+
+/***********************************************************************************/
+
+#define LOCAL_CHANNEL_TYPE_ACTION_HANDLER                       0x01
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY                        0x02
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY                       0x03
+
+#define LOCAL_CHANNEL_TYPE_REMOTE_RELAY                         0x10
+#define LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER                   0x11
+
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_BUTTON                       0x20
+
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC                         0x30
+
+#define LOCAL_CHANNEL_TYPE_SWITCHBOT                            0x40
+
+#define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                       0x80
+
+#define REMOTE_ADDRESS_TYPE_LOCAL                               0x00
+#define REMOTE_ADDRESS_TYPE_IP4                                 0x01
+#define REMOTE_ADDRESS_TYPE_MDNS                                0x02
+
+/***********************************************************************************/
 
 extern portMUX_TYPE Z2S_globalMutex;
+
+/***********************************************************************************/
 
 typedef struct z2s_zb_device_params_s {
 
@@ -81,6 +111,8 @@ typedef struct z2s_zb_device_params_s {
   uint64_t user_data_4;
 
 } __attribute__((packed)) z2s_zb_device_params_t;  //fields are padded properly anyway
+
+/***********************************************************************************/
 
 typedef struct z2s_device_params_s {
 
@@ -184,9 +216,53 @@ union {
   uint8_t             reserved_9;
 } z2s_device_params_t;
 
+/***********************************************************************************/
+
+size_t mbstrnlen(const char *mb_str, size_t max_bytes);
+
+/******************************************************************************/
+
+bool checkIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index);
+bool setIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index);
+bool clearIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
+  uint16_t max_index);
+
+bool Z2S_loadIndexTable(
+  uint8_t *index_table, size_t table_size, const char *file_name);
+bool Z2S_saveIndexTable(
+  uint8_t *index_table, size_t table_size, const char *file_name);
+uint16_t Z2S_getIndexTableEntriesNumber(
+  uint8_t *index_table, uint16_t max_index);
+int16_t Z2S_getIndexTablePositionCounter(
+  uint8_t *index_table, uint16_t index_position, uint16_t max_index);
+
+int16_t Z2S_findFreeEntryIndex(uint8_t *index_table, uint16_t max_index);
+int16_t Z2S_findNextIndexPosition(
+  uint8_t *index_table, uint16_t index_position, uint16_t max_index);
+int16_t Z2S_findPrevIndexPosition(
+  uint8_t *index_table, uint16_t index_position, uint16_t max_index);
+
+bool Z2S_saveObject(
+  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
+  size_t object_size);
+
+bool Z2S_loadObject(
+  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
+  size_t object_size);
+
+bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix);
+
+/*****************************************************************************/
+
+bool Z2S_saveChannelsTable();
+
 class Z2S_Core;
 
 inline std::vector<Z2S_Core*> Z2S_Cores;
+
+/***********************************************************************************/
 
 class Z2S_Core {
 
@@ -194,10 +270,10 @@ public:
 
   Z2S_Core(Supla::Element* z2s_element) {
 
-    _z2s_core_ptr = this;
-    Z2S_Cores.push_back(_z2s_core_ptr);
+    //_z2s_core_ptr = this;
+    Z2S_Cores.push_back(this);
     _z2s_element = z2s_element;
-    log_i("Element <%08X>, Core <%08X>", _z2s_element, _z2s_core_ptr);
+    //log_i("Element <%08X>, Core <%08X>", _z2s_element, _z2s_core_ptr);
   };
 
   ~Z2S_Core() {
@@ -218,18 +294,20 @@ public:
     while (core_it != Z2S_Cores.end()) {
 
       log_i(
-        "Core ptr 0x%08X, name %s, short address 0x%04X, channel #%u\n\r", 
-        *core_it, (*core_it)->_z2s_channel ? 
+        "Core ptr 0x%08X, Element ptr 0x%08X, name %s, \n\r"
+        "short address 0x%04X, channel #%u, sub id %d\n\r", 
+        *core_it, (*core_it)->_z2s_element, (*core_it)->_z2s_channel ? 
         (*core_it)->_z2s_channel->Supla_channel_name : "missing", 
         (*core_it)->_short_addr, 
-        (*core_it)->_z2s_element->getChannelNumber());
+        (*core_it)->_z2s_element->getChannelNumber(), 
+        (*core_it)->_z2s_channel->sub_id);
       core_it++;
     }
   }
 
   Z2S_Core* getZ2SCorePtr() {
     
-    return _z2s_core_ptr;
+    return this; //_z2s_core_ptr;
   }
 
   Supla::Element* getZ2SElementPtr() {
@@ -263,7 +341,16 @@ public:
     return _z2s_channel;
   };
 
-  void setZ2SChannelUID(uint16_t short_addr, uint8_t endpoint, int8_t sub_id) {
+  uint8_t getZbDeviceId() {
+    
+    if (_z2s_channel)
+      return _z2s_channel->Zb_device_id;
+    else
+      return 0xFF;
+  }
+
+  void setZ2SChannelUID(
+    uint16_t short_addr, uint8_t endpoint, int8_t sub_id) {
 
     _short_addr = short_addr;
     _endpoint = endpoint;
@@ -280,8 +367,15 @@ public:
   void updateShortAddress(uint16_t short_addr)  {
 
     _short_addr = short_addr;
-    //_device.short_addr = short_addr;
   };
+
+  uint8_t *getIEEEAddress() {
+
+    if (_z2s_channel)
+      return _z2s_channel->ieee_addr;
+    else 
+      return nullptr;
+  }
 
   void test_func() { 
   
@@ -360,17 +454,36 @@ public:
       return false;
   }
 
-  void setChannelUserDataFlags(uint32_t flags_to_set) {
+  bool setChannelUserDataFlags(uint32_t flags_to_set, bool save = true) {
 
-    if (_z2s_channel)
+    if (_z2s_channel) {
+
       _z2s_channel->user_data_flags |= flags_to_set;
+      
+      if (save)
+        return Z2S_saveChannelsTable();
+      else
+        return true;
+    }
+    else
+      return false;
   }
 
-  void clearChannelUserDataFlags(uint32_t flags_to_clear) {
+  bool clearChannelUserDataFlags(uint32_t flags_to_clear, bool save = true) {
 
-    if (_z2s_channel)
+    if (_z2s_channel) {
+      
       _z2s_channel->user_data_flags &= ~flags_to_clear;
+    
+      if (save)
+        return Z2S_saveChannelsTable();
+      else
+        return true;
+    }
+    else
+      return false;
   }
+
 
   double getChannelInitialGPMValue() {
 
@@ -457,6 +570,186 @@ public:
       _z2s_channel->fwd_energy_timer = set_value;
   }
 
+  uint32_t getRemoteIPAddress() {
+  
+    if (_z2s_channel)
+      return _z2s_channel->remote_channel_data.remote_ip_address;
+    else
+      return 0;
+  }
+
+  bool setRemoteIPAddress(uint32_t remote_ip_address);
+
+  uint8_t getSuplaRemoteChannel() {
+  
+    if (_z2s_channel)
+      return _z2s_channel->Supla_remote_channel;
+    else
+      return 0;
+  }
+
+  bool setSuplaRemoteChannel(uint8_t Supla_remote_channel) {
+  
+    if (_z2s_channel) {
+
+      _z2s_channel->Supla_remote_channel = Supla_remote_channel;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  const char* getMDNSName() {
+  
+    if (_z2s_channel)
+      return _z2s_channel->remote_channel_data.mDNS_name;
+    else
+      return 0;
+  }
+
+  bool setMDNSName(const char *mDNS_name);
+
+  uint32_t getIgnoreNextMsgCounter() {
+
+    if (_z2s_channel)
+      return _z2s_channel->ignore_next_msg_counter;
+    else
+      return 0;
+  }
+
+  bool setIgnoreNextMsgCounter(uint32_t counter) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->ignore_next_msg_counter = counter;
+      return true;
+    }
+    else
+      return false;
+  }
+
+
+  bool decIgnoreNextMsgCounter() {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->ignore_next_msg_counter--;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint8_t getSmartValveProgram() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_valve_data.program;
+    else
+      return 0xFF;
+  }
+
+  bool setSmartValveProgram(uint8_t program) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_valve_data.program = program;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint8_t getSmartValveCycles() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_valve_data.cycles;
+    else
+      return 0xFF;
+  }
+
+  bool setSmartValveCycles(uint8_t cycles) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_valve_data.cycles = cycles;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint32_t getSmartValveValue() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_valve_data.value;
+    else
+      return 0;
+  }
+
+  bool setSmartValveValue(uint32_t value) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_valve_data.value = value;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint32_t getSmartValvePauseTime() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_valve_data.pause_time;
+    else
+      return 0;
+  }
+
+  bool setSmartValvePauseTime(uint32_t pause_time) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_valve_data.pause_time = pause_time;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint8_t getZ2SChannelNumber() {
+    
+    if (_z2s_channel)
+      return _z2s_channel->Supla_channel;
+    else 
+      return 0xFF;
+  }
+
+  uint16_t getZ2SChannelGUIControlId() {
+    
+    if (_z2s_channel)
+      return _z2s_channel->gui_control_id;
+    else 
+      return 0xFFFF;
+  }
+
+  bool setZ2SChannelGUIControlId(uint16_t gui_control_id) {
+    
+    if (_z2s_channel) {
+
+      _z2s_channel->gui_control_id = gui_control_id;
+      return true;
+    }
+    else 
+      return false;
+  }
+
+  bool fillZ2SChannelStruct(z2s_device_params_t& z2s_channel);
+
+  static Z2S_Core *getZ2SCoreByChannelIndex(int16_t channel_index);
+  static Z2S_Core *getZ2SCoreBySuplaChannelNumber(
+    uint8_t Supla_channel_number);
+  static Z2S_Core *getZ2SCoreByZbDeviceId(uint8_t Zb_device_id);
+
   const char* getZ2SChannelName() {
 
     if (_z2s_channel)
@@ -465,13 +758,89 @@ public:
       return nullptr;
   }
 
-  uint32_t getChannelType() {
+  bool setZ2SChannelName(const char *Supla_channel_name) {
+
+    if (_z2s_channel && Supla_channel_name) {
+
+      size_t Supla_channel_name_size_w = mbstrnlen(
+        Supla_channel_name, SUPLA_CHANNEL_NAME_MAX_SIZE - 1);
+
+      strncpy(
+				_z2s_channel->Supla_channel_name, Supla_channel_name, 
+        Supla_channel_name_size_w);
+
+        _z2s_channel->Supla_channel_name[Supla_channel_name_size_w] = '\0';
+      return true;
+    }
+    else 
+      return false;
+  }
+
+  const char *getZ2SChannelExtendedDataCounter() {
+
+    if (_z2s_channel)
+      return _z2s_channel->extended_data_counter;
+    else 
+      return nullptr;
+  }
+
+  bool initZ2SChannelExtendedDataCounter() {
+
+    if (_z2s_channel) {
+
+      if (checkChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+        size_t extended_data_counter_str_len = strnlen(
+          _z2s_channel->extended_data_counter, 8);
+
+        if ((extended_data_counter_str_len > 0) &&
+            (extended_data_counter_str_len < 8))
+        return false;
+      }
+      sprintf(
+        _z2s_channel->extended_data_counter, "EDC_%03U", _channel_index);
+
+      return setChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER);
+  }
+  else 
+    return false;
+}
+
+  uint32_t getZ2SChannelType() {
 
     if (_z2s_channel)
       return _z2s_channel->Supla_channel_type;
     else 
       return 0;
   }
+
+  uint8_t getZ2SLocalChannelType() {
+
+    if (_z2s_channel)
+      return _z2s_channel->local_channel_type;
+    else 
+      return 0xFF;
+  }
+
+  uint8_t getExtendedDataType() {
+
+    if (_z2s_channel)
+      return _z2s_channel->extended_data_type;
+    else 
+      return 0x00;
+  }
+
+  bool setExtendedDataType(uint8_t extended_data_type) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->extended_data_type = extended_data_type;
+      return true;
+    }
+    else 
+      return false;
+  }
+
 
   uint32_t getChannelClusterId() {
 
@@ -496,29 +865,21 @@ public:
     return _sub_id;
   }
 
-  int16_t getChannelIndex() {
+  int16_t getZ2SChannelIndex() {
 
     return _channel_index;
   }
 
   uint32_t getZbDeviceModelId() {
 
-    //portENTER_CRITICAL(Z2S_globalMutex);
-
     uint32_t model_id = _z2s_zb_device ? _z2s_zb_device->desc_id : 0;
-
-    //portEXIT_CRITICAL(Z2S_globalMutex);
 
     return model_id;
   };
 
   uint32_t getChannelModelId() {
 
-    //portENTER_CRITICAL(Z2S_globalMutex);
-
     uint32_t model_id = _z2s_channel ? _z2s_channel->model_id : 0;
-
-    //portEXIT_CRITICAL(Z2S_globalMutex);
 
     return model_id;
   };
@@ -564,7 +925,7 @@ protected:
     };
     uint32_t _z2s_channel_uid;
   };
-  Z2S_Core* _z2s_core_ptr = nullptr;
+  //Z2S_Core* _z2s_core_ptr = nullptr;
   Supla::Element* _z2s_element = nullptr;
   int16_t _channel_index = -1;
 };

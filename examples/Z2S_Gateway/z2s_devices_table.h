@@ -436,6 +436,8 @@ Supla::Element *Z2S_getSuplaElementByChannelNumber(uint8_t channel_id);
 Supla::Control::SwitchBotRelay *Z2S_getSwitchBotRelayInstance(
   int16_t channel_number_slot, uint8_t channel_number = 0xFF);
 
+
+
 /*****************************************************************************/
 
 void Z2S_initSuplaChannels();
@@ -443,35 +445,6 @@ void Z2S_initSuplaChannels();
 void Z2S_rebuildSuplaChannels();
 
 uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms);
-
-/*****************************************************************************/
-
-bool checkIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
-  uint16_t max_index);
-bool setIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
-  uint16_t max_index);
-bool clearIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
-  uint16_t max_index);
-
-bool Z2S_loadIndexTable();
-bool Z2S_saveIndexTable();
-uint16_t Z2S_getIndexTableEntriesNumber();
-int16_t Z2S_getIndexTablePositionCounter(uint16_t index_position);
-
-int16_t Z2S_findFreeEntryIndex();
-int16_t Z2S_findNextIndexPosition(uint16_t index_position = 0);
-int16_t Z2S_findPrevIndexPosition(uint16_t action_position);
-
-bool Z2S_saveObject(
-  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
-  size_t object_size);
-
-bool Z2S_loadObject(
-  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
-  size_t object_size);
-
-bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix);
-
 
 /*****************************************************************************/
 
@@ -724,6 +697,7 @@ void sendChannelAction(uint8_t Supla_channel, uint16_t channel_action);
 void setRemoteRelay(uint8_t Supla_channel, bool state);
 
 void updateRemoteRelayMDNSName(uint8_t channel_number_slot, char * mDNS_name);
+//void updateRemoteRelayMDNSName(Z2S_Core *z2s_core);
 
 void updateRemoteRelayIPAddress(
   uint8_t channel_number_slot, uint32_t remote_ip_address);

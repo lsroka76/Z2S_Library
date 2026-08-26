@@ -165,6 +165,21 @@ void initZ2SDeviceVirtualRelay(
           break;
         }
       } break;
+
+
+      case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE: {
+
+
+        switch (_z2s_channel->sub_id) {
+
+
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: 
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID: 
+
+            z2s_function = Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM; 
+          break;
+        }
+      } break;
       
 
       case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY: {
@@ -298,14 +313,45 @@ void initZ2SDeviceVirtualRelay(
               
               log_i(
                 "program: %d, cycles#: %d, time/volume: %d, pause: %d",
-                _z2s_channel->\
-                  smart_valve_data.program,
-                _z2s_channel->\
-                  smart_valve_data.cycles,
-                _z2s_channel->\
-                  smart_valve_data.value,
-                _z2s_channel->\
-                  smart_valve_data.pause_time);
+                _z2s_channel->smart_valve_data.program,
+                _z2s_channel->smart_valve_data.cycles,
+                _z2s_channel->smart_valve_data.value,
+                _z2s_channel->smart_valve_data.pause_time);
+            }
+          } break;
+        }
+      } break;
+
+
+      case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE: {
+
+
+        switch (_z2s_channel->sub_id) {
+          
+
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID:
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID: {
+
+            if (_z2s_channel->smart_valve_data.program > 0) {
+              
+              Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS8(
+                _z2s_channel->smart_valve_data.program);
+
+              Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU8(
+                  _z2s_channel->smart_valve_data.cycles);
+                  
+              Supla_Z2S_VirtualRelay->Z2S_setFunctionValueS32(
+                  _z2s_channel->smart_valve_data.value);
+
+              Supla_Z2S_VirtualRelay->Z2S_setFunctionValueU32(
+                  _z2s_channel->smart_valve_data.pause_time);
+              
+              log_i(
+                "program: %d, cycles#: %d, time/volume: %d, pause: %d",
+                _z2s_channel->smart_valve_data.program,
+                _z2s_channel->smart_valve_data.cycles,
+                _z2s_channel->smart_valve_data.value,
+                _z2s_channel->smart_valve_data.pause_time);
             }
           } break;
         }
@@ -477,15 +523,6 @@ void addZ2SDeviceVirtualRelay(
   }
 }
 
-/*****************************************************************************/
-
-/*void msgZ2SDeviceVirtualRelay(int16_t channel_number_slot, bool state) {
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceVirtualRelay(element, state);
-}*/
 
 /*****************************************************************************/
 
@@ -497,17 +534,6 @@ void msgZ2SDeviceVirtualRelay(Supla::Element* element, bool state) {
   Supla_Z2S_VirtualRelay->setZbDeviceLastSeenMs(millis());
     
   Supla_Z2S_VirtualRelay->Z2S_setOnOff(state);          
-}
-
-/*****************************************************************************/
-
-void msgZ2SDeviceVirtualRelayValue(
-  int16_t channel_number_slot, uint8_t value_id, uint32_t value) {
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceVirtualRelayValue(element, value_id, value);
 }
 
 /*****************************************************************************/
@@ -555,17 +581,6 @@ void msgZ2SDeviceVirtualRelayValue(
 /*****************************************************************************/
 
 void msgZ2SDeviceRollerShutter(
-  int16_t channel_number_slot, uint8_t msg_id, uint16_t msg_value) {
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceRollerShutter(element, msg_id, msg_value);
-}  
-
-/*****************************************************************************/
-
-void msgZ2SDeviceRollerShutter(
   Supla::Element* element, uint8_t msg_id, uint16_t msg_value) {
     
   auto Supla_Z2S_RollerShutter = static_cast<
@@ -578,23 +593,15 @@ void msgZ2SDeviceRollerShutter(
 
     case RS_CURRENT_POSITION_LIFT_PERCENTAGE_MSG:
 
-      //if (Z2S_checkChannelFlags(
-      //  channel_number_slot, USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG)) {
       if (Supla_Z2S_RollerShutter->checkChannelUserDataFlags(
         USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG)) {
         
-        /*if (z2s_channels_table[channel_number_slot].\
-            ignore_next_msg_counter == 0)
-          Z2S_clearChannelFlags(
-            channel_number_slot, USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);*/
-        if (Supla_Z2S_RollerShutter->getZ2SChannel()\
-              ->ignore_next_msg_counter == 0)
+        if (Supla_Z2S_RollerShutter->getIgnoreNextMsgCounter() == 0)
           Supla_Z2S_RollerShutter->clearChannelUserDataFlags(
             USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
         else {
 
-          //z2s_channels_table[channel_number_slot].ignore_next_msg_counter--;
-          Supla_Z2S_RollerShutter->getZ2SChannel()->ignore_next_msg_counter--;
+          Supla_Z2S_RollerShutter->decIgnoreNextMsgCounter();
           return;
         }
       }

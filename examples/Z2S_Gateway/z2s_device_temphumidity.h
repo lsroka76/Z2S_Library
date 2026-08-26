@@ -29,19 +29,9 @@ void addZ2SDeviceTempHumidity(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceTempHumidityTemp(
-  int16_t channel_number_slot, double temp, bool refresh_only = false); 
-
-/*****************************************************************************/
-
 void msgZ2SDeviceTempHumidityTemp(Supla::Element* element, double temp); 
 
 /*****************************************************************************/
-
-void msgZ2SDeviceTempHumidityHumi(int16_t channel_number_slot, double humi); 
-
-/*****************************************************************************/
-
 
 void msgZ2SDeviceTempHumidityHumi(Supla::Element* element, double humi); 
 

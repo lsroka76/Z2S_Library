@@ -3425,7 +3425,44 @@ static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_id 		 			= TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP,
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_BOOL,
     .Tuya_datapoint_name 	 			= "Backlight",
-    .Tuya_datapoint_description = "Enter numeric value between 0 (OFF) and 1 (ON)"}
+    .Tuya_datapoint_description = "Enter numeric value between 0 (OFF) and 1 (ON)"},
+
+	//wq
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_QUALITY_MONITOR_MODE_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Mode",
+    .Tuya_datapoint_description = "Enter numeric value:<br>"
+																	"0 => Freshwater<br>"
+																	"1 => Seawater" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_QUALITY_MONITOR_SAMPLING_INTERVAL_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Sampling interval",
+    .Tuya_datapoint_description = "Enter numeric value between 5 and 1200 [s]"
+																	"<br>with step 5s" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_QUALITY_MONITOR_PROBE_TEMPERATURE_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Probe temperature calibration",
+    .Tuya_datapoint_description = "Enter numeric value between - 20 and 20"
+																	"<br> 1 = 0.1 °C"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_QUALITY_MONITOR_TEMPERATURE_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Temperature calibration",
+    .Tuya_datapoint_description = "Enter numeric value between - 200 and 200"
+																	"<br> 1 = 0.01 °C"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR,
+    .Tuya_datapoint_id 		 			= TUYA_WATER_QUALITY_MONITOR_HUMIDITY_CALIBRATION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Humidity calibration",
+    .Tuya_datapoint_description = "Enter numeric value between - 1000 and 1000"
+																	"<br> 1 = 0.01 %"}
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

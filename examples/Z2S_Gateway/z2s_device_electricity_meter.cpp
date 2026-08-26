@@ -495,8 +495,8 @@ void addZ2SDeviceElectricityMeter(
   auto Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(
     active_query, one_phase);
   
-  if (active_query) 
-    z2s_channels_table[free_slot].refresh_secs = 30; //active_query replacement 
+  //if (active_query) 
+  //  z2s_channels_table_DEP[free_slot].refresh_secs = 30; //active_query replacement 
   
   channel_extended_data_em_t channel_extended_data_em = {};
 
@@ -516,10 +516,11 @@ void addZ2SDeviceElectricityMeter(
 void updateZ2SDeviceElectricityMeter(int16_t channel_number_slot) {
 
   channel_extended_data_em_t channel_extended_data_em = {};
+  
+  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
 
   memcpy(
-    channel_extended_data_em.ieee_addr, 
-    z2s_channels_table[channel_number_slot].ieee_addr, 
+    channel_extended_data_em.ieee_addr, z2s_core->getIEEEAddress(), 
     sizeof(esp_zb_ieee_addr_t));
   
   if (Z2S_saveChannelExtendedData(
@@ -531,25 +532,11 @@ void updateZ2SDeviceElectricityMeter(int16_t channel_number_slot) {
 
 /*****************************************************************************/
 
-/*void msgZ2SDeviceElectricityMeter(
-  int16_t channel_number_slot, uint8_t emv_selector, int64_t em_value) {
-
-  Z2S_updateZbDeviceLastSeenMsById(
-    z2s_channels_table[channel_number_slot].Zb_device_id);
-  
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceElectricityMeter(element, emv_selector, em_value);
-}*/
-
-/*****************************************************************************/
-
 void msgZ2SDeviceElectricityMeter(
   Supla::Element* element, uint8_t emv_selector, int64_t em_value) {
   
   auto Supla_ElectricityMeter = static_cast<
-  Supla::Sensor::Z2S_ElectricityMeter *>(element);
+    Supla::Sensor::Z2S_ElectricityMeter *>(element);
        
   Supla_ElectricityMeter->pong();
 
@@ -617,14 +604,12 @@ void msgZ2SDeviceElectricityMeter(
             1800000)) {
 
         uint64_t fwd_energy_counter = Z2S_getChannelExtendedDataCounter(
-          Supla_ElectricityMeter->getChannelIndex()) +
+          Supla_ElectricityMeter->getZ2SChannelIndex()) +
           Supla_ElectricityMeter->getFwdEnergyBuffer();
 
         Z2S_setChannelExtendedDataCounter(
-          Supla_ElectricityMeter->getChannelIndex(), fwd_energy_counter);
-
-        //z2s_channels_table[channel_number_slot].fwd_energy_buffer = 0;  
-        //z2s_channels_table[channel_number_slot].fwd_energy_timer = millis();  
+          Supla_ElectricityMeter->getZ2SChannelIndex(), fwd_energy_counter);
+  
         Supla_ElectricityMeter->clearFwdEnergyBuffer();
         Supla_ElectricityMeter->setFwdEnergyTimer(millis());
 

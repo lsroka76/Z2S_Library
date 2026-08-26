@@ -21,10 +21,6 @@ void addZ2SDevicePressure(
 
 /*****************************************************************************/
 
-void msgZ2SDevicePressure(int16_t channel_number_slot, double pressure);
-
-/*****************************************************************************/
-
 void msgZ2SDevicePressure(Supla::Element *element, double pressure);
 
 /*****************************************************************************/

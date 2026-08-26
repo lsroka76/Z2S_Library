@@ -58,16 +58,7 @@ bool getVirtualButtonNumber(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceActionTrigger(int16_t channel_number_slot);
-
-/*****************************************************************************/
-
 void msgZ2SDeviceActionTrigger(Supla::Element* element);
-
-/*****************************************************************************/
-
-void msgZ2SDeviceActionTriggerV2(
-  int16_t channel_number_slot, int8_t sub_id, uint8_t hold_start = 0);
 
 /*****************************************************************************/
 

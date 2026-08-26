@@ -320,6 +320,19 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         runAction(ON_TURN_ON);
         channel.setNewValue(state);
       } break;
+
+
+/*****************************************************************************/
+
+      case Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM: {
+
+        log_i("Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM");
+
+        state = true;
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);
+        channel.setNewValue(state);
+
+      } break;
     }  
   }
   // Schedule save in 5 s after state change
@@ -535,6 +548,15 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
 
 /*****************************************************************************/
 
+      case Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM: {
+
+        log_i("Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM");
+
+        state = false;
+        zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);
+        channel.setNewValue(state);
+
+      } break;
     }  
   }
   // Schedule save in 5 s after state change

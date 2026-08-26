@@ -25,6 +25,7 @@
 #include <supla/control/relay.h>
 #include "ZigbeeGateway.h"
 
+#include "Z2S_common.h"
 #include "Z2S_custom_actions_events.h"
 
 #define REMOTE_CMD_TURN_OFF       0x00
@@ -39,7 +40,7 @@ extern IPAddress     Z2S_IPAddress;
 
 namespace Supla {
 namespace Control {
-class Z2S_RemoteRelay : public Relay {
+class Z2S_RemoteRelay : public Relay, public Z2S_Core {
 
  public:
   
@@ -66,23 +67,28 @@ class Z2S_RemoteRelay : public Relay {
   void setRemoteGatewayIPAddress(String remote_gateway_ip) {
 
     _remote_gateway_ip = Z2S_IPAddress.fromString(remote_gateway_ip);
+
+    log_i("IP address updated to %s", remote_gateway_ip.c_str());
   }
 
   void setRemoteGatewayMDNSName(char *remote_gateway_mDNS_name) {
 
     _remote_gateway_mDNS_name = remote_gateway_mDNS_name;
+
+    log_i("mDNS name updated to %s", _remote_gateway_mDNS_name);
+  }
+
+  void setRemoteGatewayMDNSName(const char *remote_gateway_mDNS_name) {
+
+    _remote_gateway_mDNS_name = (char *)remote_gateway_mDNS_name;
+
+    log_i("mDNS name updated to %s", _remote_gateway_mDNS_name);
   }
 
   void setRemoteGatewaySuplaChannel(uint8_t remote_Supla_channel) {
 
     _remote_Supla_channel = remote_Supla_channel;
   }
-
-  //void setKeepAliveSecs(uint32_t keep_alive_secs);
-  //void setTimeoutSecs(uint32_t timeout_secs);
-
-  //uint32_t getKeepAliveSecs();
-  //uint32_t getTimeoutSecs();
 
  protected:
 

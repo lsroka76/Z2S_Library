@@ -144,6 +144,8 @@ void initZ2SDeviceGatewayEvents(
   auto Supla_GatewayEvents = new Supla::GatewayEvents(); 
 
   _z2s_channel->local_action_handler_data.Supla_element = Supla_GatewayEvents;
+
+  Supla_GatewayEvents->setZ2SChannel(channel_index, _z2s_channel);
   
   SuplaDevice.addAction(
     0x6000, Supla_GatewayEvents, Supla::ON_DEVICE_STATUS_CHANGE, false);
@@ -172,6 +174,9 @@ void initZ2SDeviceLocalActionHandler(
       _z2s_channel->local_action_handler_data.Supla_element =
         Supla_LocalActionHandlerWithTrigger;
 
+      Supla_LocalActionHandlerWithTrigger->setZ2SChannel(
+        channel_index, _z2s_channel);
+
       Supla_LocalActionHandlerWithTrigger->setPostponedTurnOnSecs(  
         _z2s_channel->keep_alive_secs);
     } break;
@@ -193,6 +198,8 @@ void initZ2SDeviceLocalActionHandler(
       
       auto Supla_LocalVirtualRelay = 
         new Supla::Control::LocalVirtualRelay(RELAY_FLAGS); 
+
+      Supla_LocalVirtualRelay->setZ2SChannel(channel_index, _z2s_channel);
       
       Supla_LocalVirtualRelay->getChannel()->setChannelNumber(Supla_channel);
       Supla_LocalVirtualRelay->setDefaultFunction(
@@ -208,6 +215,8 @@ void initZ2SDeviceLocalActionHandler(
       
       auto Supla_SwitchBotRelay = 
         new Supla::Control::SwitchBotRelay(_z2s_channel->local_channel_func); 
+
+      Supla_SwitchBotRelay->setZ2SChannel(channel_index, _z2s_channel);
       
       Supla_SwitchBotRelay->getChannel()->setChannelNumber(Supla_channel);
       Supla_SwitchBotRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
@@ -245,7 +254,9 @@ void initZ2SDeviceLocalActionHandler(
         new Supla::Control::VirtualOutputInterface();
 
       auto Supla_VirtualHvac = 
-        new Supla::Control::HvacBase(Supla_VirtualOutputInterface); 
+        new Supla::Control::LocalVirtualHvac(Supla_VirtualOutputInterface); 
+
+      Supla_VirtualHvac->setZ2SChannel(channel_index, _z2s_channel);
       
       Supla_VirtualHvac->getChannel()->setChannelNumber(Supla_channel);
       Supla_VirtualHvac->enableDomesticHotWaterFunctionSupport();
@@ -260,6 +271,8 @@ void initZ2SDeviceLocalActionHandler(
       
       auto Supla_LocalVirtualBinary = 
         new Supla::Sensor::LocalVirtualBinary(true); 
+
+      Supla_LocalVirtualBinary->setZ2SChannel(channel_index, _z2s_channel);
       
       Supla_LocalVirtualBinary->getChannel()->setChannelNumber(Supla_channel);
       Supla_LocalVirtualBinary->setDefaultFunction(
@@ -278,6 +291,8 @@ void initZ2SDeviceLocalActionHandler(
       
       auto Supla_Z2S_RemoteThermometer = 
         new Supla::Sensor::Z2S_RemoteThermometer();
+
+      Supla_Z2S_RemoteThermometer->setZ2SChannel(channel_index, _z2s_channel);
 
       Supla_Z2S_RemoteThermometer->getChannel()->setChannelNumber(
           _z2s_channel->Supla_channel);
@@ -301,6 +316,8 @@ void initZ2SDeviceLocalActionHandler(
       
       auto Supla_Z2S_RemoteRelay = new Supla::Control::Z2S_RemoteRelay(
         &Z2S_NetworkClient, 0xFF); 
+
+      Supla_Z2S_RemoteRelay->setZ2SChannel(channel_index, _z2s_channel);
 
       Supla_Z2S_RemoteRelay->getChannel()->setChannelNumber(Supla_channel);
 
@@ -492,7 +509,7 @@ bool addZ2SDeviceLocalActionHandler(
         new Supla::Control::VirtualOutputInterface();
 
       auto Supla_VirtualHvac = 
-        new Supla::Control::HvacBase(Supla_VirtualOutputInterface);
+        new Supla::Control::LocalVirtualHvac(Supla_VirtualOutputInterface);
 
       z2s_channels_table[first_free_slot].Supla_channel = 
         Supla_VirtualHvac->getChannelNumber();

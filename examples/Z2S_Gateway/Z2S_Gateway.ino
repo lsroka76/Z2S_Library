@@ -142,11 +142,11 @@ uint8_t _z2s_security_level    = 0;
 bool sendIASNotifications = false;
 Supla::Control::VirtualRelay *toggleNotifications = nullptr;
 
-
-
 bool _restart_scheduled = false;
 static bool _forced_config = false;
 static bool _start_Zigbee = true;
+
+SemaphoreHandle_t saveMutex;
 
 void initGUI(gui_modes_t mode = minimal_gui_mode) {
 
@@ -221,6 +221,7 @@ void supla_callback_bridge(int event, int action) {
         Z2S_saveChannelsTable();
         Z2S_saveZbDevicesTable();
         _restart_scheduled = true;
+        LittleFS.end();
         return;
       }
 
@@ -503,6 +504,8 @@ void setup() {
 
   log_i("setup start");
 
+  saveMutex = xSemaphoreCreateMutex();
+
   printSizeOfClasses();
 
   uint32_t sanity_check_time_ms = millis();
@@ -597,7 +600,8 @@ void setup() {
     Z2S_SUPLA_ACTION_DEVICE_STATUS_CHANGE, AHwC, 
     Supla::ON_DEVICE_STATUS_CHANGE, false);
 
-  LittleFS.begin(false);
+  //LittleFS.begin(true);
+  Z2S_initLittleFs();
   listDir(LittleFS,"/",3);
 
   File verfile = LittleFS.open("/version.dat", "w");
@@ -650,7 +654,7 @@ void setup() {
     esp_zb_ota_image_header.stack_version, 
     esp_zb_ota_image_header.image_size);
 
-  LittleFS.end();
+  //LittleFS.end();
 
   Z2S_loadZbDevicesTable();
 

@@ -261,6 +261,7 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
   log_i("RAW bufid: %d size: %d", bufid, sizeof(buf));
   
   for (int i = 0; i < sizeof(buf); ++i) {
+      
       log_i("0x%02X ", buf[i]);
   }
   
@@ -299,6 +300,10 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
         return true;
       } else {
         log_i("-----------------raw command not processed------------------");
+        for (int i = 0; i < sizeof(buf); ++i) {
+      
+          log_i("0x%02X ", buf[i]);
+        }
         return false;
       }
     }
@@ -378,16 +383,19 @@ static esp_err_t zb_cmd_read_attr_resp_handler(const esp_zb_zcl_cmd_read_attr_re
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (true /*message->info.dst_endpoint == (*it)->getEndpoint()*/) {
       esp_zb_zcl_read_attr_resp_variable_t *variable = message->variables;
+      if (variable)
+        log_v("variable present");
+      else
+        log_v("variable missing");
       while (variable) {
         log_v("Read attribute response: status(%d), cluster(0x%x), attribute(0x%x), type(0x%x), value(%d)", 
               variable->status, message->info.cluster, variable->attribute.id, variable->attribute.data.type, 
               variable->attribute.data.value ? *(uint8_t *)variable->attribute.data.value : 0);
         //if (variable->status == ESP_ZB_ZCL_STATUS_SUCCESS) {
           if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_BASIC) {
-            (*it)->zbReadBasicCluster(message->info.src_address, 
-                                      message->info.src_endpoint, 
-                                      message->info.cluster, 
-                                      &variable->attribute);  //method zbReadBasicCluster implemented in the common EP class
+            (*it)->zbReadBasicCluster(
+              message->info.src_address, message->info.src_endpoint, 
+              message->info.cluster, &variable->attribute);  //method zbReadBasicCluster implemented in the common EP class
           } else {
             (*it)->zbReadAttrResponse(
               message->info.header.tsn, message->info.header.rssi,

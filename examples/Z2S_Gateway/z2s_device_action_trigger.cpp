@@ -208,17 +208,6 @@ void addZ2SDeviceActionTriggerV2(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceActionTrigger(int16_t channel_number_slot) {
-
- 
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceActionTrigger(element);
-}
-
-/*****************************************************************************/
-
 void msgZ2SDeviceActionTrigger(Supla::Element *element) {
     
   auto Supla_Z2S_ActionTrigger = static_cast<
@@ -228,26 +217,6 @@ void msgZ2SDeviceActionTrigger(Supla::Element *element) {
     
   Supla_Z2S_ActionTrigger->toggle();
 }
-
-/*****************************************************************************/
-
-/*void msgZ2SDeviceActionTriggerV2(
-  int16_t channel_number_slot, int8_t sub_id, uint8_t hold_start) {
-
-  if (channel_number_slot < 0) {
-    
-    log_e("invalid channel number slot");
-    return;
-  }
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  bool isActionTriggerV2 = z2s_channels_table[channel_number_slot].\
-    user_data_flags & USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0;
-
-  msgZ2SDeviceActionTriggerV2(element, isActionTriggerV2, sub_id, hold_start);
-} */
 
 /*****************************************************************************/
 

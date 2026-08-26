@@ -266,26 +266,6 @@ void addZ2SDeviceDimmer(
 /*****************************************************************************/
 
 void msgZ2SDeviceDimmer(
-  int16_t channel_number_slot, int16_t level, bool state, 
-  DimmerMessage dimmer_msg) {
-
-  if (channel_number_slot < 0) {
-    
-    log_e("msgZ2SDeviceDimmer - invalid channel number slot");
-    return;
-  }
-  
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceDimmer(
-    element, z2s_channels_table[channel_number_slot].model_id, level, state, 
-    dimmer_msg);
-}
-
-/*****************************************************************************/
-
-void msgZ2SDeviceDimmer(
   Supla::Element* element, uint32_t model_id, int16_t level, bool state, 
   DimmerMessage dimmer_msg) {
 

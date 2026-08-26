@@ -24,11 +24,6 @@ void addZ2SDeviceRGBCCT(
 /*****************************************************************************/
 
 void msgZ2SDeviceRGBCCT(
-  int16_t channel_number_slot, RGBCCTMessage rgbcct_msg, uint32_t value);
-
-/*****************************************************************************/
-
-void msgZ2SDeviceRGBCCT(
   Supla::Element* element, RGBCCTMessage rgbcct_msg, uint32_t value);
 
 /*****************************************************************************/

@@ -1012,7 +1012,7 @@ void processTuyaIlluminanceSensorDataReport(
   }
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuya3PhasesElectricityMeterDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size,
@@ -1204,7 +1204,7 @@ void processTuya3PhasesElectricityMeterDataReport(
       Tuya_read_dp_result.dp_value);
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuya1PhaseElectricityMeterDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size,uint8_t *payload, 
@@ -1300,7 +1300,7 @@ void processTuya1PhaseElectricityMeterDataReport(
       Tuya_read_dp_result.dp_value);
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaEF00Switch2x3DataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -1347,7 +1347,7 @@ void processTuyaEF00Switch2x3DataReport(
   }
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaSmokeDetectorReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -1518,7 +1518,7 @@ void processTuyaSmokeDetectorReport(
   }
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaCOGasDetectorReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -1593,7 +1593,7 @@ void processTuyaCOGasDetectorReport(
       element_5, (Tuya_read_dp_result.dp_value == 1));
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaCO2DetectorReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -1614,7 +1614,7 @@ void processTuyaCO2DetectorReport(
       Tuya_read_dp_result.dp_value);
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaCOGasDetector2Report(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -1687,7 +1687,7 @@ void processTuyaCOGasDetector2Report(
       Tuya_read_dp_result.dp_value);
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaAirQualitySensorReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size,
@@ -1754,7 +1754,7 @@ void processTuyaAirQualitySensorReport(
       Tuya_read_dp_result.dp_value);
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaRelaysDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -1819,7 +1819,7 @@ void processTuyaRelaysDataReport(
   }
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaXRelaysDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -1844,7 +1844,7 @@ void processTuyaXRelaysDataReport(
   }
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaDPRelayDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -1864,7 +1864,7 @@ void processTuyaDPRelayDataReport(
       element, Tuya_read_dp_result.dp_value);
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaPresenceSensorDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -2508,7 +2508,7 @@ void processMoesAlarmDataReport(
   }  
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaVibrationSensorDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size,
@@ -2554,7 +2554,7 @@ void processTuyaVibrationSensorDataReport(
   }  
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaVibrationSensor2DataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size,
@@ -2651,7 +2651,7 @@ void processTuyaVibrationSensor2DataReport(
   }  
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaTempHumidityTempProbeSensorDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size,
@@ -2708,7 +2708,7 @@ void processTuyaTempHumidityTempProbeSensorDataReport(
   }  
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaPIRIlluminanceSensorDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -2827,7 +2827,7 @@ void processTuyaPIRIlluminanceSensorDataReport(
   } 
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaOnOffValveBatteryDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -2878,7 +2878,7 @@ void processTuyaOnOffValveBatteryDataReport(
   }  
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processGiexSmartValveDataReport(
   uint16_t short_addr, uint8_t endpoint, 
@@ -3071,7 +3071,7 @@ void processTuyaDINRCBOEMTemp(
       Tuya_read_dp_result.dp_value);
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaTS0603GateControllerDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -3102,7 +3102,7 @@ void processTuyaTS0603GateControllerDataReport(
     msgZ2SDeviceVirtualRelay(element_2, Tuya_read_dp_result.dp_value);  
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaDualWaterValveDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -3197,7 +3197,7 @@ void processTuyaDualWaterValveDataReport(
       short_addr, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
   }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaWaterLevelSensorDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -3248,7 +3248,7 @@ void processTuyaWaterLevelSensorDataReport(
       Tuya_read_dp_result.dp_value);
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaSmartPoolSensorDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
@@ -3363,6 +3363,113 @@ void processTuyaSmartPoolSensorDataReport(
 
 /*****************************************************************************/
 
+void processTuyaWaterQualityMonitorDataReport(
+  uint16_t short_addr, uint8_t endpoint, uint16_t payload_size, 
+  uint8_t *payload, uint32_t model_id) {
+
+  Tuya_read_dp_result_t Tuya_read_dp_result = {};
+
+  Supla::Element* element_1 = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00, 
+    SUPLA_CHANNELTYPE_THERMOMETER,
+    TUYA_WATER_QUALITY_MONITOR_PROBE_TEMPERATURE_SID);
+
+  Supla::Element* element_2 = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00, 
+    SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+    TUYA_WATER_QUALITY_MONITOR_TH_SID);
+  
+  Supla::Element* element_3 = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_WATER_QUALITY_MONITOR_TDS_SID);
+
+  Supla::Element* element_4 = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_WATER_QUALITY_MONITOR_SALINITY_SID);
+  
+  Supla::Element* element_5 = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_WATER_QUALITY_MONITOR_EC_SID);
+
+  Supla::Element* element_6 = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    TUYA_WATER_QUALITY_MONITOR_SG_SID);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_PROBE_TEMPERATURE_DP,
+    payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceTempHumidityTemp(
+      element_1, (float)Tuya_read_dp_result.dp_value / 10);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_TEMPERATURE_DP,
+    payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceTempHumidityTemp(
+      element_2, (float)Tuya_read_dp_result.dp_value / 100);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_HUMIDITY_DP,
+    payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceTempHumidityHumi(
+      element_2, (float)Tuya_read_dp_result.dp_value / 100);
+  
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_TDS_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      element_3, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_SALINITY_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      element_4, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      (float)Tuya_read_dp_result.dp_value / 10);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_EC_DP, payload_size,
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      element_5, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      Tuya_read_dp_result.dp_value);
+
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_SG_DP, payload_size, 
+    payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      element_6, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+      (float)Tuya_read_dp_result.dp_value / 1000);
+    
+  Z2S_readTuyaDPvalue(
+    Tuya_read_dp_result,TUYA_WATER_QUALITY_MONITOR_BATTERY_LEVEL_DP, 
+    payload_size, payload);
+
+  if (Tuya_read_dp_result.is_success) 
+    updateSuplaBatteryLevel(
+      short_addr, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
+}
+
+/*****************************************************************************/
+
 void processTuyaDataReport(
   uint16_t short_addr, uint16_t endpoint, uint16_t payload_size,
   uint8_t *payload) {
@@ -3388,8 +3495,6 @@ void processTuyaDataReport(
     return;
   }
 
-
-  //uint32_t model_id = z2s_channels_table[channel_number_slot].model_id;
   uint32_t model_id = z2s_core->getChannelModelId();
 
   switch (model_id) {
@@ -3719,6 +3824,13 @@ void processTuyaDataReport(
     break;
 
 
+    case Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR:
+
+      processTuyaWaterQualityMonitorDataReport(
+        short_addr, endpoint, payload_size, payload, model_id);
+    break;
+
+
     default: 
       
       log_i("Unknown device model id 0x%x", model_id); 
@@ -3726,7 +3838,7 @@ void processTuyaDataReport(
   }
 }
 
-/*******************************************************************************/
+/*****************************************************************************/
 
 void processTuyaCustomCluster(
   uint8_t tsn, uint16_t short_addr, uint16_t endpoint, uint8_t command_id, 
@@ -3925,11 +4037,11 @@ void processZosungCustomCluster(
     return;
   }
 
-  device.endpoint = z2s_channels_table[channel_number_slot].endpoint;
+  device.endpoint = z2s_channels_table_DEP[channel_number_slot].endpoint;
   device.cluster_id = ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER;
-  memcpy(device.ieee_addr, z2s_channels_table[channel_number_slot].ieee_addr, 8);
-  device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
-  device.model_id = z2s_channels_table[channel_number_slot].model_id;
+  memcpy(device.ieee_addr, z2s_channels_table_DEP[channel_number_slot].ieee_addr, 8);
+  device.short_addr = z2s_channels_table_DEP[channel_number_slot].short_addr;
+  device.model_id = z2s_channels_table_DEP[channel_number_slot].model_id;
   
   switch (command_id) {
     case 0: if ((!ir_code_learning) && (payload_size == 16)) {

@@ -86,23 +86,6 @@ public:
     temperature = val;
   }
 
-  /*void setTemperature(double val) {
-    
-    log_i("temperature = %f4.2", val);
-    _forced_temperature = false;
-    temperature = val;
-    Refresh();
-  }
-
-  void setForcedTemperature(double val) {
-    
-    log_i("temperature = %f4.2", val);
-    _forced_temperature = true;
-    temperature = val;
-    Refresh();
-  }*/
-
-
   void setConnectedThermometersFunction(
     uint32_t connected_thermometers_function) {
 
@@ -345,10 +328,6 @@ public:
     
  protected:
   bool     _rwns_flag;
-
-  //uint8_t  _remote_Supla_channel = 0xFF;
-  //uint32_t _remote_gateway_ip = 0;
-  //char *_remote_gateway_mDNS_name = nullptr;
 
   uint32_t  _connected_thermometers_function = CONNECTED_THERMOMETERS_FNC_AVG;
   connected_thermometers_t _connected_thermometers[MAX_CONNECTED_THERMOMETERS];  

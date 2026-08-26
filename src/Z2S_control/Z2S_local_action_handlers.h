@@ -32,6 +32,7 @@
 #include <supla/element_with_channel_actions.h>
 #include <supla/control/action_trigger.h>
 #include <supla/control/virtual_relay.h>
+#include <supla/control/hvac_base.h>
 #include <supla/sensor/virtual_binary.h>
 #include <supla/device/notifications.h>
 #include <supla/log_wrapper.h>
@@ -94,7 +95,7 @@ extern Supla::Control::VirtualRelay *toggleNotifications;
 namespace Supla {
 
 class LocalActionHandler : public Element, public LocalAction, 
-  public ActionHandler {
+  public ActionHandler, public Z2S_Core {
 
   public:
     LocalActionHandler();
@@ -103,7 +104,6 @@ class LocalActionHandler : public Element, public LocalAction,
 };
 
 class LocalActionHandlerWithTrigger : public LocalActionHandler {
-  //public Element, public LocalAction, public ActionHandler {
   public:
     LocalActionHandlerWithTrigger(uint8_t pin_logic_operator);
     virtual ~LocalActionHandlerWithTrigger();
@@ -203,7 +203,7 @@ class LocalActionTrigger: public ActionTrigger, public Z2S_Core {
 
 };
 
-class LocalVirtualRelay: public VirtualRelay {
+class LocalVirtualRelay: public VirtualRelay, public Z2S_Core {
 
   public:
 
@@ -220,7 +220,7 @@ class LocalVirtualRelay: public VirtualRelay {
     uint32_t test_ms = 300 * 1000;
 };
 
-class SwitchBotRelay: public Relay {
+class SwitchBotRelay: public Relay, public Z2S_Core {
 
   public:
 
@@ -244,11 +244,21 @@ class SwitchBotRelay: public Relay {
     bool _state;
     //bool _connected = false;
 };
+
+class LocalVirtualHvac: public HvacBase, public Z2S_Core {
+
+  public:
+    explicit LocalVirtualHvac(
+      Supla::Control::OutputInterface *primaryOutput = nullptr,
+      Supla::Control::OutputInterface *secondaryOutput = nullptr)
+      : HvacBase(primaryOutput, secondaryOutput), Z2S_Core(this) {
+}
+};
 }; //namespace Control
 
 namespace Sensor {
 
-class LocalVirtualBinary: public VirtualBinary {
+class LocalVirtualBinary: public VirtualBinary, public Z2S_Core {
 
   public:
 

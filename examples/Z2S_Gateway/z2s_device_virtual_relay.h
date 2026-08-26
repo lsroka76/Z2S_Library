@@ -41,21 +41,6 @@ void addZ2SDeviceVirtualRelay(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceVirtualRelay(
-  int16_t channel_number_slot, bool state);
-
-/*****************************************************************************/
-
-void msgZ2SDeviceVirtualRelayValue(
-  int16_t channel_number_slot, uint8_t value_id, uint32_t value);
-
-/*****************************************************************************/
-
-void msgZ2SDeviceRollerShutter(
-  int16_t channel_number_slot, uint8_t msg_id, uint16_t msg_value);
-
-/*****************************************************************************/
-
 void msgZ2SDeviceVirtualRelay(Supla::Element* element, bool state);
 
 /*****************************************************************************/

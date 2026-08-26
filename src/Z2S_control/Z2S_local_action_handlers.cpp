@@ -44,7 +44,7 @@ extern bool Z2S_fillPushoverMessage(
 using namespace Supla;
 /*****************************************************************************/
 
-LocalActionHandler::LocalActionHandler() {
+LocalActionHandler::LocalActionHandler() : Z2S_Core(this) {
 
 };
 
@@ -509,8 +509,7 @@ void GatewayEvents::iterateAlways() {
 /*****************************************************************************/
 
 
-Supla::Control::LocalActionTrigger::LocalActionTrigger() 
-  : Z2S_Core(this) {
+Supla::Control::LocalActionTrigger::LocalActionTrigger() : Z2S_Core(this) {
 
 }
 
@@ -569,8 +568,8 @@ void Supla::Control::LocalActionTrigger::iterateAlways() {
 /*****************************************************************************/
 
 
-Supla::Control::LocalVirtualRelay::LocalVirtualRelay(_supla_int_t functions):
- VirtualRelay(functions) {
+Supla::Control::LocalVirtualRelay::LocalVirtualRelay(_supla_int_t functions)
+  : VirtualRelay(functions), Z2S_Core(this) {
 
 }
 
@@ -649,8 +648,9 @@ void Supla::Control::LocalVirtualRelay::iterateAlways() {
 
 /*****************************************************************************/
 
-Supla::Control::SwitchBotRelay::SwitchBotRelay(uint8_t device_type_id):
- Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) {
+Supla::Control::SwitchBotRelay::SwitchBotRelay(uint8_t device_type_id)
+  : Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER), 
+  Z2S_Core(this) {
 
   _device_type_id = device_type_id;
 }
@@ -856,7 +856,8 @@ bool Supla::Control::SwitchBotRelay::updateSwitchBotData(
 /*****************************************************************************/
 
 Supla::Sensor::LocalVirtualBinary::LocalVirtualBinary(
-  bool keepStateInStorage) : VirtualBinary(keepStateInStorage) {
+  bool keepStateInStorage) 
+  : VirtualBinary(keepStateInStorage), Z2S_Core(this) {
 
 };
 

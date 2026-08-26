@@ -337,7 +337,10 @@ Supla::Element* Z2S_findZ2SElement(
   uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id) {
 
-  log_i ("sub id %d", sub_id);
+  log_i (
+    "short address 0x%04X, endpoint 0x%02X, cluster 0x%04X, channel type "
+    "0x%04X, sub id %02d", short_addr, endpoint, cluster, channel_type, 
+    sub_id);
     
   auto core_it = Z2S_Cores.begin();
   while (core_it != Z2S_Cores.end()) {
@@ -346,7 +349,8 @@ Supla::Element* Z2S_findZ2SElement(
 
     if ((z2s_core->getChannelShortAddress() == short_addr) &&
         ((endpoint < 0) || (z2s_core->getChannelEndpoint() == endpoint)) &&
-        ((channel_type < 0) || (z2s_core->getChannelType() == channel_type)) &&
+        ((channel_type < 0) || 
+          (z2s_core->getZ2SChannelType() == channel_type)) &&
         ((sub_id < 0) || (z2s_core->getChannelSubId() == sub_id) ||
          (z2s_core->getChannelUserDataFlags() &
           USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0))) {
@@ -370,6 +374,7 @@ Supla::Element* Z2S_findZ2SElement(
     }
     core_it++;
   }
+  log_e("Supla element not found!");
   return nullptr;
 }
 
@@ -388,7 +393,8 @@ Z2S_Core* Z2S_findZ2SCore(
 
     if ((z2s_core->getChannelShortAddress() == short_addr) &&
         ((endpoint < 0) || (z2s_core->getChannelEndpoint() == endpoint)) &&
-        ((channel_type < 0) || (z2s_core->getChannelType() == channel_type)) &&
+        ((channel_type < 0) || 
+          (z2s_core->getZ2SChannelType() == channel_type)) &&
         ((sub_id < 0) || (z2s_core->getChannelSubId() == sub_id) ||
          (z2s_core->getChannelUserDataFlags() &
           USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0))) {
@@ -588,7 +594,7 @@ z2s_device_params_t *Z2S_getChannelPtr(int16_t channel_number_slot) {
 
 /*****************************************************************************/
 
-Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
+/*Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
 
   if ((channel_number_slot >= 0) && 
       (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) &&
@@ -624,13 +630,13 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
       case SUPLA_CHANNELTYPE_THERMOMETER: {
 
         if (z2s_channels_table[channel_number_slot].local_channel_type ==
-            LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
+            LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {*/
 
           /*auto Supla_Z2S_RemoteThermometer = static_cast<
             Supla::Sensor::Z2S_RemoteThermometer *>(Supla_element);
           
           return static_cast<Z2S_Core *>(Supla_Z2S_RemoteThermometer);*/
-          return nullptr;
+        /*  return nullptr;
 
         }
 
@@ -713,7 +719,7 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
           Supla_Z2S_HvacBaseEE->getPrimaryOutputEE());
         
         return static_cast<Z2S_Core *>(Supla_Z2S_TRVInterface);
-      } break;
+      } break; */
 
       /*case SUPLA_CHANNELTYPE_ACTIONTRIGGER: {
 
@@ -722,10 +728,10 @@ Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot) {
      
         return static_cast<Z2S_Core *>(Supla_Z2S_ActionTrigger);
       } break;*/
-    }
+    /*}
   }
   return nullptr;
-}
+}*/
 
 /*****************************************************************************/
 
@@ -816,19 +822,15 @@ void Z2S_fillChannelsTableSlot(
 
 bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table) {
 
-  if ((channel_number_slot >= 0) && 
-      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER - 1) && 
-      z2s_channels_table[channel_number_slot].valid_record) {
+  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
 
-    if (z2s_channels_table[channel_number_slot].user_data_flags & 
-        USER_DATA_FLAG_HAS_EXTENDED_DATA) 
+  if (z2s_core) {
+
+    if (z2s_core->checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA))
       Z2S_removeChannelExtendedData(
-        //z2s_channels_table[channel_number_slot].Supla_channel,
-        channel_number_slot,
-        z2s_channels_table[channel_number_slot].extended_data_type, false);
+        channel_number_slot, z2s_core->getExtendedDataType(), false);
     
-    Z2S_removeChannelActions(
-      z2s_channels_table[channel_number_slot].Supla_channel, false);
+    Z2S_removeChannelActions(z2s_core->getZ2SChannelNumber(), false);
     
     Z2S_removeChannelExtendedDataCounter(channel_number_slot);
 
@@ -839,6 +841,8 @@ bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table) {
     if (save_table)
       return Z2S_saveChannelsTable();
 
+    delete z2s_core->getZ2SElementPtr();
+  
     return true;
   }
   return false;
@@ -849,24 +853,9 @@ bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table) {
 bool Z2S_setChannelFlags(
   int16_t channel_number_slot, uint32_t flags_to_set,bool save_table) {
 
-  if ((channel_number_slot >= 0) && 
-      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) && 
-      z2s_channels_table[channel_number_slot].valid_record) {
+  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
 
-    z2s_channels_table[channel_number_slot].user_data_flags |= flags_to_set;
-
-    if (!save_table) return true;
-
-    if (Z2S_saveChannelsTable()) {
-      
-      log_i("Device(channel %d) flags set successfully to %x", 
-            z2s_channels_table[channel_number_slot].Supla_channel, 
-           z2s_channels_table[channel_number_slot].user_data_flags);
-      
-      return true;
-    }
-    return false;
-  } else return false;
+  return z2s_core->setChannelUserDataFlags(flags_to_set, save_table);
 }
 
 /*****************************************************************************/
@@ -874,24 +863,9 @@ bool Z2S_setChannelFlags(
 bool Z2S_clearChannelFlags(
   int16_t channel_number_slot, uint32_t flags_to_clear, bool save_table) {
 
-  if ((channel_number_slot >= 0) && 
-      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) && 
-      z2s_channels_table[channel_number_slot].valid_record) {
+  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
 
-    z2s_channels_table[channel_number_slot].user_data_flags &= ~flags_to_clear;
-
-    if (!save_table) return true;
-
-    if (Z2S_saveChannelsTable()) {
-      
-      log_i("Device(channel %d) flags cleared successfully to %x", 
-            z2s_channels_table[channel_number_slot].Supla_channel, 
-            z2s_channels_table[channel_number_slot].user_data_flags);
-      
-      return true;
-    }
-    return false;
-  } else return false;
+  return z2s_core->clearChannelUserDataFlags(flags_to_clear, save_table);
 }
 
 /*****************************************************************************/
@@ -899,15 +873,9 @@ bool Z2S_clearChannelFlags(
 bool Z2S_checkChannelFlags(
   int16_t channel_number_slot, uint32_t flags_to_check) {
 
-  if ((channel_number_slot >= 0) && 
-      (channel_number_slot < Z2S_CHANNELS_MAX_NUMBER) && 
-      z2s_channels_table[channel_number_slot].valid_record) {
+  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
 
-    return 
-      (z2s_channels_table[channel_number_slot].user_data_flags &
-       flags_to_check);    
-  } else 
-    return false;
+  return z2s_core->checkChannelUserDataFlags(flags_to_check);
 }
 
 /*****************************************************************************/
@@ -945,15 +913,6 @@ bool Z2S_loadChannelsTable() {
       } else { 
 
         return true;  
-        /*if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_CHANNELS_TABLE_SIZE_ID, sizeof(z2s_channels_table))) {
-          
-          Supla::Storage::ConfigInstance()->commit();
-          return true;
-        } else { 
-          
-          log_i ("Channels table size write failed!");
-          return false;
-        }*/
       }
   } else {
 
@@ -1103,8 +1062,8 @@ bool Z2S_loadChannelsTable() {
               z2s_channels_table[table_index].sub_id = 
                 (z2s_devices_legacy_2_table + table_index)->sub_id;
 
-              z2s_channels_table[table_index].user_data_flags = 0; //(z2s_devices_legacy_2_table + table_index)->user_data_1;
-              z2s_channels_table[table_index].user_data_1 = 0; //(z2s_devices_legacy_2_table + table_index)->user_data_2;
+              z2s_channels_table[table_index].user_data_flags = 0; 
+              z2s_channels_table[table_index].user_data_1 = 0; 
               z2s_channels_table[table_index].user_data_2 = 0; 
               z2s_channels_table[table_index].user_data_3 = 0;
               z2s_channels_table[table_index].user_data_4 = 0;
@@ -1336,10 +1295,6 @@ bool Z2S_loadChannelsTable() {
 
 bool Z2S_saveChannelsTable() {
 
-  /*if (save_mutex == 1) return false;
-
-  save_mutex = 1;*/
-
   bool save_result = Z2S_saveFile(
     Z2S_CHANNELS_TABLE_ID_V2, (uint8_t *)z2s_channels_table, 
     sizeof(z2s_channels_table));
@@ -1351,35 +1306,18 @@ bool Z2S_saveChannelsTable() {
   if (!(save_result || backup_result)) {
 
     log_i("Channels table write failed!");
-    /*save_mutex = 0; */
+
     return false;
   } else { 
     
     return true;
-    /*if (Supla::Storage::ConfigInstance()->setUInt32(
-          Z2S_CHANNELS_TABLE_SIZE_ID, 
-          sizeof(z2s_channels_table))) {
-
-      log_i("Channels table new size(%d) write success!", 
-            sizeof(z2s_channels_table));
-
-      Supla::Storage::ConfigInstance()->commit();
-
-      //save_mutex = 0;
-      return true;
-
-    } else { 
-
-      log_i("Channels table size write failed!");
-      //save_mutex = 0;
-      return false;
-    }*/
+    
   }
 }
 
 /*****************************************************************************/
 
-bool Z2S_removeAllChannels() {
+/*bool Z2S_removeAllChannels() {
 
   for (uint8_t channels_counter = 0; 
        channels_counter < Z2S_CHANNELS_MAX_NUMBER; 
@@ -1390,7 +1328,6 @@ bool Z2S_removeAllChannels() {
     if (z2s_channels_table[channels_counter].user_data_flags & 
         USER_DATA_FLAG_HAS_EXTENDED_DATA) 
       Z2S_removeChannelExtendedData(
-        //z2s_channels_table[channels_counter].Supla_channel,
         channels_counter,
         z2s_channels_table[channels_counter].extended_data_type, false);
     } 
@@ -1401,7 +1338,7 @@ bool Z2S_removeAllChannels() {
   memset(z2s_channels_table, 0, sizeof(z2s_channels_table));
 
   return Z2S_saveChannelsTable();
-}
+}*/
 
 /*****************************************************************************/
 /* ZB_DEVICE_FUNCTIONS */
@@ -1502,17 +1439,19 @@ bool Z2S_removeZbDeviceWithAllChannels(
 
     bool channels_table_save_required = false;
 
-    for (uint8_t channels_counter = 0; 
-         channels_counter < Z2S_CHANNELS_MAX_NUMBER; channels_counter++) {
+    auto z2s_core = Z2S_Core::getZ2SCoreByZbDeviceId(zb_device_slot);
 
-      if ((z2s_channels_table[channels_counter].valid_record) && 
-          (memcmp(z2s_channels_table[channels_counter].ieee_addr, 
-          z2s_zb_devices_table[zb_device_slot].ieee_addr, 
-          sizeof(esp_zb_ieee_addr_t)) == 0)) {
+    while (z2s_core) {
 
-        Z2S_removeChannel(channels_counter, false);
+      if (memcmp(z2s_core->getIEEEAddress(), 
+            z2s_zb_devices_table[zb_device_slot].ieee_addr, 
+            sizeof(esp_zb_ieee_addr_t)) == 0) {
+
+        Z2S_removeChannel(z2s_core->getZ2SChannelIndex(), false);
+        
         channels_table_save_required = true;
       }
+      z2s_core = Z2S_Core::getZ2SCoreByZbDeviceId(zb_device_slot);
     }
     bool tables_save_result = false;
 
@@ -1914,14 +1853,10 @@ bool Z2S_loadZbDevicesTable() {
 
   uint32_t z2s_zb_devices_table_size =  Z2S_getZbDevicesTableSize(); 
 
-  log_i("\n\rZ2S_getZbDevicesTableSize %d\n\r"
-        "sizeof(z2s_zb_devices_table) %d\n\r"
-        "sizeof(z2s_zb_device_params_t) %d\n\r"
-        "sizeof(bool)%d",
-        z2s_zb_devices_table_size, 
-        sizeof(z2s_zb_devices_table), 
-        sizeof(z2s_zb_device_params_t), 
-        sizeof(bool));
+  log_i(
+    "\n\rZ2S_getZbDevicesTableSize %d\n\rsizeof(z2s_zb_devices_table) %d\n\r"
+    "sizeof(z2s_zb_device_params_t) %d\n\r", z2s_zb_devices_table_size, 
+    sizeof(z2s_zb_devices_table), sizeof(z2s_zb_device_params_t));
 
   if (z2s_zb_devices_table_size == 0) {
 
@@ -1943,16 +1878,6 @@ bool Z2S_loadZbDevicesTable() {
       } else { 
 
         return true;
-        /*if (Supla::Storage::ConfigInstance()->setUInt32(
-              Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
-
-          Supla::Storage::ConfigInstance()->commit();
-          return true;
-        } else {
-
-          log_i ("Zigbee devices table size write failed!");
-          return false;
-        }*/
       }
   } else {
 
@@ -2157,7 +2082,6 @@ bool Z2S_loadZbDevicesTable() {
           }
           log_i("Zigbee devices table upgrade completed - saving new table");
           Z2S_saveZbDevicesTable();
-          //Z2S_printZbDevicesTableSlots();
           free(z2s_zb_devices_legacy_2_table);
           return true;
         } break;
@@ -2221,10 +2145,6 @@ bool Z2S_loadZbDevicesTable() {
 
 bool Z2S_saveZbDevicesTable() {
 
-  /*if (save_mutex == 1) return false;
-
-  save_mutex = 1;*/
-
   bool save_result = Z2S_saveFile(
     Z2S_ZB_DEVICES_TABLE_ID_V2, (uint8_t *)z2s_zb_devices_table, 
     sizeof(z2s_zb_devices_table));
@@ -2238,31 +2158,11 @@ bool Z2S_saveZbDevicesTable() {
 
     log_i ("Zigbee devices table write failed!");
 
-    /*save_mutex = 0; */
     return false;
   }
   else { 
 
     return true;  
-    /*if (Supla::Storage::ConfigInstance()->setUInt32(
-      Z2S_ZB_DEVICES_TABLE_SIZE, sizeof(z2s_zb_devices_table))) {
-
-      log_i(
-        "Zigbee devices table new size(%d) write success!", 
-        sizeof(z2s_zb_devices_table));
-
-      Supla::Storage::ConfigInstance()->commit();
-
-      //save_mutex = 0; 
-      return true;
-    }
-    else { 
-      
-      log_i ("Zigbee devices table size write failed!");
-
-      //save mutex = 0;
-      return false;
-    }*/
   }
 }
 
@@ -2704,240 +2604,7 @@ uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms) {
       }
     }
   }
-  /*uint32_t iterate_ms = millis() - millis_ms;
-  log_i(
-    "last_iterate_ms = %lu, iterate_ms = %lu", last_iterate_ms, iterate_ms);*/
   return millis_ms;
-}
-
-/*****************************************************************************/
-
-bool checkIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
-  uint16_t max_index) {
-
-  if (index_position >= max_index)
-    return false;
-
-  uint8_t byte_index = index_position / 8;
-  uint8_t bit_index = index_position % 8;
-
-  if (*(index_table + byte_index) & (1 << bit_index))
-    return true;
-  else
-    return false;
-}
-
-/*****************************************************************************/
-
-bool setIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
-  uint16_t max_index) {
-
-  if (index_position >= max_index)
-    return false;
-
-  uint8_t byte_index = index_position / 8;
-  uint8_t bit_index = index_position % 8;
-
-  *(index_table + byte_index) |= (1 << bit_index);
-  return true;
-}
-
-/*****************************************************************************/
-
-bool clearIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
-  uint16_t max_index) {
-
-  if (index_position >= max_index)
-    return false;
-
-  uint8_t byte_index = index_position / 8;
-  uint8_t bit_index = index_position % 8;
-
-  *(index_table + byte_index) &= ~(1 << bit_index);
-  return true;
-}
-
-/*****************************************************************************/
-
-bool Z2S_loadIndexTable(
-  uint8_t *index_table, size_t table_size, const char *file_name) {
-
-  memset(index_table, 0, table_size);
-
-  if (Z2S_loadFile(file_name, index_table, table_size)) {
-
-    log_i("Index table (%s) load SUCCESS!", file_name);
-    return true;
-  } 
-  else {
-  
-    if (Z2S_saveFile(file_name, index_table, table_size)) {
-
-      log_i(
-        "Index table (%s) not found - writing new one: SUCCESS!", file_name);
-      return true;
-    } else {
-    
-      log_i(
-        "Index table (%s) not found - writing new one: FAILED!", file_name);
-    return false;
-    }
-  }
-}
-
-/*****************************************************************************/
-
-bool Z2S_saveIndexTable(
-  uint8_t *index_table, size_t table_size, const char *file_name) {
-
-  if (Z2S_saveFile(file_name, index_table, table_size)) {
-
-    log_i("Saving index table (%s): SUCCESS!", file_name);
-    return true;
-
-  } else {
-    
-    log_i ("Saving index table (%s): FAILED!", file_name);
-    return false;
-  }
-}
-
-/*****************************************************************************/
-
-uint16_t Z2S_getIndexTableEntriesNumber(
-  uint8_t *index_table, uint16_t max_index) {
-
-  uint16_t entries_number = 0;
-
-  for (uint16_t index = 0; index < max_index; index++)
-    if (checkIndexTablePosition(index_table, index, max_index))
-      entries_number++;
-  
-  return entries_number;
-}
-
-/*****************************************************************************/
-
-int16_t Z2S_getIndexTablePositionCounter(
-  uint8_t *index_table, uint16_t index_position, uint16_t max_index) {
-
-  if (!checkIndexTablePosition(index_table, index_position, max_index))
-      return -1;
-  
-  uint16_t position_counter = 0;
-
-  for (uint16_t index = 0; index < max_index; index++) {
-    
-    if (index_position == index)
-      return position_counter + 1;
-
-    if (checkIndexTablePosition(index_table, index, max_index))
-      position_counter++;
-  }
-  return -1;
-}
-
-/*****************************************************************************/
-
-int16_t Z2S_findFreeEntryIndex(uint8_t *index_table, uint16_t max_index) {
-
-  for (uint16_t index = 0; index < max_index; index++)
-    if (!checkIndexTablePosition(index_table, index, max_index))
-      return index;
-  
-  return -1; 
-}
-
-/*****************************************************************************/
-
-int16_t Z2S_findNextIndexPosition(
-  uint8_t *index_table, uint16_t index_position, uint16_t max_index) {
-
-  for (uint16_t index = index_position; index < max_index; index++)
-    if (checkIndexTablePosition(index_table, index, max_index))
-      return index;
-  
-  return -1;
-}
-
-/*****************************************************************************/
-
-int16_t Z2S_findPrevIndexPosition(
-  uint8_t *index_table, uint16_t index_position, uint16_t max_index) {
-
-  for (uint16_t index = index_position; index >= 0; index--)
-    if (checkIndexTablePosition(index_table, index, max_index))
-      return index;
-  
-  return -1;
-}
-
-/*****************************************************************************/
-
-bool Z2S_saveObject(
-  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
-  size_t object_size) {
-
-  char file_name_buffer[50] = {};
-  sprintf(file_name_buffer, file_name_prefix, object_index);
-  
-  if (Z2S_saveFile(file_name_buffer, object_data, object_size)) {
-
-    log_i(
-      "Saving object in file %s: SUCCESS", file_name_buffer);
-
-   return true;
-  } 
-  else {
-
-    log_i(
-      "Saving object in file %s: FAILED", file_name_buffer);
-    return false;
-  }
-}
-
-/*****************************************************************************/
-
-bool Z2S_loadObject(
-  uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
-  size_t object_size) {
-
-  char file_name_buffer[50] = {};
-  
-  sprintf(file_name_buffer, file_name_prefix, object_index);
-  
-  if (Z2S_loadFile(file_name_buffer, object_data, object_size)) {
-
-    log_i(
-      "Loading object from file %s: SUCCESS", file_name_buffer);
-   return true;
-  } 
-  else {
-
-    log_i(
-      "Loading object from file %s: FAILED", file_name_buffer);
-    return false;
-  }
-}
-
-/*****************************************************************************/
-
-bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix) {
-
-  char file_name_buffer[50] = {};
-
-  sprintf(file_name_buffer, file_name_prefix, object_index);
-  
-  if (Z2S_deleteFile(file_name_buffer)) {
-    
-    log_i("Removing object file %s: SUCCESS", file_name_buffer);
-    return true;
-  }
-  else {
-
-    log_i("Removing object file %s: FAILED", file_name_buffer);
-    return false;
-  }
 }
 
 /*****************************************************************************/
@@ -3504,10 +3171,6 @@ bool Z2S_saveChannelExtendedData(
   int16_t channel_number_slot, uint8_t extended_data_type,
   uint8_t *extended_data, bool save_table) {
 
-  /*if (save_mutex == 1) return false;
-
-  save_mutex = 1;*/
-
   if (Z2S_getChannelExtendedDataTypeSize(extended_data_type) == 0) {
 
     log_e("Unknown channel extended data type");
@@ -3527,14 +3190,12 @@ bool Z2S_saveChannelExtendedData(
     log_i(
       "Saving Zigbee<=>Supla channel extended data in file %s: SUCCESS", 
       file_name_buffer);
-    
-    z2s_channels_table[channel_number_slot].extended_data_type = 
-      extended_data_type;
-      
-    z2s_channels_table[channel_number_slot].user_data_flags |= 
-      USER_DATA_FLAG_HAS_EXTENDED_DATA;
 
-    /*save_mutex = 0; */
+    auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
+    
+    z2s_core->setExtendedDataType(extended_data_type);
+    z2s_core->clearChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA);
+
     if (save_table)
       return Z2S_saveChannelsTable();
 
@@ -3553,11 +3214,10 @@ bool Z2S_saveChannelExtendedData(
 bool Z2S_removeChannelExtendedData(
   int16_t channel_number_slot, uint8_t extended_data_type, bool save_table) {
 
-  
-  if ((z2s_channels_table[channel_number_slot].user_data_flags &
-      USER_DATA_FLAG_HAS_EXTENDED_DATA) &&
-      (z2s_channels_table[channel_number_slot].extended_data_type == 
-        extended_data_type)) { 
+  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
+
+  if (z2s_core->checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA) &&
+      (z2s_core->getExtendedDataType() == extended_data_type)) { 
 
     char file_name_buffer[50] = {};
   
@@ -3574,11 +3234,8 @@ bool Z2S_removeChannelExtendedData(
         "Removing Zigbee<=>Supla channel extended data file %s: FAILED", 
         file_name_buffer);
 
-    z2s_channels_table[channel_number_slot].extended_data_type = 
-      CHANNEL_EXTENDED_DATA_TYPE_NULL;
-
-    z2s_channels_table[channel_number_slot].user_data_flags &= 
-      ~USER_DATA_FLAG_HAS_EXTENDED_DATA;
+    z2s_core->setExtendedDataType(CHANNEL_EXTENDED_DATA_TYPE_NULL);
+    z2s_core->clearChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA);
 
     if (save_table)
       return Z2S_saveChannelsTable();
@@ -3601,10 +3258,10 @@ bool Z2S_loadChannelExtendedData(
     return false;
   }
 
-  if ((z2s_channels_table[channel_number_slot].user_data_flags &
-      USER_DATA_FLAG_HAS_EXTENDED_DATA) &&
-      (z2s_channels_table[channel_number_slot].extended_data_type == 
-        extended_data_type)) { 
+  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
+
+  if (z2s_core->checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA) &&
+      (z2s_core->getExtendedDataType() == extended_data_type)) { 
 
     char file_name_buffer[50] = {};
   
@@ -3670,7 +3327,7 @@ bool Z2S_removeChannelExtendedDataCounter(int16_t channel_number_slot) {
       Z2S_GatewayPreferences.remove(
         z2s_channels_table[channel_number_slot].extended_data_counter);
     return Z2S_clearChannelFlags(
-    channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER, false);
+      channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER, false);
   }
   return false;
 }
@@ -3722,7 +3379,7 @@ bool Z2S_setChannelExtendedDataCounter(
   int16_t channel_number_slot, uint64_t extended_data_counter) {
 
 if (Z2S_checkChannelFlags(
-        channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+      channel_number_slot, USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
     
     size_t extended_data_counter_str_len = strnlen(
       z2s_channels_table[channel_number_slot].extended_data_counter, 8);
@@ -5638,6 +5295,7 @@ void Z2S_onSonoffCustomClusterReceive(
       msgZ2SDeviceGeneralPurposeMeasurement(
         element, 
         ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_DEC_VALUE, 
+        //ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_INIT_VALUE,
         readAttr<uint32_t>(attribute));
     } break;
 
@@ -9204,6 +8862,22 @@ uint8_t Z2S_addZ2SDevice(
 
 /******************************************************************************/     
 
+      case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE: {
+        
+        switch (sub_id) {
+          
+          //case SONOFF_SMART_VALVE_ON_OFF_SID:
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID:
+          case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID:
+
+           addZ2SDeviceVirtualRelay(
+            &zbGateway, device, first_free_slot, sub_id, name, func); 
+          break;
+        }
+      } break;
+
+/******************************************************************************/     
+
       case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE: {
         
         switch (sub_id) {
@@ -9942,7 +9616,8 @@ uint8_t Z2S_addZ2SDevice(
             addZ2SDeviceGeneralPurposeMeasurement(
               device, first_free_slot, sub_id, name, func, unit); 
           break;
-        } break;
+        } 
+      break;
 
 /*****************************************************************************/     
 
@@ -9963,7 +9638,36 @@ uint8_t Z2S_addZ2SDevice(
             addZ2SDeviceGeneralPurposeMeasurement(
               device, first_free_slot, sub_id, name, func, unit); 
           break;
-        } break;
+        } 
+      break;
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR:
+
+        switch (sub_id) {
+      
+
+          case TUYA_WATER_QUALITY_MONITOR_PROBE_TEMPERATURE_SID: 
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func, false);
+          break;
+
+          case TUYA_WATER_QUALITY_MONITOR_TH_SID: 
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func, true);
+          break;
+
+
+          default: 
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+        } 
+      break;
 
 /******************************************************************************/     
 
@@ -9994,7 +9698,9 @@ uint8_t Z2S_addZ2SDevice(
         z2s_channels_table[channel_number_slot].short_addr = 
           device->short_addr;
         
-        auto Z2S_Core_Ptr = Z2S_getChannelZ2SCorePtr(channel_number_slot);
+        auto Z2S_Core_Ptr = Z2S_Core::getZ2SCoreByChannelIndex(
+          channel_number_slot);
+        //Z2S_getChannelZ2SCorePtr(channel_number_slot);
 
         if (Z2S_Core_Ptr)
           Z2S_Core_Ptr->updateShortAddress(device->short_addr);
@@ -10375,6 +10081,19 @@ void updateRemoteRelayMDNSName(
 
 /*****************************************************************************/
 
+/*void updateRemoteRelayMDNSName(Z2S_Core *z2s_core) {
+
+  auto Supla_Z2S_RemoteRelay = static_cast<
+    Supla::Control::Z2S_RemoteRelay *>(z2s_core->getZ2SElementPtr());
+
+  if (Supla_Z2S_RemoteRelay) {
+
+    Supla_Z2S_RemoteRelay->setRemoteGatewayMDNSName(z2s_core->getMDNSName());
+  }
+}*/
+
+/*****************************************************************************/
+
 void updateRemoteRelayIPAddress(
   uint8_t channel_number_slot, uint32_t remote_ip_address) {
 
@@ -10469,11 +10188,6 @@ void updateRemoteThermometer(
     device.short_addr = z2s_channels_table[channel_number_slot].short_addr;
     device.model_id = z2s_channels_table[channel_number_slot].model_id;
 
-    /*zbGateway.sendAttributeWrite(
-      &device, SONOFF_CUSTOM_CLUSTER, 
-      SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
-      ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
-    */
     int16_t sonoff_external_value = connected_thermometer_value;
 
     switch (value_type) {
@@ -10481,11 +10195,6 @@ void updateRemoteThermometer(
 
       case RTH_VALUE_TYPE_TEMPERATURE: {
   
-        /*zbGateway.sendAttributeWrite(
-          &device, SONOFF_CUSTOM_CLUSTER, 
-          SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
-          ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &sonoff_external_value);*/
-
         Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature(
           sonoff_external_value);
       } break;
@@ -10493,10 +10202,6 @@ void updateRemoteThermometer(
 
       case RTH_VALUE_TYPE_HUMIDITY: {
   
-        /*zbGateway.sendAttributeWrite(
-          &device, SONOFF_CUSTOM_CLUSTER, 
-          SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
-          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &sonoff_external_value);*/
         Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity(
           sonoff_external_value);
       } break;
@@ -10554,9 +10259,10 @@ void updateHvacFixedCalibrationTemperature(
 
     if (Z2S_saveChannelsTable()) {
 
-      log_i("Device(channel %d) fixed calibration temperature updated. "
-            "Table saved successfully.", 
-            z2s_channels_table[channel_number_slot].Supla_channel);
+      log_i(
+        "Device(channel %d) fixed calibration temperature updated. "
+        "Table saved successfully.", 
+        z2s_channels_table[channel_number_slot].Supla_channel);
 
       if (set_trv_interface) {
 
@@ -10583,8 +10289,9 @@ void updateHvacFixedCalibrationTemperature(
     }
   }
   else
-    log_i("Fixed calibration temperature update only "
-          "allowed for SUPLA_CHANNELTYPE_HVAC");
+    log_i(
+      "Fixed calibration temperature update only allowed for "
+      "SUPLA_CHANNELTYPE_HVAC");
 }
 
 /*****************************************************************************/
@@ -10623,6 +10330,8 @@ Supla::LocalAction *getLocalActionPtr(uint8_t Supla_channel_number) {
     return static_cast<Supla::LocalActionHandler *>(Supla_element);
 }
 
+/*****************************************************************************/
+
 Supla::ElementWithChannelActions *getElementWithChannelActionsPtr(
   uint8_t Supla_channel_number) {
 
@@ -10638,6 +10347,7 @@ Supla::ElementWithChannelActions *getElementWithChannelActionsPtr(
     return nullptr;
 }
 
+/*****************************************************************************/
 
 Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
 
@@ -10753,11 +10463,6 @@ Supla::ActionHandlerClient *getActionClientPtr(
     Supla_event = Supla::ON_CHANGE;
   
   while (ptr) {
-
-    /*log_i(
-      "\n\local_action_ptr\t0x%08X\taction_handler_ptr\t0x%08X\n\r"
-      "trigger\t0x%08X\tclient\t0x%08X\n\r",
-      local_action_ptr, action_handler_ptr, ptr->trigger, ptr->client);*/
 
     if ((ptr->trigger && ptr->trigger == local_action_ptr) && 
         (ptr->onEvent == Supla_event) &&
@@ -11091,6 +10796,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
     case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
     case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR:
+    case Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR:
       return true;
     default:
       return false;
@@ -12499,6 +12205,23 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
+    case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE: {
+      
+      /*Z2S_addZ2SDevice(
+        joined_device, SONOFF_SMART_VALVE_ON_OFF_SID, "VALVE ON/OFF (MANUAL)", 
+        SUPLA_CHANNELFNC_POWERSWITCH);*/
+
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_SMART_VALVE_RUN_PROGRAM_SID, 
+        "RUN SAVED PROGRAM (1)", SUPLA_CHANNELFNC_POWERSWITCH);
+                        
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID, 
+        "RUN SAVED PROGRAM (2)", SUPLA_CHANNELFNC_POWERSWITCH);
+    } break;
+
+/*****************************************************************************/
+
     case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE: {
       
       Z2S_addZ2SDevice(
@@ -12885,6 +12608,38 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_SMART_POOL_SENSOR_SALINITY_SID, "SALT VALUE", 
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR: {
+            
+      
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_QUALITY_MONITOR_PROBE_TEMPERATURE_SID, 
+        "PROBE TEMPERATURE");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_QUALITY_MONITOR_TH_SID, "T/H");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_QUALITY_MONITOR_TDS_SID, 
+        "TOTAL DISSOLVED SOLIDS",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "ppm");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_QUALITY_MONITOR_EC_SID, 
+        "ELECTRICAL CONDUCTIVITY", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "uS/cm");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_QUALITY_MONITOR_SALINITY_SID, "SALINITY", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_WATER_QUALITY_MONITOR_SG_SID, "SPECIFIC GRAVITY", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
+
     } break;
 
 /*****************************************************************************/

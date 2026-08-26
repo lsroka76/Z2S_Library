@@ -502,6 +502,14 @@ public:
     uint16_t manuf_code = 0, bool disable_default_response = false, 
     uint16_t profile_id = ESP_ZB_AF_HA_PROFILE_ID);
 
+  bool sendAttributeWriteExt(
+    uint16_t short_addr, uint8_t dst_endpoint, uint16_t cluster_id, 
+    uint16_t attribute_id, esp_zb_zcl_attr_type_t attribute_type, 
+    uint16_t attribute_size, void *attribute_value, bool ack = false, 
+    uint8_t manuf_specific = 0, uint16_t manuf_code = 0, 
+    bool disable_default_response = false, 
+    uint16_t profile_id = ESP_ZB_AF_HA_PROFILE_ID);
+
   void sendIASzoneEnrollResponseCmd(
     zbg_device_params_t *device, uint8_t enroll_rsp_code, uint8_t zone_id);
 
@@ -853,6 +861,7 @@ private:
 
   static query_basic_cluster_data_t _last_device_query;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
+  static uint8_t _read_attr_last_result_value_buffer[64];
   static esp_zb_zcl_read_report_config_resp_variable_t 
     _read_report_config_resp_variable_last_result;
   static esp_zb_zcl_status_t _config_report_status_last_result;
@@ -863,7 +872,8 @@ private:
   static uint8_t _custom_cmd_resp_to_cmd_last_result;
 
   static volatile uint8_t _read_attr_last_tsn;
-  static volatile uint8_t _read_attr_tsn_list[256];
+  static volatile uint8_t _read_attr_last_tsn_flag;
+  //static volatile uint8_t _read_attr_tsn_list[256];
   static volatile uint8_t _custom_cmd_last_tsn;
   static volatile uint8_t _custom_cmd_last_tsn_flag;
   static volatile uint8_t _set_config_last_tsn;

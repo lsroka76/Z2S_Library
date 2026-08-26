@@ -54,11 +54,6 @@ void addZ2SDeviceHvac(
 
 /*****************************************************************************/
 
-/*void msgZ2SDeviceHvac(
-  int16_t channel_number_slot, uint8_t msg_id, int32_t msg_value);*/
-
-/*****************************************************************************/
-
 void msgZ2SDeviceHvac(
   Supla::Element* element, uint8_t msg_id, int32_t msg_value);
 

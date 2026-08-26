@@ -39,11 +39,6 @@ void addZ2SDeviceGeneralPurposeMeasurement(
 /*****************************************************************************/
 
 void msgZ2SDeviceGeneralPurposeMeasurement(
-  int16_t channel_number_slot, uint8_t function, double value); 
-
-/*****************************************************************************/
-
-void msgZ2SDeviceGeneralPurposeMeasurement(
   Supla::Element* element, uint8_t function, double value);
 
 

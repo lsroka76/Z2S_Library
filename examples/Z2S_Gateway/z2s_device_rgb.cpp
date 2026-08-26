@@ -155,17 +155,6 @@ void addZ2SDeviceRGB(
 
 /*****************************************************************************/
 
-void msgZ2SDeviceRGB(int16_t channel_number_slot, uint8_t hue, 
-  uint8_t saturation, bool state) {
-
-  auto element = Supla::Element::getElementByChannelNumber(
-    z2s_channels_table[channel_number_slot].Supla_channel);
-
-  msgZ2SDeviceRGB(element, hue, saturation, state);
-}
-
-/*****************************************************************************/
-
 void msgZ2SDeviceRGB(Supla::Element *element, uint8_t hue, uint8_t saturation, 
   bool state) {
 

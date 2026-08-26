@@ -1,9 +1,7 @@
 #include "z2s_telnet_parser.h"
 
-//extern ZigbeeGateway zbGateway;
 
 void printDir(fs::FS &fs, const char *dirname, uint8_t levels) {
-  //Serial.printf("Listing directory: %s\n", dirname);
 
   File root = fs.open(dirname);
   if (!root) {
@@ -66,72 +64,33 @@ void Z2S_nwk_scan_neighbourhood(bool toTelnet = false) {
 
   while (scan_result == ESP_OK) {
     
-    sprintf_P(log_line, 
-              PSTR("Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t"
-                  "%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n\rDEPTH"
-                  "\t\t\t0x%x\n\rRX_ON_WHEN_IDLE\t\t0x%x\n\rRELATIONSHIP\t\t"
-                  "0x%x\n\rLQI\t\t\t%d\n\rRSSI\t\t\t%d\n\rOUTGOING COST\t\t0x%x\n"
-                  "\rAGE\t\t\t0x%x\n\rDEVICE TIMEOUT\t\t%lu\n\rTIMEOUT COUNTER\t\t%lu"), 
-        nwk_iterator, 
-        nwk_neighbour.ieee_addr[7], 
-        nwk_neighbour.ieee_addr[6], 
-        nwk_neighbour.ieee_addr[5], 
-        nwk_neighbour.ieee_addr[4], 
-        nwk_neighbour.ieee_addr[3], 
-        nwk_neighbour.ieee_addr[2], 
-        nwk_neighbour.ieee_addr[1], 
-        nwk_neighbour.ieee_addr[0],
-        nwk_neighbour.short_addr, 
-        nwk_neighbour.depth, 
-        nwk_neighbour.rx_on_when_idle, 
-        nwk_neighbour.relationship,
-        nwk_neighbour.lqi, 
-        nwk_neighbour.rssi, 
-        nwk_neighbour.outgoing_cost, 
-        nwk_neighbour.age, 
-        nwk_neighbour.device_timeout,
-        nwk_neighbour.timeout_counter);
+    sprintf_P(
+      log_line, "Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t"
+      "%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n\rDEPTH"
+      "\t\t\t0x%x\n\rRX_ON_WHEN_IDLE\t\t0x%x\n\rRELATIONSHIP\t\t"
+      "0x%x\n\rLQI\t\t\t%d\n\rRSSI\t\t\t%d\n\rOUTGOING COST\t\t0x%x\n"
+      "\rAGE\t\t\t0x%x\n\rDEVICE TIMEOUT\t\t%lu\n\rTIMEOUT COUNTER\t\t%lu", 
+      nwk_iterator, nwk_neighbour.ieee_addr[7], nwk_neighbour.ieee_addr[6], 
+      nwk_neighbour.ieee_addr[5], nwk_neighbour.ieee_addr[4], 
+      nwk_neighbour.ieee_addr[3], nwk_neighbour.ieee_addr[2], 
+      nwk_neighbour.ieee_addr[1], nwk_neighbour.ieee_addr[0],
+      nwk_neighbour.short_addr, nwk_neighbour.depth, 
+      nwk_neighbour.rx_on_when_idle, nwk_neighbour.relationship,
+      nwk_neighbour.lqi, nwk_neighbour.rssi, nwk_neighbour.outgoing_cost, 
+      nwk_neighbour.age, nwk_neighbour.device_timeout,
+      nwk_neighbour.timeout_counter);
 
     log_i_telnet2(log_line, toTelnet);
     
-    int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-      nwk_neighbour.ieee_addr, -1, 0, ALL_SUPLA_CHANNEL_TYPES, 
-      NO_CUSTOM_CMD_SID);
-    
-    if (channel_number_slot < 0) {
-      
-      sprintf(
-        log_line, 
-        PSTR("Z2S_nwk_scan_neighbourhood - "
-             "no channel found for address 0x%x"),
-        nwk_neighbour.short_addr);
-
-      log_i_telnet2(log_line, toTelnet);
-    } else {
-      
-      while (channel_number_slot >= 0) {
-      auto element = 
-        Supla::Element::getElementByChannelNumber(z2s_channels_table[channel_number_slot].Supla_channel);
-
-      if (element) 
-        element->getChannel()->setBridgeSignalStrength(Supla::rssiToSignalStrength(nwk_neighbour.rssi));
-        
-      channel_number_slot = Z2S_findChannelNumberNextSlot(
-        channel_number_slot, nwk_neighbour.ieee_addr, -1, 0, 
-        ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
-      }
-    }  
-    
     scan_result = esp_zb_nwk_get_next_neighbor(&nwk_iterator, &nwk_neighbour);
-    
   }
   if (scan_result == ESP_ERR_INVALID_ARG)
-    log_i_telnet2("Z2S_nwk_scan_neighbourhood error ESP_ERR_INVALID_ARG", 
-                  toTelnet);
+    log_i_telnet2(
+      "Z2S_nwk_scan_neighbourhood error ESP_ERR_INVALID_ARG", toTelnet);
 
   if (scan_result == ESP_ERR_NOT_FOUND)
-    log_i_telnet2("Z2S_nwk_scan_neighbourhood scan completed", 
-                  toTelnet);
+    log_i_telnet2(
+      "Z2S_nwk_scan_neighbourhood scan completed", toTelnet);
 }
 
 void remoteNeighbourhoodTableCb(
@@ -167,12 +126,10 @@ void remoteNeighbourhoodTableCb(
     for (int i = 0; i < rsp->neighbor_table_list_count; i++) {
     
       sprintf_P(
-        log_line, 
-        PSTR(
-          "Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t"
-          "%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n\r"
-          "DEVICE TYPE\t\t0x%x\n\rDEPTH\t\t\t0x%x\n\rRX_ON_WHEN_IDLE"
-          "\t\t0x%x\n\rRELATIONSHIP\t\t0x%x\n\rLQI\t\t\t%d\n\r"), 
+        log_line, "Scan neighbour record number - 0x%x:\n\rIEEE ADDRESS\t\t"
+        "%X:%X:%X:%X:%X:%X:%X:%X\n\rSHORT ADDRESS\t\t0x%x\n\r"
+        "DEVICE TYPE\t\t0x%x\n\rDEPTH\t\t\t0x%x\n\rRX_ON_WHEN_IDLE"
+        "\t\t0x%x\n\rRELATIONSHIP\t\t0x%x\n\rLQI\t\t\t%d\n\r", 
         rsp->start_index + rsp->neighbor_table_list_count, 
         nwk_neighbour->extended_addr[7], nwk_neighbour->extended_addr[6], 
         nwk_neighbour->extended_addr[5], nwk_neighbour->extended_addr[4], 
@@ -210,25 +167,20 @@ void Z2S_scanRemoteNeighbourhoodTable(
 
 bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
 
-  int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+  auto z2s_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(channel_id);
   
-  if (channel_number_slot >= 0) {
+  if (z2s_core) {
 
-    device->endpoint = 
-      z2s_channels_table[channel_number_slot].endpoint;
+    device->endpoint = z2s_core->getChannelEndpoint();
+    device->cluster_id = z2s_core->getChannelClusterId();
 
-    device->cluster_id = 
-    z2s_channels_table[channel_number_slot].cluster_id;
-    
-    memcpy(device->ieee_addr, 
-           z2s_channels_table[channel_number_slot].ieee_addr,
-           sizeof(esp_zb_ieee_addr_t));
+    memcpy(
+      device->ieee_addr, z2s_core->getIEEEAddress(),
+      sizeof(esp_zb_ieee_addr_t));
 
-    device->short_addr = 
-      z2s_channels_table[channel_number_slot].short_addr;
-
-    device->model_id = 
-      z2s_channels_table[channel_number_slot].model_id;
+    device->short_addr = z2s_core->getChannelShortAddress();
+    device->model_id = z2s_core->getChannelModelId();
+  
 
     telnet.printf(PSTR(">Device %u\n\r>"), device->short_addr);
     
@@ -592,9 +544,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   if (strcmp(cmd, "DIR") == 0) {
 
     telnet.printf("\n\r>FILE SYSTEM\n\r");
-    LittleFS.begin(false);
+    //LittleFS.begin(false);
+    Z2S_initLittleFs();
     printDir(LittleFS,"/",3);
-    LittleFS.end();
+    //LittleFS.end();
     telnet.printf("--------------------\n\r>");
     return;
   } else
@@ -829,7 +782,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     }
     return;
   } else
-  if (strcmp(cmd,"UPDATE-DEVICE-DESC") == 0) {
+  /*if (strcmp(cmd,"UPDATE-DEVICE-DESC") == 0) {
 
     if (params_number < 2)  {
       telnet.println(">update-device-desc channel device_desc_id");
@@ -841,7 +794,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-        z2s_channels_table[channel_number_slot].model_id = device_desc_id;
+        z2s_channels_table_DEP[channel_number_slot].model_id = device_desc_id;
       if (Z2S_saveChannelsTable()) {
         log_i("Device(channel %d) description id changed successfully.", channel_id);
       }
@@ -862,7 +815,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-        z2s_channels_table[channel_number_slot].sub_id = device_sub_id;
+        z2s_channels_table_DEP[channel_number_slot].sub_id = device_sub_id;
       if (Z2S_saveChannelsTable()) {
         log_i("Device(channel %d) sub id changed successfully.", channel_id);
       }
@@ -883,7 +836,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-        z2s_channels_table[channel_number_slot].Supla_channel_type = channel_type;
+        z2s_channels_table_DEP[channel_number_slot].Supla_channel_type = channel_type;
       if (Z2S_saveChannelsTable()) {
         log_i("Channel (%02u) type changed successfully.", channel_id);
       }
@@ -924,7 +877,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
-        z2s_channels_table[channel_number_slot].Supla_channel_func = channel_func;
+        z2s_channels_table_DEP[channel_number_slot].Supla_channel_func = channel_func;
       if (Z2S_saveChannelsTable()) {
         log_i("Channel (%02u) function changed successfully.", channel_id);
       }
@@ -932,7 +885,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
     }  
     return;
-  } else
+  } else*/
   if ((strcmp(cmd,"UPDATE-DEVICE-FLAGS") == 0) ||
       (strcmp(cmd,"UPDATE-CHANNEL-FLAGS") == 0)) {
 
@@ -945,15 +898,19 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     bool flag_set = (strcmp(*(param + 1), "SET") == 0);
     bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
     uint8_t bit_id = parseDeviceFlagsStr(*(param + 2));
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+
+    auto z2s_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(channel_id);
     
-    if (channel_number_slot >= 0) {
+    if (z2s_core) {
+
+        bool set_flag_result = false;
         if (flag_set)
-          z2s_channels_table[channel_number_slot].user_data_flags |= (1 << bit_id);
+          set_flag_result = z2s_core->setChannelUserDataFlags(bit_id);
         if (flag_clear)
-          z2s_channels_table[channel_number_slot].user_data_flags &= ~(1 << bit_id);
-      if (Z2S_saveChannelsTable()) {
-        telnet.printf(">Device(channel %d) flags changed successfully.\n\r>", channel_id);
+          set_flag_result = z2s_core->clearChannelUserDataFlags(bit_id);
+      if (set_flag_result) {
+        telnet.printf(
+          ">Channel #%d flags changed successfully.\n\r>", channel_id);
       }
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
@@ -972,10 +929,10 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
     uint8_t bit_id = parseZbDeviceFlagsStr(*(param + 2));
     
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    auto z2s_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(channel_id);
     
-    uint8_t zb_device_number_slot = (channel_number_slot >= 0) ? 
-      Z2S_findZbDeviceTableSlot(z2s_channels_table[channel_number_slot].ieee_addr) : 0xFF;
+    uint8_t zb_device_number_slot = (z2s_core) ? z2s_core->getZbDeviceId() : 
+      0xFF;
     
     if (zb_device_number_slot < 0xFF) {
         if (flag_set)
@@ -1070,23 +1027,36 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     int8_t param_id = strtoul(*(param + 1), nullptr, 0);
     int32_t param_value = strtoul(*(param + 2), nullptr, 0);
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    auto z2s_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(channel_id);
     
-    if (channel_number_slot >= 0) {
+    if (z2s_core) {
       switch (param_id) {
+        
         case 1:
-          z2s_channels_table[channel_number_slot].user_data_1 = param_value; break;
+          z2s_core->setChannelUserData1(param_value); 
+        break;
+
         case 2:
-          z2s_channels_table[channel_number_slot].user_data_2 = param_value; break;
+          z2s_core->setChannelUserData2(param_value); 
+        break;
+
         case 3:
-          z2s_channels_table[channel_number_slot].user_data_3 = param_value; break;
+          z2s_core->setChannelUserData3(param_value); 
+        break;
+
         case 4:
-          z2s_channels_table[channel_number_slot].user_data_4 = param_value; break;
+          z2s_core->setChannelUserData4(param_value); 
+        break;
+        
+        
         default:
-          telnet.printf(">param_id(%u) should be in range 1...4\n\r>", param_id); break;
+          telnet.printf(
+            ">param_id(%u) should be in range 1...4\n\r>", param_id); 
+        break;
       }
       if (Z2S_saveChannelsTable()) {
-        log_i("Device(channel %d) user data daved successfully.", channel_id);
+        log_i(
+          "Device(channel %d) user data daved successfully.", channel_id);
       }
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);

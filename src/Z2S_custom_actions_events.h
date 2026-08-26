@@ -283,10 +283,19 @@
 /***********************************************************************************/
 
 Supla::Action convertZ2SActionToSuplaAction(uint32_t z2s_core_supla_action);
+
+/***********************************************************************************/
+
 uint32_t convertSuplaActionToZ2SAction(Supla::Action supla_action);
 
+/***********************************************************************************/
+
 Supla::Event convertZ2SEventToSuplaEvent(uint32_t core_supla_event);
+
+/***********************************************************************************/
+
 uint32_t convertSuplaEventToZ2SEvent(Supla::Event supla_event);
 
+/***********************************************************************************/
 #endif //
 
