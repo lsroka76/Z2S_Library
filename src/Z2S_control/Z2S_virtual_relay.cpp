@@ -588,9 +588,7 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
   }
 }
 
-void Supla::Control::Z2S_VirtualRelay::iterateConnected() {
-
-  Supla::Control::Relay::iterateConnected();
+bool Supla::Control::Z2S_VirtualRelay::iterateConnected() {
 
   if (_timer_ms > 0) {
 
@@ -602,6 +600,8 @@ void Supla::Control::Z2S_VirtualRelay::iterateConnected() {
         getChannelNumber(), _timer_ms, state, senderId);
     }
   }
+
+  return Supla::Control::Relay::iterateConnected();
 }
 
 

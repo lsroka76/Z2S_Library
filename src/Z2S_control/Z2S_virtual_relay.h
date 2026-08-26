@@ -85,7 +85,7 @@ public:
   void turnOn(_supla_int_t duration = 0) override;
   void turnOff(_supla_int_t duration = 0) override;
   void iterateAlways() override;
-  void iterateConnected() override;
+  bool iterateConnected() override;
 
   void startTimer(uint32_t timer_ms) {
 
