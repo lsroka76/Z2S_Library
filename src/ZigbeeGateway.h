@@ -759,6 +759,13 @@ public:
     _on_on_off_receive = callback;
   }
 
+  void onTimeReceive(
+    void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
+    const esp_zb_zcl_attribute_t *)) {
+
+    _on_time_receive = callback;
+  }
+
   void onBatteryReceive(
     void (*callback)(uint16_t short_addr, uint16_t, uint16_t,
     const esp_zb_zcl_attribute_t *)) {
@@ -928,6 +935,9 @@ private:
     uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
 
   void (*_on_on_off_receive)(
+    uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+
+  void (*_on_time_receive)(
     uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
 
   void (*_on_electrical_measurement_receive)(

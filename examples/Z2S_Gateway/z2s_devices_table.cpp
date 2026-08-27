@@ -345,7 +345,7 @@ Supla::Element* Z2S_findZ2SElement(
   auto core_it = Z2S_Cores.begin();
   while (core_it != Z2S_Cores.end()) {
 
-    Z2S_Core* z2s_core = *core_it;
+    Z2S_Core *z2s_core = *core_it;
 
     if ((z2s_core->getChannelShortAddress() == short_addr) &&
         ((endpoint < 0) || (z2s_core->getChannelEndpoint() == endpoint)) &&
@@ -380,7 +380,7 @@ Supla::Element* Z2S_findZ2SElement(
 
 /*****************************************************************************/
 
-Z2S_Core* Z2S_findZ2SCore(
+Z2S_Core *Z2S_findZ2SCore(
   uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id) {
 
@@ -389,7 +389,7 @@ Z2S_Core* Z2S_findZ2SCore(
   auto core_it = Z2S_Cores.begin();
   while (core_it != Z2S_Cores.end()) {
 
-    Z2S_Core* z2s_core = *core_it;
+    Z2S_Core *z2s_core = *core_it;
 
     if ((z2s_core->getChannelShortAddress() == short_addr) &&
         ((endpoint < 0) || (z2s_core->getChannelEndpoint() == endpoint)) &&
@@ -3492,7 +3492,7 @@ void Z2S_onPressureReceive(
         return;
       }
 
-      Z2S_Core* z2s_core = Z2S_findZ2SCore(
+      Z2S_Core *z2s_core = Z2S_findZ2SCore(
         short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
 
@@ -3610,7 +3610,7 @@ void Z2S_onIlluminanceReceive(
     "0x%04X, endpoint 0x%x, illuminance %u", short_addr, endpoint, 
     illuminance);
 
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
 
@@ -3721,7 +3721,7 @@ void Z2S_onOccupancyReceive(
   log_i(
     "0x%04X, endpoint 0x%x, occupancy 0x%x", short_addr, endpoint, occupancy);
 
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
     NO_CUSTOM_CMD_SID);
 
@@ -3772,7 +3772,7 @@ void Z2S_onColorControlReceive(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RGBLEDCONTROLLER, 
     NO_CUSTOM_CMD_SID);
 
-  Z2S_Core* z2s_core_2 = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core_2 = Z2S_findZ2SCore(
         short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
         DIMMER_FUNC_COLOR_TEMPERATURE_SID);
 
@@ -4183,7 +4183,7 @@ void Z2S_onFCXXCustomClusterReceive(
     "0x%x, size %u", short_addr, endpoint, cluster, attribute->id, 
     attribute->data.size);
 
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (!z2s_core) {                         
@@ -4445,7 +4445,7 @@ void Z2S_onLumiCustomClusterReceive(
           "F7 attribute[%d] = 0x%02X(%d)", i, readAttr<uint8_t>(attribute, i),
           readAttr<uint8_t>(attribute, i));
              
-      Z2S_Core* z2s_core = Z2S_findZ2SCore(
+      Z2S_Core *z2s_core = Z2S_findZ2SCore(
         short_addr, ALL_ENDPOINTS, LUMI_CUSTOM_CLUSTER, 
         ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
@@ -5042,7 +5042,7 @@ void Z2S_onBasicReceive(
         msgZ2SDeviceTempHumidityHumi(element, lumi_humidity);
       }
 
-      Z2S_Core* z2s_core = Z2S_findZ2SCore(
+      Z2S_Core *z2s_core = Z2S_findZ2SCore(
         short_addr, endpoint, cluster, 
         SUPLA_CHANNELTYPE_PRESSURESENSOR, NO_CUSTOM_CMD_SID);   
 
@@ -5103,7 +5103,7 @@ void Z2S_onSonoffCustomClusterReceive(
 
       case SONOFF_CUSTOM_CLUSTER_2_BUTTON_ID: {
 
-      Z2S_Core* z2s_core = Z2S_findZ2SCore(
+      Z2S_Core *z2s_core = Z2S_findZ2SCore(
         short_addr, endpoint, SONOFF_CUSTOM_CLUSTER_2,
         SUPLA_CHANNELTYPE_ACTIONTRIGGER, value - 1);    
 
@@ -5476,7 +5476,7 @@ void Z2S_onOnOffReceive(
     channel_found = true;
   }
 
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
     DIMMER_FUNC_BRIGHTNESS_SID);
 
@@ -5557,6 +5557,37 @@ void Z2S_onOnOffReceive(
 
 /*****************************************************************************/
 
+void Z2S_onTimeReceive(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
+  const esp_zb_zcl_attribute_t *attribute) {
+
+  if (attribute->id != ESP_ZB_ZCL_ATTR_TIME_TIME_ID) {
+
+    log_e("unknown attribute 0x%04X", attribute->id);
+    return;
+  }
+
+  uint32_t utc_time = readAttr<uint32_t>(attribute);
+  
+  log_i("0x%04X, endpoint 0x%x, flow %lu", short_addr, endpoint, utc_time);
+
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, cluster, 
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+    SLACKY_DIY_REPEATER_UPTIME_SID);
+
+  if ((z2s_core) && (z2s_core->getChannelModelId() ==
+        Z2S_DEVICE_DESC_SLACKY_DIY_REPEATER)) {                         
+    msgZ2SDeviceGeneralPurposeMeasurement(
+      z2s_core->getZ2SElementPtr(), 
+      ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, utc_time); 
+  }
+  else
+    no_channel_found_error_func(short_addr);
+}
+
+/*****************************************************************************/
+
 void Z2S_onElectricalMeasurementReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
   const esp_zb_zcl_attribute_t *attribute) {
@@ -5566,7 +5597,7 @@ void Z2S_onElectricalMeasurementReceive(
     "0x%04X, endpoint 0x%x, attribute id 0x%x, size %u", short_addr, endpoint,
     attribute->id, attribute->data.size);
 
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_ELECTRICITY_METER, 
     NO_CUSTOM_CMD_SID);
 
@@ -5841,7 +5872,7 @@ void Z2S_onBinaryInputReceive(
     "0x%04X, endpoint 0x%x, attribute id 0x%x, size %u", short_addr, endpoint,
     attribute->id, attribute->data.size);
 
-    Z2S_Core* z2s_core = Z2S_findZ2SCore(
+    Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (!z2s_core) {
@@ -5896,7 +5927,7 @@ void Z2S_onMultistateInputReceive(
     "short address 0x%04X, endpoint 0x%02X, attribute id 0x%04X, size %u", 
     short_addr, endpoint, attribute->id, attribute->data.size);
 
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
   if (!z2s_core) {
@@ -6041,7 +6072,7 @@ void Z2S_onAnalogInputReceive(
     "0x%04X, endpoint 0x%x, attribute id 0x%x, size %u", short_addr, endpoint,
     attribute->id, attribute->data.size);
 
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, ALL_ENDPOINTS, cluster, ALL_SUPLA_CHANNEL_TYPES, 
     NO_CUSTOM_CMD_SID);
 
@@ -6301,11 +6332,11 @@ void Z2S_onCurrentLevelReceive(
   const esp_zb_zcl_attribute_t *attribute) {
 
 
-  Z2S_Core* z2s_core_1 = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core_1 = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
     DIMMER_FUNC_BRIGHTNESS_SID);
 
-  Z2S_Core* z2s_core_2 = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core_2 = Z2S_findZ2SCore(
     short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_DIMMER, 
     DIMMER_FUNC_BRIGHTNESS_COLOR_TEMPERATURE_SID);
 
@@ -6390,11 +6421,23 @@ void Z2S_onBatteryReceive(
     break;
 
 
-    case ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID:
+    case ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID: {
 
       updateSuplaBatteryLevel(
         short_addr, ZBD_BATTERY_VOLTAGE_MSG, battery_remaining, false);
-    break;
+
+      Z2S_Core *z2s_core = Z2S_findZ2SCore(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        SLACKY_DIY_REPEATER_VOLTAGE_SID);
+
+      if ((z2s_core) && (z2s_core->getChannelModelId() ==
+        Z2S_DEVICE_DESC_SLACKY_DIY_REPEATER)) {                         
+          msgZ2SDeviceGeneralPurposeMeasurement(
+          z2s_core->getZ2SElementPtr(), 
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, battery_remaining); 
+      }
+    } break;
   }
 }
 
@@ -6560,7 +6603,7 @@ bool processPhilipsCommands(
       uint8_t sub_id = 4 * (button_id - 1);
       sub_id += action_id;
 
-      Z2S_Core* z2s_core = Z2S_findZ2SCore(
+      Z2S_Core *z2s_core = Z2S_findZ2SCore(
         short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
         sub_id);
 
@@ -6592,7 +6635,7 @@ bool processIkeaSymfoniskCommands(
   bool is_IKEA_FC7F_C_1 = false;
   bool isSomrig = false;
 
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
     NO_CUSTOM_CMD_SID);
 
@@ -6772,7 +6815,7 @@ bool Z2S_onCustomCmdReceive(
     "short address 0x%04X, endpoint 0x%02X, cluster 0x%04X, cmd id 0x%02X", 
     short_addr, endpoint, cluster_id, command_id);
   
-  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
     short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
     ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID);
 
@@ -7041,7 +7084,7 @@ bool Z2S_onCustomCmdReceive(
         if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) && 
             (command_id == 0x09)) {
 
-          Z2S_Core* z2s_core = Z2S_findZ2SCore(
+          Z2S_Core *z2s_core = Z2S_findZ2SCore(
             short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
             SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
             IKEA_CUSTOM_CMD_BUTTON_3_HELD_SID);
@@ -7072,7 +7115,7 @@ bool Z2S_onCustomCmdReceive(
           if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) && 
             (command_id == 0x07)) {
 
-          Z2S_Core* z2s_core = Z2S_findZ2SCore(
+          Z2S_Core *z2s_core = Z2S_findZ2SCore(
             short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
             SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
             IKEA_CUSTOM_CMD_BUTTON_1_HELD_SID);
@@ -7166,7 +7209,7 @@ bool Z2S_onCustomCmdReceive(
           TUYA_CUSTOM_CMD_BUTTON_ROTATE_RIGHT_SID + (*buffer) : 
           (*buffer);
 
-        Z2S_Core* z2s_core = Z2S_findZ2SCore(
+        Z2S_Core *z2s_core = Z2S_findZ2SCore(
           short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
           SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id);
         

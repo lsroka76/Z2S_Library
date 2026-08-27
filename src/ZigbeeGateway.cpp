@@ -1235,6 +1235,14 @@ void ZigbeeGateway::zbProcessAttributeReporting(
     } break;
 
 
+    case ESP_ZB_ZCL_CLUSTER_ID_TIME: {
+
+      if (_on_time_receive)
+        _on_time_receive(
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+    } break;
+
+
     case ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT: {
 
       if (_on_electrical_measurement_receive)

@@ -369,6 +369,7 @@ void enableZ2SNotifications() {
   zbGateway.onFlowReceive(Z2S_onFlowReceive);
   zbGateway.onOccupancyReceive(Z2S_onOccupancyReceive);
   zbGateway.onOnOffReceive(Z2S_onOnOffReceive);
+  zbGateway.onTimeReceive(Z2S_onTimeReceive);
   zbGateway.onElectricalMeasurementReceive(Z2S_onElectricalMeasurementReceive);
   zbGateway.onBinaryInputReceive(Z2S_onBinaryInputReceive);
   zbGateway.onMultistateInputReceive(Z2S_onMultistateInputReceive);
@@ -418,6 +419,7 @@ void disableZ2SNotifications() {
   zbGateway.onFlowReceive(nullptr);
   zbGateway.onOccupancyReceive(nullptr);
   zbGateway.onOnOffReceive(nullptr);
+  zbGateway.onTimeReceive(nullptr);
   zbGateway.onElectricalMeasurementReceive(nullptr);
   zbGateway.onBinaryInputReceive(nullptr);
   zbGateway.onMultistateInputReceive(nullptr);
