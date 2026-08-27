@@ -9801,7 +9801,6 @@ uint8_t Z2S_addZ2SDevice(
         
         auto Z2S_Core_Ptr = Z2S_Core::getZ2SCoreByChannelIndex(
           channel_number_slot);
-        //Z2S_getChannelZ2SCorePtr(channel_number_slot);
 
         if (Z2S_Core_Ptr)
           Z2S_Core_Ptr->updateShortAddress(device->short_addr);

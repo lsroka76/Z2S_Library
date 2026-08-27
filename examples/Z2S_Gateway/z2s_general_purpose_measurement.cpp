@@ -168,6 +168,9 @@ void addZ2SDeviceGeneralPurposeMeasurement(
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id, name, func);
   
   Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
+
+  Supla_Z2S_GeneralPurposeMeasurement->setZ2SChannel(
+    free_slot, z2s_channels_table + free_slot);
 }
 
 /*****************************************************************************/
