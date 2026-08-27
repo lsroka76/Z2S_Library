@@ -5615,7 +5615,8 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		} break;
 
 
-		case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER: {
+		case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER:
+		case SUPLA_CHANNELTYPE_DIMMERANDRGBLED: {
 
 			enableChannelTimings(3); //timeout + keepalive
 
@@ -5628,8 +5629,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			ESPUI.updateNumber(param_1_number, z2s_channel.rgb_color_mode);
 
 			char *working_str_ptr = "&#10023; RGB custom param<br>"
-				"enter numeric value to select RGB MODE<br>"
-				"ie. to set correction to -1 enter -100 &#10023;";
+				"enter numeric value to select RGB MODE &#10023;";
 
 			ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 
