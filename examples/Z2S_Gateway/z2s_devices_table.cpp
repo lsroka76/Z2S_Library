@@ -855,6 +855,12 @@ bool Z2S_setChannelFlags(
 
   auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
 
+  if (z2s_core) {
+    log_i("CORE present!");
+  }
+  else
+    return false;
+
   return z2s_core->setChannelUserDataFlags(flags_to_set, save_table);
 }
 
@@ -7936,22 +7942,11 @@ uint8_t Z2S_addZ2SDevice(
           case TUYA_X_RELAYS_CONTROLLER_RELAY_6_SID:
           case TUYA_X_RELAYS_CONTROLLER_RELAY_7_SID:
           case TUYA_X_RELAYS_CONTROLLER_RELAY_8_SID:
-          //case TUYA_8_RELAYS_CONTROLLER_LOCK_SID:
 
             addZ2SDeviceVirtualRelay(
               &zbGateway,device, first_free_slot, sub_id, name, 
               SUPLA_CHANNELFNC_POWERSWITCH);
           break;
-
-
-          /*case TUYA_8_RELAYS_CONTROLLER_STATUS_SID:
-
-            addZ2SDeviceGeneralPurposeMeasurement(device, 
-                                                  first_free_slot, 
-                                                  sub_id, name, 
-                                                  func, 
-                                                  unit); */
-          break;            
 
 
           default:

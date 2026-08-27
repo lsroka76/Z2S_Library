@@ -145,6 +145,10 @@ void addZ2SDeviceTempHumidity(
     Z2S_fillChannelsTableSlot(
       device, free_slot, Supla_Z2S_VirtualThermHygroMeter->getChannelNumber(), 
       SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, sub_id, name, func);
+
+    Supla_Z2S_VirtualThermHygroMeter->setZ2SChannel(
+      free_slot, z2s_channels_table + free_slot);
+    
   } else {
 
     auto Z2S_VirtualThermometer = new Supla::Sensor::Z2S_VirtualThermometer();
@@ -155,6 +159,9 @@ void addZ2SDeviceTempHumidity(
     Z2S_fillChannelsTableSlot(
       device, free_slot, Z2S_VirtualThermometer->getChannelNumber(), 
       SUPLA_CHANNELTYPE_THERMOMETER, sub_id, name, func);
+
+    Z2S_VirtualThermometer->setZ2SChannel(
+      free_slot, z2s_channels_table + free_slot);
   }
 }
 
