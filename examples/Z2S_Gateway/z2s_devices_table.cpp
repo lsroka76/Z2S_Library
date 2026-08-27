@@ -5404,18 +5404,37 @@ void Z2S_onSonoffCustomClusterReceive(
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_DUAL_VALVE_TIME_SID);
 
-        if (status_data->schedule_status == 0x02)
+        //if (status_data->schedule_status == 0x02)
           log_i(
-            "Irrigation Status Report received:\n\rStatus %u<>Type %u<>Mode"
-            " %u\n\rExpected Duration %lu\n\r", status_data->schedule_status,
-            status_data->schedule_type, status_data->schedule_mode,
-            __builtin_bswap32(status_data->expected_end_time) - 
-            __builtin_bswap32(status_data->expected_start_time));
+            "Irrigation Status Report received:\n\r"
+            "Status %u<>Type %u<>Mode %u\n\r",
+            //" %u\n\rExpected Duration %lu\n\r", 
+            status_data->schedule_status,
+            status_data->schedule_type, status_data->schedule_mode);
+            //,
+            //__builtin_bswap32(status_data->expected_end_time) - 
+            //__builtin_bswap32(status_data->expected_start_time));
 
         switch (status_data->schedule_status) {
 
+          
+          case 0x00: //start
 
-          case 0x02:
+            msgZ2SDeviceGeneralPurposeMeasurement(
+              element_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+              __builtin_bswap32(status_data->expected_end_time) - 
+              __builtin_bswap32(status_data->expected_start_time));
+          break;
+
+
+          case 0x01:  //end
+
+            msgZ2SDeviceGeneralPurposeMeasurement(
+              element_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 0);
+          break;
+
+
+          case 0x02: //running
 
             msgZ2SDeviceGeneralPurposeMeasurement(
               element_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
