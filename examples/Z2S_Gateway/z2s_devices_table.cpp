@@ -5419,8 +5419,8 @@ void Z2S_onSonoffCustomClusterReceive(
 
             msgZ2SDeviceGeneralPurposeMeasurement(
               element_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-              __builtin_bswap32(status_data->actual_end_time) - 
-              __builtin_bswap32(status_data->expected_start_time));
+              __builtin_bswap32(status_data->expected_end_time) - 
+              __builtin_bswap32(status_data->actual_end_time));
           break;
         }
       }      
