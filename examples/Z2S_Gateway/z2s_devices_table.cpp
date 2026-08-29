@@ -3058,13 +3058,14 @@ bool Z2S_saveChannelExtendedData(
     auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
     
     z2s_core->setExtendedDataType(extended_data_type);
-    z2s_core->clearChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA);
+    z2s_core->setChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA);
 
     if (save_table)
       return Z2S_saveChannelsTable();
 
     return true;
-  } else {
+  } 
+  else {
 
     log_i(
       "Saving Zigbee<=>Supla channel extended data in file %s: FAILED", 

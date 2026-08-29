@@ -495,20 +495,18 @@ void addZ2SDeviceElectricityMeter(
   auto Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(
     active_query, one_phase);
   
-  //if (active_query) 
-  //  z2s_channels_table_DEP[free_slot].refresh_secs = 30; //active_query replacement 
-  
-  channel_extended_data_em_t channel_extended_data_em = {};
+  //channel_extended_data_em_t channel_extended_data_em = {};
 
-  memcpy(
-    channel_extended_data_em.ieee_addr, device->ieee_addr, 
-    sizeof(esp_zb_ieee_addr_t));
+  //memcpy(
+  //  channel_extended_data_em.ieee_addr, device->ieee_addr, 
+  //  sizeof(esp_zb_ieee_addr_t));
 
   Z2S_fillChannelsTableSlot(
     device, free_slot, Supla_Z2S_ElectricityMeter->getChannelNumber(), 
     SUPLA_CHANNELTYPE_ELECTRICITY_METER, sub_id, "Electricity meter",
-    SUPLA_CHANNELFNC_ELECTRICITY_METER, 0xFF, CHANNEL_EXTENDED_DATA_TYPE_EM,
-    (uint8_t*)&channel_extended_data_em);
+    SUPLA_CHANNELFNC_ELECTRICITY_METER);
+    //, 0xFF, CHANNEL_EXTENDED_DATA_TYPE_EM,
+    //(uint8_t*)&channel_extended_data_em);
 }
 
 /*****************************************************************************/

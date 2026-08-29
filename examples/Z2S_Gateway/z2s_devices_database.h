@@ -5313,7 +5313,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb GU10 CWS 345lm",
     .z2s_device_uid = 18805,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB, //Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "ORMANAS LED Strip",
@@ -5328,7 +5328,8 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "Adeo", .model_name = "ZBEK-1",
     .z2s_device_uid = 18950,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_RGBW_BULB,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+                          //Z2S_DEVICE_DESC_ADEO_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
@@ -5538,7 +5539,8 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3210_ljoasixl", .model_name = "TS0505B",
     .z2s_device_uid = 20200,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE,
+                          //Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3210_0zabbfax", .model_name = "TS0503B",

@@ -514,8 +514,10 @@ void addZ2SDeviceVirtualRelay(
 
     Supla_Z2S_VirtualRelay->setInitialCaption(name);
   
-    if (func !=0) 
-      Supla_Z2S_VirtualRelay->setDefaultFunction(func);
+    if (func == 0)
+      func = SUPLA_CHANNELFNC_POWERSWITCH;
+    
+    Supla_Z2S_VirtualRelay->setDefaultFunction(func);
   
     Z2S_fillChannelsTableSlot(
       device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), 

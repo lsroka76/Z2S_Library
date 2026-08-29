@@ -99,6 +99,8 @@ typedef struct z2s_zb_device_params_s {
     struct {
       uint32_t user_data_1;
       uint32_t user_data_2; 
+      uint64_t user_data_3;
+      uint64_t user_data_4;
     };
     struct {
       uint32_t value : 24;
@@ -106,10 +108,17 @@ typedef struct z2s_zb_device_params_s {
       uint32_t pause_time : 24;
       uint32_t cycles : 8;
     } smart_valve_data;
+    struct {
+      uint16_t        total_duration;
+      uint16_t        irrigation_duration;
+      uint16_t        pause_duration;
+      uint16_t        irrgation_volume;
+      uint16_t        fail_safe_duration;
+      uint8_t         channel_id;
+      uint8_t         program_id;
+      uint8_t         unit_id;
+    } smart_dual_valve_data;    
   };
-  uint64_t user_data_3;
-  uint64_t user_data_4;
-
 } __attribute__((packed)) z2s_zb_device_params_t;  //fields are padded properly anyway
 
 /***********************************************************************************/
@@ -167,6 +176,15 @@ union {
       uint32_t        pause_time : 24;
       uint32_t        cycles : 8;
     } smart_valve_data;
+    struct {
+      uint16_t        total_duration;
+      uint16_t        irrigation_duration;
+      uint16_t        pause_duration;
+      uint16_t        irrgation_volume;
+      uint16_t        fail_safe_duration;
+      uint8_t         program_id;
+      uint8_t         unit_id;
+    } smart_dual_valve_data;
     struct {
       Supla::Element  *Supla_element;
       uint8_t         logic_operator;
