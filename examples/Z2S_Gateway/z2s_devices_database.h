@@ -1663,10 +1663,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
-    .z2s_device_clusters_count = 2,
+    .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { 
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_METERING,
       SONOFF_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_RELAY_ELECTRICITY_METER,
@@ -7139,7 +7140,13 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "DTS1XM9", .model_name = "Excellux",
     .z2s_device_uid = 37100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SONOFF", .model_name = "BASIC-ZB1GSP",
+    .z2s_device_uid = 37200,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
     .z2s_device_endpoints_count = 1}
+
 //DEVICES_END
 };
 #endif

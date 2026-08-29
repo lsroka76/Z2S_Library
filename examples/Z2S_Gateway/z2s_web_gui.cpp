@@ -8755,7 +8755,7 @@ void sendDualValveProgram(uint8_t device_slot, uint8_t flag_id) {
 		channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID;
 
 	auto z2s_core = Z2S_findZ2SCore(
-		z2s_zb_devices_table[device_slot].short_addr, channel_sid, 
+		z2s_zb_devices_table[device_slot].short_addr, endpoint_id, 
 		SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, channel_sid);
   
   if (!z2s_core) {
@@ -8781,7 +8781,8 @@ void sendDualValveProgram(uint8_t device_slot, uint8_t flag_id) {
 	z2s_core->setSmartDualValveFailSafeTime(
 		ESPUI.getControl(DV_FAILSAFE_TIME)->getValueInt());
 
-	Z2S_saveChannelsTable();
+	if (Z2S_saveChannelsTable())
+		ESPUI.updateLabel(DV_INFO_LABEL, "Program saved in Supla channel");
 }
 
 /*****************************************************************************/
