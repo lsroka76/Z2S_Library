@@ -603,15 +603,13 @@ bool addZ2SDeviceLocalActionHandler(
       z2s_channels_table[first_free_slot].Supla_channel = 
         Supla_SwitchBotRelay->getChannelNumber();
 
-      /*z2s_channels_table[first_free_slot].extended_data_type = 
-        CHANNEL_EXTENDED_DATA_TYPE_SB;*/
-      channel_extended_data_sb_t channel_extended_data_sb = {};
+      /*channel_extended_data_sb_t channel_extended_data_sb = {};
 
       channel_extended_data_sb.device_id = local_channel_func;
 
       Z2S_saveChannelExtendedData(
         first_free_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
-        (uint8_t*)&channel_extended_data_sb, false);
+        (uint8_t*)&channel_extended_data_sb, false);*/
 
       sprintf(
         z2s_channels_table[first_free_slot].Supla_channel_name, 

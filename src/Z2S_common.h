@@ -734,6 +734,142 @@ public:
       return false;
   }
 
+  uint8_t getSmartDualValveProgramId() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_dual_valve_data.program_id;
+    else
+      return 0xFF;
+  }
+
+  bool setSmartDualValveProgramId(uint8_t program_id) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_dual_valve_data.program_id = program_id;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint8_t getSmartDualValveUnitId() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_dual_valve_data.unit_id;
+    else
+      return 0xFF;
+  }
+
+  bool setSmartDualValveUnitId(uint8_t unit_id) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_dual_valve_data.unit_id = unit_id;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint16_t getSmartDualValveTotalDurationTime() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_dual_valve_data.total_duration;
+    else
+      return 0;
+  }
+
+  bool setSmartDualValveTotalDurationTime(uint16_t total_duration) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_dual_valve_data.total_duration = total_duration;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint32_t getSmartDualValveIrrigationDurationTime() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_dual_valve_data.irrigation_duration;
+    else
+      return 0;
+  }
+
+  bool setSmartDualValveIrrigationDurationTime(
+    uint16_t irrigation_duration) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_dual_valve_data.irrigation_duration = 
+        irrigation_duration;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint32_t getSmartDualValveIrrigationPauseTime() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_dual_valve_data.pause_duration;
+    else
+      return 0;
+  }
+
+  bool setSmartDualValveIrrigationPauseTime(uint16_t pause_duration) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_dual_valve_data.pause_duration = pause_duration;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint32_t getSmartDualValveFailSafeTime() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_dual_valve_data.fail_safe_duration;
+    else
+      return 0;
+  }
+
+  bool setSmartDualValveFailSafeTime(uint16_t fail_safe_duration) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_dual_valve_data.fail_safe_duration = 
+        fail_safe_duration;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  uint32_t getSmartDualValveIrrigationVolume() {
+
+  if (_z2s_channel)
+      return _z2s_channel->smart_dual_valve_data.irrgation_volume;
+    else
+      return 0;
+  }
+
+  bool setSmartDualValveIrrigationVolume(uint16_t irrgation_volume) {
+
+    if (_z2s_channel) {
+
+      _z2s_channel->smart_dual_valve_data.irrgation_volume = irrgation_volume;
+      return true;
+    }
+    else
+      return false;
+  }
+
   uint8_t getZ2SChannelNumber() {
     
     if (_z2s_channel)

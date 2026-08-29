@@ -328,10 +328,48 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
 
       case Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM: {
 
-        log_i("Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM");
+        uint8_t dual_valve_cmd_payload[15] = {};
 
-        state = true;
-        zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);
+	      dual_valve_cmd_payload[0] = ESP_ZB_ZCL_ATTR_TYPE_U8;
+	      dual_valve_cmd_payload[1] = 0x0C;
+
+	      dual_valve_cmd_payload[3] = getSmartDualValveProgramId();
+
+	      uint16_t value_16 = getSmartDualValveTotalDurationTime();
+
+	      dual_valve_cmd_payload[4] = value_16 >> 8;
+	      dual_valve_cmd_payload[5] = value_16;
+
+	      value_16 = getSmartDualValveIrrigationDurationTime();
+
+	      dual_valve_cmd_payload[6] = value_16 >> 8;
+	      dual_valve_cmd_payload[7] = value_16;
+
+	      value_16 = getSmartDualValveIrrigationPauseTime();
+
+	      dual_valve_cmd_payload[8] = value_16 >> 8;
+	      dual_valve_cmd_payload[9] = value_16;
+
+	      dual_valve_cmd_payload[10] = 0x01; //liters
+
+	      value_16 = getSmartDualValveIrrigationVolume();
+
+	      dual_valve_cmd_payload[11] = value_16 >> 8;
+	      dual_valve_cmd_payload[12] = value_16;
+
+	      value_16 = getSmartDualValveFailSafeTime();
+
+	      dual_valve_cmd_payload[13] = value_16 >> 8;
+	      dual_valve_cmd_payload[14] = value_16;
+
+	      if (zbGateway.sendAttributeWriteExt(
+				      _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
+				      SONOFF_CUSTOM_CLUSTER_MANUAL_DEFAULT_SETTINGS_ID, 
+				      ESP_ZB_ZCL_ATTR_TYPE_ARRAY, sizeof(dual_valve_cmd_payload), 
+				      dual_valve_cmd_payload, true))
+          zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
+        
+        state = false;
         channel.setNewValue(state);
 
       } break;
@@ -551,8 +589,6 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
 /*****************************************************************************/
 
       case Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM: {
-
-        log_i("Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM");
 
         state = false;
         zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);

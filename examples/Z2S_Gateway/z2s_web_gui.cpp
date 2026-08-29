@@ -1898,9 +1898,6 @@ void sbChannelCallback(BasicControl *sender, int type, void *param) {
 	
 	channel_extended_data_sb_t channel_extended_data_sb = {};
 
-	/*if (Z2S_loadChannelExtendedData(
-				sb_channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
-				(uint8_t*)&channel_extended_data_sb)) {*/
 	auto sbInstance = Z2S_getSwitchBotRelayInstance(sb_channel_slot);
 	
 	if (sbInstance) {
@@ -8593,7 +8590,7 @@ void saveDualValveProgram(uint8_t device_slot) {
 	auto& zb_device = z2s_zb_devices_table[device_slot];
 
 	if ((ESPUI.getControl(DV_CHANNEL_SELECTOR)->getValueInt() > 0) &&
-			(ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt() > 0)) {
+			(ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt() >= 0)) {
 
 		uint32_t value_32;
 
@@ -8628,24 +8625,163 @@ void saveDualValveProgram(uint8_t device_slot) {
 void loadDualValveProgram(uint8_t device_slot) {
 
 	auto& zb_device = z2s_zb_devices_table[device_slot];
+
+	if (zb_device.smart_dual_valve_data.channel_id > 0) {
+
+		ESPUI.updateNumber(
+			DV_CHANNEL_SELECTOR, zb_device.smart_dual_valve_data.channel_id);
+		ESPUI.updateNumber(
+			DV_PROGRAM_SELECTOR, zb_device.smart_dual_valve_data.program_id);
+		ESPUI.updateNumber(
+			DV_TOTAL_DURATION, zb_device.smart_dual_valve_data.total_duration);
+		ESPUI.updateNumber(
+			DV_IRRIGATION_DURATION, 
+			zb_device.smart_dual_valve_data.irrigation_duration);
+		ESPUI.updateNumber(
+			DV_PAUSE_TIME, zb_device.smart_dual_valve_data.pause_duration);
+		ESPUI.updateNumber(
+			DV_VOLUME, zb_device.smart_dual_valve_data.irrgation_volume);
+		ESPUI.updateNumber(
+			DV_FAILSAFE_TIME, zb_device.smart_dual_valve_data.fail_safe_duration);
+
+		ESPUI.updateLabel(DV_INFO_LABEL, "Valve program loaded successfully.");	
+	}
+	else
+		ESPUI.updateLabel(DV_INFO_LABEL, "No valve program to load");
 }
 
 /*****************************************************************************/
 
 void startDualValveProgram(uint8_t device_slot) {
 
+	auto& zb_device = z2s_zb_devices_table[device_slot];
+
+	int16_t endpoint_id = ESPUI.getControl(
+		DV_CHANNEL_SELECTOR)->getValueInt();
+
+	int16_t program_id = ESPUI.getControl(
+		DV_PROGRAM_SELECTOR)->getValueInt();
+
+	if ((endpoint_id < 1) || (program_id < 0)) {
+
+		ESPUI.updateLabel(DV_INFO_LABEL, "Select channel and program!");
+		return;
+	}
+
+
+	uint8_t dual_valve_cmd_payload[15] = {};
+
+	dual_valve_cmd_payload[0] = ESP_ZB_ZCL_ATTR_TYPE_U8;
+	dual_valve_cmd_payload[1] = 0x0C;
+
+	dual_valve_cmd_payload[3] = program_id;
+
+	uint16_t value_16 = ESPUI.getControl(DV_TOTAL_DURATION)->getValueInt();
+
+	dual_valve_cmd_payload[4] = value_16 >> 8;
+	dual_valve_cmd_payload[5] = value_16;
+
+	value_16 = ESPUI.getControl(DV_IRRIGATION_DURATION)->getValueInt();
+
+	dual_valve_cmd_payload[6] = value_16 >> 8;
+	dual_valve_cmd_payload[7] = value_16;
+
+	value_16 = ESPUI.getControl(DV_PAUSE_TIME)->getValueInt();
+
+	dual_valve_cmd_payload[8] = value_16 >> 8;
+	dual_valve_cmd_payload[9] = value_16;
+
+	dual_valve_cmd_payload[10] = 0x01; //liters
+
+	value_16 = ESPUI.getControl(DV_VOLUME)->getValueInt();
+
+	dual_valve_cmd_payload[11] = value_16 >> 8;
+	dual_valve_cmd_payload[12] = value_16;
+
+	value_16 = ESPUI.getControl(DV_FAILSAFE_TIME)->getValueInt();
+
+	dual_valve_cmd_payload[13] = value_16 >> 8;
+	dual_valve_cmd_payload[14] = value_16;
+
+	if (zbGateway.sendAttributeWriteExt(
+				zb_device.short_addr, 1, SONOFF_CUSTOM_CLUSTER, 
+				SONOFF_CUSTOM_CLUSTER_MANUAL_DEFAULT_SETTINGS_ID, 
+				ESP_ZB_ZCL_ATTR_TYPE_ARRAY, sizeof(dual_valve_cmd_payload), 
+				dual_valve_cmd_payload, true)) {
+
+		if (*zbGateway.getWriteAttrStatusLastResult() == 
+				ESP_ZB_ZCL_STATUS_SUCCESS) {				
+
+			ESPUI.updateLabel(DV_INFO_LABEL, "Valve settings updated! Starting...");
+			zbGateway.sendOnOffCmd(zb_device.short_addr, endpoint_id, true);
+		}
+		else
+			ESPUI.updateLabel(
+				DV_INFO_LABEL, "Valve settings update failed! Try again!");
+	} 
+	else
+		ESPUI.updateLabel(DV_INFO_LABEL, device_query_failed_str);
 }
 
 /*****************************************************************************/
 
 void stopDualValveProgram(uint8_t device_slot) {
 
+	auto& zb_device = z2s_zb_devices_table[device_slot];
+
+	zbGateway.sendOnOffCmd(zb_device.short_addr, 1, false);
+	//zbGateway.sendOnOffCmd(zb_device.short_addr, 2, false);
 }
 
 /*****************************************************************************/
 
 void sendDualValveProgram(uint8_t device_slot, uint8_t flag_id) {
 
+	int16_t endpoint_id = ESPUI.getControl(
+		DV_CHANNEL_SELECTOR)->getValueInt();
+
+	int16_t program_id = ESPUI.getControl(
+		DV_PROGRAM_SELECTOR)->getValueInt();
+
+	if ((endpoint_id < 1) || (program_id < 0)) {
+
+		ESPUI.updateLabel(DV_INFO_LABEL, "Select channel and program!");
+		return;
+	}
+	
+	int8_t channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_SID;
+	
+	if (flag_id == GUI_CB_SEND_PROGRAM_2_FLAG)
+		channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID;
+
+	auto z2s_core = Z2S_findZ2SCore(
+		z2s_zb_devices_table[device_slot].short_addr, channel_sid, 
+		SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, channel_sid);
+  
+  if (!z2s_core) {
+					
+		log_i("no Supla channel for upload Sonoff dual valve program");
+		return;
+	}
+
+	z2s_core->setSmartDualValveProgramId(program_id);
+
+	z2s_core->setSmartDualValveTotalDurationTime(
+		ESPUI.getControl(DV_TOTAL_DURATION)->getValueInt());
+
+	z2s_core->setSmartDualValveIrrigationDurationTime(
+		ESPUI.getControl(DV_IRRIGATION_DURATION)->getValueInt());
+
+	z2s_core->setSmartDualValveIrrigationPauseTime(
+		ESPUI.getControl(DV_PAUSE_TIME)->getValueInt());
+
+	z2s_core->setSmartDualValveIrrigationVolume(
+		ESPUI.getControl(DV_VOLUME)->getValueInt());
+
+	z2s_core->setSmartDualValveFailSafeTime(
+		ESPUI.getControl(DV_FAILSAFE_TIME)->getValueInt());
+
+	Z2S_saveChannelsTable();
 }
 
 /*****************************************************************************/
