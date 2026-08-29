@@ -5297,7 +5297,7 @@ void Z2S_onSonoffCustomClusterReceive(
 
             msgZ2SDeviceGeneralPurposeMeasurement(
               element_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-              __builtin_bswap32(status_data->expected_volume));
+              __builtin_bswap16(status_data->expected_volume));
           break;
 
 
@@ -5319,8 +5319,8 @@ void Z2S_onSonoffCustomClusterReceive(
 
             msgZ2SDeviceGeneralPurposeMeasurement(
               element_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
-              __builtin_bswap32(status_data->expected_volume_2) - 
-              __builtin_bswap32(status_data->actual_volume));
+              __builtin_bswap16(status_data->expected_volume_2) - 
+              __builtin_bswap16(status_data->actual_volume));
           break;
         }
       }      
