@@ -224,18 +224,18 @@ typedef struct sonoff_duo_irrigation_status_data_s {
   uint32_t expected_start_time;
   uint32_t expected_end_time;
 union {
-  struct {
+  struct __attribute__((packed)) {
     uint8_t volume_unit;
     uint16_t expected_volume;
   };
-  struct {
+  struct __attribute__((packed)) {
     uint32_t actual_end_time;
     uint8_t volume_unit_2;
     uint16_t expected_volume_2;
     uint16_t actual_volume;
   };
 };
-} ESP_ZB_PACKED_STRUCT sonoff_duo_irrigation_status_data_t;
+} __attribute__((packed)) sonoff_duo_irrigation_status_data_t;
 
 
 extern z2s_device_params_t z2s_channels_table[Z2S_CHANNELS_MAX_NUMBER];
