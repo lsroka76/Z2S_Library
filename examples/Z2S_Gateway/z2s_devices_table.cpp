@@ -5269,6 +5269,11 @@ void Z2S_onSonoffCustomClusterReceive(
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_DUAL_VALVE_TIME_SID);
 
+        Supla::Element* element_2 = Z2S_findZ2SElement(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+        SONOFF_SMART_DUAL_VALVE_VOLUME_SID);
+
         //if (status_data->schedule_status == 0x02)
           log_i(
             "Irrigation Status Report received:\n\r"
@@ -5289,6 +5294,10 @@ void Z2S_onSonoffCustomClusterReceive(
               element_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
               __builtin_bswap32(status_data->expected_end_time) - 
               __builtin_bswap32(status_data->expected_start_time));
+
+            msgZ2SDeviceGeneralPurposeMeasurement(
+              element_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+              __builtin_bswap32(status_data->expected_volume));
           break;
 
 
@@ -5296,6 +5305,8 @@ void Z2S_onSonoffCustomClusterReceive(
 
             msgZ2SDeviceGeneralPurposeMeasurement(
               element_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 0);
+            msgZ2SDeviceGeneralPurposeMeasurement(
+              element_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 0);
           break;
 
 
@@ -5305,6 +5316,11 @@ void Z2S_onSonoffCustomClusterReceive(
               element_1, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
               __builtin_bswap32(status_data->expected_end_time) - 
               __builtin_bswap32(status_data->actual_end_time));
+
+            msgZ2SDeviceGeneralPurposeMeasurement(
+              element_2, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+              __builtin_bswap32(status_data->expected_volume) - 
+              __builtin_bswap32(status_data->actual_volume));
           break;
         }
       }      
