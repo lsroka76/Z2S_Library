@@ -226,6 +226,9 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
   if (Zigbee.started()) {   
 
+    if (rsConfig.buttonsUpsideDown == 2)
+      lift_percentage = 100 - lift_percentage;
+
     switch (_z2s_function) {
 
 
