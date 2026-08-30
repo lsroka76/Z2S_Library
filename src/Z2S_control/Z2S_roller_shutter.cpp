@@ -501,6 +501,9 @@ void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(
 
     if (_z2s_function == Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER)
       _rs_current_position = 100 - _rs_current_position;
+
+    if (rsConfig.buttonsUpsideDown == 2)
+      _rs_current_position = 100 - _rs_current_position;
   
     setCurrentPosition(_rs_current_position);
  } else
