@@ -3816,6 +3816,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "LUMI", .model_name = "lumi.magnet.acn001",
+    .z2s_device_uid = 7310,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "LUMI", .model_name = "lumi.magnet.agl02",
     .z2s_device_uid = 7400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR,
@@ -6908,6 +6913,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
  { .manufacturer_name = "_TZE608_c75zqghm", .model_name = "TS0603",
     .z2s_device_uid = 34105,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE608_q5fvikim", .model_name = "TS0603",
+    .z2s_device_uid = 34110,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER,
     .z2s_device_endpoints_count = 1},
 
