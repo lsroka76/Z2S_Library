@@ -73,20 +73,10 @@
 
 #define TIME_CLUSTER_REFRESH_MS     60 * 1000 //miliseconds
 
-/*static char tpc_send_buffer[8] = {0};
-static size_t bufferPos = 0;
-
-static uint8_t tcp_connect_state = 0;
-
-static size_t waitingAck = 0;
-
-static AsyncClient client;*/
-
-//static constexpr char *TEST_GATEWAY_IP PROGMEM = "10.164.38.17";
-//static constexpr char *TEST_GATEWAY_IP PROGMEM = "10.164.38.210";
-//static constexpr char *TEST_GATEWAY_IP PROGMEM = "192.168.1.70";
-//static String TEST_GATEWAY_IP PROGMEM = "192.168.1.36";
-//static String TEST_GATEWAY_IP PROGMEM = "192.168.1.70";
+#define Z2S_TCP_CMD_SET_REMOTE_RELAY_OFF  0x00
+#define Z2S_TCP_CMD_SET_REMOTE_RELAY_ON   0x01
+#define Z2S_TCP_CMD_UPDATE_TEMPERATURE    0x10
+#define Z2S_TCP_CMD_UPDATE_HUMIDITY       0x11
 
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
 
@@ -103,6 +93,7 @@ static uint8_t test_device_install_code[18] =
 
 static NetworkServer TestServer(REMOTE_RELAY_PORT);
 static NetworkClient client2;
+char   remote_cmd_request[64];
 
 Supla::Eeprom             eeprom;
 Supla::ESPWifi            wifi;
@@ -505,6 +496,33 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
 
 Supla::Device::StatusLed statusLed(RGB_BUILTIN, true);
 
+
+static uint32_t parse_uint(const char *s, size_t len) {
+
+  char tmp[16];
+
+  if (len >= sizeof(tmp))
+    return 0;
+
+  memcpy(tmp, s, len);
+  tmp[len] = '\0';
+
+  return strtoul(tmp, nullptr, 10);
+}
+
+static int32_t parse_int(const char *s, size_t len) {
+
+  char tmp[16];
+
+  if (len >= sizeof(tmp))
+    return 0;
+
+  memcpy(tmp, s, len);
+  tmp[len] = '\0';
+
+  return strtol(tmp, nullptr, 10);
+}
+
 void setup() {
 
   log_i("setup start");
@@ -546,6 +564,7 @@ void setup() {
 
   pinMode(WIFI_ENABLE, OUTPUT); // pinMode(3, OUTPUT); (credits @Zibi_007)in
   pinMode(WIFI_ANT_CONFIG, OUTPUT); // pinMode(14, OUTPUT);
+  //digitalWrite(WIFI_ENABLE, LOW);
   digitalWrite(WIFI_ANT_CONFIG, HIGH);
  
   eeprom.setStateSavePeriod(5000);
@@ -997,98 +1016,67 @@ void loop() {
 #endif //USE_TELNET_CONSOLE
 
 
-client2 = TestServer.available();
+  client2 = TestServer.available();
 
-if (client2 && client2.connected()) {
+  if (client2.connected()) {
      
-     String request = client2.readStringUntil('\n');
-     Serial.println(request);
-     int16_t cmd_pos = request.indexOf(Z2S_TCP_CMD);
+    size_t request_length = client2.readBytesUntil(
+      '\n', remote_cmd_request, sizeof(remote_cmd_request) - 1);
 
+    remote_cmd_request[request_length] = '\0';
 
-     if (cmd_pos >= 0 ) {
+    char *cmd = strstr(remote_cmd_request, Z2S_TCP_CMD);
+
+    if (cmd == nullptr) {
+
+      client2.stop();
+    }
+    else {
 
       client2.print("OK\n");
       client2.stop();
 
-      Serial.printf("cmd pos %u\n\r", cmd_pos);
-      String helper;
-      helper.reserve(64);
-      
-      helper = request.substring(cmd_pos + 6, cmd_pos + 8);
-      //Serial.println(helper);
-      uint8_t cmd_id = helper.toInt();
-      
-      helper = request.substring(cmd_pos + 8, cmd_pos + 11);
-      uint8_t cmd_dst_channel = helper.toInt();      
+      IPAddress ip = client2.remoteIP();
+
+      const char *p = cmd + strlen(Z2S_TCP_CMD);
+
+      uint8_t cmd_id  = parse_uint(p + 0, 2);
+      uint8_t cmd_dst_channel = parse_uint(p + 2, 3);  
     
       switch (cmd_id) {
 
 
-        case 0x00:
-        case 0x01: { //Relay On/Off
+        case Z2S_TCP_CMD_SET_REMOTE_RELAY_OFF:
+        case Z2S_TCP_CMD_SET_REMOTE_RELAY_ON: { //Relay On/Off
 
-          log_i("\n\rZ2S TCP ON/OFF command received id = %u"
-                "\n\rfor channel = %u",
-                cmd_id,
-                cmd_dst_channel);
+          log_i(
+            "\n\rZ2S TCP ON/OFF command received id = %u\n\rfor channel = %u",
+            cmd_id, cmd_dst_channel);
 
           setRemoteRelay(cmd_dst_channel, cmd_id);
         } break;
 
 
-        case  0x10: { //remote thermometer
+        case Z2S_TCP_CMD_UPDATE_TEMPERATURE:
+        case Z2S_TCP_CMD_UPDATE_HUMIDITY: {
 
-          helper = request.substring(cmd_pos + 11, cmd_pos + 14);
-          uint32_t cmd_src_channel = helper.toInt();
-          
-          helper = request.substring(cmd_pos + 14, cmd_pos + 22);
-          int32_t cmd_thermometer_value = helper.toInt();
+          uint32_t src_channel = parse_uint(p + 5, 3);
+          int32_t cmd_thermometer_value = parse_int (p + 8, 8);
 
-          log_i("\n\rZ2S TCP thermometer command received id = %u"
-                "\n\rremote IP = %s"
-                "\n\rfrom channel = %u"
-                "\n\rto local channel = %u"
-                "\n\rwith value = %lu",
-                cmd_id,
-                client2.remoteIP().toString(),
-                cmd_src_channel,
-                cmd_dst_channel,
-                cmd_thermometer_value);
+          auto value_type = (cmd_id == Z2S_TCP_CMD_UPDATE_TEMPERATURE) ? 
+            RTH_VALUE_TYPE_TEMPERATURE : RTH_VALUE_TYPE_HUMIDITY;
+
+          log_i(
+            "Z2S TCP sensor command id=%u src=%u dst=%u value=%ld", cmd_id,
+            src_channel, cmd_dst_channel, cmd_thermometer_value);
 
           updateRemoteThermometer(
-            cmd_dst_channel, client2.remoteIP(), cmd_src_channel, 
-            RTH_VALUE_TYPE_TEMPERATURE, cmd_thermometer_value);
+            cmd_dst_channel, client2.remoteIP(), src_channel, value_type, 
+            cmd_thermometer_value);
         } break;
-
-
-        case  0x11: { //remote humidity
-
-          helper = request.substring(cmd_pos + 11, cmd_pos + 14);
-          uint32_t cmd_src_channel = helper.toInt();
-          
-          helper = request.substring(cmd_pos + 14, cmd_pos + 22);
-          uint32_t cmd_humidity_value = helper.toInt();
-
-          log_i("\n\rZ2S TCP humidity command received id = %u"
-                "\n\rremote IP = %s"
-                "\n\rfrom channel = %u"
-                "\n\rto local channel = %u"
-                "\n\rwith value = %lu",
-                cmd_id,
-                client2.remoteIP().toString(),
-                cmd_src_channel,
-                cmd_dst_channel,
-                cmd_humidity_value);
-
-          updateRemoteThermometer(
-            cmd_dst_channel, client2.remoteIP(), cmd_src_channel, 
-            RTH_VALUE_TYPE_HUMIDITY, cmd_humidity_value);
-        } break;
-      }      
-     } else
-      client2.stop();
-   }
+      }   
+    }
+  }
 
   if (Z2S_isGUIStarted())
     Z2S_loopWebGUI();
