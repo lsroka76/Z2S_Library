@@ -29,13 +29,10 @@
   _cct_mode = _dimmer_mode;
 }*/
 
-Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface(
-  uint8_t dimmer_function, uint8_t dimmer_mode, uint8_t cct_mode) 
-  : Z2S_Core(this), _dimmer_function(dimmer_function), 
-  _dimmer_mode(dimmer_mode), _cct_mode(cct_mode) {
+Supla::Control::Z2S_DimmerInterface::Z2S_DimmerInterface() : Z2S_Core(this) {
   
   channel.setType(SUPLA_CHANNELTYPE_DIMMER);
-  channel.setDefault(dimmer_function);
+  channel.setDefault(SUPLA_CHANNELFNC_DIMMER);
 }
 
 void Supla::Control::Z2S_DimmerInterface::onLoadState() {
@@ -677,13 +674,13 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
     ping();
   }*/
 
-  if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (getKeepAliveMs() && ((millis() - _last_ping_ms) > getKeepAliveMs())) {
     if (true) {
       
       
       _last_seen_ms = getZbDeviceLastSeenMs();
 
-      if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      if ((millis() - _last_seen_ms) > getKeepAliveMs()) {
       	ping();
         _last_ping_ms = millis();
       } else {
@@ -693,8 +690,8 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
       }
     }
   }
-  if (_timeout_ms && channel.isStateOnline() && 
-      ((millis() - _last_seen_ms) > _timeout_ms)) {
+  if (getTimeoutMs() && channel.isStateOnline() && 
+      ((millis() - _last_seen_ms) > getTimeoutMs())) {
 	  
     log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
 
@@ -702,7 +699,7 @@ void Supla::Control::Z2S_DimmerInterface::iterateAlways() {
     _last_seen_ms = getZbDeviceLastSeenMs();
 
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
-    if ((millis() - _last_seen_ms) > _timeout_ms)
+    if ((millis() - _last_seen_ms) > getTimeoutMs())
       channel.setStateOffline();
    // _last_ping_ms = current_millis;
   }
@@ -717,28 +714,15 @@ uint8_t Supla::Control::Z2S_DimmerInterface::getDimmerMode() {
   return _dimmer_mode;
 }
 
+void Supla::Control::Z2S_DimmerInterface::setCCTMode(uint8_t cct_mode) {
 
-void Supla::Control::Z2S_DimmerInterface::setKeepAliveSecs(uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
+  _cct_mode = cct_mode;
+}
+uint8_t Supla::Control::Z2S_DimmerInterface::getCCTMode() {
+  
+  return _cct_mode;
 }
 
-void Supla::Control::Z2S_DimmerInterface::setTimeoutSecs(uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-  if (_timeout_ms == 0) 
-    channel.setStateOnline();
-}
-
-uint32_t Supla::Control::Z2S_DimmerInterface::getKeepAliveSecs() {
-
-  return _keep_alive_ms / 1000;
-}
-
-uint32_t Supla::Control::Z2S_DimmerInterface::getTimeoutSecs() {
-
-  return _timeout_ms / 1000;
-}
 
 void Supla::Control::Z2S_DimmerInterface::increaseBrightness(
   int8_t add_to_brightness) {

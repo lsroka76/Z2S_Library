@@ -30,9 +30,6 @@ class Z2S_ElectricityMeter : public ElectricityMeter, public Z2S_Core {
   Z2S_ElectricityMeter(bool active_query = false, bool one_phase = true) 
     :  Z2S_Core(this), _one_phase(one_phase) {
 	
-    if (active_query) 
-      setRefreshSecs(30);
-	
     if (_one_phase) {
 	  
       extChannel.setFlag(SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED);
@@ -393,7 +390,7 @@ void setRvrBalancedEnergy2(uint64_t energy) {
 
 void onInit() override {
   
-  if (_timeout_ms)
+  if (getTimeoutMs())
     getChannel()->setStateOffline();
 }
 
@@ -406,7 +403,7 @@ void resetStorage() {
   channel_extended_data_em_t channel_extended_data_em = {};
 
   memcpy(
-    channel_extended_data_em.ieee_addr, getIEEEAddress(), 
+    channel_extended_data_em.ieee_addr, getChannelIEEEAddress(), 
     sizeof(esp_zb_ieee_addr_t));
 
   for (uint8_t i = 0; i <3; i++) {
@@ -518,25 +515,6 @@ void pong() {
 	  getChannel()->setStateOnline();
 }
 
-
-void setKeepAliveSecs(uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
-}
-
-  void setTimeoutSecs(uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-
-  if (_timeout_ms == 0) 
-    getChannel()->setStateOnline();
-}
-
-void setRefreshSecs(uint32_t refresh_secs) {
-
-  _refresh_ms = refresh_secs * 1000;
-}
-
 void setEnergyInitialCounters(
   channel_extended_data_em_t *channel_extended_data_em) {
 
@@ -568,26 +546,7 @@ void setEnergyInitialCounters(
     channel_extended_data_em->total_reverse_active_energy_balanced_counter;
 }
 
-uint32_t getKeepAliveSecs() {
-
-  return _keep_alive_ms / 1000;
-}
-
-uint32_t getTimeoutSecs() {
-
-  return _timeout_ms / 1000;
-}
-
-uint32_t getRefreshSecs() {
-
-  return _refresh_ms / 1000;
-}
-
-/*uint64_t getEnergyInitialCounter() {
-
-  return _energy_initial_counter;
-}*/
-
+/*****************************************************************************/
 
 void iterateAlways() override {
 
@@ -601,28 +560,28 @@ void iterateAlways() override {
     }
   }
 
-  if ((_refresh_ms) && ((millis() - _last_refresh_ms) > _refresh_ms)) {
+  if ((getRefreshMs()) && ((millis() - _last_refresh_ms) > getRefreshMs())) {
     if (true) {
       
       
       _last_seen_ms = getZbDeviceLastSeenMs();
-      //if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      //if ((millis() - _last_seen_ms) > getKeepAliveMs()) {
       	ping();
         _last_ping_ms = millis();
       //} else {
         //_last_ping_ms = _last_seen_ms;
-        if ((!getChannel()->isStateOnline()) && ((millis() - _last_seen_ms) < _timeout_ms)) 
-	  getChannel()->setStateOnline();
+        if ((!getChannel()->isStateOnline()) && ((millis() - _last_seen_ms) < getTimeoutMs())) 
+	      getChannel()->setStateOnline();
       //}
     }
     _last_refresh_ms = millis();
   } else
-  if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (getKeepAliveMs() && ((millis() - _last_ping_ms) > getKeepAliveMs())) {
     if (true) {
       
       _last_seen_ms = getZbDeviceLastSeenMs();
 
-      if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      if ((millis() - _last_seen_ms) > getKeepAliveMs()) {
       	ping();
         _last_ping_ms = millis();
       } else {
@@ -632,8 +591,8 @@ void iterateAlways() override {
       }
     }
   }
-  if (_timeout_ms && getChannel()->isStateOnline() &&
-     ((millis() - _last_seen_ms) > _timeout_ms)) {
+  if (getTimeoutMs() && getChannel()->isStateOnline() &&
+     ((millis() - _last_seen_ms) > getTimeoutMs())) {
 
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
 
@@ -642,7 +601,7 @@ void iterateAlways() override {
     log_i(
       "current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
 
-    if ((millis() - _last_seen_ms) > _timeout_ms)
+    if ((millis() - _last_seen_ms) > getTimeoutMs())
       getChannel()->setStateOffline();
   }
 }
@@ -686,9 +645,6 @@ void iterateAlways() override {
     uint64_t  total_forward_active_energy_balanced_counter;
     uint64_t  total_reverse_active_energy_balanced_counter;
     
-    uint32_t _refresh_ms    = 0;
-    uint32_t _keep_alive_ms = 0;
-    uint32_t _timeout_ms    = 0;
     uint32_t _init_ms       = 30000;
     
     uint32_t _last_ping_ms    = 0;

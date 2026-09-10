@@ -167,7 +167,7 @@ void Z2S_scanRemoteNeighbourhoodTable(
 
 bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
 
-  auto z2s_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(channel_id);
+  auto z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(channel_id);
   
   if (z2s_core) {
 
@@ -175,7 +175,7 @@ bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
     device->cluster_id = z2s_core->getChannelClusterId();
 
     memcpy(
-      device->ieee_addr, z2s_core->getIEEEAddress(),
+      device->ieee_addr, z2s_core->getChannelIEEEAddress(),
       sizeof(esp_zb_ieee_addr_t));
 
     device->short_addr = z2s_core->getChannelShortAddress();
@@ -650,7 +650,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    int16_t channel_number_slot = Z2S_Core::getZ2SChannelIndexByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
       
@@ -667,22 +667,6 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     telnet.println(">command update-sed-timeout depreciated");
     return;
-
-    if (params_number < 2)  {
-      telnet.println(">update-sed-timeout channel timeout(h)");
-      return;
-    }
-
-    uint8_t channel_id = strtoul(*(param), nullptr, 0);
-    uint8_t timeout = strtoul(*(param + 1), nullptr, 0);
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
-    
-    if (channel_number_slot >= 0) {
-        updateTimeout(channel_number_slot, timeout);
-    } else {
-      telnet.printf(">Invalid channel number %u\n\r>", channel_id);
-    }  
-    return;
   } else
   if (strcmp(cmd,"UPDATE-DEVICE-TIMINGS") == 0) {
 
@@ -697,10 +681,30 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t selector = parseTimingsStr(*(param + 1));
     uint32_t timings_secs = strtoul(*(param + 2), nullptr, 0);
 
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(channel_id);
     
-    if (channel_number_slot >= 0) {
-        updateTimeout(channel_number_slot, 0, selector, timings_secs);
+    if (z2s_core) {
+
+      switch (selector) {
+
+
+        case 0x01: 
+        
+          z2s_core->setKeepAliveValue(timings_secs);
+        break;
+
+
+        case 0x02: 
+        
+          z2s_core->setTimeoutValue(timings_secs);
+        break;
+
+
+        case 0x04: 
+        
+          z2s_core->setRefreshValue(timings_secs);
+        break;
+      }
     } else {
       telnet.printf("\n\rInvalid channel number %u\n\r>", channel_id);
     }  
@@ -717,10 +721,11 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     uint8_t rgb_mode = parseRGBModeStr(*(param + 1));
 
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(channel_id);
     
-    if (channel_number_slot >= 0) {
-        updateRGBMode(channel_number_slot, rgb_mode);
+    if (z2s_core) {
+
+        z2s_core->setRGBColorMode(rgb_mode);
     } else {
       telnet.printf("\n\rInvalid channel number %u\n\r>", channel_id);
     }  
@@ -791,7 +796,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     uint32_t device_desc_id = strtoul(*(param + 1), nullptr, 0);
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    int16_t channel_number_slot = Z2S_Core::getZ2SChannelIndexByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
         z2s_channels_table_DEP[channel_number_slot].model_id = device_desc_id;
@@ -812,7 +817,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     int8_t device_sub_id = strtoul(*(param + 1), nullptr, 0);
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    int16_t channel_number_slot = Z2S_Core::getZ2SChannelIndexByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
         z2s_channels_table_DEP[channel_number_slot].sub_id = device_sub_id;
@@ -833,7 +838,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     uint32_t channel_type = strtoul(*(param + 1), nullptr, 0);
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    int16_t channel_number_slot = Z2S_Core::getZ2SChannelIndexByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
         z2s_channels_table_DEP[channel_number_slot].Supla_channel_type = channel_type;
@@ -874,7 +879,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
 
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     uint32_t channel_func = strtoul(*(param + 1), nullptr, 0);
-    int16_t channel_number_slot = Z2S_findTableSlotByChannelNumber(channel_id);
+    int16_t channel_number_slot = Z2S_Core::getZ2SChannelIndexByChannelNumber(channel_id);
     
     if (channel_number_slot >= 0) {
         z2s_channels_table_DEP[channel_number_slot].Supla_channel_func = channel_func;
@@ -899,7 +904,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
     uint8_t bit_id = parseDeviceFlagsStr(*(param + 2));
 
-    auto z2s_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(channel_id);
+    auto z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(channel_id);
     
     if (z2s_core) {
 
@@ -929,7 +934,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     bool flag_clear = (strcmp(*(param + 1), "CLEAR") == 0);
     uint8_t bit_id = parseZbDeviceFlagsStr(*(param + 2));
     
-    auto z2s_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(channel_id);
+    auto z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(channel_id);
     
     uint8_t zb_device_number_slot = (z2s_core) ? z2s_core->getZbDeviceId() : 
       0xFF;
@@ -1027,7 +1032,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
     uint8_t channel_id = strtoul(*(param), nullptr, 0);
     int8_t param_id = strtoul(*(param + 1), nullptr, 0);
     int32_t param_value = strtoul(*(param + 2), nullptr, 0);
-    auto z2s_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(channel_id);
+    auto z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(channel_id);
     
     if (z2s_core) {
       switch (param_id) {

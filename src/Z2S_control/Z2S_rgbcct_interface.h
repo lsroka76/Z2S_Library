@@ -79,7 +79,7 @@ class Z2S_RGBCCTInterface : public ChannelElement, public ActionHandler,
 
 public:
 
-  Z2S_RGBCCTInterface(uint8_t rgb_mode = Z2S_COLOR_HS_RGB);
+  Z2S_RGBCCTInterface();
 
   void onLoadState() override;
   void onSaveState() override;
@@ -115,9 +115,6 @@ public:
 
   void syncDevice();
 
-  void setRGBMode(uint8_t rgb_mode);
-  uint8_t getRGBMode();
-
   void setMinCoolCCT(uint16_t min_cool_cct) {
 
     _min_cool_cct = min_cool_cct;
@@ -129,19 +126,10 @@ public:
   };
   
   virtual void ping();
-
-  void setKeepAliveSecs(uint32_t keep_alive_secs);
-  void setTimeoutSecs(uint32_t timeout_secs);
-
-  uint32_t getKeepAliveSecs();
-  uint32_t getTimeoutSecs();
   
-
 protected:
 
   void increaseBrightness(int8_t add_to_brightness);
-
-  uint8_t _rgb_mode = Z2S_COLOR_HS_RGB;
 
   bool _fresh_start = true;
 
@@ -151,8 +139,6 @@ protected:
   uint16_t _min_cool_cct = 153;
   uint16_t _max_warm_cct = 500;
 
-  uint32_t _keep_alive_ms = 0;
-  uint32_t _timeout_ms    = 0;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
   uint32_t _last_sync_ms  = 0; 

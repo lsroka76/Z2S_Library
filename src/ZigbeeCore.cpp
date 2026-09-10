@@ -424,8 +424,11 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
 			        log_d("Device already bound to endpoint %d", (*it)->getEndpoint());
               (*it)->zbDeviceRejoin(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr);
             }
-		        else 
-              (*it)->findEndpoint(&cmd_req); //zbDeviceAnnce(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr);//
+		        else {
+
+              if (Zigbee.isNetworkOpen())
+                (*it)->findEndpoint(&cmd_req); 
+            }
           }
         }
       } break;

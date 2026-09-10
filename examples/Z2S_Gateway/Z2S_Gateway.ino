@@ -266,6 +266,9 @@ void supla_callback_bridge(int event, int action) {
 
         TestServer.begin();
         MDNS.begin(GatewayMDNSLocalName);
+        char actualHostname[MDNS_NAME_BUF_LEN]; 
+        mdns_hostname_get(actualHostname);
+        log_i("MDNS hostname = %s", actualHostname);
 
         return;
       }
@@ -658,31 +661,46 @@ void setup() {
 
   //LittleFS.end();
 
-  Z2S_loadZbDevicesTable();
+  if (Supla::Storage::ConfigInstance()->getUInt8(
+    Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
 
-  Z2S_initZbDevices(millis());
+    log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
 
-  Z2S_loadChannelsTable();
+    if (_force_config_on_start)
+      _forced_config = true;
+  } else {
 
-  Z2S_initSuplaChannels();
+    log_i("Z2S_FORCE_CONFIG_ON_START not configured - turning off");
 
-  Z2S_initPushoverMessages();
+    _force_config_on_start = 0;
+  }
 
-  /*auto test_element = Supla::Element::getElementByChannelNumber(6);
+  if (_forced_config) {
 
-  Supla::Control::Z2S_VirtualRelay *test_relay = static_cast<
-    Supla::Control::Z2S_VirtualRelay *>(test_element);
-  Supla::Control::Z2S_VirtualRelay *test_relay2 = reinterpret_cast<
-    Supla::Control::Z2S_VirtualRelay *>(test_element);
-  Z2S_Core *test_core = static_cast<Z2S_Core *>(test_relay);
-  Z2S_Core *test_core2 = reinterpret_cast<Z2S_Core *>(test_relay);
+  }
+  else {
 
-  log_i(
-    "\n\rTEST POINTERS: element: 0x%08X\n\rrelay(static): 0x%08X, " 
-    "relay(reinterpret): 0x%08X\n\rcore(static): 0x%08X, core(reinterpret): "
-    "0x%08X", test_element, test_relay, test_relay2, test_core, test_core2);
-    
-  test_core->test_func();*/
+    Z2S_loadZbDevicesTable();
+
+    Z2S_initZbDevices(millis());
+
+    if (Z2S_loadChannelsTable()) {
+
+      Z2S_initSuplaChannels();
+      
+      setGatewayEventHandler(supla_callback_bridge);
+      handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
+      handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED);
+
+      Z2S_initSuplaActions();
+      Z2S_initPushoverMessages();
+    }
+    else {
+
+      _force_config_on_start = 1;
+      _forced_config = true;
+    }
+  }
 
   if (Supla::Storage::ConfigInstance()->getUInt8(
         Z2S_REBUILD_CHANNELS_ON_START, &_rebuild_Supla_channels_on_start)) {
@@ -706,22 +724,15 @@ void setup() {
 
     log_i("rebuild Supla Channels action triggered!");  
 
-    Z2S_rebuildSuplaChannels();
+    //Z2S_rebuildSuplaChannels();
   }
-
-  setGatewayEventHandler(supla_callback_bridge);
-  handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
-  handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED);
-
-  Z2S_initSuplaActions();
 
   enableZ2SNotifications();
 
   zbGateway.setManufacturerAndModel("Supla", "Z2SGateway");
   zbGateway.allowMultipleBinding(true);
 
-  //Zigbee.addGatewayEndpoint(&zbGateway);
-  Zigbee.addEndpoint(&zbGateway); //???
+  Zigbee.addEndpoint(&zbGateway); 
 
   uint32_t zb_primary_channel_mask;
 
@@ -753,20 +764,6 @@ void setup() {
 		Supla::Storage::ConfigInstance()->commit();
   }
   
-  if (Supla::Storage::ConfigInstance()->getUInt8(
-    Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
-
-    log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
-
-    if (_force_config_on_start)
-      _forced_config = true;
-  } else {
-
-    log_i("Z2S_FORCE_CONFIG_ON_START not configured - turning off");
-
-    _force_config_on_start = 0;
-  }
-
   if (Supla::Storage::ConfigInstance()->getInt32(
     Z2S_GUI_ON_START_DELAY_V2, &_gui_start_delay)) {
 
@@ -1193,7 +1190,7 @@ if (client2 && client2.connected()) {
   if ((!zbGateway.getJoinedDevices().empty()) && 
       (zbGateway.isNewDeviceJoined())) {
 
-    disableZ2SNotifications();
+    //disableZ2SNotifications();
     
     zbGateway.printJoinedDevices();
 
@@ -1478,11 +1475,11 @@ if (client2 && client2.connected()) {
                       uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(
                         joined_device->ieee_addr);
                       
-                      if (zb_device_slot < 0xFF)
+                      //if (zb_device_slot < 0xFF)
                         restart_required = false;
 
                       zb_device_slot = Z2S_addZbDeviceTableSlot(
-                        joined_device->ieee_addr,joined_device->short_addr,
+                        joined_device->ieee_addr, joined_device->short_addr,
                         zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
                         zbGateway.getQueryBasicClusterData()->zcl_model_name,
                         z2s_device_list.z2s_device_endpoints_count,
@@ -1496,8 +1493,9 @@ if (client2 && client2.connected()) {
                         Z2S_clearZbDeviceFlags(
                           zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
                       }
+                      joined_device->zb_device_id = zb_device_slot;
                     }
-                    //if (restart_required)
+                    //if (restart_required)  
                     Z2S_buildSuplaChannels(joined_device, endpoint_counter);
                   }          
                 }
@@ -1913,9 +1911,18 @@ if (client2 && client2.connected()) {
                 SuplaDevice.scheduleSoftRestart(10000);
               else {
                 
+                if (Zigbee.isNetworkOpen())
+                  rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
+                else
+                rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+
                 zbGateway.clearQueryBasicClusterData();
                 zbGateway.clearNewDeviceJoined();
-                enableZ2SNotifications();
+                if (Z2S_isGUIStarted())
+                  sortChannelsSelectors();
+                Supla::Network::DisconnectProtocols();
+                
+                //enableZ2SNotifications();
               }
               break;
             }   
@@ -1928,10 +1935,8 @@ if (client2 && client2.connected()) {
         
         rgbLedWrite(RGB_BUILTIN, 255, 0, 0);  // Red
         delay(1000);
-        enableZ2SNotifications();
-        //zbGateway.setActivePairing(false);
-
-        //Z2S_startWebGUI();
+        //enableZ2SNotifications();
+                
         GUI_onLastBindingFailure(true);
 
         if (zpm->getState() == 2) {

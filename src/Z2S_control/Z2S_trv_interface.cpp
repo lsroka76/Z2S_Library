@@ -117,39 +117,13 @@ bool Supla::Control::Z2S_TRVInterface::isHvacWindowOpened() {
 
 /*****************************************************************************/
 
-void Supla::Control::Z2S_TRVInterface::setTimeoutSecs(uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-  if (_timeout_ms == 0) {
-    _timeout_enabled = false;
-    if (_trv_hvac)
-      _trv_hvac->getChannel()->setStateOnline();
-  }
-  else
-   _timeout_enabled = true;
-}
-
-/*****************************************************************************/
-
-void Supla::Control::Z2S_TRVInterface::setKeepAliveSecs(
-  uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
-  if (_keep_alive_ms == 0)
-    if (_trv_hvac)
-      _trv_hvac->getChannel()->setStateOnline();
-}
-
-
-/*****************************************************************************/
-
 void Supla::Control::Z2S_TRVInterface::refreshTimeout() {
 
   _last_seen_ms = millis();
   _last_cmd_sent_ms = 0;
   _last_keep_alive_ms = millis();
   if (_trv_hvac)
-      _trv_hvac->getChannel()->setStateOnline();
+    _trv_hvac->getChannel()->setStateOnline();
 }
 
 /*****************************************************************************/
@@ -158,7 +132,7 @@ void Supla::Control::Z2S_TRVInterface::setFixedTemperatureCalibration(
     int32_t trv_fixed_temperature_calibration) {
 
     if (abs(trv_fixed_temperature_calibration - 
-                _trv_temperature_calibration) <= 10) {
+            _trv_temperature_calibration) <= 10) {
 
       _trv_fixed_temperature_calibration = _trv_temperature_calibration;
       return;
@@ -167,10 +141,10 @@ void Supla::Control::Z2S_TRVInterface::setFixedTemperatureCalibration(
     _trv_fixed_temperature_calibration = trv_fixed_temperature_calibration;
     _trv_fixed_temperature_calibration_updated = true;
 
-    log_i("_trv_fixed_temperature_calibration updated to %ld,"
-          "_trv_temperature_calibration %ld", 
-          _trv_fixed_temperature_calibration,
-          _trv_temperature_calibration);
+    log_i(
+      "_trv_fixed_temperature_calibration updated to %ld,"
+      "_trv_temperature_calibration %ld", _trv_fixed_temperature_calibration,
+      _trv_temperature_calibration);
   }
 
 /*****************************************************************************/
@@ -646,7 +620,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
       if (trv_external_sensor_present) {
       
         uint8_t buffer_size = buildLumiFFF2CmdLinkParams1(
-          fff2_cmd_data_buffer, 0x12, timestamp, getIEEEAddress());
+          fff2_cmd_data_buffer, 0x12, timestamp, getChannelIEEEAddress());
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
@@ -654,7 +628,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
           buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         buffer_size =buildLumiFFF2CmdLinkParams2(
-          fff2_cmd_data_buffer, 0x13, timestamp, getIEEEAddress());
+          fff2_cmd_data_buffer, 0x13, timestamp, getChannelIEEEAddress());
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
@@ -668,7 +642,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
       } else {
 
         uint8_t buffer_size = buildLumiFFF2CmdUnlinkParams(
-          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, getIEEEAddress());
+          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, getChannelIEEEAddress());
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
@@ -676,7 +650,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
           buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         buffer_size = buildLumiFFF2CmdUnlinkParams(
-          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, getIEEEAddress());
+          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, getChannelIEEEAddress());
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
@@ -1433,6 +1407,7 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
   
   //uint32_t z2s_zb_device_last_seen_ms = getZbDeviceLastSeenMs();
 
+  uint32_t last_seen_ms = _last_seen_ms;
 
   _last_seen_ms = getZbDeviceLastSeenMs();
   
@@ -1446,13 +1421,24 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       _last_keep_alive_ms = _last_seen_ms;
       
       _last_cmd_sent_ms = 0;
-      if (_trv_hvac)
+    }  
+    
+    if (_trv_hvac && (_last_seen_ms - last_seen_ms > 0)) {
+
+      log_i(
+          "RSSI %u, battery %u", getZbDeviceLastRSSIPercentage(), 
+          getZbDeviceLastBatteryLevelPercentage());
+
         _trv_hvac->getChannel()->setStateOnline();
-    }    
+        _trv_hvac->getChannel()->setBridgeSignalStrength(
+          getZbDeviceLastRSSIPercentage());
+        _trv_hvac->getChannel()->setBatteryLevel(
+          getZbDeviceLastBatteryLevelPercentage());
+    }
   }
 
-  if ((_keep_alive_ms) && 
-      ((millis_ms - _last_keep_alive_ms) > _keep_alive_ms)) {
+  if ((getKeepAliveMs()) && 
+      ((millis_ms - _last_keep_alive_ms) > getKeepAliveMs())) {
 
     _last_keep_alive_ms = millis_ms;
 
@@ -1462,9 +1448,8 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVChildLock(_trv_child_lock, false);
   }
 
-  if (_timeout_enabled && 
-      (_last_cmd_sent_ms > 0) && 
-      (millis_ms - _last_cmd_sent_ms > _timeout_ms)) {
+  if (getTimeoutMs() && (_last_cmd_sent_ms > 0) && 
+      (millis_ms - _last_cmd_sent_ms > getTimeoutMs())) {
 
     if (_trv_hvac)
       _trv_hvac->getChannel()->setStateOffline();

@@ -13,13 +13,8 @@ static const char *default_temp_name = "TEMP";
 /*****************************************************************************/
 
 void initZ2SDeviceTempHumidity(
-  int16_t channel_number_slot, bool thermhygrometer = true);
-
-/*****************************************************************************/
-
-void initZ2SDeviceTempHumidity(
   uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
-  bool thermhygrometer = true);
+  bool thermhygrometer = true, Supla::Element *element = nullptr);
 
 /*****************************************************************************/
 

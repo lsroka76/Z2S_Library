@@ -15,11 +15,10 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-
-//#ifdef Z2S_GATEWAY
-
 #ifndef SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_
 #define SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_
+
+/*****************************************************************************/
 
 #include <supla/control/relay.h>
 
@@ -27,6 +26,8 @@
 
 #include "Z2S_common.h"
 #include "Z2S_custom_actions_events.h"
+
+/*****************************************************************************/
 
 #define MAX_COMMAND_DATA_SIZE                                   0x0B 
 
@@ -60,6 +61,8 @@
 #define Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL               0x71
 #define Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2                   0x72
 
+/*****************************************************************************/
+
 static const uint32_t RELAY_FLAGS = 
   SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK |
   SUPLA_BIT_FUNC_CONTROLLINGTHEGATE |
@@ -71,7 +74,7 @@ static const uint32_t RELAY_FLAGS =
   SUPLA_BIT_FUNC_PUMPSWITCH |
   SUPLA_BIT_FUNC_HEATORCOLDSOURCESWITCH;
 
-
+/*****************************************************************************/
 
 namespace Supla {
 namespace Control {
@@ -80,6 +83,9 @@ class Z2S_VirtualRelay : public Relay, public Z2S_Core {
 public:
   
   Z2S_VirtualRelay(uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE);
+
+  void  setZ2SFunction(uint8_t z2s_function);
+  uint8_t getZ2SFunction();
 
   void onInit() override;
   void turnOn(_supla_int_t duration = 0) override;
@@ -113,12 +119,6 @@ public:
 
   void ping();
 
-  void setKeepAliveSecs(uint32_t keep_alive_secs);
-  void setTimeoutSecs(uint32_t timeout_secs);
-
-  uint32_t getKeepAliveSecs();
-  uint32_t getTimeoutSecs();
-
  protected:
 
   uint8_t Z2S_decValueU8(uint8_t lower_limit, uint8_t upper_limit, uint8_t step = 1);
@@ -129,10 +129,6 @@ public:
 
 
   bool state = false;
-  //ZigbeeGateway *_gateway = nullptr;
-  //zbg_device_params_t 	_device;
-
-  //z2s_zb_device_params_t *_z2s_zb_device = nullptr;
 
   uint8_t _z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
   
@@ -143,13 +139,8 @@ public:
 
   bool _fresh_start = true;
 
-  //bool _keep_alive_enabled = true;
-  //bool _timeout_enabled    = true;
-
   uint32_t _timer_ms = 0;
 
-  uint32_t _keep_alive_ms = 0;
-  uint32_t _timeout_ms    = 0;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
  
@@ -157,5 +148,7 @@ public:
 
 };  // namespace Control
 };  // namespace Supla
+
+/*****************************************************************************/
 
 #endif  // SRC_SUPLA_CONTROL_Z2S_VIRTUAL_RELAY_H_

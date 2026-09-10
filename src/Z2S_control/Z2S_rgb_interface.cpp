@@ -21,8 +21,7 @@
 
 #include <supla/log_wrapper.h>
 
-Supla::Control::Z2S_RGBInterface::Z2S_RGBInterface(uint8_t rgb_mode) 
-  : Z2S_Core(this), _rgb_mode(rgb_mode) {
+Supla::Control::Z2S_RGBInterface::Z2S_RGBInterface() : Z2S_Core(this) {
 
   channel.setType(SUPLA_CHANNELTYPE_RGBLEDCONTROLLER);
   channel.setDefault(SUPLA_CHANNELFNC_RGBLIGHTING);
@@ -64,7 +63,6 @@ int32_t Supla::Control::Z2S_RGBInterface::handleNewValueFromServer(
     else {
       if ((_colorBrightness == 0) && (colorBrightness > 0)) {
         log_i("RGB ON");
-        _turn_dimmer_off = true;
       }
       
       log_i("RGB operations - TURN COLOR MODE + SEND COLOR");
@@ -161,7 +159,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
     
     uint8_t light_mode = 0x01;
 
-    switch (_rgb_mode) {
+    switch (getRGBColorMode()) {
 
       case Z2S_COLOR_HS_RGB:
       case Z2S_PHILIPS_COLOR_HS_RGB:
@@ -270,25 +268,23 @@ void Supla::Control::Z2S_RGBInterface::ping() {
 void Supla::Control::Z2S_RGBInterface::iterateAlways() {
 
   if (_lastMsgReceivedMs != 0 && millis() - _lastMsgReceivedMs >= 400) {
+    
     _lastMsgReceivedMs = 0;
+    
     channel.setNewValue(_red, _green, _blue, _colorBrightness, 0, -1);
-    if ((_turn_dimmer_off) && _dimmer) {
-      _dimmer->getChannel()->setNewValue(0, 0, 0, 0, 0, -1);
-      _turn_dimmer_off = false;
-    }
     sendValueToDevice(_red, _green, _blue, _colorBrightness);
   }
 
   if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
     ping();
 
-  if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (getKeepAliveMs() && ((millis() - _last_ping_ms) > getKeepAliveMs())) {
+
     if (true) {
-      
-      
+        
       _last_seen_ms = getZbDeviceLastSeenMs();
 
-      if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      if ((millis() - _last_seen_ms) > getKeepAliveMs()) {
       	ping();
         _last_ping_ms = millis();
       } else {
@@ -298,9 +294,8 @@ void Supla::Control::Z2S_RGBInterface::iterateAlways() {
       }
     }
   }
-  if (_timeout_enabled && 
-      channel.isStateOnline() && 
-      ((millis() - _last_seen_ms) > _timeout_ms)) {
+  if (getTimeoutMs() && channel.isStateOnline() && 
+      ((millis() - _last_seen_ms) > getTimeoutMs())) {
 
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
 
@@ -309,48 +304,7 @@ void Supla::Control::Z2S_RGBInterface::iterateAlways() {
 
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
 
-    if ((millis() - _last_seen_ms) > _timeout_ms)
+    if ((millis() - _last_seen_ms) > getTimeoutMs())
       channel.setStateOffline();
   }
-}
-
-void Supla::Control::Z2S_RGBInterface::setRGBMode(uint8_t rgb_mode) {
-
-  _rgb_mode = rgb_mode;
-}
-uint8_t Supla::Control::Z2S_RGBInterface::getRGBMode() {
-  
-  return _rgb_mode;
-}
-
-void Supla::Control::Z2S_RGBInterface::setKeepAliveSecs(
-  uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
-  if (_keep_alive_ms == 0)
-    _keep_alive_enabled = false;
-  else 
-    _keep_alive_enabled = true;
-}
-
-void Supla::Control::Z2S_RGBInterface::setTimeoutSecs(
-  uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-  if (_timeout_ms == 0) {
-    _timeout_enabled = false;
-    channel.setStateOnline();
-  }
-  else
-   _timeout_enabled = true;
-}
-
-uint32_t Supla::Control::Z2S_RGBInterface::getKeepAliveSecs() {
-
-  return _keep_alive_ms / 1000;
-}
-
-uint32_t Supla::Control::Z2S_RGBInterface::getTimeoutSecs() {
-
-  return _timeout_ms / 1000;
 }

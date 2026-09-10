@@ -22,6 +22,8 @@
 
 #include <supla/time.h>
 
+/*****************************************************************************/
+
 Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(uint8_t z2s_function)
   : Z2S_Core(this), _z2s_function(z2s_function) {
    
@@ -29,11 +31,27 @@ Supla::Control::Z2S_RollerShutter::Z2S_RollerShutter(uint8_t z2s_function)
 
 /*****************************************************************************/
 
+void Supla::Control::Z2S_RollerShutter::setZ2SFunction(uint8_t z2s_function) {
+
+  _z2s_function = z2s_function;
+}
+
+/*****************************************************************************/
+
+uint8_t Supla::Control::Z2S_RollerShutter::getZ2SFunction() {
+
+  return _z2s_function;
+}
+
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RollerShutter::onInit() {
 
-  if (_timeout_enabled)
+  if (getTimeoutMs())
     channel.setStateOffline();
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
@@ -101,6 +119,8 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
   }
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RollerShutter::rsClose() {
 
   if (Zigbee.started()) {   
@@ -166,6 +186,8 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
   }
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RollerShutter::rsStop() {
 
   if (Zigbee.started()) {   
@@ -220,6 +242,8 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
     }
   }
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
   uint8_t lift_percentage) {
@@ -297,11 +321,9 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
       case Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER: {
     
-        //if (_z2s_channel) {
           
-          setChannelUserDataFlags(USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
-          setIgnoreNextMsgCounter(2);
-        //}
+        setChannelUserDataFlags(USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
+        setIgnoreNextMsgCounter(2);
         
         rsStop();
         
@@ -330,6 +352,8 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
     }
   }
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::ping() {
 
@@ -360,6 +384,8 @@ void Supla::Control::Z2S_RollerShutter::ping() {
     }
   }
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::onTimer() {
 
@@ -417,37 +443,22 @@ void Supla::Control::Z2S_RollerShutter::onTimer() {
   }
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RollerShutter::iterateAlways() {
 
   Supla::Control::RollerShutterInterface::iterateAlways();
 
-  /*if ((_rs_moving_direction != 1) &&
-      ((millis() - _update_rs_position_ms) > 1000)) {
-
-    _update_rs_position_ms = millis();
-
-    log_i("trying to update rs position");
-
-    if (Zigbee.started()) {
-
-      zbGateway.sendAttributeRead(
-        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
-    }
-  }*/
-  
-
-  //uint32_t current_millis = millis();
-
   if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
     ping();
 
-  if (_keep_alive_enabled && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (getKeepAliveMs() && ((millis() - _last_ping_ms) > getKeepAliveMs())) {
     if (true) {
       
       
       _last_seen_ms = getZbDeviceLastSeenMs();
       
-      if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      if ((millis() - _last_seen_ms) > getKeepAliveMs()) {
       	ping();
         _last_ping_ms = millis();
       } else {
@@ -457,8 +468,8 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
       }
     }
   }
-  if (_timeout_enabled && channel.isStateOnline() && 
-      ((millis() - _last_seen_ms) > _timeout_ms)) {
+  if (getTimeoutMs() && channel.isStateOnline() && 
+      ((millis() - _last_seen_ms) > getTimeoutMs())) {
 
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), 
     _last_seen_ms);
@@ -469,33 +480,16 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), 
           _last_seen_ms);
 
-    if ((millis() - _last_seen_ms) > _timeout_ms)
+    if ((millis() - _last_seen_ms) > getTimeoutMs())
       channel.setStateOffline();
   }
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(
   uint8_t rs_current_position) {
  
-  /*if ((_rs_current_position == 100) && (_rs_current_position == 0))
-    _rs_current_position_changed = true;
-  else
-  if ((_rs_current_position == 0) && (_rs_current_position == 100))
-    _rs_current_position_changed = true;
-  else {
-    _rs_current_position = rs_current_position;
-    setCurrentPosition(_rs_current_position);  
-  }
-  return;
-
-  if (_rs_current_position != rs_current_position)
-    _rs_current_position_changed = true;
-
-  _rs_current_position = rs_current_position;
-  setCurrentPosition(_rs_current_position);
-
-  return;*/
-
   if ((_rs_moving_direction != 1) || _rs_ignore_moving_direction) {
   _rs_current_position = rs_current_position;
 
@@ -520,6 +514,8 @@ void Supla::Control::Z2S_RollerShutter::setRSIgnoreMovingDirection(
   else
     _rs_moving_direction = 1;*/
 }
+
+/*****************************************************************************/
 
 bool Supla::Control::Z2S_RollerShutter::getRSIgnoreMovingDirection() {
   
@@ -549,6 +545,8 @@ void Supla::Control::Z2S_RollerShutter::setRSMovingDirection(
   }
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RollerShutter::Refresh() {
 
   _last_ping_ms = millis();
@@ -558,39 +556,6 @@ void Supla::Control::Z2S_RollerShutter::Refresh() {
 	  channel.setStateOnline();
 }
 
-
-void Supla::Control::Z2S_RollerShutter::setKeepAliveSecs(
-  uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
-
-  if (_keep_alive_ms == 0)
-    _keep_alive_enabled = false;
-  else 
-    _keep_alive_enabled = true;
-}
-
-void Supla::Control::Z2S_RollerShutter::setTimeoutSecs(
-  uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-  
-  if (_timeout_ms == 0) {
-    _timeout_enabled = false;
-    channel.setStateOnline();
-  }
-  else
-   _timeout_enabled = true;
-}
-
-uint32_t Supla::Control::Z2S_RollerShutter::getKeepAliveSecs() {
-
-  return _keep_alive_ms / 1000;
-}
-
-uint32_t Supla::Control::Z2S_RollerShutter::getTimeoutSecs() {
-
-  return _timeout_ms / 1000;
-}
+/*****************************************************************************/
 
 //#endif

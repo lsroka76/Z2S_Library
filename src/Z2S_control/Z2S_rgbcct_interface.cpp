@@ -23,8 +23,8 @@
 #include <supla/storage/storage.h>
 
 
-Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface(uint8_t rgb_mode) 
-  : Z2S_Core(this), _rgb_mode(rgb_mode) {
+Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface() 
+  : Z2S_Core(this) {
 
   channel.setType(SUPLA_CHANNELTYPE_DIMMERANDRGBLED);
   channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
@@ -335,7 +335,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
 
       uint8_t light_mode = 0x01;
 
-      switch (_rgb_mode) {
+      switch (getRGBColorMode()) {
 
         case Z2S_COLOR_HS_RGB:
         case Z2S_PHILIPS_COLOR_HS_RGB:
@@ -553,24 +553,25 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
   //if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
   //  ping();
 
-  if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (getKeepAliveMs() && ((millis() - _last_ping_ms) > getKeepAliveMs())) {
+    
     if (true) {
       
       
       _last_seen_ms = getZbDeviceLastSeenMs();
 
-      if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      if ((millis() - _last_seen_ms) > getKeepAliveMs()) {
       	ping();
         _last_ping_ms = millis();
       } else {
         _last_ping_ms = _last_seen_ms;
         if (!channel.isStateOnline()) 
-	  channel.setStateOnline();
+	        channel.setStateOnline();
       }
     }
   }
-  if (_timeout_ms && channel.isStateOnline() && 
-      ((millis() - _last_seen_ms) > _timeout_ms)) {
+  if (getTimeoutMs() && channel.isStateOnline() && 
+      ((millis() - _last_seen_ms) > getTimeoutMs())) {
 
 	  log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
 
@@ -579,44 +580,9 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
 
-    if ((millis() - _last_seen_ms) > _timeout_ms)
+    if ((millis() - _last_seen_ms) > getTimeoutMs())
       channel.setStateOffline();
   }
-}
-
-void Supla::Control::Z2S_RGBCCTInterface::setRGBMode(uint8_t rgb_mode) {
-
-  _rgb_mode = rgb_mode;
-}
-
-uint8_t Supla::Control::Z2S_RGBCCTInterface::getRGBMode() {
-  
-  return _rgb_mode;
-}
-
-void Supla::Control::Z2S_RGBCCTInterface::setKeepAliveSecs(
-  uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
-}
-
-void Supla::Control::Z2S_RGBCCTInterface::setTimeoutSecs(
-  uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-
-  if (_timeout_ms == 0) 
-    channel.setStateOnline();
-}
-
-uint32_t Supla::Control::Z2S_RGBCCTInterface::getKeepAliveSecs() {
-
-  return _keep_alive_ms / 1000;
-}
-
-uint32_t Supla::Control::Z2S_RGBCCTInterface::getTimeoutSecs() {
-
-  return _timeout_ms / 1000;
 }
 
 void Supla::Control::Z2S_RGBCCTInterface::increaseBrightness(

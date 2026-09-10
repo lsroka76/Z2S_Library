@@ -49,11 +49,6 @@ public:
     _rwns_flag = rwns_flag;
   }
 
-  void setTimeoutSecs(uint32_t timeout_secs) {
-    
-    _timeout_ms = timeout_secs * 1000;
-  }
-
   void Refresh() {
     
     _last_timeout_ms = millis();
@@ -78,7 +73,7 @@ public:
     
     uint32_t millis_ms = millis();
 
-    if (_timeout_ms) {
+    if (getTimeoutMs()) {
       
       uint32_t _zb_device_last_seen_ms = getZbDeviceLastSeenMs();
       
@@ -88,7 +83,7 @@ public:
         channel.setStateOnline();
       }
 
-      if ((millis_ms - _last_timeout_ms) > _timeout_ms) {
+      if ((millis_ms - _last_timeout_ms) > getTimeoutMs()) {
       
         _last_timeout_ms = millis_ms;
 
@@ -104,7 +99,6 @@ public:
   double _value = NAN;
   bool   _rwns_flag;
 
-  uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;
 };
 };  // namespace Sensor

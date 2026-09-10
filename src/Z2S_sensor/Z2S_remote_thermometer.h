@@ -74,35 +74,13 @@ public:
     _rwns_flag = rwns_flag;    
   }
   
-  void setTimeoutSecs(uint32_t timeout_secs) {
-    
-    _timeout_ms = timeout_secs * 1000;
-  }
-
-
   void setRawValue(double val) {
 
     log_i("setRawValue");
     temperature = val;
   }
 
-  void setConnectedThermometersFunction(
-    uint32_t connected_thermometers_function) {
-
-      _connected_thermometers_function = 
-        connected_thermometers_function;
-    }
-    
-    void setConnectedThermometerTimeoutSecs(
-      uint32_t connected_thermometer_timeout_secs) {
-
-      if (connected_thermometer_timeout_secs > 0)
-        _connected_thermometer_timeout_ms = 
-          connected_thermometer_timeout_secs * 1000;
-      else
-        _connected_thermometer_timeout_ms = MINUTES_30;
-    }
-
+  
   void setConnectedThermometerTemperature(
     uint32_t connected_thermometer_ip_address,
     uint32_t connected_thermometer_channel, 
@@ -217,7 +195,7 @@ public:
 
         if ((millis_ms - _connected_thermometers[connected_thermometers_counter].\
                            connected_thermometer_last_seen_ms) > 
-            _connected_thermometer_timeout_ms) { //unregister connected thermometer
+            getConnectedThermometerTimeoutMs()) { //unregister connected thermometer
 
           log_i("unregistering connected thermometer from IP %s, channel %u",
                 IPAddress(_connected_thermometers[connected_thermometers_counter].
@@ -233,7 +211,7 @@ public:
           continue; //skip that thermometer - already unregistered
         }
 
-        switch (_connected_thermometers_function) {
+        switch (getZ2SLocalChannelFunc()) {
 
 
           case CONNECTED_THERMOMETERS_FNC_MIN: {
@@ -278,7 +256,7 @@ public:
                 _connected_thermometers[connected_thermometers_counter].
                   connected_thermometer_temperature;
           } break;
-        } //switch (_connected_thermometers_function)
+        } //switch (getZ2SLocalChannelFunc())
       }
     }
     if (connected_thermometers_number > 0) {
@@ -314,8 +292,8 @@ public:
 
     }
 
-    if ((_timeout_ms > 0) && 
-        (millis_ms - _last_timeout_ms > _timeout_ms)) {
+    if ((getTimeoutMs() > 0) && 
+        (millis_ms - _last_timeout_ms > getTimeoutMs())) {
       
       _last_timeout_ms = millis_ms;
 
@@ -329,14 +307,10 @@ public:
  protected:
   bool     _rwns_flag;
 
-  uint32_t  _connected_thermometers_function = CONNECTED_THERMOMETERS_FNC_AVG;
   connected_thermometers_t _connected_thermometers[MAX_CONNECTED_THERMOMETERS];  
 
   bool _connected_thermometers_updated = false;
 
-  uint32_t _connected_thermometer_timeout_ms = MINUTES_30; //-> channel refresh?
-
-  uint32_t _timeout_ms = 0; //-> channel timeout
   uint32_t _last_timeout_ms = 0;
 };
 };  // namespace Sensor

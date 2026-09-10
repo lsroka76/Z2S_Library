@@ -44,10 +44,6 @@ public:
     _rwns_flag = rwns_flag;    
   }
   
-  void setTimeoutSecs(uint32_t timeout_secs) {
-    
-    _timeout_ms = timeout_secs * 1000;
-  }
 
   void Refresh() {
     _last_timeout_ms = millis();
@@ -89,7 +85,7 @@ public:
     }
 
 
-    if (_timeout_ms) {
+    if (getTimeoutMs()) {
       
       uint32_t _zb_device_last_seen_ms = getZbDeviceLastSeenMs();
       
@@ -99,7 +95,7 @@ public:
         channel.setStateOnline();
       }
       
-      if ((millis_ms - _last_timeout_ms) > _timeout_ms) {
+      if ((millis_ms - _last_timeout_ms) > getTimeoutMs()) {
       
         _last_timeout_ms = millis_ms;
 
@@ -115,7 +111,6 @@ public:
   bool     _rwns_flag;
   bool     _forced_temperature = false;
 
-  uint32_t _timeout_ms = 0;
   uint32_t _last_timeout_ms = 0;
 };
 
@@ -127,11 +122,6 @@ public:
   Z2S_SNZB02DR2ThermHygroMeter(bool rwns_flag = false) 
     : Z2S_VirtualThermHygroMeter(rwns_flag) 
   {
-  }
-
-  void setResentSecs(uint32_t resent_secs) {
-    
-    _resent_ms = resent_secs * 1000;
   }
 
   void setSonoffExternalTemperature(int16_t sonoff_external_temperature) {
@@ -176,24 +166,19 @@ public:
 
     VirtualThermHygroMeter::iterateAlways();
 
-    if (_resent_ms && (millis() - _last_resent_ms > _resent_ms)) {
+    if (getResentMs() && (millis() - _last_resent_ms > getResentMs())) {
       
       updateSNZB02DR2ExtValues();
       _last_resent_ms = millis();
     }
        
   }
-
-  /*uint32_t getID() override {
-    
-    return TH_ID_SNZB_02DR2;
-  }*/
-    
+  
  protected:
 
   int16_t  _sonoff_external_temperature = INT16_MIN;
   uint16_t  _sonoff_external_humidity = UINT16_MAX;
-  uint32_t  _resent_ms = 0;
+
   uint32_t  _last_resent_ms = 0;
 };
 };  // namespace Sensor

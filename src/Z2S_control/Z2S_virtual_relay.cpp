@@ -37,14 +37,29 @@ Supla::Control::Z2S_VirtualRelay::Z2S_VirtualRelay(uint8_t z2s_function)
 
 /*****************************************************************************/
 
+void Supla::Control::Z2S_VirtualRelay::setZ2SFunction(uint8_t z2s_function) {
+
+  _z2s_function = z2s_function;
+}
+
+/*****************************************************************************/
+
+uint8_t Supla::Control::Z2S_VirtualRelay::getZ2SFunction() {
+
+  return _z2s_function;
+}
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_VirtualRelay::onInit() {
   
-  if (_timeout_ms)
+  if (getTimeoutMs())
     channel.setStateOffline();
   
   initDone = true;
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
   
@@ -83,7 +98,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8: {
 
@@ -95,7 +110,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
           LUMI_MANUFACTURER_CODE);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL: {
 
@@ -107,7 +122,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
           LUMI_MANUFACTURER_CODE);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2: {
 
@@ -123,12 +138,12 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         _z2s_function_value_U8 = 0;
 
         zbGateway.sendAttributeWrite(
-          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,
-          ESP_ZB_ZCL_ATTR_TYPE_U8, 4, &_z2s_function_value_U8, false, 1,
-          LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,ESP_ZB_ZCL_ATTR_TYPE_U8, 4, 
+          &_z2s_function_value_U8, false, 1, LUMI_MANUFACTURER_CODE);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM:
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM: {
@@ -144,7 +159,6 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         _z2s_function_data[3] = 0x32; //strobe duty cycle 50/50
         _z2s_function_data[4] = 0x01; //strobe level field
 
-        //log_i("_z2s_function = %u, short addr = 0x%X",_z2s_function, _device.short_addr);
         zbGateway.sendCustomClusterCmd(
           _short_addr, _endpoint, 0x0502, 0x00, ESP_ZB_ZCL_ATTR_TYPE_SET, 0x05, 
           _z2s_function_data);
@@ -154,7 +168,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH: {
 
@@ -167,7 +181,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION: {
 
@@ -181,7 +195,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY: {
 
@@ -194,7 +208,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME: {
 
@@ -208,7 +222,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
 
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE: {
 
@@ -221,7 +235,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
@@ -234,7 +248,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
 
@@ -247,7 +261,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 
@@ -259,7 +273,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY: {
 
@@ -273,7 +287,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM: {
 
@@ -324,7 +338,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
       } break;
 
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM: {
 
@@ -379,6 +393,8 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
   Supla::Storage::ScheduleSave(5000);
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
   
   SUPLA_LOG_INFO(
@@ -408,7 +424,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8: {
 
@@ -420,7 +436,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
           LUMI_MANUFACTURER_CODE);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL: {
 
@@ -432,7 +448,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
           LUMI_MANUFACTURER_CODE);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2: {
 
@@ -441,19 +457,19 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         _z2s_function_value_U32 = 0x3C00;
 
         zbGateway.sendAttributeWrite(
-          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_1_ID,
-          ESP_ZB_ZCL_ATTR_TYPE_U32, 4, &_z2s_function_value_U32, false, 1,
-          LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_BUZZER_1_ID, ESP_ZB_ZCL_ATTR_TYPE_U32, 4, 
+          &_z2s_function_value_U32, false, 1, LUMI_MANUFACTURER_CODE);
 
         _z2s_function_value_U8 = 1;
 
         zbGateway.sendAttributeWrite(
-          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_BUZZER_2_ID,
-          ESP_ZB_ZCL_ATTR_TYPE_U8, 4, &_z2s_function_value_U8, false, 1,
-          LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_BUZZER_2_ID, ESP_ZB_ZCL_ATTR_TYPE_U8, 4, 
+          &_z2s_function_value_U8, false, 1, LUMI_MANUFACTURER_CODE);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM:
       case Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM: {
@@ -474,6 +490,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
       } break;
 
+/*---------------------------------------------------------------------------*/
+
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH: {
 
         state = false;
@@ -484,6 +502,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         channel.setNewValue(state);
 
       } break;
+
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION: {
 
@@ -497,6 +517,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         channel.setNewValue(state);
       } break;
 
+/*---------------------------------------------------------------------------*/
+
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY: {
 
         state = false;
@@ -507,6 +529,8 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
         channel.setNewValue(state);
       } break;
+
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME: {
         
@@ -520,7 +544,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
 
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE: {
 
@@ -533,7 +557,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE: {
 
@@ -546,7 +570,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
 
@@ -559,7 +583,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_GIEX_VALVE_MANUAL: {
 
@@ -572,7 +596,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
 
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
       
       case Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY: {
 
@@ -586,7 +610,7 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
         channel.setNewValue(state);
       } break;
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
       case Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM: {
 
@@ -600,6 +624,8 @@ case Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE: {
   // Schedule save in 5 s after state change
   Supla::Storage::ScheduleSave(5000);
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_VirtualRelay::ping() {
 
@@ -626,6 +652,8 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
   }
 }
 
+/*****************************************************************************/
+
 bool Supla::Control::Z2S_VirtualRelay::iterateConnected() {
 
   if (_timer_ms > 0) {
@@ -643,6 +671,7 @@ bool Supla::Control::Z2S_VirtualRelay::iterateConnected() {
   return Supla::Control::Relay::iterateConnected();
 }
 
+/*****************************************************************************/
 
 void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
 
@@ -653,13 +682,13 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
   if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
     ping();
 
-  if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (getKeepAliveMs() && ((millis() - _last_ping_ms) > getKeepAliveMs())) {
     if (true) {
       
       
       _last_seen_ms = getZbDeviceLastSeenMs();
     
-      if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      if ((millis() - _last_seen_ms) > getKeepAliveMs()) {
       	ping();
         _last_ping_ms = millis();
       } else {
@@ -669,8 +698,8 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
       }
     }
   }
-  if (_timeout_ms && channel.isStateOnline() && 
-      ((millis() - _last_seen_ms) > _timeout_ms)) {
+  if (getTimeoutMs() && channel.isStateOnline() && 
+      ((millis() - _last_seen_ms) > getTimeoutMs())) {
 	  
     log_i("current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
     
@@ -680,10 +709,12 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
     log_i("current_millis %u, _last_seen_ms(updated) %u", millis(), 
           _last_seen_ms);
     
-    if ((millis() - _last_seen_ms) > _timeout_ms)
+    if ((millis() - _last_seen_ms) > getTimeoutMs())
       channel.setStateOffline();
   }
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_VirtualRelay::handleAction(int event, int action) {
 
@@ -716,11 +747,14 @@ void Supla::Control::Z2S_VirtualRelay::handleAction(int event, int action) {
   }
 }
 
+/*****************************************************************************/
 
 bool Supla::Control::Z2S_VirtualRelay::isOn() {
   
    return state;
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   
@@ -768,11 +802,15 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   Supla::Storage::ScheduleSave(5000);
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS8(
   int32_t z2s_function_value_S8) {
 
   _z2s_function_value_S8 = z2s_function_value_S8;
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU8(
   int32_t z2s_function_value_U8) {
@@ -780,11 +818,15 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU8(
   _z2s_function_value_U8 = z2s_function_value_U8;
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueS32(
   int32_t z2s_function_value_S32) { 
 
   _z2s_function_value_S32 = z2s_function_value_S32;
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU32(
   int32_t z2s_function_value_U32) {
@@ -792,82 +834,65 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setFunctionValueU32(
   _z2s_function_value_U32 = z2s_function_value_U32;
 }
 
+/*****************************************************************************/
+
 uint8_t Supla::Control::Z2S_VirtualRelay::Z2S_decValueU8(
   uint8_t lower_limit, uint8_t upper_limit, uint8_t step) {
 
   if (_z2s_function_value_U8 < UINT8_MAX) {
 
-    _z2s_function_value_U8 = (_z2s_function_value_U8 >= (lower_limit + step)) ? 
-      (_z2s_function_value_U8 - step) : upper_limit;
+    _z2s_function_value_U8 = (_z2s_function_value_U8 >= 
+      (lower_limit + step)) ? (_z2s_function_value_U8 - step) : upper_limit;
     
     return  _z2s_function_value_U8;
   }
   return lower_limit;
 }
 
+/*****************************************************************************/
+
 uint8_t Supla::Control::Z2S_VirtualRelay::Z2S_incValueU8(
   uint8_t lower_limit, uint8_t upper_limit, uint8_t step) {
 
   if (_z2s_function_value_U8 < UINT8_MAX) {
 
-    _z2s_function_value_U8 = (_z2s_function_value_U8 <= (upper_limit - step)) ?
-      _z2s_function_value_U8 + step : lower_limit;
+    _z2s_function_value_U8 = (_z2s_function_value_U8 <= 
+      (upper_limit - step)) ? _z2s_function_value_U8 + step : lower_limit;
     
     return _z2s_function_value_U8;
   }
   return lower_limit; 
 }
 
+/*****************************************************************************/
+
 uint32_t Supla::Control::Z2S_VirtualRelay::Z2S_decValueU32(
   uint32_t lower_limit, uint32_t upper_limit, uint32_t step) {
 
   if (_z2s_function_value_U32 < UINT32_MAX) {
 
-    _z2s_function_value_U32 = (_z2s_function_value_U32 >= (lower_limit + step)) ? 
-      (_z2s_function_value_U32 - step) : upper_limit;
+    _z2s_function_value_U32 = (_z2s_function_value_U32 >= 
+      (lower_limit + step)) ? (_z2s_function_value_U32 - step) : upper_limit;
     
     return  _z2s_function_value_U32;
   }
   return lower_limit;
 }
 
+/*****************************************************************************/
+
 uint32_t Supla::Control::Z2S_VirtualRelay::Z2S_incValueU32(
   uint32_t lower_limit, uint32_t upper_limit, uint32_t step) {
 
   if (_z2s_function_value_U32 < UINT32_MAX) {
 
-    _z2s_function_value_U32 = (_z2s_function_value_U32 <= (upper_limit - step)) ?
-      _z2s_function_value_U32 + step : lower_limit;
+    _z2s_function_value_U32 = (_z2s_function_value_U32 <= 
+      (upper_limit - step)) ? _z2s_function_value_U32 + step : lower_limit;
     
     return _z2s_function_value_U32;
   }
   return lower_limit; 
 }
 
-
-void Supla::Control::Z2S_VirtualRelay::setKeepAliveSecs(
-  uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
-}
-
-void Supla::Control::Z2S_VirtualRelay::setTimeoutSecs(
-  uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-  
-  if (_timeout_ms == 0)
-    channel.setStateOnline();
-}
-
-uint32_t Supla::Control::Z2S_VirtualRelay::getKeepAliveSecs() {
-
-  return _keep_alive_ms / 1000;
-}
-
-uint32_t Supla::Control::Z2S_VirtualRelay::getTimeoutSecs() {
-
-  return _timeout_ms / 1000;
-}
-
+/*****************************************************************************/
 //#endif

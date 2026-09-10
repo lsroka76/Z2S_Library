@@ -26,13 +26,8 @@ static const char *default_rs_name = "Roller shutter";
 /*****************************************************************************/
 
 void initZ2SDeviceVirtualRelay(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, 
-  int16_t channel_number_slot);
-
-/*****************************************************************************/
-
-void initZ2SDeviceVirtualRelay(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
+  Supla::Element *element = nullptr);
   
 /*****************************************************************************/
 

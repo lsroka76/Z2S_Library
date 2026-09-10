@@ -32,6 +32,8 @@
 #include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>
 #include <Z2S_sensor/Z2S_virtual_thermometer.h>
 
+#define EMPTY_CMD_SET 0xFF
+
 /*****************************************************************************/
 
 #define TRVZB_CMD_SET 0x40 //1-63 reserved for Tuya/Saswell/Moes and other TS0601 variants
@@ -392,7 +394,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  me167_cmd_set,
     
@@ -458,7 +460,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x65 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  me167_no_pi_cmd_set,
     
@@ -524,7 +526,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  trv603_cmd_set,
     
@@ -590,7 +592,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  beca_cmd_set,
     
@@ -656,7 +658,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  moes_cmd_set,
     
@@ -721,7 +723,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  trv601_cmd_set,
     
@@ -786,7 +788,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  gtz10_cmd_set,
     
@@ -851,7 +853,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  trv602z_cmd_set,
     
@@ -916,7 +918,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x72 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  tv02_cmd_set,
     
@@ -981,7 +983,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  siterwell_cmd_set,
     
@@ -1046,7 +1048,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-  /*---------------------------------------------------------------------------------------*/
+  /*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  trv16_cmd_set,
     
@@ -1112,11 +1114,11 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 //Wall thermostats section
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  zwt198_cmd_set,
     
@@ -1185,7 +1187,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 }, 
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  zwt100_cmd_set,
     
@@ -1254,7 +1256,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 }, 
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  bht002_cmd_set,
     
@@ -1323,7 +1325,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
   
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 { .ts0601_cmd_set_id                               =  tgm50_cmd_set,
     
@@ -1392,7 +1394,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  zhtsr_cmd_set,
     
@@ -1461,7 +1463,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
-  /*---------------------------------------------------------------------------------------*/
+  /*****************************************************************************/
 
   { .ts0601_cmd_set_id                               =  botr9v_cmd_set,
     
@@ -1531,20 +1533,23 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 }
 }; 
 
-/*---------------------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 namespace Supla {
 
 namespace Control {
 
-class Z2S_TRVInterface : public RemoteOutputInterface, 
-  /*public ActionHandler,*/public Element, public Z2S_Core {
+class Z2S_TRVInterface : public RemoteOutputInterface, public Element, 
+public Z2S_Core {
  
  public:
   Z2S_TRVInterface(uint8_t trv_commands_set, bool onOffOnly = true);
 
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
+
+  //Channel *getChannel() override;
+  //const Channel *getChannel() const override;
 
   uint8_t getTRVCommandsSet() {
 
@@ -1671,12 +1676,9 @@ protected:
   uint32_t _refresh_ms      = 5000;
   uint32_t _last_refresh_ms = 0;
 
-  uint32_t  _timeout_ms = 0;
-  uint32_t  _keep_alive_ms = 0;
   uint32_t  _last_keep_alive_ms = 0;
   uint32_t  _last_seen_ms = 0;
   uint32_t  _last_cmd_sent_ms = 0;
-  bool      _timeout_enabled = false;
 
   bool isForcedTemperatureSet();
   void forceTRVTemperature();

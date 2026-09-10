@@ -4,14 +4,6 @@ extern uint8_t _use_new_at_model;
 
 /*****************************************************************************/
 
-void initZ2SDeviceActionTrigger(int16_t channel_number_slot) {
-
-  initZ2SDeviceActionTrigger(
-    channel_number_slot, z2s_channels_table + channel_number_slot);
-}
-
-/*****************************************************************************/
-
 void initZ2SDeviceActionTrigger(
   uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
   
@@ -54,16 +46,9 @@ void initZ2SDeviceActionTrigger(
 
 /*****************************************************************************/
 
-void initZ2SDeviceActionTriggerV2(int16_t channel_number_slot) {
-
-  initZ2SDeviceActionTriggerV2(
-    channel_number_slot, z2s_channels_table + channel_number_slot);
-}
-
-/*****************************************************************************/
-
 void initZ2SDeviceActionTriggerV2(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
+  Supla::Element *element) {
 
   uint32_t debounce_time_ms = 100;
 
@@ -77,22 +62,27 @@ void initZ2SDeviceActionTriggerV2(
 
   _z2s_channel->virtual_button_data.button_last_seen_ms = 0;
 
-  auto Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
+  Supla::Control::LocalActionTrigger *Supla_Z2S_ActionTrigger = nullptr;
 
-  Supla_Z2S_ActionTrigger->setZ2SZbDevice(Z2S_getZbDevicePtr(
-    _z2s_channel->Zb_device_id)); 
-      
-  Supla_Z2S_ActionTrigger->setZ2SChannel(channel_index, _z2s_channel);
-  
-  Supla_Z2S_ActionTrigger->getChannel()->setChannelNumber(
-    _z2s_channel->Supla_channel);
+  if (element) {
 
-  if (strlen(_z2s_channel->Supla_channel_name) > 0) 
-    Supla_Z2S_ActionTrigger->setInitialCaption(
-      _z2s_channel->Supla_channel_name);
+    Supla_Z2S_ActionTrigger = static_cast<
+      Supla::Control::LocalActionTrigger *>(element);
+  }
+  else {
+
+    Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
+
+    Supla_Z2S_ActionTrigger->setZ2SChannel(channel_index, _z2s_channel);
   
-  Supla_Z2S_ActionTrigger->getChannel()->setActionTriggerCaps(
-    _z2s_channel->virtual_button_data.button_flags);
+    Supla_Z2S_ActionTrigger->getChannel()->setChannelNumber(
+      _z2s_channel->Supla_channel);
+
+    Supla_Z2S_ActionTrigger->setInitialCaption(_z2s_channel->Supla_channel_name);
+  
+    Supla_Z2S_ActionTrigger->getChannel()->setActionTriggerCaps(
+      _z2s_channel->virtual_button_data.button_flags);
+  }
 }
 
 /*****************************************************************************/
@@ -120,9 +110,10 @@ void addZ2SDeviceActionTrigger(
   if (func !=0) 
     Supla_Z2S_ActionTrigger->setDefaultFunction(func);
   
-  Z2S_fillChannelsTableSlot(
-    device, free_slot, Supla_Z2S_ActionTrigger->getChannelNumber(), 
-    SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id, name, func);
+  Z2S_setChannelData(
+      Supla_Z2S_ActionTrigger->getZ2SCorePtr(), device, free_slot,
+      Supla_Z2S_ActionTrigger->getChannelNumber(), 
+      SUPLA_CHANNELTYPE_ACTIONTRIGGER, sub_id, name, func);
 }
 
 /*****************************************************************************/
@@ -137,14 +128,17 @@ void addZ2SDeviceActionTriggerV2(
     virtual_button_data, device->endpoint, device->cluster_id, 
     device->model_id, sub_id);
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlotV2(
-    device->ieee_addr, device->endpoint, device->cluster_id, 
+  Supla::Element *element = Z2S_findZ2SElementV2(
+    device->short_addr, device->endpoint, device->cluster_id, 
     SUPLA_CHANNELTYPE_ACTIONTRIGGER, 0x40 + virtual_button_data.button_id, 
     USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0);
   
-  if (channel_number_slot < 0)  {
+  if (element == nullptr)  {
 
     log_i("no AT channel found - registering new one!");
+
+    SuplaDevice.saveStateToStorage();
+    Supla::Storage::ConfigInstance()->commit();
 
     auto Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
 
@@ -157,51 +151,54 @@ void addZ2SDeviceActionTriggerV2(
       
       Supla_Z2S_ActionTrigger->setInitialCaption(
         virtual_button_data.button_action_trigger_name);
-
     }
 
-  Z2S_fillChannelsTableSlot(
-    device, free_slot, Supla_Z2S_ActionTrigger->getChannelNumber(), 
-    SUPLA_CHANNELTYPE_ACTIONTRIGGER, 0x40 + virtual_button_data.button_id,
-    virtual_button_data.button_action_trigger_name, func);
+    Z2S_setChannelData(
+      Supla_Z2S_ActionTrigger->getZ2SCorePtr(), device, free_slot,
+      Supla_Z2S_ActionTrigger->getChannelNumber(), 
+      SUPLA_CHANNELTYPE_ACTIONTRIGGER, 0x40 + virtual_button_data.button_id,
+      virtual_button_data.button_action_trigger_name, func);
 
-  z2s_channels_table[free_slot].virtual_button_data.button_flags =
-    virtual_button_data.button_action_trigger_flag;
+    Supla_Z2S_ActionTrigger->setButtonFlags(
+      virtual_button_data.button_action_trigger_flag);
+    Supla_Z2S_ActionTrigger->setChannelUserDataFlags(
+      USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0, true);
 
-  z2s_channels_table[free_slot].user_data_flags |=
-    USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0;
+    initZ2SDeviceActionTriggerV2(
+      free_slot, Supla_Z2S_ActionTrigger->getZ2SChannel(), 
+      Supla_Z2S_ActionTrigger->getZ2SElementPtr());
 
-  Z2S_saveChannelsTable();
+    addChannelsSelectorChannel(Supla_Z2S_ActionTrigger->getZ2SCorePtr());
 
-  } else {
+    Supla_Z2S_ActionTrigger->getChannel()->setSubDeviceId(
+      device->zb_device_id + 1);
+    Supla_Z2S_ActionTrigger->getChannel()->setFlag(
+      SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    uint32_t button_flags = z2s_channels_table[channel_number_slot].\
-        virtual_button_data.button_flags;
+    Supla_Z2S_ActionTrigger->onLoadConfig(&SuplaDevice);
+    Supla_Z2S_ActionTrigger->onInit();
+  } 
+  else {
+
+    auto Supla_Z2S_ActionTrigger = 
+      static_cast<Supla::Control::LocalActionTrigger *>(element);
+
+    uint32_t button_flags = Supla_Z2S_ActionTrigger->getButtonFlags();
     
     log_i(
       "AT channel found at slot %02u, virtual button flags %08x", 
-      channel_number_slot, button_flags);
+      Supla_Z2S_ActionTrigger->getZ2SChannelIndex(), button_flags);
 
-    auto element = Supla::Element::getElementByChannelNumber(
-      z2s_channels_table[channel_number_slot].Supla_channel);
-
-    if (element) {
-    
-      auto Supla_Z2S_ActionTrigger = 
-        reinterpret_cast<Supla::Control::LocalActionTrigger *>(element);
-
-      if (getVirtualButtonNumber(
+    if (getVirtualButtonNumber(
           virtual_button_data, device->endpoint, device->cluster_id, 
           device->model_id, sub_id)) {
 
-        button_flags |= virtual_button_data.button_action_trigger_flag;
-        Supla_Z2S_ActionTrigger->getChannel()->setActionTriggerCaps(
-          button_flags);
+      button_flags |= virtual_button_data.button_action_trigger_flag;
+
+      Supla_Z2S_ActionTrigger->getChannel()->setActionTriggerCaps(
+        button_flags);
         
-        z2s_channels_table[channel_number_slot].\
-          virtual_button_data.button_flags = button_flags;
-        Z2S_saveChannelsTable();
-      }
+      Supla_Z2S_ActionTrigger->setButtonFlags(button_flags);
     }
   }  
 }

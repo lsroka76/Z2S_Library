@@ -8,7 +8,11 @@
 #include <Z2S_control/hvac_base_ee.h>
 #include <Z2S_control/Z2S_trv_interface.h>
 
-/*---------------------------------------------------------------------------------------------------------------------------*/
+/*****************************************************************************/
+
+static constexpr char *HVAC_DEFAULT_NAME = "THERMOSTAT";
+
+/*****************************************************************************/
 
 #define TRV_HEATING_SETPOINT_MSG        0x01
 #define TRV_SYSTEM_MODE_MSG             0x02
@@ -29,7 +33,7 @@
 
 /*****************************************************************************/
 
-uint8_t getZ2SDeviceHvacCmdSet(z2s_device_params_t* _z2s_channel);
+uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id);
 
 /*****************************************************************************/
 
@@ -37,20 +41,16 @@ uint8_t getZ2SDeviceHvacCmdSet(Supla::Element* element);
 
 /*****************************************************************************/
 
-void initZ2SDeviceHvac(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, 
-  int16_t channel_number_slot);
-
-/*****************************************************************************/
-
-void initZ2SDeviceHvac(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+void initZ2SDeviceHvacExt(
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
+  zbg_device_params_t *device = nullptr, 
+  uint8_t trv_thermometer_channel = 0xFF);
 
 /*****************************************************************************/
 
 void addZ2SDeviceHvac(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
-  uint8_t trv_thermometer_slot);
+  uint8_t trv_thermometer_channel);
 
 /*****************************************************************************/
 

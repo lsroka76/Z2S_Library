@@ -27,7 +27,7 @@
 Supla::Control::Z2S_RemoteRelay::Z2S_RemoteRelay(
   NetworkClient *remote_gateway, uint8_t remote_Supla_channel) 
   : Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER), 
-    Z2S_Core(this), _remote_Supla_channel(remote_Supla_channel) {
+    Z2S_Core(this) {
 }
 
 void Supla::Control::Z2S_RemoteRelay::onInit() {
@@ -37,27 +37,29 @@ void Supla::Control::Z2S_RemoteRelay::onInit() {
 
 bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
 
-  if (_remote_Supla_channel < 0xFF) {
+  log_i("getMDNSName() = %s", getMDNSName());
+  
+  if (getSuplaRemoteChannel() < 0xFF) {
 
-    if(_remote_gateway_ip == 0) {
+    if(getRemoteIPAddress() == 0) {
 
-      if (_remote_gateway_mDNS_name)
-        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name, 500);
+      if (getMDNSName())
+        setRemoteIPAddress(MDNS.queryHost(getMDNSName(), 500));
       else
         return false;
 
-      if(_remote_gateway_ip == 0)
+      if(getRemoteIPAddress() == 0)
         return false;
     }
 
-    if (!Z2S_NetworkClient.connect(_remote_gateway_ip, REMOTE_RELAY_PORT, 500)) {
+    if (!Z2S_NetworkClient.connect(getRemoteIPAddress(), REMOTE_RELAY_PORT, 500)) {
 
-      if (_remote_gateway_mDNS_name)
-        _remote_gateway_ip = MDNS.queryHost(_remote_gateway_mDNS_name, 500);
+      if (getMDNSName())
+        setRemoteIPAddress(MDNS.queryHost(getMDNSName(), 500));
       else
         return false;
 
-      if (!Z2S_NetworkClient.connect(_remote_gateway_ip, REMOTE_RELAY_PORT, 500))
+      if (!Z2S_NetworkClient.connect(getRemoteIPAddress(), REMOTE_RELAY_PORT, 500))
       return false;
     } else   
       return true;
@@ -103,7 +105,7 @@ void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
   if (connectRemoteGateway()) {
 
     Z2S_NetworkClient.printf(
-      "Z2SCMD%02u%03u%08ld\n", REMOTE_CMD_TURN_ON, _remote_Supla_channel,
+      "Z2SCMD%02u%03u%08ld\n", REMOTE_CMD_TURN_ON, getSuplaRemoteChannel(),
       -12567);
     
     String response = Z2S_NetworkClient.readStringUntil('\n');
@@ -142,7 +144,7 @@ void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
   if (connectRemoteGateway()) {
 
     Z2S_NetworkClient.printf(
-      "Z2SCMD%02u%03u%08ld\n", REMOTE_CMD_TURN_OFF, _remote_Supla_channel,
+      "Z2SCMD%02u%03u%08ld\n", REMOTE_CMD_TURN_OFF, getSuplaRemoteChannel(),
       0xAB);
     
     String response = Z2S_NetworkClient.readStringUntil('\n');
@@ -246,10 +248,6 @@ bool Supla::Control::Z2S_RemoteRelay::isOn() {
 
 void Supla::Control::Z2S_RemoteRelay::Z2S_setOnOff(bool on_off_state) {
   
-  
-  if (!channel.isStateOnline()) 
-	  channel.setStateOnline();
-
   log_i("durationMs = %lu, "
         "storedTurnOnDurationMs = %lu, "
         "durationTimestamp = %lu, "
@@ -291,35 +289,5 @@ void Supla::Control::Z2S_RemoteRelay::Z2S_setOnOff(bool on_off_state) {
   Supla::Storage::ScheduleSave(5000);
 }
 
-/*void Supla::Control::Z2S_RemoteRelay::setKeepAliveSecs(
-  uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
-  if (_keep_alive_ms == 0)
-    _keep_alive_enabled = false;
-  else 
-    _keep_alive_enabled = true;
-}
-
-void Supla::Control::Z2S_RemoteRelay::setTimeoutSecs(uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-  if (_timeout_ms == 0) {
-    _timeout_enabled = false;
-    channel.setStateOnline();
-  }
-  else
-   _timeout_enabled = true;
-}
-
-uint32_t Supla::Control::Z2S_RemoteRelay::getKeepAliveSecs() {
-
-  return _keep_alive_ms / 1000;
-}
-
-uint32_t Supla::Control::Z2S_RemoteRelay::getTimeoutSecs() {
-
-  return _timeout_ms / 1000;
-}*/
 
 //#endif

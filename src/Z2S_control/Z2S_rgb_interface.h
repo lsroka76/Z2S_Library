@@ -49,7 +49,7 @@ class Z2S_RGBInterface : public ChannelElement, public ActionHandler,
 
 public:
 
-  Z2S_RGBInterface(uint8_t rgb_mode = Z2S_COLOR_HS_RGB);
+  Z2S_RGBInterface();
 
   int32_t handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue) override;
 
@@ -64,36 +64,17 @@ public:
   virtual void setValueOnServer(
     uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness);
 
-  void setRGBMode(uint8_t rgb_mode);
-  uint8_t getRGBMode();
-  
   virtual void ping();
-
-  void setKeepAliveSecs(uint32_t keep_alive_secs);
-  void setTimeoutSecs(uint32_t timeout_secs);
-
-  uint32_t getKeepAliveSecs();
-  uint32_t getTimeoutSecs();
-  
 
 protected:
 
-  uint8_t _rgb_mode = Z2S_COLOR_HS_RGB;
-
   bool _fresh_start = true;
 
-  bool _keep_alive_enabled = true;
-  bool _timeout_enabled    = true;
-
-  uint32_t _keep_alive_ms = 45000;
-  uint32_t _timeout_ms    = 60000;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
 
   uint8_t turnOnOff = 0xFF;
-  bool _turn_dimmer_off = false;
-  Element *_dimmer = nullptr;
-
+  
   uint8_t _last_red = 0;
   uint8_t _last_green = 0;
   uint8_t _last_blue = 0;

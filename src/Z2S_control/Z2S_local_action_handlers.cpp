@@ -44,7 +44,7 @@ extern bool Z2S_fillPushoverMessage(
 using namespace Supla;
 /*****************************************************************************/
 
-LocalActionHandler::LocalActionHandler() : Z2S_Core(this) {
+LocalActionHandler::LocalActionHandler() {
 
 };
 
@@ -57,7 +57,8 @@ LocalActionHandler::~LocalActionHandler() {
 /*****************************************************************************/
 
 LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
-  uint8_t pin_logic_operator) : _pin_logic_operator(pin_logic_operator) {
+  uint8_t pin_logic_operator)
+  : Z2S_Core(this), _pin_logic_operator(pin_logic_operator) {
 
     log_i(
       "_pin_logic_operator %u, pin_logic_operator %u", _pin_logic_operator, 
@@ -225,7 +226,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   
   if (logic_operation_result) {
 
-    if (_postponed_turn_on_ms)
+    if (getPostponedTurnOnMs())
       _pending_postponed_turn_on_ms = millis();
     else
       runAction(ON_TURN_ON);
@@ -238,7 +239,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   }
   
   log_i("_postponed_turn_on_ms %lu, _pending_postponed_turn_on_ms %lu", 
-        _postponed_turn_on_ms, _pending_postponed_turn_on_ms);
+        getPostponedTurnOnMs(), _pending_postponed_turn_on_ms);
 }
 
 /*****************************************************************************/
@@ -248,56 +249,18 @@ void LocalActionHandlerWithTrigger::iterateAlways() {
   uint32_t millis_ms = millis();
 
   if ((_pending_postponed_turn_on_ms) && 
-      ((millis_ms - _pending_postponed_turn_on_ms) > _postponed_turn_on_ms)) {
+      ((millis_ms - _pending_postponed_turn_on_ms) > getPostponedTurnOnMs())) {
 
         log_i(
           "millis_ms %lu, _postponed_turn_on_ms %lu, "
           "_pending_postponed_turn_on_ms %lu", millis_ms, 
-          _postponed_turn_on_ms, _pending_postponed_turn_on_ms);
+          getPostponedTurnOnMs(), _pending_postponed_turn_on_ms);
 
         _pending_postponed_turn_on_ms = 0;
         runAction(ON_TURN_ON);
   }
 }
 
-/*****************************************************************************/
-
-LocalActionVirtualButton::LocalActionVirtualButton() {
-
-}
-
-/*****************************************************************************/
-
-LocalActionVirtualButton::~LocalActionVirtualButton() {
-
-}
-
-/*****************************************************************************/
-
-void LocalActionVirtualButton::registerFunction(uint32_t function) {
-
-  _function_flags |= function;
-}
-
-/*****************************************************************************/
-
-void LocalActionVirtualButton::unregisterFunction(uint32_t function) {
-
-  _function_flags &= ~function;
-}
-
-/*****************************************************************************/
-
-bool LocalActionVirtualButton::hasFunction(uint32_t function) {
-
-  return (_function_flags & function);
-}
-
-/*****************************************************************************/
-
-void LocalActionVirtualButton::handleAction(int event, int action) {
-
-}
 /*****************************************************************************/
 
 void GatewayEvents::onInit() {
@@ -513,6 +476,12 @@ Supla::Control::LocalActionTrigger::LocalActionTrigger() : Z2S_Core(this) {
 
 }
 
+
+Supla::Control::LocalActionTrigger::LocalActionTrigger(
+  int16_t channel_index, z2s_device_params_t *z2s_channel) : Z2S_Core(this) {
+
+    setZ2SChannel(channel_index, z2s_channel);
+}
 /*****************************************************************************/
 
 Supla::Control::LocalActionTrigger::~LocalActionTrigger() {
@@ -757,6 +726,22 @@ bool Supla::Control::SwitchBotRelay::updateSwitchBotData(
     }
     return false;
   }
+/*****************************************************************************/
+
+const char *Supla::Control::SwitchBotRelay::getSwitchBotChannelName(
+  uint8_t device_type_id) {
+
+  switch (device_type_id) {
+
+
+    case SB_DEVICE_TYPE_PRESS_ID:
+      return "SWITCH BOT (1X)";
+
+
+    case SB_DEVICE_TYPE_ON_OFF_ID:
+      return "SWITCH BOT (2X)";
+  }
+}
 
 /*****************************************************************************/
 
@@ -876,3 +861,5 @@ void Supla::Sensor::LocalVirtualBinary::sendNotification() {
 }
 
 /*****************************************************************************/
+
+Supla::GatewayEvents GatewayEventsInstance;

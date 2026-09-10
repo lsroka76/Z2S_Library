@@ -33,8 +33,6 @@
 
 #include <Z2S_control/Z2S_local_action_handlers.h>
 
-#define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  //32
-#define Z2S_CHANNELS_MAX_NUMBER                                 0x80  //128
 #define Z2S_ACTIONS_MAX_NUMBER                                  0x100 //256
 #define Z2S_PUSHOVER_MESSAGES_MAX_NUMBER                        0x100 //256
 
@@ -71,39 +69,6 @@
 #define GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT                       0x7F
 
 typedef void (*_actionhandler_callback)(int event, int action);
-
-typedef struct z2s_legacy_device_params_s {
-
-  bool valid_record;
-  uint32_t model_id;
-  esp_zb_ieee_addr_t ieee_addr;
-  uint8_t endpoint;
-  uint16_t cluster_id;
-  uint16_t short_addr;
-  uint8_t Supla_channel;
-  int32_t Supla_channel_type;
-  char Supla_channel_name[30];
-  uint32_t Supla_channel_func;
-  int8_t sub_id;
-} z2s_legacy_device_params_t;
-
-typedef struct z2s_legacy_2_device_params_s {
-
-  bool valid_record;
-  uint32_t model_id;
-  esp_zb_ieee_addr_t ieee_addr;
-  uint8_t endpoint;
-  uint16_t cluster_id;
-  uint16_t short_addr;
-  uint8_t Supla_channel;
-  uint8_t Supla_secondary_channel;
-  int32_t Supla_channel_type;
-  char Supla_channel_name[30];
-  uint32_t Supla_channel_func;
-  int8_t sub_id;
-  uint32_t user_data_1;
-  uint32_t user_data_2;
-} z2s_legacy_2_device_params_t;
 
 typedef struct z2s_legacy_zb_device_params_s {
 
@@ -238,12 +203,10 @@ union {
 } __attribute__((packed)) sonoff_duo_irrigation_status_data_t;
 
 
-extern z2s_device_params_t z2s_channels_table[Z2S_CHANNELS_MAX_NUMBER];
+//extern z2s_device_params_t z2s_channels_table[Z2S_CHANNELS_MAX_NUMBER];
 
-const static char Z2S_CHANNELS_TABLE_ID[] PROGMEM = "Z2S_devs_table";
 const static char Z2S_CHANNELS_TABLE_ID_V2[] PROGMEM = "channels_table_v2.z2s";
 const static char Z2S_CHANNELS_TABLE_BACKUP_ID_V2[] PROGMEM = "channels_table_v2.bak";
-const static char Z2S_CHANNELS_TABLE_SIZE_ID[] PROGMEM = "Z2S_devs_ts";
 
 extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZB_DEVICES_MAX_NUMBER];
 
@@ -253,13 +216,12 @@ const static char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2[] PROGMEM = "zb_devices_tabl
 
 const static char Z2S_ZB_DEVICES_TABLE_SIZE[] PROGMEM = "Z2S_zbd_ts";
 
-extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8];  //bit-indexed table
+extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8];  
 
-const static char Z2S_CHANNELS_ACTIONS_INDEX_TABLE[] PROGMEM = "Z2S_actions_i";
 const static char Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2[] PROGMEM = 
   "actions_index_table.z2s";
-const static char Z2S_CHANNELS_ACTIONS_PPREFIX[] PROGMEM = "Z2S_an_";
-const static char Z2S_CHANNELS_ACTIONS_PPREFIX_V2[] PROGMEM = 
+
+const static char Z2S_CHANNELS_ACTIONS_PREFIX_V2[] PROGMEM = 
   "action_%04d.z2s";
 
 //8 bit-indexed table
@@ -268,12 +230,12 @@ extern uint8_t z2s_pushover_messages_index_table[
 
 const static char Z2S_PUSHOVER_MESSAGES_INDEX_TABLE_V2[] PROGMEM = 
   "pushover_messages_index_table.z2s";
-const static char Z2S_PUSHOVER_MESSAGES_PPREFIX_V2[] PROGMEM = 
+const static char Z2S_PUSHOVER_MESSAGES_PREFIX_V2[] PROGMEM = 
   "pushover_message_%04d.z2s";
 
 const static char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
 
-const static char Z2S_CHANNELS_EXTENDED_DATA_PPREFIX_V2[] PROGMEM =
+const static char Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2[] PROGMEM =
   "channel_ext_data_%03d_%02d.z2s";
 
 extern bool sendIASNotifications;
@@ -284,13 +246,9 @@ extern char GatewayMDNSLocalName[12];
 
 extern Preferences Z2S_GatewayPreferences;
 
-//extern Supla::Sensor::GeneralPurposeMeasurement *Test_GeneralPurposeMeasurement;
-
 const static char Z2S_ZIGBEE_PRIMARY_CHANNEL[] PROGMEM = "Z2S_primary_ch";
 
-//const static char Z2S_ENABLE_GUI_ON_START[] PROGMEM = "Z2S_enable_gui";
 const static char Z2S_ENABLE_GUI_ON_START_V2[] PROGMEM = "Z2S_gui_mode";
-//const static char Z2S_GUI_ON_START_DELAY[] PROGMEM = "Z2S_gui_delay";
 const static char Z2S_GUI_ON_START_DELAY_V2[] PROGMEM = "Z2S_gui_delay2";
 const static char Z2S_FORCE_CONFIG_ON_START[] PROGMEM = "Z2S_force_cfg";
 const static char Z2S_REBUILD_CHANNELS_ON_START[] PROGMEM = "Z2S_rebuild";
@@ -329,7 +287,6 @@ uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot = 0);
 void Z2S_printChannelsTableSlots(bool toTelnet = false);
 bool Z2S_loadChannelsTable();
 bool Z2S_saveChannelsTable();
-bool Z2S_removeAllChannels();
 
 bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table = true);
 
@@ -343,14 +300,8 @@ bool Z2S_clearZbDevicesTable();
 void Z2S_printZbDevicesTableSlots(bool toTelnet = false);
 uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t ieee_addr);
 uint8_t Z2S_findZbDeviceTableSlot(uint16_t short_addr);
-uint8_t Z2S_countChannelsWithZbDeviceId(uint8_t Zb_device_id);
 bool Z2S_hasZbDevice(uint32_t desc_id);
 void Z2S_initZbDevices(uint32_t init_ms);
-void  Z2S_updateZbDeviceLastSeenMs(
-  uint16_t short_addr, uint32_t last_seen_ms);
-void  Z2S_updateZbDeviceLastSeenMsById(uint8_t Zb_device_id);
-
-uint32_t Z2S_getZbDeviceDescID(int16_t channel_number_slot);
 
 uint8_t Z2S_addZbDeviceTableSlot(
   esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr,
@@ -362,58 +313,45 @@ bool Z2S_removeZbDeviceWithAllChannels(uint8_t zb_device_slot,
   bool save_tables = true);
 bool Z2S_removeAllZbDeviceWithAllChannels();
 
-z2s_zb_device_params_t *Z2S_getChannelZbDevicePtr(
-  int16_t channel_number_slot);
 z2s_zb_device_params_t *Z2S_getZbDevicePtr(uint8_t Zb_device_id);
 
 
 /*****************************************************************************/
-
-int16_t Z2S_findChannelNumberSlot(
-  esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
-  int32_t channel_type, int8_t sub_id);
-
-int16_t Z2S_findChannelNumberSlot(
-  uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
-  int32_t channel_type, int8_t sub_id);
 
 Supla::Element* Z2S_findZ2SElement(
   uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id);
 
 Z2S_Core* Z2S_findZ2SCore(
+  esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
+  int32_t channel_type, int8_t sub_id);
+
+Z2S_Core* Z2S_findZ2SCore(
   uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id);
 
-int16_t Z2S_findChannelNumberSlotV2(
-  esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster, 
+Supla::Element *Z2S_findZ2SElementV2(
+  uint16_t short_addr, int16_t endpoint, uint16_t cluster, 
   int32_t channel_type, int8_t sub_id, uint32_t channel_flags = UINT32_MAX);
 
-int16_t Z2S_findChannelNumberNextSlot(
-  int16_t prev_slot, 
-  esp_zb_ieee_addr_t ieee_addr, int16_t endpoint, uint16_t cluster,
-  int32_t channel_type, int8_t sub_id);
-
-int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot, uint16_t short_addr);
-
-int16_t Z2S_findChannelNumberNextSlot(int16_t prev_slot);
-
-int16_t Z2S_findChannelNumberSlot(int16_t gui_control_id);
-
-z2s_device_params_t *Z2S_getChannelPtr(int16_t channel_number_slot);
-
-Z2S_Core *Z2S_getChannelZ2SCorePtr(int16_t channel_number_slot);
-
 /*****************************************************************************/
 
-void Z2S_fillChannelsTableSlot(
-  zbg_device_params_t *device, uint8_t slot, uint8_t channel,
-  int32_t channel_type, int8_t sub_id, const char *name = nullptr, 
-  uint32_t func = 0, uint8_t secondary_channel = 0xFF,
-  uint8_t extended_data_type = CHANNEL_EXTENDED_DATA_TYPE_NULL,
-  uint8_t *extended_data = nullptr);
-
+void Z2S_setChannelData(
+  Z2S_Core *z2s_core, zbg_device_params_t *device, uint8_t channel_index, 
+  uint8_t Supla_channel, int32_t Supla_channel_type, int8_t sub_id, 
+  const char *name = nullptr, uint32_t func = 0, 
+  uint8_t secondary_channel = 0xFF);
+  
 /*****************************************************************************/
+
+void Z2S_setLocalChannelData(
+  Z2S_Core *z2s_core, uint8_t channel_index, uint8_t Supla_channel, 
+  int8_t sub_id, const char *name = nullptr, uint32_t func = 0, 
+  uint8_t secondary_channel = 0xFF, uint8_t local_channel_type = 0, 
+  uint8_t local_channel_func = 0, uint8_t logic_operator = 0xFF);
+  
+/*****************************************************************************/
+
 
 bool Z2S_setChannelFlags(
   int16_t channel_number_slot, uint32_t flags_to_set, bool save_table = true);
@@ -444,9 +382,8 @@ const char *Z2S_getZbDeviceManufacturerName(int8_t device_number_slot);
 const char *Z2S_getZbDeviceModelName(int8_t device_number_slot);
 char *Z2S_getZbDeviceLocalName(int8_t device_number_slot);
 
-/*****************************************************************************/
-
-int16_t Z2S_findTableSlotByChannelNumber(uint8_t channel_id);
+bool Z2S_isZbDeviceModelName(
+  int8_t device_number_slot, const char *zb_device_name);
 
 /*****************************************************************************/
 
@@ -456,18 +393,7 @@ bool Z2S_updateZbDeviceUidIdx(
 
 /*****************************************************************************/
 
-Supla::Element *Z2S_getSuplaElementByChannelNumber(uint8_t channel_id);
-
-Supla::Control::SwitchBotRelay *Z2S_getSwitchBotRelayInstance(
-  int16_t channel_number_slot, uint8_t channel_number = 0xFF);
-
-
-
-/*****************************************************************************/
-
 void Z2S_initSuplaChannels();
-
-void Z2S_rebuildSuplaChannels();
 
 uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms);
 
@@ -496,10 +422,12 @@ ActionCompareResult Z2S_compareAction(
 
 bool Z2S_loadAction(uint16_t action_index, z2s_channel_action_t &action);
 
-//bool Z2S_enableAction()
-
-bool Z2S_removeAction(uint16_t action_index, z2s_channel_action_t &action);
+bool Z2S_removeAction(
+  uint16_t action_index, z2s_channel_action_t &action, 
+  bool delete_action = true);
 void Z2S_removeChannelActions(uint8_t channel_id, bool all_channels = false);
+
+bool Z2S_removeActions();
 
 void Z2S_initSuplaActions();
 
@@ -546,22 +474,6 @@ bool Z2S_removeChannelExtendedData(
 bool Z2S_loadChannelExtendedData(
   int16_t channel_number_slot, uint8_t extended_data_type,
   uint8_t *extended_data);
-
-/*****************************************************************************/
-static const char *no_extended_data_counter_key = 
-  "no edc key";
-
-static const char *invalid_extended_data_counter_key = 
-  "invalid edc key";
-
-bool Z2S_initChannelExtendedDataCounter(int16_t channel_number_slot);
-bool Z2S_removeChannelExtendedDataCounter(int16_t channel_number_slot);
-const char *Z2S_Z2S_getChannelExtendedDataCounterKey(int16_t channel_number_slot);
-
-uint64_t  Z2S_getChannelExtendedDataCounter(int16_t channel_number_slot);
-
-bool Z2S_setChannelExtendedDataCounter(
-  int16_t channel_number_slot, uint64_t extended_data_counter);
 
 /*****************************************************************************/
 
@@ -719,20 +631,9 @@ void updateTimeout(
   uint8_t channel_number_slot, uint8_t timeout, uint8_t selector = 0,
   uint32_t timings_secs = 0);
 
-void updateRGBMode(uint8_t channel_number_slot, uint8_t rgb_mode);
-
 void sendChannelAction(uint8_t Supla_channel, uint16_t channel_action);
 
 void setRemoteRelay(uint8_t Supla_channel, bool state);
-
-void updateRemoteRelayMDNSName(uint8_t channel_number_slot, char * mDNS_name);
-//void updateRemoteRelayMDNSName(Z2S_Core *z2s_core);
-
-void updateRemoteRelayIPAddress(
-  uint8_t channel_number_slot, uint32_t remote_ip_address);
-
-void updateRemoteRelaySuplaChannel(
-  uint8_t channel_number_slot, uint8_t remote_Supla_channel);
 
 void updateRemoteThermometer(
   uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
@@ -748,10 +649,6 @@ void updateHvacFixedCalibrationTemperature(
 
 void updateDeviceTemperature(
   uint8_t channel_number_slot, int32_t temperature);
-
-void updateSuplaBatteryLevel(
-  int16_t channel_number_slot, uint8_t msg_id, uint32_t msg_value,
-  bool restore = false);
 
 void updateSuplaBatteryLevel(
   uint16_t short_addr, uint8_t msg_id, uint32_t msg_value,

@@ -33,11 +33,8 @@ namespace Supla {
 	        void turnOn(_supla_int_t duration = 0) override;
             void turnOff(_supla_int_t duration = 0) override;
 
-            void setDebounceTimeMs(uint32_t debounceTimeMs);
-
         protected:
             uint32_t _lastChangeTimeMs = 0;
-            uint32_t _debounceTimeMs   = 0;
         };
 
     }; // namespace Control

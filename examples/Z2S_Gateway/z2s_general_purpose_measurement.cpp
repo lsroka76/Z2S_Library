@@ -35,48 +35,45 @@ uint64_t setU64Digits(
 
 /*****************************************************************************/
 
-void initZ2SDeviceGeneralPurposeMeasurement(int16_t channel_number_slot) {
-
-  initZ2SDeviceGeneralPurposeMeasurement(
-    channel_number_slot, z2s_channels_table + channel_number_slot);
-}
-
-/*****************************************************************************/
-
 void initZ2SDeviceGeneralPurposeMeasurement(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel,
+  Supla::Element *element) {
 
-  auto Supla_Z2S_GeneralPurposeMeasurement = 
+  Supla::Sensor::Z2S_GeneralPurposeMeasurement 
+    *Supla_Z2S_GeneralPurposeMeasurement = nullptr;
+
+  if (element) {
+
+    Supla_Z2S_GeneralPurposeMeasurement = static_cast<
+      Supla::Sensor::Z2S_GeneralPurposeMeasurement *>(element);
+  }
+  else {
+
+    Supla_Z2S_GeneralPurposeMeasurement = 
     new Supla::Sensor::Z2S_GeneralPurposeMeasurement();
 
-  Supla_Z2S_GeneralPurposeMeasurement->getChannel()->setChannelNumber(
-    _z2s_channel->Supla_channel);
+    Supla_Z2S_GeneralPurposeMeasurement->setZ2SChannel(
+    channel_index, _z2s_channel);
 
-  if (_z2s_channel->Supla_channel_name)
+
+    Supla_Z2S_GeneralPurposeMeasurement->getChannel()->setChannelNumber(
+      _z2s_channel->Supla_channel);
+
+
     Supla_Z2S_GeneralPurposeMeasurement->setInitialCaption(
       _z2s_channel->Supla_channel_name);
 
-  if (_z2s_channel->Supla_channel_func != 0)
     Supla_Z2S_GeneralPurposeMeasurement->setDefaultFunction(
       _z2s_channel->Supla_channel_func);
+  }
 
-  if (_z2s_channel->user_data_flags & 
-        USER_DATA_FLAG_SET_SORWNS_ON_START) {
+  if (_z2s_channel->user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) {
       
     Supla_Z2S_GeneralPurposeMeasurement->getChannel()->
       setStateOfflineRemoteWakeupNotSupported();
 
     Supla_Z2S_GeneralPurposeMeasurement->setRWNSFlag(true);
   }
-
-  Supla_Z2S_GeneralPurposeMeasurement->setTimeoutSecs(
-    _z2s_channel->timeout_secs);
-
-  Supla_Z2S_GeneralPurposeMeasurement->setZ2SZbDevice(Z2S_getZbDevicePtr(
-    _z2s_channel->Zb_device_id));
-
-  Supla_Z2S_GeneralPurposeMeasurement->setZ2SChannel(
-    channel_index, _z2s_channel);
 
   if (_z2s_channel->user_data_2 > 0)
     _z2s_channel->user_data_3 = millis();
@@ -156,6 +153,9 @@ void initZ2SDeviceGeneralPurposeMeasurement(
 void addZ2SDeviceGeneralPurposeMeasurement(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
   const char *name, uint32_t func, const char *unit) {
+
+  SuplaDevice.saveStateToStorage();
+  Supla::Storage::ConfigInstance()->commit();
   
   auto Supla_Z2S_GeneralPurposeMeasurement = 
     new Supla::Sensor::Z2S_GeneralPurposeMeasurement();
@@ -163,14 +163,32 @@ void addZ2SDeviceGeneralPurposeMeasurement(
   if (name == nullptr)
     name = (char*)default_gpm_name;
 
-  Z2S_fillChannelsTableSlot(
-    device, free_slot, Supla_Z2S_GeneralPurposeMeasurement->getChannelNumber(), 
+  Z2S_setChannelData(
+    Supla_Z2S_GeneralPurposeMeasurement->getZ2SCorePtr(), device, free_slot,
+    Supla_Z2S_GeneralPurposeMeasurement->getChannelNumber(), 
     SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id, name, func);
-  
-  Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
 
-  Supla_Z2S_GeneralPurposeMeasurement->setZ2SChannel(
-    free_slot, z2s_channels_table + free_slot);
+  Supla_Z2S_GeneralPurposeMeasurement->setInitialCaption(name);
+
+  Supla_Z2S_GeneralPurposeMeasurement->setDefaultFunction(func);
+  
+  if (unit)
+    Supla_Z2S_GeneralPurposeMeasurement->setDefaultUnitAfterValue(unit);
+
+  initZ2SDeviceGeneralPurposeMeasurement(
+    free_slot, Supla_Z2S_GeneralPurposeMeasurement->getZ2SChannel(), 
+    Supla_Z2S_GeneralPurposeMeasurement->getZ2SElementPtr());
+
+  Supla_Z2S_GeneralPurposeMeasurement->getChannel()->setSubDeviceId(
+    device->zb_device_id + 1);
+  Supla_Z2S_GeneralPurposeMeasurement->getChannel()->setFlag(
+    SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+  addChannelsSelectorChannel(
+    Supla_Z2S_GeneralPurposeMeasurement->getZ2SCorePtr());  
+
+  Supla_Z2S_GeneralPurposeMeasurement->onLoadConfig(&SuplaDevice);
+  Supla_Z2S_GeneralPurposeMeasurement->onInit();
 }
 
 /*****************************************************************************/

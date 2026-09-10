@@ -42,32 +42,49 @@
 #include "Z2S_common.h"
 #include "Z2S_custom_actions_events.h"
 
-#define PIN_LOGIC_OPERATOR_NONE       0x00
-#define PIN_LOGIC_OPERATOR_AND        0x01
-#define PIN_LOGIC_OPERATOR_OR         0x02
-#define PIN_LOGIC_OPERATOR_NOT        0x03
-#define PIN_LOGIC_OPERATOR_XOR        0x04
-#define PIN_LOGIC_OPERATOR_NAND       0x05
-#define PIN_LOGIC_OPERATOR_NOR        0x06
-#define PIN_LOGIC_OPERATOR_AND3       0x07
-#define PIN_LOGIC_OPERATOR_OR3        0x08
-#define PIN_LOGIC_OPERATOR_NOP        0x09
+/*****************************************************************************/
 
-#define LAVB_SINGLE_PRESS_FUNC        0x01
-#define LAVB_DOUBLE_PRESS_FUNC        0x02
-#define LAVB_HELD_FUNC                0x03
-#define LAVB_ROTATE_RIGHT_FUNC        0x04
-#define LAVB_ROTATE_LEFT_FUNC         0x05
+#define GATEWAY_EVENTS_CHANNEL_NUMBER   0xFE
+#define GATEWAY_EVENTS_CHANNEL_INDEX    0xFE
 
-#define CHANNEL_EXTENDED_DATA_TYPE_SB 0x10
+static const char *gateway_events_channel_name = "GATEWAY EVENTS";
 
-#define SB_UPDATE_DATA_LOAD_DIR       0x00
-#define SB_UPDATE_DATA_SAVE_DIR       0x01
+/*****************************************************************************/
 
-#define SB_DEVICE_TYPE_PRESS_ID       0x00
-#define SB_DEVICE_TYPE_ON_OFF_ID      0x01
+#define PIN_LOGIC_OPERATOR_NONE         0x00
+#define PIN_LOGIC_OPERATOR_AND          0x01
+#define PIN_LOGIC_OPERATOR_OR           0x02
+#define PIN_LOGIC_OPERATOR_NOT          0x03
+#define PIN_LOGIC_OPERATOR_XOR          0x04
+#define PIN_LOGIC_OPERATOR_NAND         0x05
+#define PIN_LOGIC_OPERATOR_NOR          0x06
+#define PIN_LOGIC_OPERATOR_AND3         0x07
+#define PIN_LOGIC_OPERATOR_OR3          0x08
+#define PIN_LOGIC_OPERATOR_NOP          0x09
+
+/*****************************************************************************/
+
+#define LAVB_SINGLE_PRESS_FUNC          0x01
+#define LAVB_DOUBLE_PRESS_FUNC          0x02
+#define LAVB_HELD_FUNC                  0x03
+#define LAVB_ROTATE_RIGHT_FUNC          0x04
+#define LAVB_ROTATE_LEFT_FUNC           0x05
+
+/*****************************************************************************/
+
+#define CHANNEL_EXTENDED_DATA_TYPE_SB   0x10
+
+#define SB_UPDATE_DATA_LOAD_DIR         0x00
+#define SB_UPDATE_DATA_SAVE_DIR         0x01
+
+#define SB_DEVICE_TYPE_PRESS_ID         0x00
+#define SB_DEVICE_TYPE_ON_OFF_ID        0x01
+
+/*****************************************************************************/
 
 typedef void (*_actionhandler_callback)(int event, int action);
+
+/*****************************************************************************/
 
 typedef struct channel_extended_data_sb_s {
 
@@ -89,13 +106,17 @@ static const char *sb_host = "api.switch-bot.com";
 
 static const char *sb_device_path = "POST /v1.1/devices/%s/commands HTTP/1.1\r\n";
 
+/*****************************************************************************/
+
 extern bool sendIASNotifications;
 extern Supla::Control::VirtualRelay *toggleNotifications;
+
+/*****************************************************************************/
 
 namespace Supla {
 
 class LocalActionHandler : public Element, public LocalAction, 
-  public ActionHandler, public Z2S_Core {
+  public ActionHandler {
 
   public:
     LocalActionHandler();
@@ -103,20 +124,17 @@ class LocalActionHandler : public Element, public LocalAction,
 
 };
 
-class LocalActionHandlerWithTrigger : public LocalActionHandler {
+/*****************************************************************************/
+
+class LocalActionHandlerWithTrigger : public LocalActionHandler, 
+  public Z2S_Core {
+
   public:
     LocalActionHandlerWithTrigger(uint8_t pin_logic_operator);
     virtual ~LocalActionHandlerWithTrigger();
     void handleAction(int event, int action);
     void iterateAlways() override;
-    void setPostponedTurnOnSecs(uint32_t _postponed_turn_on_secs) {
-
-      _postponed_turn_on_ms = _postponed_turn_on_secs * 1000;
-    }
-    uint32_t getPostponedTurnOnSecs() {
-
-      return _postponed_turn_on_ms / 1000;
-    }
+    
   protected:
     uint8_t _pin_a = 0;
     uint8_t _pin_b = 0;
@@ -125,25 +143,10 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler {
     uint8_t _pin_logic_operator = PIN_LOGIC_OPERATOR_AND;
 
     uint32_t _pending_postponed_turn_on_ms = 0;
-    uint32_t _postponed_turn_on_ms = 0;
+  
 };
 
-class LocalActionVirtualButton : public LocalActionHandler {
-
-  public:
-
-    LocalActionVirtualButton();
-    virtual ~LocalActionVirtualButton();
-
-    void registerFunction(uint32_t function);
-    void unregisterFunction(uint32_t function);
-    bool hasFunction(uint32_t function);
-    void handleAction(int event, int action);
-
-  private:
-
-  uint32_t  _function_flags = 0;
-};
+/*****************************************************************************/
 
 class GatewayEvents: public LocalActionHandler {
 
@@ -175,6 +178,8 @@ class GatewayEvents: public LocalActionHandler {
     _actionhandler_callback actionhandler_callback = nullptr;
 };
 
+/*****************************************************************************/
+
 namespace Control {
 
 class LocalActionTrigger: public ActionTrigger, public Z2S_Core {
@@ -182,6 +187,8 @@ class LocalActionTrigger: public ActionTrigger, public Z2S_Core {
   public:
 
     LocalActionTrigger();
+    LocalActionTrigger(
+      int16_t channel_index, z2s_device_params_t *z2s_channel);
     virtual ~LocalActionTrigger();
 
     void setHoldMs(uint32_t hold_ms);
@@ -203,6 +210,8 @@ class LocalActionTrigger: public ActionTrigger, public Z2S_Core {
 
 };
 
+/*****************************************************************************/
+
 class LocalVirtualRelay: public VirtualRelay, public Z2S_Core {
 
   public:
@@ -220,6 +229,8 @@ class LocalVirtualRelay: public VirtualRelay, public Z2S_Core {
     uint32_t test_ms = 300 * 1000;
 };
 
+/*****************************************************************************/
+
 class SwitchBotRelay: public Relay, public Z2S_Core {
 
   public:
@@ -233,6 +244,8 @@ class SwitchBotRelay: public Relay, public Z2S_Core {
 
     void turnOn(_supla_int_t duration = 0) override;
     void turnOff(_supla_int_t duration = 0) override;
+
+  static const char *getSwitchBotChannelName(uint8_t device_type_id);
   
   protected:
     String _sb_device_id;
@@ -245,6 +258,8 @@ class SwitchBotRelay: public Relay, public Z2S_Core {
     //bool _connected = false;
 };
 
+/*****************************************************************************/
+
 class LocalVirtualHvac: public HvacBase, public Z2S_Core {
 
   public:
@@ -255,6 +270,8 @@ class LocalVirtualHvac: public HvacBase, public Z2S_Core {
 }
 };
 }; //namespace Control
+
+/*****************************************************************************/
 
 namespace Sensor {
 
@@ -293,4 +310,7 @@ class LocalVirtualBinary: public VirtualBinary, public Z2S_Core {
 }; //namespace Sensor
 };  // namespace Supla
 
+/*****************************************************************************/
+
+extern Supla::GatewayEvents GatewayEventsInstance;
 #endif

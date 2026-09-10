@@ -143,6 +143,8 @@ enum clusters_attributes_controls {
 	device_last_enum_position
 };
 
+uint16_t gateway_events_gui_control_id = 0xFFFF;
+
 uint16_t clusters_attributes_table[device_last_enum_position];
 
 uint16_t device_attribute_id_selector_first_option_id = 0xFFFF;
@@ -187,6 +189,7 @@ uint16_t timeout_save_button;
 uint16_t refresh_save_button;
 uint16_t remove_channel_button;
 uint16_t lah_status_label;
+static uint16_t lah_panel;
 
 uint16_t advanced_device_selector = 0xFFFF;
 uint16_t advanced_device_info_label;
@@ -671,6 +674,7 @@ void removeDeviceCallback(BasicControl *sender, int type, void *param);
 void startDeviceOTACallback(BasicControl *sender, int type, void *param);
 void channelSelectorCallback(BasicControl *sender, int type, void *param);
 void enableChannelControls(bool enable);
+void enableLAHPanel(bool enable);
 void enableTuyaDevicesControls(bool enable);
 void editDeviceCallback(BasicControl *sender, int type, void *param);
 void editChannelCallback(BasicControl *sender, int type, void *param);
@@ -713,6 +717,34 @@ void buildAllChannelSelectors();
 
 void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len = 512);
+
+void updateActionSummary(z2s_channel_action_t &new_action);
+
+/*****************************************************************************/
+
+bool isAdvancedDevice(uint8_t zb_device_id) {
+
+	auto zb_device = z2s_zb_devices_table[zb_device_id];
+
+	if (zb_device.record_id) {
+
+		switch (zb_device.desc_id) {
+
+
+			case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE:
+			case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE:
+			case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
+			case Z2S_DEVICE_DESC_MOES_ALARM:
+
+				return true;
+
+			
+			default:
+				return false;
+		}
+	}
+	return false;
+}
 
 /*****************************************************************************/
 
@@ -1588,12 +1620,71 @@ void removeDevicesSelectorDevice(uint8_t device_slot) {
 
 /*****************************************************************************/
 
+void addDevicesSelectorDevice(uint8_t device_slot) {
+
+	auto& zb_device = z2s_zb_devices_table[device_slot];
+
+	if ((device_selector < 0xFFFF) && zb_device.record_id) {
+
+		zb_device.device_gui_id = ESPUI.addControl(
+			Control::Type::Option, zb_device.device_local_name, device_slot, 
+			Control::Color::None, device_selector);
+	
+		ESPUI.updateControlValue(device_selector, -1);
+		deviceSelectorCallback(nullptr, -1, nullptr);
+	}			
+	
+	if ((clusters_attributes_table[clusters_attributes_device_selector] <
+			0xFFFF) && zb_device.record_id) {
+
+		ESPUI.addControl(
+			Control::Type::Option, zb_device.device_local_name, device_slot, 
+			Control::Color::None, 
+			clusters_attributes_table[clusters_attributes_device_selector]);
+		
+
+		ESPUI.updateControlValue(
+			clusters_attributes_table[clusters_attributes_device_selector], -1);
+		
+		clustersattributesdeviceSelectorCallback(nullptr, -1, nullptr);
+	}
+
+	if ((advanced_device_selector < 0xFFFF)  && isAdvancedDevice(device_slot)) {
+
+		ESPUI.addControl(
+			Control::Type::Option, zb_device.device_local_name, device_slot, 
+			Control::Color::None, advanced_device_selector);
+
+		ESPUI.updateControlValue(advanced_device_selector, -1);
+		advancedDeviceSelectorCallback(nullptr, -1, nullptr);
+	}
+
+	if ((Tuya_devices_tab_controls_table[Tuya_device_selector] < 0xFFFF) &&
+			zb_device.record_id && hasTuyaCustomCluster(zb_device.desc_id)) {
+
+		ESPUI.addControl(
+			Control::Type::Option, zb_device.device_local_name, device_slot, 
+			Control::Color::None, 
+			Tuya_devices_tab_controls_table[Tuya_device_selector]);
+
+		ESPUI.updateControlValue(
+			Tuya_devices_tab_controls_table[Tuya_device_selector], -1);
+			
+		TuyaDeviceSelectorCallback(nullptr, -1, nullptr);
+	}
+}
+
+/*****************************************************************************/
+
 void removeChannelsSelectorChannel(
-	int16_t channel_number_slot, int32_t channel_option_id) {
+	int16_t channel_number_slot, int32_t channel_option_id, bool last_channel) {
 
 	if ((channel_selector < 0xFFFF) || 
-			(action_source_channel_selector < 0xFFFF))
+			(action_source_channel_selector < 0xFFFF)) {
+
+		ESPUI.updateControlLabel(channel_option_id, empty_str);
 		ESPUI.updateControlValue(channel_option_id, -2);
+	}
 
 	if (action_source_channel_selector < 0xFFFF) {
 
@@ -1605,29 +1696,12 @@ void removeChannelsSelectorChannel(
 		BasicControl *first_option_id = ESPUI.getFirstOptionId(
 			sb_channel_selector, channel_number_slot);
 
-		if (first_option_id)
+		if (first_option_id) {
+
+			ESPUI.updateControlLabel(first_option_id->GetId(), empty_str);
 			ESPUI.updateControlValue(first_option_id->GetId(), -2);
+		}
 	}
-
-	/*if (channel_selector == 0xFFFF);
-	uint16_t actions_source_channel_option_id = 
-		action_source_channel_selector_first_option_id +
-		(channel_option_id - channel_selector_first_option_id);
-
-	uint16_t actions_destination_channel_option_id = 
-		action_destination_channel_selector_first_option_id +
-		(channel_option_id - channel_selector_first_option_id);
-
-	int32_t channel_selector_value = 
-		ESPUI.getControl(channel_selector)->getValueInt();
-	
-	
-	ESPUI.updateControlValue(channel_option_id, -2);
-	ESPUI.updateControlValue(actions_source_channel_option_id, -2);
-	ESPUI.updateControlValue(actions_destination_channel_option_id, -2);
-
-	ESPUI.updateControlValue(action_source_channel_selector, -1);
-	ESPUI.updateControlValue(action_destination_channel_selector, -1);*/
 
 	if (channel_selector < 0xFFFF) {
 
@@ -1636,8 +1710,8 @@ void removeChannelsSelectorChannel(
 		
 		if (channel_selector_value > -1) {
 
-			int16_t next_channel_slot = 
-				Z2S_findChannelNumberNextSlot(channel_number_slot);
+			int16_t next_channel_slot = -1;
+				//Z2S_findNextElementPosition(channel_number_slot);
 
 			if (next_channel_slot >= 0)
 				ESPUI.updateSelect(channel_selector, next_channel_slot);
@@ -1866,7 +1940,7 @@ void rebuildChannelsSelector(
 			Control::Color::Emerald, channelstab, channelSelectorCallback);
 
 	
-		ESPUI.addControl(
+		channel_selector_first_option_id = ESPUI.addControl(
 			Control::Type::Option, PSTR("Select Supla channel..."), (long int)-1,
 			Control::Color::None, channel_selector);
 
@@ -1874,7 +1948,7 @@ void rebuildChannelsSelector(
 		ESPUI.setPanelWide(channel_selector, true);
 	}
 
-	channel_selector_first_option_id 	= 0xFFFF;
+	//channel_selector_first_option_id 	= 0xFFFF;
 	
 	if (rebuild_channels_list)
 		channelSelectorCallback(
@@ -1898,7 +1972,7 @@ void sbChannelCallback(BasicControl *sender, int type, void *param) {
 	
 	channel_extended_data_sb_t channel_extended_data_sb = {};
 
-	auto sbInstance = Z2S_getSwitchBotRelayInstance(sb_channel_slot);
+	auto sbInstance = Z2S_Core::getSwitchBotRelayInstance(sb_channel_slot);
 	
 	if (sbInstance) {
 
@@ -2300,7 +2374,7 @@ void buildChannelsTabGUI() {
 		Control::Type::Label, PSTR("Status"), working_str, 
 		Control::Color::Alizarin, remove_channel_button);
 
-	auto lah_panel = ESPUI.addControl(
+	uint16_t lah_panel = ESPUI.addControl(
 		Control::Type::Button, PSTR("Local logic objects"), 
 		PSTR("Add AND gate"), Control::Color::Emerald, channelstab, 
 		addLocalActionHandlerCallback, (void*)GUI_CB_ADD_AND_HANDLER_FLAG);
@@ -3429,16 +3503,8 @@ void buildAdvancedDevicesTabGUI() {
 	for (uint8_t devices_counter = 0; 
 			 devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
 
-    if ((z2s_zb_devices_table[devices_counter].record_id > 0) && 
-				((z2s_zb_devices_table[devices_counter].desc_id == 
-						Z2S_DEVICE_DESC_SONOFF_SMART_VALVE) ||
-					(z2s_zb_devices_table[devices_counter].desc_id == 
-						Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE) ||
-		  		(z2s_zb_devices_table[devices_counter].desc_id == 
-						Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR) ||
-					(z2s_zb_devices_table[devices_counter].desc_id == 
-						Z2S_DEVICE_DESC_MOES_ALARM))) {
-			
+    if (isAdvancedDevice(devices_counter)) {
+
 			switch (z2s_zb_devices_table[devices_counter].desc_id) {
 				
 
@@ -3544,12 +3610,6 @@ void sprintfAction(z2s_channel_action_t &action) {
 
 	char general_purpose_gui_buffer[512] = {};
 
-	Z2S_Core *src_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(
-		action.src_Supla_channel);
-	
-	Z2S_Core *dst_core = Z2S_Core::getZ2SCoreBySuplaChannelNumber(
-		action.dst_Supla_channel);
-
 	if (action.is_condition)
 		snprintf(
 			general_purpose_gui_buffer, 512,
@@ -3563,9 +3623,11 @@ void sprintfAction(z2s_channel_action_t &action) {
 				current_action_counter, Z2S_getActionsNumber(), action.action_name, 
 				action.is_enabled ? "enabled" : "disabled",
 				getSuplaEventName(action.src_Supla_event, action.is_condition),
-				action.min_value, action.max_value, src_core->getZ2SChannelName(), 
+				action.min_value, action.max_value, 
+				Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel), 
 				getSuplaActionName(action.dst_Supla_action), 
-				dst_core->getZ2SChannelName(), action.subaction_id, action.reserved32);
+				Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel),
+				action.subaction_id, action.reserved32);
 	else
 		snprintf(
 			general_purpose_gui_buffer, 512, 
@@ -3578,8 +3640,9 @@ void sprintfAction(z2s_channel_action_t &action) {
 			current_action_counter, Z2S_getActionsNumber(), action.action_name,
 			action.is_enabled ? "enabled" : "disabled", getSuplaEventName(
 				action.src_Supla_event, action.is_condition), 
-			src_core->getZ2SChannelName(), getSuplaActionName(
-				action.dst_Supla_action), dst_core->getZ2SChannelName(),
+			Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel),  
+			getSuplaActionName(action.dst_Supla_action), 
+			Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel),
 			action.subaction_id, action.reserved32);
 
 	working_str = general_purpose_gui_buffer;
@@ -3697,6 +3760,8 @@ void updateActionButtons() {
 	enableControlStyle(action_copy_button, action_remove_button_enable);
 }
 
+/*****************************************************************************/
+
 void updateActionDetails(
 	z2s_channel_action_t &action, bool empty_action = false) {
 
@@ -3721,7 +3786,8 @@ void updateActionDetails(
 	
 	ESPUI.updateSelect(
 		action_source_channel_selector, empty_action ? 
-		-1 : Z2S_findTableSlotByChannelNumber(action.src_Supla_channel));
+		-1 : Z2S_Core::getZ2SChannelIndexByChannelNumber(
+			action.src_Supla_channel));
 
 	long action_id = empty_action ? -1 : action.is_condition ? 
 			(0xFFFF + action.src_Supla_event) : action.src_Supla_event;
@@ -3729,7 +3795,8 @@ void updateActionDetails(
 
 	ESPUI.updateSelect(
 		action_destination_channel_selector, empty_action ? 
-		-1 : Z2S_findTableSlotByChannelNumber(action.dst_Supla_channel));
+		-1 : Z2S_Core::getZ2SChannelIndexByChannelNumber(
+			action.dst_Supla_channel));
 
 	ESPUI.updateSelect(
 		action_action_selector, empty_action ? -1 : action.dst_Supla_action);
@@ -3748,6 +3815,8 @@ void updateActionDetails(
 		String(0, 2) : String(action.max_value, 2);
 	ESPUI.updateText(action_condition_threshold_2_number, working_str);
 }
+
+/*****************************************************************************/
 
 bool fillActionDetails(z2s_channel_action_t &action) {
 
@@ -3781,9 +3850,8 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 
 	if ( selector_value >= 0) {
 
-		Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(selector_value);
-
-		action.src_Supla_channel = z2s_core->getZ2SChannelNumber();
+		action.src_Supla_channel = Z2S_Core::getZ2SChannelNumberByChannelIndex(
+			selector_value);
 	}
 	else
 		return false;
@@ -3807,9 +3875,8 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 
 	if ( selector_value >= 0) {
 
-		Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(selector_value);
-
-		action.dst_Supla_channel = z2s_core->getZ2SChannelNumber();
+		action.dst_Supla_channel = Z2S_Core::getZ2SChannelNumberByChannelIndex(
+			selector_value);
 	}
 	else
 		return false;
@@ -3837,6 +3904,8 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 	return true;
 }
 
+/*****************************************************************************/
+
 uint16_t getSubactionsNumber(Supla::Action action_id) {
 
 	uint16_t actions_number = 
@@ -3847,6 +3916,8 @@ uint16_t getSubactionsNumber(Supla::Action action_id) {
 			return Supla_actions[i].max_subactions_number;
 	return 0;
 }
+
+/*****************************************************************************/
 
 void actionSelectorCallback(BasicControl *sender, int type, void *param) {
 	
@@ -3873,7 +3944,107 @@ void actionSelectorCallback(BasicControl *sender, int type, void *param) {
 		enableControlStyle(action_subaction_number, false);
 }
 
+/*****************************************************************************/
+
+void buildGatewayEventsChannelSelector(bool update_only = false) {
+
+	if (update_only) {
+
+		if (gateway_events_gui_control_id < 0xFFFF) {
+
+			ESPUI.updateControlLabel(
+				gateway_events_gui_control_id, gateway_events_channel_name);
+			ESPUI.updateControlValue(
+				gateway_events_gui_control_id, GATEWAY_EVENTS_CHANNEL_INDEX);
+		}
+		return;
+	}
+
+	if (channel_selector < 0xFFFF) {
+
+		gateway_events_gui_control_id = ESPUI.addControl(
+			Control::Type::Option, gateway_events_channel_name, 
+			GATEWAY_EVENTS_CHANNEL_INDEX, Control::Color::None, channel_selector);
+
+		if (action_source_channel_selector < 0xFFFF) {
+
+			ESPUI.getControl(gateway_events_gui_control_id)->secondParent = 
+				action_source_channel_selector;
+			ESPUI.getControl(gateway_events_gui_control_id)->thirdParent = 
+				action_destination_channel_selector;
+		}			
+	}
+	else {
+
+		if (action_source_channel_selector < 0xFFFF) {
+
+			gateway_events_gui_control_id = ESPUI.addControl(
+				Control::Type::Option, gateway_events_channel_name, 
+				GATEWAY_EVENTS_CHANNEL_INDEX, Control::Color::None, 
+				action_source_channel_selector);
+
+			ESPUI.getControl(gateway_events_gui_control_id)->secondParent = 
+				action_destination_channel_selector;
+		}
+	}
+}
+
+/*****************************************************************************/
+
+void buildAllChannelSelectorsForZ2SCore(Z2S_Core *z2s_core) {
+
+	if (channel_selector < 0xFFFF) {
+
+		uint16_t gui_control_id = ESPUI.addControl(
+		Control::Type::Option, z2s_core->getZ2SChannelName(), 
+		z2s_core->getZ2SChannelIndex(), Control::Color::None, channel_selector);
+
+			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
+
+		if (action_source_channel_selector < 0xFFFF) {
+
+			ESPUI.getControl(gui_control_id)->secondParent = 
+				action_source_channel_selector;
+			ESPUI.getControl(gui_control_id)->thirdParent = 
+				action_destination_channel_selector;
+		}
+	} 
+	else {
+
+		if (action_source_channel_selector < 0xFFFF) {
+
+			uint16_t gui_control_id = ESPUI.addControl(
+				Control::Type::Option, z2s_core->getZ2SChannelName(), 
+				z2s_core->getZ2SChannelIndex(), Control::Color::None, 
+				action_source_channel_selector);
+
+			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
+
+			ESPUI.getControl(gui_control_id)->secondParent = 
+				action_destination_channel_selector;
+		}
+	}
+}
+
+/*****************************************************************************/
+
 void buildAllChannelSelectors() {
+
+	for (uint8_t zb_device_id = 0; zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER; 
+			 zb_device_id++) {
+
+		auto core_it = Z2S_Cores.begin();
+
+  	while (core_it != Z2S_Cores.end()) {
+
+    	Z2S_Core* z2s_core = *core_it;
+
+			if (z2s_core->getZbDeviceId() == zb_device_id) 
+				buildAllChannelSelectorsForZ2SCore(z2s_core);
+			
+			core_it++;
+		}
+	}
 
 	auto core_it = Z2S_Cores.begin();
 
@@ -3881,41 +4052,161 @@ void buildAllChannelSelectors() {
 
     Z2S_Core* z2s_core = *core_it;
 
-		if (channel_selector < 0xFFFF) {
+		if (z2s_core->getZbDeviceId() == 0xFF) 
+			buildAllChannelSelectorsForZ2SCore(z2s_core);
+			
+		core_it++;
+	}
 
-			uint16_t gui_control_id = ESPUI.addControl(
-				Control::Type::Option, z2s_core->getZ2SChannelName(), 
-				z2s_core->getZ2SChannelIndex(), Control::Color::None, 
-				channel_selector);
+	if (channel_selector < 0xFFFF) {
 
-			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
+		uint16_t gui_control_id = ESPUI.addControl(
+			Control::Type::Option, empty_str, -2, Control::Color::None, 
+			channel_selector);
 
-			if (action_source_channel_selector < 0xFFFF) {
+		if (action_source_channel_selector < 0xFFFF) {
 
-				ESPUI.getControl(gui_control_id)->secondParent = 
-					action_source_channel_selector;
-				ESPUI.getControl(gui_control_id)->thirdParent = 
-					action_destination_channel_selector;
-			}
-		} 
-		else {
+			ESPUI.getControl(gui_control_id)->secondParent = 
+				action_source_channel_selector;
+			ESPUI.getControl(gui_control_id)->thirdParent = 
+				action_destination_channel_selector;
+		}
+	} 
+	else {
 
-			if (action_source_channel_selector < 0xFFFF) {
+		if (action_source_channel_selector < 0xFFFF) {
 
 				uint16_t gui_control_id = ESPUI.addControl(
-					Control::Type::Option, z2s_core->getZ2SChannelName(), 
-					z2s_core->getZ2SChannelIndex(), Control::Color::None, 
-					action_source_channel_selector);
+			Control::Type::Option, empty_str, -2, Control::Color::None, 
+			action_source_channel_selector);
 
-				z2s_core->setZ2SChannelGUIControlId(gui_control_id);
+			ESPUI.getControl(gui_control_id)->secondParent = 
+				action_destination_channel_selector;
+		}
+	}
 
-				ESPUI.getControl(gui_control_id)->secondParent = 
-					action_destination_channel_selector;
-			}
+
+	buildGatewayEventsChannelSelector();
+}
+
+/*****************************************************************************/
+
+void updateChannelSelectorsWithZbDeviceId(
+	uint16_t main_selector, uint8_t zb_device_id) {
+
+	auto core_it = Z2S_Cores.begin();
+
+	uint16_t gui_control_id = ESPUI.getFirstOptionId(main_selector, -2)->GetId();
+
+	while (core_it != Z2S_Cores.end()) {
+
+  	Z2S_Core* z2s_core = *core_it;
+
+		log_i("gui_control_id = %u", gui_control_id);
+
+		if (z2s_core->getZbDeviceId() == zb_device_id) {
+
+			ESPUI.updateControlLabel(gui_control_id, z2s_core->getZ2SChannelName());
+			ESPUI.updateControlValue(gui_control_id, z2s_core->getZ2SChannelIndex());
+			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
+					
+			gui_control_id = ESPUI.getNextOptionId(
+				main_selector, -2, gui_control_id)->GetId();
 		}
 		core_it++;
 	}
 }
+
+/*****************************************************************************/
+
+void sortChannelsSelectors() {
+
+	if ((channel_selector < 0xFFFF) || 
+			(action_source_channel_selector < 0xFFFF)) {
+
+		uint16_t main_selector = (channel_selector < 0xFFFF) ? channel_selector :
+			action_source_channel_selector;
+
+		ESPUI.removeSelectOptions(
+			main_selector, channel_selector_first_option_id);
+
+		for (uint8_t zb_device_id = 0; zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER; 
+			 zb_device_id++) {
+
+			updateChannelSelectorsWithZbDeviceId(main_selector, zb_device_id);
+		}
+
+		updateChannelSelectorsWithZbDeviceId(main_selector, 0xFF);
+
+		uint16_t gui_control_id = ESPUI.getFirstOptionId(
+			main_selector, -2)->GetId();
+		
+		log_i("GE gui_control_id = %u", gui_control_id);
+		
+		gateway_events_gui_control_id = gui_control_id;
+		buildGatewayEventsChannelSelector(true);
+	}
+}
+
+/*****************************************************************************/
+
+void addChannelsSelectorChannel(Z2S_Core *z2s_core, bool isSwitchBot) {
+
+
+	if ((channel_selector < 0xFFFF) || 
+			(action_source_channel_selector < 0xFFFF)) {
+
+		uint16_t main_selector = (channel_selector < 0xFFFF) ? channel_selector :
+			action_source_channel_selector;
+
+		BasicControl *free_option = ESPUI.getFirstOptionId(main_selector, -2);
+
+		if (free_option) {
+
+			uint16_t free_option_id = free_option->GetId();
+
+			ESPUI.updateControlLabel(free_option_id, z2s_core->getZ2SChannelName());
+			ESPUI.updateControlValue(free_option_id, z2s_core->getZ2SChannelIndex());
+			z2s_core->setZ2SChannelGUIControlId(free_option_id);
+		} 
+		else {
+
+			uint16_t gui_control_id  = ESPUI.addControl(
+			Control::Type::Option, z2s_core->getZ2SChannelName(), 
+			z2s_core->getZ2SChannelIndex(), Control::Color::None, 
+			main_selector);
+
+			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
+
+			/*ESPUI.updateControlLabel(
+				gateway_events_gui_control_id, z2s_core->getZ2SChannelName());
+			ESPUI.updateControlValue(
+				gateway_events_gui_control_id, z2s_core->getZ2SChannelIndex());
+
+			z2s_core->setZ2SChannelGUIControlId(gateway_events_gui_control_id);
+
+			buildGatewayEventsChannelSelector();*/
+		}
+
+		/*if (channel_selector < 0xFFFF) {
+
+			ESPUI.updateControlValue(
+				channel_selector, z2s_core->getZ2SChannelIndex());
+
+			channelSelectorCallback(
+				nullptr, z2s_core->getZ2SChannelIndex(), nullptr);
+		}*/
+	}
+	if (isSwitchBot && (sb_channel_selector < 0xFFFF)) {
+
+		uint16_t gui_control_id = ESPUI.addControl(
+			Control::Type::Option, z2s_core->getZ2SChannelName(), 
+			z2s_core->getZ2SChannelIndex(), Control::Color::None, 
+			sb_channel_selector);
+	}
+}
+
+/*****************************************************************************/
 
 void buildActionsChannelSelectors(
 	bool rebuild_options, uint16_t parent_control_id = 0xFFFF) {
@@ -4857,20 +5148,23 @@ void Z2S_loopWebGUI() {
 		case 66: {
 
 			gui_command = 0;
+			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
 
 				ESPUI.updateLabel(
 					lah_status_label, 
-					"Local virtual relay added - you may add next one.<br>"
-					"When finished restart gateway manually to see new objects.");
+					"The local virtual relay has been successfully added and is "
+					"available for use.");
 			}
+			enableLAHPanel(true);
 		} break;
 
 
 		case 67: {
 
 			gui_command = 0;
+			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY, 
 						SUPLA_CHANNELFNC_BINARY_SENSOR)) {
@@ -4878,54 +5172,60 @@ void Z2S_loopWebGUI() {
 			
 				ESPUI.updateLabel(
 					lah_status_label, 
-					"Local virtual binary added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects.");
+					"The ocal virtual binary has been successfully added and is "
+					"available for use.");
 			}
+			enableLAHPanel(true);
 		} break;
 
 
 		case 68: {
 
 			gui_command = 0;
+			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_REMOTE_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
 
 				ESPUI.updateLabel(
 					lah_status_label, 
-					"Local remote relay added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects.");
-				
+					"The local remote relay has been successfully added and is "
+					"available for use.");	
 			}
+			enableLAHPanel(true);
 		} break;
 
 
 		case 69: {
 
 			gui_command = 0;
+			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER, 
 						CONNECTED_THERMOMETERS_FNC_AVG)) {
 
 				ESPUI.updateLabel(
 					lah_status_label, 
-					"Local remote thermometer added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects.");
+					"The local remote thermometer has been successfully added and is "
+					"available for use.");
 			}
+			enableLAHPanel(true);
 		} break;
 
 
 		case 70: {
 
 			gui_command = 0;
+			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC, 
 						SUPLA_CHANNELFNC_HVAC_THERMOSTAT)) {
 				
 				ESPUI.updateLabel(
 					lah_status_label, 
-					"Local virtual HVAC added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects.");
+					"The ocal virtual HVAC has been successfully added and is "
+					"available for use.");
 			}
+			enableLAHPanel(true);
 		} break;
 
 
@@ -4936,14 +5236,16 @@ void Z2S_loopWebGUI() {
 
 			gui_command = 0;
 
+			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
 						LOCAL_CHANNEL_TYPE_SWITCHBOT, local_func)) {
 				
 				ESPUI.updateLabel(
 					sb_status_label, 
-					"Switchbot object added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects.");
+					"The Switchbot object has been successfully added and is "
+					"available for use.");
 			}
+			enableLAHPanel(true);
 		} break;
 
 
@@ -4987,7 +5289,7 @@ void Z2S_loopWebGUI() {
 					channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB, 
 					(uint8_t*)&channel_extended_data_sb, true);
 
-				auto sbInstance = Z2S_getSwitchBotRelayInstance(channel_slot);
+				auto sbInstance = Z2S_Core::getSwitchBotRelayInstance(channel_slot);
 				if (sbInstance)
 					sbInstance->updateSwitchBotData(
 						channel_extended_data_sb, SB_UPDATE_DATA_LOAD_DIR);
@@ -5298,6 +5600,13 @@ void clustersattributesdeviceSelectorCallback(
 	}
 }
 
+void enableLAHPanel(bool enable) {
+
+	return;
+
+	for (uint8_t i = 0; i < 14; i++)
+		enableControlStyle(lah_panel + i, enable);
+}
 
 void enableChannelControls(bool enable) {
 
@@ -5548,17 +5857,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		z2s_channel.ieee_addr[1], z2s_channel.ieee_addr[0]);
 
 	log_i("z2s_channel ieee addr %s", ieee_addr_str);
-	
-	/*snprintf_P(
-		ieee_addr_str, 24, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
-		*(z2s_core->getIEEEAddress() + 7), *(z2s_core->getIEEEAddress() + 6), 
-		*(z2s_core->getIEEEAddress() + 5), *(z2s_core->getIEEEAddress() + 4), 
-	 	*(z2s_core->getIEEEAddress() + 3), *(z2s_core->getIEEEAddress() + 2),
-		*(z2s_core->getIEEEAddress() + 1), *(z2s_core->getIEEEAddress() + 0));
-
-	log_i("z2s_channel ieee addr %s", ieee_addr_str);*/
-	
-
+		
 	snprintf_P(
 		general_purpose_gui_buffer, 896, "<meta charset=\"UTF-8\">"
 		"<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X "
@@ -5570,7 +5869,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>ud(3)</b></i> 0x%08X "
 		"<b>| <i>ud(4)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
 		"<b><i>ZB device</b></i> %s (%s::%s)<br>"
-		"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX (%s)",
+		"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX (%s) [[%u]]",
 		ieee_addr_str, z2s_channel.short_addr, z2s_channel.endpoint,
 		z2s_channel.cluster_id, getZ2SDeviceDescName(z2s_channel.model_id),
     z2s_channel.model_id, z2s_channel.Supla_channel,
@@ -5587,8 +5886,8 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		(z2s_channel.local_channel_type == 0) ?
 		Z2S_getZbDeviceModelName(z2s_channel.Zb_device_id):
 		getZ2SDeviceLocalActionHandlerLogicOperatorName(&z2s_channel),
-		z2s_channel.gui_control_id, Z2S_getChannelExtendedDataCounter(channel_slot),
-		Z2S_Z2S_getChannelExtendedDataCounterKey(channel_slot));
+		z2s_channel.gui_control_id, z2s_core->getChannelExtendedDataCounter(),
+		z2s_core->getChannelExtendedDataCounterKey(), z2s_core->getZ2SChannelIndex());
 	
 	updateLabel_P(
 		zb_channel_info_label, general_purpose_gui_buffer);
@@ -5613,7 +5912,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 					LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
 
 				enableChannelTimings(1); //turn on delay
-				ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
+				ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
 			}
 
 			if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
@@ -5642,9 +5941,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 				ESPUI.updateSelect(
 					channel_local_function, z2s_channel.local_channel_func); 
 
-				ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
+				ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 
-				ESPUI.updateNumber(refresh_number, z2s_channel.refresh_secs);
+				ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
 			}
 			if (z2s_channel.local_channel_type == 
@@ -5652,7 +5951,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 				enableChannelTimings(4);
 
-				ESPUI.updateNumber(refresh_number, z2s_channel.refresh_secs);
+				ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 			}
 		} break;
 		
@@ -5660,9 +5959,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		case SUPLA_CHANNELTYPE_BINARYSENSOR: {
 
 			enableChannelTimings(6); //timeout+debounce
-			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 
-			ESPUI.updateNumber(refresh_number, z2s_channel.refresh_secs);
+			ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 	
 			enableChannelFlags(5 + 16);
 			
@@ -5695,7 +5994,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 			ESPUI.updateNumber(keepalive_number, z2s_channel.action_trigger_hold_ms);
 
-			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 
 			ESPUI.updateNumber(refresh_number, z2s_channel.debounce_ms);
 	
@@ -5720,7 +6019,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			ESPUI.updateNumber(
 				enable_resend_temperature_switcher, enable_resend_temperature_flag); 
 
-			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 		
 			if (enable_resend_temperature_flag) {
 				
@@ -5770,9 +6069,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			
 			enableChannelTimings(1 + 2); //keepalive + timeout
 
-			ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
+			ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
 
-			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 	
 			enableChannelFlags(2 + 16);
 			ESPUI.updateNumber(
@@ -5818,9 +6117,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 			enableChannelTimings(3); //timeout + keepalive
 
-			ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
+			ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
 
-			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
+			ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 
 			enableChannelParams(1);
 
@@ -5843,9 +6142,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 				enableChannelTimings(3); //timeout + keepalive
 
-				ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
+				ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
 
-				ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
+				ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 
 				enableChannelFlags(16);
 			}
@@ -5855,9 +6154,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
 			enableChannelTimings(7); //timeout + keepalive + refresh
-			ESPUI.updateNumber(keepalive_number, z2s_channel.keep_alive_secs);
-			ESPUI.updateNumber(timeout_number, z2s_channel.timeout_secs);
-			ESPUI.updateNumber(refresh_number, z2s_channel.refresh_secs);
+			ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
+			ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
+			ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
 			enableChannelFlags(16);
 		} break;
@@ -5882,9 +6181,10 @@ void channelSelectorCallback(BasicControl *sender, int type, void *param) {
 	if (sender)
 		sender_value = sender->getValueInt();
 
-	log_i("selector value = %u", sender_value);
+	log_i("selector value = %ld", sender_value);
 
-	if ((sender_value < 0) || (sender_value >= Z2S_CHANNELS_MAX_NUMBER)) {
+	if ((sender_value < 0) || (sender_value >= Z2S_ELEMENTS_MAX_NUMBER) ||
+			(sender_value == GATEWAY_EVENTS_CHANNEL_INDEX)) {
 
 		enableChannelControls(false);
 		return;
@@ -6761,16 +7061,24 @@ void removeChannelCallback(BasicControl *sender, int type, void *param) {
 		else {
 
 			uint16_t gui_control_id = z2s_core->getZ2SChannelGUIControlId();
+			uint8_t channel_number = z2s_core->getZ2SChannelNumber();
 
 			if (Z2S_removeChannel(channel_slot, true)) {
 
-				removeChannelsSelectorChannel(channel_slot, gui_control_id);
-
+				removeChannelsSelectorChannel(channel_slot, gui_control_id, true);
+				
 				sprintf_P(
-					general_purpose_gui_buffer, ":Local channel # %02u with all "
-					"actions removed.", channel_slot);
+					general_purpose_gui_buffer, "Local channel #%02u with all "
+					"actions removed.", channel_number);
 
       	updateLabel_P(channel_status_label, general_purpose_gui_buffer);
+			}
+			else {
+
+				sprintf_P(
+					general_purpose_gui_buffer, "Local channel %s can't be removed.",
+					z2s_core->getZ2SChannelName());
+				updateLabel_P(channel_status_label, general_purpose_gui_buffer);
 			}
 		}
 	}
@@ -7067,14 +7375,9 @@ uint32_t saveRemoteAddressData(uint8_t channel_slot) {
 		z2s_core->setRemoteIPAddress(ip);
 	}
 		
-	if (Z2S_saveChannelsTable()) {
-
-		log_i("remote channel mDNS/IP address saved successfuly!");
-	}
-
 	return
     z2s_core->checkChannelUserDataFlags(
-			USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?REMOTE_ADDRESS_TYPE_MDNS : 
+			USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ? REMOTE_ADDRESS_TYPE_MDNS : 
 			REMOTE_ADDRESS_TYPE_IP4;
 }
 
@@ -7087,11 +7390,6 @@ uint8_t	saveRemoteChannelData(uint8_t channel_slot){
 
 	z2s_core->setSuplaRemoteChannel(Supla_remote_channel);								
 
-	if (Z2S_saveChannelsTable()) {
-
-		log_i(
-			"remote_Supla_channel saved successfuly to %lu", Supla_remote_channel);
-	}
 	return Supla_remote_channel;
 }
 
@@ -7115,10 +7413,8 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 			case GUI_CB_UPDATE_CHANNEL_NAME_FLAG : {	
 
-				z2s_core->setZ2SChannelName(
-					ESPUI.getControl(channel_name_text)->getValueCstr());
-				
-				if (Z2S_saveChannelsTable()) {
+				if (z2s_core->setZ2SChannelName(
+					ESPUI.getControl(channel_name_text)->getValueCstr(), true)) {
 
 					if ((channel_selector < 0xFFFF) || 
 							(action_source_channel_selector < 0xFFFF))
@@ -7145,8 +7441,7 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 					ESPUI.getControl(channel_local_function)->getValueInt();
 				
 				if (connected_thermometers_function > 0)
-					setRemoteThermometerFunction(
-						channel_slot, connected_thermometers_function);
+					z2s_core->setZ2SLocalChannelFunc(connected_thermometers_function);
 			} break;
 
 
@@ -7156,7 +7451,7 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 				switch (z2s_core->getZ2SChannelType()) {
 
 
-					case 0x0000: {
+					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
 
 						if (z2s_core->getZ2SLocalChannelType() ==
 								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
@@ -7184,14 +7479,7 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 					default: {
 
 						z2s_core->setChannelUserData1(
-							ESPUI.getControl(param_1_number)->getValueInt());
-						
-						if (Z2S_saveChannelsTable()) {
-
-							log_i(
-								"channel user data 1 updated successfuly to %lu", 
-								z2s_core->getChannelUserData1());
-						}
+							ESPUI.getControl(param_1_number)->getValueInt());		
 					} break;
 				}
 			} break;
@@ -7204,8 +7492,7 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 					case 0x0000: {
 
-						updateRemoteRelaySuplaChannel(
-							channel_slot, saveRemoteChannelData(channel_slot));
+						saveRemoteChannelData(channel_slot);
 					} break;
 
 
@@ -7220,38 +7507,28 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 						z2s_core->setChannelUserData1( 
 							ESPUI.getControl(param_2_number)->getValueInt());
-						
-						if (Z2S_saveChannelsTable()) {
-
-							log_i(
-								"channel user data 2 updated successfuly to %lu", 
-								z2s_core->getChannelUserData1());
-						}
 					} break;
 				}
 			} break;
 			
 			case GUI_CB_UPDATE_KEEPALIVE_FLAG : {	
 
-				updateTimeout(
-					channel_slot, 0, 1, ESPUI.getControl(
-						keepalive_number)->getValueInt());
+				z2s_core->setKeepAliveValue(
+					ESPUI.getControl(keepalive_number)->getValueInt());
 			} break;
 
 
 			case GUI_CB_UPDATE_TIMEOUT_FLAG : {		
 
-				updateTimeout(
-					channel_slot, 0, 2, ESPUI.getControl(
-						timeout_number)->getValueInt());
+				z2s_core->setTimeoutValue(
+					ESPUI.getControl(timeout_number)->getValueInt());
 			} break;
 
 
 			case GUI_CB_UPDATE_REFRESH_FLAG : {		
 
-				updateTimeout(
-					channel_slot, 0, 4, ESPUI.getControl(
-						refresh_number)->getValueInt());
+				z2s_core->setRefreshValue(
+					ESPUI.getControl(refresh_number)->getValueInt());
 			} break;	
 		}
 		gui_callback_reentry_number--;
@@ -8025,6 +8302,28 @@ void TuyaCustomCmdCallback(BasicControl *sender, int type, void *param) {
 	}
 }
 
+/*****************************************************************************/
+
+void updateActionSummary(z2s_channel_action_t &new_action) {
+
+	current_action_id = Z2S_findNextActionPosition(0);
+
+	if (current_action_id >= 0) {
+
+		current_action_counter = Z2S_getActionCounter(current_action_id);
+		Z2S_loadAction(current_action_id, new_action);
+		sprintfAction(new_action);
+		ESPUI.updateLabel(actions_table_label, working_str);
+	}
+	else {
+
+		current_action_counter = -1;
+		working_str = "Actions table is empty.";
+		ESPUI.updateLabel(actions_table_label, working_str);
+	}
+}
+/*****************************************************************************/
+
 void actionsTableCallback(BasicControl *sender, int type, void *param) {
 
 	if (type == B_UP) {
@@ -8131,7 +8430,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 				new_action_id = Z2S_findFreeActionIndex();
 				
 				if (new_action_id == -1) {
-					
+		
 					ESPUI.updateLabel(action_state_label, "Actions table is full - can't add new Z2S Action!");
 					return;
 				}
@@ -8313,21 +8612,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 				Z2S_loadAction(current_action_id, new_action);
 
 				bool remove_result = Z2S_removeAction(current_action_id, new_action);
-				current_action_id = Z2S_findNextActionPosition(0);
-
-				if (current_action_id >= 0) {
-
-					current_action_counter = Z2S_getActionCounter(current_action_id);
-					Z2S_loadAction(current_action_id, new_action);
-					sprintfAction(new_action);
-					ESPUI.updateLabel(actions_table_label, working_str);
-				}
-				else {
-
-					current_action_counter = -1;
-					working_str = "Actions table is empty.";
-					ESPUI.updateLabel(actions_table_label, working_str);
-				}
+				updateActionSummary(new_action); 
 				current_action_gui_state = VIEW_ACTION;
 				enableActionDetails(false);
 				enableActionControls(true);
@@ -8558,8 +8843,6 @@ void sendValveProgram(uint8_t device_slot, uint8_t flag_id) {
 
 				msgZ2SDeviceVirtualRelayValue(
 					z2s_core->getZ2SElementPtr(), VRV_S8_ID, 0);
-
-				Z2S_saveChannelsTable();
 				return;
 			} break;
 		}
@@ -8567,10 +8850,10 @@ void sendValveProgram(uint8_t device_slot, uint8_t flag_id) {
 		z2s_core->setSmartValveCycles(ESPUI.getControl(
 			valve_cycles_number)->getValueInt());
 
-		z2s_core->setSmartValvePauseTime( ESPUI.getControl(
-			valve_pause_number)->getValueInt());
+		
 
-		if (Z2S_saveChannelsTable())
+		if (z2s_core->setSmartValvePauseTime( ESPUI.getControl(
+			valve_pause_number)->getValueInt()))
 			ESPUI.updateLabel(
 				valve_info_label, "Valve program send to Supla channel.");
 
@@ -8764,24 +9047,26 @@ void sendDualValveProgram(uint8_t device_slot, uint8_t flag_id) {
 		return;
 	}
 
-	z2s_core->setSmartDualValveProgramId(program_id);
+	bool save_success = false;
 
-	z2s_core->setSmartDualValveTotalDurationTime(
+	save_success = z2s_core->setSmartDualValveProgramId(program_id);
+
+	save_success &= z2s_core->setSmartDualValveTotalDurationTime(
 		ESPUI.getControl(DV_TOTAL_DURATION)->getValueInt());
 
-	z2s_core->setSmartDualValveIrrigationDurationTime(
+	save_success &= z2s_core->setSmartDualValveIrrigationDurationTime(
 		ESPUI.getControl(DV_IRRIGATION_DURATION)->getValueInt());
 
-	z2s_core->setSmartDualValveIrrigationPauseTime(
+	save_success &= z2s_core->setSmartDualValveIrrigationPauseTime(
 		ESPUI.getControl(DV_PAUSE_TIME)->getValueInt());
 
-	z2s_core->setSmartDualValveIrrigationVolume(
+	save_success &= z2s_core->setSmartDualValveIrrigationVolume(
 		ESPUI.getControl(DV_VOLUME)->getValueInt());
 
-	z2s_core->setSmartDualValveFailSafeTime(
+	save_success &= z2s_core->setSmartDualValveFailSafeTime(
 		ESPUI.getControl(DV_FAILSAFE_TIME)->getValueInt());
 
-	if (Z2S_saveChannelsTable())
+	if (save_success)
 		ESPUI.updateLabel(DV_INFO_LABEL, "Program saved in Supla channel");
 }
 
@@ -9116,16 +9401,19 @@ void addLocalActionHandlerCallback(BasicControl *sender, int type, void *param) 
 			break;
 		}
 
+		enableLAHPanel(false);
+
 		if (addZ2SDeviceLocalActionHandler(
 			LOCAL_CHANNEL_TYPE_ACTION_HANDLER, SUPLA_CHANNELFNC_NONE, 
 			logic_operator)) {
 			
 			delay(200);				
 			ESPUI.updateLabel(
-				lah_status_label, PSTR(
-					"Local logical object added - you may add next one."
-					"<br>When finished restart gateway manually to see new objects."));												
+				lah_status_label,
+				"The local logical object has been successfully added and is "
+				"available for use.");												
 		}
+		enableLAHPanel(true);
 	}
 }
 

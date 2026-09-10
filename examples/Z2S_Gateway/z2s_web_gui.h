@@ -32,6 +32,8 @@ typedef enum gui_modes {
   gui_modes_number
 } gui_modes_t;
 
+class Z2S_Core;
+
 size_t mbstrnlen(const char *mb_str, size_t max_bytes);
 
 bool Z2S_isGUIStarted();
@@ -67,7 +69,14 @@ void GUI_onZigbeeOpenNetwork(bool is_network_open);
 
 void removeDevicesSelectorDevice(uint8_t device_slot);
 
+void addDevicesSelectorDevice(uint8_t device_slot);
+
 void removeChannelsSelectorChannel(
-  int16_t channel_number_slot, int32_t channel_option_id);
+  int16_t channel_number_slot, int32_t channel_option_id, 
+  bool last_channel = false);
+
+void addChannelsSelectorChannel(Z2S_Core *z2s_core, bool isSwitchBot = false);
+
+void sortChannelsSelectors();
 
 #endif // Z2S_WEB_GUI_H_

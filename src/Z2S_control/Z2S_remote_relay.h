@@ -59,43 +59,12 @@ class Z2S_RemoteRelay : public Relay, public Z2S_Core {
 
   void ping();
 
-  void setRemoteGatewayIPAddress(uint32_t remote_gateway_ip) {
-
-    _remote_gateway_ip = remote_gateway_ip;
-  }
-
-  void setRemoteGatewayIPAddress(String remote_gateway_ip) {
-
-    _remote_gateway_ip = Z2S_IPAddress.fromString(remote_gateway_ip);
-
-    log_i("IP address updated to %s", remote_gateway_ip.c_str());
-  }
-
-  void setRemoteGatewayMDNSName(char *remote_gateway_mDNS_name) {
-
-    _remote_gateway_mDNS_name = remote_gateway_mDNS_name;
-
-    log_i("mDNS name updated to %s", _remote_gateway_mDNS_name);
-  }
-
-  void setRemoteGatewayMDNSName(const char *remote_gateway_mDNS_name) {
-
-    _remote_gateway_mDNS_name = (char *)remote_gateway_mDNS_name;
-
-    log_i("mDNS name updated to %s", _remote_gateway_mDNS_name);
-  }
-
-  void setRemoteGatewaySuplaChannel(uint8_t remote_Supla_channel) {
-
-    _remote_Supla_channel = remote_Supla_channel;
-  }
-
  protected:
 
   bool state = false;
-  uint32_t _remote_gateway_ip = 0;
-  char *_remote_gateway_mDNS_name = nullptr;
-  uint8_t _remote_Supla_channel = 0xFF;
+  //uint32_t _remote_gateway_ip = 0;
+  //char *_remote_gateway_mDNS_name = nullptr;
+  //uint8_t _remote_Supla_channel = 0xFF;
 
 
   uint8_t _retries_number = 3;

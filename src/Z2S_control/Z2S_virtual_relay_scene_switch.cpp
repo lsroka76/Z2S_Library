@@ -8,7 +8,6 @@ Supla::Control::VirtualRelaySceneSwitch::VirtualRelaySceneSwitch(
     : Supla::Control::VirtualRelay(functions), Z2S_Core(this) {
       
     _lastChangeTimeMs = millis();
-    _debounceTimeMs   = debounceTimeMs;
 }
 
 
@@ -49,7 +48,7 @@ void Supla::Control::VirtualRelaySceneSwitch::turnOn(_supla_int_t duration) {
 
   uint32_t timeMs = millis() - _lastChangeTimeMs;
 
-  if ( timeMs > _debounceTimeMs) {
+  if ( timeMs > getDebounceTimeMs()) {
 
     log_i("durationMs = %lu, storedTurnOnDurationMs = %lu, durationTimestamp = %lu, keepTurnOnDurationMs = %u",
           durationMs, storedTurnOnDurationMs, durationTimestamp, keepTurnOnDurationMs);
@@ -70,15 +69,12 @@ void Supla::Control::VirtualRelaySceneSwitch::turnOn(_supla_int_t duration) {
 void Supla::Control::VirtualRelaySceneSwitch::turnOff(_supla_int_t duration) {
 
   uint32_t timeMs = millis() - _lastChangeTimeMs;
-  if (timeMs > _debounceTimeMs) {
+  if (timeMs > getDebounceTimeMs()) {
 
     VirtualRelay::turnOff(duration);
     _lastChangeTimeMs = millis();
-    log_i("Relay[%d] turn OFF as following time passed (time %d ms)", channel.getChannelNumber(), timeMs);
+    log_i(
+      "Relay[%d] turn OFF as following time passed (time %d ms)", 
+      channel.getChannelNumber(), timeMs);
   }
-}
-
-void Supla::Control::VirtualRelaySceneSwitch::setDebounceTimeMs(uint32_t debounceTimeMs) {
-
-  _debounceTimeMs = debounceTimeMs;
 }

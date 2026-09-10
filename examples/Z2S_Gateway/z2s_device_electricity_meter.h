@@ -54,14 +54,13 @@
 
 /*****************************************************************************/
 
-void initZ2SDeviceElectricityMeter(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, 
-  int16_t channel_number_slot);
+static constexpr char *DEFAULT_EM_NAME = "Electricity meter";
 
 /*****************************************************************************/
 
 void initZ2SDeviceElectricityMeter(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel,
+  Supla::Element *element = nullptr);
 
 /*****************************************************************************/
 
@@ -72,7 +71,8 @@ void addZ2SDeviceElectricityMeter(
 
 /*****************************************************************************/
 
-void updateZ2SDeviceElectricityMeter(int16_t channel_number_slot);
+void updateZ2SDeviceElectricityMeter(
+  int16_t channel_number_slot, esp_zb_ieee_addr_t ieee_addr);
 
 /*****************************************************************************/
 

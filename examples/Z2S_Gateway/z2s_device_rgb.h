@@ -7,13 +7,8 @@
 /*****************************************************************************/
 
 void initZ2SDeviceRGB(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, 
-  int16_t channel_number_slot);
-
-/*****************************************************************************/
-
-void initZ2SDeviceRGB(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
+  Supla::Element *element = nullptr);
   
 /*****************************************************************************/
 

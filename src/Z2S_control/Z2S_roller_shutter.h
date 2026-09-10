@@ -19,11 +19,15 @@
 #ifndef SRC_SUPLA_CONTROL_Z2S_ROLLER_SHUTTER_H_
 #define SRC_SUPLA_CONTROL_Z2S_ROLLER_SHUTTER_H_
 
+/*****************************************************************************/
+
 #include <supla/control/roller_shutter_interface.h>
 
 #include "ZigbeeGateway.h"
 
 #include "Z2S_common.h"
+
+/*****************************************************************************/
 
 #define Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER     0x00
 #define Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT 0x02
@@ -35,6 +39,8 @@
 
 
 #define Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE      0x20
+
+/*****************************************************************************/
 
 namespace Supla {
 namespace Control {
@@ -51,17 +57,14 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
 
   void setRSCurrentPosition(uint8_t rs_current_position);
   
+  void  setZ2SFunction(uint8_t z2s_function);
+  uint8_t getZ2SFunction();
+
   void setRSIgnoreMovingDirection(bool rs_ignore_moving_direction);
   bool getRSIgnoreMovingDirection();
   void setRSMovingDirection(uint8_t rs_moving_direction);
 
   void Refresh();
-
-  void setKeepAliveSecs(uint32_t keep_alive_secs);
-  void setTimeoutSecs(uint32_t timeout_secs);
-
-  uint32_t getKeepAliveSecs();
-  uint32_t getTimeoutSecs();
 
  protected:
 
@@ -85,11 +88,6 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
 
   bool _fresh_start = true;
 
-  bool _keep_alive_enabled = true;
-  bool _timeout_enabled    = true;
-
-  uint32_t _keep_alive_ms = 45000;
-  uint32_t _timeout_ms    = 60000;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
   uint32_t _update_rs_position_ms = 0;
@@ -99,5 +97,6 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
 };  // namespace Control
 };  // namespace Supla
 
+/*****************************************************************************/
+
 #endif  // SRC_SUPLA_CONTROL_Z2S_ROLLER_SHUTTER_H_
-//#endif  // #ifdef Z2S_GATEWAY

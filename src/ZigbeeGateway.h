@@ -308,7 +308,9 @@ typedef struct query_basic_cluster_data_s {
 typedef struct zbg_device_params_s {
   uint32_t model_id;
   esp_zb_ieee_addr_t ieee_addr;
+  uint8_t zb_device_id;
   uint8_t endpoint;
+  //uint8_t endpoint_counter;
   uint16_t cluster_id;
   uint16_t short_addr;
   //uint32_t user_data;

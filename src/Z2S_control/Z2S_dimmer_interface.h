@@ -56,12 +56,7 @@ class Z2S_DimmerInterface : public ChannelElement, public ActionHandler,
 
 public:
 
-  /*Z2S_DimmerInterface(uint8_t dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER);*/
-
-  Z2S_DimmerInterface(
-    uint8_t dimmer_function = SUPLA_RGBW_BIT_FUNC_DIMMER,
-    uint8_t dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER,
-    uint8_t cct_mode = Z2S_COLOR_TEMPERATURE_DIMMER);
+  Z2S_DimmerInterface();
 
   void onLoadState() override;
   void onSaveState() override;
@@ -97,16 +92,12 @@ public:
   void setDimmerMode(uint8_t dimmer_mode);
   uint8_t getDimmerMode();
 
-  void setKeepAliveSecs(uint32_t keep_alive_secs);
-  void setTimeoutSecs(uint32_t timeout_secs);
-
-  uint32_t getKeepAliveSecs();
-  uint32_t getTimeoutSecs();
+  void setCCTMode(uint8_t dimmer_mode);
+  uint8_t getCCTMode();
 
 
 protected:
 
-  uint8_t _dimmer_function = SUPLA_RGBW_BIT_FUNC_DIMMER;
   uint8_t _dimmer_mode = Z2S_SEND_TO_LEVEL_DIMMER;
   uint8_t _cct_mode = Z2S_COLOR_TEMPERATURE_DIMMER;
 
@@ -125,8 +116,6 @@ protected:
   uint16_t min_mireds = 153;
   uint16_t max_mireds = 500;
 
-  uint32_t _keep_alive_ms = 0;
-  uint32_t _timeout_ms    = 0;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
   uint32_t  _last_sync_ms = 0;

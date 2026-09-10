@@ -39,21 +39,6 @@ public:
     _rwns_flag = rwns_flag;    
   }
   
-  void setTimeoutSecs(uint32_t timeout_secs) {
-    
-    _timeout_ms = timeout_secs * 1000;
-  }
-
- void setAutoClearSecs(uint32_t auto_clear_secs) {
-    
-   _auto_clear_ms = auto_clear_secs * 1000;
-  }
-
-void setAutoSetSecs(uint32_t auto_set_secs) {
-    
-   _auto_set_ms = auto_set_secs * 1000;
-  }
-
   void Refresh() {
     
     _last_timeout_ms = millis();
@@ -84,7 +69,7 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
       channel.setNewValue(getValue());
     }
     
-    if (_timeout_ms) {
+    if (getTimeoutMs()) {
       
       uint32_t _zb_device_last_seen_ms = getZbDeviceLastSeenMs();
       
@@ -94,7 +79,7 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
         channel.setStateOnline();
       }
 
-      if ((millis_ms - _last_timeout_ms) > _timeout_ms) {
+      if ((millis_ms - _last_timeout_ms) > getTimeoutMs()) {
       
         _last_timeout_ms = millis_ms;
 
@@ -104,8 +89,8 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
           channel.setStateOffline();
       }
     }
-    if (_auto_set_ms && _last_clear_ms && 
-        (millis_ms - _last_clear_ms > _auto_set_ms))
+    if (getAutoSetMs() && _last_clear_ms && 
+        (millis_ms - _last_clear_ms > getAutoSetMs()))
 	    extSet();
   }
 
@@ -134,11 +119,9 @@ void setAutoSetSecs(uint32_t auto_set_secs) {
     
  protected:
   bool     _rwns_flag;
-  uint32_t _timeout_ms = 0;
+  
   uint32_t _last_timeout_ms = 0;
    
-  uint32_t _auto_clear_ms = 0;
-  uint32_t _auto_set_ms = 0;
   uint32_t _last_set_ms = 0;
   uint32_t _last_clear_ms = 0;
 };

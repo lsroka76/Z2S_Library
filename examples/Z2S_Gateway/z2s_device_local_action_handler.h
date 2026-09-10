@@ -29,13 +29,20 @@ static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
   "NOP GATE"
 };
 
-static constexpr char* CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {
+static constexpr char *CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {
 
 "CONNECTED_THERMOMETERS_FNC_MINIMUM",
 "CONNECTED_THERMOMETERS_FNC_AVERAGE",
 "CONNECTED_THERMOMETERS_FNC_MAXIMUM"
 };
 
+static constexpr char *LOCAL_VIRTUAL_RELAY_NAME = "LOCAL VIRTUAL RELAY";
+static constexpr char *LOCAL_VIRTUAL_HVAC_NAME = "LOCAL VIRTUAL HVAC";
+static constexpr char *LOCAL_VIRTUAL_BINARY_NAME = "LOCAL VIRTUAL BINARY";
+static constexpr char *LOCAL_REMOTE_RELAY_NAME = "LOCAL REMOTE RELAY";
+static constexpr char *LOCAL_REMOTE_THERMOMETER_NAME = 
+  "LOCAL REMOTE THERMOMETER";
+
 /*****************************************************************************/
 
 const char* getZ2SDeviceLocalActionHandlerTypeName(
@@ -53,22 +60,13 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
   z2s_device_params_t* _z2s_channel);
 
 /*****************************************************************************/
-
-void initZ2SDeviceLocalActionHandler(int16_t channel_number_slot);
 
 void initZ2SDeviceLocalActionHandler(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
+  Supla::Element *element = nullptr);
   
 /*****************************************************************************/
 
-void initZ2SDeviceGatewayEvents(int16_t channel_number_slot);
-
-void initZ2SDeviceGatewayEvents(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel);
-
-/*****************************************************************************/
-
-bool addZ2SDeviceGatewayEvents(int16_t channel_number_slot);
 
 bool addZ2SDeviceLocalActionHandler(
   uint8_t local_channel_type = LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 

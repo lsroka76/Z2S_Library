@@ -1104,16 +1104,6 @@ void ZigbeeGateway::zbDeviceAnnce(uint16_t short_addr,
 void ZigbeeGateway::zbDeviceLeave(
   uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {
 
-  /*for (std::list<zbg_device_params_t *>::iterator bound_device = _gateway_devices.begin(); 
-       bound_device != _gateway_devices.end(); ++bound_device) {
-
-    if (((*bound_device)->short_addr == short_addr) || (memcmp((*bound_device)->ieee_addr, ieee_addr, 8) == 0)) {
-      _gateway_devices.erase(bound_device);
-
-      log_i("device 0x%04X erased", short_addr);
-    }
-	}*/
-
   if (_on_device_leave)
     _on_device_leave(short_addr, ieee_addr, rejoin);
 }

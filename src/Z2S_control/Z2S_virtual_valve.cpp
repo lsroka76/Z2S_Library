@@ -19,14 +19,35 @@
 #include "Z2S_virtual_valve.h"
 #include "TuyaDatapoints.h"
 
+/*****************************************************************************/
+
 using Supla::Control::Z2S_VirtualValve;
 
 
+/*****************************************************************************/
 
 Z2S_VirtualValve::Z2S_VirtualValve(
   bool openClose, uint8_t z2s_function) : 
   ValveBase(openClose), Z2S_Core(this), _z2s_function(z2s_function) {
+
 }
+
+/*****************************************************************************/
+
+void Z2S_VirtualValve::setZ2SFunction(uint8_t z2s_function) {
+
+  _z2s_function = z2s_function;
+}
+
+/*****************************************************************************/
+
+uint8_t Z2S_VirtualValve::getZ2SFunction() {
+
+  return _z2s_function;
+}
+
+/*****************************************************************************/
+
 
 void Z2S_VirtualValve::setValueOnDevice(uint8_t openLevel) {
     
@@ -54,10 +75,14 @@ void Z2S_VirtualValve::setValueOnDevice(uint8_t openLevel) {
   }
 }
 
+/*****************************************************************************/
+
 uint8_t Z2S_VirtualValve::getValueOpenStateFromDevice() {
 
   return valveOpenState;
 }
+
+/*****************************************************************************/
 
 void Z2S_VirtualValve::setValueOnServer(bool state) {
   
@@ -65,6 +90,8 @@ void Z2S_VirtualValve::setValueOnServer(bool state) {
   valveOpenState = state ? 100 : 0;
   channel.setValveOpenState(valveOpenState);
 }
+
+/*****************************************************************************/
 
 void Z2S_VirtualValve::ping() {
 
@@ -92,6 +119,7 @@ void Z2S_VirtualValve::ping() {
   }
 }
 
+/*****************************************************************************/
 
 void Z2S_VirtualValve::iterateAlways() {
 
@@ -101,13 +129,13 @@ void Z2S_VirtualValve::iterateAlways() {
   if (_fresh_start && ((millis() - _last_ping_ms) > 5000))
     ping();
 
-  if (_keep_alive_ms && ((millis() - _last_ping_ms) > _keep_alive_ms)) {
+  if (getKeepAliveMs() && ((millis() - _last_ping_ms) > getKeepAliveMs())) {
     if (true) {
       
       
       _last_seen_ms = getZbDeviceLastSeenMs();
 
-      if ((millis() - _last_seen_ms) > _keep_alive_ms) {
+      if ((millis() - _last_seen_ms) > getKeepAliveMs()) {
       	ping();
         _last_ping_ms = millis();
       } else {
@@ -117,8 +145,8 @@ void Z2S_VirtualValve::iterateAlways() {
       }
     }
   }
-  if (_timeout_ms && channel.isStateOnline() && 
-      ((millis() - _last_seen_ms) > _timeout_ms)) {
+  if (getTimeoutMs() && channel.isStateOnline() && 
+      ((millis() - _last_seen_ms) > getTimeoutMs())) {
 
 	  log_i(
       "current_millis %u, _last_seen_ms %u", millis(), _last_seen_ms);
@@ -129,10 +157,12 @@ void Z2S_VirtualValve::iterateAlways() {
     log_i(
       "current_millis %u, _last_seen_ms(updated) %u", millis(), _last_seen_ms);
 
-    if ((millis() - _last_seen_ms) > _timeout_ms)
+    if ((millis() - _last_seen_ms) > getTimeoutMs())
       channel.setStateOffline();
   }
 }
+
+/*****************************************************************************/
 
 void Z2S_VirtualValve::Refresh() {
 
@@ -143,26 +173,4 @@ void Z2S_VirtualValve::Refresh() {
 	  channel.setStateOnline();
 }
 
-
-void Z2S_VirtualValve::setKeepAliveSecs(uint32_t keep_alive_secs) {
-
-  _keep_alive_ms = keep_alive_secs * 1000;
-}
-
-void Z2S_VirtualValve::setTimeoutSecs(uint32_t timeout_secs) {
-
-  _timeout_ms = timeout_secs * 1000;
-  
-  if (_timeout_ms == 0)
-    channel.setStateOnline();
-}
-
-uint32_t Z2S_VirtualValve::getKeepAliveSecs() {
-
-  return _keep_alive_ms / 1000;
-}
-
-uint32_t Z2S_VirtualValve::getTimeoutSecs() {
-
-  return _timeout_ms / 1000;
-}
+/*****************************************************************************/

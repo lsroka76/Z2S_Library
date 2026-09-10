@@ -2,28 +2,28 @@
 
 /*****************************************************************************/
 
-void initZ2SDevicePressure(int16_t channel_number_slot) {
-
-  initZ2SDevicePressure(
-    channel_number_slot, z2s_channels_table + channel_number_slot);
-}
-
-/*****************************************************************************/
-
 void initZ2SDevicePressure(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel,
+  Supla::Element *element) {
 
-  auto Supla_VirtualPressure = 
-    new Supla::Sensor::Z2S_VirtualPressure();
+  Supla::Sensor::Z2S_VirtualPressure *Supla_VirtualPressure = nullptr;
 
-  Supla_VirtualPressure->getChannel()->setChannelNumber(
-    _z2s_channel->Supla_channel);
+  if (element) {
 
-  Supla_VirtualPressure->setZ2SZbDevice(Z2S_getZbDevicePtr(
-    _z2s_channel->Zb_device_id));
+    Supla_VirtualPressure = static_cast<
+      Supla::Sensor::Z2S_VirtualPressure *>(element);
+  }
+  else {
 
-  Supla_VirtualPressure->setZ2SChannel(channel_index, _z2s_channel);
+    Supla_VirtualPressure = new Supla::Sensor::Z2S_VirtualPressure();
 
+    Supla_VirtualPressure->setZ2SChannel(channel_index, _z2s_channel);
+
+    Supla_VirtualPressure->getChannel()->setChannelNumber(
+      _z2s_channel->Supla_channel);
+  }
+
+  
   if (_z2s_channel->user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) {
       
     Supla_VirtualPressure->getChannel()->
@@ -31,8 +31,6 @@ void initZ2SDevicePressure(
       
     Supla_VirtualPressure->setRWNSFlag(true);
   }
-
-  Supla_VirtualPressure->setTimeoutSecs(_z2s_channel->timeout_secs);
 }
 
 /*****************************************************************************/
@@ -40,31 +38,30 @@ void initZ2SDevicePressure(
 void addZ2SDevicePressure(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id) {
 
-  auto Supla_Z2S_VirtualPressure = 
-    new Supla::Sensor::Z2S_VirtualPressure();
+  SuplaDevice.saveStateToStorage();
+  Supla::Storage::ConfigInstance()->commit();
+
+  auto Supla_Z2S_VirtualPressure = new Supla::Sensor::Z2S_VirtualPressure();
   
-  Z2S_fillChannelsTableSlot(
-    device, free_slot, Supla_Z2S_VirtualPressure->getChannelNumber(), 
+  Z2S_setChannelData(
+    Supla_Z2S_VirtualPressure->getZ2SCorePtr(), device, free_slot,
+    Supla_Z2S_VirtualPressure->getChannelNumber(), 
     SUPLA_CHANNELTYPE_PRESSURESENSOR, sub_id, "PRESSURE", 
     SUPLA_CHANNELFNC_PRESSURESENSOR);
-}
 
-/*****************************************************************************/
+  initZ2SDevicePressure(
+    free_slot, Supla_Z2S_VirtualPressure->getZ2SChannel(), 
+    Supla_Z2S_VirtualPressure->getZ2SElementPtr());
 
-Supla::Sensor::Z2S_VirtualPressure* getZ2SDevicePressurePtr(uint8_t Supla_channel) {
+  Supla_Z2S_VirtualPressure->getChannel()->setSubDeviceId(
+    device->zb_device_id + 1);
+  Supla_Z2S_VirtualPressure->getChannel()->setFlag(
+    SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-  auto element = Supla::Element::getElementByChannelNumber(Supla_channel);
+  addChannelsSelectorChannel(Supla_Z2S_VirtualPressure->getZ2SCorePtr());  
 
-  if (element && (element->getChannel()->getChannelType() == 
-      SUPLA_CHANNELTYPE_PRESSURESENSOR))
-
-    return 
-      reinterpret_cast<Supla::Sensor::Z2S_VirtualPressure *>(element);
-  
-  else 
-  
-    return 
-      nullptr;  
+  Supla_Z2S_VirtualPressure->onLoadConfig(&SuplaDevice);
+  Supla_Z2S_VirtualPressure->onInit();
 }
 
 /*****************************************************************************/

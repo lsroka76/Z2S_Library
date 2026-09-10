@@ -44,6 +44,9 @@ class Z2S_VirtualValve : public ValveBase, public Z2S_Core {
     bool openClose = true, 
     uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF);
 
+  void  setZ2SFunction(uint8_t z2s_function);
+  uint8_t getZ2SFunction();
+
   /**
    * Sets the value of the valve virtual device
    *
@@ -65,12 +68,6 @@ class Z2S_VirtualValve : public ValveBase, public Z2S_Core {
   void ping();
   void Refresh();
 
-  void setKeepAliveSecs(uint32_t keep_alive_secs);
-  void setTimeoutSecs(uint32_t timeout_secs);
-
-  uint32_t getKeepAliveSecs();
-  uint32_t getTimeoutSecs();
-
  protected:
   uint8_t valveOpenState = 0;
 
@@ -78,8 +75,6 @@ class Z2S_VirtualValve : public ValveBase, public Z2S_Core {
   
   bool _fresh_start = true;
 
-  uint32_t _keep_alive_ms = 0;
-  uint32_t _timeout_ms    = 0;
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
 };

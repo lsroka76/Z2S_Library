@@ -1,8 +1,8 @@
-/***********************************************************************************/
+/*****************************************************************************/
 
 #include <cstring>
-
 #include <Arduino.h>
+#include <Preferences.h>
 #include <ZigbeeGateway.h>
 #include <SuplaDevice.h>
 #include <supla/element.h>
@@ -11,8 +11,20 @@
 #include "z2s_little_fs.h"
 
 #include <Z2S_control/Z2S_remote_relay.h>
+#include <Z2S_sensor/Z2S_remote_thermometer.h>
+#include <Z2S_control/Z2S_local_action_handlers.h>
+#include <Z2S_control/hvac_base_ee.h>
+#include <Z2S_control/Z2S_trv_interface.h>
 
-/***********************************************************************************/
+/*****************************************************************************/
+
+extern Preferences Z2S_GatewayPreferences;
+
+/*****************************************************************************/
+
+uint8_t z2s_elements_index_table[Z2S_ELEMENTS_MAX_NUMBER / 8] = {};
+
+/*****************************************************************************/
 
 size_t mbstrnlen(const char *mb_str, size_t max_bytes) {
 
@@ -283,19 +295,141 @@ bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix) {
   }
 }
 
-/***********************************************************************************/
+/*****************************************************************************/
 
-bool Z2S_Core::fillZ2SChannelStruct(z2s_device_params_t& z2s_channel) {
+bool checkElementsIndexTablePosition(uint16_t index_position) {
 
-  if (_z2s_channel) {
+  return checkIndexTablePosition(
+    z2s_elements_index_table, index_position, Z2S_ELEMENTS_MAX_NUMBER);
+}
 
-    memcpy(&z2s_channel, _z2s_channel, sizeof(z2s_device_params_t));
+/*****************************************************************************/
+
+bool setElementsIndexTablePosition(uint16_t index_position) {
+
+  return setIndexTablePosition(
+    z2s_elements_index_table, index_position, Z2S_ELEMENTS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool clearElementsIndexTablePosition(uint16_t index_position) {
+
+  return clearIndexTablePosition(
+    z2s_elements_index_table, index_position, Z2S_ELEMENTS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool Z2S_loadElementsIndexTable() {
+
+  return Z2S_loadIndexTable(
+    z2s_elements_index_table, sizeof(z2s_elements_index_table), 
+    Z2S_ELEMENTS_INDEX_TABLE_V2);
+}
+
+/*****************************************************************************/
+
+bool Z2S_saveElementsIndexTable() {
+
+  return Z2S_saveIndexTable(
+    z2s_elements_index_table, sizeof(z2s_elements_index_table), 
+    Z2S_ELEMENTS_INDEX_TABLE_V2);
+}
+
+/*****************************************************************************/
+
+uint16_t Z2S_getElementsNumber() {
+
+  return Z2S_getIndexTableEntriesNumber(
+    z2s_elements_index_table, Z2S_ELEMENTS_MAX_NUMBER);
+}
+
+/****************************************************************************/
+
+int16_t  Z2S_getElementCounter(uint16_t element_position) {
+
+  return Z2S_getIndexTablePositionCounter(
+    z2s_elements_index_table, element_position, Z2S_ELEMENTS_MAX_NUMBER);
+}
+  
+/*****************************************************************************/  
+
+int16_t  Z2S_findFreeChannelIndex() {
+
+  return Z2S_findFreeEntryIndex(
+    z2s_elements_index_table, Z2S_CHANNELS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+int16_t  Z2S_findNextElementPosition(uint16_t element_position) {
+
+  return Z2S_findNextIndexPosition(
+    z2s_elements_index_table, element_position, Z2S_ELEMENTS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+int16_t  Z2S_findPrevElementPosition(uint16_t element_position) {
+
+return Z2S_findPrevIndexPosition(
+    z2s_elements_index_table, element_position, Z2S_ELEMENTS_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
+bool Z2S_saveElement(uint16_t element_index, z2s_device_params_t &element) {
+
+  if (element_index >= Z2S_ELEMENTS_MAX_NUMBER)
+    return false;
+
+  if (Z2S_saveObject(element_index, Z2S_ELEMENTS_PREFIX_V2, 
+        (uint8_t*) &element, sizeof(z2s_device_params_t))) {
+    
+    setElementsIndexTablePosition(element_index);
+    return Z2S_saveElementsIndexTable();
+  }
+  return false;
+}
+
+/*****************************************************************************/
+
+bool Z2S_loadElement(uint16_t element_index, z2s_device_params_t &element) {
+
+  if (element_index >= Z2S_ELEMENTS_MAX_NUMBER)
+    return false;
+
+  return Z2S_loadObject(element_index, Z2S_ELEMENTS_PREFIX_V2, 
+    (uint8_t*) &element, sizeof(z2s_device_params_t));
+}
+
+/*****************************************************************************/
+
+bool Z2S_removeElement(uint16_t element_index) {
+
+  if (element_index >= Z2S_ELEMENTS_MAX_NUMBER)
+    return false;
+
+   if (Z2S_removeObject(element_index, Z2S_ELEMENTS_PREFIX_V2)) {
+  
+    clearElementsIndexTablePosition(element_index);
+    Z2S_saveElementsIndexTable();
     return true;
   }
   return false;
 }
 
-/***********************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+
+bool Z2S_Core::fillZ2SChannelStruct(z2s_device_params_t& z2s_channel) {
+
+  memcpy(&z2s_channel, &_z2s_channel, sizeof(z2s_device_params_t));
+  return true;
+}
+
+/*****************************************************************************/
 
 Z2S_Core *Z2S_Core::getZ2SCoreByChannelIndex(int16_t channel_index) {
 
@@ -303,90 +437,490 @@ Z2S_Core *Z2S_Core::getZ2SCoreByChannelIndex(int16_t channel_index) {
     return nullptr;
 
   auto core_it = Z2S_Cores.begin();
-    while (core_it != Z2S_Cores.end()) {
 
-      if ((*core_it)->_channel_index == channel_index)
-        return (*core_it);
+  while (core_it != Z2S_Cores.end()) {
 
-      core_it++;
-    }
-    return nullptr;
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_channel_index == channel_index)
+      return z2s_core;
+
+    core_it++;
+  }
+  return nullptr;
 }
 
-/***********************************************************************************/
+/*****************************************************************************/
 
-Z2S_Core *Z2S_Core::getZ2SCoreBySuplaChannelNumber(uint8_t Supla_channel_number) {
+Z2S_Core *Z2S_Core::getZ2SCoreByChannelNumber(uint8_t channel_number) {
 
   auto core_it = Z2S_Cores.begin();
-    while (core_it != Z2S_Cores.end()) {
+    
+  while (core_it != Z2S_Cores.end()) {
 
-      if ((*core_it)->_z2s_channel->Supla_channel == Supla_channel_number)
-        return (*core_it);
+    auto z2s_core = *core_it;
 
-      core_it++;
-    }
-    return nullptr;
+    if (z2s_core->_z2s_channel.Supla_channel == channel_number)
+      return z2s_core;
+
+    core_it++;
+  }
+  return nullptr;
 }
 
-/***********************************************************************************/
+/*****************************************************************************/
 
 Z2S_Core *Z2S_Core::getZ2SCoreByZbDeviceId(uint8_t Zb_device_id) {
 
   auto core_it = Z2S_Cores.begin();
-    while (core_it != Z2S_Cores.end()) {
 
-      if ((*core_it)->_z2s_channel->Zb_device_id == Zb_device_id)
-        return (*core_it);
+  while (core_it != Z2S_Cores.end()) {
 
-      core_it++;
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.Zb_device_id == Zb_device_id)
+      return z2s_core;
+
+    core_it++;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
+
+Supla::Element *Z2S_Core::getZ2SElementByChannelIndex(int16_t channel_index) {
+
+  if (channel_index < 0)
+    return nullptr;
+
+  auto core_it = Z2S_Cores.begin();
+  
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_channel_index == channel_index)
+      return z2s_core->_z2s_element;
+
+    core_it++;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
+Supla::Element *Z2S_Core::getZ2SElementByChannelNumber(
+  uint8_t channel_number) {
+
+  if (channel_number == GATEWAY_EVENTS_CHANNEL_NUMBER) 
+    return &GatewayEventsInstance;
+
+  auto core_it = Z2S_Cores.begin();
+    
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.Supla_channel == channel_number)
+      return z2s_core->_z2s_element;
+
+    core_it++;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
+Supla::Element *Z2S_Core::getZ2SElementByZbDeviceId(uint8_t Zb_device_id) {
+
+  auto core_it = Z2S_Cores.begin();
+    
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.Zb_device_id == Zb_device_id)
+      return z2s_core->_z2s_element;
+
+    core_it++;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
+uint8_t Z2S_Core::updateZ2SChannelsByZbDeviceId(
+  uint8_t Zb_device_id, uint8_t rssi_percentage, uint8_t battery_level) {
+
+  uint8_t channels_number = 0;
+
+  auto core_it = Z2S_Cores.begin();
+    
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.Zb_device_id == Zb_device_id) {     
+
+      Supla::Channel *channel = z2s_core->_z2s_element->getChannel();
+
+      if (channel) {
+
+        channel->setStateOnline();
+        channel->setBridgeSignalStrength(rssi_percentage);
+        if ((battery_level < 0xFF) &&
+          ((z2s_core->_z2s_channel.user_data_flags &
+            USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL) == 0)) 
+
+          channel->setBatteryLevel(battery_level);
+      }
+      else
+        {
+
+        }
+      channels_number++;
     }
+    core_it++;
+  }
+  return channels_number;
+}
+
+/*****************************************************************************/
+
+uint8_t Z2S_Core::countZ2SChannelsByZbDeviceId(uint8_t Zb_device_id) {
+
+  uint8_t channels_number = 0;
+
+  auto core_it = Z2S_Cores.begin();
+    
+  while (core_it != Z2S_Cores.end()) {
+
+    if ((*core_it)->_z2s_channel.Zb_device_id == Zb_device_id) {
+      
+      channels_number++;
+    }
+    core_it++;
+  }
+  return channels_number;
+}
+
+/*****************************************************************************/
+
+int16_t Z2S_Core::getZ2SChannelIndexByChannelNumber(uint8_t channel_number) {
+
+  if (channel_number == GATEWAY_EVENTS_CHANNEL_NUMBER)
+    return GATEWAY_EVENTS_CHANNEL_INDEX;
+
+  auto core_it = Z2S_Cores.begin();
+  
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.Supla_channel == channel_number)
+      return z2s_core->_channel_index;
+
+    core_it++;
+  }
+  return -1;
+}
+
+/*****************************************************************************/
+
+uint8_t Z2S_Core::getZ2SChannelNumberByChannelIndex(int16_t channel_index) {
+
+  if (channel_index == GATEWAY_EVENTS_CHANNEL_INDEX)
+     return GATEWAY_EVENTS_CHANNEL_NUMBER;
+
+  auto core_it = Z2S_Cores.begin();
+  
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_channel_index == channel_index)
+      return z2s_core->_z2s_channel.Supla_channel;
+
+    core_it++;
+  }
+  return 0xFF;
+}
+
+/*****************************************************************************/
+
+const char *Z2S_Core::getZ2SChannelNameByChannelNumber(
+  uint8_t channel_number) {
+    
+  if (channel_number == GATEWAY_EVENTS_CHANNEL_NUMBER)
+    return gateway_events_channel_name;
+
+  auto core_it = Z2S_Cores.begin();
+  
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.Supla_channel == channel_number)
+      return z2s_core->_z2s_channel.Supla_channel_name;
+
+    core_it++;
+  }
+  return "missing channel name!";
+}
+
+/*****************************************************************************/
+
+const char *Z2S_Core::getZ2SChannelNameByChannelIndex(int16_t channel_index) {
+    
+  if (channel_index == GATEWAY_EVENTS_CHANNEL_INDEX)
+    return gateway_events_channel_name;
+
+  auto core_it = Z2S_Cores.begin();
+  
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_channel_index == channel_index)
+      return z2s_core->_z2s_channel.Supla_channel_name;
+
+    core_it++;
+  }
+  return "missing channel name!";
+}
+
+/*****************************************************************************/
+
+Supla::Control::SwitchBotRelay *Z2S_Core::getSwitchBotRelayInstance(
+  int16_t channel_index, uint8_t channel_number) {
+
+  auto core_it = Z2S_Cores.begin();
+
+  bool core_found = false;
+  
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (channel_index < 0) {
+
+      if ((z2s_core->_z2s_channel.Supla_channel == channel_number) &&
+          ((z2s_core->_z2s_channel.local_channel_type == 
+            LOCAL_CHANNEL_TYPE_SWITCHBOT)))
+       return static_cast<
+        Supla::Control::SwitchBotRelay *>(z2s_core->_z2s_element);    
+    }
+    else {
+
+      if ((z2s_core->_channel_index == channel_index) &&
+          ((z2s_core->_z2s_channel.local_channel_type == 
+            LOCAL_CHANNEL_TYPE_SWITCHBOT)))
+        return static_cast<
+          Supla::Control::SwitchBotRelay *>(z2s_core->_z2s_element);    
+    }
+    core_it++;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
+void Z2S_Core::updateZ2SCoresShortAddress(
+  uint16_t prev_addr, uint16_t new_addr){
+
+  auto core_it = Z2S_Cores.begin();
+
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.short_addr == prev_addr) {
+
+      z2s_core->_z2s_channel.short_addr = new_addr;
+      z2s_core->saveChannelData();
+    }
+
+    core_it++;
+  }
+}
+
+/*****************************************************************************/
+
+Supla::Control::Z2S_RemoteRelay *Z2S_Core::getRemoteRelayPtr() {
+    
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_REMOTE_RELAY)
+    return static_cast<
+      Supla::Control::Z2S_RemoteRelay *>(_z2s_element);
+  else
     return nullptr;
 }
 
+/*****************************************************************************/
 
-/***********************************************************************************/
+Supla::Control::HvacBaseEE *Z2S_Core::getHvacPtr() {
+
+  if (_z2s_channel.Supla_channel_type == SUPLA_CHANNELTYPE_HVAC) {
+
+    Supla::Control::Z2S_TRVInterface *Supla_Z2S_TRVInterface = static_cast<
+      Supla::Control::Z2S_TRVInterface *>(_z2s_element);
+      
+    return Supla_Z2S_TRVInterface->getTRVHvac();
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
 
 bool Z2S_Core::setMDNSName(const char *mDNS_name) {
   
-    if (_z2s_channel && mDNS_name) {
+  if (mDNS_name) {
 
-      // cut "mdns://"
-      memcpy(_z2s_channel->remote_channel_data.mDNS_name, mDNS_name + 7, 11);
-      _z2s_channel->remote_channel_data.mDNS_name[11] = '\0';
+    // cut "mdns://"
+    memcpy(_z2s_channel.remote_channel_data.mDNS_name, mDNS_name + 7, 11);
+      _z2s_channel.remote_channel_data.mDNS_name[11] = '\0';
       
-      if ((getZ2SLocalChannelType() == LOCAL_CHANNEL_TYPE_REMOTE_RELAY) &&
-          (_z2s_element->getChannel()->getChannelType() == 
-           SUPLA_CHANNELTYPE_RELAY)) {
-
-        auto Supla_Z2S_RemoteRelay = static_cast<
-          Supla::Control::Z2S_RemoteRelay *>(_z2s_element);
-        Supla_Z2S_RemoteRelay->setRemoteGatewayMDNSName(mDNS_name);  
-      }
-      return true;
-    }
-    else
-      return false;
+    return saveChannelData();
   }
+  else
+    return false;
+}
 
-  /***********************************************************************************/
+/*****************************************************************************/
 
-  bool Z2S_Core::setRemoteIPAddress(uint32_t remote_ip_address) {
+bool Z2S_Core::setRemoteIPAddress(uint32_t remote_ip_address) {
   
-    if (_z2s_channel) {
-
-      _z2s_channel->remote_channel_data.remote_ip_address = remote_ip_address;
-
-      if ((getZ2SLocalChannelType() == LOCAL_CHANNEL_TYPE_REMOTE_RELAY) &&
-          (_z2s_element->getChannel()->getChannelType() == 
-           SUPLA_CHANNELTYPE_RELAY)) {
+  _z2s_channel.remote_channel_data.remote_ip_address = remote_ip_address;
             
-        auto Supla_Z2S_RemoteRelay = static_cast<
-          Supla::Control::Z2S_RemoteRelay *>(_z2s_element);
-        Supla_Z2S_RemoteRelay->setRemoteGatewayIPAddress(remote_ip_address);  
-      }
+  return saveChannelData();
+}
 
+/*****************************************************************************/
+
+bool Z2S_Core::setSuplaRemoteChannel(uint8_t Supla_remote_channel) {
+
+  _z2s_channel.Supla_remote_channel = Supla_remote_channel;
+                
+  return saveChannelData();
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::isInSeconds() {
+
+  switch (_z2s_channel.Supla_channel_type) {
+
+
+    case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
+      return false;
+
+
+    default:
       return true;
-    }
-    else
+  }
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::initZ2SChannelExtendedDataCounter() {
+
+  
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      _z2s_channel.extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len > 0) &&
+        (extended_data_counter_str_len < 8))
       return false;
   }
+  sprintf(
+    _z2s_channel.extended_data_counter, "EDC_%03U", _channel_index);
+
+  return setChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER, true);
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::setChannelExtendedDataCounter(uint64_t extended_data_counter) {
+
+  
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      _z2s_channel.extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len == 0) &&
+        (extended_data_counter_str_len == 8))
+      return false;
+
+    return Z2S_GatewayPreferences.putULong64(
+      _z2s_channel.extended_data_counter, extended_data_counter);
+  } 
+  else {
+
+    _z2s_channel.data_counter = extended_data_counter;
+    return saveChannelData();
+  }
+}
+
+/*****************************************************************************/
+
+const char *Z2S_Core::getChannelExtendedDataCounterKey() {
+
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+        _z2s_channel.extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len == 0) &&
+        (extended_data_counter_str_len == 8))
+      return invalid_extended_data_counter_key;
+
+    return (const char*)_z2s_channel.extended_data_counter;
+  }
+  return no_extended_data_counter_key;
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::removeChannelExtendedDataCounter() {
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      _z2s_channel.extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len > 0) &&
+        (extended_data_counter_str_len < 8))
+      Z2S_GatewayPreferences.remove(_z2s_channel.extended_data_counter);
+
+    return clearChannelUserDataFlags(
+      USER_DATA_FLAG_EXTENDED_DATA_COUNTER, true);
+  }
+  return false;
+}
+
+/*****************************************************************************/
+
+uint64_t Z2S_Core::getChannelExtendedDataCounter() {
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
+    
+    size_t extended_data_counter_str_len = strnlen(
+      _z2s_channel.extended_data_counter, 8);
+
+    if ((extended_data_counter_str_len == 0) &&
+        (extended_data_counter_str_len == 8))
+      return 0;
+        
+    return Z2S_GatewayPreferences.getULong64(
+      _z2s_channel.extended_data_counter);
+  }
+  else
+    return _z2s_channel.data_counter;
+}
+
+/*****************************************************************************/

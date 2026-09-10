@@ -3,16 +3,8 @@
 /*****************************************************************************/
 
 void initZ2SDeviceVirtualValve(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, 
-  int16_t channel_number_slot) {
-    initZ2SDeviceVirtualValve(
-      channel_number_slot, z2s_channels_table + channel_number_slot);
-}
-
-/*****************************************************************************/
-
-void initZ2SDeviceVirtualValve(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
+  Supla::Element *element) {
 
   
   uint8_t z2s_function = Z2S_VIRTUAL_VALVE_FNC_DEFAULT_ON_OFF;
@@ -25,29 +17,30 @@ void initZ2SDeviceVirtualValve(
       z2s_function = Z2S_VIRTUAL_VALVE_FNC_TUYA_BATTERY; 
     break;
   }
-  
-  auto Supla_Z2S_VirtualValve = 
-    new Supla::Control::Z2S_VirtualValve(true, z2s_function);
-  
-  Supla_Z2S_VirtualValve->getChannel()->setChannelNumber(
+
+  Supla::Control::Z2S_VirtualValve *Supla_Z2S_VirtualValve = nullptr;
+
+  if (element) {
+
+    Supla_Z2S_VirtualValve = static_cast<
+      Supla::Control::Z2S_VirtualValve *>(element);
+  }
+  else {
+
+    Supla_Z2S_VirtualValve = new Supla::Control::Z2S_VirtualValve(true);
+    
+    Supla_Z2S_VirtualValve->setZ2SChannel(channel_index, _z2s_channel);
+
+    Supla_Z2S_VirtualValve->getChannel()->setChannelNumber(
     _z2s_channel->Supla_channel);
 
-  Supla_Z2S_VirtualValve->setZ2SZbDevice(Z2S_getZbDevicePtr(
-    _z2s_channel->Zb_device_id));
-
-  Supla_Z2S_VirtualValve->setZ2SChannel(channel_index, _z2s_channel);
-
-  if (strlen(_z2s_channel->Supla_channel_name) > 0) 
     Supla_Z2S_VirtualValve->setInitialCaption(
-      _z2s_channel->Supla_channel_name);  
-
-  if (_z2s_channel->Supla_channel_func !=0) 
+      _z2s_channel->Supla_channel_name);
     Supla_Z2S_VirtualValve->setDefaultFunction(
       _z2s_channel->Supla_channel_func);
+  }
 
-  Supla_Z2S_VirtualValve->setKeepAliveSecs(_z2s_channel->keep_alive_secs);
-
-  Supla_Z2S_VirtualValve->setTimeoutSecs(_z2s_channel->timeout_secs);
+  Supla_Z2S_VirtualValve->setZ2SFunction(z2s_function);
 }
 
 /*****************************************************************************/
@@ -55,9 +48,11 @@ void initZ2SDeviceVirtualValve(
 void addZ2SDeviceVirtualValve(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
   int8_t sub_id, const char *name, uint32_t func) {
-  
- auto Supla_Z2S_VirtualValve = 
-  new Supla::Control::Z2S_VirtualValve(true);
+
+  SuplaDevice.saveStateToStorage();
+  Supla::Storage::ConfigInstance()->commit();
+
+  auto Supla_Z2S_VirtualValve = new Supla::Control::Z2S_VirtualValve(true);
 
   if (name) 
     Supla_Z2S_VirtualValve->setInitialCaption(name);
@@ -65,9 +60,25 @@ void addZ2SDeviceVirtualValve(
   if (func !=0) 
     Supla_Z2S_VirtualValve->setDefaultFunction(func);
   
-  Z2S_fillChannelsTableSlot(
-    device, free_slot, Supla_Z2S_VirtualValve->getChannelNumber(), 
+  Z2S_setChannelData(
+    Supla_Z2S_VirtualValve->getZ2SCorePtr(), device, free_slot,
+    Supla_Z2S_VirtualValve->getChannelNumber(), 
     SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, sub_id, name, func);
+
+  initZ2SDeviceVirtualValve(
+    free_slot, Supla_Z2S_VirtualValve->getZ2SChannel(), 
+    Supla_Z2S_VirtualValve->getZ2SElementPtr());
+
+    Supla_Z2S_VirtualValve->getChannel()->setSubDeviceId(
+      device->zb_device_id + 1);
+    Supla_Z2S_VirtualValve->getChannel()->setFlag(
+      SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+    addChannelsSelectorChannel(
+      Supla_Z2S_VirtualValve->getZ2SCorePtr(), false);  
+
+    Supla_Z2S_VirtualValve->onLoadConfig(&SuplaDevice);
+    Supla_Z2S_VirtualValve->onInit();
 }
 
 /*****************************************************************************/

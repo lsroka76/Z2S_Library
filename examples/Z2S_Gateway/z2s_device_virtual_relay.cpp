@@ -1,20 +1,169 @@
 #include "z2s_device_virtual_relay.h"
 #include "TuyaDatapoints.h"
 
-/*****************************************************************************/
+uint8_t getZ2SRelayFunctionId(uint32_t model_id, int8_t sub_id) {
 
-void initZ2SDeviceVirtualRelay(
-  ZigbeeGateway *gateway, zbg_device_params_t *device, 
-  int16_t channel_number_slot) {
+  uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
 
-    initZ2SDeviceVirtualRelay(
-      channel_number_slot, z2s_channels_table + channel_number_slot);
+  switch (model_id) {
+
+
+    case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
+    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
+    case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
+    case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
+    case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T:
+    case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE: {
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY; 
+    } break;
+
+
+    case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR: {
+
+      switch (sub_id) {
+
+
+        case LUMI_SMOKE_DETECTOR_SELFTEST_SID: 
+          
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL;
+        break;
+
+
+        case LUMI_SMOKE_DETECTOR_BUZZER_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2;
+        break;
+        
+
+        case LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID:
+        case LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID:
+          
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8;
+        break;  
+      } 
+    } break;
+
+    
+    case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
+
+
+      switch (sub_id) {
+
+
+        case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: 
+        case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID: 
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM; 
+        break;
+      }
+    } break;
+
+
+    case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE: {
+
+
+      switch (sub_id) {
+
+
+        case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: 
+        case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID: 
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM; 
+        break;
+      }
+    } break;
+    
+
+    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY: {
+
+
+      switch (sub_id) {
+        
+
+        case TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID: 
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE; 
+        break;
+
+
+        case TUYA_PRESENCE_SENSOR_RELAY_MODE_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE; 
+        break;
+
+
+        case TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE; 
+        break;
+      }
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
+
+
+      switch (sub_id) {
+        
+
+        case IAS_WD_SILENT_ALARM_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM; 
+        break;
+
+
+        case IAS_WD_LOUD_ALARM_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM; 
+        break;
+      }
+    } break;
+
+
+    case Z2S_DEVICE_DESC_MOES_ALARM: {
+
+
+      switch (sub_id) {
+
+
+        case MOES_ALARM_SWITCH_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH; 
+        break;
+
+
+        case MOES_ALARM_MELODY_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY; 
+        break;
+
+
+        case MOES_ALARM_VOLUME_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME; 
+        break;
+
+
+        case MOES_ALARM_DURATION_SID:
+
+          z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION; 
+        break;
+      }
+    } break;       
+  }
+  return z2s_function;
 }
 
 /*****************************************************************************/
 
 void initZ2SDeviceVirtualRelay(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel) {
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
+  Supla::Element *element) {
 
 
   if (_z2s_channel->Supla_channel_func == 
@@ -77,214 +226,59 @@ void initZ2SDeviceVirtualRelay(
       } break;
     }
     
+    Supla::Control::Z2S_RollerShutter *Supla_Z2S_RollerShutter = nullptr;
 
-    auto Supla_Z2S_RollerShutter = 
-      new Supla::Control::Z2S_RollerShutter(z2s_function);
-  
-    Supla_Z2S_RollerShutter->getChannel()->setChannelNumber(
-      _z2s_channel->Supla_channel);
+    if (element) {
 
-    if (strlen(_z2s_channel->Supla_channel_name) > 0) 
+      Supla_Z2S_RollerShutter = static_cast<
+        Supla::Control::Z2S_RollerShutter *>(element);
+    }
+    else {
+
+      Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter();
+      Supla_Z2S_RollerShutter->getChannel()->setChannelNumber(
+        _z2s_channel->Supla_channel);
+
+      Supla_Z2S_RollerShutter->setZ2SChannel(channel_index, _z2s_channel);
+
       Supla_Z2S_RollerShutter->setInitialCaption(
-        _z2s_channel->Supla_channel_name);  
-    
-    Supla_Z2S_RollerShutter->setDefaultFunction(
+        _z2s_channel->Supla_channel_name);
+      Supla_Z2S_RollerShutter->setDefaultFunction(
       _z2s_channel->Supla_channel_func);
-
-    Supla_Z2S_RollerShutter->setKeepAliveSecs(
-      _z2s_channel->keep_alive_secs);
-
-    Supla_Z2S_RollerShutter->setTimeoutSecs(
-      _z2s_channel->timeout_secs);
-    
-    Supla_Z2S_RollerShutter->setRSIgnoreMovingDirection(
-      z2s_rs_ignore_moving_direction);
-
-    Supla_Z2S_RollerShutter->setZ2SZbDevice(Z2S_getZbDevicePtr(
-    _z2s_channel->Zb_device_id));
-    
-    Supla_Z2S_RollerShutter->setZ2SChannel(channel_index, _z2s_channel);
-  } else {  //VirtualRelay section
-    
-    uint8_t z2s_function = Z2S_VIRTUAL_RELAY_FNC_NONE;
-
-    switch (_z2s_channel->model_id) {
-
-
-      case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
-      case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
-      case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
-      case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
-      case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
-      case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
-      case Z2S_DEVICE_DESC_TUYA_TS0603_GATE_CONTROLLER:
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T:
-      case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE: {
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_TUYA_DP_RELAY; 
-      } break;
-
-
-      case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR: {
-
-        switch (_z2s_channel->sub_id) {
-
-
-          case LUMI_SMOKE_DETECTOR_SELFTEST_SID: 
-            
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL;
-          break;
-
-
-          case LUMI_SMOKE_DETECTOR_BUZZER_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2;
-          break;
-          
-
-          case LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID:
-          case LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID:
-            
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_U8;
-          break;  
-        } 
-      } break;
-
-      
-      case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE: {
-
-
-        switch (_z2s_channel->sub_id) {
-
-
-          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: 
-          case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID: 
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_SONOFF_VALVE_PROGRAM; 
-          break;
-        }
-      } break;
-
-
-      case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE: {
-
-
-        switch (_z2s_channel->sub_id) {
-
-
-          case SONOFF_SMART_VALVE_RUN_PROGRAM_SID: 
-          case SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID: 
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_SONOFF_DUAL_VALVE_PROGRAM; 
-          break;
-        }
-      } break;
-      
-
-      case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY: {
-
-
-        switch (_z2s_channel->sub_id) {
-          
-
-          case TUYA_PRESENCE_SENSOR_RELAY_SWITCH_SID: 
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_STATE; 
-          break;
-
-
-          case TUYA_PRESENCE_SENSOR_RELAY_MODE_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_RELAY_MODE; 
-          break;
-
-
-          case TUYA_PRESENCE_SENSOR_RELAY_SENSOR_STATE_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_PRESENCE_SENSOR_STATE_MODE; 
-          break;
-        }
-      } break;
-
-
-      case Z2S_DEVICE_DESC_TUYA_SIREN_ALARM: {
-
-
-        switch (_z2s_channel->sub_id) {
-          
-
-          case IAS_WD_SILENT_ALARM_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_SILENT_ALARM; 
-          break;
-
-
-          case IAS_WD_LOUD_ALARM_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_IAS_WD_LOUD_ALARM; 
-          break;
-        }
-      } break;
-
-
-      case Z2S_DEVICE_DESC_MOES_ALARM: {
-
-
-        switch (_z2s_channel->sub_id) {
-
-
-          case MOES_ALARM_SWITCH_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_SWITCH; 
-          break;
-
-
-          case MOES_ALARM_MELODY_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY; 
-          break;
-
-
-          case MOES_ALARM_VOLUME_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME; 
-          break;
-
-
-          case MOES_ALARM_DURATION_SID:
-
-            z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION; 
-          break;
-        }
-      } break;       
     }
 
-    auto Supla_Z2S_VirtualRelay = 
-      new Supla::Control::Z2S_VirtualRelay(z2s_function);
-  
-    Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(
+    Supla_Z2S_RollerShutter->setZ2SFunction(z2s_function);
+
+    Supla_Z2S_RollerShutter->setRSIgnoreMovingDirection(
+      z2s_rs_ignore_moving_direction);
+  } 
+  else {  //VirtualRelay section
+    
+    Supla::Control::Z2S_VirtualRelay *Supla_Z2S_VirtualRelay = nullptr;
+
+    if (element) {
+
+      Supla_Z2S_VirtualRelay = static_cast<
+        Supla::Control::Z2S_VirtualRelay *>(element);
+    }
+    else {
+
+      Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay();
+
+      Supla_Z2S_VirtualRelay->setZ2SChannel(channel_index, _z2s_channel);
+
+      Supla_Z2S_VirtualRelay->getChannel()->setChannelNumber(
       _z2s_channel->Supla_channel);
 
-    if (strlen(_z2s_channel->Supla_channel_name) > 0) 
       Supla_Z2S_VirtualRelay->setInitialCaption(
         _z2s_channel->Supla_channel_name); 
-
-    if (_z2s_channel->Supla_channel_func !=0) 
       Supla_Z2S_VirtualRelay->setDefaultFunction(
         _z2s_channel->Supla_channel_func);
-
-    Supla_Z2S_VirtualRelay->setKeepAliveSecs(
-        _z2s_channel->keep_alive_secs);
-
-    Supla_Z2S_VirtualRelay->setTimeoutSecs(
-        _z2s_channel->timeout_secs);
-
-    Supla_Z2S_VirtualRelay->setZ2SZbDevice(Z2S_getZbDevicePtr(
-    _z2s_channel->Zb_device_id));
-
-    Supla_Z2S_VirtualRelay->setZ2SChannel(channel_index, _z2s_channel);
-
+    }
+    
+    Supla_Z2S_VirtualRelay->setZ2SFunction(
+      getZ2SRelayFunctionId(_z2s_channel->model_id, _z2s_channel->sub_id));
+      
     switch (_z2s_channel->model_id) {
 
       
@@ -491,21 +485,40 @@ void addZ2SDeviceVirtualRelay(
   
   if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
 
-    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter(
-      Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
+    SuplaDevice.saveStateToStorage();
+    Supla::Storage::ConfigInstance()->commit();
+
+    auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter();
 
     if (name == nullptr)
       name = (char*)default_rs_name;
 
     Supla_Z2S_RollerShutter->setInitialCaption(name);
-  
     Supla_Z2S_RollerShutter->setDefaultFunction(func);
   
-    Z2S_fillChannelsTableSlot(
-      device, free_slot, Supla_Z2S_RollerShutter->getChannelNumber(),
-      SUPLA_CHANNELTYPE_RELAY, sub_id, name, func);
+    Z2S_setChannelData(
+      Supla_Z2S_RollerShutter->getZ2SCorePtr(), device, free_slot,
+      Supla_Z2S_RollerShutter->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,
+      sub_id, name, func);
 
-  } else {
+    initZ2SDeviceVirtualRelay(
+      free_slot, Supla_Z2S_RollerShutter->getZ2SChannel(), 
+      Supla_Z2S_RollerShutter->getZ2SElementPtr());
+
+    Supla_Z2S_RollerShutter->getChannel()->setSubDeviceId(
+      device->zb_device_id + 1);
+    Supla_Z2S_RollerShutter->getChannel()->setFlag(
+      SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+    addChannelsSelectorChannel(Supla_Z2S_RollerShutter->getZ2SCorePtr());  
+
+    Supla_Z2S_RollerShutter->onLoadConfig(&SuplaDevice);
+    Supla_Z2S_RollerShutter->onInit();
+  } 
+  else {
+
+    SuplaDevice.saveStateToStorage();
+    Supla::Storage::ConfigInstance()->commit();
 
     auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay();
 
@@ -518,10 +531,25 @@ void addZ2SDeviceVirtualRelay(
       func = SUPLA_CHANNELFNC_POWERSWITCH;
     
     Supla_Z2S_VirtualRelay->setDefaultFunction(func);
-  
-    Z2S_fillChannelsTableSlot(
-      device, free_slot, Supla_Z2S_VirtualRelay->getChannelNumber(), 
-      SUPLA_CHANNELTYPE_RELAY, sub_id, name, func);
+
+    Z2S_setChannelData(
+      Supla_Z2S_VirtualRelay->getZ2SCorePtr(), device, free_slot,
+      Supla_Z2S_VirtualRelay->getChannelNumber(), SUPLA_CHANNELTYPE_RELAY,
+      sub_id, name, func);
+
+    initZ2SDeviceVirtualRelay(
+      free_slot, Supla_Z2S_VirtualRelay->getZ2SChannel(), 
+      Supla_Z2S_VirtualRelay->getZ2SElementPtr());
+
+    Supla_Z2S_VirtualRelay->getChannel()->setSubDeviceId(
+      device->zb_device_id + 1);
+    Supla_Z2S_VirtualRelay->getChannel()->setFlag(
+      SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+    addChannelsSelectorChannel(Supla_Z2S_VirtualRelay->getZ2SCorePtr());  
+
+    Supla_Z2S_VirtualRelay->onLoadConfig(&SuplaDevice);
+    Supla_Z2S_VirtualRelay->onInit();
   }
 }
 
