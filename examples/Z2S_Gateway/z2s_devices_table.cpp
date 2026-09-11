@@ -656,8 +656,7 @@ bool Z2S_loadChannelsTable() {
 
           z2s_channel_params.keep_alive_ms *= 1000;
           z2s_channel_params.timeout_ms *= 1000;
-          z2s_channel_params.refres_ms *= 1000;
-
+          z2s_channel_params.refresh_ms *= 1000;
         }
 
         switch (z2s_channel_params.local_channel_type) {
