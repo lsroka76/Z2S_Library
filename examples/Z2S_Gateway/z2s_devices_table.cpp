@@ -5898,6 +5898,12 @@ bool processIkeaSymfoniskCommands(
     short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
     NO_CUSTOM_CMD_SID);
 
+  if (!z2s_core) {
+  
+    no_channel_found_error_func(short_addr);
+    return false;
+  }
+
   if ((z2s_core->getChannelModelId() == 
        Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1) ||
       (z2s_core->getChannelModelId() == 
@@ -9089,6 +9095,11 @@ void updateHvacFixedCalibrationTemperature(
   bool set_trv_interface) {
 
   Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_index);
+
+  if (!z2s_core) {
+  
+    return;
+  }  
 
   if (z2s_core->getZ2SChannelType() ==SUPLA_CHANNELTYPE_HVAC) {
 
