@@ -11602,6 +11602,13 @@ bool ZbConflictResolver::onChannelConflictReport(
         log_i("%u, %u, %u", channelReportSize, i, channelReport[i]);
         
         Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(i);
+
+        if (!z2s_core) {
+
+          log_e("missing Z2S Core for channel number %u", i);
+          break;
+        }
+
         int16_t channel_number_slot = z2s_core->getZ2SChannelIndex();
         
         if ( channel_number_slot >= 0) {

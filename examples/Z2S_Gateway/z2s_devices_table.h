@@ -783,9 +783,13 @@ class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
     if (result != nullptr) {
       
       result->MaximumDurationSec = 180; //pairingTimeoutSec;
+      
       if (_state == 2) { //Zigbee.isNetworkOpen()
+
         log_d("Pairing already in progress");
+
         if (linkStartTimeMs != 0) {
+          
           result->ElapsedTimeSec = (millis() - linkStartTimeMs) / 1000;
         }
         result->PairingResult = SUPLA_CALCFG_PAIRINGRESULT_ONGOING;
@@ -793,7 +797,9 @@ class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
       }
 
       if (_state != 1) {
+        
         log_d("Pairing not started, device is not ready");
+        
         result->PairingResult = 
           SUPLA_CALCFG_PAIRINGRESULT_NOT_STARTED_NOT_READY;
         return false;
@@ -803,7 +809,9 @@ class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
     }
  
     if (_state != 1) {
+
       log_d("Pairing not started, device is not ready");
+      
       return false;
     }
 
@@ -811,6 +819,7 @@ class ZbPairingManager : public Supla::Device::SubdevicePairingHandler {
     linkStartTimeMs = millis();
     
     if (Zigbee.isNetworkOpen()) {
+      
       Zigbee.openNetwork(0);
       Zigbee.openNetwork(180);
     } else
