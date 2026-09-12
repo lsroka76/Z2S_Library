@@ -88,6 +88,18 @@ const static char Z2S_ELEMENTS_INDEX_TABLE_V2[] PROGMEM =
 const static char Z2S_ELEMENTS_PREFIX_V2[] PROGMEM = 
   "element_%03d.z2s";
 
+const static char Z2S_ELEMENTS_INDEX_TABLE_V3[] PROGMEM = 
+  "elements_index_table_v3.z2s";
+  const static char Z2S_ELEMENTS_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
+  "elements_index_table_v3.bak";
+
+const static char Z2S_ELEMENTS_PREFIX_V3[] PROGMEM = 
+  "element_%03d_v3.z2s";
+
+const static char Z2S_ELEMENTS_BACKUP_PREFIX_V3[] PROGMEM = 
+  "element_%03d_v3.bak";
+
+
 static const char *no_extended_data_counter_key = 
   "no edc key";
 
@@ -291,9 +303,12 @@ bool clearIndexTablePosition(uint8_t *index_table, uint16_t index_position,
   uint16_t max_index);
 
 bool Z2S_loadIndexTable(
-  uint8_t *index_table, size_t table_size, const char *file_name);
+  uint8_t *index_table, size_t table_size, const char *file_name, 
+  bool use_new_format = false, const char *backup_file_name = nullptr);
 bool Z2S_saveIndexTable(
-  uint8_t *index_table, size_t table_size, const char *file_name);
+  uint8_t *index_table, size_t table_size, const char *file_name, 
+  bool use_new_format = false, const char *backup_file_name = nullptr);
+
 uint16_t Z2S_getIndexTableEntriesNumber(
   uint8_t *index_table, uint16_t max_index);
 int16_t Z2S_getIndexTablePositionCounter(
@@ -307,13 +322,16 @@ int16_t Z2S_findPrevIndexPosition(
 
 bool Z2S_saveObject(
   uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
-  size_t object_size);
+  size_t object_size, bool use_new_format = false, 
+  const char *backup_file_name = nullptr);
 
 bool Z2S_loadObject(
   uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
-  size_t object_size);
+  size_t object_size, bool use_new_format = false, 
+  const char *backup_file_name_prefix = nullptr);
 
-bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix);
+bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix, 
+const char *backup_file_name_prefix = nullptr);
 
 /*****************************************************************************/
 

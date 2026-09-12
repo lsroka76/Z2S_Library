@@ -211,8 +211,16 @@ const static char Z2S_CHANNELS_TABLE_BACKUP_ID_V2[] PROGMEM = "channels_table_v2
 extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZB_DEVICES_MAX_NUMBER];
 
 const static char Z2S_ZB_DEVICES_TABLE[] PROGMEM = "Z2S_zbd_table";
-const static char Z2S_ZB_DEVICES_TABLE_ID_V2[] PROGMEM = "zb_devices_table_v2.z2s";
-const static char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2[] PROGMEM = "zb_devices_table_v2.bak";
+const static char Z2S_ZB_DEVICES_TABLE_ID_V2[] PROGMEM = 
+  "zb_devices_table_v2.z2s";
+const static char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2[] PROGMEM = 
+  "zb_devices_table_v2.bak";
+
+const static char Z2S_ZB_DEVICES_TABLE_ID_V3[] PROGMEM = 
+  "zb_devices_table_v3.z2s";
+const static char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V3[] PROGMEM = 
+  "zb_devices_table_v3.bak";
+
 
 const static char Z2S_ZB_DEVICES_TABLE_SIZE[] PROGMEM = "Z2S_zbd_ts";
 

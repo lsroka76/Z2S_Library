@@ -208,11 +208,10 @@ void supla_callback_bridge(int event, int action) {
         Zigbee.stop();
         delay(500);
 
-        log_i("software reset - saving tables");
-        Z2S_saveChannelsTable();
+        log_i("software reset - saving ZB devices table");
         Z2S_saveZbDevicesTable();
         _restart_scheduled = true;
-        LittleFS.end();
+        Z2S_endLittleFs(true);
         return;
       }
 
@@ -595,10 +594,58 @@ void setup() {
   Z2S_GatewayPreferences.begin("Z2S_GATEWAY", false);
   toggleNotifications = new Supla::Control::VirtualRelay();
   toggleNotifications->getChannel()->setChannelNumber(110);
+
+  /*auto Supla_LocalVirtualRelay = 
+        new Supla::Control::LocalVirtualRelay(RELAY_FLAGS); 
+
+      Z2S_setLocalChannelData(
+        Supla_LocalVirtualRelay->getZ2SCorePtr(), first_free_slot,
+        Supla_LocalVirtualRelay->getChannelNumber(), NO_CUSTOM_CMD_SID, 
+        LOCAL_VIRTUAL_RELAY_NAME, SUPLA_CHANNELFNC_POWERSWITCH, 0xFF, 
+        local_channel_type, local_channel_func);
+      
+      Supla_LocalVirtualRelay->setInitialCaption(LOCAL_VIRTUAL_RELAY_NAME);
+      Supla_LocalVirtualRelay->setDefaultFunction(
+        SUPLA_CHANNELFNC_POWERSWITCH);
+        
+      initZ2SDeviceLocalActionHandler(
+        first_free_slot, Supla_LocalVirtualRelay->getZ2SChannel(), 
+        Supla_LocalVirtualRelay->getZ2SElementPtr());
+
+      Supla_LocalVirtualRelay->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+*/
   toggleNotifications->setInitialCaption("Gateway sensors notifications");
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
   
+  /*auto rescue = new Supla::Control::VirtualRelay();
+  rescue->getChannel()->setChannelNumber(5);
+  rescue->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+  auto rescue2 = new Supla::Control::VirtualRelay();
+  rescue2->getChannel()->setChannelNumber(9);
+  rescue2->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+  auto rescue3 = new Supla::Control::VirtualRelay();
+  rescue3->getChannel()->setChannelNumber(44);
+  rescue3->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+  auto rescue4 = new Supla::Control::VirtualRelay();
+  rescue4->getChannel()->setChannelNumber(45);
+  rescue4->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+  auto rescue5 = new Supla::Control::VirtualRelay();
+  rescue5->getChannel()->setChannelNumber(46);
+  rescue5->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);*/
+
+
   auto AHwC = new Supla::ActionHandlerWithCallbacks();
   AHwC->setActionHandlerCallback(supla_callback_bridge);
 
@@ -699,20 +746,21 @@ void setup() {
   }
   else {
 
-    Z2S_loadZbDevicesTable();
+    if (Z2S_loadZbDevicesTable()) {
 
-    Z2S_initZbDevices(millis());
+      Z2S_initZbDevices(millis());
 
-    if (Z2S_loadChannelsTable()) {
+      if (Z2S_loadChannelsTable()) {
 
-      Z2S_initSuplaChannels();
+        Z2S_initSuplaChannels();
       
-      setGatewayEventHandler(supla_callback_bridge);
-      handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
-      handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED);
+        setGatewayEventHandler(supla_callback_bridge);
+        handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
+        handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED);
 
-      Z2S_initSuplaActions();
-      Z2S_initPushoverMessages();
+        Z2S_initSuplaActions();
+        Z2S_initPushoverMessages();
+      }
     }
     else {
 

@@ -4121,6 +4121,13 @@ void updateChannelSelectorsWithZbDeviceId(
 
 void sortChannelsSelectors() {
 
+	gui_command = 22;
+}
+
+/*****************************************************************************/
+
+void sortChannelsSelectorsMain() {
+
 	if ((channel_selector < 0xFFFF) || 
 			(action_source_channel_selector < 0xFFFF)) {
 
@@ -5057,6 +5064,18 @@ void onUpdateBegin(const UpdateType type, int &result) {
 void onUpdateEnd(const UpdateType type, int &result) {
 
 	rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+
+	if (result == UpdateResult::UPDATE_OK) {
+
+		log_i("OTA update finished successfully - cleaning before reset");
+  
+		Zigbee.stop();
+  	delay(500);
+
+  	log_i("software reset - saving ZB devices table");
+  	Z2S_saveZbDevicesTable();
+  	Z2S_endLittleFs(true);
+	}
 }
 
 void Z2S_startUpdateServer() {
@@ -5138,6 +5157,13 @@ void Z2S_loopWebGUI() {
 	uint32_t local_func = 0;
 	
 	switch (gui_command) {
+
+		case 22: {
+
+			gui_command = 0;
+			sortChannelsSelectorsMain();
+		} break;
+
 
 		case 34: {
 

@@ -115,25 +115,57 @@ bool clearIndexTablePosition(uint8_t *index_table, uint16_t index_position,
 /*****************************************************************************/
 
 bool Z2S_loadIndexTable(
-  uint8_t *index_table, size_t table_size, const char *file_name) {
+  uint8_t *index_table, size_t table_size, const char *file_name, 
+  bool use_new_format, const char *backup_file_name) {
 
   memset(index_table, 0, table_size);
 
-  if (Z2S_loadFile(file_name, index_table, table_size)) {
+  bool load_result = false;
+
+  if (use_new_format) {
+
+    load_result = Z2S_loadFileWithCRC(file_name, index_table, table_size);
+    
+    if(backup_file_name && (!load_result)) {
+
+      log_e(
+        "Index table (%s) not found - loading backup file (%s)", 
+        file_name, backup_file_name);
+
+      load_result = Z2S_loadFileWithCRC(
+        backup_file_name, index_table, table_size);
+      
+      if (load_result) {
+
+        Z2S_saveFileWithCRC(file_name, index_table, table_size);
+      }
+    }
+  }
+  else
+    load_result = Z2S_loadFile(file_name, index_table, table_size);
+
+  if (load_result) {
 
     log_i("Index table (%s) load SUCCESS!", file_name);
     return true;
   } 
   else {
+
+    bool save_result = false;
+
+    if (use_new_format)
+      save_result = Z2S_saveFileWithCRC(file_name, index_table, table_size);
+    else
+      save_result = Z2S_saveFile(file_name, index_table, table_size);
   
-    if (Z2S_saveFile(file_name, index_table, table_size)) {
+    if (save_result) {
 
       log_i(
         "Index table (%s) not found - writing new one: SUCCESS!", file_name);
       return true;
     } else {
     
-      log_i(
+      log_e(
         "Index table (%s) not found - writing new one: FAILED!", file_name);
     return false;
     }
@@ -143,9 +175,21 @@ bool Z2S_loadIndexTable(
 /*****************************************************************************/
 
 bool Z2S_saveIndexTable(
-  uint8_t *index_table, size_t table_size, const char *file_name) {
+  uint8_t *index_table, size_t table_size, const char *file_name, 
+  bool use_new_format, const char *backup_file_name) {
 
-  if (Z2S_saveFile(file_name, index_table, table_size)) {
+  bool save_result = true;
+
+  if (use_new_format) {
+
+      if (backup_file_name)
+        Z2S_renameFile(file_name, backup_file_name);
+      save_result = Z2S_saveFileWithCRC(file_name, index_table, table_size);
+  }
+  else
+    save_result = Z2S_saveFile(file_name, index_table, table_size);
+
+  if (save_result) {
 
     log_i("Saving index table (%s): SUCCESS!", file_name);
     return true;
@@ -231,12 +275,31 @@ int16_t Z2S_findPrevIndexPosition(
 
 bool Z2S_saveObject(
   uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
-  size_t object_size) {
+  size_t object_size, bool use_new_format, 
+  const char *backup_file_name_prefix) {
 
   char file_name_buffer[50] = {};
+  char backup_file_name_buffer[50] = {};
+
   sprintf(file_name_buffer, file_name_prefix, object_index);
+  if (backup_file_name_prefix)
+    sprintf(backup_file_name_buffer, backup_file_name_prefix, object_index);
+
+  bool save_result = false;
+
+  if (use_new_format) {
+
+    if (backup_file_name_prefix)
+        Z2S_renameFile(file_name_buffer, backup_file_name_buffer);
+
+    save_result = Z2S_saveFileWithCRC(
+      file_name_buffer, object_data, object_size);
+  }
+  else
+    save_result = Z2S_saveFile(
+      file_name_buffer, object_data, object_size);
   
-  if (Z2S_saveFile(file_name_buffer, object_data, object_size)) {
+  if (save_result) {
 
     log_i(
       "Saving object in file %s: SUCCESS", file_name_buffer);
@@ -255,13 +318,43 @@ bool Z2S_saveObject(
 
 bool Z2S_loadObject(
   uint16_t object_index, const char *file_name_prefix, uint8_t *object_data, 
-  size_t object_size) {
+  size_t object_size, bool use_new_format, 
+  const char *backup_file_name_prefix) {
 
   char file_name_buffer[50] = {};
+  char backup_file_name_buffer[50] = {};
   
   sprintf(file_name_buffer, file_name_prefix, object_index);
+  if (backup_file_name_prefix)
+    sprintf(backup_file_name_buffer, backup_file_name_prefix, object_index);
+
+  bool load_result = false;
+
+  if (use_new_format) {
+    
+    load_result = Z2S_loadFileWithCRC(
+      file_name_buffer, object_data, object_size);
+
+    if(backup_file_name_prefix && (!load_result)) {
+
+      log_e(
+        "Object data file (%s) not found - loading backup file (%s)", 
+        file_name_buffer, backup_file_name_buffer);
+
+      load_result = Z2S_loadFileWithCRC(
+        backup_file_name_buffer, object_data, object_size);
+      
+      if (load_result) {
+
+        Z2S_saveFileWithCRC(file_name_buffer, object_data, object_size);
+      }
+    }
+  }
+  else
+    load_result = Z2S_loadFile(
+      file_name_buffer, object_data, object_size);
   
-  if (Z2S_loadFile(file_name_buffer, object_data, object_size)) {
+  if (load_result) {
 
     log_i(
       "Loading object from file %s: SUCCESS", file_name_buffer);
@@ -277,15 +370,23 @@ bool Z2S_loadObject(
 
 /*****************************************************************************/
 
-bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix) {
+bool Z2S_removeObject(
+  uint16_t object_index, const char *file_name_prefix, 
+  const char *backup_file_name_prefix) {
 
   char file_name_buffer[50] = {};
+  char backup_file_name_buffer[50] = {};
 
   sprintf(file_name_buffer, file_name_prefix, object_index);
+  if (backup_file_name_prefix)
+    sprintf(backup_file_name_buffer, backup_file_name_prefix, object_index);
   
   if (Z2S_deleteFile(file_name_buffer)) {
+
+    if (backup_file_name_prefix)
+      Z2S_deleteFile(backup_file_name_buffer);
     
-    log_i("Removing object file %s: SUCCESS", file_name_buffer);
+    log_i("Removing object file(s) %s: SUCCESS", file_name_buffer);
     return true;
   }
   else {
@@ -325,7 +426,7 @@ bool Z2S_loadElementsIndexTable() {
 
   return Z2S_loadIndexTable(
     z2s_elements_index_table, sizeof(z2s_elements_index_table), 
-    Z2S_ELEMENTS_INDEX_TABLE_V2);
+    Z2S_ELEMENTS_INDEX_TABLE_V3, true, Z2S_ELEMENTS_INDEX_TABLE_BACKUP_V3);
 }
 
 /*****************************************************************************/
@@ -334,7 +435,7 @@ bool Z2S_saveElementsIndexTable() {
 
   return Z2S_saveIndexTable(
     z2s_elements_index_table, sizeof(z2s_elements_index_table), 
-    Z2S_ELEMENTS_INDEX_TABLE_V2);
+    Z2S_ELEMENTS_INDEX_TABLE_V3, true, Z2S_ELEMENTS_INDEX_TABLE_BACKUP_V3);
 }
 
 /*****************************************************************************/
@@ -384,8 +485,9 @@ bool Z2S_saveElement(uint16_t element_index, z2s_device_params_t &element) {
   if (element_index >= Z2S_ELEMENTS_MAX_NUMBER)
     return false;
 
-  if (Z2S_saveObject(element_index, Z2S_ELEMENTS_PREFIX_V2, 
-        (uint8_t*) &element, sizeof(z2s_device_params_t))) {
+  if (Z2S_saveObject(element_index, Z2S_ELEMENTS_PREFIX_V3, 
+        (uint8_t*) &element, sizeof(z2s_device_params_t), true,
+        Z2S_ELEMENTS_BACKUP_PREFIX_V3)) {
     
     setElementsIndexTablePosition(element_index);
     return Z2S_saveElementsIndexTable();
@@ -400,8 +502,9 @@ bool Z2S_loadElement(uint16_t element_index, z2s_device_params_t &element) {
   if (element_index >= Z2S_ELEMENTS_MAX_NUMBER)
     return false;
 
-  return Z2S_loadObject(element_index, Z2S_ELEMENTS_PREFIX_V2, 
-    (uint8_t*) &element, sizeof(z2s_device_params_t));
+  return Z2S_loadObject(element_index, Z2S_ELEMENTS_PREFIX_V3, 
+    (uint8_t*) &element, sizeof(z2s_device_params_t), true,
+    Z2S_ELEMENTS_BACKUP_PREFIX_V3);
 }
 
 /*****************************************************************************/
@@ -411,7 +514,7 @@ bool Z2S_removeElement(uint16_t element_index) {
   if (element_index >= Z2S_ELEMENTS_MAX_NUMBER)
     return false;
 
-   if (Z2S_removeObject(element_index, Z2S_ELEMENTS_PREFIX_V2)) {
+   if (Z2S_removeObject(element_index, Z2S_ELEMENTS_PREFIX_V3)) {
   
     clearElementsIndexTablePosition(element_index);
     Z2S_saveElementsIndexTable();
