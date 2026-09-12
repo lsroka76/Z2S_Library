@@ -363,6 +363,7 @@ volatile int16_t current_message_counter = -1;
 volatile int16_t new_message_id = -1;
 volatile int16_t current_message_id = -1;
 
+uint32_t channels_sort_delay_ms = 0;
 
 volatile PushoverMessageGUIState current_pushover_message_gui_state = 
 	VIEW_PUSHOVER_MESSAGE;
@@ -2374,7 +2375,7 @@ void buildChannelsTabGUI() {
 		Control::Type::Label, PSTR("Status"), working_str, 
 		Control::Color::Alizarin, remove_channel_button);
 
-	uint16_t lah_panel = ESPUI.addControl(
+	lah_panel = ESPUI.addControl(
 		Control::Type::Button, PSTR("Local logic objects"), 
 		PSTR("Add AND gate"), Control::Color::Emerald, channelstab, 
 		addLocalActionHandlerCallback, (void*)GUI_CB_ADD_AND_HANDLER_FLAG);
@@ -4122,6 +4123,7 @@ void updateChannelSelectorsWithZbDeviceId(
 void sortChannelsSelectors() {
 
 	gui_command = 22;
+	channels_sort_delay_ms = millis();
 }
 
 /*****************************************************************************/
@@ -4177,32 +4179,25 @@ void addChannelsSelectorChannel(Z2S_Core *z2s_core, bool isSwitchBot) {
 			z2s_core->setZ2SChannelGUIControlId(free_option_id);
 		} 
 		else {
-
+				
 			uint16_t gui_control_id  = ESPUI.addControl(
-			Control::Type::Option, z2s_core->getZ2SChannelName(), 
-			z2s_core->getZ2SChannelIndex(), Control::Color::None, 
-			main_selector);
-
+				Control::Type::Option, z2s_core->getZ2SChannelName(), 
+				z2s_core->getZ2SChannelIndex(), Control::Color::None, 
+				main_selector);
+		
 			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
 
-			/*ESPUI.updateControlLabel(
-				gateway_events_gui_control_id, z2s_core->getZ2SChannelName());
-			ESPUI.updateControlValue(
-				gateway_events_gui_control_id, z2s_core->getZ2SChannelIndex());
+			if (channel_selector < 0xFFFF) {
 
-			z2s_core->setZ2SChannelGUIControlId(gateway_events_gui_control_id);
-
-			buildGatewayEventsChannelSelector();*/
+				ESPUI.getControl(gui_control_id)->secondParent = 
+					action_source_channel_selector;
+				ESPUI.getControl(gui_control_id)->thirdParent = 
+					action_destination_channel_selector;
+			}
+			else
+				ESPUI.getControl(gui_control_id)->secondParent = 
+					action_destination_channel_selector;
 		}
-
-		/*if (channel_selector < 0xFFFF) {
-
-			ESPUI.updateControlValue(
-				channel_selector, z2s_core->getZ2SChannelIndex());
-
-			channelSelectorCallback(
-				nullptr, z2s_core->getZ2SChannelIndex(), nullptr);
-		}*/
 	}
 	if (isSwitchBot && (sb_channel_selector < 0xFFFF)) {
 
@@ -5155,6 +5150,13 @@ void clusterCallbackCmd() {
 void Z2S_loopWebGUI() {
 
 	uint32_t local_func = 0;
+
+	if (channels_sort_delay_ms && (millis() - channels_sort_delay_ms) > 1000) {
+
+		channels_sort_delay_ms = 0;
+		enableLAHPanel(true);
+		ESPUI.jsonReload();
+	}
 	
 	switch (gui_command) {
 
@@ -5183,7 +5185,6 @@ void Z2S_loopWebGUI() {
 					"The local virtual relay has been successfully added and is "
 					"available for use.");
 			}
-			enableLAHPanel(true);
 		} break;
 
 
@@ -5195,13 +5196,12 @@ void Z2S_loopWebGUI() {
 						LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY, 
 						SUPLA_CHANNELFNC_BINARY_SENSOR)) {
 
-			
 				ESPUI.updateLabel(
 					lah_status_label, 
 					"The ocal virtual binary has been successfully added and is "
 					"available for use.");
 			}
-			enableLAHPanel(true);
+			
 		} break;
 
 
@@ -5217,7 +5217,6 @@ void Z2S_loopWebGUI() {
 					"The local remote relay has been successfully added and is "
 					"available for use.");	
 			}
-			enableLAHPanel(true);
 		} break;
 
 
@@ -5234,7 +5233,6 @@ void Z2S_loopWebGUI() {
 					"The local remote thermometer has been successfully added and is "
 					"available for use.");
 			}
-			enableLAHPanel(true);
 		} break;
 
 
@@ -5251,7 +5249,6 @@ void Z2S_loopWebGUI() {
 					"The ocal virtual HVAC has been successfully added and is "
 					"available for use.");
 			}
-			enableLAHPanel(true);
 		} break;
 
 
@@ -5271,7 +5268,6 @@ void Z2S_loopWebGUI() {
 					"The Switchbot object has been successfully added and is "
 					"available for use.");
 			}
-			enableLAHPanel(true);
 		} break;
 
 
@@ -5628,7 +5624,7 @@ void clustersattributesdeviceSelectorCallback(
 
 void enableLAHPanel(bool enable) {
 
-	return;
+	//return;
 
 	for (uint8_t i = 0; i < 14; i++)
 		enableControlStyle(lah_panel + i, enable);
@@ -9439,7 +9435,6 @@ void addLocalActionHandlerCallback(BasicControl *sender, int type, void *param) 
 				"The local logical object has been successfully added and is "
 				"available for use.");												
 		}
-		enableLAHPanel(true);
 	}
 }
 

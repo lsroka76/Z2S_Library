@@ -132,6 +132,7 @@ uint8_t _z2s_security_level    = 0;
 
 bool sendIASNotifications = false;
 Supla::Control::VirtualRelay *toggleNotifications = nullptr;
+Supla::Sensor::GeneralPurposeMeasurement *memory_gpm = nullptr;
 
 bool _restart_scheduled = false;
 static bool _forced_config = false;
@@ -595,30 +596,15 @@ void setup() {
   toggleNotifications = new Supla::Control::VirtualRelay();
   toggleNotifications->getChannel()->setChannelNumber(110);
 
-  /*auto Supla_LocalVirtualRelay = 
-        new Supla::Control::LocalVirtualRelay(RELAY_FLAGS); 
-
-      Z2S_setLocalChannelData(
-        Supla_LocalVirtualRelay->getZ2SCorePtr(), first_free_slot,
-        Supla_LocalVirtualRelay->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_VIRTUAL_RELAY_NAME, SUPLA_CHANNELFNC_POWERSWITCH, 0xFF, 
-        local_channel_type, local_channel_func);
-      
-      Supla_LocalVirtualRelay->setInitialCaption(LOCAL_VIRTUAL_RELAY_NAME);
-      Supla_LocalVirtualRelay->setDefaultFunction(
-        SUPLA_CHANNELFNC_POWERSWITCH);
-        
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_LocalVirtualRelay->getZ2SChannel(), 
-        Supla_LocalVirtualRelay->getZ2SElementPtr());
-
-      Supla_LocalVirtualRelay->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-*/
   toggleNotifications->setInitialCaption("Gateway sensors notifications");
   toggleNotifications->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
   toggleNotifications->setDefaultStateRestore();
+
+  memory_gpm = new Supla::Sensor::GeneralPurposeMeasurement();
+  memory_gpm->setInitialCaption("Maximum Allocatable Heap Block");
+  memory_gpm->setDefaultUnitAfterValue("B");
+  memory_gpm->getChannel()->setChannelNumber(127);
+
   
   /*auto rescue = new Supla::Control::VirtualRelay();
   rescue->getChannel()->setChannelNumber(5);
@@ -1193,6 +1179,8 @@ void loop() {
 
     if (Z2S_isGUIStarted())
       Z2S_updateWebGUI();
+
+    memory_gpm->setValue(ESP.getMaxAllocHeap());
 
     _time_cluster_last_refresh_ms = millis();
   }
