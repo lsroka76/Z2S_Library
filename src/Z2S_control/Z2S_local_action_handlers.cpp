@@ -862,4 +862,48 @@ void Supla::Sensor::LocalVirtualBinary::sendNotification() {
 
 /*****************************************************************************/
 
+Supla::Sensor::LocalVirtualThermHygroMeter::LocalVirtualThermHygroMeter() 
+  : VirtualThermHygroMeter(), Z2S_Core(this) {
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualThermHygroMeter::iterateAlways() {
+
+  Supla::Sensor::VirtualThermHygroMeter::iterateAlways();
+
+  if (getRefreshMs() && ((millis() - _last_refresh_ms) > getRefreshMs())) {
+
+    _last_refresh_ms = millis();
+
+    if ((_last_source_channel < 0xFF) && 
+        (_last_source_channel != getSourceChannel()))
+      _source_virtual_therm_hygro_meter = nullptr;
+
+    if (_source_virtual_therm_hygro_meter == nullptr) {
+
+      Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelNumberAndType(
+        getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
+
+      if (z2s_core)
+        _source_virtual_therm_hygro_meter = static_cast<
+          Supla::Sensor::VirtualThermHygroMeter *>(z2s_core->getZ2SElementPtr());
+      
+      _last_source_channel = getSourceChannel();
+    }
+
+    if (_source_virtual_therm_hygro_meter) {
+
+      setTemp(_source_virtual_therm_hygro_meter->getTemp());
+      setHumi(_source_virtual_therm_hygro_meter->getHumi());
+
+      updateRemoteThermometer(
+        getSuplaRemoteChannel(), 0, channel.getChannelNumber(), 
+        RTH_VALUE_TYPE_TEMPERATURE, getTemp() * 100);
+    }       
+  }
+}
+
+/*****************************************************************************/
+
 Supla::GatewayEvents GatewayEventsInstance;

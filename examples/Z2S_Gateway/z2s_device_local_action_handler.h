@@ -42,6 +42,8 @@ static constexpr char *LOCAL_VIRTUAL_BINARY_NAME = "LOCAL VIRTUAL BINARY";
 static constexpr char *LOCAL_REMOTE_RELAY_NAME = "LOCAL REMOTE RELAY";
 static constexpr char *LOCAL_REMOTE_THERMOMETER_NAME = 
   "LOCAL REMOTE THERMOMETER";
+static constexpr char *LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME = 
+  "LOCAL VIRTUAL THERMHYGROMETER";
 
 /*****************************************************************************/
 

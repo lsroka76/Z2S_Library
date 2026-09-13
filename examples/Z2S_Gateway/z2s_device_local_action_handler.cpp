@@ -54,6 +54,12 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
     break;
 
 
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
+      
+      return "Local virtual thermhygrometer";
+    break;
+
+
     case LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS:
 
       return "Gateway events";
@@ -89,6 +95,7 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
     case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
     case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC:
     case LOCAL_CHANNEL_TYPE_SWITCHBOT:
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
     case LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS:
       
       return "No special functions";
@@ -306,6 +313,31 @@ void initZ2SDeviceLocalActionHandler(
       Supla_Z2S_RemoteRelay->setDefaultStateRestore();      
     }
     break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER: {
+
+      Supla::Sensor::LocalVirtualThermHygroMeter 
+        *Supla_Z2S_LocalVirtualThermHygroMeter = nullptr;
+
+      if (element) {
+
+        Supla_Z2S_LocalVirtualThermHygroMeter = static_cast<
+          Supla::Sensor::LocalVirtualThermHygroMeter *>(element);
+      }
+      else {
+      
+        Supla_Z2S_LocalVirtualThermHygroMeter = 
+          new Supla::Sensor::LocalVirtualThermHygroMeter();
+
+        Supla_Z2S_LocalVirtualThermHygroMeter->setZ2SChannel(
+          channel_index, _z2s_channel);
+
+        Supla_Z2S_LocalVirtualThermHygroMeter->getChannel()->setChannelNumber(
+          _z2s_channel->Supla_channel);
+      } 
+    } break; 
+
   } 
 }
 
@@ -555,6 +587,45 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_SwitchBotRelay->onInit();
       
       Supla::Network::DisconnectProtocols();
+    } break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER: {
+
+      
+      auto Supla_Z2S_LocalVirtualThermHygroMeter = 
+          new Supla::Sensor::LocalVirtualThermHygroMeter();
+
+      Z2S_setLocalChannelData(
+        Supla_Z2S_LocalVirtualThermHygroMeter->getZ2SCorePtr(),
+        first_free_slot, 
+        Supla_Z2S_LocalVirtualThermHygroMeter->getChannelNumber(), 
+        NO_CUSTOM_CMD_SID, LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME, 
+        SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 0xFF, 
+        local_channel_type, local_channel_func);
+
+      Supla_Z2S_LocalVirtualThermHygroMeter->setInitialCaption(
+        LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME);
+      Supla_Z2S_LocalVirtualThermHygroMeter->setDefaultFunction(
+        SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
+
+      initZ2SDeviceLocalActionHandler(
+        first_free_slot, 
+        Supla_Z2S_LocalVirtualThermHygroMeter->getZ2SChannel(), 
+        Supla_Z2S_LocalVirtualThermHygroMeter->getZ2SElementPtr());
+
+      Supla_Z2S_LocalVirtualThermHygroMeter->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+      addChannelsSelectorChannel(
+        Supla_Z2S_LocalVirtualThermHygroMeter->getZ2SCorePtr());
+      sortChannelsSelectors();
+
+      Supla_Z2S_LocalVirtualThermHygroMeter->onLoadConfig(&SuplaDevice);
+      Supla_Z2S_LocalVirtualThermHygroMeter->onInit();
+      
+      Supla::Network::DisconnectProtocols();
+
     } break;
 
 

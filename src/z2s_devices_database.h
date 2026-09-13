@@ -48,6 +48,7 @@
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1               0x1001
 #define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL            0x1002
 #define Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_POLL             0x1003
+#define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT        0x1004
 
 #define Z2S_DEVICE_DESC_TEMPERATURE_SENSOR                  0x1005
 #define Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_1                0x1006
@@ -1341,19 +1342,17 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { //ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
-                             //ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
-                             //ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG 
-                             }},
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_POLL,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { //ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
-                             ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
-                             //ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG 
-                             }},
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPERATURE_SENSOR,
     .z2s_device_clusters_count = 2,
@@ -3211,12 +3210,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-02DR2",
     .z2s_device_uid = 2050,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT,
 	  .z2s_device_endpoints_count = 1,
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD, 
-      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL}
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT }
   },
 
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-02P",

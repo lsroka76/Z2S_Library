@@ -61,9 +61,6 @@
 #define ZBD_LOW_BATTERY_MSG                                     0x05
 #define ZBD_BATTERY_RESTORE_MSG                                 0x06
 
-#define RTH_VALUE_TYPE_TEMPERATURE                              0x01
-#define RTH_VALUE_TYPE_HUMIDITY                                 0x02
-
 #define CHANNEL_EXTENDED_DATA_TYPE_NULL                         0x00
 
 #define GATEWAY_EVENTS_LOCAL_CHANNEL_SLOT                       0x7F

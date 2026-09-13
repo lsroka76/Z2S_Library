@@ -9,12 +9,16 @@
 
 #include "Z2S_common.h"
 #include "z2s_little_fs.h"
+#include "z2s_devices_database.h"
 
 #include <Z2S_control/Z2S_remote_relay.h>
 #include <Z2S_sensor/Z2S_remote_thermometer.h>
 #include <Z2S_control/Z2S_local_action_handlers.h>
 #include <Z2S_control/hvac_base_ee.h>
 #include <Z2S_control/Z2S_trv_interface.h>
+#include <Z2S_sensor/Z2S_virtual_therm_hygro_meter.h>
+#include <Z2S_sensor/Z2S_virtual_thermometer.h>
+
 
 /*****************************************************************************/
 
@@ -555,6 +559,26 @@ Z2S_Core *Z2S_Core::getZ2SCoreByChannelIndex(int16_t channel_index) {
 
 /*****************************************************************************/
 
+Z2S_Core *Z2S_Core::getZ2SCoreByChannelNumberAndType(
+  uint8_t channel_number, int32_t Supla_channel_type) {
+
+  auto core_it = Z2S_Cores.begin();
+    
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if ((z2s_core->_z2s_channel.Supla_channel == channel_number) &&
+        (z2s_core->_z2s_channel.Supla_channel_type == Supla_channel_type))
+      return z2s_core;
+
+    core_it++;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
 Z2S_Core *Z2S_Core::getZ2SCoreByChannelNumber(uint8_t channel_number) {
 
   auto core_it = Z2S_Cores.begin();
@@ -909,6 +933,16 @@ bool Z2S_Core::setSuplaRemoteChannel(uint8_t Supla_remote_channel) {
 
 /*****************************************************************************/
 
+bool Z2S_Core::setSourceChannel(uint8_t source_channel) {
+
+  _z2s_channel.source_channel = source_channel;
+                
+  return saveChannelData();
+}
+
+
+/*****************************************************************************/
+
 bool Z2S_Core::isInSeconds() {
 
   switch (_z2s_channel.Supla_channel_type) {
@@ -1027,3 +1061,69 @@ uint64_t Z2S_Core::getChannelExtendedDataCounter() {
 }
 
 /*****************************************************************************/
+
+void Z2S_Core::updateRemoteThermometer(
+  uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
+  uint32_t connected_thermometer_channel, uint8_t value_type,
+  int32_t connected_thermometer_value) {
+
+
+  log_i(
+    "Supla_channel %u, connected_thermometer_channel %u, value type %u, "
+    "connected_thermometer_temperature %lu", Supla_channel, 
+    connected_thermometer_channel, value_type, connected_thermometer_value);
+
+  if (Supla_channel > 0x7F) {
+
+    Supla_channel -= 0x80;
+    connected_thermometer_channel += 0x80;
+  }
+  
+  auto core_it = Z2S_Cores.begin();
+    
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.Supla_channel == Supla_channel) {
+
+      if (z2s_core->isRemoteThermometer() &&
+          (value_type == RTH_VALUE_TYPE_TEMPERATURE)) {
+
+        
+        auto Z2S_RemoteThermometer = static_cast<
+          Supla::Sensor::Z2S_RemoteThermometer *>
+          (z2s_core->getZ2SElementPtr());
+        
+        Z2S_RemoteThermometer->setConnectedThermometerTemperature(
+          connected_thermometer_ip_address, connected_thermometer_channel,
+          connected_thermometer_value);            
+      }
+      if (z2s_core->getZbDeviceModelId() == 
+          Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT) {
+
+        auto Z2S_SNZB02DR2ThermHygroMeter = static_cast<
+          Supla::Sensor::Z2S_SNZB02DR2ThermHygroMeter *>
+          (z2s_core->getZ2SElementPtr());
+
+        switch (value_type) {
+
+
+          case RTH_VALUE_TYPE_TEMPERATURE: {
+  
+            Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature(
+              connected_thermometer_value);
+          } break;
+
+
+          case RTH_VALUE_TYPE_HUMIDITY: {
+  
+            Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity(
+              connected_thermometer_value);
+          } break;
+        }
+      }
+    }
+    core_it++;
+  }
+}

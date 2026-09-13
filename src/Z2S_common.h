@@ -75,11 +75,18 @@
 
 #define LOCAL_CHANNEL_TYPE_SWITCHBOT                            0x40
 
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER            0x50
+
 #define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                       0x80
 
 #define REMOTE_ADDRESS_TYPE_LOCAL                               0x00
 #define REMOTE_ADDRESS_TYPE_IP4                                 0x01
 #define REMOTE_ADDRESS_TYPE_MDNS                                0x02
+
+/***********************************************************************************/
+
+#define RTH_VALUE_TYPE_TEMPERATURE                              0x01
+#define RTH_VALUE_TYPE_HUMIDITY                                 0x02
 
 /***********************************************************************************/
 
@@ -178,7 +185,7 @@ union {
   char                Supla_channel_name[SUPLA_CHANNEL_NAME_MAX_SIZE];
   uint32_t            Supla_channel_func;
   int8_t              sub_id;
-  uint8_t             reserved_4;
+  uint8_t             source_channel;
   uint16_t            gui_control_id;
   
   union {
@@ -611,8 +618,14 @@ public:
 
   bool isRemoteRelay() {
 
-        return (_z2s_channel.local_channel_type == 
+    return (_z2s_channel.local_channel_type == 
       LOCAL_CHANNEL_TYPE_REMOTE_RELAY);
+  }
+
+  bool isRemoteThermometer() {
+
+    return (_z2s_channel.local_channel_type == 
+      LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER);
   }
 
   bool isHvacChannel() {
@@ -718,7 +731,14 @@ public:
     return _z2s_channel.Supla_remote_channel;
   }
 
+  uint8_t getSourceChannel() {
+  
+    return _z2s_channel.source_channel;
+  }
+
   bool setSuplaRemoteChannel(uint8_t Supla_remote_channel);
+
+  bool setSourceChannel(uint8_t source_channel);
 
   const char* getMDNSName() {
   
@@ -908,6 +928,8 @@ public:
   static Z2S_Core *getZ2SCoreByChannelIndex(int16_t channel_index);
   static Z2S_Core *getZ2SCoreByChannelNumber(uint8_t channel_number);
   static Z2S_Core *getZ2SCoreByZbDeviceId(uint8_t Zb_device_id);
+  static Z2S_Core *getZ2SCoreByChannelNumberAndType(
+    uint8_t channel_number, int32_t Supla_channel_type);
 
   static Supla::Element *getZ2SElementByChannelNumber(uint8_t channel_number);
   static Supla::Element *getZ2SElementByChannelIndex(int16_t channel_index);
@@ -929,6 +951,12 @@ public:
 
   static void updateZ2SCoresShortAddress(
     uint16_t prev_addr, uint16_t new_addr);
+
+  static void updateRemoteThermometer(
+    uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
+    uint32_t connected_thermometer_channel, uint8_t value_type,
+    int32_t connected_thermometer_value);
+
     
 
   const char* getZ2SChannelName() {

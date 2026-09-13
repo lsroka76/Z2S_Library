@@ -34,6 +34,7 @@
 #include <supla/control/virtual_relay.h>
 #include <supla/control/hvac_base.h>
 #include <supla/sensor/virtual_binary.h>
+#include <supla/sensor/virtual_therm_hygro_meter.h>
 #include <supla/device/notifications.h>
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
@@ -306,7 +307,21 @@ class LocalVirtualBinary: public VirtualBinary, public Z2S_Core {
 
 };
 
+class LocalVirtualThermHygroMeter: public VirtualThermHygroMeter, public Z2S_Core {
 
+  public:
+
+    LocalVirtualThermHygroMeter();
+
+    void iterateAlways() override;
+
+  private:
+
+    uint8_t _last_source_channel = 0xFF;
+    uint32_t  _last_refresh_ms = 0;
+    Supla::Sensor::VirtualThermHygroMeter *_source_virtual_therm_hygro_meter =
+      nullptr;
+};
 }; //namespace Sensor
 };  // namespace Supla
 

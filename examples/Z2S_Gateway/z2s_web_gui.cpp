@@ -180,7 +180,10 @@ uint16_t param_1_desc_label;
 uint16_t param_1_save_button; 
 uint16_t param_2_number;
 uint16_t param_2_desc_label;
-uint16_t param_2_save_button; 
+uint16_t param_2_save_button;
+uint16_t param_3_number;
+uint16_t param_3_desc_label;
+uint16_t param_3_save_button; 
 uint16_t keepalive_number;
 uint16_t timeout_number;
 uint16_t refresh_number;
@@ -436,6 +439,7 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 
 #define GUI_CB_UPDATE_PARAM_1_FLAG								0x4030
 #define GUI_CB_UPDATE_PARAM_2_FLAG								0x4031
+#define GUI_CB_UPDATE_PARAM_3_FLAG								0x4032
 
 #define GUI_CB_ADD_AND_HANDLER_FLAG								0x4050
 #define GUI_CB_ADD_OR_HANDLER_FLAG								0x4051
@@ -549,6 +553,17 @@ static constexpr char *OTA_server_notify_success_str PROGMEM =
 
 static constexpr char *OTA_server_notify_failure_str PROGMEM = 
 	"OTA upgrade server notify failed!";
+
+static constexpr char *dest_thermometer_address_desc =
+	"&#10023; Enter destination thermometer IP address or mDNS name &#10023;"
+	"<br>for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway<br>"
+	"or enter 0.0.0.0 for local temperature forwarding";
+
+static constexpr char *dest_thermometer_channel_desc =
+	"&#10023; Enter destination thermometer channel # &#10023;";
+static constexpr char *src_thermometer_channel_desc =
+	"&#10023; Enter source thermometer local channel # &#10023;<br>";
+
 
 //static char general_purpose_gui_buffer[1024] = {};
 
@@ -696,11 +711,18 @@ void valveCallback(BasicControl *sender, int type, void *param);
 void TuyaCustomCmdCallback(BasicControl *sender, int type, void *param);
 void actionsTableCallback(BasicControl *sender, int type, void *param);
 void actionSelectorCallback(BasicControl *sender, int type, void *param);
-void addLocalActionHandlerCallback(BasicControl *sender, int type, void *param);
-void addLocalVirtualRelayCallback(BasicControl *sender, int type, void *param);
-void addLocalVirtualBinaryCallback(BasicControl *sender, int type, void *param);
-void addLocalRemoteRelayCallback(BasicControl *sender, int type, void *param);
-void addLocalRemoteThermometerCallback(BasicControl *sender, int type, void *param);
+void addLocalActionHandlerCallback(
+	BasicControl *sender, int type, void *param);
+void addLocalVirtualRelayCallback(
+	BasicControl *sender, int type, void *param);
+void addLocalVirtualBinaryCallback(
+	BasicControl *sender, int type, void *param);
+void addLocalRemoteRelayCallback(
+	BasicControl *sender, int type, void *param);
+void addLocalRemoteThermometerCallback(
+	BasicControl *sender, int type, void *param);
+void addLocalVirtualThermhygrometerCallback(
+	BasicControl *sender, int type, void *param);
 void addLocalVirtualHvacCallback(BasicControl *sender, int type, void *param);
 void addSwitchbotCallback(BasicControl *sender, int type, void *param);
 void saveSwitchbotCallback(BasicControl *sender, int type, void *param);
@@ -998,6 +1020,7 @@ const char* getZ2SDeviceDescName(uint32_t modelID)  {
 		case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
 			return "Temperature and humidity sensor(0x402, 0x405)";
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL:
+		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT:
 			return "Temperature and humidity sensor(0x20, 0x402, 0x405)";
 		case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
 			return "Temperature and humidity sensor(Tuya 0xEF00)";
@@ -2301,11 +2324,27 @@ void buildChannelsTabGUI() {
 		Control::Color::Emerald, zb_channel_params_label, 
 		editChannelCallback, (void*)GUI_CB_UPDATE_PARAM_2_FLAG);
 
-	working_str_ptr = PSTR("&#10023; PARAM(1) - currently not used &#10023;");
+	working_str_ptr = PSTR("&#10023; PARAM(2) - currently not used &#10023;");
 	param_2_desc_label = ESPUI.addControl(
 		Control::Type::Label, empty_str, working_str_ptr, 
 		Control::Color::None, zb_channel_params_label);
 	ESPUI.setElementStyle(param_2_desc_label, clearLabelStyle);
+
+	param_3_number = ESPUI.addControl(
+		Control::Type::Number, empty_str, (long int)0, 
+		Control::Color::Emerald, zb_channel_params_label, generalCallback);
+
+	working_str_ptr = PSTR("Save");
+	param_3_save_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, working_str_ptr, 
+		Control::Color::Emerald, zb_channel_params_label, 
+		editChannelCallback, (void*)GUI_CB_UPDATE_PARAM_3_FLAG);
+
+	working_str_ptr = PSTR("&#10023; PARAM(3) - currently not used &#10023;");
+	param_3_desc_label = ESPUI.addControl(
+		Control::Type::Label, empty_str, working_str_ptr, 
+		Control::Color::None, zb_channel_params_label);
+	ESPUI.setElementStyle(param_3_desc_label, clearLabelStyle);
 
 	zb_channel_timings_label = ESPUI.addControl(
 		Control::Type::Label, PSTR("Channel timings panel"), 
@@ -2450,7 +2489,13 @@ void buildChannelsTabGUI() {
 	working_str_ptr = PSTR("Add remote thermometer");
 	ESPUI.addControl(
 		Control::Type::Button, empty_str, working_str_ptr, 
-		Control::Color::Emerald, lah_panel, addLocalRemoteThermometerCallback);			
+		Control::Color::Emerald, lah_panel, addLocalRemoteThermometerCallback);
+
+	working_str_ptr = PSTR("Add virtual thermhygrometer");
+	ESPUI.addControl(
+		Control::Type::Button, empty_str, working_str_ptr, 
+		Control::Color::Emerald, lah_panel, 
+		addLocalVirtualThermhygrometerCallback);			
 
 	addEmptyLineLabel(lah_panel);
 	lah_status_label = ESPUI.addControl(
@@ -5178,7 +5223,7 @@ void Z2S_loopWebGUI() {
 			gui_command = 0;
 			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
-						LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
+						LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY, 0)) {
 
 				ESPUI.updateLabel(
 					lah_status_label, 
@@ -5193,12 +5238,11 @@ void Z2S_loopWebGUI() {
 			gui_command = 0;
 			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
-						LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY, 
-						SUPLA_CHANNELFNC_BINARY_SENSOR)) {
+						LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY, 0)) {
 
 				ESPUI.updateLabel(
 					lah_status_label, 
-					"The ocal virtual binary has been successfully added and is "
+					"The local virtual binary has been successfully added and is "
 					"available for use.");
 			}
 			
@@ -5210,7 +5254,7 @@ void Z2S_loopWebGUI() {
 			gui_command = 0;
 			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
-						LOCAL_CHANNEL_TYPE_REMOTE_RELAY, SUPLA_CHANNELFNC_POWERSWITCH)) {
+						LOCAL_CHANNEL_TYPE_REMOTE_RELAY, 0)) {
 
 				ESPUI.updateLabel(
 					lah_status_label, 
@@ -5241,13 +5285,27 @@ void Z2S_loopWebGUI() {
 			gui_command = 0;
 			enableLAHPanel(false);
 			if (addZ2SDeviceLocalActionHandler(
-						LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC, 
-						SUPLA_CHANNELFNC_HVAC_THERMOSTAT)) {
+						LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC, 0)) {
 				
 				ESPUI.updateLabel(
 					lah_status_label, 
-					"The ocal virtual HVAC has been successfully added and is "
+					"The local virtual HVAC has been successfully added and is "
 					"available for use.");
+			}
+		} break;
+
+
+		case 71: {
+
+			gui_command = 0;
+			enableLAHPanel(false);
+			if (addZ2SDeviceLocalActionHandler(
+						LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER, 0)) {
+				
+				ESPUI.updateLabel(
+					lah_status_label, 
+					"The local virtual thermHygrometer has been successfully added and"
+					" is available for use.");
 			}
 		} break;
 
@@ -5626,7 +5684,7 @@ void enableLAHPanel(bool enable) {
 
 	//return;
 
-	for (uint8_t i = 0; i < 14; i++)
+	for (uint8_t i = 0; i < 15; i++)
 		enableControlStyle(lah_panel + i, enable);
 }
 
@@ -5641,6 +5699,7 @@ void enableChannelControls(bool enable) {
 
 	ESPUI.updateNumber(param_1_number, 0);
 	ESPUI.updateNumber(param_2_number, 0);
+	ESPUI.updateNumber(param_3_number, 0);
 	ESPUI.updateNumber(keepalive_number, 0);
 	ESPUI.updateNumber(timeout_number, 0);
 	ESPUI.updateNumber(refresh_number, 0);
@@ -5666,8 +5725,10 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(skip_subdevice_registation_switcher, enable);
 	enableControlStyle(param_1_number, enable);
 	enableControlStyle(param_2_number, enable);
+	enableControlStyle(param_3_number, enable);
 	enableControlStyle(param_1_save_button, enable);
 	enableControlStyle(param_2_save_button, enable);
+	enableControlStyle(param_3_save_button, enable);
 	enableControlStyle(keepalive_number, enable);
 	enableControlStyle(keepalive_save_button, enable);
 	enableControlStyle(timeout_number, enable);
@@ -5810,6 +5871,22 @@ void enableChannelParams(uint8_t params_mask) {
 		enableControlStyle(param_2_save_button, false);
 	}
 
+	if (params_mask & 4) {
+		
+		enableControlStyle(param_3_number, true);
+		enableControlStyle(param_3_save_button, true);
+		
+	}
+	else {
+		
+		ESPUI.updateNumber(param_3_number, 0);
+		char *working_str_ptr = 
+			PSTR("&#10023; PARAM(3) - currently not used &#10023;");
+		ESPUI.updateLabel(param_3_desc_label, working_str_ptr);
+		enableControlStyle(param_3_number, false);
+		enableControlStyle(param_3_save_button, false);
+	}
+	
 	if (params_mask == 0) 
 		enableControlStyle(zb_channel_params_label, false);
 	else
@@ -5925,7 +6002,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
 	switch (z2s_channel.Supla_channel_type) {
 
-		case 0x0000: {
+		case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
 
 			
 			enableChannelFlags(0);
@@ -5974,6 +6051,20 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 				enableChannelTimings(4);
 
 				ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
+			}
+
+			if (z2s_channel.local_channel_type == 
+						LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER) {
+
+				enableChannelTimings(4);
+				enableChannelParams(7);
+				fillRemoteAddressData(channel_slot);
+				ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
+				ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
+
+				ESPUI.updateLabel(param_1_desc_label, dest_thermometer_address_desc);
+				ESPUI.updateLabel(param_2_desc_label, dest_thermometer_channel_desc);
+				ESPUI.updateLabel(param_3_desc_label, src_thermometer_channel_desc);
 			}
 		} break;
 		
@@ -6029,7 +6120,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 		case SUPLA_CHANNELTYPE_PRESSURESENSOR: {
 	
 			enableChannelFlags(4 + 8 + 16);
-			enableChannelTimings(2); //timeout only
+			enableChannelTimings(6); //timeout only
 
 			ESPUI.updateNumber(
 				set_sorwns_on_start_switcher, (z2s_channel.user_data_flags & 
@@ -6042,6 +6133,7 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 				enable_resend_temperature_switcher, enable_resend_temperature_flag); 
 
 			ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
+			ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 		
 			if (enable_resend_temperature_flag) {
 				
@@ -6052,17 +6144,10 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
       		"MDNS" : "IP4");
 
 				fillRemoteAddressData(channel_slot);
-
-				char *working_str_ptr = PSTR(
-					"&#10023; Enter remote thermometer IP address or mDNS name &#10023;<br>"
-					"for mDNS use <b><i>mdns://</i></b> prefix ie. mdns://my_gateway<br>"
-					"or enter 0.0.0.0 for local temperature forwarding");
 				
-				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+				ESPUI.updateLabel(param_1_desc_label, dest_thermometer_address_desc);
 
-				working_str_ptr = PSTR(
-					"&#10023; Enter destination thermometer channel # &#10023;");
-				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+				ESPUI.updateLabel(param_2_desc_label, dest_thermometer_channel_desc);
 			} else {
 
 				enableChannelParams(0);
@@ -7415,6 +7500,19 @@ uint8_t	saveRemoteChannelData(uint8_t channel_slot){
 	return Supla_remote_channel;
 }
 
+uint8_t	saveSourceChannelData(uint8_t channel_slot){
+
+	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
+	
+	uint8_t Supla_source_channel = ESPUI.getControl(
+		param_3_number)->getValueInt();
+
+	z2s_core->setSourceChannel(Supla_source_channel);								
+
+	return Supla_source_channel;
+}
+
+
 void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 	log_i("type = %u, param %lu", type, (uint32_t)param);
@@ -7475,10 +7573,13 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
 
-						if (z2s_core->getZ2SLocalChannelType() ==
-								LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
+						switch(z2s_core->getZ2SLocalChannelType()) {
 
-							saveRemoteAddressData(channel_slot);
+							case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
+							case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
+
+								saveRemoteAddressData(channel_slot);
+							break;
 						}
 					} break;
 
@@ -7512,9 +7613,16 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 				switch (z2s_core->getZ2SChannelType()) {
 
 
-					case 0x0000: {
+					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
 
-						saveRemoteChannelData(channel_slot);
+						switch(z2s_core->getZ2SLocalChannelType()) {
+
+							case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
+							case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
+
+								saveRemoteChannelData(channel_slot);
+							break;
+						}
 					} break;
 
 
@@ -7532,6 +7640,27 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 					} break;
 				}
 			} break;
+
+
+			case GUI_CB_UPDATE_PARAM_3_FLAG : {	
+
+
+				switch (z2s_core->getZ2SChannelType()) {
+
+
+					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
+
+						switch(z2s_core->getZ2SLocalChannelType()) {
+
+							case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
+
+								saveSourceChannelData(channel_slot);
+							break;
+						}
+					} break;
+				}
+			} break;
+		
 			
 			case GUI_CB_UPDATE_KEEPALIVE_FLAG : {	
 
@@ -9426,8 +9555,7 @@ void addLocalActionHandlerCallback(BasicControl *sender, int type, void *param) 
 		enableLAHPanel(false);
 
 		if (addZ2SDeviceLocalActionHandler(
-			LOCAL_CHANNEL_TYPE_ACTION_HANDLER, SUPLA_CHANNELFNC_NONE, 
-			logic_operator)) {
+			LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 0, logic_operator)) {
 			
 			delay(200);				
 			ESPUI.updateLabel(
@@ -9462,7 +9590,8 @@ void addLocalRemoteRelayCallback(BasicControl *sender, int type, void *param) {
 	}
 }
 
-void addLocalRemoteThermometerCallback(BasicControl *sender, int type, void *param) {
+void addLocalRemoteThermometerCallback(
+	BasicControl *sender, int type, void *param) {
 
 	if (type == B_UP) {
 
@@ -9475,6 +9604,15 @@ void addLocalVirtualHvacCallback(BasicControl *sender, int type, void *param) {
 	if (type == B_UP) {
 
 		gui_command = 70;
+	}
+}
+
+void addLocalVirtualThermhygrometerCallback(
+	BasicControl *sender, int type, void *param) {
+
+	if (type == B_UP) {
+
+		gui_command = 71;
 	}
 }
 
