@@ -26,7 +26,7 @@
 
 #define MSINHOUR (60*60*1000)
 #define MINUTES_30 1800000
-//#define MINUTES_30
+
 
 #define CONNECTED_THERMOMETERS_FNC_MIN  0x01
 #define CONNECTED_THERMOMETERS_FNC_AVG  0x02
@@ -92,61 +92,60 @@ public:
         connected_thermometers_counter < MAX_CONNECTED_THERMOMETERS;
         connected_thermometers_counter++) {
 
-      if ((_connected_thermometers[connected_thermometers_counter].
-           connected_thermometer_ip_address == 
+      auto& _connected_thermometer = _connected_thermometers[
+        connected_thermometers_counter];
+
+      if ((_connected_thermometer.connected_thermometer_ip_address == 
            connected_thermometer_ip_address) &&
-           (_connected_thermometers[connected_thermometers_counter].
-           connected_thermometer_channel == 
+           (_connected_thermometer.connected_thermometer_channel == 
            connected_thermometer_channel)) {
 
-        _connected_thermometers[connected_thermometers_counter].
-        connected_thermometer_temperature = 
+        _connected_thermometer.connected_thermometer_temperature = 
           connected_thermometer_temperature;
 
-        _connected_thermometers[connected_thermometers_counter].
-        connected_thermometer_last_seen_ms = millis();
+        _connected_thermometer.connected_thermometer_last_seen_ms = millis();
 
-        log_i("connected thermometer #%u updated\n\r"
-              "IP %s, channel %u\n\r"
-              "temperature %ld\n\r",
-              connected_thermometers_counter,
-              IPAddress(_connected_thermometers[connected_thermometers_counter].
-              connected_thermometer_ip_address).toString(),
-              _connected_thermometers[connected_thermometers_counter].
-              connected_thermometer_channel,
-              _connected_thermometers[connected_thermometers_counter].
-              connected_thermometer_temperature);
+        IPAddress ip(
+            _connected_thermometer.connected_thermometer_ip_address);
+
+        log_i(
+          "connected thermometer #%u updated\n\rIP %u.%u.%u.%u, channel %u"
+          "\n\rtemperature %ld\n\r", connected_thermometers_counter, ip[0], 
+          ip[1], ip[2], ip[3], 
+          _connected_thermometer.connected_thermometer_channel,
+          _connected_thermometer.connected_thermometer_temperature);
+
         return;
       }
-      if ((_connected_thermometers[connected_thermometers_counter].
-           connected_thermometer_channel == 0xFF) &&
+      if ((_connected_thermometer.connected_thermometer_channel == 0xFF) &&
           (connected_thermometers_free_slot == 0xFF))
         connected_thermometers_free_slot = connected_thermometers_counter;
     }
     if (connected_thermometers_free_slot < 0xFF) {
 
-      _connected_thermometers[connected_thermometers_free_slot].
-      connected_thermometer_ip_address = connected_thermometer_ip_address;
+      auto& _connected_thermometer = _connected_thermometers[
+        connected_thermometers_free_slot];
 
-      _connected_thermometers[connected_thermometers_free_slot].
-      connected_thermometer_channel = connected_thermometer_channel;
+      _connected_thermometer.connected_thermometer_ip_address = 
+        connected_thermometer_ip_address;
 
-      _connected_thermometers[connected_thermometers_free_slot].
-      connected_thermometer_temperature = connected_thermometer_temperature;
+      _connected_thermometer.connected_thermometer_channel = 
+        connected_thermometer_channel;
 
-      _connected_thermometers[connected_thermometers_free_slot].
-      connected_thermometer_last_seen_ms = millis();
+      _connected_thermometer.connected_thermometer_temperature = 
+        connected_thermometer_temperature;
 
-      log_i("new connected thermometer registered at%u\n\r"
-              "IP %s, channel %u\n\r"
-              "temperature %ld\n\r",
-              connected_thermometers_free_slot,
-              IPAddress(_connected_thermometers[connected_thermometers_free_slot].
-              connected_thermometer_ip_address).toString(),
-              _connected_thermometers[connected_thermometers_free_slot].
-              connected_thermometer_channel,
-              _connected_thermometers[connected_thermometers_free_slot].
-              connected_thermometer_temperature);
+      _connected_thermometer.connected_thermometer_last_seen_ms = millis();
+
+      IPAddress ip(
+            _connected_thermometer.connected_thermometer_ip_address);
+
+      log_i(
+        "new connected thermometer registered at%u\n\rIP %u.%u.%u.%u, channel"
+        " %u\n\rtemperature %ld\n\r", connected_thermometers_free_slot,
+        ip[0], ip[1], ip[2], ip[3],
+        _connected_thermometer.connected_thermometer_channel,
+        _connected_thermometer.connected_thermometer_temperature);
     } else
       log_e("maximum number of connected thermometers - skipping new data");
   }
@@ -170,44 +169,42 @@ public:
         connected_thermometers_counter < MAX_CONNECTED_THERMOMETERS;
         connected_thermometers_counter++) {      
 
-      connected_thermometer_channel =
-        _connected_thermometers[connected_thermometers_counter].\
-          connected_thermometer_channel;
+      auto& _connected_thermometer = _connected_thermometers[
+        connected_thermometers_counter];
 
-      log_i("\n\rcounter = %d"
-            "\n\rchannel = %d"
-            "\n\rtemperature = %d",
-            connected_thermometers_counter,
-            connected_thermometer_channel,
-            _connected_thermometers[connected_thermometers_counter].\
-              connected_thermometer_temperature);
+      connected_thermometer_channel =
+        _connected_thermometer.connected_thermometer_channel;
+
+      log_i(
+        "\n\rcounter = %d\n\rchannel = %d\n\rtemperature = %d",
+        connected_thermometers_counter, connected_thermometer_channel,
+        _connected_thermometer.connected_thermometer_temperature);
 
       if ((connected_thermometer_channel > 0x7F) &&
           (connected_thermometer_channel < 0xFF)) {
 
         special_thermometer_calculated_temperature = 
-          _connected_thermometers[connected_thermometers_counter].\
-            connected_thermometer_temperature;
+          _connected_thermometer.connected_thermometer_temperature;
         continue;
       }
 
       if (connected_thermometer_channel < 0x7F) {
 
-        if ((millis_ms - _connected_thermometers[connected_thermometers_counter].\
-                           connected_thermometer_last_seen_ms) > 
-            getConnectedThermometerTimeoutMs()) { //unregister connected thermometer
+        if ((millis_ms - 
+             _connected_thermometer.connected_thermometer_last_seen_ms) > 
+            getConnectedThermometerTimeoutMs()) { 
 
-          log_i("unregistering connected thermometer from IP %s, channel %u",
-                IPAddress(_connected_thermometers[connected_thermometers_counter].
-                connected_thermometer_ip_address).toString(),
-                connected_thermometer_channel
-              );
+          IPAddress ip(
+            _connected_thermometer.connected_thermometer_ip_address);
 
-          _connected_thermometers[connected_thermometers_counter].
-          connected_thermometer_temperature = INT32_MIN;
+          log_i(
+            "unregistering connected thermometer from IP %u.%u%.%u.%u, "
+            "channel %u", ip[0], ip[1], ip[2], ip[3],
+            connected_thermometer_channel);
 
-          _connected_thermometers[connected_thermometers_counter].
-          connected_thermometer_channel = 0xFF;
+          _connected_thermometer.connected_thermometer_temperature = INT32_MIN;
+
+          _connected_thermometer.connected_thermometer_channel = 0xFF;
           continue; //skip that thermometer - already unregistered
         }
 
@@ -219,13 +216,11 @@ public:
             connected_thermometers_number = 1;
 
             if ((connected_thermometers_calculated_temperature == INT32_MIN) ||
-                (_connected_thermometers[connected_thermometers_counter].
-                connected_thermometer_temperature < 
+                (_connected_thermometer.connected_thermometer_temperature < 
                 connected_thermometers_calculated_temperature))
 
               connected_thermometers_calculated_temperature = 
-                _connected_thermometers[connected_thermometers_counter].
-                  connected_thermometer_temperature;
+                _connected_thermometer.connected_thermometer_temperature;
           } break;
           
           
@@ -235,12 +230,10 @@ public:
 
             if (connected_thermometers_calculated_temperature == INT32_MIN)
               connected_thermometers_calculated_temperature = 
-                _connected_thermometers[connected_thermometers_counter].
-                  connected_thermometer_temperature;
+                _connected_thermometer.connected_thermometer_temperature;
             else
               connected_thermometers_calculated_temperature += 
-                _connected_thermometers[connected_thermometers_counter].
-                  connected_thermometer_temperature;
+                _connected_thermometer.connected_thermometer_temperature;
           } break;
 
 
@@ -248,13 +241,11 @@ public:
 
             connected_thermometers_number = 1;
 
-            if (_connected_thermometers[connected_thermometers_counter].
-                connected_thermometer_temperature > 
+            if (_connected_thermometer.connected_thermometer_temperature > 
                 connected_thermometers_calculated_temperature)
 
               connected_thermometers_calculated_temperature = 
-                _connected_thermometers[connected_thermometers_counter].
-                  connected_thermometer_temperature;
+                _connected_thermometer.connected_thermometer_temperature;
           } break;
         } //switch (getZ2SLocalChannelFunc())
       }
@@ -264,7 +255,8 @@ public:
       setTemperature((double)(connected_thermometers_calculated_temperature) / 
                (connected_thermometers_number * 100));
       _connected_thermometers_updated = true;
-    } else {
+    } 
+    else {
       
       if (_connected_thermometers_updated) {
 
@@ -272,11 +264,7 @@ public:
         setForcedTemperature(TEMPERATURE_NOT_AVAILABLE);
       } else
       setForcedTemperature(temperature);
-      //if (temperature > TEMPERATURE_NOT_AVAILABLE)//(special_thermometer_calculated_temperature > INT32_MIN)
-      //setRawValue(temperature); //setRawValue((double)(special_thermometer_calculated_temperature) / 100);
     }
-    //else
-      //setRawValue(TEMPERATURE_NOT_AVAILABLE);
   }
 
   void iterateAlways() override {
@@ -290,9 +278,13 @@ public:
       lastReadTime = millis_ms;
       channel.setNewValue(getTemp());
 
+      if (checkChannelUserDataFlags(
+            USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE))
+        resendTemperatureHumidityValue(
+          RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
     }
 
-    if ((getTimeoutMs() > 0) && 
+    if (getTimeoutMs() && 
         (millis_ms - _last_timeout_ms > getTimeoutMs())) {
       
       _last_timeout_ms = millis_ms;

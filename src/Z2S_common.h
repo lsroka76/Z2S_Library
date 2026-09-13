@@ -85,6 +85,11 @@
 
 /***********************************************************************************/
 
+#define REMOTE_ADDRESS_TYPE_LOCAL                               0x00
+#define REMOTE_ADDRESS_TYPE_IP4                                 0x01
+#define REMOTE_ADDRESS_TYPE_MDNS                                0x02
+
+
 #define RTH_VALUE_TYPE_TEMPERATURE                              0x01
 #define RTH_VALUE_TYPE_HUMIDITY                                 0x02
 
@@ -724,7 +729,7 @@ public:
     return _z2s_channel.remote_channel_data.remote_ip_address;
   }
 
-  bool setRemoteIPAddress(uint32_t remote_ip_address);
+  bool setRemoteIPAddress(uint32_t remote_ip_address, bool save = true);
 
   uint8_t getSuplaRemoteChannel() {
   
@@ -746,6 +751,8 @@ public:
   }
 
   bool setMDNSName(const char *mDNS_name);
+
+  void resendTemperatureHumidityValue( uint8_t value_type, int32_t value);
 
   uint32_t getIgnoreNextMsgCounter() {
 

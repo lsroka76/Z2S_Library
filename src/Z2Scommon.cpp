@@ -28,6 +28,9 @@ extern Preferences Z2S_GatewayPreferences;
 
 uint8_t z2s_elements_index_table[Z2S_ELEMENTS_MAX_NUMBER / 8] = {};
 
+NetworkClient RemoteThermometer;
+IPAddress ip_address;
+
 /*****************************************************************************/
 
 size_t mbstrnlen(const char *mb_str, size_t max_bytes) {
@@ -915,11 +918,14 @@ bool Z2S_Core::setMDNSName(const char *mDNS_name) {
 
 /*****************************************************************************/
 
-bool Z2S_Core::setRemoteIPAddress(uint32_t remote_ip_address) {
+bool Z2S_Core::setRemoteIPAddress(uint32_t remote_ip_address, bool save) {
   
   _z2s_channel.remote_channel_data.remote_ip_address = remote_ip_address;
-            
-  return saveChannelData();
+
+  if (save)          
+    return saveChannelData();
+  else
+    return true;
 }
 
 /*****************************************************************************/
@@ -1127,3 +1133,79 @@ void Z2S_Core::updateRemoteThermometer(
     core_it++;
   }
 }
+
+/*****************************************************************************/
+
+void Z2S_Core::resendTemperatureHumidityValue(
+  uint8_t value_type, int32_t value) {
+
+
+  uint8_t remote_Supla_channel = getSuplaRemoteChannel();
+    
+  uint8_t remote_address_type = checkChannelUserDataFlags(
+    USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ? REMOTE_ADDRESS_TYPE_MDNS : 
+    REMOTE_ADDRESS_TYPE_IP4;
+
+  log_i(
+    "Resending T/H value: type = %u, address flag = %s, channel = %u,"
+    "value = %i", value_type, (remote_address_type == 
+    REMOTE_ADDRESS_TYPE_MDNS) ? "MDNS" : "IP4", remote_Supla_channel, value);    
+  
+  switch(remote_address_type) {
+
+
+    case REMOTE_ADDRESS_TYPE_IP4: {
+
+      ip_address = getRemoteIPAddress();
+      
+      if (ip_address == IPAddress(0, 0, 0, 0)) {
+
+        uint8_t Supla_channel = getZ2SChannelNumber();
+
+        log_i(
+          "remote_Supla_channel %u, ip_address %u, Supla_channel %u, "
+          "value_type %u, value %u", remote_Supla_channel, ip_address, 
+          Supla_channel, value_type, value);
+
+        updateRemoteThermometer(
+          remote_Supla_channel, ip_address, Supla_channel, value_type, value);
+        return;
+      }
+    } break;
+
+
+    case REMOTE_ADDRESS_TYPE_MDNS: {
+
+      ip_address = MDNS.queryHost(getMDNSName());
+
+      setRemoteIPAddress(ip_address, false);
+    } break;
+  }
+
+  if (RemoteThermometer.connect(ip_address, 1234, 500)) {
+
+    uint8_t cmd_id = (value_type == RTH_VALUE_TYPE_TEMPERATURE) ? 0x10 : 0x11;
+
+    RemoteThermometer.printf(
+      "Z2SCMD%02u%03u%03u%08ld\n", cmd_id, remote_Supla_channel,
+      getZ2SChannelNumber(), value);
+    
+    char response[8];
+
+    size_t len = RemoteThermometer.readBytesUntil(
+      '\n', response, sizeof(response) - 1);
+    response[len] = '\0';
+
+    if (strcmp(response, "OK") == 0) {
+    
+      log_i("T/H value forwarded");
+    }      
+  
+    RemoteThermometer.stop();
+  } 
+  else
+    log_e(
+      "T/H value forwarding FAILED - no connection to remote thremometer"); 
+}
+
+/*****************************************************************************/

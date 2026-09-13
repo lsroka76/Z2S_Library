@@ -56,7 +56,8 @@ public:
     _forced_temperature = false;
     temperature = val;
 
-    channel.setNewValue(temperature);
+    // channel.setNewValue(temperature);
+    lastReadTime = 0;
     Refresh();
   }
 
@@ -82,6 +83,11 @@ public:
       
       lastReadTime = millis_ms;
       channel.setNewValue(getTemp());
+
+      if (checkChannelUserDataFlags(
+            USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE))
+        resendTemperatureHumidityValue(
+          RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
     }
 
     if (getTimeoutMs()) {

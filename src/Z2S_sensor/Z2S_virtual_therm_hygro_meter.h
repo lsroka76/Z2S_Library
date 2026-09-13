@@ -34,9 +34,7 @@ class Z2S_VirtualThermHygroMeter :
 public:
     
   Z2S_VirtualThermHygroMeter(bool rwns_flag = false) 
-    : Z2S_Core(this), _rwns_flag(rwns_flag) 
-  {
-
+    : Z2S_Core(this), _rwns_flag(rwns_flag) {
   }
 
   void setRWNSFlag(bool rwns_flag) {
@@ -46,6 +44,7 @@ public:
   
 
   void Refresh() {
+
     _last_timeout_ms = millis();
     channel.setStateOnline();
   }
@@ -56,7 +55,20 @@ public:
     _forced_temperature = false;
     temperature = val;
 
-    channel.setNewValue(temperature, getHumi());
+    lastReadTime = 0;
+
+    //channel.setNewValue(temperature, getHumi());
+    Refresh();
+  }
+
+  void setHumidity(double val) {
+    
+    log_i("humidity = %f4.2", val);
+    humidity = val;
+
+    lastReadTime = 0;
+
+    //channel.setNewValue(temperature, getHumi());
     Refresh();
   }
 
@@ -82,6 +94,16 @@ public:
 
       lastReadTime = millis_ms;
       channel.setNewValue(getTemp(), getHumi());
+
+      if (checkChannelUserDataFlags(
+            USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
+
+        resendTemperatureHumidityValue(
+          RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
+
+        resendTemperatureHumidityValue(
+          RTH_VALUE_TYPE_HUMIDITY, channel.getValueDoubleSecond() * 100);
+      }
     }
 
 

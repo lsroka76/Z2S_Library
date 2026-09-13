@@ -564,6 +564,19 @@ static constexpr char *dest_thermometer_channel_desc =
 static constexpr char *src_thermometer_channel_desc =
 	"&#10023; Enter source thermometer local channel # &#10023;<br>";
 
+static constexpr char *keepalive_desc =
+	"&#10023; keepalive (s) &#10023;<br>&#10023;turn on delay (s) [logical"
+	" gates]&#10023;<br>&#10023; action trigger hold repeat (ms) &#10023;";
+
+static constexpr char *timeout_desc =
+	"&#10023; timeout (s) &#10023;";
+
+static constexpr char *refresh_desc =
+	"&#10023; refresh(s) [ElectricityMeter] &#10023;<br>"
+	"&#10023; autoset(s) [VirtualBinary] &#10023;<br>"
+	"&#10023; debounce(ms) [VirtualSceneSwitch] &#10023; <br>"
+	"&#10023; thermometers timeout(s) [Remote Thermometer] &#10023;<br>"
+	"&#10023; read interval(s) [VirtualThermhygrometer] &#10023;";
 
 //static char general_purpose_gui_buffer[1024] = {};
 
@@ -2361,11 +2374,7 @@ void buildChannelsTabGUI() {
 		Control::Color::Emerald, zb_channel_timings_label, editChannelCallback, 
 		(void*)GUI_CB_UPDATE_KEEPALIVE_FLAG);
 
-	addClearLabel(
-		PSTR(
-			"&#10023; keepalive (s) &#10023; turn on delay (s) [logical gates] "
-			"&#10023;<br>&#10023; action trigger hold repeat (ms) &#10023;"),
-			zb_channel_timings_label);
+	addClearLabel(keepalive_desc, zb_channel_timings_label);
 
 	timeout_number = ESPUI.addControl(
 		Control::Type::Number, empty_str, (long int)0, 
@@ -2377,8 +2386,7 @@ void buildChannelsTabGUI() {
 		Control::Color::Emerald, zb_channel_timings_label, 
 		editChannelCallback, (void*)GUI_CB_UPDATE_TIMEOUT_FLAG);
 
-	addClearLabel(
-		PSTR("&#10023; timeout (s) &#10023;"), zb_channel_timings_label);
+	addClearLabel(timeout_desc, zb_channel_timings_label);
 
 	refresh_number = ESPUI.addControl(
 		Control::Type::Number, empty_str, (long int)0,
@@ -2390,13 +2398,7 @@ void buildChannelsTabGUI() {
 		Control::Color::Emerald, zb_channel_timings_label, editChannelCallback, 
 		(void*)GUI_CB_UPDATE_REFRESH_FLAG); 
 
-	addClearLabel(
-		PSTR(
-			"&#10023; refresh(s) [ElectricityMeter] &#10023; "
-			"&#10023; autoset(s) [VirtualBinary] &#10023<br>;"
-			"&#10023; debounce(ms) [VirtualSceneSwitch] &#10023; <br>"
-			"&#10023; thermometers timeout(s) [Remote Thermometer] &#10023;"),
-		zb_channel_timings_label);
+	addClearLabel(refresh_desc, zb_channel_timings_label);
 
 	ESPUI.setPanelWide(zb_channel_timings_label, false);
 	
@@ -5893,6 +5895,8 @@ void enableChannelParams(uint8_t params_mask) {
 		enableControlStyle(zb_channel_params_label, true);
 }
 
+/*****************************************************************************/
+
 void fillRemoteAddressData(uint8_t channel_slot) {
 
 	char general_purpose_gui_buffer[512] = {};
@@ -5926,6 +5930,48 @@ void fillRemoteAddressData(uint8_t channel_slot) {
 	}
 }
 
+/*****************************************************************************/
+
+void updateResendTemperatureControls(Z2S_Core *z2s_core, bool source_channel) {
+
+	uint8_t enable_resend_temperature_flag = z2s_core->checkChannelUserDataFlags(
+		USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) ? 1 : 0;
+
+	ESPUI.updateNumber(
+		enable_resend_temperature_switcher, enable_resend_temperature_flag);
+
+	if (enable_resend_temperature_flag) {
+				
+		if (source_channel)
+			enableChannelParams(7);
+		else
+			enableChannelParams(3);
+	
+		log_i(
+			"remote address type = %s", z2s_core->checkChannelUserDataFlags(
+				USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ? "MDNS" : "IP4");
+
+		fillRemoteAddressData(z2s_core->getZ2SChannelIndex());
+				
+		ESPUI.updateLabel(param_1_desc_label, dest_thermometer_address_desc);
+		ESPUI.updateLabel(param_2_desc_label, dest_thermometer_channel_desc);
+	} 
+	else {
+		
+		if (source_channel)
+			enableChannelParams(4);
+		else
+			enableChannelParams(0);
+	}
+
+	if (source_channel) {
+
+		ESPUI.updateLabel(param_3_desc_label, src_thermometer_channel_desc);
+		ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel()); 
+	}
+}
+
+/*****************************************************************************/
 
 void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 
@@ -6031,20 +6077,23 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			}
 
 			if (z2s_channel.local_channel_type == 
-					LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
+						LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) {
 
-				enableChannelTimings(2+4);
-
+				enableChannelTimings(2 + 4);
+				enableChannelFlags(8);
 				enableControlStyle(channel_local_function, true);
+
 				working_str = z2s_channel.local_channel_func;
+				
 				ESPUI.updateSelect(
 					channel_local_function, z2s_channel.local_channel_func); 
 
 				ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
-
 				ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
+				updateResendTemperatureControls(z2s_core, false);
 			}
+
 			if (z2s_channel.local_channel_type == 
 					LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY) {
 
@@ -6057,14 +6106,11 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 						LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER) {
 
 				enableChannelTimings(4);
-				enableChannelParams(7);
-				fillRemoteAddressData(channel_slot);
-				ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
+				enableChannelFlags(8);
+		
 				ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
-				ESPUI.updateLabel(param_1_desc_label, dest_thermometer_address_desc);
-				ESPUI.updateLabel(param_2_desc_label, dest_thermometer_channel_desc);
-				ESPUI.updateLabel(param_3_desc_label, src_thermometer_channel_desc);
+				updateResendTemperatureControls(z2s_core, true);
 			}
 		} break;
 		
@@ -6126,32 +6172,10 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 				set_sorwns_on_start_switcher, (z2s_channel.user_data_flags & 
 				USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
 
-			uint8_t enable_resend_temperature_flag = (z2s_channel.user_data_flags &
-				USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE) ? 1 : 0;
-
-			ESPUI.updateNumber(
-				enable_resend_temperature_switcher, enable_resend_temperature_flag); 
-
 			ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 			ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
-		
-			if (enable_resend_temperature_flag) {
-				
-				enableChannelParams(3);
 
-				log_i("remote address type = %s",Z2S_checkChannelFlags(
-					channel_slot, USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ?
-      		"MDNS" : "IP4");
-
-				fillRemoteAddressData(channel_slot);
-				
-				ESPUI.updateLabel(param_1_desc_label, dest_thermometer_address_desc);
-
-				ESPUI.updateLabel(param_2_desc_label, dest_thermometer_channel_desc);
-			} else {
-
-				enableChannelParams(0);
-			}
+			updateResendTemperatureControls(z2s_core, false);
 		} break;
 
 
@@ -7576,6 +7600,7 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 						switch(z2s_core->getZ2SLocalChannelType()) {
 
 							case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
+							case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
 							case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
 
 								saveRemoteAddressData(channel_slot);
@@ -7618,6 +7643,7 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 						switch(z2s_core->getZ2SLocalChannelType()) {
 
 							case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
+							case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
 							case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
 
 								saveRemoteChannelData(channel_slot);
