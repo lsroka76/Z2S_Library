@@ -367,12 +367,13 @@ void processTuyaHvacDataReport(
         ((1 << Tuya_read_dp_result.dp_value) & 
           ts0601_command_set->ts0601_cmd_on_dp_value_on);
       
-      if (is_system_mode_on)
+      if (is_system_mode_on) {
         msgZ2SDeviceHvac(element_2, TRV_SYSTEM_MODE_MSG, 1);
       
-      bytes_read -= (Tuya_read_dp_result.bytes_read);
-      if (bytes_read == 0)
-        return;
+        bytes_read -= (Tuya_read_dp_result.bytes_read);
+        if (bytes_read == 0)
+          return;
+      }
     }
   }
 
@@ -383,14 +384,17 @@ void processTuyaHvacDataReport(
       payload_size, payload);
     
     if (Tuya_read_dp_result.is_success) {
-     
+     log_i("trv off %u", Tuya_read_dp_result.dp_value);
+     log_i("off defined %u", ts0601_command_set->ts0601_cmd_off_dp_value_off);
       if (Tuya_read_dp_result.dp_value == 
-            ts0601_command_set->ts0601_cmd_off_dp_value_off)
+            ts0601_command_set->ts0601_cmd_off_dp_value_off) {
+
         msgZ2SDeviceHvac(element_2, TRV_SYSTEM_MODE_MSG, 0);
 
-      bytes_read -= (Tuya_read_dp_result.bytes_read);
-      if (bytes_read == 0)
-        return;
+        bytes_read -= (Tuya_read_dp_result.bytes_read);
+        if (bytes_read == 0)
+          return;
+      }
     }
   }
 
@@ -406,16 +410,21 @@ void processTuyaHvacDataReport(
       if (Tuya_read_dp_result.dp_value < 7)
         if ((ts0601_command_set->ts0601_cmd_set_schedule_mode_dp_value_on >=
              0x80) && ((1 << Tuya_read_dp_result.dp_value) & 
-             ts0601_command_set->ts0601_cmd_set_schedule_mode_dp_value_on))
+             ts0601_command_set->ts0601_cmd_set_schedule_mode_dp_value_on)) {
+
           msgZ2SDeviceHvac(
             element_2, TRV_SCHEDULE_MODE_ALT_MSG, 
             Tuya_read_dp_result.dp_value);
+          bytes_read -= (Tuya_read_dp_result.bytes_read);
+        }
       
       if (Tuya_read_dp_result.dp_value == 
-          ts0601_command_set->ts0601_cmd_set_schedule_mode_dp_value_on)
-        msgZ2SDeviceHvac(element_2, TRV_SCHEDULE_MODE_MSG, 2); //adjusted
+          ts0601_command_set->ts0601_cmd_set_schedule_mode_dp_value_on) {
 
-      bytes_read -= (Tuya_read_dp_result.bytes_read);
+        msgZ2SDeviceHvac(element_2, TRV_SCHEDULE_MODE_MSG, 2); //adjusted
+        bytes_read -= (Tuya_read_dp_result.bytes_read);
+      }
+
       if (bytes_read == 0)
         return;
     }
@@ -432,12 +441,14 @@ void processTuyaHvacDataReport(
     if (Tuya_read_dp_result.is_success) {
       
       if (Tuya_read_dp_result.dp_value == 
-          ts0601_command_set->ts0601_cmd_set_schedule_mode_dp_value_off)
+          ts0601_command_set->ts0601_cmd_set_schedule_mode_dp_value_off) {
+
         msgZ2SDeviceHvac(element_2, TRV_SCHEDULE_MODE_MSG, 0);
 
-      bytes_read -= (Tuya_read_dp_result.bytes_read);
-      if (bytes_read == 0)
-        return;
+        bytes_read -= (Tuya_read_dp_result.bytes_read);
+        if (bytes_read == 0)
+          return;
+      }
     }
   }
 
@@ -453,16 +464,23 @@ void processTuyaHvacDataReport(
       
       if (ts0601_command_set->ts0601_cmd_set_running_state_dp_value_heat < 2) {
         if (Tuya_read_dp_result.dp_value == 
-            ts0601_command_set->ts0601_cmd_set_running_state_dp_value_idle)
+            ts0601_command_set->ts0601_cmd_set_running_state_dp_value_idle) {
+
           msgZ2SDeviceHvac(element_2, TRV_RUNNING_STATE_MSG, 0);
-        else
+          bytes_read -= (Tuya_read_dp_result.bytes_read);
+        }
+        else {
+
           msgZ2SDeviceHvac(element_2, TRV_RUNNING_STATE_MSG, 1);
+          bytes_read -= (Tuya_read_dp_result.bytes_read);
+        }
       }
-      else
+      else {
         msgZ2SDeviceHvac(
           element_2, TRV_RUNNING_STATE_MSG, Tuya_read_dp_result.dp_value);
+        bytes_read -= (Tuya_read_dp_result.bytes_read);
+      }
       
-      bytes_read -= (Tuya_read_dp_result.bytes_read);
       if (bytes_read == 0)
         return;
     }

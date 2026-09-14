@@ -1618,14 +1618,15 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       _hvac_window_opened = false;
     
     if (_trv_hvac && 
-        ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1)  != 
+        (((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF) ? 0 : 1)  != 
           _trv_system_mode)) {
       
-      log_i("trv mode difference detected: hvac=%d, trv=%d", 
-            _trv_hvac->getMode(), 
-            _trv_system_mode);
+      log_i(
+        "trv mode difference detected: hvac=%d, trv=%d", 
+        ((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF) ? 0 : 1), 
+        _trv_system_mode);
       
-      sendTRVSystemMode(_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF ? 0 : 1);        
+      sendTRVSystemMode((_trv_hvac->getMode() == SUPLA_HVAC_MODE_OFF) ? 0 : 1);        
     }
 
     bool external_sensor_last_state = _trv_external_sensor_present;
