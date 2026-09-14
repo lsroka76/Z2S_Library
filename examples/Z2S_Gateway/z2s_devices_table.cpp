@@ -6936,6 +6936,7 @@ uint8_t Z2S_addZ2SDevice(
 
 
       case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
+      case Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER: 
       case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER: {
 
 
@@ -9332,6 +9333,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
     case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
     case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER: 
     case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
@@ -9906,6 +9908,7 @@ void Z2S_buildSuplaChannels(
 /*****************************************************************************/
 
     case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
+    case Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER: 
     case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER: {
 
       Z2S_addZ2SDevice(
@@ -9920,14 +9923,20 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_4_SID, "RELAY 4");
 
-      if (joined_device->model_id == 
-            Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER) {
+      if ((joined_device->model_id == 
+            Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER) ||
+          (joined_device->model_id == 
+            Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER)) {
 
         Z2S_addZ2SDevice(
           joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_5_SID, "RELAY 5");
 
         Z2S_addZ2SDevice(
           joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_6_SID, "RELAY 6");
+      }
+      
+      if (joined_device->model_id == 
+            Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER) {
 
         Z2S_addZ2SDevice(
           joined_device, TUYA_X_RELAYS_CONTROLLER_RELAY_7_SID, "RELAY 7");

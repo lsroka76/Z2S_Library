@@ -273,6 +273,7 @@
 
 #define Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES      0x4650
 #define Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER         0x4660
+#define Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER         0x4662
 #define Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER         0x4665
 
 #define Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER            0x4670
@@ -1619,6 +1620,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -7180,7 +7186,12 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "SONOFF", .model_name = "BASIC-ZB1GSP",
     .z2s_device_uid = 37200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
-    .z2s_device_endpoints_count = 1}
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE284_l8xiyymq", .model_name = "TS0601",
+    .z2s_device_uid = 37300,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER,
+    .z2s_device_endpoints_count = 1},
 
 //DEVICES_END
 };
