@@ -633,6 +633,12 @@ public:
       LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER);
   }
 
+  bool isVirtualThermHygroMeter() {
+
+    return (_z2s_channel.local_channel_type == 
+      LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER);
+  }
+
   bool isHvacChannel() {
 
     return (_z2s_channel.Supla_channel_type == SUPLA_CHANNELTYPE_HVAC);

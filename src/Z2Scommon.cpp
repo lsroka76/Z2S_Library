@@ -1130,8 +1130,37 @@ void Z2S_Core::updateRemoteThermometer(
         
         Z2S_RemoteThermometer->setConnectedThermometerTemperature(
           connected_thermometer_ip_address, connected_thermometer_channel,
-          connected_thermometer_value);            
+          connected_thermometer_value);   
+
+        return;         
       }
+
+      if (z2s_core->isVirtualThermHygroMeter()) {
+
+        
+        auto Z2S_LocalVirtualThermHygroMeter = static_cast<
+          Supla::Sensor::LocalVirtualThermHygroMeter *>
+          (z2s_core->getZ2SElementPtr());
+        
+        switch (value_type) {
+
+
+          case RTH_VALUE_TYPE_TEMPERATURE: {
+  
+            Z2S_LocalVirtualThermHygroMeter->setTemp(
+              connected_thermometer_value / 100.0);
+          } break;
+
+
+          case RTH_VALUE_TYPE_HUMIDITY: {
+  
+            Z2S_LocalVirtualThermHygroMeter->setHumi(
+              connected_thermometer_value / 100.0);
+          } break;
+        }    
+        return;    
+      }
+
       if (z2s_core->getZbDeviceModelId() == 
           Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT) {
 
