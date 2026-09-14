@@ -662,6 +662,33 @@ Supla::Element *Z2S_Core::getZ2SElementByChannelNumber(
 
 /*****************************************************************************/
 
+Supla::Element *Z2S_Core::getSuplaElementByChannelNumber(
+  uint8_t channel_number) {
+
+  if (channel_number == GATEWAY_EVENTS_CHANNEL_NUMBER) 
+    return &GatewayEventsInstance;
+
+  auto core_it = Z2S_Cores.begin();
+    
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if (z2s_core->_z2s_channel.Supla_channel == channel_number) {
+
+      if (z2s_core->_z2s_channel.Supla_channel_type == SUPLA_CHANNELTYPE_HVAC)
+        return z2s_core->getHvacPtr(); 
+      else  
+      return z2s_core->_z2s_element;
+    }
+
+    core_it++;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
 Supla::Element *Z2S_Core::getZ2SElementByZbDeviceId(uint8_t Zb_device_id) {
 
   auto core_it = Z2S_Cores.begin();

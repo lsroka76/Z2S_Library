@@ -1104,7 +1104,7 @@ void loop() {
             "Z2S TCP sensor command id=%u src=%u dst=%u value=%ld", cmd_id,
             src_channel, cmd_dst_channel, cmd_thermometer_value);
 
-          updateRemoteThermometer(
+          Z2S_Core::updateRemoteThermometer(
             cmd_dst_channel, client2.remoteIP(), src_channel, value_type, 
             cmd_thermometer_value);
         } break;

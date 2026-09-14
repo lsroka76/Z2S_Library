@@ -894,12 +894,23 @@ void Supla::Sensor::LocalVirtualThermHygroMeter::iterateAlways() {
 
     if (_source_virtual_therm_hygro_meter) {
 
-      setTemp(_source_virtual_therm_hygro_meter->getTemp());
-      setHumi(_source_virtual_therm_hygro_meter->getHumi());
+      setTemp(
+        _source_virtual_therm_hygro_meter->getChannel()->getValueDoubleFirst(
+          ));
+      setHumi(
+        _source_virtual_therm_hygro_meter->getChannel()->getValueDoubleSecond(
+          ));
+      
 
-      updateRemoteThermometer(
-        getSuplaRemoteChannel(), 0, channel.getChannelNumber(), 
-        RTH_VALUE_TYPE_TEMPERATURE, getTemp() * 100);
+      if (checkChannelUserDataFlags(
+            USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
+
+        resendTemperatureHumidityValue(
+          RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDoubleFirst() * 100);
+
+        resendTemperatureHumidityValue(
+          RTH_VALUE_TYPE_HUMIDITY, channel.getValueDoubleSecond() * 100);
+      }
     }       
   }
 }

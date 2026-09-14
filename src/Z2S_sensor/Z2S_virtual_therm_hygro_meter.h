@@ -99,7 +99,7 @@ public:
             USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
 
         resendTemperatureHumidityValue(
-          RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
+          RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDoubleFirst() * 100);
 
         resendTemperatureHumidityValue(
           RTH_VALUE_TYPE_HUMIDITY, channel.getValueDoubleSecond() * 100);

@@ -636,14 +636,7 @@ void updateTimeout(
   uint8_t channel_number_slot, uint8_t timeout, uint8_t selector = 0,
   uint32_t timings_secs = 0);
 
-void sendChannelAction(uint8_t Supla_channel, uint16_t channel_action);
-
 void setRemoteRelay(uint8_t Supla_channel, bool state);
-
-void updateRemoteThermometer(
-  uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
-  uint32_t connected_thermometer_channel, uint8_t value_type, 
-  int32_t connected_thermometer_value);
 
 void setRemoteThermometerFunction(
   uint8_t Supla_channel, uint32_t connected_thermometers_function);

@@ -8809,29 +8809,6 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/
 
-void sendChannelAction(uint8_t Supla_channel, uint16_t channel_action) {
-
-  auto element = Z2S_Core::getZ2SElementByChannelNumber(Supla_channel);
-
-  if (element && (Supla_channel < 0x080)) {
-
-    switch (element->getChannel()->getChannelType()) {
-
-
-      case SUPLA_CHANNELTYPE_RELAY: {
-
-        auto Supla_Z2S_Relay = 
-          reinterpret_cast<Supla::Control::Relay *>(element);
-        
-        Supla_Z2S_Relay->handleAction(0, channel_action);
-      } break;
-    }
-  } else
-  log_i("TODO send channel action for logic gates");
-}
-
-/*****************************************************************************/
-
 void setRemoteRelay(uint8_t Supla_channel, bool state) {
 
   auto z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(Supla_channel);
@@ -8849,76 +8826,6 @@ void setRemoteRelay(uint8_t Supla_channel, bool state) {
     }
   } 
   log_e("No valid remote relay channel");
-}
-
-/*****************************************************************************/
-
-void updateRemoteThermometer(
-  uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
-  uint32_t connected_thermometer_channel, uint8_t value_type,
-  int32_t connected_thermometer_value) {
-
-
-  log_i(
-    "Supla_channel %u, connected_thermometer_channel %u, value type %u, "
-    "connected_thermometer_temperature %lu", Supla_channel, 
-    connected_thermometer_channel, value_type, connected_thermometer_value);
-
-  if (Supla_channel > 0x7F) {
-
-    Supla_channel -= 0x80;
-    connected_thermometer_channel += 0x80;
-  }
-  
-  Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(Supla_channel);
-
-  if (!z2s_core)
-    return;
-
-  log_i(
-    "device name %s", Z2S_getZbDeviceModelName(z2s_core->getZbDeviceId()));
-
-
-  if ((z2s_core->getZ2SLocalChannelType() == 
-        LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER) &&
-      (value_type == RTH_VALUE_TYPE_TEMPERATURE)) {
-
-    auto Z2S_RemoteThermometer = static_cast<
-      Supla::Sensor::Z2S_RemoteThermometer *>(z2s_core->getZ2SElementPtr());
-
-    Z2S_RemoteThermometer->setConnectedThermometerTemperature(
-      connected_thermometer_ip_address, connected_thermometer_channel,
-      connected_thermometer_value);      
-  } 
-  else {
-
-    if ((z2s_core->getZ2SChannelType() == 
-        SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
-        (strcmp(Z2S_getZbDeviceModelName(z2s_core->getZbDeviceId()), 
-        "SNZB-02DR2") == 0))  {
-
-      auto Z2S_SNZB02DR2ThermHygroMeter = static_cast<
-        Supla::Sensor::Z2S_SNZB02DR2ThermHygroMeter *>
-        (z2s_core->getZ2SElementPtr());
-
-      switch (value_type) {
-
-
-        case RTH_VALUE_TYPE_TEMPERATURE: {
-  
-          Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature(
-            connected_thermometer_value);
-        } break;
-
-
-        case RTH_VALUE_TYPE_HUMIDITY: {
-  
-          Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity(
-            connected_thermometer_value);
-        } break;
-      }
-    }
-  }
 }
 
 /*****************************************************************************/
@@ -8982,7 +8889,7 @@ void updateDeviceTemperature(uint8_t channel_index, int32_t temperature) {
 
 Supla::LocalAction *getLocalActionPtr(uint8_t Supla_channel_number) {
 
-  auto Supla_element = Z2S_Core::getZ2SElementByChannelNumber(
+  auto Supla_element = Z2S_Core::getSuplaElementByChannelNumber(
     Supla_channel_number);
 
   if (!Supla_element)
@@ -9001,7 +8908,7 @@ Supla::LocalAction *getLocalActionPtr(uint8_t Supla_channel_number) {
 Supla::ElementWithChannelActions *getElementWithChannelActionsPtr(
   uint8_t Supla_channel_number) {
 
-  auto Supla_element = Z2S_Core::getZ2SElementByChannelNumber(
+  auto Supla_element = Z2S_Core::getSuplaElementByChannelNumber(
     Supla_channel_number);
 
   auto Supla_channel = Supla_element->getChannel();
@@ -9017,7 +8924,7 @@ Supla::ElementWithChannelActions *getElementWithChannelActionsPtr(
 
 Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
 
-  auto Supla_element = Z2S_Core::getZ2SElementByChannelNumber(
+  auto Supla_element = Z2S_Core::getSuplaElementByChannelNumber(
     Supla_channel_number);
 
   if (!Supla_element)
@@ -9121,7 +9028,7 @@ Supla::ActionHandlerClient *getActionClientPtr(
 
 uint32_t getSuplaChannelType(uint8_t Supla_channel_number) {
 
-  auto Supla_element = Z2S_Core::getZ2SElementByChannelNumber(
+  auto Supla_element = Z2S_Core::getSuplaElementByChannelNumber(
     Supla_channel_number);
 
   if (Supla_element && Supla_element->getChannel())

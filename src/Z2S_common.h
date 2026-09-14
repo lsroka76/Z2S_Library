@@ -939,6 +939,8 @@ public:
     uint8_t channel_number, int32_t Supla_channel_type);
 
   static Supla::Element *getZ2SElementByChannelNumber(uint8_t channel_number);
+  //this one checks for TRV/Hvac edge case
+  static Supla::Element *getSuplaElementByChannelNumber(uint8_t channel_number);
   static Supla::Element *getZ2SElementByChannelIndex(int16_t channel_index);
   static Supla::Element *getZ2SElementByZbDeviceId(uint8_t Zb_device_id);
 

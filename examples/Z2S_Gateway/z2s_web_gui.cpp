@@ -5202,7 +5202,7 @@ void Z2S_loopWebGUI() {
 
 		channels_sort_delay_ms = 0;
 		enableLAHPanel(true);
-		ESPUI.jsonReload();
+		//ESPUI.jsonReload();
 	}
 	
 	switch (gui_command) {
