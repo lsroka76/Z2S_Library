@@ -212,7 +212,8 @@ union {
       uint32_t        rgb_color_mode;
     };
     struct {
-      int32_t        hvac_fixed_temperature_correction;
+      int32_t         hvac_fixed_temperature_correction;
+      uin32_t         hvac_reserved; //TODO is it really used?
     };
     struct {
       int32_t         ignore_next_msg_counter;

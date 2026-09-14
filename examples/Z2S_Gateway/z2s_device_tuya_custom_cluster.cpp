@@ -3729,6 +3729,14 @@ void processTuyaDataReport(
         short_addr, endpoint, payload_size, payload, model_id, 8); 
     break;
 
+
+    case Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER:
+
+      processTuyaXRelaysDataReport(
+        short_addr, endpoint, payload_size, payload, model_id, 6); 
+    break;
+
+
     case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
 
       processTuyaXRelaysDataReport(
