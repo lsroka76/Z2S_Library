@@ -5545,42 +5545,41 @@ void updateDeviceInfoLabel(uint8_t device_slot) {
 	char general_purpose_gui_buffer[768] = {};
 	char ieee_addr_str[24] = {};
 
-  snprintf_P(ieee_addr_str, 24,
-						PSTR("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"), 
-						z2s_zb_devices_table[device_slot].ieee_addr[7],
-						z2s_zb_devices_table[device_slot].ieee_addr[6], 
-						z2s_zb_devices_table[device_slot].ieee_addr[5], 
-						z2s_zb_devices_table[device_slot].ieee_addr[4], 
-          	z2s_zb_devices_table[device_slot].ieee_addr[3],
-						z2s_zb_devices_table[device_slot].ieee_addr[2],
-						z2s_zb_devices_table[device_slot].ieee_addr[1], 
-						z2s_zb_devices_table[device_slot].ieee_addr[0]);
+  snprintf_P(
+		ieee_addr_str, 24, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", 
+		z2s_zb_devices_table[device_slot].ieee_addr[7],
+		z2s_zb_devices_table[device_slot].ieee_addr[6], 
+		z2s_zb_devices_table[device_slot].ieee_addr[5], 
+		z2s_zb_devices_table[device_slot].ieee_addr[4], 
+    z2s_zb_devices_table[device_slot].ieee_addr[3],
+		z2s_zb_devices_table[device_slot].ieee_addr[2],
+		z2s_zb_devices_table[device_slot].ieee_addr[1], 
+		z2s_zb_devices_table[device_slot].ieee_addr[0]);
 
-	snprintf_P(general_purpose_gui_buffer, 768,
-						PSTR("<b><i><style=color:black>Slot#</b></i> %02u <b>| <i>"
-						"Manufacturer name<style=;></i></b> %s "
-								"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
-								"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X "
-								"<b>| <i>Power source</b></i> 0x%02X<br>"
-								"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
-								//"<b>| <i>Gateway unit last seen (ms)</b></i>  %lu <b>| <i>"
-								"Last RSSI</b></i> %d<br>"
-								"<b><i>Device flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X <b>"
-								"| <i>ud(2)</b></i> 0x%08X<br>"), 
-						device_slot,
-						Z2S_getZbDeviceManufacturerName(device_slot),
-						Z2S_getZbDeviceModelName(device_slot),
-						getZ2SDeviceDescName(z2s_zb_devices_table[device_slot].desc_id), 
-						z2s_zb_devices_table[device_slot].desc_id,
-						ieee_addr_str,
-						z2s_zb_devices_table[device_slot].short_addr,
-						z2s_zb_devices_table[device_slot].power_source,
-						z2s_zb_devices_table[device_slot].battery_percentage,
-						z2s_zb_devices_table[device_slot].last_seen_ms,
-						z2s_zb_devices_table[device_slot].rssi,
-						z2s_zb_devices_table[device_slot].user_data_flags,
-						z2s_zb_devices_table[device_slot].user_data_1,
-						z2s_zb_devices_table[device_slot].user_data_2);
+	snprintf_P(
+		general_purpose_gui_buffer, 768,
+		"<b><i><style=color:black>Slot#</b></i> %02u <b>| <i>"
+		"Manufacturer name<style=;></i></b> %s "
+		"<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
+		"<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X "
+		"<b>| <i>Power source</b></i> 0x%02X<br>"
+		"<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
+		"Last RSSI</b></i> %d<br><b><i>Device flags</b></i> 0x%08X <b>| <i>ud(1)"
+		"</b></i> 0x%08X <b>| <i>ud(2)</b></i> 0x%08X<br>", 
+		device_slot,
+		Z2S_getZbDeviceManufacturerName(device_slot),
+		Z2S_getZbDeviceModelName(device_slot),
+		getZ2SDeviceDescName(z2s_zb_devices_table[device_slot].desc_id), 
+		z2s_zb_devices_table[device_slot].desc_id,
+		ieee_addr_str,
+		z2s_zb_devices_table[device_slot].short_addr,
+		z2s_zb_devices_table[device_slot].power_source,
+		z2s_zb_devices_table[device_slot].battery_percentage,
+		z2s_zb_devices_table[device_slot].last_seen_ms,
+		z2s_zb_devices_table[device_slot].rssi,
+		z2s_zb_devices_table[device_slot].user_data_flags,
+		z2s_zb_devices_table[device_slot].user_data_1,
+		z2s_zb_devices_table[device_slot].user_data_2);
 
 	log_i(
 		"value = %s, length = %u", general_purpose_gui_buffer, 

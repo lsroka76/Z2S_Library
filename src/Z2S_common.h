@@ -213,7 +213,7 @@ union {
     };
     struct {
       int32_t         hvac_fixed_temperature_correction;
-      uint32_t         hvac_reserved; //TODO is it really used?
+      uint32_t         hvac_reserved; //probably unused
     };
     struct {
       int32_t         ignore_next_msg_counter;

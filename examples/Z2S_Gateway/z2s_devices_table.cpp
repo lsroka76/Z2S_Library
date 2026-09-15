@@ -141,9 +141,14 @@ uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot) {
 
     Z2S_Core *z2s_core = *core_it;
 
-    if (z2s_core->getZ2SChannelNumber() >= Z2S_CHANNELS_MAX_NUMBER)
-      local_action_handlers_number++;
+    if (z2s_core->getZ2SChannelNumber() >= Z2S_CHANNELS_MAX_NUMBER) {
 
+    log_i(
+      "FOUND !!!!! #%u, name %s", z2s_core->getZ2SChannelNumber(),
+      z2s_core->getZ2SChannelName());
+
+      local_action_handlers_number++;
+    }
     core_it++;
   }
 
@@ -481,7 +486,7 @@ uint8_t updateChannelDesc(
 
   if (z2s_channel_params.valid_record && 
       (z2s_channel_params.local_channel_type == 0)) {
-  
+
     uint8_t new_Zb_device_id = Z2S_addZbDeviceTableSlot(
       z2s_channel_params.ieee_addr, z2s_channel_params.short_addr, "Unknown", 
       "Unknown", 1, z2s_channel_params.model_id, 0);
@@ -835,7 +840,8 @@ bool Z2S_removeZbDeviceWithAllChannels(
     }
     bool tables_save_result = false;
 
-    memset(&z2s_zb_devices_table[zb_device_slot], 0, 
+    memset(
+      z2s_zb_devices_table + zb_device_slot, 0, 
       sizeof(z2s_zb_device_params_t));
 
     if (save_tables)
@@ -1591,7 +1597,7 @@ void Z2S_initSuplaChannels() {
           
           initZ2SDeviceTempHumidity(
             channels_counter, &z2s_channel_params, true); 
-          break;
+           break;
 
 
         case SUPLA_CHANNELTYPE_PRESSURESENSOR:
@@ -1884,15 +1890,18 @@ bool Z2S_saveAction(
       
       if (compare_result == CR_SAVE_REBUILD)
         Z2S_add_action(
-          action.action_name, action.src_Supla_channel,dst_Supla_action + 
+          action.action_name, action.src_Supla_channel, dst_Supla_action + 
           action.subaction_id, action.dst_Supla_channel, src_Supla_event, 
           action.is_condition, action.min_value, action.max_value);
-      log_i("after z2s add action");
+
+      log_i("action.src_Supla_channel %u", action.src_Supla_channel);
+      log_i("action.dst_Supla_channel %u", action.dst_Supla_channel);
+
       auto ac_ptr = getActionClientPtr(
         action.src_Supla_channel, dst_Supla_action + action.subaction_id,
         action.dst_Supla_channel, src_Supla_event, action.is_condition, 
         false);
-      log_i("after getActionClientPtr");
+    
 
       if (ac_ptr && (compare_result == CR_SAVE_ENABLE))
         ac_ptr->enable();

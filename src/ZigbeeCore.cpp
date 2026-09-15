@@ -314,7 +314,11 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
     case ESP_ZB_BDB_SIGNAL_DEVICE_FIRST_START:  // Common
     case ESP_ZB_BDB_SIGNAL_DEVICE_REBOOT:       // Common
       if (err_status == ESP_OK) {
-        log_i("Device started up in %s factory-reset mode", esp_zb_bdb_is_factory_new() ? "" : "non");
+
+        log_i(
+          "Device started up in %s factory-reset mode", 
+          esp_zb_bdb_is_factory_new() ? "" : "non");
+
         if (esp_zb_bdb_is_factory_new()) {
           // Role specific code
           if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
@@ -433,38 +437,71 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
         }
       } break;
 
-    case ESP_ZB_ZDO_SIGNAL_DEVICE_UPDATE:  // Coordinator
+    case ESP_ZB_ZDO_SIGNAL_DEVICE_UPDATE: { // Coordinator
 
-      /*if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
-        dev_update_params = (esp_zb_zdo_signal_device_update_params_t *)esp_zb_app_signal_get_params(p_sg_p);
-        log_i("New device commissioned or rejoined (short: 0x%04hx)", dev_update_params->short_addr);
-        esp_zb_zdo_match_desc_req_param_t cmd_req;
-        cmd_req.dst_nwk_addr = dev_update_params->short_addr;
-        cmd_req.addr_of_interest = dev_update_params->short_addr;
-        // for each endpoint in the list call the findEndpoint function if not bounded or allowed to bind multiple devices
-        for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
-          if (!(*it)->bound() || (*it)->epAllowMultipleBinding()) {
-	
-		        if ((*it)->isDeviceBound(dev_update_params->short_addr, dev_update_params->long_addr))
-			        log_d("Device already bound to endpoint %d", (*it)->getEndpoint());
-		        else 
-              (*it)->zbDeviceAnnce(dev_update_params->short_addr, dev_update_params->long_addr);
-          }
-        }
-        
-      }*/
-      break;
+      static constexpr const char* device_update_status_str[] = {
+        "ESP_ZB_ZDO_STANDARD_DEV_SECURED_REJOIN",
+        "ESP_ZB_ZDO_STANDARD_DEV_UNSECURED_JOIN",
+        "ESP_ZB_ZDO_STANDARD_DEV_LEFT",
+        "ESP_ZB_ZDO_STANDARD_DEV_TC_REJOIN"};
+
+      static constexpr const char* device_update_tc_action_str[] = {
+        "ESP_ZB_ZDO_TC_ACTION_AUTHORIZE",
+        "ESP_ZB_ZDO_TC_ACTION_DENY",
+        "ESP_ZB_ZDO_TC_ACTION_IGNORE" };
+
+      dev_update_params = (esp_zb_zdo_signal_device_update_params_t *)
+        esp_zb_app_signal_get_params(p_sg_p);
+
+      log_i(
+        "ESP_ZB_ZDO_SIGNAL_DEVICE_UPDATE:\n\rshort: 0x%04X\n\rstatus: %s\n\r"
+        "TC action: %s\n\rparent short: 0x%04X", 
+        dev_update_params->short_addr, (dev_update_params->status < 4) ? 
+          device_update_status_str[dev_update_params->status] : "RESERVED",
+        (dev_update_params->tc_action < 3) ? 
+          device_update_tc_action_str[dev_update_params->tc_action] :
+          "UNKNOWN", dev_update_params->parent_short);
+
+      log_i(
+        "IEEE address %02X:%02X:%02X", dev_update_params->long_addr[5],
+        dev_update_params->long_addr[6], dev_update_params->long_addr[7]);
+
+      static constexpr uint8_t LUMI_pattern[] = {0x44, 0xEF, 0x54};
+      static constexpr uint8_t LUMI_pattern_2[] = {0x3C, 0xC2, 0x18};
+      static constexpr uint8_t LUMI_pattern_3[] = {0x8C, 0xCF, 0x04};
+
+      if ((memcmp(&dev_update_params->long_addr[5], LUMI_pattern, 
+            sizeof(LUMI_pattern)) == 0) ||
+          (memcmp(&dev_update_params->long_addr[5], LUMI_pattern_2, 
+            sizeof(LUMI_pattern_2)) == 0) ||
+          (memcmp(&dev_update_params->long_addr[5], LUMI_pattern_3, 
+            sizeof(LUMI_pattern_3)) == 0))  {
+
+        log_i("LUMI device detected - spoofing LUMI manufacturer code");
+
+        esp_zb_set_node_descriptor_manufacturer_code(0x115F);
+      }
+      else
+        esp_zb_set_node_descriptor_manufacturer_code(0x131B);
+    }  break;
 
     case ESP_ZB_NWK_SIGNAL_PERMIT_JOIN_STATUS:  // Coordinator
+      
       if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
         if (err_status == ESP_OK) {
+          
           if (*(uint8_t *)esp_zb_app_signal_get_params(p_sg_p)) {
+
             Zigbee.setNetworkOpen(true);
-            log_i("Network(0x%04hx) is open for %d seconds", 
-                  esp_zb_get_pan_id(), 
-                  *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
+            
+            log_i(
+              "Network(0x%04hx) is open for %d seconds", esp_zb_get_pan_id(), 
+              *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p));
             log_i("channel %d", esp_zb_get_current_channel());
-          } else {
+
+            //esp_zb_set_node_descriptor_manufacturer_code(0x115F);
+          } 
+          else {
             Zigbee.setNetworkOpen(false);
             log_i("Network(0x%04hx) closed, devices joining not allowed.", 
             esp_zb_get_pan_id());
@@ -488,9 +525,11 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
       esp_zb_zdo_signal_device_authorized_params_t *auth_params = 
             (esp_zb_zdo_signal_device_authorized_params_t*)esp_zb_app_signal_get_params(p_sg_p);
         
-        log_i("Device 0x%04x authorized (status: %d, type: %d)", 
-                auth_params->short_addr, auth_params->authorization_status, 
-                auth_params->authorization_type);
+      log_i(
+        "Device 0x%04x authorized (status: %d, type: %d)", 
+        auth_params->short_addr, auth_params->authorization_status, 
+        auth_params->authorization_type);
+      
     } break;
 
     case ESP_ZB_ZDO_SIGNAL_LEAVE_INDICATION: {

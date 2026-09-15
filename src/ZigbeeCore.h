@@ -106,6 +106,8 @@ private:
   zigbee_scan_result_t *_scan_result;
   SemaphoreHandle_t lock;
 
+  uint16_t _manufacturer_code = 0x131B;
+
   TaskHandle_t _zigbee_task_handle = NULL;
 
   bool zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs);
@@ -168,6 +170,16 @@ public:
   }
   bool getRxOnWhenIdle() {
     return _rx_on_when_idle;
+  }
+
+  uint16_t getManufacturerCode(){
+
+    return _manufacturer_code;
+  }
+
+  void setManufacturerCode(uint16_t manufacturer_code){
+
+    _manufacturer_code = manufacturer_code;
   }
 
   void setRebootOpenNetwork(uint8_t time);

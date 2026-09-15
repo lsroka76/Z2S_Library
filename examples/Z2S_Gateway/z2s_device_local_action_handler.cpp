@@ -347,15 +347,11 @@ bool addZ2SDeviceLocalActionHandler(
   uint8_t local_channel_type, uint32_t local_channel_func, 
   uint8_t logic_operator) {
 
-  zbg_device_params_t device = {};
-
   uint8_t first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
   if (first_free_slot == 0xFF)
     return false;
   
-  device.model_id = Z2S_DEVICE_DESC_LOCAL_ACTION_HANDLER;
-
   switch(local_channel_type) {
 
 
@@ -364,13 +360,16 @@ bool addZ2SDeviceLocalActionHandler(
       SuplaDevice.saveStateToStorage();
       Supla::Storage::ConfigInstance()->commit();
 
+      uint8_t free_lah_channel_number = 
+        Z2S_findFirstFreeLocalActionHandlerId();
+
       auto lah = new Supla::LocalActionHandlerWithTrigger(logic_operator);
 
       Z2S_setLocalChannelData(
-        lah->getZ2SCorePtr(), first_free_slot,
-        Z2S_findFirstFreeLocalActionHandlerId(), NO_CUSTOM_CMD_SID, 
-        ACTION_HANDLERS_DEFAULT_NAMES[logic_operator], SUPLA_CHANNELFNC_NONE,
-        0xFF, local_channel_type, local_channel_func, logic_operator);
+        lah->getZ2SCorePtr(), first_free_slot,free_lah_channel_number, 
+        NO_CUSTOM_CMD_SID, ACTION_HANDLERS_DEFAULT_NAMES[logic_operator], 
+        SUPLA_CHANNELFNC_NONE,0xFF, local_channel_type, local_channel_func, 
+        logic_operator);
 
       initZ2SDeviceLocalActionHandler(
         first_free_slot, lah->getZ2SChannel(), lah->getZ2SElementPtr());
