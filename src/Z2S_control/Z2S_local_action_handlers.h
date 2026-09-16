@@ -144,6 +144,7 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler,
     uint8_t _pin_logic_operator = PIN_LOGIC_OPERATOR_AND;
 
     uint32_t _pending_postponed_turn_on_ms = 0;
+    uint32_t _pending_postponed_turn_off_ms = 0;
   
 };
 

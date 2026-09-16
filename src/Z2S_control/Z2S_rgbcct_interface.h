@@ -96,8 +96,9 @@ public:
     return _colorBrightness || _brightness;
   }
 
-  void turnOn() {};
-  void turnOff() {};
+  void turnOn();
+  void turnOnDimmer();
+  void turnOff();
 
   virtual void sendValueToDevice(
     uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness, 

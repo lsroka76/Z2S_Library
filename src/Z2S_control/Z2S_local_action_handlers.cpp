@@ -71,6 +71,7 @@ LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
       case PIN_LOGIC_OPERATOR_NOP:
 
         _pin_b = 0xFF;
+        _pin_c = 0xFF;
       break;
 
       
@@ -116,19 +117,6 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
           _pin_b = 1 : (_pin_c == 0) ? 
             _pin_c = 1 : pins_changed = false;
 
-      /*if (_pin_a == 0) {
-        
-        _pin_a = 1;
-        pins_changed = true;
-      } else {
-
-        if (_pin_b == 0) {
-
-          _pin_b = 1;
-          pins_changed = true;
-        }
-      }*/
-
       log_i(
         "TURN_ON _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, "
         "pins_changed %s", _pin_a, _pin_b, _pin_c, _pin_logic_operator, 
@@ -141,20 +129,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
         _pin_a = 0 : (_pin_b == 1) ? 
           _pin_b = 0 : (_pin_c == 1) ? 
             _pin_c = 0 : pins_changed = false;
-    
-      /*if (_pin_a == 1) {
-
-        _pin_a = 0;
-        pins_changed = true;
-      } else {
-
-        if (_pin_b == 1) {
-
-          _pin_b = 0;
-          pins_changed = true;
-        }
-      }*/
-
+     
       log_i(
         "TURN_OFF _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, "
         "pins_changed %s", _pin_a, _pin_b, _pin_c, _pin_logic_operator, 
@@ -226,20 +201,30 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   
   if (logic_operation_result) {
 
-    if (getPostponedTurnOnMs())
+    _pending_postponed_turn_off_ms = 0;
+
+    if (getPostponedTurnOnMs()) 
       _pending_postponed_turn_on_ms = millis();
     else
       runAction(ON_TURN_ON);
   }
   else {
 
-    if (_pending_postponed_turn_on_ms)
-      _pending_postponed_turn_on_ms = 0;
-   runAction(ON_TURN_OFF);
+    _pending_postponed_turn_on_ms = 0;
+
+    if (getPostponedTurnOffMs()) 
+      _pending_postponed_turn_off_ms = millis();
+    else
+      runAction(ON_TURN_OFF);
   }
   
-  log_i("_postponed_turn_on_ms %lu, _pending_postponed_turn_on_ms %lu", 
-        getPostponedTurnOnMs(), _pending_postponed_turn_on_ms);
+  log_i(
+    "_postponed_turn_on_ms %lu, _pending_postponed_turn_on_ms %lu", 
+    getPostponedTurnOnMs(), _pending_postponed_turn_on_ms);
+
+  log_i(
+    "_postponed_turn_off_ms %lu, _pending_postponed_turn_off_ms %lu", 
+    getPostponedTurnOffMs(), _pending_postponed_turn_off_ms);
 }
 
 /*****************************************************************************/
@@ -258,6 +243,18 @@ void LocalActionHandlerWithTrigger::iterateAlways() {
 
         _pending_postponed_turn_on_ms = 0;
         runAction(ON_TURN_ON);
+  }
+
+  if ((_pending_postponed_turn_off_ms) && 
+      ((millis_ms - _pending_postponed_turn_off_ms) > getPostponedTurnOffMs())) {
+
+        log_i(
+          "millis_ms %lu, _postponed_turn_off_ms %lu, "
+          "_pending_postponed_turn_off_ms %lu", millis_ms, 
+          getPostponedTurnOffMs(), _pending_postponed_turn_off_ms);
+
+        _pending_postponed_turn_off_ms = 0;
+        runAction(ON_TURN_OFF);
   }
 }
 

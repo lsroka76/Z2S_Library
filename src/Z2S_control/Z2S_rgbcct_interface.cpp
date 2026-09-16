@@ -104,6 +104,8 @@ void Supla::Control::Z2S_RGBCCTInterface::onSaveState() {
 void Supla::Control::Z2S_RGBCCTInterface::onInit() {
 
   //at this stage ZigBee is still not active
+  if ((_brightness == 0) && (_last_brightness == 0))
+    _last_brightness = 100;
 }
 
 int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
@@ -494,6 +496,8 @@ void Supla::Control::Z2S_RGBCCTInterface::syncDevice() {
   }
 }
 
+/*****************************************************************************/
+
 
 void Supla::Control::Z2S_RGBCCTInterface::ping() {
 
@@ -504,6 +508,84 @@ void Supla::Control::Z2S_RGBCCTInterface::ping() {
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
   }
 }
+
+/*****************************************************************************/
+
+
+void Supla::Control::Z2S_RGBCCTInterface::turnOn() {
+
+  if (turnOnOff == 0) {
+
+    turnOnOff = 1;
+
+    if (_last_colorBrightness > 0)
+      _colorBrightness = _last_colorBrightness;
+    else {
+
+      _last_colorBrightness = _colorBrightness;
+      _colorBrightness = 100;
+    }
+
+    _lastServerMsgReceivedMs = 1;
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Control::Z2S_RGBCCTInterface::turnOnDimmer(){
+
+  log_i("turnOnOff %u", turnOnOff);
+
+  if (turnOnOff == 0) {
+
+    turnOnOff = 1;
+
+    if (_last_brightness > 0)
+      _brightness = _last_brightness;
+    else {
+
+      _last_brightness = _brightness;
+      _brightness = 100;
+    }
+    
+    _lastServerMsgReceivedMs = 1;
+    return;
+  }
+  if ((turnOnOff) && (_brightness))
+    return; //DIMMER already on
+
+  _last_colorBrightness = _colorBrightness;
+  _colorBrightness = 0;
+
+  if (_last_brightness > 0)
+    _brightness = _last_brightness;
+  else {
+
+    _last_brightness = _brightness;
+    _brightness = 100;
+  }
+
+  _lastServerMsgReceivedMs = 1;
+}
+
+
+/*****************************************************************************/
+
+void Supla::Control::Z2S_RGBCCTInterface::turnOff() {
+
+  if (turnOnOff > 0)
+    turnOnOff = 0;
+
+  _last_colorBrightness = _colorBrightness;
+  _colorBrightness = 0;
+
+  _last_brightness = _brightness;
+  _brightness = 0;
+
+  _lastServerMsgReceivedMs = 1;
+}
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
@@ -636,6 +718,12 @@ void Supla::Control::Z2S_RGBCCTInterface::handleAction(
     case BRIGHTEN_W: 
       
       increaseBrightness(10);
+    break;
+
+
+    case TURN_ON_W:
+
+      turnOnDimmer();
     break;
   }
 }

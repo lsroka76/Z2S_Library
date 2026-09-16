@@ -252,6 +252,7 @@ union {
 union {
   uint32_t            timeout_secs;
   uint32_t            timeout_ms;
+  uint32_t            postponed_turn_off_ms;
 
 };
 union {
@@ -1288,6 +1289,11 @@ public:
   uint32_t getPostponedTurnOnMs() {
 
     return _z2s_channel.postponed_turn_on_ms;
+  }
+
+  uint32_t getPostponedTurnOffMs() {
+
+    return _z2s_channel.postponed_turn_off_ms;
   }
 
   uint32_t getDebounceTimeMs() {

@@ -411,6 +411,18 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_STOP,
 		.Supla_action_name = "STOP" },
 
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TURN_ON_W,
+		.Supla_action_name = "TURN ON DIMMER" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TURN_OFF_W,
+		.Supla_action_name = "TURN OFF DIMMER" },
+	
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TURN_ON_RGB,
+		.Supla_action_name = "TURN ON RGB" },	
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TURN_OFF_RGB,
+		.Supla_action_name = "TURN OFF RGB" },
+
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_BRIGHTEN_ALL,
 		.Supla_action_name = "BRIGHTEN ALL" },
 

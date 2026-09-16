@@ -569,7 +569,8 @@ static constexpr char *keepalive_desc =
 	" gates]&#10023;<br>&#10023; action trigger hold repeat (ms) &#10023;";
 
 static constexpr char *timeout_desc =
-	"&#10023; timeout (s) &#10023;";
+	"&#10023; timeout (s) &#10023;<br>&#10023;turn off delay (s) [logical"
+	" gates]&#10023;";
 
 static constexpr char *refresh_desc =
 	"&#10023; refresh(s) [ElectricityMeter] &#10023;<br>"
@@ -6055,8 +6056,9 @@ void updateChannelInfoLabel(uint8_t label_number, int16_t channel_slot) {
 			if (z2s_channel.local_channel_type == 
 					LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
 
-				enableChannelTimings(1); //turn on delay
+				enableChannelTimings(1 + 2); //turn on delay
 				ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
+				ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 			}
 
 			if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
