@@ -385,6 +385,7 @@
 #define Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR                   0x6202
 #define Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100                   0x6203
 #define Z2S_DEVICE_DESC_TS0601_BOTR9V                       0X6204
+#define Z2S_DEVICE_DESC_TS0601_EONE_BATB                    0X6205
 
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
 
@@ -2038,6 +2039,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_BOTR9V,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_BATB,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -7197,6 +7204,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 37300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_gtouvmvl", .model_name = "TS0601",
+    .z2s_device_uid = 37400,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_BATB,
+    .z2s_device_endpoints_count = 1}
 
 //DEVICES_END
 };

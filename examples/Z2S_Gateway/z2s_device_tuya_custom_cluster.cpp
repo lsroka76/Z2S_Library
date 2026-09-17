@@ -3537,6 +3537,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
     case Z2S_DEVICE_DESC_TS0601_BOTR9V:
+    case Z2S_DEVICE_DESC_TS0601_EONE_BATB:
 
       processTuyaHvacDataReport(
         short_addr, endpoint, payload_size, payload, model_id); 
