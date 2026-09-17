@@ -1490,7 +1490,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_schedule_mode_dp_id              =  0x02,
     .ts0601_cmd_set_schedule_mode_dp_type            =  TUYA_DP_TYPE_ENUM,
-    .ts0601_cmd_set_schedule_mode_dp_value_on        =  0x00,
+    .ts0601_cmd_set_schedule_mode_dp_value_on        =  0x85, //0, 2
     .ts0601_cmd_set_schedule_mode_dp_value_off       =  0x01,
 
     .ts0601_cmd_set_child_lock_dp_id                 =  0x28,
