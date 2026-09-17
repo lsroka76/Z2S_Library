@@ -521,7 +521,8 @@ bool Z2S_removeElement(uint16_t element_index) {
   if (element_index >= Z2S_ELEMENTS_MAX_NUMBER)
     return false;
 
-   if (Z2S_removeObject(element_index, Z2S_ELEMENTS_PREFIX_V3)) {
+   if (Z2S_removeObject(
+    element_index, Z2S_ELEMENTS_PREFIX_V3, Z2S_ELEMENTS_BACKUP_PREFIX_V3)) {
   
     clearElementsIndexTablePosition(element_index);
     Z2S_saveElementsIndexTable();

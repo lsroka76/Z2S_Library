@@ -732,7 +732,11 @@ void setup() {
   }
   else {
 
+    void Z2S_initWebGUI();
+
     if (Z2S_loadZbDevicesTable()) {
+
+      Z2S_printZbDevicesTableSlots(false);
 
       Z2S_initZbDevices(millis());
 

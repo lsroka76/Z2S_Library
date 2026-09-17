@@ -272,9 +272,6 @@ uint16_t action_copy_button;
 uint16_t action_remove_button;
 uint16_t action_state_label;
 
-uint16_t action_source_channel_selector_first_option_id = 0xFFFF;
-uint16_t action_destination_channel_selector_first_option_id = 0xFFFF;
-
 uint16_t sb_channel_selector = 0xFFFF;
 uint16_t sb_device_id_text;
 uint16_t sb_token_text;
@@ -4480,6 +4477,12 @@ void buildActionsTabGUI() {
 	
 	enableActionDetails(false);
 	updateActionButtons();
+}
+
+void Z2S_initWebGUI() {
+
+	clusters_attributes_table[clusters_attributes_device_selector] = 0xFFFF;
+	Tuya_devices_tab_controls_table[Tuya_device_selector] = 0xFFFF;
 }
 
 void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {

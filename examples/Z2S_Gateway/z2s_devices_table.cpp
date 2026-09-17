@@ -487,6 +487,8 @@ uint8_t updateChannelDesc(
   if (z2s_channel_params.valid_record && 
       (z2s_channel_params.local_channel_type == 0)) {
 
+    log_i("ZBD id %u", z2s_channel_params.Zb_device_id);
+
     uint8_t new_Zb_device_id = Z2S_addZbDeviceTableSlot(
       z2s_channel_params.ieee_addr, z2s_channel_params.short_addr, "Unknown", 
       "Unknown", 1, z2s_channel_params.model_id, 0);
@@ -498,6 +500,18 @@ uint8_t updateChannelDesc(
     }
                 
     if (new_Zb_device_id < 0xFF) {
+
+      if (z2s_zb_devices_table[new_Zb_device_id].device_uid == 0) {
+
+        log_e(
+          "Unknown ZigBee device couldn't be restored - removing device #%u"
+          " and element #%u", new_Zb_device_id, channel_index);
+
+        Z2S_removeZbDevice(new_Zb_device_id, true);
+        Z2S_removeElement(channel_index);
+
+        return 4;
+      }
 
       uint32_t devices_list_idx = 
         z2s_zb_devices_table[new_Zb_device_id].devices_list_idx;
@@ -1033,7 +1047,10 @@ uint8_t Z2S_addZbDeviceTableSlot(
       z2s_zb_devices_table[zb_device_slot].battery_percentage = 0xFF;
 
       Z2S_saveZbDevicesTable();
-      addDevicesSelectorDevice(zb_device_slot);
+      
+      if (Z2S_isGUIBuilt())
+        addDevicesSelectorDevice(zb_device_slot);
+      
       return zb_device_slot;
     }
   } else {
@@ -1579,7 +1596,8 @@ void Z2S_initSuplaChannels() {
         continue;
       }
 
-      updateChannelDesc(channels_counter, z2s_channel_params);
+      if (updateChannelDesc(channels_counter, z2s_channel_params) & 4)
+        continue;
       
       bool channel_created = true;
       

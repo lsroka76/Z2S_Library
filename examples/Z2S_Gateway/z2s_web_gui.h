@@ -39,6 +39,8 @@ size_t mbstrnlen(const char *mb_str, size_t max_bytes);
 bool Z2S_isGUIStarted();
 bool Z2S_isGUIBuilt();
 
+void Z2S_initWebGUI();
+
 void Z2S_startWebGUIConfig();
 
 void Z2S_buildWebGUI(

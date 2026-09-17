@@ -479,7 +479,7 @@ void msgZ2SDeviceHvac(
 
           if (Supla_Z2S_TRVInterface->checkChannelUserDataFlags(
                 USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG))
-            Supla_Z2S_TRVInterface->setChannelUserData2(0);  
+            Supla_Z2S_TRVInterface->setChannelUserData2(0, false);  
         break;
 
 
@@ -492,7 +492,7 @@ void msgZ2SDeviceHvac(
           
           Supla_Z2S_TRVInterface->clearChannelUserDataFlags(
             USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
-          Supla_Z2S_TRVInterface->setChannelUserData2(0);
+          Supla_Z2S_TRVInterface->setChannelUserData2(0, false);
         break;
       }
       
@@ -517,7 +517,7 @@ void msgZ2SDeviceHvac(
 
           if (Supla_Z2S_TRVInterface->checkChannelUserDataFlags(
                 USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG))
-            Supla_Z2S_TRVInterface->setChannelUserData2(0);  
+            Supla_Z2S_TRVInterface->setChannelUserData2(0, false);  
         } break;
         
         
