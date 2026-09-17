@@ -111,7 +111,7 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id) {
     } break;
 
 
-    case Z2S_DEVICE_DESC_TS0601_EONE_BAT: {
+    case Z2S_DEVICE_DESC_TS0601_EONE_BATB: {
 
       return eonebatb_cmd_set;
     } break;
