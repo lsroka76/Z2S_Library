@@ -4104,45 +4104,17 @@ void buildAllChannelSelectors() {
 		core_it++;
 	}
 
-	if (channel_selector < 0xFFFF) {
-
-		uint16_t gui_control_id = ESPUI.addControl(
-			Control::Type::Option, empty_str, -2, Control::Color::None, 
-			channel_selector);
-
-		if (action_source_channel_selector < 0xFFFF) {
-
-			ESPUI.getControl(gui_control_id)->secondParent = 
-				action_source_channel_selector;
-			ESPUI.getControl(gui_control_id)->thirdParent = 
-				action_destination_channel_selector;
-		}
-	} 
-	else {
-
-		if (action_source_channel_selector < 0xFFFF) {
-
-				uint16_t gui_control_id = ESPUI.addControl(
-			Control::Type::Option, empty_str, -2, Control::Color::None, 
-			action_source_channel_selector);
-
-			ESPUI.getControl(gui_control_id)->secondParent = 
-				action_destination_channel_selector;
-		}
-	}
-
-
 	buildGatewayEventsChannelSelector();
 }
 
 /*****************************************************************************/
 
-void updateChannelSelectorsWithZbDeviceId(
-	uint16_t main_selector, uint8_t zb_device_id) {
+uint16_t updateChannelSelectorsWithZbDeviceId(
+	uint16_t main_selector, uint8_t zb_device_id, uint16_t start_id) {
 
 	auto core_it = Z2S_Cores.begin();
 
-	uint16_t gui_control_id = ESPUI.getFirstOptionId(main_selector, -2)->GetId();
+	uint16_t gui_control_id = start_id;
 
 	while (core_it != Z2S_Cores.end()) {
 
@@ -4154,13 +4126,15 @@ void updateChannelSelectorsWithZbDeviceId(
 
 			ESPUI.updateControlLabel(gui_control_id, z2s_core->getZ2SChannelName());
 			ESPUI.updateControlValue(gui_control_id, z2s_core->getZ2SChannelIndex());
+			
 			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
 					
 			gui_control_id = ESPUI.getNextOptionId(
-				main_selector, -2, gui_control_id)->GetId();
+				main_selector, -4, gui_control_id)->GetId();
 		}
 		core_it++;
 	}
+	return gui_control_id;
 }
 
 /*****************************************************************************/
@@ -4181,23 +4155,23 @@ void sortChannelsSelectorsMain() {
 		uint16_t main_selector = (channel_selector < 0xFFFF) ? channel_selector :
 			action_source_channel_selector;
 
-		ESPUI.removeSelectOptions(
-			main_selector, channel_selector_first_option_id);
-
+		uint16_t start_id = ESPUI.getNextOptionId(
+			main_selector, -4, channel_selector_first_option_id)->GetId();
+		
 		for (uint8_t zb_device_id = 0; zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER; 
 			 zb_device_id++) {
 
-			updateChannelSelectorsWithZbDeviceId(main_selector, zb_device_id);
+			start_id = updateChannelSelectorsWithZbDeviceId(
+				main_selector, zb_device_id, start_id);
 		}
 
-		updateChannelSelectorsWithZbDeviceId(main_selector, 0xFF);
-
-		uint16_t gui_control_id = ESPUI.getFirstOptionId(
-			main_selector, -2)->GetId();
+		start_id = updateChannelSelectorsWithZbDeviceId(
+			main_selector, 0xFF, start_id);
 		
-		log_i("GE gui_control_id = %u", gui_control_id);
+		log_i("GE gui_control_id = %u", start_id); 
 		
-		gateway_events_gui_control_id = gui_control_id;
+		gateway_events_gui_control_id = start_id;
+		
 		buildGatewayEventsChannelSelector(true);
 	}
 }
