@@ -4677,7 +4677,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 		sizeof(Control));
 	
 	ESPUI.sliderContinuous = true;
-	ESPUI.setVerbosity(Verbosity::VerboseJSON);
+	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
 	ESPUI.captivePortal = false;
 
 	working_str.reserve(1056);
@@ -5387,7 +5387,7 @@ void Z2S_loopWebGUI() {
 		}
 		else {
 
-			log_i("not yet synchronized");
+			//log_i("not yet synchronized");
 		}
 	}
 	
