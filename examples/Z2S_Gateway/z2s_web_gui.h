@@ -79,6 +79,8 @@ void removeChannelsSelectorChannel(
 
 void addChannelsSelectorChannel(Z2S_Core *z2s_core, bool isSwitchBot = false);
 
-void sortChannelsSelectors();
+void sortChannelsSelectors(int32_t selected_value = -1);
+
+void updateChannelsSelector(uint16_t selector_control_id);
 
 #endif // Z2S_WEB_GUI_H_

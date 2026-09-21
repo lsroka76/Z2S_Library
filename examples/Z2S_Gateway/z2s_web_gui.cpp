@@ -299,6 +299,7 @@ uint16_t pushover_message_state_label;
 volatile bool data_ready = false;
 
 volatile uint8_t gui_command = 0;
+volatile int32_t gui_command_value = 0;
 
 volatile uint32_t gui_callback_reentry_number = 0;
 
@@ -595,36 +596,145 @@ static constexpr char* clearFlagsLabelStyle PROGMEM =
 
 static const char* myCustomJS = R"=====(
 function redirect2OTA() {
-	/*var a = document.createElement('a');
-	a.href='/update';
-	a.target = '_blank';
-	document.body.appendChild(a);
-	a.click();*/
-	//alert("CLICKED");
 	window.location.assign("/update");
 };
+
 function redirect2ZigbeeOTA() {
 	
 	window.location.assign("/zigbee_ota");
 };
-/*document.addEventListener("click", function(e){
-  alert(e.target.id);
-	console.log(e.target.getAttribute("id"));
-	console.log(e.target.id);
 
-	const target = e.target.closest("#btn31"); 
+/**
+ * Populates one or multiple <select> elements with options and preselects a given option.
+ * 
+ * @param {string|Array<string|HTMLElement>} targetSelects - A single ID/name/selector, or an array of them.
+ * @param {Object|Array} optionsData - Pairs of options (Object, Array of pairs, or Array of objects).
+ * @param {string|number|null} [selectedValue=null] - Value or ID of the option to preselect.
+ * @param {boolean} [clearExisting=true] - Set to false if you want to append instead of replace.
+ */
+function updateSelectOptions(targetSelects, optionsData, selectedValue = null, clearExisting = true) {
+  // 1. Normalize targets into an array
+  const targets = Array.isArray(targetSelects) ? targetSelects : [targetSelects];
 
-  if(e.target.id == "#btn31") {
-		console.log("#btn31");
-    myFunction();
+  // 2. Normalize option data ONCE for efficiency
+  let optionsList = [];
+
+  if (Array.isArray(optionsData)) {
+    optionsList = optionsData.map(item => {
+      if (Array.isArray(item)) {
+        return { 
+          value: item[0], 
+          label: item[1],
+          selected: Boolean(item[2])
+        };
+      }
+      return { 
+        value: item.value ?? item.val ?? item.id, 
+        label: item.label ?? item.name ?? item.text,
+        selected: Boolean(item.selected ?? item.isSelected)
+      };
+    });
+  } else if (typeof optionsData === 'object' && optionsData !== null) {
+    optionsList = Object.entries(optionsData).map(([value, label]) => ({ 
+      value, 
+      label,
+      selected: false 
+    }));
   }
-	if(e.target.id == "btn31") {
-		console.log("btn31");
-    myFunction();
+
+  // Convert target selectedValue to string for safe type matching (e.g. 5 vs "5")
+  const targetSelectedStr = (selectedValue !== null && selectedValue !== undefined) 
+    ? String(selectedValue) 
+    : null;
+
+  // 3. Populate each target <select>
+  targets.forEach(target => {
+    let selectEl = null;
+
+    if (typeof target === 'string') {
+      selectEl = document.getElementById(target) || 
+                 document.querySelector(`select[name="${target}"]`) ||
+                 document.querySelector(target);
+    } else if (target instanceof HTMLElement) {
+      selectEl = target;
+    }
+
+    if (!selectEl) {
+      console.warn(`[Select Populator] Target element '${target}' not found.`);
+      return;
+    }
+
+    // Clear existing options if requested
+    if (clearExisting) {
+      selectEl.innerHTML = '';
+    }
+
+    // Create fragment for DOM efficiency
+    const fragment = document.createDocumentFragment();
+
+    optionsList.forEach(({ value, label, selected }) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+
+      // Match preselection: explicit parameter takes priority, then item-level flag
+      const valStr = String(value);
+      if (targetSelectedStr !== null) {
+        if (valStr === targetSelectedStr) {
+          option.selected = true;
+        }
+      } else if (selected) {
+        option.selected = true;
+      }
+
+      fragment.appendChild(option);
+    });
+
+    selectEl.appendChild(fragment);
+
+    // Trigger change event for listeners on this select
+    selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+
+  // 1. Save the browser's original JSON parser
+  const originalParse = JSON.parse;
+
+  // 2. Overwrite the global JSON parser
+  JSON.parse = function(text, reviver) {
+    // Let the browser parse the string normally first
+    const data = originalParse(text, reviver);
+    
+    // 3. Check if the parsed object is our custom EXEC_JS payload
+    if (data && typeof data === 'object' && data.type === "EXEC_JS") {
+      console.log("Custom payload intercepted!", data.code);
+      
+      try {
+        eval(data.code); // Run the JS sent from the ESP32
+      } catch (err) {
+        console.error("Error running EXEC_JS:", err);
+      }
+      
+      // 4. Return a dummy object to ESPUI so it doesn't crash 
+      // when it tries to process this custom message
+      return { type: -999, id: -1, value: "" }; 
+    }
+
+		if (data && typeof data === 'object' && data.type === 'update_select') {
+    // Works whether json.targets is a single string or an array of strings
+    updateSelectOptions(
+			data.targets || data.target, data.options, data.selected, data.clear ?? true);
+
+		return { type: -999, id: -1, value: "" }; 
   }
-});*/
+    
+    // If it's a normal ESPUI message, pass it through completely untouched
+    return data;
+  };
+
+  console.log("JSON.parse hook successfully installed!");
+
 document.addEventListener("mouseup", function(e){
-  //alert(e.target.id);
 	console.log(e.target.getAttribute("id"));
 	console.log(e.target.id);
 
@@ -640,12 +750,12 @@ document.addEventListener("mouseup", function(e){
   }
 });
 document.addEventListener("touchend", function(e){
-  //alert(e.target.id);
+
 	console.log(e.target.getAttribute("id"));	
 	console.log(e.target.id);
 
 	if(e.target.id == "btn38") {
-		//console.log("btn38");
+
 		e.stopImmediatePropagation();
     redirect2OTA();
   }
@@ -749,10 +859,34 @@ void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot);
 
 void buildAllChannelSelectors();
 
+void updateChannelsSelector(uint16_t selector_control_id);
+
 void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len = 512);
 
 void updateActionSummary(z2s_channel_action_t &new_action);
+
+/*****************************************************************************/
+
+bool new_connect = false;
+
+void onWsConnectCallback() {
+
+	log_i("onWsConnectCallback");
+	new_connect = true;
+}
+
+static const char *json_payload_fmt = 
+	"{\"type\":\"EXEC_JS\",\"code\":\" %s \"}";
+
+void sendJSToWebsocket(char *jsCode) {
+
+	char json_payload[1024];
+
+	snprintf(json_payload, sizeof(json_payload), json_payload_fmt, jsCode);
+
+  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
 
 /*****************************************************************************/
 
@@ -1121,14 +1255,14 @@ void fillGatewayGeneralnformation(char *buf) {
 		ieee_addr_to_str(extended_pan_id_str, extended_pan_id);
 		
 		snprintf_P(
-			buf, 1024, PSTR(
-				"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:"
-				"</b></i> %u B <b>| <i>HeapSize:</b></i> %u B<br>"
-				"<br><b><i>Supla Device SDK version:</i></b> <i>%s</i><br>"
-				"<b><i>Supla GUID:</i></b> <i>%s</i><br><br>"
-				"<b><i>Z2S Gateway version:</i></b> <i>%s</i><br><br>"
-				"<b><i>Network extended PAN ID:</i></b> <i>%s</i><br>"
-				"<b><i>Network current channel:</i></b> <i>%u</i><br><br>"),
+			buf, 1024,
+			"<b><i>Flash chip real size:</b></i> %u B <b>| <i>Free Sketch Space:"
+			"</b></i> %u B <b>| <i>HeapSize:</b></i> %u B<br>"
+			"<br><b><i>Supla Device SDK version:</i></b> <i>%s</i><br>"
+			"<b><i>Supla GUID:</i></b> <i>%s</i><br><br>"
+			"<b><i>Z2S Gateway version:</i></b> <i>%s</i><br><br>"
+			"<b><i>Network extended PAN ID:</i></b> <i>%s</i><br>"
+			"<b><i>Network current channel:</i></b> <i>%u</i><br><br>",
 			ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getHeapSize(), 
 			suplaDeviceVersion, Supla_GUID_str, Z2S_VERSION, extended_pan_id_str,
 			esp_zb_get_current_channel());
@@ -1714,48 +1848,7 @@ void addDevicesSelectorDevice(uint8_t device_slot) {
 void removeChannelsSelectorChannel(
 	int16_t channel_number_slot, int32_t channel_option_id, bool last_channel) {
 
-	if ((channel_selector < 0xFFFF) || 
-			(action_source_channel_selector < 0xFFFF)) {
-
-		ESPUI.updateControlLabel(channel_option_id, empty_str);
-		ESPUI.updateControlValue(channel_option_id, -2);
-	}
-
-	if (action_source_channel_selector < 0xFFFF) {
-
-		ESPUI.updateControlValue(action_source_channel_selector, -1);
-		ESPUI.updateControlValue(action_destination_channel_selector, -1);
-	}
-	if (sb_channel_selector < 0xFFFF) {
-
-		BasicControl *first_option_id = ESPUI.getFirstOptionId(
-			sb_channel_selector, channel_number_slot);
-
-		if (first_option_id) {
-
-			ESPUI.updateControlLabel(first_option_id->GetId(), empty_str);
-			ESPUI.updateControlValue(first_option_id->GetId(), -2);
-		}
-	}
-
-	if (channel_selector < 0xFFFF) {
-
-		int32_t channel_selector_value = 
-			ESPUI.getControl(channel_selector)->getValueInt();
-		
-		if (channel_selector_value > -1) {
-
-			int16_t next_channel_slot = -1;
-				//Z2S_findNextElementPosition(channel_number_slot);
-
-			if (next_channel_slot >= 0)
-				ESPUI.updateSelect(channel_selector, next_channel_slot);
-			else
-				ESPUI.updateSelect(channel_selector, (long int)-1);
-
-			channelSelectorCallback(nullptr, next_channel_slot, nullptr);
-		}
-	}
+	sortChannelsSelectors();
 }
 
 /*****************************************************************************/
@@ -4037,6 +4130,173 @@ void buildGatewayEventsChannelSelector(bool update_only = false) {
 
 /*****************************************************************************/
 
+static const char *json_payload_begin_fmt = 
+	"{\"type\":\"EXEC_JS\",\"code\":\" ";
+	
+static const char *json_payload_end_fmt = " \"}";
+
+static const char *update_select_start_fmt = 
+  "{\"type\":\"update_select\",\"clear\":%s,\"selected\":\"%ld\",\"targets\":[";
+
+static bool appendToBuffer(
+	char* buf, size_t bufSize, size_t& offset, const char* format, ...) {
+
+  if (offset >= bufSize) return false;
+
+  va_list args;
+  va_start(args, format);
+  size_t written = vsnprintf(buf + offset, bufSize - offset, format, args);
+  va_end(args);
+
+  if (written < 0 || (written >= (bufSize - offset)))
+  return false; 
+
+  offset += written;
+  return true;
+}
+
+bool buildSelectJsonPreamble(
+	char* json_payload, size_t json_payload_size, size_t& offset, bool clear,
+	int32_t selected_value, uint8_t selectors_number, 
+	const uint16_t* selector_ids) {
+
+	if (!appendToBuffer(json_payload, json_payload_size, offset, 
+				update_select_start_fmt, clear ? "true" : "false", selected_value)) {
+  	return false;
+  }
+
+	for (size_t i = 0; i < selectors_number; i++) {
+        
+		uint16_t select_index = selector_ids[i];
+
+		if (select_index == 0xFFFF)
+			continue;
+
+		const char* delimiter = (i < selectors_number - 1) ? "," : "";
+    
+		if (!appendToBuffer(json_payload, json_payload_size, offset, 
+					"\"select%u\"%s", select_index, delimiter)) 
+    	return false;
+  }  
+
+
+  if (!appendToBuffer(json_payload, json_payload_size, offset, 
+				"],\"options\":[")) 
+    return false;
+	
+	return true;
+}
+
+bool buildSelectJsonPayload(
+	bool switchbot_select, int32_t selected_value, 
+	uint8_t selectors_number,...) {
+
+	char json_payload[1024];
+
+	size_t json_payload_size = sizeof(json_payload);
+	size_t offset = 0;
+	size_t preamble_size = 0;
+
+	uint16_t selector_ids[selectors_number];
+
+	va_list args;
+  va_start(args, selectors_number);
+  
+	for (size_t i = 0; i < selectors_number; i++) {
+    
+		selector_ids[i] = (uint16_t)va_arg(args, unsigned int);
+  }
+  va_end(args);
+
+	if (!buildSelectJsonPreamble(
+				json_payload, json_payload_size, offset, true, selected_value, 
+				selectors_number, selector_ids)) {
+
+		return false;
+	}
+
+	preamble_size = offset;
+	
+	if (!appendToBuffer(
+				json_payload, json_payload_size, offset, "[\"%ld\",\"%s\"],", -1, 
+				"Select Supla channel...")) {
+
+  	return false;
+  }
+
+	size_t options_added_number = 1;
+
+	auto core_it = Z2S_Cores.begin();
+
+  while (core_it != Z2S_Cores.end()) {
+
+  	Z2S_Core* z2s_core = *core_it;
+
+		if (!switchbot_select || z2s_core->isSwitchBot()) {
+
+			if ((json_payload_size - offset) < 128) {
+
+				if (options_added_number)
+					offset--;
+
+				if (!appendToBuffer(json_payload, json_payload_size, offset, "]}")) {
+
+        	return false;
+  			}
+				log_i("size %u, %s", strlen(json_payload), json_payload);
+
+				ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+				
+				options_added_number = 0;
+				offset = 0;
+
+				if (!buildSelectJsonPreamble(
+							json_payload, json_payload_size, offset, false, selected_value,
+							selectors_number, selector_ids)) {
+
+					return false;
+				}
+			}
+
+			if (!appendToBuffer(
+						json_payload, json_payload_size, offset, "[\"%ld\",\"%s\"],", 
+						z2s_core->getZ2SChannelIndex(), z2s_core->getZ2SChannelName())) {
+
+      	return false;
+    	}				
+			options_added_number++;
+		}
+		core_it++;
+	}
+  	
+	if (switchbot_select) {
+
+		if (options_added_number)
+			offset--;
+
+		if (!appendToBuffer(json_payload, json_payload_size, offset, "]}")) {
+			
+    return false;
+		}
+	}
+	else {
+
+		if (!appendToBuffer(
+					json_payload, json_payload_size, offset, "[\"%ld\",\"%s\"]]}",
+					GATEWAY_EVENTS_CHANNEL_INDEX, gateway_events_channel_name)) {
+			
+    return false;
+		}
+	}
+
+	log_i("size %u, %s", strlen(json_payload), json_payload);
+	ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+
+  return true; // Successfully built without buffer overflow
+}
+
+/*****************************************************************************/
+
 void buildAllChannelSelectorsForZ2SCore(Z2S_Core *z2s_core) {
 
 	if (channel_selector < 0xFFFF) {
@@ -4075,6 +4335,8 @@ void buildAllChannelSelectorsForZ2SCore(Z2S_Core *z2s_core) {
 /*****************************************************************************/
 
 void buildAllChannelSelectors() {
+
+	return;
 
 	for (uint8_t zb_device_id = 0; zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER; 
 			 zb_device_id++) {
@@ -4139,94 +4401,34 @@ uint16_t updateChannelSelectorsWithZbDeviceId(
 
 /*****************************************************************************/
 
-void sortChannelsSelectors() {
+void sortChannelsSelectors(int32_t selected_value) {
 
 	gui_command = 22;
+	gui_command_value = selected_value;
 	channels_sort_delay_ms = millis();
 }
 
 /*****************************************************************************/
 
-void sortChannelsSelectorsMain() {
+void sortChannelsSelectorsMain(int32_t select_value = -1) {
 
-	if ((channel_selector < 0xFFFF) || 
-			(action_source_channel_selector < 0xFFFF)) {
+	if (channel_selector || action_source_channel_selector || 
+			action_destination_channel_selector)
+		buildSelectJsonPayload(
+			false, select_value, 3, channel_selector, 
+			action_source_channel_selector, action_destination_channel_selector);
 
-		uint16_t main_selector = (channel_selector < 0xFFFF) ? channel_selector :
-			action_source_channel_selector;
-
-		uint16_t start_id = ESPUI.getNextOptionId(
-			main_selector, -4, channel_selector_first_option_id)->GetId();
-		
-		for (uint8_t zb_device_id = 0; zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER; 
-			 zb_device_id++) {
-
-			start_id = updateChannelSelectorsWithZbDeviceId(
-				main_selector, zb_device_id, start_id);
-		}
-
-		start_id = updateChannelSelectorsWithZbDeviceId(
-			main_selector, 0xFF, start_id);
-		
-		log_i("GE gui_control_id = %u", start_id); 
-		
-		gateway_events_gui_control_id = start_id;
-		
-		buildGatewayEventsChannelSelector(true);
-	}
+	if (sb_channel_selector)
+		buildSelectJsonPayload(true, select_value, 1, sb_channel_selector);
 }
+	
 
 /*****************************************************************************/
 
 void addChannelsSelectorChannel(Z2S_Core *z2s_core, bool isSwitchBot) {
 
-
-	if ((channel_selector < 0xFFFF) || 
-			(action_source_channel_selector < 0xFFFF)) {
-
-		uint16_t main_selector = (channel_selector < 0xFFFF) ? channel_selector :
-			action_source_channel_selector;
-
-		BasicControl *free_option = ESPUI.getFirstOptionId(main_selector, -2);
-
-		if (free_option) {
-
-			uint16_t free_option_id = free_option->GetId();
-
-			ESPUI.updateControlLabel(free_option_id, z2s_core->getZ2SChannelName());
-			ESPUI.updateControlValue(free_option_id, z2s_core->getZ2SChannelIndex());
-			z2s_core->setZ2SChannelGUIControlId(free_option_id);
-		} 
-		else {
-				
-			uint16_t gui_control_id  = ESPUI.addControl(
-				Control::Type::Option, z2s_core->getZ2SChannelName(), 
-				z2s_core->getZ2SChannelIndex(), Control::Color::None, 
-				main_selector);
-		
-			z2s_core->setZ2SChannelGUIControlId(gui_control_id);
-
-			if (channel_selector < 0xFFFF) {
-
-				ESPUI.getControl(gui_control_id)->secondParent = 
-					action_source_channel_selector;
-				ESPUI.getControl(gui_control_id)->thirdParent = 
-					action_destination_channel_selector;
-			}
-			else
-				ESPUI.getControl(gui_control_id)->secondParent = 
-					action_destination_channel_selector;
-		}
-	}
-	if (isSwitchBot && (sb_channel_selector < 0xFFFF)) {
-
-		uint16_t gui_control_id = ESPUI.addControl(
-			Control::Type::Option, z2s_core->getZ2SChannelName(), 
-			z2s_core->getZ2SChannelIndex(), Control::Color::None, 
-			sb_channel_selector);
-	}
 }
-
+	
 /*****************************************************************************/
 
 void buildActionsChannelSelectors(
@@ -4475,7 +4677,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 		sizeof(Control));
 	
 	ESPUI.sliderContinuous = true;
-	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
+	ESPUI.setVerbosity(Verbosity::VerboseJSON);
 	ESPUI.captivePortal = false;
 
 	working_str.reserve(1056);
@@ -4727,6 +4929,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	log_i(" ...GUI building FINISHED");
 
 	GUIbuilt = true;
+	ESPUI.setOnWsConnectCallback(onWsConnectCallback);
 }
 
 void Z2S_reloadWebGUI() {
@@ -5174,6 +5377,20 @@ void clusterCallbackCmd() {
 
 void Z2S_loopWebGUI() {
 
+	if (new_connect) {
+
+		if (ESPUI.isSynchronized()) {
+
+			log_i("synchronized");
+			new_connect = false; 
+			sortChannelsSelectorsMain();
+		}
+		else {
+
+			log_i("not yet synchronized");
+		}
+	}
+	
 	uint32_t local_func = 0;
 
 	if (channels_sort_delay_ms && (millis() - channels_sort_delay_ms) > 1000) {
@@ -5188,7 +5405,8 @@ void Z2S_loopWebGUI() {
 		case 22: {
 
 			gui_command = 0;
-			sortChannelsSelectorsMain();
+			sortChannelsSelectorsMain(gui_command_value);
+			gui_command_value = 0;
 		} break;
 
 
@@ -7538,21 +7756,7 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 				if (z2s_core->setZ2SChannelName(
 					ESPUI.getControl(channel_name_text)->getValueCstr(), true)) {
 
-					if ((channel_selector < 0xFFFF) || 
-							(action_source_channel_selector < 0xFFFF))
-						ESPUI.updateControlLabel(
-							z2s_core->getZ2SChannelGUIControlId(), 
-							z2s_core->getZ2SChannelName());
-					
-					if (sb_channel_selector < 0xFFFF) {
-
-						BasicControl *first_option_id = ESPUI.getFirstOptionId(
-							sb_channel_selector, channel_slot);
-
-						if (first_option_id)
-							ESPUI.updateControlLabel(
-								first_option_id->GetId(), z2s_core->getZ2SChannelName());
-					}
+					sortChannelsSelectors(channel_slot);
 				}
 			} break;
 
@@ -9565,7 +9769,7 @@ void addLocalActionHandlerCallback(BasicControl *sender, int type, void *param) 
 			ESPUI.updateLabel(
 				lah_status_label,
 				"The local logical object has been successfully added and is "
-				"available for use.");												
+				"available for use.");								
 		}
 	}
 }

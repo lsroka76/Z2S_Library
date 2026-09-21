@@ -1738,6 +1738,7 @@ void Z2S_initSuplaChannels() {
   auto core_it = Z2S_Cores.begin();
   if (*core_it)
     (*core_it)->listCores();
+  //updateChannelsSelector(98);
 }
 
 /*****************************************************************************/

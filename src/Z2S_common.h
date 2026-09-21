@@ -635,6 +635,12 @@ public:
       LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER);
   }
 
+  bool isSwitchBot() {
+
+    return (_z2s_channel.local_channel_type == 
+      LOCAL_CHANNEL_TYPE_SWITCHBOT);
+  }
+
   bool isVirtualThermHygroMeter() {
 
     return (_z2s_channel.local_channel_type == 
