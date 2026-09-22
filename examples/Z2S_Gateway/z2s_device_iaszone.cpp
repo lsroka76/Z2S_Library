@@ -47,9 +47,6 @@ void addZ2SDeviceIASzone(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
   const char *name, uint32_t func) {
 
-  SuplaDevice.saveStateToStorage();
-  Supla::Storage::ConfigInstance()->commit();
-  
   auto Supla_Z2S_VirtualBinary = new Supla::Sensor::Z2S_VirtualBinary(true);
 
   if (name == nullptr)
@@ -81,6 +78,11 @@ void addZ2SDeviceIASzone(
 
   Supla_Z2S_VirtualBinary->onLoadConfig(&SuplaDevice);
   Supla_Z2S_VirtualBinary->onInit();
+
+  if (!Supla::Storage::IsStateStorageValid()) 
+    Supla::Storage::WriteStateStorage();
+          
+  Supla::Storage::ConfigInstance()->commit();
 }
 
 /*****************************************************************************/

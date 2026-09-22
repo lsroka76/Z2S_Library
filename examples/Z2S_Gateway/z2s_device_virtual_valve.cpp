@@ -49,9 +49,6 @@ void addZ2SDeviceVirtualValve(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot, 
   int8_t sub_id, const char *name, uint32_t func) {
 
-  SuplaDevice.saveStateToStorage();
-  Supla::Storage::ConfigInstance()->commit();
-
   auto Supla_Z2S_VirtualValve = new Supla::Control::Z2S_VirtualValve(true);
 
   if (name) 
@@ -76,6 +73,11 @@ void addZ2SDeviceVirtualValve(
 
     Supla_Z2S_VirtualValve->onLoadConfig(&SuplaDevice);
     Supla_Z2S_VirtualValve->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
 }
 
 /*****************************************************************************/

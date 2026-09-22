@@ -445,10 +445,7 @@ void initZ2SDeviceElectricityMeter(
 void addZ2SDeviceElectricityMeter(
   ZigbeeGateway *gateway, zbg_device_params_t *device, bool isTuya, 
   bool active_query, uint8_t free_slot, int8_t sub_id, bool one_phase) {
-  
-  SuplaDevice.saveStateToStorage();
-    Supla::Storage::ConfigInstance()->commit();
-  
+
   auto Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(
     active_query, one_phase);
 
@@ -473,6 +470,11 @@ void addZ2SDeviceElectricityMeter(
 
   Supla_Z2S_ElectricityMeter->onLoadConfig(&SuplaDevice);
   Supla_Z2S_ElectricityMeter->onInit();
+
+  if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+  Supla::Storage::ConfigInstance()->commit();
 }
 
 /*****************************************************************************/

@@ -87,9 +87,6 @@ void addZ2SDeviceRGB(
   ZigbeeGateway *gateway, zbg_device_params_t *device, uint8_t free_slot,
   const char *name, uint32_t func) {
   
-  SuplaDevice.saveStateToStorage();
-  Supla::Storage::ConfigInstance()->commit();
-  
   auto Supla_Z2S_RGBInterface = new Supla::Control::Z2S_RGBInterface();
 
   if (Supla_Z2S_RGBInterface) {
@@ -113,6 +110,11 @@ void addZ2SDeviceRGB(
 
     Supla_Z2S_RGBInterface->onLoadConfig(&SuplaDevice);
     Supla_Z2S_RGBInterface->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
   }
 }
 

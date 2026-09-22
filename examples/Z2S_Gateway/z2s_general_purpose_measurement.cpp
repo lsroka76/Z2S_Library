@@ -154,9 +154,6 @@ void addZ2SDeviceGeneralPurposeMeasurement(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
   const char *name, uint32_t func, const char *unit) {
 
-  SuplaDevice.saveStateToStorage();
-  Supla::Storage::ConfigInstance()->commit();
-  
   auto Supla_Z2S_GeneralPurposeMeasurement = 
     new Supla::Sensor::Z2S_GeneralPurposeMeasurement();
   
@@ -186,6 +183,11 @@ void addZ2SDeviceGeneralPurposeMeasurement(
 
   Supla_Z2S_GeneralPurposeMeasurement->onLoadConfig(&SuplaDevice);
   Supla_Z2S_GeneralPurposeMeasurement->onInit();
+
+  if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+  Supla::Storage::ConfigInstance()->commit();
 }
 
 /*****************************************************************************/

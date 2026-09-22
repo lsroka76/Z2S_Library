@@ -107,10 +107,6 @@ void addZ2SDeviceTempHumidity(
     bool isSNZB02DR2 = Z2S_isZbDeviceModelName(
       device->zb_device_id, "SNZB-02DR2");
 
-    SuplaDevice.saveStateToStorage();
-    Supla::Storage::ConfigInstance()->commit();
-
-
     auto Supla_Z2S_VirtualThermHygroMeter = isSNZB02DR2 ?
         new Supla::Sensor::Z2S_SNZB02DR2ThermHygroMeter :
         new Supla::Sensor::Z2S_VirtualThermHygroMeter;
@@ -140,11 +136,13 @@ void addZ2SDeviceTempHumidity(
 
     Supla_Z2S_VirtualThermHygroMeter->onLoadConfig(&SuplaDevice);
     Supla_Z2S_VirtualThermHygroMeter->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
       
   } else {
-
-    SuplaDevice.saveStateToStorage();
-    Supla::Storage::ConfigInstance()->commit();
 
     auto Z2S_VirtualThermometer = new Supla::Sensor::Z2S_VirtualThermometer();
   
@@ -173,6 +171,11 @@ void addZ2SDeviceTempHumidity(
 
     Z2S_VirtualThermometer->onLoadConfig(&SuplaDevice);
     Z2S_VirtualThermometer->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
   }
 }
 

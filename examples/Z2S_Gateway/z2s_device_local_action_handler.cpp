@@ -357,9 +357,6 @@ int16_t addZ2SDeviceLocalActionHandler(
 
     case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
 
-      SuplaDevice.saveStateToStorage();
-      Supla::Storage::ConfigInstance()->commit();
-
       uint8_t free_lah_channel_number = 
         Z2S_findFirstFreeLocalActionHandlerId();
 
@@ -373,15 +370,15 @@ int16_t addZ2SDeviceLocalActionHandler(
 
       initZ2SDeviceLocalActionHandler(
         first_free_slot, lah->getZ2SChannel(), lah->getZ2SElementPtr());
-      
-      //sortChannelsSelectors();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
     } break;
 
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
-
-      SuplaDevice.saveStateToStorage();
-      Supla::Storage::ConfigInstance()->commit();
 
       auto Supla_LocalVirtualRelay = 
         new Supla::Control::LocalVirtualRelay(RELAY_FLAGS); 
@@ -403,19 +400,19 @@ int16_t addZ2SDeviceLocalActionHandler(
       Supla_LocalVirtualRelay->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      //sortChannelsSelectors();
-
       Supla_LocalVirtualRelay->onLoadConfig(&SuplaDevice);
       Supla_LocalVirtualRelay->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
       
       Supla::Network::DisconnectProtocols();
     } break;
 
 
     case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC: {
-
-      SuplaDevice.saveStateToStorage();
-      Supla::Storage::ConfigInstance()->commit();
 
       auto Supla_VirtualOutputInterface = 
         new Supla::Control::VirtualOutputInterface();
@@ -439,10 +436,13 @@ int16_t addZ2SDeviceLocalActionHandler(
       Supla_VirtualHvac->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      //sortChannelsSelectors();
-
       Supla_VirtualHvac->onLoadConfig(&SuplaDevice);
       Supla_VirtualHvac->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
       
       Supla::Network::DisconnectProtocols();
     } break;
@@ -470,10 +470,13 @@ int16_t addZ2SDeviceLocalActionHandler(
       Supla_LocalVirtualBinary->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      //sortChannelsSelectors();
-
       Supla_LocalVirtualBinary->onLoadConfig(&SuplaDevice);
       Supla_LocalVirtualBinary->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
       
       Supla::Network::DisconnectProtocols();
 
@@ -481,9 +484,6 @@ int16_t addZ2SDeviceLocalActionHandler(
 
 
     case LOCAL_CHANNEL_TYPE_REMOTE_RELAY: {
-
-      SuplaDevice.saveStateToStorage();
-      Supla::Storage::ConfigInstance()->commit();
 
       auto Supla_Z2S_RemoteRelay = 
         new Supla::Control::Z2S_RemoteRelay(&Z2S_NetworkClient, 0xFF); 
@@ -510,6 +510,11 @@ int16_t addZ2SDeviceLocalActionHandler(
 
       Supla_Z2S_RemoteRelay->onLoadConfig(&SuplaDevice);
       Supla_Z2S_RemoteRelay->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
       
       Supla::Network::DisconnectProtocols();
     } break;
@@ -542,15 +547,17 @@ int16_t addZ2SDeviceLocalActionHandler(
 
       Supla_Z2S_RemoteThermometer->onLoadConfig(&SuplaDevice);
       Supla_Z2S_RemoteThermometer->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
       
       Supla::Network::DisconnectProtocols();
     } break;
 
 
     case LOCAL_CHANNEL_TYPE_SWITCHBOT: {
-
-      SuplaDevice.saveStateToStorage();
-      Supla::Storage::ConfigInstance()->commit();
 
       auto Supla_SwitchBotRelay = 
         new Supla::Control::SwitchBotRelay(local_channel_func); 
@@ -574,10 +581,13 @@ int16_t addZ2SDeviceLocalActionHandler(
       Supla_SwitchBotRelay->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      //sortChannelsSelectors();
-
       Supla_SwitchBotRelay->onLoadConfig(&SuplaDevice);
       Supla_SwitchBotRelay->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
       
       Supla::Network::DisconnectProtocols();
     } break;
@@ -610,10 +620,13 @@ int16_t addZ2SDeviceLocalActionHandler(
       Supla_Z2S_LocalVirtualThermHygroMeter->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      //sortChannelsSelectors();
-
       Supla_Z2S_LocalVirtualThermHygroMeter->onLoadConfig(&SuplaDevice);
       Supla_Z2S_LocalVirtualThermHygroMeter->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
       
       Supla::Network::DisconnectProtocols();
 

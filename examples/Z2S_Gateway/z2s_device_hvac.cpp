@@ -261,9 +261,6 @@ void initZ2SDeviceHvacExt(
 
   if (device) {
 
-    SuplaDevice.saveStateToStorage();
-    Supla::Storage::ConfigInstance()->commit();
-
     Supla_Z2S_TRVInterface = new Supla::Control::Z2S_TRVInterface(
       trv_commands_set, onOffOnly);
     
@@ -354,6 +351,11 @@ void initZ2SDeviceHvacExt(
 
     Supla_Z2S_HvacBase->onLoadConfig(&SuplaDevice);
     Supla_Z2S_HvacBase->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();    
   }
 }
 

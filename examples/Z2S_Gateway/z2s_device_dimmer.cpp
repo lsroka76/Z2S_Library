@@ -195,9 +195,6 @@ void addZ2SDeviceDimmer(
 
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH: {
 
-      SuplaDevice.saveStateToStorage();
-      Supla::Storage::ConfigInstance()->commit();
-      
       auto Supla_Z2S_TuyaDimmerSwitch =  
         new Supla::Control::Z2S_TuyaDimmerSwitch(sub_id); 
       
@@ -209,26 +206,28 @@ void addZ2SDeviceDimmer(
       Supla_Z2S_TuyaDimmerSwitch->setInitialCaption(name);
       Supla_Z2S_TuyaDimmerSwitch->setDefaultFunction(func);
 
-    initZ2SDeviceDimmer(
-      free_slot, Supla_Z2S_TuyaDimmerSwitch->getZ2SChannel(),
-      Supla_Z2S_TuyaDimmerSwitch->getZ2SElementPtr());
+      initZ2SDeviceDimmer(
+        free_slot, Supla_Z2S_TuyaDimmerSwitch->getZ2SChannel(),
+        Supla_Z2S_TuyaDimmerSwitch->getZ2SElementPtr());
 
-    Supla_Z2S_TuyaDimmerSwitch->getChannel()->setSubDeviceId(
-      device->zb_device_id + 1);
-    Supla_Z2S_TuyaDimmerSwitch->getChannel()->setFlag(
-      SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+      Supla_Z2S_TuyaDimmerSwitch->getChannel()->setSubDeviceId(
+        device->zb_device_id + 1);
+      Supla_Z2S_TuyaDimmerSwitch->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    Supla_Z2S_TuyaDimmerSwitch->onLoadConfig(&SuplaDevice);
-    Supla_Z2S_TuyaDimmerSwitch->onInit();
+      Supla_Z2S_TuyaDimmerSwitch->onLoadConfig(&SuplaDevice);
+      Supla_Z2S_TuyaDimmerSwitch->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
     } break;
 
     
 
     default: {
 
-      SuplaDevice.saveStateToStorage();
-      Supla::Storage::ConfigInstance()->commit();
-      
       auto Supla_Z2S_DimmerInterface = 
         new Supla::Control::Z2S_DimmerInterface(); 
 
@@ -251,6 +250,11 @@ void addZ2SDeviceDimmer(
 
       Supla_Z2S_DimmerInterface->onLoadConfig(&SuplaDevice);
       Supla_Z2S_DimmerInterface->onInit(); 
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
     } break;
   }  
 }
@@ -269,10 +273,7 @@ void addZ2SDeviceDimmer(
 void addZ2SDeviceDimmer(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
   const char *name, uint32_t function) {
-
-  SuplaDevice.saveStateToStorage();
-  Supla::Storage::ConfigInstance()->commit();
-      
+    
   auto Supla_Z2S_DimmerInterface = new Supla::Control::Z2S_DimmerInterface(); 
   
   if (Supla_Z2S_DimmerInterface) {
@@ -296,6 +297,11 @@ void addZ2SDeviceDimmer(
 
     Supla_Z2S_DimmerInterface->onLoadConfig(&SuplaDevice);
     Supla_Z2S_DimmerInterface->onInit(); 
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
   }
 }
 

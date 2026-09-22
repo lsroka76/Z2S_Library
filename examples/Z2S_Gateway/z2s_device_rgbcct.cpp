@@ -110,9 +110,6 @@ void addZ2SDeviceRGBCCT(
   zbg_device_params_t *device, uint8_t free_slot,const char *name, 
   uint32_t func) {
   
-  SuplaDevice.saveStateToStorage();
-  Supla::Storage::ConfigInstance()->commit();
-  
   auto Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface();
 
   if (Supla_Z2S_RGBCCTInterface) {
@@ -136,6 +133,11 @@ void addZ2SDeviceRGBCCT(
 
     Supla_Z2S_RGBCCTInterface->onLoadConfig(&SuplaDevice);
     Supla_Z2S_RGBCCTInterface->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
   }
 }
 

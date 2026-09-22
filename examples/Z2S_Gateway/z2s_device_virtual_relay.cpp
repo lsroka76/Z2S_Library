@@ -487,9 +487,6 @@ void addZ2SDeviceVirtualRelay(
   
   if (func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER) {
 
-    SuplaDevice.saveStateToStorage();
-    Supla::Storage::ConfigInstance()->commit();
-
     auto Supla_Z2S_RollerShutter = new Supla::Control::Z2S_RollerShutter();
 
     if (name == nullptr)
@@ -514,11 +511,13 @@ void addZ2SDeviceVirtualRelay(
 
     Supla_Z2S_RollerShutter->onLoadConfig(&SuplaDevice);
     Supla_Z2S_RollerShutter->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
   } 
   else {
-
-    SuplaDevice.saveStateToStorage();
-    Supla::Storage::ConfigInstance()->commit();
 
     auto Supla_Z2S_VirtualRelay = new Supla::Control::Z2S_VirtualRelay();
 
@@ -548,6 +547,11 @@ void addZ2SDeviceVirtualRelay(
 
     Supla_Z2S_VirtualRelay->onLoadConfig(&SuplaDevice);
     Supla_Z2S_VirtualRelay->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
   }
 }
 

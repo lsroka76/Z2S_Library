@@ -137,9 +137,6 @@ void addZ2SDeviceActionTriggerV2(
 
     log_i("no AT channel found - registering new one!");
 
-    SuplaDevice.saveStateToStorage();
-    Supla::Storage::ConfigInstance()->commit();
-
     auto Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
 
     if (getVirtualButtonNumber(
@@ -176,6 +173,11 @@ void addZ2SDeviceActionTriggerV2(
 
     Supla_Z2S_ActionTrigger->onLoadConfig(&SuplaDevice);
     Supla_Z2S_ActionTrigger->onInit();
+
+    if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+    Supla::Storage::ConfigInstance()->commit();
   } 
   else {
 

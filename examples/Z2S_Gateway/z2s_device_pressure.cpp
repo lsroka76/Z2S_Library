@@ -38,9 +38,6 @@ void initZ2SDevicePressure(
 void addZ2SDevicePressure(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id) {
 
-  SuplaDevice.saveStateToStorage();
-  Supla::Storage::ConfigInstance()->commit();
-
   auto Supla_Z2S_VirtualPressure = new Supla::Sensor::Z2S_VirtualPressure();
   
   Z2S_setChannelData(
@@ -60,6 +57,11 @@ void addZ2SDevicePressure(
 
   Supla_Z2S_VirtualPressure->onLoadConfig(&SuplaDevice);
   Supla_Z2S_VirtualPressure->onInit();
+
+  if (!Supla::Storage::IsStateStorageValid()) 
+      Supla::Storage::WriteStateStorage();
+          
+  Supla::Storage::ConfigInstance()->commit();
 }
 
 /*****************************************************************************/
