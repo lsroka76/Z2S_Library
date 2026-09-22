@@ -820,6 +820,160 @@ bool getVirtualButtonNumber(
     break;
 
 
+    case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2489:  
+
+      switch (sub_id) {
+
+
+        case NO_CUSTOM_CMD_SID:
+        case IKEA_CUSTOM_CMD_BILRESA_ON_PRESSED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "ON";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_ON_HELD_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_HOLD;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_HOLD;
+          virtual_button_data.button_action_trigger_name = "ON";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_ON_DOUBLE_PRESSED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x2;
+          virtual_button_data.button_action_trigger_name = "ON";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_OFF_PRESSED_SID: {
+
+          virtual_button_data.button_id = 2;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "OFF";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_OFF_HELD_SID: {
+
+          virtual_button_data.button_id = 2;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_HOLD;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_HOLD;
+          virtual_button_data.button_action_trigger_name = "OFF";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_OFF_DOUBLE_PRESSED_SID: {
+
+          virtual_button_data.button_id = 2;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x2;
+          virtual_button_data.button_action_trigger_name = "OFF";
+          return true;
+        } break;
+
+
+        default: {
+
+          log_e(
+            "unknown combination: model id = 0x%04X, sub id = 0x%02X", 
+            model_id, sub_id);
+          return 0;
+        } break;
+      } 
+    break;
+
+
+    case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2490:  
+
+      switch (sub_id) {
+
+
+        case NO_CUSTOM_CMD_SID:
+        case IKEA_CUSTOM_CMD_BILRESA_WHEEL_PRESSED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x1;
+          virtual_button_data.button_action_trigger_name = "WHEEL";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_WHEEL_DOUBLE_PRESSED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x2;
+          virtual_button_data.button_action_trigger_name = "WHEEL";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_WHEEL_TRIPLE_PRESSED_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x3;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x3;
+          virtual_button_data.button_action_trigger_name = "WHEEL";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x4;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x4;
+          virtual_button_data.button_action_trigger_name = "WHEEL";
+          return true;
+        } break;
+
+
+        default: {
+
+          log_e(
+            "unknown combination: model id = 0x%04X, sub id = 0x%02X", 
+            model_id, sub_id);
+          return 0;
+        } break;
+      } 
+    break;
+
+
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:        
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1: 
 

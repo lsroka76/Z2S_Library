@@ -329,6 +329,9 @@
 #define Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1                0x5211
 #define Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2                0x5212
 
+#define Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2489           0x5220
+#define Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2490           0x5221
+
 #define Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_3F              0x5300
 #define Z2S_DEVICE_DESC_SONOFF_SMART_BUTTON_4X4F            0x5305
 
@@ -592,6 +595,19 @@
 #define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_LONG_RELEASED_SID    0x0D
 #define IKEA_CUSTOM_CMD_SYMFONISK_DOTS_DOUBLE_PRESSED_SID   0x0E
 
+#define IKEA_CUSTOM_CMD_BILRESA_ON_PRESSED_SID              0x00
+#define IKEA_CUSTOM_CMD_BILRESA_ON_HELD_SID                 0x01
+#define IKEA_CUSTOM_CMD_BILRESA_ON_DOUBLE_PRESSED_SID       0x02
+
+#define IKEA_CUSTOM_CMD_BILRESA_OFF_PRESSED_SID             0x03
+#define IKEA_CUSTOM_CMD_BILRESA_OFF_HELD_SID                0x04
+#define IKEA_CUSTOM_CMD_BILRESA_OFF_DOUBLE_PRESSED_SID      0x05
+
+#define IKEA_CUSTOM_CMD_BILRESA_WHEEL_PRESSED_SID           0x00
+#define IKEA_CUSTOM_CMD_BILRESA_WHEEL_DOUBLE_PRESSED_SID    0x01
+#define IKEA_CUSTOM_CMD_BILRESA_WHEEL_TRIPLE_PRESSED_SID    0x02
+#define IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_SID            0x03
+
 #define PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_SID              0x00
 #define PHILIPS_HUE_DIMMER_SWITCH_ON_HOLD_SID               0x01
 #define PHILIPS_HUE_DIMMER_SWITCH_ON_PRESS_RELEASE_SID      0x02
@@ -816,6 +832,23 @@ static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = {
     "LEFT HELD", 
     "RIGHT PRESSED", 
     "RIGHT HELD" };
+
+[[maybe_unused]]
+static const char *IKEA_BILRESA_BUTTONS[] PROGMEM = { 
+    "ON PRESSED", 
+    "ON HELD", 
+    "ON DOUBLE PRESSED",
+    "OFF PRESSED", 
+    "OFF HELD",
+    "OFF DOUBLE PRESSED" };
+
+[[maybe_unused]]
+static const char *IKEA_BILRESA_WHEEL[] PROGMEM = { 
+    "WHEEL PRESSED",  
+    "WHEEL DOUBLE PRESSED",
+    "WHEEL TRIPLE PRESSED", 
+    "WHEEL ROTATE" };
+
 
 [[maybe_unused]]
 static const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = { 
@@ -1761,18 +1794,38 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON,
     .z2s_device_clusters_count = 4,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ESP_ZB_ZCL_CLUSTER_ID_SCENES,
-                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON_2F,
     .z2s_device_clusters_count = 4,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ESP_ZB_ZCL_CLUSTER_ID_SCENES,
-                             ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
-                             ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2489,
+    .z2s_device_clusters_count = 4,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2490,
+    .z2s_device_clusters_count = 4,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_SCENES,
+      ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+      ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1,
     .z2s_device_clusters_count = 4,
@@ -5025,6 +5078,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints =  {
       { 1, 0, 0, Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1 },
       { 2, 0, 0, Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_2 }}},
+
+    {	.manufacturer_name = "IKEA of Sweden", .model_name = "09B9",
+    .z2s_device_uid = 16050,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2489,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "IKEA of Sweden", .model_name = "09BA",
+    .z2s_device_uid = 16060,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2490,
+	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "VALLHORN Wireless Motion Sensor",
     .z2s_device_uid = 16100,

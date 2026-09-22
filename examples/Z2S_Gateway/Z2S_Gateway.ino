@@ -1681,11 +1681,13 @@ void loop() {
                   zbGateway.sendAddGroupRequestCmd(joined_device, 0x4E20, false);
                 } break;
 
-                /*case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3: {
 
-                  zbGateway.sendAddGroupRequestCmd(joined_device, 0, true);
-                  zbGateway.sendAddGroupRequestCmd(joined_device, 0, false);
-                } break;*/
+                case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2489:
+                case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2490: {
+
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 21658, true);
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 21658, false);
+                } break;
 
     
     

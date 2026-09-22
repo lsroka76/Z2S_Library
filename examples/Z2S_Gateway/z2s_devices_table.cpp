@@ -5745,6 +5745,214 @@ bool processPhilipsCommands(
 
 /*****************************************************************************/
 
+bool processIkeaBilresaCommands(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
+  uint8_t command_id, uint8_t buffer_size, uint8_t *buffer) {
+
+  log_i(
+    "IKEA BILRESA command: cluster(0x%x), command id(0x%x)", cluster_id, 
+    command_id);
+  
+  uint8_t sub_id = 0x7F;
+
+  uint8_t hold_mode = 0;
+
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    NO_CUSTOM_CMD_SID);
+
+  if (!z2s_core) {
+  
+    no_channel_found_error_func(short_addr);
+    return false;
+  }
+
+  // 1. Check On/Off Cluster
+  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) {
+    
+    switch(command_id) {
+
+
+      case 0x01:
+
+        sub_id = IKEA_CUSTOM_CMD_BILRESA_ON_PRESSED_SID;
+      break;
+
+
+      case 0x00:
+
+        sub_id = IKEA_CUSTOM_CMD_BILRESA_OFF_PRESSED_SID;
+      break;
+    }
+  }
+
+  // 2. Check Level Control Cluster
+  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
+
+    switch (command_id) {
+
+      case 0x01: {// Move
+
+        if (compareBuffer(buffer, buffer_size, "0053")) 
+          sub_id = IKEA_CUSTOM_CMD_BILRESA_ON_HELD_SID;
+        else 
+        if (compareBuffer(buffer, buffer_size, "0153")) 
+          sub_id = IKEA_CUSTOM_CMD_BILRESA_OFF_HELD_SID;
+
+        hold_mode = 1;
+      } break;
+
+      case 0x07: {
+
+        hold_mode = 2;
+      } break;
+    }
+  }
+
+  // 3. Check Scenes Cluster
+  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) {
+
+    switch (command_id) {
+
+      case 0x07: {
+
+        if (compareBuffer(buffer, buffer_size, "00010D00")) 
+          sub_id = IKEA_CUSTOM_CMD_BILRESA_ON_DOUBLE_PRESSED_SID;
+        else 
+        if (compareBuffer(buffer, buffer_size, "01010D00")) 
+          sub_id = IKEA_CUSTOM_CMD_BILRESA_OFF_DOUBLE_PRESSED_SID;
+      } break;
+    }
+  }
+  
+  log_i("IKEA BILRESA sub id %d, %u", sub_id, sub_id);
+
+  if (hold_mode == 2) {
+
+    z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    IKEA_CUSTOM_CMD_BILRESA_ON_HELD_SID);
+
+    if (!z2s_core)
+      log_i("No IKEA BILRESA channel found for address 0x%04X", short_addr);
+    else 
+      msgZ2SDeviceActionTriggerV2(
+        z2s_core->getZ2SElementPtr(), z2s_core->isActionTriggerV2(), 
+        IKEA_CUSTOM_CMD_BILRESA_ON_HELD_SID, hold_mode);
+
+    z2s_core = Z2S_findZ2SCore(
+      short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+      IKEA_CUSTOM_CMD_BILRESA_OFF_HELD_SID);
+
+    if (!z2s_core)
+      log_i("No IKEA BILRESA channel found for address 0x%04X", short_addr);
+    else 
+      msgZ2SDeviceActionTriggerV2(
+        z2s_core->getZ2SElementPtr(), z2s_core->isActionTriggerV2(), 
+        IKEA_CUSTOM_CMD_BILRESA_OFF_HELD_SID, hold_mode);
+
+    return true;
+  }
+  
+  if (sub_id == 0x7F) return false;
+
+  z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    sub_id);
+
+  if (!z2s_core)
+    log_i("No IKEA BILRESA channel found for address 0x%04X", short_addr);
+  else 
+    msgZ2SDeviceActionTriggerV2(
+      z2s_core->getZ2SElementPtr(), z2s_core->isActionTriggerV2(), sub_id, 
+      hold_mode);
+  return true;
+}
+
+/*****************************************************************************/
+
+bool processIkeaBilresaWheelCommands(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
+  uint8_t command_id, uint8_t buffer_size, uint8_t *buffer) {
+
+  log_i(
+    "IKEA BILRESA WHEEL command: cluster(0x%x), command id(0x%x)", cluster_id, 
+    command_id);
+  
+  uint8_t sub_id = 0x7F;
+
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    NO_CUSTOM_CMD_SID);
+
+  if (!z2s_core) {
+  
+    no_channel_found_error_func(short_addr);
+    return false;
+  }
+
+  // 1. Check On/Off Cluster
+  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) {
+    
+    switch(command_id) {
+
+
+      case 0x00:
+      case 0x01:
+
+        sub_id = IKEA_CUSTOM_CMD_BILRESA_WHEEL_PRESSED_SID;
+      break;
+    }
+  }
+
+  // 2. Check Level Control Cluster
+  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
+
+    switch (command_id) {
+
+      case 0x00: {// Move to level
+
+        sub_id = IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_SID;
+      } break;
+    }
+  }
+
+  // 3. Check Scenes Cluster
+  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) {
+
+    switch (command_id) {
+
+      case 0x07: {
+
+        if (compareBuffer(buffer, buffer_size, "00010D00")) 
+          sub_id = IKEA_CUSTOM_CMD_BILRESA_WHEEL_DOUBLE_PRESSED_SID;
+        else 
+        if (compareBuffer(buffer, buffer_size, "01010D00")) 
+          sub_id = IKEA_CUSTOM_CMD_BILRESA_WHEEL_TRIPLE_PRESSED_SID;
+      } break;
+    }
+  }
+  
+  log_i("IKEA BILRESA sub id %d, %u", sub_id, sub_id);
+
+  if (sub_id == 0x7F) return false;
+
+  z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    sub_id);
+
+  if (!z2s_core)
+    log_i(
+      "No IKEA BILRESA WHEEL channel found for address 0x%04X", short_addr);
+  else 
+    msgZ2SDeviceActionTriggerV2(
+      z2s_core->getZ2SElementPtr(), z2s_core->isActionTriggerV2(), sub_id);
+
+  return true;
+}
+
+/*****************************************************************************/
+
 bool processIkeaSymfoniskCommands(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
   uint8_t command_id, uint8_t buffer_size, uint8_t *buffer) {
@@ -6289,6 +6497,7 @@ bool Z2S_onCustomCmdReceive(
       if (!z2s_core)
         log_i("No IKEA device channel found for address 0x%04X", short_addr);
       else {
+        
         uint8_t hold_start = ((sub_id % 2) == 1) ? 1 : 0;
         msgZ2SDeviceActionTriggerV2(
               z2s_core->getZ2SElementPtr(), z2s_core->isActionTriggerV2(), 
@@ -6297,6 +6506,21 @@ bool Z2S_onCustomCmdReceive(
 
       return true;
     } break;
+
+
+    case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2489:
+
+      return processIkeaBilresaCommands(
+        short_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
+      break;
+
+
+    case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2490:
+
+      return processIkeaBilresaWheelCommands(
+        short_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
+      break;
+      
 
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1:
     case Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1:  
@@ -7146,6 +7370,28 @@ uint8_t Z2S_addZ2SDevice(
 
         char button_name_function[30];
         sprintf(button_name_function, IKEA_STYRBAR_BUTTONS[sub_id]);
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, button_name_function, 
+          SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2489: {
+
+        char button_name_function[30];
+        sprintf(button_name_function, IKEA_BILRESA_BUTTONS[sub_id]);
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, button_name_function, 
+          SUPLA_CHANNELFNC_POWERSWITCH);
+      } break;
+
+/*****************************************************************************/     
+
+      case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2490: {
+
+        char button_name_function[30];
+        sprintf(button_name_function, IKEA_BILRESA_WHEEL[sub_id]);
         addZ2SDeviceActionTrigger(
           device, first_free_slot, sub_id, button_name_function, 
           SUPLA_CHANNELFNC_POWERSWITCH);
@@ -9570,6 +9816,44 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_2_PRESSED_SID);
 
       Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BUTTON_2_HELD_SID);
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2489: {
+      
+      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BILRESA_ON_PRESSED_SID);
+
+      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BILRESA_ON_HELD_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_CUSTOM_CMD_BILRESA_ON_DOUBLE_PRESSED_SID);
+
+      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BILRESA_OFF_PRESSED_SID);
+
+      Z2S_addZ2SDevice(joined_device, IKEA_CUSTOM_CMD_BILRESA_OFF_HELD_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_CUSTOM_CMD_BILRESA_OFF_DOUBLE_PRESSED_SID);
+
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_IKEA_BILRESA_BUTTON_E2490: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_PRESSED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_DOUBLE_PRESSED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_TRIPLE_PRESSED_SID);
+
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_SID);
+
     } break;
 
 /*****************************************************************************/
