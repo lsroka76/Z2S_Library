@@ -134,8 +134,6 @@ void addZ2SDeviceRGBCCT(
     Supla_Z2S_RGBCCTInterface->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    addChannelsSelectorChannel(Supla_Z2S_RGBCCTInterface->getZ2SCorePtr());  
-
     Supla_Z2S_RGBCCTInterface->onLoadConfig(&SuplaDevice);
     Supla_Z2S_RGBCCTInterface->onInit();
   }

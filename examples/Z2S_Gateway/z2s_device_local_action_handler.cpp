@@ -343,14 +343,14 @@ void initZ2SDeviceLocalActionHandler(
 
 /*****************************************************************************/
 
-bool addZ2SDeviceLocalActionHandler(
+int16_t addZ2SDeviceLocalActionHandler(
   uint8_t local_channel_type, uint32_t local_channel_func, 
   uint8_t logic_operator) {
 
   uint8_t first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
 
   if (first_free_slot == 0xFF)
-    return false;
+    return -1;
   
   switch(local_channel_type) {
 
@@ -373,8 +373,8 @@ bool addZ2SDeviceLocalActionHandler(
 
       initZ2SDeviceLocalActionHandler(
         first_free_slot, lah->getZ2SChannel(), lah->getZ2SElementPtr());
-      addChannelsSelectorChannel(lah->getZ2SCorePtr());
-      sortChannelsSelectors();
+      
+      //sortChannelsSelectors();
     } break;
 
 
@@ -403,8 +403,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_LocalVirtualRelay->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      addChannelsSelectorChannel(Supla_LocalVirtualRelay->getZ2SCorePtr());
-      sortChannelsSelectors();
+      //sortChannelsSelectors();
 
       Supla_LocalVirtualRelay->onLoadConfig(&SuplaDevice);
       Supla_LocalVirtualRelay->onInit();
@@ -440,8 +439,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_VirtualHvac->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      addChannelsSelectorChannel(Supla_VirtualHvac->getZ2SCorePtr());
-      sortChannelsSelectors();
+      //sortChannelsSelectors();
 
       Supla_VirtualHvac->onLoadConfig(&SuplaDevice);
       Supla_VirtualHvac->onInit();
@@ -472,8 +470,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_LocalVirtualBinary->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      addChannelsSelectorChannel(Supla_LocalVirtualBinary->getZ2SCorePtr());
-      sortChannelsSelectors();
+      //sortChannelsSelectors();
 
       Supla_LocalVirtualBinary->onLoadConfig(&SuplaDevice);
       Supla_LocalVirtualBinary->onInit();
@@ -509,8 +506,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_Z2S_RemoteRelay->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      addChannelsSelectorChannel(Supla_Z2S_RemoteRelay->getZ2SCorePtr());
-      sortChannelsSelectors();
+      //sortChannelsSelectors();
 
       Supla_Z2S_RemoteRelay->onLoadConfig(&SuplaDevice);
       Supla_Z2S_RemoteRelay->onInit();
@@ -542,8 +538,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_Z2S_RemoteThermometer->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      addChannelsSelectorChannel(Supla_Z2S_RemoteThermometer->getZ2SCorePtr());
-      sortChannelsSelectors();
+      //sortChannelsSelectors();
 
       Supla_Z2S_RemoteThermometer->onLoadConfig(&SuplaDevice);
       Supla_Z2S_RemoteThermometer->onInit();
@@ -579,8 +574,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_SwitchBotRelay->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      addChannelsSelectorChannel(Supla_SwitchBotRelay->getZ2SCorePtr(), true);
-      sortChannelsSelectors();
+      //sortChannelsSelectors();
 
       Supla_SwitchBotRelay->onLoadConfig(&SuplaDevice);
       Supla_SwitchBotRelay->onInit();
@@ -616,9 +610,7 @@ bool addZ2SDeviceLocalActionHandler(
       Supla_Z2S_LocalVirtualThermHygroMeter->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-      addChannelsSelectorChannel(
-        Supla_Z2S_LocalVirtualThermHygroMeter->getZ2SCorePtr());
-      sortChannelsSelectors();
+      //sortChannelsSelectors();
 
       Supla_Z2S_LocalVirtualThermHygroMeter->onLoadConfig(&SuplaDevice);
       Supla_Z2S_LocalVirtualThermHygroMeter->onInit();
@@ -634,5 +626,5 @@ bool addZ2SDeviceLocalActionHandler(
         "unknown local action handler channel type 0%u", local_channel_type);
     break;
   }
-  return true;
+  return first_free_slot;
 }

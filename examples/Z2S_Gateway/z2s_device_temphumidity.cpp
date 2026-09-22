@@ -138,9 +138,6 @@ void addZ2SDeviceTempHumidity(
     Supla_Z2S_VirtualThermHygroMeter->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    addChannelsSelectorChannel(
-      Supla_Z2S_VirtualThermHygroMeter->getZ2SCorePtr());
-
     Supla_Z2S_VirtualThermHygroMeter->onLoadConfig(&SuplaDevice);
     Supla_Z2S_VirtualThermHygroMeter->onInit();
       
@@ -173,8 +170,6 @@ void addZ2SDeviceTempHumidity(
       device->zb_device_id + 1);
     Z2S_VirtualThermometer->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-    addChannelsSelectorChannel(Z2S_VirtualThermometer->getZ2SCorePtr());
 
     Z2S_VirtualThermometer->onLoadConfig(&SuplaDevice);
     Z2S_VirtualThermometer->onInit();

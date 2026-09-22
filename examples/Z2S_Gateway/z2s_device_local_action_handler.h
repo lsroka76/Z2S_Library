@@ -70,7 +70,7 @@ void initZ2SDeviceLocalActionHandler(
 /*****************************************************************************/
 
 
-bool addZ2SDeviceLocalActionHandler(
+int16_t addZ2SDeviceLocalActionHandler(
   uint8_t local_channel_type = LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 
   uint32_t local_channel_func = SUPLA_CHANNELFNC_NONE,
   uint8_t logic_operator = PIN_LOGIC_OPERATOR_NONE);

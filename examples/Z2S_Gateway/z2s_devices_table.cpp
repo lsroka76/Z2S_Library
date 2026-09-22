@@ -907,10 +907,40 @@ void Z2S_initZbDevices(uint32_t init_ms) {
   for (uint8_t devices_counter = 0; 
        devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) 
     if (z2s_zb_devices_table[devices_counter].record_id > 0) {
+    
+      switch (z2s_zb_devices_table[devices_counter].record_id) {
 
+      
+        case 1: 
+        case 2: {
+
+          log_e("Critical error - since 0.9.31 we never should landed here!");
+
+          continue;
+        } break;
+
+
+        case 3: {
+
+          if (!Z2S_updateZbDeviceUidIdx(devices_counter, nullptr, nullptr)) {
+
+            log_e("Critical error - couldn't get devices list idx!");
+        
+            continue;
+          }
+        } break;
+      }
+  
       z2s_zb_devices_table[devices_counter].last_seen_ms = 0; //init_ms;
       z2s_zb_devices_table[devices_counter].rssi = 0;
       z2s_zb_devices_table[devices_counter].battery_percentage = 0xFF;
+      
+      size_t device_local_name_size_w = mbstrnlen(
+			  z2s_zb_devices_table[devices_counter].device_local_name,
+				DEVICE_LOCAL_NAME_MAX_SIZE - 1);		
+
+			z2s_zb_devices_table[devices_counter].\
+				device_local_name[device_local_name_size_w] = '\0';
     }
 }
 
@@ -1047,10 +1077,7 @@ uint8_t Z2S_addZbDeviceTableSlot(
       z2s_zb_devices_table[zb_device_slot].battery_percentage = 0xFF;
 
       Z2S_saveZbDevicesTable();
-      
-      if (Z2S_isGUIBuilt())
-        addDevicesSelectorDevice(zb_device_slot);
-      
+            
       return zb_device_slot;
     }
   } else {
@@ -1177,6 +1204,7 @@ bool Z2S_loadZbDevicesTable() {
 
   uint32_t z2s_zb_devices_table_size =  Z2S_getZbDevicesTableSize(); 
 
+
   log_i(
     "\n\rZ2S_getZbDevicesTableSize %d\n\rsizeof(z2s_zb_devices_table) %d\n\r"
     "sizeof(z2s_zb_device_params_t) %d\n\r", z2s_zb_devices_table_size, 
@@ -1240,7 +1268,11 @@ bool Z2S_loadZbDevicesTable() {
         sizeof(z2s_zb_devices_table));
       Z2S_deleteFile(Z2S_ZB_DEVICES_TABLE_ID_V2);
       Z2S_deleteFile(Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2);
+      
       log_i("Zigbee devices table load and conversion success!");
+      
+      return true;
+
     }
     else {
         
@@ -1251,33 +1283,7 @@ bool Z2S_loadZbDevicesTable() {
   else
     return false;
 
-  for (uint8_t table_index = 0; table_index < Z2S_ZB_DEVICES_MAX_NUMBER;
-       table_index++) {
-          
-    switch (z2s_zb_devices_table[table_index].record_id) {
-
-      
-      case 1: 
-      case 2: {
-
-        log_e("Critical error - since 0.9.31 we never should landed here!");
-
-        continue;
-      } break;
-
-
-      case 3: {
-
-        if (!Z2S_updateZbDeviceUidIdx(table_index, nullptr, nullptr)) {
-
-          log_e("Critical error - couldn't get devices list idx!");
-        
-          continue;
-        }
-      } break;
-    }
-  }
-  return true;
+  return false; 
 }
 
 /*****************************************************************************/
@@ -11440,12 +11446,8 @@ bool ZbConflictResolver::onChannelConflictReport(
 
           Z2S_removeChannel(channel_number_slot, true);
 
-          if (Z2S_Core::countZ2SChannelsByZbDeviceId(zb_device_slot))
-            removeChannelsSelectorChannel(
-              channel_number_slot, gui_control_id, false);
-          else
-            removeChannelsSelectorChannel(
-              channel_number_slot, gui_control_id, true);
+          if (zb_device_slot == 0xFF)
+            sortChannelsSelectors();      
         }
       }
     }
@@ -11456,7 +11458,8 @@ bool ZbConflictResolver::onChannelConflictReport(
       log_i("all channels removed - removing device %02u", zb_device_slot);
 
       Z2S_removeZbDevice(zb_device_slot);
-      removeDevicesSelectorDevice(zb_device_slot);
+
+      sortZbDevicesAndChannelsSelectors();
     }
   }
   return false;

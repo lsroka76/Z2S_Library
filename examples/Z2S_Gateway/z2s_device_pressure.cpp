@@ -58,8 +58,6 @@ void addZ2SDevicePressure(
   Supla_Z2S_VirtualPressure->getChannel()->setFlag(
     SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-  addChannelsSelectorChannel(Supla_Z2S_VirtualPressure->getZ2SCorePtr());  
-
   Supla_Z2S_VirtualPressure->onLoadConfig(&SuplaDevice);
   Supla_Z2S_VirtualPressure->onInit();
 }

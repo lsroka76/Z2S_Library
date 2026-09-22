@@ -74,9 +74,6 @@ void addZ2SDeviceVirtualValve(
     Supla_Z2S_VirtualValve->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    addChannelsSelectorChannel(
-      Supla_Z2S_VirtualValve->getZ2SCorePtr(), false);  
-
     Supla_Z2S_VirtualValve->onLoadConfig(&SuplaDevice);
     Supla_Z2S_VirtualValve->onInit();
 }

@@ -512,8 +512,6 @@ void addZ2SDeviceVirtualRelay(
     Supla_Z2S_RollerShutter->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    addChannelsSelectorChannel(Supla_Z2S_RollerShutter->getZ2SCorePtr());  
-
     Supla_Z2S_RollerShutter->onLoadConfig(&SuplaDevice);
     Supla_Z2S_RollerShutter->onInit();
   } 
@@ -547,8 +545,6 @@ void addZ2SDeviceVirtualRelay(
       device->zb_device_id + 1);
     Supla_Z2S_VirtualRelay->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-    addChannelsSelectorChannel(Supla_Z2S_VirtualRelay->getZ2SCorePtr());  
 
     Supla_Z2S_VirtualRelay->onLoadConfig(&SuplaDevice);
     Supla_Z2S_VirtualRelay->onInit();

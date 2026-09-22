@@ -218,8 +218,6 @@ void addZ2SDeviceDimmer(
     Supla_Z2S_TuyaDimmerSwitch->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    addChannelsSelectorChannel(Supla_Z2S_TuyaDimmerSwitch->getZ2SCorePtr());
-
     Supla_Z2S_TuyaDimmerSwitch->onLoadConfig(&SuplaDevice);
     Supla_Z2S_TuyaDimmerSwitch->onInit();
     } break;
@@ -250,8 +248,6 @@ void addZ2SDeviceDimmer(
         device->zb_device_id + 1);
       Supla_Z2S_DimmerInterface->getChannel()->setFlag(
         SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      addChannelsSelectorChannel(Supla_Z2S_DimmerInterface->getZ2SCorePtr());
 
       Supla_Z2S_DimmerInterface->onLoadConfig(&SuplaDevice);
       Supla_Z2S_DimmerInterface->onInit(); 
@@ -297,8 +293,6 @@ void addZ2SDeviceDimmer(
       device->zb_device_id + 1);
     Supla_Z2S_DimmerInterface->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-    addChannelsSelectorChannel(Supla_Z2S_DimmerInterface->getZ2SCorePtr());
 
     Supla_Z2S_DimmerInterface->onLoadConfig(&SuplaDevice);
     Supla_Z2S_DimmerInterface->onInit(); 

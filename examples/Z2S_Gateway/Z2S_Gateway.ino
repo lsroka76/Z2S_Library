@@ -1946,8 +1946,11 @@ void loop() {
 
                 zbGateway.clearQueryBasicClusterData();
                 zbGateway.clearNewDeviceJoined();
-                if (Z2S_isGUIStarted())
-                  sortChannelsSelectors();
+                
+                if (Z2S_isGUIStarted()) {
+
+                  sortZbDevicesAndChannelsSelectors();
+                }
                 Supla::Network::DisconnectProtocols();
                 
                 //enableZ2SNotifications();

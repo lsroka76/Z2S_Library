@@ -168,7 +168,6 @@ void addZ2SDeviceActionTriggerV2(
       free_slot, Supla_Z2S_ActionTrigger->getZ2SChannel(), 
       Supla_Z2S_ActionTrigger->getZ2SElementPtr());
 
-    addChannelsSelectorChannel(Supla_Z2S_ActionTrigger->getZ2SCorePtr());
 
     Supla_Z2S_ActionTrigger->getChannel()->setSubDeviceId(
       device->zb_device_id + 1);

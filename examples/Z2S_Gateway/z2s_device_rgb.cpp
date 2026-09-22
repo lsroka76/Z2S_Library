@@ -111,8 +111,6 @@ void addZ2SDeviceRGB(
     Supla_Z2S_RGBInterface->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    addChannelsSelectorChannel(Supla_Z2S_RGBInterface->getZ2SCorePtr());
-
     Supla_Z2S_RGBInterface->onLoadConfig(&SuplaDevice);
     Supla_Z2S_RGBInterface->onInit();
   }

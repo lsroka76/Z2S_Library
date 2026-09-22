@@ -184,9 +184,6 @@ void addZ2SDeviceGeneralPurposeMeasurement(
   Supla_Z2S_GeneralPurposeMeasurement->getChannel()->setFlag(
     SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-  addChannelsSelectorChannel(
-    Supla_Z2S_GeneralPurposeMeasurement->getZ2SCorePtr());  
-
   Supla_Z2S_GeneralPurposeMeasurement->onLoadConfig(&SuplaDevice);
   Supla_Z2S_GeneralPurposeMeasurement->onInit();
 }

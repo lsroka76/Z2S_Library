@@ -69,18 +69,13 @@ void GUI_onTuyaCustomClusterReceive(
 
 void GUI_onZigbeeOpenNetwork(bool is_network_open);
 
-void removeDevicesSelectorDevice(uint8_t device_slot);
 
-void addDevicesSelectorDevice(uint8_t device_slot);
 
-void removeChannelsSelectorChannel(
-  int16_t channel_number_slot, int32_t channel_option_id, 
-  bool last_channel = false);
-
-void addChannelsSelectorChannel(Z2S_Core *z2s_core, bool isSwitchBot = false);
+void sortZbDevicesSelectors(int32_t selected_value = -1);
 
 void sortChannelsSelectors(int32_t selected_value = -1);
 
-void updateChannelsSelector(uint16_t selector_control_id);
+void sortZbDevicesAndChannelsSelectors();
+
 
 #endif // Z2S_WEB_GUI_H_

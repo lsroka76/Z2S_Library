@@ -471,8 +471,6 @@ void addZ2SDeviceElectricityMeter(
   Supla_Z2S_ElectricityMeter->getChannel()->setFlag(
     SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-  addChannelsSelectorChannel(Supla_Z2S_ElectricityMeter->getZ2SCorePtr());  
-
   Supla_Z2S_ElectricityMeter->onLoadConfig(&SuplaDevice);
   Supla_Z2S_ElectricityMeter->onInit();
 }

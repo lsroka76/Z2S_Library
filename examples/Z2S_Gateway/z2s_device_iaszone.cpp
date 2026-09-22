@@ -79,8 +79,6 @@ void addZ2SDeviceIASzone(
   Supla_Z2S_VirtualBinary->getChannel()->setFlag(
     SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-  addChannelsSelectorChannel(Supla_Z2S_VirtualBinary->getZ2SCorePtr());  
-
   Supla_Z2S_VirtualBinary->onLoadConfig(&SuplaDevice);
   Supla_Z2S_VirtualBinary->onInit();
 }

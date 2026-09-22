@@ -288,7 +288,6 @@ void initZ2SDeviceHvacExt(
     Supla_Z2S_HvacBase->getChannel()->setFlag(
       SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    addChannelsSelectorChannel(Supla_Z2S_TRVInterface->getZ2SCorePtr(), false);
   }
   else {
 
