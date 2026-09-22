@@ -4979,6 +4979,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "", .model_name = "lumi.sensor_switch",
+    .z2s_device_uid = 15455,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_2F,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "Remote Control N2",
     .z2s_device_uid = 15500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SMART_BUTTON,
