@@ -61,6 +61,7 @@ void initZ2SDeviceActionTriggerV2(
     _z2s_channel->debounce_ms = debounce_time_ms;
 
   _z2s_channel->virtual_button_data.button_last_seen_ms = 0;
+  _z2s_channel->virtual_button_data.button_last_value = -1;
 
   Supla::Control::LocalActionTrigger *Supla_Z2S_ActionTrigger = nullptr;
 
@@ -951,13 +952,25 @@ bool getVirtualButtonNumber(
         } break;
 
 
-        case IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_SID: {
+        case IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_RIGHT_SID: {
 
           virtual_button_data.button_id = 1;
           virtual_button_data.button_action_trigger_flag = 
             SUPLA_ACTION_CAP_SHORT_PRESS_x4;
           virtual_button_data.button_action_id = 
             Supla::SEND_AT_SHORT_PRESS_x4;
+          virtual_button_data.button_action_trigger_name = "WHEEL";
+          return true;
+        } break;
+
+
+        case IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_LEFT_SID: {
+
+          virtual_button_data.button_id = 1;
+          virtual_button_data.button_action_trigger_flag = 
+            SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+          virtual_button_data.button_action_id = 
+            Supla::SEND_AT_SHORT_PRESS_x5;
           virtual_button_data.button_action_trigger_name = "WHEEL";
           return true;
         } break;

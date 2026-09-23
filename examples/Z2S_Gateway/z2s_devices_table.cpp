@@ -5918,7 +5918,41 @@ bool processIkeaBilresaWheelCommands(
 
       case 0x00: {// Move to level
 
-        sub_id = IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_SID;
+        z2s_core = Z2S_findZ2SCore(
+          short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+          IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_RIGHT_SID);
+
+        if (!z2s_core) {
+
+          log_i(
+            "No IKEA BILRESA WHEEL channel found for address 0x%04X", 
+            short_addr);
+
+          return false;
+        }
+
+        uint8_t button_last_value = *buffer;
+
+
+        //if (millis() - z2s_core->getButtonLastSeenMs() > 1000) {
+        if (z2s_core->getButtonLastValue() < 0) {
+
+          //z2s_core->setButtonLastSeenMs(millis());
+          z2s_core->setButtonLastValue(button_last_value);
+
+          return true;
+        }
+        else {
+
+          if ((button_last_value == 1) || 
+              (button_last_value < z2s_core->getButtonLastValue()))
+            sub_id = IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_LEFT_SID;    
+          else
+            sub_id = IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_RIGHT_SID;
+          
+          //z2s_core->setButtonLastSeenMs(millis());
+          z2s_core->setButtonLastValue(button_last_value);
+        }
       } break;
     }
   }
@@ -9858,8 +9892,10 @@ void Z2S_buildSuplaChannels(
         joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_TRIPLE_PRESSED_SID);
 
       Z2S_addZ2SDevice(
-        joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_SID);
+        joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_RIGHT_SID);
 
+      Z2S_addZ2SDevice(
+        joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_LEFT_SID);
     } break;
 
 /*****************************************************************************/

@@ -238,10 +238,10 @@ union {
       uint8_t         logic_operator;
     } local_action_handler_data;
     struct {
-      Supla::Element  *Supla_element;
+      uint32_t         reserved_32;
       uint32_t         button_flags;
       uint32_t         button_last_seen_ms;
-      //uint32_t         button_debounce_ms;
+      int32_t          button_last_value;
     } virtual_button_data;
     struct {
       char            mDNS_name[12];
@@ -688,6 +688,16 @@ public:
 
     _z2s_channel.virtual_button_data.button_flags = button_flags;
     saveChannelData();
+  }
+
+  int32_t getButtonLastValue() {
+
+    return _z2s_channel.virtual_button_data.button_last_value;
+  }
+
+  void setButtonLastValue(int32_t button_last_value) {
+
+    _z2s_channel.virtual_button_data.button_last_value = button_last_value;
   }
 
   uint32_t getDebounceMs() {
