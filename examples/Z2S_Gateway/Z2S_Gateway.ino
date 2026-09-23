@@ -55,6 +55,7 @@
 #include "web_gui_templates.h"
 #include "z2s_little_fs.h"
 #include "z2s_device_tuya_custom_cluster.h"
+#include "task_info.h"
 
 #ifdef USE_TELNET_CONSOLE
 
@@ -109,14 +110,9 @@ constexpr uint8_t NUM_LEDS = 1;
 uint32_t refresh_time = 0;
 uint8_t refresh_cycle = 0;
 
-//uint32_t test_loop_ms = 0;
-
-//uint32_t _init_devices_ms = 0;
-
 uint32_t _z2s_iterate_ms = 0;
 
 uint32_t _time_cluster_last_refresh_ms = 0;
-
 
 int8_t  _enable_gui_on_start  = 1;
 uint8_t	_force_config_on_start = 0;
@@ -133,6 +129,7 @@ uint8_t _z2s_security_level    = 0;
 bool sendIASNotifications = false;
 Supla::Control::VirtualRelay *toggleNotifications = nullptr;
 Supla::Sensor::GeneralPurposeMeasurement *memory_gpm = nullptr;
+Supla::Sensor::GeneralPurposeMeasurement *cpu_gpm = nullptr;
 
 bool _restart_scheduled = false;
 static bool _forced_config = false;
@@ -525,7 +522,9 @@ static int32_t parse_int(const char *s, size_t len) {
 
 void setup() {
 
-  log_i("setup start");
+  log_i("Z2S GATEWAY setup has just started!");
+
+  setupCpuMonitoring();
 
   saveMutex = xSemaphoreCreateMutex();
 
@@ -605,32 +604,10 @@ void setup() {
   memory_gpm->setDefaultUnitAfterValue("B");
   memory_gpm->getChannel()->setChannelNumber(127);
 
-  
-  /*auto rescue = new Supla::Control::VirtualRelay();
-  rescue->getChannel()->setChannelNumber(5);
-  rescue->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-  auto rescue2 = new Supla::Control::VirtualRelay();
-  rescue2->getChannel()->setChannelNumber(9);
-  rescue2->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-  auto rescue3 = new Supla::Control::VirtualRelay();
-  rescue3->getChannel()->setChannelNumber(44);
-  rescue3->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-  auto rescue4 = new Supla::Control::VirtualRelay();
-  rescue4->getChannel()->setChannelNumber(45);
-  rescue4->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-  auto rescue5 = new Supla::Control::VirtualRelay();
-  rescue5->getChannel()->setChannelNumber(46);
-  rescue5->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);*/
-
+  cpu_gpm = new Supla::Sensor::GeneralPurposeMeasurement();
+  cpu_gpm->setInitialCaption("CPU usage");
+  cpu_gpm->setDefaultUnitAfterValue("%");
+  cpu_gpm->getChannel()->setChannelNumber(126);
 
   auto AHwC = new Supla::ActionHandlerWithCallbacks();
   AHwC->setActionHandlerCallback(supla_callback_bridge);
@@ -1185,6 +1162,7 @@ void loop() {
       Z2S_updateWebGUI();
 
     memory_gpm->setValue(ESP.getMaxAllocHeap());
+    cpu_gpm->setValue(GatewayTaskInfo.getCpuUsage());
 
     _time_cluster_last_refresh_ms = millis();
   }

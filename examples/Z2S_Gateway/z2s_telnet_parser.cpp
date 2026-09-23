@@ -535,9 +535,12 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       //vTaskResetState();
     } else {
       
-      telnet.printf("\n\r>TASKS CPU USAGE\n\r");
-      printTaskInfo(true);
-      telnet.printf("\n\r>");
+      //telnet.printf("\n\r>TASKS CPU USAGE\n\r");
+      //printTaskInfo(true);
+      //telnet.printf("\n\r>");
+      char task_info[1024];
+      GatewayTaskInfo.get(task_info, sizeof(task_info));
+      telnet.println(task_info);
     }
     return;
   } else

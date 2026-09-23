@@ -14,6 +14,7 @@
 
 #include "z2s_version_info.h"
 #include "z2s_little_fs.h"
+#include "task_info.h"
 
 #include <SuplaDevice.h>
 #include <supla/storage/littlefs_config.h>
@@ -1293,31 +1294,22 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		log_i("\n\rcurrent time %s\n\r",	current_time_buffer);
 
 		uint16_t meminfbuf_size = snprintf_P(
-			buf, buf_max_len, PSTR(
-				"FreeHeap:</b></i> %u B <b>| <i>"
-				"MinimalFreeHeap:</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<br>"
-				//"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
-				//"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br>"
-				//"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
-				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
-				"%lu dni %02lu:%02lu:%02lu (%lu seconds)"), 
-				ESP.getFreeHeap(), ESP.getMinFreeHeap(), 
-				ESP.getMaxAllocHeap(), //uxTaskGetStackHighWaterMark(NULL),
-				//uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()), 
-				//ESP.getPsramSize(), ESP.getFreePsram(), 
-				current_time_buffer, 
-				Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
-				Supla_uptime_s);
-
-		
-		/*uint16_t meminfbuf_size = snprintf_P(
-			buf, buf_max_len, PSTR(
-				"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
-				"%lu dni %02lu:%02lu:%02lu (%lu seconds)"), current_time_buffer, 
-				Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
-				Supla_uptime_s);*/
-
-		//log_i("Memory & uptime information (%u) %s", meminfbuf_size, buf);
+			buf, buf_max_len, "<b><i>FreeHeap:</b></i> %u B <b>| <i>MinimalFreeHeap"
+			":</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<b>| <i>CPU usage:"
+			"</b></i> %04.1f %%<br>"
+			//"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
+			//"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br>"
+			//"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br><br>"
+			"<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
+			"%lu dni %02lu:%02lu:%02lu (%lu seconds)", 
+			ESP.getFreeHeap(), ESP.getMinFreeHeap(), 
+			ESP.getMaxAllocHeap(), GatewayTaskInfo.getCpuUsage(),
+			//uxTaskGetStackHighWaterMark(NULL),
+			//uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()), 
+			//ESP.getPsramSize(), ESP.getFreePsram(), 
+			current_time_buffer, 
+			Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss, 
+			Supla_uptime_s);
 	}
 }
 

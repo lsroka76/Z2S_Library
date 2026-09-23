@@ -12,6 +12,7 @@
 #include "z2s_version_info.h"
 #include "z2s_web_gui.h"
 #include "z2s_little_fs.h"
+#include "task_info.h"
 
 void Z2S_onTelnetCmd(
   char *cmd, uint8_t params_number, char **param);
