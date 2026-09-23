@@ -4001,14 +4001,13 @@ bool buildSelectJsonPreamble(
 
 		if (select_index == 0xFFFF)
 			continue;
-
-		const char* delimiter = (i < selectors_number - 1) ? "," : "";
     
 		if (!appendToBuffer(json_payload, json_payload_size, offset, 
-					"\"select%u\"%s", select_index, delimiter)) 
+					"\"select%u\",", select_index)) 
     	return false;
   }  
 
+	offset--;
 
   if (!appendToBuffer(json_payload, json_payload_size, offset, 
 				"],\"options\":[")) 
@@ -9871,6 +9870,10 @@ void updatePushoverMessageDetails(
 	if (current_pushover_message_gui_state != VIEW_PUSHOVER_MESSAGE)
 		enablePushoverMessageControls(false);
 
+	if (!empty_message)
+		log_i(
+			"strlen = %u, mbstrnlen = %u", strlen(message.pushover_message_name),
+			mbstrnlen(message.pushover_message_name, 64));
 	
 	working_str = empty_message ? Z2S_findFreePushoverMessageIndex() : 
 		message.pushover_message_subaction_id;
@@ -10330,7 +10333,7 @@ void buildPushoverTabGUI() {
 		Control::Type::Label, empty_str, three_dots_str, Control::Color::Emerald, 
 		pushover_message_subaction_label);
 
-	z2s_pushover_message_t new_pushover_message;
+	z2s_pushover_message_t new_pushover_message = {};
 	
 	int16_t first_message = Z2S_findNextPushoverMessagePosition(0);
   if (first_message >= 0) {

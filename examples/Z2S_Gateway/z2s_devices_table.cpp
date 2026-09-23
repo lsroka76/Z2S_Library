@@ -2300,8 +2300,14 @@ bool Z2S_loadPushoverMessage(
   if (Z2S_loadObject(message_index, Z2S_PUSHOVER_MESSAGES_PREFIX_V2, 
         (uint8_t*) &message, sizeof(z2s_pushover_message_t))) 
     return true;
-  else    
-    return false;
+  else {   
+    
+    if (Z2S_loadObject(message_index, Z2S_PUSHOVER_MESSAGES_PREFIX_V2, 
+        (uint8_t*) &message, PUSHOVER_MESSAGE_LEGACY_FILE_SIZE))
+      return true;
+    else
+      return false;
+  }
 }
 
 /*****************************************************************************/

@@ -43,7 +43,7 @@
 
 #define PUSHOVER_MESSAGE_NAME_MAX_SIZE                          33
 #define PUSHOVER_MESSAGE_TEXT_MAX_SIZE                          1024
-
+#define PUSHOVER_MESSAGE_LEGACY_FILE_SIZE                       552
 
 #define ALL_SUPLA_CHANNEL_TYPES                                 -1
 #define ALL_ENDPOINTS                                           -1
