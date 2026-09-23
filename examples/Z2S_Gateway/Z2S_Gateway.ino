@@ -209,8 +209,8 @@ void supla_callback_bridge(int event, int action) {
         Zigbee.stop();
         delay(500);
 
-        log_i("software reset - saving ZB devices table");
-        Z2S_saveZbDevicesTable();
+        log_i("software reset - closing LittleFs");
+        
         _restart_scheduled = true;
         Z2S_endLittleFs(true);
         return;

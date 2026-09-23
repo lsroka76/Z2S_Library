@@ -5160,8 +5160,8 @@ void onUpdateEnd(const UpdateType type, int &result) {
 		Zigbee.stop();
   	delay(500);
 
-  	log_i("software reset - saving ZB devices table");
-  	Z2S_saveZbDevicesTable();
+  	log_i("software reset - closing LittleFs");
+  	
   	Z2S_endLittleFs(true);
 	}
 }
@@ -7623,44 +7623,6 @@ void editDeviceCallback(BasicControl *sender, int type, void *param) {
 				if (Z2S_saveZbDevicesTable()) {
 
 					sortZbDevicesSelectors(device_slot);
-
-					/*ESPUI.updateControlLabel(
-						z2s_zb_devices_table[device_slot].device_gui_id, 
-						z2s_zb_devices_table[device_slot].device_local_name);
-					
-					if (clusters_attributes_table[clusters_attributes_device_selector] <
-						  0xFFFF) {
-						
-						BasicControl *first_option_id = ESPUI.getFirstOptionId(
-							clusters_attributes_table[clusters_attributes_device_selector],
-							device_slot);
-						if (first_option_id)
-							ESPUI.updateControlLabel(
-								first_option_id->GetId(), 
-								z2s_zb_devices_table[device_slot].device_local_name);
-					}
-
-					if (advanced_device_selector < 0xFFFF) {
-						
-						BasicControl *first_option_id = ESPUI.getFirstOptionId(
-							advanced_device_selector, device_slot);
-						if (first_option_id)
-							ESPUI.updateControlLabel(
-								first_option_id->GetId(), 
-								z2s_zb_devices_table[device_slot].device_local_name);
-					}
-					
-					if (Tuya_devices_tab_controls_table[Tuya_device_selector] < 0xFFFF) {
-						
-						BasicControl *first_option_id = ESPUI.getFirstOptionId(
-							Tuya_devices_tab_controls_table[Tuya_device_selector], 
-							device_slot);
-
-						if (first_option_id)
-							ESPUI.updateControlLabel(
-								first_option_id->GetId(), 
-								z2s_zb_devices_table[device_slot].device_local_name);
-					}*/
 				}
 			} break;
 		}
