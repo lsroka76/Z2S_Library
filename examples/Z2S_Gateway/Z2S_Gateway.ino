@@ -81,17 +81,6 @@
 
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
 
-/*static uint8_t test_device_ieee_address[8] = 
-  {0x84, 0x71, 0x27, 0xFF, 0xFE, 0x98, 0x0E, 0x00};
-
-static uint8_t test_device_ieee_address_2[8] = 
-  {0x00, 0x0E, 0x98, 0xFE, 0xFF, 0x27, 0x71, 0x84};
-
-static uint8_t test_device_install_code[18] = 
-  {0x08, 0x0A, 0x84, 0x0E, 0xD6, 0x64,
-   0x22, 0xD1, 0xC8, 0xB2, 0x39, 0x11,
-   0x38, 0x2E, 0x1A, 0x74, 0x4F, 0xDB};*/
-
 static NetworkServer TestServer(REMOTE_RELAY_PORT);
 static NetworkClient client2;
 char   remote_cmd_request[64];
@@ -119,6 +108,7 @@ uint8_t	_force_config_on_start = 0;
 uint8_t _rebuild_Supla_channels_on_start = 0;
 uint8_t _use_new_at_model = 1;
 int32_t _gui_start_delay = 0;
+
 //1.4.81-06/03/26 - 
 int32_t _auto_connection_reset_timeout = 0; 
 
@@ -317,14 +307,6 @@ void Z2S_onOpenNetwork(uint8_t permit_duration) {
     rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
     GUI_onZigbeeOpenNetwork(true);
     handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_OPEN_NETWORK);
-
-    /*if (zpm) {
-
-      zpm->setSrpc(SuplaDevice.getSrpcLayer());
-
-      zpm->notifySrpcAboutParingEnd(
-        SUPLA_CALCFG_PAIRINGRESULT_ONGOING, nullptr);
-    }*/
   }
   else {
     
@@ -333,14 +315,6 @@ void Z2S_onOpenNetwork(uint8_t permit_duration) {
     rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
     GUI_onZigbeeOpenNetwork(false);
     handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
-
-    /*if (zpm) {
-
-      zpm->setSrpc(SuplaDevice.getSrpcLayer());
-      
-      zpm->notifySrpcAboutParingEnd(
-        SUPLA_CALCFG_PAIRINGRESULT_NO_NEW_DEVICE_FOUND, nullptr);
-    }*/
   }
 }
 
@@ -368,13 +342,7 @@ void enableZ2SNotifications() {
   zbGateway.onMeteringReceive(Z2S_onMeteringReceive);
   zbGateway.onBasicReceive(Z2S_onBasicReceive);
   zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
-  //zbGateway.onCurrentLevelReceive(Z2S_onCurrentLevelReceive);
   zbGateway.onColorControlReceive(Z2S_onColorControlReceive);
-  //zbGateway.onColorHueReceive(Z2S_onColorHueReceive);
-  //zbGateway.onColorSaturationReceive(Z2S_onColorSaturationReceive);
-  //zbGateway.onColorTemperatureReceive(Z2S_onColorTemperatureReceive);
-  //zbGateway.onThermostatTemperaturesReceive(Z2S_onThermostatTemperaturesReceive);
-  //zbGateway.onThermostatModesReceive(Z2S_onThermostatModesReceive);
   zbGateway.onThermostatReceive(Z2S_onThermostatReceive);
   zbGateway.onThermostatUIReceive(Z2S_onThermostatUIReceive);
   zbGateway.onWindowCoveringReceive(Z2S_onWindowCoveringReceive);
@@ -419,11 +387,6 @@ void disableZ2SNotifications() {
   zbGateway.onBasicReceive(nullptr);
   zbGateway.onCurrentLevelReceive(nullptr);
   zbGateway.onColorControlReceive(nullptr);
-  //zbGateway.onColorHueReceive(nullptr);
-  //zbGateway.onColorSaturationReceive(nullptr);
-  //zbGateway.onColorTemperatureReceive(nullptr);
-  //zbGateway.onThermostatTemperaturesReceive(nullptr);
-  //zbGateway.onThermostatModesReceive(nullptr);
   zbGateway.onThermostatReceive(nullptr);
   zbGateway.onThermostatUIReceive(nullptr);
   zbGateway.onWindowCoveringReceive(nullptr);
@@ -555,7 +518,9 @@ void setup() {
     }
   }
   sanity_check_time_ms = millis() - sanity_check_time_ms;
+
   log_i("Sanity check time %lu", sanity_check_time_ms);
+  
   //log_d("Total PSRAM: %d", ESP.getPsramSize());
   //log_d("Free PSRAM: %d", ESP.getFreePsram());
 
@@ -649,16 +614,24 @@ void setup() {
 
   if (LittleFS.exists("/supla/Z2S_devs_table")) {
 
-    log_i("/supla/Z2S_devs_table found - moving to /z2s_gateway/channels_table_v2.z2s");
+    log_i(
+      "/supla/Z2S_devs_table found - moving to "
+      "/z2s_gateway/channels_table_v2.z2s");
+
     LittleFS.mkdir("/z2s_gateway");
-    LittleFS.rename("/supla/Z2S_devs_table", "/z2s_gateway/channels_table_v2.z2s");
+    LittleFS.rename(
+      "/supla/Z2S_devs_table", "/z2s_gateway/channels_table_v2.z2s");
   }
 
   if (LittleFS.exists("/supla/Z2S_zbd_table")) {
 
-    log_i("/supla/Z2S_zbd_table found - moving to /z2s_gateway/zb_devices_table_v2.z2s");
+    log_i(
+      "/supla/Z2S_zbd_table found - moving to "
+      "/z2s_gateway/zb_devices_table_v2.z2s");
+
     LittleFS.mkdir("/z2s_gateway");
-    LittleFS.rename("/supla/Z2S_zbd_table", "/z2s_gateway/zb_devices_table_v2.z2s");
+    LittleFS.rename(
+      "/supla/Z2S_zbd_table", "/z2s_gateway/zb_devices_table_v2.z2s");
   }
 
   listDir(LittleFS,"/",3);
@@ -670,9 +643,9 @@ void setup() {
   
   log_i("OTA file size %lu", ota_file_size);
   
-  size_t bytes_read = 
-      Z2S_loadBufferFromFile("/zigbee_ota/zigbee_ota_file.ota", 0, 
-      sizeof(esp_zb_ota_image_header_t), (uint8_t *)&esp_zb_ota_image_header);
+  size_t bytes_read = Z2S_loadBufferFromFile(
+    "/zigbee_ota/zigbee_ota_file.ota", 0, sizeof(esp_zb_ota_image_header_t), 
+    (uint8_t *)&esp_zb_ota_image_header);
 
   log_i(
     "\n\rupgrade_file_id = 0x%08X, header_version = 0x%04X, header_length = %u"
@@ -688,12 +661,11 @@ void setup() {
     esp_zb_ota_image_header.stack_version, 
     esp_zb_ota_image_header.image_size);
 
-  //LittleFS.end();
-
   if (Supla::Storage::ConfigInstance()->getUInt8(
     Z2S_FORCE_CONFIG_ON_START, &_force_config_on_start)) {
 
-    log_i("Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
+    log_i(
+      "Z2S_FORCE_CONFIG_ON_START = %d", _force_config_on_start);
 
     if (_force_config_on_start)
       _forced_config = true;

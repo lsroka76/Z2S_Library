@@ -411,6 +411,27 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_STOP,
 		.Supla_action_name = "STOP" },
 
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_OPEN_OR_STOP,
+		.Supla_action_name = "OPEN OR STOP" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_CLOSE_OR_STOP,
+		.Supla_action_name = "CLOSE OR STOP" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_STEP_BY_STEP,
+		.Supla_action_name = "STEP BY STEP" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_MOVE_UP,
+		.Supla_action_name = "MOVE UP" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_MOVE_DOWN,
+		.Supla_action_name = "MOVE DOWN" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_MOVE_UP_OR_STOP,
+		.Supla_action_name = "MOVE UP OR STOP" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_MOVE_DOWN_OR_STOP,
+		.Supla_action_name = "MOVE DOWN OR STOP" },
+
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TURN_ON_W,
 		.Supla_action_name = "TURN ON DIMMER" },
 
