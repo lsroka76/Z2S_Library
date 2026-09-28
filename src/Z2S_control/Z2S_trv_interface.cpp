@@ -57,6 +57,14 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
           break;
 
 
+          case botr9v_cmd_set:
+
+            //_schedule_trv_temperature_setpoint_magic_number = 550;
+            _ready_to_send = false;
+            _init_sequence = 0;
+          break;
+
+
           default:
 
             _schedule_trv_temperature_setpoint_magic_number = 0;
@@ -180,7 +188,7 @@ void Supla::Control::Z2S_TRVInterface::enableExternalSensorDetection(
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
     int32_t temperature_setpoint) {
 
-  if (Zigbee.started()) {
+  if (Zigbee.started() && _ready_to_send) {
 
     log_i("Z2S_TRVInterface::sendTRVTemperatureSetpoint = %d", 
           temperature_setpoint);
@@ -298,7 +306,7 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
   int32_t temperature_calibration) {
 
-  if (Zigbee.started()) {
+  if (Zigbee.started() && _ready_to_send) {
 
     log_i("Z2S_TRVInterface::sendTRVTemperatureCalibration = %d", 
           temperature_calibration);
@@ -673,7 +681,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
 void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
   uint8_t trv_system_mode) {
 
-  if (Zigbee.started()) {
+  if (Zigbee.started() && _ready_to_send) {
 
     log_i("Z2S_TRVInterface::sendTRVMode = %d", 
           trv_system_mode);
@@ -723,7 +731,10 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
 
         sendTuyaRequestCmdData(
           _short_addr, _endpoint, system_mode_dp_id, system_mode_dp_type, 
-          system_mode_value); 
+          system_mode_value, false, TUYA_REQUEST_CMD); 
+
+        //if (_trv_commands_set == botr9v_cmd_set)
+        //  setTRVSystemMode(1);
 
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
@@ -809,7 +820,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
 void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
   uint8_t trv_schedule_mode) {
 
-  if (Zigbee.started()) {
+  if (Zigbee.started() && _ready_to_send) {
 
     log_i("Z2S_TRVInterface::sendTRVScheduleMode = %d", 
           trv_schedule_mode);
@@ -928,7 +939,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
 void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
   uint8_t trv_child_lock, bool send_value) {
 
-  if (Zigbee.started()) {
+  if (Zigbee.started() && _ready_to_send) {
 
     log_i("Z2S_TRVInterface::sendTRVChildLock = %d", 
           trv_child_lock);
@@ -1055,7 +1066,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
 void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
   int32_t temperature_histeresis) {
 
-  if (Zigbee.started()) {
+  if (Zigbee.started() && _ready_to_send) {
 
     log_i("temperature histeresis = %d", 
           temperature_histeresis);
@@ -1404,6 +1415,13 @@ void Supla::Control::Z2S_TRVInterface::forceTRVTemperature() {
 void Supla::Control::Z2S_TRVInterface::iterateAlways() {
 
   uint32_t millis_ms = millis();
+
+  if (_ready_to_send_delay_ms && 
+      ((millis_ms - _ready_to_send_delay_ms) > 60000)) {
+
+    _ready_to_send_delay_ms = 0;
+    _ready_to_send = true;
+  }
   
   //uint32_t z2s_zb_device_last_seen_ms = getZbDeviceLastSeenMs();
 

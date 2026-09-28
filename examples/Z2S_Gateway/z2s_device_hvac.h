@@ -30,6 +30,7 @@ static constexpr char *HVAC_DEFAULT_NAME = "THERMOSTAT";
 #define TRV_SENSOR_TYPE_MSG             0x0E
 #define TRV_PI_HEATING_DEMAND_MSG       0x0F
 #define TRV_SCHEDULE_MODE_ALT_MSG       0x10
+#define TRV_SUNDAY_SCHEDULE_MSG         0x11
 
 /*****************************************************************************/
 

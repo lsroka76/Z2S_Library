@@ -106,10 +106,10 @@ bool Z2S_readTuyaDPvalue(
         }
       } else {
 
-        if (Tuya_read_dp_result_test.dp_size > 8) {
+        if (Tuya_read_dp_result_test.dp_size > 64) {
 
           log_e(
-            "Tuya RAW DP size > 8 (0x%x)", Tuya_read_dp_result_test.dp_size); 
+            "Tuya RAW DP size > 64 (0x%x)", Tuya_read_dp_result_test.dp_size); 
           return Tuya_read_dp_result_test.is_success;
         }
 
@@ -144,45 +144,7 @@ void processTuyaHvacDataReport(
 
   uint16_t bytes_read = payload_size - 2;
 
-  /*uint8_t local_temperature_dp_id      = 0x00;
-  uint8_t current_heating_setpoint_dp_id = 0x00;
-
-  uint8_t system_mode_on_dp_id           = 0x00;
-  uint8_t system_mode_off_dp_id          = 0x00;
-
-  uint8_t running_state_dp_id            = 0x00;
-  uint8_t running_state_value_idle       = 0xFF;
-  uint8_t running_state_value_heat       = 0xFF;
-  bool    onOffOnly                      = true;
-
-  uint8_t temperature_calibration_dp_id  = 0x00;
-
-  uint8_t low_battery_dp_id              = 0x00;
-  uint8_t battery_level_dp_id            = 0x00;
-
-  uint8_t schedule_mode_dp_id            = 0x00;
-
-  uint8_t child_lock_dp_id               = 0x00;
-  uint8_t window_detect_dp_id            = 0x00;
-  uint8_t anti_freeze_dp_id              = 0x00;
-  uint8_t limescale_protect_dp_id        = 0x00;
-
-  uint8_t system_mode_value_on           = 0xFF;
-  uint8_t system_mode_value_off          = 0xFF;
-  
-  uint8_t schedule_mode_value_on         = 0xFF;
-  uint8_t schedule_mode_value_off        = 0xFF;
-
-  uint8_t temperature_histeresis_dp_id   = 0x00;
-
-  uint8_t pi_heating_demand_dp_id        = 0x00;
-
-  int32_t local_temperature_factor       = 1;
-  int32_t target_heatsetpoint_factor     = 1;
-  int32_t temperature_calibration_factor = 1;
-  int32_t temperature_histeresis_factor  = 1;*/
-
-  //legacy compatibility
+  //legacy compatibility + thermostats with humidity reporting
   Supla::Element* element_1 = Z2S_findZ2SElement(
     short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00, 
     SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
@@ -211,94 +173,7 @@ void processTuyaHvacDataReport(
     if (ts0601_command_sets_table[trv_commands_set].ts0601_cmd_set_id == 
         trv_commands_set) {
 
-      //memcpy(
-      //  &ts0601_command_set, &ts0601_command_sets_table[trv_commands_set], 
-      //  sizeof(ts0601_command_set_t));
-      //
       ts0601_command_set = ts0601_command_sets_table + trv_commands_set;
-      /*local_temperature_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_local_temperature_dp_id;
-
-      current_heating_setpoint_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_target_heatsetpoint_dp_id;
-
-      system_mode_on_dp_id =  ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_on_dp_id;
-
-      system_mode_off_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_off_dp_id;
-
-      system_mode_value_on = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_on_dp_value_on;
-
-      system_mode_value_off = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_off_dp_value_off;
-      
-      running_state_dp_id =  ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_running_state_dp_id;
-
-      running_state_value_idle = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_running_state_dp_value_idle;
-
-      running_state_value_heat = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_running_state_dp_value_heat;
-
-      if ((running_state_value_idle == 0) &&
-          (running_state_value_heat == 100))
-        onOffOnly = false; //valve 0-100%
-
-      temperature_calibration_dp_id = 
-      ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_temperature_calibration_dp_id;
-
-      low_battery_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_low_battery_dp_id;
-
-      battery_level_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_battery_level_dp_id;
-
-      schedule_mode_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_schedule_mode_dp_id;
-
-      schedule_mode_value_on = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_schedule_mode_dp_value_on;
-
-      schedule_mode_value_off = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_schedule_mode_dp_value_off;
-
-      child_lock_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_child_lock_dp_id;
-      
-      window_detect_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_window_detect_dp_id;
-      
-      anti_freeze_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_anti_freeze_protect_dp_id;
-      
-      limescale_protect_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_limescale_protect_dp_id;
-
-      local_temperature_factor = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_local_temperature_factor;
-      
-      target_heatsetpoint_factor =  
-        ts0601_command_sets_table[trv_commands_set].\
-          ts0601_cmd_set_target_heatsetpoint_factor;
-      
-      temperature_calibration_factor =  
-        ts0601_command_sets_table[trv_commands_set].\
-          ts0601_cmd_set_temperature_calibration_factor;
-
-      temperature_histeresis_dp_id =              
-        ts0601_command_sets_table[trv_commands_set].\
-          ts0601_cmd_set_temperature_histeresis_dp_id;
-
-      temperature_histeresis_factor =
-        ts0601_command_sets_table[trv_commands_set].\
-          ts0601_cmd_set_temperature_histeresis_factor;
-
-      pi_heating_demand_dp_id = ts0601_command_sets_table[trv_commands_set].\
-        ts0601_cmd_set_pi_heating_demand_dp_id;*/
     } 
     else
       log_e(
@@ -658,6 +533,41 @@ void processTuyaHvacDataReport(
 
       msgZ2SDeviceHvac(
         element_2, TRV_LIMESCALE_PROTECT_MSG, Tuya_read_dp_result.dp_value);
+
+      bytes_read -= (Tuya_read_dp_result.bytes_read);
+      if (bytes_read == 0)
+        return;
+    }
+  }
+
+  if (ts0601_command_set->ts0601_cmd_set_sunday_schedule_dp_id) {
+    
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result,
+      ts0601_command_set->ts0601_cmd_set_sunday_schedule_dp_id, 
+      payload_size, payload);
+    
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceHvac(
+        element_2, TRV_SUNDAY_SCHEDULE_MSG, 1);
+
+      bytes_read -= (Tuya_read_dp_result.bytes_read);
+      if (bytes_read == 0)
+        return;
+    }
+  }
+
+  if (ts0601_command_set->ts0601_cmd_set_humidity_dp_id) {
+    
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, ts0601_command_set->ts0601_cmd_set_humidity_dp_id, 
+      payload_size, payload);
+    
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceTempHumidityHumi(
+        element_1, (float)Tuya_read_dp_result.dp_value);
 
       bytes_read -= (Tuya_read_dp_result.bytes_read);
       if (bytes_read == 0)
@@ -3538,6 +3448,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
     case Z2S_DEVICE_DESC_TS0601_BOTR9V:
     case Z2S_DEVICE_DESC_TS0601_EONE_BATB:
+    case Z2S_DEVICE_DESC_TS0601_EONE_230W:
 
       processTuyaHvacDataReport(
         short_addr, endpoint, payload_size, payload, model_id); 

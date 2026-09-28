@@ -387,8 +387,9 @@
 #define Z2S_DEVICE_DESC_TS0601_MOES_BHT002                  0x6201
 #define Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR                   0x6202
 #define Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100                   0x6203
-#define Z2S_DEVICE_DESC_TS0601_BOTR9V                       0X6204
-#define Z2S_DEVICE_DESC_TS0601_EONE_BATB                    0X6205
+#define Z2S_DEVICE_DESC_TS0601_BOTR9V                       0x6204
+#define Z2S_DEVICE_DESC_TS0601_EONE_BATB                    0x6205
+#define Z2S_DEVICE_DESC_TS0601_EONE_230W                    0x6206
 
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
 
@@ -2094,12 +2095,17 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_BOTR9V,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_BATB,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
-  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_BATB,
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_230W,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -4864,10 +4870,17 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 3,
     .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
+  {	.manufacturer_name = "_TZ3000_bi6lpsew", .model_name = "TS0043",
+    .z2s_device_uid = 13810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
+	  .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
   {	.manufacturer_name = "_TZ3000_sj7jbgks", .model_name = "TS0043",
     .z2s_device_uid = 13900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
-    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS, //Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS, 
 	  .z2s_device_endpoints_count = 3,
     .z2s_device_endpoints_ext = tuya_switch_8 },
     //.z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
@@ -6510,6 +6523,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER,
       Z2S_DEVICE_DESC_SLACKY_DIY_REPEATER }},
 
+  {	.manufacturer_name = "lukasz06", .model_name = "SMT97",
+    .z2s_device_uid = 26450,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
     .z2s_device_uid = 26500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY,
@@ -7283,6 +7301,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_gtouvmvl", .model_name = "TS0601",
     .z2s_device_uid = 37400,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_BATB,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_awnadkan", .model_name = "TS0601",
+    .z2s_device_uid = 37500,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_230W,
     .z2s_device_endpoints_count = 1}
 
 //DEVICES_END

@@ -3490,6 +3490,36 @@ bool ZigbeeGateway::zbRawCmdHandler(
 
     /*if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_TIME) {
 
+      uint16_t attribute_id = (*buffer) + ((*(buffer + 1)) << 8);
+      
+      if (attribute_id == 0x007) {
+
+        //return true;
+
+        log_i("Time cluster request for local time - sending current local time");
+
+        uint8_t payload_data[8];
+        
+        uint32_t new_local_time = time(NULL); // - 946684800;
+
+        payload_data[0] = 0x07; // Attr ID Low
+        payload_data[1] = 0x00; // Attr ID High
+        payload_data[2] = 0x00; // Status: SUCCESS
+        payload_data[3] = 0x23; // Data Type: uint32
+        payload_data[4] = (uint8_t)(new_local_time & 0xFF);
+        payload_data[5] = (uint8_t)((new_local_time >> 8) & 0xFF);
+        payload_data[6] = (uint8_t)((new_local_time >> 16) & 0xFF);
+        payload_data[7] = (uint8_t)((new_local_time >> 24) & 0xFF);
+
+        sendAPSDEDataRequestCmd(
+          source.u.short_addr, seq_number, src_endpoint, cluster_id, 0x01, 
+          sizeof(payload_data), payload_data, ESP_ZB_ZCL_CMD_DIRECTION_TO_CLI, 
+          1, 0, 0, true, ESP_ZB_AF_HA_PROFILE_ID);
+
+        return true;
+      }
+    }*/
+    /*
       log_i("Sonoff temporary time cluster fix");
       uint8_t payload_data[48];
 
@@ -3516,7 +3546,7 @@ bool ZigbeeGateway::zbRawCmdHandler(
       payload_data[14] = 0x00; // Value Byte 2
       payload_data[15] = 0x00; // Value Byte 3
 
-      // Attribute 0x0007: LocalTime (uint32: 0x3220241A / 840,967,194 s)
+      
       payload_data[16] = 0x07; // Attr ID Low
       payload_data[17] = 0x00; // Attr ID High
       payload_data[18] = 0x00; // Status: SUCCESS
@@ -3735,8 +3765,6 @@ bool ZigbeeGateway::zbRawCmdHandler(
       }
       return true; 
     }
-
-  
 
     if ((cluster_id == TUYA_PRIVATE_CLUSTER_EF00) && 
         ((cmd_id == 0x24) || (cmd_id == 0x25))) {

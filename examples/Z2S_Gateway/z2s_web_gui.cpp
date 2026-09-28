@@ -1935,17 +1935,9 @@ void rebuildChannelsSelector(
 		channel_selector = ESPUI.addControl(
 			Control::Type::Select, PSTR("Channels"), (long int)-1, 
 			Control::Color::Emerald, channelstab, channelSelectorCallback);
-
 	
-		channel_selector_first_option_id = ESPUI.addControl(
-			Control::Type::Option, PSTR("Select Supla channel..."), (long int)-1,
-			Control::Color::None, channel_selector);
-
-		
 		ESPUI.setPanelWide(channel_selector, true);
 	}
-
-	//channel_selector_first_option_id 	= 0xFFFF;
 	
 	if (rebuild_channels_list)
 		channelSelectorCallback(

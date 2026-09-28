@@ -21,7 +21,7 @@ union {
   uint32_t dp_value;
   int32_t  dp_value_signed;
 };
-  uint8_t  dp_raw_value_8[8];
+  uint8_t  dp_raw_value_8[64];
 } Tuya_read_dp_result_t;
 
 void processTuyaCustomCluster(

@@ -619,6 +619,26 @@ Z2S_Core *Z2S_Core::getZ2SCoreByZbDeviceId(uint8_t Zb_device_id) {
 
 /*****************************************************************************/
 
+Z2S_Core *Z2S_Core::getZ2SCoreByZbDeviceIdAndChannelType(
+  uint8_t Zb_device_id, int32_t Supla_channel_type) {
+
+  auto core_it = Z2S_Cores.begin();
+
+  while (core_it != Z2S_Cores.end()) {
+
+    auto z2s_core = *core_it;
+
+    if ((z2s_core->_z2s_channel.Zb_device_id == Zb_device_id) &&
+        (z2s_core->_z2s_channel.Supla_channel_type == Supla_channel_type))
+      return z2s_core;
+
+    core_it++;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
 
 Supla::Element *Z2S_Core::getZ2SElementByChannelIndex(int16_t channel_index) {
 

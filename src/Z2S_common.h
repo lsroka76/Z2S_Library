@@ -959,6 +959,8 @@ public:
   static Z2S_Core *getZ2SCoreByChannelIndex(int16_t channel_index);
   static Z2S_Core *getZ2SCoreByChannelNumber(uint8_t channel_number);
   static Z2S_Core *getZ2SCoreByZbDeviceId(uint8_t Zb_device_id);
+  static Z2S_Core *getZ2SCoreByZbDeviceIdAndChannelType(
+    uint8_t Zb_device_id, int32_t Supla_channel_type);
   static Z2S_Core *getZ2SCoreByChannelNumberAndType(
     uint8_t channel_number, int32_t Supla_channel_type);
 

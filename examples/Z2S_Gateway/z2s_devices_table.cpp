@@ -6924,11 +6924,11 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   device.model_id = z2s_zb_devices_table[device_number_slot].desc_id;
 
   log_i(
-    "IEEE: %s, slot: %u, flags: %lu", ieee_addr_str,device_number_slot, 
+    "IEEE: %s, slot: %u, flags: %lu", ieee_addr_str, device_number_slot, 
     z2s_zb_devices_table[device_number_slot].user_data_flags);  
 
- // if (Z2S_checkZbDeviceFlags(device_number_slot, 
-   //   ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN)) {
+  if (Z2S_checkZbDeviceFlags(device_number_slot, 
+        ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN)) {
     
 
     /*if (device.model_id == Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR) {
@@ -6947,17 +6947,17 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
     zbGateway.sendAttributeRead(
       &device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
       ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, false);
-  //}
+  }
 
-  //if (Z2S_checkZbDeviceFlags(device_number_slot, 
-   //   ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN)) {
+  if (Z2S_checkZbDeviceFlags(device_number_slot, 
+        ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN)) {
     
     log_i("On/Off state query after rejoin");
   
     zbGateway.sendAttributeRead(
       &device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
-  //}
+  }
 
   if (Z2S_checkZbDeviceFlags(device_number_slot, 
       ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN)) {
@@ -6966,23 +6966,26 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
     
     device.cluster_id = TUYA_PRIVATE_CLUSTER_EF00;
 
-    /*log_i("Tuya magic");
-
-    uint16_t tuya_init_attributes[6] = { 
-      ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,
-      ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 
-      ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, 
-      ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,
-      ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 
-      0xFFFE };
-
-    zbGateway.sendAttributesRead(
-      &device, ESP_ZB_ZCL_CLUSTER_ID_BASIC, 6, 
-      tuya_init_attributes);*/
-
     zbGateway.sendCustomClusterCmd(
       &device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
       ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr); 
+  }
+
+  if (device.model_id == Z2S_DEVICE_DESC_TS0601_BOTR9V) {
+
+    Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByZbDeviceIdAndChannelType(
+      device_number_slot, SUPLA_CHANNELTYPE_HVAC);
+
+    if (z2s_core) {
+
+      auto Supla_Z2S_TRVInterface = static_cast<
+        Supla::Control::Z2S_TRVInterface *>(z2s_core->getZ2SElementPtr());
+      Supla_Z2S_TRVInterface->setReadyToSend(false);
+      Supla_Z2S_TRVInterface->setReadyToSendDelayMs(millis());
+    }
+    else
+      log_e("Missing Z2S_Core for Z2S_DEVICE_DESC_TS0601_BOTR9V!");
+  
   }
 
   if (device.model_id == Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR) {
@@ -7685,7 +7688,6 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
       case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
       case Z2S_DEVICE_DESC_TS0601_BOTR9V:
-      case Z2S_DEVICE_DESC_TS0601_EONE_BATB:
       case Z2S_DEVICE_DESC_SONOFF_TRVZB:
       case Z2S_DEVICE_DESC_BOSCH_BTHRA:
       case Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001:
@@ -7694,6 +7696,30 @@ uint8_t Z2S_addZ2SDevice(
       
         addZ2SDeviceTempHumidity(
           device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
+        
+        uint8_t trv_thermometer_slot = first_free_slot;
+        Z2S_setChannelFlags(
+          trv_thermometer_slot, USER_DATA_FLAG_CORRECTIONS_DISABLED);
+        
+        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+        if (first_free_slot == 0xFF) {
+
+          devices_table_full_error_func();
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+
+        addZ2SDeviceHvac(
+          &zbGateway, device, first_free_slot, 
+          Z2S_Core::getZ2SChannelNumberByChannelIndex(trv_thermometer_slot)); 
+      } break;
+      
+/*****************************************************************************/
+     
+      case Z2S_DEVICE_DESC_TS0601_EONE_BATB:
+      case Z2S_DEVICE_DESC_TS0601_EONE_230W: {
+      
+        addZ2SDeviceTempHumidity(
+          device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC T/H", 0, true);
         
         uint8_t trv_thermometer_slot = first_free_slot;
         Z2S_setChannelFlags(
@@ -9638,6 +9664,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
     case Z2S_DEVICE_DESC_TS0601_BOTR9V:
     case Z2S_DEVICE_DESC_TS0601_EONE_BATB:
+    case Z2S_DEVICE_DESC_TS0601_EONE_230W:
     case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2:

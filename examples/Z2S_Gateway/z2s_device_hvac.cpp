@@ -117,6 +117,12 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id) {
     } break;
 
 
+    case Z2S_DEVICE_DESC_TS0601_EONE_230W: {
+
+      return eone230w_cmd_set;
+    } break;
+
+
     case Z2S_DEVICE_DESC_SONOFF_TRVZB: {
 
       return TRVZB_CMD_SET;
@@ -458,7 +464,7 @@ void msgZ2SDeviceHvac(
         
         if (Supla_Z2S_TRVInterface->getChannelUserData2() == 0)
           Supla_Z2S_TRVInterface->clearChannelUserDataFlags(
-            USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
+            USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG, false);
 
         Supla_Z2S_TRVInterface->setTRVTemperatureSetpoint(msg_value);
         break;
@@ -498,7 +504,7 @@ void msgZ2SDeviceHvac(
           Supla_Z2S_TRVInterface->setOutputValueFromRemote(0);
           
           Supla_Z2S_TRVInterface->clearChannelUserDataFlags(
-            USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG);
+            USER_DATA_FLAG_TRV_IGNORE_NEXT_MSG, false);
           Supla_Z2S_TRVInterface->setChannelUserData2(0, false);
         break;
       }
@@ -668,6 +674,15 @@ void msgZ2SDeviceHvac(
         "msgZ2SDeviceHvac - TRV_SENSOR_TYPE_MSG: 0x%x", msg_value);
 
       Supla_Z2S_TRVInterface->setTRVTemperatureSensorType(msg_value);
+    } break;
+
+
+    case TRV_SUNDAY_SCHEDULE_MSG: {
+
+      log_i(
+        "msgZ2SDeviceHvac - TRV_SUNDAY_SCHEDULE_MSG: 0x%x", msg_value);
+
+      Supla_Z2S_TRVInterface->setReadyToSend(true);
     } break;
 
 
