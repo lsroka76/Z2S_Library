@@ -3,6 +3,9 @@
 
 #define Z2S_GATEWAY
 
+#include <cstdlib>
+#include <new>
+#include "multi_heap.h"
 
 #include <esp_task_wdt.h>
 //#include <rtc_wdt.h>
@@ -79,6 +82,9 @@
 #define Z2S_TCP_CMD_UPDATE_TEMPERATURE    0x10
 #define Z2S_TCP_CMD_UPDATE_HUMIDITY       0x11
 
+alignas(8) static uint8_t custom_heap_buf[32 * 1024]; 
+static multi_heap_handle_t my_custom_heap = nullptr;
+
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
 
 static NetworkServer TestServer(REMOTE_RELAY_PORT);
@@ -126,6 +132,43 @@ static bool _forced_config = false;
 static bool _start_Zigbee = true;
 
 SemaphoreHandle_t saveMutex;
+
+inline bool is_in_custom_heap(void* ptr) {
+    
+    uintptr_t p = reinterpret_cast<uintptr_t>(ptr);
+    uintptr_t start = reinterpret_cast<uintptr_t>(custom_heap_buf);
+    uintptr_t end = start + sizeof(custom_heap_buf);
+    return (p >= start && p < end);
+}
+
+void* operator new(size_t size) {
+    void* ptr = nullptr;
+
+    // Try allocating from custom heap if registered
+    if (my_custom_heap != nullptr) {
+        ptr = multi_heap_malloc(my_custom_heap, size);
+    }
+
+    // Fallback to system heap if custom heap is full or not initialized yet
+    if (!ptr) {
+        ptr = malloc(size);
+    }
+
+    if (!ptr) throw std::bad_alloc();
+    return ptr;
+}
+
+void operator delete(void* ptr) noexcept {
+    if (!ptr) return;
+
+    // Check which heap owns this memory pointer
+    if (is_in_custom_heap(ptr)) {
+        multi_heap_free(my_custom_heap, ptr);
+    } else {
+        free(ptr); // System heap
+    }
+}
+
 
 void initGUI(gui_modes_t mode = minimal_gui_mode) {
 
@@ -486,6 +529,9 @@ static int32_t parse_int(const char *s, size_t len) {
 void setup() {
 
   log_i("Z2S GATEWAY setup has just started!");
+
+  my_custom_heap = multi_heap_register(
+    custom_heap_buf, sizeof(custom_heap_buf));
 
   setupCpuMonitoring();
 
