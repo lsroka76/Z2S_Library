@@ -82,7 +82,7 @@
 #define Z2S_TCP_CMD_UPDATE_TEMPERATURE    0x10
 #define Z2S_TCP_CMD_UPDATE_HUMIDITY       0x11
 
-alignas(8) static uint8_t custom_heap_buf[32 * 1024]; 
+alignas(8) static uint8_t custom_heap_buf[48 * 1024]; 
 static multi_heap_handle_t my_custom_heap = nullptr;
 
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
