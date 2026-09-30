@@ -78,6 +78,7 @@
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER            0x50
 
 #define LOCAL_CHANNEL_TYPE_GPIO_RELAY                           0x60
+#define LOCAL_CHANNEL_TYPE_GPIO_HVAC                            0x61
 
 #define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                       0x80
 
@@ -252,7 +253,11 @@ union {
     struct {
       int32_t         gpio_pin;
       uint32_t        high_is_on : 1;
-    };
+    } local_relay_data;
+    struct {
+      int32_t         gpio_pin;
+      uint32_t        high_is_on : 1;
+    } local_hvac_data;
   };
   uint32_t            user_data_flags;
 union {
@@ -696,26 +701,50 @@ public:
     saveChannelData();
   }
 
-  int32_t getChannelGPIOPin() {
+  int32_t getLocalRelayGpioPin() {
 
-    return _z2s_channel.gpio_pin;
+    return _z2s_channel.local_relay_data.gpio_pin;
   }
 
-  void setChannelGPIOPin(int32_t gpio_pin, bool save = false) {
+  void setLocalRelayGpioPin(int32_t gpio_pin, bool save = false) {
 
-    _z2s_channel.gpio_pin = gpio_pin;
+    _z2s_channel.local_relay_data.gpio_pin = gpio_pin;
     if (save)
       saveChannelData();
   }
 
-  bool getChannelHighIsOn() {
+  bool getLocalRelayHighIsOn() {
 
-    return _z2s_channel.high_is_on;
+    return _z2s_channel.local_relay_data.high_is_on;
   }
 
-  void setChannelHighIsOn(bool high_is_on, bool save = false) {
+  void setLocalRelayHighIsOn(bool high_is_on, bool save = false) {
 
-  _z2s_channel.high_is_on = high_is_on;
+  _z2s_channel.local_relay_data.high_is_on = high_is_on;
+  if (save)
+    saveChannelData();
+  }
+
+  int32_t getLocalHvacGpioPin() {
+
+    return _z2s_channel.local_hvac_data.gpio_pin;
+  }
+
+  void setLocalHvacGpioPin(int32_t gpio_pin, bool save = false) {
+
+    _z2s_channel.local_hvac_data.gpio_pin = gpio_pin;
+    if (save)
+      saveChannelData();
+  }
+
+  bool getLocalHvacHighIsOn() {
+
+    return _z2s_channel.local_hvac_data.high_is_on;
+  }
+
+  void setLocalHvacHighIsOn(bool high_is_on, bool save = false) {
+
+  _z2s_channel.local_hvac_data.high_is_on = high_is_on;
   if (save)
     saveChannelData();
   }
@@ -1396,6 +1425,7 @@ public:
   }
 
   bool updateLocalRelayParams();
+  bool updateLocalHvacParams();
 
   bool initChannelData() {
 

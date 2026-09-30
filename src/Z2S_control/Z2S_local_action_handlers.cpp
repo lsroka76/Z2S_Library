@@ -712,6 +712,63 @@ void Supla::Control::LocalRelay::iterateAlways() {
 /*****************************************************************************/
 /*****************************************************************************/
 
+
+Supla::Control::LocalHvac::LocalHvac(int pin, bool highIsOn) 
+  : HvacBase(&_local_hvac_out_pin), Z2S_Core(this) {
+    
+}
+
+/*****************************************************************************/
+
+Supla::Control::LocalHvac::~LocalHvac() {
+
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalHvac::setPin(int pin) {
+
+  _local_hvac_out_pin.getIoPin()->setPin(pin);
+  _local_hvac_out_pin.getIoPin()->setMode(OUTPUT);
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalHvac::setHighIsOn(bool highIsOn) {
+
+  _local_hvac_out_pin.getIoPin()->setActiveHigh(highIsOn);
+}
+
+/*****************************************************************************/
+
+int Supla::Control::LocalHvac::getPin() {
+
+  return _local_hvac_out_pin.getIoPin()->getPin();
+}
+
+/*****************************************************************************/
+
+bool Supla::Control::LocalHvac::getHighIsOn() {
+
+  return _local_hvac_out_pin.getIoPin()->isActiveHigh();
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalHvac::handleAction(int event, int action) {
+
+  Supla::Control::HvacBase::handleAction(event, action);
+}
+/*****************************************************************************/
+
+void Supla::Control::LocalHvac::iterateAlways() {
+
+  Supla::Control::HvacBase::iterateAlways();
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+
 Supla::Control::SwitchBotRelay::SwitchBotRelay(uint8_t device_type_id)
   : Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER), 
   Z2S_Core(this) {

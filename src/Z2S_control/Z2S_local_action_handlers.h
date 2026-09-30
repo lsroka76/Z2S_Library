@@ -39,6 +39,7 @@
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
 #include <supla/network/network.h>
+#include <supla/control/internal_pin_output.h>
 
 #include "Z2S_common.h"
 #include "Z2S_custom_actions_events.h"
@@ -252,6 +253,41 @@ class LocalRelay: public Relay, public Z2S_Core {
     void handleAction(int event, int action) override; 
     void iterateAlways() override;
   protected:
+};
+
+/*****************************************************************************/
+
+class CustomInternalPinOutput : public InternalPinOutput {
+
+  public:
+
+    explicit CustomInternalPinOutput()  : InternalPinOutput(-1, true) {
+    }
+
+    Supla::Io::IoPin *getIoPin() {
+
+      return &outPin;
+    }
+};
+
+class LocalHvac: public HvacBase, public Z2S_Core {
+
+  public:
+
+    LocalHvac(int pin, bool highIsOn = true);
+
+    virtual ~LocalHvac();
+
+    void setPin(int pin);
+    void setHighIsOn(bool highIsOn);
+
+    int getPin();
+    bool getHighIsOn();
+
+    void handleAction(int event, int action) override; 
+    void iterateAlways() override;
+  protected:
+    CustomInternalPinOutput _local_hvac_out_pin;
 };
 
 /*****************************************************************************/

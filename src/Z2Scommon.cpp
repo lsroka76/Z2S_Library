@@ -1294,8 +1294,26 @@ bool Z2S_Core::updateLocalRelayParams() {
     Supla::Control::LocalRelay *Supla_LocalRelay = static_cast<
       Supla::Control::LocalRelay *>(_z2s_element);
 
-    Supla_LocalRelay->setPin(_z2s_channel.gpio_pin);
-    Supla_LocalRelay->setHighIsOn(_z2s_channel.high_is_on);
+    Supla_LocalRelay->setPin(_z2s_channel.local_relay_data.gpio_pin);
+    Supla_LocalRelay->setHighIsOn(_z2s_channel.local_relay_data.high_is_on);
+
+    return true;
+  }
+  else
+    return false;
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::updateLocalHvacParams() {
+    
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_HVAC) {
+
+    Supla::Control::LocalHvac *Supla_LocalHvac = static_cast<
+      Supla::Control::LocalHvac *>(_z2s_element);
+
+    Supla_LocalHvac->setPin(_z2s_channel.local_hvac_data.gpio_pin);
+    Supla_LocalHvac->setHighIsOn(_z2s_channel.local_hvac_data.high_is_on);
 
     return true;
   }
