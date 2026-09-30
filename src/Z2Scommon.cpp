@@ -1291,7 +1291,7 @@ bool Z2S_Core::updateLocalRelayParams() {
     
   if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_RELAY) {
 
-    Supla_Z2S_LocalRelay = static_cast<
+    Supla::Control::Z2S_LocalRelay *Supla_Z2S_LocalRelay = static_cast<
       Supla::Control::Z2S_LocalRelay *>(_z2s_element);
 
     Supla_Z2S_LocalRelay->setPin(_z2s_channel.gpio_pin);
