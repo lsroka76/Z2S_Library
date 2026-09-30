@@ -1291,11 +1291,11 @@ bool Z2S_Core::updateLocalRelayParams() {
     
   if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_RELAY) {
 
-    Supla::Control::Z2S_LocalRelay *Supla_Z2S_LocalRelay = static_cast<
-      Supla::Control::Z2S_LocalRelay *>(_z2s_element);
+    Supla::Control::LocalRelay *Supla_LocalRelay = static_cast<
+      Supla::Control::LocalRelay *>(_z2s_element);
 
-    Supla_Z2S_LocalRelay->setPin(_z2s_channel.gpio_pin);
-    Supla_Z2S_LocalRelay->setHighIsOn(_z2s_channel.high_is_on);
+    Supla_LocalRelay->setPin(_z2s_channel.gpio_pin);
+    Supla_LocalRelay->setHighIsOn(_z2s_channel.high_is_on);
 
     return true;
   }
