@@ -77,6 +77,8 @@
 
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER            0x50
 
+#define LOCAL_CHANNEL_TYPE_GPIO_RELAY                           0x60
+
 #define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                       0x80
 
 #define REMOTE_ADDRESS_TYPE_LOCAL                               0x00
@@ -247,6 +249,10 @@ union {
       char            mDNS_name[12];
       uint32_t        remote_ip_address;
     } remote_channel_data;
+    struct {
+      int32_t         gpio_pin;
+      uint32_t        high_is_on : 1;
+    };
   };
   uint32_t            user_data_flags;
 union {
@@ -687,6 +693,30 @@ public:
   void setButtonFlags(uint32_t button_flags) {
 
     _z2s_channel.virtual_button_data.button_flags = button_flags;
+    saveChannelData();
+  }
+
+  int32_t getChannelGPIOPin() {
+
+    return _z2s_channel.gpio_pin;
+  }
+
+  void setChannelGPIOPin(int32_t gpio_pin, bool save = false) {
+
+    _z2s_channel.gpio_pin = gpio_pin;
+    if (save)
+      saveChannelData();
+  }
+
+  bool getChannelHighIsOn() {
+
+    return _z2s_channel.high_is_on;
+  }
+
+  void setChannelHighIsOn(bool high_is_on, bool save = false) {
+
+  _z2s_channel.high_is_on = high_is_on;
+  if (save)
     saveChannelData();
   }
 
@@ -1364,6 +1394,8 @@ public:
       hvac_fixed_temperature_correction;
     return saveChannelData();
   }
+
+  bool updateLocalRelayParams();
 
   bool initChannelData() {
 

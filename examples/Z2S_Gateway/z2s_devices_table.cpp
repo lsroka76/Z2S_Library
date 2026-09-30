@@ -378,7 +378,7 @@ void Z2S_setLocalChannelData(
   Z2S_Core *z2s_core, uint8_t channel_index, uint8_t Supla_channel, 
   int8_t sub_id, const char *name, uint32_t func, uint8_t secondary_channel,
   uint8_t local_channel_type, uint8_t local_channel_func, 
-  uint8_t logic_operator) {
+  uint8_t logic_operator, bool save) {
     
   z2s_core->setChannelIndex(channel_index);
   z2s_core->initChannelData();
@@ -396,6 +396,7 @@ void Z2S_setLocalChannelData(
   z2s_core->setExtendedDataType(CHANNEL_EXTENDED_DATA_TYPE_NULL);
   z2s_core->setZbDeviceId(0xFF);
 
+  if (save)
     z2s_core->saveChannelData();
 }
 /*****************************************************************************/

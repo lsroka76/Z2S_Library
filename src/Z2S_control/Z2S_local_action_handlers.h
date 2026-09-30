@@ -227,8 +227,31 @@ class LocalVirtualRelay: public VirtualRelay, public Z2S_Core {
     void iterateAlways() override;
   protected:
 
-    uint32_t timer_update_ms = 0;
-    uint32_t test_ms = 300 * 1000;
+    //uint32_t timer_update_ms = 0;
+    //uint32_t test_ms = 300 * 1000;
+};
+
+/*****************************************************************************/
+
+class LocalRelay: public Relay, public Z2S_Core {
+
+  public:
+
+    LocalRelay(
+      int pin, bool highIsOn = true, _supla_int_t functions =
+       (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER));
+
+    virtual ~LocalRelay();
+
+    void setPin(int pin);
+    void setHighIsOn(bool highIsOn);
+
+    int getPin();
+    bool getHighIsOn();
+
+    void handleAction(int event, int action) override; 
+    void iterateAlways() override;
+  protected:
 };
 
 /*****************************************************************************/

@@ -24,6 +24,12 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
     break;
 
 
+    case LOCAL_CHANNEL_TYPE_GPIO_RELAY:
+      
+      return "Local relay (GPIO)";
+    break;
+
+
     case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC:
       
       return "Local virtual hvac";
@@ -96,6 +102,7 @@ const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
     case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC:
     case LOCAL_CHANNEL_TYPE_SWITCHBOT:
     case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
+    case LOCAL_CHANNEL_TYPE_GPIO_RELAY:
     case LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS:
       
       return "No special functions";
@@ -155,6 +162,29 @@ void initZ2SDeviceLocalActionHandler(
         Supla_LocalVirtualRelay->getChannel()->setChannelNumber(Supla_channel);
       }
       Supla_LocalVirtualRelay->setDefaultStateRestore();
+    }
+    break;
+
+
+    case LOCAL_CHANNEL_TYPE_GPIO_RELAY: {
+
+      Supla::Control::LocalRelay *Supla_LocalRelay = nullptr;
+
+      if (element) {
+
+        Supla_LocalRelay = static_cast<
+          Supla::Control::LocalRelay *>(element);
+      }
+      else {
+
+        Supla_LocalRelay = new Supla::Control::LocalRelay(
+          _z2s_channel->gpio_pin, _z2s_channel->high_is_on, RELAY_FLAGS); 
+    
+        Supla_LocalRelay->setZ2SChannel(channel_index, _z2s_channel);
+        uint8_t Supla_channel = _z2s_channel->Supla_channel;
+        Supla_LocalRelay->getChannel()->setChannelNumber(Supla_channel);
+      }
+      Supla_LocalRelay->setDefaultStateRestore();
     }
     break;
 
@@ -402,6 +432,45 @@ int16_t addZ2SDeviceLocalActionHandler(
 
       Supla_LocalVirtualRelay->onLoadConfig(&SuplaDevice);
       Supla_LocalVirtualRelay->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
+      
+      Supla::Network::DisconnectProtocols();
+    } break;
+
+
+    case LOCAL_CHANNEL_TYPE_GPIO_RELAY: {
+
+      auto Supla_LocalRelay = new Supla::Control::LocalRelay(
+        -1, true, RELAY_FLAGS); 
+
+      Z2S_setLocalChannelData(
+        Supla_LocalRelay->getZ2SCorePtr(), first_free_slot,
+        Supla_LocalRelay->getChannelNumber(), NO_CUSTOM_CMD_SID, 
+        LOCAL_GPIO_RELAY_NAME, SUPLA_CHANNELFNC_POWERSWITCH, 0xFF, 
+        local_channel_type, local_channel_func, 0xFF, false);
+
+      Supla_LocalRelay->setChannelGPIOPin(-1);
+
+      Supla_LocalRelay->setChannelHighIsOn(true);
+
+      Supla_LocalRelay->saveChannelData();
+      
+      Supla_LocalRelay->setInitialCaption(LOCAL_GPIO_RELAY_NAME);
+      Supla_LocalRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+        
+      initZ2SDeviceLocalActionHandler(
+        first_free_slot, Supla_LocalRelay->getZ2SChannel(), 
+        Supla_LocalRelay->getZ2SElementPtr());
+
+      Supla_LocalRelay->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+      Supla_LocalRelay->onLoadConfig(&SuplaDevice);
+      Supla_LocalRelay->onInit();
 
       if (!Supla::Storage::IsStateStorageValid()) 
         Supla::Storage::WriteStateStorage();

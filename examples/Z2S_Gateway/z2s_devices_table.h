@@ -274,7 +274,8 @@ void Z2S_setLocalChannelData(
   Z2S_Core *z2s_core, uint8_t channel_index, uint8_t Supla_channel, 
   int8_t sub_id, const char *name = nullptr, uint32_t func = 0, 
   uint8_t secondary_channel = 0xFF, uint8_t local_channel_type = 0, 
-  uint8_t local_channel_func = 0, uint8_t logic_operator = 0xFF);
+  uint8_t local_channel_func = 0, uint8_t logic_operator = 0xFF, 
+  bool save = true);
   
 /*****************************************************************************/
 

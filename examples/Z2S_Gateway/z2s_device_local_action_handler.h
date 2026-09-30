@@ -45,6 +45,8 @@ static constexpr char *LOCAL_REMOTE_THERMOMETER_NAME =
 static constexpr char *LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME = 
   "LOCAL VIRTUAL THERMHYGROMETER";
 
+static constexpr char *LOCAL_GPIO_RELAY_NAME = "LOCAL RELAY (GPIO)";
+
 /*****************************************************************************/
 
 const char* getZ2SDeviceLocalActionHandlerTypeName(

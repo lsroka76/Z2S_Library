@@ -73,6 +73,7 @@ enum gui_commands {
   gui_cmd_add_switchbot_1x,
   gui_cmd_add_switchbot_2x,
   gui_cmd_save_switchbot_data,
+  gui_cmd_add_local_relay,
   gui_cmd_remove_local_channel,
   gui_cmd_edit_channel_data,
   gui_cmd_update_channel_info,

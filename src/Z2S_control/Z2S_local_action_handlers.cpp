@@ -611,7 +611,105 @@ void Supla::Control::LocalVirtualRelay::iterateAlways() {
   }*/
 }
 
+/*****************************************************************************/
+/*****************************************************************************/
 
+
+Supla::Control::LocalRelay::LocalRelay(
+  int pin, bool highIsOn, _supla_int_t functions) 
+  : Relay(pin, highIsOn, functions), Z2S_Core(this) {
+
+}
+
+/*****************************************************************************/
+
+Supla::Control::LocalRelay::~LocalRelay() {
+
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalRelay::setPin(int pin) {
+
+  outputPin.setPin(pin);
+  outputPin.setMode(OUTPUT);
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalRelay::setHighIsOn(bool highIsOn) {
+
+  outputPin.setActiveHigh(highIsOn);
+}
+
+/*****************************************************************************/
+
+int Supla::Control::LocalRelay::getPin() {
+
+  return outputPin.getPin();
+}
+
+/*****************************************************************************/
+
+bool Supla::Control::LocalRelay::getHighIsOn() {
+
+  return outputPin.isActiveHigh();
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalRelay::handleAction(int event, int action) {
+
+  Supla::Control::Relay::handleAction(event, action);
+
+  log_i("event %u, action %u", event, action);
+
+  switch (action) {
+
+    
+    case Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS:
+
+      turnOff(5000);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_RESEND_RELAY_STATE:
+
+      if (isOn()) 
+        runAction(Supla::ON_TURN_ON);
+      else
+        runAction(Supla::ON_TURN_OFF);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_COPY_ON_STATE:
+
+      if (isOn()) 
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_COPY_OFF_STATE:
+
+      if (!isOn()) 
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
+    break;
+
+
+    case Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED:
+
+      channel.setStateOffline();
+    break;
+  }
+}
+/*****************************************************************************/
+
+void Supla::Control::LocalRelay::iterateAlways() {
+
+  Supla::Control::Relay::iterateAlways();
+}
+
+/*****************************************************************************/
 /*****************************************************************************/
 
 Supla::Control::SwitchBotRelay::SwitchBotRelay(uint8_t device_type_id)
