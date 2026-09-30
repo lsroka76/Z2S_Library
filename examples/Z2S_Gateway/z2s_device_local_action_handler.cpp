@@ -520,7 +520,7 @@ int16_t addZ2SDeviceLocalActionHandler(
       Z2S_setLocalChannelData(
         Supla_LocalHvac->getZ2SCorePtr(), first_free_slot,
         Supla_LocalHvac->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_GPIO_RELAY_NAME, SUPLA_CHANNELFNC_POWERSWITCH, 0xFF, 
+        LOCAL_GPIO_HVAC_NAME, SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0xFF, 
         local_channel_type, local_channel_func, 0xFF, false);
 
       Supla_LocalHvac->setLocalHvacGpioPin(-1);
