@@ -633,6 +633,7 @@ void Supla::Control::LocalRelay::setPin(int pin) {
 
   outputPin.setPin(pin);
   outputPin.setMode(OUTPUT);
+  outputPin.pinMode(channel.getChannelNumber());
 }
 
 /*****************************************************************************/
@@ -718,6 +719,7 @@ Supla::Control::LocalHvac::LocalHvac(int pin, bool highIsOn)
 
   _local_hvac_out_pin.getIoPin()->setPin(pin);
   _local_hvac_out_pin.getIoPin()->setMode(OUTPUT);
+  _local_hvac_out_pin.getIoPin()->pinMode(channel.getChannelNumber());
     
   _local_hvac_out_pin.getIoPin()->setActiveHigh(highIsOn);
 }
@@ -734,6 +736,7 @@ void Supla::Control::LocalHvac::setPin(int pin) {
 
   _local_hvac_out_pin.getIoPin()->setPin(pin);
   _local_hvac_out_pin.getIoPin()->setMode(OUTPUT);
+  _local_hvac_out_pin.getIoPin()->pinMode(channel.getChannelNumber());
 }
 
 /*****************************************************************************/
