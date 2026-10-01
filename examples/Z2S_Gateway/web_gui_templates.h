@@ -405,8 +405,14 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_OPEN,
 		.Supla_action_name = "OPEN" },
 
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_OPEN_WITH_TIMEOUT,
+		.Supla_action_name = "OPEN WITH TIMEOUT"},
+
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_CLOSE,
 		.Supla_action_name = "CLOSE" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CLOSE_WITH_TIMEOUT,
+		.Supla_action_name = "CLOSE WITH TIMEOUT"},
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_STOP,
 		.Supla_action_name = "STOP" },

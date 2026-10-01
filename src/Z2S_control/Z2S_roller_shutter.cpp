@@ -264,37 +264,6 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
 
 
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT: {
-
-        if (_rs_target_position == 0) {
-
-          if (_rs_current_position > 10) {
-
-            targetPosition = _rs_current_position - 10;
-          } else {
-
-            targetPosition = 0;
-            _rs_target_position = -1;
-          }
-        }
-
-        if (_rs_target_position == 100) {
-
-          if (_rs_current_position < 90) {
-
-            targetPosition = _rs_current_position + 10;
-          } else {
-
-            targetPosition = 100;
-            _rs_target_position = -1;
-          }
-        }
-
-        log_i(
-          "lift_percentage %u\n\r_rs_target_position %d\n\r"
-          "_rs_current_position %d\n\rnewTargetPositionAvailable %d",
-          lift_percentage, _rs_target_position, _rs_current_position,
-          newTargetPositionAvailable); 
-
         
         zbGateway.sendWindowCoveringCmd(
           _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
@@ -395,6 +364,7 @@ void Supla::Control::Z2S_RollerShutter::onTimer() {
     log_i("newTargetPositionAvailable = STOP_POSITION");
 
     newTargetPositionAvailable = false;
+    currentDirection = Directions::STOP_DIR;
     rsStop();
   }
 
@@ -403,6 +373,7 @@ void Supla::Control::Z2S_RollerShutter::onTimer() {
     log_i("newTargetPositionAvailable = MOVE_UP_POSITION");
 
     newTargetPositionAvailable = false;
+    currentDirection = Directions::UP_DIR;
 
     if (rsConfig.motorUpsideDown == 2) 
       rsClose();
@@ -415,6 +386,7 @@ void Supla::Control::Z2S_RollerShutter::onTimer() {
     log_i("newTargetPositionAvailable = MOVE_DOWN_POSITION");
 
     newTargetPositionAvailable = false;
+    currentDirection = Directions::DOWN_DIR;
 
     if (rsConfig.motorUpsideDown == 2) 
       rsOpen();
@@ -429,16 +401,19 @@ void Supla::Control::Z2S_RollerShutter::onTimer() {
 
     newTargetPositionAvailable = false;
 
-    /*switch (targetPosition) {
+    switch (targetPosition) {
 
-      case 0: 
-      case 100:
-        _rs_target_position = targetPosition; break;
 
-      default:
+      case 0:
+        currentDirection = Directions::UP_DIR;  
       break;
-    }*/
-    
+
+
+      case 100:
+        currentDirection = Directions::DOWN_DIR;
+      break;
+    }
+
     rsMoveToLiftPercentage(targetPosition);
   }
 }
@@ -482,6 +457,13 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
 
     if ((millis() - _last_seen_ms) > getTimeoutMs())
       channel.setStateOffline();
+  }
+
+  if (_rs_action_timeout_ms && (millis() - _rs_action_timeout_ms > 
+        getRefreshMs())) {
+
+    _rs_action_timeout_ms = 0;
+    stop();
   }
 }
 
@@ -543,6 +525,31 @@ void Supla::Control::Z2S_RollerShutter::setRSMovingDirection(
       
       _rs_moving_direction = rs_moving_direction; break;
   }
+}
+
+/*****************************************************************************/
+
+void Supla::Control::Z2S_RollerShutter::handleAction(int event, int action) {
+
+  Supla::Control::RollerShutterInterface::handleAction(event, action);
+
+  switch (action) {
+
+
+    case Z2S_SUPLA_ACTION_OPEN_WITH_TIMEOUT: {
+
+      _rs_action_timeout_ms = millis();
+      open();
+    } break;
+
+
+    case Z2S_SUPLA_ACTION_CLOSE_WITH_TIMEOUT: {
+
+      _rs_action_timeout_ms = millis();
+      close();
+    } break;
+  }
+
 }
 
 /*****************************************************************************/

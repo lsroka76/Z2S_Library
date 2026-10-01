@@ -23,6 +23,9 @@
 #define Z2S_SUPLA_ACTION_START_GUI_MINIMAL                                    0x4200
 #define Z2S_SUPLA_ACTION_START_GUI_STANDARD                                   0x4201
 
+#define Z2S_SUPLA_ACTION_OPEN_WITH_TIMEOUT                                    0x4300
+#define Z2S_SUPLA_ACTION_CLOSE_WITH_TIMEOUT                                   0x4301
+
 #define Z2S_SUPLA_ACTION_DIM_W                                                0x4500
 #define Z2S_SUPLA_ACTION_DIM_W_5                                              0x4501
 #define Z2S_SUPLA_ACTION_DIM_W_15                                             0x4502

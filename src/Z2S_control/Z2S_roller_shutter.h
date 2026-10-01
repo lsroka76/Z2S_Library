@@ -26,6 +26,7 @@
 #include "ZigbeeGateway.h"
 
 #include "Z2S_common.h"
+#include "Z2S_custom_actions_events.h"
 
 /*****************************************************************************/
 
@@ -52,6 +53,7 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
   void onInit() override;
   void onTimer() override;
   void iterateAlways() override;
+  void handleAction(int event, int action) override;
 
   void ping();
 
@@ -84,13 +86,11 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
   uint8_t _rs_current_position = 0xFF;
   bool    _rs_current_position_changed = false;
 
-  int8_t  _rs_target_position = -1;
-
   bool _fresh_start = true;
 
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;
-  uint32_t _update_rs_position_ms = 0;
+  uint32_t _rs_action_timeout_ms = 0;
  
 };
 

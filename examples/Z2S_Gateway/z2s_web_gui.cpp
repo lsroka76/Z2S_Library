@@ -2331,8 +2331,8 @@ void buildChannelsTabGUI() {
 	addClearLabel(timeout_desc, zb_channel_timings_label);
 
 	refresh_number = ESPUI.addControl(
-		Control::Type::Number, empty_str, (long int)0,
-		Control::Color::Emerald, zb_channel_timings_label, generalCallback);
+		Control::Type::Number, empty_str, (long int)0,Control::Color::Emerald,
+		zb_channel_timings_label, generalCallback);
 	
 	refresh_save_button = ESPUI.addControl(
 		Control::Type::Button, empty_str, "Save", Control::Color::Emerald, 
@@ -6205,11 +6205,11 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 
 			if (z2s_channel.local_channel_type == 0) {
 
-				enableChannelTimings(3); //timeout + keepalive
+				enableChannelTimings(1 + 2 + 4); //timeout + keepalive + refresh
 
 				ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
-
 				ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
+				ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
 				enableChannelFlags(16);
 			}
