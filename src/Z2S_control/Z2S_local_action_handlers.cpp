@@ -715,7 +715,11 @@ void Supla::Control::LocalRelay::iterateAlways() {
 
 Supla::Control::LocalHvac::LocalHvac(int pin, bool highIsOn) 
   : HvacBase(&_local_hvac_out_pin), Z2S_Core(this) {
+
+  _local_hvac_out_pin.getIoPin()->setPin(pin);
+  _local_hvac_out_pin.getIoPin()->setMode(OUTPUT);
     
+  _local_hvac_out_pin.getIoPin()->setActiveHigh(highIsOn);
 }
 
 /*****************************************************************************/

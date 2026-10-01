@@ -1217,6 +1217,9 @@ void Z2S_Core::resendTemperatureHumidityValue(
   uint8_t value_type, int32_t value) {
 
 
+  if (!Supla::Network::IsReady())
+    return;
+  
   uint8_t remote_Supla_channel = getSuplaRemoteChannel();
     
   uint8_t remote_address_type = checkChannelUserDataFlags(
