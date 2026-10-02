@@ -772,7 +772,7 @@ document.addEventListener("mouseup", function(e){
 	console.log(e.target.getAttribute("id"));
 	console.log(e.target.id);
 
-	if(e.target.id == "btn	38") {
+	if(e.target.id == "btn52") {
 		console.log("btn52");
 		e.stopImmediatePropagation();
     redirect2OTA();
