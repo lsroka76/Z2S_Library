@@ -135,6 +135,22 @@ static constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 	"Standard GUI + AD"
 };
 
+static constexpr char* GUI_BUILD_FLAGS_NAMES[] PROGMEM = {
+
+	"Gateway",
+	"WiFi & Supla credentials",
+	"ZigBee settings",
+	"ZigBee devices",
+	"Supla channels",
+	"Local actions",
+	"Clusters & Attributes",
+	"Advanced Devices",
+	"Tuya custom cluster (0xEF00) devices",
+	"SwitchBot channels",
+	"Pushover"
+};
+
+
 static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 
 	{ .zigbee_cluster_name = "BASIC",										

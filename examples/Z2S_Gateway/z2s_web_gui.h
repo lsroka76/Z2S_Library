@@ -64,6 +64,8 @@ enum gui_commands {
   gui_cmd_sort_Tuya_datapoints_selectors,
   gui_cmd_cluster_callback,
   gui_cmd_Tuya_device_callback,
+  gui_cmd_Tuya_custom_cmd_callback,
+  gui_cmd_get_clusters_attributes_query_callback,
   gui_cmd_add_logic_gate,
   gui_cmd_add_virtual_relay,
   gui_cmd_add_virtual_binary,
@@ -116,6 +118,8 @@ void sortZbDevicesSelectors(int32_t selected_value = -1);
 void sortChannelsSelectors(int32_t selected_value = -1);
 
 void sortZbDevicesAndChannelsSelectors();
+
+uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode);
 
 
 #endif // Z2S_WEB_GUI_H_

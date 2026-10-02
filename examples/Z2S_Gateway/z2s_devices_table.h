@@ -175,12 +175,15 @@ extern Preferences Z2S_GatewayPreferences;
 const static char Z2S_ZIGBEE_PRIMARY_CHANNEL[] PROGMEM = "Z2S_primary_ch";
 
 const static char Z2S_ENABLE_GUI_ON_START_V2[] PROGMEM = "Z2S_gui_mode";
+const static char Z2S_GUI_BUILD_FLAGS_V2[] PROGMEM = "Z2S_gui_flags";
 const static char Z2S_GUI_ON_START_DELAY_V2[] PROGMEM = "Z2S_gui_delay2";
 const static char Z2S_FORCE_CONFIG_ON_START[] PROGMEM = "Z2S_force_cfg";
 const static char Z2S_REBUILD_CHANNELS_ON_START[] PROGMEM = "Z2S_rebuild";
 const static char Z2S_USE_NEW_AT_MODEL[] PROGMEM = "Z2S_new_at";
 const static char Z2S_GATEWAY_MDNS_LOCAL_NAME[] PROGMEM = "Z2S_mdns_name";
 const static char Z2S_AUTO_CONNECTION_RESET_TIMEOUT[] PROGMEM = "Z2S_acrt";
+
+
 
 namespace Supla {
 enum Conditions {

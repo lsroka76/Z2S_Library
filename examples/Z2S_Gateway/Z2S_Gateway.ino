@@ -110,10 +110,13 @@ uint32_t _z2s_iterate_ms = 0;
 uint32_t _time_cluster_last_refresh_ms = 0;
 
 int8_t  _enable_gui_on_start  = 1;
+uint32_t _gui_build_flags = 0;
+int32_t _gui_start_delay = 0;
+
 uint8_t	_force_config_on_start = 0;
 uint8_t _rebuild_Supla_channels_on_start = 0;
+
 uint8_t _use_new_at_model = 1;
-int32_t _gui_start_delay = 0;
 
 //1.4.81-06/03/26 - 
 int32_t _auto_connection_reset_timeout = 0; 
@@ -799,11 +802,13 @@ void setup() {
   //Disable pairing after boot 1.2.2-15/01/26
   Zigbee.setRebootOpenNetwork(0);
 
+
   if (Supla::Storage::ConfigInstance()->getInt8(
     Z2S_ENABLE_GUI_ON_START_V2, &_enable_gui_on_start)) {
 
     log_i("Z2S_ENABLE_GUI_ON_START_V2 = %i", _enable_gui_on_start);
-  } else {
+  } 
+  else {
 
     log_i(
       "Z2S_ENABLE_GUI_ON_START_V2 not configured - setting to minimal_gui");
@@ -815,6 +820,34 @@ void setup() {
 		  _enable_gui_on_start);
 		Supla::Storage::ConfigInstance()->commit();
   }
+
+  if (Supla::Storage::ConfigInstance()->getUInt32(
+    Z2S_GUI_BUILD_FLAGS_V2, &_gui_build_flags)) {
+
+    log_i("Z2S_GUI_BUILD_FLAGS_V2 = 0x%04X", _gui_build_flags);
+  }
+  if (_gui_build_flags == 0) {
+
+    Supla::Storage::ConfigInstance()->eraseKey(Z2S_GUI_BUILD_FLAGS_V2);
+    Supla::Storage::ConfigInstance()->commit();
+
+    _gui_build_flags = Z2S_getGUIBuildControlFlags(
+      (gui_modes_t)_enable_gui_on_start);
+
+    if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_GUI_BUILD_FLAGS_V2, 
+		      _gui_build_flags)) {
+
+      Supla::Storage::ConfigInstance()->commit();
+
+      log_i(
+      "Z2S_GUI_BUILD_FLAGS_V2 not configured - updating to 0x%04X from "
+      "Z2S_ENABLE_GUI_ON_START_V2 0x%u", _gui_build_flags, 
+      _enable_gui_on_start);
+    }
+    else
+      log_e("Error updating Z2S_GUI_BUILD_FLAGS_V2");
+  }
+
   
   if (Supla::Storage::ConfigInstance()->getInt32(
     Z2S_GUI_ON_START_DELAY_V2, &_gui_start_delay)) {
@@ -1023,13 +1056,13 @@ void loop() {
 
   
   if (_initial_gui_check && (!Z2S_isGUIStarted()) && 
-      (_enable_gui_on_start != no_gui_mode) && 
+      ((_enable_gui_on_start != no_gui_mode) || _gui_build_flags) && 
       Zigbee.started() && 
       (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {
 
     _initial_gui_check = false;
     
-    Z2S_buildWebGUI((gui_modes_t)_enable_gui_on_start);  
+    Z2S_buildWebGUI((gui_modes_t)_enable_gui_on_start, _gui_build_flags);  
     Z2S_startWebGUI();
     Z2S_startUpdateServer();
     onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
