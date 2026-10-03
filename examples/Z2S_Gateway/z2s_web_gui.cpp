@@ -5687,6 +5687,8 @@ void switchGUIBuildFlagCallback(BasicControl *sender, int type, void *param) {
 	else
 		_gui_build_flags = _gui_build_flags & (~(1 << build_flag_bit));
 
+	_gui_build_flags = _gui_build_flags | (1 << 0); //Gateway
+
 	log_i(
 		"build_flag_bit %u, set_flag %u, Z2S_GUI_BUILD_FLAGS_V2 0x%04X", 
 		build_flag_bit, set_flag, _gui_build_flags);
