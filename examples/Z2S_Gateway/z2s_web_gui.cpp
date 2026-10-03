@@ -1444,9 +1444,9 @@ void buildGatewayTabGUI() {
 			GUI_BUILD_FLAGS_NAMES[gui_build_flag_bit], build_gateway_switcher);
 		addEmptyLineLabel(build_gateway_switcher);
 	}
-	addClearLabel(
+	/*addClearLabel(
 		"When GUI is disabled on start use 5x BOOT to enable it.", 
-		build_gateway_switcher);
+		build_gateway_switcher);*/
 
 	gui_start_delay_number = ESPUI.addControl(
 		Control::Type::Number, "GUI start delay (s)", (long int)0,
