@@ -2266,6 +2266,15 @@ void processMoesShadesDriveMotorDataReport(
     } break;
 
 
+    case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR_L3: {
+
+      cover_state_dp_id = MOES_SHADES_DRIVE_MOTOR_STATE_DP;
+      cover_position_dp_id = MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_DP;
+      cover_position_percetage_dp_id = 
+        MOES_SHADES_DRIVE_MOTOR_STATE_COVER_POSITION_PERCENTAGE_DP;
+    } break;
+
+
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR: {
 
       cover_state_dp_id = MOES_SHADES_DRIVE_MOTOR_STATE_DP;
@@ -3611,6 +3620,7 @@ void processTuyaDataReport(
 
     
     case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
+    case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR_L3:
     case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
     case Z2S_DEVICE_DESC_MOES_COVER:
     case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:

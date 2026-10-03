@@ -183,6 +183,7 @@ void initZ2SDeviceVirtualRelay(
       } break;
       
       case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR: 
+      case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR_L3:
       case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR: {
       
         z2s_function = Z2S_ROLLER_SHUTTER_FNC_MOES_SHADES_DRIVE_MOTOR; 

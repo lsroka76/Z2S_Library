@@ -292,6 +292,7 @@
 #define Z2S_DEVICE_DESC_MOES_COVER                          0x4822
 #define Z2S_DEVICE_DESC_CURRYSMARTER_COVER                  0x4823
 #define Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR       0x4824
+#define Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR_L3          0x4825
 #define Z2S_DEVICE_DESC_LORATAP_WINDOW_COVERING_SINGLE      0x4830
 #define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER                 0x4850
 #define Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1               0x4851
@@ -2816,6 +2817,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR_L3,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
@@ -6447,6 +6453,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZE200_icka1clh", .model_name = "TS0601",
     .z2s_device_uid = 25900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "TZE28C1000000_alh14edn", .model_name = "TS0601",
+    .z2s_device_uid = 25950,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR_L3,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE200_68nvbio9", .model_name = "TS0601",
