@@ -6271,15 +6271,15 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 
 				char *working_str_ptr = 
 					"&#10023; Enter local HC-SR04 parameters&#10023;<br>"
-					"use this format:<br>TrigPin,EchoPin,MinIn,MinOut,MaxIn,MaxOut<br>"
+					"use this format:<br>TrigPin,EchoPin,MinIn,MaxIn,MinOut,MaxOut<br>"
 					"i.e. 5,6,0,500,0,500";
 
 				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
 				sprintf(
 					general_purpose_gui_buffer, "%i,%i,%u,%u,%u,%u", 
 					z2s_core->getLocalHCSR04TrigPin(), z2s_core->getLocalHCSR04EchoPin(),
-					z2s_core->getLocalHCSR04MinIn(), z2s_core->getLocalHCSR04MinOut(),
-					z2s_core->getLocalHCSR04MaxIn(), z2s_core->getLocalHCSR04MaxOut());
+					z2s_core->getLocalHCSR04MinIn(), z2s_core->getLocalHCSR04MaxIn(),
+					z2s_core->getLocalHCSR04MinOut(), z2s_core->getLocalHCSR04MaxOut());
 				 
 				working_str = general_purpose_gui_buffer;
 				ESPUI.updateText(param_1_number, working_str);
@@ -7795,9 +7795,9 @@ void editChannelMain(uint32_t update_channel_flag) {
         					case 6: 
 										z2s_core->setLocalHCSR04MaxOut(hcsr04_params[5]); [[fallthrough]];
         					case 5: 
-										z2s_core->setLocalHCSR04MaxIn(hcsr04_params[4]); [[fallthrough]];
+										z2s_core->setLocalHCSR04MinOut(hcsr04_params[4]); [[fallthrough]];
         					case 4: 
-										z2s_core->setLocalHCSR04MinOut(hcsr04_params[3]); [[fallthrough]];
+										z2s_core->setLocalHCSR04MaxIn(hcsr04_params[3]); [[fallthrough]];
         					case 3: 
 										z2s_core->setLocalHCSR04MinIn(hcsr04_params[2]); [[fallthrough]];
         					case 2: 
@@ -7805,6 +7805,7 @@ void editChannelMain(uint32_t update_channel_flag) {
         					case 1: 
 										z2s_core->setLocalHCSR04TrigPin(hcsr04_params[0]); [[fallthrough]];
 										z2s_core->saveChannelData();
+										z2s_core->updateLocalHcsr04Params();
         					default: break; 
 								}
 								 

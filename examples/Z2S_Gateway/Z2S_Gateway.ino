@@ -833,6 +833,8 @@ void setup() {
 
     _gui_build_flags = Z2S_getGUIBuildControlFlags(
       (gui_modes_t)_enable_gui_on_start);
+    if (_gui_build_flags == 0)
+      _gui_build_flags = 1;
 
     if (Supla::Storage::ConfigInstance()->setUInt32(Z2S_GUI_BUILD_FLAGS_V2, 
 		      _gui_build_flags)) {
