@@ -1308,6 +1308,26 @@ bool Z2S_Core::updateLocalRelayParams() {
 
 /*****************************************************************************/
 
+bool Z2S_Core::updateLocalBinaryParams() {
+    
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_BINARY) {
+
+    Supla::Sensor::LocalBinary *Supla_LocalBinary = static_cast<
+      Supla::Sensor::LocalBinary *>(_z2s_element);
+
+    Supla_LocalBinary->setPin(_z2s_channel.local_binary_data.gpio_pin);
+    Supla_LocalBinary->setInvertLogic(
+      _z2s_channel.local_binary_data.invert_logic);
+    Supla_LocalBinary->setPullUp(_z2s_channel.local_binary_data.pull_up);
+
+    return true;
+  }
+  else
+    return false;
+}
+
+/*****************************************************************************/
+
 bool Z2S_Core::updateLocalHvacParams() {
     
   if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_HVAC) {
@@ -1340,6 +1360,23 @@ bool Z2S_Core::updateLocalHcsr04Params() {
     Supla_LocalHcsr04->setMaxIn(_z2s_channel.local_hcsr04_data.max_in);
     Supla_LocalHcsr04->setMaxOut(_z2s_channel.local_hcsr04_data.max_out);
 
+    return true;
+  }
+  else
+    return false;
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::updateLocalDs18b20Params() {
+    
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_DS18B20) {
+
+    Supla::Sensor::LocalDS18B20 *Supla_LocalDs18b20 = static_cast<
+      Supla::Sensor::LocalDS18B20 *>(_z2s_element);
+
+    Supla_LocalDs18b20->initDS18B20(_z2s_channel.local_ds18b20_data.gpio_pin, 
+      _z2s_channel.local_ds18b20_data.sensor_address);
     return true;
   }
   else

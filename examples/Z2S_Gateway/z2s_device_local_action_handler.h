@@ -48,6 +48,8 @@ static constexpr char *LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME =
 static constexpr char *LOCAL_GPIO_RELAY_NAME = "LOCAL RELAY (GPIO)";
 static constexpr char *LOCAL_GPIO_HVAC_NAME = "LOCAL HVAC (GPIO)";
 static constexpr char *LOCAL_GPIO_HCSR04_NAME = "LOCAL HC-SR04 (GPIO)";
+static constexpr char *LOCAL_GPIO_DS18B20_NAME = "LOCAL DS18B20 (GPIO)";
+static constexpr char *LOCAL_GPIO_BINARY_NAME = "LOCAL BINARY (GPIO)";
 
 /*****************************************************************************/
 

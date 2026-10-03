@@ -81,8 +81,9 @@
 #define LOCAL_CHANNEL_TYPE_GPIO_HVAC                            0x61
 #define LOCAL_CHANNEL_TYPE_GPIO_DS18B20                         0x65
 #define LOCAL_CHANNEL_TYPE_GPIO_SHT3X                           0x66
-
+#define LOCAL_CHANNEL_TYPE_GPIO_BINARY                          0x69
 #define LOCAL_CHANNEL_TYPE_GPIO_HCSR04                          0x6A
+
 
 #define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                       0x80
 
@@ -262,6 +263,11 @@ union {
       int32_t         gpio_pin;
       uint32_t        high_is_on : 1;
     } local_hvac_data;
+    struct {
+      int32_t         gpio_pin;
+      uint32_t        invert_logic : 1;
+      uint32_t        pull_up : 1;
+    } local_binary_data;
     struct {
       int8_t         trig_pin;
       int8_t         echo_pin;
@@ -796,6 +802,44 @@ public:
   void setLocalRelayHighIsOn(bool high_is_on, bool save = false) {
 
   _z2s_channel.local_relay_data.high_is_on = high_is_on;
+  if (save)
+    saveChannelData();
+  }
+
+/*****************************************************************************/
+
+  int32_t getLocalBinaryGpioPin() {
+
+    return _z2s_channel.local_binary_data.gpio_pin;
+  }
+
+  void setLocalBinaryGpioPin(int32_t gpio_pin, bool save = false) {
+
+    _z2s_channel.local_binary_data.gpio_pin = gpio_pin;
+    if (save)
+      saveChannelData();
+  }
+
+  bool getLocalBinaryInvertLogic() {
+
+    return _z2s_channel.local_binary_data.invert_logic;
+  }
+
+  void setLocalBinaryInvertLogic(bool invert_logic, bool save = false) {
+
+  _z2s_channel.local_binary_data.invert_logic = invert_logic;
+  if (save)
+    saveChannelData();
+  }
+
+  bool getLocalBinaryPullUp() {
+
+    return _z2s_channel.local_binary_data.pull_up;
+  }
+
+  void setLocalBinaryPullUp(bool pull_up, bool save = false) {
+
+  _z2s_channel.local_binary_data.pull_up = pull_up;
   if (save)
     saveChannelData();
   }
@@ -1600,7 +1644,9 @@ public:
 /*****************************************************************************/
 
   bool updateLocalRelayParams();
+  bool updateLocalBinaryParams();
   bool updateLocalHvacParams();
+  bool updateLocalDs18b20Params();
   bool updateLocalHcsr04Params();
 
 /*****************************************************************************/

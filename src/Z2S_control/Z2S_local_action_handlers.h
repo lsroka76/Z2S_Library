@@ -37,6 +37,7 @@
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 #include <supla/sensor/HC_SR04_GPM.h>
 #include <supla/sensor/DS18B20.h>
+#include <supla/sensor/binary.h>
 #include <supla/device/notifications.h>
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
@@ -391,7 +392,7 @@ class LocalHCSR04: public HC_SR04_GPM, public Z2S_Core {
 
   public:
 
-    LocalHCSR04() : HC_SR04_GPM(-1, -1), Z2S_Core(this) {
+    LocalHCSR04() : HC_SR04_GPM(5, 6, 0, 500, 0, 500), Z2S_Core(this) {
 
     }
 
@@ -462,20 +463,34 @@ class LocalHCSR04: public HC_SR04_GPM, public Z2S_Core {
     }
 };
 
-//class DS18B20;
+/*****************************************************************************/
 
 class LocalDS18B20: public DS18B20, public Z2S_Core {
 
   public:
 
     LocalDS18B20(uint8_t gpio_pin, uint8_t *sensor_address);
-
-    virtual ~LocalDS18B20() {
-
-    }
-
-    void updateDS18B20();
+    virtual ~LocalDS18B20() {}
 };
+
+/*****************************************************************************/
+
+class LocalBinary: public Binary, public Z2S_Core {
+
+  public:
+
+    LocalBinary(); 
+    virtual ~LocalBinary() {}
+
+    void setPin(int pin);
+    void setInvertLogic(bool invertLogic);
+    void setPullUp(bool pullUp);
+
+    int getPin();
+    bool getInvertLogic();
+    bool getPullUp();
+};
+
 }; //namespace Sensor
 };  // namespace Supla
 

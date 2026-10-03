@@ -633,7 +633,7 @@ void Supla::Control::LocalRelay::setPin(int pin) {
 
   outputPin.setPin(pin);
   outputPin.setMode(OUTPUT);
-  outputPin.pinMode(channel.getChannelNumber());
+  outputPin.pinMode();
 }
 
 /*****************************************************************************/
@@ -719,7 +719,7 @@ Supla::Control::LocalHvac::LocalHvac(int pin, bool highIsOn)
 
   _local_hvac_out_pin.getIoPin()->setPin(pin);
   _local_hvac_out_pin.getIoPin()->setMode(OUTPUT);
-  _local_hvac_out_pin.getIoPin()->pinMode(channel.getChannelNumber());
+  _local_hvac_out_pin.getIoPin()->pinMode();
     
   _local_hvac_out_pin.getIoPin()->setActiveHigh(highIsOn);
 }
@@ -1084,8 +1084,38 @@ Supla::Sensor::LocalDS18B20::LocalDS18B20(
 
 /*****************************************************************************/
 
-void Supla::Sensor::LocalDS18B20::updateDS18B20() {
+Supla::Sensor::LocalBinary::LocalBinary() 
+  : Binary(-1, false, false), Z2S_Core(this) {
 
+}
+
+void Supla::Sensor::LocalBinary::setPin(int pin) {
+
+  inputPin.setPin(pin);
+  inputPin.setMode(INPUT);
+  inputPin.pinMode();
+}
+
+void Supla::Sensor::LocalBinary::setInvertLogic(bool invertLogic) {
+
+  inputPin.setActiveHigh(!invertLogic);
+}
+void Supla::Sensor::LocalBinary::setPullUp(bool pullUp) {
+
+  inputPin.setPullUp(pullUp);
+}
+
+int Supla::Sensor::LocalBinary::getPin() {
+
+  return inputPin.getPin();
+}
+bool Supla::Sensor::LocalBinary::getInvertLogic() {
+  
+  return !inputPin.isActiveHigh();
+}
+bool Supla::Sensor::LocalBinary::getPullUp() {
+
+  return inputPin.isPullUp();
 }
 
 /*****************************************************************************/

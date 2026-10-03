@@ -872,11 +872,7 @@ void addLocalActionHandlerCallback(
 	BasicControl *sender, int type, void *param);
 void addLocalVirtualRelayCallback(
 	BasicControl *sender, int type, void *param);
-void addLocalRelayCallback(
-	BasicControl *sender, int type, void *param);
-void addLocalHvacCallback(
-	BasicControl *sender, int type, void *param);
-void addLocalHcsr04Callback(
+void addLocalChannelCallback(
 	BasicControl *sender, int type, void *param);
 void addLocalVirtualBinaryCallback(
 	BasicControl *sender, int type, void *param);
@@ -954,6 +950,50 @@ size_t parseCsvNumbers(const char* input, long* outArray, size_t maxElements) {
     	current++;  
   }
   return count;
+}
+
+/*****************************************************************************/
+
+bool bytesToHex(const uint8_t src[8], char* dst, size_t dstSize) {
+    
+	if (!src || !dst || dstSize < 17)
+  	return false;
+
+  snprintf(
+		dst, dstSize, "%02X%02X%02X%02X%02X%02X%02X%02X",src[0], src[1], src[2], 
+		src[3], src[4], src[5], src[6], src[7]);
+
+    return true;
+}
+
+/*****************************************************************************/
+
+static inline int hexCharToNibble(char c) {
+
+  if (c >= '0' && c <= '9') return c - '0';
+  if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+  if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+  return -1; // Invalid hex character
+}
+
+/*****************************************************************************/
+
+bool hexToBytes(const char* src, uint8_t dst[8]) {
+
+  if (!src || !dst)
+  	return false;
+
+  for (size_t i = 0; i < 8; ++i) {
+        
+		int high = hexCharToNibble(src[i * 2]);
+    int low  = hexCharToNibble(src[i * 2 + 1]);
+
+    if (high < 0 || low < 0)
+      return false; 
+
+    dst[i] = static_cast<uint8_t>((high << 4) | low);
+  }
+  return true;
 }
 
 /*****************************************************************************/
@@ -2376,15 +2416,27 @@ void buildChannelsTabGUI() {
 
 	ESPUI.addControl(
 		Control::Type::Button, empty_str, "Add local relay (GPIO)", 
-		Control::Color::Dark, lah_panel, addLocalRelayCallback);			
+		Control::Color::Dark, lah_panel, addLocalChannelCallback,
+		(void *)gui_cmd_add_local_relay);			
 
 	ESPUI.addControl(
 		Control::Type::Button, empty_str, "Add local hvac (GPIO)", 
-		Control::Color::Dark, lah_panel, addLocalHvacCallback);
+		Control::Color::Dark, lah_panel, addLocalChannelCallback,
+		(void *)gui_cmd_add_local_hvac);
+	ESPUI.addControl(
+		Control::Type::Button, empty_str, "Add local binary (GPIO)", 
+		Control::Color::Dark, lah_panel, addLocalChannelCallback,
+		(void *)gui_cmd_add_local_binary);
+
+	ESPUI.addControl(
+		Control::Type::Button, empty_str, "Add local DS18B20 (GPIO)", 
+		Control::Color::Dark, lah_panel, addLocalChannelCallback,
+		(void *)gui_cmd_add_local_ds18b20);
 
 	ESPUI.addControl(
 		Control::Type::Button, empty_str, "Add local HC-SR04 (GPIO)", 
-		Control::Color::Dark, lah_panel, addLocalHcsr04Callback);			
+		Control::Color::Dark, lah_panel, addLocalChannelCallback,
+		(void *)gui_cmd_add_local_hcsr04);		
 
 
 	addEmptyLineLabel(lah_panel);
@@ -5137,6 +5189,23 @@ void Z2S_loopWebGUI() {
 			} break;
 
 
+			case gui_cmd_add_local_binary: {
+
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_GPIO_BINARY, 0);
+
+				if (new_channel_slot >= 0) {
+
+					ESPUI.updateLabel(
+						lah_status_label, 
+						"The local binary has been successfully added and is "
+						"available for use.");
+
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);					
+				}
+			} break;
+
+
 			case gui_cmd_add_local_hvac: {
 
 				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
@@ -5147,6 +5216,23 @@ void Z2S_loopWebGUI() {
 					ESPUI.updateLabel(
 						lah_status_label, 
 						"The local hvac has been successfully added and is "
+						"available for use.");
+
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);					
+				}
+			} break;
+
+
+			case gui_cmd_add_local_ds18b20: {
+
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_GPIO_DS18B20, 0);
+
+				if (new_channel_slot >= 0) {
+
+					ESPUI.updateLabel(
+						lah_status_label, 
+						"The local DS18B20 sensor has been successfully added and is "
 						"available for use.");
 
 					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);					
@@ -6125,6 +6211,57 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 				working_str_ptr = "&#10023; Enter local hvac ON value &#10023;";
 				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
 				ESPUI.updateNumber(param_2_number, z2s_core->getLocalHvacHighIsOn());
+			}
+
+			if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_BINARY) {
+
+				enableChannelTimings(0);
+				enableChannelParams(1 + 2 + 4);
+
+				char *working_str_ptr = 
+					"&#10023; Enter local binary GPIO pin number &#10023;";
+
+				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+				ESPUI.updateNumber(param_1_number, z2s_core->getLocalBinaryGpioPin());
+
+				working_str_ptr = "&#10023; Enter local binary logic type value "
+					"&#10023;<br> 0 = normal logic, 1 = inverted logic";
+				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+				ESPUI.updateNumber(param_2_number, z2s_core->getLocalBinaryInvertLogic());
+
+				working_str_ptr = "&#10023; Enter local binary pull up value "
+					"&#10023;<br> 0 = no pull up, 1 = pull up";
+				ESPUI.updateLabel(param_3_desc_label, working_str_ptr);
+				ESPUI.updateNumber(param_3_number, z2s_core->getLocalBinaryPullUp());
+			}
+
+			if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_DS18B20) {
+
+				enableChannelTimings(0);
+				enableChannelParams(1 + 2);
+
+				char *working_str_ptr = 
+					"&#10023; Enter local DS18B20 address &#10023; <br>"
+					"i.e. 28FF55CA6B18018D or leave it blank for single sensor";
+
+				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+
+				if (z2s_core->getLocalDS18B20Address()) {
+
+					char ds_address_str[17] = {};
+
+					bytesToHex(
+						z2s_core->getLocalDS18B20Address(), ds_address_str, 
+						sizeof(ds_address_str));
+					working_str = ds_address_str;
+				}
+				else
+					working_str = empty_str;
+				ESPUI.updateText(param_1_number, working_str);
+				
+				working_str_ptr = "&#10023; Enter local DS18B20 pin value &#10023;";
+				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+				ESPUI.updateNumber(param_2_number, z2s_core->getLocalDS18B20GpioPin());
 			}
 
 			if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_HCSR04) {
@@ -7623,6 +7760,28 @@ void editChannelMain(uint32_t update_channel_flag) {
 								z2s_core->updateLocalHvacParams();
 							} break;
 
+							case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
+
+								z2s_core->setLocalBinaryGpioPin(
+									ESPUI.getControl(param_1_number)->getValueInt(), true);
+								
+								z2s_core->updateLocalBinaryParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_DS18B20 : {
+
+								uint8_t parsedBytes[8] = {0};
+
+    						if (hexToBytes(ESPUI.getControl(
+											param_1_number)->getValueCstr(), parsedBytes)) {
+        					
+									z2s_core->setLocalDS18B20Address(parsedBytes, true);
+	
+									z2s_core->updateLocalDs18b20Params();
+								}
+							} break;
+
 
 							case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
 
@@ -7710,6 +7869,24 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 								z2s_core->updateLocalHvacParams();
 							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
+
+								z2s_core->setLocalBinaryInvertLogic(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+								
+								z2s_core->updateLocalBinaryParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_DS18B20 : {
+
+								z2s_core->setLocalDS18B20GpioPin(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+								
+								z2s_core->updateLocalDs18b20Params();
+							} break;
 						}
 					} break;
 
@@ -7744,6 +7921,15 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 								saveSourceChannelData(channel_slot);
 							break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
+
+								z2s_core->setLocalBinaryPullUp(
+									ESPUI.getControl(param_3_number)->getValueInt(), true);
+								
+								z2s_core->updateLocalBinaryParams();
+							} break;
 						}
 					} break;
 				}
@@ -9547,31 +9733,13 @@ void addLocalVirtualRelayCallback(
 
 /*****************************************************************************/
 
-void addLocalRelayCallback(BasicControl *sender, int type, void *param) {
+void addLocalChannelCallback(BasicControl *sender, int type, void *param) {
 
 	if (type == B_UP) {
 
-		addGUICommand(gui_cmd_add_local_relay);
-	}
-}
+		uint32_t gui_command = (uint32_t)param;
 
-/*****************************************************************************/
-
-void addLocalHvacCallback(BasicControl *sender, int type, void *param) {
-
-	if (type == B_UP) {
-
-		addGUICommand(gui_cmd_add_local_hvac);
-	}
-}
-
-/*****************************************************************************/
-
-void addLocalHcsr04Callback(BasicControl *sender, int type, void *param) {
-
-	if (type == B_UP) {
-
-		addGUICommand(gui_cmd_add_local_hcsr04);
+		addGUICommand((gui_commands)gui_command);
 	}
 }
 
