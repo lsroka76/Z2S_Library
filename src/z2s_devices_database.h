@@ -6455,7 +6455,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "TZE28C1000000_alh14edn", .model_name = "TS0601",
+  {	.manufacturer_name = "_TZE28C1000000_alh14edn", .model_name = "TS0601",
     .z2s_device_uid = 25950,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR_L3,
 	  .z2s_device_endpoints_count = 1},
