@@ -1326,3 +1326,25 @@ bool Z2S_Core::updateLocalHvacParams() {
 
 /*****************************************************************************/
 
+bool Z2S_Core::updateLocalHcsr04Params() {
+    
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_HCSR04) {
+
+    Supla::Sensor::LocalHCSR04 *Supla_LocalHcsr04 = static_cast<
+      Supla::Sensor::LocalHCSR04 *>(_z2s_element);
+
+    Supla_LocalHcsr04->setTrigPin(_z2s_channel.local_hcsr04_data.trig_pin);
+    Supla_LocalHcsr04->setEchoPin(_z2s_channel.local_hcsr04_data.echo_pin);
+    Supla_LocalHcsr04->setMinIn(_z2s_channel.local_hcsr04_data.min_in);
+    Supla_LocalHcsr04->setMinOut(_z2s_channel.local_hcsr04_data.min_out);
+    Supla_LocalHcsr04->setMaxIn(_z2s_channel.local_hcsr04_data.max_in);
+    Supla_LocalHcsr04->setMaxOut(_z2s_channel.local_hcsr04_data.max_out);
+
+    return true;
+  }
+  else
+    return false;
+}
+
+/*****************************************************************************/
+

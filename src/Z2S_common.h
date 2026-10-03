@@ -79,6 +79,10 @@
 
 #define LOCAL_CHANNEL_TYPE_GPIO_RELAY                           0x60
 #define LOCAL_CHANNEL_TYPE_GPIO_HVAC                            0x61
+#define LOCAL_CHANNEL_TYPE_GPIO_DS18B20                         0x65
+#define LOCAL_CHANNEL_TYPE_GPIO_SHT3X                           0x66
+
+#define LOCAL_CHANNEL_TYPE_GPIO_HCSR04                          0x6A
 
 #define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                       0x80
 
@@ -258,6 +262,18 @@ union {
       int32_t         gpio_pin;
       uint32_t        high_is_on : 1;
     } local_hvac_data;
+    struct {
+      int8_t         trig_pin;
+      int8_t         echo_pin;
+      int16_t        min_in;
+      int16_t        min_out;
+      int16_t        max_in;
+      int16_t        max_out;
+    } local_hcsr04_data;
+    struct {
+      uint8_t         gpio_pin;
+      uint8_t        sensor_address[8];
+    } local_ds18b20_data;
   };
   uint32_t            user_data_flags;
 union {
@@ -531,11 +547,15 @@ public:
     return true;
   }
 
+/*****************************************************************************/
+
   void test_func() { 
   
     log_i("sent from core!"); 
   };
   
+/*****************************************************************************/
+
   uint32_t getChannelUserData1() {
 
     return _z2s_channel.user_data_1;
@@ -617,6 +637,8 @@ public:
       return true;
   }
 
+/*****************************************************************************/
+
   double getChannelInitialGPMValue() {
 
     return _z2s_channel.initial_gpm_value;
@@ -628,11 +650,15 @@ public:
     _z2s_channel.initial_gpm_value = initial_gpm_value;
   }
 
+  /*****************************************************************************/
+
   bool isActionTriggerV2() {
     
     return checkChannelUserDataFlags(
       USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0);
   }
+
+/*****************************************************************************/
 
   bool isRemoteRelay() {
 
@@ -640,17 +666,23 @@ public:
       LOCAL_CHANNEL_TYPE_REMOTE_RELAY);
   }
 
+/*****************************************************************************/
+
   bool isRemoteThermometer() {
 
     return (_z2s_channel.local_channel_type == 
       LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER);
   }
 
+/*****************************************************************************/
+
   bool isSwitchBot() {
 
     return (_z2s_channel.local_channel_type == 
       LOCAL_CHANNEL_TYPE_SWITCHBOT);
   }
+
+  /*****************************************************************************/
 
   bool isVirtualThermHygroMeter() {
 
@@ -663,9 +695,15 @@ public:
     return (_z2s_channel.Supla_channel_type == SUPLA_CHANNELTYPE_HVAC);
   }
 
+/*****************************************************************************/
+
   Supla::Control::HvacBaseEE *getHvacPtr(); 
 
+  /*****************************************************************************/
+
   Supla::Control::Z2S_RemoteRelay *getRemoteRelayPtr();
+
+  /*****************************************************************************/
 
   uint8_t getLogicOperator() {
 
@@ -678,6 +716,8 @@ public:
     if (save)
       saveChannelData();
   }
+
+/*****************************************************************************/
 
   uint32_t getButtonLastSeenMs() {
 
@@ -698,54 +738,6 @@ public:
   void setButtonFlags(uint32_t button_flags) {
 
     _z2s_channel.virtual_button_data.button_flags = button_flags;
-    saveChannelData();
-  }
-
-  int32_t getLocalRelayGpioPin() {
-
-    return _z2s_channel.local_relay_data.gpio_pin;
-  }
-
-  void setLocalRelayGpioPin(int32_t gpio_pin, bool save = false) {
-
-    _z2s_channel.local_relay_data.gpio_pin = gpio_pin;
-    if (save)
-      saveChannelData();
-  }
-
-  bool getLocalRelayHighIsOn() {
-
-    return _z2s_channel.local_relay_data.high_is_on;
-  }
-
-  void setLocalRelayHighIsOn(bool high_is_on, bool save = false) {
-
-  _z2s_channel.local_relay_data.high_is_on = high_is_on;
-  if (save)
-    saveChannelData();
-  }
-
-  int32_t getLocalHvacGpioPin() {
-
-    return _z2s_channel.local_hvac_data.gpio_pin;
-  }
-
-  void setLocalHvacGpioPin(int32_t gpio_pin, bool save = false) {
-
-    _z2s_channel.local_hvac_data.gpio_pin = gpio_pin;
-    if (save)
-      saveChannelData();
-  }
-
-  bool getLocalHvacHighIsOn() {
-
-    return _z2s_channel.local_hvac_data.high_is_on;
-  }
-
-  void setLocalHvacHighIsOn(bool high_is_on, bool save = false) {
-
-  _z2s_channel.local_hvac_data.high_is_on = high_is_on;
-  if (save)
     saveChannelData();
   }
 
@@ -782,6 +774,164 @@ public:
     saveChannelData();
   }
 
+/*****************************************************************************/
+
+  int32_t getLocalRelayGpioPin() {
+
+    return _z2s_channel.local_relay_data.gpio_pin;
+  }
+
+  void setLocalRelayGpioPin(int32_t gpio_pin, bool save = false) {
+
+    _z2s_channel.local_relay_data.gpio_pin = gpio_pin;
+    if (save)
+      saveChannelData();
+  }
+
+  bool getLocalRelayHighIsOn() {
+
+    return _z2s_channel.local_relay_data.high_is_on;
+  }
+
+  void setLocalRelayHighIsOn(bool high_is_on, bool save = false) {
+
+  _z2s_channel.local_relay_data.high_is_on = high_is_on;
+  if (save)
+    saveChannelData();
+  }
+
+/*****************************************************************************/
+
+  int32_t getLocalHvacGpioPin() {
+
+    return _z2s_channel.local_hvac_data.gpio_pin;
+  }
+
+  void setLocalHvacGpioPin(int32_t gpio_pin, bool save = false) {
+
+    _z2s_channel.local_hvac_data.gpio_pin = gpio_pin;
+    if (save)
+      saveChannelData();
+  }
+
+  bool getLocalHvacHighIsOn() {
+
+    return _z2s_channel.local_hvac_data.high_is_on;
+  }
+
+  void setLocalHvacHighIsOn(bool high_is_on, bool save = false) {
+
+  _z2s_channel.local_hvac_data.high_is_on = high_is_on;
+  if (save)
+    saveChannelData();
+  }
+
+/*****************************************************************************/
+
+  int8_t getLocalHCSR04TrigPin() {
+
+    return _z2s_channel.local_hcsr04_data.trig_pin;
+  }
+
+  void setLocalHCSR04TrigPin(int8_t trig_pin, bool save = false) {
+
+    _z2s_channel.local_hcsr04_data.trig_pin = trig_pin;
+    if (save)
+      saveChannelData();
+  }
+
+  int8_t getLocalHCSR04EchoPin() {
+
+    return _z2s_channel.local_hcsr04_data.echo_pin;
+  }
+
+  void setLocalHCSR04EchoPin(int8_t echo_pin, bool save = false) {
+
+    _z2s_channel.local_hcsr04_data.echo_pin = echo_pin;
+    if (save)
+      saveChannelData();
+  }
+
+  int16_t getLocalHCSR04MinIn() {
+
+    return _z2s_channel.local_hcsr04_data.min_in;
+  }
+
+  void setLocalHCSR04MinIn(int16_t min_in, bool save = false) {
+
+    _z2s_channel.local_hcsr04_data.min_in = min_in;
+    if (save)
+      saveChannelData();
+  }
+
+  int16_t getLocalHCSR04MinOut() {
+
+    return _z2s_channel.local_hcsr04_data.min_out;
+  }
+
+  void setLocalHCSR04MinOut(int16_t min_out, bool save = false) {
+
+    _z2s_channel.local_hcsr04_data.min_out = min_out;
+    if (save)
+      saveChannelData();
+  }
+
+  int16_t getLocalHCSR04MaxIn() {
+
+    return _z2s_channel.local_hcsr04_data.max_in;
+  }
+
+  void setLocalHCSR04MaxIn(int16_t max_in, bool save = false) {
+
+    _z2s_channel.local_hcsr04_data.max_in = max_in;
+    if (save)
+      saveChannelData();
+  }
+
+  int16_t getLocalHCSR04MaxOut() {
+
+    return _z2s_channel.local_hcsr04_data.max_out;
+  }
+
+  void setLocalHCSR04MaxOut(int16_t max_out, bool save = false) {
+
+    _z2s_channel.local_hcsr04_data.max_out = max_out;
+    if (save)
+      saveChannelData();
+  }
+
+/*****************************************************************************/
+
+  uint8_t getLocalDS18B20GpioPin() {
+
+    return _z2s_channel.local_ds18b20_data.gpio_pin;
+  }
+
+  void setLocalDS18B20GpioPin(uint8_t gpio_pin, bool save = false) {
+
+    _z2s_channel.local_ds18b20_data.gpio_pin = gpio_pin;
+    if (save)
+      saveChannelData();
+  }
+
+
+  uint8_t *getLocalDS18B20Address() {
+
+    if (_z2s_channel.local_ds18b20_data.sensor_address[0] == 0x00)
+      return nullptr;
+    else
+      return _z2s_channel.local_ds18b20_data.sensor_address;
+  }
+
+  void setLocalDS18B20Address(uint8_t *sensor_address, bool save = false) {
+
+    memcpy(_z2s_channel.local_ds18b20_data.sensor_address, sensor_address, 8);
+    if (save)
+      saveChannelData();
+  }
+
+/*****************************************************************************/
+
   uint32_t getFwdEnergyBuffer() {
   
     return _z2s_channel.fwd_energy_buffer;
@@ -806,6 +956,8 @@ public:
   
     _z2s_channel.fwd_energy_timer = set_value;
   }
+
+/*****************************************************************************/
 
   uint32_t getRemoteIPAddress() {
   
@@ -842,6 +994,8 @@ public:
     return _z2s_channel.ignore_next_msg_counter;
   }
 
+/*****************************************************************************/
+
   bool setIgnoreNextMsgCounter(uint32_t counter) {
 
     _z2s_channel.ignore_next_msg_counter = counter;
@@ -853,6 +1007,8 @@ public:
     _z2s_channel.ignore_next_msg_counter--;
     return true;
   }
+
+/*****************************************************************************/
 
   uint8_t getSmartValveProgram() {
 
@@ -979,6 +1135,8 @@ public:
     return saveChannelData();
   }
 
+/*****************************************************************************/
+
   uint8_t getZ2SChannelNumber() {
     
     return _z2s_channel.Supla_channel;
@@ -1001,6 +1159,7 @@ public:
     return true;
   }
 
+/*****************************************************************************/
 
   uint16_t getZ2SChannelGUIControlId() {
     
@@ -1013,7 +1172,11 @@ public:
     return true;
   }
 
+/*****************************************************************************/
+
   bool fillZ2SChannelStruct(z2s_device_params_t& z2s_channel);
+
+/*****************************************************************************/
 
   static Z2S_Core *getZ2SCoreByChannelIndex(int16_t channel_index);
   static Z2S_Core *getZ2SCoreByChannelNumber(uint8_t channel_number);
@@ -1040,6 +1203,8 @@ public:
 
   static uint8_t countZ2SChannelsByZbDeviceId(uint8_t Zb_device_id); 
 
+/*****************************************************************************/
+
   static Supla::Control::SwitchBotRelay *getSwitchBotRelayInstance(
     int16_t channel_index, uint8_t channel_number = 0xFF);
 
@@ -1051,7 +1216,7 @@ public:
     uint32_t connected_thermometer_channel, uint8_t value_type,
     int32_t connected_thermometer_value);
 
-    
+/*****************************************************************************/
 
   const char* getZ2SChannelName() {
 
@@ -1079,6 +1244,8 @@ public:
     
   }
 
+/*****************************************************************************/
+
   uint64_t getDataCounter() {
 
     return _z2s_channel.data_counter;
@@ -1093,6 +1260,8 @@ public:
   bool removeChannelExtendedDataCounter();
 
   uint64_t getChannelExtendedDataCounter();
+
+/*****************************************************************************/
 
   uint32_t getZ2SChannelFunction() {
 
@@ -1142,6 +1311,8 @@ public:
     else return true;
   }
 
+/*****************************************************************************/
+
   uint8_t getExtendedDataType() {
 
     return _z2s_channel.extended_data_type;
@@ -1153,6 +1324,7 @@ public:
     return true;
   }
 
+/*****************************************************************************/
 
   uint16_t getChannelClusterId() {
 
@@ -1272,6 +1444,8 @@ public:
       return 0xFF;
   };
 
+/*****************************************************************************/
+
   bool isInSeconds();
 
   uint32_t getKeepAliveMs() {
@@ -1286,11 +1460,6 @@ public:
     else
       return _z2s_channel.keep_alive_ms;
   }
-
-  /*void setKeepAliveMs(uint32_t keep_alive_ms) {
-
-    _z2s_channel.keep_alive_ms = keep_alive_ms;
-  }*/
 
   void setKeepAliveValue(uint32_t keep_alive_value) {
 
@@ -1399,6 +1568,8 @@ public:
     return _z2s_channel.auto_clear_ms;
   }
 
+/*****************************************************************************/
+
   uint32_t getRGBColorMode() {
     
     return _z2s_channel.rgb_color_mode;
@@ -1410,6 +1581,8 @@ public:
     saveChannelData();
 
   }
+
+/*****************************************************************************/
 
   int32_t getHvacFixedTemperatureCorrection() {
     
@@ -1424,8 +1597,13 @@ public:
     return saveChannelData();
   }
 
+/*****************************************************************************/
+
   bool updateLocalRelayParams();
   bool updateLocalHvacParams();
+  bool updateLocalHcsr04Params();
+
+/*****************************************************************************/
 
   bool initChannelData() {
 
@@ -1455,6 +1633,5 @@ protected:
   Supla::Element* _z2s_element = nullptr;
   int16_t _channel_index = -1;
 };
-
 
 #endif //SRC_Z2S_COMMON_H_

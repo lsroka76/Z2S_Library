@@ -78,6 +78,7 @@ enum gui_commands {
   gui_cmd_save_switchbot_data,
   gui_cmd_add_local_relay,
   gui_cmd_add_local_hvac,
+  gui_cmd_add_local_hcsr04,
   gui_cmd_remove_local_channel,
   gui_cmd_edit_channel_data,
   gui_cmd_update_channel_info,

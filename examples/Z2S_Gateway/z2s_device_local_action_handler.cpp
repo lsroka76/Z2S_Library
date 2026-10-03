@@ -221,6 +221,28 @@ void initZ2SDeviceLocalActionHandler(
     break;
 
 
+    case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
+
+      Supla::Sensor::LocalHCSR04 *Supla_LocalHcsr04 = nullptr;
+
+      if (element) {
+
+        Supla_LocalHcsr04 = static_cast<
+          Supla::Sensor::LocalHCSR04 *>(element);
+      }
+      else {
+
+        Supla_LocalHcsr04 = new Supla::Sensor::LocalHCSR04(); 
+    
+        Supla_LocalHcsr04->setZ2SChannel(channel_index, _z2s_channel);
+        uint8_t Supla_channel = _z2s_channel->Supla_channel;
+        Supla_LocalHcsr04->getChannel()->setChannelNumber(Supla_channel);
+      }
+      Supla_LocalHcsr04->updateLocalHcsr04Params();
+    }
+    break;
+
+
     case LOCAL_CHANNEL_TYPE_SWITCHBOT: {
 
       Supla::Control::SwitchBotRelay *Supla_SwitchBotRelay = nullptr;
@@ -541,6 +563,46 @@ int16_t addZ2SDeviceLocalActionHandler(
 
       Supla_LocalHvac->onLoadConfig(&SuplaDevice);
       Supla_LocalHvac->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
+      
+      Supla::Network::DisconnectProtocols();
+    } break;
+
+
+    case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
+
+      auto Supla_LocalHcsr04 = new Supla::Sensor::LocalHCSR04(); 
+
+      Z2S_setLocalChannelData(
+        Supla_LocalHcsr04->getZ2SCorePtr(), first_free_slot,
+        Supla_LocalHcsr04->getChannelNumber(), NO_CUSTOM_CMD_SID, 
+        LOCAL_GPIO_HCSR04_NAME, SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0xFF, 
+        local_channel_type, local_channel_func, 0xFF, false);
+
+      Supla_LocalHcsr04->setLocalHCSR04TrigPin(5);
+      Supla_LocalHcsr04->setLocalHCSR04EchoPin(6);
+      Supla_LocalHcsr04->setLocalHCSR04MinIn(0);
+      Supla_LocalHcsr04->setLocalHCSR04MinOut(500);
+      Supla_LocalHcsr04->setLocalHCSR04MaxIn(0);
+      Supla_LocalHcsr04->setLocalHCSR04MaxOut(500);
+
+      Supla_LocalHcsr04->saveChannelData();
+      
+      Supla_LocalHcsr04->setInitialCaption(LOCAL_GPIO_HCSR04_NAME);
+        
+      initZ2SDeviceLocalActionHandler(
+        first_free_slot, Supla_LocalHcsr04->getZ2SChannel(), 
+        Supla_LocalHcsr04->getZ2SElementPtr());
+
+      Supla_LocalHcsr04->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+      Supla_LocalHcsr04->onLoadConfig(&SuplaDevice);
+      Supla_LocalHcsr04->onInit();
 
       if (!Supla::Storage::IsStateStorageValid()) 
         Supla::Storage::WriteStateStorage();

@@ -35,6 +35,8 @@
 #include <supla/control/hvac_base.h>
 #include <supla/sensor/virtual_binary.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
+#include <supla/sensor/HC_SR04_GPM.h>
+#include <supla/sensor/DS18B20.h>
 #include <supla/device/notifications.h>
 #include <supla/log_wrapper.h>
 #include <supla/storage/storage.h>
@@ -381,6 +383,98 @@ class LocalVirtualThermHygroMeter: public VirtualThermHygroMeter, public Z2S_Cor
     uint32_t  _last_refresh_ms = 0;
     Supla::Sensor::VirtualThermHygroMeter *_source_virtual_therm_hygro_meter =
       nullptr;
+};
+
+/*****************************************************************************/
+
+class LocalHCSR04: public HC_SR04_GPM, public Z2S_Core {
+
+  public:
+
+    LocalHCSR04() : HC_SR04_GPM(-1, -1), Z2S_Core(this) {
+
+    }
+
+    virtual ~LocalHCSR04() {
+
+    }
+
+    void setTrigPin(int8_t trig_pin) {
+
+      _trigPin = trig_pin;
+      onInit();
+    }
+
+    void setEchoPin(int8_t echo_pin) {
+
+      _echoPin = echo_pin;
+      onInit();
+    }
+
+    void setMinIn(int16_t min_in) {
+
+      _minIn = min_in;
+    }
+
+    void setMinOut(int16_t min_out) {
+
+      _minOut = min_out;
+    }
+
+    void setMaxIn(int16_t max_in) {
+
+      _maxIn = max_in;
+    }
+
+    void setMaxOut(int16_t max_out) {
+
+      _maxOut = max_out;
+    }
+
+    int8_t getTrigPin() {
+
+      return _trigPin;
+    }
+
+    int8_t getEchoPin() {
+
+      return _echoPin;
+    }
+
+    int16_t getMinIn() {
+
+      return _minIn;
+    }
+
+    int16_t getMinOut() {
+
+      return _minOut;
+    }
+
+    int16_t getMaxIn() {
+
+      return _maxIn;
+    }
+
+    int16_t getMaxOut() {
+
+      return _maxOut;
+    }
+};
+
+//class DS18B20;
+
+class LocalDS18B20: public DS18B20, public Z2S_Core {
+
+  public:
+
+    LocalDS18B20(uint8_t gpio_pin, uint8_t *sensor_address);
+
+    virtual ~LocalDS18B20() {
+
+    }
+
+    void updateDS18B20();
 };
 }; //namespace Sensor
 };  // namespace Supla

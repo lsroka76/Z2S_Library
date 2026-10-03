@@ -876,6 +876,8 @@ void addLocalRelayCallback(
 	BasicControl *sender, int type, void *param);
 void addLocalHvacCallback(
 	BasicControl *sender, int type, void *param);
+void addLocalHcsr04Callback(
+	BasicControl *sender, int type, void *param);
 void addLocalVirtualBinaryCallback(
 	BasicControl *sender, int type, void *param);
 void addLocalRemoteRelayCallback(
@@ -904,6 +906,7 @@ void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len = 512);
 
 void updateActionSummary(z2s_channel_action_t &new_action);
+
 /*****************************************************************************/
 
 bool new_connect = false;
@@ -924,6 +927,33 @@ void sendJSToWebsocket(char *jsCode) {
 	snprintf(json_payload, sizeof(json_payload), json_payload_fmt, jsCode);
 
   ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
+
+/*****************************************************************************/
+
+size_t parseCsvNumbers(const char* input, long* outArray, size_t maxElements) {
+
+  if (!input || !outArray || maxElements == 0)
+    return 0;
+
+  size_t count = 0;
+  char* endPtr = nullptr;
+  const char* current = input;
+
+  while (*current != '\0' && count < maxElements) {
+        
+  	long val = strtol(current, &endPtr, 10);
+
+    if (current == endPtr)
+    	break; 
+
+    outArray[count++] = val;
+    current = endPtr;
+
+  	if (*current == ',') 
+    	current++;  
+  }
+  return count;
 }
 
 /*****************************************************************************/
@@ -2175,9 +2205,8 @@ void buildChannelsTabGUI() {
 
 	working_str = "0";
 	param_1_number = ESPUI.addControl(
-		Control::Type::Text, empty_str, working_str, 
-		Control::Color::Dark, zb_channel_params_label, 
-		generalCallback);
+		Control::Type::Text, empty_str, working_str, Control::Color::Dark, 
+		zb_channel_params_label, generalCallback);
 	
 	param_1_save_button = ESPUI.addControl(
 		Control::Type::Button, empty_str, "Save", Control::Color::Dark,
@@ -2351,7 +2380,11 @@ void buildChannelsTabGUI() {
 
 	ESPUI.addControl(
 		Control::Type::Button, empty_str, "Add local hvac (GPIO)", 
-		Control::Color::Dark, lah_panel, addLocalHvacCallback);			
+		Control::Color::Dark, lah_panel, addLocalHvacCallback);
+
+	ESPUI.addControl(
+		Control::Type::Button, empty_str, "Add local HC-SR04 (GPIO)", 
+		Control::Color::Dark, lah_panel, addLocalHcsr04Callback);			
 
 
 	addEmptyLineLabel(lah_panel);
@@ -4218,7 +4251,8 @@ void buildActionsTabGUI() {
 
 	ESPUI.setElementStyle(
 		actions_table_label, "text-align: left; font-family:tahoma;"
-		" font-size: 4 px; font-style: normal; font-weight: normal;");
+		" font-size: 4 px; font-style: normal; font-weight: normal;"
+		"background-color:unset;");
 
 	ESPUI.setPanelWide(actions_table_label, false);
 
@@ -5113,6 +5147,23 @@ void Z2S_loopWebGUI() {
 					ESPUI.updateLabel(
 						lah_status_label, 
 						"The local hvac has been successfully added and is "
+						"available for use.");
+
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);					
+				}
+			} break;
+
+
+			case gui_cmd_add_local_hcsr04: {
+
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_GPIO_HCSR04, 0);
+
+				if (new_channel_slot >= 0) {
+
+					ESPUI.updateLabel(
+						lah_status_label, 
+						"The local HC-SR04 sensor has been successfully added and is "
 						"available for use.");
 
 					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);					
@@ -6074,6 +6125,31 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 				working_str_ptr = "&#10023; Enter local hvac ON value &#10023;";
 				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
 				ESPUI.updateNumber(param_2_number, z2s_core->getLocalHvacHighIsOn());
+			}
+
+			if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_HCSR04) {
+
+				enableChannelTimings(0);
+				enableChannelParams(1);
+
+				char *working_str_ptr = 
+					"&#10023; Enter local HC-SR04 parameters&#10023;<br>"
+					"use this format:<br>TrigPin,EchoPin,MinIn,MinOut,MaxIn,MaxOut<br>"
+					"i.e. 5,6,0,500,0,500";
+
+				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+				sprintf(
+					general_purpose_gui_buffer, "%i,%i,%u,%u,%u,%u", 
+					z2s_core->getLocalHCSR04TrigPin(), z2s_core->getLocalHCSR04EchoPin(),
+					z2s_core->getLocalHCSR04MinIn(), z2s_core->getLocalHCSR04MinOut(),
+					z2s_core->getLocalHCSR04MaxIn(), z2s_core->getLocalHCSR04MaxOut());
+				 
+				working_str = general_purpose_gui_buffer;
+				ESPUI.updateText(param_1_number, working_str);
+
+				/*working_str_ptr = "&#10023; Enter local hvac ON value &#10023;";
+				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+				ESPUI.updateNumber(param_2_number, z2s_core->getLocalHvacHighIsOn());*/
 			}
 
 			if (z2s_channel.local_channel_type == 
@@ -7546,10 +7622,37 @@ void editChannelMain(uint32_t update_channel_flag) {
 								
 								z2s_core->updateLocalHvacParams();
 							} break;
-						} 
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
+
+								long hcsr04_params[6];
+
+								size_t params_found = parseCsvNumbers(
+									ESPUI.getControl(param_1_number)->getValueCstr(), 
+									hcsr04_params, 6);
+
+								switch (params_found) {
+        					case 6: 
+										z2s_core->setLocalHCSR04MaxOut(hcsr04_params[5]); [[fallthrough]];
+        					case 5: 
+										z2s_core->setLocalHCSR04MaxIn(hcsr04_params[4]); [[fallthrough]];
+        					case 4: 
+										z2s_core->setLocalHCSR04MinOut(hcsr04_params[3]); [[fallthrough]];
+        					case 3: 
+										z2s_core->setLocalHCSR04MinIn(hcsr04_params[2]); [[fallthrough]];
+        					case 2: 
+										z2s_core->setLocalHCSR04EchoPin(hcsr04_params[1]); [[fallthrough]];
+        					case 1: 
+										z2s_core->setLocalHCSR04TrigPin(hcsr04_params[0]); [[fallthrough]];
+										z2s_core->saveChannelData();
+        					default: break; 
+								}
+								 
+							} break;
+						}
 					} break;
 
-					
 					case SUPLA_CHANNELTYPE_THERMOMETER:
 					case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
 
@@ -9459,6 +9562,16 @@ void addLocalHvacCallback(BasicControl *sender, int type, void *param) {
 	if (type == B_UP) {
 
 		addGUICommand(gui_cmd_add_local_hvac);
+	}
+}
+
+/*****************************************************************************/
+
+void addLocalHcsr04Callback(BasicControl *sender, int type, void *param) {
+
+	if (type == B_UP) {
+
+		addGUICommand(gui_cmd_add_local_hcsr04);
 	}
 }
 

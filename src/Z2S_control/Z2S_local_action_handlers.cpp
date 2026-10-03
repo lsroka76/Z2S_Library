@@ -1076,4 +1076,18 @@ void Supla::Sensor::LocalVirtualThermHygroMeter::iterateAlways() {
 
 /*****************************************************************************/
 
+Supla::Sensor::LocalDS18B20::LocalDS18B20(
+  uint8_t gpio_pin, uint8_t *sensor_address) 
+  : DS18B20(gpio_pin, sensor_address), Z2S_Core(this) {
+
+} 
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalDS18B20::updateDS18B20() {
+
+}
+
+/*****************************************************************************/
+
 Supla::GatewayEvents GatewayEventsInstance;
