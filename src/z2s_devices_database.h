@@ -4255,6 +4255,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3000_jxk7abms", .model_name = "TS0001",
+    .z2s_device_uid = 10125,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_skueekg3", .model_name = "TS0001",
     .z2s_device_uid = 10200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
@@ -5832,6 +5837,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_l9brjwau", .model_name = "TS0002",
     .z2s_device_uid = 21115,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+      { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
+  {	.manufacturer_name = "_TZ3210_dvsuy9fz", .model_name = "TS0002",
+    .z2s_device_uid = 21120,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = { 
