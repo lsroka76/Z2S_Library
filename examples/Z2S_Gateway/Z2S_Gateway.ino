@@ -82,7 +82,7 @@
 #define Z2S_TCP_CMD_UPDATE_TEMPERATURE    0x10
 #define Z2S_TCP_CMD_UPDATE_HUMIDITY       0x11
 
-alignas(8) static uint8_t custom_heap_buf[48 * 1024]; 
+alignas(8) static uint8_t custom_heap_buf[64 * 1024]; 
 static multi_heap_handle_t my_custom_heap = nullptr;
 
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
@@ -406,6 +406,8 @@ void enableZ2SNotifications() {
   zbGateway.onBTCBoundDevice(Z2S_onBTCBoundDevice);
 
   zbGateway.onDataSaveRequest(Z2S_onDataSaveRequest);
+  zbGateway.onDeviceUpdate(Z2S_onDeviceUpdate);
+  zbGateway.onDeviceAnnce(Z2S_onDeviceAnnce);
   zbGateway.onDeviceRejoin(Z2S_onDeviceRejoin);
   zbGateway.onDeviceLeave(Z2S_onDeviceLeave);
   zbGateway.onUpdateDeviceLastRssi(Z2S_onUpdateDeviceLastRssi);
@@ -448,6 +450,8 @@ void disableZ2SNotifications() {
   zbGateway.onBoundDevice(nullptr);
   zbGateway.onBTCBoundDevice(nullptr);
   zbGateway.onDataSaveRequest(nullptr);
+  zbGateway.onDeviceUpdate(nullptr);
+  zbGateway.onDeviceAnnce(nullptr);
   zbGateway.onDeviceRejoin(nullptr);
   zbGateway.onDeviceLeave(nullptr);
   zbGateway.onUpdateDeviceLastRssi(nullptr);
@@ -1414,7 +1418,7 @@ void loop() {
                       if (z2s_device_desc.z2s_device_config_flags & 
                           Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT) {
 
-                        log_i("Tuya magic");
+                        log_i("sending Tuya magic packet!");
 
                         uint16_t tuya_init_attributes[6] = { 
                           ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,
@@ -1439,6 +1443,23 @@ void loop() {
                           TUYA_SETUP_CMD, ESP_ZB_ZCL_ATTR_TYPE_SET, 
                           0, nullptr, false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
                           1, 0, 0); //disable default response, no manufacurer code  
+                      }
+
+                      if (strcmp(z2s_device_list.model_name, "TS0601") == 0) {
+
+                        /*zbGateway.sendCustomClusterCmd(
+                          joined_device, TUYA_PRIVATE_CLUSTER_EF00, 
+                          TUYA_QUERY_CMD, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, 
+                          nullptr);*/
+
+                        uint8_t seq[2] = {0x00, 0x02};
+
+                        log_i("Sending TUYA_MCU_VERSION_REQUEST");
+      
+                        zbGateway.sendCustomClusterCmd(
+                          joined_device, TUYA_PRIVATE_CLUSTER_EF00, 
+                          TUYA_MCU_VERSION_REQUEST, ESP_ZB_ZCL_ATTR_TYPE_SET, 
+                          2, seq, false);
                       }
 
                       if (z2s_device_desc.z2s_device_config_flags & 
@@ -1595,12 +1616,8 @@ void loop() {
                   }
                 } 
               } //endpoint counter
-              //here we can configure reporting and restart ESP32
+              //here we can configure reporting
 
-              if (hasTuyaCustomCluster(z2s_device_list.z2s_device_desc_id))
-                zbGateway.sendCustomClusterCmd(
-                  joined_device, TUYA_PRIVATE_CLUSTER_EF00, TUYA_QUERY_CMD, 
-                  ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr);
 
               switch (z2s_device_list.z2s_device_desc_id) { 
 

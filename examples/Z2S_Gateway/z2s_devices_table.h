@@ -28,7 +28,9 @@
 #include <supla/storage/config.h>
 #include <supla/storage/storage.h>
 
+#include <Z2S_StorageManager.h>
 #include <Z2S_common.h>
+
 #include "z2s_web_gui.h"
 
 #include <Z2S_control/Z2S_local_action_handlers.h>
@@ -235,7 +237,8 @@ void Z2S_initZbDevices(uint32_t init_ms);
 uint8_t Z2S_addZbDeviceTableSlot(
   esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr,
   const char *manufacturer_name, const char *model_name,
-  uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source);
+  uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source, 
+  bool join_init = false);
 
 bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table = true);
 bool Z2S_removeZbDeviceWithAllChannels(uint8_t zb_device_slot, 
@@ -538,8 +541,10 @@ void Z2S_onDataSaveRequest(
   uint8_t Supla_channel, uint8_t data_save_mode,  uint8_t extended_data_type, 
   uint8_t *extended_data);
 
+void Z2S_onDeviceUpdate(
+  uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t status);
+uint8_t Z2S_onDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr);
 void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr);
-
 void Z2S_onDeviceLeave(
   uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin);
 

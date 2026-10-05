@@ -3883,6 +3883,8 @@ void processTuyaCustomCluster(
 
     case TUYA_MCU_VERSION_RESPONSE: {
 
+      return;
+
       uint8_t seq[2];
     
       uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(short_addr);
