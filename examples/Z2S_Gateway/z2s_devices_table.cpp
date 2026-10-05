@@ -1109,7 +1109,6 @@ uint8_t Z2S_addZbDeviceTableSlot(
       if (z2s_zb_devices_table[zb_device_slot].user_data_flags &
         ZBD_USER_DATA_FLAG_BINDING_REQUIRED) {
 
-        log_i("FAAAAAAAAAAAAAAAAAAAAAAALSCHHHHHHHHHHHHHHHHHHHHHHH!");
         if (!Z2S_updateZbDeviceUidIdx(
           zb_device_slot, manufacturer_name, model_name)) {
 

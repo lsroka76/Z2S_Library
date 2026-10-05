@@ -1445,12 +1445,18 @@ void loop() {
                           1, 0, 0); //disable default response, no manufacurer code  
                       }
 
-                      if (strcmp(z2s_device_list.model_name, "TS0601") == 0) {
+                      if (z2s_device_desc.z2s_device_config_flags & 
+                          Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY) {
 
-                        /*zbGateway.sendCustomClusterCmd(
+                        log_i("Tuya query");
+
+                        zbGateway.sendCustomClusterCmd(
                           joined_device, TUYA_PRIVATE_CLUSTER_EF00, 
                           TUYA_QUERY_CMD, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, 
-                          nullptr);*/
+                          nullptr);
+                      }
+
+                      if (strcmp(z2s_device_list.model_name, "TS0601") == 0) {
 
                         uint8_t seq[2] = {0x00, 0x02};
 
