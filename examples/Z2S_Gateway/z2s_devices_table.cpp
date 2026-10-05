@@ -490,11 +490,22 @@ uint8_t updateChannelDesc(
   if (z2s_channel_params.valid_record && 
       (z2s_channel_params.local_channel_type == 0)) {
 
-    log_i("ZBD id %u", z2s_channel_params.Zb_device_id);
+    uint8_t new_Zb_device_id = Z2S_findZbDeviceTableSlot(
+      z2s_channel_params.ieee_addr);
+    
+    if (new_Zb_device_id == 0xFF) {
 
-    uint8_t new_Zb_device_id = Z2S_addZbDeviceTableSlot(
-      z2s_channel_params.ieee_addr, z2s_channel_params.short_addr, "Unknown", 
-      "Unknown", 1, z2s_channel_params.model_id, 0);
+      log_e("missing ZigBee device for channel index %u", channel_index);
+      return 4;
+    }
+
+    if (z2s_zb_devices_table[new_Zb_device_id].user_data_flags & 
+        ZBD_USER_DATA_FLAG_BINDING_REQUIRED) {
+
+      z2s_zb_devices_table[new_Zb_device_id].user_data_flags &= 
+        ~ZBD_USER_DATA_FLAG_BINDING_REQUIRED;
+      update_result |= 2;
+    }
 
     if (z2s_channel_params.Zb_device_id != new_Zb_device_id) {
     
@@ -826,9 +837,10 @@ bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table) {
 
   if (z2s_zb_devices_table[zb_device_slot].record_id > 0) {
 
-    zbGateway.sendDeviceLeaveRequest(
-          z2s_zb_devices_table[zb_device_slot].ieee_addr, 
-          z2s_zb_devices_table[zb_device_slot].short_addr, false, false);
+    if (Zigbee.started())
+      zbGateway.sendDeviceLeaveRequest(
+        z2s_zb_devices_table[zb_device_slot].ieee_addr, 
+        z2s_zb_devices_table[zb_device_slot].short_addr, false, false);
     
     memset(&z2s_zb_devices_table[zb_device_slot], 0, 
       sizeof(z2s_zb_device_params_t));
