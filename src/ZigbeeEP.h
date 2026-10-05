@@ -207,7 +207,10 @@ public:
     zb_device_params_t *device, uint16_t cluster_id, uint8_t count, 
     uint8_t position) {};
 
-  virtual void zbDeviceAnnce(
+  virtual void zbDeviceUpdate(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t status) {};
+
+  virtual uint8_t zbDeviceAnnce(
     uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {};
 
   virtual void zbDeviceRejoin(

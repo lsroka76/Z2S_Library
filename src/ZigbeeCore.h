@@ -31,6 +31,11 @@ typedef enum {
 #define ZB_SCAN_RUNNING (-1)
 #define ZB_SCAN_FAILED  (-2)
 
+#define DEVICE_ANNCE_RESULT_JOIN    0x00
+#define DEVICE_ANNCE_RESULT_REJOIN  0x01
+#define DEVICE_ANNCE_RESULT_LEAVE   0x03
+#define DEVICE_ANNCE_RESULT_UNKNOWN 0xFF
+
 #define ZIGBEE_DEFAULT_ED_CONFIG()                                      \
   {                                                                     \
     .esp_zb_role = ESP_ZB_DEVICE_TYPE_ED, .install_code_policy = false, \

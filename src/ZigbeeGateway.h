@@ -843,6 +843,12 @@ public:
     uint8_t extended_data_type, uint8_t *extended_data)) {
     _on_data_save_request = callback;
   }
+  void onDeviceUpdate(void (*callback)(uint16_t, esp_zb_ieee_addr_t, uint8_t)) {
+    _on_device_update = callback;
+  }
+  void onDeviceAnnce(uint8_t (*callback)(uint16_t, esp_zb_ieee_addr_t)) {
+    _on_device_annce = callback;
+  }
   void onDeviceRejoin(void (*callback)(uint16_t, esp_zb_ieee_addr_t)) {
     _on_device_rejoin = callback;
   }
@@ -994,6 +1000,8 @@ private:
 
   void (*_on_data_save_request)(uint8_t , uint8_t, uint8_t, uint8_t *);
 
+  void (*_on_device_update)(uint16_t, esp_zb_ieee_addr_t, uint8_t);
+  uint8_t (*_on_device_annce)(uint16_t, esp_zb_ieee_addr_t);
   void (*_on_device_rejoin)(uint16_t, esp_zb_ieee_addr_t);
   void (*_on_device_leave)(uint16_t, esp_zb_ieee_addr_t, uint8_t);
   void (*_on_update_device_last_rssi)(uint16_t, int8_t);
@@ -1086,7 +1094,9 @@ private:
     esp_zb_ota_zcl_information_t message, uint16_t index, uint8_t size, 
     uint8_t **data);
 
-  void zbDeviceAnnce(
+  void zbDeviceUpdate(
+    uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t status) override;
+  uint8_t zbDeviceAnnce(
     uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;
   void zbDeviceRejoin(
     uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) override;

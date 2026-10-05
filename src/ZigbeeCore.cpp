@@ -420,18 +420,41 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
             Bit 6 – Security capability
             Bit 7 – Reserved
         */
-        // for each endpoint in the list call the findEndpoint function if not bounded or allowed to bind multiple devices
+        
         for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
           if (!(*it)->bound() || (*it)->epAllowMultipleBinding()) {
 	
-		        if ((*it)->isDeviceBound(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr)) {
-			        log_d("Device already bound to endpoint %d", (*it)->getEndpoint());
-              (*it)->zbDeviceRejoin(dev_annce_params->device_short_addr, dev_annce_params->ieee_addr);
-            }
-		        else {
+		        uint8_t annce_result = (*it)->zbDeviceAnnce(
+              dev_annce_params->device_short_addr, 
+              dev_annce_params->ieee_addr);
+              
+            switch (annce_result) {
+              
+              
+              case DEVICE_ANNCE_RESULT_JOIN: {
 
-              if (Zigbee.isNetworkOpen())
+                if (Zigbee.isNetworkOpen())
                 (*it)->findEndpoint(&cmd_req); 
+			        
+              } break;
+
+
+              case DEVICE_ANNCE_RESULT_REJOIN: {
+              
+                log_d(
+                  "Device already bound to endpoint %d", (*it)->getEndpoint());
+
+                (*it)->zbDeviceRejoin(
+                  dev_annce_params->device_short_addr, 
+                  dev_annce_params->ieee_addr);
+              } break;
+
+
+              case DEVICE_ANNCE_RESULT_LEAVE: {
+
+                log_d(
+                  "Unknown device was forced to leave!");
+              } break;
             }
           }
         }
@@ -483,6 +506,15 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
       }
       else
         esp_zb_set_node_descriptor_manufacturer_code(0x131B);
+
+      for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+        if (!(*it)->bound() || (*it)->epAllowMultipleBinding()) {
+	
+		      (*it)->zbDeviceUpdate(
+            dev_update_params->short_addr, dev_update_params->long_addr, 
+            dev_update_params->status);
+        }
+      }
     }  break;
 
     case ESP_ZB_NWK_SIGNAL_PERMIT_JOIN_STATUS:  // Coordinator
