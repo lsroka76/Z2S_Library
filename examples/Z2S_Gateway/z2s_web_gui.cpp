@@ -772,13 +772,13 @@ document.addEventListener("mouseup", function(e){
 	console.log(e.target.getAttribute("id"));
 	console.log(e.target.id);
 
-	if(e.target.id == "btn52") {
-		console.log("btn52");
+	if(e.target.id == "btn51") {
+		console.log("btn51");
 		e.stopImmediatePropagation();
     redirect2OTA();
   }
-	if(e.target.id == "btn53") {
-		console.log("btn53");
+	if(e.target.id == "btn52") {
+		console.log("btn52");
 		e.stopImmediatePropagation();
     redirect2ZigbeeOTA();
   }
@@ -788,13 +788,13 @@ document.addEventListener("touchend", function(e){
 	console.log(e.target.getAttribute("id"));	
 	console.log(e.target.id);
 
-	if(e.target.id == "btn52") {
+	if(e.target.id == "btn51") {
 
 		e.stopImmediatePropagation();
     redirect2OTA();
   }
-	if(e.target.id == "btn53") {
-		console.log("btn53");
+	if(e.target.id == "btn52") {
+		console.log("btn52");
 		e.stopImmediatePropagation();
     redirect2ZigbeeOTA();
   }
