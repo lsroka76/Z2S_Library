@@ -2091,7 +2091,7 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
@@ -2102,13 +2102,13 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_BATB,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_230W,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
@@ -2443,17 +2443,17 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY |
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY | 
+                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,// |
+                               //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT | 
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY | 
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY |
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION |
+                               //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_MCU_VERSION |
                                Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -2466,7 +2466,8 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
@@ -2571,7 +2572,8 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY |
+      ,Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
@@ -2743,7 +2745,8 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
@@ -2849,7 +2852,8 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM,
     .z2s_device_clusters_count = 1,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_FORCE_TIME_SYNC,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR,
@@ -6480,6 +6484,21 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZE204_t1blo2bj", .model_name = "TS0601",
     .z2s_device_uid = 26100,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_t1blo2bj", .model_name = "TS0601",
+    .z2s_device_uid = 26105,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE204_t1blo2bj", .model_name = "TS0601",
+    .z2s_device_uid = 26110,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE204_q76rtoa9", .model_name = "TS0601",
+    .z2s_device_uid = 26115,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM,
 	  .z2s_device_endpoints_count = 1},
 
