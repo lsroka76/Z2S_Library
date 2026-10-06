@@ -141,6 +141,8 @@ typedef struct esp_zb_ota_image_header_s {
 /*SNZB-02DR2*/
 #define SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT         0x6018 //U16
 
+#define SONOFF_CUSTOM_CLUSTER_REMOTE_SENSOR_DATA              0x601E //ARRAY
+
 #define SONOFF_CUSTOM_CLUSTER_2                               0xFC12
 
 #define SONOFF_CUSTOM_CLUSTER_2_BUTTON_ID                     0x0000 //U8

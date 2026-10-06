@@ -25,30 +25,42 @@
 
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 
-#define TH_ID_SNZB_02DR2        0x1000
+/*****************************************************************************/
+/*                    Z2S_VirtualThermHygroMeter                             */
+/*****************************************************************************/
 
 namespace Supla {
 namespace Sensor {
+
+/*****************************************************************************/
+
 class Z2S_VirtualThermHygroMeter : 
   public Supla::Sensor::VirtualThermHygroMeter, public Z2S_Core {
   
 public:
-    
+
+/*****************************************************************************/
+
   Z2S_VirtualThermHygroMeter(bool rwns_flag = false) 
     : Z2S_Core(this), _rwns_flag(rwns_flag) {
   }
+
+/*****************************************************************************/
 
   void setRWNSFlag(bool rwns_flag) {
 
     _rwns_flag = rwns_flag;    
   }
   
+/*****************************************************************************/
 
   void Refresh() {
 
     _last_timeout_ms = millis();
     channel.setStateOnline();
   }
+
+/*****************************************************************************/
 
   void setTemperature(double val) {
     
@@ -62,6 +74,8 @@ public:
     Refresh();
   }
 
+/*****************************************************************************/
+
   void setHumidity(double val) {
     
     log_i("humidity = %f4.2", val);
@@ -73,6 +87,8 @@ public:
     Refresh();
   }
 
+/*****************************************************************************/
+
   void setForcedTemperature(double val) {
     
     log_i("temperature = %f4.2", val);
@@ -82,10 +98,14 @@ public:
     Refresh();
   }
 
+/*****************************************************************************/
+
   bool isForcedTemperature() {
 
     return _forced_temperature;
   }
+
+/*****************************************************************************/
 
   void iterateAlways() override {
 
@@ -130,6 +150,8 @@ public:
     }
   }
     
+/*****************************************************************************/
+
  protected:
   bool     _rwns_flag;
   bool     _forced_temperature = false;
@@ -137,6 +159,7 @@ public:
   uint32_t _last_timeout_ms = 0;
 };
 
+/*****************************************************************************/
 /*****************************************************************************/
 
 // Sensor Types
@@ -153,6 +176,8 @@ public:
 #define SNZB_STATE_OFFLINE   0x02
 #define SNZB_STATE_RESTORED  0x03
 
+/*****************************************************************************/
+
 /**
  * Encodes SNZB-02DR2 payload into a raw uint8_t buffer.
  * 
@@ -160,73 +185,83 @@ public:
  * @param max_len   Maximum capacity of the buffer.
  * @param count     Number of items being passed (1 to 4).
  * @param ...       Item parameters as tuples of:
- *                  (int type, int id, int state, double value)
+ *                  (uint32_t type, uint32_t id, int32_t state, in32_t value)
  *                
  * 
  * @return          Total bytes written to buffer (0 on error).
  */
 
+/*****************************************************************************/
+
 inline size_t build_snzb02dr2_payload_va(
   uint8_t *buf, size_t max_len, uint8_t count, ...) {
 
-    if (!buf || count == 0 || count > 4) return 0;
+  if (!buf || count == 0 || count > 4) return 0;
 
-    // Safety check: header (6 bytes) + max 6 bytes per item
-    if (max_len < (size_t)(6 + (count * 6))) return 0;
+  // Safety check: header (9 bytes) + max 6 bytes per item
+  if (max_len < (size_t)(9 + (count * 6))) return 0;
 
-    size_t offset = 6; // Reserve 6 bytes for header
+  size_t offset = 9; // Reserve 6 bytes for header
 
-    va_list args;
-    va_start(args, count);
+  va_list args;
+  va_start(args, count);
 
-    for (uint8_t i = 0; i < count; i++) {
+  for (uint8_t i = 0; i < count; i++) {
       
-        uint8_t type  = (uint8_t)va_arg(args, int);
-        uint8_t id    = (uint8_t)va_arg(args, int);
-        uint8_t state = (uint8_t)va_arg(args, int);
-        double  val   = va_arg(args, double);
+    uint8_t type  = va_arg(args, uint32_t);
+    uint8_t id    = va_arg(args, uint32_t);
+    uint8_t state = va_arg(args, uint32_t);
+    int32_t value = va_arg(args, int32_t);
 
-        buf[offset++] = type;
-        buf[offset++] = id;
-        buf[offset++] = state;
+    buf[offset++] = type;
+    buf[offset++] = id;
+    buf[offset++] = state;
 
-        if (state == SNZB_STATE_ONLINE || state == SNZB_STATE_RESTORED) {
-            buf[offset++] = 0x02; // Value length = 2 bytes
+    if (state == SNZB_STATE_ONLINE || state == SNZB_STATE_RESTORED) {
 
-            if (type == SNZB_TYPE_TEMP) {
-                int16_t raw_val = (int16_t)lround(val * 100.0);
-                buf[offset++] = (uint8_t)(raw_val & 0xFF);
-                buf[offset++] = (uint8_t)((raw_val >> 8) & 0xFF);
-            } else {
-                uint16_t raw_val = (uint16_t)lround(val * 100.0);
-                buf[offset++] = (uint8_t)(raw_val & 0xFF);
-                buf[offset++] = (uint8_t)((raw_val >> 8) & 0xFF);
-            }
-        } else {
-            buf[offset++] = 0x00; // No value payload attached
-        }
+      buf[offset++] = 0x02; // Value length = 2 bytes
+
+      if (type == SNZB_TYPE_TEMP) {
+
+        buf[offset++] = value & 0xFF;
+        buf[offset++] = (value >> 8) & 0xFF;
+      } 
+      else {
+        
+        buf[offset++] = (value & 0xFF);
+        buf[offset++] = ((value >> 8) & 0xFF);
+      }
+    } 
+    else {
+      
+      buf[offset++] = 0x00; // No value payload attached
     }
+  }
+  va_end(args);
 
-    va_end(args);
+  // Header assembly
+  buf[0] = ESP_ZB_ZCL_ATTR_TYPE_U8;
+  buf[1] = (offset - 3) & 0xFF;
+  buf[2] = 0x00;
+  buf[3] = 0x01;
+  buf[4] = 0x01;
+  buf[5] = 0x00;
+  buf[6] = 0x03;
+  buf[7] = (uint8_t)(offset - 8); // TLV Length
+  buf[8] = count;
 
-    // Header assembly
-    buf[0] = 0x01;
-    buf[1] = 0x01;
-    buf[2] = 0x00;
-    buf[3] = 0x03;
-    buf[4] = (uint8_t)(offset - 5); // TLV Length
-    buf[5] = count;
-
-    return offset; // Return length of generated payload
+  return offset; // Return length of generated payload
 }
 
-#define EWELINK_FLAG_TEMPERATURE  (1 << 0)
-#define EWELINK_FLAG_HUMIDITY     (1 << 1)
-#define EWELINK_FLAG_PRESSURE     (1 << 2)
+/*****************************************************************************/
+
+#define SONOFF_FLAG_TEMPERATURE  (1 << 0)
+#define SONOFF_FLAG_HUMIDITY     (1 << 1)
+#define SONOFF_FLAG_PRESSURE     (1 << 2)
 
 
 /**
- * Builds the ZCL Array Write Attribute frame for eWeLink remote sensor data.
+ * Builds the ZCL Array Write Attribute frame for Sonoff remote sensor data.
  *
  * @param buffer Pointer to the destination byte array (must be at least 32 bytes).
  * @param count Number of sensor arguments provided:
@@ -237,7 +272,9 @@ inline size_t build_snzb02dr2_payload_va(
  * @return Total bytes written to buffer.
  */
 
-inline uint16_t build_ewelink_payload(
+/*****************************************************************************/
+
+inline uint16_t build_sonoff_payload(
   uint8_t *buffer, uint8_t flags, int16_t temperature, uint16_t humidity, 
   int32_t pressure) {
 
@@ -246,9 +283,9 @@ inline uint16_t build_ewelink_payload(
   // Count how many sensors are active
   uint8_t item_count = 0;
   
-  if (flags & EWELINK_FLAG_TEMPERATURE) item_count++;
-  if (flags & EWELINK_FLAG_HUMIDITY) item_count++;    
-  if (flags & EWELINK_FLAG_PRESSURE) item_count++;    
+  if (flags & SONOFF_FLAG_TEMPERATURE) item_count++;
+  if (flags & SONOFF_FLAG_HUMIDITY) item_count++;    
+  if (flags & SONOFF_FLAG_PRESSURE) item_count++;    
   
   buffer[0] = ESP_ZB_ZCL_ATTR_TYPE_U8;
 
@@ -266,7 +303,7 @@ inline uint16_t build_ewelink_payload(
   uint16_t idx = 9; // Start index for sensor item blocks
 
 
-  if (flags & EWELINK_FLAG_TEMPERATURE) {
+  if (flags & SONOFF_FLAG_TEMPERATURE) {
 
     buffer[idx++] = 0x00; // Type: Temperature
     buffer[idx++] = 0x00; // Sensor ID: 0
@@ -277,7 +314,7 @@ inline uint16_t build_ewelink_payload(
     buffer[idx++] = (temperature >> 8) & 0xFF; 
   }
 
-  if (flags & EWELINK_FLAG_HUMIDITY) {
+  if (flags & SONOFF_FLAG_HUMIDITY) {
 
     buffer[idx++] = 0x01; // Type: Humidity
     buffer[idx++] = 0x00; // Sensor ID: 0
@@ -288,7 +325,7 @@ inline uint16_t build_ewelink_payload(
     buffer[idx++] = (humidity >> 8) & 0xFF;
   }
 
-  if (flags & EWELINK_FLAG_PRESSURE) {
+  if (flags & SONOFF_FLAG_PRESSURE) {
 
     buffer[idx++] = 0x02; // Type: Pressure
     buffer[idx++] = 0x00; // Sensor ID: 0
@@ -303,16 +340,23 @@ inline uint16_t build_ewelink_payload(
 
   // Calculate length headers
   uint16_t total_item_bytes = idx - 9;
-  buffer[7] = (uint8_t)(1 + total_item_bytes); // eWeLink Inner Length L
+  buffer[7] = 1 + total_item_bytes; // eWeLink Inner Length L
 
   uint16_t inner_payload_len = idx - 3;
-  buffer[1] = (uint8_t)(inner_payload_len & 0xFF);       
-  buffer[2] = (uint8_t)((inner_payload_len >> 8) & 0xFF);
+  buffer[1] = inner_payload_len & 0xFF;       
+  buffer[2] = (inner_payload_len >> 8) & 0xFF;
 
   return idx;
 }
 
-/*****************************************************************************/
+inline bool is_valid_temperature(int32_t val) {
+  return ((val >= -4000) && (val <= 8500));
+}
+
+inline bool is_valid_humidity(int32_t val) {
+  return ((val >= 0) && (val <= 10000));
+}
+
 /*****************************************************************************/
 
 class Z2S_SNZB02DR2ThermHygroMeter : 
@@ -357,7 +401,42 @@ public:
 
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT: {
 
-        zbGateway.sendAttributeWrite(
+        
+        uint8_t sonoff_buffer[32] = {};
+        size_t payload_size = 0;
+
+        bool temp_ok = is_valid_temperature(_sonoff_external_temperature);
+        bool humi_ok = is_valid_humidity(_sonoff_external_humidity);
+
+        if (temp_ok && humi_ok) {
+
+          payload_size = build_snzb02dr2_payload_va(
+            sonoff_buffer, sizeof(sonoff_buffer), 2, SNZB_TYPE_TEMP, 
+            SNZB_SOURCE_1, SNZB_STATE_ONLINE, _sonoff_external_temperature, 
+            SNZB_TYPE_HUMI, SNZB_SOURCE_1, SNZB_STATE_ONLINE,
+            _sonoff_external_humidity);
+        }
+        else if (temp_ok) {
+
+          payload_size = build_snzb02dr2_payload_va(
+            sonoff_buffer, sizeof(sonoff_buffer), 1, SNZB_TYPE_TEMP, 
+            SNZB_SOURCE_1, SNZB_STATE_ONLINE, _sonoff_external_temperature);
+        }
+        else if (humi_ok) {
+
+          payload_size = build_snzb02dr2_payload_va(
+            sonoff_buffer, sizeof(sonoff_buffer), 1, SNZB_TYPE_HUMI, 
+            SNZB_SOURCE_1, SNZB_STATE_ONLINE, _sonoff_external_humidity);
+        }
+        
+        if (payload_size)
+          zbGateway.sendAttributeWriteExt(
+            _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
+            SONOFF_CUSTOM_CLUSTER_REMOTE_SENSOR_DATA, 
+            ESP_ZB_ZCL_ATTR_TYPE_ARRAY, payload_size, sonoff_buffer, true, 1,
+            SONOFF_MANUFACTURER_CODE);
+      
+        /*zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
           SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
           ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
@@ -373,7 +452,7 @@ public:
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
           SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
-          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &_sonoff_external_humidity);
+          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &_sonoff_external_humidity);*/
       } break;
 
 
@@ -382,27 +461,27 @@ public:
       uint8_t sonoff_flags = 0;
 
       if (_sonoff_external_temperature > INT16_MIN) 
-        sonoff_flags |= EWELINK_FLAG_TEMPERATURE;
+        sonoff_flags |= SONOFF_FLAG_TEMPERATURE;
 
       if (_sonoff_external_humidity < UINT16_MAX)
-        sonoff_flags |= EWELINK_FLAG_HUMIDITY;
+        sonoff_flags |= SONOFF_FLAG_HUMIDITY;
 
       if (sonoff_flags) {
 
         uint8_t sonoff_buffer[32] = {};
 
-        build_ewelink_payload(
+        build_sonoff_payload(
           sonoff_buffer, sonoff_flags, _sonoff_external_temperature, 
           _sonoff_external_humidity, 0);
 
         zbGateway.sendAttributeWriteExt(
           _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
-          0x601E, ESP_ZB_ZCL_ATTR_TYPE_ARRAY, sizeof(sonoff_buffer), 
-				  sonoff_buffer, true);
+          SONOFF_CUSTOM_CLUSTER_REMOTE_SENSOR_DATA, ESP_ZB_ZCL_ATTR_TYPE_ARRAY,
+          sizeof(sonoff_buffer), sonoff_buffer, true);
       }
-      } break;
-    }
+    } break;
   }
+}
 
 /*****************************************************************************/
 
