@@ -492,13 +492,16 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
       static constexpr uint8_t LUMI_pattern[] = {0x44, 0xEF, 0x54};
       static constexpr uint8_t LUMI_pattern_2[] = {0x3C, 0xC2, 0x18};
       static constexpr uint8_t LUMI_pattern_3[] = {0x8C, 0xCF, 0x04};
+      static constexpr uint8_t LUMI_pattern_4[] = {0x8D, 0x15, 0x00};
 
       if ((memcmp(&dev_update_params->long_addr[5], LUMI_pattern, 
             sizeof(LUMI_pattern)) == 0) ||
           (memcmp(&dev_update_params->long_addr[5], LUMI_pattern_2, 
             sizeof(LUMI_pattern_2)) == 0) ||
           (memcmp(&dev_update_params->long_addr[5], LUMI_pattern_3, 
-            sizeof(LUMI_pattern_3)) == 0))  {
+            sizeof(LUMI_pattern_3)) == 0) ||
+          (memcmp(&dev_update_params->long_addr[5], LUMI_pattern_4, 
+            sizeof(LUMI_pattern_4)) == 0))  {
 
         log_i("LUMI device detected - spoofing LUMI manufacturer code");
 

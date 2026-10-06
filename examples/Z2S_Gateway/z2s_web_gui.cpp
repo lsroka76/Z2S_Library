@@ -9158,7 +9158,7 @@ void stopValveProgram(uint8_t device_slot) {
 
 /*****************************************************************************/
 
-void sendValveProgram(uint8_t device_slot, uint8_t flag_id) {
+void sendValveProgram(uint8_t device_slot, uint32_t flag_id) {
 
 	int8_t channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_SID;
 				

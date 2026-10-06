@@ -21,6 +21,7 @@
 
 #include "ZigbeeGateway.h"
 #include "Z2S_common.h"
+#include "z2s_devices_database.h"
 
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 
@@ -137,9 +138,92 @@ public:
 };
 
 /*****************************************************************************/
-//#include <stdarg.h>
-//#include <stdint.h>
-//#include <math.h>
+
+// Sensor Types
+#define SNZB_TYPE_TEMP       0x00
+#define SNZB_TYPE_HUMI       0x01
+
+// Source IDs
+#define SNZB_SOURCE_1        0x00
+#define SNZB_SOURCE_2        0x01
+
+// Sensor States
+#define SNZB_STATE_UNBOUND   0x00
+#define SNZB_STATE_ONLINE    0x01
+#define SNZB_STATE_OFFLINE   0x02
+#define SNZB_STATE_RESTORED  0x03
+
+/**
+ * Encodes SNZB-02DR2 payload into a raw uint8_t buffer.
+ * 
+ * @param buf       Output raw byte array buffer (minimum 30 bytes recommended).
+ * @param max_len   Maximum capacity of the buffer.
+ * @param count     Number of items being passed (1 to 4).
+ * @param ...       Item parameters as tuples of:
+ *                  (int type, int id, int state, double value)
+ *                
+ * 
+ * @return          Total bytes written to buffer (0 on error).
+ */
+
+inline size_t build_snzb02dr2_payload_va(
+  uint8_t *buf, size_t max_len, uint8_t count, ...) {
+
+    if (!buf || count == 0 || count > 4) return 0;
+
+    // Safety check: header (6 bytes) + max 6 bytes per item
+    if (max_len < (size_t)(6 + (count * 6))) return 0;
+
+    size_t offset = 6; // Reserve 6 bytes for header
+
+    va_list args;
+    va_start(args, count);
+
+    for (uint8_t i = 0; i < count; i++) {
+      
+        uint8_t type  = (uint8_t)va_arg(args, int);
+        uint8_t id    = (uint8_t)va_arg(args, int);
+        uint8_t state = (uint8_t)va_arg(args, int);
+        double  val   = va_arg(args, double);
+
+        buf[offset++] = type;
+        buf[offset++] = id;
+        buf[offset++] = state;
+
+        if (state == SNZB_STATE_ONLINE || state == SNZB_STATE_RESTORED) {
+            buf[offset++] = 0x02; // Value length = 2 bytes
+
+            if (type == SNZB_TYPE_TEMP) {
+                int16_t raw_val = (int16_t)lround(val * 100.0);
+                buf[offset++] = (uint8_t)(raw_val & 0xFF);
+                buf[offset++] = (uint8_t)((raw_val >> 8) & 0xFF);
+            } else {
+                uint16_t raw_val = (uint16_t)lround(val * 100.0);
+                buf[offset++] = (uint8_t)(raw_val & 0xFF);
+                buf[offset++] = (uint8_t)((raw_val >> 8) & 0xFF);
+            }
+        } else {
+            buf[offset++] = 0x00; // No value payload attached
+        }
+    }
+
+    va_end(args);
+
+    // Header assembly
+    buf[0] = 0x01;
+    buf[1] = 0x01;
+    buf[2] = 0x00;
+    buf[3] = 0x03;
+    buf[4] = (uint8_t)(offset - 5); // TLV Length
+    buf[5] = count;
+
+    return offset; // Return length of generated payload
+}
+
+#define EWELINK_FLAG_TEMPERATURE  (1 << 0)
+#define EWELINK_FLAG_HUMIDITY     (1 << 1)
+#define EWELINK_FLAG_PRESSURE     (1 << 2)
+
 
 /**
  * Builds the ZCL Array Write Attribute frame for eWeLink remote sensor data.
@@ -153,89 +237,79 @@ public:
  * @return Total bytes written to buffer.
  */
 
-inline uint16_t build_ewelink_payload(uint8_t *buffer, uint8_t count, ...) {
-    
-    if (!buffer || count == 0 || count > 3) 
-        return 0;
-    
+inline uint16_t build_ewelink_payload(
+  uint8_t *buffer, uint8_t flags, int16_t temperature, uint16_t humidity, 
+  int32_t pressure) {
 
-    
-    buffer[0] = ESP_ZB_ZCL_ATTR_TYPE_U8;
+  if (!buffer || flags == 0) return 0;
 
-    // buffer[1] and buffer[2] reserved for Array Element Count (uint16_le)
+  // Count how many sensors are active
+  uint8_t item_count = 0;
+  
+  if (flags & EWELINK_FLAG_TEMPERATURE) item_count++;
+  if (flags & EWELINK_FLAG_HUMIDITY) item_count++;    
+  if (flags & EWELINK_FLAG_PRESSURE) item_count++;    
+  
+  buffer[0] = ESP_ZB_ZCL_ATTR_TYPE_U8;
 
-    // 2. Inner eWeLink Header
-    buffer[3] = 0x01; // Prefix byte 0
-    buffer[4] = 0x01; // Prefix byte 1
-    buffer[5] = 0x00; // Prefix byte 2
-    buffer[6] = 0x03; // Prefix byte 3
+  // buffer[1] and buffer[2] reserved for Array Element Count (uint16_le)
 
-    // buffer[7] reserved for Inner Length L (1 + item_bytes)
-    buffer[8] = count; 
+  // 2. Inner eWeLink Header
+  buffer[3] = 0x01; // Prefix byte 0
+  buffer[4] = 0x01; // Prefix byte 1
+  buffer[5] = 0x00; // Prefix byte 2
+  buffer[6] = 0x03; // Prefix byte 3
 
-    uint16_t idx = 9; // Start index for sensor item blocks
+  // buffer[7] reserved for Inner Length L (1 + item_bytes)
+  buffer[8] = item_count; 
 
-    va_list args;
-    va_start(args, count);
+  uint16_t idx = 9; // Start index for sensor item blocks
 
-    // --- 1. Temperature (always present if count >= 1) ---
-    if (count >= 1) {
-        
-      double temp = va_arg(args, double);
-      int16_t scaled = (int16_t)round(temp * 100.0);
 
-      buffer[idx++] = 0x00; // Type: Temperature
-      buffer[idx++] = 0x00; // Sensor ID: 0
-      buffer[idx++] = 0x01; // State: Enabled
-      buffer[idx++] = 0x02; // Value Length: 2 bytes
+  if (flags & EWELINK_FLAG_TEMPERATURE) {
 
-      buffer[idx++] = (uint8_t)(scaled & 0xFF);        
-      buffer[idx++] = (uint8_t)((scaled >> 8) & 0xFF); 
-    }
+    buffer[idx++] = 0x00; // Type: Temperature
+    buffer[idx++] = 0x00; // Sensor ID: 0
+    buffer[idx++] = 0x01; // State: Enabled
+    buffer[idx++] = 0x02; // Value Length: 2 bytes
 
-    // --- 2. Humidity (present if count >= 2) ---
-    if (count >= 2) {
+    buffer[idx++] = temperature & 0xFF;        
+    buffer[idx++] = (temperature >> 8) & 0xFF; 
+  }
 
-      double humi = va_arg(args, double);
-      uint16_t scaled = (uint16_t)round(humi * 100.0);
+  if (flags & EWELINK_FLAG_HUMIDITY) {
 
-      buffer[idx++] = 0x01; // Type: Humidity
-      buffer[idx++] = 0x00; // Sensor ID: 0
-      buffer[idx++] = 0x01; // State: Enabled
-      buffer[idx++] = 0x02; // Value Length: 2 bytes
+    buffer[idx++] = 0x01; // Type: Humidity
+    buffer[idx++] = 0x00; // Sensor ID: 0
+    buffer[idx++] = 0x01; // State: Enabled
+    buffer[idx++] = 0x02; // Value Length: 2 bytes
 
-      buffer[idx++] = (uint8_t)(scaled & 0xFF);        
-      buffer[idx++] = (uint8_t)((scaled >> 8) & 0xFF); 
-    }
+    buffer[idx++] = humidity & 0xFF;     
+    buffer[idx++] = (humidity >> 8) & 0xFF;
+  }
 
-    // --- 3. Pressure (present if count >= 3) ---
-    if (count >= 3) {
+  if (flags & EWELINK_FLAG_PRESSURE) {
 
-      double press = va_arg(args, double);
-      int32_t scaled = (int32_t)round(press * 100.0);
+    buffer[idx++] = 0x02; // Type: Pressure
+    buffer[idx++] = 0x00; // Sensor ID: 0
+    buffer[idx++] = 0x01; // State: Enabled
+    buffer[idx++] = 0x04; // Value Length: 4 bytes
 
-      buffer[idx++] = 0x02; // Type: Pressure
-      buffer[idx++] = 0x00; // Sensor ID: 0
-      buffer[idx++] = 0x01; // State: Enabled
-      buffer[idx++] = 0x04; // Value Length: 4 bytes
+    buffer[idx++] = pressure & 0xFF;
+    buffer[idx++] = (pressure >> 8) & 0xFF;
+    buffer[idx++] = (pressure >> 16) & 0xFF;
+    buffer[idx++] = (pressure >> 24) & 0xFF;
+  }
 
-      buffer[idx++] = (uint8_t)(scaled & 0xFF);
-      buffer[idx++] = (uint8_t)((scaled >> 8) & 0xFF);
-      buffer[idx++] = (uint8_t)((scaled >> 16) & 0xFF);
-      buffer[idx++] = (uint8_t)((scaled >> 24) & 0xFF);
-    }
+  // Calculate length headers
+  uint16_t total_item_bytes = idx - 9;
+  buffer[7] = (uint8_t)(1 + total_item_bytes); // eWeLink Inner Length L
 
-    va_end(args);
+  uint16_t inner_payload_len = idx - 3;
+  buffer[1] = (uint8_t)(inner_payload_len & 0xFF);       
+  buffer[2] = (uint8_t)((inner_payload_len >> 8) & 0xFF);
 
-    // Calculate length headers
-    uint16_t total_item_bytes = idx - 9;
-    buffer[7] = (uint8_t)(1 + total_item_bytes); // eWeLink Inner Length L
-
-    uint16_t inner_payload_len = idx - 3;
-    buffer[1] = (uint8_t)(inner_payload_len & 0xFF);       
-    buffer[2] = (uint8_t)((inner_payload_len >> 8) & 0xFF);
-
-    return idx;
+  return idx;
 }
 
 /*****************************************************************************/
@@ -278,30 +352,63 @@ public:
 
     uint8_t temperature_selector = 1;
 
-    zbGateway.sendAttributeWrite(
-      _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
-      SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
-      ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
+    switch (getChannelModelId()) {
+
+
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT: {
+
+        zbGateway.sendAttributeWrite(
+          _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
+          SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
+          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
 
   
-    if (_sonoff_external_temperature > INT16_MIN)
-      zbGateway.sendAttributeWrite(
-        _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
-        SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
-        ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &_sonoff_external_temperature);
+      if (_sonoff_external_temperature > INT16_MIN)
+        zbGateway.sendAttributeWrite(
+          _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
+          SONOFF_CUSTOM_CLUSTER_EXTERNAL_TEMPERATURE_INPUT, 
+          ESP_ZB_ZCL_ATTR_TYPE_S16, 2, &_sonoff_external_temperature);
   
-    if (_sonoff_external_humidity < UINT16_MAX)
-      zbGateway.sendAttributeWrite(
-        _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
-        SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
-        ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &_sonoff_external_humidity);
+      if (_sonoff_external_humidity < UINT16_MAX)
+        zbGateway.sendAttributeWrite(
+          _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
+          SONOFF_CUSTOM_CLUSTER_EXTERNAL_HUMIDITY_INPUT, 
+          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &_sonoff_external_humidity);
+      } break;
+
+
+      case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2: {
+
+      uint8_t sonoff_flags = 0;
+
+      if (_sonoff_external_temperature > INT16_MIN) 
+        sonoff_flags |= EWELINK_FLAG_TEMPERATURE;
+
+      if (_sonoff_external_humidity < UINT16_MAX)
+        sonoff_flags |= EWELINK_FLAG_HUMIDITY;
+
+      if (sonoff_flags) {
+
+        uint8_t sonoff_buffer[32] = {};
+
+        build_ewelink_payload(
+          sonoff_buffer, sonoff_flags, _sonoff_external_temperature, 
+          _sonoff_external_humidity, 0);
+
+        zbGateway.sendAttributeWriteExt(
+          _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
+          0x601E, ESP_ZB_ZCL_ATTR_TYPE_ARRAY, sizeof(sonoff_buffer), 
+				  sonoff_buffer, true);
+      }
+      } break;
+    }
   }
 
 /*****************************************************************************/
 
   void iterateAlways() override {
 
-    VirtualThermHygroMeter::iterateAlways();
+    Z2S_VirtualThermHygroMeter::iterateAlways();
 
     if (getResentMs() && (millis() - _last_resent_ms > getResentMs())) {
       

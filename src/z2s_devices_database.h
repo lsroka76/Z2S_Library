@@ -63,6 +63,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR            0x1030
 
+#define Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2       0x1040
+
 #define Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR             0x1050
 #define Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR        0x1055
 #define Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2      0x1056
@@ -1389,6 +1391,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
@@ -3304,7 +3311,7 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-02UL",
     .z2s_device_uid = 2070,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2,
 	  .z2s_device_endpoints_count = 1,
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 

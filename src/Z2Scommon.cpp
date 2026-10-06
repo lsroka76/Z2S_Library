@@ -723,7 +723,9 @@ void Z2S_Core::updateRemoteThermometer(
       }
 
       if (z2s_core->getZbDeviceModelId() == 
-          Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT) {
+            Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT ||
+          z2s_core->getZbDeviceModelId() == 
+            Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2) {
 
         auto Z2S_SNZB02DR2ThermHygroMeter = static_cast<
           Supla::Sensor::Z2S_SNZB02DR2ThermHygroMeter *>

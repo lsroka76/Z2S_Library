@@ -11,8 +11,9 @@ void initZ2SDeviceTempHumidity(
   
   if (thermhygrometer) {
 
-    bool isSNZB02DR2 = Z2S_isZbDeviceModelName(
-      _z2s_channel->Zb_device_id, "SNZB-02DR2");
+    bool isSNZB02DR2 = _z2s_channel->model_id == 
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT || _z2s_channel->model_id ==
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2;
 
     Supla::Sensor::Z2S_VirtualThermHygroMeter 
       *Supla_Z2S_VirtualThermHygroMeter = nullptr;
@@ -104,8 +105,10 @@ void addZ2SDeviceTempHumidity(
 
   if (thermhygrometer) {
 
-    bool isSNZB02DR2 = Z2S_isZbDeviceModelName(
-      device->zb_device_id, "SNZB-02DR2");
+    bool isSNZB02DR2 = device->model_id == 
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT || device->model_id == 
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2;
+
 
     auto Supla_Z2S_VirtualThermHygroMeter = isSNZB02DR2 ?
         new Supla::Sensor::Z2S_SNZB02DR2ThermHygroMeter :
