@@ -8335,7 +8335,8 @@ void advancedDeviceSelectorCallback(
 	}
 	
 	uint8_t device_slot = sender_value;
-
+	log_i("sender_value %u", sender_value);
+	
 	if (z2s_zb_devices_table[device_slot].desc_id == 
 				Z2S_DEVICE_DESC_SONOFF_SMART_VALVE)
 		enableSonoffValveGUI(true);
@@ -8343,12 +8344,12 @@ void advancedDeviceSelectorCallback(
 		if (isSonoffValvePresent)
 			enableSonoffValveGUI(false);
 	}
-
+	
 	if (z2s_zb_devices_table[device_slot].desc_id == 
 				Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE)
 		enableSonoffDualValveGUI(true);
 	else {
-		if (isSonoffValvePresent)
+		if (isSonoffDualValvePresent)
 			enableSonoffDualValveGUI(false);
 	}
 	
@@ -8366,13 +8367,13 @@ void advancedDeviceSelectorCallback(
 		if (isMoesAlarmPresent)
 			enableMoesAlarmGUI(false);
 	}
-
+	
 	sprintf_P(
 		general_purpose_gui_buffer,"<b><i>Manufacturer name</i></b> %s <b>| <i>"
 		"model ID</b></i> %s", Z2S_getZbDeviceManufacturerName(device_slot),
 		Z2S_getZbDeviceModelName(device_slot));
 
-	updateLabel_P(advanced_device_info_label, general_purpose_gui_buffer);
+	updateLabel_P(advanced_device_info_label, general_purpose_gui_buffer);	 
 }
 
 /*****************************************************************************/
