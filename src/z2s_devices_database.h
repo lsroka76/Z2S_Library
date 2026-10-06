@@ -3302,6 +3302,16 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT }
   },
 
+  {	.manufacturer_name = "SONOFF", .model_name = "SNZB-02UL",
+    .z2s_device_uid = 2070,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT }
+  },
+
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-02P",
     .z2s_device_uid = 2100,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL,

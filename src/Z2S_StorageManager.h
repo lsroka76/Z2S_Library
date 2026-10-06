@@ -395,7 +395,7 @@ public:
 /*****************************************************************************/
 
 inline Z2S_StorageManager<z2s_device_params_t, Z2S_ELEMENTS_MAX_NUMBER> 
-  Elements(
+  elementsStorage(
     Z2S_ELEMENTS_INDEX_TABLE_V3, 
     Z2S_ELEMENTS_INDEX_TABLE_BACKUP_V3,
     Z2S_ELEMENTS_PREFIX_V3, 
@@ -403,7 +403,7 @@ inline Z2S_StorageManager<z2s_device_params_t, Z2S_ELEMENTS_MAX_NUMBER>
   );
 
 inline Z2S_StorageManager<z2s_zb_device_params_t, Z2S_DEVICES_MAX_NUMBER> 
-  Devices(
+  devicesStorage(
     Z2S_DEVICES_INDEX_TABLE_V3, 
     Z2S_DEVICES_INDEX_TABLE_BACKUP_V3,
     Z2S_DEVICES_PREFIX_V3, 

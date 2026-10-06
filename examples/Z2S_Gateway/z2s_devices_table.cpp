@@ -121,13 +121,13 @@ uint32_t Z2S_getChannelsTableSize() {
 
 uint8_t Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot) {
 
-  int16_t free_channel_index = Elements.findFreeIndex(
+  int16_t free_channel_index = elementsStorage.findFreeIndex(
     Z2S_CHANNELS_MAX_NUMBER);
 
   if (free_channel_index < 0)
     return 0xFF;
-  Elements.setPosition(free_channel_index);
-  Elements.saveIndexTable();
+  elementsStorage.setPosition(free_channel_index);
+  elementsStorage.saveIndexTable();
   return free_channel_index;
 }
 
@@ -231,7 +231,7 @@ Z2S_Core *Z2S_findZ2SCore(
     core_it++;
 
     if ((memcmp(
-          z2s_core->getChannelIEEEAddress(), ieee_addr, 
+          z2s_core->getChannelIeeeAddress(), ieee_addr, 
           sizeof(esp_zb_ieee_addr_t)) == 0) &&
         ((endpoint < 0) || (z2s_core->getChannelEndpoint() == endpoint)) &&
         ((channel_type < 0) || 
@@ -356,7 +356,7 @@ void Z2S_setChannelData(
 
     z2s_core->setChannelIndex(channel_index);
     z2s_core->initChannelData();
-    z2s_core->setChannelIEEEAddress(device->ieee_addr);
+    z2s_core->setChannelIeeeAddress(device->ieee_addr);
     z2s_core->setChannelShortAddress(device->short_addr);
     z2s_core->setChannelEndpoint(device->endpoint);
     z2s_core->setChannelClusterId(device->cluster_id);
@@ -420,7 +420,7 @@ bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table) {
     
     z2s_core->removeChannelExtendedDataCounter();
 
-    Elements.remove(channel_number_slot);
+    elementsStorage.remove(channel_number_slot);
 
     Supla::AutoLock lock(SuplaDevice.getTimerAccessMutex());
 
@@ -499,14 +499,6 @@ uint8_t updateChannelDesc(
       return 4;
     }
 
-    if (z2s_zb_devices_table[new_Zb_device_id].user_data_flags & 
-        ZBD_USER_DATA_FLAG_BINDING_REQUIRED) {
-
-      z2s_zb_devices_table[new_Zb_device_id].user_data_flags &= 
-        ~ZBD_USER_DATA_FLAG_BINDING_REQUIRED;
-      update_result |= 2;
-    }
-
     if (z2s_channel_params.Zb_device_id != new_Zb_device_id) {
     
       z2s_channel_params.Zb_device_id = new_Zb_device_id;
@@ -522,7 +514,7 @@ uint8_t updateChannelDesc(
           " and element #%u", new_Zb_device_id, channel_index);
 
         Z2S_removeZbDevice(new_Zb_device_id, true);
-        Elements.remove(channel_index);
+        elementsStorage.remove(channel_index);
 
         return 4;
       }
@@ -628,7 +620,7 @@ uint8_t updateChannelDesc(
     }
   }
   if (update_result & 1)
-    Elements.save(channel_index, z2s_channel_params);
+    elementsStorage.save(channel_index, z2s_channel_params);
   if (update_result & 2)
     Z2S_saveZbDevicesTable();
   return update_result;
@@ -675,7 +667,7 @@ bool Z2S_loadChannelsTable() {
 
           log_i("legacy element (%u) loaded", element_index);
           
-          bool element_save_success = Elements.save(
+          bool element_save_success = elementsStorage.save(
             element_index, z2s_channel_params);
           
           if (element_save_success)
@@ -689,7 +681,7 @@ bool Z2S_loadChannelsTable() {
           "Elements index table version 2.0 converted and deleted!");
     }
       
-    if (!Elements.loadIndexTable())
+    if (!elementsStorage.loadIndexTable())
     {
       log_e(
         "Unrecoverable error encountered while loading/creating elements "
@@ -737,7 +729,7 @@ bool Z2S_loadChannelsTable() {
 
           case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
 
-            Elements.save(lah_counter, z2s_channel_params);
+            elementsStorage.save(lah_counter, z2s_channel_params);
             //setElementsIndexTablePosition(lah_counter);
             lah_counter++;
           } break;
@@ -752,7 +744,7 @@ bool Z2S_loadChannelsTable() {
 
           default: {
             
-            Elements.save(channels_index, z2s_channel_params);
+            elementsStorage.save(channels_index, z2s_channel_params);
             //setElementsIndexTablePosition(channels_index);
             ch_counter++;
           }
@@ -867,7 +859,7 @@ bool Z2S_removeZbDeviceWithAllChannels(
 
     while (z2s_core) {
 
-      if (memcmp(z2s_core->getChannelIEEEAddress(), 
+      if (memcmp(z2s_core->getChannelIeeeAddress(), 
             z2s_zb_devices_table[zb_device_slot].ieee_addr, 
             sizeof(esp_zb_ieee_addr_t)) == 0) {
 
@@ -1081,7 +1073,7 @@ uint8_t Z2S_addZbDeviceTableSlot(
       if (join_init) {
 
         z2s_zb_devices_table[zb_device_slot].user_data_flags |= 
-        ZBD_USER_DATA_FLAG_BINDING_REQUIRED;
+        ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED;
       }
       else {
         if (!Z2S_updateZbDeviceUidIdx(
@@ -1119,7 +1111,7 @@ uint8_t Z2S_addZbDeviceTableSlot(
         ZBD_USER_DATA_FLAG_VERSION_2_0) {
 
       if (z2s_zb_devices_table[zb_device_slot].user_data_flags &
-        ZBD_USER_DATA_FLAG_BINDING_REQUIRED) {
+        ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED) {
 
         if (!Z2S_updateZbDeviceUidIdx(
           zb_device_slot, manufacturer_name, model_name)) {
@@ -1127,6 +1119,8 @@ uint8_t Z2S_addZbDeviceTableSlot(
           log_e("Critical error - couldn't get devices list idx!");
           return 0xFF;
         }
+        z2s_zb_devices_table[zb_device_slot].user_data_flags &=
+          ~ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED;
       }
       else {
         
@@ -1624,13 +1618,13 @@ void Z2S_initSuplaChannels() {
   for (uint16_t channels_counter = 0; 
        channels_counter < Z2S_ELEMENTS_MAX_NUMBER; channels_counter++) {
 
-    if (Elements.checkPosition(channels_counter)) {
+    if (elementsStorage.checkPosition(channels_counter)) {
 
-      if (!Elements.load(channels_counter, z2s_channel_params)) {
+      if (!elementsStorage.load(channels_counter, z2s_channel_params)) {
 
         log_e("channel data file not found - clearing index position - temporary disabled");
-        //Elements.clearPosition(channels_counter);
-        //Elements.saveIndexTable();
+        //elementsStorage.clearPosition(channels_counter);
+        //elementsStorage.saveIndexTable();
         continue;
       }
 
@@ -7000,12 +6994,23 @@ uint8_t Z2S_onDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   }
 
   if (Z2S_checkZbDeviceFlags(
-        zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED)) {
+        zb_device_slot, ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED)) {
 
-    log_i("ZBD_USER_DATA_FLAG_BINDING_REQUIRED SET");
+    log_i(
+      "ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED");
 
     return DEVICE_ANNCE_RESULT_JOIN;
   }
+
+  if (Z2S_checkZbDeviceFlags(
+        zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED)) {
+
+    log_i(
+      "ZBD_USER_DATA_FLAG_BINDING_REQUIRED SET");
+
+    return DEVICE_ANNCE_RESULT_JOIN;
+  }
+
   if (z2s_zb_devices_table[zb_device_slot].short_addr != short_addr) {
 
     log_i("Device has new short address - reconfiguring");
@@ -9276,7 +9281,7 @@ uint8_t Z2S_addZ2SDevice(
     if (z2s_core) {
       
       updateZ2SDeviceElectricityMeter(
-        z2s_core->getZ2SChannelIndex(), z2s_core->getChannelIEEEAddress()); 
+        z2s_core->getZ2SChannelIndex(), z2s_core->getChannelIeeeAddress()); 
     }
     
     return ADD_Z2S_DEVICE_STATUS_DAP; 

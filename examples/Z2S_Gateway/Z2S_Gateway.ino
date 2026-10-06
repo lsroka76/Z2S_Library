@@ -2019,7 +2019,18 @@ void loop() {
           "Unknown model %s::%s, no binding is possible", 
           zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
           zbGateway.getQueryBasicClusterData()->zcl_model_name);
-        
+        Z2S_printZbDevicesTableSlots();
+        uint8_t incomplete_device_slot = Z2S_findZbDeviceTableSlot(
+          joined_device->ieee_addr);
+
+        if (incomplete_device_slot < 0xFF)
+          Z2S_removeZbDevice(incomplete_device_slot, true);
+        Z2S_printZbDevicesTableSlots();
+
+        if (Zigbee.started())
+          zbGateway.sendDeviceLeaveRequest(
+            joined_device->ieee_addr, joined_device->short_addr, false, false);
+
         rgbLedWrite(RGB_BUILTIN, 255, 0, 0);  // Red
         delay(1000);
         //enableZ2SNotifications();
@@ -2039,6 +2050,8 @@ void loop() {
             SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED,
             unknown_device_name);
         }
+        zbGateway.clearQueryBasicClusterData();
+        zbGateway.clearNewDeviceJoined();
       }
     }
   }

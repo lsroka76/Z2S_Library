@@ -403,7 +403,7 @@ void resetStorage() {
   channel_extended_data_em_t channel_extended_data_em = {};
 
   memcpy(
-    channel_extended_data_em.ieee_addr, getChannelIEEEAddress(), 
+    channel_extended_data_em.ieee_addr, getChannelIeeeAddress(), 
     sizeof(esp_zb_ieee_addr_t));
 
   for (uint8_t i = 0; i <3; i++) {

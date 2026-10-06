@@ -129,22 +129,16 @@ public:
 
   Z2S_Core(Supla::Element* z2s_element) {
 
-    //_z2s_core_ptr = this;
     Z2S_Cores.push_back(this);
     _z2s_element = z2s_element;
-    //log_i("Element <%08X>, Core <%08X>", _z2s_element, _z2s_core_ptr);
   };
 
   ~Z2S_Core() {
 
-    auto core_it = Z2S_Cores.begin();
-    while (core_it != Z2S_Cores.end()) {
-
-      if (*core_it == this)
-        core_it = Z2S_Cores.erase(core_it);
-      else core_it++;
-    }
-    listCores();
+    auto core_it = std::find(Z2S_Cores.begin(), Z2S_Cores.end(), this);
+      
+      if (core_it != Z2S_Cores.end())
+        Z2S_Cores.erase(core_it);
   };
 
   void listCores() {
@@ -243,13 +237,13 @@ public:
     return setChannelShortAddress(short_addr);
   };
 
-  uint8_t *getChannelIEEEAddress() {
+  uint8_t *getChannelIeeeAddress() {
 
 
     return _z2s_channel.ieee_addr;
   }
 
-  bool setChannelIEEEAddress(uint8_t *ieee_addr) {
+  bool setChannelIeeeAddress(uint8_t *ieee_addr) {
 
         memcpy(_z2s_channel.ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t)); 
     return true;
@@ -1362,9 +1356,11 @@ public:
 
   bool saveChannelData() {
 
-    return Elements.save(_channel_index, _z2s_channel);
-    //return Z2S_saveElement(_channel_index, _z2s_channel);
-    //return Z2S_saveChannelsTable();
+    if (_channel_index >= 0)
+      return elementsStorage.save(_channel_index, _z2s_channel);
+    else
+      return false;
+
   }
 
 protected:
@@ -1381,6 +1377,61 @@ protected:
   };
   Supla::Element* _z2s_element = nullptr;
   int16_t _channel_index = -1;
+};
+
+class Z2S_Device;
+
+inline std::vector<Z2S_Device *> Z2S_Devices;
+
+class Z2S_Device {
+
+  public:
+
+    Z2S_Device() {
+
+      Z2S_Devices.push_back(this);
+   }
+
+    ~Z2S_Device() {
+
+      auto device_it = std::find(Z2S_Devices.begin(), Z2S_Devices.end(), this);
+      
+      if (device_it != Z2S_Devices.end())
+        Z2S_Devices.erase(device_it);
+    }
+
+    int16_t getDeviceIndex() {
+
+      return _device_index;
+    }
+
+    uint16_t getDeviceShortAddress() {
+
+      return _z2s_device.short_addr;
+    }
+
+    uint8_t *getDeviceIeeeAddress() {
+
+      return _z2s_device.ieee_addr;
+    }    
+
+    bool saveDeviceData() {
+
+      if (_device_index >= 0)
+        return devicesStorage.save(_device_index, _z2s_device);
+      else
+        return false;
+    }
+
+    static Z2S_Device *getZ2SDeviceByDeviceIndex(int16_t device_index);
+    static Z2S_Device *getZ2SDeviceByIeeeAddress(esp_zb_ieee_addr_t ieee_addr);
+    static Z2S_Device *getZ2SDeviceByShortAddress(uint16_t short_addr);
+
+  protected:
+
+  z2s_zb_device_params_t _z2s_device;
+  int16_t _device_index = -1;
+
 };
 
 #endif //SRC_Z2S_COMMON_H_

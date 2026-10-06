@@ -175,7 +175,7 @@ bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
     device->cluster_id = z2s_core->getChannelClusterId();
 
     memcpy(
-      device->ieee_addr, z2s_core->getChannelIEEEAddress(),
+      device->ieee_addr, z2s_core->getChannelIeeeAddress(),
       sizeof(esp_zb_ieee_addr_t));
 
     device->short_addr = z2s_core->getChannelShortAddress();

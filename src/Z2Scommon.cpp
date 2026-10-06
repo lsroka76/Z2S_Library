@@ -925,3 +925,38 @@ bool Z2S_Core::updateLocalDs18b20Params() {
 
 /*****************************************************************************/
 
+/*                          Z2S_Device                                       */
+
+/*****************************************************************************/
+
+Z2S_Device *Z2S_Device::getZ2SDeviceByDeviceIndex(int16_t device_index) {
+
+  if (device_index < 0)
+    return nullptr;
+
+  for (const auto& device : Z2S_Devices) {
+
+    if (device->_device_index == device_index)
+      return device;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
+Z2S_Device *Z2S_Device::getZ2SDeviceByShortAddress(uint16_t short_addr) {
+
+  for (const auto& device : Z2S_Devices) {
+
+    if (device->_z2s_device.short_addr == short_addr)
+      return device;
+  }
+  return nullptr;
+}
+
+/*****************************************************************************/
+
+Z2S_Device *Z2S_Device::getZ2SDeviceByIeeeAddress(
+  esp_zb_ieee_addr_t ieee_addr) {
+
+}

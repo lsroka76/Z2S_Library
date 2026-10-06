@@ -8308,7 +8308,8 @@ void valueCallback(BasicControl *sender, int type, void *param) {
 
 /*****************************************************************************/
 
-void advancedDeviceSelectorCallback(BasicControl *sender, int type, void *param) {
+void advancedDeviceSelectorCallback(
+	BasicControl *sender, int type, void *param) {
 
 	char general_purpose_gui_buffer[512] = {};
 

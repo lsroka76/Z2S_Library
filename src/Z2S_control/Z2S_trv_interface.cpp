@@ -628,7 +628,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
       if (trv_external_sensor_present) {
       
         uint8_t buffer_size = buildLumiFFF2CmdLinkParams1(
-          fff2_cmd_data_buffer, 0x12, timestamp, getChannelIEEEAddress());
+          fff2_cmd_data_buffer, 0x12, timestamp, getChannelIeeeAddress());
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
@@ -636,7 +636,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
           buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         buffer_size =buildLumiFFF2CmdLinkParams2(
-          fff2_cmd_data_buffer, 0x13, timestamp, getChannelIEEEAddress());
+          fff2_cmd_data_buffer, 0x13, timestamp, getChannelIeeeAddress());
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
@@ -650,7 +650,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
       } else {
 
         uint8_t buffer_size = buildLumiFFF2CmdUnlinkParams(
-          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, getChannelIEEEAddress());
+          fff2_cmd_data_buffer, 0x12, timestamp, 0x05, getChannelIeeeAddress());
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
@@ -658,7 +658,7 @@ void Supla::Control::Z2S_TRVInterface::sendTRVExternalSensorInput(
           buffer_size, &fff2_cmd_data_buffer, true, 1, LUMI_MANUFACTURER_CODE);
 
         buffer_size = buildLumiFFF2CmdUnlinkParams(
-          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, getChannelIEEEAddress());
+          fff2_cmd_data_buffer, 0x13, timestamp, 0x04, getChannelIeeeAddress());
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
