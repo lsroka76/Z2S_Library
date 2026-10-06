@@ -1327,6 +1327,14 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_max_interval_value = 60,
     .z2s_delta_value_32 = 1},
 
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SONOFF_SWV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 1800,
+    .z2s_delta_value_8 = 0},
+
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER,
     .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
     .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID,
