@@ -153,7 +153,7 @@ public:
  * @return Total bytes written to buffer.
  */
 
-uint16_t build_ewelink_payload(uint8_t *buffer, uint8_t count, ...) {
+inline uint16_t build_ewelink_payload(uint8_t *buffer, uint8_t count, ...) {
     
     if (!buffer || count == 0 || count > 3) 
         return 0;
