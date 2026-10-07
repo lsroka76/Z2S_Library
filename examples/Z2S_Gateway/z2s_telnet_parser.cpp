@@ -182,7 +182,7 @@ bool getDeviceByChannelNumber(zbg_device_params_t *device, uint8_t channel_id) {
     device->model_id = z2s_core->getChannelModelId();
   
 
-    telnet.printf(PSTR(">Device %u\n\r>"), device->short_addr);
+    telnet.printf(">Device %u\n\r>", device->short_addr);
     
     return true;
 

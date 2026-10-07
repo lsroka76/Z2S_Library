@@ -163,18 +163,18 @@ public:
 /*****************************************************************************/
 
 // Sensor Types
-#define SNZB_TYPE_TEMP       0x00
-#define SNZB_TYPE_HUMI       0x01
+#define SNZB_TYPE_TEMPERATURE   0x00
+#define SNZB_TYPE_HUMIDITY      0x01
 
 // Source IDs
-#define SNZB_SOURCE_1        0x00
-#define SNZB_SOURCE_2        0x01
+#define SNZB_SOURCE_1           0x00
+#define SNZB_SOURCE_2           0x01
 
 // Sensor States
-#define SNZB_STATE_UNBOUND   0x00
-#define SNZB_STATE_ONLINE    0x01
-#define SNZB_STATE_OFFLINE   0x02
-#define SNZB_STATE_RESTORED  0x03
+#define SNZB_STATE_UNBOUND      0x00
+#define SNZB_STATE_ONLINE       0x01
+#define SNZB_STATE_OFFLINE      0x02
+#define SNZB_STATE_RESTORED     0x03
 
 /*****************************************************************************/
 
@@ -221,7 +221,7 @@ inline size_t build_snzb02dr2_payload_va(
 
       buf[offset++] = 0x02; // Value length = 2 bytes
 
-      if (type == SNZB_TYPE_TEMP) {
+      if (type == SNZB_TYPE_TEMPERATURE) {
 
         buf[offset++] = value & 0xFF;
         buf[offset++] = (value >> 8) & 0xFF;
@@ -402,7 +402,7 @@ public:
       case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT: {
 
         
-        uint8_t sonoff_buffer[32] = {};
+        uint8_t sonoff_buffer[64] = {};
         size_t payload_size = 0;
 
         bool temp_ok = is_valid_temperature(_sonoff_external_temperature);
@@ -411,30 +411,44 @@ public:
         if (temp_ok && humi_ok) {
 
           payload_size = build_snzb02dr2_payload_va(
-            sonoff_buffer, sizeof(sonoff_buffer), 2, SNZB_TYPE_TEMP, 
+            sonoff_buffer, sizeof(sonoff_buffer), 2, SNZB_TYPE_TEMPERATURE, 
             SNZB_SOURCE_1, SNZB_STATE_ONLINE, _sonoff_external_temperature, 
-            SNZB_TYPE_HUMI, SNZB_SOURCE_1, SNZB_STATE_ONLINE,
+            SNZB_TYPE_HUMIDITY, SNZB_SOURCE_1, SNZB_STATE_ONLINE, 
             _sonoff_external_humidity);
+            //SNZB_TYPE_TEMPERATURE, SNZB_SOURCE_2,
+            //SNZB_STATE_UNBOUND, 0, SNZB_TYPE_HUMIDITY, SNZB_SOURCE_2, 
+            //SNZB_STATE_UNBOUND, 0);
+            
         }
         else if (temp_ok) {
 
           payload_size = build_snzb02dr2_payload_va(
-            sonoff_buffer, sizeof(sonoff_buffer), 1, SNZB_TYPE_TEMP, 
+            sonoff_buffer, sizeof(sonoff_buffer), 1, SNZB_TYPE_TEMPERATURE, 
             SNZB_SOURCE_1, SNZB_STATE_ONLINE, _sonoff_external_temperature);
         }
         else if (humi_ok) {
 
           payload_size = build_snzb02dr2_payload_va(
-            sonoff_buffer, sizeof(sonoff_buffer), 1, SNZB_TYPE_HUMI, 
+            sonoff_buffer, sizeof(sonoff_buffer), 1, SNZB_TYPE_HUMIDITY, 
             SNZB_SOURCE_1, SNZB_STATE_ONLINE, _sonoff_external_humidity);
         }
         
-        if (payload_size)
+        if (payload_size) {
+
+          uint8_t temperature_selector = 1;
+
+          zbGateway.sendAttributeWrite(
+          _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
+          SONOFF_CUSTOM_CLUSTER_TEMPERATURE_SENSOR_SELECT, 
+          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &temperature_selector);
+
+          
           zbGateway.sendAttributeWriteExt(
             _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
             SONOFF_CUSTOM_CLUSTER_REMOTE_SENSOR_DATA, 
             ESP_ZB_ZCL_ATTR_TYPE_ARRAY, payload_size, sonoff_buffer, true, 1,
             SONOFF_MANUFACTURER_CODE);
+        }
       
         /*zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, SONOFF_CUSTOM_CLUSTER, 
