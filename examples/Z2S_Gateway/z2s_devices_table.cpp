@@ -4423,6 +4423,13 @@ void Z2S_onSonoffCustomClusterReceive(
       msgZ2SDeviceGeneralPurposeMeasurement(
         element, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
         readAttr<uint8_t>(attribute)); 
+      
+      element = Z2S_findZ2SElement(
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
+        SONOFF_SMART_VALVE_ON_OFF_SID);
+  
+      if (element) 
+        msgZ2SDeviceVirtualRelay(element, readAttr<bool>(attribute));
     } break;
 
 
