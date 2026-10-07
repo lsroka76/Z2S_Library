@@ -68,6 +68,7 @@
 #define Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR             0x1050
 #define Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR        0x1055
 #define Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2      0x1056
+#define Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR      0x1057
 
 #define Z2S_DEVICE_DESC_PRESSURE_SENSOR                     0x1060
 
@@ -1405,6 +1406,11 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL }},
@@ -7392,6 +7398,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE200_znzs7yaw", .model_name = "TS0601",
     .z2s_device_uid = 37700,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_HY08WE,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SONOFF", .model_name = "SNZB-02M",
+    .z2s_device_uid = 37800,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR,
     .z2s_device_endpoints_count = 1},
 
 //DEVICES_END

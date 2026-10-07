@@ -1233,62 +1233,93 @@ const char* getZ2SDeviceDescName(uint32_t modelID)  {
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_1:
 		case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR:
 			return "Temperature and humidity sensor(0x402, 0x405)";
+
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL:
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT:
 			return "Temperature and humidity sensor(0x20, 0x402, 0x405)";
+
 		case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
 			return "Temperature and humidity sensor(Tuya 0xEF00)";
+
 		case Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_HUMIX10:
 			return "Temperature and humidity(x10) sensor(0x402, 0x405)";
+
 		case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR:
+		case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
+    case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2:
+    case Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR:
 			return "Temperature, pressure and humidity sensor(0x402, 0x403, 0x405)";
+
 		case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR:
 			return "Tuya soil temperature(/10) and humidity sensor(0xEF00)";
+
 		case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
 			return "Tuya soil temperature(/1) and humidity sensor(0xEF00)";
+			
 		case Z2S_DEVICE_DESC_TUYA_ILLUMINANCE_SENSOR:
 			return "Tuya illuminance sensor (0x400)";
+
 		case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
 			return "Illuminance and IAS Zone sensor (0x400, 0x500)";
+
 		case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
 			return "Tuya rain and illuminance sensor (0xEF00)";
+
 		case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR:
 			return "IAS Zone sensor: ALARM1(0x500)";
+
 		case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T:
 			return "IAS Zone sensor: ALARM1, ALARM2, TAMPER(0x500)";
+
 		case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B:
 			return "IAS Zone sensor: ALARM1, TAMPER, LOW BATTERY(0x500)";
+
 		case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B:
 		case Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR:
 			return "IAS Zone sensor: ALARM1, LOW BATTERY(0x500)";
+
 		case Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR:
 			return "IKEA IAS Zone sensor(0x6, 0x500)";
+
 		case Z2S_DEVICE_DESC_IKEA_VALLHORN_1:
 			return "IKEA VALLHORN Wireless Motion Sensor(0x6, 0x406)";
+
 		case Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR:
 			return "LUMI magnet sensor(0x6)";
+
 		case Z2S_DEVICE_DESC_LUMI_MOTION_SENSOR:
 			return "LUMI motion sensor(0x400, 0x406)";
+
 		case Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B: 
 			return "Sonoff IAS Zone sensor: ALARM1, TAMPER, LOW BATTERY(0x500, 0xFC11)";
+
 		case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:          
 			return "Tuya vibration sensor(0xEF00)";
+
 		case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:       
 			return "Tuya smoke sensor: BATTERY LEVEL(0xEF00)";
+
 		case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
-			return "Tuya vibration sensor: BATTERY STATE(0xEF00)";         
+			return "Tuya vibration sensor: BATTERY STATE(0xEF00)"; 
+
 		case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:                
-			return "Tuya CO sensor(0xEF00)";         
+			return "Tuya CO sensor(0xEF00)";        
+
 		case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
-			return "Tuya presence and motion state sensor (0xEF00)";          
+			return "Tuya presence and motion state sensor (0xEF00)"; 
+
 		case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:     
 			return "Tuya presence sensor (0xEF00)";
+
 		case Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR: 
 			return "ADEO smart PIRTH sensor";        
+
 		case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
 			return "ADEO contact and vibration sensor"; 
+
 		case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR:
 			return "Sonoff PIR sensor";               
+			
 		default:
 			return "Unknown Zigbee model";
 	}

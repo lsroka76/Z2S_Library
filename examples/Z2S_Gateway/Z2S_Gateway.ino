@@ -2024,12 +2024,18 @@ void loop() {
         
         Z2S_printZbDevicesTableSlots();
 
-        log_i(
-          "Removing incomplete ZigBee device#%u", joined_device->zb_device_id);
+        uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(
+          joined_device->ieee_addr);
 
-        Z2S_removeZbDevice(joined_device->zb_device_id, true);
+        if (zb_device_slot < 0xFF) {
+          
+          log_i(
+            "Removing incomplete ZigBee device#%u", zb_device_slot);
+
+          Z2S_removeZbDevice(zb_device_slot, true);
         
-        Z2S_printZbDevicesTableSlots();
+          Z2S_printZbDevicesTableSlots();
+        }
 
         if (Zigbee.started())
           zbGateway.sendDeviceLeaveRequest(

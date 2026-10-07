@@ -7233,7 +7233,8 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: 
       case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
-      case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2: {
+      case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2:
+      case Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR: {
 
         addZ2SDeviceTempHumidity(
           device, first_free_slot, sub_id, name, func);
