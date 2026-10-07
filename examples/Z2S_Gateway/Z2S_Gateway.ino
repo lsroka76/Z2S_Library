@@ -1015,7 +1015,7 @@ void setup() {
 
   const char *manuf = "LUMI"; //"AwoX"; //"Paulmann Licht GmbH";
   const char *model = "lumi.sensor_switch.aq3"; //"TLSR82xx"; //"CCT-I";
-  Z2S_addZbDeviceTableSlot(
+  test_joined_device.zb_device_id = Z2S_addZbDeviceTableSlot(
     ieee_addr_test, 33600, manuf, model, 1, 
     Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM, 0);
 

@@ -7825,6 +7825,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TS0601_TRV_TRV16:
       case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
       case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100:
+      case Z2S_DEVICE_DESC_TS0601_HY08WE:
       case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
       case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
       case Z2S_DEVICE_DESC_TS0601_BOTR9V:
@@ -9800,6 +9801,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL:
     case Z2S_DEVICE_DESC_TS0601_TRV_TRV16:
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
+    case Z2S_DEVICE_DESC_TS0601_HY08WE:
     case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100:
     case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
     case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
@@ -11822,42 +11824,6 @@ void printTaskInfo(bool toTelnet) {
 
     vTaskGetRunTimeStats(task_info);    
     log_i_telnet2(task_info, toTelnet);
-    
-    /*
-    UBaseType_t uxArraySize;
-    TaskStatus_t *taskStatusArray;
-    uint32_t ulTotalRunTime,ulStatsAsPercentage;
-    uxArraySize = uxTaskGetNumberOfTasks();
-    taskStatusArray = 
-    (TaskStatus_t *)pvPortMalloc(uxArraySize * sizeof(TaskStatus_t));
-
-    if (taskStatusArray != NULL) {
-        uxArraySize = 
-          uxTaskGetSystemState(taskStatusArray, uxArraySize, &ulTotalRunTime);
-        ulTotalRunTime /= 100UL;
-
-        int16_t loop_chars_written = 0;
-        int16_t total_chars_written = 0;
-
-        for (UBaseType_t i = 0; i < uxArraySize; i++) {
-          
-          ulStatsAsPercentage = 
-            taskStatusArray[i].ulRunTimeCounter / ulTotalRunTime;
-          
-          loop_chars_written = snprintf(task_info + total_chars_written, 
-            512 - total_chars_written, "\n\rTASK: %s%sCPU usage: %d %%",
-            taskStatusArray[i].pcTaskName, 
-            strlen(taskStatusArray[i].pcTaskName) > 10 ? "\t" : "\t\t",
-            ulStatsAsPercentage);
-          if ((loop_chars_written >= 0) && (loop_chars_written < 512))
-            total_chars_written += loop_chars_written;
-          if (total_chars_written >= 511)
-            break;
-        }
-        log_i_telnet2(task_info, toTelnet);
-
-        vPortFree(taskStatusArray);
-    }*/
 }
 
 bool ZbConflictResolver::onChannelConflictReport(
@@ -11959,4 +11925,3 @@ bool ZbConflictResolver::onChannelConflictReport(
   }
   return false;
 }
-  
