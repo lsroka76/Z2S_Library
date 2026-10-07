@@ -764,58 +764,62 @@ function updateSelectOptions(targetSelects, optionsData, selectedValue = null, c
   };
   console.log("JSON.parse hook successfully installed!");
 
-async function backupAndRedirectToOTA(buttonId, partitionLabel = "spiffs") {
-	
+async function downloadPartition(label, btn) {
+  if (btn) btn.innerText = `Downloading ${label}... 0%`;
+
+  const response = await fetch(`/partition?label=${label}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${label} (HTTP ${response.status})`);
+  }
+
+  const contentLength = response.headers.get('content-length');
+  const total = contentLength ? parseInt(contentLength, 10) : 0;
+  
+  const reader = response.body.getReader();
+  const chunks = [];
+  let loaded = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    
+    if (done) break; 
+    
+    chunks.push(value);
+    loaded += value.length;
+    
+    if (total && btn) {
+      const percent = Math.round((loaded / total) * 100);
+      btn.innerText = `Downloading ${label}... ${percent}%`;
+    }
+  }
+
+  const blob = new Blob(chunks, { type: 'application/octet-stream' });
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = downloadUrl;
+  a.download = `${label}_backup.bin`;
+  document.body.appendChild(a);
+  a.click();
+  
+  window.URL.revokeObjectURL(downloadUrl);
+  a.remove();
+
+  return new Promise(resolve => setTimeout(resolve, 300));
+}
+
+async function backupAndRedirectToOTA(buttonId) {
   const btn = document.getElementById(buttonId);
   const originalText = btn ? btn.innerText : "";
   
-  if (btn) {
-    btn.innerText = "Downloading Backup... 0%";
-    btn.disabled = true; 
-  }
+  if (btn) btn.disabled = true; 
 
   try {
-    const response = await fetch(`/partition?label=${partitionLabel}`);
+    await downloadPartition("nvs", btn);
+    await downloadPartition("spiffs", btn);
+    await downloadPartition("zb_storage", btn);
     
-    if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
-    }
-
-    const contentLength = response.headers.get('content-length');
-    const total = contentLength ? parseInt(contentLength, 10) : 0;
-    
-    const reader = response.body.getReader();
-    const chunks = [];
-    let loaded = 0;
-
-    while (true) {
-      const { done, value } = await reader.read();
-      
-      if (done) break; // Download complete
-      
-      chunks.push(value);
-      loaded += value.length;
-      
-      if (total && btn) {
-        const percent = Math.round((loaded / total) * 100);
-        btn.innerText = `Downloading Backup... ${percent}%`;
-      }
-    }
-
-    const blob = new Blob(chunks, { type: 'application/octet-stream' });
-
-    if (btn) btn.innerText = "Saving...";
-
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = downloadUrl;
-    a.download = `${partitionLabel}_backup.bin`;
-    document.body.appendChild(a);
-    a.click();
-    
-    window.URL.revokeObjectURL(downloadUrl);
-    a.remove();
+    if (btn) btn.innerText = "Redirecting to OTA...";
 
     setTimeout(() => {
       window.location.assign("/update");
@@ -823,7 +827,7 @@ async function backupAndRedirectToOTA(buttonId, partitionLabel = "spiffs") {
 
   } catch (error) {
     console.error("Backup failed:", error);
-    alert(`Backup failed (${error.message}). Redirecting to OTA anyway...`);
+    alert(`Backup failed: ${error.message}. Redirecting to OTA anyway...`);
     
     window.location.assign("/update"); 
     
@@ -838,22 +842,18 @@ function handleMenuClick(e) {
   if (!e.target.id) return;
 
   if (e.target.id === "btn51") {
-    //console.log("btn51 triggered");
     e.stopImmediatePropagation();
-    backupAndRedirectToOTA("btn51", "spiffs"); 
+    backupAndRedirectToOTA("btn51"); 
   }
   
   if (e.target.id === "btn52") {
-    //console.log("btn52 triggered");
     e.stopImmediatePropagation();
     redirect2ZigbeeOTA(); 
   }
 }
 
-// Attach the same handler to both event types
 document.addEventListener("mouseup", handleMenuClick);
 document.addEventListener("touchend", handleMenuClick);
-
 )=====";
 
 static String working_str;
