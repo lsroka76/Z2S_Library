@@ -667,10 +667,13 @@ void Z2S_Core::updateRemoteThermometer(
     "connected_thermometer_temperature %lu", Supla_channel, 
     connected_thermometer_channel, value_type, connected_thermometer_value);
 
+  bool second_source = false;  
+
   if (Supla_channel > 0x7F) {
 
     Supla_channel -= 0x80;
     connected_thermometer_channel += 0x80;
+    second_source = true;
   }
   
   auto core_it = Z2S_Cores.begin();
@@ -735,16 +738,24 @@ void Z2S_Core::updateRemoteThermometer(
 
 
           case RTH_VALUE_TYPE_TEMPERATURE: {
-  
-            Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature(
+
+            if (second_source)
+              Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature2(
               connected_thermometer_value);
+            else
+              Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalTemperature(
+                connected_thermometer_value);
           } break;
 
 
           case RTH_VALUE_TYPE_HUMIDITY: {
-  
-            Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity(
-              connected_thermometer_value);
+            
+            if (second_source)
+              Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity2(
+                connected_thermometer_value);
+            else
+              Z2S_SNZB02DR2ThermHygroMeter->setSonoffExternalHumidity(
+                connected_thermometer_value);
           } break;
         }
       }

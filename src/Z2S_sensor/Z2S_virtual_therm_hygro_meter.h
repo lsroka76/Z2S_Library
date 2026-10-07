@@ -389,6 +389,22 @@ public:
 
 /*****************************************************************************/
 
+  void setSonoffExternalTemperature2(int16_t sonoff_external_temperature) {
+
+    _sonoff_external_temperature_2 = sonoff_external_temperature;
+    _last_resent_ms = 0;
+  }
+
+/*****************************************************************************/
+
+  void setSonoffExternalHumidity2(uint16_t sonoff_external_humidity) {
+
+    _sonoff_external_humidity_2 = sonoff_external_humidity;
+    _last_resent_ms = 0;
+  }
+
+/*****************************************************************************/
+
   void updateSNZB02DR2ExtValues() {
 
     if (!Zigbee.started())
@@ -405,22 +421,45 @@ public:
         uint8_t sonoff_buffer[64] = {};
         size_t payload_size = 0;
 
-        bool temp_ok = is_valid_temperature(_sonoff_external_temperature);
+        /*bool temp_ok = is_valid_temperature(_sonoff_external_temperature);
         bool humi_ok = is_valid_humidity(_sonoff_external_humidity);
 
-        if (temp_ok && humi_ok) {
+        bool temp2_ok = is_valid_temperature(_sonoff_external_temperature_2);
+        bool humi2_ok = is_valid_humidity(_sonoff_external_humidity_2);*/
+
+        uint32_t temperature_state_1 = SNZB_STATE_UNBOUND;
+        uint32_t temperature_state_2 = SNZB_STATE_UNBOUND;
+
+        uint32_t humidity_state_1 = SNZB_STATE_UNBOUND;
+        uint32_t humidity_state_2 = SNZB_STATE_UNBOUND;
+
+        if (is_valid_temperature(_sonoff_external_temperature))
+          temperature_state_1 = SNZB_STATE_ONLINE;
+
+        if (is_valid_temperature(_sonoff_external_temperature_2))
+          temperature_state_2 = SNZB_STATE_ONLINE;
+
+        if (is_valid_temperature(_sonoff_external_humidity))
+          humidity_state_1 = SNZB_STATE_ONLINE;
+
+        if (is_valid_temperature(_sonoff_external_humidity_2))
+          humidity_state_2 = SNZB_STATE_ONLINE;
+
+
+          
+
+        //if (temp_ok && humi_ok) {
 
           payload_size = build_snzb02dr2_payload_va(
-            sonoff_buffer, sizeof(sonoff_buffer), 2, SNZB_TYPE_TEMPERATURE, 
-            SNZB_SOURCE_1, SNZB_STATE_ONLINE, _sonoff_external_temperature, 
-            SNZB_TYPE_HUMIDITY, SNZB_SOURCE_1, SNZB_STATE_ONLINE, 
-            _sonoff_external_humidity);
-            //SNZB_TYPE_TEMPERATURE, SNZB_SOURCE_2,
-            //SNZB_STATE_UNBOUND, 0, SNZB_TYPE_HUMIDITY, SNZB_SOURCE_2, 
-            //SNZB_STATE_UNBOUND, 0);
+            sonoff_buffer, sizeof(sonoff_buffer), 4, SNZB_TYPE_TEMPERATURE, 
+            SNZB_SOURCE_1, temperature_state_1, _sonoff_external_temperature, 
+            SNZB_TYPE_HUMIDITY, SNZB_SOURCE_1, humidity_state_1, 
+            _sonoff_external_humidity, SNZB_TYPE_TEMPERATURE, SNZB_SOURCE_2,
+            temperature_state_2, 0, SNZB_TYPE_HUMIDITY, SNZB_SOURCE_2, 
+            humidity_state_2, 0);
             
-        }
-        else if (temp_ok) {
+        //}
+        /*else if (temp_ok) {
 
           payload_size = build_snzb02dr2_payload_va(
             sonoff_buffer, sizeof(sonoff_buffer), 1, SNZB_TYPE_TEMPERATURE, 
@@ -431,7 +470,7 @@ public:
           payload_size = build_snzb02dr2_payload_va(
             sonoff_buffer, sizeof(sonoff_buffer), 1, SNZB_TYPE_HUMIDITY, 
             SNZB_SOURCE_1, SNZB_STATE_ONLINE, _sonoff_external_humidity);
-        }
+        }*/
         
         if (payload_size) {
 
@@ -516,6 +555,9 @@ public:
 
   int16_t  _sonoff_external_temperature = INT16_MIN;
   uint16_t  _sonoff_external_humidity = UINT16_MAX;
+
+  int16_t  _sonoff_external_temperature_2 = INT16_MIN;
+  uint16_t  _sonoff_external_humidity_2 = UINT16_MAX;
 
   uint32_t  _last_resent_ms = 0;
 };

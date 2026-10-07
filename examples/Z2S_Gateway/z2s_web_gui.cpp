@@ -6866,6 +6866,14 @@ void getClustersAttributesQueryMain(int32_t custom_flag) {
 					&device, cluster_id, attribute_id, attribute_type, min_interval,
 					max_interval, delta_ptr, sync_cmd, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
 					1, manuf_specific, manuf_code);
+
+ 				/*uint8_t cr_payload[8] = {0x00, 0x00, 0x00, 0x10, 0x05, 0x00, 0x3c, 0x00};
+				esp_zb_lock_acquire(portMAX_DELAY);
+				bool result = zbGateway.sendAPSDEDataRequestCmd(
+					device.short_addr, 5, device.endpoint, cluster_id, 0x6, 8, 
+					cr_payload, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 0, 0, 0, true);
+				esp_zb_lock_release();*/
+					
 					
 				if (result) {
 					if (*zbGateway.getConfigReportStatusLastResult() == 
