@@ -79,8 +79,10 @@
 
 #define Z2S_TCP_CMD_SET_REMOTE_RELAY_OFF  0x00
 #define Z2S_TCP_CMD_SET_REMOTE_RELAY_ON   0x01
+
 #define Z2S_TCP_CMD_UPDATE_TEMPERATURE    0x10
 #define Z2S_TCP_CMD_UPDATE_HUMIDITY       0x11
+#define Z2S_TCP_CMD_UPDATE_PRESSURE       0x12
 
 alignas(8) static uint8_t custom_heap_buf[48 * 1024]; 
 static multi_heap_handle_t my_custom_heap = nullptr;
@@ -1130,13 +1132,13 @@ void loop() {
 
 
         case Z2S_TCP_CMD_UPDATE_TEMPERATURE:
-        case Z2S_TCP_CMD_UPDATE_HUMIDITY: {
+        case Z2S_TCP_CMD_UPDATE_HUMIDITY:
+        case Z2S_TCP_CMD_UPDATE_PRESSURE: {
 
           uint32_t src_channel = parse_uint(p + 5, 3);
           int32_t cmd_thermometer_value = parse_int (p + 8, 8);
 
-          auto value_type = (cmd_id == Z2S_TCP_CMD_UPDATE_TEMPERATURE) ? 
-            RTH_VALUE_TYPE_TEMPERATURE : RTH_VALUE_TYPE_HUMIDITY;
+          auto value_type = cmd_id - Z2S_TCP_CMD_UPDATE_TEMPERATURE + 1;
 
           log_i(
             "Z2S TCP sensor command id=%u src=%u dst=%u value=%ld", cmd_id,
@@ -2019,12 +2021,14 @@ void loop() {
           "Unknown model %s::%s, no binding is possible", 
           zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
           zbGateway.getQueryBasicClusterData()->zcl_model_name);
+        
         Z2S_printZbDevicesTableSlots();
-        uint8_t incomplete_device_slot = Z2S_findZbDeviceTableSlot(
-          joined_device->ieee_addr);
 
-        if (incomplete_device_slot < 0xFF)
-          Z2S_removeZbDevice(incomplete_device_slot, true);
+        log_i(
+          "Removing incomplete ZigBee device#%u", joined_device->zb_device_id);
+
+        Z2S_removeZbDevice(joined_device->zb_device_id, true);
+        
         Z2S_printZbDevicesTableSlots();
 
         if (Zigbee.started())

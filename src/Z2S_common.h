@@ -84,9 +84,10 @@
 #define REMOTE_ADDRESS_TYPE_IP4                                 0x01
 #define REMOTE_ADDRESS_TYPE_MDNS                                0x02
 
-
+#define RTH_VALUE_TYPE_NONE                                     0x00
 #define RTH_VALUE_TYPE_TEMPERATURE                              0x01
 #define RTH_VALUE_TYPE_HUMIDITY                                 0x02
+#define RTH_VALUE_TYPE_PRESSURE                                 0x03
 
 /*****************************************************************************/
 

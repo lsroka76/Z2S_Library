@@ -629,9 +629,6 @@ static constexpr char* clearFlagsLabelStyle PROGMEM =
 //
 
 static const char* myCustomJS = R"=====(
-function redirect2OTA() {
-	window.location.assign("/update");
-};
 
 function redirect2ZigbeeOTA() {
 	
@@ -765,40 +762,98 @@ function updateSelectOptions(targetSelects, optionsData, selectedValue = null, c
     // If it's a normal ESPUI message, pass it through completely untouched
     return data;
   };
-
   console.log("JSON.parse hook successfully installed!");
 
-document.addEventListener("mouseup", function(e){
-	console.log(e.target.getAttribute("id"));
-	console.log(e.target.id);
-
-	if(e.target.id == "btn51") {
-		console.log("btn51");
-		e.stopImmediatePropagation();
-    redirect2OTA();
+async function backupAndRedirectToOTA(buttonId, partitionLabel = "spiffs") {
+	
+  const btn = document.getElementById(buttonId);
+  const originalText = btn ? btn.innerText : "";
+  
+  if (btn) {
+    btn.innerText = "Downloading Backup... 0%";
+    btn.disabled = true; 
   }
-	if(e.target.id == "btn52") {
-		console.log("btn52");
-		e.stopImmediatePropagation();
-    redirect2ZigbeeOTA();
-  }
-});
-document.addEventListener("touchend", function(e){
 
-	console.log(e.target.getAttribute("id"));	
-	console.log(e.target.id);
+  try {
+    const response = await fetch(`/partition?label=${partitionLabel}`);
+    
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
 
-	if(e.target.id == "btn51") {
+    const contentLength = response.headers.get('content-length');
+    const total = contentLength ? parseInt(contentLength, 10) : 0;
+    
+    const reader = response.body.getReader();
+    const chunks = [];
+    let loaded = 0;
 
-		e.stopImmediatePropagation();
-    redirect2OTA();
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) break; // Download complete
+      
+      chunks.push(value);
+      loaded += value.length;
+      
+      if (total && btn) {
+        const percent = Math.round((loaded / total) * 100);
+        btn.innerText = `Downloading Backup... ${percent}%`;
+      }
+    }
+
+    const blob = new Blob(chunks, { type: 'application/octet-stream' });
+
+    if (btn) btn.innerText = "Saving...";
+
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = downloadUrl;
+    a.download = `${partitionLabel}_backup.bin`;
+    document.body.appendChild(a);
+    a.click();
+    
+    window.URL.revokeObjectURL(downloadUrl);
+    a.remove();
+
+    setTimeout(() => {
+      window.location.assign("/update");
+    }, 500);
+
+  } catch (error) {
+    console.error("Backup failed:", error);
+    alert(`Backup failed (${error.message}). Redirecting to OTA anyway...`);
+    
+    window.location.assign("/update"); 
+    
+    if (btn) {
+      btn.innerText = originalText;
+      btn.disabled = false;
+    }
   }
-	if(e.target.id == "btn52") {
-		console.log("btn52");
-		e.stopImmediatePropagation();
-    redirect2ZigbeeOTA();
+}
+
+function handleMenuClick(e) {
+  if (!e.target.id) return;
+
+  if (e.target.id === "btn51") {
+    //console.log("btn51 triggered");
+    e.stopImmediatePropagation();
+    backupAndRedirectToOTA("btn51", "spiffs"); 
   }
-});
+  
+  if (e.target.id === "btn52") {
+    //console.log("btn52 triggered");
+    e.stopImmediatePropagation();
+    redirect2ZigbeeOTA(); 
+  }
+}
+
+// Attach the same handler to both event types
+document.addEventListener("mouseup", handleMenuClick);
+document.addEventListener("touchend", handleMenuClick);
+
 )=====";
 
 static String working_str;
