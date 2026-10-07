@@ -798,7 +798,10 @@ async function downloadPartition(label, btn) {
   const a = document.createElement('a');
   a.style.display = 'none';
   a.href = downloadUrl;
-  a.download = `${label}_backup.bin`;
+  
+  const deviceName = window.location.hostname.replace('.local', '');
+  a.download = `${deviceName}_${label}_backup.bin`;
+  
   document.body.appendChild(a);
   a.click();
   
@@ -854,6 +857,7 @@ function handleMenuClick(e) {
 
 document.addEventListener("mouseup", handleMenuClick);
 document.addEventListener("touchend", handleMenuClick);
+
 )=====";
 
 static String working_str;
