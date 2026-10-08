@@ -58,12 +58,18 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
 
 
           case botr9v_cmd_set:
-          case hy_cmd_set:
+          //case hy_cmd_set:
 
             //_schedule_trv_temperature_setpoint_magic_number = 550;
             _ready_to_send = false;
             _init_sequence = 0;
           break;
+
+
+			case hy_cmd_set:
+				
+			  _init_sequence = 0;
+			break;
 
 
           default:
