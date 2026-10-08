@@ -7387,6 +7387,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_230W,
     .z2s_device_endpoints_count = 1},
 
+ { .manufacturer_name = "_TZE204_ca3i8m8p", .model_name = "TS0601",
+    .z2s_device_uid = 37505,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_230W,
+    .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "3A Smart Home DE", .model_name = "LXN59-2S7LX1.0",
     .z2s_device_uid = 37600,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
