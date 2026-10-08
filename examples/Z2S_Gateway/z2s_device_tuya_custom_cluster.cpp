@@ -3500,6 +3500,7 @@ void processTuyaDataReport(
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2:
     case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4:
+    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_5:
 
       processTuyaTempHumiditySensorDataReport(
         short_addr, endpoint, payload_size, payload, 1); 
