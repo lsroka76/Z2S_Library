@@ -520,6 +520,9 @@
 #define IKEA_AIR_QUALITY_SENSOR_PM25_SID                    0x01
 #define IKEA_AIR_QUALITY_SENSOR_VOC_SID                     0x02
 
+#define SONOFF_THP_SENSOR_TEMPHUMIDITY_SID                  0x00
+#define SONOFF_THP_SENSOR_PRESSURE_SID                      0x01
+
 #define TUYA_RAIN_SENSOR_RAIN_SID                           0x00
 //#define TUYA_RAIN_SENSOR_RAIN_SID                           0x01
 #define TUYA_RAIN_SENSOR_ILLUMINANCE_SID                    0x02

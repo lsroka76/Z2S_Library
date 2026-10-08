@@ -2615,7 +2615,8 @@ void Z2S_onPressureReceive(
 
 
     //ESP_ZB_ZCL_ATTR_TYPE_S16
-    case ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID: {
+    case ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID:
+    case 0x0004: {
 
   
       float pressure = readAttr<int16_t>(attribute);
@@ -2651,6 +2652,12 @@ void Z2S_onPressureReceive(
         case Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION:
 
           sub_id = SHELLY_WS90_WEATHER_STATION_PRESSURE_SID;
+        break;
+
+
+        case Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR:
+
+          sub_id = SONOFF_THP_SENSOR_PRESSURE_SID;
         break;
       }
 
@@ -7234,8 +7241,7 @@ uint8_t Z2S_addZ2SDevice(
 
       case Z2S_DEVICE_DESC_TEMPHUMIPRESSURE_SENSOR: 
       case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR:
-      case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2:
-      case Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR: {
+      case Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2: {
 
         addZ2SDeviceTempHumidity(
           device, first_free_slot, sub_id, name, func);
@@ -7250,6 +7256,27 @@ uint8_t Z2S_addZ2SDevice(
         //addZ2SDevicePressure(device, first_free_slot); 
         addZ2SDeviceGeneralPurposeMeasurement(
           device, first_free_slot, NO_CUSTOM_CMD_SID, "PRESSURE", 
+          SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kPa"); 
+      } break;
+
+/*****************************************************************************/
+
+      case Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR: {
+
+        addZ2SDeviceTempHumidity(
+          device, first_free_slot, SONOFF_THP_SENSOR_TEMPHUMIDITY_SID, name, 
+          func);
+        
+        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+        if (first_free_slot == 0xFF) {
+          
+          devices_table_full_error_func();
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+
+        //addZ2SDevicePressure(device, first_free_slot); 
+        addZ2SDeviceGeneralPurposeMeasurement(
+          device, first_free_slot, SONOFF_THP_SENSOR_PRESSURE_SID, "PRESSURE", 
           SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kPa"); 
       } break;
 
