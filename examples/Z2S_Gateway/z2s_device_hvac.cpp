@@ -123,6 +123,12 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id) {
     } break;
 
 
+    case Z2S_DEVICE_DESC_TS0601_EONE_E40: {
+
+      return e40_cmd_set;
+    } break;
+
+
     case Z2S_DEVICE_DESC_TS0601_HY08WE: {
 
       return hy_cmd_set;
