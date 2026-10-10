@@ -1,10 +1,15 @@
 /*****************************************************************************/
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #include <ArduinoJson.h>
 #include <esp_ota_ops.h>
+
+#include <SuplaDevice.h>
 
 #include "z2s_version_info.h"
 
@@ -15,6 +20,10 @@ const char* GITHUB_API_URL = "https://api.github.com/repos/lsroka76/"
 
 const char* firmwareUrl = "https://github.com/lsroka76/Z2S_Library/"
 "releases/latest/download/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin";
+
+/*****************************************************************************/
+
+TaskHandle_t otaTaskHandle = NULL;
 
 /*****************************************************************************/
 
@@ -140,12 +149,23 @@ bool checkGitHubForUpdate() {
 
 /*****************************************************************************/
 
-void performGitHubOTA() {
+void performBackgroundGitHubOta(void *pvParameters) {
 
   WiFiClientSecure client;
   client.setInsecure(); 
 
   httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+
+  httpUpdate.onProgress([](size_t current, size_t total) {
+        
+    size_t currentOtaProgress = (current * 100) / total;
+        
+    if (currentOtaProgress % 10 == 0) {
+
+      log_i("OTA Progress: %d%%\n", currentOtaProgress);
+
+    }
+  });
 
   log_i("Starting OTA from GitHub...");
   
@@ -171,9 +191,35 @@ void performGitHubOTA() {
     case HTTP_UPDATE_OK:
         
       log_i("OTA Successful. Rebooting...");
-      ESP.restart();
+      SuplaDevice.scheduleSoftRestart(1000);
     break;
   }
+
+  log_i("OTA Task finished. Deleting thread.");
+  otaTaskHandle = NULL;
+  vTaskDelete(NULL);  
 }
 
 /*****************************************************************************/
+
+void startBackgroundGitHubOtaTask() {
+
+  if (otaTaskHandle == NULL) {
+            
+    if (isHardwareCapableOfOta()) {
+                
+      xTaskCreate(
+        performBackgroundGitHubOta, "GitHub_OTA", 8192, NULL, 1, 
+        &otaTaskHandle);
+                
+    } 
+    else {
+      
+      log_e("Aborting OTA due to hardware limits.");
+    }
+  } 
+  else {
+    
+    log_i("OTA is already running in the background!");
+  }
+}

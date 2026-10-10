@@ -433,10 +433,10 @@ public:
         if (is_valid_temperature(_sonoff_external_temperature_2))
           temperature_state_2 = SNZB_STATE_ONLINE;
 
-        if (is_valid_temperature(_sonoff_external_humidity))
+        if (is_valid_humidity(_sonoff_external_humidity))
           humidity_state_1 = SNZB_STATE_ONLINE;
 
-        if (is_valid_temperature(_sonoff_external_humidity_2))
+        if (is_valid_humidity(_sonoff_external_humidity_2))
           humidity_state_2 = SNZB_STATE_ONLINE;
 
         payload_size = build_snzb02dr2_payload_va(
