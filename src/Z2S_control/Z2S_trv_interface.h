@@ -1699,7 +1699,7 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
     .ts0601_cmd_set_running_state_dp_id              =  0x03,
     .ts0601_cmd_set_running_state_dp_type            =  TUYA_DP_TYPE_ENUM,
-    .ts0601_cmd_set_running_state_dp_value_idle      =  0x04, 
+    .ts0601_cmd_set_running_state_dp_value_idle      =  0x00, 
     .ts0601_cmd_set_running_state_dp_value_heat      =  0x02,
 
     .ts0601_cmd_set_schedule_mode_dp_id              =  0x3A,
