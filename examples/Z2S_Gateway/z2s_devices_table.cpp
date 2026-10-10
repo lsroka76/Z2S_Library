@@ -2620,6 +2620,9 @@ void Z2S_onPressureReceive(
 
   
       float pressure = readAttr<int16_t>(attribute);
+
+      if (attribute->id == 0x0004)
+        pressure = readAttr<int32_t>(attribute);
   
       log_i(
         "0x%04X, endpoint 0x%x, pressure %f", short_addr, endpoint, pressure);
