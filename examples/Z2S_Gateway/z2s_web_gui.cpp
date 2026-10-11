@@ -69,6 +69,8 @@ uint16_t auto_connection_reset_timeout_number;
 uint16_t gateway_mdns_name_text;
 //uint16_t rebuild_Supla_channels_switcher;
 uint16_t use_new_at_model_switcher;
+uint16_t github_ota_button;
+uint16_t github_ota_info_label;
 
 uint16_t wifi_ssid_text;
 uint16_t wifi_pass_text;
@@ -414,6 +416,8 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 #define GUI_CB_REBUILD_CHANNELS_FLAG							0x0105
 #define GUI_CB_USE_NEW_AT_FLAG										0x0106
 #define GUI_CB_GUI_RESTART_FLAG										0x0107
+#define GUI_CB_GUI_CHECK_GITHUB_OTA_FLAG					0x0108
+#define GUI_CB_GUI_PERFORM_GITHUB_OTA_FLAG				0x0109
 
 #define GUI_CB_SAVE_FLAG													0x1000
 #define GUI_CB_RESTART_FLAG												0x1001
@@ -635,6 +639,38 @@ function redirect2ZigbeeOTA() {
 	window.location.assign("/zigbee_ota");
 };
 
+// This function catches all "CMD_" payloads from controls.js
+window.onGatewayCommand = function(command, labelId) {
+    
+		console.log("Received gateway command:", command);
+
+    switch (command) {
+        
+				case "Z2S_GUI_CMD_START_BACKUP":
+            
+            $("#l" + labelId).html("Downloading...");
+            
+            (async () => {
+                await downloadPartition("nvs", null);
+                await downloadPartition("spiffs", null);
+                await downloadPartition("zb_storage", null);
+                
+            })();
+            break;
+
+        case "Z2S_GUI_CMD_UI_LOCKDOWN":
+            
+            console.log("Locking UI for critical OTA...");
+            document.body.style.pointerEvents = "none";
+            document.body.style.opacity = "0.5";
+            break;
+
+        default:
+            console.warn("Unknown command received:", command);
+            break;
+    }
+};
+
 /**
  * Populates one or multiple <select> elements with options and preselects a given option.
  * 
@@ -841,22 +877,57 @@ async function backupAndRedirectToOTA(buttonId) {
   }
 }
 
-function handleMenuClick(e) {
-  if (!e.target.id) return;
-
-  if (e.target.id === "btn51") {
-    e.stopImmediatePropagation();
-    backupAndRedirectToOTA("btn51"); 
-  }
+async function backupAndContinue(buttonId) {
   
-  if (e.target.id === "btn52") {
-    e.stopImmediatePropagation();
-    redirect2ZigbeeOTA(); 
+	const btn = document.getElementById(buttonId);
+  const originalText = btn ? btn.innerText : "";
+  
+  if (btn) btn.disabled = true; 
+
+  await downloadPartition("nvs", btn);
+  await downloadPartition("spiffs", btn);
+  await downloadPartition("zb_storage", btn);
+  
+  
+  if (btn) {
+    btn.innerText = originalText;
+    btn.disabled = false;
   }
+
+	const numericId = buttonId.replace("btn", "");
+
+  websock.send("bdown:" + numericId);
+  
+  setTimeout(() => {
+      websock.send("bup:" + numericId);
+  }, 50);
 }
 
-document.addEventListener("mouseup", handleMenuClick);
-document.addEventListener("touchend", handleMenuClick);
+const originalButtonClick = window.buttonclick;
+
+window.buttonclick = function(number, isdown) {
+  
+  if (number == 55) {
+    if (isdown) return;
+    
+    backupAndContinue("btn55");
+    return; 
+  }
+
+  if (number == 51) {
+    if (isdown) return;
+    backupAndRedirectToOTA("btn51");
+    return;
+  }
+
+  if (number == 52) {
+    if (isdown) return;
+    redirect2ZigbeeOTA();
+    return;
+  }
+
+  originalButtonClick(number, isdown);
+};
 
 )=====";
 
@@ -1631,13 +1702,30 @@ void buildGatewayTabGUI() {
 		Control::Color::Dark, gatewaytab, gatewayCallback, 
 		(void*)GUI_CB_GUI_RESTART_FLAG);
 
-	auto test_button = ESPUI.addControl(
+	auto web_ota_button = ESPUI.addControl(
 		Control::Type::Button, empty_str, "Gateway firmware update", 
 		Control::Color::Dark, gatewaytab);
 
 	auto upload_zigbee_ota_file_button = ESPUI.addControl(
 		Control::Type::Button, empty_str, "Upload Zigbee OTA file", 
-		Control::Color::Alizarin, test_button);
+		Control::Color::Alizarin, web_ota_button);
+
+	addEmptyLineLabel(web_ota_button);
+
+	ESPUI.addControl(
+		Control::Type::Button, empty_str, "Check GitHub gateway firmware version", 
+		Control::Color::Dark, web_ota_button, gatewayCallback, 
+		(void*)GUI_CB_GUI_CHECK_GITHUB_OTA_FLAG);
+
+	github_ota_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, "GitHub gateway firmware update", 
+		Control::Color::Dark, web_ota_button, gatewayCallback, 
+		(void*)GUI_CB_GUI_PERFORM_GITHUB_OTA_FLAG);
+
+	github_ota_info_label = ESPUI.addControl(
+		Control::Type::Label, "", emptyString, 
+		Control::Color::Dark, web_ota_button); 
+	ESPUI.getControl(github_ota_info_label)->reserve(60);
 
 	//ESPUI.updateNumber(enable_gui_switcher, _enable_gui_on_start);
 	working_str = _enable_gui_on_start;
@@ -1651,6 +1739,7 @@ void buildGatewayTabGUI() {
 	//ESPUI.updateNumber(
 	//	rebuild_Supla_channels_switcher, _rebuild_Supla_channels_on_start);
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
+	enableControlStyle(github_ota_button, false);
 }
 
 /*****************************************************************************/
@@ -5059,6 +5148,29 @@ void clusterCallbackCmd() {
 
 /*****************************************************************************/
 
+static int16_t previousOtaProgress = -1;
+
+void guiGitHubOtaProgress(size_t current, size_t total) {
+
+	size_t currentOtaProgress = (current * 100) / total;
+        
+	if ((currentOtaProgress % 10 == 0) && 
+			(currentOtaProgress != previousOtaProgress)) {
+		
+		previousOtaProgress = currentOtaProgress;
+
+		char ota_info_buffer[64];
+
+		sprintf(ota_info_buffer, "GitHub OTA progress %u %%", currentOtaProgress);
+
+		working_str = ota_info_buffer;
+
+		ESPUI.updateLabel(github_ota_info_label, working_str);
+	}
+}
+
+/*****************************************************************************/
+
 void Z2S_loopWebGUI() {
 
 	if (new_connect) {
@@ -5089,6 +5201,25 @@ void Z2S_loopWebGUI() {
 					gui_commands_queue, &pending_gui_command, 0) == pdTRUE) {
 	
 		switch (pending_gui_command->gui_command) {
+
+			
+			case gui_cmd_check_github_ota: {
+
+				char response_buffer[128];
+
+				if (checkGitHubForUpdate(response_buffer, sizeof(response_buffer))) 
+					enableControlStyle(github_ota_button, true);
+
+				working_str = response_buffer;
+				ESPUI.updateLabel(github_ota_info_label, working_str);
+			} break;
+
+
+			case gui_cmd_perform_github_ota: {
+
+				startBackgroundGitHubOtaTask(guiGitHubOtaProgress);
+			} break;
+			
 
 			case gui_cmd_sort_channels_selectors: {
 
@@ -8556,6 +8687,20 @@ void gatewayCallback(BasicControl *sender, int type, void *param) {
 
 			SuplaDevice.softRestart();
 		} break;
+
+
+		case GUI_CB_GUI_CHECK_GITHUB_OTA_FLAG:
+
+			if (type == B_UP)
+				addGUICommand(gui_cmd_check_github_ota);
+		break;
+
+
+		case GUI_CB_GUI_PERFORM_GITHUB_OTA_FLAG:
+
+			if (type == B_UP)
+				addGUICommand(gui_cmd_perform_github_ota);
+		break;
 	}
 }
 

@@ -55,6 +55,8 @@ typedef enum gui_modes {
 enum gui_commands {
 
   gui_cmd_none,
+  gui_cmd_check_github_ota,
+  gui_cmd_perform_github_ota,
   gui_cmd_sort_channels_selectors,
   gui_cmd_sort_zbdevices_selectors,
   gui_cmd_sort_zbdevices_and_channels_selectors,
