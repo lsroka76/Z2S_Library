@@ -5163,16 +5163,45 @@ static int16_t previousOtaProgress = -1;
 
 void guiGitHubOtaProgress(size_t current, size_t total) {
 
+	if (total == 0) {
+
+		switch (current) {
+
+
+			case 0: {
+
+				working_str = "OTA Successful. Rebooting...";
+				ESPUI.updateLabel(github_ota_info_label, working_str);
+			} break;
+
+
+			case 1: {
+
+				working_str = "Starting OTA from GitHub...";
+				ESPUI.updateLabel(github_ota_info_label, working_str);
+			} break;
+
+
+			case 2: {
+
+				working_str = "GitHub OTA failed - check logs for error code!";
+				ESPUI.updateLabel(github_ota_info_label, working_str);
+			} break;
+		}
+		return;
+	}
+	
 	size_t currentOtaProgress = (current * 100) / total;
         
-	if ((currentOtaProgress % 10 == 0) && 
+	if ((currentOtaProgress % 5 == 0) && 
 			(currentOtaProgress != previousOtaProgress)) {
 		
 		previousOtaProgress = currentOtaProgress;
 
 		char ota_info_buffer[64];
 
-		sprintf(ota_info_buffer, "GitHub OTA progress %u %%", currentOtaProgress);
+		sprintf(
+			ota_info_buffer, "GitHub OTA progress %02u %%", currentOtaProgress);
 
 		working_str = ota_info_buffer;
 

@@ -217,25 +217,33 @@ void performBackgroundGitHubOta(void *pvParameters) {
         
       if (currentOtaProgress % 10 == 0) {
 
-        log_i("OTA Progress: %d%%\n", currentOtaProgress);
+        log_i("OTA Progress: %02d %%", currentOtaProgress);
 
       }
     });
   }
 
   log_i("Starting OTA from GitHub...");
+
+  if (activeOtaProgressCb) 
+    activeOtaProgressCb(1, 0);
   
+  httpUpdate.rebootOnUpdate(false); 
+
   t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
 
   switch (ret) {
 
 
-    case HTTP_UPDATE_FAILED:
+    case HTTP_UPDATE_FAILED: {
         
+      if (activeOtaProgressCb) 
+        activeOtaProgressCb(2, 0);
+      
       log_e(
         "OTA Failed. Error (%d): %s", httpUpdate.getLastError(), 
         httpUpdate.getLastErrorString().c_str());
-    break;
+    } break;
 
 
     case HTTP_UPDATE_NO_UPDATES:
@@ -244,11 +252,15 @@ void performBackgroundGitHubOta(void *pvParameters) {
     break;
     
     
-    case HTTP_UPDATE_OK:
+    case HTTP_UPDATE_OK: {
         
+      if (activeOtaProgressCb) 
+        activeOtaProgressCb(0, 0);
+
       log_i("OTA Successful. Rebooting...");
+      
       SuplaDevice.scheduleSoftRestart(1000);
-    break;
+    } break;
   }
 
   log_i("OTA Task finished. Deleting thread.");
