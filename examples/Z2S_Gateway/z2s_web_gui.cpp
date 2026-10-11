@@ -669,6 +669,12 @@ window.onGatewayCommand = function(command, labelId) {
             document.body.style.opacity = "0.5";
             break;
 
+				case "CMD_UI_UNLOCK":
+            console.log("Unlocking UI...");
+            document.body.style.pointerEvents = "auto"; 
+            document.body.style.opacity = "1";     
+          	break;
+
         default:
             console.warn("Unknown command received:", command);
             break;
@@ -5170,6 +5176,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 
 			case 0: {
 
+				rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
 				working_str = "OTA Successful. Rebooting...";
 				ESPUI.updateLabel(github_ota_info_label, working_str);
 			} break;
@@ -5177,6 +5184,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 
 			case 1: {
 
+				rgbLedWrite(RGB_BUILTIN, 255, 0, 255);
 				working_str = "Starting OTA from GitHub...";
 				ESPUI.updateLabel(github_ota_info_label, working_str);
 			} break;
@@ -5184,6 +5192,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 
 			case 2: {
 
+				rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
 				working_str = "GitHub OTA failed - check logs for error code!";
 				ESPUI.updateLabel(github_ota_info_label, working_str);
 			} break;
