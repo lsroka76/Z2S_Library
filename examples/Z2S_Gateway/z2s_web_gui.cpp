@@ -60,6 +60,10 @@ static volatile uint16_t max_Tuya_datapoints_selector_options =
 
 
 //UI handles
+
+uint16_t gui_cmd_hidden_label;
+uint16_t gui_cmd_hidden_response_button;
+
 uint16_t gateway_general_info;
 uint16_t gateway_memory_info;
 uint16_t enable_gui_switcher;
@@ -907,20 +911,20 @@ const originalButtonClick = window.buttonclick;
 
 window.buttonclick = function(number, isdown) {
   
-  if (number == 55) {
+  if (number == 57) {
     if (isdown) return;
     
-    backupAndContinue("btn55");
+    backupAndContinue("btn57");
     return; 
   }
 
-  if (number == 51) {
+  if (number == 53) {
     if (isdown) return;
-    backupAndRedirectToOTA("btn51");
+    backupAndRedirectToOTA("btn53");
     return;
   }
 
-  if (number == 52) {
+  if (number == 54) {
     if (isdown) return;
     redirect2ZigbeeOTA();
     return;
@@ -1523,9 +1527,23 @@ void buildGatewayTabGUI() {
 
 	char general_purpose_gui_buffer[768] = {};
 
-	char *working_str_ptr = "Gateway";
+	gui_cmd_hidden_label = ESPUI.addControl(
+		Control::Type::Label, empty_str, empty_str,Control::Color::Dark,
+		Control::noParent);
+
+	gui_cmd_hidden_response_button = ESPUI.addControl(
+		Control::Type::Button, empty_str, empty_str,Control::Color::Dark,
+		Control::noParent);
+
+	log_i(
+		"gui_cmd_hidden_label = %u, gui_cmd_hidden_response_button = %u", 
+		gui_cmd_hidden_label, gui_cmd_hidden_response_button);
+
+	ESPUI.updateVisibility(gui_cmd_hidden_label, false);
+	ESPUI.updateVisibility(gui_cmd_hidden_response_button, false);
+
 	auto gatewaytab = ESPUI.addControl(
-		Control::Type::Tab, empty_str, working_str_ptr, Control::Color::Dark,
+		Control::Type::Tab, empty_str, "Gateway", Control::Color::Dark,
 		Control::noParent, generalCallback);
 
 	ESPUI.addControl(
@@ -1623,32 +1641,28 @@ void buildGatewayTabGUI() {
 		(long int)0,
 		Control::Color::Dark, gatewaytab, generalMinMaxCallback, (void*)3600);
 
-	working_str_ptr = "Save";
 	auto auto_connection_reset_timeout_save_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, working_str_ptr, 
-		Control::Color::Dark, auto_connection_reset_timeout_number, 
-		gatewayCallback, (void*)GUI_CB_ACR_TIMEOUT_FLAG);
+		Control::Type::Button, empty_str, "Save", Control::Color::Dark, 
+		auto_connection_reset_timeout_number, gatewayCallback, 
+		(void*)GUI_CB_ACR_TIMEOUT_FLAG);
 
 	addClearLabel(
 		"Setting this value to 0 s disables automatic connection reset.", 
 		auto_connection_reset_timeout_number);
 
-	//working_str = empty_str;
 	gateway_mdns_name_text = ESPUI.addControl(
 		Control::Type::Text, "Gateway local mDNS name", emptyString, 
 		Control::Color::Dark, gatewaytab, generalCallback);
 	ESPUI.getControl(gateway_mdns_name_text)->reserve(12);
 
-	working_str_ptr = "Save";
 	auto gateway_mdns_name_save_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, working_str_ptr, 
-		Control::Color::Dark, gateway_mdns_name_text, gatewayCallback, 
+		Control::Type::Button, empty_str, "Save", Control::Color::Dark, 
+		gateway_mdns_name_text, gatewayCallback, 
 		(void*)GUI_CB_SAVE_MDNS_NAME_FLAG);
 
-	working_str_ptr = "(max. 11 characters, no spaces!!!)";
 	ESPUI.setElementStyle(
 		ESPUI.addControl(
-			Control::Type::Label, empty_str, working_str_ptr, 
+			Control::Type::Label, empty_str, "(max. 11 characters, no spaces!!!)", 
 			Control::Color::None, gateway_mdns_name_text), 
 		clearLabelStyle);
 
@@ -1685,22 +1699,19 @@ void buildGatewayTabGUI() {
 		(long int)0, Control::Color::Dark, gatewaytab, gatewayCallback,
 		(void*)GUI_CB_USE_NEW_AT_FLAG);
 
-	working_str_ptr = 
-		"New smart buttons will add as AT with Cloud and local actions";
 
 	ESPUI.setElementStyle(
 		ESPUI.addControl(
-			Control::Type::Label, empty_str, working_str_ptr, 
+			Control::Type::Label, empty_str, 
+			"New smart buttons will add as AT with Cloud and local actions", 
 			Control::Color::None, use_new_at_model_switcher), 
 		clearLabelStyle);
 
 	/**/
 
-	working_str_ptr = "Restart gateway";
 	save_button = ESPUI.addControl(
-		Control::Type::Button, empty_str, working_str_ptr, 
-		Control::Color::Dark, gatewaytab, gatewayCallback, 
-		(void*)GUI_CB_GUI_RESTART_FLAG);
+		Control::Type::Button, empty_str, "Restart gateway", Control::Color::Dark,
+		gatewaytab, gatewayCallback, (void*)GUI_CB_GUI_RESTART_FLAG);
 
 	auto web_ota_button = ESPUI.addControl(
 		Control::Type::Button, empty_str, "Gateway firmware update", 
