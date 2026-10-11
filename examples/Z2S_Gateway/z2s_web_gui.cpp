@@ -3926,7 +3926,7 @@ static bool appendToBuffer(
 
   va_list args;
   va_start(args, format);
-  size_t written = vsnprintf(buf + offset, bufSize - offset, format, args);
+  int32_t written = vsnprintf(buf + offset, bufSize - offset, format, args);
   va_end(args);
 
   if (written < 0 || (written >= (bufSize - offset)))
@@ -3981,6 +3981,50 @@ inline void extractSelectorIds(
 
 /*****************************************************************************/
 
+static bool appendEscapedJsonString(
+  char* buf, size_t bufSize, size_t& offset, const char* str) {
+    
+  if (!str) return true; 
+
+  while (*str) {
+
+  	if (offset + 2 >= bufSize) {
+            
+			return false;
+    }
+
+    if (*str == '"' || *str == '\\') {
+            
+			buf[offset++] = '\\';
+      buf[offset++] = *str;
+    } 
+		else if (*str == '\n') {
+            
+			buf[offset++] = '\\';
+      buf[offset++] = 'n';
+    } 
+		else if (*str == '\r') {
+            
+			buf[offset++] = '\\';
+      buf[offset++] = 'r';
+    } 
+		else if (*str == '\t') {
+            
+			buf[offset++] = '\\';
+    	buf[offset++] = 't';
+    } 
+		else {
+    	buf[offset++] = *str;
+    }
+    str++;
+  }
+    
+  buf[offset] = '\0'; 
+  return true;
+}
+
+/*****************************************************************************/
+
 template <typename YieldFunc>
 
 bool buildSelectJsonPayloadGeneric(
@@ -4026,8 +4070,17 @@ bool buildSelectJsonPayloadGeneric(
     }
 
     if (!appendToBuffer(
-					json_payload, json_payload_size, offset, "[\"%ld\",\"%s\"],", id, 
-					name)) {
+          json_payload, json_payload_size, offset, "[\"%ld\",\"", (long)id)) {
+      return false;
+    }
+
+    if (!appendEscapedJsonString(
+        	json_payload, json_payload_size, offset, name ? name : "")) {
+      return false;
+    }
+
+    if (!appendToBuffer(
+          json_payload, json_payload_size, offset, "\"],")) {
       return false;
     }
 
