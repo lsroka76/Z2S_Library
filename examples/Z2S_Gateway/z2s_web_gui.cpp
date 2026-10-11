@@ -3168,6 +3168,8 @@ void enableTuyaGasDetectorGUI(bool enable) {
 	enableControlStyle(gas_alarm_silence_button, enable);
 }
 
+/*****************************************************************************/
+
 void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
 
 	static const char ringtones[][9] PROGMEM = {
@@ -3230,6 +3232,8 @@ void buildTuyaGasDetectorGUI(uint16_t advanced_devices_tab) {
 		Control::Color::Dark, gas_alarm_ringtone_selector);
 }
 
+/*****************************************************************************/
+
 void enableMoesAlarmGUI(bool enable) {
 
 	ESPUI.updateSelect(moes_alarm_melody_selector, -1);
@@ -3246,6 +3250,8 @@ void enableMoesAlarmGUI(bool enable) {
 	enableControlStyle(moes_alarm_duration_button, enable);
 	enableControlStyle(moes_alarm_volume_button, enable);
 }
+
+/*****************************************************************************/
 
 void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 
@@ -3315,6 +3321,8 @@ void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 		Control::Color::Dark, moes_alarm_melody_selector);
 }
 
+/*****************************************************************************/
+
 void enableTuyaDevicesControls(bool enable) {
 
 	if (enable == (controls_enabled_flags & TUYA_DEVICES_ENABLED_FLAG))
@@ -3332,12 +3340,16 @@ void enableTuyaDevicesControls(bool enable) {
 					 controls_enabled_flags &= ~TUYA_DEVICES_ENABLED_FLAG;
 }
 
+/*****************************************************************************/
+
 void rebuildTuyaDevicesDatapointsList(uint8_t Tuya_device_slot) {
 
 	ESPUI.updateControlValue(
 		Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector], -1);
 										
 }
+
+/*****************************************************************************/
 
 void buildTuyaCustomClusterTabGUI() {
 
@@ -4666,6 +4678,7 @@ void Z2S_initWebGUI() {
 	clusters_attributes_table[device_attribute_value_selector] = 0xFFFF;
 
 	Tuya_devices_tab_controls_table[Tuya_device_selector] = 0xFFFF;
+	Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector] = 0xFFFF;
 }
 
 
@@ -5263,7 +5276,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 		char ota_info_buffer[64];
 
 		sprintf(
-			ota_info_buffer, "GitHub OTA progress %02u %%", currentOtaProgress);
+			ota_info_buffer, "GitHub OTA progress: %02u%%", currentOtaProgress);
 
 		working_str = ota_info_buffer;
 

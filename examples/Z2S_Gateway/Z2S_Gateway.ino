@@ -736,7 +736,7 @@ void setup() {
   }
   else {
 
-    void Z2S_initWebGUI();
+    Z2S_initWebGUI();
 
     if (Z2S_loadZbDevicesTable()) {
 
