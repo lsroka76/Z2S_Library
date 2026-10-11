@@ -15,7 +15,7 @@
 
 /*****************************************************************************/
 
-const char* GITHUB_API_URL = "https://api.github.com/repos/lsroka76/"
+const char *GITHUB_API_URL = "https://api.github.com/repos/lsroka76/"
 "Z2S_Library/releases/latest";
 
 const char* firmwareUrl = "https://github.com/lsroka76/Z2S_Library/"
@@ -99,10 +99,22 @@ bool isHardwareCapableOfOta() {
 
 /*****************************************************************************/
 
-bool checkGitHubForUpdate() {
+static const char *parse_github_ota_version_no_tag_value_error = "Parse "
+  "error: Found tag_name but no value.";
+
+static const char *parse_github_ota_version_no_tag_name_error = "Parse error:"
+  " tag_name not found in stream.";
+
+static const char *parse_github_ota_version_api_error = "GitHub API failed "
+  "with HTTP Code:";
+
+/*****************************************************************************/
+
+bool checkGitHubForUpdate(char *response_buffer, size_t response_buffer_size) {
 
   WiFiClientSecure client;
   client.setInsecure(); 
+  client.setTimeout(5); 
 
   HTTPClient http;
   http.begin(client, GITHUB_API_URL);
@@ -112,38 +124,73 @@ bool checkGitHubForUpdate() {
   bool updateAvailable = false;
 
   if (httpCode == HTTP_CODE_OK) {
-    
-    JsonDocument filter;
-    filter["tag_name"] = true;
         
-    JsonDocument doc;
-    DeserializationError error = deserializeJson(
-      doc, http.getStream(), DeserializationOption::Filter(filter));
-
-    if (!error) {
+    Stream& stream = http.getStream();
+    stream.setTimeout(5000); 
+        
+    
+    if (stream.find("\"tag_name\"")) {
             
-      const char* latestTag = doc["tag_name"].as<const char*>();
-            
-      log_i("Current: %s | Latest: %s\n", Z2S_VERSION, latestTag);
-            
-      if (isVersionNewer(Z2S_VERSION, latestTag)) {
+      if (stream.find("\"")) {
                 
-        log_i("New firmware release detected.");
-            
-        updateAvailable = true;
+        char latestTag[32] = {0}; 
+        size_t len = stream.readBytesUntil(
+          '"', latestTag, sizeof(latestTag) - 1);
+        latestTag[len] = '\0';
+                
+        log_i("Current: %s | Latest: %s", Z2S_VERSION, latestTag);
+                
+        if (isVersionNewer(Z2S_VERSION, latestTag)) {
+
+          if (response_buffer)
+          snprintf(
+            response_buffer, response_buffer_size, "New GitHub firmware "
+            "found:<br>current: %s | latest: %s", Z2S_VERSION, latestTag);
+
+          
+          log_i("New firmware release found!");
+          updateAvailable = true;
+        }
+        else {
+
+          if (response_buffer)
+          snprintf(
+            response_buffer, response_buffer_size, "No new GitHub firmware"
+            " found!");
+        }
+      } 
+      else {
+        
+        if (response_buffer)
+          snprintf(
+            response_buffer, response_buffer_size, 
+            parse_github_ota_version_no_tag_value_error);
+
+        log_e("%s", parse_github_ota_version_no_tag_value_error);
       }
     } 
     else {
 
-      log_e("JSON parse failed: %s\n", error.c_str());
+      if (response_buffer)
+          snprintf(
+            response_buffer, response_buffer_size, 
+            parse_github_ota_version_no_tag_name_error);
+            
+      log_e("%s", parse_github_ota_version_no_tag_name_error);
     }
   } 
   else {
-        
-    log_e("GitHub API failed with HTTP Code: %d\n", httpCode);
+    
+    if (response_buffer)
+          snprintf(
+            response_buffer, response_buffer_size, 
+            parse_github_ota_version_api_error, httpCode);
+
+    log_e("GitHub API failed with HTTP Code: %d", httpCode);
   }
     
-  http.end();
+  http.end(); 
+    
   return updateAvailable;
 }
 
@@ -156,16 +203,25 @@ void performBackgroundGitHubOta(void *pvParameters) {
 
   httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
 
-  httpUpdate.onProgress([](size_t current, size_t total) {
-        
-    size_t currentOtaProgress = (current * 100) / total;
-        
-    if (currentOtaProgress % 10 == 0) {
+  otaProgressCallback activeOtaProgressCb = (otaProgressCallback)pvParameters;
 
-      log_i("OTA Progress: %d%%\n", currentOtaProgress);
+  if (activeOtaProgressCb) {
 
-    }
-  });
+    httpUpdate.onProgress(activeOtaProgressCb);
+  } 
+  else {
+
+    httpUpdate.onProgress([](size_t current, size_t total) {
+        
+      size_t currentOtaProgress = (current * 100) / total;
+        
+      if (currentOtaProgress % 10 == 0) {
+
+        log_i("OTA Progress: %d%%\n", currentOtaProgress);
+
+      }
+    });
+  }
 
   log_i("Starting OTA from GitHub...");
   
@@ -202,14 +258,14 @@ void performBackgroundGitHubOta(void *pvParameters) {
 
 /*****************************************************************************/
 
-void startBackgroundGitHubOtaTask() {
+void startBackgroundGitHubOtaTask(otaProgressCallback progressCb) {
 
   if (otaTaskHandle == NULL) {
             
     if (isHardwareCapableOfOta()) {
                 
       xTaskCreate(
-        performBackgroundGitHubOta, "GitHub_OTA", 8192, NULL, 1, 
+        performBackgroundGitHubOta, "GitHub_OTA", 8192, (void *)progressCb, 1, 
         &otaTaskHandle);
                 
     } 

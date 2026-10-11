@@ -11,7 +11,11 @@
 
 /*****************************************************************************/
 
-#define Z2S_VERSION "Z2S-1.6.73-10/10/26"
+#define Z2S_VERSION "Z2S-1.6.74-11/10/26"
+
+/*****************************************************************************/
+
+typedef void (*otaProgressCallback)(size_t, size_t);
 
 /*****************************************************************************/
 
@@ -23,7 +27,12 @@ bool isHardwareCapableOfOta();
 
 /*****************************************************************************/
 
-bool checkGitHubForUpdate();
+bool checkGitHubForUpdate(
+  char *response_buffer = nullptr, size_t response_buffer_size = 0);
+
+/*****************************************************************************/
+
+void startBackgroundGitHubOtaTask(otaProgressCallback progressCb = nullptr);
 
 /*****************************************************************************/
 
