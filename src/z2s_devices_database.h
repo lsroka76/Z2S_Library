@@ -5517,6 +5517,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3210_0fcr8csz", .model_name = "TS0502B",
+    .z2s_device_uid = 18770,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_LIGHT_SOURCE,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E27 CWS globe 806lm",
     .z2s_device_uid = 18800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB, //Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
