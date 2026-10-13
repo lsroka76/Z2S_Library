@@ -4360,7 +4360,7 @@ bool buildCalculatedThermometerLocalFunctionsSelectJsonPayload(
 		  for (uint8_t ctf = 0; ctf < 2; ctf++) {
 
 			  if (!add_function_option(
-							ctf, calculated_thermomether_functions_names[ctf - 1]))
+							ctf, calculated_thermomether_functions_names[ctf]))
 				  return false;
 		  }
 		  return true;
