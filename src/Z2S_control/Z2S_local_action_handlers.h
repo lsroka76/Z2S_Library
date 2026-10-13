@@ -35,6 +35,7 @@
 #include <supla/control/hvac_base.h>
 #include <supla/sensor/virtual_binary.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
+#include <supla/sensor/virtual_thermometer.h>
 #include <supla/sensor/HC_SR04_GPM.h>
 #include <supla/sensor/DS18B20.h>
 #include <supla/sensor/binary.h>
@@ -46,6 +47,8 @@
 
 #include "Z2S_common.h"
 #include "Z2S_custom_actions_events.h"
+
+#include "Z2S_sensor/virtual_general_purpose_measurement.h"
 
 /*****************************************************************************/
 
@@ -66,14 +69,6 @@ static const char *gateway_events_channel_name = "GATEWAY EVENTS";
 #define PIN_LOGIC_OPERATOR_AND3         0x07
 #define PIN_LOGIC_OPERATOR_OR3          0x08
 #define PIN_LOGIC_OPERATOR_NOP          0x09
-
-/*****************************************************************************/
-
-#define LAVB_SINGLE_PRESS_FUNC          0x01
-#define LAVB_DOUBLE_PRESS_FUNC          0x02
-#define LAVB_HELD_FUNC                  0x03
-#define LAVB_ROTATE_RIGHT_FUNC          0x04
-#define LAVB_ROTATE_LEFT_FUNC           0x05
 
 /*****************************************************************************/
 
@@ -109,13 +104,25 @@ static const char *sb_url_template =
 
 static const char *sb_host = "api.switch-bot.com";
 
-static const char *sb_device_path = "POST /v1.1/devices/%s/commands HTTP/1.1\r\n";
+static const char *sb_device_path = "POST /v1.1/devices/%s/commands "
+  "HTTP/1.1\r\n";
+
+/*****************************************************************************/
+
+#define CALCULATED_THERMOMETER_FUNC_DEW_POINT                           0x0000
+#define CALCULATED_THERMOMETER_FUNC_HEAT_INDEX                          0x0001
+
+
+static constexpr char *calculated_thermomether_functions_names[] = {
+  "DEW POINT", "HEAT INDEX(FEELS LIKE)"
+};
 
 /*****************************************************************************/
 
 extern bool sendIASNotifications;
 extern Supla::Control::VirtualRelay *toggleNotifications;
 
+/*****************************************************************************/
 /*****************************************************************************/
 
 namespace Supla {
@@ -137,7 +144,7 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler,
   public:
     LocalActionHandlerWithTrigger(uint8_t pin_logic_operator);
     virtual ~LocalActionHandlerWithTrigger();
-    void handleAction(int event, int action);
+    void handleAction(int event, int action) override;
     void iterateAlways() override;
     
   protected:
@@ -162,7 +169,7 @@ class GatewayEvents: public LocalActionHandler {
     virtual ~GatewayEvents() {};
 
     void onInit();
-    void handleAction(int event, int action);
+    void handleAction(int event, int action) override;
     void iterateAlways();
     void setActionHandlerCallback(_actionhandler_callback actionhandler_callback);
 
@@ -184,6 +191,7 @@ class GatewayEvents: public LocalActionHandler {
     _actionhandler_callback actionhandler_callback = nullptr;
 };
 
+/*****************************************************************************/
 /*****************************************************************************/
 
 namespace Control {
@@ -336,6 +344,7 @@ class LocalVirtualHvac: public HvacBase, public Z2S_Core {
 }; //namespace Control
 
 /*****************************************************************************/
+/*****************************************************************************/
 
 namespace Sensor {
 
@@ -370,7 +379,10 @@ class LocalVirtualBinary: public VirtualBinary, public Z2S_Core {
 
 };
 
-class LocalVirtualThermHygroMeter: public VirtualThermHygroMeter, public Z2S_Core {
+/*****************************************************************************/
+
+class LocalVirtualThermHygroMeter: public VirtualThermHygroMeter, 
+  public Z2S_Core {
 
   public:
 
@@ -385,6 +397,45 @@ class LocalVirtualThermHygroMeter: public VirtualThermHygroMeter, public Z2S_Cor
     Supla::Sensor::VirtualThermHygroMeter *_source_virtual_therm_hygro_meter =
       nullptr;
 };
+
+/*****************************************************************************/
+
+class CalculatedThermometer : public VirtualThermometer, 
+  public Z2S_Core {
+
+  public:
+
+    CalculatedThermometer();
+
+    void iterateAlways() override;
+
+  private:
+
+    uint8_t _last_source_channel = 0xFF;
+    uint32_t  _last_refresh_ms = 0;
+    Supla::Sensor::VirtualThermHygroMeter *_source_virtual_therm_hygro_meter =
+      nullptr;
+};
+
+/*****************************************************************************/
+
+class LocalVirtualGPM 
+  : public VirtualGeneralPurposeMeasurement, public Z2S_Core {
+
+  public:
+
+    LocalVirtualGPM() 
+      : VirtualGeneralPurposeMeasurement(), Z2S_Core(this) {
+    } 
+
+
+    void handleAction(int event, int action) override;
+    void iterateAlways() override;
+
+  protected:
+    
+};
+
 
 /*****************************************************************************/
 

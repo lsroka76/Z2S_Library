@@ -19,29 +19,20 @@
 #ifndef Z2S_GENERAL_PURPOSE_MEASUREMENT_H_
 #define Z2S_GENERAL_PURPOSE_MEASUREMENT_H_
 
-#include <NetworkClient.h>
-#include <ESPmDNS.h>
-
-#include <supla/sensor/general_purpose_channel_base.h>
-
 #include "Z2S_common.h"
-
-#define MSINHOUR (60*60*1000)
+#include "virtual_general_purpose_measurement.h"
 
 
 namespace Supla {
 namespace Sensor {
 class Z2S_GeneralPurposeMeasurement 
-  : public Supla::Sensor::GeneralPurposeChannelBase, public Z2S_Core {
+  : public Supla::Sensor::VirtualGeneralPurposeMeasurement, public Z2S_Core {
   
 public:
     
-  Z2S_GeneralPurposeMeasurement(bool rwns_flag = false) : 
-    GeneralPurposeChannelBase(nullptr, false), Z2S_Core(this), 
+  Z2S_GeneralPurposeMeasurement(bool rwns_flag = false) 
+    : VirtualGeneralPurposeMeasurement(), Z2S_Core(this), 
     _rwns_flag(rwns_flag) {
-
-    channel.setType(SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT);
-    channel.setDefaultFunction(SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
   }
 
   void setRWNSFlag(bool rwns_flag) {
@@ -55,21 +46,15 @@ public:
     channel.setStateOnline();
   }
 
-  void setValue(double value) {
+  void setValue(double value) override {
     
     _value = value;
-
     Refresh();
-  }
-
-  double getValue() {
-
-    return _value;
   }
 
   void iterateAlways() override {
     
-    GeneralPurposeChannelBase::iterateAlways();
+    VirtualGeneralPurposeMeasurement::iterateAlways();
     
     uint32_t millis_ms = millis();
 
@@ -96,7 +81,6 @@ public:
   }
     
  protected:
-  double _value = NAN;
   bool   _rwns_flag;
 
   uint32_t _last_timeout_ms = 0;
@@ -104,4 +88,4 @@ public:
 };  // namespace Sensor
 };  // namespace Supla
 
-#endif  // Z2S_GENERAL_PURPOSE_MEASUREMENT_H_
+#endif  // VIRTUAL_GENERAL_PURPOSE_MEASUREMENT_H_

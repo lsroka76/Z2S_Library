@@ -72,7 +72,7 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
     break;
 
 
-  case LOCAL_CHANNEL_TYPE_SWITCHBOT:
+    case LOCAL_CHANNEL_TYPE_SWITCHBOT:
       
       return "Switchbot object";
     break;
@@ -81,6 +81,18 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
     case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
       
       return "Local virtual thermhygrometer";
+    break;
+
+
+    case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
+      
+      return "Local calculated thermometer";
+    break;
+
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_GPM:
+      
+      return "Local virtual GPM";
     break;
 
 
@@ -418,6 +430,30 @@ void initZ2SDeviceLocalActionHandler(
     } break; 
 
 
+    case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER: {
+
+      Supla::Sensor::CalculatedThermometer *Supla_Z2S_CalculatedThermometer = 
+        nullptr;
+
+      if (element) {
+
+        Supla_Z2S_CalculatedThermometer = static_cast<
+          Supla::Sensor::CalculatedThermometer *>(element);
+      }
+      else {
+      
+        Supla_Z2S_CalculatedThermometer = 
+          new Supla::Sensor::CalculatedThermometer();
+
+        Supla_Z2S_CalculatedThermometer->setZ2SChannel(
+          channel_index, _z2s_channel);
+
+        Supla_Z2S_CalculatedThermometer->getChannel()->setChannelNumber(
+          _z2s_channel->Supla_channel);
+      }
+    } break; 
+
+
     case LOCAL_CHANNEL_TYPE_REMOTE_RELAY: {
 
       Supla::Control::Z2S_RemoteRelay *Supla_Z2S_RemoteRelay = nullptr;
@@ -467,6 +503,27 @@ void initZ2SDeviceLocalActionHandler(
       } 
     } break; 
 
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_GPM: {
+
+      Supla::Sensor::LocalVirtualGPM *Supla_Z2S_LocalVirtualGPM = nullptr;
+
+      if (element) {
+
+        Supla_Z2S_LocalVirtualGPM = static_cast<
+          Supla::Sensor::LocalVirtualGPM *>(element);
+      }
+      else {
+      
+        Supla_Z2S_LocalVirtualGPM = new Supla::Sensor::LocalVirtualGPM();
+
+        Supla_Z2S_LocalVirtualGPM->setZ2SChannel(
+          channel_index, _z2s_channel);
+
+        Supla_Z2S_LocalVirtualGPM->getChannel()->setChannelNumber(
+          _z2s_channel->Supla_channel);
+      } 
+    } break;
   } 
 }
 
@@ -873,6 +930,41 @@ int16_t addZ2SDeviceLocalActionHandler(
     } break;
 
 
+    case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER: {
+
+      auto Supla_Z2S_CalculatedThermometer = 
+        new Supla::Sensor::CalculatedThermometer();
+
+      Z2S_setLocalChannelData(
+        Supla_Z2S_CalculatedThermometer->getZ2SCorePtr(),first_free_slot, 
+        Supla_Z2S_CalculatedThermometer->getChannelNumber(), NO_CUSTOM_CMD_SID, 
+        LOCAL_CALCULATED_THERMOMETER_NAME, SUPLA_CHANNELFNC_THERMOMETER, 0xFF, 
+        local_channel_type, local_channel_func);
+
+      Supla_Z2S_CalculatedThermometer->setInitialCaption(
+        LOCAL_CALCULATED_THERMOMETER_NAME);
+      Supla_Z2S_CalculatedThermometer->setDefaultFunction(
+        SUPLA_CHANNELFNC_THERMOMETER);
+
+      initZ2SDeviceLocalActionHandler(
+        first_free_slot, Supla_Z2S_CalculatedThermometer->getZ2SChannel(), 
+        Supla_Z2S_CalculatedThermometer->getZ2SElementPtr());
+
+      Supla_Z2S_CalculatedThermometer->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+      Supla_Z2S_CalculatedThermometer->onLoadConfig(&SuplaDevice);
+      Supla_Z2S_CalculatedThermometer->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
+      
+      Supla::Network::DisconnectProtocols();
+    } break;
+
+
     case LOCAL_CHANNEL_TYPE_SWITCHBOT: {
 
       auto Supla_SwitchBotRelay = 
@@ -948,6 +1040,41 @@ int16_t addZ2SDeviceLocalActionHandler(
 
     } break;
 
+
+    case LOCAL_CHANNEL_TYPE_VIRTUAL_GPM: {
+
+      auto Supla_Z2S_LocalVirtualGPM = new Supla::Sensor::LocalVirtualGPM();
+
+      Z2S_setLocalChannelData(
+        Supla_Z2S_LocalVirtualGPM->getZ2SCorePtr(),
+        first_free_slot, Supla_Z2S_LocalVirtualGPM->getChannelNumber(), 
+        NO_CUSTOM_CMD_SID, LOCAL_VIRTUAL_GPM_NAME, 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 0xFF, 
+        local_channel_type, local_channel_func);
+
+      Supla_Z2S_LocalVirtualGPM->setInitialCaption(
+        LOCAL_VIRTUAL_GPM_NAME);
+      Supla_Z2S_LocalVirtualGPM->setDefaultFunction(
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
+
+      initZ2SDeviceLocalActionHandler(
+        first_free_slot, Supla_Z2S_LocalVirtualGPM->getZ2SChannel(), 
+        Supla_Z2S_LocalVirtualGPM->getZ2SElementPtr());
+
+      Supla_Z2S_LocalVirtualGPM->getChannel()->setFlag(
+        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+
+      Supla_Z2S_LocalVirtualGPM->onLoadConfig(&SuplaDevice);
+      Supla_Z2S_LocalVirtualGPM->onInit();
+
+      if (!Supla::Storage::IsStateStorageValid()) 
+        Supla::Storage::WriteStateStorage();
+          
+      Supla::Storage::ConfigInstance()->commit();
+      
+      Supla::Network::DisconnectProtocols();
+    } break;
+    
 
     default:
       

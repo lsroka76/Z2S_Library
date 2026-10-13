@@ -14,6 +14,10 @@
 #include <esp_coexist.h>
 #include <esp_heap_caps.h>
 
+//#include <lua.h>
+//#include <lualib.h>
+//#include <lauxlib.h>
+
 #include <ZigbeeGateway.h>
 
 #include <SuplaDevice.h>
@@ -137,6 +141,8 @@ static bool _forced_config = false;
 static bool _start_Zigbee = true;
 
 SemaphoreHandle_t saveMutex;
+
+//lua_State *LuaState = nullptr;
 
 inline bool is_in_custom_heap(void* ptr) {
     
@@ -1035,6 +1041,9 @@ void setup() {
   disableLoopWDT();
   esp_task_wdt_delete(NULL);
   esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
+
+  //LuaState = luaL_newstate();
+  //luaL_openlibs(LuaState);
 }
 
 zbg_device_params_t *gateway_device;
@@ -1224,7 +1233,19 @@ void loop() {
     cpu_gpm->setValue(GatewayTaskInfo.getCpuUsage());
 
     _time_cluster_last_refresh_ms = millis();
+
+    
   }
+
+  /*if (LuaState) {
+
+    if (luaL_dostring(LuaState, "print('Hello from Lua')") != LUA_OK) {
+        
+      Serial.println(lua_tostring(LuaState, -1));
+      lua_pop(LuaState, 1);
+    }
+    lua_gc(LuaState, LUA_GCSTEP, 1);
+  }*/
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
 

@@ -52,6 +52,7 @@
 #define LOCAL_CHANNEL_TYPE_ACTION_HANDLER                       0x01
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY                        0x02
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY                       0x03
+#define LOCAL_CHANNEL_TYPE_VIRTUAL_GPM                          0x04
 
 #define LOCAL_CHANNEL_TYPE_REMOTE_RELAY                         0x10
 #define LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER                   0x11
@@ -63,6 +64,7 @@
 #define LOCAL_CHANNEL_TYPE_SWITCHBOT                            0x40
 
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER            0x50
+#define LOCAL_CHANNEL_TYPE_CALC_THERMOMETER                     0x51
 
 #define LOCAL_CHANNEL_TYPE_GPIO_RELAY                           0x60
 #define LOCAL_CHANNEL_TYPE_GPIO_HVAC                            0x61

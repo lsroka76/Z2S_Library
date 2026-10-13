@@ -1021,6 +1021,130 @@ void Supla::Sensor::LocalVirtualBinary::sendNotification() {
 
 /*****************************************************************************/
 
+Supla::Sensor::CalculatedThermometer::CalculatedThermometer() 
+  : VirtualThermometer(), Z2S_Core(this) {
+}
+
+/*****************************************************************************/
+
+double calculateDewPoint(double temperature, double humidity) {
+
+  if (humidity <= 0.0) return -273.15; 
+
+    
+  const double a = 17.27;
+  const double b = 237.3;
+
+
+  double gamma = (a * temperature) / (b + temperature) + 
+    std::log(humidity / 100.0);
+
+  double dewPoint = (b * gamma) / (a - gamma);
+
+  return dewPoint;
+}
+
+/*****************************************************************************/
+
+double calculateHeatIndex(double temperatureC, double humidity) {
+    
+  double T = (temperatureC * 1.8) + 32.0;
+    
+  double HI = 0.5 * (T + 61.0 + ((T - 68.0) * 1.2) + (humidity * 0.094));
+
+  
+  if (HI >= 80.0) {
+        
+    HI = -42.379 + (2.04901523 * T) + (10.14333127 * humidity) - 
+      (0.22475541 * T * humidity) - (0.00683783 * T * T) - 
+      (0.05481717 * humidity * humidity) + (0.00122874 * T * T * humidity) + 
+      (0.00085282 * T * humidity * humidity) - 
+      (0.00000199 * T * T * humidity * humidity);
+
+        
+    if (humidity < 13.0 && T >= 80.0 && T <= 112.0) {
+    
+      double adjustment = ((13.0 - humidity) / 4.0) * 
+        std::sqrt((17.0 - std::abs(T - 95.0)) / 17.0);
+      HI -= adjustment;
+    } 
+    else if (humidity > 85.0 && T >= 80.0 && T <= 87.0) {
+
+      double adjustment = ((humidity - 85.0) / 10.0) * ((87.0 - T) / 5.0);
+      HI += adjustment;
+    }
+  }
+  return (HI - 32.0) / 1.8;
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedThermometer::iterateAlways() {
+
+  Supla::Sensor::VirtualThermometer::iterateAlways();
+
+  if (getRefreshMs() && ((millis() - _last_refresh_ms) > getRefreshMs())) {
+
+    _last_refresh_ms = millis();
+
+    if ((_last_source_channel < 0xFF) && 
+        (_last_source_channel != getSourceChannel()))
+      _source_virtual_therm_hygro_meter = nullptr;
+
+    if (_source_virtual_therm_hygro_meter == nullptr) {
+
+      Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelNumberAndType(
+        getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
+
+      if (z2s_core)
+        _source_virtual_therm_hygro_meter = static_cast<
+          Supla::Sensor::VirtualThermHygroMeter *>(z2s_core->getZ2SElementPtr());
+      
+      _last_source_channel = getSourceChannel();
+    }
+
+    if (_source_virtual_therm_hygro_meter) {
+
+      switch (getZ2SLocalChannelFunc()) {
+
+
+        case CALCULATED_THERMOMETER_FUNC_DEW_POINT: {
+
+          double dew_point = calculateDewPoint(
+            _source_virtual_therm_hygro_meter->getChannel()->
+              getValueDoubleFirst(),
+            _source_virtual_therm_hygro_meter->getChannel()->
+              getValueDoubleSecond());
+
+          setValue(dew_point);
+        } break;
+
+
+        case CALCULATED_THERMOMETER_FUNC_HEAT_INDEX: {
+
+          double heat_index = calculateHeatIndex(
+            _source_virtual_therm_hygro_meter->getChannel()->
+              getValueDoubleFirst(),
+            _source_virtual_therm_hygro_meter->getChannel()->
+              getValueDoubleSecond());
+
+          setValue(heat_index);
+        } break;
+      }
+
+
+      if (checkChannelUserDataFlags(
+            USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
+
+        resendTemperatureHumidityValue(
+        RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
+      }
+    }       
+  }
+}
+
+/*****************************************************************************/
+
 Supla::Sensor::LocalVirtualThermHygroMeter::LocalVirtualThermHygroMeter() 
   : VirtualThermHygroMeter(), Z2S_Core(this) {
 }
@@ -1072,6 +1196,37 @@ void Supla::Sensor::LocalVirtualThermHygroMeter::iterateAlways() {
       }
     }       
   }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualGPM::handleAction(int event, int action) {
+
+  log_i("event %u, action %u", event, action);
+  
+  switch (action) {
+
+
+    case TURN_ON:
+    case SET:
+
+      _value = 1000;
+    break;
+
+
+    case TURN_OFF:
+    case CLEAR:
+
+      _value = 0;
+    break;
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::LocalVirtualGPM::iterateAlways() {
+    
+  VirtualGeneralPurposeMeasurement::iterateAlways();
 }
 
 /*****************************************************************************/

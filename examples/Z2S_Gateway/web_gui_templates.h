@@ -478,6 +478,15 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_DIM_W,
 		.Supla_action_name = "DIM WHITE" },
 
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_RESET,
+		.Supla_action_name = "RESET COUNTER" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_INCREMENT,
+		.Supla_action_name = "INCREMENT COUNTER" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_DECREMENT,
+		.Supla_action_name = "DECREMENT COUNTER" },
+
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_ENTER_CONFIG_MODE,
 		.Supla_action_name = "ENTER CONFIG MODE" },
 

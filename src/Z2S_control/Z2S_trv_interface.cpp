@@ -1864,9 +1864,10 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
           _trv_local_temperature_updated &&
           (_trv_temperature_calibration == 0)) {
 
-        log_i("No external sensor temperature data available - "
-              "temporarily using TRV local temperature value %d", 
-              _trv_local_temperature);
+        log_i(
+          "No external sensor temperature data available - "
+          "temporarily using TRV local temperature value %d", 
+          _trv_local_temperature);
 
         forceTRVTemperature();
       }

@@ -9513,6 +9513,12 @@ Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
         return (static_cast<Supla::Sensor::ElectricityMeter *>(
           Supla_element))->getRealClient();
 
+      
+      case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
+
+        return (static_cast<Supla::Sensor::VirtualGeneralPurposeMeasurement *>(
+          Supla_element))->getRealClient();
+
       default:
 
         return nullptr;
