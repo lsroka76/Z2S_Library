@@ -4357,10 +4357,10 @@ bool buildCalculatedThermometerLocalFunctionsSelectJsonPayload(
 	return buildSelectJsonPayloadGeneric(
 	  selected_value, 1, &selector_id,
 	  "Select local channel function...", [&](auto add_function_option) {
-		  for (uint8_t ctf = 0; ctf < 2; ctf++) {
+		  for (uint8_t ctf = 1; ctf < 3; ctf++) {
 
 			  if (!add_function_option(
-							ctf, calculated_thermomether_functions_names[ctf]))
+							ctf, calculated_thermomether_functions_names[ctf-1]))
 				  return false;
 		  }
 		  return true;
@@ -5729,7 +5729,8 @@ void Z2S_loopWebGUI() {
 				{
 
 					int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
-					  LOCAL_CHANNEL_TYPE_CALC_THERMOMETER, 0);
+					  LOCAL_CHANNEL_TYPE_CALC_THERMOMETER, 
+						CALCULATED_THERMOMETER_FUNC_DEW_POINT);
 
 					if (new_channel_slot >= 0) {
 

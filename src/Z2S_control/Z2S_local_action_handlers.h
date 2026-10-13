@@ -109,8 +109,8 @@ static const char *sb_device_path = "POST /v1.1/devices/%s/commands "
 
 /*****************************************************************************/
 
-#define CALCULATED_THERMOMETER_FUNC_DEW_POINT                           0x0000
-#define CALCULATED_THERMOMETER_FUNC_HEAT_INDEX                          0x0001
+#define CALCULATED_THERMOMETER_FUNC_DEW_POINT                           0x0001
+#define CALCULATED_THERMOMETER_FUNC_HEAT_INDEX                          0x0002
 
 
 static constexpr char *calculated_thermomether_functions_names[] = {
