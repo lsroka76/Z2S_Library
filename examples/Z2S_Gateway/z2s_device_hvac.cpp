@@ -687,12 +687,12 @@ void msgZ2SDeviceHvac(
     } break;
 
 
-    case TRV_TEMPERATURE_HISTERESIS_MSG: { 
+    case TRV_TEMPERATURE_HYSTERESIS_MSG: { 
       
       log_i(
-        "msgZ2SDeviceHvac - TRV_TEMPERATURE_HISTERESIS_MSG: %04d", msg_value);
+        "msgZ2SDeviceHvac - TRV_TEMPERATURE_HYSTERESIS_MSG: %04d", msg_value);
 
-      Supla_Z2S_TRVInterface->setTRVTemperatureHisteresis(msg_value);
+      Supla_Z2S_TRVInterface->setTRVTemperatureHysteresis(msg_value);
     } break;
 
 

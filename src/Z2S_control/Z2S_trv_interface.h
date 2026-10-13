@@ -304,9 +304,9 @@ typedef struct ts0601_command_set_s {
   uint16_t ts0601_cmd_set_target_heatsetpoint_max;
 
 //extended 
-  uint8_t ts0601_cmd_set_temperature_histeresis_dp_id;
-  uint8_t ts0601_cmd_set_temperature_histeresis_dp_type;
-  uint16_t ts0601_cmd_set_temperature_histeresis_factor;
+  uint8_t ts0601_cmd_set_temperature_hysteresis_dp_id;
+  uint8_t ts0601_cmd_set_temperature_hysteresis_dp_type;
+  uint16_t ts0601_cmd_set_temperature_hysteresis_factor;
 
   uint8_t ts0601_cmd_set_pi_heating_demand_dp_id;
   uint8_t ts0601_cmd_set_sunday_schedule_dp_id;
@@ -1193,9 +1193,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x6B,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x6B,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0x0A,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 }, 
 
@@ -1262,9 +1262,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x6B,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x6B,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0x0A,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 }, 
 
@@ -1331,9 +1331,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x14,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0x01,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x14,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0x01,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
   
@@ -1400,9 +1400,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0DAC, //3500
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x6B,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x6B,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0x0A,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
@@ -1469,9 +1469,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x1194, //4500
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x6E,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x6E,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0x0A,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00 },
 
@@ -1538,9 +1538,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x1770, //6000
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x70,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0x0A,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x70,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0x0A,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00,
     .ts0601_cmd_set_sunday_schedule_dp_id            =  0x47 },
@@ -1608,9 +1608,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x1194, //4500
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x00,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  0xFF,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0xFF,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x00,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  0xFF,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0xFF,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00,
     .ts0601_cmd_set_humidity_dp_id                   =  0x22 },
@@ -1679,9 +1679,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x1194, //4500
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x00,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  0xFF,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0xFF,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x00,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  0xFF,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0xFF,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00,
     .ts0601_cmd_set_humidity_dp_id                   =  0x22 },
@@ -1746,9 +1746,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x1194, //4500
     
-    .ts0601_cmd_set_temperature_histeresis_dp_id     =  0x00,
-    .ts0601_cmd_set_temperature_histeresis_dp_type   =  0xFF,
-    .ts0601_cmd_set_temperature_histeresis_factor    =  0xFF,
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     =  0x00,
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   =  0xFF,
+    .ts0601_cmd_set_temperature_hysteresis_factor    =  0xFF,
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          =  0x00,
     .ts0601_cmd_set_humidity_dp_id                   =  0x00 },
@@ -1815,9 +1815,9 @@ static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
     .ts0601_cmd_set_target_heatsetpoint_min          =  0x01F4, //500
     .ts0601_cmd_set_target_heatsetpoint_max          =  0x0BB8, //3000
 
-    .ts0601_cmd_set_temperature_histeresis_dp_id     = 0x6E,  
-    .ts0601_cmd_set_temperature_histeresis_dp_type   = TUYA_DP_TYPE_VALUE,
-    .ts0601_cmd_set_temperature_histeresis_factor    = 0x0A,  
+    .ts0601_cmd_set_temperature_hysteresis_dp_id     = 0x6E,  
+    .ts0601_cmd_set_temperature_hysteresis_dp_type   = TUYA_DP_TYPE_VALUE,
+    .ts0601_cmd_set_temperature_hysteresis_factor    = 0x0A,  
 
     .ts0601_cmd_set_pi_heating_demand_dp_id          = 0x00,
     .ts0601_cmd_set_humidity_dp_id                   = 0x00 }
@@ -1879,7 +1879,7 @@ public Z2S_Core {
 
   void setTRVLocalTemperature(int32_t trv_local_temperature);
   void setTRVTemperatureCalibration(int32_t trv_temperature_calibration);
-  void setTRVTemperatureHisteresis(int32_t trv_temperature_histeresis);
+  void setTRVTemperatureHysteresis(int32_t trv_temperature_hysteresis);
 
   void setTRVTemperatureSensorType(uint8_t trv_temperature_sensor_type);
 
@@ -1919,9 +1919,9 @@ protected:
   int32_t _trv_last_local_temperature    = INT32_MIN;
   bool    _trv_local_temperature_updated = false;
 
-  int32_t _trv_temperature_histeresis         = INT32_MIN;
-  bool    _trv_temperature_histeresis_updated = false;
-  bool    _trv_temperature_histeresis_enabled = false;
+  int32_t _trv_temperature_hysteresis         = INT32_MIN;
+  bool    _trv_temperature_hysteresis_updated = false;
+  bool    _trv_temperature_hysteresis_enabled = false;
 
   int32_t _trv_external_sensor_temperature    = INT32_MIN;
   bool _trv_external_sensor_detection_enabled = false;
@@ -2000,7 +2000,7 @@ protected:
   void sendTRVExternalSensorInput(bool trv_external_sensor_present);
   void sendTRVChildLock(uint8_t trv_child_lock, bool send_value = true);
   void sendTRVScheduleMode(uint8_t trv_schedule_mode);
-  void sendTRVTemperatureHisteresis(int32_t temperature_histeresis);
+  void sendTRVTemperatureHysteresis(int32_t temperature_hysteresis);
   void sendTRVPing();
 
   void sendHvacTemperatureSetpoint(int32_t temperature_setpoint);

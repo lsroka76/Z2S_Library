@@ -4060,6 +4060,14 @@ void Z2S_onLumiCustomClusterReceive(
         } break;
 
 
+        case LUMI_CUSTOM_CLUSTER_W500_HYSTERESIS_ID: {
+
+          uint32_t temperature_hysteresis = lumi_mode * 10;
+          msgZ2SDeviceHvac(element, TRV_TEMPERATURE_HYSTERESIS_MSG, 
+            temperature_hysteresis);
+        } break;
+
+
         case LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID: {
 
           log_i("lumi trv sensor type %u", lumi_mode);
@@ -7923,7 +7931,7 @@ uint8_t Z2S_addZ2SDevice(
 case Z2S_DEVICE_DESC_LUMI_W500: {
       
         addZ2SDeviceTempHumidity(
-          device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
+          device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC T/H", 0, true);
         
         uint8_t trv_thermometer_slot = first_free_slot;
         Z2S_setChannelFlags(

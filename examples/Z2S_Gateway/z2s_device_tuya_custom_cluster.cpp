@@ -404,19 +404,19 @@ void processTuyaHvacDataReport(
     }
   }
 
-  if (ts0601_command_set->ts0601_cmd_set_temperature_histeresis_dp_id) {
+  if (ts0601_command_set->ts0601_cmd_set_temperature_hysteresis_dp_id) {
 
     Z2S_readTuyaDPvalue(
       Tuya_read_dp_result,
-      ts0601_command_set->ts0601_cmd_set_temperature_histeresis_dp_id, 
+      ts0601_command_set->ts0601_cmd_set_temperature_hysteresis_dp_id, 
       payload_size, payload);
     
     if (Tuya_read_dp_result.is_success) {
 
       msgZ2SDeviceHvac(
-        element_2, TRV_TEMPERATURE_HISTERESIS_MSG, 
+        element_2, TRV_TEMPERATURE_HYSTERESIS_MSG, 
         (Tuya_read_dp_result.dp_value_signed * 100) / 
-        ts0601_command_set->ts0601_cmd_set_temperature_histeresis_factor);
+        ts0601_command_set->ts0601_cmd_set_temperature_hysteresis_factor);
 
       bytes_read -= (Tuya_read_dp_result.bytes_read);
       if (bytes_read == 0)

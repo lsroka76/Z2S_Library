@@ -32,9 +32,9 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
     if (ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id == 
         _trv_commands_set) {
         
-        _trv_temperature_histeresis_enabled = 
+        _trv_temperature_hysteresis_enabled = 
           (ts0601_command_sets_table[_trv_commands_set].\
-            ts0601_cmd_set_temperature_histeresis_dp_id > 0);
+            ts0601_cmd_set_temperature_hysteresis_dp_id > 0);
 
         _trv_temperature_calibration_trigger /= 
           ts0601_command_sets_table[_trv_commands_set].\
@@ -1090,13 +1090,13 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
 
 /*****************************************************************************/
 
-void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
-  int32_t temperature_histeresis) {
+void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHysteresis(
+  int32_t temperature_hysteresis) {
 
   if (Zigbee.started() && _ready_to_send) {
 
-    log_i("temperature histeresis = %d", 
-          temperature_histeresis);
+    log_i("temperature hysteresis = %d", 
+          temperature_hysteresis);
 
     if ((_trv_commands_set >= saswell_cmd_set) &&
         (_trv_commands_set < ts0601_cmd_sets_number)) { 
@@ -1105,20 +1105,20 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
             ts0601_cmd_set_id == _trv_commands_set) {
 
         if ((ts0601_command_sets_table[_trv_commands_set].
-               ts0601_cmd_set_temperature_histeresis_dp_id > 0) &&
+               ts0601_cmd_set_temperature_hysteresis_dp_id > 0) &&
             (ts0601_command_sets_table[_trv_commands_set].
-               ts0601_cmd_set_temperature_histeresis_dp_type == TUYA_DP_TYPE_VALUE)) {
+               ts0601_cmd_set_temperature_hysteresis_dp_type == TUYA_DP_TYPE_VALUE)) {
 
-          temperature_histeresis *= ts0601_command_sets_table[_trv_commands_set].
-            ts0601_cmd_set_temperature_histeresis_factor;
+          temperature_hysteresis *= ts0601_command_sets_table[_trv_commands_set].
+            ts0601_cmd_set_temperature_hysteresis_factor;
 
-          temperature_histeresis /= 100;
+          temperature_hysteresis /= 100;
           
           sendTuyaRequestCmdValue32(
             _short_addr, _endpoint, 
             ts0601_command_sets_table[_trv_commands_set].\
-              ts0601_cmd_set_temperature_histeresis_dp_id,
-            temperature_histeresis);
+              ts0601_cmd_set_temperature_hysteresis_dp_id,
+            temperature_hysteresis);
         }
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
@@ -1139,6 +1139,16 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureHisteresis(
                                   SONOFF_CUSTOM_CLUSTER, 
                                   SONOFF_CUSTOM_CLUSTER_CHILD_LOCK_ID, 
                                   false);*/
+    }
+
+    if (_trv_commands_set == LUMI_W500_CMD_SET) {
+      
+      temperature_hysteresis /= 10;
+
+      zbGateway.sendAttributeWrite(
+        _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+        LUMI_CUSTOM_CLUSTER_W500_HYSTERESIS_ID, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, 
+        &temperature_hysteresis, false, 1, LUMI_MANUFACTURER_CODE);
     }
 
     if (_last_cmd_sent_ms == 0)
@@ -1322,11 +1332,11 @@ void Supla::Control::Z2S_TRVInterface::setTRVChildLock(
   refreshTimeout();
 }
 
-void Supla::Control::Z2S_TRVInterface::setTRVTemperatureHisteresis(
-    int32_t trv_temperature_histeresis) {
+void Supla::Control::Z2S_TRVInterface::setTRVTemperatureHysteresis(
+    int32_t trv_temperature_hysteresis) {
 
-    _trv_temperature_histeresis = trv_temperature_histeresis;
-    _trv_temperature_histeresis_updated = true;
+    _trv_temperature_hysteresis = trv_temperature_hysteresis;
+    _trv_temperature_hysteresis_updated = true;
     refreshTimeout();
 }
 
@@ -1592,18 +1602,18 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     }
   }
 
-  if (_trv_temperature_histeresis_updated) {
+  if (_trv_temperature_hysteresis_updated) {
 
     if ((_trv_hvac) && 
-        (_trv_hvac->getTemperatureHisteresis() != _trv_temperature_histeresis)) {
+        (_trv_hvac->getTemperatureHisteresis() != _trv_temperature_hysteresis)) {
 
-      log_i("TRV temperature histeresis difference detected hvac = %d, trv = %d", 
+      log_i("TRV temperature hysteresis difference detected hvac = %d, trv = %d", 
             _trv_hvac->getTemperatureHisteresis(),
-            _trv_temperature_histeresis);
+            _trv_temperature_hysteresis);
       
-      _trv_hvac->setTemperatureHisteresis(_trv_temperature_histeresis);
+      _trv_hvac->setTemperatureHisteresis(_trv_temperature_hysteresis);
 
-      _trv_temperature_histeresis_updated = false;
+      _trv_temperature_hysteresis_updated = false;
     }
 
   }
@@ -1636,15 +1646,15 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
     }
 
-    if (_trv_temperature_histeresis_enabled &&
+    if (_trv_temperature_hysteresis_enabled &&
         _trv_hvac && 
-        (_trv_hvac->getTemperatureHisteresis() != _trv_temperature_histeresis)) {
+        (_trv_hvac->getTemperatureHisteresis() != _trv_temperature_hysteresis)) {
 
-      log_i("HVAC temperature histeresis difference detected hvac = %d, trv = %d", 
+      log_i("HVAC temperature hysteresis difference detected hvac = %d, trv = %d", 
             _trv_hvac->getTemperatureHisteresis(),
-            _trv_temperature_histeresis);
+            _trv_temperature_hysteresis);
       
-      sendTRVTemperatureHisteresis(_trv_hvac->getTemperatureHisteresis());
+      sendTRVTemperatureHysteresis(_trv_hvac->getTemperatureHisteresis());
     }
 
 
