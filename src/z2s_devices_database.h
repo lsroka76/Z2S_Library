@@ -6091,6 +6091,14 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
       { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
 
+  {	.manufacturer_name = "_TZ3002_tlsvxhxc", .model_name = "TS0726",
+    .z2s_device_uid = 22105,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_2GANG_SWITCH,
+	  .z2s_device_endpoints_count = 2,
+    .z2s_device_endpoints = { 
+      { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1},
+      { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
+
   {	.manufacturer_name = "_TZ3000_sueu2ppq", .model_name = "TS0003",
     .z2s_device_uid = 22200,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH,
