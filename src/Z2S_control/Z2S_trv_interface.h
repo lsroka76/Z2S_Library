@@ -1838,9 +1838,6 @@ public Z2S_Core {
   Supla::Control::HvacBaseEE *getTRVHvac();
   void setTRVHvac(Supla::Control::HvacBaseEE *trv_hvac);
 
-  //Channel *getChannel() override;
-  //const Channel *getChannel() const override;
-
   uint8_t getTRVCommandsSet() {
 
     return _trv_commands_set;
@@ -1896,6 +1893,7 @@ public Z2S_Core {
   void iterateAlways() override;
   //void handleAction(int event, int action) override;
 
+  void sendTRVBacklight(uint8_t backlight);
 
 protected:
 

@@ -512,10 +512,16 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "SWITCH TO WEEKLY SCHEDULE MODE" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_ON_MAX_TEMPERATURE,
-		.Supla_action_name = "TURN_ON_MAX_TEMPERATURE" },
+		.Supla_action_name = "TURN ON MAX TEMPERATURE" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_ON_MIN_TEMPERATURE,
-		.Supla_action_name = "TURN_ON_MIN_TEMPERATURE" },
+		.Supla_action_name = "TURN ON MIN TEMPERATURE" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_ON_BACKLIGHT,
+		.Supla_action_name = "TURN ON BACKLIGHT" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_BACKLIGHT,
+		.Supla_action_name = "TURN_OFF BACKLIGHT" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_RESEND_RELAY_STATE,
 		.Supla_action_name = "RESEND RELAY STATE" },

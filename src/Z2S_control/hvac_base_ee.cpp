@@ -14,15 +14,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include <supla/events.h>
+#include <Z2S_custom_actions_events.h>
 #include "hvac_base_ee.h"
+#include "Z2S_trv_interface.h"
 
 using Supla::Control::HvacBaseEE;
 
 HvacBaseEE::HvacBaseEE(
   Supla::Control::OutputInterface *primaryOutput,
-  Supla::Control::OutputInterface *secondaryOutput) : 
-  HvacBase(primaryOutput, secondaryOutput) {}
+  Supla::Control::OutputInterface *secondaryOutput) 
+    : HvacBase(primaryOutput, secondaryOutput), 
+      primaryOutputEE(primaryOutput) {}
 
 HvacBaseEE::~HvacBaseEE() {}
 
@@ -51,18 +53,35 @@ void HvacBaseEE::handleAction(int event, int action) {
   switch (action) {
   
 
-    case 0x5000:
+    case Z2S_SUPLA_ACTION_TURN_ON_MAX_TEMPERATURE:
 
       applyNewRuntimeSettings(
         SUPLA_HVAC_MODE_HEAT, getDefaultTemperatureRoomMax(), 0, 0);
     break;
 
 
-    case 0x5001:
+    case Z2S_SUPLA_ACTION_TURN_ON_MIN_TEMPERATURE:
 
       applyNewRuntimeSettings(
         SUPLA_HVAC_MODE_HEAT, getDefaultTemperatureRoomMin(), 0, 0);
     break;
+
+
+    case Z2S_SUPLA_ACTION_TURN_OFF_BACKLIGHT: {
+
+      auto Supla_Z2S_TRVInterface = static_cast<
+        Supla::Control::Z2S_TRVInterface *>(primaryOutputEE);
+      
+      Supla_Z2S_TRVInterface->sendTRVBacklight(0);
+    } break;
+
+    case Z2S_SUPLA_ACTION_TURN_ON_BACKLIGHT: {
+
+      auto Supla_Z2S_TRVInterface = static_cast<
+        Supla::Control::Z2S_TRVInterface *>(primaryOutputEE);
+      
+      Supla_Z2S_TRVInterface->sendTRVBacklight(3);
+    } break;
 
 
     default:

@@ -34,6 +34,9 @@
 #define Z2S_SUPLA_ACTION_TURN_ON_MAX_TEMPERATURE                              0x5000
 #define Z2S_SUPLA_ACTION_TURN_ON_MIN_TEMPERATURE                              0x5001
 
+#define Z2S_SUPLA_ACTION_TURN_OFF_BACKLIGHT                                   0x5010
+#define Z2S_SUPLA_ACTION_TURN_ON_BACKLIGHT                                    0x5011
+
 #define Z2S_SUPLA_ACTION_RESEND_RELAY_STATE                                   0x5100
 #define Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED                             0x5101
 #define Z2S_SUPLA_ACTION_RESYNC_REMOTE_RELAY                                  0x5102

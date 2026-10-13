@@ -1198,6 +1198,29 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
   }
 }
 
+/*****************************************************************************/
+
+void Supla::Control::Z2S_TRVInterface::sendTRVBacklight(uint8_t backlight) {
+
+  if (Zigbee.started()) {
+
+    switch (_trv_commands_set) {
+
+
+      case zwt198_cmd_set:
+      case zwt100_cmd_set: {
+
+        sendTuyaRequestCmdData(
+          _short_addr, _endpoint, TUYA_ZWT_ZWT198_BACKLIGHT_MODE_DP, 
+          TUYA_DP_TYPE_ENUM, backlight);
+
+      } break;
+    }
+  }
+}
+
+/*****************************************************************************/
+
 void Supla::Control::Z2S_TRVInterface::sendHvacTemperatureSetpoint(
   int32_t temperature_setpoint) {
 
