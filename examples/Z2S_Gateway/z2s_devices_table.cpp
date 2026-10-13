@@ -2660,6 +2660,8 @@ void Z2S_onPressureReceive(
 
         case Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR:
 
+          if (attribute->id == ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID)
+            return; //only use 0x0004 attribute
           sub_id = SONOFF_THP_SENSOR_PRESSURE_SID;
         break;
       }
