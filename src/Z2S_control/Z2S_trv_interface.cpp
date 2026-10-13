@@ -83,15 +83,20 @@ Supla::Control::Z2S_TRVInterface::Z2S_TRVInterface(
           _trv_commands_set);  
   }
 
-  if ((_trv_commands_set == TRVZB_CMD_SET) ||
-      (_trv_commands_set == BOSCH_CMD_SET) ||
-      (_trv_commands_set == EUROTRONIC_CMD_SET) ||
-      (_trv_commands_set == LUMI_CMD_SET) ||
-      (_trv_commands_set == DANFOSS_CMD_SET)) {
-  
-      _trv_temperature_calibration_trigger = 10;
-  }
+   
+      
+  switch (_trv_commands_set) {
 
+    case TRVZB_CMD_SET:
+    case BOSCH_CMD_SET:
+    case EUROTRONIC_CMD_SET:
+    case LUMI_CMD_SET:
+    case DANFOSS_CMD_SET:
+    case LUMI_W500_CMD_SET:
+
+      _trv_temperature_calibration_trigger = 10;
+    break;
+  }
 }
 
 /*****************************************************************************/
@@ -225,7 +230,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
     if ((_trv_commands_set == TRVZB_CMD_SET) ||
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == LUMI_CMD_SET) ||
-        (_trv_commands_set == DANFOSS_CMD_SET)) {
+        (_trv_commands_set == DANFOSS_CMD_SET) ||
+        (_trv_commands_set == LUMI_W500_CMD_SET)) {
 
       zbGateway.sendAttributeWrite(
         _short_addr, _endpoint, 
@@ -296,7 +302,8 @@ void Supla::Control::Z2S_TRVInterface::readTRVLocalTemperature(
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
         (_trv_commands_set == LUMI_CMD_SET) ||
-        (_trv_commands_set == DANFOSS_CMD_SET)) {
+        (_trv_commands_set == DANFOSS_CMD_SET) ||
+        (_trv_commands_set == LUMI_W500_CMD_SET)) {
 
       zbGateway.sendAttributeRead(
         _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 
@@ -347,7 +354,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
         (_trv_commands_set == LUMI_CMD_SET) ||
-        (_trv_commands_set == DANFOSS_CMD_SET)) {
+        (_trv_commands_set == DANFOSS_CMD_SET) ||
+        (_trv_commands_set == LUMI_W500_CMD_SET)) {
 
       
       temperature_calibration = temperature_calibration / 10;
@@ -748,7 +756,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
     } else 
-    if (_trv_commands_set == TRVZB_CMD_SET) {
+    if ((_trv_commands_set == TRVZB_CMD_SET) ||
+        (_trv_commands_set == LUMI_W500_CMD_SET)) {
       
       trv_system_mode = (trv_system_mode == 0) ? 0 : 4; //
 
@@ -936,6 +945,16 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
         LUMI_MANUFACTURER_CODE);
     }
 
+    if (_trv_commands_set == LUMI_W500_CMD_SET) {
+      
+      trv_schedule_mode = (trv_schedule_mode == 0) ? 8 : 1; //
+
+      zbGateway.sendAttributeWrite(
+        _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+        LUMI_CUSTOM_CLUSTER_W500_PRESET_ID, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, 
+        &trv_schedule_mode,false, 1, LUMI_MANUFACTURER_CODE);
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -1046,14 +1065,15 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
       }
     }
 
-    if (_trv_commands_set == LUMI_CMD_SET) {
+    if ((_trv_commands_set == LUMI_CMD_SET) ||
+        (_trv_commands_set == LUMI_W500_CMD_SET)) {
       
       if (send_value) {
 
         zbGateway.sendAttributeWrite(
-          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID, 
-          ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &trv_child_lock,false, 1, 
-          LUMI_MANUFACTURER_CODE);
+          _short_addr, _endpoint, LUMI_CUSTOM_CLUSTER, 
+          LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID, ESP_ZB_ZCL_ATTR_TYPE_U8, 1, 
+          &trv_child_lock,false, 1, LUMI_MANUFACTURER_CODE);
         delay(200);
       }
 
@@ -1139,7 +1159,8 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
         (_trv_commands_set == BOSCH_CMD_SET) ||
         (_trv_commands_set == EUROTRONIC_CMD_SET) ||
         (_trv_commands_set == LUMI_CMD_SET) ||
-        (_trv_commands_set == DANFOSS_CMD_SET)) {
+        (_trv_commands_set == DANFOSS_CMD_SET) ||
+        (_trv_commands_set == LUMI_W500_CMD_SET)) {
 
       uint16_t attributes[5] = { 
         ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID, 

@@ -369,7 +369,7 @@
 #define Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001                 0x6007
 #define Z2S_DEVICE_DESC_LUMI_TRV                            0x6008
 #define Z2S_DEVICE_DESC_DANFOSS_ETRV0103                    0x6009
-                                                            //0x600A
+#define Z2S_DEVICE_DESC_LUMI_W500                           0x600A
                                                             //0x600B
                                                             //0x600C
                                                             //0x600D
@@ -2009,15 +2009,25 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_TRV,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
-                             LUMI_CUSTOM_CLUSTER,
-                             ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+      LUMI_CUSTOM_CLUSTER,
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DANFOSS_ETRV0103,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_W500,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+      LUMI_CUSTOM_CLUSTER,
+      ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
     .z2s_device_clusters_count = 1,
@@ -7446,6 +7456,11 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE204_glk6viwg", .model_name = "TS0601",
     .z2s_device_uid = 37900,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_E40,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "Aqara", .model_name = "lumi.airrtc.aeu001",
+    .z2s_device_uid = 38000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_W500,
     .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };

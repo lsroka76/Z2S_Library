@@ -159,6 +159,13 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id) {
     } break;
 
 
+    case Z2S_DEVICE_DESC_LUMI_W500: {
+
+      return LUMI_W500_CMD_SET;
+    } break;
+
+
+
     case Z2S_DEVICE_DESC_DANFOSS_ETRV0103: {
 
       return DANFOSS_CMD_SET;
@@ -255,6 +262,15 @@ void initZ2SDeviceHvacExt(
         trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_INPUT; 
         hvac_room_temperature_min = LUMI_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = LUMI_CMD_SET_HEATSETPOINT_MAX;
+        onOffOnly = true;
+      } break;
+
+
+      case LUMI_W500_CMD_SET: {
+
+        trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE; 
+        hvac_room_temperature_min = LUMI_W500_CMD_SET_HEATSETPOINT_MIN;
+        hvac_room_temperature_max = LUMI_W500_CMD_SET_HEATSETPOINT_MAX;
         onOffOnly = true;
       } break;
 

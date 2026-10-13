@@ -4053,6 +4053,13 @@ void Z2S_onLumiCustomClusterReceive(
         } break;
 
 
+        case LUMI_CUSTOM_CLUSTER_W500_PRESET_ID: {
+
+          msgZ2SDeviceHvac(element, TRV_SCHEDULE_MODE_MSG, 
+            lumi_mode == 8 ? 0 : 2);
+        } break;
+
+
         case LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID: {
 
           log_i("lumi trv sensor type %u", lumi_mode);
@@ -7911,7 +7918,39 @@ uint8_t Z2S_addZ2SDevice(
           Z2S_Core::getZ2SChannelNumberByChannelIndex(trv_thermometer_slot)); 
       } break;
       
-/*****************************************************************************/     
+/*****************************************************************************/   
+
+case Z2S_DEVICE_DESC_LUMI_W500: {
+      
+        addZ2SDeviceTempHumidity(
+          device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC TEMP", 0, false);
+        
+        uint8_t trv_thermometer_slot = first_free_slot;
+        Z2S_setChannelFlags(
+          trv_thermometer_slot, USER_DATA_FLAG_CORRECTIONS_DISABLED);
+        
+        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+        if (first_free_slot == 0xFF) {
+
+          devices_table_full_error_func();
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+
+        addZ2SDeviceHvac(
+          &zbGateway, device, first_free_slot, 
+          Z2S_Core::getZ2SChannelNumberByChannelIndex(trv_thermometer_slot)); 
+
+        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+        if (first_free_slot == 0xFF) {
+
+          devices_table_full_error_func();
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+        addZ2SDeviceElectricityMeter(
+          &zbGateway, device, false, false, first_free_slot, sub_id, true);
+      } break;
+      
+/*****************************************************************************/
 
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0: {
 

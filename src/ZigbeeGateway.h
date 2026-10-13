@@ -176,6 +176,8 @@ typedef struct esp_zb_ota_image_header_s {
 #define LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID                    0x040A //
 #define LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID              0x027D //U8
 
+#define LUMI_CUSTOM_CLUSTER_W500_PRESET_ID                    0x0311//U8 manual:8
+
 #define LUMI_CUSTOM_CLUSTER_SMOKE_ALARM_ID                    0x013A
 #define LUMI_CUSTOM_CLUSTER_SMOKE_DENSITY_ID                  0x013B
 #define LUMI_CUSTOM_CLUSTER_BUZZER_1_ID                       0x013E //U32
