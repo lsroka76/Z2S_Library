@@ -14,9 +14,9 @@
 #include <esp_coexist.h>
 #include <esp_heap_caps.h>
 
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
+//#include <lua.h>
+//#include <lualib.h>
+//#include <lauxlib.h>
 
 #include <ZigbeeGateway.h>
 
@@ -142,7 +142,7 @@ static bool _start_Zigbee = true;
 
 SemaphoreHandle_t saveMutex;
 
-lua_State *LuaState = nullptr;
+//lua_State *LuaState = nullptr;
 
 inline bool is_in_custom_heap(void* ptr) {
     
@@ -747,7 +747,7 @@ void setup() {
     if (Z2S_loadZbDevicesTable()) {
 
       Z2S_initZbDevices(millis());
-      
+
       Z2S_printZbDevicesTableSlots(false);
 
       if (Z2S_loadChannelsTable()) {
@@ -1042,12 +1042,12 @@ void setup() {
   esp_task_wdt_delete(NULL);
   esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
 
-  LuaState = luaL_newstate();
+  /*LuaState = luaL_newstate();
   //luaL_openlibs(LuaState);
   lua_pushcfunction(LuaState, luaopen_base); lua_call(LuaState, 0, 0); 
   lua_pushcfunction(LuaState, luaopen_math); lua_call(LuaState, 0, 0); 
   lua_pushcfunction(LuaState, luaopen_string); lua_call(LuaState, 0, 0); 
-  lua_pushcfunction(LuaState, luaopen_table); lua_call(LuaState, 0, 0);
+  lua_pushcfunction(LuaState, luaopen_table); lua_call(LuaState, 0, 0);*/
 }
 
 zbg_device_params_t *gateway_device;
