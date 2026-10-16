@@ -943,47 +943,29 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       0xFF;
     
     if (zb_device_number_slot < 0xFF) {
+      Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+        zb_device_number_slot);
+
+      if (device) {
         if (flag_set)
-          z2s_zb_devices_table[zb_device_number_slot].user_data_flags |= (1 << bit_id);
+          device->setDeviceUserDataFlags((1 << bit_id), false);
+
         if (flag_clear)
-          z2s_zb_devices_table[zb_device_number_slot].user_data_flags &= ~(1 << bit_id);
-      if (Z2S_saveZbDevicesTable()) {
-        telnet.printf("ZB Device(channel %d) global flags changed successfully.\n\r>", channel_id);
+          device->clearDeviceUserDataFlags((1 << bit_id), false);
+
+        if (device->saveDeviceData()) {
+          telnet.printf(
+            "ZB Device(channel %d) global flags changed successfully.\n\r>",
+            channel_id);
+        }
+      } else {
+        telnet.printf(">Device not found for channel %u\n\r>", channel_id);
       }
     } else {
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
     }  
     return;
     } else
-    if (strcmp(cmd,"UPDATE-ZB-DEVICE-UID") == 0) {
-
-    if (params_number < 2)  {
-      telnet.println(">update-zb-device-uid zb_device_slot uid");
-      return;
-    }
-
-    uint8_t device_slot = strtoul(*(param), nullptr, 0);
-    uint32_t device_new_uid = strtoul(*(param + 1), nullptr, 0);
-    
-    if ((device_slot >= 0) && (device_slot < Z2S_ZB_DEVICES_MAX_NUMBER)) {
-
-      if (z2s_zb_devices_table[device_slot].record_id >= 2) {
-
-        z2s_zb_devices_table[device_slot].device_uid = device_new_uid;
-        
-        if (Z2S_saveZbDevicesTable()) {
-          telnet.printf("ZB Device #%02u UID changed successfully to %lu!\n\r>", device_slot, device_new_uid);
-        } else {
-          telnet.printf("Error saving ZB Devices Table (device #%02u)!\n\r>", device_slot);
-        }
-      } else {
-        telnet.printf("Error - ZB Device #%02u not in V2 data format!\n\r>", device_slot);
-      }
-    } else {
-      telnet.printf("Error - zb_device_slot (%u) not in range [0..%u]\n\r>", device_slot, Z2S_ZB_DEVICES_MAX_NUMBER);
-    }
-    return;
-  } else
     if (strcmp(cmd,"BIND-ZB-DEVICES") == 0) {
 
     if (params_number < 5)  {
@@ -1003,25 +985,30 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       unbind = strtoul(*(param + 5), nullptr, 0);
     
     if ((src_device_slot >= 0) && 
-        (src_device_slot < Z2S_ZB_DEVICES_MAX_NUMBER) &&
+        (src_device_slot < Z2S_DEVICES_MAX_NUMBER) &&
         (dst_device_slot >= 0) && 
-        (dst_device_slot < Z2S_ZB_DEVICES_MAX_NUMBER)) {
+        (dst_device_slot < Z2S_DEVICES_MAX_NUMBER)) {
 
-      if ((z2s_zb_devices_table[src_device_slot].record_id > 0) &&
-          (z2s_zb_devices_table[dst_device_slot].record_id > 0)) {
-          
-          zbGateway.bindDevices(
-					  z2s_zb_devices_table[src_device_slot].ieee_addr, 
-					  z2s_zb_devices_table[dst_device_slot].ieee_addr, 
-					  z2s_zb_devices_table[src_device_slot].short_addr, src_endpoint, 
-            dst_endpoint, cluster_id, unbind);
+      Z2S_Device *src_device = 
+        Z2S_Device::getZ2SDeviceByDeviceIndex(src_device_slot);
+      Z2S_Device *dst_device = 
+        Z2S_Device::getZ2SDeviceByDeviceIndex(dst_device_slot);
+
+      if (src_device && dst_device) {
+
+        zbGateway.bindDevices(
+          src_device->getDeviceIeeeAddress(), 
+          dst_device->getDeviceIeeeAddress(), 
+          src_device->getDeviceShortAddress(), src_endpoint, 
+          dst_endpoint, cluster_id, unbind);
+
       } else {
         telnet.printf("Error - invalid device_slot (source or destination)");
       }
     } else {
       telnet.printf(
         "Error - device slot not in range [0..%u]\n\r>", 
-        Z2S_ZB_DEVICES_MAX_NUMBER);
+        Z2S_DEVICES_MAX_NUMBER);
     }
     return;
   } else

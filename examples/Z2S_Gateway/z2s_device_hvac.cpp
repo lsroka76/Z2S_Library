@@ -4,6 +4,16 @@
 
 uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id) {
 
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(Zb_device_id);
+
+  if (device == nullptr) {
+
+    log_e(
+      "Fatal error - no ZigBee device for id: %u", Zb_device_id);
+
+    return 0xFF;
+  }
+  
   switch (model_id) {
 
 
@@ -15,12 +25,9 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id) {
 
     case Z2S_DEVICE_DESC_TS0601_TRV_ME167: {
 
-      if ((strcmp(Z2S_getZbDeviceManufacturerName(Zb_device_id), 
-            "_TZE200_9xfjixap") == 0) || 
-          (strcmp(Z2S_getZbDeviceManufacturerName(Zb_device_id), 
-            "_TZE200_hvaxb2tc") == 0) || 
-          (strcmp(Z2S_getZbDeviceManufacturerName(Zb_device_id), 
-            "_TZE200_rxq4iti9") == 0))
+      if (device->hasManufacturerName("_TZE200_9xfjixap") ||
+          device->hasManufacturerName("_TZE200_hvaxb2tc") ||
+          device->hasManufacturerName("_TZE200_rxq4iti9")) 
         return me167_no_pi_cmd_set;
       else
         return me167_cmd_set;

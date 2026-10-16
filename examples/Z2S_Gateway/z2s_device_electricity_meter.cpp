@@ -32,6 +32,17 @@ void initZ2SDeviceElectricityMeter(
   bool ignore_zigbee_scaling = false;
   bool extended_data_counter = false;
 
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+    _z2s_channel->Zb_device_id);
+
+  if (device == nullptr) {
+
+    log_e(
+      "Fatal error - no ZigBee device for channel (index %u)", channel_index);
+
+    return;
+  }
+
   switch (_z2s_channel->model_id) {
     
 
@@ -40,12 +51,8 @@ void initZ2SDeviceElectricityMeter(
       _isTuya = true; 
       _active_query = false; //true;
 
-      if ((strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3000_5f43h46b") == 0) ||
-          (strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3000_5f43h46b") == 0) ||
-          (strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3000_w0qqde0g") == 0)) {
+      if (device->hasManufacturerName("_TZ3000_5f43h46b") ||
+          device->hasManufacturerName("_TZ3000_w0qqde0g")) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;
@@ -60,8 +67,7 @@ void initZ2SDeviceElectricityMeter(
       _isTuya = true; 
       _active_query = false; //true;
 
-      if (strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3210_rwmitwj4") == 0) {
+      if (device->hasManufacturerName("_TZ3210_rwmitwj4")) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;
@@ -76,14 +82,10 @@ void initZ2SDeviceElectricityMeter(
       _isTuya = true; 
       _active_query = false;
 
-      if ((strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3000_ww6drja5") == 0) ||
-          (strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3000_fukaa7nc") == 0) ||
-          (strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3210_2uollq9d") == 0) ||
-          (strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3210_2putqrmw") == 0)) {
+      if (device->hasManufacturerName("_TZ3000_ww6drja5") ||
+          device->hasManufacturerName("_TZ3000_fukaa7nc") ||
+          device->hasManufacturerName("_TZ3210_2uollq9d") ||
+          device->hasManufacturerName("_TZ3210_2putqrmw")) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;
@@ -91,8 +93,7 @@ void initZ2SDeviceElectricityMeter(
         ignore_zigbee_scaling = true;
       }
       
-      if (strcmp(Z2S_getZbDeviceManufacturerName(
-            _z2s_channel->Zb_device_id), "_TZ3008_1a8m8wd6") == 0) {
+      if (device->hasManufacturerName("_TZ3008_1a8m8wd6")) {
 
         voltage_multiplier = 1;
         voltage_divisor    = 10;
@@ -344,8 +345,7 @@ void initZ2SDeviceElectricityMeter(
   if (_active_query && (Supla_Z2S_ElectricityMeter->getRefreshMs() == 0))
     Supla_Z2S_ElectricityMeter->setRefreshValue(30);
     
-  if (strcmp(Z2S_getZbDeviceManufacturerName(
-       _z2s_channel->Zb_device_id), "_TZ3000_kqvb5akv") == 0) {
+  if (device->hasManufacturerName("_TZ3000_kqvb5akv")) {
 
     current_multiplier = 1;
     current_divisor    = 1000;
@@ -489,7 +489,7 @@ void updateZ2SDeviceElectricityMeter(
   
   if (Z2S_saveChannelExtendedData(
         channel_number_slot, CHANNEL_EXTENDED_DATA_TYPE_EM,
-        (uint8_t*)&channel_extended_data_em, false))
+        (uint8_t*)&channel_extended_data_em))
 
     log_i("EM channel extended data successfully UPDATED (counters zeroed)"); 
 }

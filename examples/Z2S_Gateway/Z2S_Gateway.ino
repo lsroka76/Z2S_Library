@@ -14,9 +14,9 @@
 #include <esp_coexist.h>
 #include <esp_heap_caps.h>
 
-//#include <lua.h>
-//#include <lualib.h>
-//#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 
 #include <ZigbeeGateway.h>
 
@@ -142,7 +142,7 @@ static bool _start_Zigbee = true;
 
 SemaphoreHandle_t saveMutex;
 
-//lua_State *LuaState = nullptr;
+lua_State *LuaState = nullptr;
 
 inline bool is_in_custom_heap(void* ptr) {
     
@@ -746,9 +746,9 @@ void setup() {
 
     if (Z2S_loadZbDevicesTable()) {
 
-      Z2S_printZbDevicesTableSlots(false);
-
       Z2S_initZbDevices(millis());
+      
+      Z2S_printZbDevicesTableSlots(false);
 
       if (Z2S_loadChannelsTable()) {
 
@@ -1042,8 +1042,12 @@ void setup() {
   esp_task_wdt_delete(NULL);
   esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
 
-  //LuaState = luaL_newstate();
+  LuaState = luaL_newstate();
   //luaL_openlibs(LuaState);
+  lua_pushcfunction(LuaState, luaopen_base); lua_call(LuaState, 0, 0); 
+  lua_pushcfunction(LuaState, luaopen_math); lua_call(LuaState, 0, 0); 
+  lua_pushcfunction(LuaState, luaopen_string); lua_call(LuaState, 0, 0); 
+  lua_pushcfunction(LuaState, luaopen_table); lua_call(LuaState, 0, 0);
 }
 
 zbg_device_params_t *gateway_device;
@@ -1210,18 +1214,17 @@ void loop() {
       "\n\rUTC time attribute %lu\n\rlocal time attribute %lu", 
       time_status_attribute, utc_time_attribute, local_time_attribute);
 
-    for (uint8_t devices_counter = 0; 
-         devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+    for (Z2S_Device *device : Z2S_Devices) {
 
-      if (Z2S_checkZbDeviceFlags(
-            devices_counter, ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC)) {
-        
+      if (device && (device->checkDeviceUserDataFlags(
+            ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC))) {
+
         esp_zb_lock_acquire(portMAX_DELAY);
 
         processTuyaCustomCluster(
-          1, z2s_zb_devices_table[devices_counter].short_addr, 1, 
-          TUYA_MCU_SYNC_TIME, 0, nullptr);
-        
+          1, device->getDeviceShortAddress(), 1, TUYA_MCU_SYNC_TIME, 0, 
+          nullptr);
+
         esp_zb_lock_release();
       }
     }
@@ -1249,28 +1252,28 @@ void loop() {
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
 
-    for (uint8_t devices_counter = 0; 
-         devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+    for (Z2S_Device *device : Z2S_Devices) {
+      if (device && 
+          (device->getDeviceDescId() == 
+            Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR)) {
 
-      if (z2s_zb_devices_table[devices_counter].desc_id == 
-          Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR) {
+        zbg_device_params_t dev_params = {};
 
-        zbg_device_params_t device = {};
+        dev_params.endpoint = 1;
+        dev_params.short_addr = device->getDeviceShortAddress();
 
-        device.endpoint = 1;
-        device.short_addr = z2s_zb_devices_table[devices_counter].short_addr;
-    
         sendTuyaRequestCmdValue32(
-          &zbGateway, &device, TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP, 1, true);
-        
+          &zbGateway, &dev_params, TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP, 1, 
+          true);
+
         delay(2000); //== vTaskDelay
 
         sendTuyaRequestCmdValue32(
-          &zbGateway, &device, TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP, 0, true);
+          &zbGateway, &dev_params, TUYA_SMART_POOL_SENSOR_BACKLIGHT_DP, 0, 
+          true);
       }
-      
-      refresh_time = millis();
     }
+    refresh_time = millis();
   }
 
   if ((!zbGateway.getJoinedDevices().empty()) && 
@@ -1581,13 +1584,14 @@ void loop() {
 
                     if (endpoint_counter == 0) {//(endpoint_id == 1)
                           
-                      uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(
-                        joined_device->ieee_addr);
+                      //uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(
+                      //  joined_device->ieee_addr);
                       
                       //if (zb_device_slot < 0xFF)
                         restart_required = false;
 
-                      zb_device_slot = Z2S_addZbDeviceTableSlot(
+                      //zb_device_slot = 
+                      Z2S_Device * z2s_device = Z2S_addZbDeviceTableSlot(
                         joined_device->ieee_addr, joined_device->short_addr,
                         zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
                         zbGateway.getQueryBasicClusterData()->zcl_model_name,
@@ -1595,14 +1599,13 @@ void loop() {
                         z2s_device_list.z2s_device_desc_id,
                         zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
 
-                      if (zb_device_slot < 0xFF) {
+                      if (z2s_device) {
 
-                        Z2S_syncZbDeviceDescFlags(
-                          devices_desc_counter, zb_device_slot);
-                        Z2S_clearZbDeviceFlags(
-                          zb_device_slot, ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
+                        z2s_device->syncDeviceDescFlags(devices_desc_counter);
+                        z2s_device->clearDeviceUserDataFlags(
+                          ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
                       }
-                      joined_device->zb_device_id = zb_device_slot;
+                      joined_device->zb_device_id = z2s_device->getDeviceIndex();
                     }
                     //if (restart_required)  
                     Z2S_buildSuplaChannels(joined_device, endpoint_counter);
@@ -2045,15 +2048,16 @@ void loop() {
         
         Z2S_printZbDevicesTableSlots();
 
-        uint8_t zb_device_slot = Z2S_findZbDeviceTableSlot(
+        Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(
           joined_device->ieee_addr);
 
-        if (zb_device_slot < 0xFF) {
+        if (z2s_device) {
           
           log_i(
-            "Removing incomplete ZigBee device#%u", zb_device_slot);
+            "Removing incomplete ZigBee device#%u", 
+            z2s_device->getDeviceIndex());
 
-          Z2S_removeZbDevice(zb_device_slot, true);
+          Z2S_removeZbDevice(z2s_device->getDeviceIndex());
         
           Z2S_printZbDevicesTableSlots();
         }

@@ -219,33 +219,26 @@ void Z2S_printChannelsTableSlots(bool toTelnet = false);
 bool Z2S_loadChannelsTable();
 bool Z2S_saveChannelsTable();
 
-bool Z2S_removeChannel(int16_t channel_number_slot, bool save_table = true);
+bool Z2S_removeChannel(int16_t channel_number_slot);
 
 /*****************************************************************************/
 
-uint8_t Z2S_findFirstFreeZbDevicesTableSlot(uint8_t start_slot = 0);
 uint32_t Z2S_getZbDevicesTableSize();
 bool Z2S_saveZbDevicesTable();
 bool Z2S_loadZbDevicesTable();
 bool Z2S_clearZbDevicesTable();
 void Z2S_printZbDevicesTableSlots(bool toTelnet = false);
-uint8_t Z2S_findZbDeviceTableSlot(esp_zb_ieee_addr_t ieee_addr);
-uint8_t Z2S_findZbDeviceTableSlot(uint16_t short_addr);
-bool Z2S_hasZbDevice(uint32_t desc_id);
 void Z2S_initZbDevices(uint32_t init_ms);
 
-uint8_t Z2S_addZbDeviceTableSlot(
+Z2S_Device *Z2S_addZbDeviceTableSlot(
   esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr,
   const char *manufacturer_name, const char *model_name,
   uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source, 
   bool join_init = false);
 
-bool Z2S_removeZbDevice(uint8_t zb_device_slot, bool save_table = true);
-bool Z2S_removeZbDeviceWithAllChannels(uint8_t zb_device_slot, 
-  bool save_tables = true);
+bool Z2S_removeZbDevice(uint8_t zb_device_slot);
+bool Z2S_removeZbDeviceWithAllChannels(uint8_t zb_device_slot);
 bool Z2S_removeAllZbDeviceWithAllChannels();
-
-z2s_zb_device_params_t *Z2S_getZbDevicePtr(uint8_t Zb_device_id);
 
 
 /*****************************************************************************/
@@ -298,35 +291,9 @@ bool Z2S_checkChannelFlags(
 
 /*****************************************************************************/
 
-void Z2S_syncZbDeviceDescFlags(
-  uint32_t devices_desc_slot, uint8_t zb_device_slot);
-
-bool Z2S_setZbDeviceFlags(int8_t device_number_slot, uint32_t flags_to_set);
-
-bool Z2S_clearZbDeviceFlags(
-  int8_t device_number_slot, uint32_t flags_to_clear);
-
-bool Z2S_checkZbDeviceFlags(
-  int8_t device_number_slot, uint32_t flags_to_check);
-
-/*****************************************************************************/
-
-const char *Z2S_getZbDeviceManufacturerName(int8_t device_number_slot);
-const char *Z2S_getZbDeviceModelName(int8_t device_number_slot);
-char *Z2S_getZbDeviceLocalName(int8_t device_number_slot);
-
-bool Z2S_isZbDeviceModelName(
-  int8_t device_number_slot, const char *zb_device_name);
-
-/*****************************************************************************/
-
-bool Z2S_updateZbDeviceUidIdx(
-  uint8_t zb_device_slot, 
-  const char *manufacturer_name, const char *model_name);
-
-/*****************************************************************************/
-
 void Z2S_initSuplaChannels();
+
+/*****************************************************************************/
 
 uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms);
 
@@ -393,16 +360,14 @@ void Z2S_initPushoverMessages();
 
 /*****************************************************************************/
 
-uint16_t Z2S_getChannelExtendedDataTypeSize(
-  uint8_t extended_data_type);
+uint16_t Z2S_getChannelExtendedDataTypeSize(uint8_t extended_data_type);
 
 bool Z2S_saveChannelExtendedData(
   int16_t channel_number_slot, uint8_t extended_data_type, 
-  uint8_t *extended_data, bool save_table = true);
+  uint8_t *extended_data);
 
 bool Z2S_removeChannelExtendedData(
-  int16_t channel_number_slot, uint8_t extended_data_type, 
-  bool save_table = true);
+  int16_t channel_number_slot, uint8_t extended_data_type);
 
 bool Z2S_loadChannelExtendedData(
   int16_t channel_number_slot, uint8_t extended_data_type,
@@ -557,11 +522,6 @@ uint8_t Z2S_addZ2SDevice(
 void Z2S_buildSuplaChannels(
   zbg_device_params_t *joined_device, uint8_t endpoint_counter);
 
-uint8_t Z2S_addZ2SZbDevice(
-  const char *manufacturer_name, const char *model_name,
-  esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, uint8_t endpoints,
-  uint32_t desc_id);
-
 void updateTimeout(
   uint8_t channel_number_slot, uint8_t timeout, uint8_t selector = 0,
   uint32_t timings_secs = 0);
@@ -624,12 +584,10 @@ public:
     // delay sending subdevice details to server by 1 s
     lastSendTime = millis();
 
-    for (int i = 0; i < Z2S_ZB_DEVICES_MAX_NUMBER; i++) {
-
-      if (z2s_zb_devices_table[i].record_id > 0)
-        //z2s_zb_devices_table[i].reserved_0 = 0;
-        z2s_zb_devices_table[i].user_data_flags &= 
-          ~ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED;
+    for (Z2S_Device *device : Z2S_Devices) {
+        
+      device->clearDeviceUserDataFlags(
+        ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED, false);
     }
   }
 
@@ -642,43 +600,44 @@ public:
     }
     lastSendTime = millis() - 11500;
 
-    for (int i = 0; i < Z2S_ZB_DEVICES_MAX_NUMBER; i++) {
+    for (Z2S_Device *device : Z2S_Devices) {
 
 
-      if (z2s_zb_devices_table[i].record_id > 0) {
-
-        if (z2s_zb_devices_table[i].user_data_flags & 
-          ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED)
+      if (device->checkDeviceUserDataFlags(
+            ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED))
         continue;
 
-        TDS_SubdeviceDetails subdeviceDetails = {};
+      TDS_SubdeviceDetails subdeviceDetails = {};
     
-        subdeviceDetails.SubDeviceId = i + 1;
+      subdeviceDetails.SubDeviceId = device->getDeviceIndex() + 1;
     
-        snprintf(
-          subdeviceDetails.Name, SUPLA_DEVICE_NAME_MAXSIZE - 1, "%s (%s::%s)",
-          Z2S_getZbDeviceLocalName(i), Z2S_getZbDeviceManufacturerName(i), 
-          Z2S_getZbDeviceModelName(i));
+      snprintf(
+        subdeviceDetails.Name, SUPLA_DEVICE_NAME_MAXSIZE - 1, "%s (%s::%s)",
+        device->getDeviceLocalName(), device->getManufacturerName(), 
+        device->getModelName());
 
-        strncpy(subdeviceDetails.SoftVer, "", SUPLA_SOFTVER_MAXSIZE);
+      strncpy(subdeviceDetails.SoftVer, "", SUPLA_SOFTVER_MAXSIZE);
 
-        snprintf(
-          subdeviceDetails.ProductCode, SUPLA_SUBDEVICE_PRODUCT_CODE_MAXSIZE, 
-          "");
+      snprintf(
+        subdeviceDetails.ProductCode, SUPLA_SUBDEVICE_PRODUCT_CODE_MAXSIZE, 
+        "");
 
-        char ieee_addr_str[24];
-        ieee_addr_to_str(ieee_addr_str, z2s_zb_devices_table[i].ieee_addr);
-        strncpy(
-          subdeviceDetails.SerialNumber, ieee_addr_str, 
-          SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE);
+      char ieee_addr_str[24];
+      ieee_addr_to_str(ieee_addr_str, device->getDeviceIeeeAddress());
+        
+      strncpy(
+        subdeviceDetails.SerialNumber, ieee_addr_str, 
+        SUPLA_SUBDEVICE_SERIAL_NUMBER_MAXSIZE);
 
-        srpc->sendSubdeviceDetails(&subdeviceDetails);
-        z2s_zb_devices_table[i].user_data_flags |= 
-          ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED;
-        dataSend = true;
-        break;
-      }
+      srpc->sendSubdeviceDetails(&subdeviceDetails);
+        
+      device->setDeviceUserDataFlags(
+        ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED, false);
+          
+      dataSend = true;
+      break;
     }
+  
     return !dataSend;
   }
 

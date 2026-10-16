@@ -339,10 +339,10 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
 
           temperature_calibration /= 100;
 
-          sendTuyaRequestCmdValue32(_short_addr, _endpoint, 
-                                    ts0601_command_sets_table[_trv_commands_set].
-                                      ts0601_cmd_set_temperature_calibration_dp_id,
-                                    temperature_calibration);
+          sendTuyaRequestCmdValue32(
+            _short_addr, _endpoint, ts0601_command_sets_table[
+              _trv_commands_set].ts0601_cmd_set_temperature_calibration_dp_id,
+            temperature_calibration);
         }
       } else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 

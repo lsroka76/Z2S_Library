@@ -25,9 +25,6 @@ void initZ2SDeviceActionTrigger(
   auto Supla_Z2S_ActionTrigger = new Supla::Control::VirtualRelaySceneSwitch(
     0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER, debounce_time_ms);
 
-  Supla_Z2S_ActionTrigger->setZ2SZbDevice(Z2S_getZbDevicePtr(
-    _z2s_channel->Zb_device_id));
-
   Supla_Z2S_ActionTrigger->setZ2SChannel(channel_index, _z2s_channel);
   
   Supla_Z2S_ActionTrigger->getChannel()->setChannelNumber(

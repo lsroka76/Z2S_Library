@@ -103,7 +103,6 @@ static const char *invalid_extended_data_counter_key =
 
 extern portMUX_TYPE Z2S_globalMutex;
 
-extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZB_DEVICES_MAX_NUMBER];
 
 /*****************************************************************************/
 
@@ -119,6 +118,633 @@ class Z2S_TRVInterface;
 class HvacBaseEE;
 }
 }
+
+
+/*****************************************************************************/
+/*****************************************************************************/
+
+class Z2S_Device;
+
+inline std::vector<Z2S_Device *> Z2S_Devices;
+
+/*****************************************************************************/
+
+class Z2S_Device {
+
+  public:
+
+    Z2S_Device() {
+
+      Z2S_Devices.push_back(this);
+    }
+
+    ~Z2S_Device() {
+
+      auto device_it = std::find(Z2S_Devices.begin(), Z2S_Devices.end(), this);
+      
+      if (device_it != Z2S_Devices.end())
+        Z2S_Devices.erase(device_it);
+    }
+
+    int16_t getDeviceIndex() const {
+
+      return _device_index;
+    }
+
+    void setDeviceIndex(int16_t index) {
+    
+      _device_index = index;
+    }
+
+    void setZ2SDevice(
+      int16_t device_index, z2s_zb_device_params_t *z2s_device) {
+
+      _device_index = device_index;
+      memcpy(&_z2s_device, z2s_device, sizeof(z2s_zb_device_params_t));
+  }
+
+    bool saveDeviceData() {
+
+      if (_device_index >= 0)
+        return devicesStorage.save(_device_index, _z2s_device);
+      else
+        return false;
+    }
+
+    bool updateDeviceUidIdx(
+      const char *manufacturer_name = nullptr, 
+      const char *model_name = nullptr);
+
+    void syncDeviceDescFlags(uint32_t devices_desc_slot);
+
+    const char* getManufacturerName();
+    bool hasManufacturerName(const char *manufacturer_name);
+    const char* getModelName();
+    bool isModelName(const char *zb_device_name);
+
+    static Z2S_Device *getZ2SDeviceByDeviceIndex(int16_t device_index);
+    static Z2S_Device *getZ2SDeviceByIeeeAddress(esp_zb_ieee_addr_t ieee_addr);
+    static Z2S_Device *getZ2SDeviceByShortAddress(uint16_t short_addr);
+    static bool hasZbDevice(uint32_t desc_id);
+
+    bool checkDeviceUserDataFlags(uint32_t flags_to_check) const {
+
+      return ((_z2s_device.user_data_flags & flags_to_check) == flags_to_check);
+    }
+
+    bool setDeviceUserDataFlags(uint32_t flags_to_set, bool save = true) {
+
+      _z2s_device.user_data_flags |= flags_to_set;
+        
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    bool clearDeviceUserDataFlags(uint32_t flags_to_clear, bool save = true) {
+
+      _z2s_device.user_data_flags &= ~flags_to_clear;
+      
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getRecordId() const {
+
+      return _z2s_device.record_id;
+    }
+
+    bool setRecordId(uint32_t record_id, bool save = true) {
+
+      _z2s_device.record_id = record_id;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getDeviceUid() const {
+
+      return _z2s_device.device_uid;
+    }
+
+    bool setDeviceUid(uint32_t device_uid, bool save = true) {
+
+      _z2s_device.device_uid = device_uid;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getDevicesListIdx() const {
+
+      return _z2s_device.devices_list_idx;
+    }
+
+    bool setDevicesListIdx(uint32_t idx, bool save = true) {
+
+      _z2s_device.devices_list_idx = idx;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getDeviceDescId() const {
+
+      return _z2s_device.desc_id;
+    }
+
+    bool setDeviceDescId(uint32_t desc_id, bool save = true) {
+
+      _z2s_device.desc_id = desc_id;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getDeviceGuiId() const {
+
+      return _z2s_device.device_gui_id;
+    }
+
+    bool setDeviceGuiId(uint32_t gui_id, bool save = true) {
+
+      _z2s_device.device_gui_id = gui_id;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    char *getDeviceLocalName() {
+
+      return _z2s_device.device_local_name;
+    }
+
+    bool setDeviceLocalName(const char *name, bool save = true) {
+
+      size_t device_local_name_size_w = mbstrnlen(
+        name, DEVICE_LOCAL_NAME_MAX_SIZE - 1);
+
+      strncpy(_z2s_device.device_local_name, name, device_local_name_size_w);
+
+      _z2s_device.device_local_name[device_local_name_size_w] = '\0';
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t *getDeviceIeeeAddress() {
+
+      return _z2s_device.ieee_addr;
+    }
+
+    bool setDeviceIeeeAddress(esp_zb_ieee_addr_t addr, bool save = true) {
+
+      memcpy(_z2s_device.ieee_addr, addr, sizeof(esp_zb_ieee_addr_t));
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint16_t getDeviceShortAddress() const {
+
+      return _z2s_device.short_addr;
+    }
+
+    bool setDeviceShortAddress(uint16_t short_addr, bool save = true) {
+
+      _z2s_device.short_addr = short_addr;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t getEndpointsCount() const {
+
+      return _z2s_device.endpoints_count;
+    }
+
+    bool setEndpointsCount(uint8_t count, bool save = true) {
+
+      _z2s_device.endpoints_count = count;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t getPowerSource() const {
+
+      return _z2s_device.power_source;
+    }
+
+    bool setPowerSource(uint8_t power_source, bool save = true) {
+
+      _z2s_device.power_source = power_source;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    int8_t getRssi() const {
+
+      return _z2s_device.rssi;
+    }
+
+    bool setRssi(int8_t rssi, bool save = true) {
+
+      _z2s_device.rssi = rssi;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t getBatteryPercentage() const {
+
+      return _z2s_device.battery_percentage;
+    }
+
+    bool setBatteryPercentage(uint8_t percentage, bool save = true) {
+
+      _z2s_device.battery_percentage = percentage;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t getBatteryVoltageMin() const {
+
+      return _z2s_device.battery_voltage_min;
+    }
+
+    bool setBatteryVoltageMin(uint8_t min_v, bool save = true) {
+
+      _z2s_device.battery_voltage_min = min_v;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t getBatteryVoltageMax() const {
+
+      return _z2s_device.battery_voltage_max;
+    }
+
+    bool setBatteryVoltageMax(uint8_t max_v, bool save = true) {
+
+      _z2s_device.battery_voltage_max = max_v;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getLastSeenMs() const {
+
+      return _z2s_device.last_seen_ms;
+    }
+
+    bool setLastSeenMs(uint32_t ms, bool save = true) {
+
+      _z2s_device.last_seen_ms = ms;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getKeepAliveMs() const {
+
+      return _z2s_device.keep_alive_ms;
+    }
+
+    bool setKeepAliveMs(uint32_t ms, bool save = true) {
+
+      _z2s_device.keep_alive_ms = ms;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getTimeoutMs() const {
+
+      return _z2s_device.timeout_ms;
+    }
+
+    bool setTimeoutMs(uint32_t ms, bool save = true) {
+
+      _z2s_device.timeout_ms = ms;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getUserDataFlags() const {
+
+      return _z2s_device.user_data_flags;
+    }
+
+    bool setUserDataFlags(uint32_t flags, bool save = true) {
+
+      _z2s_device.user_data_flags = flags;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getUserData1() const {
+
+      return _z2s_device.user_data_1;
+    }
+
+    bool setUserData1(uint32_t data, bool save = true) {
+
+      _z2s_device.user_data_1 = data;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getUserData2() const {
+
+      return _z2s_device.user_data_2;
+    }
+
+    bool setUserData2(uint32_t data, bool save = true) {
+
+      _z2s_device.user_data_2 = data;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint64_t getUserData3() const {
+
+      return _z2s_device.user_data_3;
+    }
+
+    bool setUserData3(uint64_t data, bool save = true) {
+
+      _z2s_device.user_data_3 = data;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint64_t getUserData4() const {
+
+      return _z2s_device.user_data_4;
+    }
+
+    bool setUserData4(uint64_t data, bool save = true) {
+
+      _z2s_device.user_data_4 = data;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getSmartValveDataValue() const {
+
+      return _z2s_device.smart_valve_data.value;
+    }
+
+    bool setSmartValveDataValue(uint32_t value, bool save = true) {
+
+      _z2s_device.smart_valve_data.value = value;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getSmartValveDataProgram() const {
+
+      return _z2s_device.smart_valve_data.program;
+    }
+
+    bool setSmartValveDataProgram(uint32_t program, bool save = true) {
+
+      _z2s_device.smart_valve_data.program = program;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getSmartValveDataPauseTime() const {
+
+      return _z2s_device.smart_valve_data.pause_time;
+    }
+
+    bool setSmartValveDataPauseTime(uint32_t time, bool save = true) {
+
+      _z2s_device.smart_valve_data.pause_time = time;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint32_t getSmartValveDataCycles() const {
+
+      return _z2s_device.smart_valve_data.cycles;
+    }
+
+    bool setSmartValveDataCycles(uint32_t cycles, bool save = true) {
+
+      _z2s_device.smart_valve_data.cycles = cycles;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint16_t getSmartDualValveDataTotalDuration() const {
+
+      return _z2s_device.smart_dual_valve_data.total_duration;
+    }
+
+    bool setSmartDualValveDataTotalDuration(
+      uint16_t duration, bool save = true) {
+
+      _z2s_device.smart_dual_valve_data.total_duration = duration;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint16_t getSmartDualValveDataIrrigationDuration() const {
+
+      return _z2s_device.smart_dual_valve_data.irrigation_duration;
+    }
+
+    bool setSmartDualValveDataIrrigationDuration(
+      uint16_t duration, bool save = true) {
+
+      _z2s_device.smart_dual_valve_data.irrigation_duration = duration;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint16_t getSmartDualValveDataPauseDuration() const {
+
+      return _z2s_device.smart_dual_valve_data.pause_duration;
+    }
+
+    bool setSmartDualValveDataPauseDuration(
+      uint16_t duration, bool save = true) {
+
+      _z2s_device.smart_dual_valve_data.pause_duration = duration;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint16_t getSmartDualValveDataIrrigationVolume() const {
+
+      return _z2s_device.smart_dual_valve_data.irrgation_volume;
+    }
+
+    bool setSmartDualValveDataIrrigationVolume(
+      uint16_t volume, bool save = true) {
+
+      _z2s_device.smart_dual_valve_data.irrgation_volume = volume;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint16_t getSmartDualValveDataFailSafeDuration() const {
+
+      return _z2s_device.smart_dual_valve_data.fail_safe_duration;
+    }
+
+    bool setSmartDualValveDataFailSafeDuration(
+      uint16_t duration, bool save = true) {
+
+      _z2s_device.smart_dual_valve_data.fail_safe_duration = duration;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t getSmartDualValveDataChannelId() const {
+
+      return _z2s_device.smart_dual_valve_data.channel_id;
+    }
+
+    bool setSmartDualValveDataChannelId(uint8_t channel_id, bool save = true) {
+
+      _z2s_device.smart_dual_valve_data.channel_id = channel_id;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t getSmartDualValveDataProgramId() const {
+
+      return _z2s_device.smart_dual_valve_data.program_id;
+    }
+
+    bool setSmartDualValveDataProgramId(uint8_t program_id, bool save = true) {
+
+      _z2s_device.smart_dual_valve_data.program_id = program_id;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    uint8_t getSmartDualValveDataUnitId() const {
+
+      return _z2s_device.smart_dual_valve_data.unit_id;
+    }
+
+    bool setSmartDualValveDataUnitId(uint8_t unit_id, bool save = true) {
+
+      _z2s_device.smart_dual_valve_data.unit_id = unit_id;
+
+      if (save)
+        return saveDeviceData();
+      else
+        return true;
+    }
+
+    bool isAdvancedDevice();
+    bool hasTuyaCustomCluster();
+
+  protected:
+
+  z2s_zb_device_params_t _z2s_device {};
+  int16_t _device_index = -1;
+
+};
+
+
+/*****************************************************************************/
+/*****************************************************************************/
 
 class Z2S_Core;
 
@@ -171,16 +797,6 @@ public:
     return _z2s_element;
   }
 
-  void setZ2SZbDevice(z2s_zb_device_params_t *z2s_zb_device) {
-
-    _z2s_zb_device = z2s_zb_device;
-  };
-
-  z2s_zb_device_params_t *getZ2SZbDevice() {
-
-    return _z2s_zb_device;
-  };
-
   void setZ2SChannel(
     int16_t channel_index, z2s_device_params_t *z2s_channel) {
 
@@ -204,11 +820,11 @@ public:
     return _z2s_channel.Zb_device_id;
   }
 
-  bool setZbDeviceId(uint8_t Zb_device_id) {
+  bool setZbDeviceId(uint8_t Zb_device_id) { 
     
     _z2s_channel.Zb_device_id = Zb_device_id;
     if (Zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER)
-      _z2s_zb_device = z2s_zb_devices_table + Zb_device_id;
+      _z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(Zb_device_id);
     return true;
   }
 
@@ -318,7 +934,7 @@ public:
 
   bool checkChannelUserDataFlags(uint32_t flags_to_check) {
 
-    return (_z2s_channel.user_data_flags & flags_to_check);
+    return ((_z2s_channel.user_data_flags & flags_to_check) == flags_to_check);
     
   }
 
@@ -1126,14 +1742,6 @@ public:
     _channel_index = channel_index;
   }
 
-  uint32_t getZbDeviceModelId() {
-
-    if (_z2s_zb_device)
-      return  _z2s_zb_device->desc_id;
-    else
-      return 0;
-  };
-
   uint32_t getChannelModelId() {
 
     return _z2s_channel.model_id;
@@ -1145,47 +1753,77 @@ public:
     return true;
   };
 
-  uint32_t getZbDeviceLastSeenMs() {
+  uint32_t getZbDeviceModelId() {
 
-    if (_z2s_zb_device)
-      return _z2s_zb_device->last_seen_ms;
+    if (_z2s_device)
+      return _z2s_device->getDeviceDescId();
     else
       return 0;
-  };
+  }
+
+  uint32_t getZbDeviceLastSeenMs() {
+
+    if (_z2s_device)
+      return _z2s_device->getLastSeenMs();
+    else
+      return 0;
+  }
 
   void setZbDeviceLastSeenMs(uint32_t last_seen_ms) {
 
-    _z2s_zb_device->last_seen_ms = last_seen_ms;
-
-  };
+    if (_z2s_device)
+      _z2s_device->setLastSeenMs(last_seen_ms, false);
+  }
 
   int8_t getZbDeviceLastRSSI() {
 
-    if (_z2s_zb_device)
-      return _z2s_zb_device->rssi;
+    if (_z2s_device)
+      return _z2s_device->getRssi();
     else
       return 0;
-  };
+  }
 
   uint8_t getZbDeviceLastRSSIPercentage() {
 
-    if (_z2s_zb_device)
-     
-      return map(_z2s_zb_device->rssi, -100, -30, 0, 100);
+    if (_z2s_device)
+      return map(_z2s_device->getRssi(), -100, -30, 0, 100);
     else
       return 0xFF;
-  };
+  }
 
   uint8_t getZbDeviceLastBatteryLevelPercentage() {
 
-    if (_z2s_zb_device)
-     
+    if (_z2s_device)
       return checkChannelUserDataFlags(
         USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL) ? 0xFF :
-        _z2s_zb_device->battery_percentage;
+        _z2s_device->getBatteryPercentage();
     else
       return 0xFF;
-  };
+  }
+  
+  const char *getZbDeviceManufacturerName() {
+
+    if (_z2s_device)
+      return _z2s_device->getManufacturerName();
+    else
+      return "NO DEVICE!";
+  }
+
+  const char *getZbDeviceModelName() {
+
+    if (_z2s_device)
+      return _z2s_device->getModelName();
+    else
+      return "NO DEVICE!";
+  }
+
+  const char *getZbDeviceLocalName() {
+
+    if (_z2s_device)
+      return _z2s_device->getDeviceLocalName();
+    else
+      return "NO DEVICE!";
+  }
 
 /*****************************************************************************/
 
@@ -1368,8 +2006,8 @@ public:
 
 protected:
 
-  z2s_zb_device_params_t *_z2s_zb_device = nullptr;
-  z2s_device_params_t _z2s_channel;
+  Z2S_Device *_z2s_device = nullptr;
+  z2s_device_params_t _z2s_channel {};
   union {
     struct {
       uint16_t _short_addr;
@@ -1380,61 +2018,6 @@ protected:
   };
   Supla::Element* _z2s_element = nullptr;
   int16_t _channel_index = -1;
-};
-
-class Z2S_Device;
-
-inline std::vector<Z2S_Device *> Z2S_Devices;
-
-class Z2S_Device {
-
-  public:
-
-    Z2S_Device() {
-
-      Z2S_Devices.push_back(this);
-   }
-
-    ~Z2S_Device() {
-
-      auto device_it = std::find(Z2S_Devices.begin(), Z2S_Devices.end(), this);
-      
-      if (device_it != Z2S_Devices.end())
-        Z2S_Devices.erase(device_it);
-    }
-
-    int16_t getDeviceIndex() {
-
-      return _device_index;
-    }
-
-    uint16_t getDeviceShortAddress() {
-
-      return _z2s_device.short_addr;
-    }
-
-    uint8_t *getDeviceIeeeAddress() {
-
-      return _z2s_device.ieee_addr;
-    }    
-
-    bool saveDeviceData() {
-
-      if (_device_index >= 0)
-        return devicesStorage.save(_device_index, _z2s_device);
-      else
-        return false;
-    }
-
-    static Z2S_Device *getZ2SDeviceByDeviceIndex(int16_t device_index);
-    static Z2S_Device *getZ2SDeviceByIeeeAddress(esp_zb_ieee_addr_t ieee_addr);
-    static Z2S_Device *getZ2SDeviceByShortAddress(uint16_t short_addr);
-
-  protected:
-
-  z2s_zb_device_params_t _z2s_device;
-  int16_t _device_index = -1;
-
 };
 
 #endif //SRC_Z2S_COMMON_H_

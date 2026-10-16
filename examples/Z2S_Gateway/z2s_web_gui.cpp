@@ -1127,7 +1127,7 @@ bool hexToBytes(const char *src, uint8_t dst[8]) {
 
 /*****************************************************************************/
 
-bool isAdvancedDevice(uint8_t zb_device_id) {
+/*bool isAdvancedDevice(uint8_t zb_device_id) {
 
 	auto zb_device = z2s_zb_devices_table[zb_device_id];
 
@@ -1149,7 +1149,7 @@ bool isAdvancedDevice(uint8_t zb_device_id) {
 		}
 	}
 	return false;
-}
+} */
 
 /*****************************************************************************/
 
@@ -3476,66 +3476,57 @@ void buildAdvancedDevicesTabGUI() {
 	  Control::Color::Dark, advanced_devices_tab,
 	  advancedDeviceSelectorCallback);
 
-	for (uint8_t devices_counter = 0;
-	     devices_counter < Z2S_ZB_DEVICES_MAX_NUMBER; devices_counter++) {
+	for (Z2S_Device *device : Z2S_Devices) {
 
-		if (isAdvancedDevice(devices_counter)) {
+    if (device->isAdvancedDevice()) {
 
-			switch (z2s_zb_devices_table[devices_counter].desc_id) {
+      switch (device->getDeviceDescId()) {
 
+        case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE:
+          isSonoffValvePresent = true;
+          break;
 
-				case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE:
+        case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE:
+          isSonoffDualValvePresent = true;
+          break;
 
-					isSonoffValvePresent = true;
-					break;
+        case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
+          isTuyaGasDetectorPresent = true;
+          break;
 
-
-				case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE:
-
-					isSonoffDualValvePresent = true;
-					break;
-
-
-				case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
-
-					isTuyaGasDetectorPresent = true;
-					break;
-
-
-				case Z2S_DEVICE_DESC_MOES_ALARM:
-
-					isMoesAlarmPresent = true;
-					break;
-			}
-		}
-	}
+        case Z2S_DEVICE_DESC_MOES_ALARM:
+          isMoesAlarmPresent = true;
+          break;
+      }
+    }
+  }
 	working_str = three_dots_str;
 	advanced_device_info_label = ESPUI.addControl(
 	  Control::Type::Label, "Advanced ZigBee device", working_str,
 	  Control::Color::Dark, advanced_devices_tab);
 
 	//SONOFF VALVE SWV
-	if (Z2S_hasZbDevice(Z2S_DEVICE_DESC_SONOFF_SMART_VALVE)) {
+	if (Z2S_Device::hasZbDevice(Z2S_DEVICE_DESC_SONOFF_SMART_VALVE)) {
 
 		buildSonoffValveGUI(advanced_devices_tab);
 		enableSonoffValveGUI(false);
 	}
 
 	//SONOFF VALVE SWV-ZF2
-	if (Z2S_hasZbDevice(Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE)) {
+	if (Z2S_Device::hasZbDevice(Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE)) {
 
 		buildSonoffDualValveGUI(advanced_devices_tab);
 		enableSonoffDualValveGUI(false);
 	}
 
 	//GAS DETECTOR
-	if (Z2S_hasZbDevice(Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR)) {
+	if (Z2S_Device::hasZbDevice(Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR)) {
 
 		buildTuyaGasDetectorGUI(advanced_devices_tab);
 		enableTuyaGasDetectorGUI(false);
 	}
 	//MOES ALARM
-	if (Z2S_hasZbDevice(Z2S_DEVICE_DESC_MOES_ALARM)) {
+	if (Z2S_Device::hasZbDevice(Z2S_DEVICE_DESC_MOES_ALARM)) {
 
 		buildMoesAlarmGUI(advanced_devices_tab);
 		enableMoesAlarmGUI(false);
@@ -4167,23 +4158,25 @@ bool buildZbDevicesSelectJsonPayload(
 	extractSelectorIds(selectors_number, args, selector_ids);
 	va_end(args);
 
-	return buildSelectJsonPayloadGeneric(
-	  selected_value, selectors_number, selector_ids, "Select device...",
-	  [&](auto add_device_option) {
-		  for (uint8_t i = 0; i < Z2S_ZB_DEVICES_MAX_NUMBER; i++) {
-			  auto &dev = z2s_zb_devices_table[i];
+		return buildSelectJsonPayloadGeneric(
+			selected_value, selectors_number, selector_ids, "Select device...",
+			[&](auto add_device_option) {
+				
+				for (Z2S_Device *device : Z2S_Devices) {
 
-			  if (dev.record_id && ((select_type == ZB_DEVICE_SELECT_TYPE_ALL) || 
-						(select_type == ZB_DEVICE_SELECT_TYPE_AD && 
-							isAdvancedDevice(i)) ||
-						(select_type == ZB_DEVICE_SELECT_TYPE_TCC && 
-							hasTuyaCustomCluster(dev.desc_id)))) {
+					if (device->getRecordId() && 
+							((select_type == ZB_DEVICE_SELECT_TYPE_ALL) || 
+							(select_type == ZB_DEVICE_SELECT_TYPE_AD && 
+								device->isAdvancedDevice()) ||
+							(select_type == ZB_DEVICE_SELECT_TYPE_TCC && 
+								device->hasTuyaCustomCluster()))) {
 
-				  if (!add_device_option(i, dev.device_local_name)) return false;
-			  }
-		  }
-		  return true;
-	  });
+						if (!add_device_option(device->getDeviceIndex(), 
+									device->getDeviceLocalName())) return false;
+					}
+				}
+				return true;
+  	});
 }
 
 /*****************************************************************************/
@@ -4277,26 +4270,31 @@ bool buildTuyaDatapointsSelectJsonPayload(
 	va_end(args);
 
 	return buildSelectJsonPayloadGeneric(
-	  selected_value, selectors_number, selector_ids,
-	  "Select predefined datapoint...", [&](auto add_Tuya_datapoint_option) {
-		  if (current_Tuya_device_id == -1)
-			  return true;
+    selected_value, selectors_number, selector_ids,
+    "Select predefined datapoint...", [&](auto add_Tuya_datapoint_option) {
+      if (current_Tuya_device_id == -1)
+        return true;
 
-		  uint32_t z2s_current_device_desc_id =
-		    z2s_zb_devices_table[current_Tuya_device_id].desc_id;
+      Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+				current_Tuya_device_id);
 
-		  for (const auto &Tuya_datapoint : Tuya_datapoints) {
+      if (!device)
+        return true;
 
-			  if (Tuya_datapoint.z2s_device_desc_id == z2s_current_device_desc_id) {
+      uint32_t z2s_current_device_desc_id = device->getDeviceDescId();
 
-				  uint32_t datapoint_position = &Tuya_datapoint - Tuya_datapoints;
-				  if (!add_Tuya_datapoint_option(
-				        datapoint_position, Tuya_datapoint.Tuya_datapoint_name))
-					  return false;
-			  }
-		  }
-		  return true;
-	  });
+      for (const auto &Tuya_datapoint : Tuya_datapoints) {
+
+        if (Tuya_datapoint.z2s_device_desc_id == z2s_current_device_desc_id) {
+
+          uint32_t datapoint_position = &Tuya_datapoint - Tuya_datapoints;
+          if (!add_Tuya_datapoint_option(
+                datapoint_position, Tuya_datapoint.Tuya_datapoint_name))
+            return false;
+        }
+      }
+      return true;
+    });
 }
 
 /*****************************************************************************/
@@ -5813,7 +5811,7 @@ void Z2S_loopWebGUI() {
 
 						Z2S_saveChannelExtendedData(
 						  channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB,
-						  (uint8_t *)&channel_extended_data_sb, true);
+						  (uint8_t *)&channel_extended_data_sb);
 
 						auto sbInstance = Z2S_Core::getSwitchBotRelayInstance(channel_slot);
 						if (sbInstance)
@@ -5981,84 +5979,83 @@ void enableClustersAttributesControls(bool enable) {
 	for (uint8_t i = device_endpoint_number; i < device_last_enum_position; i++)
 		enableControlStyle(clusters_attributes_table[i], enable);
 
-	enable ? controls_enabled_flags |= CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG : controls_enabled_flags &= ~CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG;
+	enable ? controls_enabled_flags |= CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG : 
+		controls_enabled_flags &= ~CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG;
 }
 
-void updateDeviceInfoLabel(uint8_t device_slot) {
+/*****************************************************************************/
 
-	if ((device_slot < 0) || (device_slot >= Z2S_ZB_DEVICES_MAX_NUMBER)) {
+void updateDeviceInfoLabel(uint8_t device_index) {
 
-		enableDeviceControls(false);
-		return;
-	}
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_index);
 
-	enableDeviceControls(true);
+  if (device == nullptr) {
 
-	char general_purpose_gui_buffer[768] = {};
-	char ieee_addr_str[24] = {};
+    enableDeviceControls(false);
+    return;
+  }
 
-	snprintf_P(
-	  ieee_addr_str, 24, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
-	  z2s_zb_devices_table[device_slot].ieee_addr[7],
-	  z2s_zb_devices_table[device_slot].ieee_addr[6],
-	  z2s_zb_devices_table[device_slot].ieee_addr[5],
-	  z2s_zb_devices_table[device_slot].ieee_addr[4],
-	  z2s_zb_devices_table[device_slot].ieee_addr[3],
-	  z2s_zb_devices_table[device_slot].ieee_addr[2],
-	  z2s_zb_devices_table[device_slot].ieee_addr[1],
-	  z2s_zb_devices_table[device_slot].ieee_addr[0]);
+  enableDeviceControls(true);
 
-	snprintf_P(
-	  general_purpose_gui_buffer, 768,
-	  "<b><i><style=color:white;background-color:unset;>Slot#</b></i> %02u "
-	  "<b>| <i>Manufacturer name<style=;></i></b> %s "
-	  "<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
-	  "<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X "
-	  "<b>| <i>Power source</b></i> 0x%02X<br>"
-	  "<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
-	  "Last RSSI</b></i> %d<br><b><i>Device flags</b></i> 0x%08X <b>| <i>ud(1)"
-	  "</b></i> 0x%08X <b>| <i>ud(2)</b></i> 0x%08X<br>",
-	  device_slot,
-	  Z2S_getZbDeviceManufacturerName(device_slot),
-	  Z2S_getZbDeviceModelName(device_slot),
-	  getZ2SDeviceDescName(z2s_zb_devices_table[device_slot].desc_id),
-	  z2s_zb_devices_table[device_slot].desc_id,
-	  ieee_addr_str,
-	  z2s_zb_devices_table[device_slot].short_addr,
-	  z2s_zb_devices_table[device_slot].power_source,
-	  z2s_zb_devices_table[device_slot].battery_percentage,
-	  z2s_zb_devices_table[device_slot].last_seen_ms,
-	  z2s_zb_devices_table[device_slot].rssi,
-	  z2s_zb_devices_table[device_slot].user_data_flags,
-	  z2s_zb_devices_table[device_slot].user_data_1,
-	  z2s_zb_devices_table[device_slot].user_data_2);
+  char general_purpose_gui_buffer[768] = {};
+  char ieee_addr_str[24] = {};
+  uint8_t *ieee_addr = device->getDeviceIeeeAddress();
 
-	log_i(
-	  "value = %s, length = %u", general_purpose_gui_buffer,
-	  strlen(general_purpose_gui_buffer));
+  snprintf_P(
+    ieee_addr_str, 24, "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
+    ieee_addr[7], ieee_addr[6], ieee_addr[5], ieee_addr[4],
+    ieee_addr[3], ieee_addr[2], ieee_addr[1], ieee_addr[0]);
 
-	updateLabel_P(zb_device_info_label, general_purpose_gui_buffer);
+  snprintf_P(
+    general_purpose_gui_buffer, 768,
+    "<b><i><style=color:white;background-color:unset;>Slot#</b></i> %02u "
+    "<b>| <i>Manufacturer name<style=;></i></b> %s "
+    "<b>| <i>model ID</b></i> %s <b>| <i>Z2S model</b></i> %s [0x%04X]<br>"
+    "<b><i>IEEE address</b></i> %s <b>| <i>Short address</b></i> 0x%04X "
+    "<b>| <i>Power source</b></i> 0x%02X<br>"
+    "<b><i>Battery percentage</b></i> %u <b>| <i>Last seen (ms)</b></i> %lu "
+    "Last RSSI</b></i> %d<br><b><i>Device flags</b></i> 0x%08X <b>| <i>ud(1)"
+    "</b></i> 0x%08X <b>| <i>ud(2)</b></i> 0x%08X<br>",
+    device_index,
+    device->getManufacturerName(),
+    device->getModelName(),
+    getZ2SDeviceDescName(device->getDeviceDescId()),
+    device->getDeviceDescId(),
+    ieee_addr_str,
+    device->getDeviceShortAddress(),
+    device->getPowerSource(),
+    device->getBatteryPercentage(),
+    device->getLastSeenMs(),
+    device->getRssi(),
+    device->getUserDataFlags(),
+    device->getUserData1(),
+    device->getUserData2());
 
-	working_str = z2s_zb_devices_table[device_slot].device_local_name;
-	ESPUI.updateText(device_name_text, working_str);
+  log_i(
+    "value = %s, length = %u", general_purpose_gui_buffer,
+    strlen(general_purpose_gui_buffer));
 
-	ESPUI.updateNumber(
-	  battery_voltage_min_number,
-	  z2s_zb_devices_table[device_slot].battery_voltage_min);
+  updateLabel_P(zb_device_info_label, general_purpose_gui_buffer);
 
-	ESPUI.updateNumber(
-	  battery_voltage_max_number,
-	  z2s_zb_devices_table[device_slot].battery_voltage_max);
+  working_str = device->getDeviceLocalName();
+  ESPUI.updateText(device_name_text, working_str);
 
-	ESPUI.updateNumber(
-	  disable_battery_percentage_msg_switcher,
-	  (z2s_zb_devices_table[device_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG) ? 1 : 0);
+  ESPUI.updateNumber(
+    battery_voltage_min_number, device->getBatteryVoltageMin());
 
-	ESPUI.updateNumber(
-	  disable_battery_voltage_msg_switcher,
-	  (z2s_zb_devices_table[device_slot].user_data_flags & ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG) ? 1 : 0);
+  ESPUI.updateNumber(
+    battery_voltage_max_number, device->getBatteryVoltageMax());
+
+  ESPUI.updateNumber(
+    disable_battery_percentage_msg_switcher,
+    device->checkDeviceUserDataFlags(
+      ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG) ? 1 : 0);
+
+  ESPUI.updateNumber(
+    disable_battery_voltage_msg_switcher,
+    device->checkDeviceUserDataFlags(
+      ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG) ? 1 : 0);
 }
-
 /*****************************************************************************/
 
 void selectGuiModeCallback(BasicControl *sender, int type, void *param) {
@@ -6124,7 +6121,7 @@ void clustersattributesdeviceSelectorCallback(
 	if (sender)
 		sender_value = sender->getValueInt();
 
-	if ((sender_value < 0) || (sender_value >= Z2S_ZB_DEVICES_MAX_NUMBER)) {
+	if ((sender_value < 0) || (sender_value >= Z2S_DEVICES_MAX_NUMBER)) {
 
 		enableClustersAttributesControls(false);
 		clusterCallbackCmd();
@@ -6135,11 +6132,13 @@ void clustersattributesdeviceSelectorCallback(
 
 		uint8_t device_slot = sender_value;
 
+		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+			device_slot);
+
 		sprintf_P(
 		  general_purpose_gui_buffer, "<b><i>Manufacturer name</i></b> %s <b>| "
-		                              "<i>model ID</b></i> %s",
-		  Z2S_getZbDeviceManufacturerName(device_slot),
-		  Z2S_getZbDeviceModelName(device_slot));
+		  "<i>model ID</b></i> %s",z2s_device->getManufacturerName(),
+			z2s_device->getModelName());
 
 		updateLabel_P(
 		  clusters_attributes_table[clusters_attributes_device_info_label],
@@ -6475,25 +6474,34 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 	log_i("z2s_channel ieee addr %s", ieee_addr_str);
 
 	snprintf_P(
-	  general_purpose_gui_buffer, 896, "<meta charset=\"UTF-8\">"
-	                                   "<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X "
-	                                   "<b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
-	                                   "<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u "
-	                                   "<b>| <i>secondary channel</i></b> #%u<br><b><i>Type</b></i> %s "
-	                                   "<b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
-	                                   "<b><i>Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X "
-	                                   "<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>ud(3)</b></i> 0x%08X "
-	                                   "<b>| <i>ud(4)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
-	                                   "<b><i>ZB device</b></i> %s (%s::%s)<br>"
-	                                   "<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX (%s) [[%u]]",
+	  general_purpose_gui_buffer, 896, 
+		"<meta charset=\"UTF-8\">"
+	  "<b><i>IEEE address</i></b> %s <b>| <i>Short address</i></b> 0x%04X "
+		"<b>| <i>endpoint</i></b> 0x%02X <b>| <i>cluster</i></b> 0x%04X<br>"
+		"<b><i>Model id</i></b> %s [0x%04X] <b>| <i>channel</i></b> #%u "
+		"<b>| <i>secondary channel</i></b> #%u<br><b><i>Type</b></i> %s "
+		"<b>| <i>Function</b></i> %s <b>| <i>Sub id</b></i> %d<br>"
+		"<b><i>Channel flags</b></i> 0x%08X <b>| <i>ud(1)</b></i> 0x%08X "
+		"<b>| <i>ud(2)</b></i> 0x%08X <b>| <i>ud(3)</b></i> 0x%08X "
+		"<b>| <i>ud(4)</b></i> 0x%08X <b>| <i>edt</b></i> 0x%02X<br>"
+		"<b><i>ZB device</b></i> %s (%s::%s)<br>"
+		"<b><i>GUI id</b></i> %u <b>| <i>dc</b></i> 0x%016llX (%s) [[%u]]",
 	  ieee_addr_str, z2s_channel.short_addr, z2s_channel.endpoint,
 	  z2s_channel.cluster_id, getZ2SDeviceDescName(z2s_channel.model_id),
 	  z2s_channel.model_id, z2s_channel.Supla_channel,
-	  z2s_channel.Supla_secondary_channel, getSuplaChannelTypeName(z2s_channel.Supla_channel_type), z2s_channel.Supla_channel_func > 0 ? getSuplaChannelFuncName(z2s_channel.Supla_channel_type, z2s_channel.Supla_channel_func) : "none", z2s_channel.sub_id,
+	  z2s_channel.Supla_secondary_channel, 
+		getSuplaChannelTypeName(z2s_channel.Supla_channel_type), 
+		z2s_channel.Supla_channel_func > 0 ? 
+		getSuplaChannelFuncName(z2s_channel.Supla_channel_type, 
+			z2s_channel.Supla_channel_func) : "none", z2s_channel.sub_id,
 	  z2s_channel.user_data_flags, z2s_channel.user_data_1,
 	  z2s_channel.user_data_2, z2s_channel.user_data_3, z2s_channel.user_data_4,
-	  z2s_channel.extended_data_type, Z2S_getZbDeviceLocalName(z2s_channel.Zb_device_id), (z2s_channel.local_channel_type == 0) ? Z2S_getZbDeviceManufacturerName(z2s_channel.Zb_device_id) : getZ2SDeviceLocalActionHandlerTypeName(&z2s_channel),
-	  (z2s_channel.local_channel_type == 0) ? Z2S_getZbDeviceModelName(z2s_channel.Zb_device_id) : getZ2SDeviceLocalActionHandlerLogicOperatorName(&z2s_channel),
+	  z2s_channel.extended_data_type, 
+		z2s_core->getZbDeviceLocalName(), (z2s_channel.local_channel_type == 0) ? 
+			z2s_core->getZbDeviceManufacturerName() : 
+			getZ2SDeviceLocalActionHandlerTypeName(&z2s_channel),
+	  (z2s_channel.local_channel_type == 0) ? z2s_core->getZbDeviceModelName() : 
+			getZ2SDeviceLocalActionHandlerLogicOperatorName(&z2s_channel),
 	  z2s_channel.gui_control_id, z2s_core->getChannelExtendedDataCounter(),
 	  z2s_core->getChannelExtendedDataCounterKey(), z2s_core->getZ2SChannelIndex());
 
@@ -6807,21 +6815,26 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 
 				enableChannelFlags(2 + 16);
 				ESPUI.updateNumber(
-				  trv_auto_to_schedule_switcher, (z2s_channel.user_data_flags & USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
+				  trv_auto_to_schedule_switcher, (z2s_channel.user_data_flags & 
+					USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE) ? 1 : 0);
 
-				uint8_t fixed_correction_flag = (z2s_channel.user_data_flags & USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0;
+				uint8_t fixed_correction_flag = (z2s_channel.user_data_flags & 
+				USER_DATA_FLAG_TRV_FIXED_CORRECTION) ? 1 : 0;
 
 				ESPUI.updateNumber(
 				  trv_fixed_calibration_switcher, fixed_correction_flag);
 
 				ESPUI.updateNumber(
-				  trv_auto_to_schedule_manual_switcher, (z2s_channel.user_data_flags & USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
+				  trv_auto_to_schedule_manual_switcher, (z2s_channel.user_data_flags & 
+					USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
 
 				ESPUI.updateNumber(
-				  trv_auto_to_schedule_manual_switcher, (z2s_channel.user_data_flags & USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
+				  trv_auto_to_schedule_manual_switcher, (z2s_channel.user_data_flags & 
+					USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL) ? 1 : 0);
 
 				ESPUI.updateNumber(
-				  trv_cooperative_childlock_switcher, (z2s_channel.user_data_flags & USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK) ? 1 : 0);
+				  trv_cooperative_childlock_switcher, (z2s_channel.user_data_flags & 
+					USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK) ? 1 : 0);
 
 				if (fixed_correction_flag) {
 
@@ -6940,20 +6953,33 @@ void getZigbeeDeviceQueryCallback(BasicControl *sender, int type, void *param) {
 		zbg_device_params_t device;
 
 		uint8_t device_selector_value = ESPUI.getControl(
-		                                       device_selector)
-		                                  ->getValueInt();
+			device_selector)->getValueInt();
 
 		log_i("device_selector value %u", device_selector_value);
 
 		device.endpoint = 1;
 		device.cluster_id = 0;
-		memcpy(
+		/*memcpy(
 		  &device.ieee_addr,
 		  z2s_zb_devices_table[device_selector_value].ieee_addr,
 		  sizeof(esp_zb_ieee_addr_t));
 
 		device.short_addr =
-		  z2s_zb_devices_table[device_selector_value].short_addr;
+		  z2s_zb_devices_table[device_selector_value].short_addr;*/
+
+		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+			device_selector_value);
+
+    if (z2s_device) {
+      memcpy(
+        &device.ieee_addr,
+        z2s_device->getDeviceIeeeAddress(),
+        sizeof(esp_zb_ieee_addr_t));
+
+      device.short_addr = z2s_device->getDeviceShortAddress();
+    }
+		else 
+			return;
 
 
 		switch ((uint32_t)param) {
@@ -6988,8 +7014,8 @@ void getZigbeeDeviceQueryCallback(BasicControl *sender, int type, void *param) {
 					      &device, 0x0003, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr,
 					      true)) {
 
-						sprintf_P(general_purpose_gui_buffer, "%d",
-						          z2s_zb_devices_table[device_selector_value].rssi);
+						sprintf_P(
+							general_purpose_gui_buffer, "%d", z2s_device->getRssi());
 						updateLabel_P(rssilabel, general_purpose_gui_buffer);
 					} else
 						updateLabel_C(rssilabel, device_query_failed_str);
@@ -7022,65 +7048,70 @@ void getClustersAttributesQueryMain(int32_t custom_flag) {
 
 		zbg_device_params_t device;
 
-		uint16_t c_a_device_selector = clusters_attributes_table[clusters_attributes_device_selector];
+		uint16_t c_a_device_selector = clusters_attributes_table[
+			clusters_attributes_device_selector];
 
 		log_i("device_selector value %u",
 		      ESPUI.getControl(c_a_device_selector)->getValueInt());
 
 		device.endpoint = ESPUI.getControl(
-		                         clusters_attributes_table[device_endpoint_number])
-		                    ->getValueInt();
+			clusters_attributes_table[device_endpoint_number])->getValueInt();
 
 		device.cluster_id = 0;
 
-		memcpy(
+		/*memcpy(
 		  &device.ieee_addr, z2s_zb_devices_table[ESPUI.getControl(c_a_device_selector)->getValueInt()].ieee_addr,
-		  sizeof(esp_zb_ieee_addr_t));
+		  sizeof(esp_zb_ieee_addr_t));*/
 
-		device.short_addr = z2s_zb_devices_table[ESPUI.getControl(
+		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+      ESPUI.getControl(c_a_device_selector)->getValueInt());
+
+    if (z2s_device) {
+      memcpy(
+        &device.ieee_addr, z2s_device->getDeviceIeeeAddress(),
+        sizeof(esp_zb_ieee_addr_t));
+    }
+		else
+			return;
+
+		/*device.short_addr = z2s_zb_devices_table[ESPUI.getControl(
 		                                                c_a_device_selector)
 		                                           ->getValueInt()]
-		                      .short_addr;
+		                      .short_addr;*/
 
-		uint16_t cluster_id = ESPUI.getControl(
-		                             clusters_attributes_table[device_cluster_selector])
-		                        ->getValueInt();
+		device.short_addr = z2s_device->getDeviceShortAddress();
+
+		uint16_t cluster_id = ESPUI.getControl(clusters_attributes_table[
+			device_cluster_selector])->getValueInt();
 
 		uint16_t attribute_id = strtoul(ESPUI.getControl(
-		                                       clusters_attributes_table[device_attribute_id_text])
-		                                  ->getValueCstr(),
-		                                nullptr, 0);
+			clusters_attributes_table[device_attribute_id_text])->getValueCstr(),
+		  nullptr, 0);
 
 		uint8_t attribute_type_idx = ESPUI.getControl(
-		                                    clusters_attributes_table[device_attribute_type_selector])
-		                               ->getValueInt();
+			clusters_attributes_table[
+				device_attribute_type_selector])->getValueInt();
 
-		uint8_t attribute_type = attribute_type_idx < 0xFF ? zigbee_datatypes[attribute_type_idx].zigbee_datatype_id : 0xFF;
+		uint8_t attribute_type = attribute_type_idx < 0xFF ? 
+			zigbee_datatypes[attribute_type_idx].zigbee_datatype_id : 0xFF;
 
 		bool sync_cmd = ESPUI.getControl(
-		                       clusters_attributes_table[device_async_switcher])
-		                  ->getValueInt()
-		                == 0;
+		  clusters_attributes_table[device_async_switcher])->getValueInt() == 0;
 
 		uint8_t manuf_specific = (ESPUI.getControl(
-		                                 clusters_attributes_table[manufacturer_code_switcher])
-		                            ->getValueInt()
-		                          == 0)
-		                           ? 0
-		                           : 1;
+			clusters_attributes_table[manufacturer_code_switcher])->getValueInt() ==
+		  0) ? 0 : 1;
 
 		uint16_t manuf_code = (ESPUI.getControl(
-		                              clusters_attributes_table[manufacturer_code_selector])
-		                         ->getValueInt()
-		                       > 0)
-		                        ? ESPUI.getControl(
-		                                 clusters_attributes_table[manufacturer_code_selector])
-		                            ->getValueInt()
-		                        : 0;
+		  clusters_attributes_table[manufacturer_code_selector])->getValueInt() > 
+			0) ? ESPUI.getControl(clusters_attributes_table[
+				manufacturer_code_selector])->getValueInt()  : 0;
 
 		uint8_t src_endpoint = GATEWAY_ENDPOINT_NUMBER;
 
-		if ((device.endpoint == SHELLY_RPC_CLUSTER_ENDPOINT_ID) && (cluster_id == SHELLY_CUSTOM_CLUSTER_ID_RPC) && manuf_specific && (manuf_code == SHELLY_MANUFACTURER_CODE))
+		if ((device.endpoint == SHELLY_RPC_CLUSTER_ENDPOINT_ID) && 
+				(cluster_id == SHELLY_CUSTOM_CLUSTER_ID_RPC) && manuf_specific && 
+				(manuf_code == SHELLY_MANUFACTURER_CODE))
 			src_endpoint++;
 
 		switch (custom_flag) {
@@ -7720,10 +7751,16 @@ void startDeviceOTACallback(BasicControl *sender, int type, void *param) {
 
 		log_i("ota_image_size = %lu", ota_image_size);
 
-		if (zbGateway.sendOTAUpgradeServerNotifyRequest(
-		      z2s_zb_devices_table[device_slot].ieee_addr, /*(uint8_t *)&*/ esp_zb_ota_image_header,
-		      nullptr)
-		    == ESP_OK) {
+		/*if (zbGateway.sendOTAUpgradeServerNotifyRequest(
+		      z2s_zb_devices_table[device_slot].ieee_addr,  esp_zb_ota_image_header,
+		      nullptr) == ESP_OK) {*/
+		
+		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+			device_slot);
+
+    if (z2s_device && zbGateway.sendOTAUpgradeServerNotifyRequest(
+          z2s_device->getDeviceIeeeAddress(), esp_zb_ota_image_header,
+          nullptr) == ESP_OK) {
 
 			log_i("%s", OTA_server_notify_success_str);
 
@@ -7753,8 +7790,7 @@ void removeDeviceCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_SINGLE_FLAG:
 				{
 
-					z2s_zb_devices_table[device_slot].record_id = 0;
-					if (Z2S_saveZbDevicesTable()) {
+					if (Z2S_removeZbDevice(device_slot)) {
 
 						sprintf_P(
 						  general_purpose_gui_buffer,
@@ -7773,7 +7809,7 @@ void removeDeviceCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_WITH_CHANNELS_FLAG:
 				{
 
-					if (Z2S_removeZbDeviceWithAllChannels(device_slot, true)) {
+					if (Z2S_removeZbDeviceWithAllChannels(device_slot)) {
 
 						sprintf_P(
 						  general_purpose_gui_buffer,
@@ -7792,8 +7828,6 @@ void removeDeviceCallback(BasicControl *sender, int type, void *param) {
 
 			case GUI_CB_ALL_FLAG:
 				{
-
-					//if (Z2S_clearZbDevicesTable()) {
 					if (remove_all_devices_counter == 0) {
 
 						if (Z2S_removeAllZbDeviceWithAllChannels()) {
@@ -7854,7 +7888,7 @@ void removeChannelCallbackCmd() {
 			uint16_t gui_control_id = z2s_core->getZ2SChannelGUIControlId();
 			uint8_t channel_number = z2s_core->getZ2SChannelNumber();
 
-			if (Z2S_removeChannel(channel_slot, true)) {
+			if (Z2S_removeChannel(channel_slot)) {
 
 				sortChannelsSelectors();
 
@@ -8096,10 +8130,10 @@ void editDeviceCallback(BasicControl *sender, int type, void *param) {
 
 		switch ((uint32_t)param) {
 
-			case GUI_CB_UPDATE_DEVICE_NAME_FLAG:
-				{
 
-					size_t device_local_name_size_w = mbstrnlen(
+			case GUI_CB_UPDATE_DEVICE_NAME_FLAG: {
+
+					/*size_t device_local_name_size_w = mbstrnlen(
 					  ESPUI.getControl(device_name_text)->getValueCstr(),
 					  DEVICE_LOCAL_NAME_MAX_SIZE - 1);
 
@@ -8116,9 +8150,25 @@ void editDeviceCallback(BasicControl *sender, int type, void *param) {
 					if (Z2S_saveZbDevicesTable()) {
 
 						sortZbDevicesSelectors(device_slot);
-					}
-				}
-				break;
+					}*/
+				Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+					device_slot);
+
+        if (device) {
+                
+        	device->setDeviceLocalName(
+            ESPUI.getControl(device_name_text)->getValueCstr(), false);
+
+          device->clearDeviceUserDataFlags(
+            ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED, false);
+
+          
+          if (device->saveDeviceData()) {
+
+            sortZbDevicesSelectors(device_slot);
+          }
+        }
+			} break;
 		}
 	}
 }
@@ -8640,7 +8690,7 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 		}
 	}
 }
-
+/*
 void batteryCallback(BasicControl *sender, int type, void *param) {
 
 	if ((type == B_UP) && (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
@@ -8710,6 +8760,88 @@ void batterySwitcherCallback(BasicControl *sender, int type, void *param) {
 		}
 	}
 }
+*/
+
+/*****************************************************************************/
+
+void batteryCallback(BasicControl *sender, int type, void *param) {
+
+  if ((type == B_UP) && 
+      (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
+
+    Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+      ESPUI.getControl(device_selector)->getValueInt());
+
+    if (device) {
+
+      switch ((uint32_t)param) {
+
+        case GUI_CB_BATTERY_VOLTAGE_MIN_FLAG: {
+
+          device->setBatteryVoltageMin(
+            ESPUI.getControl(battery_voltage_min_number)->getValueInt(), 
+            false);
+
+          device->saveDeviceData();
+        } break;
+
+
+        case GUI_CB_BATTERY_VOLTAGE_MAX_FLAG: {
+
+          device->setBatteryVoltageMax(
+            ESPUI.getControl(battery_voltage_max_number)->getValueInt(), 
+            false);
+
+          device->saveDeviceData();
+        } break;
+      }
+    }
+  }
+}
+
+/*****************************************************************************/
+
+void batterySwitcherCallback(BasicControl *sender, int type, void *param) {
+
+  if (ESPUI.getControl(device_selector)->getValueInt() >= 0) {
+
+    Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+      ESPUI.getControl(device_selector)->getValueInt());
+
+    if (device) {
+
+      switch ((uint32_t)param) {
+
+        case GUI_CB_DISABLE_VOLTAGE_MSG_FLAG: {
+
+          if (type == S_ACTIVE)
+            device->setDeviceUserDataFlags(
+              ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG, false);
+          else
+            device->clearDeviceUserDataFlags(
+              ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG, false);
+
+          device->saveDeviceData();
+        } break;
+
+
+        case GUI_CB_DISABLE_PERCENTAGE_MSG_FLAG: {
+
+          if (type == S_ACTIVE)
+            device->setDeviceUserDataFlags(
+              ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG, false);
+          else
+            device->clearDeviceUserDataFlags(
+              ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG, false);
+
+          device->saveDeviceData();
+        } break;
+      }
+    }
+  }
+}
+
+/*****************************************************************************/
 
 void datatypeCallback(BasicControl *sender, int type, void *param) {
 
@@ -8881,67 +9013,71 @@ void valueCallback(BasicControl *sender, int type, void *param) {
 void advancedDeviceSelectorCallback(
   BasicControl *sender, int type, void *param) {
 
-	char general_purpose_gui_buffer[512] = {};
+  char general_purpose_gui_buffer[512] = {};
 
-	int sender_value = type;
+  int sender_value = type;
 
-	if (sender)
-		sender_value = sender->getValueInt();
+  if (sender)
+    sender_value = sender->getValueInt();
 
-	if ((sender_value < 0) || (sender_value >= Z2S_ZB_DEVICES_MAX_NUMBER)) {
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(sender_value);
 
-		updateLabel_C(advanced_device_info_label, three_dots_str);
+  if (!device) {
 
-		if (isSonoffValvePresent)
-			enableSonoffValveGUI(false);
-		if (isSonoffDualValvePresent)
-			enableSonoffDualValveGUI(false);
-		if (isTuyaGasDetectorPresent)
-			enableTuyaGasDetectorGUI(false);
-		if (isMoesAlarmPresent)
-			enableMoesAlarmGUI(false);
+    updateLabel_C(advanced_device_info_label, three_dots_str);
+
+    if (isSonoffValvePresent)
+      enableSonoffValveGUI(false);
+    if (isSonoffDualValvePresent)
+      enableSonoffDualValveGUI(false);
+    if (isTuyaGasDetectorPresent)
+      enableTuyaGasDetectorGUI(false);
+    if (isMoesAlarmPresent)
+      enableMoesAlarmGUI(false);
+    return;
+  }
+	else
 		return;
-	}
 
-	uint8_t device_slot = sender_value;
-	log_i("sender_value %u", sender_value);
+  log_i("sender_value %d", sender_value);
 
-	if (z2s_zb_devices_table[device_slot].desc_id == Z2S_DEVICE_DESC_SONOFF_SMART_VALVE)
-		enableSonoffValveGUI(true);
-	else {
-		if (isSonoffValvePresent)
-			enableSonoffValveGUI(false);
-	}
+  uint32_t desc_id = device->getDeviceDescId();
 
-	if (z2s_zb_devices_table[device_slot].desc_id == Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE)
-		enableSonoffDualValveGUI(true);
-	else {
-		if (isSonoffDualValvePresent)
-			enableSonoffDualValveGUI(false);
-	}
+  if (desc_id == Z2S_DEVICE_DESC_SONOFF_SMART_VALVE)
+    enableSonoffValveGUI(true);
+  else {
+    if (isSonoffValvePresent)
+      enableSonoffValveGUI(false);
+  }
 
-	if (z2s_zb_devices_table[device_slot].desc_id == Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR)
-		enableTuyaGasDetectorGUI(true);
-	else {
-		if (isTuyaGasDetectorPresent)
-			enableTuyaGasDetectorGUI(false);
-	}
-	if (z2s_zb_devices_table[device_slot].desc_id == Z2S_DEVICE_DESC_MOES_ALARM)
-		enableMoesAlarmGUI(true);
-	else {
-		if (isMoesAlarmPresent)
-			enableMoesAlarmGUI(false);
-	}
+  if (desc_id == Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE)
+    enableSonoffDualValveGUI(true);
+  else {
+    if (isSonoffDualValvePresent)
+      enableSonoffDualValveGUI(false);
+  }
 
-	sprintf_P(
-	  general_purpose_gui_buffer, "<b><i>Manufacturer name</i></b> %s <b>| <i>"
-	                              "model ID</b></i> %s",
-	  Z2S_getZbDeviceManufacturerName(device_slot),
-	  Z2S_getZbDeviceModelName(device_slot));
+  if (desc_id == Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR)
+    enableTuyaGasDetectorGUI(true);
+  else {
+    if (isTuyaGasDetectorPresent)
+      enableTuyaGasDetectorGUI(false);
+  }
 
-	updateLabel_P(advanced_device_info_label, general_purpose_gui_buffer);
+  if (desc_id == Z2S_DEVICE_DESC_MOES_ALARM)
+    enableMoesAlarmGUI(true);
+  else {
+    if (isMoesAlarmPresent)
+      enableMoesAlarmGUI(false);
+  }
+
+  sprintf_P(
+    general_purpose_gui_buffer, "<b><i>Manufacturer name</i></b> %s <b>| <i>"
+  	"model ID</b></i> %s", device->getManufacturerName(),
+		device->getModelName());
+
+  updateLabel_P(advanced_device_info_label, general_purpose_gui_buffer);
 }
-
 /*****************************************************************************/
 
 void gatewayCallback(BasicControl *sender, int type, void *param) {
@@ -9070,14 +9206,12 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 
 	char general_purpose_gui_buffer[512] = {};
 
-	if (ESPUI.getControl(
-	           Tuya_devices_tab_controls_table[Tuya_device_selector])
-	      ->getValueInt()
-	    >= 0) {
+	if (ESPUI.getControl(Tuya_devices_tab_controls_table[
+		Tuya_device_selector])->getValueInt() >= 0) {
 
 		uint8_t Tuya_device_selector_value = ESPUI.getControl(
-		                                            Tuya_devices_tab_controls_table[Tuya_device_selector])
-		                                       ->getValueInt();
+			Tuya_devices_tab_controls_table[
+				Tuya_device_selector])->getValueInt();
 
 		zbg_device_params_t device;
 		log_i(
@@ -9090,15 +9224,21 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 		uint8_t cmd_id;
 
 		uint16_t tsn_id = random(0x0000, 0xFFFF);
-		;
 
-		memcpy(
-		  &device.ieee_addr,
-		  z2s_zb_devices_table[Tuya_device_selector_value].ieee_addr,
-		  sizeof(esp_zb_ieee_addr_t));
+		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+			Tuya_device_selector_value);
 
-		device.short_addr =
-		  z2s_zb_devices_table[Tuya_device_selector_value].short_addr;
+    if (z2s_device) {
+
+      memcpy(
+        &device.ieee_addr,
+        z2s_device->getDeviceIeeeAddress(),
+        sizeof(esp_zb_ieee_addr_t));
+
+      device.short_addr = z2s_device->getDeviceShortAddress();
+    }
+		else 
+			return;
 
 		switch (custom_flag) {
 
@@ -9106,8 +9246,8 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 				{
 
 					uint8_t cmd_dp_id = ESPUI.getControl(
-					                           Tuya_devices_tab_controls_table[Tuya_datapoint_id_number])
-					                      ->getValueInt();
+						Tuya_devices_tab_controls_table[
+							Tuya_datapoint_id_number])->getValueInt();
 
 					if (cmd_dp_id == 0) {
 
@@ -9118,8 +9258,8 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 					}
 
 					int8_t cmd_dp_type = ESPUI.getControl(
-					                            Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector])
-					                       ->getValueInt();
+					  Tuya_devices_tab_controls_table[
+							Tuya_datapoint_type_selector])->getValueInt();
 
 					if (cmd_dp_type < 0) {
 
@@ -9130,8 +9270,8 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 					}
 
 					uint8_t cmd_dp_length = ESPUI.getControl(
-					                               Tuya_devices_tab_controls_table[Tuya_datapoint_length_number])
-					                          ->getValueInt();
+						Tuya_devices_tab_controls_table[
+							Tuya_datapoint_length_number])->getValueInt();
 
 					if (cmd_dp_type > 58) {
 
@@ -9142,8 +9282,8 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 					}
 
 					int32_t cmd_dp_value = ESPUI.getControl(
-					                              Tuya_devices_tab_controls_table[Tuya_datapoint_value_number])
-					                         ->getValueInt();
+					  Tuya_devices_tab_controls_table[
+							Tuya_datapoint_value_number])->getValueInt();
 
 					Tuya_custom_cmd_dp = cmd_dp_id;
 
@@ -9152,9 +9292,8 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 
 					uint8_t Tuya_data_cmd = TUYA_REQUEST_CMD;
 
-					if (Z2S_checkZbDeviceFlags(
-					      Tuya_device_selector_value,
-					      ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA))
+					if (z2s_device->checkDeviceUserDataFlags(
+								ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA))
 						Tuya_data_cmd = TUYA_SEND_CMD;
 
 					bool result = sendTuyaRequestCmdData(
@@ -9163,13 +9302,14 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 
 					if (result) {
 
-						if (*zbGateway.getCustomCmdStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS) {
+						if (*zbGateway.getCustomCmdStatusLastResult() == 
+								ESP_ZB_ZCL_STATUS_SUCCESS) {
 
 							sprintf_P(
 							  general_purpose_gui_buffer, "Tuya custom cluster data request "
-							                              "sent successfully! <br>Datapoint id   = %u(0x%02X)<br>"
-							                              "Datapoint type = %s(0x%02X)<br>Datapoint length 	= %u(0x%02X)"
-							                              "<br>Datapoint value = %u(0x%02X)",
+								"sent successfully! <br>Datapoint id   = %u(0x%02X)<br>"
+							  "Datapoint type = %s(0x%02X)<br>Datapoint length 	= %u(0x%02X)"
+							  "<br>Datapoint value = %u(0x%02X)",
 							  cmd_dp_id, cmd_dp_id,
 							  Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_name,
 							  Tuya_datapoint_types[cmd_dp_type].Tuya_datapoint_type_id,
@@ -9621,20 +9761,19 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 }
 
 /*****************************************************************************/
-
+/*
 void saveValveProgram(uint8_t device_slot) {
 
 	auto &zb_device = z2s_zb_devices_table[device_slot];
 
-	if ((ESPUI.getControl(valve_program_selector)->getValueInt() > 0) && (ESPUI.getControl(valve_cycles_number)->getValueInt() > 0)) {
+	if ((ESPUI.getControl(valve_program_selector)->getValueInt() > 0) && 
+			(ESPUI.getControl(valve_cycles_number)->getValueInt() > 0)) {
 
 		uint8_t program_mode = ESPUI.getControl(
-		                              valve_program_selector)
-		                         ->getValueInt();
+		  valve_program_selector)->getValueInt();
 
 		uint8_t valve_cycles = ESPUI.getControl(
-		                              valve_cycles_number)
-		                         ->getValueInt();
+		  valve_cycles_number)->getValueInt();
 
 		uint32_t value_32 = 0;
 
@@ -9647,8 +9786,7 @@ void saveValveProgram(uint8_t device_slot) {
 		zb_device.smart_valve_data.cycles = valve_cycles;
 		zb_device.smart_valve_data.value = value_32;
 		zb_device.smart_valve_data.pause_time = ESPUI.getControl(
-		                                               valve_pause_number)
-		                                          ->getValueInt();
+		  valve_pause_number)->getValueInt();
 
 		if (Z2S_saveZbDevicesTable())
 			ESPUI.updateLabel(
@@ -9658,253 +9796,297 @@ void saveValveProgram(uint8_t device_slot) {
 	} else
 		ESPUI.updateLabel(valve_info_label, "No valve program to save");
 }
+*/
+
+void saveValveProgram(uint8_t device_slot) {
+
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
+
+  if (!device)
+    return;
+
+  if ((ESPUI.getControl(valve_program_selector)->getValueInt() > 0) && 
+      (ESPUI.getControl(valve_cycles_number)->getValueInt() > 0)) {
+
+    uint8_t program_mode = ESPUI.getControl(
+      valve_program_selector)->getValueInt();
+
+    uint8_t valve_cycles = ESPUI.getControl(
+      valve_cycles_number)->getValueInt();
+
+    uint32_t value_32 = 0;
+
+    if (program_mode == 1)
+      value_32 = ESPUI.getControl(valve_worktime_number)->getValueInt();
+    else
+      value_32 = ESPUI.getControl(valve_volume_number)->getValueInt();
+
+    device->setSmartValveDataProgram(program_mode, false);
+    device->setSmartValveDataCycles(valve_cycles, false);
+    device->setSmartValveDataValue(value_32, false);
+    device->setSmartValveDataPauseTime(
+      ESPUI.getControl(valve_pause_number)->getValueInt(), false);
+
+    if (device->saveDeviceData())
+      ESPUI.updateLabel(
+        valve_info_label, "Valve program saved successfully.");
+    else
+      ESPUI.updateLabel(valve_info_label, "Valve program save failed.");
+
+  } else {
+    ESPUI.updateLabel(valve_info_label, "No valve program to save");
+  }
+}
 
 /*****************************************************************************/
 
 void loadValveProgram(uint8_t device_slot) {
 
-	auto &zb_device = z2s_zb_devices_table[device_slot];
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
 
-	uint8_t valve_cycles = zb_device.smart_valve_data.cycles;
+  if (!device)
+    return;
 
-	if (valve_cycles > 0) {
+  uint8_t valve_cycles = device->getSmartValveDataCycles();
 
-		uint8_t program_mode = zb_device.smart_valve_data.program;
+  if (valve_cycles > 0) {
 
-		ESPUI.updateNumber(valve_program_selector, program_mode);
-		ESPUI.updateNumber(valve_cycles_number, valve_cycles);
+    uint8_t program_mode = device->getSmartValveDataProgram();
 
-		uint32_t value_32 = zb_device.smart_valve_data.value;
+    ESPUI.updateNumber(valve_program_selector, program_mode);
+    ESPUI.updateNumber(valve_cycles_number, valve_cycles);
 
-		if (program_mode == 1) {
+    uint32_t value_32 = device->getSmartValveDataValue();
 
-			ESPUI.updateNumber(valve_worktime_number, value_32);
-			ESPUI.updateNumber(valve_volume_number, 0);
-		} else {
+    if (program_mode == 1) {
 
-			ESPUI.updateNumber(valve_volume_number, value_32);
-			ESPUI.updateNumber(valve_worktime_number, 0);
-		}
+      ESPUI.updateNumber(valve_worktime_number, value_32);
+      ESPUI.updateNumber(valve_volume_number, 0);
+    } else {
 
-		value_32 = zb_device.smart_valve_data.pause_time;
+      ESPUI.updateNumber(valve_volume_number, value_32);
+      ESPUI.updateNumber(valve_worktime_number, 0);
+    }
 
-		ESPUI.updateNumber(valve_pause_number, value_32);
+    value_32 = device->getSmartValveDataPauseTime();
 
-		ESPUI.updateLabel(valve_info_label, "Valve program loaded successfully.");
-	} else
-		ESPUI.updateLabel(valve_info_label, "No Valve program found.");
+    ESPUI.updateNumber(valve_pause_number, value_32);
+
+    ESPUI.updateLabel(
+      valve_info_label, "Valve program loaded successfully.");
+
+  } else {
+    ESPUI.updateLabel(valve_info_label, "No Valve program found.");
+  }
 }
-
 /*****************************************************************************/
 
 void startValveProgram(uint8_t device_slot) {
 
-	uint16_t attribute_id;
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
 
-	switch (ESPUI.getControl(valve_program_selector)->getValueInt()) {
+  if (!device)
+    return;
 
+  uint16_t attribute_id;
 
-		case 1:
+  switch (ESPUI.getControl(valve_program_selector)->getValueInt()) {
 
-			attribute_id = SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID;
-			break;
+    case 1:
 
-
-		case 2:
-
-			attribute_id = SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID;
-			break;
+      attribute_id = SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID;
+      break;
 
 
-		default:
+    case 2:
 
-			return;
-	}
+      attribute_id = SONOFF_CUSTOM_CLUSTER_VOLUME_IRRIGATION_CYCLE_ID;
+      break;
 
-	auto &zb_device = z2s_zb_devices_table[device_slot];
 
-	uint32_t value_32;
+    default:
 
-	uint8_t valve_cmd_payload[11] = {};
+      return;
+  }
 
-	valve_cmd_payload[0] = 0x0A;
+  uint32_t value_32;
+  uint8_t valve_cmd_payload[11] = {};
 
-	valve_cmd_payload[2] = ESPUI.getControl(valve_cycles_number)->getValueInt();
+  valve_cmd_payload[0] = 0x0A;
 
-	if (attribute_id == SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID)
-		value_32 = ESPUI.getControl(valve_worktime_number)->getValueInt();
-	else
-		value_32 = ESPUI.getControl(valve_volume_number)->getValueInt();
+  valve_cmd_payload[2] = ESPUI.getControl(valve_cycles_number)->getValueInt();
 
-	valve_cmd_payload[4] = value_32 >> 16;
-	valve_cmd_payload[5] = value_32 >> 8;
-	valve_cmd_payload[6] = value_32;
+  if (attribute_id == SONOFF_CUSTOM_CLUSTER_TIME_IRRIGATION_CYCLE_ID)
+    value_32 = ESPUI.getControl(valve_worktime_number)->getValueInt();
+  else
+    value_32 = ESPUI.getControl(valve_volume_number)->getValueInt();
 
-	value_32 = ESPUI.getControl(valve_pause_number)->getValueInt();
+  valve_cmd_payload[4] = value_32 >> 16;
+  valve_cmd_payload[5] = value_32 >> 8;
+  valve_cmd_payload[6] = value_32;
 
-	valve_cmd_payload[8] = value_32 >> 16;
-	valve_cmd_payload[9] = value_32 >> 8;
-	valve_cmd_payload[10] = value_32;
+  value_32 = ESPUI.getControl(valve_pause_number)->getValueInt();
 
-	for (int i = 0; i < 11; i++)
-		log_i("valve payload [%u] = 0x%02x", i, valve_cmd_payload[i]);
+  valve_cmd_payload[8] = value_32 >> 16;
+  valve_cmd_payload[9] = value_32 >> 8;
+  valve_cmd_payload[10] = value_32;
 
-	if (zbGateway.sendAttributeWrite(
-	      zb_device.short_addr, 1, SONOFF_CUSTOM_CLUSTER, attribute_id,
-	      ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, sizeof(valve_cmd_payload),
-	      valve_cmd_payload, true)) {
+  for (int i = 0; i < 11; i++)
+    log_i("valve payload [%u] = 0x%02x", i, valve_cmd_payload[i]);
 
-		if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS)
-			ESPUI.updateLabel(valve_info_label, "Valve program start success!");
-		else
-			ESPUI.updateLabel(valve_info_label, "Valve program start error!");
-	} else
-		ESPUI.updateLabel(valve_info_label, device_query_failed_str);
+  if (zbGateway.sendAttributeWrite(
+        device->getDeviceShortAddress(), 1, SONOFF_CUSTOM_CLUSTER, 
+				attribute_id,ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING, 
+				sizeof(valve_cmd_payload), valve_cmd_payload, true)) {
+
+    if (*zbGateway.getWriteAttrStatusLastResult() == ESP_ZB_ZCL_STATUS_SUCCESS)
+      ESPUI.updateLabel(valve_info_label, "Valve program start success!");
+    else
+      ESPUI.updateLabel(valve_info_label, "Valve program start error!");
+  } else
+    ESPUI.updateLabel(valve_info_label, device_query_failed_str);
 }
 
 /*****************************************************************************/
 
 void stopValveProgram(uint8_t device_slot) {
 
-	auto &zb_device = z2s_zb_devices_table[device_slot];
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
 
-	zbGateway.sendOnOffCmd(zb_device.short_addr, 1, false);
+  if (!device)
+    return;
+
+  zbGateway.sendOnOffCmd(device->getDeviceShortAddress(), 1, false);
 }
 
 /*****************************************************************************/
 
 void sendValveProgram(uint8_t device_slot, uint32_t flag_id) {
 
-	int8_t channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_SID;
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
 
-	if (flag_id == GUI_CB_SEND_PROGRAM_2_FLAG)
-		channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID;
+  if (!device)
+    return;
 
-	auto z2s_core = Z2S_findZ2SCore(
-	  z2s_zb_devices_table[device_slot].short_addr, ALL_ENDPOINTS,
-	  SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, channel_sid);
+  int8_t channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_SID;
 
-	if (!z2s_core) {
+  if (flag_id == GUI_CB_SEND_PROGRAM_2_FLAG)
+    channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID;
 
-		log_i("no Supla channel for Sonoff program run");
-		return;
-	}
+  auto z2s_core = Z2S_findZ2SCore(
+    device->getDeviceShortAddress(), ALL_ENDPOINTS,
+    SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, channel_sid);
 
-	switch (ESPUI.getControl(valve_program_selector)->getValueInt()) {
+  if (!z2s_core) {
 
+    log_i("no Supla channel for Sonoff program run");
+    return;
+  }
 
-		case 1:
-			{
+  switch (ESPUI.getControl(valve_program_selector)->getValueInt()) {
 
-				z2s_core->setSmartValveProgram(1);
-				z2s_core->setSmartValveValue(ESPUI.getControl(
-				                                    valve_worktime_number)
-				                               ->getValueInt());
+    case 1: {
 
-				msgZ2SDeviceVirtualRelayValue(
-				  z2s_core->getZ2SElementPtr(), VRV_S8_ID, 1);
+      z2s_core->setSmartValveProgram(1);
+      z2s_core->setSmartValveValue(
+        ESPUI.getControl(valve_worktime_number)->getValueInt());
 
-				msgZ2SDeviceVirtualRelayValue(
-				  z2s_core->getZ2SElementPtr(), VRV_S32_ID,
-				  ESPUI.getControl(valve_worktime_number)->getValueInt());
-			}
-			break;
+      msgZ2SDeviceVirtualRelayValue(
+        z2s_core->getZ2SElementPtr(), VRV_S8_ID, 1);
 
+      msgZ2SDeviceVirtualRelayValue(
+        z2s_core->getZ2SElementPtr(), VRV_S32_ID,
+        ESPUI.getControl(valve_worktime_number)->getValueInt());
+    } break;
 
-		case 2:
-			{
+    case 2: {
 
-				z2s_core->setSmartValveProgram(2);
-				z2s_core->setSmartValveValue(ESPUI.getControl(
-				                                    valve_volume_number)
-				                               ->getValueInt());
+      z2s_core->setSmartValveProgram(2);
+      z2s_core->setSmartValveValue(
+        ESPUI.getControl(valve_volume_number)->getValueInt());
 
-				msgZ2SDeviceVirtualRelayValue(
-				  z2s_core->getZ2SElementPtr(), VRV_S8_ID, 2);
+      msgZ2SDeviceVirtualRelayValue(
+        z2s_core->getZ2SElementPtr(), VRV_S8_ID, 2);
 
-				msgZ2SDeviceVirtualRelayValue(
-				  z2s_core->getZ2SElementPtr(), VRV_S32_ID, ESPUI.getControl(valve_volume_number)->getValueInt());
-			}
-			break;
+      msgZ2SDeviceVirtualRelayValue(
+        z2s_core->getZ2SElementPtr(), VRV_S32_ID, 
+        ESPUI.getControl(valve_volume_number)->getValueInt());
+    } break;
 
+    default: {
 
-		default:
-			{
+      z2s_core->setSmartValveProgram(0);
+      z2s_core->setSmartValveCycles(0);
+      z2s_core->setSmartValveValue(0);
 
-				z2s_core->setSmartValveProgram(0);
-				z2s_core->setSmartValveCycles(0);
-				z2s_core->setSmartValveValue(0);
+      msgZ2SDeviceVirtualRelayValue(
+        z2s_core->getZ2SElementPtr(), VRV_S8_ID, 0);
+      return;
+    } break;
+  }
 
-				msgZ2SDeviceVirtualRelayValue(
-				  z2s_core->getZ2SElementPtr(), VRV_S8_ID, 0);
-				return;
-			}
-			break;
-	}
+  z2s_core->setSmartValveCycles(
+		ESPUI.getControl(valve_cycles_number)->getValueInt());
 
-	z2s_core->setSmartValveCycles(ESPUI.getControl(
-	                                     valve_cycles_number)
-	                                ->getValueInt());
-
-
-
-	if (z2s_core->setSmartValvePauseTime(ESPUI.getControl(
-	                                            valve_pause_number)
-	                                       ->getValueInt()))
+	if (z2s_core->setSmartValvePauseTime(
+		ESPUI.getControl( valve_pause_number)->getValueInt()))
 		ESPUI.updateLabel(
 		  valve_info_label, "Valve program send to Supla channel.");
 
 	msgZ2SDeviceVirtualRelayValue(
-	  z2s_core->getZ2SElementPtr(), VRV_U8_ID, ESPUI.getControl(valve_cycles_number)->getValueInt());
+	  z2s_core->getZ2SElementPtr(), VRV_U8_ID, 
+		ESPUI.getControl(valve_cycles_number)->getValueInt());
 
 	msgZ2SDeviceVirtualRelayValue(
-	  z2s_core->getZ2SElementPtr(), VRV_U32_ID, ESPUI.getControl(valve_pause_number)->getValueInt());
+	  z2s_core->getZ2SElementPtr(), VRV_U32_ID, 
+		ESPUI.getControl(valve_pause_number)->getValueInt());
 }
 
 /*****************************************************************************/
 
 void saveDualValveProgram(uint8_t device_slot) {
 
-	auto &zb_device = z2s_zb_devices_table[device_slot];
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
 
-	if ((ESPUI.getControl(DV_CHANNEL_SELECTOR)->getValueInt() > 0) && (ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt() >= 0)) {
+  if (!device)
+    return;
 
-		uint32_t value_32;
+  if ((ESPUI.getControl(DV_CHANNEL_SELECTOR)->getValueInt() > 0) && 
+      (ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt() >= 0)) {
 
-		zb_device.smart_dual_valve_data.channel_id = ESPUI.getControl(
-		                                                    DV_CHANNEL_SELECTOR)
-		                                               ->getValueInt();
-		zb_device.smart_dual_valve_data.program_id = ESPUI.getControl(
-		                                                    DV_PROGRAM_SELECTOR)
-		                                               ->getValueInt();
+    device->setSmartDualValveDataChannelId(
+      ESPUI.getControl(DV_CHANNEL_SELECTOR)->getValueInt(), false);
 
-		zb_device.smart_dual_valve_data.total_duration = ESPUI.getControl(
-		                                                        DV_TOTAL_DURATION)
-		                                                   ->getValueInt();
-		zb_device.smart_dual_valve_data.irrigation_duration = ESPUI.getControl(
-		                                                             DV_IRRIGATION_DURATION)
-		                                                        ->getValueInt();
-		zb_device.smart_dual_valve_data.pause_duration = ESPUI.getControl(
-		                                                        DV_PAUSE_TIME)
-		                                                   ->getValueInt();
+    device->setSmartDualValveDataProgramId(
+      ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt(), false);
 
-		zb_device.smart_dual_valve_data.irrgation_volume = ESPUI.getControl(
-		                                                          DV_VOLUME)
-		                                                     ->getValueInt();
-		zb_device.smart_dual_valve_data.fail_safe_duration = ESPUI.getControl(
-		                                                            DV_FAILSAFE_TIME)
-		                                                       ->getValueInt();
+    device->setSmartDualValveDataTotalDuration(
+      ESPUI.getControl(DV_TOTAL_DURATION)->getValueInt(), false);
 
-		if (Z2S_saveZbDevicesTable())
-			ESPUI.updateLabel(DV_INFO_LABEL, "Valve program saved successfully.");
-		else
-			ESPUI.updateLabel(DV_INFO_LABEL, "Valve program save failed.");
-	} else
-		ESPUI.updateLabel(DV_INFO_LABEL, "No valve program to save");
+    device->setSmartDualValveDataIrrigationDuration(
+      ESPUI.getControl(DV_IRRIGATION_DURATION)->getValueInt(), false);
+
+    device->setSmartDualValveDataPauseDuration(
+      ESPUI.getControl(DV_PAUSE_TIME)->getValueInt(), false);
+
+    device->setSmartDualValveDataIrrigationVolume(
+      ESPUI.getControl(DV_VOLUME)->getValueInt(), false);
+
+    device->setSmartDualValveDataFailSafeDuration(
+      ESPUI.getControl(DV_FAILSAFE_TIME)->getValueInt(), false);
+
+    if (device->saveDeviceData())
+      ESPUI.updateLabel(DV_INFO_LABEL, "Valve program saved successfully.");
+    else
+      ESPUI.updateLabel(DV_INFO_LABEL, "Valve program save failed.");
+
+  } else {
+    ESPUI.updateLabel(DV_INFO_LABEL, "No valve program to save");
+  }
 }
 
 /*****************************************************************************/
-
+/*
 void loadDualValveProgram(uint8_t device_slot) {
 
 	auto &zb_device = z2s_zb_devices_table[device_slot];
@@ -9931,20 +10113,55 @@ void loadDualValveProgram(uint8_t device_slot) {
 	} else
 		ESPUI.updateLabel(DV_INFO_LABEL, "No valve program to load");
 }
+*/
+
+void loadDualValveProgram(uint8_t device_slot) {
+
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
+
+  if (!device)
+    return;
+
+  if (device->getSmartDualValveDataChannelId() > 0) {
+
+    ESPUI.updateNumber(
+      DV_CHANNEL_SELECTOR, device->getSmartDualValveDataChannelId());
+      
+    ESPUI.updateNumber(
+      DV_PROGRAM_SELECTOR, device->getSmartDualValveDataProgramId());
+      
+    ESPUI.updateNumber(
+      DV_TOTAL_DURATION, device->getSmartDualValveDataTotalDuration());
+      
+    ESPUI.updateNumber(
+      DV_IRRIGATION_DURATION, 
+			device->getSmartDualValveDataIrrigationDuration());
+      
+    ESPUI.updateNumber(
+      DV_PAUSE_TIME, device->getSmartDualValveDataPauseDuration());
+      
+    ESPUI.updateNumber(
+      DV_VOLUME, device->getSmartDualValveDataIrrigationVolume());
+      
+    ESPUI.updateNumber(
+      DV_FAILSAFE_TIME, device->getSmartDualValveDataFailSafeDuration());
+
+    ESPUI.updateLabel(DV_INFO_LABEL, "Valve program loaded successfully.");
+    
+  } else {
+    ESPUI.updateLabel(DV_INFO_LABEL, "No valve program to load");
+  }
+}
 
 /*****************************************************************************/
-
+/*
 void startDualValveProgram(uint8_t device_slot) {
 
 	auto &zb_device = z2s_zb_devices_table[device_slot];
 
-	int16_t endpoint_id = ESPUI.getControl(
-	                             DV_CHANNEL_SELECTOR)
-	                        ->getValueInt();
+	int16_t endpoint_id = ESPUI.getControl(DV_CHANNEL_SELECTOR)->getValueInt();
 
-	int16_t program_id = ESPUI.getControl(
-	                            DV_PROGRAM_SELECTOR)
-	                       ->getValueInt();
+	int16_t program_id = ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt();
 
 	if ((endpoint_id < 1) || (program_id < 0)) {
 
@@ -10003,9 +10220,84 @@ void startDualValveProgram(uint8_t device_slot) {
 	} else
 		ESPUI.updateLabel(DV_INFO_LABEL, device_query_failed_str);
 }
+*/
+
+void startDualValveProgram(uint8_t device_slot) {
+
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
+
+  if (!device)
+    return;
+
+  int16_t endpoint_id = ESPUI.getControl(DV_CHANNEL_SELECTOR)->getValueInt();
+
+  int16_t program_id = ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt();
+
+  if ((endpoint_id < 1) || (program_id < 0)) {
+
+    ESPUI.updateLabel(DV_INFO_LABEL, "Select channel and program!");
+    return;
+  }
+
+  uint8_t dual_valve_cmd_payload[15] = {};
+
+  dual_valve_cmd_payload[0] = ESP_ZB_ZCL_ATTR_TYPE_U8;
+  dual_valve_cmd_payload[1] = 0x0C;
+
+  dual_valve_cmd_payload[3] = program_id;
+
+  uint16_t value_16 = ESPUI.getControl(DV_TOTAL_DURATION)->getValueInt();
+
+  dual_valve_cmd_payload[4] = value_16 >> 8;
+  dual_valve_cmd_payload[5] = value_16;
+
+  value_16 = ESPUI.getControl(DV_IRRIGATION_DURATION)->getValueInt();
+
+  dual_valve_cmd_payload[6] = value_16 >> 8;
+  dual_valve_cmd_payload[7] = value_16;
+
+  value_16 = ESPUI.getControl(DV_PAUSE_TIME)->getValueInt();
+
+  dual_valve_cmd_payload[8] = value_16 >> 8;
+  dual_valve_cmd_payload[9] = value_16;
+
+  dual_valve_cmd_payload[10] = 0x01;  //liters
+
+  value_16 = ESPUI.getControl(DV_VOLUME)->getValueInt();
+
+  dual_valve_cmd_payload[11] = value_16 >> 8;
+  dual_valve_cmd_payload[12] = value_16;
+
+  value_16 = ESPUI.getControl(DV_FAILSAFE_TIME)->getValueInt();
+
+  dual_valve_cmd_payload[13] = value_16 >> 8;
+  dual_valve_cmd_payload[14] = value_16;
+
+  if (zbGateway.sendAttributeWriteExt(
+        device->getDeviceShortAddress(), 1, SONOFF_CUSTOM_CLUSTER,
+        SONOFF_CUSTOM_CLUSTER_MANUAL_DEFAULT_SETTINGS_ID,
+        ESP_ZB_ZCL_ATTR_TYPE_ARRAY, sizeof(dual_valve_cmd_payload),
+        dual_valve_cmd_payload, true)) {
+
+    if (*zbGateway.getWriteAttrStatusLastResult() == 
+        ESP_ZB_ZCL_STATUS_SUCCESS) {
+
+      ESPUI.updateLabel(DV_INFO_LABEL, "Valve settings updated! Starting...");
+      
+      zbGateway.sendOnOffCmd(
+        device->getDeviceShortAddress(), endpoint_id, true);
+        
+    } else {
+      ESPUI.updateLabel(
+        DV_INFO_LABEL, "Valve settings update failed! Try again!");
+    }
+  } else {
+    ESPUI.updateLabel(DV_INFO_LABEL, device_query_failed_str);
+  }
+}
 
 /*****************************************************************************/
-
+/*
 void stopDualValveProgram(uint8_t device_slot) {
 
 	auto &zb_device = z2s_zb_devices_table[device_slot];
@@ -10013,18 +10305,28 @@ void stopDualValveProgram(uint8_t device_slot) {
 	zbGateway.sendOnOffCmd(zb_device.short_addr, 1, false);
 	//zbGateway.sendOnOffCmd(zb_device.short_addr, 2, false);
 }
+*/
+
+void stopDualValveProgram(uint8_t device_slot) {
+
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
+
+  if (!device)
+    return;
+
+  zbGateway.sendOnOffCmd(device->getDeviceShortAddress(), 1, false);
+  //zbGateway.sendOnOffCmd(device->getDeviceShortAddress(), 2, false);
+}
+
+
 
 /*****************************************************************************/
-
+/*
 void sendDualValveProgram(uint8_t device_slot, uint8_t flag_id) {
 
-	int16_t endpoint_id = ESPUI.getControl(
-	                             DV_CHANNEL_SELECTOR)
-	                        ->getValueInt();
+	int16_t endpoint_id = ESPUI.getControl(DV_CHANNEL_SELECTOR)->getValueInt();
 
-	int16_t program_id = ESPUI.getControl(
-	                            DV_PROGRAM_SELECTOR)
-	                       ->getValueInt();
+	int16_t program_id = ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt();
 
 	if ((endpoint_id < 1) || (program_id < 0)) {
 
@@ -10069,22 +10371,83 @@ void sendDualValveProgram(uint8_t device_slot, uint8_t flag_id) {
 	if (save_success)
 		ESPUI.updateLabel(DV_INFO_LABEL, "Program saved in Supla channel");
 }
+*/
+
+void sendDualValveProgram(uint8_t device_slot, uint8_t flag_id) {
+
+  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
+
+  if (!device)
+    return;
+
+  int16_t endpoint_id = ESPUI.getControl(DV_CHANNEL_SELECTOR)->getValueInt();
+
+  int16_t program_id = ESPUI.getControl(DV_PROGRAM_SELECTOR)->getValueInt();
+
+  if ((endpoint_id < 1) || (program_id < 0)) {
+
+    ESPUI.updateLabel(DV_INFO_LABEL, "Select channel and program!");
+    return;
+  }
+
+  int8_t channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_SID;
+
+  if (flag_id == GUI_CB_SEND_PROGRAM_2_FLAG)
+    channel_sid = SONOFF_SMART_VALVE_RUN_PROGRAM_2_SID;
+
+  auto z2s_core = Z2S_findZ2SCore(
+    device->getDeviceShortAddress(), endpoint_id,
+    SONOFF_CUSTOM_CLUSTER, SUPLA_CHANNELTYPE_RELAY, channel_sid);
+
+  if (!z2s_core) {
+
+    log_i("no Supla channel for upload Sonoff dual valve program");
+    return;
+  }
+
+  bool save_success = false;
+
+  save_success = z2s_core->setSmartDualValveProgramId(program_id);
+
+  save_success &= z2s_core->setSmartDualValveTotalDurationTime(
+    ESPUI.getControl(DV_TOTAL_DURATION)->getValueInt());
+
+  save_success &= z2s_core->setSmartDualValveIrrigationDurationTime(
+    ESPUI.getControl(DV_IRRIGATION_DURATION)->getValueInt());
+
+  save_success &= z2s_core->setSmartDualValveIrrigationPauseTime(
+    ESPUI.getControl(DV_PAUSE_TIME)->getValueInt());
+
+  save_success &= z2s_core->setSmartDualValveIrrigationVolume(
+    ESPUI.getControl(DV_VOLUME)->getValueInt());
+
+  save_success &= z2s_core->setSmartDualValveFailSafeTime(
+    ESPUI.getControl(DV_FAILSAFE_TIME)->getValueInt());
+
+  if (save_success)
+    ESPUI.updateLabel(DV_INFO_LABEL, "Program saved in Supla channel");
+}
 
 /*****************************************************************************/
 
 void valveCallback(BasicControl *sender, int type, void *param) {
 
-	if ((type == B_UP) && (ESPUI.getControl(advanced_device_selector)->getValueInt() >= 0)) {
+	if ((type == B_UP) && (ESPUI.getControl(
+		advanced_device_selector)->getValueInt() >= 0)) {
 
 		uint8_t device_slot = ESPUI.getControl(
-		                             advanced_device_selector)
-		                        ->getValueInt();
+			advanced_device_selector)->getValueInt();
 
-		log_i("device_selector value %u, param id %d", device_slot, (uint32_t)param);
+		log_i(
+			"device_selector value %u, param id %d", device_slot, (uint32_t)param);
 
-		uint32_t device_desc_id = z2s_zb_devices_table[device_slot].desc_id;
+		Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
 
-		uint16_t short_addr = z2s_zb_devices_table[device_slot].short_addr;
+    if (!device) 
+			return;
+      
+		uint32_t device_desc_id = device->getDeviceDescId();
+    uint16_t short_addr = device->getDeviceShortAddress();
 
 		uint32_t flag_id = (uint32_t)param;
 
@@ -10344,13 +10707,15 @@ void TuyaDeviceSelectorCmd(int32_t device_slot) {
 
 	if (device_slot >= 0) {
 
+		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+			device_slot);
+
 		enableTuyaDevicesControls(true);
 
 		sprintf_P(
 		  general_purpose_gui_buffer, "<b><i>Manufacturer name</i></b> %s <b>| "
-		                              "<i>model ID</b></i> %s",
-		  Z2S_getZbDeviceManufacturerName(device_slot),
-		  Z2S_getZbDeviceModelName(device_slot));
+			"<i>model ID</b></i> %s", z2s_device->getManufacturerName(),
+		  z2s_device->getModelName());
 
 		updateLabel_P(
 		  Tuya_devices_tab_controls_table[Tuya_device_info_label],
@@ -10947,7 +11312,8 @@ void pushoverMessagesCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_PUSHOVER_MESSAGE_REMOVE_FLAG:
 				{
 
-					if ((current_pushover_message_gui_state != VIEW_PUSHOVER_MESSAGE) || (current_message_id == -1))
+					if ((current_pushover_message_gui_state != VIEW_PUSHOVER_MESSAGE) ||
+							(current_message_id == -1))
 						return;
 
 					previous_pushover_message_gui_state = REMOVE_PUSHOVER_MESSAGE;
