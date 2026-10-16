@@ -305,9 +305,9 @@ private:
 
 public:
   
-  Z2S_StorageManager(const char* idx_file, const char* idx_bak, 
-                     const char* o_pref, const char* o_bak_pref)
-    : index_file(idx_file), index_backup(idx_bak), 
+  Z2S_StorageManager(
+    const char* idx_file, const char* idx_bak, const char* o_pref, 
+    const char* o_bak_pref) : index_file(idx_file), index_backup(idx_bak), 
       obj_prefix(o_pref), obj_backup_prefix(o_bak_pref) {}
 
   bool checkPosition(uint16_t index) {

@@ -4029,6 +4029,21 @@ static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE200_2pddnnrk", .model_name = "TS0601",
+    .z2s_device_uid = 7810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_jsaqgakf", .model_name = "TS0601",
+    .z2s_device_uid = 7815,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_gt1gge3x", .model_name = "TS0601",
+    .z2s_device_uid = 7820,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "Heiman", .model_name = "SMOK_V16",
     .z2s_device_uid = 7900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
