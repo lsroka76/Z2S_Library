@@ -39,6 +39,9 @@ bool Z2S_loadFileWithCRC(
 
 /*****************************************************************************/
 
+size_t Z2S_getFileSizeWithCRC(const char* z2s_file_name);
+
+/*****************************************************************************/
 
 size_t Z2S_loadBufferFromFile(
   const char *z2s_file_name, size_t z2s_file_offset, 

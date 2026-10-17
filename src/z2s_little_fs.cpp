@@ -393,6 +393,67 @@ bool Z2S_loadFileWithCRC(
 
 /*****************************************************************************/
 
+size_t Z2S_getFileSizeWithCRC(const char* z2s_file_name) {
+  
+  if (!Z2S_initLittleFs()) {
+    return 0;
+  }
+
+  char file_name[50] = {};
+  
+  snprintf(file_name, sizeof(file_name), "/z2s_gateway/%s", z2s_file_name);
+
+  if (xSemaphoreTake(saveMutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+
+    File file = LittleFS.open(file_name, "r");
+  
+    if (!file) {
+
+      log_e(
+        "Z2S LittleFs: failed to open file \"%s\" for read", z2s_file_name);
+
+      Z2S_endLittleFs();
+      return 0;
+    }
+
+    FileHeader hdr;
+
+    if (file.read((uint8_t*)&hdr, sizeof(hdr)) != sizeof(hdr)) {
+
+      log_e(
+        "Z2S LittleFs: error while reading header for file \"%s\"!", 
+        z2s_file_name);
+    
+      file.close();
+      Z2S_endLittleFs();
+      return 0;
+    }
+
+    if (hdr.magic != FILE_MAGIC) {
+
+      log_e(
+        "Z2S LittleFs: invalid header magic for file \"%s\"!", 
+        z2s_file_name);
+
+      file.close();
+      Z2S_endLittleFs();
+      return 0;
+    }
+
+    file.close();
+    Z2S_endLittleFs();
+    return hdr.dataSize;
+  }
+  else {
+
+    log_e("xSemaphoreTake failed!");
+    return 0;
+  }
+}
+
+
+/*****************************************************************************/
+
 size_t Z2S_loadBufferFromFile(
   const char* z2s_file_name, size_t z2s_file_offset, size_t z2s_buffer_size,
   uint8_t* z2s_buffer_data) {

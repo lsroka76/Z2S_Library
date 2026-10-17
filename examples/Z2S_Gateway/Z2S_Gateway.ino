@@ -158,8 +158,9 @@ void* operator new(size_t size) {
   void* ptr = nullptr;
 
   // Try allocating from custom heap if registered
+  //if ((size < 256) && (_z2s_custom_heap != nullptr)) {
   if (_z2s_custom_heap != nullptr) {
-
+  
     taskENTER_CRITICAL(&custom_heap_spinlock);
     ptr = multi_heap_malloc(_z2s_custom_heap, size);
     taskEXIT_CRITICAL(&custom_heap_spinlock);

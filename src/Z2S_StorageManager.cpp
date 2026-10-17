@@ -64,7 +64,13 @@ bool Z2S_loadIndexTable(
 
   if (use_new_format) {
 
-    load_result = Z2S_loadFileWithCRC(file_name, index_table, table_size);
+    size_t index_table_file_size = Z2S_getFileSizeWithCRC(file_name);
+
+    if (index_table_file_size <= table_size) {
+
+      load_result = Z2S_loadFileWithCRC(
+        file_name, index_table, index_table_file_size);
+    }
     
     if(backup_file_name && (!load_result)) {
 
@@ -72,8 +78,13 @@ bool Z2S_loadIndexTable(
         "Index table (%s) not found - loading backup file (%s)", 
         file_name, backup_file_name);
 
-      load_result = Z2S_loadFileWithCRC(
-        backup_file_name, index_table, table_size);
+      index_table_file_size = Z2S_getFileSizeWithCRC(backup_file_name);
+
+      if (index_table_file_size <= table_size) {
+
+        load_result = Z2S_loadFileWithCRC(
+          backup_file_name, index_table, table_size);
+      }
       
       if (load_result) {
 
