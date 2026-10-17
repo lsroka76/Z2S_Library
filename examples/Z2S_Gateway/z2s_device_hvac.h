@@ -10,7 +10,7 @@
 
 /*****************************************************************************/
 
-static constexpr char *HVAC_DEFAULT_NAME = "THERMOSTAT";
+inline constexpr char *HVAC_DEFAULT_NAME = "THERMOSTAT";
 
 /*****************************************************************************/
 

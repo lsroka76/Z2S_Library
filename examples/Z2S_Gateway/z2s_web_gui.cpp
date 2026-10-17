@@ -8133,24 +8133,6 @@ void editDeviceCallback(BasicControl *sender, int type, void *param) {
 
 			case GUI_CB_UPDATE_DEVICE_NAME_FLAG: {
 
-					/*size_t device_local_name_size_w = mbstrnlen(
-					  ESPUI.getControl(device_name_text)->getValueCstr(),
-					  DEVICE_LOCAL_NAME_MAX_SIZE - 1);
-
-					strncpy(
-					  z2s_zb_devices_table[device_slot].device_local_name,
-					  ESPUI.getControl(device_name_text)->getValueCstr(),
-					  device_local_name_size_w);
-
-					z2s_zb_devices_table[device_slot].device_local_name[device_local_name_size_w] = '\0';
-
-					z2s_zb_devices_table[device_slot].user_data_flags &=
-					  ~ZBD_USER_DATA_FLAG_SUBDEVICE_REGISTERED;
-
-					if (Z2S_saveZbDevicesTable()) {
-
-						sortZbDevicesSelectors(device_slot);
-					}*/
 				Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(
 					device_slot);
 
@@ -8577,11 +8559,11 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				{
 
 					if (type == S_ACTIVE)
-						Z2S_setChannelFlags(
-						  channel_slot, USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
+						z2s_core->setChannelUserDataFlags(
+							USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 					else
-						Z2S_clearChannelFlags(
-						  channel_slot, USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
+						z2s_core->clearChannelUserDataFlags(
+						  USER_DATA_FLAG_DISABLE_NOTIFICATIONS);
 				}
 				break;
 
@@ -8590,11 +8572,11 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				{
 
 					if (type == S_ACTIVE)
-						Z2S_setChannelFlags(
-						  channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
+						z2s_core->setChannelUserDataFlags(
+						  USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 					else
-						Z2S_clearChannelFlags(
-						  channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
+						z2s_core->clearChannelUserDataFlags(
+						  USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE);
 				}
 				break;
 
@@ -8603,11 +8585,11 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				{
 
 					if (type == S_ACTIVE)
-						Z2S_setChannelFlags(
-						  channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+						z2s_core->setChannelUserDataFlags(
+						  USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
 					else
-						Z2S_clearChannelFlags(
-						  channel_slot, USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
+						z2s_core->clearChannelUserDataFlags(
+						  USER_DATA_FLAG_TRV_AUTO_TO_SCHEDULE_MANUAL);
 				}
 				break;
 
@@ -8616,11 +8598,11 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				{
 
 					if (type == S_ACTIVE)
-						Z2S_setChannelFlags(
-						  channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+						z2s_core->setChannelUserDataFlags(
+						  USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 					else {
-						Z2S_clearChannelFlags(
-						  channel_slot, USER_DATA_FLAG_TRV_FIXED_CORRECTION);
+						z2s_core->clearChannelUserDataFlags(
+						  USER_DATA_FLAG_TRV_FIXED_CORRECTION);
 
 						updateHvacFixedCalibrationTemperature(channel_slot, 0);
 					}
@@ -8634,10 +8616,10 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				{
 
 					if (type == S_ACTIVE)
-						Z2S_setChannelFlags(
+						z2s_core->setChannelUserDataFlags(
 						  channel_slot, USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
 					else
-						Z2S_clearChannelFlags(
+						z2s_core->clearChannelUserDataFlags(
 						  channel_slot, USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
 				}
 				break;
@@ -8647,15 +8629,16 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				{
 
 					if (type == S_ACTIVE)
-						Z2S_setChannelFlags(
+						z2s_core->setChannelUserDataFlags(
 						  channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
 					else {
 
 						z2s_core->setRemoteIPAddress(0);
 						z2s_core->setSuplaRemoteChannel(0xFF);
 
-						Z2S_clearChannelFlags(
-						  channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE | USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS);
+						z2s_core->clearChannelUserDataFlags(
+						  channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE | 
+							USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS);
 					}
 
 					addGUICommand(gui_cmd_update_channel_info, -2);
@@ -8667,10 +8650,10 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				{
 
 					if (type == S_ACTIVE)
-						Z2S_setChannelFlags(
+						z2s_core->setChannelUserDataFlags(
 						  channel_slot, USER_DATA_FLAG_SET_SORWNS_ON_START);
 					else
-						Z2S_clearChannelFlags(
+						z2s_core->clearChannelUserDataFlags(
 						  channel_slot, USER_DATA_FLAG_SET_SORWNS_ON_START);
 				}
 				break;
@@ -8680,87 +8663,16 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				{
 
 					if (type == S_ACTIVE)
-						Z2S_setChannelFlags(
+						z2s_core->setChannelUserDataFlags(
 						  channel_slot, USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
 					else
-						Z2S_clearChannelFlags(
+						z2s_core->clearChannelUserDataFlags(
 						  channel_slot, USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
 				}
 				break;
 		}
 	}
 }
-/*
-void batteryCallback(BasicControl *sender, int type, void *param) {
-
-	if ((type == B_UP) && (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
-
-		uint8_t channel_slot = ESPUI.getControl(device_selector)->getValueInt();
-
-		switch ((uint32_t)param) {
-
-
-			case GUI_CB_BATTERY_VOLTAGE_MIN_FLAG:
-				{
-
-					z2s_zb_devices_table[channel_slot].battery_voltage_min =
-					  ESPUI.getControl(battery_voltage_min_number)->getValueInt();
-
-					Z2S_saveZbDevicesTable();
-				}
-				break;
-
-
-			case GUI_CB_BATTERY_VOLTAGE_MAX_FLAG:
-				{
-
-					z2s_zb_devices_table[channel_slot].battery_voltage_max =
-					  ESPUI.getControl(battery_voltage_max_number)->getValueInt();
-
-					Z2S_saveZbDevicesTable();
-				}
-				break;
-		}
-	}
-}
-
-void batterySwitcherCallback(BasicControl *sender, int type, void *param) {
-
-	if (ESPUI.getControl(device_selector)->getValueInt() >= 0) {
-
-		uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
-
-		switch ((uint32_t)param) {
-
-
-			case GUI_CB_DISABLE_VOLTAGE_MSG_FLAG:
-				{
-
-					if (type == S_ACTIVE)
-						Z2S_setZbDeviceFlags(device_slot,
-						                     ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG);
-					else
-						Z2S_clearZbDeviceFlags(device_slot,
-						                       ZBD_USER_DATA_FLAG_DISABLE_BATTERY_VOLTAGE_MSG);
-				}
-				break;
-
-
-			case GUI_CB_DISABLE_PERCENTAGE_MSG_FLAG:
-				{
-
-					if (type == S_ACTIVE)
-						Z2S_setZbDeviceFlags(device_slot,
-						                     ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG);
-					else
-						Z2S_clearZbDeviceFlags(device_slot,
-						                       ZBD_USER_DATA_FLAG_DISABLE_BATTERY_PERCENTAGE_MSG);
-				}
-				break;
-		}
-	}
-}
-*/
 
 /*****************************************************************************/
 
@@ -9761,42 +9673,6 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 }
 
 /*****************************************************************************/
-/*
-void saveValveProgram(uint8_t device_slot) {
-
-	auto &zb_device = z2s_zb_devices_table[device_slot];
-
-	if ((ESPUI.getControl(valve_program_selector)->getValueInt() > 0) && 
-			(ESPUI.getControl(valve_cycles_number)->getValueInt() > 0)) {
-
-		uint8_t program_mode = ESPUI.getControl(
-		  valve_program_selector)->getValueInt();
-
-		uint8_t valve_cycles = ESPUI.getControl(
-		  valve_cycles_number)->getValueInt();
-
-		uint32_t value_32 = 0;
-
-		if (program_mode == 1)
-			value_32 = ESPUI.getControl(valve_worktime_number)->getValueInt();
-		else
-			value_32 = ESPUI.getControl(valve_volume_number)->getValueInt();
-
-		zb_device.smart_valve_data.program = program_mode;
-		zb_device.smart_valve_data.cycles = valve_cycles;
-		zb_device.smart_valve_data.value = value_32;
-		zb_device.smart_valve_data.pause_time = ESPUI.getControl(
-		  valve_pause_number)->getValueInt();
-
-		if (Z2S_saveZbDevicesTable())
-			ESPUI.updateLabel(
-			  valve_info_label, "Valve program saved successfully.");
-		else
-			ESPUI.updateLabel(valve_info_label, "Valve program save failed.");
-	} else
-		ESPUI.updateLabel(valve_info_label, "No valve program to save");
-}
-*/
 
 void saveValveProgram(uint8_t device_slot) {
 

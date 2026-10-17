@@ -55,7 +55,7 @@
 #define GATEWAY_EVENTS_CHANNEL_NUMBER   0xFE
 #define GATEWAY_EVENTS_CHANNEL_INDEX    0xFE
 
-static const char *gateway_events_channel_name = "GATEWAY EVENTS";
+inline const char *gateway_events_channel_name = "GATEWAY EVENTS";
 
 /*****************************************************************************/
 
@@ -99,12 +99,12 @@ typedef struct channel_extended_data_sb_s {
   char json_payload_2[256];
 } __attribute__ ((packed)) channel_extended_data_sb_t;
 
-static const char *sb_url_template = 
+inline const char *sb_url_template = 
   "https://api.switch-bot.com/v1.1/devices/%s/commands";
 
-static const char *sb_host = "api.switch-bot.com";
+inline const char *sb_host = "api.switch-bot.com";
 
-static const char *sb_device_path = "POST /v1.1/devices/%s/commands "
+inline const char *sb_device_path = "POST /v1.1/devices/%s/commands "
   "HTTP/1.1\r\n";
 
 /*****************************************************************************/
@@ -113,7 +113,7 @@ static const char *sb_device_path = "POST /v1.1/devices/%s/commands "
 #define CALCULATED_THERMOMETER_FUNC_HEAT_INDEX                          0x0002
 
 
-static constexpr char *calculated_thermomether_functions_names[] = {
+inline constexpr char *calculated_thermomether_functions_names[] = {
   "DEW POINT", "HEAT INDEX(FEELS LIKE)"
 };
 

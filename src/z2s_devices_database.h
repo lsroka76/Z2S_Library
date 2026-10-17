@@ -835,7 +835,7 @@
 #define TUYA_WATER_QUALITY_MONITOR_SG_SID                   0x05
 
 [[maybe_unused]]
-static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
+inline const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
     "ON PRESSED", 
     "ON HELD", 
     "OFF PRESSED", 
@@ -846,7 +846,7 @@ static const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = {
     "RIGHT HELD" };
 
 [[maybe_unused]]
-static const char *IKEA_BILRESA_BUTTONS[] PROGMEM = { 
+inline const char *IKEA_BILRESA_BUTTONS[] PROGMEM = { 
     "ON PRESSED", 
     "ON HELD", 
     "ON DOUBLE PRESSED",
@@ -855,7 +855,7 @@ static const char *IKEA_BILRESA_BUTTONS[] PROGMEM = {
     "OFF DOUBLE PRESSED" };
 
 [[maybe_unused]]
-static const char *IKEA_BILRESA_WHEEL[] PROGMEM = { 
+inline const char *IKEA_BILRESA_WHEEL[] PROGMEM = { 
     "WHEEL PRESSED",  
     "WHEEL DOUBLE PRESSED",
     "WHEEL TRIPLE PRESSED", 
@@ -864,7 +864,7 @@ static const char *IKEA_BILRESA_WHEEL[] PROGMEM = {
 
 
 [[maybe_unused]]
-static const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = { 
+inline const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = { 
     "PLAY", 
     "VOLUME UP", 
     "VOLUME DOWN", 
@@ -882,7 +882,7 @@ static const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = {
     "DOTS DOUBLE PRESSED" };
 
 [[maybe_unused]]
-static const char *PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[] PROGMEM = {  
+inline const char *PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[] PROGMEM = {  
     "ON_PRESS", 
     "ON_PRESS_RELEASE", 
     "ON_HOLD", 
@@ -983,7 +983,7 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 
 #define Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER                      0x0700
 
-static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
+inline const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_BASIC,
     .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
@@ -1362,7 +1362,7 @@ static const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
 
 };//Z2S_REPORTING_SETS_DESC
 
-static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
+inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_NULL, 
@@ -2988,12 +2988,12 @@ static const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }}
 };
 
-static const z2s_device_endpoint_t test_ep[] PROGMEM = {
+inline const z2s_device_endpoint_t test_ep[] PROGMEM = {
   { 10, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR },
   { 25, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
 };
 
-static const z2s_device_endpoint_t tuya_switch_8[] PROGMEM = {
+inline const z2s_device_endpoint_t tuya_switch_8[] PROGMEM = {
   { 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
   { 2, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
   { 3, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 },
@@ -3004,7 +3004,7 @@ static const z2s_device_endpoint_t tuya_switch_8[] PROGMEM = {
   { 8, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }
 };
 
-static const z2s_device_endpoint_t 
+inline const z2s_device_endpoint_t 
   DEVELCO_IAS_ZONE_ILLUM_TEMP_SENSOR_ENDPOINTS[] PROGMEM = {
   { 0x23, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B },
   { 0x26, 0, 0, Z2S_DEVICE_DESC_TEMPERATURE_SENSOR_1 },
@@ -3014,7 +3014,7 @@ static const z2s_device_endpoint_t
   { 0x29, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR }
 };
 
-static const z2s_device_endpoint_t 
+inline const z2s_device_endpoint_t 
   SHELLY_RELAY_ELECTRICITY_METER_ENDPOINTS[] PROGMEM = {
   { 0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
     Z2S_REPORTING_SET_DESC_SHELLY_POWER_STRIP_EM, 
@@ -3032,7 +3032,7 @@ static const z2s_device_endpoint_t
 };
 
 
-static const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
+inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 //DEVICES_START
   {	.manufacturer_name = "Unknown", .model_name = "Unknown",
     .z2s_device_uid = 0,

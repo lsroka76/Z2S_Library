@@ -57,9 +57,6 @@ typedef struct esp_zb_ota_image_header_s {
 } __attribute__ ((packed)) esp_zb_ota_image_header_t;
 
 
-
-#define ZBG_MAX_DEVICES                                       0x20 //32
-
 #define GATEWAY_ENDPOINT_NUMBER                               1
 
 #define TUYA_PRIVATE_CLUSTER_0                                0xE000

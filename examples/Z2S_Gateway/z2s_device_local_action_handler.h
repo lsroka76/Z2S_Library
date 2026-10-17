@@ -15,7 +15,7 @@
 
 #include "z2s_devices_table.h"
 
-static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
+inline constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
 
   "LOCAL ACTION HANDLER",
   "AND GATE",
@@ -29,28 +29,28 @@ static constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
   "NOP GATE"
 };
 
-static constexpr char *CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {
+inline constexpr char *CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {
   "CONNECTED_THERMOMETERS_FNC_MINIMUM", "CONNECTED_THERMOMETERS_FNC_AVERAGE",
   "CONNECTED_THERMOMETERS_FNC_MAXIMUM" };
 
-static constexpr char *LOCAL_VIRTUAL_RELAY_NAME = "LOCAL VIRTUAL RELAY";
-static constexpr char *LOCAL_VIRTUAL_HVAC_NAME = "LOCAL VIRTUAL HVAC";
-static constexpr char *LOCAL_VIRTUAL_BINARY_NAME = "LOCAL VIRTUAL BINARY";
-static constexpr char *LOCAL_REMOTE_RELAY_NAME = "LOCAL REMOTE RELAY";
-static constexpr char *LOCAL_REMOTE_THERMOMETER_NAME = 
+inline constexpr char *LOCAL_VIRTUAL_RELAY_NAME = "LOCAL VIRTUAL RELAY";
+inline constexpr char *LOCAL_VIRTUAL_HVAC_NAME = "LOCAL VIRTUAL HVAC";
+inline constexpr char *LOCAL_VIRTUAL_BINARY_NAME = "LOCAL VIRTUAL BINARY";
+inline constexpr char *LOCAL_REMOTE_RELAY_NAME = "LOCAL REMOTE RELAY";
+inline constexpr char *LOCAL_REMOTE_THERMOMETER_NAME = 
   "LOCAL REMOTE THERMOMETER";
-static constexpr char *LOCAL_CALCULATED_THERMOMETER_NAME = 
+inline constexpr char *LOCAL_CALCULATED_THERMOMETER_NAME = 
   "CALCULATED THERMOMETER";
-static constexpr char *LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME = 
+inline constexpr char *LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME = 
   "LOCAL VIRTUAL THERMHYGROMETER";
-static constexpr char *LOCAL_VIRTUAL_GPM_NAME = 
+inline constexpr char *LOCAL_VIRTUAL_GPM_NAME = 
   "LOCAL VIRTUAL GPM";
 
-static constexpr char *LOCAL_GPIO_RELAY_NAME = "LOCAL RELAY (GPIO)";
-static constexpr char *LOCAL_GPIO_HVAC_NAME = "LOCAL HVAC (GPIO)";
-static constexpr char *LOCAL_GPIO_HCSR04_NAME = "LOCAL HC-SR04 (GPIO)";
-static constexpr char *LOCAL_GPIO_DS18B20_NAME = "LOCAL DS18B20 (GPIO)";
-static constexpr char *LOCAL_GPIO_BINARY_NAME = "LOCAL BINARY (GPIO)";
+inline constexpr char *LOCAL_GPIO_RELAY_NAME = "LOCAL RELAY (GPIO)";
+inline constexpr char *LOCAL_GPIO_HVAC_NAME = "LOCAL HVAC (GPIO)";
+inline constexpr char *LOCAL_GPIO_HCSR04_NAME = "LOCAL HC-SR04 (GPIO)";
+inline constexpr char *LOCAL_GPIO_DS18B20_NAME = "LOCAL DS18B20 (GPIO)";
+inline constexpr char *LOCAL_GPIO_BINARY_NAME = "LOCAL BINARY (GPIO)";
 
 /*****************************************************************************/
 

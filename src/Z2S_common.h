@@ -93,10 +93,10 @@
 
 /*****************************************************************************/
 
-static const char *no_extended_data_counter_key = 
+inline const char *no_extended_data_counter_key = 
   "no edc key";
 
-static const char *invalid_extended_data_counter_key = 
+inline const char *invalid_extended_data_counter_key = 
   "invalid edc key";
 
 /*****************************************************************************/

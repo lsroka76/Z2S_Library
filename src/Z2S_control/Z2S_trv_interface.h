@@ -165,7 +165,7 @@ typedef struct lumi_sensor_send_temperature_params_s {
 } __attribute__((packed)) lumi_sensor_send_temperature_params_t;
 
 
-static constexpr lumi_fff2_cmd_header_t 
+inline constexpr lumi_fff2_cmd_header_t 
   lumi_fff2_cmd_header_template PROGMEM = {
   
     .cmd_start    = 0xAA, 
@@ -179,7 +179,7 @@ static constexpr lumi_fff2_cmd_header_t
     .params_size  = 0x2E
 };
 
-static constexpr lumi_sensor_link_params_1_t 
+inline constexpr lumi_sensor_link_params_1_t 
   lumi_sensor_link_params_1_template PROGMEM = {
 
   .timestamp          = 0x00000000,
@@ -195,7 +195,7 @@ static constexpr lumi_sensor_link_params_1_t
   .const_end_65       = 0x65,
 };
 
-static constexpr lumi_sensor_link_params_2_t 
+inline constexpr lumi_sensor_link_params_2_t 
   lumi_sensor_link_params_2_template PROGMEM = {
 
   .timestamp          = 0x00000000,
@@ -210,7 +210,7 @@ static constexpr lumi_sensor_link_params_2_t
   .const_end_65       = 0x65,
 };
 
-static constexpr lumi_sensor_unlink_params_t 
+inline constexpr lumi_sensor_unlink_params_t 
   lumi_sensor_unlink_params_template PROGMEM = {
 
   .timestamp          = 0x00000000,
@@ -221,7 +221,7 @@ static constexpr lumi_sensor_unlink_params_t
                          0x00, 0x00, 0x00, 0x0}
 };
 
-static constexpr lumi_sensor_unlink_params_t 
+inline constexpr lumi_sensor_unlink_params_t 
 lumi_sensor_unlink_params_2 PROGMEM = {
 
   .timestamp          = 0x00000000,
@@ -232,7 +232,7 @@ lumi_sensor_unlink_params_2 PROGMEM = {
                          0x00, 0x00, 0x00, 0x0}
 };
 
-static constexpr lumi_sensor_send_temperature_params_t 
+inline constexpr lumi_sensor_send_temperature_params_t 
   lumi_sensor_send_temperature_params_template PROGMEM = {
 
   .sensor_address    = { 0x00, 0x15, 0x8D, 0x00, 0x01, 0x9D, 0x1B, 0x98 },//some static value - seems enough
@@ -340,7 +340,7 @@ enum ts0601_cmd_sets {
   ts0601_cmd_sets_number
 };
 
-static constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
+inline constexpr ts0601_command_set_t ts0601_command_sets_table[] PROGMEM = {
 
   { .ts0601_cmd_set_id                               =  saswell_cmd_set,
     
@@ -1894,6 +1894,7 @@ public Z2S_Core {
   //void handleAction(int event, int action) override;
 
   void sendTRVBacklight(uint8_t backlight);
+  void sendTRVChildLock(uint8_t trv_child_lock, bool send_value = true);
 
 protected:
 
@@ -1996,7 +1997,6 @@ protected:
   void sendTRVTemperatureCalibration(int32_t temperature_calibration);
   void sendTRVExternalSensorTemperature(int32_t external_sensor_temperature);
   void sendTRVExternalSensorInput(bool trv_external_sensor_present);
-  void sendTRVChildLock(uint8_t trv_child_lock, bool send_value = true);
   void sendTRVScheduleMode(uint8_t trv_schedule_mode);
   void sendTRVTemperatureHysteresis(int32_t temperature_hysteresis);
   void sendTRVPing();

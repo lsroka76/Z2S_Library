@@ -2,9 +2,10 @@
 
 /*****************************************************************************/
 
+//legacy
 #define Z2S_ZB_DEVICES_MAX_NUMBER                               0x20  
 
-#define Z2S_DEVICES_MAX_NUMBER                                  0x20
+#define Z2S_DEVICES_MAX_NUMBER                                  0x40
 
 //Supla channels
 #define Z2S_CHANNELS_MAX_NUMBER                                 0x80      

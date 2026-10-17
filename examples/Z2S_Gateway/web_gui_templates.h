@@ -116,7 +116,7 @@ typedef struct Supla_condition_type_s {
 	const char* Supla_condition_name;
 } Supla_condition_type_t;
 
-static constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
+inline constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 
 	"No GUI on start",
 	"Minimal GUI (Gateway + Credentials)",
@@ -135,7 +135,7 @@ static constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 	"Standard GUI + AD"
 };
 
-static constexpr char* GUI_BUILD_FLAGS_NAMES[] PROGMEM = {
+inline constexpr char* GUI_BUILD_FLAGS_NAMES[] PROGMEM = {
 
 	"Gateway",
 	"WiFi & Supla credentials",
@@ -151,7 +151,7 @@ static constexpr char* GUI_BUILD_FLAGS_NAMES[] PROGMEM = {
 };
 
 
-static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
+inline constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 
 	{ .zigbee_cluster_name = "BASIC",										
 		.zigbee_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_BASIC },
@@ -265,7 +265,7 @@ static constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 		.zigbee_cluster_id = SLACKY_DIY_CUSTOM_CLUSTER }
 };
 
-static constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
+inline constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM = 
 
 	{{ .zigbee_datatype_name = "NULL",			
 		 .zigbee_datatype_size = 0x00,	
@@ -344,7 +344,7 @@ static constexpr zigbee_datatype_t zigbee_datatypes[] PROGMEM =
 		 .zigbee_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_UTC_TIME }
 	};
 
-static constexpr Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM = 
+inline constexpr Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM = 
 	
 	{{ .Tuya_datapoint_type_name = "RAW", 		
 		 .Tuya_datapoint_type_id = TUYA_DP_TYPE_RAW, 
@@ -371,7 +371,7 @@ static constexpr Tuya_datapoint_type_t Tuya_datapoint_types[] PROGMEM =
 		 .Tuya_datapoint_type_length = 0x01 }
 	};
 
-static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM = {
+inline constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM = {
 
 	{ .manufacturer_code = PHILIPS_MANUFACTURER_CODE,	
 		.manufacturer_name = "PHILIPS" },
@@ -401,7 +401,7 @@ static constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM 
 		.manufacturer_name = "SLACKY DIY" }
 	};
 
-static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
+inline constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CORE_ACTION_TURN_ON,
 		.Supla_action_name = "TURN ON" },
@@ -523,6 +523,12 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_BACKLIGHT,
 		.Supla_action_name = "TURN_OFF BACKLIGHT" },
 
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_ON_CHILD_LOCK,
+		.Supla_action_name = "TURN ON CHILD LOCK" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TURN_OFF_CHILD_LOCK,
+		.Supla_action_name = "TURN_OFF CHILD LOCK" },
+
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_RESEND_RELAY_STATE,
 		.Supla_action_name = "RESEND RELAY STATE" },
 
@@ -582,7 +588,7 @@ static constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.max_subactions_number = 256 }
 };
 
-static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
+inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 		
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CHANGE,
 		.Supla_event_name =  "ON CHANGE" },
@@ -703,7 +709,7 @@ static constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 		.Supla_event_name =  "[CONDITION] ON EQUAL" }
 };
 
-static constexpr Supla_condition_type_t Supla_conditions [] PROGMEM = {
+inline constexpr Supla_condition_type_t Supla_conditions [] PROGMEM = {
 	
 	{ .Supla_condition_id = Supla::ON_LESS,
 		.Supla_condition_name =  "ON LESS" },
@@ -727,7 +733,7 @@ static constexpr Supla_condition_type_t Supla_conditions [] PROGMEM = {
 		.Supla_condition_name =  "ON EQUAL" }
 };
 
-static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
+inline constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 
 //POWER CONFIG
 	{
@@ -1603,7 +1609,7 @@ static constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 };
 	 
 
-static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
+inline constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 
 	{
 		.zigbee_attribute_id = ESP_ZB_ZCL_ATTR_ON_OFF_START_UP_ON_OFF,
@@ -2043,7 +2049,7 @@ static constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 	}
 };
 
-static const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
+inline const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
 
   { .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
     .Tuya_datapoint_id 		 			= TUYA_PIR_ILLUMINANCE_SENSOR_SENSITIVITY_DP,

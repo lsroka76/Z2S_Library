@@ -63,7 +63,7 @@
 
 /*****************************************************************************/
 
-static const uint32_t RELAY_FLAGS = 
+inline const uint32_t RELAY_FLAGS = 
   SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK |
   SUPLA_BIT_FUNC_CONTROLLINGTHEGATE |
   SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR |

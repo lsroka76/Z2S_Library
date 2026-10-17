@@ -84,6 +84,24 @@ void HvacBaseEE::handleAction(int event, int action) {
     } break;
 
 
+    case Z2S_SUPLA_ACTION_TURN_ON_CHILD_LOCK: {
+
+      auto Supla_Z2S_TRVInterface = static_cast<
+        Supla::Control::Z2S_TRVInterface *>(primaryOutputEE);
+      
+      Supla_Z2S_TRVInterface->sendTRVChildLock(1);
+    } break;
+
+
+    case Z2S_SUPLA_ACTION_TURN_OFF_CHILD_LOCK: {
+
+      auto Supla_Z2S_TRVInterface = static_cast<
+        Supla::Control::Z2S_TRVInterface *>(primaryOutputEE);
+      
+      Supla_Z2S_TRVInterface->sendTRVChildLock(0);
+    } break;
+
+
     default:
 
       HvacBase::handleAction(event, action);

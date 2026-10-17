@@ -18,7 +18,7 @@ typedef struct virtual_button_data_s {
 
 /*****************************************************************************/
 
-static const char* default_at_name = "Virtual button";
+inline const char* default_at_name = "Virtual button";
 
 /*****************************************************************************/
 

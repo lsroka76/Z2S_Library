@@ -1220,29 +1220,9 @@ uint32_t Z2S_getZbDevicesTableSize() {
 
 bool Z2S_saveZbDevicesTable() {
 
-  log_e("This function is obsolete");
+  log_e("This function is obsolete and shouldn't be called!");
   return true;
   
-  bool backup_result = Z2S_renameFile(
-    Z2S_ZB_DEVICES_TABLE_ID_V3, Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V3);
-
-  if (!backup_result)
-    log_e("ZigBee devices table backup failed!");
-
-  bool save_result = Z2S_saveFileWithCRC(
-    Z2S_ZB_DEVICES_TABLE_ID_V3, (uint8_t *)z2s_zb_devices_table, 
-    sizeof(z2s_zb_devices_table));   
-    
-  if (!save_result) {
-
-    log_e("ZigBee devices table write failed!");
-
-    return false;
-  }
-  else { 
-
-    return true;  
-  }
 }
 
 /*****************************************************************************/

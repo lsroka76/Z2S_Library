@@ -123,12 +123,8 @@ union {
 } __attribute__((packed)) sonoff_duo_irrigation_status_data_t;
 
 
-//extern z2s_device_params_t z2s_channels_table[Z2S_CHANNELS_MAX_NUMBER];
-
 const static char Z2S_CHANNELS_TABLE_ID_V2[] PROGMEM = "channels_table_v2.z2s";
 const static char Z2S_CHANNELS_TABLE_BACKUP_ID_V2[] PROGMEM = "channels_table_v2.bak";
-
-extern z2s_zb_device_params_t z2s_zb_devices_table[Z2S_ZB_DEVICES_MAX_NUMBER];
 
 const static char Z2S_ZB_DEVICES_TABLE[] PROGMEM = "Z2S_zbd_table";
 const static char Z2S_ZB_DEVICES_TABLE_ID_V2[] PROGMEM = 
