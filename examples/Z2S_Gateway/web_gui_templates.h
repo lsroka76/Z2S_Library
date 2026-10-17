@@ -680,6 +680,12 @@ inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE,
 		.Supla_event_name =  "ON COPY OFF STATE" },
 
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_CHILD_LOCK_ON,
+		.Supla_event_name =  "ON CHILD LOCK ON" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_CHILD_LOCK_OFF,
+		.Supla_event_name =  "ON CHILD LOCK OFF" },
+
 	{ .Supla_event_id = Supla::ON_LESS,
 		.is_condition = true,
 		.Supla_event_name =  "[CONDITION] ON LESS" },

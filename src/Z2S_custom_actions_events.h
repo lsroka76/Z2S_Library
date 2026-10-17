@@ -184,6 +184,9 @@
 #define Z2S_SUPLA_EVENT_ON_COPY_ON_STATE                                      0x4300
 #define Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE                                     0x4301
 
+#define Z2S_SUPLA_EVENT_ON_CHILD_LOCK_ON                                      0x5000
+#define Z2S_SUPLA_EVENT_ON_CHILD_LOCK_OFF                                     0x5001
+
 #define Z2S_SUPLA_EVENT_CORE_EVENT_FIRST_EVENT                                0x6000
 
 #define Z2S_SUPLA_EVENT_CORE_EVENT_ON_PRESS                                   0x6000

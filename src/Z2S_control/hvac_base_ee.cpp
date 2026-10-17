@@ -86,6 +86,8 @@ void HvacBaseEE::handleAction(int event, int action) {
 
     case Z2S_SUPLA_ACTION_TURN_ON_CHILD_LOCK: {
 
+      setLocalUILock((LocalUILock)1);
+      
       auto Supla_Z2S_TRVInterface = static_cast<
         Supla::Control::Z2S_TRVInterface *>(primaryOutputEE);
       
@@ -95,6 +97,8 @@ void HvacBaseEE::handleAction(int event, int action) {
 
     case Z2S_SUPLA_ACTION_TURN_OFF_CHILD_LOCK: {
 
+      setLocalUILock((LocalUILock)0);
+      
       auto Supla_Z2S_TRVInterface = static_cast<
         Supla::Control::Z2S_TRVInterface *>(primaryOutputEE);
       

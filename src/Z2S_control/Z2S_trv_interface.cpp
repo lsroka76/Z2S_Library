@@ -1612,14 +1612,18 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
     if ((_trv_hvac) && 
         ((uint8_t)_trv_hvac->getLocalUILock() != _trv_child_lock)) {
 
-      log_i("TRV child lock difference detected hvac = %d, trv = %d", 
-            (uint8_t)_trv_hvac->getLocalUILock(), 
-            _trv_child_lock);
+      log_i(
+        "TRV child lock difference detected hvac = %d, trv = %d", 
+        (uint8_t)_trv_hvac->getLocalUILock(), _trv_child_lock);
             
       if (_cooperative_child_lock)
         _trv_hvac->setLocalUILock((LocalUILock)_trv_child_lock);
       else
         sendTRVChildLock((uint8_t)_trv_hvac->getLocalUILock()); 
+
+      _trv_hvac->runAction(
+        _trv_child_lock ? Z2S_SUPLA_EVENT_ON_CHILD_LOCK_ON :
+          Z2S_SUPLA_EVENT_ON_CHILD_LOCK_OFF);
 
       _trv_child_lock_changed = false;
     }

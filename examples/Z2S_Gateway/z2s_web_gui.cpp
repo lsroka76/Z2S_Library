@@ -5,6 +5,7 @@
 #include <esp_partition.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "multi_heap.h"
 
 #include <ZigbeeGateway.h>
 
@@ -30,6 +31,8 @@
 #include "web_gui_templates.h"
 
 ESPAsyncHTTPUpdateServer updateServer;
+
+extern multi_heap_handle_t _z2s_custom_heap;
 
 extern bool force_leave_global_flag;
 
@@ -1127,32 +1130,6 @@ bool hexToBytes(const char *src, uint8_t dst[8]) {
 
 /*****************************************************************************/
 
-/*bool isAdvancedDevice(uint8_t zb_device_id) {
-
-	auto zb_device = z2s_zb_devices_table[zb_device_id];
-
-	if (zb_device.record_id) {
-
-		switch (zb_device.desc_id) {
-
-
-			case Z2S_DEVICE_DESC_SONOFF_SMART_VALVE:
-			case Z2S_DEVICE_DESC_SONOFF_SMART_DUAL_VALVE:
-			case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
-			case Z2S_DEVICE_DESC_MOES_ALARM:
-
-				return true;
-
-
-			default:
-				return false;
-		}
-	}
-	return false;
-} */
-
-/*****************************************************************************/
-
 uint16_t addEmptyLineLabel(uint16_t parent_id) {
 
 	uint16_t label_id = ESPUI.addControl(
@@ -1399,9 +1376,11 @@ const char *getZ2SDeviceDescName(uint32_t modelID) {
 
 const char *getZigbeeDataTypeName(uint8_t dataType) {
 
-	uint32_t zigbee_datatypes_count = sizeof(zigbee_datatypes) / sizeof(zigbee_datatype_t);
+	uint32_t zigbee_datatypes_count = sizeof(zigbee_datatypes) / 
+		sizeof(zigbee_datatype_t);
 
-	for (uint8_t datatypes_counter = 0; datatypes_counter < zigbee_datatypes_count; datatypes_counter++) {
+	for (uint8_t datatypes_counter = 0; 
+			 datatypes_counter < zigbee_datatypes_count; datatypes_counter++) {
 
 		if (zigbee_datatypes[datatypes_counter].zigbee_datatype_id == dataType)
 			return zigbee_datatypes[datatypes_counter].zigbee_datatype_name;
@@ -1466,17 +1445,24 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 
 		log_i("\n\rcurrent time %s\n\r", current_time_buffer);
 
+		multi_heap_info_t multi_heap_info;
+    multi_heap_get_info(_z2s_custom_heap, &multi_heap_info);
+
 		uint16_t meminfbuf_size = snprintf_P(
 		  buf, buf_max_len, "<b><i>FreeHeap:</b></i> %u B <b>| <i>MinimalFreeHeap"
-		                    ":</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<b>| <i>CPU usage:"
-		                    "</b></i> %04.1f %%<br><br>"
-		                    //"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
-		                    //"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br><br>"
-		                    //"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br>"
-		                    "<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
-		                    "%lu dni %02lu:%02lu:%02lu (%lu seconds)",
+		  ":</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<b>| <i>CPU usage:"
+	   	"</b></i> %04.1f %%<br><br>"
+			"<b><i>Custom FreeHeap:</b></i> %u B <b>| <i>Custom MinimalFreeHeap"
+		  ":</b></i> %u B <b>| <i>CustomMaxAllocHeap:</b></i> %u B<br><br>"
+		  //"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
+		  //"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br><br>"
+		  //"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br>"
+		  "<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
+		  "%lu dni %02lu:%02lu:%02lu (%lu seconds)",
 		  ESP.getFreeHeap(), ESP.getMinFreeHeap(),
 		  ESP.getMaxAllocHeap(), GatewayTaskInfo.getCpuUsage(),
+			multi_heap_info.total_free_bytes, multi_heap_info.minimum_free_bytes, 
+			multi_heap_info.largest_free_block,
 		  //uxTaskGetStackHighWaterMark(NULL),
 		  //uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()),
 		  //ESP.getPsramSize(), ESP.getFreePsram(),
@@ -9962,34 +9948,6 @@ void saveDualValveProgram(uint8_t device_slot) {
 }
 
 /*****************************************************************************/
-/*
-void loadDualValveProgram(uint8_t device_slot) {
-
-	auto &zb_device = z2s_zb_devices_table[device_slot];
-
-	if (zb_device.smart_dual_valve_data.channel_id > 0) {
-
-		ESPUI.updateNumber(
-		  DV_CHANNEL_SELECTOR, zb_device.smart_dual_valve_data.channel_id);
-		ESPUI.updateNumber(
-		  DV_PROGRAM_SELECTOR, zb_device.smart_dual_valve_data.program_id);
-		ESPUI.updateNumber(
-		  DV_TOTAL_DURATION, zb_device.smart_dual_valve_data.total_duration);
-		ESPUI.updateNumber(
-		  DV_IRRIGATION_DURATION,
-		  zb_device.smart_dual_valve_data.irrigation_duration);
-		ESPUI.updateNumber(
-		  DV_PAUSE_TIME, zb_device.smart_dual_valve_data.pause_duration);
-		ESPUI.updateNumber(
-		  DV_VOLUME, zb_device.smart_dual_valve_data.irrgation_volume);
-		ESPUI.updateNumber(
-		  DV_FAILSAFE_TIME, zb_device.smart_dual_valve_data.fail_safe_duration);
-
-		ESPUI.updateLabel(DV_INFO_LABEL, "Valve program loaded successfully.");
-	} else
-		ESPUI.updateLabel(DV_INFO_LABEL, "No valve program to load");
-}
-*/
 
 void loadDualValveProgram(uint8_t device_slot) {
 

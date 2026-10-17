@@ -88,8 +88,9 @@
 #define Z2S_TCP_CMD_UPDATE_HUMIDITY       0x11
 #define Z2S_TCP_CMD_UPDATE_PRESSURE       0x12
 
-alignas(8) static uint8_t custom_heap_buf[48 * 1024]; 
-static multi_heap_handle_t my_custom_heap = nullptr;
+alignas(8) static uint8_t custom_heap_buffer[64 * 1024]; 
+multi_heap_handle_t _z2s_custom_heap = nullptr;
+static portMUX_TYPE custom_heap_spinlock = portMUX_INITIALIZER_UNLOCKED;
 
 static constexpr char *Z2S_TCP_CMD PROGMEM = "Z2SCMD";
 
@@ -147,37 +148,47 @@ SemaphoreHandle_t saveMutex;
 inline bool is_in_custom_heap(void* ptr) {
     
     uintptr_t p = reinterpret_cast<uintptr_t>(ptr);
-    uintptr_t start = reinterpret_cast<uintptr_t>(custom_heap_buf);
-    uintptr_t end = start + sizeof(custom_heap_buf);
+    uintptr_t start = reinterpret_cast<uintptr_t>(custom_heap_buffer);
+    uintptr_t end = start + sizeof(custom_heap_buffer);
     return (p >= start && p < end);
 }
 
 void* operator new(size_t size) {
-    void* ptr = nullptr;
+   
+  void* ptr = nullptr;
 
-    // Try allocating from custom heap if registered
-    if (my_custom_heap != nullptr) {
-        ptr = multi_heap_malloc(my_custom_heap, size);
-    }
+  // Try allocating from custom heap if registered
+  if (_z2s_custom_heap != nullptr) {
 
-    // Fallback to system heap if custom heap is full or not initialized yet
-    if (!ptr) {
-        ptr = malloc(size);
-    }
+    taskENTER_CRITICAL(&custom_heap_spinlock);
+    ptr = multi_heap_malloc(_z2s_custom_heap, size);
+    taskEXIT_CRITICAL(&custom_heap_spinlock);
+  }
 
-    if (!ptr) throw std::bad_alloc();
-    return ptr;
+  // Fallback to system heap if custom heap is full or not initialized yet
+  if (!ptr) {
+    ptr = malloc(size);
+  }
+
+  if (!ptr) throw std::bad_alloc();
+  
+  return ptr;
 }
 
 void operator delete(void* ptr) noexcept {
-    if (!ptr) return;
+    
+  if (!ptr) return;
 
-    // Check which heap owns this memory pointer
-    if (is_in_custom_heap(ptr)) {
-        multi_heap_free(my_custom_heap, ptr);
-    } else {
-        free(ptr); // System heap
-    }
+  // Check which heap owns this memory pointer
+  if (is_in_custom_heap(ptr)) {
+
+    taskENTER_CRITICAL(&custom_heap_spinlock);
+    multi_heap_free(_z2s_custom_heap, ptr);
+    taskEXIT_CRITICAL(&custom_heap_spinlock);
+  } 
+  else {
+    free(ptr); // System heap
+  }
 }
 
 
@@ -545,8 +556,8 @@ void setup() {
 
   log_i("Z2S GATEWAY setup has just started!");
 
-  my_custom_heap = multi_heap_register(
-    custom_heap_buf, sizeof(custom_heap_buf));
+  _z2s_custom_heap = multi_heap_register(
+    custom_heap_buffer, sizeof(custom_heap_buffer));
 
   setupCpuMonitoring();
 
@@ -982,39 +993,6 @@ void setup() {
   SuplaDevice.begin(28);      
   
   refresh_time = millis();
-
-
-   /*client.onDisconnect([](void *arg, AsyncClient *client) {
-    Serial.printf("Disconnected.\n");
-    tcp_connect_state = 0;
-  });
-
-  // register a callback when an error occurs
-  client.onError([](void *arg, AsyncClient *client, int8_t error) {
-    Serial.printf("Error: %s\n", client->errorToString(error));
-  });
-
-  // register a callback when data arrives, to accumulate it
-  client.onData([](void *arg, AsyncClient *client, void *data, size_t len) {
-    Serial.printf("Received %u bytes...\n", len);
-    Serial.write((uint8_t *)data, len);
-  });
-
-  // register a callback when we are connected
-  client.onConnect([](void *arg, AsyncClient *client) {
-    Serial.printf("Connected!\n");
-    tcp_connect_state = 2;
-  });
-
-  client.onAck([](void *arg, AsyncClient *client, size_t len, uint32_t time) {
-    Serial.printf("Acked %u bytes in %" PRIu32 " ms\n", len, time);
-    assert(waitingAck >= len);
-    waitingAck -= len;
-  });
-
-  client.setRxTimeout(20000);
-  client.setNoDelay(true);
-*/
 
   /*zbg_device_params_t test_joined_device = {};
 
