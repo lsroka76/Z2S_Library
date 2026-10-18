@@ -248,7 +248,8 @@ uint16_t table_first_button;
 uint16_t table_next_button;
 uint16_t table_prev_button;
 uint16_t table_last_button;
-uint16_t actions_table_label;
+//uint16_t actions_table_label;
+uint16_t actions_table_label_2;
 uint16_t action_name_text;
 uint16_t action_description_text;
 uint16_t action_enabled_switcher;
@@ -777,41 +778,135 @@ function updateSelectOptions(targetSelects, optionsData, selectedValue = null, c
   });
 }
 
-  // 1. Save the browser's original JSON parser
-  const originalParse = JSON.parse;
+function updateActionTable(data) {
+  const targetLabel = document.getElementById(data.target);
+  if (!targetLabel) return;
 
-  // 2. Overwrite the global JSON parser
-  JSON.parse = function(text, reviver) {
-    // Let the browser parse the string normally first
-    const data = originalParse(text, reviver);
+  let rowsHtml = "";
+  
+  data.d.forEach((row, index) => {
+    // Calculate the absolute row index across all chunks
+    let absoluteIndex = data.start_idx + index;
+    let style = (index === data.s) 
+  	? "background-color: rgba(0, 123, 255, 0.2); font-weight: bold;" 
+  	: "";
+      
+    rowsHtml += `<tr style="${style}">`;
+    row.forEach(cell => {
+      rowsHtml += "<td style='padding: 4px; border-bottom: 1px solid #eee;'>" +
+                  `${cell}</td>`;
+    });
+    rowsHtml += "</tr>";
+  });
+
+  if (data.append) {
+    // Chunk 2+: Find the existing table body and append the new rows
+    let tbody = targetLabel.querySelector("tbody");
+    if (tbody) {
+      tbody.insertAdjacentHTML('beforeend', rowsHtml);
+    }
+  } else {
+    // Chunk 1: Build the fresh table header and insert the first rows
+    let html = "<table style='width:100%; border-collapse: collapse;'>" +
+      "<thead><tr>" +
+      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Name</th>" +
+      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Event</th>" +
+      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Source channel</th>" +
+      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Action</th>" +
+      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Destination channel</th>" +
+      "</tr></thead><tbody>" + 
+      rowsHtml + 
+      "</tbody></table>";
     
-    // 3. Check if the parsed object is our custom EXEC_JS payload
-    if (data && typeof data === 'object' && data.type === "EXEC_JS") {
-      console.log("Custom payload intercepted!", data.code);
-      
-      try {
-        eval(data.code); // Run the JS sent from the ESP32
-      } catch (err) {
-        console.error("Error running EXEC_JS:", err);
+    targetLabel.innerHTML = html;
+    targetLabel.style.display = "block";
+  }
+}
+
+function highlightActionRow(data) {
+  const targetLabel = document.getElementById(data.target);
+  if (!targetLabel) return;
+
+  // Select all table rows inside the tbody of your target label
+  const rows = targetLabel.querySelectorAll("tbody tr");
+  
+  rows.forEach((row, index) => {
+    if (index === data.s) {
+  		row.style.backgroundColor = "rgba(0, 123, 255, 0.2)";
+  		row.style.fontWeight = "bold";
+  		// row.style.color = "white"; 
+		} else {
+  		row.style.backgroundColor = "";
+  		row.style.fontWeight = "normal";
+  		// row.style.color = ""; 
+		}
+	});
+}
+
+function editActionRow(data) {
+  const targetLabel = document.getElementById(data.target);
+  if (!targetLabel) return;
+
+  const rows = targetLabel.querySelectorAll("tbody tr");
+  
+  // Ensure the row actually exists in the DOM before editing
+  if (data.idx < rows.length) {
+    const cells = rows[data.idx].querySelectorAll("td");
+    
+    // Overwrite each cell with the new data
+    data.d.forEach((newCellContent, i) => {
+      if (cells[i]) {
+        cells[i].innerHTML = newCellContent;
       }
-      
-      // 4. Return a dummy object to ESPUI so it doesn't crash 
-      // when it tries to process this custom message
+    });
+  }
+}
+
+const originalParse = JSON.parse;
+
+JSON.parse = function(text, reviver) {
+  const data = originalParse(text, reviver);
+  
+  if (data && typeof data === 'object') {
+    
+    // Custom Command 1: Execute arbitrary JS
+    if (data.type === "EXEC_JS") {
+      console.log("Custom payload intercepted!", data.code);
+      try { eval(data.code); } catch (err) { console.error(err); }
       return { type: -999, id: -1, value: "" }; 
     }
 
-		if (data && typeof data === 'object' && data.type === 'update_select') {
-    // Works whether json.targets is a single string or an array of strings
-    updateSelectOptions(
-			data.targets || data.target, data.options, data.selected, data.clear ?? true);
+    // Custom Command 2: Update select options
+    if (data.type === 'update_select') {
+      updateSelectOptions(
+        data.targets || data.target, data.options, data.selected, 
+        data.clear ?? true
+      );
+      return { type: -999, id: -1, value: "" }; 
+    }
 
-		return { type: -999, id: -1, value: "" }; 
+    // Custom Command 3: Render action table
+    if (data.type === 'update_action_table') {
+      updateActionTable(data);
+      return { type: -998, id: -1, value: "" }; 
+    }
+
+		if (data.type === 'highlight_action_row') {
+      highlightActionRow(data);
+      return { type: -997, id: -1, value: "" }; 
+    }
+
+		if (data.type === 'edit_action_row') {
+      editActionRow(data);
+      return { type: -999, id: -1, value: "" }; 
+    }
   }
-    
-    // If it's a normal ESPUI message, pass it through completely untouched
-    return data;
-  };
-  console.log("JSON.parse hook successfully installed!");
+  
+  // Normal ESPUI message passthrough
+  return data;
+};
+
+console.log("JSON.parse hook successfully installed!");
 
 async function downloadPartition(label, btn) {
   if (btn) btn.innerText = `Downloading ${label}... 0%`;
@@ -3921,6 +4016,168 @@ static bool appendToBuffer(
 
 /*****************************************************************************/
 
+void buildActionsTableJsonHeader(
+  char* buffer, size_t max_size, size_t& offset, uint16_t label_id, 
+	int selected_index, bool append, int start_idx) {
+
+  if (offset >= max_size) return;
+  
+  int len = snprintf(
+    buffer + offset, max_size - offset, 
+    "{\"type\":\"update_action_table\",\"target\":\"id%d\",\"s\":%d,"
+    "\"append\":%s,\"start_idx\":%d,\"d\":[", 
+    label_id, selected_index, append ? "true" : "false", start_idx);
+  
+  if (len > 0 && len < (max_size - offset)) offset += len;
+}
+
+/*****************************************************************************/
+
+void addActionsTableJsonRow(
+  char* buffer, size_t max_size, size_t& offset, z2s_channel_action_t &action, 
+	bool is_first) {
+
+  if (offset >= max_size) return;
+
+  char trig_buf[128] = {};
+
+  if (action.is_condition) {
+    snprintf(
+      trig_buf, sizeof(trig_buf), "%s (v: %.2f, %.2f)", 
+      getSuplaEventName(action.src_Supla_event, action.is_condition),
+      action.min_value, action.max_value
+    );
+  } else {
+    snprintf(
+      trig_buf, sizeof(trig_buf), "%s", 
+      getSuplaEventName(action.src_Supla_event, action.is_condition)
+    );
+  }
+
+  int len = snprintf(
+    buffer + offset, max_size - offset,
+    "%s[\"%s (%s)\",\"%s\",\"%s\",\"%s (sid: %u)\",\"%s\"]",
+    is_first ? "" : ",", 
+    action.action_name, action.is_enabled ? "on" : "off",
+    trig_buf,
+    Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel),
+    getSuplaActionName(action.dst_Supla_action), action.subaction_id,
+    Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel)
+  );
+
+  if (len > 0 && len < (max_size - offset)) offset += len;
+}
+
+/*****************************************************************************/
+
+void buildActionsTableJsonFooter(
+	char* buffer, size_t max_size, size_t& offset) {
+
+  if (offset >= max_size) return;
+  
+  int len = snprintf(buffer + offset, max_size - offset, "]}");
+  if (len > 0 && len < (max_size - offset)) offset += len;
+}
+
+/*****************************************************************************/
+
+void buildActionsTableJsonPayload(uint16_t ui_label_id, 
+	int target_action_index) {
+
+	const size_t MAX_JSON_SIZE = 2048; 
+	char json_payload[MAX_JSON_SIZE] = {};
+
+
+	const int BATCH_SIZE = 10; 
+	size_t offset = 0;
+
+	int total_actions = Z2S_getActionsNumber();
+
+	log_i("total actions %u", total_actions);
+
+	int16_t next_action = Z2S_findNextActionPosition(0);
+
+	z2s_channel_action_t new_action = {};
+
+	for (int i = 0; i < total_actions; i++) {
+  	
+  	if (i % BATCH_SIZE == 0) {
+    	
+			offset = 0; // 
+    	bool is_appending = (i > 0);
+    	buildActionsTableJsonHeader(
+      	json_payload, MAX_JSON_SIZE, offset, ui_label_id, target_action_index, 
+				is_appending, i);
+  	}
+
+  
+  	bool is_first_in_batch = (i % BATCH_SIZE == 0);
+  
+		
+		Z2S_loadAction(next_action, new_action);
+		
+		addActionsTableJsonRow(
+    	json_payload, MAX_JSON_SIZE, offset, new_action, is_first_in_batch);
+
+		next_action = Z2S_findNextActionPosition(next_action + 1);
+
+  	if (((i + 1) % BATCH_SIZE == 0) || (i == total_actions - 1)) {
+    
+			buildActionsTableJsonFooter(json_payload, MAX_JSON_SIZE, offset);
+
+			log_i("size %u, %s", strlen(json_payload), json_payload);
+
+    	ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+  	}
+	}
+}
+
+/*****************************************************************************/
+
+
+void sendActionsTableHighlight(uint16_t ui_label_id, int new_action_index) {
+  
+  char json_payload[128] = {};
+  
+  snprintf(
+    json_payload, sizeof(json_payload), 
+    "{\"type\":\"highlight_action_row\",\"target\":\"id%d\",\"s\":%d}", 
+    ui_label_id, new_action_index);
+
+  
+  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
+
+/*****************************************************************************/
+
+void sendActionRowEdit(
+  uint16_t ui_label_id, int target_action_index) {
+  
+	char json_payload[512] = {};
+  size_t offset = 0;
+  
+  int len = snprintf(
+    json_payload, sizeof(json_payload), 
+    "{\"type\":\"edit_action_row\",\"target\":\"id%d\",\"idx\":%d,\"d\":", 
+    ui_label_id, target_action_index);
+
+  if (len > 0) offset += len;
+
+	z2s_channel_action_t action {};
+
+	Z2S_loadAction(target_action_index, action);
+
+  addActionsTableJsonRow(
+		json_payload, sizeof(json_payload), offset, action, true);
+
+  len = snprintf(json_payload + offset, sizeof(json_payload) - offset, "}");
+  if (len > 0) offset += len;
+
+  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
+
+/*****************************************************************************/
+
 bool buildSelectJsonPreamble(
   char *json_payload, size_t json_payload_size, size_t &offset, bool clear,
   int32_t selected_value, uint8_t selectors_number,
@@ -4527,13 +4784,14 @@ void buildActionsTabGUI() {
 	  Control::Type::Button, empty_str, "FIRST", Control::Color::Dark,
 	  actions_tab, actionsTableCallback, (void *)GUI_CB_ACTION_FIRST_FLAG);
 
+	table_prev_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "PREV", Control::Color::Dark,
+	  table_first_button, actionsTableCallback, (void *)GUI_CB_ACTION_PREV_FLAG);
+
 	table_next_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "NEXT", Control::Color::Dark,
 	  table_first_button, actionsTableCallback, (void *)GUI_CB_ACTION_NEXT_FLAG);
 
-	table_prev_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "PREV", Control::Color::Dark,
-	  table_first_button, actionsTableCallback, (void *)GUI_CB_ACTION_PREV_FLAG);
 
 	table_last_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "LAST", Control::Color::Dark,
@@ -4548,22 +4806,26 @@ void buildActionsTabGUI() {
 		current_action_counter = Z2S_getActionCounter(first_action);
 
 		Z2S_loadAction(first_action, new_action);
-		sprintfAction(new_action);
+		//sprintfAction(new_action);
 	}
 
-	actions_table_label = ESPUI.addControl(
+	/*actions_table_label = ESPUI.addControl(
 	  Control::Type::Label, "Table label", working_str, Control::Color::Dark,
+	  actions_tab);*/
+
+	actions_table_label_2 = ESPUI.addControl(
+	  Control::Type::Label, "Table label", empty_str, Control::Color::Dark,
 	  actions_tab);
 
 	//ESPUI.getControl(actions_table_label)->reserve(500);
+	
 
-
-	ESPUI.setElementStyle(
+	/*ESPUI.setElementStyle(
 	  actions_table_label, "text-align: left; font-family:tahoma;"
-	                       " font-size: 4 px; font-style: normal; font-weight: normal;"
-	                       "background-color:unset;");
+	  " font-size: 4 px; font-style: normal; font-weight: normal;"
+	"background-color:unset;");*/
 
-	ESPUI.setPanelWide(actions_table_label, false);
+	ESPUI.setPanelWide(actions_table_label_2, true);
 
 	action_enabled_switcher = ESPUI.addControl(
 	  Control::Type::Switcher, "Action details", (long int)0,
@@ -5259,6 +5521,7 @@ void Z2S_loopWebGUI() {
 			sortAttributesSelectorsMain();
 			sortAttributeValuesSelectorsMain();
 			sortTuyaDatapointsSelectorsMain();
+			buildActionsTableJsonPayload(actions_table_label_2, 0);
 		} else {
 
 			//log_i("not yet synchronized");
@@ -5345,6 +5608,20 @@ void Z2S_loopWebGUI() {
 					sortTuyaDatapointsSelectorsMain();
 				}
 				break;
+
+
+			case gui_cmd_edit_actions_table: {
+
+					sendActionRowEdit(
+						actions_table_label_2, pending_gui_command->gui_command_value);
+			} break;
+
+
+			case gui_cmd_build_actions_table: {
+					
+				buildActionsTableJsonPayload(
+					actions_table_label_2, pending_gui_command->gui_command_value);
+			} break;
 
 
 			case gui_cmd_edit_channel_data:
@@ -9320,13 +9597,16 @@ void updateActionSummary(z2s_channel_action_t &new_action) {
 
 		current_action_counter = Z2S_getActionCounter(current_action_id);
 		Z2S_loadAction(current_action_id, new_action);
-		sprintfAction(new_action);
-		ESPUI.updateLabel(actions_table_label, working_str);
+		//sprintfAction(new_action);
+		//ESPUI.updateLabel(actions_table_label, working_str);
+		addGUICommand(
+			gui_cmd_build_actions_table, current_action_counter - 1);
 	} else {
 
 		current_action_counter = -1;
-		working_str = "Actions table is empty.";
-		ESPUI.updateLabel(actions_table_label, working_str);
+		//working_str = "Actions table is empty.";
+		//ESPUI.updateLabel(actions_table_label, working_str);
+		addGUICommand(gui_cmd_build_actions_table, 0);
 	}
 }
 /*****************************************************************************/
@@ -9352,9 +9632,11 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 						current_action_counter = Z2S_getActionCounter(first_action);
 
 						Z2S_loadAction(first_action, new_action);
-						sprintfAction(new_action);
-						ESPUI.updateLabel(actions_table_label, working_str);
+						//sprintfAction(new_action);
+						//ESPUI.updateLabel(actions_table_label, working_str);
 						updateActionDetails(new_action);
+						sendActionsTableHighlight(
+							actions_table_label_2, current_action_counter - 1);
 					}
 				}
 				break;
@@ -9373,8 +9655,10 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 						current_action_counter = Z2S_getActionCounter(next_action);
 
 						Z2S_loadAction(next_action, new_action);
-						sprintfAction(new_action);
-						ESPUI.updateLabel(actions_table_label, working_str);
+						//sprintfAction(new_action);
+						//ESPUI.updateLabel(actions_table_label, working_str);
+						sendActionsTableHighlight(
+							actions_table_label_2, current_action_counter - 1);
 						updateActionDetails(new_action);
 					}
 				}
@@ -9394,8 +9678,10 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 						current_action_counter = Z2S_getActionCounter(prev_action);
 
 						Z2S_loadAction(prev_action, new_action);
-						sprintfAction(new_action);
-						ESPUI.updateLabel(actions_table_label, working_str);
+						//sprintfAction(new_action);
+						//ESPUI.updateLabel(actions_table_label, working_str);
+						sendActionsTableHighlight(
+							actions_table_label_2, current_action_counter - 1);
 						updateActionDetails(new_action);
 					}
 				}
@@ -9415,8 +9701,10 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 						current_action_counter = Z2S_getActionCounter(last_action);
 
 						Z2S_loadAction(last_action, new_action);
-						sprintfAction(new_action);
-						ESPUI.updateLabel(actions_table_label, working_str);
+						//sprintfAction(new_action);
+						//ESPUI.updateLabel(actions_table_label, working_str);
+						sendActionsTableHighlight(
+							actions_table_label_2, current_action_counter - 1);
 						updateActionDetails(new_action);
 					}
 				}
@@ -9472,9 +9760,13 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					new_action_id = Z2S_findFreeActionIndex();
 					if (new_action_id == -1) {
 
-						ESPUI.updateLabel(action_state_label, "Actions table is full - can't add new Z2S Action!");
+						ESPUI.updateLabel(
+							action_state_label, "Actions table is full - can't add new "
+							"Z2S Action!");
 						return;
-					} else {
+					} 
+					else {
+						
 						previous_action_gui_state = current_action_gui_state;
 						current_action_gui_state = NEW_ACTION;
 						enableActionDetails(true);
@@ -9487,32 +9779,38 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_ACTION_SAVE_FLAG:
 				{
 
-					if ((current_action_gui_state != NEW_ACTION) && (current_action_gui_state != EDIT_ACTION) && (current_action_gui_state != COPY_ACTION))
+					if ((current_action_gui_state != NEW_ACTION) && 
+							(current_action_gui_state != EDIT_ACTION) && 
+							(current_action_gui_state != COPY_ACTION))
 						return;
 
 					if (!fillActionDetails(new_action)) {
-						ESPUI.updateLabel(action_state_label, "Required action data is missing!");
+						
+						ESPUI.updateLabel(
+							action_state_label, "Required action data is missing!");
 						return;
 					}
 
 					bool save_result = false;
 
 					const char *save_result_success_str = "Saving Z2S Action: SUCCESS!"
-					                                      "<br>Action has been activated!";
+					  "<br>Action has been activated!";
 					const char *save_result_enabled_str = "Saving Z2S Action: SUCCESS!"
-					                                      "<br>Action has been enabled!";
+						"<br>Action has been enabled!";
 					const char *save_result_disabled_str = "Saving Z2S Action: SUCCESS!"
-					                                       "<br>Action has been disabled!";
+					  "<br>Action has been disabled!";
 					const char *save_result_saved_str = "Saving Z2S Action: SUCCESS!";
 					const char *save_result_failed_str = "Saving Z2S Action: FAILED!";
 					const char *save_result_no_changes_str = "No changes detected!";
 
 					const char *save_result_str = save_result_success_str;
 
+					bool send_edit = false;
 
 					previous_action_gui_state = SAVE_ACTION;
 
-					if ((current_action_gui_state == NEW_ACTION) || (current_action_gui_state == COPY_ACTION)) {
+					if ((current_action_gui_state == NEW_ACTION) || 
+							(current_action_gui_state == COPY_ACTION)) {
 
 						current_action_id = new_action_id;
 
@@ -9523,7 +9821,8 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 							save_result_str = save_result_failed_str;
 
 						current_action_counter = Z2S_getActionCounter(current_action_id);
-					} else {
+					} 
+					else {
 
 						z2s_channel_action_t old_action = {};
 						Z2S_loadAction(current_action_id, old_action);
@@ -9601,14 +9900,21 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 								}
 								break;
 						}
+						send_edit = true;
 					}
 
 					current_action_gui_state = VIEW_ACTION;
 
 					enableActionDetails(false);
 					enableActionControls(true);
-					sprintfAction(new_action);
-					ESPUI.updateLabel(actions_table_label, working_str);
+					//sprintfAction(new_action);
+					//ESPUI.updateLabel(actions_table_label, working_str);
+					if (send_edit)
+						addGUICommand(
+							gui_cmd_edit_actions_table, current_action_counter - 1);
+					else
+						addGUICommand(
+							gui_cmd_build_actions_table, current_action_counter - 1);
 					updateActionButtons();
 
 					ESPUI.updateLabel(action_state_label, save_result_str);
@@ -9618,7 +9924,9 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_ACTION_CANCEL_FLAG:
 				{
 
-					if ((current_action_gui_state != NEW_ACTION) && (current_action_gui_state != EDIT_ACTION) && (current_action_gui_state != COPY_ACTION))
+					if ((current_action_gui_state != NEW_ACTION) && 
+							(current_action_gui_state != EDIT_ACTION) && 
+							(current_action_gui_state != COPY_ACTION))
 						return;
 
 					previous_action_gui_state = CANCEL_ACTION;
@@ -9633,7 +9941,8 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_ACTION_REMOVE_FLAG:
 				{
 
-					if ((current_action_gui_state != VIEW_ACTION) || (current_action_id == -1))
+					if ((current_action_gui_state != VIEW_ACTION) || 
+							(current_action_id == -1))
 						return;
 
 					previous_action_gui_state = REMOVE_ACTION;
@@ -9650,7 +9959,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					if (remove_result)
 						ESPUI.updateLabel(
 						  action_state_label, "Removing Z2S Action: SUCCESS! <br>"
-						                      "Action has been deactivated!");
+						  "Action has been deactivated!");
 					else
 						ESPUI.updateLabel(action_state_label, "Removing Z2S Action: FAILED!");
 				}

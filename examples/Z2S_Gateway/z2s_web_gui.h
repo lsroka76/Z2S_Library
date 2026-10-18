@@ -64,6 +64,8 @@ enum gui_commands {
   gui_cmd_sort_attribute_types_selectors,
   gui_cmd_sort_attribute_values_selectors,
   gui_cmd_sort_Tuya_datapoints_selectors,
+  gui_cmd_build_actions_table,
+  gui_cmd_edit_actions_table,
   gui_cmd_cluster_callback,
   gui_cmd_Tuya_device_callback,
   gui_cmd_Tuya_custom_cmd_callback,
