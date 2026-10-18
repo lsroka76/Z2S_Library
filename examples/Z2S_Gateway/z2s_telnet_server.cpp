@@ -1,6 +1,6 @@
 #include "z2s_telnet_server.h"
 
-ESPTelnet telnet;
+Z2S_Telnet telnet;
 IPAddress ip;
 uint16_t  port = 23;
 bool is_Telnet_server = false;
@@ -86,6 +86,8 @@ void onTelnetInput(String str) {
 /* ------------------------------------------------- */
 
 void setupTelnet() {  
+  // called after every registration; a second begin() can't listen on the port
+  if (is_Telnet_server) return;
   // passing on functions for various telnet events
   telnet.onConnect(onTelnetConnect);
   telnet.onConnectionAttempt(onTelnetConnectionAttempt);
