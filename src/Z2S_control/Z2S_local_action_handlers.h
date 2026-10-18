@@ -35,7 +35,6 @@
 #include <supla/control/hvac_base.h>
 #include <supla/sensor/virtual_binary.h>
 #include <supla/sensor/virtual_therm_hygro_meter.h>
-#include <supla/sensor/virtual_thermometer.h>
 #include <supla/sensor/HC_SR04_GPM.h>
 #include <supla/sensor/DS18B20.h>
 #include <supla/sensor/binary.h>
@@ -49,6 +48,7 @@
 #include "Z2S_custom_actions_events.h"
 
 #include "Z2S_sensor/virtual_general_purpose_measurement.h"
+#include "Z2S_sensor/virtual_thermometer_with_actions.h"
 
 /*****************************************************************************/
 
@@ -111,10 +111,12 @@ inline const char *sb_device_path = "POST /v1.1/devices/%s/commands "
 
 #define CALCULATED_THERMOMETER_FUNC_DEW_POINT                           0x0001
 #define CALCULATED_THERMOMETER_FUNC_HEAT_INDEX                          0x0002
+#define CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT        0x0003
 
 
 inline constexpr char *calculated_thermomether_functions_names[] = {
-  "DEW POINT", "HEAT INDEX(FEELS LIKE)"
+  
+  "DEW POINT", "HEAT INDEX(FEELS LIKE)", "READ HVAC TEMPERATURE SETPOINT HEAT"
 };
 
 /*****************************************************************************/
@@ -400,7 +402,7 @@ class LocalVirtualThermHygroMeter: public VirtualThermHygroMeter,
 
 /*****************************************************************************/
 
-class CalculatedThermometer : public VirtualThermometer, 
+class CalculatedThermometer : public VirtualThermometerWithActions, 
   public Z2S_Core {
 
   public:
@@ -408,13 +410,18 @@ class CalculatedThermometer : public VirtualThermometer,
     CalculatedThermometer();
 
     void iterateAlways() override;
+    void handleAction(int event, int action) override;
+
+  protected:
+
+    void validateSourceChannel();
+    void readHvacTemperatureSetpointHeat();
 
   private:
 
     uint8_t _last_source_channel = 0xFF;
     uint32_t  _last_refresh_ms = 0;
-    Supla::Sensor::VirtualThermHygroMeter *_source_virtual_therm_hygro_meter =
-      nullptr;
+    Supla::Element *_source_Supla_element = nullptr;
 };
 
 /*****************************************************************************/

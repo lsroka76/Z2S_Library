@@ -102,22 +102,17 @@ Z2S_Core *Z2S_Core::getZ2SCoreByChannelIndex(int16_t channel_index) {
 
 /*****************************************************************************/
 
-Z2S_Core *Z2S_Core::getZ2SCoreByChannelNumberAndType(
-  uint8_t channel_number, int32_t Supla_channel_type) {
+Supla::Element *Z2S_Core::getSuplaElementByChannelNumberAndType(
+    uint8_t channel_number, int32_t Supla_channel_type){
 
-  auto core_it = Z2S_Cores.begin();
-    
-  while (core_it != Z2S_Cores.end()) {
+  Supla::Element *element = Supla::Element::getElementByChannelNumber(
+    channel_number);
 
-    auto z2s_core = *core_it;
-
-    if ((z2s_core->_z2s_channel.Supla_channel == channel_number) &&
-        (z2s_core->_z2s_channel.Supla_channel_type == Supla_channel_type))
-      return z2s_core;
-
-    core_it++;
-  }
-  return nullptr;
+  if (element && 
+      (element->getChannel()->getChannelType() == Supla_channel_type))
+    return element;
+  else
+    return nullptr;
 }
 
 /*****************************************************************************/

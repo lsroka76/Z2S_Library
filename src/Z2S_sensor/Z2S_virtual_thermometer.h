@@ -22,7 +22,7 @@
 #include <NetworkClient.h>
 #include <ESPmDNS.h>
 
-#include <supla/sensor/virtual_thermometer.h>
+#include "virtual_thermometer_with_actions.h"
 
 #include "Z2S_common.h"
 
@@ -31,8 +31,8 @@
 
 namespace Supla {
 namespace Sensor {
-class Z2S_VirtualThermometer : public Supla::Sensor::VirtualThermometer,
-  public Z2S_Core {
+class Z2S_VirtualThermometer :
+  public Supla::Sensor::VirtualThermometerWithActions, public Z2S_Core {
   
 public:
     

@@ -38,6 +38,7 @@
 #define Z2S_SUPLA_ACTION_TURN_ON_BACKLIGHT                                    0x5011
 #define Z2S_SUPLA_ACTION_TURN_ON_CHILD_LOCK                                   0x5012
 #define Z2S_SUPLA_ACTION_TURN_OFF_CHILD_LOCK                                  0x5013
+//#define Z2S_SUPLA_ACTION_TURN_READ_HVAC_TEMP_SETPOINT_HEAT                    0x5014
 
 #define Z2S_SUPLA_ACTION_RESEND_RELAY_STATE                                   0x5100
 #define Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED                             0x5101

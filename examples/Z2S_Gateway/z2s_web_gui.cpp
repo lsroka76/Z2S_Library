@@ -3544,48 +3544,48 @@ const char *getSuplaEventName(Supla::Event event_id, bool is_condition) {
 	return "Unknown";
 }
 
-/*****************************************************************************/
+	/*****************************************************************************/
 
-void sprintfAction(z2s_channel_action_t &action) {
+	void sprintfAction(z2s_channel_action_t &action) {
 
-	char general_purpose_gui_buffer[512] = {};
+		char general_purpose_gui_buffer[512] = {};
 
-	if (action.is_condition)
-		snprintf(
-		  general_purpose_gui_buffer, 512,
-		  "<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
-		  "<b>Action name:</b> <i>%s (%s)</i><br><br>"
-		  "<b>Condition:</b> <i>{%s}</i><br>"
-		  "with <b>value(s) = </b> <i>%.2f, %.2f </i><br>"
-		  "<b>for source channel:</b> <i>[%s]</i><br><br>"
-		  "<b>Action:</b> <i>{%s}</i> <b><br>"
-		  "on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
-		  current_action_counter, Z2S_getActionsNumber(), action.action_name,
-		  action.is_enabled ? "enabled" : "disabled",
-		  getSuplaEventName(action.src_Supla_event, action.is_condition),
-		  action.min_value, action.max_value,
-		  Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel),
-		  getSuplaActionName(action.dst_Supla_action),
-		  Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel),
-		  action.subaction_id, action.reserved32);
-	else
-		snprintf(
-		  general_purpose_gui_buffer, 512,
-		  "<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
-		  "<b>Action name:</b> <i>%s (%s)</i><br><br>"
-		  "<b>Event:</b> <i>{%s}</i><br>"
-		  "<b>from source channel:</b> <i>[%s]</i><br><br>"
-		  "<b>Action:</b> <i>{%s}</i> <b><br>"
-		  "on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
-		  current_action_counter, Z2S_getActionsNumber(), action.action_name,
-		  action.is_enabled ? "enabled" : "disabled", getSuplaEventName(action.src_Supla_event, action.is_condition),
-		  Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel),
-		  getSuplaActionName(action.dst_Supla_action),
-		  Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel),
-		  action.subaction_id, action.reserved32);
+		if (action.is_condition)
+			snprintf(
+				general_purpose_gui_buffer, 512,
+				"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
+				"<b>Action name:</b> <i>%s (%s)</i><br><br>"
+				"<b>Condition:</b> <i>{%s}</i><br>"
+				"with <b>value(s) = </b> <i>%.2f, %.2f </i><br>"
+				"<b>for source channel:</b> <i>[%s]</i><br><br>"
+				"<b>Action:</b> <i>{%s}</i> <b><br>"
+				"on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
+				current_action_counter, Z2S_getActionsNumber(), action.action_name,
+				action.is_enabled ? "enabled" : "disabled",
+				getSuplaEventName(action.src_Supla_event, action.is_condition),
+				action.min_value, action.max_value,
+				Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel),
+				getSuplaActionName(action.dst_Supla_action),
+				Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel),
+				action.subaction_id, action.reserved32);
+		else
+			snprintf(
+				general_purpose_gui_buffer, 512,
+				"<b>Action#:</b> <i>%d</i> <b>of</b> <i>%d</i><br><br>"
+				"<b>Action name:</b> <i>%s (%s)</i><br><br>"
+				"<b>Event:</b> <i>{%s}</i><br>"
+				"<b>from source channel:</b> <i>[%s]</i><br><br>"
+				"<b>Action:</b> <i>{%s}</i> <b><br>"
+				"on destination channel:</b> <i>[%s]</i> (subaction id %u::%lu)",
+				current_action_counter, Z2S_getActionsNumber(), action.action_name,
+				action.is_enabled ? "enabled" : "disabled", getSuplaEventName(action.src_Supla_event, action.is_condition),
+				Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel),
+				getSuplaActionName(action.dst_Supla_action),
+				Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel),
+				action.subaction_id, action.reserved32);
 
-	working_str = general_purpose_gui_buffer;
-}
+		working_str = general_purpose_gui_buffer;
+	}
 
 /*****************************************************************************/
 
@@ -4340,8 +4340,9 @@ bool buildCalculatedThermometerLocalFunctionsSelectJsonPayload(
 
 	return buildSelectJsonPayloadGeneric(
 	  selected_value, 1, &selector_id,
-	  "Select local channel function...", [&](auto add_function_option) {
-		  for (uint8_t ctf = 1; ctf < 3; ctf++) {
+	  "Select local channel function...", [&](auto add_function_option) {		
+
+		  for (uint8_t ctf = 1; ctf < 4; ctf++) {
 
 			  if (!add_function_option(
 							ctf, calculated_thermomether_functions_names[ctf-1]))

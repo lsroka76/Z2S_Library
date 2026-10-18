@@ -9142,6 +9142,13 @@ Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
         return (static_cast<Supla::Sensor::VirtualGeneralPurposeMeasurement *>(
           Supla_element))->getRealClient();
 
+
+      case SUPLA_CHANNELTYPE_THERMOMETER:
+
+        return (static_cast<Supla::Sensor::VirtualThermometerWithActions *>(
+          Supla_element))->getRealClient();
+
+
       default:
 
         return nullptr;

@@ -1022,7 +1022,7 @@ void Supla::Sensor::LocalVirtualBinary::sendNotification() {
 /*****************************************************************************/
 
 Supla::Sensor::CalculatedThermometer::CalculatedThermometer() 
-  : VirtualThermometer(), Z2S_Core(this) {
+  : VirtualThermometerWithActions(), Z2S_Core(this) {
 }
 
 /*****************************************************************************/
@@ -1079,36 +1079,66 @@ double calculateHeatIndex(double temperatureC, double humidity) {
 
 /*****************************************************************************/
 
+void Supla::Sensor::CalculatedThermometer::validateSourceChannel() {
+
+  if ((_last_source_channel < 0xFF) && 
+      (_last_source_channel != getSourceChannel()))
+    _source_Supla_element = nullptr;
+
+  if (_source_Supla_element == nullptr) {
+
+    switch (getZ2SLocalChannelFunc()) {
+
+
+      case CALCULATED_THERMOMETER_FUNC_DEW_POINT: 
+      case CALCULATED_THERMOMETER_FUNC_HEAT_INDEX: {
+
+        _source_Supla_element = Z2S_Core::getSuplaElementByChannelNumberAndType(
+          getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
+
+        if (_source_Supla_element) {
+
+          _last_source_channel = getSourceChannel();          
+        }
+      } break;
+
+
+      case CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT: {
+
+        _source_Supla_element = Z2S_Core::getSuplaElementByChannelNumberAndType(
+          getSourceChannel(), SUPLA_CHANNELTYPE_HVAC);
+
+        if (_source_Supla_element) {
+
+          _last_source_channel = getSourceChannel();
+        }        
+      } break;
+    }
+  }
+}
+
+/*****************************************************************************/
+
 void Supla::Sensor::CalculatedThermometer::iterateAlways() {
 
-  Supla::Sensor::VirtualThermometer::iterateAlways();
+  Supla::Sensor::VirtualThermometerWithActions::iterateAlways();
 
   if (getRefreshMs() && ((millis() - _last_refresh_ms) > getRefreshMs())) {
 
     _last_refresh_ms = millis();
 
-    if ((_last_source_channel < 0xFF) && 
-        (_last_source_channel != getSourceChannel()))
-      _source_virtual_therm_hygro_meter = nullptr;
+    validateSourceChannel();
 
-    if (_source_virtual_therm_hygro_meter == nullptr) {
-
-      Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelNumberAndType(
-        getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
-
-      if (z2s_core)
-        _source_virtual_therm_hygro_meter = static_cast<
-          Supla::Sensor::VirtualThermHygroMeter *>(z2s_core->getZ2SElementPtr());
-      
-      _last_source_channel = getSourceChannel();
-    }
-
-    if (_source_virtual_therm_hygro_meter) {
+    if (_source_Supla_element) {
 
       switch (getZ2SLocalChannelFunc()) {
 
 
         case CALCULATED_THERMOMETER_FUNC_DEW_POINT: {
+
+          VirtualThermHygroMeter *_source_virtual_therm_hygro_meter = 
+            static_cast<Supla::Sensor::VirtualThermHygroMeter *>
+              (_source_Supla_element);
 
           double dew_point = calculateDewPoint(
             _source_virtual_therm_hygro_meter->getChannel()->
@@ -1122,6 +1152,10 @@ void Supla::Sensor::CalculatedThermometer::iterateAlways() {
 
         case CALCULATED_THERMOMETER_FUNC_HEAT_INDEX: {
 
+          VirtualThermHygroMeter *_source_virtual_therm_hygro_meter = 
+            static_cast<Supla::Sensor::VirtualThermHygroMeter *>
+              (_source_Supla_element);
+
           double heat_index = calculateHeatIndex(
             _source_virtual_therm_hygro_meter->getChannel()->
               getValueDoubleFirst(),
@@ -1132,7 +1166,6 @@ void Supla::Sensor::CalculatedThermometer::iterateAlways() {
         } break;
       }
 
-
       if (checkChannelUserDataFlags(
             USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
 
@@ -1140,6 +1173,57 @@ void Supla::Sensor::CalculatedThermometer::iterateAlways() {
         RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
       }
     }       
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedThermometer::readHvacTemperatureSetpointHeat() {
+
+  if (getZ2SLocalChannelFunc() != 
+        CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT)
+    return;
+
+  validateSourceChannel();
+
+  if (_source_Supla_element) {
+
+    Supla::Control::HvacBase *_source_hvac = 
+      static_cast<Supla::Control::HvacBase *>(_source_Supla_element);
+
+    float temperature_setpoint_heat = 
+      _source_hvac->getTemperatureSetpointHeat();
+
+    log_i("temperature_setpoint_heat %f", temperature_setpoint_heat);
+
+    setValue(temperature_setpoint_heat / 100);
+
+    _last_refresh_ms = 0;
+  }
+  else
+    log_i("_source_Supla_element empty");     
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedThermometer::handleAction(
+  int event, int action) {
+
+  log_i("event %u, action %u", event, action);
+  
+  switch (action) {
+
+
+    case SET:
+    
+      readHvacTemperatureSetpointHeat();
+    break;
+
+
+    case CLEAR:
+
+      setValue(0);
+    break;
   }
 }
 
@@ -1165,14 +1249,15 @@ void Supla::Sensor::LocalVirtualThermHygroMeter::iterateAlways() {
 
     if (_source_virtual_therm_hygro_meter == nullptr) {
 
-      Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelNumberAndType(
+      Supla::Element *element = getSuplaElementByChannelNumberAndType(
         getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
 
-      if (z2s_core)
+      if (element) {
         _source_virtual_therm_hygro_meter = static_cast<
-          Supla::Sensor::VirtualThermHygroMeter *>(z2s_core->getZ2SElementPtr());
+          Supla::Sensor::VirtualThermHygroMeter *>(element);
       
-      _last_source_channel = getSourceChannel();
+        _last_source_channel = getSourceChannel();
+      }
     }
 
     if (_source_virtual_therm_hygro_meter) {
