@@ -35,7 +35,7 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::turnOn() {
 
     uint16_t _tsn_number = random(0x0000, 0xFFFF); 
 
-    _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
+    /*_Tuya_dp_data[0] = (_tsn_number & 0xFF00);
     _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
     _Tuya_dp_data[2] = (_dimmer_number == 1) ? 0x04 : 0x0A;
     _Tuya_dp_data[3] = 0x04;
@@ -72,7 +72,7 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::turnOn() {
 
     zbGateway.sendCustomClusterCmd(
       _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 
-      ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 7, _Tuya_dp_data, false);*/
 
 
     _tsn_number = random(0x0000, 0xFFFF);
@@ -136,13 +136,13 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::sendValueToDevice(uint32_t brightness
     _Tuya_dp_data[6] = 0x00;
     _Tuya_dp_data[7] = 0x00;
     _Tuya_dp_data[8] = 0x00;
-    _Tuya_dp_data[9] = map(brightness, 0, 100, 0, 254);
+    _Tuya_dp_data[9] = map(brightness, 0, 100, 0, 1000);
 
     zbGateway.sendCustomClusterCmd(
       _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x00, 
       ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
 
-    _tsn_number = random(0x0000, 0xFFFF); 
+    /*_tsn_number = random(0x0000, 0xFFFF); 
     _Tuya_dp_data[0] = (_tsn_number & 0xFF00);
     _Tuya_dp_data[1] = (_tsn_number & 0x00FF);
     _Tuya_dp_data[2] = (_dimmer_number == 1) ? 0x02 : 0x08;
@@ -162,14 +162,14 @@ void Supla::Control::Z2S_TuyaDimmerSwitch::sendValueToDevice(uint32_t brightness
       ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
     zbGateway.sendCustomClusterCmd(
       _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 0x06, 
-      ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);
+      ESP_ZB_ZCL_ATTR_TYPE_SET, 10, _Tuya_dp_data, false);*/
   }
 }
 
 
 void Supla::Control::Z2S_TuyaDimmerSwitch::setValueOnServer(uint32_t brightness) {
 
-  uint8_t _brightness = map(brightness, 1, 254, 0, 100);
+  uint8_t _brightness = map(brightness, 0, 1000, 0, 100);
   channel.setNewValue(0, 0, 0, 0, _brightness, -1);
 }
 
