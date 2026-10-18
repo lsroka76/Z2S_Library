@@ -12,6 +12,10 @@
 class Z2S_Telnet : public ESPTelnet {
  public:
   void flush() override {}
+
+  // Input is read one character per loop and kept after a disconnect: the
+  // rest of the last line (e.g. "q" of "quit") would start the next command.
+  void clearInput() { input = ""; }
 };
 
 extern Z2S_Telnet telnet;
