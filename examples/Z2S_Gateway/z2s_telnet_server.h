@@ -5,7 +5,16 @@
 
 #define MAX_TELNET_CMD_PARAM_NUMBER 12
 
-extern ESPTelnet telnet;
+// ESPTelnetBase::flush() waits for availableForWrite(), which NetworkClient
+// doesn't have: every flush ends with a timeout counted as a failed write
+// and 3 of them disconnect the client (e.g. a reconnect from the same IP).
+// Writes are sent at once, so there is nothing to flush.
+class Z2S_Telnet : public ESPTelnet {
+ public:
+  void flush() override {}
+};
+
+extern Z2S_Telnet telnet;
 extern bool is_Telnet_server;
 
 void onTelnetCmd(void (*_callback)(char *cmd, uint8_t params_number, char **params));

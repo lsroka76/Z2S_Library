@@ -1,6 +1,6 @@
 #include "z2s_telnet_server.h"
 
-ESPTelnet telnet;
+Z2S_Telnet telnet;
 IPAddress ip;
 uint16_t  port = 23;
 bool is_Telnet_server = false;
