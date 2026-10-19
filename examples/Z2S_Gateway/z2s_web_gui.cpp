@@ -8569,6 +8569,8 @@ void generalZigbeeCallback(BasicControl *sender, int type, void *param) {
 	}
 }
 
+/*****************************************************************************/
+
 void switchCallback(BasicControl *sender, int type, void *param) {
 
 	if (sender->getValueInt() == 1)
@@ -8610,6 +8612,8 @@ void editDeviceCallback(BasicControl *sender, int type, void *param) {
 	}
 }
 
+/*****************************************************************************/
+
 uint32_t saveRemoteAddressData(uint8_t channel_slot) {
 
 	working_str = ESPUI.getControl(param_1_number)->getValue();
@@ -8640,6 +8644,8 @@ uint32_t saveRemoteAddressData(uint8_t channel_slot) {
 			REMOTE_ADDRESS_TYPE_IP4;
 }
 
+/*****************************************************************************/
+
 uint8_t saveRemoteChannelData(uint8_t channel_slot) {
 
 	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
@@ -8651,6 +8657,8 @@ uint8_t saveRemoteChannelData(uint8_t channel_slot) {
 
 	return Supla_remote_channel;
 }
+
+/*****************************************************************************/
 
 uint8_t saveSourceChannelData(uint8_t channel_slot) {
 
@@ -8664,12 +8672,15 @@ uint8_t saveSourceChannelData(uint8_t channel_slot) {
 	return Supla_source_channel;
 }
 
+/*****************************************************************************/
+
 void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 	if ((type == B_UP) || (type == S_VALUE))
 		addGUICommand(gui_cmd_edit_channel_data, (uint32_t)param);
 }
 
+/*****************************************************************************/
 
 void editChannelMain(uint32_t update_channel_flag) {
 
