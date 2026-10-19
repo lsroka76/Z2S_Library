@@ -897,11 +897,11 @@ function updateActionTable(data) {
     html += "<div tabindex='0' style='height: 140px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #ccc; border-top-left-radius: 4px; border-top-right-radius: 4px;'>" +
       "<table style='width:100%; table-layout: fixed; border-collapse: collapse; text-align: left;'>" +
       "<thead><tr>" +
-      "<th style='padding: 6px; width: 30%;'>Name</th>" +
-      "<th style='padding: 6px; width: 15%;'>Trig</th>" +
-      "<th style='padding: 6px; width: 15%;'>Src</th>" +
-      "<th style='padding: 6px; width: 20%;'>Act</th>" +
-      "<th style='padding: 6px; width: 20%;'>Dest</th>" +
+      "<th style='padding: 6px; width: 30%;'>Name (enabled)</th>" +
+      "<th style='padding: 6px; width: 15%;'>Supla event</th>" +
+      "<th style='padding: 6px; width: 15%;'>Source channel</th>" +
+      "<th style='padding: 6px; width: 20%;'>Supla action</th>" +
+      "<th style='padding: 6px; width: 20%;'>Destination channel</th>" +
       "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>";
 
     // 5. Footer Hotkey Legend
