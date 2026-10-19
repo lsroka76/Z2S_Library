@@ -848,11 +848,33 @@ function updateActionTable(data) {
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
       /* Base container styling with fixed height & scroll containment */
+      /* Container supporting dual vertical and horizontal scrolling */
       #${data.target} div[tabindex="0"] {
-        height: 140px;
-        overflow-y: auto;
+        height: 210px;
+        overflow: auto; /* Enables horizontal scrollbar when width < 720px */
         overscroll-behavior: contain;
+        margin-top: 8px; 
+        border: 1px solid rgba(128, 128, 128, 0.25);
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+
+      /* Compact Slim Scrollbars for WebKit browsers */
+      #${data.target} div[tabindex="0"]::-webkit-scrollbar {
+        width: 6px;
+        height: 6px; /* Horizontal scrollbar height */
+      }
+      #${data.target} div[tabindex="0"]::-webkit-scrollbar-track {
+        background: rgba(128, 128, 128, 0.1);
+        border-radius: 4px;
+      }
+      #${data.target} div[tabindex="0"]::-webkit-scrollbar-thumb {
+        background: rgba(128, 128, 128, 0.35);
+        border-radius: 4px;
+      }
+      #${data.target} div[tabindex="0"]::-webkit-scrollbar-thumb:hover {
+        background: rgba(128, 128, 128, 0.55);
       }
 
       /* Keyboard focus glow state (kept intact) */
@@ -863,33 +885,48 @@ function updateActionTable(data) {
       }
       }
       #${data.target} .table-footer-hints {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        justify-content: center;
-        align-items: center;
-        background: #f8f9fa;
-        border: 1px solid #ccc;
-        border-top: none;
-        border-bottom-left-radius: 4px;
-        border-bottom-right-radius: 4px;
-        padding: 5px 10px;
-        font-size: 0.75rem;
-        color: #6c757d;
-        user-select: none;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 14px !important;
+        justify-content: center !important;
+        align-items: center !important;
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-top: none !important;
+        border-bottom-left-radius: 6px !important;
+        border-bottom-right-radius: 6px !important;
+        padding: 5px 10px !important;
+        font-size: 10px !important; /* Overrides ESPUI's ~14px body font on plain text */
+        line-height: 1 !important;
+        color: #cbd5e1 !important;
+        user-select: none !important;
       }
+
+      /* Text + Keycap Groupings */
+      #${data.target} .table-footer-hints span {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        font-size: 10px !important; /* Strictly enforces 10px on text nodes like "Navigate" */
+        line-height: 1 !important;
+      }
+
+      /* Keycap Styling */
       #${data.target} .table-footer-hints kbd {
-        background-color: #ffffff;
-        border: 1px solid #adb5bd;
-        border-radius: 3px;
-        box-shadow: 0 1px 1px rgba(0,0,0,0.15);
-        color: #333;
-        display: inline-block;
-        font-family: inherit;
-        font-size: 0.7rem;
-        font-weight: 600;
-        padding: 1px 4px;
-        margin: 0 2px;
+        background-color: #334155 !important;
+        border: 1px solid #475569 !important;
+        border-radius: 3px !important;
+        box-shadow: 0 1px 1px rgba(0,0,0,0.4) !important;
+        color: #f8fafc !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-family: inherit !important;
+        font-size: 9px !important;
+        font-weight: 600 !important;
+        padding: 2px 4px !important;
+        line-height: 1 !important;
+        height: 16px !important;
       }
 			/* Disabled Overlay & Input Lock */
       #${data.target} div.table-disabled {
@@ -922,15 +959,15 @@ function updateActionTable(data) {
       }
     </style>`;
 
-    // 4. Construct Scrollable Table Container
-    html += "<div tabindex='0' style='height: 140px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #ccc; border-top-left-radius: 4px; border-top-right-radius: 4px;'>" +
-      "<table style='width:100%; table-layout: fixed; border-collapse: collapse; text-align: left;'>" +
+    // Scrollable Table Container with Horizontal & Vertical Scroll
+    html += "<div tabindex='0' style='height: 210px; margin-top: 8px; overflow: auto; overscroll-behavior: contain; border: 1px solid rgba(128,128,128,0.25); border-top-left-radius: 6px; border-top-right-radius: 6px;'>" +
+      "<table style='width:100%; min-width: 720px; table-layout: fixed; border-collapse: collapse; text-align: left;'>" +
       "<thead><tr>" +
-      "<th style='padding: 6px; width: 30%;'>Name (enabled)</th>" +
-      "<th style='padding: 6px; width: 15%;'>Supla event</th>" +
-      "<th style='padding: 6px; width: 15%;'>Source channel</th>" +
-      "<th style='padding: 6px; width: 20%;'>Supla action</th>" +
-      "<th style='padding: 6px; width: 20%;'>Destination channel</th>" +
+      "<th style='padding: 6px; width: 130px; min-width: 130px;'>Name (enabled)</th>" +
+      "<th style='padding: 6px; width: 150px; min-width: 150px;'>Supla event</th>" +
+      "<th style='padding: 6px; width: 150px; min-width: 150px;'>Source channel</th>" +
+      "<th style='padding: 6px; width: 140px; min-width: 140px;'>Supla action</th>" +
+      "<th style='padding: 6px; width: 150px; min-width: 150px;'>Destination channel</th>" +
       "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>";
 
     // 5. Footer Hotkey Legend

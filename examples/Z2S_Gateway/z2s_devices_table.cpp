@@ -6903,7 +6903,8 @@ uint8_t Z2S_addZ2SDevice(
 
 /*****************************************************************************/
 
-      case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE: {
+      case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
+      case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_NTC_PROBE: {
 
         switch (sub_id) {
 
@@ -9540,6 +9541,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER:
     case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
+    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_NTC_PROBE:
     case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
     case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
     case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR:
@@ -11328,7 +11330,8 @@ void Z2S_buildSuplaChannels(
 
 /*****************************************************************************/
 
-    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE: {
+    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
+    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_NTC_PROBE: {
             
       Z2S_addZ2SDevice(
         joined_device, TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TH_SID, 

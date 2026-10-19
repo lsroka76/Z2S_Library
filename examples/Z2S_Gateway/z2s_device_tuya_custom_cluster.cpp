@@ -2606,42 +2606,101 @@ void processTuyaTempHumidityTempProbeSensorDataReport(
     SUPLA_CHANNELTYPE_THERMOMETER, 
     TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMP_SID);
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TEMPERATURE_DP, payload_size, payload);
+  uint8_t internal_temperature_dp = 0x00;
+  uint8_t internal_humidity_dp = 0x00;
+  uint8_t external_temperature_dp = 0x00;
+  uint8_t battery_state_dp = 0x00;
+  uint8_t battery_level_dp = 0x00;
 
-  if (Tuya_read_dp_result.is_success) {
+  switch (model_id) {
 
-    msgZ2SDeviceTempHumidityTemp(
-      element_1, (float)Tuya_read_dp_result.dp_value / 10);
+
+    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE: {
+
+      internal_temperature_dp = 
+        TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_TEMPERATURE_DP;
+      internal_humidity_dp = 
+        TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_HUMIDITY_DP;
+      external_temperature_dp = 
+        TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMPERATURE_DP;
+      battery_state_dp = 
+        TUYA_TH_SENSOR_TEMP_PROBE_BATTERY_STATE_DP;
+
+    } break;
+
+    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_NTC_PROBE: {
+
+      internal_temperature_dp = 
+        TUYA_TH_SENSOR_NTC_PROBE_INTERNAL_TEMPERATURE_DP;
+      internal_humidity_dp = 
+        TUYA_TH_SENSOR_NTC_PROBE_INTERNAL_HUMIDITY_DP;
+      external_temperature_dp = 
+        TUYA_TH_SENSOR_NTC_PROBE_NTC_TEMPERATURE_DP;
+      battery_level_dp = 
+        TUYA_TH_SENSOR_NTC_PROBE_BATTERY_LEVEL_DP;
+    } break;
+  }
+  
+  if (internal_temperature_dp) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, internal_temperature_dp, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceTempHumidityTemp(
+        element_1, (float)Tuya_read_dp_result.dp_value / 10);
+   }
   }
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_TH_SENSOR_TEMP_PROBE_INTERNAL_HUMIDITY_DP, payload_size, payload);
+  if (internal_humidity_dp) {
 
-  if (Tuya_read_dp_result.is_success) {
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, internal_humidity_dp, payload_size, payload);
 
-    msgZ2SDeviceTempHumidityHumi(
-      element_1, (float)Tuya_read_dp_result.dp_value);
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceTempHumidityHumi(
+        element_1, (float)Tuya_read_dp_result.dp_value);
+    }
   }
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_TH_SENSOR_TEMP_PROBE_EXTERNAL_TEMPERATURE_DP, payload_size, payload);
+  if (external_temperature_dp) {
 
-  if (Tuya_read_dp_result.is_success) {
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, external_temperature_dp, payload_size, payload);
 
-    msgZ2SDeviceTempHumidityTemp(
-      element_2, (float)Tuya_read_dp_result.dp_value / 10);
+    if (Tuya_read_dp_result.is_success) {
+
+      msgZ2SDeviceTempHumidityTemp(
+        element_2, (float)Tuya_read_dp_result.dp_value / 10);
+    }
   }
 
-  Z2S_readTuyaDPvalue(Tuya_read_dp_result,
-    TUYA_TH_SENSOR_TEMP_PROBE_BATTERY_STATE_DP, payload_size, payload);
+  if (battery_state_dp) {
 
-  if (Tuya_read_dp_result.is_success) {
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, battery_state_dp, payload_size, payload);
 
-    updateSuplaBatteryLevel(
-      short_addr, ZBD_BATTERY_LEVEL_MSG, 
-      Tuya_read_dp_result.dp_value == 0 ? 10 : 
-      Tuya_read_dp_result.dp_value == 1 ? 50 : 100);
+    if (Tuya_read_dp_result.is_success) {
+
+      updateSuplaBatteryLevel(
+        short_addr, ZBD_BATTERY_LEVEL_MSG, 
+        Tuya_read_dp_result.dp_value == 0 ? 10 : 
+        Tuya_read_dp_result.dp_value == 1 ? 50 : 100);
+    }
+  }
+
+  if (battery_level_dp) {
+
+    Z2S_readTuyaDPvalue(
+      Tuya_read_dp_result, battery_level_dp, payload_size, payload);
+
+    if (Tuya_read_dp_result.is_success) {
+
+      updateSuplaBatteryLevel(
+        short_addr, ZBD_BATTERY_LEVEL_MSG, Tuya_read_dp_result.dp_value);
+    }
   }  
 }
 
@@ -3722,6 +3781,7 @@ void processTuyaDataReport(
 
 
     case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
+    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_NTC_PROBE:
 
       processTuyaTempHumidityTempProbeSensorDataReport(
         short_addr, endpoint, payload_size, payload, model_id);
