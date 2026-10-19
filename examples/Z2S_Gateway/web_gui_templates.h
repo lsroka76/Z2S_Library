@@ -3578,7 +3578,106 @@ inline const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
     .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
     .Tuya_datapoint_name 	 			= "Temperature unit",
     .Tuya_datapoint_description = "Enter numeric value:<br>"
-																	"0 => Celsius, 1 => Fahrenheit" }
+																	"0 => Celsius, 1 => Fahrenheit" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_230W,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_BACKLIGHT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Backlight intensity (%)",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 100 [%]" },
+
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_230W,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_CONTROL_ALGORITHM_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Control alogrithm",
+    .Tuya_datapoint_description = 
+			"Enter numeric value:<br>"
+			"0 => TPI_UFH<br>"
+      "1 => TPI_RAD<br>"
+    	"2 => TPI_ELE<br>"
+      "3 => HIS_02<br>"
+      "4 => HIS_04<br>"
+    	"5 => HIS_06<br>"
+      "6 => HIS_08<br>"
+      "7 => HIS_10<br>"
+      "8 => HIS_20<br>"
+      "9 => HIS_30<br>"
+      "10 => HIS_40<br>"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_230W,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_COMFORT_FLOOR_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Comfort floor",
+    .Tuya_datapoint_description = 
+			"Enter numeric value:<br>"
+			"0 => OFF<br>"
+      "1 => LEVEL 1<br>"
+    	"2 => LEVEL 2<br>"
+      "3 => LEVEL 3<br>"
+      "4 => LEVEL 4<br>"
+    	"5 => LEVEL 5<br>" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_BATB,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_BACKLIGHT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Backlight intensity (%)",
+    .Tuya_datapoint_description = "Enter numeric value between 10 and 100 with step 10 [%]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_BATB,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_CONTROL_ALGORITHM_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Control alogrithm",
+    .Tuya_datapoint_description = 
+			"Enter numeric value:<br>"
+			"0 => TPI_UFH<br>"
+      "1 => TPI_RAD<br>"
+    	"2 => TPI_ELE<br>"
+      "3 => HIS_02<br>"
+      "4 => HIS_04<br>"
+    	"5 => HIS_06<br>"
+      "6 => HIS_08<br>"
+      "7 => HIS_10<br>"
+      "8 => HIS_20<br>"
+      "9 => HIS_30<br>"
+      "10 => HIS_40<br>"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_E40,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_BACKLIGHT_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_VALUE,
+    .Tuya_datapoint_name 	 			= "Backlight intensity (%)",
+    .Tuya_datapoint_description = "Enter numeric value between 0 and 100 with step 10 [%]" },
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_E40,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_CONTROL_ALGORITHM_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Control alogrithm",
+    .Tuya_datapoint_description = 
+			"Enter numeric value:<br>"
+			"0 => TPI_UFH<br>"
+      "1 => TPI_RAD<br>"
+    	"2 => TPI_ELE<br>"
+      "3 => HIS_02<br>"
+      "4 => HIS_04<br>"
+    	"5 => HIS_06<br>"
+      "6 => HIS_08<br>"
+      "7 => HIS_10<br>"
+      "8 => HIS_20<br>"
+      "9 => HIS_30<br>"
+      "10 => HIS_40<br>"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_E40,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_E40_COMFORT_FLOOR_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Comfort floor",
+    .Tuya_datapoint_description = 
+			"Enter numeric value:<br>"
+			"0 => OFF<br>"
+      "1 => LEVEL 1<br>"
+    	"2 => LEVEL 2<br>"
+      "3 => LEVEL 3<br>"
+      "4 => LEVEL 4<br>"
+    	"5 => LEVEL 5<br>" }
 };
 
 #endif //WEB_GUI_TEMPLATES_H_

@@ -553,6 +553,13 @@
 
 #define TUYA_TS0601_TRV_TRV602Z_HYSTERESIS_DP                       0x7F
 
+#define ENGO_EONE_230W_TEMPERATURE_RESOLUTION_DP                    0x12
+#define ENGO_EONE_230W_BACKLIGHT_DP                                 0x23
+#define ENGO_EONE_230W_CONTROL_ALGORITHM_DP                         0x65
+#define ENGO_EONE_230W_COMFORT_FLOOR_DP                             0x76
+
+#define ENGO_EONE_E40_COMFORT_FLOOR_DP                              0x2D
+
 #define TUYA_DIN_RCBO_EM_SWITCH_DP                                  0x01
 #define TUYA_DIN_RCBO_EM_ENERGY_DP                                  0x11 // /100
 #define TUYA_DIN_RCBO_EM_CURRENT_DP                                 0x12 // /100
