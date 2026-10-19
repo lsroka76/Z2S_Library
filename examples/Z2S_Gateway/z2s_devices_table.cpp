@@ -1528,7 +1528,15 @@ int16_t  Z2S_getActionCounter(uint16_t action_position) {
   return Z2S_getIndexTablePositionCounter(
     z2s_actions_index_table, action_position, Z2S_ACTIONS_MAX_NUMBER);
 }
-  
+
+/****************************************************************************/
+
+int16_t Z2S_getActionPosition(uint16_t action_counter) {
+
+  return Z2S_getIndexTableCounterPosition(
+    z2s_actions_index_table, action_counter, Z2S_ACTIONS_MAX_NUMBER);
+}
+
 /*****************************************************************************/  
 
 int16_t  Z2S_findFreeActionIndex() {
@@ -5050,6 +5058,23 @@ void Z2S_onAnalogInputReceive(
             element, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
             readAttr<float>(attribute));
         } break;
+
+
+        case Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR: {
+
+          Supla::Element* element = Z2S_findZ2SElement(
+            short_addr, endpoint, cluster, 
+            SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);    
+
+          if (!element) {
+    
+            log_e("no GPM channel found for address 0x%04X", short_addr);
+            return;
+          }       
+          msgZ2SDeviceGeneralPurposeMeasurement(
+            element, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+            readAttr<float>(attribute));
+        } break;
       }
 
       log_i("present value = %f", readAttr<float>(attribute));
@@ -8370,6 +8395,15 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
 
 /******************************************************************************/
 
+      case Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR: {
+        
+      addZ2SDeviceGeneralPurposeMeasurement(
+        device, first_free_slot, NO_CUSTOM_CMD_SID, "GENERIC GPM", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");      
+    } break;
+
+/******************************************************************************/
+      
       case Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR: 
 
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 

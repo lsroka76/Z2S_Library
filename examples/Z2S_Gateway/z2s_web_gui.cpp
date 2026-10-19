@@ -64,8 +64,8 @@ static volatile uint16_t max_Tuya_datapoints_selector_options =
 
 //UI handles
 
-uint16_t gui_cmd_hidden_label;
-uint16_t gui_cmd_hidden_response_button;
+//uint16_t gui_cmd_hidden_label;
+uint16_t gui_cmd_hidden_response_number;
 
 uint16_t gateway_general_info;
 uint16_t gateway_memory_info;
@@ -244,10 +244,10 @@ enum Tuya_devices_tab_controls {
 
 uint16_t Tuya_devices_tab_controls_table[Tuya_device_last_enum_position];
 
-uint16_t table_first_button;
-uint16_t table_next_button;
-uint16_t table_prev_button;
-uint16_t table_last_button;
+//uint16_t table_first_button;
+//uint16_t table_next_button;
+//uint16_t table_prev_button;
+//uint16_t table_last_button;
 //uint16_t actions_table_label;
 uint16_t actions_table_label_2;
 uint16_t action_name_text;
@@ -778,50 +778,215 @@ function updateSelectOptions(targetSelects, optionsData, selectedValue = null, c
   });
 }
 
+function sendActionClickToESP32(actionIndex) {
+  // Replace 'text15' with whatever HTML ID ESPUI assigned to your hidden input control
+  console.log("sendActionClickToESP32");
+	const hiddenInput = document.getElementById('num2'); 
+  if (hiddenInput) {
+    hiddenInput.value = actionIndex;
+    console.log("num2 present");
+    // Dispatch a standard browser event. ESPUI listens for 'change' or 'input' 
+    // to automatically send data over its WebSocket to your C++ callback!
+    //hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+		numberchange(2);
+  }
+}
+
+
 function updateActionTable(data) {
   const targetLabel = document.getElementById(data.target);
   if (!targetLabel) return;
 
   let rowsHtml = "";
-  
-  data.d.forEach((row, index) => {
-    // Calculate the absolute row index across all chunks
-    let absoluteIndex = data.start_idx + index;
-    let style = (index === data.s) 
-  	? "background-color: rgba(0, 123, 255, 0.2); font-weight: bold;" 
-  	: "";
-      
-    rowsHtml += `<tr style="${style}">`;
-    row.forEach(cell => {
-      rowsHtml += "<td style='padding: 4px; border-bottom: 1px solid #eee;'>" +
-                  `${cell}</td>`;
-    });
-    rowsHtml += "</tr>";
-  });
 
+  // 1. Handle Empty Table State vs Row Building
+  if (!data.d || data.d.length === 0) {
+    rowsHtml = `<tr>
+      <td colspan="5" style="text-align: center; padding: 16px; color: #6c757d; font-style: italic;">
+        No actions available
+      </td>
+    </tr>`;
+  } else {
+    data.d.forEach((row, index) => {
+      let absoluteIndex = (data.start_idx !== undefined ? data.start_idx : 0) + index;
+      
+      let style = "";
+      if (absoluteIndex === data.s) {
+        style = "background-color: rgba(0, 123, 255, 0.2); font-weight: bold;";
+      } else {
+        style = "font-weight: normal;"; 
+      }
+        
+      rowsHtml += `<tr style="${style}" data-action-idx="${absoluteIndex}">`;
+      row.forEach(cell => {
+        const cleanCell = String(cell).replace(/"/g, '&quot;');
+        rowsHtml += `<td style="padding: 6px; border-bottom: 1px solid #eee;" title="${cleanCell}">${cell}</td>`;
+      });
+      rowsHtml += "</tr>";
+    });
+  }
+
+  // 2. Append Chunks vs Full Re-render
   if (data.append) {
-    // Chunk 2+: Find the existing table body and append the new rows
     let tbody = targetLabel.querySelector("tbody");
     if (tbody) {
       tbody.insertAdjacentHTML('beforeend', rowsHtml);
     }
   } else {
-    // Chunk 1: Build the fresh table header and insert the first rows
-    let html = "<table style='width:100%; border-collapse: collapse;'>" +
+    // 3. Inject CSS (Sticky Headers, Hover, Container Focus Glow, Footer Hints)
+    let html = `<style>
+      #${data.target} tbody tr[data-action-idx] { cursor: pointer; transition: background 0.15s; }
+      #${data.target} tbody tr[data-action-idx]:hover { background-color: rgba(0, 123, 255, 0.2) !important; }
+      #${data.target} th { 
+        position: sticky; top: 0; background: #e9ecef; color: #212529; 
+        font-weight: 600; border-bottom: 2px solid #adb5bd; z-index: 10; 
+        box-shadow: 0 2px 4px -2px rgba(0,0,0,0.25); 
+      }
+      #${data.target} th, #${data.target} td {
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      /* Base container styling with fixed height & scroll containment */
+      #${data.target} div[tabindex="0"] {
+        height: 140px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+
+      /* Keyboard focus glow state (kept intact) */
+      #${data.target} div[tabindex="0"]:focus {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        outline: none !important;
+      }
+      }
+      #${data.target} .table-footer-hints {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        align-items: center;
+        background: #f8f9fa;
+        border: 1px solid #ccc;
+        border-top: none;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        color: #6c757d;
+        user-select: none;
+      }
+      #${data.target} .table-footer-hints kbd {
+        background-color: #ffffff;
+        border: 1px solid #adb5bd;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0,0,0,0.15);
+        color: #333;
+        display: inline-block;
+        font-family: inherit;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 1px 4px;
+        margin: 0 2px;
+      }
+    </style>`;
+
+    // 4. Construct Scrollable Table Container
+    html += "<div tabindex='0' style='height: 140px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #ccc; border-top-left-radius: 4px; border-top-right-radius: 4px;'>" +
+      "<table style='width:100%; table-layout: fixed; border-collapse: collapse; text-align: left;'>" +
       "<thead><tr>" +
-      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Name</th>" +
-      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Event</th>" +
-      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Source channel</th>" +
-      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Action</th>" +
-      "<th style='border-bottom: 2px solid #ccc; padding: 4px;'>Destination channel</th>" +
-      "</tr></thead><tbody>" + 
-      rowsHtml + 
-      "</tbody></table>";
-    
+      "<th style='padding: 6px; width: 30%;'>Name</th>" +
+      "<th style='padding: 6px; width: 15%;'>Trig</th>" +
+      "<th style='padding: 6px; width: 15%;'>Src</th>" +
+      "<th style='padding: 6px; width: 20%;'>Act</th>" +
+      "<th style='padding: 6px; width: 20%;'>Dest</th>" +
+      "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>";
+
+    // 5. Footer Hotkey Legend
+    html += `<div class="table-footer-hints">
+      <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+      <span><kbd>PgUp</kbd><kbd>PgDn</kbd> ±5 Rows</span>
+      <span><kbd>Home</kbd><kbd>End</kbd> First/Last</span>
+    </div>`;
+
     targetLabel.innerHTML = html;
     targetLabel.style.display = "block";
+
+    const container = targetLabel.querySelector("div[tabindex='0']");
+    const tbody = targetLabel.querySelector("tbody");
+
+    if (tbody && container) {
+      // Unified Selection & Event Dispatch Handler
+      const activateRow = (rowElement, shouldScroll = true) => {
+        if (!rowElement) return;
+
+        const actionIndex = parseInt(rowElement.getAttribute("data-action-idx"));
+        if (isNaN(actionIndex)) return;
+
+        // 1. Visual highlight
+        highlightActionRow({ target: data.target, s: actionIndex }, shouldScroll);
+
+        // Trigger custom callback to send this index back to the ESP32
+      
+        sendActionClickToESP32(actionIndex);
+        
+      };
+
+      // 1. Mouse Click Listener
+      tbody.addEventListener("click", function(e) {
+        const clickedRow = e.target.closest("tr[data-action-idx]");
+        if (!clickedRow) return;
+
+        container.focus();
+        activateRow(clickedRow, false); // Mouse click: do not scroll jump
+      });
+
+      // 2. Keyboard Navigation Listener
+      container.addEventListener("keydown", function(e) {
+        const navKeys = ["ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown", "Enter", " "];
+        if (!navKeys.includes(e.key)) return;
+
+        const rows = tbody.querySelectorAll("tr[data-action-idx]");
+        if (!rows.length) return;
+
+        let currentIndex = 0;
+        rows.forEach((row, idx) => {
+          if (row.style.fontWeight === "bold") {
+            currentIndex = idx;
+          }
+        });
+
+        // Pressing Enter or Space triggers an explicit row click
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          rows[currentIndex].click();
+          return;
+        }
+
+        let nextIndex = currentIndex;
+        if (e.key === "ArrowUp") {
+          nextIndex = Math.max(0, currentIndex - 1);
+        } else if (e.key === "ArrowDown") {
+          nextIndex = Math.min(rows.length - 1, currentIndex + 1);
+        } else if (e.key === "PageUp") {
+          nextIndex = Math.max(0, currentIndex - 5);
+        } else if (e.key === "PageDown") {
+          nextIndex = Math.min(rows.length - 1, currentIndex + 5);
+        } else if (e.key === "Home") {
+          nextIndex = 0;
+        } else if (e.key === "End") {
+          nextIndex = rows.length - 1;
+        }
+
+        if (nextIndex !== currentIndex) {
+          e.preventDefault(); // Prevent standard page viewport scrolling
+          activateRow(rows[nextIndex], true); // Keyboard move: auto-scroll to view
+        }
+      });
+    }
   }
 }
+
 
 function highlightActionRow(data) {
   const targetLabel = document.getElementById(data.target);
@@ -834,6 +999,7 @@ function highlightActionRow(data) {
     if (index === data.s) {
   		row.style.backgroundColor = "rgba(0, 123, 255, 0.2)";
   		row.style.fontWeight = "bold";
+			row.scrollIntoView({ behavior: "smooth", block: "nearest" });
   		// row.style.color = "white"; 
 		} else {
   		row.style.backgroundColor = "";
@@ -849,14 +1015,13 @@ function editActionRow(data) {
 
   const rows = targetLabel.querySelectorAll("tbody tr");
   
-  // Ensure the row actually exists in the DOM before editing
   if (data.idx < rows.length) {
     const cells = rows[data.idx].querySelectorAll("td");
     
-    // Overwrite each cell with the new data
     data.d.forEach((newCellContent, i) => {
       if (cells[i]) {
         cells[i].innerHTML = newCellContent;
+        cells[i].title = newCellContent; // Updates tooltip dynamically
       }
     });
   }
@@ -1113,6 +1278,7 @@ void addLocalChannelCallback(
 void addSwitchbotCallback(BasicControl *sender, int type, void *param);
 void saveSwitchbotCallback(BasicControl *sender, int type, void *param);
 void pushoverMessagesCallback(BasicControl *sender, int type, void *param);
+void hiddenNumberCallback(BasicControl *sender, int type, void *param);
 
 void enableControlStyle(uint16_t control_id, bool enable);
 
@@ -1601,24 +1767,25 @@ void buildGatewayTabGUI() {
 
 	char general_purpose_gui_buffer[768] = {};
 
-	gui_cmd_hidden_label = ESPUI.addControl(
-	  Control::Type::Label, empty_str, empty_str, Control::Color::Dark,
-	  Control::noParent);
-
-	gui_cmd_hidden_response_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, empty_str, Control::Color::Dark,
-	  Control::noParent);
-
-	log_i(
-	  "gui_cmd_hidden_label = %u, gui_cmd_hidden_response_button = %u",
-	  gui_cmd_hidden_label, gui_cmd_hidden_response_button);
-
-	ESPUI.updateVisibility(gui_cmd_hidden_label, false);
-	ESPUI.updateVisibility(gui_cmd_hidden_response_button, false);
-
 	auto gatewaytab = ESPUI.addControl(
 	  Control::Type::Tab, empty_str, "Gateway", Control::Color::Dark,
 	  Control::noParent, generalCallback);
+
+	/*gui_cmd_hidden_label = ESPUI.addControl(
+	  Control::Type::Label, empty_str, empty_str, Control::Color::Dark,
+	  gatewaytab);*/
+
+	gui_cmd_hidden_response_number = ESPUI.addControl(
+	  Control::Type::Number, empty_str, (long int)0,
+	  Control::Color::Dark, gatewaytab, hiddenNumberCallback);
+
+	/*log_i(
+	  "gui_cmd_hidden_label = %u, gui_cmd_hidden_response_number = %u",
+	  gui_cmd_hidden_label, gui_cmd_hidden_response_number);*/
+
+	//ESPUI.updateVisibility(gui_cmd_hidden_label, false);
+	//ESPUI.updateVisibility(gui_cmd_hidden_response_number, false);
+	ESPUI.setPanelStyle(gui_cmd_hidden_response_number, "display: none;");
 
 	ESPUI.addControl(
 	  Control::Type::Separator, "General information", empty_str,
@@ -3718,10 +3885,10 @@ void enableActionDetails(bool enable) {
 
 void enableActionControls(bool enable) {
 
-	enableControlStyle(table_first_button, enable);
-	enableControlStyle(table_next_button, enable);
-	enableControlStyle(table_prev_button, enable);
-	enableControlStyle(table_last_button, enable);
+	//enableControlStyle(table_first_button, enable);
+	//enableControlStyle(table_next_button, enable);
+	//enableControlStyle(table_prev_button, enable);
+	//enableControlStyle(table_last_button, enable);
 }
 
 /*****************************************************************************/
@@ -4081,57 +4248,67 @@ void buildActionsTableJsonFooter(
 
 /*****************************************************************************/
 
-void buildActionsTableJsonPayload(uint16_t ui_label_id, 
-	int target_action_index) {
-
-	const size_t MAX_JSON_SIZE = 2048; 
-	char json_payload[MAX_JSON_SIZE] = {};
-
-
-	const int BATCH_SIZE = 10; 
-	size_t offset = 0;
-
-	int total_actions = Z2S_getActionsNumber();
-
-	log_i("total actions %u", total_actions);
-
-	int16_t next_action = Z2S_findNextActionPosition(0);
-
-	z2s_channel_action_t new_action = {};
-
-	for (int i = 0; i < total_actions; i++) {
-  	
-  	if (i % BATCH_SIZE == 0) {
-    	
-			offset = 0; // 
-    	bool is_appending = (i > 0);
-    	buildActionsTableJsonHeader(
-      	json_payload, MAX_JSON_SIZE, offset, ui_label_id, target_action_index, 
-				is_appending, i);
-  	}
-
-  
-  	bool is_first_in_batch = (i % BATCH_SIZE == 0);
-  
+void buildActionsTableJsonPayload(
+	uint16_t ui_label_id, int target_action_index) {
 		
-		Z2S_loadAction(next_action, new_action);
-		
-		addActionsTableJsonRow(
-    	json_payload, MAX_JSON_SIZE, offset, new_action, is_first_in_batch);
+  const size_t MAX_JSON_SIZE = 2048; 
+  char json_payload[MAX_JSON_SIZE] = {};
 
-		next_action = Z2S_findNextActionPosition(next_action + 1);
+  const int BATCH_SIZE = 10; 
+  size_t offset = 0;
 
-  	if (((i + 1) % BATCH_SIZE == 0) || (i == total_actions - 1)) {
+  int total_actions = Z2S_getActionsNumber();
+
+  log_i("total actions %u", total_actions);
+
+  if (total_actions == 0) {
     
-			buildActionsTableJsonFooter(json_payload, MAX_JSON_SIZE, offset);
+		offset = 0;
+    
+    buildActionsTableJsonHeader(
+      json_payload, MAX_JSON_SIZE, offset, ui_label_id, -1, 
+      false, 0);
+  
+    buildActionsTableJsonFooter(json_payload, MAX_JSON_SIZE, offset);
 
-			log_i("size %u, %s", strlen(json_payload), json_payload);
+    log_i("Empty payload size %u: %s", strlen(json_payload), json_payload);
 
-    	ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
-  	}
-	}
+    ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    return;
+  }
+
+  int16_t next_action = Z2S_findNextActionPosition(0);
+  z2s_channel_action_t new_action = {};
+
+  for (int i = 0; i < total_actions; i++) {
+    if (i % BATCH_SIZE == 0) {
+      offset = 0; 
+      bool is_appending = (i > 0);
+      buildActionsTableJsonHeader(
+        json_payload, MAX_JSON_SIZE, offset, ui_label_id, target_action_index, 
+        is_appending, i
+      );
+    }
+
+    bool is_first_in_batch = (i % BATCH_SIZE == 0);
+    
+    Z2S_loadAction(next_action, new_action);
+    
+    addActionsTableJsonRow(
+      json_payload, MAX_JSON_SIZE, offset, new_action, is_first_in_batch
+    );
+
+    next_action = Z2S_findNextActionPosition(next_action + 1);
+
+    if (((i + 1) % BATCH_SIZE == 0) || (i == total_actions - 1)) {
+      buildActionsTableJsonFooter(json_payload, MAX_JSON_SIZE, offset);
+
+      log_i("size %u, %s", strlen(json_payload), json_payload);
+
+      ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    }
+  }
 }
-
 /*****************************************************************************/
 
 
@@ -4150,8 +4327,7 @@ void sendActionsTableHighlight(uint16_t ui_label_id, int new_action_index) {
 
 /*****************************************************************************/
 
-void sendActionRowEdit(
-  uint16_t ui_label_id, int target_action_index) {
+void sendActionRowEdit(uint16_t ui_label_id, int target_action_index) {
   
 	char json_payload[512] = {};
   size_t offset = 0;
@@ -4165,13 +4341,18 @@ void sendActionRowEdit(
 
 	z2s_channel_action_t action {};
 
-	Z2S_loadAction(target_action_index, action);
+	//uint16_t action_position = Z2S_getActionPosition(target_action_index);
+	Z2S_loadAction(current_action_id, action);
+
+	//Z2S_loadAction(target_action_index, action);
 
   addActionsTableJsonRow(
 		json_payload, sizeof(json_payload), offset, action, true);
 
   len = snprintf(json_payload + offset, sizeof(json_payload) - offset, "}");
   if (len > 0) offset += len;
+
+	log_i("size %u, %s", strlen(json_payload), json_payload);
 
   ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
 }
@@ -4780,7 +4961,7 @@ void buildActionsTabGUI() {
 
 	z2s_channel_action_t new_action = {};
 
-	table_first_button = ESPUI.addControl(
+	/*table_first_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "FIRST", Control::Color::Dark,
 	  actions_tab, actionsTableCallback, (void *)GUI_CB_ACTION_FIRST_FLAG);
 
@@ -4795,7 +4976,7 @@ void buildActionsTabGUI() {
 
 	table_last_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "LAST", Control::Color::Dark,
-	  table_first_button, actionsTableCallback, (void *)GUI_CB_ACTION_LAST_FLAG);
+	  table_first_button, actionsTableCallback, (void *)GUI_CB_ACTION_LAST_FLAG);*/
 
 	working_str = "No actions";
 
@@ -4806,26 +4987,45 @@ void buildActionsTabGUI() {
 		current_action_counter = Z2S_getActionCounter(first_action);
 
 		Z2S_loadAction(first_action, new_action);
-		//sprintfAction(new_action);
 	}
-
-	/*actions_table_label = ESPUI.addControl(
-	  Control::Type::Label, "Table label", working_str, Control::Color::Dark,
-	  actions_tab);*/
-
+	
 	actions_table_label_2 = ESPUI.addControl(
 	  Control::Type::Label, "Table label", empty_str, Control::Color::Dark,
 	  actions_tab);
 
-	//ESPUI.getControl(actions_table_label)->reserve(500);
-	
-
-	/*ESPUI.setElementStyle(
-	  actions_table_label, "text-align: left; font-family:tahoma;"
-	  " font-size: 4 px; font-style: normal; font-weight: normal;"
-	"background-color:unset;");*/
-
 	ESPUI.setPanelWide(actions_table_label_2, true);
+
+	action_new_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "NEW ACTION", Control::Color::Dark,
+	  actions_tab, actionsTableCallback, (void *)GUI_CB_ACTION_NEW_FLAG);
+
+	action_edit_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "EDIT ACTION",
+	  Control::Color::Dark, action_new_button, actionsTableCallback,
+	  (void *)GUI_CB_ACTION_EDIT_FLAG);
+
+	action_copy_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "COPY ACTION", Control::Color::Dark,
+	  action_new_button, actionsTableCallback, (void *)GUI_CB_ACTION_COPY_FLAG);
+
+	action_save_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "SAVE ACTION", Control::Color::Dark,
+	  action_new_button, actionsTableCallback, (void *)GUI_CB_ACTION_SAVE_FLAG);
+
+	action_cancel_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "CANCEL CHANGES",
+	  Control::Color::Dark, action_new_button, actionsTableCallback,
+	  (void *)GUI_CB_ACTION_CANCEL_FLAG);
+
+	action_remove_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "DELETE ACTION", Control::Color::Dark,
+	  action_new_button, actionsTableCallback, (void *)GUI_CB_ACTION_REMOVE_FLAG);
+
+	action_state_label = ESPUI.addControl(
+	  Control::Type::Label, empty_str, three_dots_str, Control::Color::Dark,
+	  action_new_button);
+
+	ESPUI.setPanelWide(action_new_button, true);
 
 	action_enabled_switcher = ESPUI.addControl(
 	  Control::Type::Switcher, "Action details", (long int)0,
@@ -4896,36 +5096,6 @@ void buildActionsTabGUI() {
 	  "&#10023; condition secondary threshold value (only for between)"
 	  " &#10023;<br>enter number ie. 21.5 or -8.0",
 	  action_enabled_switcher);
-
-	action_new_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "NEW ACTION", Control::Color::Dark,
-	  actions_tab, actionsTableCallback, (void *)GUI_CB_ACTION_NEW_FLAG);
-
-	action_edit_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "EDIT ACTION",
-	  Control::Color::Dark, action_new_button, actionsTableCallback,
-	  (void *)GUI_CB_ACTION_EDIT_FLAG);
-
-	action_copy_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "COPY ACTION", Control::Color::Dark,
-	  action_new_button, actionsTableCallback, (void *)GUI_CB_ACTION_COPY_FLAG);
-
-	action_save_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "SAVE ACTION", Control::Color::Dark,
-	  action_new_button, actionsTableCallback, (void *)GUI_CB_ACTION_SAVE_FLAG);
-
-	action_cancel_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "CANCEL CHANGES",
-	  Control::Color::Dark, action_new_button, actionsTableCallback,
-	  (void *)GUI_CB_ACTION_CANCEL_FLAG);
-
-	action_remove_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "DELETE ACTION", Control::Color::Dark,
-	  action_new_button, actionsTableCallback, (void *)GUI_CB_ACTION_REMOVE_FLAG);
-
-	action_state_label = ESPUI.addControl(
-	  Control::Type::Label, empty_str, three_dots_str, Control::Color::Dark,
-	  action_new_button);
 
 	enableActionDetails(false);
 	updateActionButtons();
@@ -6138,6 +6308,18 @@ void generalCallback(BasicControl *sender, int type, void *param) {
 	Serial.print("' = ");*/
 	//Serial.println(sender->getValue());
 }
+
+void hiddenNumberCallback(BasicControl *sender, int type, void *param) {
+
+	current_action_id = Z2S_getActionPosition(sender->getValueInt() + 1);
+	current_action_counter = Z2S_getActionCounter(current_action_id);
+
+	log_i(
+		"current_action_id %u, current_action_counter %u", current_action_id,
+		current_action_counter);
+}
+
+
 
 void onZigbeeTabCallback(BasicControl *sender, int type, void *param) {
 
@@ -9601,7 +9783,8 @@ void updateActionSummary(z2s_channel_action_t &new_action) {
 		//ESPUI.updateLabel(actions_table_label, working_str);
 		addGUICommand(
 			gui_cmd_build_actions_table, current_action_counter - 1);
-	} else {
+	} 
+	else {
 
 		current_action_counter = -1;
 		//working_str = "Actions table is empty.";

@@ -272,6 +272,8 @@ uint16_t Z2S_getIndexTableEntriesNumber(
   uint8_t *index_table, uint16_t max_index);
 int16_t Z2S_getIndexTablePositionCounter(
   uint8_t *index_table, uint16_t index_position, uint16_t max_index);
+int16_t Z2S_getIndexTableCounterPosition(
+    uint8_t *index_table, uint16_t counter, uint16_t max_index);
 
 int16_t Z2S_findFreeEntryIndex(uint8_t *index_table, uint16_t max_index);
 int16_t Z2S_findNextIndexPosition(

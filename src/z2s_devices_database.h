@@ -174,6 +174,9 @@
 #define Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR         0x2615
 #define Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR             0x2620
 
+#define Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR               0x2650
+
+
 #define Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR             0x2700
 
 #define Z2S_DEVICE_DESC_RGBW_START                          0x3000
@@ -1611,6 +1614,11 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT,
                              ESP_ZB_ZCL_CLUSTER_ID_BINARY_INPUT }},
 
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT }},
+
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
@@ -3020,6 +3028,15 @@ inline const z2s_device_endpoint_t
   { 0x22, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR },
   { 0x28, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR },
   { 0x29, 0, 0, Z2S_DEVICE_DESC_OCCUPANCY_SENSOR }
+};
+
+inline const z2s_device_endpoint_t 
+  SUPLADIY_GPM_5CH_ENDPOINTS[] PROGMEM = {
+  { 0x01, 0, 0, Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR },
+  { 0x02, 0, 0, Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR },
+  { 0x03, 0, 0, Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR },
+  { 0x04, 0, 0, Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR },
+  { 0x05, 0, 0, Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR }
 };
 
 inline const z2s_device_endpoint_t 
@@ -7498,6 +7515,12 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 38100,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_GTVZB,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SuplaDIY", .model_name = "GPM_5CH",
+    .z2s_device_uid = 38200,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints_ext = SUPLADIY_GPM_5CH_ENDPOINTS },
 
   
 //DEVICES_END

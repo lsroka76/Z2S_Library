@@ -189,6 +189,29 @@ int16_t Z2S_getIndexTablePositionCounter(
 
 /*****************************************************************************/
 
+int16_t Z2S_getIndexTableCounterPosition(
+    uint8_t *index_table, uint16_t counter, uint16_t max_index) {
+
+  if (counter == 0)
+    return -1;
+
+  uint16_t current_counter = 0;
+
+  for (uint16_t index = 0; index < max_index; index++) {
+
+    if (checkIndexTablePosition(index_table, index, max_index)) {
+      current_counter++;
+
+      if (current_counter == counter) {
+        return index;
+      }
+    }
+  }
+  return -1;
+}
+
+/*****************************************************************************/
+
 int16_t Z2S_findFreeEntryIndex(uint8_t *index_table, uint16_t max_index) {
 
   for (uint16_t index = 0; index < max_index; index++)

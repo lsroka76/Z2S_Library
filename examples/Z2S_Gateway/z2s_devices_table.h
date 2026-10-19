@@ -303,6 +303,7 @@ bool Z2S_loadActionsIndexTable();
 bool Z2S_saveActionsIndexTable();
 uint16_t Z2S_getActionsNumber();
 int16_t Z2S_getActionCounter(uint16_t action_position);
+int16_t Z2S_getActionPosition(uint16_t action_counter);
 
 int16_t Z2S_findFreeActionIndex();
 int16_t Z2S_findNextActionPosition(uint16_t action_position = 0);
