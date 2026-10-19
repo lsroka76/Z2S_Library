@@ -891,6 +891,14 @@ function updateActionTable(data) {
         padding: 1px 4px;
         margin: 0 2px;
       }
+			/* Disabled Overlay & Input Lock */
+      #${data.target} div.table-disabled {
+        pointer-events: none !important;   /* Blocks mouse clicks, hover, and wheel scrolling */
+        overflow-y: hidden !important;     /* Locks scrollbar in place */
+        opacity: 0.5 !important;           /* Visual disabled state */
+        filter: grayscale(50%);
+        user-select: none;
+      }
     </style>`;
 
     // 4. Construct Scrollable Table Container
@@ -989,6 +997,22 @@ function updateActionTable(data) {
   }
 }
 
+function setTableDisabled(targetId, isDisabled) {
+  const targetLabel = document.getElementById(targetId);
+  if (!targetLabel) return;
+
+  const container = targetLabel.querySelector("div[tabindex]");
+  if (!container) return;
+
+  if (isDisabled) {
+    container.classList.add("table-disabled");
+    container.setAttribute("tabindex", "-1"); // Prevents keyboard focus
+    container.blur();                         // Removes active blue focus border if currently focused
+  } else {
+    container.classList.remove("table-disabled");
+    container.setAttribute("tabindex", "0");  // Restores keyboard navigation
+  }
+}
 
 function highlightActionRow(data) {
   const targetLabel = document.getElementById(data.target);
@@ -1182,20 +1206,20 @@ const originalButtonClick = window.buttonclick;
 
 window.buttonclick = function(number, isdown) {
   
-  if (number == 57) {
+  if (number == 56) {
     if (isdown) return;
     
-    backupAndContinue("btn57");
+    backupAndContinue("btn56");
     return; 
   }
 
-  if (number == 53) {
+  if (number == 52) {
     if (isdown) return;
-    backupAndRedirectToOTA("btn53");
+    backupAndRedirectToOTA("btn52");
     return;
   }
 
-  if (number == 54) {
+  if (number == 53) {
     if (isdown) return;
     redirect2ZigbeeOTA();
     return;
@@ -1308,12 +1332,15 @@ void onWsConnectCallback() {
 	new_connect = true;
 }
 
+/*****************************************************************************/
+
 static const char *json_payload_fmt =
   "{\"type\":\"EXEC_JS\",\"code\":\" %s \"}";
 
+	
 void sendJSToWebsocket(char *jsCode) {
 
-	char json_payload[1024];
+	char json_payload[256];
 
 	snprintf(json_payload, sizeof(json_payload), json_payload_fmt, jsCode);
 
@@ -5790,6 +5817,7 @@ void Z2S_loopWebGUI() {
 
 					sendActionRowEdit(
 						actions_table_label_2, pending_gui_command->gui_command_value);
+					sendJSToWebsocket("setTableDisabled('id195', false);");
 			} break;
 
 
@@ -5797,6 +5825,7 @@ void Z2S_loopWebGUI() {
 					
 				buildActionsTableJsonPayload(
 					actions_table_label_2, pending_gui_command->gui_command_value);
+				sendJSToWebsocket("setTableDisabled('id195', false);");
 			} break;
 
 
@@ -9922,6 +9951,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionDetails(true);
 					updateActionDetails(new_action);
 					updateActionButtons();
+					sendJSToWebsocket("setTableDisabled('id195', true);");
 				}
 				break;
 
@@ -9946,6 +9976,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionDetails(true);
 					updateActionDetails(new_action);
 					updateActionButtons();
+					sendJSToWebsocket("setTableDisabled('id195', true);");
 				}
 				break;
 
@@ -9971,6 +10002,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 						enableActionDetails(true);
 						updateActionButtons();
 						updateActionDetails(new_action, true);
+						sendJSToWebsocket("setTableDisabled('id195', true);");
 					}
 				}
 				break;
@@ -10134,6 +10166,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionControls(true);
 					updateActionButtons();
 					ESPUI.updateLabel(action_state_label, "Changes cancelled!");
+					sendJSToWebsocket("setTableDisabled('id195', false);");
 				}
 				break;
 
