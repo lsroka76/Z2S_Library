@@ -292,6 +292,8 @@ uint16_t pushover_message_state_label;
 
 volatile bool data_ready = false;
 
+volatile bool _github_ota_enabled = false;
+
 /*****************************************************************************/
 /*****************************************************************************/
 
@@ -5714,8 +5716,11 @@ void Z2S_loopWebGUI() {
 
 					char response_buffer[128];
 
-					if (checkGitHubForUpdate(response_buffer, sizeof(response_buffer)))
+					if (checkGitHubForUpdate(response_buffer, sizeof(response_buffer))) {
+
 						enableControlStyle(github_ota_button, true);
+						_github_ota_enabled = true;
+					}
 
 					working_str = response_buffer;
 					ESPUI.updateLabel(github_ota_info_label, working_str);
@@ -5726,7 +5731,8 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_perform_github_ota:
 				{
 
-					startBackgroundGitHubOtaTask(guiGitHubOtaProgress);
+					if (_github_ota_enabled)
+						startBackgroundGitHubOtaTask(guiGitHubOtaProgress);
 				}
 				break;
 
@@ -6288,10 +6294,16 @@ void enterWifiDetailsCallback(BasicControl *sender, int type, void *param) {
 
 void textCallback(BasicControl *sender, int type, void *param) {
 
-	if ((ESPUI.getControl(wifi_ssid_text)->getValue().length() > 0) && (ESPUI.getControl(wifi_pass_text)->getValue().length() > 0) && (ESPUI.getControl(Supla_server)->getValue().length() > 0) && (ESPUI.getControl(Supla_email)->getValue().length() > 0)) {
+	if ((ESPUI.getControl(wifi_ssid_text)->getValue().length() > 0) && 
+			(ESPUI.getControl(wifi_pass_text)->getValue().length() > 0) && 
+			(ESPUI.getControl(Supla_server)->getValue().length() > 0) && 
+			(ESPUI.getControl(Supla_email)->getValue().length() > 0)) {
+
 		ESPUI.updateLabel(save_label, "Data complete. Press Save");
 		data_ready = true;
-	} else {
+	} 
+	else {
+		
 		ESPUI.updateLabel(save_label, "Data incomplete!");
 		data_ready = false;
 	}
