@@ -6303,7 +6303,7 @@ void textCallback(BasicControl *sender, int type, void *param) {
 		data_ready = true;
 	} 
 	else {
-		
+
 		ESPUI.updateLabel(save_label, "Data incomplete!");
 		data_ready = false;
 	}
@@ -6831,9 +6831,8 @@ void fillRemoteAddressData(uint8_t channel_slot) {
 	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
 
 	uint8_t remote_address_type = z2s_core->checkChannelUserDataFlags(
-	                                USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS)
-	                                ? REMOTE_ADDRESS_TYPE_MDNS
-	                                : REMOTE_ADDRESS_TYPE_IP4;
+		USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ? REMOTE_ADDRESS_TYPE_MDNS
+	  : REMOTE_ADDRESS_TYPE_IP4;
 
 
 	if (remote_address_type == REMOTE_ADDRESS_TYPE_IP4) {
@@ -6876,9 +6875,7 @@ void updateResendTemperatureControls(Z2S_Core *z2s_core, bool source_channel) {
 
 		log_i(
 		  "remote address type = %s", z2s_core->checkChannelUserDataFlags(
-		                                USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS)
-		                                ? "MDNS"
-		                                : "IP4");
+		  USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ? "MDNS" : "IP4");
 
 		fillRemoteAddressData(z2s_core->getZ2SChannelIndex());
 
@@ -8624,9 +8621,10 @@ uint32_t saveRemoteAddressData(uint8_t channel_slot) {
 	if (prefix_pos >= 0) {
 
 		z2s_core->setChannelUserDataFlags(
-		  USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS, false);
+			USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS, false);
 		z2s_core->setMDNSName(working_str.c_str());
-	} else {
+	} 
+	else {
 
 		IPAddress ip;
 		ip.fromString(working_str);
@@ -8638,9 +8636,8 @@ uint32_t saveRemoteAddressData(uint8_t channel_slot) {
 	}
 
 	return z2s_core->checkChannelUserDataFlags(
-	         USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS)
-	         ? REMOTE_ADDRESS_TYPE_MDNS
-	         : REMOTE_ADDRESS_TYPE_IP4;
+		USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ? REMOTE_ADDRESS_TYPE_MDNS : 
+			REMOTE_ADDRESS_TYPE_IP4;
 }
 
 uint8_t saveRemoteChannelData(uint8_t channel_slot) {
@@ -8648,8 +8645,7 @@ uint8_t saveRemoteChannelData(uint8_t channel_slot) {
 	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
 
 	uint8_t Supla_remote_channel = ESPUI.getControl(
-	                                      param_2_number)
-	                                 ->getValueInt();
+		param_2_number)->getValueInt();
 
 	z2s_core->setSuplaRemoteChannel(Supla_remote_channel);
 
@@ -8661,8 +8657,7 @@ uint8_t saveSourceChannelData(uint8_t channel_slot) {
 	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
 
 	uint8_t Supla_source_channel = ESPUI.getControl(
-	                                      param_3_number)
-	                                 ->getValueInt();
+	  param_3_number)->getValueInt();
 
 	z2s_core->setSourceChannel(Supla_source_channel);
 
@@ -9070,38 +9065,36 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 				break;
 
 
-			case GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG:
-				{
+			case GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG: {
 
-					if (type == S_ACTIVE)
-						z2s_core->setChannelUserDataFlags(
-						  channel_slot, USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
-					else
-						z2s_core->clearChannelUserDataFlags(
-						  channel_slot, USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+				if (type == S_ACTIVE)
+					z2s_core->setChannelUserDataFlags(
+						USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+				else
+					z2s_core->clearChannelUserDataFlags(
+						USER_DATA_FLAG_TRV_COOPERATIVE_CHILDLOCK);
+			} break;
+
+
+			case GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG: {
+
+				if (type == S_ACTIVE) {
+
+					z2s_core->setChannelUserDataFlags(
+					  USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);	
 				}
-				break;
+				else {
 
+					z2s_core->setRemoteIPAddress(0);
+					z2s_core->setSuplaRemoteChannel(0xFF);
 
-			case GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG:
-				{
-
-					if (type == S_ACTIVE)
-						z2s_core->setChannelUserDataFlags(
-						  channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE);
-					else {
-
-						z2s_core->setRemoteIPAddress(0);
-						z2s_core->setSuplaRemoteChannel(0xFF);
-
-						z2s_core->clearChannelUserDataFlags(
-						  channel_slot, USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE | 
-							USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS);
-					}
-
-					addGUICommand(gui_cmd_update_channel_info, -2);
+					z2s_core->clearChannelUserDataFlags(
+						USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE | 
+						USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS);
 				}
-				break;
+
+				addGUICommand(gui_cmd_update_channel_info, -2);
+			} break;
 
 
 			case GUI_CB_SET_SORWNS_ON_START_FLAG:
@@ -9109,10 +9102,10 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 						z2s_core->setChannelUserDataFlags(
-						  channel_slot, USER_DATA_FLAG_SET_SORWNS_ON_START);
+						  USER_DATA_FLAG_SET_SORWNS_ON_START);
 					else
 						z2s_core->clearChannelUserDataFlags(
-						  channel_slot, USER_DATA_FLAG_SET_SORWNS_ON_START);
+						  USER_DATA_FLAG_SET_SORWNS_ON_START);
 				}
 				break;
 
@@ -9122,10 +9115,10 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 
 					if (type == S_ACTIVE)
 						z2s_core->setChannelUserDataFlags(
-						  channel_slot, USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
+						  USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
 					else
 						z2s_core->clearChannelUserDataFlags(
-						  channel_slot, USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
+						  USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
 				}
 				break;
 		}
@@ -11919,3 +11912,4 @@ void GUI_onZigbeeOpenNetwork(bool is_network_open) {
 	}
 }
 #endif  //USE_SUPLA_WEB_SERVER
+  
