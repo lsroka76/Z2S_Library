@@ -7519,7 +7519,7 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "SuplaDIY", .model_name = "GPM_5CH",
     .z2s_device_uid = 38200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR,
-    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints_count = 5,
     .z2s_device_endpoints_ext = SUPLADIY_GPM_5CH_ENDPOINTS },
 
   

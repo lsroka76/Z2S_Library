@@ -899,6 +899,27 @@ function updateActionTable(data) {
         filter: grayscale(50%);
         user-select: none;
       }
+			/* Status Badge Styles */
+      #${data.target} .table-status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.2s ease;
+      }
+      #${data.target} .badge-active {
+        background-color: #e6f4ea;
+        color: #137333;
+        border: 1px solid #ceedd5;
+      }
+      #${data.target} .badge-locked {
+        background-color: #fce8e6;
+        color: #c5221f;
+        border: 1px solid #f5c6cb;
+      }
     </style>`;
 
     // 4. Construct Scrollable Table Container
@@ -913,7 +934,9 @@ function updateActionTable(data) {
       "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>";
 
     // 5. Footer Hotkey Legend
+    // Footer Bar with Hotkey Legend + Status Badge
     html += `<div class="table-footer-hints">
+      <span><span class="table-status-badge badge-active">Active</span></span>
       <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
       <span><kbd>PgUp</kbd><kbd>PgDn</kbd> ±5 Rows</span>
       <span><kbd>Home</kbd><kbd>End</kbd> First/Last</span>
@@ -1002,15 +1025,27 @@ function setTableDisabled(targetId, isDisabled) {
   if (!targetLabel) return;
 
   const container = targetLabel.querySelector("div[tabindex]");
-  if (!container) return;
+  const badge = targetLabel.querySelector(".table-status-badge");
 
   if (isDisabled) {
-    container.classList.add("table-disabled");
-    container.setAttribute("tabindex", "-1"); // Prevents keyboard focus
-    container.blur();                         // Removes active blue focus border if currently focused
+    if (container) {
+      container.classList.add("table-disabled");
+      container.setAttribute("tabindex", "-1"); // Disable keyboard nav
+      container.blur();
+    }
+    if (badge) {
+      badge.textContent = "Locked";
+      badge.className = "table-status-badge badge-locked";
+    }
   } else {
-    container.classList.remove("table-disabled");
-    container.setAttribute("tabindex", "0");  // Restores keyboard navigation
+    if (container) {
+      container.classList.remove("table-disabled");
+      container.setAttribute("tabindex", "0");  // Enable keyboard nav
+    }
+    if (badge) {
+      badge.textContent = "Active";
+      badge.className = "table-status-badge badge-active";
+    }
   }
 }
 
@@ -4387,6 +4422,22 @@ void sendActionRowEdit(uint16_t ui_label_id, int target_action_index) {
 }
 
 /*****************************************************************************/
+	
+void enableActionsTable(bool enable) {
+
+	char json_payload[256];
+
+	snprintf(
+		json_payload, sizeof(json_payload), 
+		"{\"type\":\"EXEC_JS\",\"code\":\" setTableDisabled('id%u', %s); \"}", 
+		actions_table_label_2, enable ? "false" : "true");
+
+	log_i("size %u, %s", strlen(json_payload), json_payload);
+
+	ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
+
+/*****************************************************************************/
 
 bool buildSelectJsonPreamble(
   char *json_payload, size_t json_payload_size, size_t &offset, bool clear,
@@ -5817,7 +5868,7 @@ void Z2S_loopWebGUI() {
 
 					sendActionRowEdit(
 						actions_table_label_2, pending_gui_command->gui_command_value);
-					sendJSToWebsocket("setTableDisabled('id195', false);");
+					enableActionsTable(false);
 			} break;
 
 
@@ -5825,7 +5876,7 @@ void Z2S_loopWebGUI() {
 					
 				buildActionsTableJsonPayload(
 					actions_table_label_2, pending_gui_command->gui_command_value);
-				sendJSToWebsocket("setTableDisabled('id195', false);");
+				enableActionsTable(false);
 			} break;
 
 
@@ -9951,7 +10002,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionDetails(true);
 					updateActionDetails(new_action);
 					updateActionButtons();
-					sendJSToWebsocket("setTableDisabled('id195', true);");
+					enableActionsTable(true);
 				}
 				break;
 
@@ -9976,7 +10027,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionDetails(true);
 					updateActionDetails(new_action);
 					updateActionButtons();
-					sendJSToWebsocket("setTableDisabled('id195', true);");
+					enableActionsTable(true);
 				}
 				break;
 
@@ -10002,7 +10053,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 						enableActionDetails(true);
 						updateActionButtons();
 						updateActionDetails(new_action, true);
-						sendJSToWebsocket("setTableDisabled('id195', true);");
+						enableActionsTable(true);
 					}
 				}
 				break;
@@ -10166,7 +10217,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionControls(true);
 					updateActionButtons();
 					ESPUI.updateLabel(action_state_label, "Changes cancelled!");
-					sendJSToWebsocket("setTableDisabled('id195', false);");
+					enableActionsTable(false);
 				}
 				break;
 
