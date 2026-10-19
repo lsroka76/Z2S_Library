@@ -5868,7 +5868,7 @@ void Z2S_loopWebGUI() {
 
 					sendActionRowEdit(
 						actions_table_label_2, pending_gui_command->gui_command_value);
-					enableActionsTable(false);
+					enableActionsTable(true);
 			} break;
 
 
@@ -5876,7 +5876,7 @@ void Z2S_loopWebGUI() {
 					
 				buildActionsTableJsonPayload(
 					actions_table_label_2, pending_gui_command->gui_command_value);
-				enableActionsTable(false);
+				enableActionsTable(true);
 			} break;
 
 
@@ -10002,7 +10002,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionDetails(true);
 					updateActionDetails(new_action);
 					updateActionButtons();
-					enableActionsTable(true);
+					enableActionsTable(false);
 				}
 				break;
 
@@ -10027,7 +10027,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionDetails(true);
 					updateActionDetails(new_action);
 					updateActionButtons();
-					enableActionsTable(true);
+					enableActionsTable(false);
 				}
 				break;
 
@@ -10053,7 +10053,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 						enableActionDetails(true);
 						updateActionButtons();
 						updateActionDetails(new_action, true);
-						enableActionsTable(true);
+						enableActionsTable(false);
 					}
 				}
 				break;
@@ -10217,7 +10217,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					enableActionControls(true);
 					updateActionButtons();
 					ESPUI.updateLabel(action_state_label, "Changes cancelled!");
-					enableActionsTable(false);
+					enableActionsTable(true);
 				}
 				break;
 
