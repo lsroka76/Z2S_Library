@@ -9527,8 +9527,6 @@ void advancedDeviceSelectorCallback(
       enableMoesAlarmGUI(false);
     return;
   }
-	else
-		return;
 
   log_i("sender_value %d", sender_value);
 

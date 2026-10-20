@@ -176,6 +176,7 @@
 #define Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR             0x2620
 
 #define Z2S_DEVICE_DESC_GENERIC_ANALOG_SENSOR               0x2650
+#define Z2S_DEVICE_DESC_GENERIC_BINARY_ANALOG_SENSOR        0x2651
 
 
 #define Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR             0x2700
@@ -1619,6 +1620,14 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_GENERIC_BINARY_ANALOG_SENSOR,
+    .z2s_device_clusters_count = 3,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { 
+      ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+      ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT,
+      ESP_ZB_ZCL_CLUSTER_ID_BINARY_OUTPUT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR,
     .z2s_device_clusters_count = 1,
@@ -6705,6 +6714,11 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_REPEATER,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3210_cmnwaylf", .model_name = "TS0501B",
+    .z2s_device_uid = 26455,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZE284_zm8zpwas", .model_name = "TS0601",
     .z2s_device_uid = 26500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY,
@@ -7529,6 +7543,11 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS,
     .z2s_device_endpoints_count = 5,
     .z2s_device_endpoints_ext = SUPLADIY_GPM_5CH_ENDPOINTS },
+
+  { .manufacturer_name = "SuplaDIY", .model_name = "BIN_1CH_GPM_1CH",
+    .z2s_device_uid = 38205,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_GENERIC_BINARY_ANALOG_SENSOR,
+    .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_mubi1vi2", .model_name = "ZG-227ZP",
     .z2s_device_uid = 38300,

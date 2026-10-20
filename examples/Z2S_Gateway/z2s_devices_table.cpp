@@ -4769,7 +4769,8 @@ void Z2S_onBinaryInputReceive(
 
 
         case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR:
-        case Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR: {
+        case Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR:
+        case Z2S_DEVICE_DESC_GENERIC_BINARY_ANALOG_SENSOR: {
 
           Supla::Element* element = Z2S_findZ2SElement(
             short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_BINARYSENSOR, 
@@ -5043,7 +5044,8 @@ void Z2S_onAnalogInputReceive(
         } break;
 
 
-        case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR: {
+        case Z2S_DEVICE_DESC_DIY_BATTERY_CHARGING_SENSOR:
+        case Z2S_DEVICE_DESC_GENERIC_BINARY_ANALOG_SENSOR: {
 
           Supla::Element* element = Z2S_findZ2SElement(
             short_addr, endpoint, cluster, 
@@ -8392,6 +8394,27 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
       Z2S_setChannelFlags(
         first_free_slot, USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL);
       
+    } break;
+
+/******************************************************************************/
+
+      case Z2S_DEVICE_DESC_GENERIC_BINARY_ANALOG_SENSOR: {
+        
+        addZ2SDeviceIASzone(
+          device, first_free_slot, NO_CUSTOM_CMD_SID, "BINARY OUTPUT", 
+          SUPLA_CHANNELFNC_BINARY_SENSOR); 
+
+        first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
+
+        if (first_free_slot == 0xFF) {
+
+          devices_table_full_error_func();
+          return ADD_Z2S_DEVICE_STATUS_DT_FWA;
+        }
+      
+      addZ2SDeviceGeneralPurposeMeasurement(
+        device, first_free_slot, NO_CUSTOM_CMD_SID, "ANALOG OUTPUT", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");      
     } break;
 
 /******************************************************************************/
