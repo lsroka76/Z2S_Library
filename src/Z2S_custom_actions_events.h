@@ -48,6 +48,10 @@
 
 #define Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS                             0x5110
 
+//32 subactions
+#define Z2S_SUPLA_ACTION_PLAY_MELODY                                          0x5200
+#define Z2S_SUPLA_ACTION_PLAY_MELODY_LAST_ACTION                              0x521F
+
 /***********************************************************************************/
 
 #define Z2S_SUPLA_ACTION_CORE_ACTIONS_FIRST_ACTION                            0x6000
@@ -160,7 +164,7 @@
 
 #define Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION                                0x8000
 //256 subactions
-#define Z2S_SUPLA_ACTION_PUSHOVER_LAST_ACTION                                 0x8100 
+#define Z2S_SUPLA_ACTION_PUSHOVER_LAST_ACTION                                 0x80FF 
 
 /***********************************************************************************/
 

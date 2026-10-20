@@ -1626,8 +1626,8 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { 
       ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-      ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT,
-      ESP_ZB_ZCL_CLUSTER_ID_BINARY_OUTPUT }},
+      ESP_ZB_ZCL_CLUSTER_ID_ANALOG_INPUT,
+      ESP_ZB_ZCL_CLUSTER_ID_BINARY_INPUT }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_DIY_POWER_SOURCE_SENSOR,
     .z2s_device_clusters_count = 1,

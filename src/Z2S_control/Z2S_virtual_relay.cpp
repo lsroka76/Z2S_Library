@@ -745,6 +745,21 @@ void Supla::Control::Z2S_VirtualRelay::handleAction(int event, int action) {
         runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
     break;
   }
+
+  if ((_z2s_function == Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY) &&
+      (action >= Z2S_SUPLA_ACTION_PLAY_MELODY) && 
+      (action <= Z2S_SUPLA_ACTION_PLAY_MELODY_LAST_ACTION)) {
+
+    uint8_t melody_id = action - Z2S_SUPLA_ACTION_PLAY_MELODY + 1;
+
+    if ((melody_id >= MOES_ALARM_MELODY_FIRST_MELODY) &&
+        (melody_id <= MOES_ALARM_MELODY_LAST_MELODY)) {
+
+      _z2s_function_value_U8 = melody_id;
+      sendTuyaRequestCmdEnum8(
+        _short_addr, _endpoint, MOES_ALARM_MELODY_DP, melody_id);
+    }
+  }
 }
 
 /*****************************************************************************/

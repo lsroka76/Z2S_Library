@@ -2239,19 +2239,29 @@ void Z2S_onTemperatureReceive(
         "0x%04X, endpoint 0x%x, temperature %f", short_addr, endpoint, 
         temperature);
 
-      Supla::Element* element = Z2S_findZ2SElement(
-        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
-        NO_CUSTOM_CMD_SID);
+      Z2S_Core *z2s_core = Z2S_findZ2SCore(
+        short_addr, endpoint, cluster, 
+        SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR, NO_CUSTOM_CMD_SID);
+  
 
-      if (!element)
-        element = Z2S_findZ2SElement(
-          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_THERMOMETER, 
+      if (!z2s_core)
+        z2s_core = Z2S_findZ2SCore(
+          short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_THERMOMETER,
           NO_CUSTOM_CMD_SID);
 
-      if (!element) 
+      if (!z2s_core) 
         no_channel_found_error_func(short_addr);
-      else
-        msgZ2SDeviceTempHumidityTemp(element, temperature);
+      else {
+
+        if (z2s_core->getChannelModelId() == 
+            Z2S_DEVICE_DESC_TUYA_TH_SENSOR_NTC_PROBE) {
+          //skip 
+          return;
+        }
+
+        msgZ2SDeviceTempHumidityTemp(
+          z2s_core->getZ2SElementPtr(), temperature);
+      }
     } break;
   }
 }

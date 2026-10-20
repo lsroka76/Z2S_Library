@@ -584,8 +584,12 @@ inline constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "TURN OFF GATEWAY SENSOR NOTIFICATIONS" },
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_PUSHOVER_FIRST_ACTION,
-		.Supla_action_name = "SEND PUSHOVER MESSAGE (USE SUBACTION 0-256)",
-		.max_subactions_number = 256 }
+		.Supla_action_name = "SEND PUSHOVER MESSAGE (USE SUBACTION 0-255)",
+		.max_subactions_number = 256 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_PLAY_MELODY,
+		.Supla_action_name = "PLAY MELODY (USE SUBACTION 0-31)",
+		.max_subactions_number = 32 }
 };
 
 inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {
