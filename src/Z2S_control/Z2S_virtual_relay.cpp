@@ -746,21 +746,72 @@ void Supla::Control::Z2S_VirtualRelay::handleAction(int event, int action) {
     break;
   }
 
-  if (_z2s_function == Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY) {
+  switch (_z2s_function) {
 
-      if ((action >= Z2S_SUPLA_ACTION_PLAY_MELODY) && 
+
+    case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_MELODY: {
+
+      if ((action >= Z2S_SUPLA_ACTION_PLAY_MELODY_FIRST_ACTION) && 
           (action <= Z2S_SUPLA_ACTION_PLAY_MELODY_LAST_ACTION)) {
 
-      uint8_t melody_id = action - Z2S_SUPLA_ACTION_PLAY_MELODY + 1;
+        uint8_t melody_id = action - 
+          Z2S_SUPLA_ACTION_PLAY_MELODY_FIRST_ACTION + 1;
 
-      if ((melody_id >= MOES_ALARM_MELODY_FIRST_MELODY) &&
-          (melody_id <= MOES_ALARM_MELODY_LAST_MELODY)) {
+        if ((melody_id >= MOES_ALARM_MELODY_FIRST_MELODY) &&
+            (melody_id <= MOES_ALARM_MELODY_LAST_MELODY)) {
 
-        //_z2s_function_value_U8 = melody_id;
-        sendTuyaRequestCmdEnum8(
-          _short_addr, _endpoint, MOES_ALARM_MELODY_DP, melody_id);
+          //_z2s_function_value_U8 = melody_id;
+          sendTuyaRequestCmdEnum8(
+            _short_addr, _endpoint, MOES_ALARM_MELODY_DP, melody_id);
+        }
       }
-    }
+    } break;
+
+
+    case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_VOLUME: {
+
+      if ((action >= Z2S_SUPLA_ACTION_SET_VOLUME_FIRST_ACTION) && 
+          (action <= Z2S_SUPLA_ACTION_SET_VOLUME_LAST_ACTION)) {
+
+        uint8_t volume = action - 
+          Z2S_SUPLA_ACTION_SET_VOLUME_FIRST_ACTION;
+
+        if ((volume >= MOES_ALARM_VOLUME_LOWEST) &&
+            (volume <= MOES_ALARM_VOLUME_HIGHEST)) {
+
+          //_z2s_function_value_U8 = melody_id;
+          sendTuyaRequestCmdEnum8(
+            _short_addr, _endpoint, MOES_ALARM_VOLUME_DP, volume);
+        }
+      }
+    } break;
+
+
+    case Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION: {
+
+      if ((action >= Z2S_SUPLA_ACTION_SET_DURATION_FIRST_ACTION) && 
+          (action <= Z2S_SUPLA_ACTION_SET_DURATION_LAST_ACTION)) {
+
+        static const uint16_t DURATION_INTERVALS[9] = 
+          {1, 2, 3, 5, 10, 30, 60, 180, 300};
+
+        uint32_t duration = action - 
+          Z2S_SUPLA_ACTION_SET_DURATION_FIRST_ACTION;
+
+        duration = (duration <= 8) ? DURATION_INTERVALS[duration] : 
+          (duration * 30 + 60);
+
+        if ((duration >= MOES_ALARM_MELODY_MIN_DURATION) &&
+            (duration <= MOES_ALARM_MELODY_MAX_DURATION)) {
+
+          //_z2s_function_value_U8 = melody_id;
+          sendTuyaRequestCmdValue32(
+            _short_addr, _endpoint, MOES_ALARM_DURATION_DP, duration);
+        }
+      }
+    } break;
+
+
   }
 }
 

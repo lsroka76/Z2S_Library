@@ -49,8 +49,25 @@
 #define Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS                             0x5110
 
 //32 subactions
-#define Z2S_SUPLA_ACTION_PLAY_MELODY                                          0x5200
+#define Z2S_SUPLA_ACTION_PLAY_MELODY_FIRST_ACTION                             0x5200
 #define Z2S_SUPLA_ACTION_PLAY_MELODY_LAST_ACTION                              0x521F
+
+//256 subactions
+#define Z2S_SUPLA_ACTION_SET_VOLUME_FIRST_ACTION                              0x5300
+#define Z2S_SUPLA_ACTION_SET_VOLUME_LAST_ACTION                               0x53FF
+
+//256 subactions
+#define Z2S_SUPLA_ACTION_SET_DURATION_FIRST_ACTION                            0x5400
+#define Z2S_SUPLA_ACTION_SET_DURATION_LAST_ACTION                             0x54FF
+
+//101 subactions
+#define Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_FIRST_ACTION                    0x5500
+#define Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_LAST_ACTION                     0x5564
+
+//101 subactions
+#define Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION                         0x5565
+#define Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_LAST_ACTION                          0x55C9
+
 
 /***********************************************************************************/
 

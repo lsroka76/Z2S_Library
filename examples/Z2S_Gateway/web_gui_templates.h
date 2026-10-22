@@ -587,9 +587,25 @@ inline constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 		.Supla_action_name = "SEND PUSHOVER MESSAGE (USE SUBACTION 0-255)",
 		.max_subactions_number = 256 },
 
-	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_PLAY_MELODY,
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_PLAY_MELODY_FIRST_ACTION,
 		.Supla_action_name = "PLAY MELODY (USE SUBACTION 0-31)",
-		.max_subactions_number = 32 }
+		.max_subactions_number = 32 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_SET_VOLUME_FIRST_ACTION,
+		.Supla_action_name = "SET VOLUME (USE SUBACTION 0-255)",
+		.max_subactions_number = 256 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_SET_DURATION_FIRST_ACTION,
+		.Supla_action_name = "SET DURATION (USE SUBACTION 0-255)",
+		.max_subactions_number = 256 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_FIRST_ACTION,
+		.Supla_action_name = "BRIGHTEN WHITE WITH STEP (USE SUBACTION 0-100)",
+		.max_subactions_number = 101 }, 
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION,
+		.Supla_action_name = "DIM WHITE WITH STEP (USE SUBACTION 0-100)",
+		.max_subactions_number = 101 }
 };
 
 inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {

@@ -774,4 +774,22 @@ void Supla::Control::Z2S_DimmerInterface::handleAction(int event, int action) {
       increaseBrightness(10);
     break;
   }
+
+  if ((action >= Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_FIRST_ACTION) &&
+      (action <= Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_LAST_ACTION)) {
+
+    int16_t add_to_brightness = action - 
+      Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_FIRST_ACTION;
+
+    increaseBrightness(add_to_brightness);
+  }
+
+  if ((action >= Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION) &&
+      (action <= Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_LAST_ACTION)) {
+
+    int16_t add_to_brightness = -1 * (action - 
+      Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION);
+      
+    increaseBrightness(add_to_brightness);
+  }
 }
