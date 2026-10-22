@@ -3624,6 +3624,16 @@ inline const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
       "8 => HIS_20<br>"
       "9 => HIS_30<br>"
       "10 => HIS_40<br>"},
+			
+			
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_230W,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_TEMPERATURE_RESOLUTION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Temperature resolution",
+    .Tuya_datapoint_description = 
+			"Enter numeric value:<br>"
+			"0 => ONE"
+      "1 => FIVE" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_230W,
     .Tuya_datapoint_id 		 			= ENGO_EONE_230W_COMFORT_FLOOR_DP,
@@ -3661,6 +3671,15 @@ inline const Tuya_datapoint_desc_t Tuya_datapoints[] PROGMEM = {
       "8 => HIS_20<br>"
       "9 => HIS_30<br>"
       "10 => HIS_40<br>"},
+
+	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_BATB,
+    .Tuya_datapoint_id 		 			= ENGO_EONE_230W_TEMPERATURE_RESOLUTION_DP,
+    .Tuya_datapoint_type 				= TUYA_DP_TYPE_ENUM,
+    .Tuya_datapoint_name 	 			= "Temperature resolution",
+    .Tuya_datapoint_description = 
+			"Enter numeric value:<br>"
+			"0 => ONE"
+      "1 => FIVE" },
 
 	{ .z2s_device_desc_id 	 			= Z2S_DEVICE_DESC_TS0601_EONE_E40,
     .Tuya_datapoint_id 		 			= ENGO_EONE_230W_BACKLIGHT_DP,
