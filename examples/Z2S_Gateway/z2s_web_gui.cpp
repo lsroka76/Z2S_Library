@@ -3578,7 +3578,7 @@ void buildClustersAttributesTab() {
     "width: calc(14% - 10px); min-width: 80px; margin: 0 5px 10px 5px;");
 
   clusters_attributes_table[manufacturer_code_switcher] = ESPUI.addControl(
-    Control::Type::Switcher, "&#10023; <i>use manufacturer code</i> &#10023;",
+    Control::Type::Switcher, "use manufacturer code",
     (long int)0, Control::Color::Dark, main_panel, generalCallback);
 
   clusters_attributes_table[manufacturer_code_selector] = ESPUI.addControl(
@@ -4207,105 +4207,125 @@ void buildTuyaCustomClusterTabGUI() {
 	  Control::Type::Label, "TCC ZigBee device", working_str,
 	  Control::Color::Dark, Tuya_custom_cluster_tab);
 
-	Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector] =
-	  ESPUI.addControl(
-	    Control::Type::Select, "TCC ZigBee device datapoints", (long int)-1,
-	    Control::Color::Dark, Tuya_custom_cluster_tab,
-	    TuyaDatapointIdSelectorCallback);
+	auto main_panel = ESPUI.addControl(
+    Control::Type::Label, "Tuya custom cluster panel", empty_str,
+		Control::Color::Dark, Tuya_custom_cluster_tab);
+  
+  ESPUI.setPanelWide(main_panel, true);
+  ESPUI.setElementStyle(main_panel, clearLabelStyle);
 
-
-	Tuya_devices_tab_controls_table[Tuya_datapoint_id_number] =
-	  ESPUI.addControl(
-	    Control::Type::Number, empty_str, (long int)0, Control::Color::Dark,
-	    Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector],
-	    generalMinMaxCallback, (void *)255);
-
-	addClearLabel(
-	  "Tuya datapoint id (1 - 255)",
-	  Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
-
-	Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector] =
-	  ESPUI.addControl(
-	    Control::Type::Select, "Tuya datapoint type", (long int)-1,
-	    Control::Color::Dark,
-	    Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector],
-	    TuyaDatapointTypeSelectorCallback);
-
+  Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector] =
 	ESPUI.addControl(
-	  Control::Type::Option, "Select Tuya datapoint type...", (long int)-1,
-	  Control::Color::None,
-	  Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
+      Control::Type::Select, "TCC ZigBee device datapoints", (long int)-1,
+      Control::Color::Dark, main_panel, TuyaDatapointIdSelectorCallback);
 
-	for (uint8_t t = 0; t < 6; t++) {
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector],
+    "width: calc(25% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
 
-		working_str = Tuya_datapoint_types[t].Tuya_datapoint_type_id;
-		ESPUI.addControl(
-		  Control::Type::Option, Tuya_datapoint_types[t].Tuya_datapoint_type_name,
-		  Tuya_datapoint_types[t].Tuya_datapoint_type_id, Control::Color::None,
-		  Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
-	}
+  Tuya_devices_tab_controls_table[Tuya_datapoint_id_number] =
+    ESPUI.addControl(
+      Control::Type::Number, "DP ID (1-255)", (long int)0, Control::Color::Dark,
+      main_panel, generalMinMaxCallback, (void *)255);
 
-	Tuya_devices_tab_controls_table[Tuya_datapoint_length_number] =
-	  ESPUI.addControl(
-	    Control::Type::Number, empty_str, (long int)0, Control::Color::Dark,
-	    Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector],
-	    generalMinMaxCallback, (void *)58);
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_datapoint_id_number],
+    "width: calc(12% - 10px); min-width: 90px; margin: 0 5px 10px 5px;");
 
-	addClearLabel(
-	  "Tuya datapoint type length (1-58)",
-	  Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]),
+  Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector] =
+    ESPUI.addControl(
+      Control::Type::Select, "Tuya datapoint type", (long int)-1,
+      Control::Color::Dark, main_panel, TuyaDatapointTypeSelectorCallback);
 
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector],
+    "width: calc(25% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
 
-	  Tuya_devices_tab_controls_table[Tuya_datapoint_value_number] =
-	    ESPUI.addControl(
-	      Control::Type::Number, empty_str, (long int)0, Control::Color::Dark,
-	      Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector],
-	      generalCallback);
+  Tuya_devices_tab_controls_table[Tuya_datapoint_length_number] =
+    ESPUI.addControl(
+      Control::Type::Number, "Length (1-58)", (long int)0, Control::Color::Dark,
+      main_panel, generalMinMaxCallback, (void *)58);
 
-	addClearLabel(
-	  "Datapoint value (numbers only, no range checking)",
-	  Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_datapoint_length_number],
+    "width: calc(13% - 10px); min-width: 90px; margin: 0 5px 10px 5px;");
+
+  Tuya_devices_tab_controls_table[Tuya_datapoint_value_number] =
+    ESPUI.addControl(
+      Control::Type::Number, "Value (no range check)", (long int)0, 
+      Control::Color::Dark, main_panel, generalCallback);
+
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_datapoint_value_number],
+    "width: calc(25% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
+
+  ESPUI.addControl(
+    Control::Type::Option, "Select Tuya datapoint type...", (long int)-1,
+    Control::Color::None,
+    Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
+
+  for (uint8_t t = 0; t < 6; t++) {
+    working_str = Tuya_datapoint_types[t].Tuya_datapoint_type_id;
+    ESPUI.addControl(
+      Control::Type::Option, Tuya_datapoint_types[t].Tuya_datapoint_type_name,
+      Tuya_datapoint_types[t].Tuya_datapoint_type_id, Control::Color::None,
+      Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
+  }
 
 	working_str = three_dots_str;
 	Tuya_devices_tab_controls_table[Tuya_datapoint_description_label] =
 	  ESPUI.addControl(
-	    Control::Type::Label, "Datapoint description", working_str,
-	    Control::Color::Dark,
-	    Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+	    Control::Type::Label, "Datapoint description", working_str, 
+			Control::Color::Dark, main_panel);
 
-	addClearLabel(
+	/*addClearLabel(
 	  "Datapoint acceptable values description.<br>"
-	  "Use it to fill datapoint value field.",
-	  Tuya_devices_tab_controls_table[Tuya_datapoint_id_selector]);
+	  "Use it to fill datapoint value field.", main_panel);*/
 
 	ESPUI.setElementStyle(
 	  Tuya_devices_tab_controls_table[Tuya_datapoint_description_label],
 	  "text-align: left; font-family:tahoma; font-size: "
 	  "4 px; font-style: normal; font-weight: normal;");
 
-	Tuya_devices_tab_controls_table[Tuya_device_data_request_button] =
-	  ESPUI.addControl(
-	    Control::Type::Button, empty_str, "Data request",
-	    Control::Color::Dark, Tuya_custom_cluster_tab,
-	    TuyaCustomCmdCallback, (void *)GUI_CB_SEND_TUYA_REQUEST_FLAG);
+  Tuya_devices_tab_controls_table[Tuya_device_data_request_button] =
+    ESPUI.addControl(
+      Control::Type::Button, empty_str, "Data request",
+      Control::Color::Dark, main_panel, TuyaCustomCmdCallback, 
+      (void *)GUI_CB_SEND_TUYA_REQUEST_FLAG);
 
-	Tuya_devices_tab_controls_table[Tuya_device_data_query_button] =
-	  ESPUI.addControl(
-	    Control::Type::Button, empty_str, "Data query",
-	    Control::Color::Dark,
-	    Tuya_devices_tab_controls_table[Tuya_device_data_request_button],
-	    TuyaCustomCmdCallback, (void *)GUI_CB_SEND_TUYA_QUERY_FLAG);
+  Tuya_devices_tab_controls_table[Tuya_device_data_query_button] =
+    ESPUI.addControl(
+      Control::Type::Button, empty_str, "Data query",
+      Control::Color::Dark, main_panel, TuyaCustomCmdCallback, 
+      (void *)GUI_CB_SEND_TUYA_QUERY_FLAG);
 
-	working_str = three_dots_str;
-	Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label] =
-	  ESPUI.addControl(
-	    Control::Type::Label, "Command Result", working_str,
-	    Control::Color::Dark, Tuya_custom_cluster_tab);
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_device_data_request_button],
+    "width: calc(45% - 15px); min-width: 130px; margin: 0 15px 10px 5px;");
+    
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_device_data_query_button],
+    "width: calc(45% - 15px); min-width: 130px; margin: 0 5px 10px 15px;");
 
-	Tuya_devices_tab_controls_table[Tuya_device_payload_label] =
-	  ESPUI.addControl(
-	    Control::Type::Label, "Command Response payload", working_str,
-	    Control::Color::Dark, Tuya_custom_cluster_tab);
+  working_str = three_dots_str;
+  
+  Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label] =
+    ESPUI.addControl(
+      Control::Type::Label, "Command Result", working_str,
+      Control::Color::Dark, main_panel);
+
+  Tuya_devices_tab_controls_table[Tuya_device_payload_label] =
+    ESPUI.addControl(
+      Control::Type::Label, "Command Response payload", working_str,
+      Control::Color::Dark, main_panel);
+
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label],
+    "width: calc(50% - 10px); min-width: 200px; margin: 0 5px 10px 5px;");
+    
+  ESPUI.setElementStyle(
+    Tuya_devices_tab_controls_table[Tuya_device_payload_label],
+    "width: calc(50% - 10px); min-width: 200px; margin: 0 5px 10px 5px; ");
 }
 
 /*****************************************************************************/
