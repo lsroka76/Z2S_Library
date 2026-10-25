@@ -13187,6 +13187,18 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 
         addGUICommand(gui_cmd_learn_ir_code, current_ir_device_id);
       } break;
+
+
+			case GUI_CB_IR_CODE_SEND_FLAG: {
+				
+        if (current_ir_device_id < 0 || current_ir_code_id < 0) {
+          ESPUI.updateLabel(ir_code_state_label, "Select a device and an IR code first!");
+          return;
+        }
+
+        ESPUI.updateLabel(ir_code_state_label, "Sending IR code to device...");
+        addGUICommand(gui_cmd_send_ir_code, current_ir_code_id);
+      } break;
 	}
 }
 
