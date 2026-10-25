@@ -6469,6 +6469,8 @@ void Z2S_onCmdCustomClusterReceive(
   uint16_t payload_size, uint8_t *payload) {
 
   switch (cluster) {
+    
+    
     case TUYA_PRIVATE_CLUSTER_EF00: {
 
       processTuyaCustomCluster(
@@ -6478,11 +6480,14 @@ void Z2S_onCmdCustomClusterReceive(
         _on_Tuya_custom_cluster_receive(command_id, payload_size, payload);
     } break;
 
+    
     case ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER:
       
       processZosungCustomCluster(
-        ieee_addr, endpoint, command_id, payload_size, payload); break;
+        tsn, short_addr, endpoint, command_id, payload_size, payload); 
+    break;
     
+
     case IKEA_PRIVATE_CLUSTER:
     case IKEA_PRIVATE_CLUSTER_2: {
       
@@ -6494,6 +6499,7 @@ void Z2S_onCmdCustomClusterReceive(
         short_addr, endpoint, cluster, command_id, payload_size, payload);
      } break;
 
+
      case PHILIPS_CUSTOM_CLUSTER: {
       
       log_i(
@@ -6503,6 +6509,7 @@ void Z2S_onCmdCustomClusterReceive(
       processPhilipsCommands(
         short_addr, endpoint, cluster, command_id, payload_size, payload);
      } break;
+
     
     default: 
       
@@ -8639,7 +8646,8 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
       case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
 
         addZ2SDeviceVirtualRelay(
-          &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, "IR REMOTE", 0); 
+          &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, "IR REMOTE", 
+          0); 
       break;
 
 /******************************************************************************/     

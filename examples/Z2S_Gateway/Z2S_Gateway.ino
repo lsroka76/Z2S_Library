@@ -772,6 +772,8 @@ void setup() {
 
         Z2S_initSuplaActions();
         Z2S_initPushoverMessages();
+        irCodesStorage.loadIndexTable();
+
       }
     }
     else {

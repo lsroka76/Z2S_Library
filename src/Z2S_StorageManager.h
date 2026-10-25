@@ -13,10 +13,18 @@
 //Supla channels + non-channel elements (i.e. logic gates)
 #define Z2S_ELEMENTS_MAX_NUMBER                                 0x100     
 
+
+#define Z2S_IR_CODES_MAX_NUMBER                                 0x100
+
 /*****************************************************************************/
 
-#define DEVICE_LOCAL_NAME_MAX_SIZE                              36
-#define SUPLA_CHANNEL_NAME_MAX_SIZE                             32
+#define DEVICE_LOCAL_NAME_MAX_SIZE                              0x24
+#define SUPLA_CHANNEL_NAME_MAX_SIZE                             0x20
+
+/*****************************************************************************/
+
+#define IR_CODE_NAME_MAX_SIZE                                   0x20
+#define IR_CODE_BASE64_MAX_SIZE                                 0x300
 
 /*****************************************************************************/
 
@@ -50,6 +58,18 @@ const static char Z2S_DEVICES_BACKUP_PREFIX_V3[] PROGMEM =
   "device_%03d_v3.bak";
 
 /*****************************************************************************/
+
+const static char Z2S_IR_CODES_INDEX_TABLE_V1[] PROGMEM = 
+  "ir_codes_index_table_v1.z2s";
+
+const static char Z2S_IR_CODES_INDEX_TABLE_BACKUP_V1[] PROGMEM = 
+  "ir_codes_index_table_v1.bak";
+
+const static char Z2S_IR_CODES_PREFIX_V1[] PROGMEM = 
+  "ir_code_%03d_v1.z2s";
+
+const static char Z2S_IR_CODES_BACKUP_PREFIX_V1[] PROGMEM = 
+  "ir_code_%03d_v1.bak";
 
 /*****************************************************************************/
 
@@ -254,6 +274,15 @@ union {
 
 /*****************************************************************************/
 
+typedef struct z2s_ir_code_s {
+  uint32_t flags;              
+  uint32_t reserved;
+  char     ir_code_name[IR_CODE_NAME_MAX_SIZE];
+  char     ir_code_base64[IR_CODE_BASE64_MAX_SIZE];
+} __attribute__((packed)) z2s_ir_code_t;
+
+/*****************************************************************************/
+
 bool checkIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
   uint16_t max_index);
 bool setIndexTablePosition(uint8_t *index_table, uint16_t index_position, 
@@ -346,8 +375,11 @@ public:
   }
 
   int16_t getCounter(uint16_t index) {
-    
     return Z2S_getIndexTablePositionCounter(index_table, index, MAX_ITEMS);
+  }
+
+  int16_t getPosition(uint16_t counter) {
+    return Z2S_getIndexTableCounterPosition(index_table, counter, MAX_ITEMS);
   }
 
   int16_t findFreeIndex(uint16_t limit = MAX_ITEMS) {
@@ -405,10 +437,22 @@ inline Z2S_StorageManager<z2s_device_params_t, Z2S_ELEMENTS_MAX_NUMBER>
     Z2S_ELEMENTS_BACKUP_PREFIX_V3
   );
 
+/*****************************************************************************/
+
 inline Z2S_StorageManager<z2s_zb_device_params_t, Z2S_DEVICES_MAX_NUMBER> 
   devicesStorage(
     Z2S_DEVICES_INDEX_TABLE_V3, 
     Z2S_DEVICES_INDEX_TABLE_BACKUP_V3,
     Z2S_DEVICES_PREFIX_V3, 
     Z2S_DEVICES_BACKUP_PREFIX_V3
+  );
+
+/*****************************************************************************/
+
+  inline Z2S_StorageManager<z2s_ir_code_t, Z2S_IR_CODES_MAX_NUMBER> 
+  irCodesStorage(
+    Z2S_IR_CODES_INDEX_TABLE_V1, 
+    Z2S_IR_CODES_INDEX_TABLE_BACKUP_V1,
+    Z2S_IR_CODES_PREFIX_V1, 
+    Z2S_IR_CODES_BACKUP_PREFIX_V1
   );

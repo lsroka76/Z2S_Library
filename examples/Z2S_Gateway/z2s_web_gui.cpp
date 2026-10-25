@@ -48,19 +48,8 @@ extern uint32_t _auto_connection_reset_timeout;
 
 extern uint8_t _z2s_security_level;
 
-#define MAX_ATTRIBUTE_ID_SELECTOR_OPTIONS 40
-#define MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS 5
-#define MAX_TUYA_DATAPOINTS_SELECTOR_OPTIONS 15
-
 static volatile bool GUIstarted = false;
 static volatile bool GUIbuilt = false;
-
-static volatile uint16_t max_attribute_value_selector_options =
-  MAX_ATTRIBUTE_VALUE_SELECTOR_OPTIONS;
-
-static volatile uint16_t max_Tuya_datapoints_selector_options =
-  MAX_TUYA_DATAPOINTS_SELECTOR_OPTIONS;
-
 
 //UI handles
 
@@ -287,6 +276,24 @@ uint16_t pushover_message_copy_button;
 uint16_t pushover_message_remove_button;
 uint16_t pushover_message_state_label;
 
+uint16_t ir_device_selector = 0xFFFF;
+uint16_t ir_device_info_label;
+uint16_t ir_codes_table_label;
+
+uint16_t ir_code_new_button;
+uint16_t ir_code_edit_button;
+uint16_t ir_code_copy_button;
+uint16_t ir_code_save_button;
+uint16_t ir_code_cancel_button;
+uint16_t ir_code_remove_button;
+uint16_t ir_code_learn_button;
+uint16_t ir_code_send_button;
+uint16_t ir_code_state_label;
+
+uint16_t ir_code_details_label;
+uint16_t ir_code_name_text;
+uint16_t ir_code_base64_text;
+
 
 volatile bool data_ready = false;
 
@@ -373,7 +380,8 @@ enum GuiBuildControlFlag : uint16_t {
 	GUI_BUILD_CONTROL_FLAG_TCC = 1 << 8,          // 0x0100
 	GUI_BUILD_CONTROL_FLAG_SB = 1 << 9,           // 0x0200
 	GUI_BUILD_CONTROL_FLAG_PO = 1 << 10,          // 0x0400
-	GUI_BUILD_CONTROL_FLAG_LAST = 1 << 11         // 0x8000
+	GUI_BUILD_CONTROL_FLAG_IR = 1 << 11,          // 0x0800
+	GUI_BUILD_CONTROL_FLAG_LAST = 1 << 12         // 0x8000
 };
 
 volatile uint8_t controls_enabled_flags = 0xFF;
@@ -402,8 +410,15 @@ volatile int16_t current_action_counter = -1;
 volatile int16_t new_action_id = -1;
 volatile int16_t current_action_id = -1;
 
+int32_t current_ir_device_id = -1;
+volatile int16_t current_ir_code_counter = -1;
+volatile int16_t current_ir_code_id = -1;
+volatile int16_t new_ir_code_id = -1;
+volatile bool ir_code_learning_gui_active = false;
+
 volatile ActionGUIState current_action_gui_state = VIEW_ACTION;
 volatile ActionGUIState previous_action_gui_state = VIEW_ACTION;
+volatile IrCodeGUIState current_ir_gui_state = VIEW_IR_CODE;
 
 volatile int16_t current_message_counter = -1;
 volatile int16_t new_message_id = -1;
@@ -541,6 +556,15 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 #define GUI_CB_PUSHOVER_MESSAGE_CANCEL_FLAG 0xB013
 #define GUI_CB_PUSHOVER_MESSAGE_REMOVE_FLAG 0xB014
 #define GUI_CB_PUSHOVER_MESSAGE_COPY_FLAG 0xB015
+
+#define GUI_CB_IR_CODE_NEW_FLAG    0xC001
+#define GUI_CB_IR_CODE_EDIT_FLAG   0xC002
+#define GUI_CB_IR_CODE_COPY_FLAG   0xC003
+#define GUI_CB_IR_CODE_SAVE_FLAG   0xC004
+#define GUI_CB_IR_CODE_CANCEL_FLAG 0xC005
+#define GUI_CB_IR_CODE_REMOVE_FLAG 0xC006
+#define GUI_CB_IR_CODE_LEARN_FLAG  0xC007
+#define GUI_CB_IR_CODE_SEND_FLAG   0xC008
 
 
 static constexpr char *three_dots_str PROGMEM = "...";
@@ -803,17 +827,22 @@ function sendActionClickToESP32(actionIndex) {
 
 
 function updateActionTable(data) {
+
   const targetLabel = document.getElementById(data.target);
   if (!targetLabel) return;
+
+	const isIr = Boolean(data.is_ir);
+	const colSpan = isIr ? 3 : 5;
+	const emptyMsg = isIr ? "No IR codes saved for this device" : "No actions available";
 
   let rowsHtml = "";
 
   // 1. Handle Empty Table State vs Row Building
   if (!data.d || data.d.length === 0) {
     rowsHtml = `<tr>
-      <td colspan="5" style="text-align: center; padding: 16px; color: #6c757d; font-style: italic;">
-        No actions available
-      </td>
+      <td colspan="5" style="text-align: center; padding: 16px; color: #6c757d; font-style: italic;">`
+        + emptyMsg +
+      `</td>
     </tr>`;
   } else {
     data.d.forEach((row, index) => {
@@ -966,15 +995,21 @@ function updateActionTable(data) {
       }
     </style>`;
 
+		const headerHtml = isIr
+  	? "<th style='padding: 6px; width: 80px; min-width: 80px;'>ID (sid)</th>" +
+    	"<th style='padding: 6px; width: 220px; min-width: 180px;'>Command Name</th>" +
+    	"<th style='padding: 6px; width: 420px; min-width: 260px;'>IR Code (Base64)</th>"
+  	: "<th style='padding: 6px; width: 130px; min-width: 130px;'>Name (enabled)</th>" +
+    	"<th style='padding: 6px; width: 150px; min-width: 150px;'>Supla event</th>" +
+    	"<th style='padding: 6px; width: 150px; min-width: 150px;'>Source channel</th>" +
+    	"<th style='padding: 6px; width: 140px; min-width: 140px;'>Supla action</th>" +
+    	"<th style='padding: 6px; width: 150px; min-width: 150px;'>Destination channel</th>";
+
     // Scrollable Table Container with Horizontal & Vertical Scroll
     html += "<div tabindex='0' style='height: 210px; margin-top: 8px; overflow: auto; overscroll-behavior: contain; border: 1px solid rgba(128,128,128,0.25); border-top-left-radius: 6px; border-top-right-radius: 6px;'>" +
       "<table style='width:100%; min-width: 720px; table-layout: fixed; border-collapse: collapse; text-align: left;'>" +
       "<thead><tr>" +
-      "<th style='padding: 6px; width: 130px; min-width: 130px;'>Name (enabled)</th>" +
-      "<th style='padding: 6px; width: 150px; min-width: 150px;'>Supla event</th>" +
-      "<th style='padding: 6px; width: 150px; min-width: 150px;'>Source channel</th>" +
-      "<th style='padding: 6px; width: 140px; min-width: 140px;'>Supla action</th>" +
-      "<th style='padding: 6px; width: 150px; min-width: 150px;'>Destination channel</th>" +
+       headerHtml +
       "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>";
 
     // 5. Footer Hotkey Legend
@@ -1005,7 +1040,7 @@ function updateActionTable(data) {
 
         // Trigger custom callback to send this index back to the ESP32
       
-        sendActionClickToESP32(actionIndex);
+        sendActionClickToESP32(isIr ? (actionIndex | 0x4000) : actionIndex);
         
       };
 
@@ -1285,20 +1320,20 @@ const originalButtonClick = window.buttonclick;
 
 window.buttonclick = function(number, isdown) {
   
-  if (number == 33) {
+  if (number == 34) {
     if (isdown) return;
     
-    backupAndContinue("btn33");
+    backupAndContinue("btn34");
     return; 
   }
 
-  if (number == 29) {
+  if (number == 30) {
     if (isdown) return;
-    backupAndRedirectToOTA("btn29");
+    backupAndRedirectToOTA("btn30");
     return;
   }
 
-  if (number == 30) {
+  if (number == 31) {
     if (isdown) return;
     redirect2ZigbeeOTA();
     return;
@@ -1400,6 +1435,13 @@ void fillGatewayGeneralnformation(char *buf);
 void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len = 512);
 
 void updateActionSummary(z2s_channel_action_t &new_action);
+
+void irDeviceSelectorCallback(BasicControl *sender, int type, void *param);
+void irCodesTableCallback(BasicControl *sender, int type, void *param);
+void irDeviceSelectorCmd(int32_t device_slot);
+
+static bool appendEscapedJsonString(
+  char *buf, size_t bufSize, size_t &offset, const char *str);
 
 /*****************************************************************************/
 
@@ -2020,7 +2062,7 @@ void buildGatewayTabGUI() {
 	uint16_t gui_build_control_flags = _gui_build_flags ? _gui_build_flags : 
 		Z2S_getGUIBuildControlFlags((gui_modes_t)_enable_gui_on_start);
 
-	for (uint8_t gui_build_flag_bit = 1; gui_build_flag_bit < 11;
+	for (uint8_t gui_build_flag_bit = 1; gui_build_flag_bit < 12;
 	     gui_build_flag_bit++) {
 
 		ESPUI.addControl(
@@ -2599,7 +2641,7 @@ void buildChannelsTabGUI() {
 	ESPUI.setPanelWide(zb_channel_name_label, true);
 
 	zb_channel_flags_label = ESPUI.addControl(
-	  Control::Type::Label, "CHANNEL FLAGS", 
+	  Control::Type::Label, "Channel custom flags", 
 		"here you can set channel flags (changes are saved immediately)",
 	  Control::Color::Dark, channelstab);
 
@@ -4994,6 +5036,102 @@ void enableActionsTable(bool enable) {
 
 /*****************************************************************************/
 
+void addIrCodesTableJsonRow(
+  char *buffer, size_t max_size, size_t &offset, int16_t slot_id,
+  z2s_ir_code_t &ir_code, bool is_first) {
+
+  char preview_buf[68] = {};
+  strncpy(preview_buf, ir_code.ir_code_base64, 60);
+  if (strlen(ir_code.ir_code_base64) > 60) {
+    strcat(preview_buf, "...");
+  }
+
+  appendToBuffer(
+    buffer, max_size, offset,
+    "%s[\"#%03d\",\"", is_first ? "" : ",", slot_id);
+  appendEscapedJsonString(buffer, max_size, offset, ir_code.ir_code_name);
+  appendToBuffer(buffer, max_size, offset, "\",\"");
+  appendEscapedJsonString(buffer, max_size, offset, preview_buf);
+  appendToBuffer(buffer, max_size, offset, "\"]");
+}
+
+/*****************************************************************************/
+
+void buildIrCodesTableJsonPayload(
+  uint16_t ui_label_id, int target_ir_code_index) {
+
+  const size_t MAX_JSON_SIZE = 2048;
+  char json_payload[MAX_JSON_SIZE] = {};
+  const int BATCH_SIZE = 10;
+  size_t offset = 0;
+
+  int total_codes = irCodesStorage.getCount();
+
+  if (total_codes == 0) {
+    current_ir_code_id = -1;
+    current_ir_code_counter = -1;
+    snprintf(
+      json_payload, MAX_JSON_SIZE,
+      "{\"type\":\"update_action_table\",\"is_ir\":true,\"target\":\"id%d\","
+      "\"s\":-1,\"append\":false,\"start_idx\":0,\"d\":[]}",
+      ui_label_id);
+    ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    return;
+  }
+
+  int16_t next_slot = irCodesStorage.findNext(0);
+  z2s_ir_code_t ir_code = {};
+
+  for (int i = 0; i < total_codes; i++) {
+    if (i % BATCH_SIZE == 0) {
+      offset = 0;
+      bool is_appending = (i > 0);
+      appendToBuffer(
+        json_payload, MAX_JSON_SIZE, offset,
+        "{\"type\":\"update_action_table\",\"is_ir\":true,\"target\":\"id%d\","
+        "\"s\":%d,\"append\":%s,\"start_idx\":%d,\"d\":[",
+        ui_label_id, target_ir_code_index, is_appending ? "true" : "false", i);
+    }
+
+    bool is_first_in_batch = (i % BATCH_SIZE == 0);
+    irCodesStorage.load(next_slot, ir_code);
+
+    addIrCodesTableJsonRow(
+      json_payload, MAX_JSON_SIZE, offset, next_slot, ir_code, is_first_in_batch);
+
+    next_slot = irCodesStorage.findNext(next_slot + 1);
+
+    if (((i + 1) % BATCH_SIZE == 0) || (i == total_codes - 1)) {
+      appendToBuffer(json_payload, MAX_JSON_SIZE, offset, "]}");
+      ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    }
+  }
+}
+
+/*****************************************************************************/
+
+void sendIrCodeRowEdit(uint16_t ui_label_id, int target_row_index) {
+
+  char json_payload[512] = {};
+  size_t offset = 0;
+
+  appendToBuffer(
+    json_payload, sizeof(json_payload), offset,
+    "{\"type\":\"edit_action_row\",\"target\":\"id%d\",\"idx\":%d,\"d\":",
+    ui_label_id, target_row_index);
+
+  z2s_ir_code_t ir_code = {};
+  irCodesStorage.load(current_ir_code_id, ir_code);
+
+  addIrCodesTableJsonRow(
+    json_payload, sizeof(json_payload), offset, current_ir_code_id, ir_code, 
+		true);
+
+  appendToBuffer(json_payload, sizeof(json_payload), offset, "}");
+  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
+/*****************************************************************************/
+
 bool buildSelectJsonPreamble(
   char *json_payload, size_t json_payload_size, size_t &offset, bool clear,
   int32_t selected_value, uint8_t selectors_number,
@@ -5201,11 +5339,13 @@ bool buildChannelsSelectJsonPayload(
 /*****************************************************************************/
 
 enum ZbDeviceSelectType {
-
 	ZB_DEVICE_SELECT_TYPE_ALL,
 	ZB_DEVICE_SELECT_TYPE_AD,
-	ZB_DEVICE_SELECT_TYPE_TCC
+	ZB_DEVICE_SELECT_TYPE_TCC,
+	ZB_DEVICE_SELECT_TYPE_IR
 };
+
+/*****************************************************************************/
 
 bool buildZbDevicesSelectJsonPayload(
   ZbDeviceSelectType select_type, int32_t selected_value,
@@ -5224,11 +5364,13 @@ bool buildZbDevicesSelectJsonPayload(
 				for (Z2S_Device *device : Z2S_Devices) {
 
 					if (device->getRecordId() && 
-							((select_type == ZB_DEVICE_SELECT_TYPE_ALL) || 
-							(select_type == ZB_DEVICE_SELECT_TYPE_AD && 
-								device->isAdvancedDevice()) ||
-							(select_type == ZB_DEVICE_SELECT_TYPE_TCC && 
-								device->hasTuyaCustomCluster()))) {
+    					((select_type == ZB_DEVICE_SELECT_TYPE_ALL) || 
+     					 (select_type == ZB_DEVICE_SELECT_TYPE_AD && 
+							 	device->isAdvancedDevice()) ||
+     					 (select_type == ZB_DEVICE_SELECT_TYPE_TCC && 
+							 	device->hasTuyaCustomCluster()) ||
+     					 (select_type == ZB_DEVICE_SELECT_TYPE_IR && 
+							 	device->isIrRemote()))) {
 
 						if (!add_device_option(device->getDeviceIndex(), 
 									device->getDeviceLocalName())) return false;
@@ -5483,6 +5625,11 @@ void sortZbDevicesSelectorsMain(int32_t select_value = -1) {
 		  ZB_DEVICE_SELECT_TYPE_TCC, select_value, 1,
 		  Tuya_devices_tab_controls_table[Tuya_device_selector]);
 	}
+
+	if (ir_device_selector < 0xFFFF) {
+		buildZbDevicesSelectJsonPayload(
+		  ZB_DEVICE_SELECT_TYPE_IR, select_value, 1, ir_device_selector);
+	}
 }
 
 /*****************************************************************************/
@@ -5595,23 +5742,6 @@ void buildActionsTabGUI() {
 	  Control::noParent);
 
 	z2s_channel_action_t new_action = {};
-
-	/*table_first_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "FIRST", Control::Color::Dark,
-	  actions_tab, actionsTableCallback, (void *)GUI_CB_ACTION_FIRST_FLAG);
-
-	table_prev_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "PREV", Control::Color::Dark,
-	  table_first_button, actionsTableCallback, (void *)GUI_CB_ACTION_PREV_FLAG);
-
-	table_next_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "NEXT", Control::Color::Dark,
-	  table_first_button, actionsTableCallback, (void *)GUI_CB_ACTION_NEXT_FLAG);
-
-
-	table_last_button = ESPUI.addControl(
-	  Control::Type::Button, empty_str, "LAST", Control::Color::Dark,
-	  table_first_button, actionsTableCallback, (void *)GUI_CB_ACTION_LAST_FLAG);*/
 
 	working_str = "No actions";
 
@@ -5761,6 +5891,177 @@ void buildActionsTabGUI() {
 	enableActionDetails(false);
 	updateActionButtons();
 }
+
+/*****************************************************************************/
+
+/*****************************************************************************/
+
+void enableIrTable(bool enable) {
+  
+	char json_payload[256];
+  snprintf(
+    json_payload, sizeof(json_payload),
+    "{\"type\":\"EXEC_JS\",\"code\":\" setTableDisabled('id%u', %s); \"}",
+    ir_codes_table_label, enable ? "false" : "true");
+  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
+
+/*****************************************************************************/
+
+void enableIrCodeDetails(bool enable) {
+
+  if (!enable) {
+    working_str = empty_str;
+    ESPUI.updateText(ir_code_name_text, working_str);
+    ESPUI.updateText(ir_code_base64_text, working_str);
+  }
+  enableControlStyle(ir_code_details_label, enable);
+  enableControlStyle(ir_code_name_text, enable);
+  enableControlStyle(ir_code_base64_text, enable);
+}
+
+/*****************************************************************************/
+
+void updateIrCodeButtons() {
+
+  bool has_device = (current_ir_device_id >= 0);
+  bool has_selected_code = (current_ir_code_id >= 0);
+  bool is_viewing = (current_ir_gui_state == VIEW_IR_CODE);
+  bool is_learning = ir_code_learning_gui_active;
+
+  enableControlStyle(ir_device_selector, is_viewing && !is_learning);
+
+  enableControlStyle(ir_code_new_button, is_viewing && !is_learning);
+  enableControlStyle(
+    ir_code_edit_button, is_viewing && has_selected_code && !is_learning);
+  enableControlStyle(
+    ir_code_copy_button, is_viewing && has_selected_code && !is_learning);
+  enableControlStyle(
+    ir_code_remove_button, is_viewing && has_selected_code && !is_learning);
+
+  enableControlStyle(ir_code_save_button, !is_viewing && !is_learning);
+  enableControlStyle(ir_code_cancel_button, !is_viewing || is_learning);
+
+  enableControlStyle(ir_code_learn_button, has_device && !is_learning);
+  enableControlStyle(
+    ir_code_send_button,
+    has_device && is_viewing && has_selected_code && !is_learning);
+}
+
+/*****************************************************************************/
+
+void buildIrRemoteTabGUI() {
+
+  int16_t first_ir_code = irCodesStorage.findNext(0);
+
+  if (first_ir_code >= 0) {
+    current_ir_code_id = first_ir_code;
+    current_ir_code_counter = irCodesStorage.getCounter(first_ir_code);
+  }
+	
+	auto ir_tab = ESPUI.addControl(
+    Control::Type::Tab, empty_str, "IR remote devices",
+    Control::Color::Dark, Control::noParent);
+  
+  ir_device_selector = ESPUI.addControl(
+    Control::Type::Select, "IR ZigBee devices", (long int)-1,
+    Control::Color::Dark, ir_tab, irDeviceSelectorCallback);
+
+  // Panel 2: IR Device Manufacturer / Model Label
+  working_str = three_dots_str;
+  ir_device_info_label = ESPUI.addControl(
+    Control::Type::Label, "IR ZigBee device", working_str,
+    Control::Color::Dark, ir_tab);
+
+  // Panel 3: IR Commands Table
+  ir_codes_table_label = ESPUI.addControl(
+    Control::Type::Label, "IR commands table", empty_str,
+    Control::Color::Dark, ir_tab);
+  ESPUI.setPanelWide(ir_codes_table_label, true);
+
+  // Panel 4: Action & Learn Buttons
+  ir_code_new_button = ESPUI.addControl(
+    Control::Type::Button, "IR commands management", "ADD CODE",
+    Control::Color::Dark, ir_tab, irCodesTableCallback,
+    (void *)GUI_CB_IR_CODE_NEW_FLAG);
+
+  ir_code_edit_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "EDIT CODE",
+    Control::Color::Dark, ir_code_new_button, irCodesTableCallback,
+    (void *)GUI_CB_IR_CODE_EDIT_FLAG);
+
+  ir_code_copy_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "COPY CODE",
+    Control::Color::Dark, ir_code_new_button, irCodesTableCallback,
+    (void *)GUI_CB_IR_CODE_COPY_FLAG);
+
+  ir_code_save_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "SAVE CODE",
+    Control::Color::Dark, ir_code_new_button, irCodesTableCallback,
+    (void *)GUI_CB_IR_CODE_SAVE_FLAG);
+
+  ir_code_cancel_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "CANCEL",
+    Control::Color::Dark, ir_code_new_button, irCodesTableCallback,
+    (void *)GUI_CB_IR_CODE_CANCEL_FLAG);
+
+  ir_code_remove_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "DELETE CODE",
+    Control::Color::Alizarin, ir_code_new_button, irCodesTableCallback,
+    (void *)GUI_CB_IR_CODE_REMOVE_FLAG);
+
+  ir_code_learn_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "LEARN NEW CODE",
+    Control::Color::Emerald, ir_code_new_button, irCodesTableCallback,
+    (void *)GUI_CB_IR_CODE_LEARN_FLAG);
+
+  ir_code_send_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "TEST / SEND CODE",
+    Control::Color::Dark, ir_code_new_button, irCodesTableCallback,
+    (void *)GUI_CB_IR_CODE_SEND_FLAG);
+
+  ir_code_state_label = ESPUI.addControl(
+    Control::Type::Label, empty_str, three_dots_str,
+    Control::Color::Dark, ir_code_new_button);
+
+  ESPUI.setPanelWide(ir_code_new_button, true);
+
+  // Panel 5: IR Code Editor (Name + Base64 Textarea)
+  ir_code_details_label = ESPUI.addControl(
+    Control::Type::Label, "IR command details", empty_str,
+    Control::Color::Dark, ir_tab);
+  ESPUI.setElementStyle(ir_code_details_label, clearLabelStyle);
+
+  ir_code_name_text = ESPUI.addControl(
+    Control::Type::Text, "Command name (max 31 characters)", emptyString,
+    Control::Color::Dark, ir_code_details_label, generalCallback);
+  ESPUI.getControl(ir_code_name_text)->reserve(32);
+  ESPUI.setElementStyle(
+    ir_code_name_text,
+    "width: calc(30% - 10px); min-width: 200px; margin: 0 5px 10px 5px;");
+
+  ir_code_base64_text = ESPUI.addControl(
+    Control::Type::Text, "Base64 IR code (click LEARN NEW CODE or paste Base64)",
+    emptyString, Control::Color::Dark, ir_code_details_label, generalCallback);
+  ESPUI.getControl(ir_code_base64_text)->reserve(IR_CODE_BASE64_MAX_SIZE);
+
+  BasicControl *ir_base64_textarea = ESPUI.getControl(ir_code_base64_text);
+  ir_base64_textarea->control_flags |= CONTROL_FLAG_TEXTAREA;
+  ir_base64_textarea->rows = 4;
+  ir_base64_textarea->cols = 64;
+
+  ESPUI.setElementStyle(
+    ir_code_base64_text,
+    "resize: none; width: calc(70% - 10px); min-width: 260px; "
+    "margin: 0 5px 10px 5px;");
+
+  ESPUI.setPanelWide(ir_code_details_label, true);
+
+  enableIrCodeDetails(false);
+  updateIrCodeButtons();
+}
+
+/*****************************************************************************/
 
 void Z2S_initWebGUI() {
 
@@ -6003,6 +6304,10 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_SB) {
 
 		buildSwitchBotTabGUI();
+	}
+
+	if (gui_build_control_flags & GUI_BUILD_CONTROL_FLAG_IR) {
+		buildIrRemoteTabGUI();
 	}
 
 	//buildAllChannelSelectors();
@@ -6381,6 +6686,7 @@ void Z2S_loopWebGUI() {
 				sortAttributeValuesSelectorsMain();
 				sortTuyaDatapointsSelectorsMain();
 				buildActionsTableJsonPayload(actions_table_label_2, 0);
+				buildIrCodesTableJsonPayload(ir_codes_table_label, 0);
 			} break;
 
 
@@ -6935,10 +7241,84 @@ void Z2S_loopWebGUI() {
 					}
 				}
 				break;
+
+
+			case gui_cmd_ir_device_callback: {
+				irDeviceSelectorCmd(pending_gui_command->gui_command_value);
+			} break;
+
+
+			case gui_cmd_build_ir_codes_table: {
+				buildIrCodesTableJsonPayload(
+				  ir_codes_table_label, pending_gui_command->gui_command_value);
+				enableIrTable(true);
+				updateIrCodeButtons();
+			} break;
+
+
+			case gui_cmd_edit_ir_codes_table: {
+				sendIrCodeRowEdit(
+				  ir_codes_table_label, pending_gui_command->gui_command_value);
+				enableIrTable(true);
+				updateIrCodeButtons();
+			} break;
+
+
+			case gui_cmd_learn_ir_code: {
+				int32_t val = pending_gui_command->gui_command_value;
+				if (val >= 0) {
+					Z2S_Device *dev = Z2S_Device::getZ2SDeviceByDeviceIndex(val);
+					if (dev) {
+						startLearnIRCode(dev->getDeviceShortAddress(), 1);
+					}
+				} else {
+					int32_t cancel_dev_idx = (-val) - 1;
+					Z2S_Device *dev = Z2S_Device::getZ2SDeviceByDeviceIndex(cancel_dev_idx);
+					if (dev) {
+						cancelLearnIRCode(dev->getDeviceShortAddress(), 1);
+					}
+				}
+			} break;
+
+			case gui_cmd_ir_code_learned: {
+				if (!ir_code_learning_gui_active) {
+					break; // Ignore late packet if user already cancelled
+				}
+				ir_code_learning_gui_active = false;
+
+				// Automatically open NEW_IR_CODE if in VIEW mode, or fill textarea directly!
+				if (current_ir_gui_state == VIEW_IR_CODE && current_ir_device_id >= 0) {
+					new_ir_code_id = irCodesStorage.findFreeIndex();
+					if (new_ir_code_id >= 0) {
+						current_ir_gui_state = NEW_IR_CODE;
+						enableIrCodeDetails(true);
+						enableIrTable(false);
+					}
+				}
+				updateIrCodeButtons();
+				working_str = getLearnedIrCodeBase64();
+				ESPUI.updateText(ir_code_base64_text, working_str);
+				ESPUI.updateLabel(
+				  ir_code_state_label,
+				  "IR code received & decoded! Enter a name and click SAVE CODE.");
+			} break;
+
+			case gui_cmd_send_ir_code: {
+				z2s_ir_code_t ir_code = {};
+				Z2S_Device *dev = Z2S_Device::getZ2SDeviceByDeviceIndex(current_ir_device_id);
+				if (dev && irCodesStorage.load(pending_gui_command->gui_command_value, ir_code)) {
+					
+					sendLearnedIRCode(
+					  dev->getDeviceShortAddress(), 1, ir_code.ir_code_base64);
+					ESPUI.updateLabel(ir_code_state_label, "IR code transmission started!");
+				}
+			} break;
 		}
 		pending_gui_command->in_use = false;
 	}
 }
+
+/*****************************************************************************/
 
 void enterWifiDetailsCallback(BasicControl *sender, int type, void *param) {
 
@@ -6967,6 +7347,8 @@ void enterWifiDetailsCallback(BasicControl *sender, int type, void *param) {
 	}
 }
 
+/*****************************************************************************/
+
 void textCallback(BasicControl *sender, int type, void *param) {
 
 	if ((ESPUI.getControl(wifi_ssid_text)->getValue().length() > 0) && 
@@ -6984,6 +7366,8 @@ void textCallback(BasicControl *sender, int type, void *param) {
 	}
 }
 
+/*****************************************************************************/
+
 void generalCallback(BasicControl *sender, int type, void *param) {
 
 	/*Serial.print("CB: id(");
@@ -6996,9 +7380,24 @@ void generalCallback(BasicControl *sender, int type, void *param) {
 	//Serial.println(sender->getValue());
 }
 
+/*****************************************************************************/
+
 void hiddenNumberCallback(BasicControl *sender, int type, void *param) {
 
-	current_action_id = Z2S_getActionPosition(sender->getValueInt() + 1);
+	int32_t raw_val = sender->getValueInt();
+
+	if (raw_val & 0x4000) {
+		uint16_t row_idx = raw_val & 0x3FFF;
+		current_ir_code_id = irCodesStorage.getPosition(row_idx + 1);
+		current_ir_code_counter = irCodesStorage.getCounter(current_ir_code_id);
+
+		log_i(
+			"current_ir_code_id %d, current_ir_code_counter %d",
+			current_ir_code_id, current_ir_code_counter);
+		return;
+	}
+
+	current_action_id = Z2S_getActionPosition(raw_val + 1);
 	current_action_counter = Z2S_getActionCounter(current_action_id);
 
 	log_i(
@@ -7006,7 +7405,7 @@ void hiddenNumberCallback(BasicControl *sender, int type, void *param) {
 		current_action_counter);
 }
 
-
+/*****************************************************************************/
 
 void onZigbeeTabCallback(BasicControl *sender, int type, void *param) {
 
@@ -7014,9 +7413,12 @@ void onZigbeeTabCallback(BasicControl *sender, int type, void *param) {
 	ESPUI.updateNumber(force_leave_switcher, force_leave_global_flag ? 1 : 0);
 }
 
+/*****************************************************************************/
+
 void onChannelsTabCallback(BasicControl *sender, int type, void *param) {
 }
 
+/*****************************************************************************/
 
 void generalMinMaxCallback(BasicControl *sender, int type, void *param) {
 
@@ -12596,5 +12998,206 @@ void GUI_onZigbeeOpenNetwork(bool is_network_open) {
 		}
 	}
 }
+
+/*****************************************************************************/
+
+void irDeviceSelectorCallback(BasicControl *sender, int type, void *param) {
+
+	int32_t device_slot = (sender) ? sender->getValueInt() : type;
+	addGUICommand(gui_cmd_ir_device_callback, device_slot);
+}
+
+/*****************************************************************************/
+
+void irDeviceSelectorCmd(int32_t device_slot) {
+
+	char buf[256] = {};
+	current_ir_device_id = device_slot;
+
+	ir_code_learning_gui_active = false;
+
+	if (device_slot >= 0) {
+		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
+		if (z2s_device) {
+			snprintf_P(
+			  buf, sizeof(buf),
+			  "<b><i>Manufacturer name</i></b> %s <b>| <i>model ID</i></b> %s "
+			  "<b>| <i>Short addr</i></b> 0x%04X",
+			  z2s_device->getManufacturerName(), z2s_device->getModelName(),
+			  z2s_device->getDeviceShortAddress());
+			updateLabel_P(ir_device_info_label, buf);
+		}
+	} else {
+		updateLabel_C(ir_device_info_label, three_dots_str);
+	}
+
+	updateIrCodeButtons();
+}
+
+/*****************************************************************************/
+
+void irCodesTableCallback(BasicControl *sender, int type, void *param) {
+
+	if (type != B_UP) return;
+
+	z2s_ir_code_t ir_code = {};
+
+	switch ((uint32_t)param) {
+
+		case GUI_CB_IR_CODE_NEW_FLAG: {
+			if (current_ir_gui_state != VIEW_IR_CODE) return;
+			new_ir_code_id = irCodesStorage.findFreeIndex();
+			if (new_ir_code_id < 0) {
+				ESPUI.updateLabel(ir_code_state_label, "IR codes storage is full!");
+				return;
+			}
+			current_ir_gui_state = NEW_IR_CODE;
+			enableIrCodeDetails(true);
+			if (strlen(getLearnedIrCodeBase64()) > 0) {
+				working_str = getLearnedIrCodeBase64();
+				ESPUI.updateText(ir_code_base64_text, working_str);
+			}
+			updateIrCodeButtons();
+			enableIrTable(false);
+		} break;
+
+		case GUI_CB_IR_CODE_EDIT_FLAG: {
+			if (current_ir_gui_state != VIEW_IR_CODE || current_ir_code_id < 0) return;
+			if (!irCodesStorage.load(current_ir_code_id, ir_code)) return;
+
+			current_ir_gui_state = EDIT_IR_CODE;
+			enableIrCodeDetails(true);
+			working_str = ir_code.ir_code_name;
+			ESPUI.updateText(ir_code_name_text, working_str);
+			working_str = ir_code.ir_code_base64;
+			ESPUI.updateText(ir_code_base64_text, working_str);
+			updateIrCodeButtons();
+			enableIrTable(false);
+		} break;
+
+		case GUI_CB_IR_CODE_COPY_FLAG: {
+			if (current_ir_gui_state != VIEW_IR_CODE || current_ir_code_id < 0) return;
+			new_ir_code_id = irCodesStorage.findFreeIndex();
+			if (new_ir_code_id < 0) {
+				ESPUI.updateLabel(ir_code_state_label, "IR codes storage is full!");
+				return;
+			}
+			if (!irCodesStorage.load(current_ir_code_id, ir_code)) return;
+
+			current_ir_gui_state = COPY_IR_CODE;
+			enableIrCodeDetails(true);
+			working_str = ir_code.ir_code_name;
+			ESPUI.updateText(ir_code_name_text, working_str);
+			working_str = ir_code.ir_code_base64;
+			ESPUI.updateText(ir_code_base64_text, working_str);
+			updateIrCodeButtons();
+			enableIrTable(false);
+		} break;
+
+		case GUI_CB_IR_CODE_SAVE_FLAG: {
+			if (current_ir_gui_state == VIEW_IR_CODE) return;
+
+			const char *name_str = ESPUI.getControl(ir_code_name_text)->getValueCstr();
+			const char *b64_str = ESPUI.getControl(ir_code_base64_text)->getValueCstr();
+
+			if (strlen(name_str) == 0 || strlen(b64_str) == 0) {
+				ESPUI.updateLabel(ir_code_state_label, "Name and Base64 code are required!");
+				return;
+			}
+
+			size_t name_len = mbstrnlen(name_str, IR_CODE_NAME_MAX_SIZE - 1);
+			strncpy(ir_code.ir_code_name, name_str, name_len);
+			ir_code.ir_code_name[name_len] = '\0';
+
+			strncpy(ir_code.ir_code_base64, b64_str, IR_CODE_BASE64_MAX_SIZE - 1);
+			ir_code.ir_code_base64[IR_CODE_BASE64_MAX_SIZE - 1] = '\0';
+
+			bool is_edit = (current_ir_gui_state == EDIT_IR_CODE);
+			int16_t target_slot = is_edit ? current_ir_code_id : new_ir_code_id;
+
+			if (irCodesStorage.save(target_slot, ir_code)) {
+				current_ir_code_id = target_slot;
+				current_ir_code_counter = irCodesStorage.getCounter(current_ir_code_id);
+				ESPUI.updateLabel(ir_code_state_label, "IR code saved successfully!");
+			} else {
+				ESPUI.updateLabel(ir_code_state_label, "Saving IR code FAILED!");
+			}
+
+			current_ir_gui_state = VIEW_IR_CODE;
+			enableIrCodeDetails(false);
+
+			if (is_edit) {
+				addGUICommand(gui_cmd_edit_ir_codes_table, current_ir_code_counter - 1);
+			} else {
+				addGUICommand(gui_cmd_build_ir_codes_table, current_ir_code_counter - 1);
+			}
+			updateIrCodeButtons();
+		} break;
+
+		case GUI_CB_IR_CODE_CANCEL_FLAG: {
+        // 1. If learning is active, cancel the learning state first
+        if (ir_code_learning_gui_active) {
+          ir_code_learning_gui_active = false;
+
+          if (current_ir_device_id >= 0) {
+            addGUICommand(gui_cmd_learn_ir_code, -(current_ir_device_id + 1));
+          }
+
+          if (current_ir_gui_state == VIEW_IR_CODE) {
+            enableIrTable(true);
+          }
+          updateIrCodeButtons();
+          ESPUI.updateLabel(ir_code_state_label, "IR learning cancelled!");
+          return;
+        }
+
+        // 2. Otherwise, standard cancel for ADD / EDIT / COPY mode
+        if ((current_ir_gui_state != NEW_IR_CODE) &&
+            (current_ir_gui_state != EDIT_IR_CODE) &&
+            (current_ir_gui_state != COPY_IR_CODE))
+          return;
+
+        current_ir_gui_state = VIEW_IR_CODE;
+        enableIrCodeDetails(false);
+        enableIrTable(true);
+        updateIrCodeButtons();
+        ESPUI.updateLabel(ir_code_state_label, "Changes cancelled!");
+      } break;
+
+		case GUI_CB_IR_CODE_LEARN_FLAG: {
+        if (current_ir_device_id < 0 || ir_code_learning_gui_active)
+          return;
+
+        if (current_ir_gui_state == VIEW_IR_CODE &&
+            irCodesStorage.findFreeIndex() == -1) {
+          ESPUI.updateLabel(
+            ir_code_state_label,
+            "IR codes storage is full - cannot learn new code!");
+          return;
+        }
+
+        ir_code_learning_gui_active = true;
+        enableIrTable(false);
+        updateIrCodeButtons();
+
+        ESPUI.updateLabel(
+          ir_code_state_label,
+          "Waiting for IR signal... Point remote at IR device and press a "
+          "button (or click CANCEL to abort).");
+
+        addGUICommand(gui_cmd_learn_ir_code, current_ir_device_id);
+      } break;
+	}
+}
+
+/*****************************************************************************/
+
+void GUI_onIrCodeLearned() {
+
+	if (GUIstarted)
+		addGUICommand(gui_cmd_ir_code_learned);
+}
+
+/*****************************************************************************/
+
 #endif  //USE_SUPLA_WEB_SERVER
-  

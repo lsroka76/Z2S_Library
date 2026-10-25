@@ -1,5 +1,7 @@
 #include "z2s_device_virtual_relay.h"
 #include "TuyaDatapoints.h"
+//#include "z2s_device_tuya_custom_cluster.h"
+
 
 uint8_t getZ2SRelayFunctionId(uint32_t model_id, int8_t sub_id) {
 
@@ -155,7 +157,13 @@ uint8_t getZ2SRelayFunctionId(uint32_t model_id, int8_t sub_id) {
           z2s_function = Z2S_VIRTUAL_RELAY_FNC_MOES_ALARM_DURATION; 
         break;
       }
-    } break;       
+    } break;
+
+
+    case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
+
+      z2s_function = Z2S_VIRTUAL_RELAY_FNC_IR_REMOTE_CONTROL;
+    break;       
   }
   return z2s_function;
 }

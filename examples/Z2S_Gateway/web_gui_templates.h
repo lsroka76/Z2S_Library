@@ -30,6 +30,15 @@ enum PushoverMessageGUIState {
 	COPY_PUSHOVER_MESSAGE
 };
 
+enum IrCodeGUIState {
+	VIEW_IR_CODE,
+	NEW_IR_CODE,
+	EDIT_IR_CODE,
+	SAVE_IR_CODE,
+	CANCEL_IR_CODE,
+	REMOVE_IR_CODE,
+	COPY_IR_CODE
+};
 
 typedef struct zigbee_cluster_s {
 
@@ -136,7 +145,6 @@ inline constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 };
 
 inline constexpr char* GUI_BUILD_FLAGS_NAMES[] PROGMEM = {
-
 	"Gateway",
 	"WiFi & Supla credentials",
 	"ZigBee settings",
@@ -147,9 +155,9 @@ inline constexpr char* GUI_BUILD_FLAGS_NAMES[] PROGMEM = {
 	"Advanced Devices",
 	"Tuya custom cluster (0xEF00) devices",
 	"SwitchBot channels",
-	"Pushover"
+	"Pushover",
+	"IR remote devices"
 };
-
 
 inline constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 
@@ -245,6 +253,12 @@ inline constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 	
 	{ .zigbee_cluster_name = "TUYA (0xE001)",						
 		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_1 },
+
+	{ .zigbee_cluster_name = "ZOSUNG IR CONTROL (0xE004)",						
+		.zigbee_cluster_id = ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER },
+
+	{ .zigbee_cluster_name = "ZOSUNG IR TRANSMIT (0xED00)",						
+		.zigbee_cluster_id = ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER },
 	
 	{ .zigbee_cluster_name = "TUYA (0xEF00)",						
 		.zigbee_cluster_id = TUYA_PRIVATE_CLUSTER_EF00 },
@@ -605,7 +619,11 @@ inline constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION,
 		.Supla_action_name = "DIM WHITE WITH STEP (USE SUBACTION 0-100)",
-		.max_subactions_number = 101 }
+		.max_subactions_number = 101 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_SEND_IR_CODE_FIRST_ACTION,
+		.Supla_action_name = "SEND IR CODE (USE SUBACTION 0-255)",
+		.max_subactions_number = 256 }
 };
 
 inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {

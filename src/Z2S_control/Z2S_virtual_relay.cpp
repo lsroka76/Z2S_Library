@@ -632,10 +632,6 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
   if (Zigbee.started()) {
 
     _fresh_start = false;
-    
-    zbGateway.sendAttributeRead(
-      _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-      ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
 
 	switch (_z2s_function) {
 
@@ -648,6 +644,18 @@ void Supla::Control::Z2S_VirtualRelay::ping() {
         sendTuyaQueryCmd(_short_addr, _endpoint, false);
         
       } break;
+
+      case Z2S_VIRTUAL_RELAY_FNC_IR_REMOTE_CONTROL:
+
+      break;
+
+
+      default:
+
+        zbGateway.sendAttributeRead(
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+          ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+      break;
 	}
   }
 }
@@ -807,6 +815,31 @@ void Supla::Control::Z2S_VirtualRelay::handleAction(int event, int action) {
           //_z2s_function_value_U8 = melody_id;
           sendTuyaRequestCmdValue32(
             _short_addr, _endpoint, MOES_ALARM_DURATION_DP, duration);
+        }
+      }
+    } break;
+
+
+    case Z2S_VIRTUAL_RELAY_FNC_IR_REMOTE_CONTROL: {
+
+      if (!Zigbee.started()) 
+        break;
+
+      if ((action >= Z2S_SUPLA_ACTION_SEND_IR_CODE_FIRST_ACTION) && 
+          (action <= Z2S_SUPLA_ACTION_SEND_IR_CODE_LAST_ACTION)) {
+
+        uint8_t ir_code_id = action - 
+          Z2S_SUPLA_ACTION_SEND_IR_CODE_FIRST_ACTION;
+
+        z2s_ir_code_t ir_code = {};
+
+        if (irCodesStorage.load(ir_code_id, ir_code)) {
+          log_i(
+            "Sending IR code #%03u (%s) to 0x%04X", 
+            ir_code_id, ir_code.ir_code_name, _short_addr);
+          sendLearnedIRCode(_short_addr, _endpoint, ir_code.ir_code_base64);
+        } else {
+          log_e("IR code #%03u not found in storage!", ir_code_id);
         }
       }
     } break;

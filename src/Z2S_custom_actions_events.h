@@ -68,6 +68,10 @@
 #define Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION                         0x5565
 #define Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_LAST_ACTION                          0x55C9
 
+//256 subactions
+#define Z2S_SUPLA_ACTION_SEND_IR_CODE_FIRST_ACTION                            0x55CA
+#define Z2S_SUPLA_ACTION_SEND_IR_CODE_LAST_ACTION                             0x56C9
+
 
 /***********************************************************************************/
 

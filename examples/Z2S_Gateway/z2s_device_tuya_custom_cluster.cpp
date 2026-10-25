@@ -17,16 +17,10 @@
 
 //extern ZigbeeGateway zbGateway;
 
-/*uint8_t learned_ir_code[256];
-char    learned_ir_code_base64[256];
+uint8_t learned_ir_code[512];
+char    learned_ir_code_base64[768]; 
 uint8_t ir_code_send_buffer[128];
-uint8_t ir_code_to_send[512];*/
-/*
-uint8_t learned_ir_code[1];
-char    learned_ir_code_base64[1];
-uint8_t ir_code_send_buffer[1];
-uint8_t ir_code_to_send[1];
-
+uint8_t ir_code_to_send[1024];
 
 bool ir_code_learning = false;
 bool ir_code_receiving = false;
@@ -36,22 +30,14 @@ uint32_t ir_message_chunk_last_position = 0xFFFFFFFF;
 uint32_t ir_message_chunk_last_size = 0xFFFFFFFF;
 uint32_t ir_message_length = 0;
 uint16_t ir_message_seq = 0;
-
 uint16_t learned_ir_code_base64_length = 0;
-
 uint32_t ir_code_send_position = 0;
 uint32_t ir_code_send_length  = 0;
-uint16_t  ir_code_send_seq = 0;
-*/
-/*{'key_num': 1,'delay': 300,'key1': {'num': 1,'freq': 38000,'type': 1,'key_code': */
-/*const static uint8_t IR_SEND_CODE_PREAMBLE[] PROGMEM = {0x7B,0x27,0x6B,0x65,0x79,0x5F,0x6E,0x75,0x6D,0x27,0x3A,0x20,0x31,0x2C,0x27,0x64,0x65,
-                                              0x6C,0x61,0x79,0x27,0x3A,0x20,0x33,0x30,0x30,0x2C,0x27,0x6B,0x65,0x79,0x31,0x27,0x3A,
-                                              0x20,0x7B,0x27,0x6E,0x75,0x6D,0x27,0x3A,0x20,0x31,0x2C,0x27,0x66,0x72,0x65,0x71,0x27,
-                                              0x3A,0x20,0x33,0x38,0x30,0x30,0x30,0x2C,0x27,0x74,0x79,0x70,0x65,0x27,0x3A,0x20,0x31,
-                                              0x2C,0x27,0x6B,0x65,0x79,0x5F,0x63,0x6F,0x64,0x65,0x27,0x3A,0x20};*/
+uint16_t ir_code_send_seq = 0;
 
-/*,},}*/
-/*const static uint8_t IR_SEND_CODE_POSTAMBLE[] = {0x2C,0x7D,0x2C,0x7D};*/
+
+const char* IR_JSON_PREAMBLE = "{\"key_num\":1,\"delay\":300,\"key1\":{\"num\":1,\"freq\":38000,\"type\":1,\"key_code\":\"";
+const char* IR_JSON_POSTAMBLE = "\"}}";
 
 /*testcode01*/
 /*const static uint8_t TEST_CODE_01[] = {0x74,0x65,0x73,0x74,0x63,0x6F,0x64,0x65,0x30,0x31};*/
@@ -4030,100 +4016,105 @@ void processTuyaCustomCluster(
   }
 }
 
+/*****************************************************************************/
+
 void processZosungCustomCluster(
-  esp_zb_ieee_addr_t ieee_addr, uint16_t endpoint, uint8_t command_id, 
+  uint8_t tsn, uint16_t short_addr, uint16_t endpoint, uint8_t command_id, 
   uint16_t payload_size, uint8_t *payload) {
   
-  /*log_i("processing Zosung custom cluster 0xED00, command id 0x%x", command_id);
+  log_i(
+    "processing Zosung custom cluster 0xED00, command id 0x%x", command_id);
   
-  uint8_t ir_code_data_1[17];
-  uint8_t ir_code_data_2[7];
-  uint8_t ir_code_data_4[5];
-  uint8_t ir_code_data_5[4];
-  zbg_device_params_t device = {};
+  uint8_t ir_code_data_1[17] = {0};
+  uint8_t ir_code_data_2[7] = {0};
+  uint8_t ir_code_data_4[5] = {0};
+  uint8_t ir_code_data_5[4] = {0};
 
-  int16_t channel_number_slot = Z2S_findChannelNumberSlot(
-    ieee_addr, endpoint, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 
-    ALL_SUPLA_CHANNEL_TYPES, NO_CUSTOM_CMD_SID); 
+  Z2S_Core* z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, TUYA_PRIVATE_CLUSTER_EF00, ALL_SUPLA_CHANNEL_TYPES, 
+    NO_CUSTOM_CMD_SID);
 
-  if (channel_number_slot < 0) {
-    log_i(
-      "processZosungCustomCluster failed - no Supla channel for that device");
+  if (!z2s_core) {
+    log_e("core missing for 0x%04X(EP#%02u)!", short_addr, endpoint);
     return;
   }
 
-  device.endpoint = z2s_channels_table_DEP[channel_number_slot].endpoint;
-  device.cluster_id = ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER;
-  memcpy(device.ieee_addr, z2s_channels_table_DEP[channel_number_slot].ieee_addr, 8);
-  device.short_addr = z2s_channels_table_DEP[channel_number_slot].short_addr;
-  device.model_id = z2s_channels_table_DEP[channel_number_slot].model_id;
+  uint16_t cluster_id = ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER;
   
   switch (command_id) {
-    case 0: if ((!ir_code_learning) && (payload_size == 16)) {
-      
-      ir_code_learning = true;
-      ir_code_receiving = false;
-      
-      memset(learned_ir_code, 0, sizeof(learned_ir_code));
-      ir_message_position = 0;
-      ir_message_last_position = 0;
-      
-      ir_message_chunk_last_position = 0xFFFFFFFF;
-      ir_message_chunk_last_size = 0xFFFFFFFF;
-      
-      ir_message_length = *(payload + 2) + (*(payload + 3) * 0x100) + (*(payload + 4) * 0x10000) + (*(payload + 5) * 0x1000000);
-      ir_message_seq = *payload + (*(payload + 1) * 0x100);
-      log_i("message seq 0x%x, length 0x%x", ir_message_seq, ir_message_length);
 
-      learned_ir_code[0] = ir_message_length;
 
-      memset(ir_code_data_1, 0, sizeof(ir_code_data_1));
-      memcpy(ir_code_data_1+1, payload, payload_size);
-      for (int i = 0; i < 17; i++)        log_i("ir_code_data_1[%u] = 0x%x", i, ir_code_data_1[i]);
-      memset(ir_code_data_2, 0, sizeof(ir_code_data_2));
-      ir_code_data_2[0] = *payload;
-      ir_code_data_2[1] = *(payload + 1);
-      ir_code_data_2[6] = 0x38;
-      for (int i = 0; i < 7; i++)
-        log_i("ir_code_data_2[%u] = 0x%x", i, ir_code_data_2[i]);
-      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 1, ESP_ZB_ZCL_ATTR_TYPE_SET, 17, ir_code_data_1, true, 
-                                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 0x1002);
-      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 0x0B, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, NULL,true, 1, 1, 0, 0);
-      zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 2, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, ir_code_data_2, true, 
-                                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, 0x1002);
-    } break;
+    case 0: 
+
+      if ((!ir_code_learning) && (payload_size == 16)) {
+        ir_code_learning = true;
+        ir_code_receiving = false;
+        
+        memset(learned_ir_code, 0, sizeof(learned_ir_code));
+        ir_message_position = 0;
+        ir_message_last_position = 0;
+        ir_message_chunk_last_position = 0xFFFFFFFF;
+        ir_message_chunk_last_size = 0xFFFFFFFF;
+        
+        ir_message_length = *(payload + 2) | (*(payload + 3) << 8) | 
+          (*(payload + 4) << 16) | (*(payload + 5) << 24);
+        ir_message_seq = *payload | (*(payload + 1) << 8);
+        
+        log_i("message seq 0x%x, length 0x%x", 
+          ir_message_seq, ir_message_length);
+
+        memcpy(ir_code_data_1 + 1, payload, payload_size);
+        
+        ir_code_data_2[0] = *payload;
+        ir_code_data_2[1] = *(payload + 1);
+        ir_code_data_2[6] = 0x38;
+
+        esp_zb_lock_acquire(portMAX_DELAY);
+        zbGateway.sendAPSDEDataRequestCmd(
+          short_addr, tsn, endpoint, cluster_id, 0x01, 17, ir_code_data_1,  
+          ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
+        zbGateway.sendAPSDEDataRequestCmd(
+          short_addr, tsn, endpoint, cluster_id, 0x02, 7, ir_code_data_2,  
+          ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
+        esp_zb_lock_release();
+      } 
+      break;
+
+
     case 1: {
-      ir_code_send_position = 0;
-      ir_code_send_seq = *(payload + 1) + (*(payload + 2) * 0x100);
-      log_i("IR Remote confirmed IR code receiving start, seq %u", ir_code_send_seq);
-      memcpy(ir_code_to_send, IR_SEND_CODE_PREAMBLE, sizeof(IR_SEND_CODE_PREAMBLE));
-      //memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE), TEST_CODE_01, sizeof(TEST_CODE_01));
-      //memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE), learned_ir_code + 1, ir_message_length);
-      memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE), learned_ir_code_base64, learned_ir_code_base64_length);
-      //memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE) + sizeof(TEST_CODE_01), IR_SEND_CODE_POSTAMBLE, sizeof(IR_SEND_CODE_POSTAMBLE));
-      //memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE) + ir_message_length, IR_SEND_CODE_POSTAMBLE, sizeof(IR_SEND_CODE_POSTAMBLE));
-      memcpy(ir_code_to_send + sizeof(IR_SEND_CODE_PREAMBLE) + learned_ir_code_base64_length, IR_SEND_CODE_POSTAMBLE, sizeof(IR_SEND_CODE_POSTAMBLE));
-      ir_code_send_length = sizeof(IR_SEND_CODE_PREAMBLE) + learned_ir_code_base64_length + sizeof(IR_SEND_CODE_POSTAMBLE);
-      //ir_code_send_length = sizeof(IR_SEND_CODE_PREAMBLE) + ir_message_length + sizeof(IR_SEND_CODE_POSTAMBLE);
-      //ir_message_length = sizeof(IR_SEND_CODE_PREAMBLE) + sizeof(TEST_CODE_01) + sizeof(IR_SEND_CODE_POSTAMBLE);
-
-    } break;
-    case 2: {
       
-      uint8_t preamble_size = sizeof(IR_SEND_CODE_PREAMBLE);
-      uint8_t  postamble_size = sizeof(IR_SEND_CODE_POSTAMBLE);
+      if (!ir_code_learning)
+        break;
+  
+      ir_code_send_position = 0;
+      ir_code_send_seq = *(payload + 1) | (*(payload + 2) << 8);
+      log_i("IR Remote confirmed IR code receiving start, seq %u", 
+        ir_code_send_seq);
+      
+      snprintf((char*)ir_code_to_send, sizeof(ir_code_to_send), "%s%s%s", 
+        IR_JSON_PREAMBLE, learned_ir_code_base64, IR_JSON_POSTAMBLE);
+               
+      ir_code_send_length = strlen((char*)ir_code_to_send);
+    } break;
+    
 
-      uint16_t cur_seq = *(payload) + (*(payload + 1) * 0x100);
+    case 2: {
+
+      uint16_t cur_seq = *(payload) | (*(payload + 1) << 8);
+      
       if (ir_code_send_seq == cur_seq) {
-        ir_code_send_position = *(payload + 2) + (*(payload + 3) * 0x100) + (*(payload + 4) * 0x10000) + (*(payload + 5) * 0x1000000);
+        ir_code_send_position = *(payload + 2) | (*(payload + 3) << 8) | 
+          (*(payload + 4) << 16) | (*(payload + 5) << 24);
         uint32_t crc_sum = 0;
         uint16_t max_length = *(payload + 6);
         uint16_t calc_length = ir_code_send_length - ir_code_send_position;
-        if (calc_length >= max_length) 
+        
+        if (calc_length > max_length) {
           calc_length = max_length;
-        else (calc_length++); 
-        log_i("IR Remote command 2 received, asking for code - ir_code_send_length %u, position %u, max length %u, calc length %u", 
-              ir_code_send_length, ir_code_send_position, max_length, calc_length);
+        }
+
+        calc_length = min(calc_length, (uint16_t)0x32);
+
         ir_code_send_buffer[0] = 0;
         ir_code_send_buffer[1] = *(payload);
         ir_code_send_buffer[2] = *(payload + 1);
@@ -4131,95 +4122,252 @@ void processZosungCustomCluster(
         ir_code_send_buffer[4] = *(payload + 3);
         ir_code_send_buffer[5] = *(payload + 4);
         ir_code_send_buffer[6] = *(payload + 5);
-        ir_code_send_buffer[7] = calc_length - 1;
-        for (uint16_t i = 0; i < (calc_length - 1); i++) {
-          //if (ir_code_send_position + i != 0)
-            crc_sum += ir_code_to_send[ir_code_send_position + i];//learned_ir_code[1 + ir_code_send_position + i];
-          ir_code_send_buffer[8 + i] = ir_code_to_send[ir_code_send_position + i];//learned_ir_code[1 + ir_code_send_position + i];
+        ir_code_send_buffer[7] = calc_length; 
+        
+        for (uint16_t i = 0; i < calc_length; i++) {
+          crc_sum += ir_code_to_send[ir_code_send_position + i];
+          ir_code_send_buffer[8 + i] = 
+            ir_code_to_send[ir_code_send_position + i];
         }  
-        ir_code_send_buffer[7 + calc_length] = crc_sum % 256;
-        for (int i = 0; i < 8 + calc_length; i++)
-          log_i("IR Remote command 2 buffer[%u] = 0x%x", i, ir_code_send_buffer[i]);
-        zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 3, ESP_ZB_ZCL_ATTR_TYPE_SET, 7 + calc_length + 1, ir_code_send_buffer, 
-                                      true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,  1, 0, 0);
+        ir_code_send_buffer[8 + calc_length] = crc_sum % 256;
+
+        zbGateway.sendAPSDEDataRequestCmd(
+          short_addr, tsn, endpoint, cluster_id, 0x03, 8 + calc_length + 1, 
+          ir_code_send_buffer, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
       }
     } break;
+    
+
     case 3: {
       ir_code_receiving = true;
       uint32_t crc_sum = 0;
-      uint32_t crc_sum_mod = 0;
-      uint16_t cur_seq = *(payload + 1) + (*(payload + 2) * 0x100);
-      if (ir_message_seq == cur_seq)
-        log_i("ir code learing seq matched 0x%x == 0x%x", ir_message_seq, cur_seq);
-      else
-        log_i("ir code learing seq not matched 0x%x != 0x%x", ir_message_seq, cur_seq);
+      uint16_t cur_seq = *(payload + 1) | (*(payload + 2) << 8);
       
-      ir_message_position = *(payload + 3) + (*(payload + 4) * 0x100) + (*(payload + 5) * 0x10000) + (*(payload + 6) * 0x1000000);
+      ir_message_position = *(payload + 3) | (*(payload + 4) << 8) | 
+        (*(payload + 5) << 16) | (*(payload + 6) << 24);
       
-      if (ir_message_position == 0)
-          ir_message_position++;
-
       if (ir_message_position != ir_message_chunk_last_position) {
-        
         ir_message_chunk_last_position = ir_message_position;
         ir_message_chunk_last_size = *(payload + 7);
-        for (int i = 0; i < ir_message_chunk_last_size; i++) {
-          log_i("cmd 3 [%u] = 0x%x", i + 8, *(payload + 8 + i));
-          crc_sum = crc_sum + *(payload + 8 + i);
-          learned_ir_code[ir_message_position + i] = *(payload + 8 + i);
+        
+        if (ir_message_position + ir_message_chunk_last_size <= 
+            sizeof(learned_ir_code)) {
+            for (int i = 0; i < ir_message_chunk_last_size; i++) {
+              crc_sum += *(payload + 8 + i);
+              learned_ir_code[ir_message_position + i] = 
+                *(payload + 8 + i);
+            }
+        } else {
+            log_e("IR Code exceeds buffer size!");
+            return;
         }
-        log_i("crc_sum 0x%x, crc_sum mod 256 0x%x", crc_sum, crc_sum % 256);
-        log_i("ir_message_position %u, ir_message_chunk_last_position %u, ir_message_chunk_last_size %u", 
-               ir_message_position, ir_message_chunk_last_position,ir_message_chunk_last_size);
 
-        if ((ir_message_position + ir_message_chunk_last_size) < ir_message_length) {
+        uint8_t expected_crc = *(payload + 8 + ir_message_chunk_last_size);
+        if ((crc_sum % 256) != expected_crc) {
+            log_e("CRC mismatch in chunk transfer!");
+        }
+
+        if ((ir_message_position + ir_message_chunk_last_size) < 
+            ir_message_length) {
+          uint32_t next_pos = ir_message_position + 
+            ir_message_chunk_last_size;
+          
           ir_code_data_2[0] = *(payload + 1);
           ir_code_data_2[1] = *(payload + 2);
-          ir_code_data_2[2] = ir_message_position + ir_message_chunk_last_size;
-          ir_code_data_2[3] = *(payload + 4);
-          ir_code_data_2[4] = *(payload + 5);
-          ir_code_data_2[5] = *(payload + 6);
+          ir_code_data_2[2] = next_pos & 0xFF;
+          ir_code_data_2[3] = (next_pos >> 8) & 0xFF;
+          ir_code_data_2[4] = (next_pos >> 16) & 0xFF;
+          ir_code_data_2[5] = (next_pos >> 24) & 0xFF;
           ir_code_data_2[6] = 0x38;
-          for (int i = 0; i < 7; i++) {
-            log_i("cmd 2 [%u] = 0x%x", i, ir_code_data_2[i]);
-          }
-          zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 2, ESP_ZB_ZCL_ATTR_TYPE_SET, 7, ir_code_data_2, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-                                       1, 1, 0x1002);
-        }
-        else {
+
+          zbGateway.sendAPSDEDataRequestCmd(
+            short_addr, tsn, endpoint, cluster_id, 0x02, 7, ir_code_data_2, 
+            ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
+        } else {
           ir_code_data_4[0] = 0;
           ir_code_data_4[1] = *(payload + 1);
           ir_code_data_4[2] = *(payload + 2);
           ir_code_data_4[3] = 0;
           ir_code_data_4[4] = 0;
-          log_i("Code 3 has ended, ready for command 4, seq %d:%d", ir_code_data_4[1], ir_code_data_4[1]);
-          zbGateway.sendCustomClusterCmd(&device, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 4, ESP_ZB_ZCL_ATTR_TYPE_SET, 5, ir_code_data_4, true, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-                                       1, 1, 0x1002); 
+          
+          zbGateway.sendAPSDEDataRequestCmd(
+            short_addr, tsn, endpoint, cluster_id, 0x04, 5, ir_code_data_4, 
+            ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1); 
         }
       }
     } break;
+
+
     case 4: {
+  
+      if (!ir_code_learning) {
+        log_i(
+          "IR code transmission successfully acknowledged and completed by "
+          "device 0x%04X", short_addr);
+
+        ir_code_send_seq = 0;
+        ir_code_send_position = 0;
+        ir_code_send_length = 0;
+
+        ir_message_seq = 0;
+        ir_message_length = 0;
+
+        ir_code_learning = false;
+        ir_code_receiving = false;
+        break;
+      }
+
       ir_code_data_5[0] = *(payload + 1);
       ir_code_data_5[1] = *(payload + 2);
       ir_code_data_5[2] = 0;
-      ir_code_data_4[3] = 0;
-      zbGateway.sendCustomClusterCmd(&device, 
-                                     ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 
-                                     5, 
-                                     ESP_ZB_ZCL_ATTR_TYPE_SET, 
-                                     4, 
-                                     ir_code_data_5, true, 
-                                     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 
-                                     1, 1, 0x1002); 
-    } break;
+      ir_code_data_5[3] = 0;
+
+      zbGateway.sendAPSDEDataRequestCmd(
+        short_addr, tsn, endpoint, cluster_id, 0x05, 4, ir_code_data_5,  
+        ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1); 
+    } break; 
+    
+
+
     case 5: {
       ir_code_learning = false;
       ir_code_receiving = false;
-      for (int i = 0; i <= ir_message_length + 1; i++)
-        log_i("learned_ir_code[%u] = 0x%x", i, learned_ir_code[i]);
-      learned_ir_code_base64_length = base64::encodeLength(ir_message_length);
-      base64::encode(learned_ir_code + 1, ir_message_length, learned_ir_code_base64);
-      log_i("IR code base64 encoded(size 0x%d) = %s", learned_ir_code_base64_length, learned_ir_code_base64);
+      
+      learned_ir_code_base64_length = 
+        base64::encodeLength(ir_message_length);
+      base64::encode(
+        learned_ir_code, ir_message_length, learned_ir_code_base64); 
+      log_i("IR code base64 encoded(size 0x%d) = %s", 
+        learned_ir_code_base64_length, learned_ir_code_base64);
+      
+      const char* stop_payload = "{\"study\":1}";
+      zbGateway.sendAPSDEDataRequestCmd(
+        short_addr, tsn, endpoint, 0xE004, 0x00, strlen(stop_payload), 
+        (uint8_t*)stop_payload, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
+
+      if (Z2S_isGUIStarted()) {
+        
+        GUI_onIrCodeLearned();
+      }
     } break;
-  }*/
+  }
 }
+
+/*****************************************************************************/
+
+char *getLearnedIrCodeBase64() {
+
+  return learned_ir_code_base64;
+}
+
+/*****************************************************************************/
+
+void startLearnIRCode(uint16_t short_addr, uint8_t endpoint) {
+  
+  ir_code_learning = false;
+  ir_code_receiving = false;
+  ir_message_position = 0;
+
+  const char *start_payload = "{\"study\":0}";
+  
+  esp_zb_lock_acquire(portMAX_DELAY);
+
+  zbGateway.sendAPSDEDataRequestCmd(
+    short_addr, 1, endpoint, ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER, 0x00, 
+    strlen(start_payload), (uint8_t *)start_payload, 
+    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
+
+  esp_zb_lock_release();
+}
+
+/*****************************************************************************/
+
+void cancelLearnIRCode(uint16_t short_addr, uint8_t endpoint) {
+  
+  ir_code_learning = false;
+  ir_code_receiving = false;
+  ir_message_position = 0;
+  ir_message_length = 0;
+
+  const char *stop_payload = "{\"study\":1}";
+  
+  esp_zb_lock_acquire(portMAX_DELAY);
+
+  zbGateway.sendAPSDEDataRequestCmd(
+    short_addr, 1, endpoint, ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER, 0x00, 
+    strlen(stop_payload), (uint8_t *)stop_payload, 
+    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
+    
+  esp_zb_lock_release();
+}
+
+/*****************************************************************************/
+
+void stopLearnIRCode(uint16_t short_addr, uint8_t endpoint) {
+
+  const char* stop_payload = "{\"study\":1}";
+  ir_code_learning = false;
+  ir_code_receiving = false;
+
+  esp_zb_lock_acquire(portMAX_DELAY);
+  zbGateway.sendAPSDEDataRequestCmd(
+    short_addr, 1, endpoint, ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER, 0x00, 
+    strlen(stop_payload), (uint8_t*)stop_payload, 
+    ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
+  esp_zb_lock_release();
+}
+
+/*****************************************************************************/
+
+void sendLearnedIRCode(
+  uint16_t short_addr, uint8_t endpoint, const char* base64_code) {
+
+    ir_code_send_position = 0;
+    ir_code_receiving = false;
+    ir_code_learning = false;
+    
+    uint32_t full_json_length = strlen(IR_JSON_PREAMBLE) + 
+      strlen(base64_code) + strlen(IR_JSON_POSTAMBLE);
+
+    strncpy((char*)learned_ir_code_base64, base64_code, 
+            sizeof(learned_ir_code_base64) - 1);
+    learned_ir_code_base64[sizeof(learned_ir_code_base64) - 1] = '\0'; 
+
+    snprintf((char*)ir_code_to_send, sizeof(ir_code_to_send), "%s%s%s", 
+      IR_JSON_PREAMBLE, learned_ir_code_base64, IR_JSON_POSTAMBLE);
+             
+    ir_code_send_length = strlen((char*)ir_code_to_send);
+
+    uint8_t trigger_payload[16] = {0};
+    //static uint16_t tx_seq = 1; 
+
+    ir_code_send_seq++; 
+    if (ir_code_send_seq == 0) ir_code_send_seq = 1;
+
+    trigger_payload[0] = ir_code_send_seq & 0xFF;
+    trigger_payload[1] = (ir_code_send_seq >> 8) & 0xFF;
+    
+    //trigger_payload[0] = tx_seq & 0xFF;
+    //trigger_payload[1] = (tx_seq >> 8) & 0xFF;
+    
+    trigger_payload[2] = full_json_length & 0xFF;
+    trigger_payload[3] = (full_json_length >> 8) & 0xFF;
+    trigger_payload[4] = (full_json_length >> 16) & 0xFF;
+    trigger_payload[5] = (full_json_length >> 24) & 0xFF;
+    
+    trigger_payload[10] = 0x04; 
+    trigger_payload[11] = 0xE0; 
+    trigger_payload[12] = 0x01; 
+    trigger_payload[13] = 0x02; 
+
+    esp_zb_lock_acquire(portMAX_DELAY);
+    zbGateway.sendAPSDEDataRequestCmd(
+        short_addr, 1, endpoint, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 
+        0x00, 16, trigger_payload, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
+    esp_zb_lock_release();
+
+    //tx_seq++;
+}
+
+/*****************************************************************************/
+

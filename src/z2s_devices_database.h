@@ -2875,10 +2875,9 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL,
-    .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
-                             ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER }},
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_VALVE,
     .z2s_device_clusters_count = 3,
@@ -6507,6 +6506,11 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3290_7v1k4vufotpowp9z", .model_name = "TS1201",
     .z2s_device_uid = 25000,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3290_nba3knpsarkawgnt", .model_name = "TS1201",
+    .z2s_device_uid = 25005,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL,
 	  .z2s_device_endpoints_count = 1},
 

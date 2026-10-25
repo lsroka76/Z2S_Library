@@ -61,6 +61,8 @@
 #define Z2S_VIRTUAL_RELAY_FNC_LUMI_ATTRIBUTE_BOOL               0x71
 #define Z2S_VIRTUAL_RELAY_FNC_LUMI_BUZZER_1_2                   0x72
 
+#define Z2S_VIRTUAL_RELAY_FNC_IR_REMOTE_CONTROL                 0x80
+
 /*****************************************************************************/
 
 inline const uint32_t RELAY_FLAGS = 
@@ -73,6 +75,19 @@ inline const uint32_t RELAY_FLAGS =
   SUPLA_BIT_FUNC_STAIRCASETIMER |
   SUPLA_BIT_FUNC_PUMPSWITCH |
   SUPLA_BIT_FUNC_HEATORCOLDSOURCESWITCH;
+
+/*****************************************************************************/
+
+void startLearnIRCode(uint16_t short_addr, uint8_t endpoint);
+
+/*****************************************************************************/
+
+void stopLearnIRCode(uint16_t short_addr, uint8_t endpoint);
+
+/*****************************************************************************/
+
+void sendLearnedIRCode(
+  uint16_t short_addr, uint8_t endpoint, const char* base64_code);
 
 /*****************************************************************************/
 
