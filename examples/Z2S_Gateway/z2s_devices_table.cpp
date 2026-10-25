@@ -892,6 +892,18 @@ void Z2S_initZbDevices(uint32_t init_ms) {
         continue;
       }
 
+      if (z2s_device_params.user_data_flags & 
+          ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED) {
+
+        log_e(
+          "join artefact found - clearing index position at %u", 
+          devices_counter);
+        
+        devicesStorage.clearPosition(devices_counter);
+        devicesStorage.saveIndexTable();
+        continue;
+      }
+
       Z2S_Device *z2s_device = new Z2S_Device();
       z2s_device->setZ2SDevice(devices_counter, &z2s_device_params);
 

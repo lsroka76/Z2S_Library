@@ -97,7 +97,8 @@ enum gui_commands {
 	gui_cmd_edit_ir_codes_table,
 	gui_cmd_learn_ir_code,
 	gui_cmd_send_ir_code,
-	gui_cmd_ir_code_learned
+	gui_cmd_ir_code_learned,
+  gui_cmd_delete_ir_code
 };
 
 class Z2S_Core;
