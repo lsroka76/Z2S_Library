@@ -13199,6 +13199,37 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
         ESPUI.updateLabel(ir_code_state_label, "Sending IR code to device...");
         addGUICommand(gui_cmd_send_ir_code, current_ir_code_id);
       } break;
+
+
+			case GUI_CB_IR_CODE_REMOVE_FLAG: {
+				
+        if (current_ir_device_id < 0 || current_ir_code_id < 0) {
+          ESPUI.updateLabel(ir_code_state_label, "Select an IR code to delete first!");
+          return;
+        }
+
+        z2s_ir_code_t ir_code = {};
+        bool loaded = irCodesStorage.load(current_ir_code_id, ir_code);
+        
+        if (loaded && irCodesStorage.remove(current_ir_code_id)) {
+          // Find next available code or reset selection
+          int16_t next_code = irCodesStorage.findNext(0);
+          if (next_code >= 0) {
+            current_ir_code_id = next_code;
+            current_ir_code_counter = irCodesStorage.getCounter(next_code);
+          } else {
+            current_ir_code_id = -1;
+            current_ir_code_counter = -1;
+            enableIrCodeDetails(false);
+          }
+
+          buildIrCodesTableJsonPayload(ir_codes_table_label, 0);
+          updateIrCodeButtons();
+          ESPUI.updateLabel(ir_code_state_label, "IR code deleted successfully!");
+        } else {
+          ESPUI.updateLabel(ir_code_state_label, "Failed to delete IR code!");
+        }
+      } break;
 	}
 }
 

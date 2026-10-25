@@ -19,7 +19,6 @@
 
 uint8_t learned_ir_code[512];
 char    learned_ir_code_base64[768]; 
-uint8_t ir_code_send_buffer[128];
 uint8_t ir_code_to_send[1024];
 
 bool ir_code_learning = false;
@@ -4115,6 +4114,9 @@ void processZosungCustomCluster(
 
         calc_length = min(calc_length, (uint16_t)0x32);
 
+        uint8_t ir_code_send_buffer[64];
+
+
         ir_code_send_buffer[0] = 0;
         ir_code_send_buffer[1] = *(payload);
         ir_code_send_buffer[2] = *(payload + 1);
@@ -4297,7 +4299,7 @@ void cancelLearnIRCode(uint16_t short_addr, uint8_t endpoint) {
     short_addr, 1, endpoint, ZOSUNG_IR_CONTROL_CUSTOM_CLUSTER, 0x00, 
     strlen(stop_payload), (uint8_t *)stop_payload, 
     ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
-    
+
   esp_zb_lock_release();
 }
 
