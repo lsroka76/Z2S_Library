@@ -734,6 +734,7 @@ class Z2S_Device {
 
     bool isAdvancedDevice();
     bool hasTuyaCustomCluster();
+    bool isIrRemote();
 
   protected:
 
@@ -823,7 +824,7 @@ public:
   bool setZbDeviceId(uint8_t Zb_device_id) { 
     
     _z2s_channel.Zb_device_id = Zb_device_id;
-    if (Zb_device_id < Z2S_ZB_DEVICES_MAX_NUMBER)
+    if (Zb_device_id < Z2S_DEVICES_MAX_NUMBER)
       _z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(Zb_device_id);
     return true;
   }
@@ -1001,6 +1002,13 @@ public:
 
     return (_z2s_channel.local_channel_type == 
       LOCAL_CHANNEL_TYPE_SWITCHBOT);
+  }
+
+  /*****************************************************************************/
+
+  bool isIrRemote() {
+      
+      return (_z2s_device != nullptr) && _z2s_device->isIrRemote();
   }
 
   /*****************************************************************************/
