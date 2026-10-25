@@ -7315,7 +7315,7 @@ void Z2S_loopWebGUI() {
 			} break;
 
 
-			case gui_cmd_delete_ir_code {
+			case gui_cmd_delete_ir_code: {
 				
 				z2s_ir_code_t ir_code = {};
         bool loaded = irCodesStorage.load(current_ir_code_id, ir_code);
