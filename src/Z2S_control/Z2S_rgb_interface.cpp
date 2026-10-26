@@ -242,7 +242,7 @@ void Supla::Control::Z2S_RGBInterface::sendValueToDevice(
         test_buffer[11] = (_hue_360 >> 8) & 0x00FF;
         test_buffer[12] = _hue_360 & 0x00FF;//COLOR
         test_buffer[13] = (_saturation_1000 >> 8) & 0x00FF;
-        test_buffer[14] = _saturation & 0x00FF;//SATURATION
+        test_buffer[14] = _saturation_1000 & 0x00FF;//SATURATION
         test_buffer[15] = (_color_brightness_1000 >> 8) & 0x00FF;
         test_buffer[16] = _color_brightness_1000 & 0x00FF;//BRIGHTNESS
 

@@ -7060,6 +7060,11 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00,
     .z2s_device_endpoints_count = 1},
 
+  { .manufacturer_name = "_TZE28C1000000_gt5al3bl", .model_name = "TS0601",
+    .z2s_device_uid = 31350,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00,
+    .z2s_device_endpoints_count = 1},
+
   { .manufacturer_name = "_TZE200_ehhrv2e3", .model_name = "TS0601",
     .z2s_device_uid = 31400,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2,
