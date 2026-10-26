@@ -8656,6 +8656,8 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
 /******************************************************************************/     
      
       case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
+      case Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL:
+      case Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL:
 
         addZ2SDeviceVirtualRelay(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, "IR REMOTE", 
@@ -9600,6 +9602,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR:
     case Z2S_DEVICE_DESC_TS0601_TRV_GTVZB:
+    case Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL:
       return true;
     default:
       return false;

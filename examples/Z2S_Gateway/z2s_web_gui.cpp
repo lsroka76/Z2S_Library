@@ -77,7 +77,6 @@ uint16_t save_button;
 uint16_t save_label;
 
 uint16_t pairing_mode_switcher = 0xFFFF;
-uint16_t force_leave_switcher = 0xFFFF;
 uint16_t zigbee_tx_power_number;
 uint16_t zigbee_primary_channel_text;
 uint16_t zigbee_primary_channel_label;
@@ -7436,7 +7435,6 @@ void hiddenNumberCallback(BasicControl *sender, int type, void *param) {
 void onZigbeeTabCallback(BasicControl *sender, int type, void *param) {
 
 	ESPUI.updateNumber(pairing_mode_switcher, Zigbee.isNetworkOpen() ? 1 : 0);
-	ESPUI.updateNumber(force_leave_switcher, force_leave_global_flag ? 1 : 0);
 }
 
 /*****************************************************************************/
@@ -13016,12 +13014,6 @@ void GUI_onZigbeeOpenNetwork(bool is_network_open) {
 	if (pairing_mode_switcher < 0xFFFF) {
 
 		ESPUI.updateNumber(pairing_mode_switcher, is_network_open ? 1 : 0);
-
-		if (!is_network_open) {
-
-			force_leave_global_flag = false;
-			ESPUI.updateNumber(force_leave_switcher, 0);
-		}
 	}
 }
 
@@ -13030,6 +13022,7 @@ void GUI_onZigbeeOpenNetwork(bool is_network_open) {
 void irDeviceSelectorCallback(BasicControl *sender, int type, void *param) {
 
 	int32_t device_slot = (sender) ? sender->getValueInt() : type;
+
 	addGUICommand(gui_cmd_ir_device_callback, device_slot);
 }
 
@@ -13070,7 +13063,9 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 
 	switch ((uint32_t)param) {
 
+
 		case GUI_CB_IR_CODE_NEW_FLAG: {
+
 			if (current_ir_gui_state != VIEW_IR_CODE) return;
 			new_ir_code_id = irCodesStorage.findFreeIndex();
 			if (new_ir_code_id < 0) {
@@ -13087,9 +13082,14 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 			enableIrTable(false);
 		} break;
 
+
 		case GUI_CB_IR_CODE_EDIT_FLAG: {
-			if (current_ir_gui_state != VIEW_IR_CODE || current_ir_code_id < 0) return;
-			if (!irCodesStorage.load(current_ir_code_id, ir_code)) return;
+			
+			if (current_ir_gui_state != VIEW_IR_CODE || current_ir_code_id < 0) 
+				return;
+			
+			if (!irCodesStorage.load(current_ir_code_id, ir_code)) 
+				return;
 
 			current_ir_gui_state = EDIT_IR_CODE;
 			enableIrCodeDetails(true);
@@ -13101,14 +13101,22 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 			enableIrTable(false);
 		} break;
 
+
 		case GUI_CB_IR_CODE_COPY_FLAG: {
-			if (current_ir_gui_state != VIEW_IR_CODE || current_ir_code_id < 0) return;
+
+			if (current_ir_gui_state != VIEW_IR_CODE || current_ir_code_id < 0) 
+				return;
+			
 			new_ir_code_id = irCodesStorage.findFreeIndex();
+			
 			if (new_ir_code_id < 0) {
+				
 				ESPUI.updateLabel(ir_code_state_label, "IR codes storage is full!");
 				return;
 			}
-			if (!irCodesStorage.load(current_ir_code_id, ir_code)) return;
+
+			if (!irCodesStorage.load(current_ir_code_id, ir_code)) 
+				return;
 
 			current_ir_gui_state = COPY_IR_CODE;
 			enableIrCodeDetails(true);
@@ -13120,14 +13128,20 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 			enableIrTable(false);
 		} break;
 
-		case GUI_CB_IR_CODE_SAVE_FLAG: {
-			if (current_ir_gui_state == VIEW_IR_CODE) return;
 
-			const char *name_str = ESPUI.getControl(ir_code_name_text)->getValueCstr();
-			const char *b64_str = ESPUI.getControl(ir_code_base64_text)->getValueCstr();
+		case GUI_CB_IR_CODE_SAVE_FLAG: {
+
+			if (current_ir_gui_state == VIEW_IR_CODE) 
+				return;
+
+			const char *name_str = ESPUI.getControl(
+				ir_code_name_text)->getValueCstr();
+			const char *b64_str = ESPUI.getControl(
+				ir_code_base64_text)->getValueCstr();
 
 			if (strlen(name_str) == 0 || strlen(b64_str) == 0) {
-				ESPUI.updateLabel(ir_code_state_label, "Name and Base64 code are required!");
+				ESPUI.updateLabel(
+					ir_code_state_label, "Name and Base64 code are required!");
 				return;
 			}
 
@@ -13142,10 +13156,14 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 			int16_t target_slot = is_edit ? current_ir_code_id : new_ir_code_id;
 
 			if (irCodesStorage.save(target_slot, ir_code)) {
+				
 				current_ir_code_id = target_slot;
-				current_ir_code_counter = irCodesStorage.getCounter(current_ir_code_id);
+				current_ir_code_counter = irCodesStorage.getCounter(
+					current_ir_code_id);
 				ESPUI.updateLabel(ir_code_state_label, "IR code saved successfully!");
-			} else {
+			} 
+			else {
+				
 				ESPUI.updateLabel(ir_code_state_label, "Saving IR code FAILED!");
 			}
 
@@ -13153,15 +13171,18 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 			enableIrCodeDetails(false);
 
 			if (is_edit) {
-				addGUICommand(gui_cmd_edit_ir_codes_table, current_ir_code_counter - 1);
+				addGUICommand(
+					gui_cmd_edit_ir_codes_table, current_ir_code_counter - 1);
 			} else {
-				addGUICommand(gui_cmd_build_ir_codes_table, current_ir_code_counter - 1);
+				addGUICommand(
+					gui_cmd_build_ir_codes_table, current_ir_code_counter - 1);
 			}
 			updateIrCodeButtons();
 		} break;
 
+
 		case GUI_CB_IR_CODE_CANCEL_FLAG: {
-        // 1. If learning is active, cancel the learning state first
+        
         if (ir_code_learning_gui_active) {
           ir_code_learning_gui_active = false;
 
@@ -13177,7 +13198,6 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
           return;
         }
 
-        // 2. Otherwise, standard cancel for ADD / EDIT / COPY mode
         if ((current_ir_gui_state != NEW_IR_CODE) &&
             (current_ir_gui_state != EDIT_IR_CODE) &&
             (current_ir_gui_state != COPY_IR_CODE))
@@ -13190,7 +13210,9 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
         ESPUI.updateLabel(ir_code_state_label, "Changes cancelled!");
       } break;
 
+
 		case GUI_CB_IR_CODE_LEARN_FLAG: {
+
         if (current_ir_device_id < 0 || ir_code_learning_gui_active)
           return;
 
@@ -13218,7 +13240,8 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_IR_CODE_SEND_FLAG: {
 				
         if (current_ir_device_id < 0 || current_ir_code_id < 0) {
-          ESPUI.updateLabel(ir_code_state_label, "Select a device and an IR code first!");
+          ESPUI.updateLabel(
+						ir_code_state_label, "Select a device and an IR code first!");
           return;
         }
 
@@ -13230,7 +13253,8 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_IR_CODE_REMOVE_FLAG: {
 
         if (current_ir_code_id < 0) {
-          ESPUI.updateLabel(ir_code_state_label, "Select an IR code to delete first!");
+          ESPUI.updateLabel(
+						ir_code_state_label, "Select an IR code to delete first!");
           return;
         }
 

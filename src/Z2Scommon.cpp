@@ -1305,7 +1305,8 @@ bool Z2S_Device::hasTuyaCustomCluster() {
     case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
     case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR:
     case Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR:
-	case Z2S_DEVICE_DESC_TS0601_TRV_GTVZB:
+	  case Z2S_DEVICE_DESC_TS0601_TRV_GTVZB:
+    case Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL:
       return true;
     default:
       return false;
@@ -1319,9 +1320,14 @@ bool Z2S_Device::isIrRemote() {
   switch (getDeviceDescId()) {
 
     case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
+    case Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL:
+    case Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL:
+
       return true;
 
+
     default:
+
       return false;
   }
 }

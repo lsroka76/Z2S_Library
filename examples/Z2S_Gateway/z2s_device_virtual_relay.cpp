@@ -161,6 +161,8 @@ uint8_t getZ2SRelayFunctionId(uint32_t model_id, int8_t sub_id) {
 
 
     case Z2S_DEVICE_DESC_IR_REMOTE_CONTROL:
+    case Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL:
+    case Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL:
 
       z2s_function = Z2S_VIRTUAL_RELAY_FNC_IR_REMOTE_CONTROL;
     break;       

@@ -407,6 +407,9 @@
 #define Z2S_DEVICE_DESC_HVAC_END                            0x6499
 
 #define Z2S_DEVICE_DESC_IR_REMOTE_CONTROL                   0x6500
+#define Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL              0x6505
+#define Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL                0x6510
+
 #define Z2S_DEVICE_DESC_TUYA_SIREN_ALARM                    0x6600
 #define Z2S_DEVICE_DESC_MOES_ALARM                          0x6610
 
@@ -2878,6 +2881,16 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = 0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_VALVE,
     .z2s_device_clusters_count = 3,
@@ -6512,6 +6525,16 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZ3290_nba3knpsarkawgnt", .model_name = "TS1201",
     .z2s_device_uid = 25005,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3290_yyax9ajf", .model_name = "TS1201",
+    .z2s_device_uid = 25025,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-IR01",
+    .z2s_device_uid = 25050,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZ3210_ol1uhvza", .model_name = "TS130F",
