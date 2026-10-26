@@ -27,7 +27,7 @@ void Supla::Control::VirtualRelaySceneSwitch::onInit() {
     default: 
       turnOff(duration); break;
   }
-  initDone = true;
+  runtimeFlags.initDone = true;
 }
 
 void Supla::Control::VirtualRelaySceneSwitch::onSaveState() {
@@ -51,9 +51,9 @@ void Supla::Control::VirtualRelaySceneSwitch::turnOn(_supla_int_t duration) {
   if ( timeMs > getDebounceTimeMs()) {
 
     log_i("durationMs = %lu, storedTurnOnDurationMs = %lu, durationTimestamp = %lu, keepTurnOnDurationMs = %u",
-          durationMs, storedTurnOnDurationMs, durationTimestamp, keepTurnOnDurationMs);
+          durationMs, storedTurnOnDurationMs, durationTimestamp, runtimeFlags.keepTurnOnDurationMs);
 
-    if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction())
+    if (runtimeFlags.keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction())
       
       VirtualRelay::turnOn(storedTurnOnDurationMs);
 

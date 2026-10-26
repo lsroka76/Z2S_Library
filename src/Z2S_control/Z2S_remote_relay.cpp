@@ -32,7 +32,7 @@ Supla::Control::Z2S_RemoteRelay::Z2S_RemoteRelay(
 
 void Supla::Control::Z2S_RemoteRelay::onInit() {
   
-  initDone = true;
+  runtimeFlags.initDone = true;
 }
 
 bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
@@ -84,23 +84,7 @@ void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
       "Relay[%d] turn ON (duration %d ms)",channel.getChannelNumber(),
       duration);
 
-  durationMs = duration;
-  
-  if (minimumAllowedDurationMs > 0 && storedTurnOnDurationMs == 0) {
-    storedTurnOnDurationMs = durationMs;
-  }
-
-  if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction()) {
-    durationMs = storedTurnOnDurationMs;
-  }
-
-  if (durationMs != 0) {
-
-    durationTimestamp = millis();
-  } else {
-
-    durationTimestamp = 0;
-  }
+  applyDuration(duration, true);
 
   if (connectRemoteGateway()) {
 
@@ -131,15 +115,7 @@ void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
       "Relay[%d] turn OFF (duration %d ms)", channel.getChannelNumber(),
       duration);
   
-  durationMs = duration;
-  
-  if (durationMs != 0) {
-    
-    durationTimestamp = millis();
-  } else {
-    
-    durationTimestamp = 0;
-  }
+  applyDuration(duration, false);
 
   if (connectRemoteGateway()) {
 
@@ -255,7 +231,7 @@ void Supla::Control::Z2S_RemoteRelay::Z2S_setOnOff(bool on_off_state) {
         durationMs, 
         storedTurnOnDurationMs, 
         durationTimestamp, 
-        keepTurnOnDurationMs);
+        runtimeFlags.keepTurnOnDurationMs);
 
   if (state != on_off_state) {
 
@@ -265,7 +241,8 @@ void Supla::Control::Z2S_RemoteRelay::Z2S_setOnOff(bool on_off_state) {
        storedTurnOnDurationMs = durationMs;
       }
 
-      if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction()) {
+      if (runtimeFlags.keepTurnOnDurationMs || isStaircaseFunction() || 
+          isImpulseFunction()) {
         durationMs = storedTurnOnDurationMs;
       }
       if (durationMs != 0) {

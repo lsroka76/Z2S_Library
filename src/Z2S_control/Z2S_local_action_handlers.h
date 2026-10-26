@@ -287,7 +287,7 @@ class LocalHvac: public HvacBase, public Z2S_Core {
 
   public:
 
-    LocalHvac(int pin, bool highIsOn = true);
+    LocalHvac(int pin, bool highIsOn = true, int channelNumber = -1);
 
     virtual ~LocalHvac();
 
@@ -339,8 +339,10 @@ class LocalVirtualHvac: public HvacBase, public Z2S_Core {
   public:
     explicit LocalVirtualHvac(
       Supla::Control::OutputInterface *primaryOutput = nullptr,
-      Supla::Control::OutputInterface *secondaryOutput = nullptr)
-      : HvacBase(primaryOutput, secondaryOutput), Z2S_Core(this) {
+      Supla::Control::OutputInterface *secondaryOutput = nullptr,
+      int channelNumber = -1)
+      : HvacBase(primaryOutput, secondaryOutput, channelNumber), 
+      Z2S_Core(this) {
 }
 };
 }; //namespace Control

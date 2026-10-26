@@ -56,7 +56,7 @@ void Supla::Control::Z2S_VirtualRelay::onInit() {
   if (getTimeoutMs())
     channel.setStateOffline();
   
-  initDone = true;
+  runtimeFlags.initDone = true;
 }
 
 /*****************************************************************************/
@@ -67,23 +67,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOn(_supla_int_t duration) {
     "Relay[%d] turn ON (duration %d ms)", channel.getChannelNumber(), 
     duration);
 
-  durationMs = duration;
-  
-  if (minimumAllowedDurationMs > 0 && storedTurnOnDurationMs == 0) {
-    storedTurnOnDurationMs = durationMs;
-  }
-
-  if (keepTurnOnDurationMs || isStaircaseFunction() || isImpulseFunction()) {
-    durationMs = storedTurnOnDurationMs;
-  }
-
-  if (durationMs != 0) {
-
-    durationTimestamp = millis();
-  } else {
-
-    durationTimestamp = 0;
-  }
+  applyDuration(duration, true);
 
   if (Zigbee.started()) { 
     
@@ -402,15 +386,7 @@ void Supla::Control::Z2S_VirtualRelay::turnOff(_supla_int_t duration) {
       channel.getChannelNumber(),
       duration);
   
-  durationMs = duration;
-  
-  if (durationMs != 0) {
-    
-    durationTimestamp = millis();
-  } else {
-    
-    durationTimestamp = 0;
-  }
+  applyDuration(duration, false);
 
   if (Zigbee.started()) { 
     
@@ -868,31 +844,17 @@ void Supla::Control::Z2S_VirtualRelay::Z2S_setOnOff(bool on_off_state) {
   log_i("durationMs = %lu, storedTurnOnDurationMs = %lu, "
         "durationTimestamp = %lu, keepTurnOnDurationMs = %u",
         durationMs, storedTurnOnDurationMs, durationTimestamp, 
-        keepTurnOnDurationMs);
+        runtimeFlags.keepTurnOnDurationMs);
 
   if (state != on_off_state) {
 
     if (on_off_state) {
       
-      if (minimumAllowedDurationMs > 0 && storedTurnOnDurationMs == 0) {
-       storedTurnOnDurationMs = durationMs;
-      }
-
-      if (keepTurnOnDurationMs || isStaircaseFunction() || 
-          isImpulseFunction()) {
-        durationMs = storedTurnOnDurationMs;
-      }
-      if (durationMs != 0) {
-
-        durationTimestamp = millis();
-      } else {
-
-        durationTimestamp = 0;
-      }
-    } else {
+      applyDuration(durationMs, true);
+    } 
+    else {
       
-      durationMs = 0;
-      durationTimestamp = 0;
+      applyDuration(0, false);
     }
   }
   

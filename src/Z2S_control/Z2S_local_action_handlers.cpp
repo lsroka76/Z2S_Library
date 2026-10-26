@@ -714,8 +714,8 @@ void Supla::Control::LocalRelay::iterateAlways() {
 /*****************************************************************************/
 
 
-Supla::Control::LocalHvac::LocalHvac(int pin, bool highIsOn) 
-  : HvacBase(&_local_hvac_out_pin), Z2S_Core(this) {
+Supla::Control::LocalHvac::LocalHvac(int pin, bool highIsOn, int channelNumber) 
+  : HvacBase(&_local_hvac_out_pin, nullptr, channelNumber), Z2S_Core(this) {
 
   _local_hvac_out_pin.getIoPin()->setPin(pin);
   _local_hvac_out_pin.getIoPin()->setMode(OUTPUT);
@@ -787,7 +787,7 @@ Supla::Control::SwitchBotRelay::SwitchBotRelay(uint8_t device_type_id)
 
 void Supla::Control::SwitchBotRelay::onInit() {
 
-  initDone = true;
+  runtimeFlags.initDone = true;
 }
 
 /*****************************************************************************/

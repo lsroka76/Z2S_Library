@@ -1231,9 +1231,6 @@ void Supla::Control::Z2S_TRVInterface::sendHvacTemperatureSetpoint(
         temperature_setpoint) > 40) &&
         (_trv_hvac->getCurrentProgramId() != 0)) {
 
-      TWeeklyScheduleProgram program = _trv_hvac->getProgramById(
-        _trv_hvac->getCurrentProgramId());
-
       _trv_hvac->applyNewRuntimeSettings(
         SUPLA_HVAC_MODE_NOT_SET, temperature_setpoint, 0, 0);
         

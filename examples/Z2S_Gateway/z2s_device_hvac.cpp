@@ -335,11 +335,8 @@ void initZ2SDeviceHvacExt(
     Supla_Z2S_TRVInterface->setZ2SChannel(channel_index, _z2s_channel);
 
     Supla_Z2S_HvacBase = new Supla::Control::HvacBaseEE(
-      Supla_Z2S_TRVInterface);
-            
-    Supla_Z2S_HvacBase->getChannel()->setChannelNumber(
-      _z2s_channel->Supla_channel);
-
+      Supla_Z2S_TRVInterface, nullptr, _z2s_channel->Supla_channel);
+    
     Supla_Z2S_HvacBase->setMainThermometerChannelNo(
       _z2s_channel->Supla_secondary_channel);
 

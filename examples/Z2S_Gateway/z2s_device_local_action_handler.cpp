@@ -242,13 +242,15 @@ void initZ2SDeviceLocalActionHandler(
       }
       else {
 
+        uint8_t Supla_channel = _z2s_channel->Supla_channel;
+
         Supla_LocalHvac = new Supla::Control::LocalHvac(
           _z2s_channel->local_hvac_data.gpio_pin, 
-          _z2s_channel->local_hvac_data.high_is_on); 
+          _z2s_channel->local_hvac_data.high_is_on, Supla_channel); 
     
         Supla_LocalHvac->setZ2SChannel(channel_index, _z2s_channel);
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-        Supla_LocalHvac->getChannel()->setChannelNumber(Supla_channel);
+        
+        //Supla_LocalHvac->getChannel()->setChannelNumber(Supla_channel);
       }
       Supla_LocalHvac->enableDomesticHotWaterFunctionSupport();
     }
@@ -363,11 +365,11 @@ void initZ2SDeviceLocalActionHandler(
           new Supla::Control::VirtualOutputInterface();
 
         Supla_VirtualHvac = new Supla::Control::LocalVirtualHvac(
-          Supla_VirtualOutputInterface); 
+          Supla_VirtualOutputInterface, nullptr, Supla_channel); 
 
         Supla_VirtualHvac->setZ2SChannel(channel_index, _z2s_channel);
       
-        Supla_VirtualHvac->getChannel()->setChannelNumber(Supla_channel);
+        //Supla_VirtualHvac->getChannel()->setChannelNumber(Supla_channel);
 
         Supla_VirtualHvac->setInitialCaption(LOCAL_VIRTUAL_HVAC_NAME);
         Supla_VirtualHvac->setDefaultFunction(SUPLA_CHANNELFNC_HVAC_THERMOSTAT);

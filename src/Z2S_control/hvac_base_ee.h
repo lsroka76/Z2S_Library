@@ -12,7 +12,8 @@ namespace Supla
       public:
         explicit HvacBaseEE(
           Supla::Control::OutputInterface *primaryOutput = nullptr,
-          Supla::Control::OutputInterface *secondaryOutput = nullptr);
+          Supla::Control::OutputInterface *secondaryOutput = nullptr,
+          int channelNumber = -1);
         int32_t handleNewValueFromServer(
           TSD_SuplaChannelNewValue *newValue) override;  
         virtual ~HvacBaseEE();

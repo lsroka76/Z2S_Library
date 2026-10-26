@@ -22,8 +22,9 @@ using Supla::Control::HvacBaseEE;
 
 HvacBaseEE::HvacBaseEE(
   Supla::Control::OutputInterface *primaryOutput,
-  Supla::Control::OutputInterface *secondaryOutput) 
-    : HvacBase(primaryOutput, secondaryOutput), 
+  Supla::Control::OutputInterface *secondaryOutput,
+  int channelNumber) 
+    : HvacBase(primaryOutput, secondaryOutput, channelNumber), 
       primaryOutputEE(primaryOutput) {}
 
 HvacBaseEE::~HvacBaseEE() {}
