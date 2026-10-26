@@ -10,6 +10,11 @@ static uint32_t s_ota_image_size = 0;
 static uint32_t s_ota_image_file_version = 0;
 //static uint8_t s_ota_image_start[256];
 
+// Basic cluster attribute and device of the last gt_lock signal given by
+// zbReadBasicCluster().
+static uint16_t s_basic_attr_id = 0xFFFF;
+static uint16_t s_basic_short_addr = 0;
+
 esp_zb_zcl_ota_upgrade_server_variable_t ota_server_variable = {
     .query_jitter = OTA_UPGRADE_QUERY_JITTER,
     .current_time = OTA_UPGRADE_CURRENT_TIME,
@@ -664,6 +669,9 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
 
     log_i("Query basic cluster attribute 0x%x", *read_req.attr_field);
 
+    // drop a signal left by an earlier answer or report
+    xSemaphoreTake(gt_lock, 0);
+
     esp_zb_lock_acquire(portMAX_DELAY);
     uint8_t basic_tsn = esp_zb_zcl_read_attr_cmd_req(&read_req);
     esp_zb_lock_release();
@@ -678,8 +686,27 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
           ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID ))
       wait_ticks = 6000;          
 
-    //Wait for response or timeout
-    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(wait_ticks)/*ZB_CMD_TIMEOUT*/) != pdTRUE) {
+    //Wait for response or timeout - other devices report Basic cluster
+    //attributes too and a sleepy device answers late, so wait for this
+    //attribute of this device
+    uint32_t wait_start_ms = millis();
+    bool answered = false;
+
+    while (!answered) {
+
+      uint32_t waited_ms = millis() - wait_start_ms;
+
+      if ((waited_ms >= wait_ticks) ||
+          (xSemaphoreTake(
+             gt_lock, pdMS_TO_TICKS(wait_ticks - waited_ms)) != pdTRUE))
+        break;
+
+      answered = (s_basic_attr_id == attributes[attribute_number]) &&
+                 ((device->short_addr == 0) ||
+                  (s_basic_short_addr == device->short_addr));
+    }
+
+    if (!answered) {
 
       log_e(
         "Error while querying basic cluster attribute 0x%x", 
@@ -727,6 +754,12 @@ void ZigbeeGateway::zbReadBasicCluster(
   esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
   esp_zb_zcl_attribute_t *attribute) {
 
+  auto give_lock = [&]() {
+    s_basic_attr_id = attribute->id;
+    s_basic_short_addr = src_address.u.short_addr;
+    xSemaphoreGive(gt_lock);
+  };
+
   /* Basic cluster attributes */
   if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) &&
        (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
@@ -737,7 +770,7 @@ void ZigbeeGateway::zbReadBasicCluster(
     memcpy(_last_device_query.zcl_manufacturer_name, zbstr->data, zbstr->len);
     _last_device_query.zcl_manufacturer_name[zbstr->len] = '\0';
     log_i("Peer Manufacturer is \"%s\"", _last_device_query.zcl_manufacturer_name);
-    xSemaphoreGive(gt_lock);
+    give_lock();
   } else
   if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID) &&
       (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
@@ -747,7 +780,7 @@ void ZigbeeGateway::zbReadBasicCluster(
     memcpy(_last_device_query.zcl_model_name, zbstr->data, zbstr->len);
     _last_device_query.zcl_model_name[zbstr->len] = '\0';
     log_i("Peer Model is \"%s\"", _last_device_query.zcl_model_name);
-    xSemaphoreGive(gt_lock);
+    give_lock();
   } else
   if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID) && 
       (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
@@ -757,7 +790,7 @@ void ZigbeeGateway::zbReadBasicCluster(
     memcpy(_last_device_query.software_build_ID, zbstr->data, zbstr->len);
     _last_device_query.software_build_ID[zbstr->len] = '\0';
     log_i("Device firmware build is \"%s\"", _last_device_query.software_build_ID);
-    xSemaphoreGive(gt_lock);
+    give_lock();
   } else
   if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID) && 
       (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) && 
@@ -765,7 +798,7 @@ void ZigbeeGateway::zbReadBasicCluster(
    
     _last_device_query.zcl_version_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL version id is \"%d\"", _last_device_query.zcl_version_id);
-    xSemaphoreGive(gt_lock);
+    give_lock();
   } else
   if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID) &&
       (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) && 
@@ -773,7 +806,7 @@ void ZigbeeGateway::zbReadBasicCluster(
    
     _last_device_query.zcl_application_version_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL application version id is \"%d\"", _last_device_query.zcl_application_version_id);
-    xSemaphoreGive(gt_lock);
+    give_lock();
   } else
   if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID) && 
       (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) && 
@@ -781,13 +814,13 @@ void ZigbeeGateway::zbReadBasicCluster(
    
     _last_device_query.zcl_power_source_id = *((uint8_t*)attribute->data.value);
     log_i("ZCL power source id is \"%d\"", _last_device_query.zcl_power_source_id);
-    xSemaphoreGive(gt_lock);
+    give_lock();
   } else
   if (attribute->id == 0xFFFE) { // && attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8 && attribute->data.value) {
     log_i("Attribute 0xFFFE, data type 0x%x", attribute->data.type);
     //_last_device_query.zcl_power_source_id = *((uint8_t*)attribute->data.value);
     //log_i("ZCL power source id is \"%d\"", _last_device_query.zcl_power_source_id;
-    xSemaphoreGive(gt_lock);
+    give_lock();
   } else {
 
     //uint16_t short_addr = src_address.u.short_addr;
