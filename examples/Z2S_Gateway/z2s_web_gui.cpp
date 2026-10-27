@@ -261,7 +261,22 @@ uint16_t sb_json_payload_text;
 uint16_t sb_json_payload_2_text;
 uint16_t sb_status_label;
 
-uint16_t pushover_message_first_button;
+uint16_t pushover_api_token_text;
+uint16_t pushover_user_token_text;
+uint16_t pushover_messages_table_label = 0xFFFF;
+uint16_t pushover_message_details_label;
+uint16_t pushover_message_name_text;
+uint16_t pushover_message_text_text;
+
+uint16_t pushover_message_save_button;
+uint16_t pushover_message_cancel_button;
+uint16_t pushover_message_edit_button;
+uint16_t pushover_message_new_button;
+uint16_t pushover_message_copy_button;
+uint16_t pushover_message_remove_button;
+uint16_t pushover_message_state_label;
+
+/*uint16_t pushover_message_first_button;
 uint16_t pushover_message_next_button;
 uint16_t pushover_message_prev_button;
 uint16_t pushover_message_last_button;
@@ -273,7 +288,7 @@ uint16_t pushover_message_edit_button;
 uint16_t pushover_message_new_button;
 uint16_t pushover_message_copy_button;
 uint16_t pushover_message_remove_button;
-uint16_t pushover_message_state_label;
+uint16_t pushover_message_state_label;*/
 
 uint16_t ir_device_selector = 0xFFFF;
 uint16_t ir_device_info_label;
@@ -830,16 +845,19 @@ function updateActionTable(data) {
   const targetLabel = document.getElementById(data.target);
   if (!targetLabel) return;
 
-	const isIr = Boolean(data.is_ir);
-	const colSpan = isIr ? 3 : 5;
-	const emptyMsg = isIr ? "No IR codes saved for this device" : "No actions available";
+  const isIr = Boolean(data.is_ir);
+  const isPo = Boolean(data.is_po);
+  const colSpan = (isIr || isPo) ? 3 : 5;
+  const emptyMsg = isIr
+    ? "No IR codes saved for this device"
+    : (isPo ? "No Pushover messages available" : "No actions available");
 
   let rowsHtml = "";
 
   // 1. Handle Empty Table State vs Row Building
   if (!data.d || data.d.length === 0) {
     rowsHtml = `<tr>
-      <td colspan="5" style="text-align: center; padding: 16px; color: #6c757d; font-style: italic;">`
+      <td colspan="${colSpan}" style="text-align: center; padding: 16px; color: #6c757d; font-style: italic;">`
         + emptyMsg +
       `</td>
     </tr>`;
@@ -882,11 +900,10 @@ function updateActionTable(data) {
       #${data.target} th, #${data.target} td {
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
-      /* Base container styling with fixed height & scroll containment */
       /* Container supporting dual vertical and horizontal scrolling */
       #${data.target} div[tabindex="0"] {
         height: 210px;
-        overflow: auto; /* Enables horizontal scrollbar when width < 720px */
+        overflow: auto;
         overscroll-behavior: contain;
         margin-top: 8px; 
         border: 1px solid rgba(128, 128, 128, 0.25);
@@ -898,7 +915,7 @@ function updateActionTable(data) {
       /* Compact Slim Scrollbars for WebKit browsers */
       #${data.target} div[tabindex="0"]::-webkit-scrollbar {
         width: 6px;
-        height: 6px; /* Horizontal scrollbar height */
+        height: 6px;
       }
       #${data.target} div[tabindex="0"]::-webkit-scrollbar-track {
         background: rgba(128, 128, 128, 0.1);
@@ -912,12 +929,11 @@ function updateActionTable(data) {
         background: rgba(128, 128, 128, 0.55);
       }
 
-      /* Keyboard focus glow state (kept intact) */
+      /* Keyboard focus glow state */
       #${data.target} div[tabindex="0"]:focus {
         border-color: #80bdff !important;
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
         outline: none !important;
-      }
       }
       #${data.target} .table-footer-hints {
         display: flex !important;
@@ -931,7 +947,7 @@ function updateActionTable(data) {
         border-bottom-left-radius: 6px !important;
         border-bottom-right-radius: 6px !important;
         padding: 5px 10px !important;
-        font-size: 10px !important; /* Overrides ESPUI's ~14px body font on plain text */
+        font-size: 10px !important;
         line-height: 1 !important;
         color: #cbd5e1 !important;
         user-select: none !important;
@@ -942,7 +958,7 @@ function updateActionTable(data) {
         display: inline-flex !important;
         align-items: center !important;
         gap: 4px !important;
-        font-size: 10px !important; /* Strictly enforces 10px on text nodes like "Navigate" */
+        font-size: 10px !important;
         line-height: 1 !important;
       }
 
@@ -963,15 +979,15 @@ function updateActionTable(data) {
         line-height: 1 !important;
         height: 16px !important;
       }
-			/* Disabled Overlay & Input Lock */
+      /* Disabled Overlay & Input Lock */
       #${data.target} div.table-disabled {
-        pointer-events: none !important;   /* Blocks mouse clicks, hover, and wheel scrolling */
-        overflow-y: hidden !important;     /* Locks scrollbar in place */
-        opacity: 0.5 !important;           /* Visual disabled state */
+        pointer-events: none !important;
+        overflow-y: hidden !important;
+        opacity: 0.5 !important;
         filter: grayscale(50%);
         user-select: none;
       }
-			/* Status Badge Styles */
+      /* Status Badge Styles */
       #${data.target} .table-status-badge {
         display: inline-block;
         padding: 2px 8px;
@@ -994,15 +1010,19 @@ function updateActionTable(data) {
       }
     </style>`;
 
-		const headerHtml = isIr
-  	? "<th style='padding: 6px; width: 80px; min-width: 80px;'>ID (sid)</th>" +
-    	"<th style='padding: 6px; width: 220px; min-width: 180px;'>Command Name</th>" +
-    	"<th style='padding: 6px; width: 420px; min-width: 260px;'>IR Code (Base64)</th>"
-  	: "<th style='padding: 6px; width: 130px; min-width: 130px;'>Name (enabled)</th>" +
-    	"<th style='padding: 6px; width: 150px; min-width: 150px;'>Supla event</th>" +
-    	"<th style='padding: 6px; width: 150px; min-width: 150px;'>Source channel</th>" +
-    	"<th style='padding: 6px; width: 140px; min-width: 140px;'>Supla action</th>" +
-    	"<th style='padding: 6px; width: 150px; min-width: 150px;'>Destination channel</th>";
+    const headerHtml = isIr
+      ? "<th style='padding: 6px; width: 80px; min-width: 80px;'>ID (sid)</th>" +
+        "<th style='padding: 6px; width: 220px; min-width: 180px;'>Command Name</th>" +
+        "<th style='padding: 6px; width: 420px; min-width: 260px;'>IR Code (Base64)</th>"
+      : isPo
+      ? "<th style='padding: 6px; width: 80px; min-width: 80px;'>ID (sid)</th>" +
+        "<th style='padding: 6px; width: 220px; min-width: 180px;'>Message Name</th>" +
+        "<th style='padding: 6px; width: 420px; min-width: 260px;'>Message Text</th>"
+      : "<th style='padding: 6px; width: 130px; min-width: 130px;'>Name (enabled)</th>" +
+        "<th style='padding: 6px; width: 150px; min-width: 150px;'>Supla event</th>" +
+        "<th style='padding: 6px; width: 150px; min-width: 150px;'>Source channel</th>" +
+        "<th style='padding: 6px; width: 140px; min-width: 140px;'>Supla action</th>" +
+        "<th style='padding: 6px; width: 150px; min-width: 150px;'>Destination channel</th>";
 
     // Scrollable Table Container with Horizontal & Vertical Scroll
     html += "<div tabindex='0' style='height: 210px; margin-top: 8px; overflow: auto; overscroll-behavior: contain; border: 1px solid rgba(128,128,128,0.25); border-top-left-radius: 6px; border-top-right-radius: 6px;'>" +
@@ -1011,7 +1031,6 @@ function updateActionTable(data) {
        headerHtml +
       "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>";
 
-    // 5. Footer Hotkey Legend
     // Footer Bar with Hotkey Legend + Status Badge
     html += `<div class="table-footer-hints">
       <span><span class="table-status-badge badge-active">Active</span></span>
@@ -1037,10 +1056,9 @@ function updateActionTable(data) {
         // 1. Visual highlight
         highlightActionRow({ target: data.target, s: actionIndex }, shouldScroll);
 
-        // Trigger custom callback to send this index back to the ESP32
-      
-        sendActionClickToESP32(isIr ? (actionIndex | 0x4000) : actionIndex);
-        
+        // 2. Trigger custom callback to send this index back to the ESP32
+        const clickMask = isIr ? 0x4000 : (isPo ? 0x2000 : 0);
+        sendActionClickToESP32(actionIndex | clickMask);
       };
 
       // 1. Mouse Click Listener
@@ -1049,7 +1067,7 @@ function updateActionTable(data) {
         if (!clickedRow) return;
 
         container.focus();
-        activateRow(clickedRow, false); // Mouse click: do not scroll jump
+        activateRow(clickedRow, false);
       });
 
       // 2. Keyboard Navigation Listener
@@ -1067,7 +1085,6 @@ function updateActionTable(data) {
           }
         });
 
-        // Pressing Enter or Space triggers an explicit row click
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           rows[currentIndex].click();
@@ -1090,8 +1107,8 @@ function updateActionTable(data) {
         }
 
         if (nextIndex !== currentIndex) {
-          e.preventDefault(); // Prevent standard page viewport scrolling
-          activateRow(rows[nextIndex], true); // Keyboard move: auto-scroll to view
+          e.preventDefault();
+          activateRow(rows[nextIndex], true);
         }
       });
     }
@@ -1417,6 +1434,7 @@ void addLocalChannelCallback(
 void addSwitchbotCallback(BasicControl *sender, int type, void *param);
 void saveSwitchbotCallback(BasicControl *sender, int type, void *param);
 void pushoverMessagesCallback(BasicControl *sender, int type, void *param);
+void pushoverMessagesCallbackMain(int32_t flag);
 void hiddenNumberCallback(BasicControl *sender, int type, void *param);
 
 void enableControlStyle(uint16_t control_id, bool enable);
@@ -1441,6 +1459,12 @@ void irDeviceSelectorCmd(int32_t device_slot);
 
 static bool appendEscapedJsonString(
   char *buf, size_t bufSize, size_t &offset, const char *str);
+
+void buildPushoverMessagesTableJsonPayload(
+  uint16_t ui_label_id, int target_message_index);
+void enablePushoverTable(bool enable);
+void updatePushoverMessageButtons();
+void sendPushoverMessageRowEdit(uint16_t ui_label_id, int target_row_index);
 
 /*****************************************************************************/
 
@@ -1939,20 +1963,10 @@ void buildGatewayTabGUI() {
 	  Control::Type::Tab, empty_str, "Gateway", Control::Color::Dark,
 	  Control::noParent, generalCallback);
 
-	/*gui_cmd_hidden_label = ESPUI.addControl(
-	  Control::Type::Label, empty_str, empty_str, Control::Color::Dark,
-	  gatewaytab);*/
-
 	gui_cmd_hidden_response_number = ESPUI.addControl(
 	  Control::Type::Number, empty_str, (long int)0,
 	  Control::Color::Dark, gatewaytab, hiddenNumberCallback);
 
-	/*log_i(
-	  "gui_cmd_hidden_label = %u, gui_cmd_hidden_response_number = %u",
-	  gui_cmd_hidden_label, gui_cmd_hidden_response_number);*/
-
-	//ESPUI.updateVisibility(gui_cmd_hidden_label, false);
-	//ESPUI.updateVisibility(gui_cmd_hidden_response_number, false);
 	ESPUI.setPanelStyle(gui_cmd_hidden_response_number, "display: none;");
 
 	ESPUI.addControl(
@@ -6686,6 +6700,8 @@ void Z2S_loopWebGUI() {
 				sortTuyaDatapointsSelectorsMain();
 				buildActionsTableJsonPayload(actions_table_label_2, 0);
 				buildIrCodesTableJsonPayload(ir_codes_table_label, 0);
+				buildPushoverMessagesTableJsonPayload(
+				  pushover_messages_table_label, 0);
 			} break;
 
 
@@ -7338,6 +7354,33 @@ void Z2S_loopWebGUI() {
           ESPUI.updateLabel(ir_code_state_label, "Failed to delete IR code!");
         }
 			} break;
+
+
+			case gui_cmd_pushover_message_callback: {
+
+				pushoverMessagesCallbackMain(
+				  pending_gui_command->gui_command_value);
+			} break;
+
+
+			case gui_cmd_build_pushover_messages_table: {
+
+				buildPushoverMessagesTableJsonPayload(
+				  pushover_messages_table_label,
+				  pending_gui_command->gui_command_value);
+				enablePushoverTable(true);
+				updatePushoverMessageButtons();
+			} break;
+
+
+			case gui_cmd_edit_pushover_messages_table: {
+
+				sendPushoverMessageRowEdit(
+				  pushover_messages_table_label,
+				  pending_gui_command->gui_command_value);
+				enablePushoverTable(true);
+				updatePushoverMessageButtons();
+			} break;
 		}
 		pending_gui_command->in_use = false;
 	}
@@ -7414,11 +7457,24 @@ void hiddenNumberCallback(BasicControl *sender, int type, void *param) {
 	if (raw_val & 0x4000) {
 		uint16_t row_idx = raw_val & 0x3FFF;
 		current_ir_code_id = irCodesStorage.getPosition(row_idx + 1);
-		current_ir_code_counter = irCodesStorage.getCounter(current_ir_code_id);
+		current_ir_code_counter = irCodesStorage.getCounter(
+			current_ir_code_id);
 
 		log_i(
 			"current_ir_code_id %d, current_ir_code_counter %d",
 			current_ir_code_id, current_ir_code_counter);
+		return;
+	}
+
+	if (raw_val & 0x2000) {
+		uint16_t row_idx = raw_val & 0x1FFF;
+		current_message_id = Z2S_getPushoverMessagePosition(row_idx + 1);
+		current_message_counter = Z2S_getPushoverMessageCounter(
+			current_message_id);
+
+		log_i(
+			"current_message_id %d, current_message_counter %d",
+			current_message_id, current_message_counter);
 		return;
 	}
 
@@ -12299,16 +12355,17 @@ void saveSwitchbotCallback(BasicControl *sender, int type, void *param) {
 /*****************************************************************************/
 /*****************************************************************************/
 
-static uint16_t pushover_tab;
+/*static uint16_t pushover_tab;
 static uint16_t pushover_api_token_text;
 static uint16_t pushover_user_token_text;
 static uint16_t pushover_message_name_text;
 static uint16_t pushover_message_body_text;
 static uint16_t pushover_message_counter_label;
-char pushover_message_counter[16];
+char pushover_message_counter[16];*/
+
 
 /*****************************************************************************/
-
+/*
 void updatePushoverMessageCounter() {
 
 	if (Z2S_getPushoverMessagesNumber() > 0)
@@ -12320,9 +12377,9 @@ void updatePushoverMessageCounter() {
 		  pushover_message_counter, 16, "No Pushover messages");
 	ESPUI.updateLabel(pushover_message_counter_label, pushover_message_counter);
 }
-
+*/
 /*****************************************************************************/
-
+/*
 void enablePushoverMessageDetails(bool enable) {
 
 	if (!enable) {
@@ -12331,9 +12388,9 @@ void enablePushoverMessageDetails(bool enable) {
 	enableControlStyle(pushover_message_name_text, enable);
 	enableControlStyle(pushover_message_body_text, enable);
 }
-
+*/
 /*****************************************************************************/
-
+/*
 void enablePushoverMessageControls(bool enable) {
 
 	enableControlStyle(pushover_message_first_button, enable);
@@ -12341,9 +12398,9 @@ void enablePushoverMessageControls(bool enable) {
 	enableControlStyle(pushover_message_prev_button, enable);
 	enableControlStyle(pushover_message_last_button, enable);
 }
-
+*/
 /*****************************************************************************/
-
+/*
 void updatePushoverMessageButtons() {
 
 	bool pushover_message_save_button_enable;
@@ -12430,9 +12487,9 @@ void updatePushoverMessageButtons() {
 
 	updatePushoverMessageCounter();
 }
-
+*/
 /*****************************************************************************/
-
+/*
 void updatePushoverMessageDetails(
   z2s_pushover_message_t &message, bool empty_message = false) {
 
@@ -12460,9 +12517,9 @@ void updatePushoverMessageDetails(
 	working_str = empty_message ? empty_str : message.pushover_message_text;
 	ESPUI.updateText(pushover_message_body_text, working_str);
 }
-
+*/
 /*****************************************************************************/
-
+/*
 bool fillPushoverMessageDetails(z2s_pushover_message_t &message) {
 
 	const char *pushover_message_name_str = ESPUI.getControl(
@@ -12509,9 +12566,9 @@ bool fillPushoverMessageDetails(z2s_pushover_message_t &message) {
 
 	return true;
 }
-
+*/
 /*****************************************************************************/
-
+/*
 void pushoverMessagesCallback(BasicControl *sender, int type, void *param) {
 
 	if (type == B_UP) {
@@ -12794,14 +12851,14 @@ void pushoverMessagesCallback(BasicControl *sender, int type, void *param) {
 		}
 	}
 }
-
+*/
 /*****************************************************************************/
-
+/*
 void addPushoverMessageCallback(BasicControl *sender, int type, void *param) {
 }
 
 /*****************************************************************************/
-
+/*
 void buildPushoverTabGUI() {
 
 	//char general_purpose_gui_buffer[768] = {};
@@ -12949,7 +13006,7 @@ void buildPushoverTabGUI() {
 	enablePushoverMessageDetails(false);
 	updatePushoverMessageButtons();
 }
-
+*/
 /*****************************************************************************/
 /*****************************************************************************/
 
@@ -13270,6 +13327,549 @@ void GUI_onIrCodeLearned() {
 
 	if (GUIstarted)
 		addGUICommand(gui_cmd_ir_code_learned);
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************/
+
+void addPushoverMessagesTableJsonRow(
+  char *buffer, size_t max_size, size_t &offset, int16_t slot_id,
+  z2s_pushover_message_t &message, bool is_first) {
+
+  char preview_buf[68] = {};
+  size_t text_len = strlen(message.pushover_message_text);
+  size_t copy_len = (text_len > 60)
+                      ? mbstrnlen(message.pushover_message_text, 60)
+                      : text_len;
+
+  memcpy(preview_buf, message.pushover_message_text, copy_len);
+  preview_buf[copy_len] = '\0';
+  if (text_len > copy_len) {
+    strcat(preview_buf, "...");
+  }
+
+  appendToBuffer(
+    buffer, max_size, offset,
+    "%s[\"#%03d\",\"", is_first ? "" : ",", slot_id);
+  appendEscapedJsonString(
+    buffer, max_size, offset, message.pushover_message_name);
+  appendToBuffer(buffer, max_size, offset, "\",\"");
+  appendEscapedJsonString(buffer, max_size, offset, preview_buf);
+  appendToBuffer(buffer, max_size, offset, "\"]");
+}
+
+/*****************************************************************************/
+
+void buildPushoverMessagesTableJsonPayload(
+  uint16_t ui_label_id, int target_message_index) {
+
+  if (ui_label_id == 0xFFFF) return;
+
+  const size_t MAX_JSON_SIZE = 2048;
+  char json_payload[MAX_JSON_SIZE] = {};
+  const int BATCH_SIZE = 10;
+  size_t offset = 0;
+
+  int total_messages = Z2S_getPushoverMessagesNumber();
+
+  if (total_messages == 0) {
+    current_message_id = -1;
+    current_message_counter = -1;
+    snprintf(
+      json_payload, MAX_JSON_SIZE,
+      "{\"type\":\"update_action_table\",\"is_po\":true,\"target\":\"id%d\","
+      "\"s\":-1,\"append\":false,\"start_idx\":0,\"d\":[]}",
+      ui_label_id);
+    ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    return;
+  }
+
+  int16_t next_slot = Z2S_findNextPushoverMessagePosition(0);
+  z2s_pushover_message_t message = {};
+
+  for (int i = 0; i < total_messages; i++) {
+    if (i % BATCH_SIZE == 0) {
+      offset = 0;
+      bool is_appending = (i > 0);
+      appendToBuffer(
+        json_payload, MAX_JSON_SIZE, offset,
+        "{\"type\":\"update_action_table\",\"is_po\":true,\"target\":\"id%d\","
+        "\"s\":%d,\"append\":%s,\"start_idx\":%d,\"d\":[",
+        ui_label_id, target_message_index, is_appending ? "true" : "false", i);
+    }
+
+    bool is_first_in_batch = (i % BATCH_SIZE == 0);
+    Z2S_loadPushoverMessage(next_slot, message);
+
+    addPushoverMessagesTableJsonRow(
+      json_payload, MAX_JSON_SIZE, offset, next_slot, message,
+      is_first_in_batch);
+
+    next_slot = Z2S_findNextPushoverMessagePosition(next_slot + 1);
+
+    if (((i + 1) % BATCH_SIZE == 0) || (i == total_messages - 1)) {
+      appendToBuffer(json_payload, MAX_JSON_SIZE, offset, "]}");
+      ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    }
+  }
+}
+
+/*****************************************************************************/
+
+void sendPushoverMessageRowEdit(uint16_t ui_label_id, int target_row_index) {
+
+  if (ui_label_id == 0xFFFF) return;
+
+  char json_payload[512] = {};
+  size_t offset = 0;
+
+  appendToBuffer(
+    json_payload, sizeof(json_payload), offset,
+    "{\"type\":\"edit_action_row\",\"target\":\"id%d\",\"idx\":%d,\"d\":",
+    ui_label_id, target_row_index);
+
+  z2s_pushover_message_t message = {};
+  Z2S_loadPushoverMessage(current_message_id, message);
+
+  addPushoverMessagesTableJsonRow(
+    json_payload, sizeof(json_payload), offset, current_message_id, message,
+    true);
+
+  appendToBuffer(json_payload, sizeof(json_payload), offset, "}");
+  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
+
+/*****************************************************************************/
+
+void enablePushoverTable(bool enable) {
+
+  if (pushover_messages_table_label == 0xFFFF) return;
+
+  char json_payload[256];
+  snprintf(
+    json_payload, sizeof(json_payload),
+    "{\"type\":\"EXEC_JS\",\"code\":\" setTableDisabled('id%u', %s); \"}",
+    pushover_messages_table_label, enable ? "false" : "true");
+  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+}
+
+/*****************************************************************************/
+
+void enablePushoverMessageDetails(bool enable) {
+
+  if (!enable) {
+    working_str = empty_str;
+    ESPUI.updateText(pushover_message_name_text, working_str);
+    ESPUI.updateText(pushover_message_text_text, working_str);
+  }
+  enableControlStyle(pushover_message_details_label, enable);
+  enableControlStyle(pushover_message_name_text, enable);
+  enableControlStyle(pushover_message_text_text, enable);
+}
+
+/*****************************************************************************/
+
+void updatePushoverMessageButtons() {
+
+  bool has_selected_msg = (current_message_id >= 0);
+  bool is_viewing =
+    (current_pushover_message_gui_state == VIEW_PUSHOVER_MESSAGE);
+
+  enableControlStyle(pushover_message_new_button, is_viewing);
+  enableControlStyle(
+    pushover_message_edit_button, is_viewing && has_selected_msg);
+  enableControlStyle(
+    pushover_message_copy_button, is_viewing && has_selected_msg);
+  enableControlStyle(
+    pushover_message_remove_button, is_viewing && has_selected_msg);
+
+  enableControlStyle(pushover_message_save_button, !is_viewing);
+  enableControlStyle(pushover_message_cancel_button, !is_viewing);
+}
+
+/*****************************************************************************/
+
+void updatePushoverMessageDetails(
+  z2s_pushover_message_t &message, bool empty_message = false) {
+
+  if (current_pushover_message_gui_state == VIEW_PUSHOVER_MESSAGE) {
+    if (previous_pushover_message_gui_state != VIEW_PUSHOVER_MESSAGE)
+      enablePushoverMessageDetails(false);
+    return;
+  }
+
+  working_str = empty_message ? empty_str : message.pushover_message_name;
+  ESPUI.updateText(pushover_message_name_text, working_str);
+
+  working_str = empty_message ? empty_str : message.pushover_message_text;
+  ESPUI.updateText(pushover_message_text_text, working_str);
+}
+
+/*****************************************************************************/
+
+bool fillPushoverMessageDetails(z2s_pushover_message_t &message) {
+
+  const char *name_str =
+    ESPUI.getControl(pushover_message_name_text)->getValueCstr();
+  const char *text_str =
+    ESPUI.getControl(pushover_message_text_text)->getValueCstr();
+
+  if (!name_str || strlen(name_str) == 0 || !text_str || strlen(text_str) == 0)
+    return false;
+
+  size_t name_size = mbstrnlen(name_str, PUSHOVER_MESSAGE_NAME_MAX_SIZE - 1);
+  strncpy(message.pushover_message_name, name_str, name_size);
+  message.pushover_message_name[name_size] = '\0';
+
+  size_t text_size = mbstrnlen(text_str, PUSHOVER_MESSAGE_TEXT_MAX_SIZE - 1);
+  strncpy(message.pushover_message_text, text_str, text_size);
+  message.pushover_message_text[text_size] = '\0';
+
+  return true;
+}
+
+/*****************************************************************************/
+
+void buildPushoverTabGUI() {
+
+  int16_t first_message = Z2S_findNextPushoverMessagePosition(0);
+  if (first_message >= 0) {
+    current_message_id = first_message;
+    current_message_counter = Z2S_getPushoverMessageCounter(first_message);
+  }
+
+  auto pushover_tab = ESPUI.addControl(
+    Control::Type::Tab, empty_str, "Pushover",
+    Control::Color::Dark, Control::noParent);
+
+  // Panel 1: Pushover API Credentials
+  auto pushover_credentials_label = ESPUI.addControl(
+    Control::Type::Label, "Pushover credentials", empty_str,
+    Control::Color::Dark, pushover_tab);
+  ESPUI.setElementStyle(pushover_credentials_label, clearLabelStyle);
+
+  pushover_api_token_text = ESPUI.addControl(
+    Control::Type::Text, "Application API token (30 characters)", emptyString,
+    Control::Color::Dark, pushover_credentials_label, generalCallback);
+  ESPUI.getControl(pushover_api_token_text)->reserve(31);
+  ESPUI.setElementStyle(
+    pushover_api_token_text,
+    "width: calc(40% - 10px); min-width: 220px; margin: 0 5px 10px 5px;");
+
+  pushover_user_token_text = ESPUI.addControl(
+    Control::Type::Text, "User key (30 characters)", emptyString,
+    Control::Color::Dark, pushover_credentials_label, generalCallback);
+  ESPUI.getControl(pushover_user_token_text)->reserve(31);
+  ESPUI.setElementStyle(
+    pushover_user_token_text,
+    "width: calc(40% - 10px); min-width: 220px; margin: 0 5px 10px 5px;");
+
+  auto pushover_save_data_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "Save",
+    Control::Color::Dark, pushover_credentials_label, pushoverMessagesCallback,
+    (void *)GUI_CB_PUSHOVER_SAVE_DATA_FLAG);
+  ESPUI.setElementStyle(
+    pushover_save_data_button,
+    "width: calc(20% - 10px); min-width: 80px; margin: 0 5px 10px 5px;");
+
+  ESPUI.setPanelWide(pushover_credentials_label, true);
+
+  char token_buf[31] = {};
+  Z2S_GatewayPreferences.getString(
+    "PUSHOVER_API", token_buf, sizeof(token_buf));
+  working_str = token_buf;
+  ESPUI.updateText(pushover_api_token_text, working_str);
+
+  memset(token_buf, 0, sizeof(token_buf));
+  Z2S_GatewayPreferences.getString(
+    "PUSHOVER_USER", token_buf, sizeof(token_buf));
+  working_str = token_buf;
+  ESPUI.updateText(pushover_user_token_text, working_str);
+
+  // Panel 2: Pushover Messages Table
+  pushover_messages_table_label = ESPUI.addControl(
+    Control::Type::Label, "Pushover messages table", empty_str,
+    Control::Color::Dark, pushover_tab);
+  ESPUI.setPanelWide(pushover_messages_table_label, true);
+
+  // Panel 3: Pushover Management Buttons
+  pushover_message_new_button = ESPUI.addControl(
+    Control::Type::Button, "Pushover messages management", "NEW MESSAGE",
+    Control::Color::Dark, pushover_tab, pushoverMessagesCallback,
+    (void *)GUI_CB_PUSHOVER_MESSAGE_NEW_FLAG);
+
+  pushover_message_edit_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "EDIT MESSAGE",
+    Control::Color::Dark, pushover_message_new_button, pushoverMessagesCallback,
+    (void *)GUI_CB_PUSHOVER_MESSAGE_EDIT_FLAG);
+
+  pushover_message_copy_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "COPY MESSAGE",
+    Control::Color::Dark, pushover_message_new_button, pushoverMessagesCallback,
+    (void *)GUI_CB_PUSHOVER_MESSAGE_COPY_FLAG);
+
+  pushover_message_save_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "SAVE MESSAGE",
+    Control::Color::Dark, pushover_message_new_button, pushoverMessagesCallback,
+    (void *)GUI_CB_PUSHOVER_MESSAGE_SAVE_FLAG);
+
+  pushover_message_cancel_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "CANCEL CHANGES",
+    Control::Color::Dark, pushover_message_new_button, pushoverMessagesCallback,
+    (void *)GUI_CB_PUSHOVER_MESSAGE_CANCEL_FLAG);
+
+  pushover_message_remove_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "DELETE MESSAGE",
+    Control::Color::Alizarin, pushover_message_new_button,
+    pushoverMessagesCallback, (void *)GUI_CB_PUSHOVER_MESSAGE_REMOVE_FLAG);
+
+  pushover_message_state_label = ESPUI.addControl(
+    Control::Type::Label, empty_str, three_dots_str,
+    Control::Color::Dark, pushover_message_new_button);
+
+  ESPUI.setPanelWide(pushover_message_new_button, true);
+
+  // Panel 4: Pushover Message Details Editor
+  pushover_message_details_label = ESPUI.addControl(
+    Control::Type::Label, "Pushover message details", empty_str,
+    Control::Color::Dark, pushover_tab);
+  ESPUI.setElementStyle(pushover_message_details_label, clearLabelStyle);
+
+  pushover_message_name_text = ESPUI.addControl(
+    Control::Type::Text, "Message name (max 32 characters)", emptyString,
+    Control::Color::Dark, pushover_message_details_label, generalCallback);
+  ESPUI.getControl(pushover_message_name_text)->reserve(
+    PUSHOVER_MESSAGE_NAME_MAX_SIZE);
+  ESPUI.setElementStyle(
+    pushover_message_name_text,
+    "width: calc(30% - 10px); min-width: 200px; margin: 0 5px 10px 5px;");
+
+  pushover_message_text_text = ESPUI.addControl(
+    Control::Type::Text, "Message text (max 1023 characters)", emptyString,
+    Control::Color::Dark, pushover_message_details_label, generalCallback);
+  ESPUI.getControl(pushover_message_text_text)->reserve(
+    PUSHOVER_MESSAGE_TEXT_MAX_SIZE);
+
+  BasicControl *po_textarea = ESPUI.getControl(pushover_message_text_text);
+  po_textarea->control_flags |= CONTROL_FLAG_TEXTAREA;
+  po_textarea->rows = 4;
+  po_textarea->cols = 64;
+
+  ESPUI.setElementStyle(
+    pushover_message_text_text,
+    "resize: none; width: calc(70% - 10px); min-width: 260px; "
+    "margin: 0 5px 10px 5px;");
+
+  ESPUI.setPanelWide(pushover_message_details_label, true);
+
+  enablePushoverMessageDetails(false);
+  updatePushoverMessageButtons();
+}
+
+/*****************************************************************************/
+
+void pushoverMessagesCallback(BasicControl *sender, int type, void *param) {
+
+  if (type == B_UP) {
+    addGUICommand(gui_cmd_pushover_message_callback, (int32_t)param);
+  }
+}
+
+/*****************************************************************************/
+
+void pushoverMessagesCallbackMain(int32_t flag) {
+
+  z2s_pushover_message_t new_message = {};
+
+  switch ((uint32_t)flag) {
+
+
+    case GUI_CB_PUSHOVER_SAVE_DATA_FLAG: {
+
+      Z2S_GatewayPreferences.putString(
+        "PUSHOVER_API",
+        ESPUI.getControl(pushover_api_token_text)->getValueCstr());
+      Z2S_GatewayPreferences.putString(
+        "PUSHOVER_USER",
+        ESPUI.getControl(pushover_user_token_text)->getValueCstr());
+
+      ESPUI.updateLabel(
+        pushover_message_state_label,
+        "Pushover API token and User key saved!");
+    } break;
+
+
+    case GUI_CB_PUSHOVER_MESSAGE_NEW_FLAG: {
+
+      if (current_pushover_message_gui_state != VIEW_PUSHOVER_MESSAGE)
+        return;
+
+      new_message_id = Z2S_findFreePushoverMessageIndex();
+      if (new_message_id == -1) {
+        ESPUI.updateLabel(
+          pushover_message_state_label,
+          "Pushover messages table is full - can't add new message!");
+        return;
+      }
+
+      previous_pushover_message_gui_state = current_pushover_message_gui_state;
+      current_pushover_message_gui_state = NEW_PUSHOVER_MESSAGE;
+      enablePushoverMessageDetails(true);
+      updatePushoverMessageDetails(new_message, true);
+      updatePushoverMessageButtons();
+      enablePushoverTable(false);
+      ESPUI.updateLabel(
+        pushover_message_state_label,
+        "Enter message name and text, then click SAVE MESSAGE.");
+    } break;
+
+
+    case GUI_CB_PUSHOVER_MESSAGE_EDIT_FLAG: {
+
+      if ((current_pushover_message_gui_state != VIEW_PUSHOVER_MESSAGE) ||
+          (current_message_id == -1))
+        return;
+
+      previous_pushover_message_gui_state = current_pushover_message_gui_state;
+      current_pushover_message_gui_state = EDIT_PUSHOVER_MESSAGE;
+      Z2S_loadPushoverMessage(current_message_id, new_message);
+      enablePushoverMessageDetails(true);
+      updatePushoverMessageDetails(new_message, false);
+      updatePushoverMessageButtons();
+      enablePushoverTable(false);
+      ESPUI.updateLabel(
+        pushover_message_state_label,
+        "Edit message details and click SAVE MESSAGE.");
+    } break;
+
+
+    case GUI_CB_PUSHOVER_MESSAGE_COPY_FLAG: {
+
+      if ((current_pushover_message_gui_state != VIEW_PUSHOVER_MESSAGE) ||
+          (current_message_id == -1))
+        return;
+
+      new_message_id = Z2S_findFreePushoverMessageIndex();
+      if (new_message_id == -1) {
+        ESPUI.updateLabel(
+          pushover_message_state_label,
+          "Pushover messages table is full - can't copy message!");
+        return;
+      }
+
+      previous_pushover_message_gui_state = current_pushover_message_gui_state;
+      current_pushover_message_gui_state = COPY_PUSHOVER_MESSAGE;
+      Z2S_loadPushoverMessage(current_message_id, new_message);
+      enablePushoverMessageDetails(true);
+      updatePushoverMessageDetails(new_message, false);
+      updatePushoverMessageButtons();
+      enablePushoverTable(false);
+      ESPUI.updateLabel(
+        pushover_message_state_label,
+        "Modify copied message and click SAVE MESSAGE.");
+    } break;
+
+
+    case GUI_CB_PUSHOVER_MESSAGE_SAVE_FLAG: {
+
+      if ((current_pushover_message_gui_state != NEW_PUSHOVER_MESSAGE) &&
+          (current_pushover_message_gui_state != EDIT_PUSHOVER_MESSAGE) &&
+          (current_pushover_message_gui_state != COPY_PUSHOVER_MESSAGE))
+        return;
+
+      if (!fillPushoverMessageDetails(new_message)) {
+        ESPUI.updateLabel(
+          pushover_message_state_label,
+          "Required message name or text is missing!");
+        return;
+      }
+
+      bool is_edit =
+        (current_pushover_message_gui_state == EDIT_PUSHOVER_MESSAGE);
+
+      if (!is_edit) {
+        current_message_id = new_message_id;
+      }
+
+      new_message.pushover_message_subaction_id = current_message_id;
+
+      bool save_result =
+        Z2S_savePushoverMessage(current_message_id, new_message);
+      current_message_counter =
+        Z2S_getPushoverMessageCounter(current_message_id);
+
+      previous_pushover_message_gui_state = SAVE_PUSHOVER_MESSAGE;
+      current_pushover_message_gui_state = VIEW_PUSHOVER_MESSAGE;
+
+      enablePushoverMessageDetails(false);
+      updatePushoverMessageButtons();
+
+      if (is_edit) {
+        sendPushoverMessageRowEdit(
+          pushover_messages_table_label, current_message_counter - 1);
+      } else {
+        buildPushoverMessagesTableJsonPayload(
+          pushover_messages_table_label, current_message_counter - 1);
+      }
+      enablePushoverTable(true);
+
+      ESPUI.updateLabel(
+        pushover_message_state_label,
+        save_result ? "Saving Pushover message: SUCCESS!"
+                    : "Saving Pushover message: FAILED!");
+    } break;
+
+
+    case GUI_CB_PUSHOVER_MESSAGE_CANCEL_FLAG: {
+
+      if ((current_pushover_message_gui_state != NEW_PUSHOVER_MESSAGE) &&
+          (current_pushover_message_gui_state != EDIT_PUSHOVER_MESSAGE) &&
+          (current_pushover_message_gui_state != COPY_PUSHOVER_MESSAGE))
+        return;
+
+      previous_pushover_message_gui_state = CANCEL_PUSHOVER_MESSAGE;
+      current_pushover_message_gui_state = VIEW_PUSHOVER_MESSAGE;
+      enablePushoverMessageDetails(false);
+      updatePushoverMessageButtons();
+      enablePushoverTable(true);
+      ESPUI.updateLabel(pushover_message_state_label, "Changes cancelled!");
+    } break;
+
+
+    case GUI_CB_PUSHOVER_MESSAGE_REMOVE_FLAG: {
+
+      if ((current_pushover_message_gui_state != VIEW_PUSHOVER_MESSAGE) ||
+          (current_message_id == -1))
+        return;
+
+      previous_pushover_message_gui_state = REMOVE_PUSHOVER_MESSAGE;
+      bool remove_result = Z2S_removePushoverMessage(current_message_id);
+
+      int16_t next_msg = Z2S_findNextPushoverMessagePosition(0);
+      if (next_msg >= 0) {
+        current_message_id = next_msg;
+        current_message_counter = Z2S_getPushoverMessageCounter(next_msg);
+      } else {
+        current_message_id = -1;
+        current_message_counter = -1;
+      }
+
+      current_pushover_message_gui_state = VIEW_PUSHOVER_MESSAGE;
+      enablePushoverMessageDetails(false);
+      updatePushoverMessageButtons();
+
+      buildPushoverMessagesTableJsonPayload(
+        pushover_messages_table_label,
+        (current_message_counter > 0) ? (current_message_counter - 1) : 0);
+      enablePushoverTable(true);
+
+      ESPUI.updateLabel(
+        pushover_message_state_label,
+        remove_result ? "Removing Pushover message: SUCCESS!"
+                      : "Removing Pushover message: FAILED!");
+    } break;
+  }
 }
 
 /*****************************************************************************/

@@ -338,6 +338,7 @@ bool Z2S_loadPushoverMessageIndexTable();
 bool Z2S_savePushoverMessagesIndexTable();
 uint16_t Z2S_getPushoverMessagesNumber();
 int16_t Z2S_getPushoverMessageCounter(uint16_t message_position);
+int16_t Z2S_getPushoverMessagePosition(uint16_t message_counter);
 
 int16_t Z2S_findFreePushoverMessageIndex();
 int16_t Z2S_findNextPushoverMessagePosition(uint16_t message_position = 0);

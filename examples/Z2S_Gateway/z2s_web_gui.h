@@ -98,7 +98,10 @@ enum gui_commands {
 	gui_cmd_learn_ir_code,
 	gui_cmd_send_ir_code,
 	gui_cmd_ir_code_learned,
-  gui_cmd_delete_ir_code
+  gui_cmd_delete_ir_code,
+  gui_cmd_pushover_message_callback,
+	gui_cmd_build_pushover_messages_table,
+	gui_cmd_edit_pushover_messages_table
 };
 
 class Z2S_Core;

@@ -1965,6 +1965,15 @@ int16_t Z2S_getPushoverMessageCounter(uint16_t message_position) {
 
 /*****************************************************************************/
 
+int16_t Z2S_getPushoverMessagePosition(uint16_t message_counter) {
+
+  return Z2S_getIndexTableCounterPosition(
+    z2s_pushover_messages_index_table, message_counter, 
+    Z2S_PUSHOVER_MESSAGES_MAX_NUMBER);
+}
+
+/*****************************************************************************/
+
 int16_t Z2S_findFreePushoverMessageIndex() {
 
   return Z2S_findFreeEntryIndex(
@@ -7695,8 +7704,7 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
       case Z2S_DEVICE_DESC_RGBW_BULB_XY:
-      case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB:
-      case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00: {
+      case Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB: {
         
         addZ2SDeviceVirtualRelay(
           &zbGateway, device, first_free_slot, NO_CUSTOM_CMD_SID, 
@@ -7748,7 +7756,8 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
       case Z2S_DEVICE_DESC_IKEA_RGBCCT_BULB:
       case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE:
       case Z2S_DEVICE_DESC_RGBCCT_LIGHT_SOURCE_XY:
-      case Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE: {
+      case Z2S_DEVICE_DESC_LUMI_RGBCCT_LIGHT_SOURCE:
+      case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00: {
         
         addZ2SDeviceRGBCCT(
           device, first_free_slot, "RGBCCT", 
