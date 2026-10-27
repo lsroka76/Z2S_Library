@@ -839,279 +839,272 @@ function sendActionClickToESP32(actionIndex) {
   }
 }
 
+function formatActionTableCell(cellContent, colIdx, isIr, isPo) {
+  const str = String(cellContent);
+  if (isIr || isPo) return str;
+
+  // Column 0: Action Name + (on)/(off) button badge
+  if (colIdx === 0) {
+    const match = str.match(/^(.*)\s+\((on|off)\)$/i);
+    if (match) {
+      const isOn = match[2].toLowerCase() === 'on';
+      return `<span class="action-name-cell"><span class="${isOn ? 'action-btn-on' : 'action-btn-off'}">${isOn ? 'ON' : 'OFF'}</span><span>${match[1]}</span></span>`;
+    }
+  }
+
+  // Column 1 (Supla event) & Column 3 (Supla action): Flat button style
+  if (colIdx === 1 || colIdx === 3) {
+    const match = str.match(/^(.*?)(\s+\((?:v:|sid:).*\))$/);
+    if (match) {
+      return `<span class="action-flat-btn">${match[1]}</span><span class="action-btn-meta">${match[2]}</span>`;
+    }
+    return `<span class="action-flat-btn">${str}</span>`;
+  }
+
+  return str;
+}
+
+function filterActionTable(targetId) {
+  const targetLabel = document.getElementById(targetId);
+  if (!targetLabel) return;
+
+  const searchInput = targetLabel.querySelector(".table-search-input");
+  const clearBtn = targetLabel.querySelector(".table-search-clear");
+  const countBadge = targetLabel.querySelector(".table-search-count");
+  const tbody = targetLabel.querySelector("tbody");
+  if (!searchInput || !tbody) return;
+
+  const query = searchInput.value.trim().toLowerCase();
+  targetLabel.dataset.searchQuery = searchInput.value;
+
+  if (clearBtn) {
+    clearBtn.style.display = query.length > 0 ? "inline-flex" : "none";
+  }
+
+  const isIr = targetLabel.dataset.isIr === "1";
+  const isPo = targetLabel.dataset.isPo === "1";
+  const colSpan = (isIr || isPo) ? 3 : 5;
+
+  // Local Actions: search Col 0 (Name), Col 2 (Source channel), Col 4 (Destination channel)
+  // IR / Pushover: search Col 1 (Command / Message Name)
+  const searchCols = (isIr || isPo) ? [1] : [0, 2, 4];
+
+  const rows = tbody.querySelectorAll("tr[data-action-idx]");
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll("td");
+    
+    const matches = !query || searchCols.some(colIdx => {
+      if (!cells[colIdx]) return false;
+      let rawText = cells[colIdx].getAttribute("title") || cells[colIdx].textContent || "";
+      
+      // Strip trailing " (on)" or " (off)" from Action Name so searching "on" doesn't match every active row
+      if (!isIr && !isPo && colIdx === 0) {
+        rawText = rawText.replace(/\s+\((on|off)\)$/i, "");
+      }
+      return rawText.toLowerCase().includes(query);
+    });
+
+    row.style.display = matches ? "" : "none";
+    if (matches) visibleCount++;
+  });
+
+  let noMatchRow = tbody.querySelector("tr.no-search-match");
+  if (rows.length > 0 && visibleCount === 0) {
+    if (!noMatchRow) {
+      noMatchRow = document.createElement("tr");
+      noMatchRow.className = "no-search-match";
+      noMatchRow.innerHTML = `<td colspan="${colSpan}" style="text-align:center;padding:16px;color:#94a3b8;font-style:italic;">No matching items found</td>`;
+      tbody.appendChild(noMatchRow);
+    }
+    noMatchRow.style.display = "";
+  } else if (noMatchRow) {
+    noMatchRow.style.display = "none";
+  }
+
+  if (countBadge) {
+    countBadge.textContent = query ? `${visibleCount} / ${rows.length}` : `${rows.length}`;
+  }
+}
 
 function updateActionTable(data) {
-
   const targetLabel = document.getElementById(data.target);
   if (!targetLabel) return;
 
   const isIr = Boolean(data.is_ir);
   const isPo = Boolean(data.is_po);
   const colSpan = (isIr || isPo) ? 3 : 5;
-  const emptyMsg = isIr
-    ? "No IR codes saved for this device"
-    : (isPo ? "No Pushover messages available" : "No actions available");
+  const emptyMsg = isIr ? "No IR codes saved for this device" : (isPo ? "No Pushover messages available" : "No actions available");
+  const searchPlaceholder = isIr
+    ? "Search IR command by name..."
+    : (isPo ? "Search Pushover message by name..." : "Search by action, source, or destination channel...");
+
+  targetLabel.dataset.isIr = isIr ? "1" : "0";
+  targetLabel.dataset.isPo = isPo ? "1" : "0";
+  const savedSearch = targetLabel.dataset.searchQuery || "";
 
   let rowsHtml = "";
 
-  // 1. Handle Empty Table State vs Row Building
   if (!data.d || data.d.length === 0) {
-    rowsHtml = `<tr>
-      <td colspan="${colSpan}" style="text-align: center; padding: 16px; color: #6c757d; font-style: italic;">`
-        + emptyMsg +
-      `</td>
-    </tr>`;
+    rowsHtml = `<tr><td colspan="${colSpan}" style="text-align:center;padding:16px;color:#6c757d;font-style:italic;">${emptyMsg}</td></tr>`;
   } else {
     data.d.forEach((row, index) => {
-      let absoluteIndex = (data.start_idx !== undefined ? data.start_idx : 0) + index;
-      
-      let style = "";
-      if (absoluteIndex === data.s) {
-        style = "background-color: rgba(0, 123, 255, 0.2); font-weight: bold;";
-      } else {
-        style = "font-weight: normal;"; 
-      }
-        
+      const absoluteIndex = (data.start_idx !== undefined ? data.start_idx : 0) + index;
+      const style = (absoluteIndex === data.s) ? "background-color:rgba(0,123,255,0.2);font-weight:bold;" : "font-weight:normal;";
       rowsHtml += `<tr style="${style}" data-action-idx="${absoluteIndex}">`;
-      row.forEach(cell => {
+      row.forEach((cell, colIdx) => {
         const cleanCell = String(cell).replace(/"/g, '&quot;');
-        rowsHtml += `<td style="padding: 6px; border-bottom: 1px solid #eee;" title="${cleanCell}">${cell}</td>`;
+        const renderedCell = formatActionTableCell(cell, colIdx, isIr, isPo);
+        rowsHtml += `<td style="padding:6px;border-bottom:1px solid #eee;vertical-align:middle;" title="${cleanCell}">${renderedCell}</td>`;
       });
       rowsHtml += "</tr>";
     });
   }
 
-  // 2. Append Chunks vs Full Re-render
   if (data.append) {
-    let tbody = targetLabel.querySelector("tbody");
+    const tbody = targetLabel.querySelector("tbody");
     if (tbody) {
       tbody.insertAdjacentHTML('beforeend', rowsHtml);
+      filterActionTable(data.target);
     }
-  } else {
-    // 3. Inject CSS (Sticky Headers, Hover, Container Focus Glow, Footer Hints)
-    let html = `<style>
-      #${data.target} tbody tr[data-action-idx] { cursor: pointer; transition: background 0.15s; }
-      #${data.target} tbody tr[data-action-idx]:hover { background-color: rgba(0, 123, 255, 0.2) !important; }
-      #${data.target} th { 
-        position: sticky; top: 0; background: #e9ecef; color: #212529; 
-        font-weight: 600; border-bottom: 2px solid #adb5bd; z-index: 10; 
-        box-shadow: 0 2px 4px -2px rgba(0,0,0,0.25); 
-      }
-      #${data.target} th, #${data.target} td {
-        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      }
-      /* Container supporting dual vertical and horizontal scrolling */
-      #${data.target} div[tabindex="0"] {
-        height: 210px;
-        overflow: auto;
-        overscroll-behavior: contain;
-        margin-top: 8px; 
-        border: 1px solid rgba(128, 128, 128, 0.25);
-        border-top-left-radius: 6px;
-        border-top-right-radius: 6px;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-      }
+    return;
+  }
 
-      /* Compact Slim Scrollbars for WebKit browsers */
-      #${data.target} div[tabindex="0"]::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      #${data.target} div[tabindex="0"]::-webkit-scrollbar-track {
-        background: rgba(128, 128, 128, 0.1);
-        border-radius: 4px;
-      }
-      #${data.target} div[tabindex="0"]::-webkit-scrollbar-thumb {
-        background: rgba(128, 128, 128, 0.35);
-        border-radius: 4px;
-      }
-      #${data.target} div[tabindex="0"]::-webkit-scrollbar-thumb:hover {
-        background: rgba(128, 128, 128, 0.55);
-      }
+  let html = `<style>
+    #${data.target} tbody tr[data-action-idx]{cursor:pointer;transition:background 0.15s;}
+    #${data.target} tbody tr[data-action-idx]:hover{background-color:rgba(0,123,255,0.2)!important;}
+    #${data.target} th{position:sticky;top:0;background:#e9ecef;color:#212529;font-weight:600;border-bottom:2px solid #adb5bd;z-index:10;box-shadow:0 2px 4px -2px rgba(0,0,0,0.25);}
+    #${data.target} th,#${data.target} td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    #${data.target} .table-search-bar{display:flex;align-items:center;gap:8px;margin-top:8px;padding:5px 10px;background:rgba(0,0,0,0.25);border:1px solid rgba(128,128,128,0.25);border-bottom:none;border-top-left-radius:6px;border-top-right-radius:6px;}
+    #${data.target} .table-search-input{flex:1;background:rgba(255,255,255,0.08)!important;border:1px solid rgba(255,255,255,0.2)!important;border-radius:4px!important;color:#f8fafc!important;padding:4px 8px!important;font-size:12px!important;outline:none!important;margin:0!important;height:26px!important;box-sizing:border-box!important;}
+    #${data.target} .table-search-input::placeholder{color:#94a3b8;}
+    #${data.target} .table-search-input:focus{border-color:#80bdff!important;box-shadow:0 0 0 2px rgba(0,123,255,0.25)!important;}
+    #${data.target} .table-search-clear{display:none;align-items:center;justify-content:center;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#cbd5e1;border-radius:4px;padding:0 7px;height:24px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;}
+    #${data.target} .table-search-clear:hover{background:rgba(231,76,60,0.7);color:#fff;}
+    #${data.target} .table-search-count{font-size:11px;font-weight:600;color:#94a3b8;min-width:36px;text-align:right;user-select:none;}
+    #${data.target} .action-name-cell{display:inline-flex;align-items:center;gap:6px;}
+    #${data.target} .action-btn-on,#${data.target} .action-btn-off{display:inline-flex;align-items:center;justify-content:center;padding:2px 6px;font-size:10px;font-weight:700;line-height:1.1;border-radius:4px;letter-spacing:0.4px;flex-shrink:0;}
+    #${data.target} .action-btn-on{background-color:#2ecc71;color:#fff;border:1px solid #27ae60;box-shadow:0 1px 2px rgba(0,0,0,0.2);}
+    #${data.target} .action-btn-off{background-color:rgba(148,163,184,0.2);color:#94a3b8;border:1px solid rgba(148,163,184,0.35);}
+    #${data.target} .action-flat-btn{display:inline-block;padding:2px 8px;font-size:11px;font-weight:600;line-height:1.3;border-radius:4px;background-color:rgba(128,128,128,0.15);border:1px solid rgba(128,128,128,0.3);color:inherit;}
+    #${data.target} .action-btn-meta{font-size:11px;opacity:0.8;margin-left:3px;}
+    #${data.target} div[tabindex]{height:210px;overflow:auto;overscroll-behavior:contain;border:1px solid rgba(128,128,128,0.25);transition:border-color 0.15s,box-shadow 0.15s;}
+    #${data.target} div[tabindex]::-webkit-scrollbar{width:6px;height:6px;}
+    #${data.target} div[tabindex]::-webkit-scrollbar-track{background:rgba(128,128,128,0.1);border-radius:4px;}
+    #${data.target} div[tabindex]::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.35);border-radius:4px;}
+    #${data.target} div[tabindex="0"]:focus{border-color:#80bdff!important;box-shadow:0 0 0 0.2rem rgba(0,123,255,0.25)!important;outline:none!important;}
+    #${data.target} .table-footer-hints{display:flex!important;flex-wrap:wrap!important;gap:14px!important;justify-content:center!important;align-items:center!important;background:rgba(0,0,0,0.3)!important;border:1px solid rgba(255,255,255,0.15)!important;border-top:none!important;border-bottom-left-radius:6px!important;border-bottom-right-radius:6px!important;padding:5px 10px!important;font-size:10px!important;line-height:1!important;color:#cbd5e1!important;user-select:none!important;}
+    #${data.target} .table-footer-hints span{display:inline-flex!important;align-items:center!important;gap:4px!important;font-size:10px!important;line-height:1!important;}
+    #${data.target} .table-footer-hints kbd{background-color:#334155!important;border:1px solid #475569!important;border-radius:3px!important;box-shadow:0 1px 1px rgba(0,0,0,0.4)!important;color:#f8fafc!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-family:inherit!important;font-size:9px!important;font-weight:600!important;padding:2px 4px!important;line-height:1!important;height:16px!important;}
+    #${data.target} .table-disabled{pointer-events:none!important;overflow-y:hidden!important;opacity:0.5!important;filter:grayscale(50%);user-select:none;}
+    #${data.target} .table-status-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+    #${data.target} .badge-active{background-color:#e6f4ea;color:#137333;border:1px solid #ceedd5;}
+    #${data.target} .badge-locked{background-color:#fce8e6;color:#c5221f;border:1px solid #f5c6cb;}
+  </style>`;
 
-      /* Keyboard focus glow state */
-      #${data.target} div[tabindex="0"]:focus {
-        border-color: #80bdff !important;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-        outline: none !important;
-      }
-      #${data.target} .table-footer-hints {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 14px !important;
-        justify-content: center !important;
-        align-items: center !important;
-        background: rgba(0, 0, 0, 0.3) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-top: none !important;
-        border-bottom-left-radius: 6px !important;
-        border-bottom-right-radius: 6px !important;
-        padding: 5px 10px !important;
-        font-size: 10px !important;
-        line-height: 1 !important;
-        color: #cbd5e1 !important;
-        user-select: none !important;
-      }
+  const headerHtml = isIr
+    ? "<th style='padding:6px;width:80px;min-width:80px;'>ID (sid)</th><th style='padding:6px;width:220px;min-width:180px;'>Command Name</th><th style='padding:6px;width:420px;min-width:260px;'>IR Code (Base64)</th>"
+    : isPo
+    ? "<th style='padding:6px;width:80px;min-width:80px;'>ID (sid)</th><th style='padding:6px;width:220px;min-width:180px;'>Message Name</th><th style='padding:6px;width:420px;min-width:260px;'>Message Text</th>"
+    : "<th style='padding:6px;width:140px;min-width:140px;'>Name (state)</th><th style='padding:6px;width:160px;min-width:160px;'>Supla event</th><th style='padding:6px;width:150px;min-width:150px;'>Source channel</th><th style='padding:6px;width:150px;min-width:150px;'>Supla action</th><th style='padding:6px;width:150px;min-width:150px;'>Destination channel</th>";
 
-      /* Text + Keycap Groupings */
-      #${data.target} .table-footer-hints span {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-        font-size: 10px !important;
-        line-height: 1 !important;
-      }
+  const safeSavedSearch = savedSearch.replace(/"/g, '&quot;');
+  html += `<div class="table-search-bar">
+    <input type="text" class="table-search-input" placeholder="🔍 ${searchPlaceholder}" value="${safeSavedSearch}" autocomplete="off">
+    <span class="table-search-clear" title="Clear search">✕</span>
+    <span class="table-search-count">0</span>
+  </div>
+  <div tabindex="0">
+    <table style="width:100%;min-width:750px;table-layout:fixed;border-collapse:collapse;text-align:left;">
+      <thead><tr>${headerHtml}</tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  </div>
+  <div class="table-footer-hints">
+    <span><span class="table-status-badge badge-active">Active</span></span>
+    <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+    <span><kbd>PgUp</kbd><kbd>PgDn</kbd> ±5 Rows</span>
+    <span><kbd>Home</kbd><kbd>End</kbd> First/Last</span>
+  </div>`;
 
-      /* Keycap Styling */
-      #${data.target} .table-footer-hints kbd {
-        background-color: #334155 !important;
-        border: 1px solid #475569 !important;
-        border-radius: 3px !important;
-        box-shadow: 0 1px 1px rgba(0,0,0,0.4) !important;
-        color: #f8fafc !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-family: inherit !important;
-        font-size: 9px !important;
-        font-weight: 600 !important;
-        padding: 2px 4px !important;
-        line-height: 1 !important;
-        height: 16px !important;
-      }
-      /* Disabled Overlay & Input Lock */
-      #${data.target} div.table-disabled {
-        pointer-events: none !important;
-        overflow-y: hidden !important;
-        opacity: 0.5 !important;
-        filter: grayscale(50%);
-        user-select: none;
-      }
-      /* Status Badge Styles */
-      #${data.target} .table-status-badge {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: all 0.2s ease;
-      }
-      #${data.target} .badge-active {
-        background-color: #e6f4ea;
-        color: #137333;
-        border: 1px solid #ceedd5;
-      }
-      #${data.target} .badge-locked {
-        background-color: #fce8e6;
-        color: #c5221f;
-        border: 1px solid #f5c6cb;
-      }
-    </style>`;
+  targetLabel.innerHTML = html;
+  targetLabel.style.display = "block";
 
-    const headerHtml = isIr
-      ? "<th style='padding: 6px; width: 80px; min-width: 80px;'>ID (sid)</th>" +
-        "<th style='padding: 6px; width: 220px; min-width: 180px;'>Command Name</th>" +
-        "<th style='padding: 6px; width: 420px; min-width: 260px;'>IR Code (Base64)</th>"
-      : isPo
-      ? "<th style='padding: 6px; width: 80px; min-width: 80px;'>ID (sid)</th>" +
-        "<th style='padding: 6px; width: 220px; min-width: 180px;'>Message Name</th>" +
-        "<th style='padding: 6px; width: 420px; min-width: 260px;'>Message Text</th>"
-      : "<th style='padding: 6px; width: 130px; min-width: 130px;'>Name (enabled)</th>" +
-        "<th style='padding: 6px; width: 150px; min-width: 150px;'>Supla event</th>" +
-        "<th style='padding: 6px; width: 150px; min-width: 150px;'>Source channel</th>" +
-        "<th style='padding: 6px; width: 140px; min-width: 140px;'>Supla action</th>" +
-        "<th style='padding: 6px; width: 150px; min-width: 150px;'>Destination channel</th>";
+  const searchInput = targetLabel.querySelector(".table-search-input");
+  const clearBtn = targetLabel.querySelector(".table-search-clear");
+  const container = targetLabel.querySelector("div[tabindex='0']");
+  const tbody = targetLabel.querySelector("tbody");
 
-    // Scrollable Table Container with Horizontal & Vertical Scroll
-    html += "<div tabindex='0' style='height: 210px; margin-top: 8px; overflow: auto; overscroll-behavior: contain; border: 1px solid rgba(128,128,128,0.25); border-top-left-radius: 6px; border-top-right-radius: 6px;'>" +
-      "<table style='width:100%; min-width: 720px; table-layout: fixed; border-collapse: collapse; text-align: left;'>" +
-      "<thead><tr>" +
-       headerHtml +
-      "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>";
-
-    // Footer Bar with Hotkey Legend + Status Badge
-    html += `<div class="table-footer-hints">
-      <span><span class="table-status-badge badge-active">Active</span></span>
-      <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
-      <span><kbd>PgUp</kbd><kbd>PgDn</kbd> ±5 Rows</span>
-      <span><kbd>Home</kbd><kbd>End</kbd> First/Last</span>
-    </div>`;
-
-    targetLabel.innerHTML = html;
-    targetLabel.style.display = "block";
-
-    const container = targetLabel.querySelector("div[tabindex='0']");
-    const tbody = targetLabel.querySelector("tbody");
-
-    if (tbody && container) {
-      // Unified Selection & Event Dispatch Handler
-      const activateRow = (rowElement, shouldScroll = true) => {
-        if (!rowElement) return;
-
-        const actionIndex = parseInt(rowElement.getAttribute("data-action-idx"));
-        if (isNaN(actionIndex)) return;
-
-        // 1. Visual highlight
-        highlightActionRow({ target: data.target, s: actionIndex }, shouldScroll);
-
-        // 2. Trigger custom callback to send this index back to the ESP32
-        const clickMask = isIr ? 0x4000 : (isPo ? 0x2000 : 0);
-        sendActionClickToESP32(actionIndex | clickMask);
-      };
-
-      // 1. Mouse Click Listener
-      tbody.addEventListener("click", function(e) {
-        const clickedRow = e.target.closest("tr[data-action-idx]");
-        if (!clickedRow) return;
-
+  if (searchInput) {
+    searchInput.addEventListener("input", () => filterActionTable(data.target));
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        searchInput.value = "";
+        filterActionTable(data.target);
+      } else if (e.key === "ArrowDown" && container) {
+        e.preventDefault();
         container.focus();
-        activateRow(clickedRow, false);
-      });
+      }
+    });
+  }
+  if (clearBtn && searchInput) {
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      filterActionTable(data.target);
+      searchInput.focus();
+    });
+  }
 
-      // 2. Keyboard Navigation Listener
-      container.addEventListener("keydown", function(e) {
-        const navKeys = ["ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown", "Enter", " "];
-        if (!navKeys.includes(e.key)) return;
+  filterActionTable(data.target);
 
-        const rows = tbody.querySelectorAll("tr[data-action-idx]");
-        if (!rows.length) return;
+  if (tbody && container) {
+    const activateRow = (rowElement, shouldScroll = true) => {
+      if (!rowElement) return;
+      const actionIndex = parseInt(rowElement.getAttribute("data-action-idx"));
+      if (isNaN(actionIndex)) return;
 
-        let currentIndex = 0;
-        rows.forEach((row, idx) => {
-          if (row.style.fontWeight === "bold") {
-            currentIndex = idx;
-          }
-        });
+      highlightActionRow({ target: data.target, s: actionIndex }, shouldScroll);
+      const clickMask = isIr ? 0x4000 : (isPo ? 0x2000 : 0);
+      sendActionClickToESP32(actionIndex | clickMask);
+    };
 
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          rows[currentIndex].click();
-          return;
-        }
+    tbody.addEventListener("click", function(e) {
+      const clickedRow = e.target.closest("tr[data-action-idx]");
+      if (!clickedRow) return;
+      container.focus();
+      activateRow(clickedRow, false);
+    });
 
-        let nextIndex = currentIndex;
-        if (e.key === "ArrowUp") {
-          nextIndex = Math.max(0, currentIndex - 1);
-        } else if (e.key === "ArrowDown") {
-          nextIndex = Math.min(rows.length - 1, currentIndex + 1);
-        } else if (e.key === "PageUp") {
-          nextIndex = Math.max(0, currentIndex - 5);
-        } else if (e.key === "PageDown") {
-          nextIndex = Math.min(rows.length - 1, currentIndex + 5);
-        } else if (e.key === "Home") {
-          nextIndex = 0;
-        } else if (e.key === "End") {
-          nextIndex = rows.length - 1;
-        }
+    container.addEventListener("keydown", function(e) {
+      const navKeys = ["ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown", "Enter", " "];
+      if (!navKeys.includes(e.key)) return;
 
-        if (nextIndex !== currentIndex) {
-          e.preventDefault();
-          activateRow(rows[nextIndex], true);
-        }
-      });
-    }
+      const visibleRows = Array.from(tbody.querySelectorAll("tr[data-action-idx]")).filter(r => r.style.display !== "none");
+      if (!visibleRows.length) return;
+
+      let currentIndex = visibleRows.findIndex(r => r.style.fontWeight === "bold");
+      if (currentIndex === -1) currentIndex = 0;
+
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        visibleRows[currentIndex].click();
+        return;
+      }
+
+      let nextIndex = currentIndex;
+      if (e.key === "ArrowUp") nextIndex = Math.max(0, currentIndex - 1);
+      else if (e.key === "ArrowDown") nextIndex = Math.min(visibleRows.length - 1, currentIndex + 1);
+      else if (e.key === "PageUp") nextIndex = Math.max(0, currentIndex - 5);
+      else if (e.key === "PageDown") nextIndex = Math.min(visibleRows.length - 1, currentIndex + 5);
+      else if (e.key === "Home") nextIndex = 0;
+      else if (e.key === "End") nextIndex = visibleRows.length - 1;
+
+      if (nextIndex !== currentIndex) {
+        e.preventDefault();
+        activateRow(visibleRows[nextIndex], true);
+      }
+    });
   }
 }
 
@@ -1120,14 +1113,18 @@ function setTableDisabled(targetId, isDisabled) {
   if (!targetLabel) return;
 
   const container = targetLabel.querySelector("div[tabindex]");
+  const searchBar = targetLabel.querySelector(".table-search-bar");
+  const searchInput = targetLabel.querySelector(".table-search-input");
   const badge = targetLabel.querySelector(".table-status-badge");
 
   if (isDisabled) {
     if (container) {
       container.classList.add("table-disabled");
-      container.setAttribute("tabindex", "-1"); // Disable keyboard nav
+      container.setAttribute("tabindex", "-1");
       container.blur();
     }
+    if (searchBar) searchBar.classList.add("table-disabled");
+    if (searchInput) searchInput.disabled = true;
     if (badge) {
       badge.textContent = "Locked";
       badge.className = "table-status-badge badge-locked";
@@ -1135,8 +1132,10 @@ function setTableDisabled(targetId, isDisabled) {
   } else {
     if (container) {
       container.classList.remove("table-disabled");
-      container.setAttribute("tabindex", "0");  // Enable keyboard nav
+      container.setAttribute("tabindex", "0");
     }
+    if (searchBar) searchBar.classList.remove("table-disabled");
+    if (searchInput) searchInput.disabled = false;
     if (badge) {
       badge.textContent = "Active";
       badge.className = "table-status-badge badge-active";
@@ -1144,44 +1143,46 @@ function setTableDisabled(targetId, isDisabled) {
   }
 }
 
-function highlightActionRow(data) {
+function highlightActionRow(data, shouldScroll = true) {
   const targetLabel = document.getElementById(data.target);
   if (!targetLabel) return;
 
-  // Select all table rows inside the tbody of your target label
-  const rows = targetLabel.querySelectorAll("tbody tr");
-  
-  rows.forEach((row, index) => {
-    if (index === data.s) {
-  		row.style.backgroundColor = "rgba(0, 123, 255, 0.2)";
-  		row.style.fontWeight = "bold";
-			row.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  		// row.style.color = "white"; 
-		} else {
-  		row.style.backgroundColor = "";
-  		row.style.fontWeight = "normal";
-  		// row.style.color = ""; 
-		}
-	});
+  const rows = targetLabel.querySelectorAll("tbody tr[data-action-idx]");
+  rows.forEach((row) => {
+    const rowIdx = parseInt(row.getAttribute("data-action-idx"));
+    if (rowIdx === data.s) {
+      row.style.backgroundColor = "rgba(0, 123, 255, 0.2)";
+      row.style.fontWeight = "bold";
+      if (shouldScroll && row.style.display !== "none") {
+        row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    } else {
+      row.style.backgroundColor = "";
+      row.style.fontWeight = "normal";
+    }
+  });
 }
 
 function editActionRow(data) {
   const targetLabel = document.getElementById(data.target);
   if (!targetLabel) return;
 
-  const rows = targetLabel.querySelectorAll("tbody tr");
+  const isIr = targetLabel.dataset.isIr === "1";
+  const isPo = targetLabel.dataset.isPo === "1";
+  const rows = targetLabel.querySelectorAll("tbody tr[data-action-idx]");
   
   if (data.idx < rows.length) {
     const cells = rows[data.idx].querySelectorAll("td");
-    
     data.d.forEach((newCellContent, i) => {
       if (cells[i]) {
-        cells[i].innerHTML = newCellContent;
-        cells[i].title = newCellContent; // Updates tooltip dynamically
+        cells[i].innerHTML = formatActionTableCell(newCellContent, i, isIr, isPo);
+        cells[i].title = String(newCellContent);
       }
     });
+    filterActionTable(data.target);
   }
 }
+
 
 const originalParse = JSON.parse;
 
