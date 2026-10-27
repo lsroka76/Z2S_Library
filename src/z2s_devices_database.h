@@ -976,6 +976,7 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 #define Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_BASIC               0x0100
 
 #define Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_XIAOMI              0x0110
+#define Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF        0x0115
 
 #define Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD               0x0200
 #define Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD    0x0201
@@ -993,7 +994,9 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 
 #define Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER                      0x0700
 
+
 inline const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
+
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_BASIC,
     .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
@@ -1029,6 +1032,42 @@ inline const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_min_interval_value = 3600, 
     .z2s_max_interval_value = 65000,
     .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 30, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 20,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 30, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 100,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 3600, 
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 3600, 
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value_8 = 1,
     .z2s_manufacturer_code = 0},
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD,
@@ -3381,12 +3420,18 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "Zbeacon", .model_name = "TH01",
     .z2s_device_uid = 1800,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
-	.z2s_device_endpoints_count = 1},
+	.z2s_device_endpoints = { 
+      0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF, 
+      Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR }},
 
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-02",
     .z2s_device_uid = 1900,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
-	.z2s_device_endpoints_count = 1},
+	.z2s_device_endpoints = { 
+      0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF, 
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR }},
 
   {	.manufacturer_name = "TELINK", .model_name = "TLSR82xx",
     .z2s_device_uid = 1905,
@@ -3396,7 +3441,10 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "eWeLink", .model_name = "CK-TLSR8656-SS5-01(7014)",
     .z2s_device_uid = 1910,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
-	.z2s_device_endpoints_count = 1},
+	.z2s_device_endpoints = { 
+      0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF, 
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR }},
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-02D",
     .z2s_device_uid = 2000,
@@ -3478,7 +3526,10 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "eWeLink", .model_name = "TH01",
     .z2s_device_uid = 2800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints = { 
+      0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF, 
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR }},
 
   {	.manufacturer_name = "LUMI", .model_name = "lumi.weather",
     .z2s_device_uid = 2900,
