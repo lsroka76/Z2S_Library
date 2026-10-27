@@ -843,7 +843,7 @@ function formatActionTableCell(cellContent, colIdx, isIr, isPo) {
   const str = String(cellContent);
   if (isIr || isPo) return str;
 
-  // Column 0: Action Name + (on)/(off) button badge
+  // Kolumna 0: Action Name + przycisk statusu (ON/OFF)
   if (colIdx === 0) {
     const match = str.match(/^(.*)\s+\((on|off)\)$/i);
     if (match) {
@@ -852,13 +852,19 @@ function formatActionTableCell(cellContent, colIdx, isIr, isPo) {
     }
   }
 
-  // Column 1 (Supla event) & Column 3 (Supla action): Flat button style
+  // Kolumna 1 (Supla event) & Kolumna 3 (Supla action): Płaski przycisk (Flat button)
   if (colIdx === 1 || colIdx === 3) {
     const match = str.match(/^(.*?)(\s+\((?:v:|sid:).*\))$/);
     if (match) {
       return `<span class="action-flat-btn">${match[1]}</span><span class="action-btn-meta">${match[2]}</span>`;
     }
     return `<span class="action-flat-btn">${str}</span>`;
+  }
+
+  // Kolumna 2 (Source channel) & Kolumna 4 (Destination channel): Przycisk łańcucha logiki 🔗
+  if (colIdx === 2 || colIdx === 4) {
+    const safeChannel = str.replace(/"/g, '&quot;');
+    return `<span class="channel-cell-wrap"><span class="channel-chain-btn" data-channel="${safeChannel}" title="Pokaż wszystkie akcje powiązane z tym kanałem">🔗</span><span class="channel-cell-name">${str}</span></span>`;
   }
 
   return str;
@@ -884,9 +890,6 @@ function filterActionTable(targetId) {
   const isIr = targetLabel.dataset.isIr === "1";
   const isPo = targetLabel.dataset.isPo === "1";
   const colSpan = (isIr || isPo) ? 3 : 5;
-
-  // Local Actions: search Col 0 (Name), Col 2 (Source channel), Col 4 (Destination channel)
-  // IR / Pushover: search Col 1 (Command / Message Name)
   const searchCols = (isIr || isPo) ? [1] : [0, 2, 4];
 
   const rows = tbody.querySelectorAll("tr[data-action-idx]");
@@ -894,20 +897,32 @@ function filterActionTable(targetId) {
 
   rows.forEach(row => {
     const cells = row.querySelectorAll("td");
-    
-    const matches = !query || searchCols.some(colIdx => {
-      if (!cells[colIdx]) return false;
-      let rawText = cells[colIdx].getAttribute("title") || cells[colIdx].textContent || "";
-      
-      // Strip trailing " (on)" or " (off)" from Action Name so searching "on" doesn't match every active row
+    let rowMatches = !query;
+
+    searchCols.forEach(colIdx => {
+      const cell = cells[colIdx];
+      if (!cell) return;
+
+      let rawText = cell.getAttribute("title") || cell.textContent || "";
       if (!isIr && !isPo && colIdx === 0) {
         rawText = rawText.replace(/\s+\((on|off)\)$/i, "");
       }
-      return rawText.toLowerCase().includes(query);
+
+      const colHit = Boolean(query) && rawText.toLowerCase().includes(query);
+      if (colHit) rowMatches = true;
+
+      // Podświetlenie roli w obwodzie dla Source (Col 2) i Destination (Col 4)
+      if (!isIr && !isPo && (colIdx === 2 || colIdx === 4)) {
+        const wrap = cell.querySelector(".channel-cell-wrap");
+        if (wrap) {
+          wrap.classList.toggle("chain-match-src", colHit && colIdx === 2);
+          wrap.classList.toggle("chain-match-dst", colHit && colIdx === 4);
+        }
+      }
     });
 
-    row.style.display = matches ? "" : "none";
-    if (matches) visibleCount++;
+    row.style.display = rowMatches ? "" : "none";
+    if (rowMatches) visibleCount++;
   });
 
   let noMatchRow = tbody.querySelector("tr.no-search-match");
@@ -989,6 +1004,11 @@ function updateActionTable(data) {
     #${data.target} .action-btn-off{background-color:rgba(148,163,184,0.2);color:#94a3b8;border:1px solid rgba(148,163,184,0.35);}
     #${data.target} .action-flat-btn{display:inline-block;padding:2px 8px;font-size:11px;font-weight:600;line-height:1.3;border-radius:4px;background-color:rgba(128,128,128,0.15);border:1px solid rgba(128,128,128,0.3);color:inherit;}
     #${data.target} .action-btn-meta{font-size:11px;opacity:0.8;margin-left:3px;}
+		#${data.target} .channel-cell-wrap{display:inline-flex;align-items:center;gap:5px;padding:1px 5px;border-radius:4px;max-width:100%;transition:all 0.15s;}
+    #${data.target} .channel-chain-btn{display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:1px 4px;border-radius:3px;background:rgba(128,128,128,0.15);border:1px solid rgba(128,128,128,0.3);cursor:pointer;opacity:0.65;flex-shrink:0;transition:all 0.15s;}
+    #${data.target} .channel-chain-btn:hover{opacity:1;background:rgba(0,123,255,0.35);border-color:#80bdff;transform:scale(1.08);}
+    #${data.target} .chain-match-src{background:rgba(59,130,246,0.22);border:1px solid rgba(96,165,250,0.55);color:#93c5fd;font-weight:600;}
+    #${data.target} .chain-match-dst{background:rgba(245,158,11,0.22);border:1px solid rgba(251,191,36,0.55);color:#fcd34d;font-weight:600;}
     #${data.target} div[tabindex]{height:210px;overflow:auto;overscroll-behavior:contain;border:1px solid rgba(128,128,128,0.25);transition:border-color 0.15s,box-shadow 0.15s;}
     #${data.target} div[tabindex]::-webkit-scrollbar{width:6px;height:6px;}
     #${data.target} div[tabindex]::-webkit-scrollbar-track{background:rgba(128,128,128,0.1);border-radius:4px;}
@@ -1070,6 +1090,16 @@ function updateActionTable(data) {
     };
 
     tbody.addEventListener("click", function(e) {
+      // Obsługa kliknięcia w przycisk 🔗 (filtruj obwód tego kanału / wyczyść jeśli już aktywny)
+      const chainBtn = e.target.closest(".channel-chain-btn");
+      if (chainBtn && searchInput) {
+        e.stopPropagation();
+        const chName = chainBtn.getAttribute("data-channel") || "";
+        searchInput.value = (searchInput.value.trim().toLowerCase() === chName.trim().toLowerCase()) ? "" : chName;
+        filterActionTable(data.target);
+        return;
+      }
+
       const clickedRow = e.target.closest("tr[data-action-idx]");
       if (!clickedRow) return;
       container.focus();
