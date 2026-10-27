@@ -34,6 +34,12 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id) {
     } break;
 
 
+    case Z2S_DEVICE_DESC_TS0601_TRV_ME168: {
+
+      return me167_no_pi_cmd_set;
+    } break;
+
+
     case Z2S_DEVICE_DESC_TS0601_TRV_BECA: {
       
       return beca_cmd_set; 

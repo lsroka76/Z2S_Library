@@ -391,6 +391,7 @@
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z                  0x6017
 #define Z2S_DEVICE_DESC_TS0601_TRV_TV02                     0x6018
 #define Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL                0x6019
+#define Z2S_DEVICE_DESC_TS0601_TRV_ME168                    0x601A
 #define Z2S_DEVICE_DESC_TS0601_TRV_TRV16                    0x6020
 #define Z2S_DEVICE_DESC_TS0601_TRV_GTVZB                    0x6021
 
@@ -2084,6 +2085,11 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME168,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_BECA,
     .z2s_device_clusters_count = 2,
@@ -5442,7 +5448,7 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZE200_ybsqljjg", .model_name = "TS0601",
     .z2s_device_uid = 17105,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME168,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE200_4utwozi2", .model_name = "TS0601",
@@ -5458,6 +5464,21 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "_TZE284_c6wv4xyo", .model_name = "TS0601",
     .z2s_device_uid = 17120,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME167,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_cxakecfo", .model_name = "TS0601",
+    .z2s_device_uid = 17125,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME168,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_4aijvczq", .model_name = "TS0601",
+    .z2s_device_uid = 17130,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME168,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZE200_r5ksy7qo", .model_name = "TS0601",
+    .z2s_device_uid = 17135,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_TRV_ME168,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "_TZE200_9xfjixap", .model_name = "TS0601",
