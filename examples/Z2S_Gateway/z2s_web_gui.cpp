@@ -252,6 +252,7 @@ uint16_t action_edit_button;
 uint16_t action_new_button;
 uint16_t action_copy_button;
 uint16_t action_remove_button;
+uint16_t action_chain_button;
 uint16_t action_state_label;
 
 uint16_t sb_channel_selector = 0xFFFF;
@@ -554,6 +555,7 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 #define GUI_CB_ACTION_CANCEL_FLAG 0x9013
 #define GUI_CB_ACTION_REMOVE_FLAG 0x9014
 #define GUI_CB_ACTION_COPY_FLAG 0x9015
+#define GUI_CB_ACTION_CHAIN_FLAG 0x9016
 
 #define GUI_CB_ADD_SB_1X_FLAG 0xA000
 #define GUI_CB_ADD_SB_2X_FLAG 0xA001
@@ -689,6 +691,9 @@ static constexpr char *clearFlagsLabelStyle PROGMEM =
 
 static const char *myCustomJS = R"=====(
 
+window.z2sIrOptions = [];
+window.z2sPoOptions = [];
+
 function redirect2ZigbeeOTA() {
 	
 	window.location.assign("/zigbee_ota");
@@ -788,7 +793,10 @@ function updateSelectOptions(targetSelects, optionsData, selectedValue = null, c
     }
 
     if (!selectEl) {
-      console.warn(`[Select Populator] Target element '${target}' not found.`);
+      console.warn(`[Select Populator] '${target}' not in DOM yet, retrying in 150ms...`);
+      setTimeout(() => {
+        updateSelectOptions([target], optionsData, selectedValue, clearExisting);
+      }, 150);
       return;
     }
 
@@ -964,7 +972,21 @@ function updateActionTable(data) {
   if (!data.d || data.d.length === 0) {
     rowsHtml = `<tr><td colspan="${colSpan}" style="text-align:center;padding:16px;color:#6c757d;font-style:italic;">${emptyMsg}</td></tr>`;
   } else {
+		if (!data.append) {
+      if (isIr) window.z2sIrOptions = [];
+      if (isPo) window.z2sPoOptions = [];
+    }
     data.d.forEach((row, index) => {
+			
+			if ((isIr || isPo) && row.length >= 2) {
+        const slotId = parseInt(String(row[0]).replace('#', ''), 10);
+        if (!isNaN(slotId)) {
+          const entry = { id: slotId, label: `${row[0]} - ${row[1]}` };
+          if (isIr) window.z2sIrOptions.push(entry);
+          if (isPo) window.z2sPoOptions.push(entry);
+        }
+      }
+
       const absoluteIndex = (data.start_idx !== undefined ? data.start_idx : 0) + index;
       const style = (absoluteIndex === data.s) ? "background-color:rgba(0,123,255,0.2);font-weight:bold;" : "font-weight:normal;";
       rowsHtml += `<tr style="${style}" data-action-idx="${absoluteIndex}">`;
@@ -1142,6 +1164,10 @@ function setTableDisabled(targetId, isDisabled) {
   const targetLabel = document.getElementById(targetId);
   if (!targetLabel) return;
 
+  if (targetLabel.dataset.isIr !== "1" && targetLabel.dataset.isPo !== "1") {
+    window.z2sActionEditActive = Boolean(isDisabled);
+  }
+
   const container = targetLabel.querySelector("div[tabindex]");
   const searchBar = targetLabel.querySelector(".table-search-bar");
   const searchInput = targetLabel.querySelector(".table-search-input");
@@ -1171,6 +1197,13 @@ function setTableDisabled(targetId, isDisabled) {
       badge.className = "table-status-badge badge-active";
     }
   }
+
+  [50, 150, 300].forEach(delay => {
+    setTimeout(() => {
+      if (typeof updateActionThresholdsVisibility === "function") updateActionThresholdsVisibility();
+      if (typeof syncSubactionDropdown === "function") syncSubactionDropdown();
+    }, delay);
+  });
 }
 
 function highlightActionRow(data, shouldScroll = true) {
@@ -1209,6 +1242,25 @@ function editActionRow(data) {
         cells[i].title = String(newCellContent);
       }
     });
+
+    if ((isIr || isPo) && data.d && data.d.length >= 2) {
+      const slotId = parseInt(String(data.d[0]).replace('#', ''), 10);
+      const newLabel = `${data.d[0]} - ${data.d[1]}`;
+      const targetList = isIr ? window.z2sIrOptions : window.z2sPoOptions;
+
+      if (targetList && !isNaN(slotId)) {
+        const item = targetList.find(opt => opt.id === slotId);
+        if (item) {
+          item.label = newLabel;
+        } else {
+          // Jeśli jakimś cudem nie było go na liście, dodaj
+          targetList.push({ id: slotId, label: newLabel });
+        }
+        // Jeśli formularz akcji jest otwarty, odśwież opcje na liście rozwijanej
+        syncSubactionDropdown();
+      }
+    }
+
     filterActionTable(data.target);
   }
 }
@@ -1255,6 +1307,13 @@ JSON.parse = function(text, reviver) {
   }
   
   // Normal ESPUI message passthrough
+  if (window.z2sActionEditActive) {
+    clearTimeout(window.z2sSyncTimer);
+    window.z2sSyncTimer = setTimeout(() => {
+      if (typeof updateActionThresholdsVisibility === "function") updateActionThresholdsVisibility();
+      if (typeof syncSubactionDropdown === "function") syncSubactionDropdown();
+    }, 30);
+  }
   return data;
 };
 
@@ -1388,6 +1447,194 @@ window.buttonclick = function(number, isdown) {
 
   originalButtonClick(number, isdown);
 };
+
+function updateActionThresholdsVisibility() {
+  // Znajdź selektor eventu po pierwszym option "Select source event..."
+  const allSelects = document.querySelectorAll("select");
+  let eventSelect = null;
+  for (const sel of allSelects) {
+    if (sel.options.length > 0 && sel.options[0].text.includes("Select source event")) {
+      eventSelect = sel;
+      break;
+    }
+  }
+  if (!eventSelect) return;
+
+  const panel = eventSelect.closest(".panel") || eventSelect.parentElement.parentElement;
+  if (!panel) return;
+
+  let thresh1Wrap = null;
+  let thresh2Wrap = null;
+
+  panel.querySelectorAll("input[type='text']").forEach(inp => {
+    const wrap = inp.parentElement;
+    if (!wrap) return;
+    const labelText = wrap.textContent.toLowerCase();
+    if (labelText.includes("main threshold")) thresh1Wrap = wrap;
+    else if (labelText.includes("secondary threshold")) thresh2Wrap = wrap;
+  });
+
+  if (!thresh1Wrap || !thresh2Wrap) return;
+
+  const val = parseInt(eventSelect.value);
+  const selectedText = eventSelect.options[eventSelect.selectedIndex]
+    ? eventSelect.options[eventSelect.selectedIndex].text.toLowerCase()
+    : "";
+
+  const isCondition = !isNaN(val) && val >= 0xFFFF;
+  const needsSecondThreshold = isCondition && (
+    selectedText.includes("between")
+  );
+
+  thresh1Wrap.style.display = isCondition ? "" : "none";
+  thresh2Wrap.style.display = needsSecondThreshold ? "" : "none";
+}
+
+function syncSubactionDropdown() {
+  // action_subaction_number z C++ ma swój unikalny ID przypisany przez ESPUI,
+  // ale możemy też łatwo znaleźć input po jego klasie/rodzicu lub powiązanym labelu.
+  const panel = document.querySelector("select");
+  if (!panel) return;
+
+  // Znajdź input subaction bezpośrednio w dokumencie
+  let subInput = document.getElementById("text" + (typeof action_subaction_number !== 'undefined' ? action_subaction_number : 9999)) ||
+                 document.getElementById("num" + (typeof action_subaction_number !== 'undefined' ? action_subaction_number : 9999));
+
+  // Fallback: szukaj po etykiecie "Subaction ID" jeśli zmienna C++ nie jest widoczna w globalnym scope JS
+  if (!subInput) {
+    document.querySelectorAll("input").forEach(inp => {
+      const wrap = inp.closest(".panel") || inp.parentElement;
+      if (wrap && wrap.textContent.includes("Subaction ID")) {
+        subInput = inp;
+      }
+    });
+  }
+  if (!subInput) return;
+
+  // Znajdź selektor akcji docelowych
+  const allSelects = document.querySelectorAll("select");
+  let actionSelect = null;
+  for (const sel of allSelects) {
+    if (sel.options.length > 0 && sel.options[0].text.includes("Select destination action")) {
+      actionSelect = sel;
+      break;
+    }
+  }
+  if (!actionSelect) return;
+
+  // Iniekcja stylów wymuszających ciemny tekst i ukrywanie
+  if (!document.getElementById("z2s-subaction-css")) {
+    const st = document.createElement("style");
+    st.id = "z2s-subaction-css";
+    st.textContent = `
+      .z2s-force-hidden { display: none !important; }
+      .subaction-helper-select,
+      .subaction-helper-select option {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        color: #212529 !important;
+        background-color: #ffffff !important;
+      }
+      .subaction-helper-select:disabled {
+        opacity: 0.5 !important;
+        pointer-events: none !important;
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  const isFormDisabled = !window.z2sActionEditActive || subInput.disabled || actionSelect.disabled;
+  const selectedActionText = (!isFormDisabled && actionSelect.selectedIndex >= 0 && actionSelect.options[actionSelect.selectedIndex])
+    ? actionSelect.options[actionSelect.selectedIndex].text.toUpperCase()
+    : "";
+
+  const isIrMode = selectedActionText.includes("SEND IR CODE");
+  const isPoMode = selectedActionText.includes("SEND PUSHOVER MESSAGE");
+
+  let helperSelect = subInput.parentElement.querySelector(".subaction-helper-select");
+  if (!helperSelect) {
+    helperSelect = document.createElement("select");
+    helperSelect.className = (actionSelect.className + " subaction-helper-select z2s-force-hidden").trim();
+    subInput.insertAdjacentElement("afterend", helperSelect);
+
+    helperSelect.addEventListener("change", function() {
+      subInput.value = this.value;
+      const numId = subInput.id.replace(/^(num|text)/, "");
+      if (typeof numberchange === "function" && numId) {
+        numberchange(numId);
+      } else {
+        subInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+  }
+
+  if (isFormDisabled || (!isIrMode && !isPoMode)) {
+    helperSelect.value = "0";
+    helperSelect.disabled = true;
+    helperSelect.classList.add("z2s-force-hidden");
+    subInput.classList.remove("z2s-force-hidden");
+    return;
+  }
+
+  const optionsData = isIrMode ? (window.z2sIrOptions || []) : (window.z2sPoOptions || []);
+  const placeholder = isIrMode ? "Select IR code (sid)..." : "Select Pushover message (sid)...";
+  const currentVal = String(subInput.value || "0");
+
+  let html = `<option value="0">${placeholder}</option>`;
+  if (optionsData.length === 0) {
+    html += `<option value="${currentVal}" selected>No saved items (sid: ${currentVal})</option>`;
+  } else {
+    optionsData.forEach(opt => {
+      const selected = String(opt.id) === currentVal ? " selected" : "";
+      const safeLabel = opt.label.replace(/"/g, "&quot;");
+      html += `<option value="${opt.id}"${selected}>${safeLabel}</option>`;
+    });
+  }
+
+  helperSelect.innerHTML = html;
+  helperSelect.disabled = false;
+
+  // Bezwzględnie ukrywamy oryginał i pokazujemy nasz select
+  subInput.classList.add("z2s-force-hidden");
+  helperSelect.classList.remove("z2s-force-hidden");
+}
+
+document.addEventListener("change", function(e) {
+  if (e.target && e.target.tagName === "SELECT" && !e.target.classList.contains("subaction-helper-select")) {
+    updateActionThresholdsVisibility();
+    syncSubactionDropdown();
+    setTimeout(syncSubactionDropdown, 150);
+    setTimeout(syncSubactionDropdown, 350);
+  }
+});
+
+const origUpdateSelectOptions = updateSelectOptions;
+updateSelectOptions = function(...args) {
+  origUpdateSelectOptions.apply(this, args);
+  setTimeout(() => {
+    updateActionThresholdsVisibility();
+    syncSubactionDropdown();
+  }, 50);
+};
+
+window.addEventListener("beforeunload", function() {
+  if (typeof websock !== "undefined" && websock && websock.readyState === WebSocket.OPEN) {
+    websock.close();
+  }
+});
+
+window.addEventListener("load", function() {
+  setTimeout(function checkSync() {
+    const anySelect = document.querySelector("select");
+    // Jeśli selektory już są w DOM, ale mają 0 opcji (nie dotarł gui_cmd_synchronize_all)
+    if (anySelect && anySelect.options.length === 0) {
+      console.log("[Z2S Watchdog] Selectors empty after reload, requesting sync...");
+      if (typeof websock !== "undefined" && websock && websock.readyState === WebSocket.OPEN) {
+        websock.send("uicc:1"); 
+      }
+    }
+  }, 1200);
+});
 
 )=====";
 
@@ -4674,6 +4921,7 @@ void updateActionButtons() {
 	enableControlStyle(action_cancel_button, action_cancel_button_enable);
 	enableControlStyle(action_remove_button, action_remove_button_enable);
 	enableControlStyle(action_copy_button, action_remove_button_enable);
+	enableControlStyle(action_chain_button, action_remove_button_enable);
 }
 
 /*****************************************************************************/
@@ -5816,6 +6064,10 @@ void buildActionsTabGUI() {
 	action_copy_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "COPY ACTION", Control::Color::Dark,
 	  action_new_button, actionsTableCallback, (void *)GUI_CB_ACTION_COPY_FLAG);
+	
+	action_chain_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "CHAIN ACTION", Control::Color::Dark,
+	  action_new_button, actionsTableCallback, (void *)GUI_CB_ACTION_CHAIN_FLAG);
 
 	action_save_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "SAVE ACTION", Control::Color::Dark,
@@ -11113,14 +11365,17 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 			case GUI_CB_ACTION_COPY_FLAG:
 				{
 
-					if ((current_action_gui_state != VIEW_ACTION) || (current_action_id == -1))
+					if ((current_action_gui_state != VIEW_ACTION) || 
+							(current_action_id == -1))
 						return;
 
 					new_action_id = Z2S_findFreeActionIndex();
 
 					if (new_action_id == -1) {
 
-						ESPUI.updateLabel(action_state_label, "Actions table is full - can't add new Z2S Action!");
+						ESPUI.updateLabel(
+							action_state_label, "Actions table is full - can't add new "
+							"Z2S Action!");
 						return;
 					}
 
@@ -11131,6 +11386,53 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					updateActionDetails(new_action);
 					updateActionButtons();
 					enableActionsTable(false);
+				}
+				break;
+
+
+			case GUI_CB_ACTION_CHAIN_FLAG:
+				{
+					if ((current_action_gui_state != VIEW_ACTION) || 
+							(current_action_id == -1))
+						return;
+
+					new_action_id = Z2S_findFreeActionIndex();
+					if (new_action_id == -1) {
+						ESPUI.updateLabel(
+						  action_state_label,
+						  "Actions table is full - can't add new Z2S Action!");
+						return;
+					}
+
+					z2s_channel_action_t prev_action = {};
+					Z2S_loadAction(current_action_id, prev_action);
+
+					memset(&new_action, 0, sizeof(z2s_channel_action_t));
+					new_action.is_enabled = true;
+					new_action.src_Supla_channel = prev_action.dst_Supla_channel;
+					new_action.dst_Supla_channel = 0xFF; 
+					new_action.src_Supla_event = (Supla::Event)0xFFFF;
+					new_action.dst_Supla_action = (Supla::Action)0xFFFF;
+
+					snprintf(
+					  new_action.action_name, ACTION_NAME_MAX_SIZE, "Chain: %s",
+					  Z2S_Core::getZ2SChannelNameByChannelNumber(
+					    new_action.src_Supla_channel));
+
+					previous_action_gui_state = current_action_gui_state;
+					current_action_gui_state = COPY_ACTION; 
+					enableActionDetails(true);
+					updateActionDetails(new_action);
+					
+					ESPUI.updateSelect(action_event_selector, -1);
+					ESPUI.updateSelect(action_destination_channel_selector, -1);
+					ESPUI.updateSelect(action_action_selector, -1);
+					
+					updateActionButtons();
+					enableActionsTable(false);
+					ESPUI.updateLabel(
+					  action_state_label,"Chaining action: source channel pre-filled "
+						"from previous destination!");
 				}
 				break;
 

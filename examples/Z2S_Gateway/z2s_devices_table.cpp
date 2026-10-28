@@ -7024,6 +7024,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_RELAY:
       case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
       case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
+      case Z2S_DEVICE_DESC_EGLO_CONNECT2_REMOTE:
 
         addZ2SDeviceVirtualRelay(
           &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, 

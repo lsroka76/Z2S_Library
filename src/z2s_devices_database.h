@@ -362,6 +362,8 @@
 #define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM       0x5612
 #define Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_6F_WXKG11LM       0x5613
 
+#define Z2S_DEVICE_DESC_EGLO_CONNECT2_REMOTE                0x5700
+
 #define Z2S_DEVICE_DESC_HVAC_START                          0x6000
 
 #define Z2S_DEVICE_DESC_TUYA_HVAC                           0x6000
@@ -1919,6 +1921,10 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
       ESP_ZB_ZCL_CLUSTER_ID_SCENES,
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_EGLO_CONNECT2_REMOTE,
+    .z2s_device_clusters_count = 0,
+    .z2s_device_config_flags = 0x0 },
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_1,
     .z2s_device_clusters_count = 4,
@@ -7667,6 +7673,11 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 38300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TH_SENSOR_NTC_PROBE,
     .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "AwoX", .model_name = "ERCU_3groups_Zm",
+    .z2s_device_uid = 38400,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_EGLO_CONNECT2_REMOTE,
+	  .z2s_device_endpoints_count = 1},
 
   
 //DEVICES_END
