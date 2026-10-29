@@ -254,15 +254,15 @@ void Supla::Control::Z2S_RGBCCTInterface::setValueOnServer(
 
 /*****************************************************************************/
 
-void sendOnOffCmd(bool state) {
+void Supla::Control::Z2S_RGBCCTInterface::sendOnOffCmd(bool state) {
 
   switch (getRGBColorMode()) {
 
 
-    case Z2S_TUYA_DP_COLOR_HS_RGB {
+    case Z2S_TUYA_DP_COLOR_HS_RGB: {
 
       if (!state)
-        zbGateway.sendTuyaRequestCmdBool(_short_addr, _endpoint, 0x01, false);
+        sendTuyaRequestCmdBool(_short_addr, _endpoint, 0x01, false);
     } break;
 
 
