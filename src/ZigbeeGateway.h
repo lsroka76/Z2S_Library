@@ -821,8 +821,8 @@ public:
 
   void onCustomCmdReceive(
     bool (*callback)(uint16_t short_addr, uint16_t endpoint_id, 
-    uint16_t cluster_id, uint8_t cmd_id, uint8_t buffer_size, 
-    uint8_t *buffer)) {
+    uint16_t cluster_id, uint8_t cmd_id, uint16_t group_id, 
+    uint8_t buffer_size, uint8_t *buffer)) {
     _on_custom_cmd_receive = callback;
   }
 
@@ -990,7 +990,8 @@ private:
     uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
 
   bool (*_on_custom_cmd_receive)(
-    uint16_t short_addr, uint16_t, uint16_t, uint8_t, uint8_t, uint8_t *);
+    uint16_t short_addr, uint16_t, uint16_t, uint8_t, uint16_t, uint8_t, 
+    uint8_t *);
 
   void (*_on_cmd_custom_cluster_receive)(
     uint8_t, esp_zb_ieee_addr_t ieee_addr, uint16_t, uint16_t, uint16_t, 
@@ -1016,9 +1017,9 @@ private:
   bool zbRawCmdHandler(
     uint8_t seq_number, esp_zb_zcl_addr_t source, int8_t rssi, 
     uint8_t src_endpoint, uint8_t dst_endpoint, uint16_t cluster_id, 
-    uint8_t cmd_id, bool is_common_command, bool disable_default_response, 
-    bool is_manuf_specific, uint16_t manuf_specific, uint8_t buffer_size,
-    uint8_t *buffer);
+    uint8_t cmd_id, uint16_t group_id, bool is_common_command, 
+    bool disable_default_response, bool is_manuf_specific, 
+    uint16_t manuf_specific, uint8_t buffer_size, uint8_t *buffer);
 
   static void bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
   static void bindDevicesCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);

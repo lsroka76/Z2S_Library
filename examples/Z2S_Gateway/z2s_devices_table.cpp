@@ -1304,10 +1304,10 @@ void Z2S_initSuplaChannels() {
       if (!elementsStorage.load(channels_counter, z2s_channel_params)) {
 
         log_e(
-          "channel data file not found - clearing index position - temporary"
-          " disabled");
-        //elementsStorage.clearPosition(channels_counter);
-        //elementsStorage.saveIndexTable();
+          "channel data file not found - clearing index position!");
+        
+        elementsStorage.clearPosition(channels_counter);
+        elementsStorage.saveIndexTable();
         continue;
       }
 
@@ -5977,9 +5977,216 @@ bool processIkeaSymfoniskCommands(
 
 /*****************************************************************************/
 
+bool processEglo99099Commands(
+  uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
+  uint8_t command_id, uint16_t group_id, uint8_t buffer_size, 
+  uint8_t *buffer) {
+
+  log_i(
+    "EGLO CONNECT2 REMOTE command: cluster(0x%x), command id(0x%x), "
+    "group(0x%x), buf_size(%u)", cluster_id, command_id, group_id, 
+    buffer_size);
+
+  int8_t group_idx = (group_id >= 32778 && group_id <= 32780) ? 
+    (group_id - 32778) : 0;
+
+  uint8_t sub_id = 0x7F;
+  uint8_t hold_mode = 0; 
+
+  Z2S_Core *z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    NO_CUSTOM_CMD_SID);
+
+  if (!z2s_core) {
+    no_channel_found_error_func(short_addr);
+    return false;
+  }
+
+  uint32_t now_ms = millis();
+
+  // =========================================================================
+  // 1. Check On/Off Cluster (0x0006)
+  // =========================================================================
+  if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) {
+    
+    switch (command_id) {
+      
+      
+      case 0x01: { // ON (with 500ms suppression after non-ON actions)
+        
+        if ((now_ms - z2s_core->getLastNonOnActionMs()) < 500) {
+          log_i("EGLO CONNECT2 REMOTE: suppressing spurious ON command");
+          return true;
+        }
+        sub_id = EGLO_CUSTOM_CMD_EGLO_99099_ON_PRESSED_G1_SID + 
+          group_idx;
+      } break;
+
+
+      case 0x00: { // OFF
+        sub_id = EGLO_CUSTOM_CMD_EGLO_99099_OFF_PRESSED_G1_SID + 
+          group_idx;
+      } break;
+    }
+  }
+
+  // =========================================================================
+  // 2. Check Level Control Cluster (0x0008)
+  // =========================================================================
+  else if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
+    
+    switch (command_id) {
+      
+      
+      case 0x02: // Step
+      case 0x06: { // StepWithOnOff (buffer[0] = step_mode: 0x00 = Up, 0x01 = Down)
+        
+        if (buffer_size >= 1) {
+          if (buffer[0] == 0x00) {
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_BRIGHTNESS_UP_PRESSED_G1_SID + group_idx;
+          } else if (buffer[0] == 0x01) {
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_BRIGHTNESS_DOWN_PRESSED_G1_SID + group_idx;
+          }
+        }
+      } break;
+
+
+      case 0x10: { // AwoX Custom Refresh / CANDLE_MODE (ZCL cmd 0x10 = 16)
+        
+        // Payload: [0]=0x00/0x01, [1]=0x01 (short press) or 0x02 (long press)
+        if (buffer_size >= 2) {
+          z2s_core->setLastNonOnActionMs(now_ms);
+          if ((buffer[0] == 0x00 || buffer[0] == 0x01) && buffer[1] == 0x01) {
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_CANDLE_MODE_PRESSED_G1_SID + (group_idx * 2);
+          } else if (buffer[0] == 0x01 && buffer[1] == 0x02) {
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_CANDLE_MODE_HELD_G1_SID + (group_idx * 2);
+          }
+        }
+      } break;
+    }
+  }
+
+  // =========================================================================
+  // 3. Check Scenes Cluster (0x0005)
+  // =========================================================================
+  else if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_SCENES) {
+
+    // Payload for Recall (0x05) and Store (0x04): [0..1] = GroupID (LE), [2] = SceneID (1 or 2)
+    if (buffer_size >= 3) {
+      
+      uint8_t scene_id = buffer[2];
+      
+      switch (command_id) {
+        
+        
+        case 0x05: { // commandRecall (Short press FAVOURITE_1 / FAVOURITE_2)
+          if (scene_id == 0x01)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_FAVOURITE_1_PRESSED_G1_SID + (group_idx * 2);
+          else if (scene_id == 0x02)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_FAVOURITE_2_PRESSED_G1_SID + (group_idx * 2);
+        } break;
+
+
+        case 0x04: { // commandStore (Long press FAVOURITE_1 / FAVOURITE_2)
+          if (scene_id == 0x01)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_FAVOURITE_1_HELD_G1_SID + (group_idx * 2);
+          else if (scene_id == 0x02)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_FAVOURITE_2_HELD_G1_SID + (group_idx * 2);
+        } break;
+      }
+    }
+  }
+
+  // =========================================================================
+  // 4. Check Color Control Cluster (0x0300)
+  // =========================================================================
+  else if (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL) {
+    z2s_core->setLastNonOnActionMs(now_ms); // All 0x0300 commands trigger a spurious ON after
+
+    switch (command_id) {
+      
+      
+      case 0x30: { // AwoX Custom Short Press Color (ZCL cmd 0x30 = 48)
+        // Payload: [0] = 0x00, [1] = Hue (254/255=Red, 84/85=Green, 169/170=Blue)
+        if (buffer_size >= 2 && buffer[0] == 0x00) {
+          uint8_t hue = buffer[1];
+          if (hue == 254 || hue == 255)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_RED_PRESSED_G1_SID + (group_idx * 2);
+          else if (hue == 84 || hue == 85)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_GREEN_PRESSED_G1_SID + (group_idx * 2);
+          else if (hue == 169 || hue == 170)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_BLUE_PRESSED_G1_SID + (group_idx * 2);
+        }
+      } break;
+
+      
+      case 0x06: { // commandMoveToHueAndSaturation (Long Press Color)
+        // Payload: [0] = Hue, [1] = Saturation, [2..3] = TransitionTime
+        if (buffer_size >= 1) {
+          uint8_t hue = buffer[0];
+          if (hue == 254 || hue == 255)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_RED_HELD_G1_SID + (group_idx * 2);
+          else if (hue == 84 || hue == 85)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_GREEN_HELD_G1_SID + (group_idx * 2);
+          else if (hue == 169 || hue == 170)
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_BLUE_HELD_G1_SID + (group_idx * 2);
+        }
+      } break;
+
+      
+      case 0x01:   // commandMoveHue (awox_refresh_colored)
+      case 0x41: { // commandEnhancedMoveHue (refresh_colored_button: movemode 1 = short, 3 = long)
+        // Payload: [0] = MoveMode (0x01 = Short Press COLOR_CHANGE)
+        if (buffer_size >= 1 && buffer[0] == 0x01) {
+          sub_id = EGLO_CUSTOM_CMD_EGLO_99099_COLOR_CHANGE_PRESSED_G1_SID + group_idx;
+        }
+      } break;
+
+      
+      case 0x4B: { // commandStepColorTemp
+        // Payload: [0] = StepMode (Inverted on Eglo 99099: 0x01 = Down, 0x03 = Up)
+        if (buffer_size >= 1) {
+          if (buffer[0] == 0x03) {
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_COLOR_TEMPERATURE_UP_PRESSED_G1_SID + group_idx;
+          } else if (buffer[0] == 0x01) {
+            sub_id = EGLO_CUSTOM_CMD_EGLO_99099_COLOR_TEMPERATURE_DOWN_PRESSED_G1_SID + group_idx;
+          }
+        }
+      } break;
+
+      
+      case 0x0A: { // commandMoveToColorTemp (still updates LastNonOnActionMs above to block spurious ON)
+        return true;
+      } break;
+    }
+  }
+
+  log_i("EGLO CONNECT2 REMOTE sub id %d, %u", sub_id, sub_id);
+
+  if (sub_id == 0x7F) return false;
+
+  z2s_core = Z2S_findZ2SCore(
+    short_addr, endpoint, cluster_id, SUPLA_CHANNELTYPE_ACTIONTRIGGER, 
+    sub_id);
+
+  if (!z2s_core)
+    log_i(
+      "No EGLO CONNECT2 REMOTE channel found for address 0x%04X, sub_id %u", 
+      short_addr, sub_id);
+  else 
+    msgZ2SDeviceActionTriggerV2(
+      z2s_core->getZ2SElementPtr(), z2s_core->isActionTriggerV2(), sub_id, 
+      hold_mode);
+
+  return true;
+}
+
+/*****************************************************************************/
+
 bool Z2S_onCustomCmdReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
-  uint8_t command_id, uint8_t buffer_size, uint8_t *buffer) {
+  uint8_t command_id, uint16_t group_id,  uint8_t buffer_size, 
+  uint8_t *buffer) {
   
   log_i(
     "short address 0x%04X, endpoint 0x%02X, cluster 0x%04X, cmd id 0x%02X", 
@@ -6350,6 +6557,14 @@ bool Z2S_onCustomCmdReceive(
 
       return processIkeaBilresaWheelCommands(
         short_addr, endpoint, cluster_id, command_id, buffer_size, buffer); 
+      break;
+
+
+    case Z2S_DEVICE_DESC_EGLO_99099:
+
+      return processEglo99099Commands(
+        short_addr, endpoint, cluster_id, command_id, group_id, buffer_size, 
+        buffer); 
       break;
       
 
@@ -7024,7 +7239,6 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_RELAY:
       case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
       case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
-      case Z2S_DEVICE_DESC_EGLO_CONNECT2_REMOTE:
 
         addZ2SDeviceVirtualRelay(
           &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, 
@@ -7291,7 +7505,22 @@ uint8_t Z2S_addZ2SDevice(
           SUPLA_CHANNELFNC_POWERSWITCH);
       } break;
 
-/*****************************************************************************/     
+/*****************************************************************************/  
+
+      case Z2S_DEVICE_DESC_EGLO_99099: {
+
+        char button_name_function[40];
+          
+        strncpy_P(
+          button_name_function, EGLO_99099_BUTTONS[sub_id], 
+          sizeof(button_name_function));
+        
+        addZ2SDeviceActionTrigger(
+          device, first_free_slot, sub_id, button_name_function, 
+          SUPLA_CHANNELFNC_POWERSWITCH);
+    } break;
+
+/*****************************************************************************/
 
       //case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1:
       case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_2: {
@@ -9848,6 +10077,16 @@ void Z2S_buildSuplaChannels(
 
       Z2S_addZ2SDevice(
         joined_device, IKEA_CUSTOM_CMD_BILRESA_WHEEL_ROTATE_LEFT_SID);
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_EGLO_99099: {
+      
+      for (uint8_t sid = 0x00; sid <= 0x38; sid++) {
+        Z2S_addZ2SDevice(joined_device, sid);
+      }
+
     } break;
 
 /*****************************************************************************/

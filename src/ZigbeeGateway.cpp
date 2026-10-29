@@ -3378,9 +3378,9 @@ void ZigbeeGateway::zbCmdCustomClusterReq(
 bool ZigbeeGateway::zbRawCmdHandler(
     uint8_t seq_number, esp_zb_zcl_addr_t source, int8_t rssi, 
     uint8_t src_endpoint, uint8_t dst_endpoint, uint16_t cluster_id, 
-    uint8_t cmd_id, bool is_common_command, bool disable_default_response, 
-    bool is_manuf_specific, uint16_t manuf_specific, uint8_t buffer_size,
-    uint8_t *buffer) {
+    uint8_t cmd_id, uint16_t group_id, bool is_common_command, 
+    bool disable_default_response, bool is_manuf_specific, 
+    uint16_t manuf_specific, uint8_t buffer_size, uint8_t *buffer) {
   
     if (_on_update_device_last_rssi)
       _on_update_device_last_rssi(source.u.short_addr, rssi);
@@ -3748,8 +3748,8 @@ bool ZigbeeGateway::zbRawCmdHandler(
     
     if (_on_custom_cmd_receive)
       return _on_custom_cmd_receive(
-        source.u.short_addr, src_endpoint, cluster_id, cmd_id, buffer_size, 
-        buffer);
+        source.u.short_addr, src_endpoint, cluster_id, cmd_id, group_id, 
+        buffer_size, buffer);
     else return false;
 }
 

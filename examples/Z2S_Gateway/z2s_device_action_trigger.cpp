@@ -2162,7 +2162,7 @@ bool getVirtualButtonNumber(
             Supla::SEND_AT_SHORT_PRESS_x5;
           return true;
         } break;
-
+        
 
         default: {
 
@@ -2173,6 +2173,108 @@ bool getVirtualButtonNumber(
         } break;
       } 
     break;
+
+
+    case Z2S_DEVICE_DESC_EGLO_99099: {
+
+      uint8_t eff_sid = (sub_id == NO_CUSTOM_CMD_SID) ? 0x00 : sub_id;
+
+      if (eff_sid > 0x38) {
+        
+        log_e(
+          "unknown combination: model id = 0x%04X, sub id = 0x%02X", 
+          model_id, sub_id);
+        
+        return false;
+      }
+
+      struct EgloBtnGroupDesc {
+        uint8_t start_sid;
+        uint8_t count;      // 3 = PRESSED only (G1..G3), 6 = PRESSED + HELD (G1..G3)
+        uint8_t button_id;
+        const char *name;
+      };
+
+      static const EgloBtnGroupDesc eglo_btns[] = {
+        { 0x00, 3,  1, "ON" },
+        { 0x03, 3,  2, "OFF" },
+        { 0x06, 6,  3, "COLOR RED" },
+        { 0x0C, 6,  4, "COLOR GREEN" },
+        { 0x12, 6,  5, "COLOR BLUE" },
+        { 0x18, 3,  6, "COLOR CHANGE" },
+        { 0x1B, 6,  7, "CANDLE MODE" },
+        { 0x21, 3,  8, "BRIGHTNESS UP" },
+        { 0x24, 3,  9, "BRIGHTNESS DOWN" },
+        { 0x27, 3, 10, "COLOR TEMP UP" },
+        { 0x2A, 3, 11, "COLOR TEMP DOWN" },
+        { 0x2D, 6, 12, "FAVOURITE 1" },
+        { 0x33, 6, 13, "FAVOURITE 2" }
+      };
+
+      for (const auto &b : eglo_btns) {
+    
+        if (eff_sid >= b.start_sid && eff_sid < (b.start_sid + b.count)) {
+
+          uint8_t offset = eff_sid - b.start_sid;
+          uint8_t group  = (b.count == 6) ? (offset / 2) : offset;
+          bool is_held   = (b.count == 6) && ((offset % 2) == 1);
+
+          virtual_button_data.button_id = b.button_id;
+          virtual_button_data.button_action_trigger_name = b.name;
+      
+          if (!is_held) {
+            
+            if (group == 0) {
+            
+              virtual_button_data.button_action_trigger_flag = 
+                SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+              virtual_button_data.button_action_id = 
+                Supla::SEND_AT_SHORT_PRESS_x1;
+            } 
+            else if (group == 1) {
+            
+              virtual_button_data.button_action_trigger_flag = 
+                SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+              virtual_button_data.button_action_id  = 
+                Supla::SEND_AT_SHORT_PRESS_x2;
+            } 
+            else {
+          
+              virtual_button_data.button_action_trigger_flag = 
+                SUPLA_ACTION_CAP_SHORT_PRESS_x3;
+              virtual_button_data.button_action_id = 
+                Supla::SEND_AT_SHORT_PRESS_x3;
+            }
+          } 
+          else {
+            
+            if (group == 0) {
+              
+              virtual_button_data.button_action_trigger_flag = 
+                SUPLA_ACTION_CAP_TOGGLE_x1;
+              virtual_button_data.button_action_id =  
+                Supla::SEND_AT_TOGGLE_x1;
+            } 
+            else if (group == 1) {
+            
+              virtual_button_data.button_action_trigger_flag = 
+                SUPLA_ACTION_CAP_TOGGLE_x2;
+              virtual_button_data.button_action_id = 
+                Supla::SEND_AT_TOGGLE_x2;
+            } 
+            else {
+          
+              virtual_button_data.button_action_trigger_flag = 
+                SUPLA_ACTION_CAP_TOGGLE_x3;
+              virtual_button_data.button_action_id = 
+                Supla::SEND_AT_TOGGLE_x3;
+            }
+          }
+          return true;
+        }
+      }
+      return false;
+    } break;
 
 
     default: {

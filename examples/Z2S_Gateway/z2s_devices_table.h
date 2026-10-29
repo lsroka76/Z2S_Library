@@ -484,7 +484,8 @@ void Z2S_onIkeaCustomClusterReceive(
 
 bool Z2S_onCustomCmdReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster_id, 
-  uint8_t command_id, uint8_t buffer_size, uint8_t *buffer);
+  uint8_t command_id, uint16_t group_id, uint8_t buffer_size, 
+  uint8_t *buffer);
 
 void Z2S_onCmdCustomClusterReceive(
   uint8_t tsn, esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr, 

@@ -117,7 +117,10 @@ typedef struct z2s_zb_device_params_s {
       uint8_t         channel_id;
       uint8_t         program_id;
       uint8_t         unit_id;
-    } smart_dual_valve_data;    
+    } smart_dual_valve_data;
+    struct {
+      uint32_t  last_non_on_action_ms;
+    } smart_remote_data;    
   };
 } __attribute__((packed)) z2s_zb_device_params_t;  //fields are padded properly anyway
 

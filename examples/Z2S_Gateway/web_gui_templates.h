@@ -649,6 +649,21 @@ inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_CLICK_5,
 		.Supla_event_name =  "ON CLICK 5" },
 
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_LONG_CLICK_1,
+		.Supla_event_name =  "ON LONG CLICK 1" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_LONG_CLICK_2,
+		.Supla_event_name =  "ON LONG CLICK 2" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_LONG_CLICK_3,
+		.Supla_event_name =  "ON LONG CLICK 3" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_LONG_CLICK_4,
+		.Supla_event_name =  "ON LONG CLICK 4" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_LONG_CLICK_5,
+		.Supla_event_name =  "ON LONG CLICK 5" },
+
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_CORE_EVENT_ON_TURN_ON,
 		.Supla_event_name =  "ON TURN ON" },
 

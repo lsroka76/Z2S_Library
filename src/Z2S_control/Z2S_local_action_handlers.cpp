@@ -508,7 +508,39 @@ void Supla::Control::LocalActionTrigger::handleAction(int event, int action) {
   uint32_t local_event = actionTriggerCapToButtonEvent(
     getActionTriggerCap(action));
 
+  switch (getActionTriggerCap(action)) {
+
+    case SUPLA_ACTION_CAP_TOGGLE_x1: {
+      
+      local_event = Supla::ON_LONG_CLICK_1;
+    } break;
+  
+
+    case SUPLA_ACTION_CAP_TOGGLE_x2: {
+      
+      local_event = Supla::ON_LONG_CLICK_2;
+    } break;
+
+  
+    case SUPLA_ACTION_CAP_TOGGLE_x3: {
+      
+      local_event = Supla::ON_LONG_CLICK_3;
+    } break;
+    
+
+    case SUPLA_ACTION_CAP_TOGGLE_x4: {
+      
+      local_event = Supla::ON_LONG_CLICK_4;
+    } break;
+    
+
+    case SUPLA_ACTION_CAP_TOGGLE_x5: {
+      local_event = Supla::ON_LONG_CLICK_5;
+    }  break;
+  }
+
   log_i("event %u, action %u, local event %u", event, action, local_event);
+  log_i("Supla::ON_LONG_CLICK_1 % u", Supla::ON_LONG_CLICK_1);
 
   //Supla::LocalAction::
   channel.runAction(local_event);

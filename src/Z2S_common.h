@@ -732,6 +732,17 @@ class Z2S_Device {
         return true;
     }
 
+     uint32_t getSmartRemoteDataLastNonOnActionMs() const {
+
+      return _z2s_device.smart_remote_data.last_non_on_action_ms;
+    }
+
+    void setSmartRemoteDataLastNonOnActionMs(uint32_t last_non_on_action_ms) {
+
+      _z2s_device.smart_remote_data.last_non_on_action_ms = 
+        last_non_on_action_ms;
+    }
+
     bool isAdvancedDevice();
     bool hasTuyaCustomCluster();
     bool isIrRemote();
@@ -1832,6 +1843,20 @@ public:
       return _z2s_device->getDeviceLocalName();
     else
       return "NO DEVICE!";
+  }
+
+  uint32_t getLastNonOnActionMs() {
+
+    if (_z2s_device)
+      return _z2s_device->getSmartRemoteDataLastNonOnActionMs();
+    else
+      return 0;
+  }
+
+  void setLastNonOnActionMs(uint32_t last_non_on_action_ms) {
+
+    if (_z2s_device)
+       _z2s_device->setSmartRemoteDataLastNonOnActionMs(last_non_on_action_ms);
   }
 
 /*****************************************************************************/

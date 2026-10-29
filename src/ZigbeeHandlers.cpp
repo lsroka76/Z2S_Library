@@ -313,9 +313,10 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
         cmd_info->seq_number, esp_zb_zcl_address, cmd_info->rssi, 
         cmd_info->addr_data.common_data.src_endpoint, 
         cmd_info->addr_data.common_data.dst_endpoint, 
-        cmd_info->cluster_id, cmd_info->cmd_id, cmd_info->is_common_command,
-        cmd_info->disable_default_response, cmd_info->is_manuf_specific,
-        cmd_info->manuf_specific, sizeof(buf), &buf[0])) {
+        cmd_info->cluster_id, cmd_info->cmd_id, group_id, 
+        cmd_info->is_common_command, cmd_info->disable_default_response, 
+        cmd_info->is_manuf_specific, cmd_info->manuf_specific, sizeof(buf), 
+        &buf[0])) {
 
         zb_zcl_send_default_handler(bufid, cmd_info, ZB_ZCL_STATUS_SUCCESS);
 
