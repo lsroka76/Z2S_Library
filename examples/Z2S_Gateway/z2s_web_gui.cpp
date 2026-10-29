@@ -851,27 +851,30 @@ function formatActionTableCell(cellContent, colIdx, isIr, isPo) {
   const str = String(cellContent);
   if (isIr || isPo) return str;
 
-  // Kolumna 0: Action Name + przycisk statusu (ON/OFF)
   if (colIdx === 0) {
-    const match = str.match(/^(.*)\s+\((on|off)\)$/i);
-    if (match) {
-      const isOn = match[2].toLowerCase() === 'on';
-      return `<span class="action-name-cell"><span class="${isOn ? 'action-btn-on' : 'action-btn-off'}">${isOn ? 'ON' : 'OFF'}</span><span>${match[1]}</span></span>`;
+    const lower = str.toLowerCase();
+    if (lower.endsWith(" (on)")) {
+      const name = str.slice(0, -5);
+      return `<span class="action-name-cell"><span class="action-btn-on">ON</span><span class="action-name-text">${name}</span></span>`;
     }
+    if (lower.endsWith(" (off)")) {
+      const name = str.slice(0, -6);
+      return `<span class="action-name-cell"><span class="action-btn-off">OFF</span><span class="action-name-text">${name}</span></span>`;
+    }
+    return `<span class="action-name-cell"><span class="action-name-text">${str}</span></span>`;
   }
 
-  // Kolumna 1 (Supla event) & Kolumna 3 (Supla action): Płaski przycisk (Flat button)
   if (colIdx === 1 || colIdx === 3) {
-    const match = str.match(/^(.*?)(\s+\((?:v:|sid:).*\))$/);
-    if (match) {
-      return `<span class="action-flat-btn">${match[1]}</span><span class="action-btn-meta">${match[2]}</span>`;
+    let metaIdx = str.indexOf(" (v:");
+    if (metaIdx === -1) metaIdx = str.indexOf(" (sid:");
+    if (metaIdx !== -1 && str.endsWith(")")) {
+      return `<span class="action-flat-btn">${str.slice(0, metaIdx)}</span><span class="action-btn-meta">${str.slice(metaIdx)}</span>`;
     }
     return `<span class="action-flat-btn">${str}</span>`;
   }
 
-  // Kolumna 2 (Source channel) & Kolumna 4 (Destination channel): Przycisk łańcucha logiki 🔗
   if (colIdx === 2 || colIdx === 4) {
-    const safeChannel = str.replace(/"/g, '&quot;');
+    const safeChannel = str.split('"').join('&quot;');
     return `<span class="channel-cell-wrap"><span class="channel-chain-btn" data-channel="${safeChannel}" title="Pokaż wszystkie akcje powiązane z tym kanałem">🔗</span><span class="channel-cell-name">${str}</span></span>`;
   }
 
@@ -966,19 +969,19 @@ function updateActionTable(data) {
   targetLabel.dataset.isIr = isIr ? "1" : "0";
   targetLabel.dataset.isPo = isPo ? "1" : "0";
   const savedSearch = targetLabel.dataset.searchQuery || "";
+  const isExpanded = targetLabel.dataset.isExpanded === "1";
 
   let rowsHtml = "";
 
   if (!data.d || data.d.length === 0) {
     rowsHtml = `<tr><td colspan="${colSpan}" style="text-align:center;padding:16px;color:#6c757d;font-style:italic;">${emptyMsg}</td></tr>`;
   } else {
-		if (!data.append) {
+    if (!data.append) {
       if (isIr) window.z2sIrOptions = [];
       if (isPo) window.z2sPoOptions = [];
     }
     data.d.forEach((row, index) => {
-			
-			if ((isIr || isPo) && row.length >= 2) {
+      if ((isIr || isPo) && row.length >= 2) {
         const slotId = parseInt(String(row[0]).replace('#', ''), 10);
         if (!isNaN(slotId)) {
           const entry = { id: slotId, label: `${row[0]} - ${row[1]}` };
@@ -993,7 +996,7 @@ function updateActionTable(data) {
       row.forEach((cell, colIdx) => {
         const cleanCell = String(cell).replace(/"/g, '&quot;');
         const renderedCell = formatActionTableCell(cell, colIdx, isIr, isPo);
-        rowsHtml += `<td style="padding:6px;border-bottom:1px solid #eee;vertical-align:middle;" title="${cleanCell}">${renderedCell}</td>`;
+        rowsHtml += `<td style="padding:3px 6px;border-bottom:1px solid #eee;vertical-align:middle;" title="${cleanCell}">${renderedCell}</td>`;
       });
       rowsHtml += "</tr>";
     });
@@ -1013,6 +1016,7 @@ function updateActionTable(data) {
     #${data.target} tbody tr[data-action-idx]:hover{background-color:rgba(0,123,255,0.2)!important;}
     #${data.target} th{position:sticky;top:0;background:#e9ecef;color:#212529;font-weight:600;border-bottom:2px solid #adb5bd;z-index:10;box-shadow:0 2px 4px -2px rgba(0,0,0,0.25);}
     #${data.target} th,#${data.target} td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    #${data.target} td{font-size:11px;}
     #${data.target} .table-search-bar{display:flex;align-items:center;gap:8px;margin-top:8px;padding:5px 10px;background:rgba(0,0,0,0.25);border:1px solid rgba(128,128,128,0.25);border-bottom:none;border-top-left-radius:6px;border-top-right-radius:6px;}
     #${data.target} .table-search-input{flex:1;background:rgba(255,255,255,0.08)!important;border:1px solid rgba(255,255,255,0.2)!important;border-radius:4px!important;color:#f8fafc!important;padding:4px 8px!important;font-size:12px!important;outline:none!important;margin:0!important;height:26px!important;box-sizing:border-box!important;}
     #${data.target} .table-search-input::placeholder{color:#94a3b8;}
@@ -1020,18 +1024,23 @@ function updateActionTable(data) {
     #${data.target} .table-search-clear{display:none;align-items:center;justify-content:center;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#cbd5e1;border-radius:4px;padding:0 7px;height:24px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;}
     #${data.target} .table-search-clear:hover{background:rgba(231,76,60,0.7);color:#fff;}
     #${data.target} .table-search-count{font-size:11px;font-weight:600;color:#94a3b8;min-width:36px;text-align:right;user-select:none;}
-    #${data.target} .action-name-cell{display:inline-flex;align-items:center;gap:6px;}
+    #${data.target} .table-expand-btn{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#cbd5e1;border-radius:4px;width:24px;height:24px;font-size:12px;cursor:pointer;user-select:none;transition:all 0.15s;flex-shrink:0;}
+    #${data.target} .table-expand-btn:hover{background:rgba(0,123,255,0.4);color:#fff;border-color:#80bdff;}
+    #${data.target} .action-name-cell{display:inline-flex;align-items:center;gap:6px;font-size:11px;line-height:1.3;max-width:100%;}
+    #${data.target} .action-name-text{overflow:hidden;text-overflow:ellipsis;}
     #${data.target} .action-btn-on,#${data.target} .action-btn-off{display:inline-flex;align-items:center;justify-content:center;padding:2px 6px;font-size:10px;font-weight:700;line-height:1.1;border-radius:4px;letter-spacing:0.4px;flex-shrink:0;}
     #${data.target} .action-btn-on{background-color:#2ecc71;color:#fff;border:1px solid #27ae60;box-shadow:0 1px 2px rgba(0,0,0,0.2);}
-    #${data.target} .action-btn-off{background-color:rgba(148,163,184,0.2);color:#94a3b8;border:1px solid rgba(148,163,184,0.35);}
-    #${data.target} .action-flat-btn{display:inline-block;padding:2px 8px;font-size:11px;font-weight:600;line-height:1.3;border-radius:4px;background-color:rgba(128,128,128,0.15);border:1px solid rgba(128,128,128,0.3);color:inherit;}
+    #${data.target} .action-btn-off{background-color:#e74c3c;color:#fff;border:1px solid #c0392b;box-shadow:0 1px 2px rgba(0,0,0,0.2);}
+    #${data.target} .action-flat-btn{display:inline-block;padding:1px 6px;font-size:11px;font-weight:600;line-height:1.2;border-radius:4px;background-color:rgba(128,128,128,0.15);border:1px solid rgba(128,128,128,0.3);color:inherit;}
     #${data.target} .action-btn-meta{font-size:11px;opacity:0.8;margin-left:3px;}
-		#${data.target} .channel-cell-wrap{display:inline-flex;align-items:center;gap:5px;padding:1px 5px;border-radius:4px;max-width:100%;transition:all 0.15s;}
+    #${data.target} .channel-cell-wrap{display:inline-flex;align-items:center;gap:5px;padding:1px 5px;border-radius:4px;max-width:100%;transition:all 0.15s;}
+    #${data.target} .channel-cell-name{font-size:11px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;}
     #${data.target} .channel-chain-btn{display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:1px 4px;border-radius:3px;background:rgba(128,128,128,0.15);border:1px solid rgba(128,128,128,0.3);cursor:pointer;opacity:0.65;flex-shrink:0;transition:all 0.15s;}
     #${data.target} .channel-chain-btn:hover{opacity:1;background:rgba(0,123,255,0.35);border-color:#80bdff;transform:scale(1.08);}
     #${data.target} .chain-match-src{background:rgba(59,130,246,0.22);border:1px solid rgba(96,165,250,0.55);color:#93c5fd;font-weight:600;}
     #${data.target} .chain-match-dst{background:rgba(245,158,11,0.22);border:1px solid rgba(251,191,36,0.55);color:#fcd34d;font-weight:600;}
-    #${data.target} div[tabindex]{height:210px;overflow:auto;overscroll-behavior:contain;border:1px solid rgba(128,128,128,0.25);transition:border-color 0.15s,box-shadow 0.15s;}
+    #${data.target} div[tabindex]{height:210px;overflow:auto;overscroll-behavior:contain;border:1px solid rgba(128,128,128,0.25);transition:height 0.25s ease,border-color 0.15s,box-shadow 0.15s;}
+    #${data.target} div[tabindex].table-fullscreen{height:70vh!important;}
     #${data.target} div[tabindex]::-webkit-scrollbar{width:6px;height:6px;}
     #${data.target} div[tabindex]::-webkit-scrollbar-track{background:rgba(128,128,128,0.1);border-radius:4px;}
     #${data.target} div[tabindex]::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.35);border-radius:4px;}
@@ -1046,18 +1055,19 @@ function updateActionTable(data) {
   </style>`;
 
   const headerHtml = isIr
-    ? "<th style='padding:6px;width:80px;min-width:80px;'>ID (sid)</th><th style='padding:6px;width:220px;min-width:180px;'>Command Name</th><th style='padding:6px;width:420px;min-width:260px;'>IR Code (Base64)</th>"
+    ? "<th style='padding:5px 6px;width:80px;min-width:80px;'>ID (sid)</th><th style='padding:5px 6px;width:220px;min-width:180px;'>Command Name</th><th style='padding:5px 6px;width:420px;min-width:260px;'>IR Code (Base64)</th>"
     : isPo
-    ? "<th style='padding:6px;width:80px;min-width:80px;'>ID (sid)</th><th style='padding:6px;width:220px;min-width:180px;'>Message Name</th><th style='padding:6px;width:420px;min-width:260px;'>Message Text</th>"
-    : "<th style='padding:6px;width:140px;min-width:140px;'>Name (state)</th><th style='padding:6px;width:160px;min-width:160px;'>Supla event</th><th style='padding:6px;width:150px;min-width:150px;'>Source channel</th><th style='padding:6px;width:150px;min-width:150px;'>Supla action</th><th style='padding:6px;width:150px;min-width:150px;'>Destination channel</th>";
+    ? "<th style='padding:5px 6px;width:80px;min-width:80px;'>ID (sid)</th><th style='padding:5px 6px;width:220px;min-width:180px;'>Message Name</th><th style='padding:5px 6px;width:420px;min-width:260px;'>Message Text</th>"
+    : "<th style='padding:5px 6px;width:135px;min-width:135px;'>Name (state)</th><th style='padding:5px 6px;width:135px;min-width:135px;'>Supla event</th><th style='padding:5px 6px;width:180px;min-width:180px;'>Source channel</th><th style='padding:5px 6px;width:120px;min-width:120px;'>Supla action</th><th style='padding:5px 6px;width:180px;min-width:180px;'>Destination channel</th>";
 
   const safeSavedSearch = savedSearch.replace(/"/g, '&quot;');
   html += `<div class="table-search-bar">
     <input type="text" class="table-search-input" placeholder="🔍 ${searchPlaceholder}" value="${safeSavedSearch}" autocomplete="off">
     <span class="table-search-clear" title="Clear search">✕</span>
     <span class="table-search-count">0</span>
+    <span class="table-expand-btn" title="${isExpanded ? 'Collapse table height' : 'Expand table height'}">${isExpanded ? '⤡' : '⤢'}</span>
   </div>
-  <div tabindex="0">
+  <div tabindex="0" class="${isExpanded ? 'table-fullscreen' : ''}">
     <table style="width:100%;min-width:750px;table-layout:fixed;border-collapse:collapse;text-align:left;">
       <thead><tr>${headerHtml}</tr></thead>
       <tbody>${rowsHtml}</tbody>
@@ -1075,6 +1085,7 @@ function updateActionTable(data) {
 
   const searchInput = targetLabel.querySelector(".table-search-input");
   const clearBtn = targetLabel.querySelector(".table-search-clear");
+  const expandBtn = targetLabel.querySelector(".table-expand-btn");
   const container = targetLabel.querySelector("div[tabindex='0']");
   const tbody = targetLabel.querySelector("tbody");
 
@@ -1095,6 +1106,14 @@ function updateActionTable(data) {
       searchInput.value = "";
       filterActionTable(data.target);
       searchInput.focus();
+    });
+  }
+  if (expandBtn && container) {
+    expandBtn.addEventListener("click", () => {
+      const isFull = container.classList.toggle("table-fullscreen");
+      targetLabel.dataset.isExpanded = isFull ? "1" : "0";
+      expandBtn.textContent = isFull ? "⤡" : "⤢";
+      expandBtn.title = isFull ? "Collapse table height" : "Expand table height";
     });
   }
 
