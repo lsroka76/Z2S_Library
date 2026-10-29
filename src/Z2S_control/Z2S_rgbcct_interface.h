@@ -131,6 +131,7 @@ public:
 protected:
 
   void increaseBrightness(int8_t add_to_brightness);
+  void sendOnOffCmd(bool state);
 
   bool _fresh_start = true;
 

@@ -996,6 +996,9 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 
 #define Z2S_REPORTING_SET_DESC_SLACKY_DIY_REPEATER                      0x0700
 
+#define Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS_VOLTAGE                  0x0800
+#define Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS                          0x0801
+
 
 inline const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
 
@@ -1105,7 +1108,7 @@ inline const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
     .z2s_min_interval_value = 3600, 
     .z2s_max_interval_value = 65000,
-    .z2s_delta_value_8 = 10,
+    .z2s_delta_value_8 = 1,
     .z2s_manufacturer_code = 0},
   
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SONOFF_ONOFF_1,
@@ -1409,7 +1412,34 @@ inline const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
     .z2s_min_interval_value = 60, 
     .z2s_max_interval_value = 3600,
     .z2s_delta_value_32 = 15,
-    .z2s_manufacturer_code = 0}
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS_VOLTAGE,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS_VOLTAGE,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 3600, 
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value_8 = 1,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
+    .z2s_min_interval_value = 0, 
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
 
 };//Z2S_REPORTING_SETS_DESC
 
@@ -1613,7 +1643,7 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   { .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1,
-    .z2s_device_clusters_count = 3,
+    .z2s_device_clusters_count = 0,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_SCENES,
@@ -3953,13 +3983,20 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {
-      { 1, 0, 0, Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1},
-      { 2, 0, 0, Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2 }}},
+      { 1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+        Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD, 
+        Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_1},
+      { 2, Z2S_REPORTING_SET_FLAG_STANDARD, 
+        Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS, 
+        Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2 }}},
 
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "BADRING Water Leakage Sensor",
     .z2s_device_uid = 5700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints = { 
+      0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS_VOLTAGE, 
+      Z2S_DEVICE_DESC_IAS_ZONE_SENSOR}},
 
   {	.manufacturer_name = "_TZE200_3towulqd", .model_name = "TS0601",
    .z2s_device_uid = 5800,

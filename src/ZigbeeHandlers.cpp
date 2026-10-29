@@ -249,12 +249,35 @@ static bool zb_raw_cmd_handler(uint8_t bufid) {
   log_i("src endpoint (0x%x, dst endpoint 0x%x", 
         cmd_info->addr_data.common_data.src_endpoint, 
         cmd_info->addr_data.common_data.dst_endpoint);
+  
+  log_i(
+    "destination address 0x%04X", 
+    cmd_info->addr_data.common_data.dst_addr);
 
   log_i("is common comand %d, disable_default_response %d, is_manuf_specific %d", 
         cmd_info->is_common_command, cmd_info->disable_default_response, 
         cmd_info->is_manuf_specific);
   
   log_i("manuf_specific 0x%x", cmd_info->manuf_specific);
+
+  uint16_t dst_addr = cmd_info->addr_data.common_data.dst_addr;
+  uint16_t group_id = 0x0000;
+
+  if (dst_addr >= 0xFFF8) { // Broadcast NWK address (0xFFFD for RxOnWhenIdle)
+    
+    uint8_t *zcl_payload = (uint8_t *)zb_buf_begin(bufid);
+    uint8_t zcl_hdr_len = cmd_info->is_manuf_specific ? 5 : 3;
+    uint8_t *aps_hdr_end = zcl_payload - zcl_hdr_len;
+
+    // APS Groupcast header is always 9 bytes long before the ZCL header:
+    // [-9]: APS FC | [-8..-7]: Group ID | [-6..-5]: Cluster | [-4..-3]: Profile | [-2]: SrcEP | [-1]: APS Counter
+    uint8_t aps_fc = *(aps_hdr_end - 9);
+
+    if ((aps_fc & 0x0C) == 0x0C) { // Delivery Mode bits [3:2] == 0b11 (Group Addressing)
+        group_id = (uint16_t)(*(aps_hdr_end - 8)) | ((uint16_t)(*(aps_hdr_end - 7)) << 8);
+        log_i("APS Groupcast detected! Group ID: 0x%04X", group_id);
+    }
+  }
 
   memcpy(buf, zb_buf_begin(bufid), sizeof(buf));
   

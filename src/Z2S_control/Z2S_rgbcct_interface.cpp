@@ -254,6 +254,26 @@ void Supla::Control::Z2S_RGBCCTInterface::setValueOnServer(
 
 /*****************************************************************************/
 
+void sendOnOffCmd(bool state) {
+
+  switch (getRGBColorMode()) {
+
+
+    case Z2S_TUYA_DP_COLOR_HS_RGB {
+
+      if (!state)
+        zbGateway.sendTuyaRequestCmdBool(_short_addr, _endpoint, 0x01, false);
+    } break;
+
+
+    default:
+
+      zbGateway.sendOnOffCmd(_short_addr, _endpoint, state);
+  }  
+}
+
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
   uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness,
   uint8_t brightness, uint8_t whiteTemperature) {
@@ -419,29 +439,44 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
           uint16_t _color_brightness_1000 = map(
             colorBrightness, 0, 100, 0, 1000);
 
-          uint8_t test_buffer[17];
+          uint8_t test_buffer[27];
+          uint16_t seq_num = random() & 0xFFFF;
 
-          test_buffer[0] = 00;
-          test_buffer[1] = 22;
-          test_buffer[2] = TUYA_RGBWCT_LED_EF00_COLOR_DP;
-          test_buffer[3] = TUYA_DP_TYPE_RAW;
+          test_buffer[0] = (seq_num >> 8) & 0x00FF;
+          test_buffer[1] = seq_num & 0x00FF;
+        
+          test_buffer[2] = 0x01;              
+          test_buffer[3] = TUYA_DP_TYPE_BOOL;
           test_buffer[4] = 0x00;
-          test_buffer[5] = 11;
-          test_buffer[6] = 0x00;
-          test_buffer[7] = 0x01;//COLOR
-          test_buffer[8] = 0x00; //GRADIENT
-          test_buffer[9] = 0x14;
-          test_buffer[10] = 0x00; //SEGMENT
-          test_buffer[11] = (_hue_360 >> 8) & 0x00FF;
-          test_buffer[12] = _hue_360 & 0x00FF;//COLOR
-          test_buffer[13] = (_saturation_1000 >> 8) & 0x00FF;
-          test_buffer[14] = _saturation_1000 & 0x00FF;//SATURATION
-          test_buffer[15] = (_color_brightness_1000 >> 8) & 0x00FF;
-          test_buffer[16] = _color_brightness_1000 & 0x00FF;//BRIGHTNESS
+          test_buffer[5] = 0x01;            
+          test_buffer[6] = 0x01;          
+        
+          test_buffer[7]  = 0x02;              
+          test_buffer[8]  = TUYA_DP_TYPE_ENUM;
+          test_buffer[9]  = 0x00;
+          test_buffer[10] = 0x01;            
+          test_buffer[11] = 0x01;           
+
+          test_buffer[12] = TUYA_RGBWCT_LED_EF00_COLOR_DP;
+          test_buffer[13] = TUYA_DP_TYPE_RAW;              
+          test_buffer[14] = 0x00;
+          test_buffer[15] = 11;                           
+          test_buffer[16] = 0x00;
+          test_buffer[17] = 0x01; // COLOR
+          test_buffer[18] = 0x00; // GRADIENT (0x00 = instant, 0x01 = smooth transition)
+          test_buffer[19] = 0x14;
+          test_buffer[20] = 0x00; // SEGMENT
+          test_buffer[21] = (_hue_360 >> 8) & 0x00FF;
+          test_buffer[22] = _hue_360 & 0x00FF; // COLOR (Hue 0-360)
+          test_buffer[23] = (_saturation_1000 >> 8) & 0x00FF;
+          test_buffer[24] = _saturation_1000 & 0x00FF; // SATURATION (0-1000)
+          test_buffer[25] = (_color_brightness_1000 >> 8) & 0x00FF;
+          test_buffer[26] = _color_brightness_1000 & 0x00FF; // BRIGHTNESS (10-1000)
 
           zbGateway.sendCustomClusterCmd(
-            _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
-            ESP_ZB_ZCL_ATTR_TYPE_SET, 17, test_buffer, false);
+            _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
+            TUYA_REQUEST_CMD, ESP_ZB_ZCL_ATTR_TYPE_SET, 27, test_buffer, 
+            false);
         } break;
       }
     }

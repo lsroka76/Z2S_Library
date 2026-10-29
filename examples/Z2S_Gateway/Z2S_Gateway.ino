@@ -1753,12 +1753,12 @@ void loop() {
 
                 case Z2S_DEVICE_DESC_EGLO_CONNECT2_REMOTE: {
 
-                  zbGateway.sendAddGroupRequestCmd(joined_device, 32777, true);
-                  zbGateway.sendAddGroupRequestCmd(joined_device, 32777, false);
                   zbGateway.sendAddGroupRequestCmd(joined_device, 32778, true);
                   zbGateway.sendAddGroupRequestCmd(joined_device, 32778, false);
                   zbGateway.sendAddGroupRequestCmd(joined_device, 32779, true);
                   zbGateway.sendAddGroupRequestCmd(joined_device, 32779, false);
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 32780, true);
+                  zbGateway.sendAddGroupRequestCmd(joined_device, 32780, false);
                 } break;
 
     
