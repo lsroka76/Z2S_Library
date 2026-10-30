@@ -1359,6 +1359,17 @@ double calculateSpecificEnthalpy(double temperature, double humidity) {
 
 /*****************************************************************************/
 
+double calculateDewPointSpread(double temperature, double humidity) {
+
+  if ((temperature <= -273.0) || (humidity <= 0.0))
+    return NAN;
+
+  double dp = calculateDewPoint(temperature, humidity);
+  return temperature - dp;
+}
+
+/*****************************************************************************/
+
 double calculateWoodEMC(double temperature, double humidity) {
 
   if ((temperature <= -273.0) || (humidity <= 0.0))
