@@ -1296,10 +1296,10 @@ void Supla::Sensor::CalculatedGPM::configureFunctionDefaults() {
       setDefaultValuePrecision(1);
       break;
 
-    case CALCULATED_GPM_FUNC_ZIGBEE_RSSI:
+    /*case CALCULATED_GPM_FUNC_ZIGBEE_RSSI:
       setDefaultUnitAfterValue(" dBm");
       setDefaultValuePrecision(0);
-      break;
+      break;*/
   }
 }
 
