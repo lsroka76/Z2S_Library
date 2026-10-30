@@ -1343,9 +1343,10 @@ void ZigbeeGateway::zbProcessAttributeReporting(
     } break;
 
 
-    case 0xFC01:
-    case 0xFC02:
-    case 0xFC03: {
+    case SHELLY_CUSTOM_CLUSTER_ID_WS90_WIND:
+    case SHELLY_CUSTOM_CLUSTER_ID_WS90_UV:
+    case SHELLY_CUSTOM_CLUSTER_ID_WS90_RAIN: // aka DEVELCO_CUSTOM_CLUSTER
+    case HEIMAN_CUSTOM_CLUSTER:
 
       if (_on_fcxx_custom_cluster_receive)
         _on_fcxx_custom_cluster_receive(
