@@ -4144,6 +4144,7 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "IKEA of Sweden", .model_name = "BADRING Water Leakage Sensor",
     .z2s_device_uid = 5700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
+    .z2s_device_endpoints_count = 1,
 	  .z2s_device_endpoints = { 
       0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS_VOLTAGE, 
