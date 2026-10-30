@@ -15,7 +15,7 @@
 
 #include "z2s_devices_table.h"
 
-inline constexpr char *ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
+inline constexpr char * const ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
 
   "LOCAL ACTION HANDLER",
   "AND GATE",

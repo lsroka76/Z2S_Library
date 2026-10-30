@@ -133,6 +133,7 @@
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH          0x2205
 #define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1          0x2206
 #define Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01      0x2207
+#define Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS      0x2208
 
 #define Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR                 0x220A
 
@@ -499,6 +500,12 @@
 #define LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID         0x08
 #define LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_SID               0x09
 #define LUMI_SMOKE_DETECTOR_LINKAGE_ALARM_STATE_SID         0x0A
+
+#define HEIMAN_SMOKE_DETECTOR_SMOKE_SID                     0x00
+#define HEIMAN_SMOKE_DETECTOR_TEMPERATURE_SID               0x01
+#define HEIMAN_SMOKE_DETECTOR_SMOKE_CONCENTRATION_SID       0x02
+#define HEIMAN_SMOKE_DETECTOR_CHAMBER_CONTAMINATION_SID     0x03
+
 
 #define TUYA_CO_DETECTOR_CO_SID                             0x00
 #define TUYA_CO_DETECTOR_CO_CONC_SID                        0x01
@@ -2878,6 +2885,12 @@ inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
     .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
+  
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0, //Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+                             HEIMAN_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01,
     .z2s_device_clusters_count = 2,
@@ -7872,6 +7885,15 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 38400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_EGLO_99099,
 	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "Heiman", .model_name = "HS1SA-E-PLUS",
+    .z2s_device_uid = 38500,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS}},
 
   
 //DEVICES_END

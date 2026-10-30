@@ -272,6 +272,9 @@ inline constexpr zigbee_cluster_t zigbee_clusters[] PROGMEM = {
 	{ .zigbee_cluster_name = "SONOFF (0xFC11)",					
 		.zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER },
 	
+	{ .zigbee_cluster_name = "HEIMAN (0xFC90)",						
+		.zigbee_cluster_id = HEIMAN_CUSTOM_CLUSTER },
+
 	{ .zigbee_cluster_name = "LUMI (0xFCC0)",						
 		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER },
 
@@ -410,6 +413,9 @@ inline constexpr zigbee_manufacturer_code_t zigbee_manufacturer_codes[] PROGMEM 
 
   { .manufacturer_code = SHELLY_MANUFACTURER_CODE,										
 		.manufacturer_name = "SHELLY" },
+
+	{ .manufacturer_code = HEIMAN_MANUFACTURER_CODE,										
+		.manufacturer_name = "HEIMAN" },
 
 	{ .manufacturer_code = SLACKY_DIY_MANUFACTURER_CODE,										
 		.manufacturer_name = "SLACKY DIY" }
@@ -1624,6 +1630,21 @@ inline constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
 		.zigbee_attribute_name = "SWV REAL TIME VOLUME" },
+
+	{ .zigbee_attribute_id  = HEIMAN_CUSTOM_CLUSTER_SMOKE_CONCENTRATION_LEVEL_ID, 
+		.zigbee_attribute_cluster_id = HEIMAN_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "SMOKE CONCENTRATION LEVEL" },
+
+	{ .zigbee_attribute_id  = HEIMAN_CUSTOM_CLUSTER_SMOKE_CHAMBER_CONT_LEVEL_ID, 
+		.zigbee_attribute_cluster_id = HEIMAN_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "SMOKE CHAMBER CONTAMINATION LEVEL" },
+
+	{ .zigbee_attribute_id  = HEIMAN_CUSTOM_CLUSTER_SMOKE_CONCENTRATION_UNIT_ID, 
+		.zigbee_attribute_cluster_id = HEIMAN_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "SMOKE CONCENTRATION UNIT" },
 
 	{ .zigbee_attribute_id  = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID, 
 		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 

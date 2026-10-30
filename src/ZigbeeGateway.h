@@ -279,6 +279,15 @@ typedef struct esp_zb_ota_image_header_s {
 #define SLACKY_DIY_MANUFACTURER_CODE                          0x6565
 
 
+#define HEIMAN_CUSTOM_CLUSTER                                 0xFC90
+
+#define HEIMAN_CUSTOM_CLUSTER_SMOKE_CONCENTRATION_LEVEL_ID    0x0016 //U8
+#define HEIMAN_CUSTOM_CLUSTER_SMOKE_CHAMBER_CONT_LEVEL_ID     0x0017 //U8
+#define HEIMAN_CUSTOM_CLUSTER_SMOKE_CONCENTRATION_UNIT_ID     0x0018 //U8
+
+#define HEIMAN_MANUFACTURER_CODE                              0x120B
+
+
 #define CUSTOM_CMD_SYNC                                       true
 #define CUSTOM_CMD_ASYNC                                      false
 

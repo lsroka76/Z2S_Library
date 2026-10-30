@@ -1417,12 +1417,6 @@ void Z2S_initSuplaChannels() {
       }
 
       if (channel_created) {
-        
-        Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(
-          z2s_channel_params.ieee_addr);
-        
-        if (!z2s_device)
-          continue;
 
         if (z2s_channel_params.Supla_channel < Z2S_CHANNELS_MAX_NUMBER) {
 
@@ -1433,7 +1427,10 @@ void Z2S_initSuplaChannels() {
 
             uint8_t subdevice_id = 0;
 
-            if (z2s_device->getDeviceIndex() < 0xFF) 
+            Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(
+              z2s_channel_params.ieee_addr);
+        
+            if (z2s_device && z2s_device->getDeviceIndex() < 0xFF) 
               subdevice_id = z2s_device->getDeviceIndex() + 1;
             
             log_i(
@@ -3196,7 +3193,58 @@ void Z2S_onFCXXCustomClusterReceive(
           log_i("resolution = %u", readAttr<uint16_t>(attribute));
         } break;
       }
-    }
+    } break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS: {
+
+      switch (attribute->id) {
+
+
+        case HEIMAN_CUSTOM_CLUSTER_SMOKE_CONCENTRATION_LEVEL_ID: {
+
+          if (z2s_core->getChannelSubId() != 
+              HEIMAN_SMOKE_DETECTOR_SMOKE_CONCENTRATION_SID)
+            z2s_core = Z2S_findZ2SCore(
+              short_addr, endpoint, cluster,
+              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+              HEIMAN_SMOKE_DETECTOR_SMOKE_CONCENTRATION_SID);
+
+          if (!z2s_core) {
+            
+            no_channel_found_error_func(short_addr);
+            return;
+          }
+
+          msgZ2SDeviceGeneralPurposeMeasurement(
+            z2s_core->getZ2SElementPtr(), 
+            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+            readAttr<uint8_t>(attribute));
+        } break;
+
+
+        case HEIMAN_CUSTOM_CLUSTER_SMOKE_CHAMBER_CONT_LEVEL_ID: {
+
+          if (z2s_core->getChannelSubId() != 
+              HEIMAN_SMOKE_DETECTOR_CHAMBER_CONTAMINATION_SID)
+            z2s_core = Z2S_findZ2SCore(
+              short_addr, endpoint, cluster,
+              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
+              HEIMAN_SMOKE_DETECTOR_CHAMBER_CONTAMINATION_SID);
+
+          if (!z2s_core) {
+            
+            no_channel_found_error_func(short_addr);
+            return;
+          }
+
+          msgZ2SDeviceGeneralPurposeMeasurement(
+            z2s_core->getZ2SElementPtr(), 
+            ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, 
+            readAttr<uint8_t>(attribute));
+        } break;
+      }
+    } break;
   }
 }
 
@@ -8154,6 +8202,35 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
 
 /*****************************************************************************/     
 
+      case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS:
+
+        switch (sub_id) {
+
+          case HEIMAN_SMOKE_DETECTOR_SMOKE_SID:
+
+            addZ2SDeviceIASzone(
+              device, first_free_slot, sub_id, name, func); 
+          break;
+
+
+          case HEIMAN_SMOKE_DETECTOR_TEMPERATURE_SID:
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func, false);
+          break;
+
+
+          case HEIMAN_SMOKE_DETECTOR_SMOKE_CONCENTRATION_SID:
+          case HEIMAN_SMOKE_DETECTOR_CHAMBER_CONTAMINATION_SID: 
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit); 
+          break;
+
+        } break;
+
+/*****************************************************************************/     
+
       case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR:
 
         switch (sub_id) {
@@ -9737,119 +9814,6 @@ void updateSuplaBatteryLevel(
 
 /*****************************************************************************/
 
-bool hasTuyaCustomCluster(uint32_t model_id) {
-  
-  switch (model_id) {
-  
-    
-    case Z2S_DEVICE_DESC_TUYA_QUERY:
-    case Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_TS020C_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_SZLM04U_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR:
-    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_1:
-    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_2:
-    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_228WZH:
-    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS2SA1:
-    case Z2S_DEVICE_DESC_MOES_SMOKE_DETECTOR_ZSSHMSSD01:
-    case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR: 
-    case Z2S_DEVICE_DESC_TUYA_SOIL_TEMPHUMIDITY_SENSOR_1:
-    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F:
-    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_3F_2:
-    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_4F:
-    case Z2S_DEVICE_DESC_TUYA_SOIL_SENSOR_5F:
-    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_1:
-    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_2:
-    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_3:
-    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_4:
-    case Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_EF00_SENSOR_5:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_1:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_5:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_4IN1:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_RELAY:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_NEO:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205Z:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG205ZA:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM100S2:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZYM10024GV3:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZE:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG204ZK:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_ZG104PLV:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_MWPS3Z:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100:
-    case Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T:
-    case Z2S_DEVICE_DESC_TUYA_CO_DETECTOR:
-    case Z2S_DEVICE_DESC_TUYA_CO2_DETECTOR:
-    case Z2S_DEVICE_DESC_TUYA_GAS_DETECTOR:
-    case Z2S_DEVICE_DESC_TUYA_CO_GAS_DETECTOR:
-    case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_RAIN_SENSOR_2:
-    case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_1X3:
-    case Z2S_DEVICE_DESC_TUYA_EF00_SWITCH_2X3:
-    case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
-    case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
-    case Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER:
-    case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
-    case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
-    case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:
-    case Z2S_DEVICE_DESC_TS0601_TRV_ME167:
-    case Z2S_DEVICE_DESC_TS0601_TRV_ME168:
-    case Z2S_DEVICE_DESC_TS0601_TRV_BECA:
-    case Z2S_DEVICE_DESC_TS0601_TRV_MOES:
-    case Z2S_DEVICE_DESC_TS0601_TRV_TRV601:
-    case Z2S_DEVICE_DESC_TS0601_TRV_TRV603:
-    case Z2S_DEVICE_DESC_TS0601_TRV_GTZ10:
-    case Z2S_DEVICE_DESC_TS0601_TRV_TRV602Z:
-    case Z2S_DEVICE_DESC_TS0601_TRV_TV02:
-    case Z2S_DEVICE_DESC_TS0601_TRV_SITERWELL:
-    case Z2S_DEVICE_DESC_TS0601_TRV_TRV16:
-    case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT198:
-    case Z2S_DEVICE_DESC_TS0601_HY08WE:
-    case Z2S_DEVICE_DESC_TS0601_ZWT_ZWT100:
-    case Z2S_DEVICE_DESC_TS0601_MOES_BHT002:
-    case Z2S_DEVICE_DESC_TS0601_MOES_ZHTSR:
-    case Z2S_DEVICE_DESC_TS0601_BOTR9V:
-    case Z2S_DEVICE_DESC_TS0601_EONE_BATB:
-    case Z2S_DEVICE_DESC_TS0601_EONE_230W:
-    case Z2S_DEVICE_DESC_TS0601_EONE_E40:
-    case Z2S_DEVICE_DESC_TUYA_ON_OFF_VALVE_BATTERY:
-    case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_VIBRATION_SENSOR_2:
-    case Z2S_DEVICE_DESC_MOES_ALARM:
-    case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR:
-    case Z2S_DEVICE_DESC_MOES_SHADES_DRIVE_MOTOR_L3:
-    case Z2S_DEVICE_DESC_MOES_COVER:
-    case Z2S_DEVICE_DESC_CURRYSMARTER_COVER:
-    case Z2S_DEVICE_DESC_ZEMISMART_SHADES_DRIVE_MOTOR:
-    case Z2S_DEVICE_DESC_TUYA_MB60L_SMART_BLINDS_MOTOR:
-    case Z2S_DEVICE_DESC_TUYA_AIR_QUALITY_SENSOR:
-    case Z2S_DEVICE_DESC_GIEX_SMART_VALVE:
-    case Z2S_DEVICE_DESC_TUYA_DUAL_WATER_VALVE:
-    case Z2S_DEVICE_DESC_TUYA_WATER_LEVEL_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS:
-    case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
-    case Z2S_DEVICE_DESC_TUYA_FLOOR_HEATING_BOX_6_ZONES:
-    case Z2S_DEVICE_DESC_TUYA_8_RELAYS_DP_CONTROLLER:
-    case Z2S_DEVICE_DESC_TUYA_6_RELAYS_DP_CONTROLLER: 
-    case Z2S_DEVICE_DESC_TUYA_4_RELAYS_DP_CONTROLLER:
-    case Z2S_DEVICE_DESC_TUYA_5_RELAYS_CONTROLLER:
-    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_TEMP_PROBE:
-    case Z2S_DEVICE_DESC_TUYA_TH_SENSOR_NTC_PROBE:
-    case Z2S_DEVICE_DESC_TUYA_RGBWCT_LED_EF00:
-    case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
-    case Z2S_DEVICE_DESC_TUYA_SMART_POOL_SENSOR:
-    case Z2S_DEVICE_DESC_TUYA_WATER_QUALITY_MONITOR:
-    case Z2S_DEVICE_DESC_TS0601_TRV_GTVZB:
-    case Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL:
-      return true;
-    default:
-      return false;
-  }  
-}
-
 void log_i_telnet2(char *log_line, bool toTelnet) {
 #ifdef USE_TELNET_CONSOLE
   log_i_telnet(log_line, toTelnet);
@@ -9858,12 +9822,17 @@ void log_i_telnet2(char *log_line, bool toTelnet) {
 #endif //USE_TELNET_CONSOLE
 }
 
+/*****************************************************************************/
+
 void onTuyaCustomClusterReceive(void (*callback)(
   uint8_t command_id, uint16_t payload_size, uint8_t * payload_data)) {
 
   _on_Tuya_custom_cluster_receive = callback;
 }
 
+
+/*****************************************************************************/
+/*****************************************************************************/
 
 void Z2S_buildSuplaChannels(
   zbg_device_params_t *joined_device, uint8_t endpoint_counter) {
@@ -10757,7 +10726,27 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_SMOKE_DETECTOR_SELF_TEST_SID, "SELF TEST STATUS", 
         SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
-    }break;
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS: {
+
+      Z2S_addZ2SDevice(
+        joined_device, HEIMAN_SMOKE_DETECTOR_SMOKE_SID, "SMOKE", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, HEIMAN_SMOKE_DETECTOR_TEMPERATURE_SID, "TEMPERATURE");
+
+      Z2S_addZ2SDevice(
+        joined_device, HEIMAN_SMOKE_DETECTOR_SMOKE_CONCENTRATION_SID, 
+        "SMOKE CONCENTRATION");
+
+      Z2S_addZ2SDevice(
+        joined_device, HEIMAN_SMOKE_DETECTOR_CHAMBER_CONTAMINATION_SID, 
+        "SMOKE CHAMBER CONTAMINATION");
+    } break;
 
 /*****************************************************************************/
 

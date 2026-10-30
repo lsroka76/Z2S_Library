@@ -1,1088 +1,497 @@
 #include "z2s_device_local_action_handler.h"
+#include <utility>
+
+/*****************************************************************************/
 
 NetworkClient Z2S_NetworkClient;
-
 IPAddress Z2S_IPAddress;
 
 /*****************************************************************************/
 
-const char* getZ2SDeviceLocalActionHandlerTypeName(
-  z2s_device_params_t* _z2s_channel) {
+namespace {
 
-  switch (_z2s_channel->local_channel_type) {
+struct LocalChannelDescriptor {
+  uint8_t type;
+  const char* type_name;
+  const char* default_caption;
+  uint32_t default_func;
+  bool is_virtual;
+  bool disconnect_on_add;
+  void (*init_fn)(uint16_t idx, z2s_device_params_t* ch, Supla::Element* el);
+  void (*add_fn)(uint8_t slot, const LocalChannelDescriptor& desc,
+                 uint32_t func, uint8_t logic_op);
+};
 
+/*****************************************************************************/
 
-    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
-      
-      return "Local action handler";
-    } break;
+template <typename T, typename... Args>
+T* initOrCastLocalElement(
+    uint16_t channel_index, z2s_device_params_t* z2s_channel,
+    Supla::Element* element, bool set_channel_num, Args&&... args) {
 
+  if (element) {
+    return static_cast<T*>(element);
+  }
+  T* obj = new T(std::forward<Args>(args)...);
+  obj->setZ2SChannel(channel_index, z2s_channel);
+  if (set_channel_num && obj->getChannel()) {
+    obj->getChannel()->setChannelNumber(z2s_channel->Supla_channel);
+  }
+  return obj;
+}
 
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY:
-      
-      return "Local virtual relay";
-    break;
+/*****************************************************************************/
 
+template <typename T>
+void registerNewLocalChannel(
+    T* obj, uint8_t slot, const LocalChannelDescriptor& desc,
+    uint32_t channel_func, const char* custom_caption = nullptr) {
 
-    case LOCAL_CHANNEL_TYPE_GPIO_RELAY:
-      
-      return "Local relay (GPIO)";
-    break;
+  const char* caption = custom_caption ? custom_caption : desc.default_caption;
 
+  Z2S_setLocalChannelData(
+      obj->getZ2SCorePtr(), slot, obj->getChannelNumber(),
+      NO_CUSTOM_CMD_SID, caption, desc.default_func, 0xFF,
+      desc.type, channel_func, 0xFF, desc.is_virtual);
 
-    case LOCAL_CHANNEL_TYPE_GPIO_HVAC:
-      
-      return "Local hvac (GPIO)";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_HCSR04:
-      
-      return "Local HC-SR04 (GPIO)";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_BINARY:
-      
-      return "Local binary (GPIO)";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC:
-      
-      return "Local virtual hvac";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY:
-      
-      return "Local virtual binary";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
-      
-      return "Local remote relay";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
-      
-      return "Local remote thermometer";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_SWITCHBOT:
-      
-      return "Switchbot object";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
-      
-      return "Local virtual thermhygrometer";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
-      
-      return "Local calculated thermometer";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_GPM:
-      
-      return "Local virtual GPM";
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS:
-
-      return "Gateway events";
-    break;
-
-
-    default:
-
-    break;  
+  if (caption) {
+    obj->setInitialCaption(caption);
+  }
+  if (desc.default_func != SUPLA_CHANNELFNC_NONE) {
+    obj->setDefaultFunction(desc.default_func);
   }
 
-  return "Unkown local object!";
+  if (desc.init_fn) {
+    desc.init_fn(slot, obj->getZ2SChannel(), obj->getZ2SElementPtr());
+  }
+
+  if (auto* ch = obj->getChannel()) {
+    ch->setFlag(SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+  }
+
+  obj->onLoadConfig(&SuplaDevice);
+  obj->onInit();
+}
+
+/*****************************************************************************/
+
+template <typename T>
+void defaultInitFn(uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+  initOrCastLocalElement<T>(idx, ch, el, true);
+}
+
+template <typename T>
+void defaultAddFn(uint8_t slot, const LocalChannelDescriptor& desc,
+                  uint32_t func, uint8_t) {
+  registerNewLocalChannel(new T(), slot, desc, func);
+}
+
+/*****************************************************************************/
+
+constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
+
+  {
+    LOCAL_CHANNEL_TYPE_ACTION_HANDLER,
+    "Local action handler",
+    nullptr,
+    SUPLA_CHANNELFNC_NONE,
+    true,
+    false,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      
+      initOrCastLocalElement<Supla::LocalActionHandlerWithTrigger>(
+          idx, ch, el, false, ch->local_action_handler_data.logic_operator);
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, 
+       uint8_t op) {
+      
+      uint8_t free_id = Z2S_findFirstFreeLocalActionHandlerId();
+      
+      auto* lah = new Supla::LocalActionHandlerWithTrigger(op);
+      Z2S_setLocalChannelData(
+        lah->getZ2SCorePtr(), slot, free_id, NO_CUSTOM_CMD_SID,
+        ACTION_HANDLERS_DEFAULT_NAMES[op], SUPLA_CHANNELFNC_NONE,
+        0xFF, d.type, func, op);
+      d.init_fn(slot, lah->getZ2SChannel(), lah->getZ2SElementPtr());
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY,
+    "Local virtual relay",
+    LOCAL_VIRTUAL_RELAY_NAME,
+    SUPLA_CHANNELFNC_POWERSWITCH,
+    true,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+
+      auto* r = initOrCastLocalElement<Supla::Control::LocalVirtualRelay>(
+        idx, ch, el, true, RELAY_FLAGS);
+      r->setDefaultStateRestore();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      
+      registerNewLocalChannel(
+        new Supla::Control::LocalVirtualRelay(RELAY_FLAGS), slot, d, func);
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_GPIO_RELAY,
+    "Local relay (GPIO)",
+    LOCAL_GPIO_RELAY_NAME,
+    SUPLA_CHANNELFNC_POWERSWITCH,
+    false,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+
+      int8_t pin = ch->local_relay_data.gpio_pin;
+      bool highIsOn = ch->local_relay_data.high_is_on;
+
+      auto* r = initOrCastLocalElement<Supla::Control::LocalRelay>(
+        idx, ch, el, true, pin, highIsOn, RELAY_FLAGS);
+      
+      r->setDefaultStateRestore();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      
+      auto* r = new Supla::Control::LocalRelay(-1, true, RELAY_FLAGS);
+      
+      r->setLocalRelayGpioPin(-1);
+      r->setLocalRelayHighIsOn(true);
+      r->saveChannelData();
+      registerNewLocalChannel(r, slot, d, func);
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_GPIO_BINARY,
+    "Local binary (GPIO)",
+    LOCAL_GPIO_BINARY_NAME,
+    SUPLA_CHANNELFNC_BINARY_SENSOR,
+    false,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      
+      auto* b = initOrCastLocalElement<Supla::Sensor::LocalBinary>(
+        idx, ch, el, true);
+      
+      b->updateLocalBinaryParams();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      
+      auto* b = new Supla::Sensor::LocalBinary();
+      
+      b->setLocalBinaryGpioPin(-1);
+      b->setLocalBinaryInvertLogic(false);
+      b->setLocalBinaryPullUp(false);
+      b->saveChannelData();
+      registerNewLocalChannel(b, slot, d, func);
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_GPIO_HVAC,
+    "Local hvac (GPIO)",
+    LOCAL_GPIO_HVAC_NAME,
+    SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+    false,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+
+      int8_t pin = ch->local_hvac_data.gpio_pin;
+      bool highIsOn = ch->local_hvac_data.high_is_on;
+
+      auto* h = initOrCastLocalElement<Supla::Control::LocalHvac>(
+        idx, ch, el, false, pin, highIsOn, ch->Supla_channel);
+      h->enableDomesticHotWaterFunctionSupport();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* h = new Supla::Control::LocalHvac(-1, true);
+      h->setLocalHvacGpioPin(-1);
+      h->setLocalHvacHighIsOn(true);
+      h->saveChannelData();
+      registerNewLocalChannel(h, slot, d, func);
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_GPIO_DS18B20,
+    "Local DS18B20 (GPIO)",
+    LOCAL_GPIO_DS18B20_NAME,
+    SUPLA_CHANNELFNC_THERMOMETER,
+    false,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      initOrCastLocalElement<Supla::Sensor::LocalDS18B20>(
+          idx, ch, el, true, ch->local_ds18b20_data.gpio_pin,
+          ch->local_ds18b20_data.sensor_address);
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* ds = new Supla::Sensor::LocalDS18B20(4, nullptr);
+      ds->setLocalDS18B20GpioPin(4);
+      ds->saveChannelData();
+      registerNewLocalChannel(ds, slot, d, func);
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_GPIO_HCSR04,
+    "Local HC-SR04 (GPIO)",
+    LOCAL_GPIO_HCSR04_NAME,
+    SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
+    false,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* hc = initOrCastLocalElement<Supla::Sensor::LocalHCSR04>(
+          idx, ch, el, true);
+      hc->updateLocalHcsr04Params();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* hc = new Supla::Sensor::LocalHCSR04();
+      hc->setLocalHCSR04TrigPin(5);
+      hc->setLocalHCSR04EchoPin(6);
+      hc->setLocalHCSR04MinIn(0);
+      hc->setLocalHCSR04MinOut(500);
+      hc->setLocalHCSR04MaxIn(0);
+      hc->setLocalHCSR04MaxOut(500);
+      hc->saveChannelData();
+      registerNewLocalChannel(hc, slot, d, func);
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_SWITCHBOT,
+    "Switchbot object",
+    nullptr,
+    SUPLA_CHANNELFNC_POWERSWITCH,
+    true,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* sb = initOrCastLocalElement<Supla::Control::SwitchBotRelay>(
+          idx, ch, el, true, ch->local_channel_func);
+      sb->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      sb->setDefaultStateRestore();
+
+      channel_extended_data_sb_t sb_data = {};
+      if (Z2S_loadChannelExtendedData(
+            idx, CHANNEL_EXTENDED_DATA_TYPE_SB, (uint8_t*)&sb_data)) {
+        log_i("SwitchBot device BLE address: %s", sb_data.ble_mac_address);
+        log_i(
+          "SwitchBot device token: %s (%u)", sb_data.token, 
+          sb_data.token_size);
+        log_i("SwitchBot device json payload: %s (%u)",
+              sb_data.json_payload, sb_data.json_payload_size);
+        sb->updateSwitchBotData(sb_data, SB_UPDATE_DATA_LOAD_DIR);
+      }
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* sb = new Supla::Control::SwitchBotRelay(func);
+      registerNewLocalChannel(
+          sb, slot, d, func,
+          Supla::Control::SwitchBotRelay::getSwitchBotChannelName(func));
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC,
+    "Local virtual hvac",
+    LOCAL_VIRTUAL_HVAC_NAME,
+    SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+    true,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      Supla::Control::LocalVirtualHvac* vh = nullptr;
+      if (el) {
+        vh = static_cast<Supla::Control::LocalVirtualHvac*>(el);
+      } else {
+        auto* voi = new Supla::Control::VirtualOutputInterface();
+        vh = new Supla::Control::LocalVirtualHvac(
+          voi, nullptr, ch->Supla_channel);
+        vh->setZ2SChannel(idx, ch);
+        vh->setInitialCaption(LOCAL_VIRTUAL_HVAC_NAME);
+        vh->setDefaultFunction(SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+      }
+      vh->enableDomesticHotWaterFunctionSupport();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* voi = new Supla::Control::VirtualOutputInterface();
+      auto* vh = new Supla::Control::LocalVirtualHvac(voi);
+      registerNewLocalChannel(vh, slot, d, func);
+    }
+  },
+
+  {
+    LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY,
+    "Local virtual binary",
+    LOCAL_VIRTUAL_BINARY_NAME,
+    SUPLA_CHANNELFNC_BINARY_SENSOR,
+    true,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* vb = initOrCastLocalElement<Supla::Sensor::LocalVirtualBinary>(
+          idx, ch, el, true, true);
+      vb->setDefaultFunction(SUPLA_CHANNELFNC_BINARY_SENSOR);
+      if (Supla::Notification::RegisterNotification(
+            vb->getZ2SChannelNumber(), false, true)) {
+        vb->registerNotification();
+      }
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      registerNewLocalChannel(
+          new Supla::Sensor::LocalVirtualBinary(true), slot, d, func);
+    }
+  },
+
+  {
+    LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER,
+    "Local remote thermometer",
+    LOCAL_REMOTE_THERMOMETER_NAME,
+    SUPLA_CHANNELFNC_THERMOMETER,
+    true,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* rt = initOrCastLocalElement<Supla::Sensor::Z2S_RemoteThermometer>(
+          idx, ch, el, true);
+      if (!rt->getConnectedThermometerTimeoutMs()) {
+        rt->setConnectedThermometerTimeoutValue(30);
+      }
+    },
+    &defaultAddFn<Supla::Sensor::Z2S_RemoteThermometer>
+  },
+  {
+    LOCAL_CHANNEL_TYPE_REMOTE_RELAY,
+    "Local remote relay",
+    LOCAL_REMOTE_RELAY_NAME,
+    SUPLA_CHANNELFNC_POWERSWITCH,
+    true,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* rr = initOrCastLocalElement<Supla::Control::Z2S_RemoteRelay>(
+          idx, ch, el, true, &Z2S_NetworkClient, 0xFF);
+      rr->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
+      rr->setDefaultStateRestore();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* rr = new Supla::Control::Z2S_RemoteRelay(&Z2S_NetworkClient, 0xFF);
+      rr->setDefaultStateRestore();
+      registerNewLocalChannel(rr, slot, d, func);
+    }
+  },
+
+  {
+    LOCAL_CHANNEL_TYPE_CALC_THERMOMETER,
+    "Local calculated thermometer",
+    LOCAL_CALCULATED_THERMOMETER_NAME,
+    SUPLA_CHANNELFNC_THERMOMETER,
+    true,
+    true,
+    &defaultInitFn<Supla::Sensor::CalculatedThermometer>,
+    &defaultAddFn<Supla::Sensor::CalculatedThermometer>
+  },
+  {
+    LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER,
+    "Local virtual thermhygrometer",
+    LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME,
+    SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+    true,
+    true,
+    &defaultInitFn<Supla::Sensor::LocalVirtualThermHygroMeter>,
+    &defaultAddFn<Supla::Sensor::LocalVirtualThermHygroMeter>
+  },
+  {
+    LOCAL_CHANNEL_TYPE_VIRTUAL_GPM,
+    "Local virtual GPM",
+    LOCAL_VIRTUAL_GPM_NAME,
+    SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
+    true,
+    true,
+    &defaultInitFn<Supla::Sensor::LocalVirtualGPM>,
+    &defaultAddFn<Supla::Sensor::LocalVirtualGPM>
+  },
+  {
+    LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS,
+    "Gateway events",
+    nullptr,
+    SUPLA_CHANNELFNC_NONE,
+    true,
+    false,
+    nullptr,
+    nullptr
+  }
+};
+
+const LocalChannelDescriptor* findLocalChannelDescriptor(uint8_t type) {
+  for (const auto& desc : LOCAL_CHANNEL_REGISTRY) {
+    if (desc.type == type) {
+      return &desc;
+    }
+  }
+  return nullptr;
+}
+
+}  // namespace
+
+/*****************************************************************************/
+
+const char* getZ2SDeviceLocalActionHandlerTypeName(
+    z2s_device_params_t* _z2s_channel) {
+
+  if (const auto* desc = findLocalChannelDescriptor(
+      _z2s_channel->local_channel_type)) {
+    
+    return desc->type_name;
+  }
+  return "Unknown local object!";
 }
 
 /*****************************************************************************/
 
 const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
-  z2s_device_params_t* _z2s_channel) {
+    z2s_device_params_t* _z2s_channel) {
 
-  switch (_z2s_channel->local_channel_type) {
-
-
-    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
-      
-      return 
-        ACTION_HANDLERS_DEFAULT_NAMES[
-          _z2s_channel->local_action_handler_data.logic_operator];
-    } break;
+  if (_z2s_channel->local_channel_type == LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
     
-
-    default:
-      return "No special functions";
-    break;
+    return ACTION_HANDLERS_DEFAULT_NAMES[
+        _z2s_channel->local_action_handler_data.logic_operator];
   }
-  return "Unknown local object function!";
+  return "No special functions";
 }
 
 /*****************************************************************************/
 
 void initZ2SDeviceLocalActionHandler(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
-  Supla::Element *element) {
+    uint16_t channel_index, z2s_device_params_t* _z2s_channel,
+    Supla::Element* element) {
 
-  switch (_z2s_channel->local_channel_type) {
-
-
-    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
-
-      Supla::LocalActionHandlerWithTrigger *Supla_LAHWT =nullptr;
-
-      if (element) {
-
-        Supla_LAHWT = static_cast<
-          Supla::LocalActionHandlerWithTrigger *>(element);
-      }
-      else {
-
-        Supla_LAHWT = new Supla::LocalActionHandlerWithTrigger(
-          _z2s_channel->local_action_handler_data.logic_operator); 
-
-        Supla_LAHWT->setZ2SChannel(channel_index, _z2s_channel);
-      }
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
-
-      Supla::Control::LocalVirtualRelay *Supla_LocalVirtualRelay =
-        nullptr;
-
-      if (element) {
-
-        Supla_LocalVirtualRelay = static_cast<
-          Supla::Control::LocalVirtualRelay *>(element);
-      }
-      else {
-
-        Supla_LocalVirtualRelay = new Supla::Control::LocalVirtualRelay(
-          RELAY_FLAGS); 
-    
-        Supla_LocalVirtualRelay->setZ2SChannel(channel_index, _z2s_channel);
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-        Supla_LocalVirtualRelay->getChannel()->setChannelNumber(Supla_channel);
-      }
-      Supla_LocalVirtualRelay->setDefaultStateRestore();
-    }
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_RELAY: {
-
-      Supla::Control::LocalRelay *Supla_LocalRelay = nullptr;
-
-      if (element) {
-
-        Supla_LocalRelay = static_cast<
-          Supla::Control::LocalRelay *>(element);
-      }
-      else {
-
-        Supla_LocalRelay = new Supla::Control::LocalRelay(
-          _z2s_channel->local_relay_data.gpio_pin, 
-          _z2s_channel->local_relay_data.high_is_on, RELAY_FLAGS); 
-    
-        Supla_LocalRelay->setZ2SChannel(channel_index, _z2s_channel);
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-        Supla_LocalRelay->getChannel()->setChannelNumber(Supla_channel);
-      }
-      Supla_LocalRelay->setDefaultStateRestore();
-    }
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
-
-      Supla::Sensor::LocalBinary *Supla_LocalBinary = nullptr;
-
-      if (element) {
-
-        Supla_LocalBinary = static_cast<
-          Supla::Sensor::LocalBinary *>(element);
-      }
-      else {
-
-        Supla_LocalBinary = new Supla::Sensor::LocalBinary(); 
-    
-        Supla_LocalBinary->setZ2SChannel(channel_index, _z2s_channel);
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-        Supla_LocalBinary->getChannel()->setChannelNumber(Supla_channel);
-      }
-      Supla_LocalBinary->updateLocalBinaryParams();
-    }
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_HVAC: {
-
-      Supla::Control::LocalHvac *Supla_LocalHvac = nullptr;
-
-      if (element) {
-
-        Supla_LocalHvac = static_cast<
-          Supla::Control::LocalHvac *>(element);
-      }
-      else {
-
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-
-        Supla_LocalHvac = new Supla::Control::LocalHvac(
-          _z2s_channel->local_hvac_data.gpio_pin, 
-          _z2s_channel->local_hvac_data.high_is_on, Supla_channel); 
-    
-        Supla_LocalHvac->setZ2SChannel(channel_index, _z2s_channel);
-        
-        //Supla_LocalHvac->getChannel()->setChannelNumber(Supla_channel);
-      }
-      Supla_LocalHvac->enableDomesticHotWaterFunctionSupport();
-    }
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_DS18B20: {
-
-      Supla::Sensor::LocalDS18B20 *Supla_LocalDs18b20 = nullptr;
-
-      if (element) {
-
-        Supla_LocalDs18b20 = static_cast<
-          Supla::Sensor::LocalDS18B20 *>(element);
-      }
-      else {
-
-        Supla_LocalDs18b20 = new Supla::Sensor::LocalDS18B20(
-          _z2s_channel->local_ds18b20_data.gpio_pin, 
-          _z2s_channel->local_ds18b20_data.sensor_address); 
-    
-        Supla_LocalDs18b20->setZ2SChannel(channel_index, _z2s_channel);
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-        Supla_LocalDs18b20->getChannel()->setChannelNumber(Supla_channel);
-      }
-    }
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
-
-      Supla::Sensor::LocalHCSR04 *Supla_LocalHcsr04 = nullptr;
-
-      if (element) {
-
-        Supla_LocalHcsr04 = static_cast<
-          Supla::Sensor::LocalHCSR04 *>(element);
-      }
-      else {
-
-        Supla_LocalHcsr04 = new Supla::Sensor::LocalHCSR04(); 
-    
-        Supla_LocalHcsr04->setZ2SChannel(channel_index, _z2s_channel);
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-        Supla_LocalHcsr04->getChannel()->setChannelNumber(Supla_channel);
-      }
-      Supla_LocalHcsr04->updateLocalHcsr04Params();
-    }
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_SWITCHBOT: {
-
-      Supla::Control::SwitchBotRelay *Supla_SwitchBotRelay = nullptr;
-
-      if (element) {
-
-        Supla_SwitchBotRelay = static_cast<
-          Supla::Control::SwitchBotRelay *>(element);
-      }
-      else {
-      
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-      
-        Supla_SwitchBotRelay = new Supla::Control::SwitchBotRelay(
-          _z2s_channel->local_channel_func); 
-
-        Supla_SwitchBotRelay->setZ2SChannel(channel_index, _z2s_channel);
-      
-        Supla_SwitchBotRelay->getChannel()->setChannelNumber(Supla_channel);
-      }
-      Supla_SwitchBotRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
-      Supla_SwitchBotRelay->setDefaultStateRestore();
-
-      channel_extended_data_sb_t channel_extended_data_sb = {};
+  const auto* desc = findLocalChannelDescriptor(
+    _z2s_channel->local_channel_type);
   
-      if (Z2S_loadChannelExtendedData(
-            channel_index, CHANNEL_EXTENDED_DATA_TYPE_SB,
-            (uint8_t*)&channel_extended_data_sb)) {
-
-        log_i(
-          "SwitchBot device BLE address: %s",
-          channel_extended_data_sb.ble_mac_address);
-        log_i(
-          "SwitchBot device token: %s (%u)",
-          channel_extended_data_sb.token, channel_extended_data_sb.token_size);
-        log_i(
-          "SwitchBot device json payload: %s (%u)",
-          channel_extended_data_sb.json_payload, 
-          channel_extended_data_sb.json_payload_size);
-
-        Supla_SwitchBotRelay->updateSwitchBotData(
-          channel_extended_data_sb, SB_UPDATE_DATA_LOAD_DIR);
-      }
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC: {
-
-      Supla::Control::LocalVirtualHvac *Supla_VirtualHvac = nullptr;
-
-      if (element) {
-
-        Supla_VirtualHvac = static_cast<
-          Supla::Control::LocalVirtualHvac *>(element);
-      }
-      else {
-
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-
-        auto Supla_VirtualOutputInterface = 
-          new Supla::Control::VirtualOutputInterface();
-
-        Supla_VirtualHvac = new Supla::Control::LocalVirtualHvac(
-          Supla_VirtualOutputInterface, nullptr, Supla_channel); 
-
-        Supla_VirtualHvac->setZ2SChannel(channel_index, _z2s_channel);
-      
-        //Supla_VirtualHvac->getChannel()->setChannelNumber(Supla_channel);
-
-        Supla_VirtualHvac->setInitialCaption(LOCAL_VIRTUAL_HVAC_NAME);
-        Supla_VirtualHvac->setDefaultFunction(SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
-      }
-      Supla_VirtualHvac->enableDomesticHotWaterFunctionSupport();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY: {
-
-      Supla::Sensor::LocalVirtualBinary *Supla_LocalVirtualBinary = nullptr;
-
-      if (element) {
-
-        Supla_LocalVirtualBinary = static_cast<
-          Supla::Sensor::LocalVirtualBinary *>(element);
-      }
-      else {
-
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-      
-        Supla_LocalVirtualBinary = new Supla::Sensor::LocalVirtualBinary(true); 
-
-        Supla_LocalVirtualBinary->setZ2SChannel(channel_index, _z2s_channel);
-      
-        Supla_LocalVirtualBinary->getChannel()->setChannelNumber(Supla_channel);
-      }
-      Supla_LocalVirtualBinary->setDefaultFunction(
-        SUPLA_CHANNELFNC_BINARY_SENSOR);
-
-      if (Supla::Notification::RegisterNotification(
-            Supla_LocalVirtualBinary->getZ2SChannelNumber(), false, true))
-        Supla_LocalVirtualBinary->registerNotification();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER: {
-
-      Supla::Sensor::Z2S_RemoteThermometer *Supla_Z2S_RemoteThermometer = 
-        nullptr;
-
-      if (element) {
-
-        Supla_Z2S_RemoteThermometer = static_cast<
-          Supla::Sensor::Z2S_RemoteThermometer *>(element);
-      }
-      else {
-      
-        Supla_Z2S_RemoteThermometer = 
-          new Supla::Sensor::Z2S_RemoteThermometer();
-
-        Supla_Z2S_RemoteThermometer->setZ2SChannel(
-          channel_index, _z2s_channel);
-
-        Supla_Z2S_RemoteThermometer->getChannel()->setChannelNumber(
-          _z2s_channel->Supla_channel);
-      }
-      if (!Supla_Z2S_RemoteThermometer->getConnectedThermometerTimeoutMs())
-        Supla_Z2S_RemoteThermometer->setConnectedThermometerTimeoutValue(30); 
-    } break; 
-
-
-    case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER: {
-
-      Supla::Sensor::CalculatedThermometer *Supla_Z2S_CalculatedThermometer = 
-        nullptr;
-
-      if (element) {
-
-        Supla_Z2S_CalculatedThermometer = static_cast<
-          Supla::Sensor::CalculatedThermometer *>(element);
-      }
-      else {
-      
-        Supla_Z2S_CalculatedThermometer = 
-          new Supla::Sensor::CalculatedThermometer();
-
-        Supla_Z2S_CalculatedThermometer->setZ2SChannel(
-          channel_index, _z2s_channel);
-
-        Supla_Z2S_CalculatedThermometer->getChannel()->setChannelNumber(
-          _z2s_channel->Supla_channel);
-      }
-    } break; 
-
-
-    case LOCAL_CHANNEL_TYPE_REMOTE_RELAY: {
-
-      Supla::Control::Z2S_RemoteRelay *Supla_Z2S_RemoteRelay = nullptr;
-
-      if (element) {
-
-        Supla_Z2S_RemoteRelay = static_cast<
-          Supla::Control::Z2S_RemoteRelay *>(element);
-      }
-      else {
-
-        uint8_t Supla_channel = _z2s_channel->Supla_channel;
-      
-        Supla_Z2S_RemoteRelay = new Supla::Control::Z2S_RemoteRelay(
-          &Z2S_NetworkClient, 0xFF); 
-
-        Supla_Z2S_RemoteRelay->setZ2SChannel(channel_index, _z2s_channel);
-
-        Supla_Z2S_RemoteRelay->getChannel()->setChannelNumber(Supla_channel);
-      }
-      Supla_Z2S_RemoteRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
-      Supla_Z2S_RemoteRelay->setDefaultStateRestore();      
-    }
-    break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER: {
-
-      Supla::Sensor::LocalVirtualThermHygroMeter 
-        *Supla_Z2S_LocalVirtualThermHygroMeter = nullptr;
-
-      if (element) {
-
-        Supla_Z2S_LocalVirtualThermHygroMeter = static_cast<
-          Supla::Sensor::LocalVirtualThermHygroMeter *>(element);
-      }
-      else {
-      
-        Supla_Z2S_LocalVirtualThermHygroMeter = 
-          new Supla::Sensor::LocalVirtualThermHygroMeter();
-
-        Supla_Z2S_LocalVirtualThermHygroMeter->setZ2SChannel(
-          channel_index, _z2s_channel);
-
-        Supla_Z2S_LocalVirtualThermHygroMeter->getChannel()->setChannelNumber(
-          _z2s_channel->Supla_channel);
-      } 
-    } break; 
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_GPM: {
-
-      Supla::Sensor::LocalVirtualGPM *Supla_Z2S_LocalVirtualGPM = nullptr;
-
-      if (element) {
-
-        Supla_Z2S_LocalVirtualGPM = static_cast<
-          Supla::Sensor::LocalVirtualGPM *>(element);
-      }
-      else {
-      
-        Supla_Z2S_LocalVirtualGPM = new Supla::Sensor::LocalVirtualGPM();
-
-        Supla_Z2S_LocalVirtualGPM->setZ2SChannel(
-          channel_index, _z2s_channel);
-
-        Supla_Z2S_LocalVirtualGPM->getChannel()->setChannelNumber(
-          _z2s_channel->Supla_channel);
-      } 
-    } break;
-  } 
+  if (desc && desc->init_fn) {
+    
+    desc->init_fn(channel_index, _z2s_channel, element);
+  }
 }
 
 /*****************************************************************************/
 
 int16_t addZ2SDeviceLocalActionHandler(
-  uint8_t local_channel_type, uint32_t local_channel_func, 
-  uint8_t logic_operator) {
+    uint8_t local_channel_type, uint32_t local_channel_func,
+    uint8_t logic_operator) {
 
   uint8_t first_free_slot = Z2S_findFirstFreeChannelsTableSlot();
-
-  if (first_free_slot == 0xFF)
+  if (first_free_slot == 0xFF) {
     return -1;
-  
-  switch(local_channel_type) {
-
-
-    case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
-
-      uint8_t free_lah_channel_number = 
-        Z2S_findFirstFreeLocalActionHandlerId();
-
-      auto lah = new Supla::LocalActionHandlerWithTrigger(logic_operator);
-
-      Z2S_setLocalChannelData(
-        lah->getZ2SCorePtr(), first_free_slot,free_lah_channel_number, 
-        NO_CUSTOM_CMD_SID, ACTION_HANDLERS_DEFAULT_NAMES[logic_operator], 
-        SUPLA_CHANNELFNC_NONE,0xFF, local_channel_type, local_channel_func, 
-        logic_operator);
-
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, lah->getZ2SChannel(), lah->getZ2SElementPtr());
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
-
-      auto Supla_LocalVirtualRelay = 
-        new Supla::Control::LocalVirtualRelay(RELAY_FLAGS); 
-
-      Z2S_setLocalChannelData(
-        Supla_LocalVirtualRelay->getZ2SCorePtr(), first_free_slot,
-        Supla_LocalVirtualRelay->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_VIRTUAL_RELAY_NAME, SUPLA_CHANNELFNC_POWERSWITCH, 0xFF, 
-        local_channel_type, local_channel_func);
-      
-      Supla_LocalVirtualRelay->setInitialCaption(LOCAL_VIRTUAL_RELAY_NAME);
-      Supla_LocalVirtualRelay->setDefaultFunction(
-        SUPLA_CHANNELFNC_POWERSWITCH);
-        
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_LocalVirtualRelay->getZ2SChannel(), 
-        Supla_LocalVirtualRelay->getZ2SElementPtr());
-
-      Supla_LocalVirtualRelay->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_LocalVirtualRelay->onLoadConfig(&SuplaDevice);
-      Supla_LocalVirtualRelay->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_RELAY: {
-
-      auto Supla_LocalRelay = new Supla::Control::LocalRelay(
-        -1, true, RELAY_FLAGS); 
-
-      Z2S_setLocalChannelData(
-        Supla_LocalRelay->getZ2SCorePtr(), first_free_slot,
-        Supla_LocalRelay->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_GPIO_RELAY_NAME, SUPLA_CHANNELFNC_POWERSWITCH, 0xFF, 
-        local_channel_type, local_channel_func, 0xFF, false);
-
-      Supla_LocalRelay->setLocalRelayGpioPin(-1);
-      Supla_LocalRelay->setLocalRelayHighIsOn(true);
-      Supla_LocalRelay->saveChannelData();
-      
-      Supla_LocalRelay->setInitialCaption(LOCAL_GPIO_RELAY_NAME);
-      Supla_LocalRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
-        
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_LocalRelay->getZ2SChannel(), 
-        Supla_LocalRelay->getZ2SElementPtr());
-
-      Supla_LocalRelay->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_LocalRelay->onLoadConfig(&SuplaDevice);
-      Supla_LocalRelay->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
-
-      auto Supla_LocalBinary = new Supla::Sensor::LocalBinary(); 
-
-      Z2S_setLocalChannelData(
-        Supla_LocalBinary->getZ2SCorePtr(), first_free_slot,
-        Supla_LocalBinary->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_GPIO_BINARY_NAME, SUPLA_CHANNELFNC_BINARY_SENSOR, 0xFF, 
-        local_channel_type, local_channel_func, 0xFF, false);
-
-      Supla_LocalBinary->setLocalBinaryGpioPin(-1);
-      Supla_LocalBinary->setLocalBinaryInvertLogic(false);
-      Supla_LocalBinary->setLocalBinaryPullUp(false);
-
-      Supla_LocalBinary->saveChannelData();
-      
-      Supla_LocalBinary->setInitialCaption(LOCAL_GPIO_BINARY_NAME);
-      Supla_LocalBinary->setDefaultFunction(SUPLA_CHANNELFNC_BINARY_SENSOR);
-        
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_LocalBinary->getZ2SChannel(), 
-        Supla_LocalBinary->getZ2SElementPtr());
-
-      Supla_LocalBinary->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_LocalBinary->onLoadConfig(&SuplaDevice);
-      Supla_LocalBinary->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_HVAC: {
-
-      auto Supla_LocalHvac = new Supla::Control::LocalHvac(-1, true); 
-
-      Z2S_setLocalChannelData(
-        Supla_LocalHvac->getZ2SCorePtr(), first_free_slot,
-        Supla_LocalHvac->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_GPIO_HVAC_NAME, SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0xFF, 
-        local_channel_type, local_channel_func, 0xFF, false);
-
-      Supla_LocalHvac->setLocalHvacGpioPin(-1);
-      Supla_LocalHvac->setLocalHvacHighIsOn(true);
-      Supla_LocalHvac->saveChannelData();
-      
-      Supla_LocalHvac->setInitialCaption(LOCAL_GPIO_HVAC_NAME);
-      Supla_LocalHvac->setDefaultFunction(SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
-        
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_LocalHvac->getZ2SChannel(), 
-        Supla_LocalHvac->getZ2SElementPtr());
-
-      Supla_LocalHvac->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_LocalHvac->onLoadConfig(&SuplaDevice);
-      Supla_LocalHvac->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_GPIO_DS18B20: {
-
-      auto Supla_LocalDs18b20 = new Supla::Sensor::LocalDS18B20(4, nullptr); 
-
-      Z2S_setLocalChannelData(
-        Supla_LocalDs18b20->getZ2SCorePtr(), first_free_slot,
-        Supla_LocalDs18b20->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_GPIO_DS18B20_NAME, SUPLA_CHANNELFNC_THERMOMETER, 0xFF, 
-        local_channel_type, local_channel_func, 0xFF, false);
-
-      Supla_LocalDs18b20->setLocalDS18B20GpioPin(4);
-    
-      Supla_LocalDs18b20->saveChannelData();
-      
-      Supla_LocalDs18b20->setInitialCaption(LOCAL_GPIO_DS18B20_NAME);
-      Supla_LocalDs18b20->setDefaultFunction(SUPLA_CHANNELFNC_THERMOMETER);
-        
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_LocalDs18b20->getZ2SChannel(), 
-        Supla_LocalDs18b20->getZ2SElementPtr());
-
-      Supla_LocalDs18b20->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_LocalDs18b20->onLoadConfig(&SuplaDevice);
-      Supla_LocalDs18b20->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-  
-    case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
-
-      auto Supla_LocalHcsr04 = new Supla::Sensor::LocalHCSR04(); 
-
-      Z2S_setLocalChannelData(
-        Supla_LocalHcsr04->getZ2SCorePtr(), first_free_slot,
-        Supla_LocalHcsr04->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_GPIO_HCSR04_NAME, SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
-        0xFF, local_channel_type, local_channel_func, 0xFF, false);
-
-      Supla_LocalHcsr04->setLocalHCSR04TrigPin(5);
-      Supla_LocalHcsr04->setLocalHCSR04EchoPin(6);
-      Supla_LocalHcsr04->setLocalHCSR04MinIn(0);
-      Supla_LocalHcsr04->setLocalHCSR04MinOut(500);
-      Supla_LocalHcsr04->setLocalHCSR04MaxIn(0);
-      Supla_LocalHcsr04->setLocalHCSR04MaxOut(500);
-
-      Supla_LocalHcsr04->saveChannelData();
-      
-      Supla_LocalHcsr04->setInitialCaption(LOCAL_GPIO_HCSR04_NAME);
-        
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_LocalHcsr04->getZ2SChannel(), 
-        Supla_LocalHcsr04->getZ2SElementPtr());
-
-      Supla_LocalHcsr04->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_LocalHcsr04->onLoadConfig(&SuplaDevice);
-      Supla_LocalHcsr04->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_HVAC: {
-
-      auto Supla_VirtualOutputInterface = 
-        new Supla::Control::VirtualOutputInterface();
-
-      auto Supla_VirtualHvac = 
-        new Supla::Control::LocalVirtualHvac(Supla_VirtualOutputInterface);
-
-      Z2S_setLocalChannelData(
-        Supla_VirtualHvac->getZ2SCorePtr(), first_free_slot,
-        Supla_VirtualHvac->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_VIRTUAL_HVAC_NAME, SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0xFF, 
-        local_channel_type, local_channel_func);
-
-      Supla_VirtualHvac->setInitialCaption(LOCAL_VIRTUAL_HVAC_NAME);
-      Supla_VirtualHvac->setDefaultFunction(SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
-      
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_VirtualHvac->getZ2SChannel(), 
-        Supla_VirtualHvac->getZ2SElementPtr());
-
-      Supla_VirtualHvac->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_VirtualHvac->onLoadConfig(&SuplaDevice);
-      Supla_VirtualHvac->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY: {
-
-      auto Supla_LocalVirtualBinary = 
-        new Supla::Sensor::LocalVirtualBinary(true); 
-
-      Z2S_setLocalChannelData(
-        Supla_LocalVirtualBinary->getZ2SCorePtr(), first_free_slot,
-        Supla_LocalVirtualBinary->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_VIRTUAL_BINARY_NAME, SUPLA_CHANNELFNC_BINARY_SENSOR, 0xFF, 
-        local_channel_type, local_channel_func);
-
-      Supla_LocalVirtualBinary->setInitialCaption(LOCAL_VIRTUAL_BINARY_NAME);
-      Supla_LocalVirtualBinary->setDefaultFunction(
-        SUPLA_CHANNELFNC_BINARY_SENSOR);
-
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_LocalVirtualBinary->getZ2SChannel(), 
-        Supla_LocalVirtualBinary->getZ2SElementPtr());
-
-      Supla_LocalVirtualBinary->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_LocalVirtualBinary->onLoadConfig(&SuplaDevice);
-      Supla_LocalVirtualBinary->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_REMOTE_RELAY: {
-
-      auto Supla_Z2S_RemoteRelay = 
-        new Supla::Control::Z2S_RemoteRelay(&Z2S_NetworkClient, 0xFF); 
-
-      Supla_Z2S_RemoteRelay->setDefaultStateRestore();
-
-      Z2S_setLocalChannelData(
-        Supla_Z2S_RemoteRelay->getZ2SCorePtr(), first_free_slot,
-        Supla_Z2S_RemoteRelay->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_REMOTE_RELAY_NAME, SUPLA_CHANNELFNC_POWERSWITCH, 0xFF, 
-        local_channel_type, local_channel_func);
-
-      Supla_Z2S_RemoteRelay->setInitialCaption(LOCAL_REMOTE_RELAY_NAME);  
-      Supla_Z2S_RemoteRelay->setDefaultFunction(SUPLA_CHANNELFNC_POWERSWITCH);
-
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_Z2S_RemoteRelay->getZ2SChannel(), 
-        Supla_Z2S_RemoteRelay->getZ2SElementPtr());
-
-      Supla_Z2S_RemoteRelay->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      //sortChannelsSelectors();
-
-      Supla_Z2S_RemoteRelay->onLoadConfig(&SuplaDevice);
-      Supla_Z2S_RemoteRelay->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER: {
-
-      auto Supla_Z2S_RemoteThermometer = 
-        new Supla::Sensor::Z2S_RemoteThermometer();
-
-      Z2S_setLocalChannelData(
-        Supla_Z2S_RemoteThermometer->getZ2SCorePtr(),first_free_slot, 
-        Supla_Z2S_RemoteThermometer->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_REMOTE_THERMOMETER_NAME, SUPLA_CHANNELFNC_THERMOMETER, 0xFF, 
-        local_channel_type, local_channel_func);
-
-      Supla_Z2S_RemoteThermometer->setInitialCaption(
-        LOCAL_REMOTE_THERMOMETER_NAME);
-      Supla_Z2S_RemoteThermometer->setDefaultFunction(
-        SUPLA_CHANNELFNC_THERMOMETER);
-
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_Z2S_RemoteThermometer->getZ2SChannel(), 
-        Supla_Z2S_RemoteThermometer->getZ2SElementPtr());
-
-      Supla_Z2S_RemoteThermometer->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      //sortChannelsSelectors();
-
-      Supla_Z2S_RemoteThermometer->onLoadConfig(&SuplaDevice);
-      Supla_Z2S_RemoteThermometer->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER: {
-
-      auto Supla_Z2S_CalculatedThermometer = 
-        new Supla::Sensor::CalculatedThermometer();
-
-      Z2S_setLocalChannelData(
-        Supla_Z2S_CalculatedThermometer->getZ2SCorePtr(),first_free_slot, 
-        Supla_Z2S_CalculatedThermometer->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        LOCAL_CALCULATED_THERMOMETER_NAME, SUPLA_CHANNELFNC_THERMOMETER, 0xFF, 
-        local_channel_type, local_channel_func);
-
-      Supla_Z2S_CalculatedThermometer->setInitialCaption(
-        LOCAL_CALCULATED_THERMOMETER_NAME);
-      Supla_Z2S_CalculatedThermometer->setDefaultFunction(
-        SUPLA_CHANNELFNC_THERMOMETER);
-
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_Z2S_CalculatedThermometer->getZ2SChannel(), 
-        Supla_Z2S_CalculatedThermometer->getZ2SElementPtr());
-
-      Supla_Z2S_CalculatedThermometer->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_Z2S_CalculatedThermometer->onLoadConfig(&SuplaDevice);
-      Supla_Z2S_CalculatedThermometer->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_SWITCHBOT: {
-
-      auto Supla_SwitchBotRelay = 
-        new Supla::Control::SwitchBotRelay(local_channel_func); 
-
-      Z2S_setLocalChannelData(
-        Supla_SwitchBotRelay->getZ2SCorePtr(), first_free_slot,
-        Supla_SwitchBotRelay->getChannelNumber(), NO_CUSTOM_CMD_SID, 
-        Supla::Control::SwitchBotRelay::getSwitchBotChannelName(
-          local_channel_func), SUPLA_CHANNELFNC_POWERSWITCH, 0xFF, 
-        local_channel_type, local_channel_func);
-
-      Supla_SwitchBotRelay->setInitialCaption(
-        Supla_SwitchBotRelay->getZ2SChannelName());
-      Supla_SwitchBotRelay->setDefaultFunction(
-        SUPLA_CHANNELFNC_POWERSWITCH);
-
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_SwitchBotRelay->getZ2SChannel(), 
-        Supla_SwitchBotRelay->getZ2SElementPtr());
-
-      Supla_SwitchBotRelay->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_SwitchBotRelay->onLoadConfig(&SuplaDevice);
-      Supla_SwitchBotRelay->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER: {
-
-      
-      auto Supla_Z2S_LocalVirtualThermHygroMeter = 
-          new Supla::Sensor::LocalVirtualThermHygroMeter();
-
-      Z2S_setLocalChannelData(
-        Supla_Z2S_LocalVirtualThermHygroMeter->getZ2SCorePtr(),
-        first_free_slot, 
-        Supla_Z2S_LocalVirtualThermHygroMeter->getChannelNumber(), 
-        NO_CUSTOM_CMD_SID, LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME, 
-        SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 0xFF, 
-        local_channel_type, local_channel_func);
-
-      Supla_Z2S_LocalVirtualThermHygroMeter->setInitialCaption(
-        LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME);
-      Supla_Z2S_LocalVirtualThermHygroMeter->setDefaultFunction(
-        SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
-
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, 
-        Supla_Z2S_LocalVirtualThermHygroMeter->getZ2SChannel(), 
-        Supla_Z2S_LocalVirtualThermHygroMeter->getZ2SElementPtr());
-
-      Supla_Z2S_LocalVirtualThermHygroMeter->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_Z2S_LocalVirtualThermHygroMeter->onLoadConfig(&SuplaDevice);
-      Supla_Z2S_LocalVirtualThermHygroMeter->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-
-    } break;
-
-
-    case LOCAL_CHANNEL_TYPE_VIRTUAL_GPM: {
-
-      auto Supla_Z2S_LocalVirtualGPM = new Supla::Sensor::LocalVirtualGPM();
-
-      Z2S_setLocalChannelData(
-        Supla_Z2S_LocalVirtualGPM->getZ2SCorePtr(),
-        first_free_slot, Supla_Z2S_LocalVirtualGPM->getChannelNumber(), 
-        NO_CUSTOM_CMD_SID, LOCAL_VIRTUAL_GPM_NAME, 
-        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, 0xFF, 
-        local_channel_type, local_channel_func);
-
-      Supla_Z2S_LocalVirtualGPM->setInitialCaption(
-        LOCAL_VIRTUAL_GPM_NAME);
-      Supla_Z2S_LocalVirtualGPM->setDefaultFunction(
-        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT);
-
-      initZ2SDeviceLocalActionHandler(
-        first_free_slot, Supla_Z2S_LocalVirtualGPM->getZ2SChannel(), 
-        Supla_Z2S_LocalVirtualGPM->getZ2SElementPtr());
-
-      Supla_Z2S_LocalVirtualGPM->getChannel()->setFlag(
-        SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
-
-      Supla_Z2S_LocalVirtualGPM->onLoadConfig(&SuplaDevice);
-      Supla_Z2S_LocalVirtualGPM->onInit();
-
-      if (!Supla::Storage::IsStateStorageValid()) 
-        Supla::Storage::WriteStateStorage();
-          
-      Supla::Storage::ConfigInstance()->commit();
-      
-      Supla::Network::DisconnectProtocols();
-    } break;
-    
-
-    default:
-      
-      log_i(
-        "unknown local action handler channel type 0%u", local_channel_type);
-    break;
   }
+
+  const auto* desc = findLocalChannelDescriptor(local_channel_type);
+  if (!desc || !desc->add_fn) {
+    log_i("unknown local action handler channel type 0%u", local_channel_type);
+    return -1;
+  }
+
+  desc->add_fn(first_free_slot, *desc, local_channel_func, logic_operator);
+
+  if (!Supla::Storage::IsStateStorageValid()) {
+    Supla::Storage::WriteStateStorage();
+  }
+  Supla::Storage::ConfigInstance()->commit();
+
+  if (desc->disconnect_on_add) {
+    Supla::Network::DisconnectProtocols();
+  }
+
   return first_free_slot;
 }
