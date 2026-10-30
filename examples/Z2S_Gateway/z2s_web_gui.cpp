@@ -644,7 +644,7 @@ static constexpr char *dest_thermometer_address_desc =
 static constexpr char *dest_thermometer_channel_desc =
   "&#10023; Enter destination thermometer channel # &#10023;";
 static constexpr char *src_thermometer_channel_desc =
-  "&#10023; Enter source thermometer local channel # &#10023;<br>";
+  "&#10023; Enter source local channel # &#10023;<br>";
 
 /*static constexpr char *keepalive_desc =
   "&#10023; keepalive (s) &#10023;<br>&#10023;turn on delay (s) [logical"
@@ -3024,6 +3024,11 @@ void buildChannelsTabGUI() {
 	  Control::Type::Button, empty_str, "Add calculated thermometer",
 	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
 	  (void *)gui_cmd_add_calculated_thermometer);
+
+	ESPUI.addControl(
+	  Control::Type::Button, empty_str, "Add calculated GPM",
+	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
+	  (void *)gui_cmd_add_calculated_gpm);
 
 	ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Add virtual GPM",
@@ -5768,6 +5773,37 @@ void sortCalculatedThermometerFunctionsSelectorsMain(
 
 /*****************************************************************************/
 
+bool buildCalculatedGPMLocalFunctionsSelectJsonPayload(
+  int32_t selected_value, uint16_t selector_id) {
+
+	return buildSelectJsonPayloadGeneric(
+	  selected_value, 1, &selector_id,
+	  "Select local channel function...", [&](auto add_function_option) {
+		  constexpr uint8_t funcs_count =
+		    sizeof(calculated_gpm_functions_names) /
+		    sizeof(calculated_gpm_functions_names[0]);
+
+		  for (uint8_t cgf = 1; cgf <= funcs_count; cgf++) {
+
+			  if (!add_function_option(
+			        cgf, calculated_gpm_functions_names[cgf - 1]))
+				  return false;
+		  }
+		  return true;
+	  });
+}
+
+/*****************************************************************************/
+
+void sortCalculatedGPMFunctionsSelectorsMain(int32_t select_value = -1) {
+
+	if (local_channel_function_selector < 0xFFFF)
+		buildCalculatedGPMLocalFunctionsSelectJsonPayload(
+		  select_value, local_channel_function_selector);
+}
+
+/*****************************************************************************/
+
 void buildActionsTabGUI() {
 
 	char general_purpose_gui_buffer[512] = {};
@@ -7221,24 +7257,40 @@ void Z2S_loopWebGUI() {
 				break;
 
 
-			case gui_cmd_add_calculated_thermometer:
-				{
+			case gui_cmd_add_calculated_thermometer: {
 
-					int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
-					  LOCAL_CHANNEL_TYPE_CALC_THERMOMETER, 
-						CALCULATED_THERMOMETER_FUNC_DEW_POINT);
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_CALC_THERMOMETER, 
+					CALCULATED_THERMOMETER_FUNC_DEW_POINT);
 
-					if (new_channel_slot >= 0) {
+				if (new_channel_slot >= 0) {
 
-						ESPUI.updateLabel(
-						  lah_status_label,
-						  "The local calculated thermometer has been successfully added and"
-						  " is available for use.");
+					ESPUI.updateLabel(
+					  lah_status_label,
+					  "The local calculated thermometer has been successfully added and"
+					  " is available for use.");
 
-						addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
-					}
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
 				}
-				break;
+			} break;
+
+
+			case gui_cmd_add_calculated_gpm: {
+
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_CALC_GPM, 
+					CALCULATED_GPM_FUNC_VPD);
+
+				if (new_channel_slot >= 0) {
+
+					ESPUI.updateLabel(
+						lah_status_label,
+						"The local calculated GPM has been successfully added and"
+						" is available for use.");
+
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
+				}
+			} break;
 
 
 			case gui_cmd_add_switchbot_1x:
@@ -8267,6 +8319,25 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
 					updateResendTemperatureControls(z2s_core, true);
+				}
+
+				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_CALC_GPM) {
+
+					enableChannelTimings(4);
+					enableChannelFlags(0);
+					enableControlStyle(local_channel_function_selector, true);
+
+					sortCalculatedGPMFunctionsSelectorsMain(
+						z2s_channel.local_channel_func);
+
+					ESPUI.updateSelect(
+						local_channel_function_selector, z2s_channel.local_channel_func);
+
+					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
+
+					enableChannelParams(4);
+					ESPUI.updateLabel(param_3_desc_label, src_thermometer_channel_desc);
+					ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY) {
@@ -10173,6 +10244,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 									case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
 									case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
+									case LOCAL_CHANNEL_TYPE_CALC_GPM:
 
 										saveSourceChannelData(channel_slot);
 										break;

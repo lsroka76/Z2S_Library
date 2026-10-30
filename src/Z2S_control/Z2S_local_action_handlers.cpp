@@ -1261,6 +1261,231 @@ void Supla::Sensor::CalculatedThermometer::handleAction(
 
 /*****************************************************************************/
 
+Supla::Sensor::CalculatedGPM::CalculatedGPM() 
+  : VirtualGeneralPurposeMeasurement(), Z2S_Core(this) {
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::configureFunctionDefaults() {
+
+  switch (getZ2SLocalChannelFunc()) {
+
+    case CALCULATED_GPM_FUNC_VPD:
+      setDefaultUnitAfterValue(" kPa");
+      setDefaultValuePrecision(2);
+      break;
+
+    case CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY:
+      setDefaultUnitAfterValue(" g/m³");
+      setDefaultValuePrecision(2);
+      break;
+
+    case CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY:
+      setDefaultUnitAfterValue(" kJ/kg");
+      setDefaultValuePrecision(1);
+      break;
+
+    case CALCULATED_GPM_FUNC_DEW_POINT_SPREAD:
+      setDefaultUnitAfterValue(" K");
+      setDefaultValuePrecision(1);
+      break;
+
+    case CALCULATED_GPM_FUNC_WOOD_EMC:
+      setDefaultUnitAfterValue(" %");
+      setDefaultValuePrecision(1);
+      break;
+
+    case CALCULATED_GPM_FUNC_ZIGBEE_RSSI:
+      setDefaultUnitAfterValue(" dBm");
+      setDefaultValuePrecision(0);
+      break;
+  }
+}
+
+/*****************************************************************************/
+
+double calculateVPD(double temperature, double humidity) {
+
+  if ((temperature <= -273.0) || (humidity < 0.0))
+    return NAN;
+
+  if (humidity > 100.0)
+    humidity = 100.0;
+
+  const double a = 17.27;
+  const double b = 237.3;
+
+  // Saturation Vapor Pressure (SVP) in kPa
+  double svp = 0.61078 * std::exp((a * temperature) / (b + temperature));
+
+  // Vapor Pressure Deficit (VPD) in kPa
+  return svp * (1.0 - (humidity / 100.0));
+}
+
+/*****************************************************************************/
+
+double calculateAbsoluteHumidity(double temperature, double humidity) {
+
+  if ((temperature <= -273.0) || (humidity < 0.0))
+    return NAN;
+
+  //Magnus-Tetens saturation vapor pressure (hPa) -> mass concentration (g/m^3)
+  double es = 6.112 * std::exp((17.67 * temperature) / (temperature + 243.5));
+  return (es * humidity * 2.1674) / (273.15 + temperature);
+}
+
+/*****************************************************************************/
+
+double calculateSpecificEnthalpy(double temperature, double humidity) {
+
+  if ((temperature <= -273.0) || (humidity < 0.0))
+    return NAN;
+
+  const double p_atm = 101.325; // Standard atmospheric pressure in kPa
+  double svp = 0.61078 * std::exp((17.27 * temperature) / 
+    (237.3 + temperature));
+  double pv = svp * (humidity / 100.0);
+
+  if (pv >= p_atm)
+    pv = p_atm - 0.01;
+
+  // Humidity ratio (kg water / kg dry air)
+  double w = 0.62198 * (pv / (p_atm - pv));
+
+  // Specific enthalpy in kJ/kg
+  return (1.006 * temperature) + w * (2501.0 + (1.86 * temperature));
+}
+
+/*****************************************************************************/
+
+double calculateWoodEMC(double temperature, double humidity) {
+
+  if ((temperature <= -273.0) || (humidity <= 0.0))
+    return 0.0;
+
+  double h = (humidity > 100.0) ? 1.0 : (humidity / 100.0);
+  double w = 349.0 + (1.29 * temperature) + 
+    (0.0135 * temperature * temperature);
+  double k = 0.805 + (0.000736 * temperature) - 
+    (0.00000273 * temperature * temperature);
+  double k1 = 6.27 - (0.00938 * temperature) - 
+    (0.000303 * temperature * temperature);
+  double k2 = 1.91 + (0.0407 * temperature) - 
+    (0.000293 * temperature * temperature);
+
+  double kh = k * h;
+  return (1800.0 / w) * (
+    (kh / (1.0 - kh)) +
+    (((k1 * kh) + (2.0 * k1 * k2 * kh * kh)) /
+     (1.0 + (k1 * kh) + (k1 * k2 * kh * kh)))
+  );
+}
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::validateSourceChannel() {
+
+  if ((_last_source_channel < 0xFF) && 
+      (_last_source_channel != getSourceChannel()))
+    _source_Supla_element = nullptr;
+
+  if (_source_Supla_element == nullptr) {
+
+    switch (getZ2SLocalChannelFunc()) {
+
+
+      case CALCULATED_GPM_FUNC_VPD:
+      case CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY:
+      case CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY:
+      case CALCULATED_GPM_FUNC_DEW_POINT_SPREAD:
+      case CALCULATED_GPM_FUNC_WOOD_EMC: {
+        
+        _source_Supla_element = Z2S_Core::getSuplaElementByChannelNumberAndType(
+          getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
+
+        if (_source_Supla_element) {
+
+          _last_source_channel = getSourceChannel();          
+        }
+      } break;
+    }
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::iterateAlways() {
+
+  Supla::Sensor::VirtualGeneralPurposeMeasurement::iterateAlways();
+
+  if (getRefreshMs() && ((millis() - _last_refresh_ms) > getRefreshMs())) {
+
+    _last_refresh_ms = millis();
+
+    validateSourceChannel();
+
+    if (_source_Supla_element) {
+
+      auto *channel = _source_Supla_element->getChannel();
+
+      if (channel && channel->getChannelType() == 
+            SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
+
+        double temp = channel->getValueDoubleFirst();
+        double humi = channel->getValueDoubleSecond();
+
+        switch (getZ2SLocalChannelFunc()) {
+
+
+          case CALCULATED_GPM_FUNC_VPD: {
+            
+            setValue(calculateVPD(temp, humi));
+          } break;
+
+
+          case CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY: {
+            
+            setValue(calculateAbsoluteHumidity(temp, humi));
+          } break;
+
+          case CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY: {
+            
+            setValue(calculateSpecificEnthalpy(temp, humi));
+          } break;
+
+          case CALCULATED_GPM_FUNC_DEW_POINT_SPREAD: {
+            
+            setValue(calculateDewPointSpread(temp, humi));
+          } break;
+
+          case CALCULATED_GPM_FUNC_WOOD_EMC: {
+            
+            setValue(calculateWoodEMC(temp, humi));
+          } break;
+        }
+      }
+    }       
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::handleAction(int event, int action) {
+
+  log_i("event %u, action %u", event, action);
+  
+  switch (action) {
+
+
+    case CLEAR:
+
+      setValue(0);
+    break;
+  }
+}
+
+/*****************************************************************************/
+
 Supla::Sensor::LocalVirtualThermHygroMeter::LocalVirtualThermHygroMeter() 
   : VirtualThermHygroMeter(), Z2S_Core(this) {
 }

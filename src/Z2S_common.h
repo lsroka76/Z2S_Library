@@ -65,6 +65,7 @@
 
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER            0x50
 #define LOCAL_CHANNEL_TYPE_CALC_THERMOMETER                     0x51
+#define LOCAL_CHANNEL_TYPE_CALC_GPM                             0x52
 
 #define LOCAL_CHANNEL_TYPE_GPIO_RELAY                           0x60
 #define LOCAL_CHANNEL_TYPE_GPIO_HVAC                            0x61

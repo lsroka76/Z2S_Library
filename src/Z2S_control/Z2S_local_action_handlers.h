@@ -121,6 +121,24 @@ inline constexpr char *calculated_thermomether_functions_names[] = {
 
 /*****************************************************************************/
 
+// In Z2S_local_action_handlers.h:
+#define CALCULATED_GPM_FUNC_VPD                                         0x0001
+#define CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY                           0x0002
+#define CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY                           0x0003
+#define CALCULATED_GPM_FUNC_DEW_POINT_SPREAD                            0x0004
+#define CALCULATED_GPM_FUNC_WOOD_EMC                                    0x0005
+//#define CALCULATED_GPM_FUNC_ZIGBEE_RSSI                                 0x0006
+
+inline constexpr const char *calculated_gpm_functions_names[] = {
+  "VPD (VAPOR PRESSURE DEFICIT) [kPa]",
+  "ABSOLUTE HUMIDITY [g/m3]",
+  "SPECIFIC ENTHALPY [kJ/kg]",
+  "DEW POINT SPREAD (CONDENSATION MARGIN) [K]",
+  "EQUILIBRIUM MOISTURE CONTENT (EMC) [%]"//,
+  //"ZIGBEE DEVICE RSSI [dBm]"
+};
+/*****************************************************************************/
+
 extern bool sendIASNotifications;
 extern Supla::Control::VirtualRelay *toggleNotifications;
 
@@ -445,6 +463,29 @@ class LocalVirtualGPM
     
 };
 
+/*****************************************************************************/
+
+class CalculatedGPM : public VirtualGeneralPurposeMeasurement, 
+  public Z2S_Core {
+
+  public:
+
+    CalculatedGPM();
+
+    void configureFunctionDefaults();
+    void iterateAlways() override;
+    void handleAction(int event, int action) override;
+
+  protected:
+
+    void validateSourceChannel();
+
+  private:
+
+    uint8_t _last_source_channel = 0xFF;
+    uint32_t _last_refresh_ms = 0;
+    Supla::Element *_source_Supla_element = nullptr;
+};
 
 /*****************************************************************************/
 

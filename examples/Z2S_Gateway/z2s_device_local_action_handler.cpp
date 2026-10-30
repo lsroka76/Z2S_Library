@@ -402,6 +402,20 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     &defaultAddFn<Supla::Sensor::LocalVirtualGPM>
   },
   {
+    LOCAL_CHANNEL_TYPE_CALC_GPM,
+    "Local calculated GPM",
+    LOCAL_CALCULATED_GPM_NAME,
+    SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
+    true,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* cgpm = initOrCastLocalElement<Supla::Sensor::CalculatedGPM>(
+          idx, ch, el, true);
+      cgpm->configureFunctionDefaults();
+    },
+    &defaultAddFn<Supla::Sensor::CalculatedGPM>
+  },
+  {
     LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS,
     "Gateway events",
     nullptr,

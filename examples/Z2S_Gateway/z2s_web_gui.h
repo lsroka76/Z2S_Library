@@ -79,6 +79,7 @@ enum gui_commands {
   gui_cmd_add_remote_thermometer,
   gui_cmd_add_virtual_thermhygrometer,
   gui_cmd_add_calculated_thermometer,
+  gui_cmd_add_calculated_gpm,
   gui_cmd_add_virtual_gpm,
   gui_cmd_add_switchbot_1x,
   gui_cmd_add_switchbot_2x,

@@ -43,8 +43,8 @@ inline constexpr char *LOCAL_CALCULATED_THERMOMETER_NAME =
   "CALCULATED THERMOMETER";
 inline constexpr char *LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME = 
   "LOCAL VIRTUAL THERMHYGROMETER";
-inline constexpr char *LOCAL_VIRTUAL_GPM_NAME = 
-  "LOCAL VIRTUAL GPM";
+inline constexpr char *LOCAL_VIRTUAL_GPM_NAME = "LOCAL VIRTUAL GPM";
+inline constexpr char *LOCAL_CALCULATED_GPM_NAME = "CALCULATED GPM";
 
 inline constexpr char *LOCAL_GPIO_RELAY_NAME = "LOCAL RELAY (GPIO)";
 inline constexpr char *LOCAL_GPIO_HVAC_NAME = "LOCAL HVAC (GPIO)";
