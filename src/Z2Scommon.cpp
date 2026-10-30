@@ -1049,6 +1049,30 @@ bool Z2S_Core::updateLocalDs18b20Params() {
 
 /*****************************************************************************/
 
+bool Z2S_Core::updateLocalSHT3xParams() {
+
+  if (_z2s_element) {
+
+    auto *sht = static_cast<Supla::Sensor::LocalSHT3x *>(_z2s_element);
+    sht->setAddress(getLocalSHT3xAddress());
+  }
+  return true;
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::updateLocalAdcParams() {
+
+  if (_z2s_element) {
+
+    analogSetPinAttenuation(
+      getLocalAdcPin(), (adc_attenuation_t)getLocalAdcAttenuation());
+  }
+  return true;
+}
+
+/*****************************************************************************/
+
 /*                          Z2S_Device                                       */
 
 /*****************************************************************************/

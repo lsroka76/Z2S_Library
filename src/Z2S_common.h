@@ -73,6 +73,7 @@
 #define LOCAL_CHANNEL_TYPE_GPIO_SHT3X                           0x66
 #define LOCAL_CHANNEL_TYPE_GPIO_BINARY                          0x69
 #define LOCAL_CHANNEL_TYPE_GPIO_HCSR04                          0x6A
+#define LOCAL_CHANNEL_TYPE_GPIO_ADC                             0x6B
 
 
 #define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                       0x80
@@ -1308,6 +1309,72 @@ public:
     if (save)
       saveChannelData();
   }
+
+/*****************************************************************************/
+
+  uint8_t getLocalSHT3xSdaPin() { 
+    
+    return _z2s_channel.local_sht3x_data.sda_pin; 
+  }
+
+  void setLocalSHT3xSdaPin(uint8_t pin, bool save = false) { 
+    
+    _z2s_channel.local_sht3x_data.sda_pin = pin; 
+    if (save) 
+      saveChannelData();
+  }
+  
+  uint8_t getLocalSHT3xSclPin() { 
+    return _z2s_channel.local_sht3x_data.scl_pin; 
+  }
+  
+  void setLocalSHT3xSclPin(uint8_t pin, bool save = false) { 
+    
+    _z2s_channel.local_sht3x_data.scl_pin = pin; 
+    if (save) 
+      saveChannelData(); 
+  }
+  
+  int8_t getLocalSHT3xAddress() { 
+    
+    return _z2s_channel.local_sht3x_data.sht3x_address; 
+  }
+
+  void setLocalSHT3xAddress(int8_t addr, bool save = false) { 
+    
+    _z2s_channel.local_sht3x_data.sht3x_address = addr; 
+    if (save) 
+      saveChannelData(); 
+  }
+
+  bool updateLocalSHT3xParams();
+
+/*****************************************************************************/
+
+  uint8_t getLocalAdcPin() { 
+    
+    return _z2s_channel.local_adc_data.adc_pin; 
+  }
+  
+  void setLocalAdcPin(uint8_t pin, bool save = false) { 
+    
+    _z2s_channel.local_adc_data.adc_pin = pin; 
+    if (save) 
+      saveChannelData(); 
+  }
+
+  uint8_t getLocalAdcAttenuation() { 
+    return _z2s_channel.local_adc_data.adc_attenuation; 
+  }
+
+  void setLocalAdcAttenuation(uint8_t atten, bool save = false) { 
+    
+    _z2s_channel.local_adc_data.adc_attenuation = atten; 
+    if (save) 
+      saveChannelData(); 
+  }
+  
+  bool updateLocalAdcParams();
 
 /*****************************************************************************/
 

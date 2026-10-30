@@ -37,6 +37,7 @@
 #include <supla/sensor/virtual_therm_hygro_meter.h>
 #include <supla/sensor/HC_SR04_GPM.h>
 #include <supla/sensor/DS18B20.h>
+#include <supla/sensor/SHT3x.h>
 #include <supla/sensor/binary.h>
 #include <supla/device/notifications.h>
 #include <supla/log_wrapper.h>
@@ -591,6 +592,53 @@ class LocalBinary: public Binary, public Z2S_Core {
     bool getInvertLogic();
     bool getPullUp();
 };
+
+/*****************************************************************************/
+
+class LocalSHT3x : public SHT3x, public Z2S_Core {
+ public:
+  LocalSHT3x() : SHT3x(0x44), Z2S_Core(this) {}
+
+  void setAddress(int8_t addr) {
+    
+    address = addr;
+    sht.begin(address);
+  }
+
+  double getTemp() override {
+    
+    Wire.end();
+    Wire.begin(getLocalSHT3xSdaPin(), getLocalSHT3xSclPin());
+    return Supla::Sensor::SHT3x::getTemp();
+  }
+};
+
+/*****************************************************************************/
+
+class LocalADC : public VirtualGeneralPurposeMeasurement, public Z2S_Core {
+ public:
+  LocalADC() : VirtualGeneralPurposeMeasurement(), Z2S_Core(this) {}
+
+  void iterateAlways() override {
+    VirtualGeneralPurposeMeasurement::iterateAlways();
+    
+    if (millis() - _last_read_time > 1000) {
+      _last_read_time = millis();
+      
+      if (getLocalAdcPin() != 0xFF) {
+
+        analogSetPinAttenuation(
+          getLocalAdcPin(), (adc_attenuation_t)getLocalAdcAttenuation());
+        setValue(analogReadMilliVolts(getLocalAdcPin()));
+      }
+    }
+  }
+
+ private:
+  uint32_t _last_read_time = 0;
+};
+
+/*****************************************************************************/
 
 }; //namespace Sensor
 };  // namespace Supla

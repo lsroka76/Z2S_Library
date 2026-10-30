@@ -3061,6 +3061,16 @@ void buildChannelsTabGUI() {
 	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
 	  (void *)gui_cmd_add_local_hcsr04);
 
+	ESPUI.addControl(
+	  Control::Type::Button, empty_str, "Add local SHT3x (I2C)",
+	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
+	  (void *)gui_cmd_add_local_sht3x);
+
+	ESPUI.addControl(
+	  Control::Type::Button, empty_str, "Add local ADC (GPIO)",
+	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
+	  (void *)gui_cmd_add_local_adc);
+
 
 	//addEmptyLineLabel(lah_panel);
 	lah_status_label = ESPUI.addControl(
@@ -7142,6 +7152,37 @@ void Z2S_loopWebGUI() {
 				break;
 
 
+			case gui_cmd_add_local_sht3x: {
+
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_GPIO_SHT3X, 0);
+				
+				if (new_channel_slot >= 0) {
+					
+					ESPUI.updateLabel(
+						lah_status_label, 
+						"The local SHT3x sensor has been successfully added and is "
+						"available for use.");
+					
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
+				}
+			} break;
+
+
+			case gui_cmd_add_local_adc: {
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_GPIO_ADC, 0);
+				
+				if (new_channel_slot >= 0) {
+					ESPUI.updateLabel(
+						lah_status_label, "The local ADC sensor has been successfully added and is "
+						"available for use.");
+					
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
+				}
+			} break;
+
+
 			case gui_cmd_add_virtual_binary:
 				{
 
@@ -8453,13 +8494,48 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 
 					working_str = general_purpose_gui_buffer;
 					ESPUI.updateText(param_1_text, working_str);
-
-					/*working_str_ptr = "&#10023; Enter local hvac ON value &#10023;";
-				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
-				ESPUI.updateNumber(param_2_number, z2s_core->getLocalHvacHighIsOn());*/
 				}
 
-				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER) {
+				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_SHT3X) {
+					
+					enableChannelTimings(0);
+					enableChannelParams(1 + 2);
+
+					char *working_str_ptr =
+					  "&#10023; Enter local SHT3x parameters&#10023;<br>"
+					  "use this format:<br>SDApin,SCLpin<br>"
+					  "i.e. 21,22";
+
+					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					sprintf(general_purpose_gui_buffer, "%i,%i",
+					  z2s_core->getLocalSHT3xSdaPin(), z2s_core->getLocalSHT3xSclPin());
+
+					working_str = general_purpose_gui_buffer;
+					ESPUI.updateText(param_1_text, working_str);
+
+					working_str_ptr = "&#10023; Enter local SHT3x Address (decimal) "
+					"&#10023;";
+					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateNumber(param_2_number, z2s_core->getLocalSHT3xAddress());
+				}
+
+				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_ADC) {
+					
+					enableChannelTimings(0);
+					enableChannelParams(1 + 2);
+
+					char *working_str_ptr = "&#10023; Enter local ADC pin number "
+					"&#10023;";
+					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateNumber(param_1_text, z2s_core->getLocalAdcPin());
+
+					working_str_ptr = "&#10023; Enter local ADC attenuation &#10023;";
+					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateNumber(param_2_number, z2s_core->getLocalAdcAttenuation());
+				}
+
+				if (z2s_channel.local_channel_type == 
+						LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER) {
 
 					enableChannelTimings(4);
 					enableChannelFlags(8);
@@ -10011,8 +10087,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 					switch (z2s_core->getZ2SChannelType()) {
 
 
-						case SUPLA_CHANNELTYPE_LOCALCHANNEL:
-							{
+						case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
 
 								switch (z2s_core->getZ2SLocalChannelType()) {
 
@@ -10075,43 +10150,63 @@ void editChannelMain(uint32_t update_channel_flag) {
 										break;
 
 
-									case LOCAL_CHANNEL_TYPE_GPIO_HCSR04:
-										{
+									case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
 
-											long hcsr04_params[6];
+										long hcsr04_params[6];
 
+										size_t params_found = parseCsvNumbers(
+											ESPUI.getControl(param_1_text)->getValueCstr(),
+											hcsr04_params, 6);
+
+										switch (params_found) {
+											case 6:
+												z2s_core->setLocalHCSR04MaxOut(hcsr04_params[5]);
+												[[fallthrough]];
+											case 5:
+												z2s_core->setLocalHCSR04MinOut(hcsr04_params[4]);
+												[[fallthrough]];
+											case 4:
+												z2s_core->setLocalHCSR04MaxIn(hcsr04_params[3]);
+												[[fallthrough]];
+											case 3:
+												z2s_core->setLocalHCSR04MinIn(hcsr04_params[2]);
+												[[fallthrough]];
+											case 2:
+												z2s_core->setLocalHCSR04EchoPin(hcsr04_params[1]);
+												[[fallthrough]];
+											case 1:
+												z2s_core->setLocalHCSR04TrigPin(hcsr04_params[0]);
+												[[fallthrough]];
+												z2s_core->saveChannelData();
+												z2s_core->updateLocalHcsr04Params();
+											default: break;
+										}
+									} break;
+
+
+									case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
+											
+											long sht3x_params[2];
 											size_t params_found = parseCsvNumbers(
 											  ESPUI.getControl(param_1_text)->getValueCstr(),
-											  hcsr04_params, 6);
+											  sht3x_params, 2);
 
-											switch (params_found) {
-												case 6:
-													z2s_core->setLocalHCSR04MaxOut(hcsr04_params[5]);
-													[[fallthrough]];
-												case 5:
-													z2s_core->setLocalHCSR04MinOut(hcsr04_params[4]);
-													[[fallthrough]];
-												case 4:
-													z2s_core->setLocalHCSR04MaxIn(hcsr04_params[3]);
-													[[fallthrough]];
-												case 3:
-													z2s_core->setLocalHCSR04MinIn(hcsr04_params[2]);
-													[[fallthrough]];
-												case 2:
-													z2s_core->setLocalHCSR04EchoPin(hcsr04_params[1]);
-													[[fallthrough]];
-												case 1:
-													z2s_core->setLocalHCSR04TrigPin(hcsr04_params[0]);
-													[[fallthrough]];
-													z2s_core->saveChannelData();
-													z2s_core->updateLocalHcsr04Params();
-												default: break;
+											if (params_found == 2) {
+												z2s_core->setLocalSHT3xSdaPin(sht3x_params[0]);
+												z2s_core->setLocalSHT3xSclPin(sht3x_params[1]);
+												z2s_core->saveChannelData();
+												z2s_core->updateLocalSHT3xParams();
 											}
-										}
-										break;
+										} break;
+
+									case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
+
+											z2s_core->setLocalAdcPin(
+											  ESPUI.getControl(param_1_text)->getValueInt(), true);
+											z2s_core->updateLocalAdcParams();
+										} break;
 								}
-							}
-							break;
+							} break; //LCHT 
 
 						case SUPLA_CHANNELTYPE_THERMOMETER:
 						case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
@@ -10137,7 +10232,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 								  ESPUI.getControl(param_1_text)->getValueInt());
 							}
 							break;
-					}
+					} //CHT
 				}
 				break;
 
@@ -10204,6 +10299,22 @@ void editChannelMain(uint32_t update_channel_flag) {
 											z2s_core->updateLocalDs18b20Params();
 										}
 										break;
+
+
+										case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
+
+											z2s_core->setLocalSHT3xAddress(
+											  ESPUI.getControl(param_2_number)->getValueInt(), true);
+											z2s_core->updateLocalSHT3xParams();
+										} break;
+
+
+										case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
+
+											z2s_core->setLocalAdcAttenuation(
+											  ESPUI.getControl(param_2_number)->getValueInt(), true);
+											z2s_core->updateLocalAdcParams();
+										} break;
 								}
 							}
 							break;

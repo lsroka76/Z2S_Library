@@ -228,6 +228,16 @@ union {
       uint8_t         gpio_pin;
       uint8_t        sensor_address[8];
     } local_ds18b20_data;
+    struct {
+      uint8_t         sda_pin;
+      uint8_t         scl_pin;
+      int8_t          sht3x_address;
+    } local_sht3x_data;
+    struct {
+
+      uint8_t         adc_pin;
+      uint8_t         adc_attenuation;
+    } local_adc_data;
   };
   uint32_t            user_data_flags;
 union {

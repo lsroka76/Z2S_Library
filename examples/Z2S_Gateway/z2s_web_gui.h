@@ -89,6 +89,8 @@ enum gui_commands {
   gui_cmd_add_local_binary,
   gui_cmd_add_local_ds18b20,
   gui_cmd_add_local_hcsr04,
+  gui_cmd_add_local_sht3x,
+  gui_cmd_add_local_adc,
   gui_cmd_remove_local_channel,
   gui_cmd_edit_channel_data,
   gui_cmd_update_channel_info,

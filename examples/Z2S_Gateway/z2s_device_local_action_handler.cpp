@@ -254,6 +254,47 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     }
   },
   {
+    LOCAL_CHANNEL_TYPE_GPIO_SHT3X,
+    "Local SHT3x (I2C)",
+    LOCAL_GPIO_SHT3X_NAME,
+    SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+    false,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* sht = initOrCastLocalElement<Supla::Sensor::LocalSHT3x>(
+          idx, ch, el, true);
+      sht->updateLocalSHT3xParams();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* sht = new Supla::Sensor::LocalSHT3x();
+      sht->setLocalSHT3xSdaPin(21);
+      sht->setLocalSHT3xSclPin(22);
+      sht->setLocalSHT3xAddress(0x44);
+      sht->saveChannelData();
+      registerNewLocalChannel(sht, slot, d, func);
+    }
+  },
+  {
+    LOCAL_CHANNEL_TYPE_GPIO_ADC,
+    "Local ADC (GPIO)",
+    LOCAL_GPIO_ADC_NAME,
+    SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
+    false,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* adc = initOrCastLocalElement<Supla::Sensor::LocalADC>(
+          idx, ch, el, true);
+      adc->updateLocalAdcParams();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* adc = new Supla::Sensor::LocalADC();
+      adc->setLocalAdcPin(34);
+      adc->setLocalAdcAttenuation(3); 
+      adc->saveChannelData();
+      registerNewLocalChannel(adc, slot, d, func);
+    }
+  },
+  {
     LOCAL_CHANNEL_TYPE_SWITCHBOT,
     "Switchbot object",
     nullptr,
