@@ -40,20 +40,18 @@ T* initOrCastLocalElement(
 }
 
 /*****************************************************************************/
-
+// 1. Overload without post-setup (saves immediately, e.g., virtual channels)
 template <typename T>
 void registerNewLocalChannel(
     T* obj, uint8_t slot, const LocalChannelDescriptor& desc,
-    uint32_t channel_func, const char* custom_caption = nullptr,
-    void (*post_setup)(T*) = nullptr) {
+    uint32_t channel_func, const char* custom_caption = nullptr) {
 
   const char* caption = custom_caption ? custom_caption : desc.default_caption;
-  bool save_immediately = (post_setup == nullptr);
 
   Z2S_setLocalChannelData(
       obj->getZ2SCorePtr(), slot, obj->getChannelNumber(),
       NO_CUSTOM_CMD_SID, caption, desc.default_func, 0xFF,
-      desc.type, channel_func, 0xFF, save_immediately);
+      desc.type, channel_func, 0xFF, true);
 
   if (caption) {
     obj->setInitialCaption(caption);
@@ -66,10 +64,42 @@ void registerNewLocalChannel(
     desc.init_fn(slot, obj->getZ2SChannel(), obj->getZ2SElementPtr());
   }
 
-  if (post_setup != nullptr) {
-    post_setup(obj);
-    obj->saveChannelData();
+  if (auto* ch = obj->getChannel()) {
+    ch->setFlag(SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
   }
+
+  obj->onLoadConfig(&SuplaDevice);
+  obj->onInit();
+}
+
+/*****************************************************************************/
+// 2. Overload with post-setup lambda (defers save until after configuration)
+template <typename T, typename PostSetupFn>
+void registerNewLocalChannel(
+    T* obj, uint8_t slot, const LocalChannelDescriptor& desc,
+    uint32_t channel_func, const char* custom_caption,
+    PostSetupFn post_setup) {
+
+  const char* caption = custom_caption ? custom_caption : desc.default_caption;
+
+  Z2S_setLocalChannelData(
+      obj->getZ2SCorePtr(), slot, obj->getChannelNumber(),
+      NO_CUSTOM_CMD_SID, caption, desc.default_func, 0xFF,
+      desc.type, channel_func, 0xFF, false);
+
+  if (caption) {
+    obj->setInitialCaption(caption);
+  }
+  if (desc.default_func != SUPLA_CHANNELFNC_NONE) {
+    obj->setDefaultFunction(desc.default_func);
+  }
+
+  if (desc.init_fn) {
+    desc.init_fn(slot, obj->getZ2SChannel(), obj->getZ2SElementPtr());
+  }
+
+  post_setup(obj);
+  obj->saveChannelData();
 
   if (auto* ch = obj->getChannel()) {
     ch->setFlag(SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
@@ -78,6 +108,7 @@ void registerNewLocalChannel(
   obj->onLoadConfig(&SuplaDevice);
   obj->onInit();
 }
+
 /*****************************************************************************/
 
 template <typename T>
