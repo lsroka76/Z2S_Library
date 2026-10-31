@@ -44,6 +44,8 @@ jobs:
           arduino-cli lib install --git-url https://github.com/mobizt/ESP_SSLClient.git
           arduino-cli lib install --git-url https://github.com/milesburton/Arduino-Temperature-Control-Library.git
           arduino-cli lib install --git-url https://github.com/PaulStoffregen/OneWire.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/ClosedCube_SHT31D_Arduino.git
+
           
       - name: Copy boards.txt with C6 config
         run: | 
