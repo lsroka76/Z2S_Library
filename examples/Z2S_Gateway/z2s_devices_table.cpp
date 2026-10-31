@@ -6191,12 +6191,12 @@ bool processEglo99099Commands(
       } break;
 
       
-      case 0x4B: { // commandStepColorTemp
-        // Payload: [0] = StepMode (Inverted on Eglo 99099: 0x01 = Down, 0x03 = Up)
+      case 0x4C: { // commandStepColorTemp
+        
         if (buffer_size >= 1) {
-          if (buffer[0] == 0x03) {
+          if (buffer[0] == 0x01) {
             sub_id = EGLO_CUSTOM_CMD_EGLO_99099_COLOR_TEMPERATURE_UP_PRESSED_G1_SID + group_idx;
-          } else if (buffer[0] == 0x01) {
+          } else if (buffer[0] == 0x03) {
             sub_id = EGLO_CUSTOM_CMD_EGLO_99099_COLOR_TEMPERATURE_DOWN_PRESSED_G1_SID + group_idx;
           }
         }

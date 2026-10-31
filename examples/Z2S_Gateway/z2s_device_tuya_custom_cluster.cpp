@@ -4113,7 +4113,7 @@ void processZosungCustomCluster(
           calc_length = max_length;
         }
 
-        calc_length = min(calc_length, (uint16_t)0x32);
+        //calc_length = min(calc_length, (uint16_t)0x32);
 
         uint8_t ir_code_send_buffer[64];
 

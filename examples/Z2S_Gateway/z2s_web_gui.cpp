@@ -12301,6 +12301,7 @@ void addPushoverMessagesTableJsonRow(
   z2s_pushover_message_t &message, bool is_first) {
 
   char preview_buf[128] = {};
+
   size_t text_len = strlen(message.pushover_message_text);
   size_t copy_len = (text_len > 120)
   	? mbstrnlen(message.pushover_message_text, 120) : text_len;
@@ -12308,7 +12309,8 @@ void addPushoverMessagesTableJsonRow(
   memcpy(preview_buf, message.pushover_message_text, copy_len);
   preview_buf[copy_len] = '\0';
   if (text_len > copy_len) {
-    strcat(preview_buf, "...");
+    
+		strcat(preview_buf, "...");
   }
 
   appendToBuffer(
