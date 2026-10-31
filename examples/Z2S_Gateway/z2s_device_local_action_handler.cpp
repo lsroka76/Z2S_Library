@@ -15,7 +15,6 @@ struct LocalChannelDescriptor {
   const char* type_name;
   const char* default_caption;
   uint32_t default_func;
-  bool is_virtual;
   bool disconnect_on_add;
   void (*init_fn)(uint16_t idx, z2s_device_params_t* ch, Supla::Element* el);
   void (*add_fn)(uint8_t slot, const LocalChannelDescriptor& desc,
@@ -42,17 +41,19 @@ T* initOrCastLocalElement(
 
 /*****************************************************************************/
 
-template <typename T>
+template <typename T, typename PostSetupFn = void (*)(T*)>
 void registerNewLocalChannel(
     T* obj, uint8_t slot, const LocalChannelDescriptor& desc,
-    uint32_t channel_func, const char* custom_caption = nullptr) {
+    uint32_t channel_func, const char* custom_caption = nullptr,
+    PostSetupFn post_setup = nullptr) {
 
   const char* caption = custom_caption ? custom_caption : desc.default_caption;
+  bool save_immediately = (post_setup == nullptr);
 
   Z2S_setLocalChannelData(
       obj->getZ2SCorePtr(), slot, obj->getChannelNumber(),
       NO_CUSTOM_CMD_SID, caption, desc.default_func, 0xFF,
-      desc.type, channel_func, 0xFF, desc.is_virtual);
+      desc.type, channel_func, 0xFF, save_immediately);
 
   if (caption) {
     obj->setInitialCaption(caption);
@@ -63,6 +64,11 @@ void registerNewLocalChannel(
 
   if (desc.init_fn) {
     desc.init_fn(slot, obj->getZ2SChannel(), obj->getZ2SElementPtr());
+  }
+
+  if (post_setup) {
+    post_setup(obj);
+    obj->saveChannelData();
   }
 
   if (auto* ch = obj->getChannel()) {
@@ -95,23 +101,19 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local action handler",
     nullptr,
     SUPLA_CHANNELFNC_NONE,
-    true,
     false,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
-      
       initOrCastLocalElement<Supla::LocalActionHandlerWithTrigger>(
           idx, ch, el, false, ch->local_action_handler_data.logic_operator);
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, 
        uint8_t op) {
-      
       uint8_t free_id = Z2S_findFirstFreeLocalActionHandlerId();
-      
       auto* lah = new Supla::LocalActionHandlerWithTrigger(op);
       Z2S_setLocalChannelData(
         lah->getZ2SCorePtr(), slot, free_id, NO_CUSTOM_CMD_SID,
         ACTION_HANDLERS_DEFAULT_NAMES[op], SUPLA_CHANNELFNC_NONE,
-        0xFF, d.type, func, op);
+        0xFF, d.type, func, op, true);
       d.init_fn(slot, lah->getZ2SChannel(), lah->getZ2SElementPtr());
     }
   },
@@ -121,15 +123,12 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     LOCAL_VIRTUAL_RELAY_NAME,
     SUPLA_CHANNELFNC_POWERSWITCH,
     true,
-    true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
-
       auto* r = initOrCastLocalElement<Supla::Control::LocalVirtualRelay>(
         idx, ch, el, true, RELAY_FLAGS);
       r->setDefaultStateRestore();
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
-      
       registerNewLocalChannel(
         new Supla::Control::LocalVirtualRelay(RELAY_FLAGS), slot, d, func);
     }
@@ -139,26 +138,21 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local relay (GPIO)",
     LOCAL_GPIO_RELAY_NAME,
     SUPLA_CHANNELFNC_POWERSWITCH,
-    false,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
-
       int8_t pin = ch->local_relay_data.gpio_pin;
       bool highIsOn = ch->local_relay_data.high_is_on;
 
       auto* r = initOrCastLocalElement<Supla::Control::LocalRelay>(
         idx, ch, el, true, pin, highIsOn, RELAY_FLAGS);
-      
       r->setDefaultStateRestore();
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
-      
       auto* r = new Supla::Control::LocalRelay(-1, true, RELAY_FLAGS);
-      
-      r->setLocalRelayGpioPin(-1);
-      r->setLocalRelayHighIsOn(true);
-      r->saveChannelData();
-      registerNewLocalChannel(r, slot, d, func);
+      registerNewLocalChannel(r, slot, d, func, nullptr, [](auto* r) {
+        r->setLocalRelayGpioPin(-1);
+        r->setLocalRelayHighIsOn(true);
+      });
     }
   },
   {
@@ -166,24 +160,19 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local binary (GPIO)",
     LOCAL_GPIO_BINARY_NAME,
     SUPLA_CHANNELFNC_BINARY_SENSOR,
-    false,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
-      
       auto* b = initOrCastLocalElement<Supla::Sensor::LocalBinary>(
         idx, ch, el, true);
-      
       b->updateLocalBinaryParams();
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
-      
       auto* b = new Supla::Sensor::LocalBinary();
-      
-      b->setLocalBinaryGpioPin(-1);
-      b->setLocalBinaryInvertLogic(false);
-      b->setLocalBinaryPullUp(false);
-      b->saveChannelData();
-      registerNewLocalChannel(b, slot, d, func);
+      registerNewLocalChannel(b, slot, d, func, nullptr, [](auto* b) {
+        b->setLocalBinaryGpioPin(-1);
+        b->setLocalBinaryInvertLogic(false);
+        b->setLocalBinaryPullUp(false);
+      });
     }
   },
   {
@@ -191,10 +180,8 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local hvac (GPIO)",
     LOCAL_GPIO_HVAC_NAME,
     SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
-    false,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
-
       int8_t pin = ch->local_hvac_data.gpio_pin;
       bool highIsOn = ch->local_hvac_data.high_is_on;
 
@@ -204,10 +191,10 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
       auto* h = new Supla::Control::LocalHvac(-1, true);
-      h->setLocalHvacGpioPin(-1);
-      h->setLocalHvacHighIsOn(true);
-      h->saveChannelData();
-      registerNewLocalChannel(h, slot, d, func);
+      registerNewLocalChannel(h, slot, d, func, nullptr, [](auto* h) {
+        h->setLocalHvacGpioPin(-1);
+        h->setLocalHvacHighIsOn(true);
+      });
     }
   },
   {
@@ -215,7 +202,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local DS18B20 (GPIO)",
     LOCAL_GPIO_DS18B20_NAME,
     SUPLA_CHANNELFNC_THERMOMETER,
-    false,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       initOrCastLocalElement<Supla::Sensor::LocalDS18B20>(
@@ -224,9 +210,9 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
       auto* ds = new Supla::Sensor::LocalDS18B20(4, nullptr);
-      ds->setLocalDS18B20GpioPin(4);
-      ds->saveChannelData();
-      registerNewLocalChannel(ds, slot, d, func);
+      registerNewLocalChannel(ds, slot, d, func, nullptr, [](auto* ds) {
+        ds->setLocalDS18B20GpioPin(4);
+      });
     }
   },
   {
@@ -234,7 +220,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local HC-SR04 (GPIO)",
     LOCAL_GPIO_HCSR04_NAME,
     SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
-    false,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       auto* hc = initOrCastLocalElement<Supla::Sensor::LocalHCSR04>(
@@ -243,14 +228,14 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
       auto* hc = new Supla::Sensor::LocalHCSR04();
-      hc->setLocalHCSR04TrigPin(5);
-      hc->setLocalHCSR04EchoPin(6);
-      hc->setLocalHCSR04MinIn(0);
-      hc->setLocalHCSR04MinOut(500);
-      hc->setLocalHCSR04MaxIn(0);
-      hc->setLocalHCSR04MaxOut(500);
-      hc->saveChannelData();
-      registerNewLocalChannel(hc, slot, d, func);
+      registerNewLocalChannel(hc, slot, d, func, nullptr, [](auto* hc) {
+        hc->setLocalHCSR04TrigPin(5);
+        hc->setLocalHCSR04EchoPin(6);
+        hc->setLocalHCSR04MinIn(0);
+        hc->setLocalHCSR04MinOut(500);
+        hc->setLocalHCSR04MaxIn(0);
+        hc->setLocalHCSR04MaxOut(500);
+      });
     }
   },
   {
@@ -258,7 +243,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local SHT3x (I2C)",
     LOCAL_GPIO_SHT3X_NAME,
     SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
-    false,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       auto* sht = initOrCastLocalElement<Supla::Sensor::LocalSHT3x>(
@@ -267,11 +251,11 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
       auto* sht = new Supla::Sensor::LocalSHT3x();
-      sht->setLocalSHT3xSdaPin(21);
-      sht->setLocalSHT3xSclPin(22);
-      sht->setLocalSHT3xAddress(0x44);
-      sht->saveChannelData();
-      registerNewLocalChannel(sht, slot, d, func);
+      registerNewLocalChannel(sht, slot, d, func, nullptr, [](auto* sht) {
+        sht->setLocalSHT3xSdaPin(21);
+        sht->setLocalSHT3xSclPin(22);
+        sht->setLocalSHT3xAddress(0x44);
+      });
     }
   },
   {
@@ -279,7 +263,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local ADC (GPIO)",
     LOCAL_GPIO_ADC_NAME,
     SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
-    false,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       auto* adc = initOrCastLocalElement<Supla::Sensor::LocalADC>(
@@ -288,10 +271,10 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
       auto* adc = new Supla::Sensor::LocalADC();
-      adc->setLocalAdcPin(34);
-      adc->setLocalAdcAttenuation(3); 
-      adc->saveChannelData();
-      registerNewLocalChannel(adc, slot, d, func);
+      registerNewLocalChannel(adc, slot, d, func, nullptr, [](auto* adc) {
+        adc->setLocalAdcPin(34);
+        adc->setLocalAdcAttenuation(3);
+      });
     }
   },
   {
@@ -299,7 +282,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Switchbot object",
     nullptr,
     SUPLA_CHANNELFNC_POWERSWITCH,
-    true,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       auto* sb = initOrCastLocalElement<Supla::Control::SwitchBotRelay>(
@@ -332,7 +314,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     LOCAL_VIRTUAL_HVAC_NAME,
     SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
     true,
-    true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       Supla::Control::LocalVirtualHvac* vh = nullptr;
       if (el) {
@@ -353,13 +334,11 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
       registerNewLocalChannel(vh, slot, d, func);
     }
   },
-
   {
     LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY,
     "Local virtual binary",
     LOCAL_VIRTUAL_BINARY_NAME,
     SUPLA_CHANNELFNC_BINARY_SENSOR,
-    true,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       auto* vb = initOrCastLocalElement<Supla::Sensor::LocalVirtualBinary>(
@@ -375,13 +354,11 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
           new Supla::Sensor::LocalVirtualBinary(true), slot, d, func);
     }
   },
-
   {
     LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER,
     "Local remote thermometer",
     LOCAL_REMOTE_THERMOMETER_NAME,
     SUPLA_CHANNELFNC_THERMOMETER,
-    true,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       auto* rt = initOrCastLocalElement<Supla::Sensor::Z2S_RemoteThermometer>(
@@ -398,7 +375,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     LOCAL_REMOTE_RELAY_NAME,
     SUPLA_CHANNELFNC_POWERSWITCH,
     true,
-    true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       auto* rr = initOrCastLocalElement<Supla::Control::Z2S_RemoteRelay>(
           idx, ch, el, true, &Z2S_NetworkClient, 0xFF);
@@ -411,13 +387,11 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
       registerNewLocalChannel(rr, slot, d, func);
     }
   },
-
   {
     LOCAL_CHANNEL_TYPE_CALC_THERMOMETER,
     "Local calculated thermometer",
     LOCAL_CALCULATED_THERMOMETER_NAME,
     SUPLA_CHANNELFNC_THERMOMETER,
-    true,
     true,
     &defaultInitFn<Supla::Sensor::CalculatedThermometer>,
     &defaultAddFn<Supla::Sensor::CalculatedThermometer>
@@ -428,7 +402,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     LOCAL_VIRTUAL_THERM_HYGRO_METER_NAME,
     SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
     true,
-    true,
     &defaultInitFn<Supla::Sensor::LocalVirtualThermHygroMeter>,
     &defaultAddFn<Supla::Sensor::LocalVirtualThermHygroMeter>
   },
@@ -438,7 +411,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     LOCAL_VIRTUAL_GPM_NAME,
     SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
     true,
-    true,
     &defaultInitFn<Supla::Sensor::LocalVirtualGPM>,
     &defaultAddFn<Supla::Sensor::LocalVirtualGPM>
   },
@@ -447,7 +419,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Local calculated GPM",
     LOCAL_CALCULATED_GPM_NAME,
     SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
-    true,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
       auto* cgpm = initOrCastLocalElement<Supla::Sensor::CalculatedGPM>(
@@ -461,7 +432,6 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     "Gateway events",
     nullptr,
     SUPLA_CHANNELFNC_NONE,
-    true,
     false,
     nullptr,
     nullptr
