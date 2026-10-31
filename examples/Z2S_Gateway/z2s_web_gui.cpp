@@ -8570,9 +8570,8 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					enableChannelParams(1 + 2);
 
 					char *working_str_ptr =
-					  "&#10023; Enter local SHT3x parameters&#10023;<br>"
-					  "use this format:<br>SDApin,SCLpin<br>"
-					  "i.e. 21,22";
+					  "Enter local SHT3x parameters: use this format:<br>SDApin,SCLpin"
+						",i.e. 21,22";
 
 					ESPUI.updateControlLabel(param_1_text, working_str_ptr);
 					sprintf(general_purpose_gui_buffer, "%i,%i",
@@ -8581,8 +8580,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					working_str = general_purpose_gui_buffer;
 					ESPUI.updateText(param_1_text, working_str);
 
-					working_str_ptr = "&#10023; Enter local SHT3x Address (decimal) "
-					"&#10023;";
+					working_str_ptr = "Enter local SHT3x address (decimal)";
 					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalSHT3xAddress());
 				}
