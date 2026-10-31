@@ -24,8 +24,6 @@
 #include <WiFiClient.h>
 //#include <HTTPClient.h>
 
-#include <Wire.h>
-
 ESP_SSLClient ssl_client;
 WiFiClient basic_client;
 
