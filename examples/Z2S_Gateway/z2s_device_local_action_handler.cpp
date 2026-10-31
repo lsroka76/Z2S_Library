@@ -41,11 +41,11 @@ T* initOrCastLocalElement(
 
 /*****************************************************************************/
 
-template <typename T, typename PostSetupFn = void (*)(T*)>
+template <typename T>
 void registerNewLocalChannel(
     T* obj, uint8_t slot, const LocalChannelDescriptor& desc,
     uint32_t channel_func, const char* custom_caption = nullptr,
-    PostSetupFn post_setup = nullptr) {
+    void (*post_setup)(T*) = nullptr) {
 
   const char* caption = custom_caption ? custom_caption : desc.default_caption;
   bool save_immediately = (post_setup == nullptr);
@@ -66,7 +66,7 @@ void registerNewLocalChannel(
     desc.init_fn(slot, obj->getZ2SChannel(), obj->getZ2SElementPtr());
   }
 
-  if (post_setup) {
+  if (post_setup != nullptr) {
     post_setup(obj);
     obj->saveChannelData();
   }
@@ -78,7 +78,6 @@ void registerNewLocalChannel(
   obj->onLoadConfig(&SuplaDevice);
   obj->onInit();
 }
-
 /*****************************************************************************/
 
 template <typename T>
