@@ -483,20 +483,80 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
     
     if (brightness > 0) {
 
-      uint8_t level = mapFloat(brightness, 1, 100, 1, 254);
-      zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, level, 1);
-    //}
+      switch (getRGBColorMode()) {
 
-    //if (whiteTemperature > 0) {
 
-      log_i(
-        "SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB - sending white temperature!");
+        case Z2S_TUYA_DP_COLOR_HS_RGB: {
 
-      uint16_t color_temperature = mapFloat(
-        whiteTemperature, 0, 100, _max_warm_cct, _min_cool_cct);
+          uint8_t test_buffer[28];
+          uint16_t seq_num = random() & 0xFFFF;
+
+          test_buffer[0] = (seq_num >> 8) & 0x00FF;
+          test_buffer[1] = seq_num & 0x00FF;
+
+          test_buffer[2] = 0x01;              
+          test_buffer[3] = TUYA_DP_TYPE_BOOL; 
+          test_buffer[4] = 0x00;
+          test_buffer[5] = 0x01;            
+          test_buffer[6] = 0x01;              
+
+          test_buffer[7]  = 0x02;             
+          test_buffer[8]  = TUYA_DP_TYPE_ENUM; 
+          test_buffer[9]  = 0x00;
+          test_buffer[10] = 0x01;            
+          test_buffer[11] = 0x00;         
+
+          // --- DP 4: Color Temperature (8 bytes) ---
+          // Range: 0 - 1000 (0 = warm / 370 mireds, 1000 = cold / 153 mireds)
+
+          uint16_t color_temperature = mapFloat(
+            whiteTemperature, 0, 100, 0, 1000);
+          test_buffer[12] = 0x04;               
+          test_buffer[13] = TUYA_DP_TYPE_VALUE; 
+          test_buffer[14] = 0x00;
+          test_buffer[15] = 0x04;               
+          test_buffer[16] = 0x00;
+          test_buffer[17] = 0x00;
+          test_buffer[18] = (color_temperature >> 8) & 0x00FF;
+          test_buffer[19] = color_temperature & 0x00FF;
+
+          // --- DP 3: White Brightness (8 bytes) ---
+          // Range: 10 - 1000
+
+          uint16_t _white_brightness_1000 = mapFloat(
+            brightness, 1, 100, 10, 1000);
+          
+          test_buffer[20] = 0x03;             
+          test_buffer[21] = TUYA_DP_TYPE_VALUE; 
+          test_buffer[22] = 0x00;
+          test_buffer[23] = 0x04;              
+          test_buffer[24] = 0x00;
+          test_buffer[25] = 0x00;
+          test_buffer[26] = (_white_brightness_1000 >> 8) & 0x00FF;
+          test_buffer[27] = _white_brightness_1000 & 0x00FF;
+
+          zbGateway.sendCustomClusterCmd(
+            _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
+            ESP_ZB_ZCL_ATTR_TYPE_SET, 28, test_buffer, false);
+        } break;
+
+
+        default: {
+          
+          uint8_t level = mapFloat(brightness, 1, 100, 1, 254);
+          zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, level, 1);
+  
+          log_i(
+            "SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB - sending white "
+            "temperature!");
+
+          uint16_t color_temperature = mapFloat(
+            whiteTemperature, 0, 100, _max_warm_cct, _min_cool_cct);
         
-	    zbGateway.sendColorMoveToColorTemperatureCmd(
-        _short_addr, _endpoint, color_temperature, 1);
+	          zbGateway.sendColorMoveToColorTemperatureCmd(
+              _short_addr, _endpoint, color_temperature, 1);
+        } break;
+      }
     }
   }
 }
@@ -637,6 +697,9 @@ void Supla::Control::Z2S_RGBCCTInterface::turnOff() {
 
 void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
+  if (getRGBColorMode() == Z2S_TUYA_DP_COLOR_HS_RGB)
+    _fresh_start = false;
+  
   if (_fresh_start && ((millis() - _last_sync_ms) > 5000)) {
 
     _last_sync_ms = millis();

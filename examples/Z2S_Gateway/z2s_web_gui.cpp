@@ -689,10 +689,13 @@ static constexpr char *clearFlagsLabelStyle PROGMEM =
 
 //
 
+#include <Arduino.h>
+
+
 static const char *myCustomJS = R"=====(
-	
-window.z2sIrOptions = [];
-window.z2sPoOptions = [];
+window.z2sIrOptions = window.z2sIrOptions || [];
+window.z2sPoOptions = window.z2sPoOptions || [];
+window.z2sTableQueues = window.z2sTableQueues || {};
 
 function redirect2ZigbeeOTA() {
   window.location.assign("/zigbee_ota");
@@ -723,7 +726,7 @@ window.onGatewayCommand = function(command, labelId) {
   }
 };
 
-function updateSelectOptions(targetSelects, optionsData, selectedValue = null, clearExisting = true) {
+function updateSelectOptions(targetSelects, optionsData, selectedValue = null, clearExisting = true, retriesLeft = 40) {
   const targets = Array.isArray(targetSelects) ? targetSelects : [targetSelects];
   let optionsList = [];
   if (Array.isArray(optionsData)) {
@@ -735,6 +738,7 @@ function updateSelectOptions(targetSelects, optionsData, selectedValue = null, c
     optionsList = Object.entries(optionsData).map(([value, label]) => ({ value, label, selected: false }));
   }
   const targetSelectedStr = (selectedValue !== null && selectedValue !== undefined) ? String(selectedValue) : null;
+  let updatedAny = false;
 
   targets.forEach(target => {
     let selectEl = (typeof target === 'string')
@@ -742,7 +746,9 @@ function updateSelectOptions(targetSelects, optionsData, selectedValue = null, c
       : (target instanceof HTMLElement ? target : null);
 
     if (!selectEl) {
-      setTimeout(() => updateSelectOptions([target], optionsData, selectedValue, clearExisting), 150);
+      if (retriesLeft > 0) {
+        setTimeout(() => updateSelectOptions([target], optionsData, selectedValue, clearExisting, retriesLeft - 1), 150);
+      }
       return;
     }
     if (clearExisting) selectEl.innerHTML = '';
@@ -760,14 +766,22 @@ function updateSelectOptions(targetSelects, optionsData, selectedValue = null, c
     });
     selectEl.appendChild(fragment);
     selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+    updatedAny = true;
   });
+
+  if (updatedAny) {
+    setTimeout(() => {
+      updateActionThresholdsVisibility();
+      syncSubactionDropdown();
+    }, 50);
+  }
 }
 
 function sendActionClickToESP32(actionIndex) {
   const hiddenInput = document.getElementById('num2');
   if (hiddenInput) {
     hiddenInput.value = actionIndex;
-    numberchange(2);
+    if (typeof numberchange === "function") numberchange(2);
   }
 }
 
@@ -861,8 +875,39 @@ function filterActionTable(targetId) {
 }
 
 function updateActionTable(data) {
+  if (!data || !data.target) return;
   const targetLabel = document.getElementById(data.target);
-  if (!targetLabel) return;
+
+  // Queue packets in order if ESPUI hasn't created the target Label DOM element yet
+  if (!targetLabel || (data.append && !targetLabel.querySelector("tbody"))) {
+    if (!window.z2sTableQueues[data.target]) {
+      window.z2sTableQueues[data.target] = { items: [], retries: 40, timer: null };
+    }
+    const q = window.z2sTableQueues[data.target];
+    if (!data.append) q.items = []; // Fresh table resets stale queued chunks
+    q.items.push(data);
+    if (!q.timer) {
+      const flushQueue = () => {
+        const el = document.getElementById(data.target);
+        if (el) {
+          const items = q.items.slice();
+          delete window.z2sTableQueues[data.target];
+          items.forEach(item => renderActionTableImmediate(el, item));
+        } else if (--q.retries > 0) {
+          q.timer = setTimeout(flushQueue, 100);
+        } else {
+          delete window.z2sTableQueues[data.target];
+        }
+      };
+      q.timer = setTimeout(flushQueue, 100);
+    }
+    return;
+  }
+
+  renderActionTableImmediate(targetLabel, data);
+}
+
+function renderActionTableImmediate(targetLabel, data) {
   const isIr = Boolean(data.is_ir);
   const isPo = Boolean(data.is_po);
   const colSpan = (isIr || isPo) ? 3 : 5;
@@ -883,7 +928,7 @@ function updateActionTable(data) {
       if (isPo) window.z2sPoOptions = [];
     }
     data.d.forEach((row, index) => {
-      if ((isIr || isPo) && row.length >= 2) {	
+      if ((isIr || isPo) && row.length >= 2) {
         const slotId = parseInt(String(row[0]).replace('#', ''), 10);
         if (!isNaN(slotId)) {
           const entry = { id: slotId, label: `${row[0]} - ${row[1]}` };
@@ -1022,7 +1067,7 @@ function updateActionTable(data) {
   if (tbody && container) {
     const activateRow = (rowElement, shouldScroll = true) => {
       if (!rowElement) return;
-      const actionIndex = parseInt(rowElement.getAttribute("data-action-idx"));
+      const actionIndex = parseInt(rowElement.getAttribute("data-action-idx"), 10);
       if (isNaN(actionIndex)) return;
       highlightActionRow({ target: data.target, s: actionIndex }, shouldScroll);
       const clickMask = isIr ? 0x4000 : (isPo ? 0x2000 : 0);
@@ -1103,12 +1148,15 @@ function setTableDisabled(targetId, isDisabled) {
   });
 }
 
-function highlightActionRow(data, shouldScroll = true) {
+function highlightActionRow(data, shouldScroll = true, retriesLeft = 20) {
   const targetLabel = document.getElementById(data.target);
-  if (!targetLabel) return;
+  if (!targetLabel || !targetLabel.querySelector("tbody")) {
+    if (retriesLeft > 0) setTimeout(() => highlightActionRow(data, shouldScroll, retriesLeft - 1), 100);
+    return;
+  }
   const rows = targetLabel.querySelectorAll("tbody tr[data-action-idx]");
   rows.forEach((row) => {
-    const rowIdx = parseInt(row.getAttribute("data-action-idx"));
+    const rowIdx = parseInt(row.getAttribute("data-action-idx"), 10);
     if (rowIdx === data.s) {
       row.style.backgroundColor = "rgba(0, 123, 255, 0.2)";
       row.style.fontWeight = "bold";
@@ -1122,22 +1170,26 @@ function highlightActionRow(data, shouldScroll = true) {
   });
 }
 
-function editActionRow(data) {
+function editActionRow(data, retriesLeft = 20) {
   const targetLabel = document.getElementById(data.target);
-  if (!targetLabel) return;
+  if (!targetLabel || !targetLabel.querySelector("tbody")) {
+    if (retriesLeft > 0) setTimeout(() => editActionRow(data, retriesLeft - 1), 100);
+    return;
+  }
   const isIr = targetLabel.dataset.isIr === "1";
   const isPo = targetLabel.dataset.isPo === "1";
-  const rows = targetLabel.querySelectorAll("tbody tr[data-action-idx]");
+  const targetRow = targetLabel.querySelector(`tbody tr[data-action-idx="${data.idx}"]`) ||
+                    targetLabel.querySelectorAll("tbody tr[data-action-idx]")[data.idx];
 
-  if (data.idx < rows.length) {
-    const cells = rows[data.idx].querySelectorAll("td");
+  if (targetRow && Array.isArray(data.d)) {
+    const cells = targetRow.querySelectorAll("td");
     data.d.forEach((newCellContent, i) => {
       if (cells[i]) {
         cells[i].innerHTML = formatActionTableCell(newCellContent, i, isIr, isPo);
         cells[i].title = String(newCellContent);
       }
     });
-    if ((isIr || isPo) && data.d && data.d.length >= 2) {
+    if ((isIr || isPo) && data.d.length >= 2) {
       const slotId = parseInt(String(data.d[0]).replace('#', ''), 10);
       const newLabel = `${data.d[0]} - ${data.d[1]}`;
       const targetList = isIr ? window.z2sIrOptions : window.z2sPoOptions;
@@ -1152,12 +1204,15 @@ function editActionRow(data) {
   }
 }
 
-const originalParse = JSON.parse;
+// Idempotent JSON.parse hook (safe across UI reloads)
+if (!window.__z2sOriginalParse) {
+  window.__z2sOriginalParse = JSON.parse;
+}
 JSON.parse = function(text, reviver) {
-  const data = originalParse(text, reviver);
+  const data = window.__z2sOriginalParse.call(this, text, reviver);
   if (data && typeof data === 'object') {
     if (data.type === "EXEC_JS") {
-      try { eval(data.code); } catch (err) { console.error(err); }
+      try { (0, eval)(data.code); } catch (err) { console.error(err); }
       return { type: -999, id: -1, value: "" };
     }
     if (data.type === 'update_select') {
@@ -1186,7 +1241,6 @@ JSON.parse = function(text, reviver) {
   }
   return data;
 };
-console.log("JSON.parse hook successfully installed!");
 
 async function downloadPartition(label, btn) {
   if (btn) btn.innerText = `Downloading ${label}... 0%`;
@@ -1247,12 +1301,17 @@ async function backupAndContinue(buttonId) {
   setTimeout(() => websock.send("bup:" + numericId), 50);
 }
 
-const originalButtonClick = window.buttonclick;
+// Idempotent window.buttonclick hook
+if (!window.__z2sOriginalButtonClick && typeof window.buttonclick === "function") {
+  window.__z2sOriginalButtonClick = window.buttonclick;
+}
 window.buttonclick = function(number, isdown) {
   if (number == 34) { if (!isdown) backupAndContinue("btn34"); return; }
   if (number == 30) { if (!isdown) backupAndRedirectToOTA("btn30"); return; }
   if (number == 31) { if (!isdown) redirect2ZigbeeOTA(); return; }
-  originalButtonClick(number, isdown);
+  if (typeof window.__z2sOriginalButtonClick === "function") {
+    window.__z2sOriginalButtonClick.call(this, number, isdown);
+  }
 };
 
 function updateActionThresholdsVisibility() {
@@ -1275,7 +1334,7 @@ function updateActionThresholdsVisibility() {
     else if (lt.includes("secondary threshold")) thresh2Wrap = wrap;
   });
   if (!thresh1Wrap || !thresh2Wrap) return;
-  const val = parseInt(eventSelect.value);
+  const val = parseInt(eventSelect.value, 10);
   const selectedText = eventSelect.options[eventSelect.selectedIndex] ? eventSelect.options[eventSelect.selectedIndex].text.toLowerCase() : "";
   const isCondition = !isNaN(val) && val >= 0xFFFF;
   thresh1Wrap.style.display = isCondition ? "" : "none";
@@ -1350,36 +1409,41 @@ function syncSubactionDropdown() {
   helperSelect.classList.remove("z2s-force-hidden");
 }
 
-document.addEventListener("change", function(e) {
-  if (e.target && e.target.tagName === "SELECT" && !e.target.classList.contains("subaction-helper-select")) {
-    updateActionThresholdsVisibility();
-    syncSubactionDropdown();
-    setTimeout(syncSubactionDropdown, 150);
-    setTimeout(syncSubactionDropdown, 350);
-  }
-});
-
-const origUpdateSelectOptions = updateSelectOptions;
-updateSelectOptions = function(...args) {
-  origUpdateSelectOptions.apply(this, args);
-  setTimeout(() => {
-    updateActionThresholdsVisibility();
-    syncSubactionDropdown();
-  }, 50);
-};
-
-window.addEventListener("beforeunload", function() {
-  if (typeof websock !== "undefined" && websock && websock.readyState === WebSocket.OPEN) websock.close();
-});
-
-window.addEventListener("load", function() {
+function scheduleInitialZ2SSync() {
   setTimeout(function checkSync() {
     const anySelect = document.querySelector("select");
     if (anySelect && anySelect.options.length === 0) {
-      if (typeof websock !== "undefined" && websock && websock.readyState === WebSocket.OPEN) websock.send("uicc:1");
+      if (typeof websock !== "undefined" && websock && websock.readyState === WebSocket.OPEN) {
+        websock.send("uicc:1");
+      }
     }
   }, 1200);
-});
+}
+
+if (!window.__z2sHooksInstalled) {
+  window.__z2sHooksInstalled = true;
+
+  document.addEventListener("change", function(e) {
+    if (e.target && e.target.tagName === "SELECT" && !e.target.classList.contains("subaction-helper-select")) {
+      updateActionThresholdsVisibility();
+      syncSubactionDropdown();
+      setTimeout(syncSubactionDropdown, 150);
+      setTimeout(syncSubactionDropdown, 350);
+    }
+  });
+
+  window.addEventListener("beforeunload", function() {
+    if (typeof websock !== "undefined" && websock && websock.readyState === WebSocket.OPEN) websock.close();
+  });
+
+  if (document.readyState === "complete") {
+    scheduleInitialZ2SSync();
+  } else {
+    window.addEventListener("load", scheduleInitialZ2SSync);
+  }
+}
+
+console.log("Z2S GUI hooks and JSON.parse interceptor installed!");
 )=====";
 
 static String working_str;
@@ -6562,16 +6626,18 @@ void Z2S_startWebGUI() {
 		});
 
 		
-		if (ESPUI.WebServer()) {
-		ESPUI.WebServer()->on("/js/custom.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+		/*if (ESPUI.WebServer()) {
 			
-			AsyncWebServerResponse *response = request->beginResponse(200, "application/javascript", myCustomJS);
-			// Force browser to never cache custom.js
-			response->addHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
-			response->addHeader("Pragma", "no-cache");
-			request->send(response);
-		});
-	}
+			ESPUI.WebServer()->on(
+				"/js/custom.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+  				AsyncWebServerResponse *response = request->beginResponse_P(
+    				200,	"application/javascript", Z2S_INJECT_JS_GZ, 
+						Z2S_INJECT_JS_GZ_LEN);
+  				response->addHeader("Content-Encoding", "gzip");
+  				response->addHeader("Cache-Control", "max-age=86400"); // Optional caching
+  				request->send(response);
+				});
+	}*/
 
 		/*
 		if (ESPUI.WebServer()) {
@@ -6798,6 +6864,8 @@ void Z2S_loopWebGUI() {
 
 
 			case gui_cmd_synchronize_all: {
+
+				log_i("gui_cmd_synchronize_all");
 
 				sortZbDevicesSelectorsMain();
 				sortChannelsSelectorsMain();
