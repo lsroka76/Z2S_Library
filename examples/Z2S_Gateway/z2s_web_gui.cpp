@@ -8170,7 +8170,7 @@ void enableChannelParams(uint8_t params_mask) {
 		ESPUI.updateNumber(param_1_text, 0);
 		char *working_str_ptr =
 		  "&#10023; PARAM(1) - currently not used &#10023;";
-		ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+		ESPUI.updateLabel(param_1_text, working_str_ptr);
 		enableControlStyle(param_1_text, false);
 		enableControlStyle(param_1_save_button, false);
 	}
@@ -8185,7 +8185,7 @@ void enableChannelParams(uint8_t params_mask) {
 		ESPUI.updateNumber(param_2_number, 0);
 		char *working_str_ptr =
 		  "&#10023; PARAM(2) - currently not used &#10023;";
-		ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+		ESPUI.updateLabel(param_2_number, working_str_ptr);
 		enableControlStyle(param_2_number, false);
 		enableControlStyle(param_2_save_button, false);
 	}
@@ -8200,7 +8200,7 @@ void enableChannelParams(uint8_t params_mask) {
 		ESPUI.updateNumber(param_3_number, 0);
 		char *working_str_ptr =
 		  "&#10023; PARAM(3) - currently not used &#10023;";
-		ESPUI.updateLabel(param_3_desc_label, working_str_ptr);
+		ESPUI.updateLabel(param_3_number, working_str_ptr);
 		enableControlStyle(param_3_number, false);
 		enableControlStyle(param_3_save_button, false);
 	}
@@ -8268,8 +8268,8 @@ void updateResendTemperatureControls(Z2S_Core *z2s_core, bool source_channel) {
 
 		fillRemoteAddressData(z2s_core->getZ2SChannelIndex());
 
-		ESPUI.updateLabel(param_1_desc_label, dest_thermometer_address_desc);
-		ESPUI.updateLabel(param_2_desc_label, dest_thermometer_channel_desc);
+		ESPUI.updateLabel(param_1_text, dest_thermometer_address_desc);
+		ESPUI.updateLabel(param_2_number, dest_thermometer_channel_desc);
 	} else {
 
 		if (source_channel)
@@ -8280,7 +8280,7 @@ void updateResendTemperatureControls(Z2S_Core *z2s_core, bool source_channel) {
 
 	if (source_channel) {
 
-		ESPUI.updateLabel(param_3_desc_label, src_thermometer_channel_desc);
+		ESPUI.updateLabel(param_3_number, src_thermometer_channel_desc);
 		ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
 	}
 }
@@ -8386,10 +8386,10 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 						"mDNS name &#10023;<br>for mDNS use <b><i>mdns://</i></b> prefix"
 					  " ie. mdns://my_gateway";
 
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 
 					working_str_ptr = "&#10023; Enter remote relay channel # &#10023;";
-					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_2_number, working_str_ptr);
 				}
 
 				if (z2s_channel.local_channel_type == 
@@ -8445,7 +8445,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
 					enableChannelParams(4);
-					ESPUI.updateLabel(param_3_desc_label, src_thermometer_channel_desc);
+					ESPUI.updateLabel(param_3_number, src_thermometer_channel_desc);
 					ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
 				}
 
@@ -8469,11 +8469,11 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					char *working_str_ptr =
 					  "&#10023; Enter local relay GPIO pin number &#10023;";
 
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 					ESPUI.updateNumber(param_1_text, z2s_core->getLocalRelayGpioPin());
 
 					working_str_ptr = "&#10023; Enter local relay ON value &#10023;";
-					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalRelayHighIsOn());
 				}
 
@@ -8485,11 +8485,11 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					char *working_str_ptr =
 					  "&#10023; Enter local hvac GPIO pin number &#10023;";
 
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 					ESPUI.updateNumber(param_1_text, z2s_core->getLocalHvacGpioPin());
 
 					working_str_ptr = "&#10023; Enter local hvac ON value &#10023;";
-					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalHvacHighIsOn());
 				}
 
@@ -8501,17 +8501,17 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					char *working_str_ptr =
 					  "&#10023; Enter local binary GPIO pin number &#10023;";
 
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 					ESPUI.updateNumber(param_1_text, z2s_core->getLocalBinaryGpioPin());
 
 					working_str_ptr = "&#10023; Enter local binary logic type value "
 					                  "&#10023;<br> 0 = normal logic, 1 = inverted logic";
-					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalBinaryInvertLogic());
 
 					working_str_ptr = "&#10023; Enter local binary pull up value "
 					                  "&#10023;<br> 0 = no pull up, 1 = pull up";
-					ESPUI.updateLabel(param_3_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_3_number, working_str_ptr);
 					ESPUI.updateNumber(param_3_number, z2s_core->getLocalBinaryPullUp());
 				}
 
@@ -8524,7 +8524,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					  "&#10023; Enter local DS18B20 address &#10023; <br>"
 					  "i.e. 28FF55CA6B18018D or leave it blank for single sensor";
 
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 
 					if (z2s_core->getLocalDS18B20Address()) {
 
@@ -8539,7 +8539,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					ESPUI.updateText(param_1_text, working_str);
 
 					working_str_ptr = "&#10023; Enter local DS18B20 pin value &#10023;";
-					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalDS18B20GpioPin());
 				}
 
@@ -8553,7 +8553,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					  "use this format:<br>TrigPin,EchoPin,MinIn,MaxIn,MinOut,MaxOut<br>"
 					  "i.e. 5,6,0,500,0,500";
 
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 					sprintf(
 					  general_purpose_gui_buffer, "%i,%i,%u,%u,%u,%u",
 					  z2s_core->getLocalHCSR04TrigPin(), z2s_core->getLocalHCSR04EchoPin(),
@@ -8574,7 +8574,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					  "use this format:<br>SDApin,SCLpin<br>"
 					  "i.e. 21,22";
 
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 					sprintf(general_purpose_gui_buffer, "%i,%i",
 					  z2s_core->getLocalSHT3xSdaPin(), z2s_core->getLocalSHT3xSclPin());
 
@@ -8583,7 +8583,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 
 					working_str_ptr = "&#10023; Enter local SHT3x Address (decimal) "
 					"&#10023;";
-					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalSHT3xAddress());
 				}
 
@@ -8594,11 +8594,11 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 
 					char *working_str_ptr = "&#10023; Enter local ADC pin number "
 					"&#10023;";
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 					ESPUI.updateNumber(param_1_text, z2s_core->getLocalAdcPin());
 
 					working_str_ptr = "&#10023; Enter local ADC attenuation &#10023;";
-					ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalAdcAttenuation());
 				}
 
@@ -8642,7 +8642,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 				  "enter rain intensity threshold<br>"
 				  "currently unused for other sensors &#10023;";
 
-				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+				ESPUI.updateLabel(param_1_text, working_str_ptr);
 			}
 			break;
 
@@ -8693,11 +8693,11 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 				char *working_str_ptr =
 				  "&#10023; Enter GPM temporary deactivation threshold value &#10023;";
 
-				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+				ESPUI.updateLabel(param_1_text, working_str_ptr);
 
 				working_str_ptr = "&#10023; Enter GPM temporary deactivation duration "
 				                  "[s] &#10023;";
-				ESPUI.updateLabel(param_2_desc_label, working_str_ptr);
+				ESPUI.updateLabel(param_2_number, working_str_ptr);
 			}
 			break;
 
@@ -8744,7 +8744,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					char *working_str_ptr = "&#10023; Thermostat custom parameter<br>"
 					                        "enter calibration fixed value (temperature x100)<br>"
 					                        "ie. to set correction to -1 enter -100 &#10023;";
-					ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+					ESPUI.updateLabel(param_1_text, working_str_ptr);
 				} else
 					enableChannelParams(0);
 			}
@@ -8768,7 +8768,7 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 				char *working_str_ptr = "&#10023; RGB custom param<br>"
 				                        "enter numeric value to select RGB MODE &#10023;";
 
-				ESPUI.updateLabel(param_1_desc_label, working_str_ptr);
+				ESPUI.updateLabel(param_1_text, working_str_ptr);
 
 				enableChannelFlags(16);
 			}
