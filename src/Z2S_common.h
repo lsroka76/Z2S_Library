@@ -53,6 +53,7 @@
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY                        0x02
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY                       0x03
 #define LOCAL_CHANNEL_TYPE_VIRTUAL_GPM                          0x04
+#define LOCAL_CHANNEL_TYPE_HTTP_BINARY                          0x05
 
 #define LOCAL_CHANNEL_TYPE_REMOTE_RELAY                         0x10
 #define LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER                   0x11

@@ -458,6 +458,30 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     &defaultAddFn<Supla::Sensor::CalculatedGPM>
   },
   {
+    LOCAL_CHANNEL_TYPE_HTTP_BINARY,
+    "Http binary",
+    LOCAL_HTTP_BINARY_NAME,
+    SUPLA_CHANNELFNC_BINARY_SENSOR,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* hb = initOrCastLocalElement<Supla::Sensor::HttpBinary>(
+          idx, ch, el, true, true);
+      hb->setDefaultFunction(SUPLA_CHANNELFNC_BINARY_SENSOR);
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* hb = new Supla::Sensor::HttpBinary(true);
+      registerNewLocalChannel(hb, slot, d, func, nullptr, [slot](auto* hb) {
+        hb->setRefreshValue(30);
+        hb->setExtendedDataType(CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY);
+        hb->setChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA, false);
+
+        channel_extended_data_http_binary_t hb_data = {};
+        Z2S_saveChannelExtendedData(
+            slot, CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY, (uint8_t*)&hb_data);
+      });
+    }
+  },
+  {
     LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS,
     "Gateway events",
     nullptr,

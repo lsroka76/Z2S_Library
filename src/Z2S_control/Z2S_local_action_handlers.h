@@ -84,6 +84,12 @@ inline const char *gateway_events_channel_name = "GATEWAY EVENTS";
 
 /*****************************************************************************/
 
+#define CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY  0x11
+
+#define HTTP_BINARY_URL_MAX_SIZE                256
+
+/*****************************************************************************/
+
 typedef void (*_actionhandler_callback)(int event, int action);
 
 /*****************************************************************************/
@@ -108,6 +114,13 @@ inline const char *sb_host = "api.switch-bot.com";
 
 inline const char *sb_device_path = "POST /v1.1/devices/%s/commands "
   "HTTP/1.1\r\n";
+
+/*****************************************************************************/
+
+typedef struct channel_extended_data_http_binary_s {
+  uint32_t flags;
+  char url[HTTP_BINARY_URL_MAX_SIZE];
+} __attribute__ ((packed)) channel_extended_data_http_binary_t;
 
 /*****************************************************************************/
 
@@ -637,6 +650,25 @@ class LocalADC : public VirtualGeneralPurposeMeasurement, public Z2S_Core {
 
  private:
   uint32_t _last_read_time = 0;
+};
+
+/*****************************************************************************/
+
+class HttpBinary: public VirtualBinary, public Z2S_Core {
+
+  public:
+
+    HttpBinary(bool keepStateInStorage = true);
+    virtual ~HttpBinary();
+
+    void handleAction(int event, int action) override;
+    void iterateAlways() override;
+
+    bool sendHttpTrigger();
+
+  private:
+
+    uint32_t _last_http_send_ms = 0;
 };
 
 /*****************************************************************************/

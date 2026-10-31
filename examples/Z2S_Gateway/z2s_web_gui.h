@@ -74,6 +74,7 @@ enum gui_commands {
   gui_cmd_add_logic_gate,
   gui_cmd_add_virtual_relay,
   gui_cmd_add_virtual_binary,
+  gui_cmd_add_http_binary,
   gui_cmd_add_virtual_hvac,
   gui_cmd_add_remote_relay,
   gui_cmd_add_remote_thermometer,

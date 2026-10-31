@@ -656,8 +656,9 @@ static constexpr char *timeout_desc =
 
 static constexpr char *refresh_desc =
   "refresh(s) [ElectricityMeter] \u2022 autoset(s) [VirtualBinary] \u2022 "
-  "debounce(ms) [VirtualSceneSwitch] \u2022 thermometers timeout(s) "
-	"[Remote Thermometer] \u2022 read interval(s) [VirtualThermhygrometer]";
+  "repeat(s) [HttpBinary] \u2022 debounce(ms) [VirtualSceneSwitch] \u2022 "
+  "thermometers timeout(s) [Remote Thermometer] \u2022 "
+  "read interval(s) [VirtualThermhygrometer]";
 
 static constexpr char *disabledstyle PROGMEM =
   "background-color: #bbb; border-bottom: #999 3px solid;";
@@ -2089,6 +2090,8 @@ void buildChannelsTabGUI() {
   param_1_textarea->rows = 3; 
   param_1_textarea->cols = 56;
 
+	param_1_textarea->reserve(256);
+
   param_1_save_button = ESPUI.addControl(
     Control::Type::Button, empty_str, "Save", Control::Color::Dark,
     zb_channel_params_label, editChannelCallback,
@@ -2198,6 +2201,11 @@ void buildChannelsTabGUI() {
 	  Control::Type::Button, empty_str, "Add virtual binary",
 	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
 	  (void *)gui_cmd_add_virtual_binary);
+
+	ESPUI.addControl(
+	  Control::Type::Button, empty_str, "Add HTTP binary",
+	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
+	  (void *)gui_cmd_add_http_binary);
 
 	ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Add virtual hvac",
@@ -6091,8 +6099,24 @@ void Z2S_loopWebGUI() {
 
 						addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
 					}
-				}
-				break;
+				} break;
+
+			
+				case gui_cmd_add_http_binary: {
+
+					int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					  LOCAL_CHANNEL_TYPE_HTTP_BINARY, 0);
+
+					if (new_channel_slot >= 0) {
+						
+						ESPUI.updateLabel(
+						  lah_status_label,
+						  "The local HTTP binary has been successfully added and is "
+						  "available for use.");
+
+						addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
+					}
+				} break;
 
 
 			case gui_cmd_remove_local_channel:
@@ -7129,6 +7153,33 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY) {
 
 					enableChannelTimings(0);
+				}
+
+				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_HTTP_BINARY) {
+
+					enableChannelTimings(4); 
+					enableChannelParams(1);  
+
+					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
+
+					char *working_str_ptr =
+					  "Enter HTTP GET URL (e.g. http://192.168.1.50:8000/KEY for Satel"
+						" ETHM-1 Plus):";
+					ESPUI.updateControlLabel(param_1_text, working_str_ptr);
+
+					channel_extended_data_http_binary_t hb_data = {};
+					
+					if (Z2S_loadChannelExtendedData(
+					    	channel_slot, CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY,
+					      (uint8_t *)&hb_data)) {
+						
+						working_str = hb_data.url;
+					} 
+					else {
+						
+						working_str = empty_str;
+					}
+					ESPUI.updateText(param_1_text, working_str);
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_RELAY) {
@@ -8830,6 +8881,25 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 										saveRemoteAddressData(channel_slot);
 										break;
+
+
+									case LOCAL_CHANNEL_TYPE_HTTP_BINARY: {
+
+										channel_extended_data_http_binary_t hb_data = {};
+										const char *url_cstr =ESPUI.getControl(
+											param_1_text)->getValueCstr();
+
+										if (url_cstr) {
+												
+											strncpy(
+												hb_data.url, url_cstr, sizeof(hb_data.url) - 1);
+												hb_data.url[sizeof(hb_data.url) - 1] = '\0';
+										}
+
+										Z2S_saveChannelExtendedData(
+											channel_slot, CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY,
+											(uint8_t *)&hb_data);
+									} break;
 
 
 									case LOCAL_CHANNEL_TYPE_GPIO_RELAY:

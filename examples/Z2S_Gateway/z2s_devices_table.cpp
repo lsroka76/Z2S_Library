@@ -2116,6 +2116,10 @@ uint16_t Z2S_getChannelExtendedDataTypeSize(uint8_t extended_data_type) {
       return sizeof(channel_extended_data_sb_t);
 
 
+    case CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY:
+      return sizeof(channel_extended_data_http_binary_t);
+
+
     default: return 0;
   }
 }

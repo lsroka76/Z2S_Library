@@ -1591,11 +1591,14 @@ Supla::Sensor::LocalDS18B20::LocalDS18B20(
 } 
 
 /*****************************************************************************/
+/*****************************************************************************/
 
 Supla::Sensor::LocalBinary::LocalBinary() 
   : Binary(-1, false, false), Z2S_Core(this) {
 
 }
+
+/*****************************************************************************/
 
 void Supla::Sensor::LocalBinary::setPin(int pin) {
 
@@ -1603,6 +1606,8 @@ void Supla::Sensor::LocalBinary::setPin(int pin) {
   inputPin.setMode(INPUT);
   inputPin.pinMode();
 }
+
+/*****************************************************************************/
 
 void Supla::Sensor::LocalBinary::setInvertLogic(bool invertLogic) {
 
@@ -1613,17 +1618,158 @@ void Supla::Sensor::LocalBinary::setPullUp(bool pullUp) {
   inputPin.setPullUp(pullUp);
 }
 
+/*****************************************************************************/
+
 int Supla::Sensor::LocalBinary::getPin() {
 
   return inputPin.getPin();
 }
+
+/*****************************************************************************/
+
 bool Supla::Sensor::LocalBinary::getInvertLogic() {
   
   return !inputPin.isActiveHigh();
 }
+
+/*****************************************************************************/
+
 bool Supla::Sensor::LocalBinary::getPullUp() {
 
   return inputPin.isPullUp();
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************/
+
+Supla::Sensor::HttpBinary::HttpBinary(bool keepStateInStorage)
+  : VirtualBinary(keepStateInStorage), Z2S_Core(this) {
+}
+
+/*****************************************************************************/
+
+Supla::Sensor::HttpBinary::~HttpBinary() {
+}
+
+/*****************************************************************************/
+
+bool Supla::Sensor::HttpBinary::sendHttpTrigger() {
+  
+  if (!Supla::Network::IsReady()) {
+    return false;
+  }
+
+  channel_extended_data_http_binary_t hb_data = {};
+
+  if (!Z2S_loadChannelExtendedData(
+        getZ2SChannelIndex(), CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY,
+        (uint8_t *)&hb_data) | hb_data.url[0] == '\0') {
+
+    log_e(
+      "[HttpBinary] Missing or empty extended data URL for slot %d",
+      getZ2SChannelIndex());
+    
+    return false;
+  }
+
+  const char *hostStart = hb_data.url;
+  if (strncmp(hb_data.url, "http://", 7) == 0) {
+    hostStart += 7;
+  } else if (strncmp(hb_data.url, "https://", 8) == 0) {
+    hostStart += 8;
+  }
+
+  const char *pathStart = strchr(hostStart, '/');
+  if (pathStart == nullptr) {
+    log_e("[HttpBinary] Invalid URL (missing path): %s", hb_data.url);
+    return false;
+  }
+
+  char host[64] = {0};
+  uint16_t port = 80;
+
+  const char *colonPos = strchr(hostStart, ':');
+  if (colonPos != nullptr && colonPos < pathStart) {
+    size_t hostLen = colonPos - hostStart;
+    if (hostLen >= sizeof(host)) return false;
+    memcpy(host, hostStart, hostLen);
+    host[hostLen] = '\0';
+    port = atoi(colonPos + 1);
+  } else {
+    size_t hostLen = pathStart - hostStart;
+    if (hostLen >= sizeof(host)) return false;
+    memcpy(host, hostStart, hostLen);
+    host[hostLen] = '\0';
+  }
+
+  if (!basic_client.connect(host, port, 1000)) {
+    
+    log_e("[HttpBinary] Connection failed to %s:%u", host, port);
+    
+    return false;
+  }
+
+  basic_client.printf(
+    "GET %s HTTP/1.1\r\nHost: %s:%u\r\nConnection: close\r\n\r\n",
+    pathStart, host, port);
+
+  basic_client.flush();
+  delay(20);
+  basic_client.stop();
+
+  log_i("[HttpBinary] Trigger sent to %s:%u", host, port);
+  return true;
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::HttpBinary::handleAction(int event, int action) {
+  
+  bool prevState = state;
+  Supla::Sensor::VirtualBinary::handleAction(event, action);
+
+  switch (action) {
+    case SET:
+    case TURN_ON:
+    case TOGGLE:
+      if (state && !prevState) {
+        sendHttpTrigger();
+        _last_http_send_ms = millis();
+      }
+      break;
+
+    case CLEAR:
+    case TURN_OFF:
+      _last_http_send_ms = 0;
+      break;
+
+    case Z2S_SUPLA_ACTION_COPY_ON_STATE:
+      if (state)
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
+      break;
+
+    case Z2S_SUPLA_ACTION_COPY_OFF_STATE:
+      if (!state)
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
+      break;
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::HttpBinary::iterateAlways() {
+
+  Supla::Sensor::VirtualBinary::iterateAlways();
+
+  if (state) {
+    uint32_t interval_ms = getRefreshMs();
+    if (interval_ms > 0 && (millis() - _last_http_send_ms >= interval_ms)) {
+      
+      _last_http_send_ms = millis();
+      sendHttpTrigger();
+    }
+  }
 }
 
 /*****************************************************************************/
