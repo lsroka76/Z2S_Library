@@ -1917,7 +1917,7 @@ void buildChannelsTabGUI() {
 	rebuildChannelsSelector(false, channelstab);
 
 	zb_channel_info_label = ESPUI.addControl(
-	  Control::Type::Label, "Channel info", emptyString,
+	  Control::Type::Label, "Channel information", emptyString,
 	  Control::Color::Dark, channelstab);
 	ESPUI.getControl(zb_channel_info_label)->reserve(800);
 

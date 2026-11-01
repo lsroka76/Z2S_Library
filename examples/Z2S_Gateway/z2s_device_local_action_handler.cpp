@@ -129,7 +129,7 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
   {
     LOCAL_CHANNEL_TYPE_ACTION_HANDLER,
     "Local logic gate",
-    nullptr,
+    "LOGIC GATE",
     SUPLA_CHANNELFNC_NONE,
     false,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
@@ -142,9 +142,10 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
       auto* lah = new Supla::LocalActionHandlerWithTrigger(op);
       Z2S_setLocalChannelData(
         lah->getZ2SCorePtr(), slot, free_id, NO_CUSTOM_CMD_SID,
-        lah->getOperatorName(), SUPLA_CHANNELFNC_NONE,
+        "LOGIC GATE", SUPLA_CHANNELFNC_NONE,
         0xFF, d.type, func, op, true);
       d.init_fn(slot, lah->getZ2SChannel(), lah->getZ2SElementPtr());
+      lah->onInit();
     }
   },
   {
