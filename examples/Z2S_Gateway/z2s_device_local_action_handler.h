@@ -1,6 +1,8 @@
 #ifndef Z2S_DEVICE_LOCAL_ACTION_HANDLERS_H_
 #define Z2S_DEVICE_LOCAL_ACTION_HANDLERS_H_
 
+/*****************************************************************************/
+
 #include <SuplaDevice.h>
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
@@ -15,19 +17,7 @@
 
 #include "z2s_devices_table.h"
 
-inline constexpr char * const ACTION_HANDLERS_DEFAULT_NAMES[] PROGMEM = {
-
-  "LOCAL ACTION HANDLER",
-  "AND GATE",
-  "OR GATE",
-  "NOT GATE",
-  "XOR GATE",
-  "NAND GATE",
-  "NOR GATE",
-  "AND GATE (3 INPUTS)",
-  "OR GATE (3 INPUTS)",
-  "NOP GATE"
-};
+/*****************************************************************************/
 
 inline constexpr char *CONNECTED_THERMOMETERS_FUNCTION_NAMES[] PROGMEM = {
   "CONNECTED_THERMOMETERS_FNC_MINIMUM", "CONNECTED_THERMOMETERS_FNC_AVERAGE",
@@ -61,14 +51,6 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
   int16_t channel_number_slot);
 
 const char* getZ2SDeviceLocalActionHandlerTypeName(
-  z2s_device_params_t* _z2s_channel);
-
-/*****************************************************************************/
-
-const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
-  int16_t channel_number_slot);
-
-const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
   z2s_device_params_t* _z2s_channel);
 
 /*****************************************************************************/

@@ -56,38 +56,21 @@ LocalActionHandler::~LocalActionHandler() {
 
 /*****************************************************************************/
 
+/*****************************************************************************/
+
 LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
-  uint8_t pin_logic_operator)
-  : Z2S_Core(this), _pin_logic_operator(pin_logic_operator) {
+  uint8_t pin_logic_operator, uint8_t logic_pins_number)
+  : Z2S_Core(this) {
 
-    log_i(
-      "_pin_logic_operator %u, pin_logic_operator %u", _pin_logic_operator, 
-      pin_logic_operator);
-    
-    switch (_pin_logic_operator) {
+  setLogicValue(0);
+  setLogicPinsChanged(false);
+  Z2S_Core::setLogicOperator(pin_logic_operator, false);
+  setLogicPinsNumber(logic_pins_number, false);
 
-
-      case PIN_LOGIC_OPERATOR_NOT:
-      case PIN_LOGIC_OPERATOR_NOP:
-
-        _pin_b = 0xFF;
-        _pin_c = 0xFF;
-      break;
-
-      
-      case PIN_LOGIC_OPERATOR_AND3:
-      case PIN_LOGIC_OPERATOR_OR3:
-
-        _pin_c = 0;
-      break;
-
-
-      default:
-
-        _pin_c = 0xFF;
-      break;
-    }
-  };
+  log_i(
+    "logic_operator %u, logic_pins_number %u, logic_mask 0x%08lX", 
+    getLogicOperator(), getLogicPinsNumber(), getLogicMask());
+};
 
 /*****************************************************************************/
 
@@ -97,102 +80,210 @@ LocalActionHandlerWithTrigger::~LocalActionHandlerWithTrigger() {
 
 /*****************************************************************************/
 
+void LocalActionHandlerWithTrigger::onInit() {
+
+  if ((getLogicOperator() == PIN_LOGIC_OPERATOR_NONE) &&
+      (getZ2SLocalChannelFunc() != PIN_LOGIC_OPERATOR_NONE)) {
+    Z2S_Core::setLogicOperator(getZ2SLocalChannelFunc(), false);
+  }
+
+  setLogicValue(0);
+  setLogicPinsChanged(false);
+  setLogicPinsNumber(getLogicPinsNumber(), false);
+}
+
+/*****************************************************************************/
+
+uint8_t LocalActionHandlerWithTrigger::validateLogicPinsNumber(
+  uint8_t logic_operator, uint8_t pins) {
+
+  switch (logic_operator) {
+
+    case PIN_LOGIC_OPERATOR_NONE:
+      return 0;
+
+    case PIN_LOGIC_OPERATOR_NOP:
+    case PIN_LOGIC_OPERATOR_NOT:
+      return 1;
+
+    case PIN_LOGIC_OPERATOR_AND3:
+    case PIN_LOGIC_OPERATOR_OR3:
+      return 3;
+
+    case PIN_LOGIC_OPERATOR_XOR:
+    case PIN_LOGIC_OPERATOR_AND:
+    case PIN_LOGIC_OPERATOR_OR:
+    case PIN_LOGIC_OPERATOR_NAND:
+    case PIN_LOGIC_OPERATOR_NOR:
+      return (pins < 2) ? 2 : ((pins > 32) ? 32 : pins);
+
+    default:
+      return (pins > 32) ? 32 : pins;
+  }
+}
+
+/*****************************************************************************/
+
+void LocalActionHandlerWithTrigger::updateLogicMask() {
+
+  uint8_t pins = getLogicPinsNumber();
+
+  uint32_t mask = (pins == 0) ? 0UL :
+                  (pins >= 32) ? 0xFFFFFFFFUL : ((1UL << pins) - 1UL);
+
+  setLogicMask(mask);
+  setLogicValue(getLogicValue() & mask);
+}
+
+/*****************************************************************************/
+
+void LocalActionHandlerWithTrigger::setLogicOperator(
+  uint8_t logic_operator, bool save) {
+
+  Z2S_Core::setLogicOperator(logic_operator, false);
+
+  uint8_t valid_pins = validateLogicPinsNumber(
+    logic_operator, getLogicPinsNumber());
+
+  Z2S_Core::setLogicPinsNumber(valid_pins, false);
+  updateLogicMask();
+
+  if (save)
+    saveChannelData();
+}
+
+/*****************************************************************************/
+
+void LocalActionHandlerWithTrigger::setLogicPinsNumber(
+  uint8_t logic_pins_number, bool save) {
+
+  uint8_t valid_pins = validateLogicPinsNumber(
+    getLogicOperator(), logic_pins_number);
+
+  Z2S_Core::setLogicPinsNumber(valid_pins, false);
+  updateLogicMask();
+
+  if (save)
+    saveChannelData();
+}
+
+/*****************************************************************************/
+
+const char* LocalActionHandlerWithTrigger::getOperatorName() {
+
+  uint8_t op = getLogicOperator();
+
+  if (op < (sizeof(pin_logic_operator_names) / 
+      sizeof(pin_logic_operator_names[0]))) {
+        
+    return pin_logic_operator_names[op];
+  }
+  return "UNKNOWN";
+}
+
+/*****************************************************************************/
+
 void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   
-  log_i("event %u, action %u", event, action);
+  uint32_t mask = getLogicMask();
+  uint32_t val  = getLogicValue() & mask;
+  uint8_t  op   = getLogicOperator();
+
   log_i(
-    "_pin_a %u, _pin_b %u, _pin_logic_operator %u", _pin_a, _pin_b, 
-    _pin_logic_operator);
+    "event %u, action %u, logic_value 0x%08lX, logic_mask 0x%08lX, "
+    "logic_operator %u", event, action, val, mask, op);
 
-  bool logic_operation_result = false;
+  if ((mask == 0) || (op == PIN_LOGIC_OPERATOR_NONE))
+    return;
 
-  bool pins_changed = true;
+  setLogicPinsChanged(false);
 
   switch (action) {
 
     case TURN_ON: {
       
-      (_pin_a == 0) ? 
-        _pin_a = 1 : (_pin_b == 0) ? 
-          _pin_b = 1 : (_pin_c == 0) ? 
-            _pin_c = 1 : pins_changed = false;
+      uint32_t zero_bits = (~val) & mask;
+
+      if (zero_bits != 0) {
+        uint8_t bit_idx = __builtin_ctz(zero_bits);
+        val |= (1UL << bit_idx);
+        setLogicValue(val);
+        setLogicPinsChanged(true);
+      }
 
       log_i(
-        "TURN_ON _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, "
-        "pins_changed %s", _pin_a, _pin_b, _pin_c, _pin_logic_operator, 
-        pins_changed ? "TRUE" : "FALSE");
+        "TURN_ON logic_value 0x%08lX, logic_mask 0x%08lX, "
+        "logic_operator %u, pins_changed %s", val, mask, op, 
+        hasLogicPinsChanged() ? "TRUE" : "FALSE");
     } break;
 
     case TURN_OFF: {
 
-      (_pin_a == 1) ? 
-        _pin_a = 0 : (_pin_b == 1) ? 
-          _pin_b = 0 : (_pin_c == 1) ? 
-            _pin_c = 0 : pins_changed = false;
+      uint32_t one_bits = val & mask;
+
+      if (one_bits != 0) {
+        uint8_t bit_idx = __builtin_ctz(one_bits);
+        val &= ~(1UL << bit_idx);
+        setLogicValue(val);
+        setLogicPinsChanged(true);
+      }
      
       log_i(
-        "TURN_OFF _pin_a %u, _pin_b %u, _pin_c %u, _pin_logic_operator %u, "
-        "pins_changed %s", _pin_a, _pin_b, _pin_c, _pin_logic_operator, 
-        pins_changed ? "TRUE" : "FALSE");
+        "TURN_OFF logic_value 0x%08lX, logic_mask 0x%08lX, "
+        "logic_operator %u, pins_changed %s", val, mask, op, 
+        hasLogicPinsChanged() ? "TRUE" : "FALSE");
     } break;
   }
   
-  if  (pins_changed == false)
+  if (!hasLogicPinsChanged())
     return;
 
-  switch (_pin_logic_operator) {
+  bool logic_operation_result = false;
+
+  switch (op) {
 
 
     case PIN_LOGIC_OPERATOR_NOP:
 
-      logic_operation_result = _pin_a; 
+      logic_operation_result = (val & mask) != 0; 
     break;
 
 
     case PIN_LOGIC_OPERATOR_AND:
+    case PIN_LOGIC_OPERATOR_AND3:
 
-      logic_operation_result = _pin_a && _pin_b;
+      logic_operation_result = (val & mask) == mask;
     break;
 
 
     case PIN_LOGIC_OPERATOR_OR:
+    case PIN_LOGIC_OPERATOR_OR3:
 
-      logic_operation_result = _pin_a || _pin_b; 
+      logic_operation_result = (val & mask) != 0; 
     break;
 
 
     case PIN_LOGIC_OPERATOR_XOR:
 
-      logic_operation_result = _pin_a ^ _pin_b; 
+      logic_operation_result = (__builtin_parity(val & mask) == 1); 
     break;
 
     
     case PIN_LOGIC_OPERATOR_NOT:
 
-      logic_operation_result = !_pin_a; 
+      logic_operation_result = (val & mask) == 0; 
     break;
 
 
     case PIN_LOGIC_OPERATOR_NAND:
 
-      logic_operation_result = !(_pin_a & _pin_b); 
+      logic_operation_result = (val & mask) != mask; 
     break;
 
 
     case PIN_LOGIC_OPERATOR_NOR:
 
-      logic_operation_result = !(_pin_a | _pin_b); 
-    break;
-
-
-    case PIN_LOGIC_OPERATOR_AND3:
-
-      logic_operation_result = (_pin_a & _pin_b & _pin_c); 
-    break;
-
-    case PIN_LOGIC_OPERATOR_OR3:
-
-      logic_operation_result = (_pin_a | _pin_b | _pin_c); 
+      logic_operation_result = (val & mask) == 0; 
     break;
   }
   
@@ -1662,9 +1753,9 @@ bool Supla::Sensor::HttpBinary::sendHttpTrigger() {
 
   channel_extended_data_http_binary_t hb_data = {};
 
-  if (!Z2S_loadChannelExtendedData(
-        getZ2SChannelIndex(), CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY,
-        (uint8_t *)&hb_data) | hb_data.url[0] == '\0') {
+  if (!loadChannelExtendedData(
+        CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY,(uint8_t *)&hb_data) || 
+      hb_data.url[0] == '\0') {
 
     log_e(
       "[HttpBinary] Missing or empty extended data URL for slot %d",

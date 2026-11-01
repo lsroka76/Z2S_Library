@@ -128,7 +128,7 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
 
   {
     LOCAL_CHANNEL_TYPE_ACTION_HANDLER,
-    "Local action handler",
+    "Local logic gate",
     nullptr,
     SUPLA_CHANNELFNC_NONE,
     false,
@@ -142,7 +142,7 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
       auto* lah = new Supla::LocalActionHandlerWithTrigger(op);
       Z2S_setLocalChannelData(
         lah->getZ2SCorePtr(), slot, free_id, NO_CUSTOM_CMD_SID,
-        ACTION_HANDLERS_DEFAULT_NAMES[op], SUPLA_CHANNELFNC_NONE,
+        lah->getOperatorName(), SUPLA_CHANNELFNC_NONE,
         0xFF, d.type, func, op, true);
       d.init_fn(slot, lah->getZ2SChannel(), lah->getZ2SElementPtr());
     }
@@ -320,8 +320,8 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
       sb->setDefaultStateRestore();
 
       channel_extended_data_sb_t sb_data = {};
-      if (Z2S_loadChannelExtendedData(
-            idx, CHANNEL_EXTENDED_DATA_TYPE_SB, (uint8_t*)&sb_data)) {
+      if (sb->loadChannelExtendedData(
+            CHANNEL_EXTENDED_DATA_TYPE_SB, (uint8_t*)&sb_data)) {
         log_i("SwitchBot device BLE address: %s", sb_data.ble_mac_address);
         log_i(
           "SwitchBot device token: %s (%u)", sb_data.token, 
@@ -476,8 +476,8 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
         hb->setChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA, false);
 
         channel_extended_data_http_binary_t hb_data = {};
-        Z2S_saveChannelExtendedData(
-            slot, CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY, (uint8_t*)&hb_data);
+        hb->saveChannelExtendedData(
+          CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY, (uint8_t*)&hb_data);
       });
     }
   },
@@ -514,19 +514,6 @@ const char* getZ2SDeviceLocalActionHandlerTypeName(
     return desc->type_name;
   }
   return "Unknown local object!";
-}
-
-/*****************************************************************************/
-
-const char* getZ2SDeviceLocalActionHandlerLogicOperatorName(
-    z2s_device_params_t* _z2s_channel) {
-
-  if (_z2s_channel->local_channel_type == LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
-    
-    return ACTION_HANDLERS_DEFAULT_NAMES[
-        _z2s_channel->local_action_handler_data.logic_operator];
-  }
-  return "No special functions";
 }
 
 /*****************************************************************************/

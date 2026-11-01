@@ -1,6 +1,7 @@
 #ifndef Z2S_ELECTRICITY_METER_H_
 #define Z2S_ELECTRICITY_METER_H_
 
+/*****************************************************************************/
 
 #include <supla/log_wrapper.h>
 #include <supla/sensor/electricity_meter.h>
@@ -8,19 +9,7 @@
 #include "TuyaDatapoints.h"
 #include "Z2S_common.h"
 
-#define CHANNEL_EXTENDED_DATA_TYPE_EM 0x01
-
-typedef struct channel_extended_data_em_s {
-
-  esp_zb_ieee_addr_t  ieee_addr;
-  uint64_t            total_forward_active_energy_counter[3];
-  uint64_t            total_reverse_active_energy_counter[3];
-  uint64_t            total_forward_reactive_energy_counter[3];
-  uint64_t            total_reverse_reactive_energy_counter[3];
-  uint64_t            total_forward_active_energy_balanced_counter;
-  uint64_t            total_reverse_active_energy_balanced_counter;
-} __attribute__ ((packed)) channel_extended_data_em_t;
-
+/*****************************************************************************/
 
 namespace Supla {
 namespace Sensor {
@@ -388,15 +377,21 @@ void setRvrBalancedEnergy2(uint64_t energy) {
   setRvrBalancedEnergy(energy);
 }
 
+/*****************************************************************************/
+
 void onInit() override {
   
   if (getTimeoutMs())
     getChannel()->setStateOffline();
 }
 
+/*****************************************************************************/
+
 virtual void readValuesFromDevice() {
 
 }
+
+/*****************************************************************************/
 
 void resetStorage() {
 
@@ -440,11 +435,27 @@ void resetStorage() {
   channel_extended_data_em.total_reverse_active_energy_balanced_counter = 
     total_reverse_active_energy_balanced_counter;
 
-  zbGateway.requestDataSave(
-    getChannelNumber(), 16, CHANNEL_EXTENDED_DATA_TYPE_EM, 
+  saveChannelExtendedData(CHANNEL_EXTENDED_DATA_TYPE_EM, 
     (uint8_t *)&channel_extended_data_em);
 }
 
+/*****************************************************************************/
+
+void clearCounters() {
+
+  channel_extended_data_em_t channel_extended_data_em = {};
+
+  memcpy(
+    channel_extended_data_em.ieee_addr, getChannelIeeeAddress(), 
+    sizeof(esp_zb_ieee_addr_t));
+
+  saveChannelExtendedData(CHANNEL_EXTENDED_DATA_TYPE_EM, 
+    (uint8_t *)&channel_extended_data_em);
+
+  log_i("EM channel extended data successfully UPDATED (counters zeroed)");
+}
+
+/*****************************************************************************/
 
   void initZigbee() {
 	

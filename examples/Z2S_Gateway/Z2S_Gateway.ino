@@ -425,7 +425,6 @@ void enableZ2SNotifications() {
   zbGateway.onBoundDevice(Z2S_onBoundDevice);
   zbGateway.onBTCBoundDevice(Z2S_onBTCBoundDevice);
 
-  zbGateway.onDataSaveRequest(Z2S_onDataSaveRequest);
   zbGateway.onDeviceUpdate(Z2S_onDeviceUpdate);
   zbGateway.onDeviceAnnce(Z2S_onDeviceAnnce);
   zbGateway.onDeviceRejoin(Z2S_onDeviceRejoin);
@@ -469,7 +468,6 @@ void disableZ2SNotifications() {
   zbGateway.onIASzoneStatusChangeNotification(nullptr);
   zbGateway.onBoundDevice(nullptr);
   zbGateway.onBTCBoundDevice(nullptr);
-  zbGateway.onDataSaveRequest(nullptr);
   zbGateway.onDeviceUpdate(nullptr);
   zbGateway.onDeviceAnnce(nullptr);
   zbGateway.onDeviceRejoin(nullptr);

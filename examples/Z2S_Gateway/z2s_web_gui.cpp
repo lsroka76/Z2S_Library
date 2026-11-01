@@ -517,16 +517,6 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 #define GUI_CB_UPDATE_PARAM_2_FLAG 0x4031
 #define GUI_CB_UPDATE_PARAM_3_FLAG 0x4032
 
-#define GUI_CB_ADD_AND_HANDLER_FLAG 0x4050
-#define GUI_CB_ADD_OR_HANDLER_FLAG 0x4051
-#define GUI_CB_ADD_XOR_HANDLER_FLAG 0x4052
-#define GUI_CB_ADD_NOT_HANDLER_FLAG 0x4053
-#define GUI_CB_ADD_NAND_HANDLER_FLAG 0x4054
-#define GUI_CB_ADD_NOR_HANDLER_FLAG 0x4055
-#define GUI_CB_ADD_AND3_HANDLER_FLAG 0x4056
-#define GUI_CB_ADD_OR3_HANDLER_FLAG 0x4057
-#define GUI_CB_ADD_NOP_HANDLER_FLAG 0x4058
-
 #define GUI_CB_SAVE_PROGRAM_FLAG 0x5000
 #define GUI_CB_LOAD_PROGRAM_FLAG 0x5001
 #define GUI_CB_START_PROGRAM_FLAG 0x5002
@@ -702,7 +692,8 @@ void buildAdvancedDevicesTabGUI();
 void buildTuyaCustomClusterTabGUI();
 void buildPushoverTabGUI();
 
-void updateChannelInfoLabel(int16_t channel_slot = -2);
+void updateChannelInfoLabel(
+	int16_t channel_slot = -2, bool sort_local_function_selector = true);
 void updateDeviceInfoLabel(uint8_t device_slot);
 
 void gatewayCallback(BasicControl *sender, int type, void *param);
@@ -2146,51 +2137,9 @@ void buildChannelsTabGUI() {
 	  channelstab);
 
 	lah_panel = ESPUI.addControl(
-	  Control::Type::Button, "Local logic & channels", "Add AND gate",
-	  Control::Color::Dark, channelstab, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_AND_HANDLER_FLAG);
-
-	ESPUI.addControl(
-	  Control::Type::Button, empty_str, "Add OR gate", Control::Color::Dark,
-	  lah_panel, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_OR_HANDLER_FLAG);
-
-	ESPUI.addControl(
-	  Control::Type::Button, empty_str, "Add XOR gate", Control::Color::Dark,
-	  lah_panel, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_XOR_HANDLER_FLAG);
-
-	ESPUI.addControl(
-	  Control::Type::Button, empty_str, "Add NOT gate", Control::Color::Dark,
-	  lah_panel, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_NOT_HANDLER_FLAG);
-
-	ESPUI.addControl(
-	  Control::Type::Button, empty_str, "Add NAND gate", Control::Color::Dark,
-	  lah_panel, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_NAND_HANDLER_FLAG);
-
-	ESPUI.addControl(
-	  Control::Type::Button, empty_str, "Add NOR gate", Control::Color::Dark,
-	  lah_panel, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_NOR_HANDLER_FLAG);
-
-	ESPUI.addControl(
-	  Control::Type::Button, empty_str, "Add AND gate (3 inputs)",
-	  Control::Color::Dark, lah_panel, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_AND3_HANDLER_FLAG);
-
-	ESPUI.addControl(
-	  Control::Type::Button, empty_str, "Add OR gate (3 inputs)",
-	  Control::Color::Dark, lah_panel, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_OR3_HANDLER_FLAG);
-
-	ESPUI.addControl(
-	  Control::Type::Button, empty_str, "Add NOP gate", Control::Color::Dark,
-	  lah_panel, addLocalActionHandlerCallback,
-	  (void *)GUI_CB_ADD_NOP_HANDLER_FLAG);
-
-	//addEmptyLineLabel(lah_panel);
+	  Control::Type::Button, "Local logic & channels", "Add logic gate",
+	  Control::Color::Dark, channelstab, addLocalChannelCallback,
+	  (void *)gui_cmd_add_logic_gate);
 
 	ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Add virtual relay",
@@ -4557,6 +4506,33 @@ void sortCalculatedGPMFunctionsSelectorsMain(int32_t select_value = -1) {
 
 /*****************************************************************************/
 
+bool buildLogicOperatorLocalFunctionsSelectJsonPayload(
+  int32_t selected_value, uint16_t selector_id) {
+
+	return buildSelectJsonPayloadGeneric(
+	  selected_value, 1, &selector_id,
+	  "Select logic operator...", [&](auto add_function_option) {
+		  for (uint8_t op = PIN_LOGIC_OPERATOR_AND;
+		       op <= PIN_LOGIC_OPERATOR_NOP; op++) {
+
+			  if (!add_function_option(op, pin_logic_operator_names[op]))
+				  return false;
+		  }
+		  return true;
+	  });
+}
+
+/*****************************************************************************/
+
+void sortLogicOperatorFunctionsSelectorsMain(int32_t select_value = -1) {
+
+	if (local_channel_function_selector < 0xFFFF)
+		buildLogicOperatorLocalFunctionsSelectJsonPayload(
+		  select_value, local_channel_function_selector);
+}
+
+/*****************************************************************************/
+
 void buildActionsTabGUI() {
 
 	char general_purpose_gui_buffer[512] = {};
@@ -5707,82 +5683,34 @@ void Z2S_loopWebGUI() {
 				break;
 
 
-			case gui_cmd_add_logic_gate:
-				{
+			case gui_cmd_add_logic_gate: {
 
-					uint8_t logic_operator = PIN_LOGIC_OPERATOR_NONE;
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 0, PIN_LOGIC_OPERATOR_AND);
 
-					switch (pending_gui_command->gui_command_value) {
+				if (new_channel_slot >= 0) {
 
+					Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(
+						new_channel_slot);
 
-						case GUI_CB_ADD_AND_HANDLER_FLAG:
+					if (z2s_core) {
 
-							logic_operator = PIN_LOGIC_OPERATOR_AND;
-							break;
-
-
-						case GUI_CB_ADD_OR_HANDLER_FLAG:
-
-							logic_operator = PIN_LOGIC_OPERATOR_OR;
-							break;
-
-
-						case GUI_CB_ADD_XOR_HANDLER_FLAG:
-
-							logic_operator = PIN_LOGIC_OPERATOR_XOR;
-							break;
-
-
-						case GUI_CB_ADD_NOT_HANDLER_FLAG:
-
-							logic_operator = PIN_LOGIC_OPERATOR_NOT;
-							break;
-
-
-						case GUI_CB_ADD_NAND_HANDLER_FLAG:
-
-							logic_operator = PIN_LOGIC_OPERATOR_NAND;
-							break;
-
-
-						case GUI_CB_ADD_NOR_HANDLER_FLAG:
-
-							logic_operator = PIN_LOGIC_OPERATOR_NOR;
-							break;
-
-
-						case GUI_CB_ADD_AND3_HANDLER_FLAG:
-
-							logic_operator = PIN_LOGIC_OPERATOR_AND3;
-							break;
-
-
-						case GUI_CB_ADD_OR3_HANDLER_FLAG:
-
-							logic_operator = PIN_LOGIC_OPERATOR_OR3;
-							break;
-
-
-						case GUI_CB_ADD_NOP_HANDLER_FLAG:
-
-							logic_operator = PIN_LOGIC_OPERATOR_NOP;
-							break;
+						auto *lah = static_cast<Supla::LocalActionHandlerWithTrigger *>(
+							z2s_core->getZ2SElementPtr());
+						
+						if (lah) {
+							lah->setLogicOperator(PIN_LOGIC_OPERATOR_AND, true);
+						}
 					}
 
-					int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
-					  LOCAL_CHANNEL_TYPE_ACTION_HANDLER, 0, logic_operator);
+					ESPUI.updateLabel(
+						lah_status_label,
+						"The local logical gate has been successfully added and is "
+						"available for use (default AND - use menu to change function)");
 
-					if (new_channel_slot >= 0) {
-
-						ESPUI.updateLabel(
-						  lah_status_label,
-						  "The local logical object has been successfully added and is "
-						  "available for use.");
-
-						addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
-					}
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
 				}
-				break;
+			} break;
 
 
 			case gui_cmd_add_virtual_relay:
@@ -6163,14 +6091,17 @@ void Z2S_loopWebGUI() {
 						  ESPUI.getControl(sb_json_payload_2_text)->getValueCstr(),
 						  sizeof(channel_extended_data_sb.json_payload_2));
 
-						Z2S_saveChannelExtendedData(
-						  channel_slot, CHANNEL_EXTENDED_DATA_TYPE_SB,
-						  (uint8_t *)&channel_extended_data_sb);
+						auto sbInstance = Z2S_Core::getSwitchBotRelayInstance(
+							channel_slot);
 
-						auto sbInstance = Z2S_Core::getSwitchBotRelayInstance(channel_slot);
-						if (sbInstance)
+						if (sbInstance) {
+
+							sbInstance->saveChannelExtendedData(
+						  	CHANNEL_EXTENDED_DATA_TYPE_SB, 
+								(uint8_t *)&channel_extended_data_sb);
 							sbInstance->updateSwitchBotData(
 							  channel_extended_data_sb, SB_UPDATE_DATA_LOAD_DIR);
+						}
 					}
 				}
 				break;
@@ -6982,7 +6913,8 @@ void updateResendTemperatureControls(Z2S_Core *z2s_core, bool source_channel) {
 
 /*****************************************************************************/
 
-void updateChannelInfoLabel(int16_t channel_slot) {
+void updateChannelInfoLabel(
+	int16_t channel_slot, bool sort_local_function_selector) {
 
 	char general_purpose_gui_buffer[896] = {};
 
@@ -7012,6 +6944,18 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 
 	log_i("z2s_channel ieee addr %s", ieee_addr_str);
 
+	char logic_operator_desc[64] = "No special functions";
+	
+	if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
+		
+		auto *lah = static_cast<Supla::LocalActionHandlerWithTrigger *>(
+			z2s_core->getZ2SElementPtr());
+	
+		snprintf(
+			logic_operator_desc, sizeof(logic_operator_desc), "%s (%u pins)", 
+			lah->getOperatorName(), lah->getLogicPinsNumber());
+	}
+
 	snprintf_P(
 	  general_purpose_gui_buffer, 896, 
 		"<meta charset=\"UTF-8\">"
@@ -7040,9 +6984,10 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 			z2s_core->getZbDeviceManufacturerName() : 
 			getZ2SDeviceLocalActionHandlerTypeName(&z2s_channel),
 	  (z2s_channel.local_channel_type == 0) ? z2s_core->getZbDeviceModelName() : 
-			getZ2SDeviceLocalActionHandlerLogicOperatorName(&z2s_channel),
-	  z2s_channel.gui_control_id, z2s_core->getChannelExtendedDataCounter(),
-	  z2s_core->getChannelExtendedDataCounterKey(), z2s_core->getZ2SChannelIndex());
+			logic_operator_desc, z2s_channel.gui_control_id, 
+		z2s_core->getChannelExtendedDataCounter(),
+		z2s_core->getChannelExtendedDataCounterKey(), 
+		z2s_core->getZ2SChannelIndex());
 
 	updateLabel_P(
 	  zb_channel_info_label, general_purpose_gui_buffer);
@@ -7061,14 +7006,32 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 		case SUPLA_CHANNELTYPE_LOCALCHANNEL:
 			{
 
-
 				enableChannelFlags(0);
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
 
-					enableChannelTimings(1 + 2);  //turn on delay
+					enableChannelTimings(1 + 2);  //turn on delay + turn off delay
 					ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
 					ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
+
+					enableControlStyle(local_channel_function_selector, true);
+
+					if (sort_local_function_selector) {
+
+						sortLogicOperatorFunctionsSelectorsMain(
+					  	z2s_core->getLogicOperator());
+					}
+					
+					ESPUI.updateSelect(
+					  local_channel_function_selector, z2s_core->getLogicOperator());
+					
+
+					enableChannelParams(2);
+
+					char *working_str_ptr =
+					  "Enter logic gate inputs (pins) number (1-32):";
+					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
+					ESPUI.updateNumber(param_2_number, z2s_core->getLogicPinsNumber());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
@@ -7093,11 +7056,15 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					enableChannelFlags(8);
 					enableControlStyle(local_channel_function_selector, true);
 
-					sortRemoteThermometerFunctionsSelectorsMain(
-						z2s_channel.local_channel_func);
+					if (sort_local_function_selector) {
 
+						sortRemoteThermometerFunctionsSelectorsMain(
+							z2s_channel.local_channel_func);
+					}
+					
 					ESPUI.updateSelect(
 						local_channel_function_selector, z2s_channel.local_channel_func);
+					
 
 					ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
@@ -7112,11 +7079,15 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					enableChannelFlags(8);
 					enableControlStyle(local_channel_function_selector, true);
 
-					sortCalculatedThermometerFunctionsSelectorsMain(
-						z2s_channel.local_channel_func);
+					if (sort_local_function_selector) {
 
+						sortCalculatedThermometerFunctionsSelectorsMain(
+							z2s_channel.local_channel_func);
+					}
+					
 					ESPUI.updateSelect(
 						local_channel_function_selector, z2s_channel.local_channel_func);
+					
 
 					//ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
 					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
@@ -7130,11 +7101,15 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 					enableChannelFlags(0);
 					enableControlStyle(local_channel_function_selector, true);
 
-					sortCalculatedGPMFunctionsSelectorsMain(
-						z2s_channel.local_channel_func);
+					if (sort_local_function_selector) {
 
+						sortCalculatedGPMFunctionsSelectorsMain(
+							z2s_channel.local_channel_func);
+					}
+					
 					ESPUI.updateSelect(
 						local_channel_function_selector, z2s_channel.local_channel_func);
+					
 
 					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
@@ -7169,9 +7144,8 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 
 					channel_extended_data_http_binary_t hb_data = {};
 					
-					if (Z2S_loadChannelExtendedData(
-					    	channel_slot, CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY,
-					      (uint8_t *)&hb_data)) {
+					if (z2s_core->loadChannelExtendedData(
+					    	CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY, (uint8_t *)&hb_data)) {
 						
 						working_str = hb_data.url;
 					} 
@@ -7345,10 +7319,14 @@ void updateChannelInfoLabel(int16_t channel_slot) {
 				enableChannelFlags(5 + 16);
 
 				ESPUI.updateNumber(
-				  disable_channel_notifications_switcher, (z2s_channel.user_data_flags & USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0);
+				  disable_channel_notifications_switcher, 
+					(z2s_channel.user_data_flags & 
+					 USER_DATA_FLAG_DISABLE_NOTIFICATIONS) ? 1 : 0);
 
 				ESPUI.updateNumber(
-				  set_sorwns_on_start_switcher, (z2s_channel.user_data_flags & USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
+				  set_sorwns_on_start_switcher, 
+					(z2s_channel.user_data_flags & 
+					 USER_DATA_FLAG_SET_SORWNS_ON_START) ? 1 : 0);
 
 				enableChannelParams(1);
 
@@ -8851,16 +8829,31 @@ void editChannelMain(uint32_t update_channel_flag) {
 				break;
 
 
-			case GUI_CB_UPDATE_LOCAL_CHANNEL_FUNCTION_FLAG:
-				{
+			case GUI_CB_UPDATE_LOCAL_CHANNEL_FUNCTION_FLAG: {
 
-					int16_t local_channel_function =
-					  ESPUI.getControl(local_channel_function_selector)->getValueInt();
+				int16_t local_channel_function =
+					ESPUI.getControl(local_channel_function_selector)->getValueInt();
 
-					if (local_channel_function > 0)
+				if (local_channel_function > 0) {
+
+					if (z2s_core->getZ2SLocalChannelType() == 
+							LOCAL_CHANNEL_TYPE_ACTION_HANDLER) {
+
+						auto *lah = static_cast<Supla::LocalActionHandlerWithTrigger *>(
+							z2s_core->getZ2SElementPtr());
+
+						if (lah) {
+
+							lah->setLogicOperator(local_channel_function, true);
+							ESPUI.updateNumber(param_2_number, lah->getLogicPinsNumber());
+							updateChannelInfoLabel(channel_slot, false);
+						}
+					} 
+					else {
 						z2s_core->setZ2SLocalChannelFunc(local_channel_function);
+					}
 				}
-				break;
+			} break;
 
 
 			case GUI_CB_UPDATE_PARAM_1_FLAG:
@@ -8896,8 +8889,8 @@ void editChannelMain(uint32_t update_channel_flag) {
 												hb_data.url[sizeof(hb_data.url) - 1] = '\0';
 										}
 
-										Z2S_saveChannelExtendedData(
-											channel_slot, CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY,
+										z2s_core->saveChannelExtendedData(
+											CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY, 
 											(uint8_t *)&hb_data);
 									} break;
 
@@ -8940,9 +8933,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 											uint8_t parsedBytes[8] = { 0 };
 
 											if (hexToBytes(ESPUI.getControl(
-											                      param_1_text)
-											                 ->getValueCstr(),
-											               parsedBytes)) {
+											      param_1_text)->getValueCstr(), parsedBytes)) {
 
 												z2s_core->setLocalDS18B20Address(parsedBytes, true);
 
@@ -9049,6 +9040,30 @@ void editChannelMain(uint32_t update_channel_flag) {
 							{
 
 								switch (z2s_core->getZ2SLocalChannelType()) {
+
+
+									case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
+
+										auto *lah =
+											static_cast<Supla::LocalActionHandlerWithTrigger *>(
+												z2s_core->getZ2SElementPtr());
+
+										if (lah) {
+											
+											int32_t requested_pins =
+												ESPUI.getControl(param_2_number)->getValueInt();
+
+											uint8_t clamped_pins =
+												(requested_pins < 0) ? 0 :
+												((requested_pins > 32) ? 32 : (uint8_t)requested_pins);
+
+											lah->setLogicPinsNumber(clamped_pins, true);
+											ESPUI.updateNumber(
+												param_2_number, lah->getLogicPinsNumber());
+											updateChannelInfoLabel(channel_slot, false);
+										}
+									} break;
+
 
 									case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
 									case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
@@ -11329,18 +11344,6 @@ void TuyaDeviceSelectorCmd(int32_t device_slot) {
 
 		sortTuyaDatapointsSelectorsMain();
 		enableTuyaDevicesControls(false);
-	}
-}
-
-/*****************************************************************************/
-/*****************************************************************************/
-
-void addLocalActionHandlerCallback(
-  BasicControl *sender, int type, void *param) {
-
-	if (type == B_UP) {
-
-		addGUICommand(gui_cmd_add_logic_gate, (uint32_t)param);
 	}
 }
 

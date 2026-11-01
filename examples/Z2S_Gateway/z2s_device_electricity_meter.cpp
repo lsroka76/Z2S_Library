@@ -376,9 +376,8 @@ void initZ2SDeviceElectricityMeter(
 
   channel_extended_data_em_t channel_extended_data_em = {};
   
-  if (Z2S_loadChannelExtendedData(
-    channel_index, CHANNEL_EXTENDED_DATA_TYPE_EM,
-    (uint8_t*)&channel_extended_data_em)) {
+  if (Supla_Z2S_ElectricityMeter->loadChannelExtendedData(
+        CHANNEL_EXTENDED_DATA_TYPE_EM, (uint8_t*)&channel_extended_data_em)) {
 
     char ieee_addr_str[24] = {};
 
@@ -402,9 +401,8 @@ void initZ2SDeviceElectricityMeter(
       channel_extended_data_em.ieee_addr, _z2s_channel->ieee_addr, 
       sizeof(esp_zb_ieee_addr_t));
   
-    if (Z2S_saveChannelExtendedData(
-          channel_index, CHANNEL_EXTENDED_DATA_TYPE_EM,
-          (uint8_t*)&channel_extended_data_em))
+    if (Supla_Z2S_ElectricityMeter->saveChannelExtendedData(
+          CHANNEL_EXTENDED_DATA_TYPE_EM, (uint8_t*)&channel_extended_data_em))
       log_i("EM channel extended data successfully CREATED");
   }
   
@@ -475,23 +473,6 @@ void addZ2SDeviceElectricityMeter(
       Supla::Storage::WriteStateStorage();
           
   Supla::Storage::ConfigInstance()->commit();
-}
-
-/*****************************************************************************/
-
-void updateZ2SDeviceElectricityMeter(
-  int16_t channel_number_slot, esp_zb_ieee_addr_t ieee_addr) {
-
-  channel_extended_data_em_t channel_extended_data_em = {};
-  
-  memcpy(
-    channel_extended_data_em.ieee_addr, ieee_addr, sizeof(esp_zb_ieee_addr_t));
-  
-  if (Z2S_saveChannelExtendedData(
-        channel_number_slot, CHANNEL_EXTENDED_DATA_TYPE_EM,
-        (uint8_t*)&channel_extended_data_em))
-
-    log_i("EM channel extended data successfully UPDATED (counters zeroed)"); 
 }
 
 /*****************************************************************************/

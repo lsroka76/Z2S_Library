@@ -72,9 +72,20 @@ inline const char *gateway_events_channel_name = "GATEWAY EVENTS";
 #define PIN_LOGIC_OPERATOR_OR3          0x08
 #define PIN_LOGIC_OPERATOR_NOP          0x09
 
-/*****************************************************************************/
+inline constexpr const char *pin_logic_operator_names[] = {
+  "NONE",
+  "AND",
+  "OR",
+  "NOT",
+  "XOR",
+  "NAND",
+  "NOR",
+  "AND (3 inputs)",
+  "OR (3 inputs)",
+  "NOP"
+};
 
-#define CHANNEL_EXTENDED_DATA_TYPE_SB   0x10
+/*****************************************************************************/
 
 #define SB_UPDATE_DATA_LOAD_DIR         0x00
 #define SB_UPDATE_DATA_SAVE_DIR         0x01
@@ -84,28 +95,9 @@ inline const char *gateway_events_channel_name = "GATEWAY EVENTS";
 
 /*****************************************************************************/
 
-#define CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY  0x11
-
-#define HTTP_BINARY_URL_MAX_SIZE                256
-
-/*****************************************************************************/
-
 typedef void (*_actionhandler_callback)(int event, int action);
 
 /*****************************************************************************/
-
-typedef struct channel_extended_data_sb_s {
-
-  uint8_t device_id;
-  uint16_t device_flags; //???
-  char  ble_mac_address[13]; 
-  uint32_t token_size; //not used
-  char token[128];
-  uint16_t json_payload_size;
-  uint16_t json_payload_2_size;
-  char json_payload[256];
-  char json_payload_2[256];
-} __attribute__ ((packed)) channel_extended_data_sb_t;
 
 inline const char *sb_url_template = 
   "https://api.switch-bot.com/v1.1/devices/%s/commands";
@@ -114,13 +106,6 @@ inline const char *sb_host = "api.switch-bot.com";
 
 inline const char *sb_device_path = "POST /v1.1/devices/%s/commands "
   "HTTP/1.1\r\n";
-
-/*****************************************************************************/
-
-typedef struct channel_extended_data_http_binary_s {
-  uint32_t flags;
-  char url[HTTP_BINARY_URL_MAX_SIZE];
-} __attribute__ ((packed)) channel_extended_data_http_binary_t;
 
 /*****************************************************************************/
 
@@ -177,25 +162,30 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler,
   public Z2S_Core {
 
   public:
-    LocalActionHandlerWithTrigger(uint8_t pin_logic_operator);
+    LocalActionHandlerWithTrigger(
+      uint8_t pin_logic_operator = PIN_LOGIC_OPERATOR_AND,
+      uint8_t logic_pins_number = 2);
     virtual ~LocalActionHandlerWithTrigger();
+
+    void onInit() override;
     void handleAction(int event, int action) override;
     void iterateAlways() override;
+
+    uint8_t validateLogicPinsNumber(uint8_t logic_operator, uint8_t pins);
+    void updateLogicMask();
+
+    void setLogicOperator(uint8_t logic_operator, bool save = true);
+    void setLogicPinsNumber(uint8_t logic_pins_number, bool save = true);
+
+    const char* getOperatorName();
     
   protected:
-    uint8_t _pin_a = 0;
-    uint8_t _pin_b = 0;
-    uint8_t _pin_c = 0xFF;
-
-    uint8_t _pin_logic_operator = PIN_LOGIC_OPERATOR_AND;
-
     uint32_t _pending_postponed_turn_on_ms = 0;
     uint32_t _pending_postponed_turn_off_ms = 0;
   
 };
 
 /*****************************************************************************/
-
 class GatewayEvents: public LocalActionHandler {
 
   public:

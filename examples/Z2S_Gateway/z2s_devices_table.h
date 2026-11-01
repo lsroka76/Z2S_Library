@@ -63,9 +63,11 @@
 #define ZBD_LOW_BATTERY_MSG                                     0x05
 #define ZBD_BATTERY_RESTORE_MSG                                 0x06
 
-#define CHANNEL_EXTENDED_DATA_TYPE_NULL                         0x00
+/*****************************************************************************/
 
 typedef void (*_actionhandler_callback)(int event, int action);
+
+/*****************************************************************************/
 
 typedef struct z2s_channel_action_s {
   uint16_t action_id;
@@ -83,12 +85,16 @@ typedef struct z2s_channel_action_s {
   double max_value;
 } z2s_channel_action_t;
 
+/*****************************************************************************/
+
 typedef struct z2s_pushover_message_s {
   uint32_t pushover_message_flags;
   uint16_t pushover_message_subaction_id; 
   char pushover_message_name[PUSHOVER_MESSAGE_NAME_MAX_SIZE];
   char pushover_message_text[PUSHOVER_MESSAGE_TEXT_MAX_SIZE];
 } z2s_pushover_message_t;
+
+/*****************************************************************************/
 
 typedef struct sonoff_smart_valve_cycle_data_s {
   uint8_t id;
@@ -97,6 +103,8 @@ typedef struct sonoff_smart_valve_cycle_data_s {
   uint32_t cycle_data;
   uint32_t cycle_pause;
 } ESP_ZB_PACKED_STRUCT sonoff_smart_valve_cycle_data_t;
+
+/*****************************************************************************/
 
 typedef struct sonoff_duo_irrigation_status_data_s {
 
@@ -122,9 +130,12 @@ union {
 };
 } __attribute__((packed)) sonoff_duo_irrigation_status_data_t;
 
+/*****************************************************************************/
 
-const static char Z2S_CHANNELS_TABLE_ID_V2[] PROGMEM = "channels_table_v2.z2s";
-const static char Z2S_CHANNELS_TABLE_BACKUP_ID_V2[] PROGMEM = "channels_table_v2.bak";
+const static char Z2S_CHANNELS_TABLE_ID_V2[] PROGMEM = 
+  "channels_table_v2.z2s";
+const static char Z2S_CHANNELS_TABLE_BACKUP_ID_V2[] PROGMEM = 
+  "channels_table_v2.bak";
 
 const static char Z2S_ZB_DEVICES_TABLE[] PROGMEM = "Z2S_zbd_table";
 const static char Z2S_ZB_DEVICES_TABLE_ID_V2[] PROGMEM = 
@@ -136,9 +147,6 @@ const static char Z2S_ZB_DEVICES_TABLE_ID_V3[] PROGMEM =
   "zb_devices_table_v3.z2s";
 const static char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V3[] PROGMEM = 
   "zb_devices_table_v3.bak";
-
-
-const static char Z2S_ZB_DEVICES_TABLE_SIZE[] PROGMEM = "Z2S_zbd_ts";
 
 extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8];  
 
@@ -159,12 +167,7 @@ const static char Z2S_PUSHOVER_MESSAGES_PREFIX_V2[] PROGMEM =
 
 const static char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
 
-const static char Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2[] PROGMEM =
-  "channel_ext_data_%03d_%02d.z2s";
-
 extern bool sendIASNotifications;
-
-//static NetworkClient Z2S_NetworkClient;
 
 extern char GatewayMDNSLocalName[12];
 
@@ -181,7 +184,7 @@ const static char Z2S_USE_NEW_AT_MODEL[] PROGMEM = "Z2S_new_at";
 const static char Z2S_GATEWAY_MDNS_LOCAL_NAME[] PROGMEM = "Z2S_mdns_name";
 const static char Z2S_AUTO_CONNECTION_RESET_TIMEOUT[] PROGMEM = "Z2S_acrt";
 
-
+/*****************************************************************************/
 
 namespace Supla {
 enum Conditions {
@@ -203,6 +206,8 @@ enum ActionCompareResult {
   CR_SAVE_DISABLE,
   CR_SAVE_REBUILD
 };
+
+/*****************************************************************************/
 
 void ieee_addr_to_str(char *ieee_addr_str, esp_zb_ieee_addr_t ieee_addr);
 
@@ -358,21 +363,6 @@ void Z2S_initPushoverMessages();
 
 /*****************************************************************************/
 
-uint16_t Z2S_getChannelExtendedDataTypeSize(uint8_t extended_data_type);
-
-bool Z2S_saveChannelExtendedData(
-  int16_t channel_number_slot, uint8_t extended_data_type, 
-  uint8_t *extended_data);
-
-bool Z2S_removeChannelExtendedData(
-  int16_t channel_number_slot, uint8_t extended_data_type);
-
-bool Z2S_loadChannelExtendedData(
-  int16_t channel_number_slot, uint8_t extended_data_type,
-  uint8_t *extended_data);
-
-/*****************************************************************************/
-
 void Z2S_onTemperatureReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute);
@@ -500,10 +490,6 @@ bool Z2S_onBTCBoundDevice(
   zbg_device_params_t *device, uint8_t count, uint8_t position);
 
 void Z2S_onBoundDevice(zbg_device_params_t *device, bool last_cluster);
-
-void Z2S_onDataSaveRequest(
-  uint8_t Supla_channel, uint8_t data_save_mode,  uint8_t extended_data_type, 
-  uint8_t *extended_data);
 
 void Z2S_onDeviceUpdate(
   uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t status);

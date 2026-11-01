@@ -410,9 +410,7 @@ bool Z2S_removeChannel(int16_t channel_number_slot) {
 
   if (z2s_core) {
 
-    if (z2s_core->checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA))
-      Z2S_removeChannelExtendedData(
-        channel_number_slot, z2s_core->getExtendedDataType());
+    z2s_core->removeChannelExtendedData(z2s_core->getExtendedDataType());
     
     Z2S_removeChannelActions(z2s_core->getZ2SChannelNumber(), false); 
     
@@ -1246,48 +1244,6 @@ bool Z2S_clearZbDevicesTable() {
   
 /*****************************************************************************/
 
-void Z2S_onDataSaveRequest(
-  uint8_t Supla_channel, uint8_t data_save_mode,  uint8_t extended_data_type, 
-  uint8_t *extended_data) {
-  
-  switch (data_save_mode) {
-
-
-    case 0: 
-    
-      Z2S_saveChannelsTable(); 
-    break;
-
-
-    case 1: 
-    
-      Z2S_saveZbDevicesTable(); 
-    break;
-
-
-    case 2: {
-
-      Z2S_saveZbDevicesTable();
-      Z2S_saveChannelsTable();
-    } break;
-
-
-    case 16: {
-
-      int16_t channel_number_slot = Z2S_Core::getZ2SChannelIndexByChannelNumber(
-        Supla_channel);
-      
-      if (channel_number_slot < 0)
-        return;
-
-      Z2S_saveChannelExtendedData(
-        channel_number_slot, extended_data_type, extended_data);  
-    } break;
-  }
-}
-
-/*****************************************************************************/
-
 void Z2S_initSuplaChannels() {
 
   log_i("initSuplaChannels starting");
@@ -2099,148 +2055,6 @@ void Z2S_initPushoverMessages() {
   log_i(
     "Pushover messages index table loaded, messages count = %u", 
     Z2S_getPushoverMessagesNumber());
-}
-
-/*****************************************************************************/
-
-uint16_t Z2S_getChannelExtendedDataTypeSize(uint8_t extended_data_type) {
-
-  switch (extended_data_type) {
-
-
-    case CHANNEL_EXTENDED_DATA_TYPE_EM:
-      return sizeof(channel_extended_data_em_t);
-
-    
-    case CHANNEL_EXTENDED_DATA_TYPE_SB:
-      return sizeof(channel_extended_data_sb_t);
-
-
-    case CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY:
-      return sizeof(channel_extended_data_http_binary_t);
-
-
-    default: return 0;
-  }
-}
-
-/*****************************************************************************/
-
-bool Z2S_saveChannelExtendedData(
-  int16_t channel_number_slot, uint8_t extended_data_type,
-  uint8_t *extended_data) {
-
-  if (Z2S_getChannelExtendedDataTypeSize(extended_data_type) == 0) {
-
-    log_e("Unknown channel extended data type");
-    return false;
-  }
-  
-  char file_name_buffer[50] = {};
-  
-  sprintf(
-    file_name_buffer, Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2, 
-    channel_number_slot, extended_data_type);
-  
-  if (Z2S_saveFile(
-        file_name_buffer, extended_data, 
-        Z2S_getChannelExtendedDataTypeSize(extended_data_type))) {
-
-    log_i(
-      "Saving Zigbee<=>Supla channel extended data in file %s: SUCCESS", 
-      file_name_buffer);
-
-    auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
-    
-    z2s_core->setExtendedDataType(extended_data_type);
-    return z2s_core->setChannelUserDataFlags(
-      USER_DATA_FLAG_HAS_EXTENDED_DATA, true); //save channel data
-  } 
-  else {
-    
-    log_e(
-      "Saving Zigbee<=>Supla channel extended data in file %s: FAILED", 
-      file_name_buffer);
-    
-    return false;
-  }
-}
-
-/*****************************************************************************/
-
-bool Z2S_removeChannelExtendedData(
-  int16_t channel_number_slot, uint8_t extended_data_type) {
-
-  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
-
-  if (z2s_core->checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA) &&
-      (z2s_core->getExtendedDataType() == extended_data_type)) { 
-
-    char file_name_buffer[50] = {};
-  
-    sprintf(
-      file_name_buffer, Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2, 
-      channel_number_slot, extended_data_type);
-  
-    if (Z2S_deleteFile(file_name_buffer))
-      log_i(
-        "Removing Zigbee<=>Supla channel extended data file %s: SUCCESS", 
-        file_name_buffer);
-    else 
-      log_e(
-        "Removing Zigbee<=>Supla channel extended data file %s: FAILED", 
-        file_name_buffer);
-
-    z2s_core->setExtendedDataType(CHANNEL_EXTENDED_DATA_TYPE_NULL);
-    return z2s_core->clearChannelUserDataFlags(
-      USER_DATA_FLAG_HAS_EXTENDED_DATA, true);
-  }
-  log_e("no extended data found");
-  return false;
-}
-
-/*****************************************************************************/
-
-bool Z2S_loadChannelExtendedData(
-  int16_t channel_number_slot, uint8_t extended_data_type, 
-  uint8_t *extended_data) {
-
-  if (Z2S_getChannelExtendedDataTypeSize(extended_data_type) == 0) {
-
-    log_e("Unknown channel extended data type");
-    return false;
-  }
-
-  auto z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_number_slot);
-
-  if (z2s_core->checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA) &&
-      (z2s_core->getExtendedDataType() == extended_data_type)) { 
-
-    char file_name_buffer[50] = {};
-  
-    sprintf(
-      file_name_buffer, Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2, 
-      channel_number_slot, extended_data_type);
-  
-    if (Z2S_loadFile(
-          file_name_buffer, extended_data, Z2S_getChannelExtendedDataTypeSize(
-            extended_data_type))) {
-
-      log_i(
-        "Loading Zigbee<=>Supla channel extended data from file %s: SUCCESS", 
-        file_name_buffer);
-    
-      return true;
-    } else {
-
-      log_i(
-        "Loading Zigbee<=>Supla channel extended data from file %s: FAILED", 
-        file_name_buffer);
-      return false;
-    }
-  }
-  log_e("no extended data found");
-  return false;
 }
 
 /*****************************************************************************/
@@ -9352,8 +9166,10 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
 
     if (z2s_core) {
       
-      updateZ2SDeviceElectricityMeter(
-        z2s_core->getZ2SChannelIndex(), z2s_core->getChannelIeeeAddress()); 
+      auto Supla_ElectricityMeter = static_cast<
+        Supla::Sensor::Z2S_ElectricityMeter *>(z2s_core->getZ2SElementPtr());
+
+      Supla_ElectricityMeter->clearCounters();
     }
     
     return ADD_Z2S_DEVICE_STATUS_DAP; 

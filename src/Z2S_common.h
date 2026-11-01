@@ -1042,11 +1042,42 @@ public:
 
   Supla::Control::HvacBaseEE *getHvacPtr(); 
 
-  /*****************************************************************************/
+/*****************************************************************************/
 
   Supla::Control::Z2S_RemoteRelay *getRemoteRelayPtr();
 
-  /*****************************************************************************/
+/*****************************************************************************/
+
+  uint32_t getLogicValue() {
+
+    return _z2s_channel.local_action_handler_data.logic_value;
+  }
+
+  void setLogicValue(uint32_t logic_value) {
+
+    _z2s_channel.local_action_handler_data.logic_value = logic_value;
+  }
+
+  uint32_t getLogicMask() {
+
+    return _z2s_channel.local_action_handler_data.logic_mask;
+  }
+
+  void setLogicMask(uint32_t logic_mask) {
+
+    _z2s_channel.local_action_handler_data.logic_mask = logic_mask;
+  }
+
+  bool hasLogicPinsChanged() {
+
+    return _z2s_channel.local_action_handler_data.logic_pins_changed;
+  }
+
+  void setLogicPinsChanged(bool logic_pins_changed) {
+
+    _z2s_channel.local_action_handler_data.logic_pins_changed = 
+      logic_pins_changed;
+  }
 
   uint8_t getLogicOperator() {
 
@@ -1056,6 +1087,19 @@ public:
   void setLogicOperator(uint8_t logic_operator, bool save = true) {
 
     _z2s_channel.local_action_handler_data.logic_operator = logic_operator;
+    if (save)
+      saveChannelData();
+  }
+
+  uint8_t getLogicPinsNumber() {
+
+    return _z2s_channel.local_action_handler_data.logic_pins_number;
+  }
+
+  void setLogicPinsNumber(uint8_t logic_pins_number, bool save = true) {
+
+    _z2s_channel.local_action_handler_data.logic_pins_number = 
+      logic_pins_number;
     if (save)
       saveChannelData();
   }
@@ -1772,6 +1816,14 @@ public:
     return true;
   }
 
+  bool loadChannelExtendedData(
+    uint8_t extended_data_type, uint8_t *extended_data);
+
+  bool saveChannelExtendedData(
+    uint8_t extended_data_type, uint8_t *extended_data);
+
+  bool removeChannelExtendedData(uint8_t extended_data_type);
+
 /*****************************************************************************/
 
   uint16_t getChannelClusterId() {
@@ -1822,6 +1874,11 @@ public:
   }
 
   int16_t getZ2SChannelIndex() {
+
+    return _channel_index;
+  }
+
+  int16_t getChannelIndex() {
 
     return _channel_index;
   }

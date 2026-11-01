@@ -767,6 +767,140 @@ uint64_t Z2S_Core::getChannelExtendedDataCounter() {
 
 /*****************************************************************************/
 
+uint16_t getChannelExtendedDataTypeSize(uint8_t extended_data_type) {
+
+  switch (extended_data_type) {
+
+
+    case CHANNEL_EXTENDED_DATA_TYPE_EM:
+      return sizeof(channel_extended_data_em_t);
+
+    
+    case CHANNEL_EXTENDED_DATA_TYPE_SB:
+      return sizeof(channel_extended_data_sb_t);
+
+
+    case CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY:
+      return sizeof(channel_extended_data_http_binary_t);
+
+
+    default: return 0;
+  }
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::loadChannelExtendedData(
+    uint8_t extended_data_type, uint8_t *extended_data) {
+
+  size_t channel_edt_size = getChannelExtendedDataTypeSize(extended_data_type);
+  if (channel_edt_size == 0) {
+
+    log_e("Unknown channel extended data type");
+    return false;
+  }
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA) &&
+      (getExtendedDataType() == extended_data_type)) { 
+
+    char file_name_buffer[50] = {};
+  
+    sprintf(
+      file_name_buffer, Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2, 
+      getChannelIndex(), extended_data_type);
+  
+    if (Z2S_loadFile(file_name_buffer, extended_data, channel_edt_size)) {
+
+      log_i(
+        "Loading Zigbee<=>Supla channel extended data from file %s: SUCCESS", 
+        file_name_buffer);
+    
+      return true;
+    } 
+    else {
+
+      log_i(
+        "Loading Zigbee<=>Supla channel extended data from file %s: FAILED", 
+        file_name_buffer);
+      return false;
+    }
+  }
+  
+  log_e("no extended data found");
+  
+  return false;
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::saveChannelExtendedData(
+  uint8_t extended_data_type, uint8_t *extended_data) {
+
+  size_t channel_edt_size = getChannelExtendedDataTypeSize(extended_data_type);
+
+  if (channel_edt_size == 0) {
+
+    log_e("Unknown channel extended data type");
+    return false;
+  }
+  
+  char file_name_buffer[50] = {};
+  
+  sprintf(
+    file_name_buffer, Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2, 
+    getChannelIndex(), extended_data_type);
+  
+  if (Z2S_saveFile(file_name_buffer, extended_data, channel_edt_size)) {
+
+    log_i(
+      "Saving Zigbee<=>Supla channel extended data in file %s: SUCCESS", 
+      file_name_buffer);
+    
+    setExtendedDataType(extended_data_type);
+    return setChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA, true); 
+  } 
+  else {
+    
+    log_e(
+      "Saving Zigbee<=>Supla channel extended data in file %s: FAILED", 
+      file_name_buffer);
+    
+    return false;
+  }
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::removeChannelExtendedData(uint8_t extended_data_type) {
+
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA) &&
+      (getExtendedDataType() == extended_data_type)) { 
+
+    char file_name_buffer[50] = {};
+  
+    sprintf(
+      file_name_buffer, Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2, 
+      getChannelIndex(), extended_data_type);
+  
+    if (Z2S_deleteFile(file_name_buffer))
+      log_i(
+        "Removing Zigbee<=>Supla channel extended data file %s: SUCCESS", 
+        file_name_buffer);
+    else 
+      log_e(
+        "Removing Zigbee<=>Supla channel extended data file %s: FAILED", 
+        file_name_buffer);
+
+    setExtendedDataType(CHANNEL_EXTENDED_DATA_TYPE_NULL);
+    return clearChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA, true);
+  }
+  log_e("no extended data of type %u found", extended_data_type);
+  return false;
+}
+
+/*****************************************************************************/
+
 void Z2S_Core::updateRemoteThermometer(
   uint8_t Supla_channel, uint32_t connected_thermometer_ip_address,
   uint32_t connected_thermometer_channel, uint8_t value_type,

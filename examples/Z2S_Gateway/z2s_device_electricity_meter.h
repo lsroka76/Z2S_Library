@@ -69,10 +69,6 @@ void addZ2SDeviceElectricityMeter(
   bool active_query, uint8_t free_slot,int8_t sub_id = -1, 
   bool one_phase = true);
 
-/*****************************************************************************/
-
-void updateZ2SDeviceElectricityMeter(
-  int16_t channel_number_slot, esp_zb_ieee_addr_t ieee_addr);
 
 /*****************************************************************************/
 

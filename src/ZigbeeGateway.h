@@ -641,15 +641,6 @@ public:
     uint16_t manuf_code = 0, bool is_global = false, 
     uint16_t profile_id = ESP_ZB_AF_HA_PROFILE_ID);
 
-  void requestDataSave(
-    uint8_t Supla_channel, uint8_t data_save_mode, 
-    uint8_t extended_data_type = 0, uint8_t *extended_data = nullptr) {
-
-    if (_on_data_save_request)
-      _on_data_save_request(
-        Supla_channel, data_save_mode, extended_data_type, extended_data);
-  }
-
   void onElectricalMeasurementReceive(
     void (*callback)(uint16_t short_addr, uint16_t, uint16_t, 
     const esp_zb_zcl_attribute_t *)) {
@@ -849,11 +840,6 @@ public:
     uint8_t position)) {
     _on_btc_bound_device = callback;
   }
-  void onDataSaveRequest(
-    void (*callback)(uint8_t Supla_channel, uint8_t data_save_mode,  
-    uint8_t extended_data_type, uint8_t *extended_data)) {
-    _on_data_save_request = callback;
-  }
   void onDeviceUpdate(void (*callback)(uint16_t, esp_zb_ieee_addr_t, uint8_t)) {
     _on_device_update = callback;
   }
@@ -1009,8 +995,6 @@ private:
   void (*_on_bound_device)(zbg_device_params_t *, bool);
   bool (*_on_btc_bound_device)(zbg_device_params_t *, uint8_t count, 
     uint8_t position);
-
-  void (*_on_data_save_request)(uint8_t , uint8_t, uint8_t, uint8_t *);
 
   void (*_on_device_update)(uint16_t, esp_zb_ieee_addr_t, uint8_t);
   uint8_t (*_on_device_annce)(uint16_t, esp_zb_ieee_addr_t);

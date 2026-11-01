@@ -28,6 +28,19 @@
 
 /*****************************************************************************/
 
+#define CHANNEL_EXTENDED_DATA_TYPE_NULL                         0x00
+
+#define CHANNEL_EXTENDED_DATA_TYPE_EM                           0x01
+
+#define CHANNEL_EXTENDED_DATA_TYPE_SB                           0x10
+#define CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY                  0x11
+
+/*****************************************************************************/
+
+#define HTTP_BINARY_URL_MAX_SIZE                                0x100
+
+/*****************************************************************************/
+
 const static char Z2S_ELEMENTS_INDEX_TABLE_V2[] PROGMEM = 
   "elements_index_table.z2s";
 const static char Z2S_ELEMENTS_PREFIX_V2[] PROGMEM = 
@@ -70,6 +83,11 @@ const static char Z2S_IR_CODES_PREFIX_V1[] PROGMEM =
 
 const static char Z2S_IR_CODES_BACKUP_PREFIX_V1[] PROGMEM = 
   "ir_code_%03d_v1.bak";
+
+/*****************************************************************************/
+
+const static char Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2[] PROGMEM =
+  "channel_ext_data_%03d_%02d.z2s";
 
 /*****************************************************************************/
 
@@ -190,8 +208,12 @@ union {
       uint8_t         unit_id;
     } smart_dual_valve_data;
     struct {
-      void            *Supla_element;
+      uint32_t        logic_value;
       uint8_t         logic_operator;
+      uint8_t         logic_pins_number;
+      bool            logic_pins_changed;
+      uint8_t         reserved_3;
+      uint32_t        logic_mask;
     } local_action_handler_data;
     struct {
       uint32_t         reserved_32;
@@ -293,6 +315,41 @@ typedef struct z2s_ir_code_s {
   char     ir_code_name[IR_CODE_NAME_MAX_SIZE];
   char     ir_code_base64[IR_CODE_BASE64_MAX_SIZE];
 } __attribute__((packed)) z2s_ir_code_t;
+
+/*****************************************************************************/
+
+typedef struct channel_extended_data_em_s {
+
+  esp_zb_ieee_addr_t  ieee_addr;
+  uint64_t            total_forward_active_energy_counter[3];
+  uint64_t            total_reverse_active_energy_counter[3];
+  uint64_t            total_forward_reactive_energy_counter[3];
+  uint64_t            total_reverse_reactive_energy_counter[3];
+  uint64_t            total_forward_active_energy_balanced_counter;
+  uint64_t            total_reverse_active_energy_balanced_counter;
+} __attribute__ ((packed)) channel_extended_data_em_t;
+
+/*****************************************************************************/
+
+typedef struct channel_extended_data_sb_s {
+
+  uint8_t device_id;
+  uint16_t device_flags; //???
+  char  ble_mac_address[13]; 
+  uint32_t token_size; //not used
+  char token[128];
+  uint16_t json_payload_size;
+  uint16_t json_payload_2_size;
+  char json_payload[256];
+  char json_payload_2[256];
+} __attribute__ ((packed)) channel_extended_data_sb_t;
+
+/*****************************************************************************/
+
+typedef struct channel_extended_data_http_binary_s {
+  uint32_t flags;
+  char url[HTTP_BINARY_URL_MAX_SIZE];
+} __attribute__ ((packed)) channel_extended_data_http_binary_t;
 
 /*****************************************************************************/
 
