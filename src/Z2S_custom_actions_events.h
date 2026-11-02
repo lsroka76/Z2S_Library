@@ -31,6 +31,16 @@
 #define Z2S_SUPLA_ACTION_DIM_W_15                                             0x4502
 #define Z2S_SUPLA_ACTION_DIM_W_20                                             0x4503
 
+//31 subaction
+#define Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_FIRST_ACTION                      0x4600
+#define Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_LAST_ACTION                       0x461F
+#define Z2S_SUPLA_ACTION_CLEAR_LOGIC_GATE_PIN_FIRST_ACTION                    0x4620
+#define Z2S_SUPLA_ACTION_CLEAR_LOGIC_GATE_PIN_LAST_ACTION                     0x463F
+#define Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_FIRST_ACTION                   0x4640
+#define Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_LAST_ACTION                    0x465F
+
+
+
 #define Z2S_SUPLA_ACTION_TURN_ON_MAX_TEMPERATURE                              0x5000
 #define Z2S_SUPLA_ACTION_TURN_ON_MIN_TEMPERATURE                              0x5001
 

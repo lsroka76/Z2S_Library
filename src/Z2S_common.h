@@ -1058,6 +1058,17 @@ public:
     _z2s_channel.local_action_handler_data.logic_value = logic_value;
   }
 
+  uint8_t getLastLogicResult() {
+
+    return _z2s_channel.local_action_handler_data.last_logic_result;
+  }
+
+  void setLastLogicResult(uint8_t last_logic_result) {
+
+    _z2s_channel.local_action_handler_data.last_logic_result = 
+      last_logic_result;
+  }
+
   uint32_t getLogicMask() {
 
     return _z2s_channel.local_action_handler_data.logic_mask;

@@ -3620,6 +3620,7 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "Zbeacon", .model_name = "TH01",
     .z2s_device_uid = 1800,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_TEMPHUMIDITY_SENSOR,
+  .z2s_device_endpoints_count = 1,
 	.z2s_device_endpoints = { 
       0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF, 
@@ -3628,6 +3629,7 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-02",
     .z2s_device_uid = 1900,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
+  .z2s_device_endpoints_count = 1,
 	.z2s_device_endpoints = { 
       0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF, 
@@ -3641,6 +3643,7 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "eWeLink", .model_name = "CK-TLSR8656-SS5-01(7014)",
     .z2s_device_uid = 1910,
 	.z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
+  .z2s_device_endpoints_count = 1,
 	.z2s_device_endpoints = { 
       0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF, 
@@ -4074,6 +4077,15 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_mugyhz0q", .model_name = "TS0207",
     .z2s_device_uid = 4810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
+      Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR}},
+
+  {	.manufacturer_name = "_TZ3000_kstbkt6a", .model_name = "TS0207",
+    .z2s_device_uid = 4815,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
 	  .z2s_device_endpoints_count = 1,
     .z2s_device_endpoints = { 
