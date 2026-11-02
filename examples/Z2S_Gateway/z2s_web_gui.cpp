@@ -598,10 +598,10 @@ static constexpr char *Tuya_device_payload_size_mismatch_str PROGMEM =
   "Error - Tuya payload type length and payload value length mismatch";
 
 static constexpr char *factory_reset_enabled_str PROGMEM =
-  "Zigbee stack factory reset enabled";
+  "ZigBee stack factory reset enabled";
 
 static constexpr char *factory_reset_disabled_str PROGMEM =
-  "Zigbee stack factory reset disabled";
+  "ZigBee stack factory reset disabled";
 
 /*static constexpr char *zigbee_tx_power_text_str PROGMEM =
   "Press Read to get current value or enter value between "
@@ -1550,7 +1550,7 @@ void buildZigbeeTabGUI() {
 		pairingSwitcherCallback, (void *)GUI_CB_PAIRING_FLAG);
 
 	zigbee_tx_power_number = ESPUI.addControl(
-	  Control::Type::Number, "Zigbee TX power (-15...20)", (long int)0,
+	  Control::Type::Number, "ZigBee TX power (-15...20)", (long int)0,
 	  Control::Color::Dark, zigbee_settings_label, generalCallback);
 
 	auto zigbee_get_tx_power_button = ESPUI.addControl(
@@ -1562,7 +1562,7 @@ void buildZigbeeTabGUI() {
 		zigbee_settings_label, generalZigbeeCallback, (void *)GUI_CB_SET_TX_FLAG);
 
 	zigbee_primary_channel_text = ESPUI.addControl(
-	  Control::Type::Number, "Zigbee primary channel (11...26)", (long int)0,
+	  Control::Type::Number, "ZigBee primary channel (11...26)", (long int)0,
 	  Control::Color::Dark, zigbee_settings_label, generalCallback);
 
 	auto zigbee_get_primary_channel_button = ESPUI.addControl(
@@ -1610,11 +1610,11 @@ void buildZigbeeTabGUI() {
 	  generalZigbeeCallback, (void *)GUI_CB_CLEAR_INSTALLATION_CODES_FLAG);
 
 	ESPUI.addControl(
-		Control::Type::Separator, "Zigbee stack factory reset",
+		Control::Type::Separator, "ZigBee stack factory reset",
 	                 empty_str, Control::Color::None, zigbeetab);
 
 	factory_reset_switcher = ESPUI.addControl(
-	  Control::Type::Switcher, "Enable Zigbee stack factory reset",
+	  Control::Type::Switcher, "Enable ZigBee stack factory reset",
 	  (long int)0, Control::Color::Alizarin, zigbeetab, switchCallback);
 
 	working_str_ptr = factory_reset_disabled_str;

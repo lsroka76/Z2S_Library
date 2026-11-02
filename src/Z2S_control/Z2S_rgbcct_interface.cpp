@@ -287,20 +287,21 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
 
       case 0: {
 
-        zbGateway.sendOnOffCmd(_short_addr, _endpoint, false);
+        sendOnOffCmd(_short_addr, _endpoint, false);
         return;
       } break;
 
       
       case 1: {
 
-        zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
+        sendOnOffCmd(_short_addr, _endpoint, true);
         //return;
       } break;
 
+
       case 3: {
 
-        zbGateway.sendOnOffCmd(_short_addr, _endpoint, true);
+        sendOnOffCmd(_short_addr, _endpoint, true);
         turnOnOff = 2;
       } break;
 
