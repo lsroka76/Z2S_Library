@@ -89,10 +89,10 @@ inline constexpr const char *pin_logic_operator_names[] = {
   "AND (3 inputs)",
   "OR (3 inputs)",
   "NOP",
-  "1-OF-N",
-  "MUTEX",
+  "ONE-HOT (1-OF-N)",
+  "AT MOST ONE (MUTEX)",
   "INHIBIT",
-  "MAJORITY",
+  "MAJORITY (QUORUM)",
   "SR LATCH"
 };
 
