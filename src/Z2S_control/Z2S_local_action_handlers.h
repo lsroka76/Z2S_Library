@@ -71,6 +71,12 @@ inline const char *gateway_events_channel_name = "GATEWAY EVENTS";
 #define PIN_LOGIC_OPERATOR_AND3         0x07
 #define PIN_LOGIC_OPERATOR_OR3          0x08
 #define PIN_LOGIC_OPERATOR_NOP          0x09
+#define PIN_LOGIC_OPERATOR_ONE_HOT      0x0A
+#define PIN_LOGIC_OPERATOR_AT_MOST_ONE  0x0B
+#define PIN_LOGIC_OPERATOR_INHIBIT      0x0C
+#define PIN_LOGIC_OPERATOR_MAJORITY     0x0D
+#define PIN_LOGIC_OPERATOR_SR_LATCH     0x0E
+#define PIN_LOGIC_OPERATOR_MAX          0x0F
 
 inline constexpr const char *pin_logic_operator_names[] = {
   "NONE",
@@ -82,7 +88,12 @@ inline constexpr const char *pin_logic_operator_names[] = {
   "NOR",
   "AND (3 inputs)",
   "OR (3 inputs)",
-  "NOP"
+  "NOP",
+  "1-OF-N",
+  "MUTEX",
+  "INHIBIT",
+  "MAJORITY",
+  "SR LATCH"
 };
 
 /*****************************************************************************/
@@ -173,6 +184,7 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler,
 
     uint8_t validateLogicPinsNumber(uint8_t logic_operator, uint8_t pins);
     void updateLogicMask();
+    void resetLogicRuntimeState(bool clear_pin_values);
 
     void setLogicOperator(uint8_t logic_operator, bool save = true);
     void setLogicPinsNumber(uint8_t logic_pins_number, bool save = true);

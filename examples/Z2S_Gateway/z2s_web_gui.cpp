@@ -4513,7 +4513,7 @@ bool buildLogicOperatorLocalFunctionsSelectJsonPayload(
 	  selected_value, 1, &selector_id,
 	  "Select logic operator...", [&](auto add_function_option) {
 		  for (uint8_t op = PIN_LOGIC_OPERATOR_AND;
-		       op <= PIN_LOGIC_OPERATOR_NOP; op++) {
+		       op < PIN_LOGIC_OPERATOR_MAX; op++) {
 
 			  if (!add_function_option(op, pin_logic_operator_names[op]))
 				  return false;
@@ -5034,6 +5034,10 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	log_i(" GUI building STARTED...");
 
 	log_i(
+		"getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u", 
+		ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
+
+	log_i(
 	  "sizeof(BasicControl) %u, sizeof(Control) %u", sizeof(BasicControl),
 	  sizeof(Control));
 
@@ -5119,6 +5123,10 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
 	log_i(" ...GUI building FINISHED");
 
+	log_i(
+		"getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u", 
+		ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
+
 	GUIbuilt = true;
 	ESPUI.setOnWsConnectCallback(onWsConnectCallback);
 	ESPUI.setOnWsCustomCmdCallback(onWsCustomCmdCallback);
@@ -5131,6 +5139,10 @@ void Z2S_startWebGUI() {
 	log_i("STARTING WEB GUI");
 
 	esp_log_level_set("async_ws", ESP_LOG_ERROR);
+
+	log_i(
+		"getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u", 
+		ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
 
 	//ESPUI.setCustomJS(myCustomJS);
 	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
@@ -5316,6 +5328,10 @@ void Z2S_startWebGUI() {
 			request->send(response);
 		});
 	}*/
+
+	log_i(
+		"getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u", 
+		ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
 }
 
 /*****************************************************************************/

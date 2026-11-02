@@ -629,7 +629,19 @@ inline constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_SEND_IR_CODE_FIRST_ACTION,
 		.Supla_action_name = "SEND IR CODE (USE SUBACTION 0-255)",
-		.max_subactions_number = 256 }
+		.max_subactions_number = 256 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_FIRST_ACTION,
+		.Supla_action_name = "SET LOGIC GATE PIN (USE SUBACTION 0-31)",
+		.max_subactions_number = 32 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_CLEAR_LOGIC_GATE_PIN_FIRST_ACTION,
+		.Supla_action_name = "CLEAR LOGIC GATE PIN (USE SUBACTION 0-31)",
+		.max_subactions_number = 32 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_FIRST_ACTION,
+		.Supla_action_name = "TOGGLE LOGIC GATE PIN (USE SUBACTION 0-31)",
+		.max_subactions_number = 32 }
 };
 
 inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {

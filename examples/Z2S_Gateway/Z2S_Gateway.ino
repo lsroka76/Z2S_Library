@@ -88,7 +88,7 @@
 #define Z2S_TCP_CMD_UPDATE_HUMIDITY       0x11
 #define Z2S_TCP_CMD_UPDATE_PRESSURE       0x12
 
-alignas(8) static uint8_t custom_heap_buffer[64 * 1024]; 
+//alignas(8) static uint8_t custom_heap_buffer[64 * 1024]; 
 multi_heap_handle_t _z2s_custom_heap = nullptr;
 static portMUX_TYPE custom_heap_spinlock = portMUX_INITIALIZER_UNLOCKED;
 
@@ -145,15 +145,15 @@ SemaphoreHandle_t saveMutex;
 
 //lua_State *LuaState = nullptr;
 
-inline bool is_in_custom_heap(void* ptr) {
+/*inline bool is_in_custom_heap(void* ptr) {
     
     uintptr_t p = reinterpret_cast<uintptr_t>(ptr);
     uintptr_t start = reinterpret_cast<uintptr_t>(custom_heap_buffer);
     uintptr_t end = start + sizeof(custom_heap_buffer);
     return (p >= start && p < end);
-}
+}*/
 
-void* operator new(size_t size) {
+/*void* operator new(size_t size) {
    
   void* ptr = nullptr;
 
@@ -191,7 +191,7 @@ void operator delete(void* ptr) noexcept {
     free(ptr); // System heap
   }
 }
-
+*/
 
 void initGUI(gui_modes_t mode = minimal_gui_mode) {
 
@@ -555,8 +555,8 @@ void setup() {
 
   log_i("Z2S GATEWAY setup has just started!");
 
-  _z2s_custom_heap = multi_heap_register(
-    custom_heap_buffer, sizeof(custom_heap_buffer));
+  //_z2s_custom_heap = multi_heap_register(
+  //  custom_heap_buffer, sizeof(custom_heap_buffer));
 
   setupCpuMonitoring();
 
@@ -705,7 +705,7 @@ void setup() {
       "/supla/Z2S_zbd_table", "/z2s_gateway/zb_devices_table_v2.z2s");
   }
 
-  listDir(LittleFS,"/",3);
+  //listDir(LittleFS,"/",3);
   
   esp_zb_ota_image_header_t esp_zb_ota_image_header;
   
@@ -997,11 +997,11 @@ void setup() {
 
   /*zbg_device_params_t test_joined_device = {};
 
-  test_joined_device.model_id = Z2S_DEVICE_DESC_DIMMER_CT_BULB;
+  test_joined_device.model_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR;
   esp_zb_ieee_addr_t ieee_addr_test = {0x00,0x15,0x8D,0x00,0x02,0x5F,0x1E,0xC5};
 
-  const char *manuf = "LUMI"; //"AwoX"; //"Paulmann Licht GmbH";
-  const char *model = "lumi.sensor_switch.aq3"; //"TLSR82xx"; //"CCT-I";
+  const char *manuf = "eWeLink"; //"AwoX"; //"Paulmann Licht GmbH";
+  const char *model = "DS01"; //"TLSR82xx"; //"CCT-I";
   test_joined_device.zb_device_id = Z2S_addZbDeviceTableSlot(
     ieee_addr_test, 33600, manuf, model, 1, 
     Z2S_DEVICE_DESC_LUMI_SMART_BUTTON_5F_WXKG12LM, 0);
@@ -1031,6 +1031,8 @@ void setup() {
 
 zbg_device_params_t *gateway_device;
 zbg_device_params_t *joined_device;
+
+bool once_test = true;
 
 size_t getArduinoLoopTaskStackSize(void) {
 
@@ -1255,6 +1257,14 @@ void loop() {
     refresh_time = millis();
   }
 
+  //bool _basic_cluster_query_success = false;
+
+  /*if (once_test) {
+
+    once_test = false;
+    goto test_label;
+  }*/
+
   if ((!zbGateway.getJoinedDevices().empty()) && 
       (zbGateway.isNewDeviceJoined())) {
 
@@ -1295,7 +1305,7 @@ void loop() {
                 "Gateway will restart, try to pair device once again!");
           SuplaDevice.scheduleSoftRestart(1000);
         } 
-      
+test_label:      
       uint16_t devices_list_table_number = 
         sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
 
@@ -1321,7 +1331,9 @@ void loop() {
                   z2s_device_list.model_name) == 0) &&
                 (strcmp(zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name, 
                   z2s_device_list.manufacturer_name) == 0)) {
-
+            
+              //if ((strcmp("TH01", z2s_device_list.model_name) == 0) &&
+              //  (strcmp("Zbeacon", z2s_device_list.manufacturer_name) == 0)) {
               
               const z2s_device_endpoint_t *z2s_device_endpoints_ptr = 
                 z2s_device_list.z2s_device_endpoints;

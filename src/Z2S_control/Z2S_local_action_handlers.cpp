@@ -62,10 +62,9 @@ LocalActionHandlerWithTrigger::LocalActionHandlerWithTrigger(
   uint8_t pin_logic_operator, uint8_t logic_pins_number)
   : Z2S_Core(this) {
 
-  setLogicValue(0);
-  setLogicPinsChanged(false);
   Z2S_Core::setLogicOperator(pin_logic_operator, false);
   setLogicPinsNumber(logic_pins_number, false);
+  resetLogicRuntimeState(true);
 
   log_i(
     "logic_operator %u, logic_pins_number %u, logic_mask 0x%08lX", 
@@ -87,9 +86,8 @@ void LocalActionHandlerWithTrigger::onInit() {
     Z2S_Core::setLogicOperator(getZ2SLocalChannelFunc(), false);
   }
 
-  setLogicValue(0);
-  setLogicPinsChanged(false);
   setLogicPinsNumber(getLogicPinsNumber(), false);
+  resetLogicRuntimeState(true);
 }
 
 /*****************************************************************************/
@@ -115,6 +113,11 @@ uint8_t LocalActionHandlerWithTrigger::validateLogicPinsNumber(
     case PIN_LOGIC_OPERATOR_OR:
     case PIN_LOGIC_OPERATOR_NAND:
     case PIN_LOGIC_OPERATOR_NOR:
+    case PIN_LOGIC_OPERATOR_ONE_HOT:
+    case PIN_LOGIC_OPERATOR_AT_MOST_ONE:
+    case PIN_LOGIC_OPERATOR_INHIBIT:
+    case PIN_LOGIC_OPERATOR_MAJORITY:
+    case PIN_LOGIC_OPERATOR_SR_LATCH:
       return (pins < 2) ? 2 : ((pins > 32) ? 32 : pins);
 
     default:
@@ -140,13 +143,19 @@ void LocalActionHandlerWithTrigger::updateLogicMask() {
 void LocalActionHandlerWithTrigger::setLogicOperator(
   uint8_t logic_operator, bool save) {
 
+  uint8_t prev_op   = getLogicOperator();
+  uint8_t prev_pins = getLogicPinsNumber();
+
   Z2S_Core::setLogicOperator(logic_operator, false);
 
   uint8_t valid_pins = validateLogicPinsNumber(
-    logic_operator, getLogicPinsNumber());
+    logic_operator, prev_pins);
 
   Z2S_Core::setLogicPinsNumber(valid_pins, false);
   updateLogicMask();
+
+  if ((prev_op != logic_operator) || (prev_pins != valid_pins))
+    resetLogicRuntimeState(false);
 
   if (save)
     saveChannelData();
@@ -157,11 +166,16 @@ void LocalActionHandlerWithTrigger::setLogicOperator(
 void LocalActionHandlerWithTrigger::setLogicPinsNumber(
   uint8_t logic_pins_number, bool save) {
 
+  uint8_t prev_pins = getLogicPinsNumber();
+
   uint8_t valid_pins = validateLogicPinsNumber(
     getLogicOperator(), logic_pins_number);
 
   Z2S_Core::setLogicPinsNumber(valid_pins, false);
   updateLogicMask();
+
+  if (prev_pins != valid_pins)
+    resetLogicRuntimeState(false);
 
   if (save)
     saveChannelData();
@@ -183,15 +197,34 @@ const char* LocalActionHandlerWithTrigger::getOperatorName() {
 
 /*****************************************************************************/
 
+void LocalActionHandlerWithTrigger::resetLogicRuntimeState(
+  bool clear_pin_values) {
+
+  _pending_postponed_turn_on_ms  = 0;
+  _pending_postponed_turn_off_ms = 0;
+
+  setLogicPinsChanged(false);
+  setLastLogicResult(0xFF);
+
+  if (clear_pin_values)
+    setLogicValue(0);
+  else
+    setLogicValue(getLogicValue() & getLogicMask());
+}
+
+/*****************************************************************************/
+
 void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   
-  uint32_t mask = getLogicMask();
-  uint32_t val  = getLogicValue() & mask;
-  uint8_t  op   = getLogicOperator();
+  uint32_t mask        = getLogicMask();
+  uint32_t val         = getLogicValue() & mask;
+  uint8_t  op          = getLogicOperator();
+  uint8_t  last_result = getLastLogicResult();
 
   log_i(
-    "event %u, action %u, logic_value 0x%08lX, logic_mask 0x%08lX, "
-    "logic_operator %u", event, action, val, mask, op);
+    "event %u, action 0x%04X, logic_value 0x%08lX, logic_mask 0x%08lX, "
+    "logic_operator %u, last_result %u", 
+    event, action, val, mask, op, last_result);
 
   if ((mask == 0) || (op == PIN_LOGIC_OPERATOR_NONE))
     return;
@@ -199,6 +232,67 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   setLogicPinsChanged(false);
 
   switch (action) {
+
+    case Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_FIRST_ACTION ... 
+         Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_LAST_ACTION: {
+
+      uint8_t bit_idx = 
+        action - Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_FIRST_ACTION;
+      uint32_t pin_bit = (1UL << bit_idx) & mask;
+
+      if (pin_bit != 0) {
+        if (((val & pin_bit) == 0) || (last_result == 0xFF)) {
+          val |= pin_bit;
+          setLogicValue(val);
+          setLogicPinsChanged(true);
+        }
+      }
+
+      log_i(
+        "SET_LOGIC_GATE_PIN[%u] logic_value 0x%08lX, logic_mask 0x%08lX, "
+        "logic_operator %u, pins_changed %s", bit_idx, val, mask, op, 
+        hasLogicPinsChanged() ? "TRUE" : "FALSE");
+    } break;
+
+    case Z2S_SUPLA_ACTION_CLEAR_LOGIC_GATE_PIN_FIRST_ACTION ... 
+         Z2S_SUPLA_ACTION_CLEAR_LOGIC_GATE_PIN_LAST_ACTION: {
+
+      uint8_t bit_idx = 
+        action - Z2S_SUPLA_ACTION_CLEAR_LOGIC_GATE_PIN_FIRST_ACTION;
+      uint32_t pin_bit = (1UL << bit_idx) & mask;
+
+      if (pin_bit != 0) {
+        if (((val & pin_bit) != 0) || (last_result == 0xFF)) {
+          val &= ~pin_bit;
+          setLogicValue(val);
+          setLogicPinsChanged(true);
+        }
+      }
+
+      log_i(
+        "CLEAR_LOGIC_GATE_PIN[%u] logic_value 0x%08lX, logic_mask 0x%08lX, "
+        "logic_operator %u, pins_changed %s", bit_idx, val, mask, op, 
+        hasLogicPinsChanged() ? "TRUE" : "FALSE");
+    } break;
+
+    case Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_FIRST_ACTION ... 
+         Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_LAST_ACTION: {
+
+      uint8_t bit_idx = 
+        action - Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_FIRST_ACTION;
+      uint32_t pin_bit = (1UL << bit_idx) & mask;
+
+      if (pin_bit != 0) {
+        val ^= pin_bit;
+        setLogicValue(val);
+        setLogicPinsChanged(true);
+      }
+
+      log_i(
+        "TOGGLE_LOGIC_GATE_PIN[%u] logic_value 0x%08lX, logic_mask 0x%08lX, "
+        "logic_operator %u, pins_changed %s", bit_idx, val, mask, op, 
+        hasLogicPinsChanged() ? "TRUE" : "FALSE");
+    } break;
 
     case TURN_ON: {
       
@@ -208,6 +302,8 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
         uint8_t bit_idx = __builtin_ctz(zero_bits);
         val |= (1UL << bit_idx);
         setLogicValue(val);
+        setLogicPinsChanged(true);
+      } else if (last_result == 0xFF) {
         setLogicPinsChanged(true);
       }
 
@@ -226,6 +322,8 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
         val &= ~(1UL << bit_idx);
         setLogicValue(val);
         setLogicPinsChanged(true);
+      } else if (last_result == 0xFF) {
+        setLogicPinsChanged(true);
       }
      
       log_i(
@@ -238,75 +336,114 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   if (!hasLogicPinsChanged())
     return;
 
+  uint32_t active = val & mask;
   bool logic_operation_result = false;
 
   switch (op) {
 
-
     case PIN_LOGIC_OPERATOR_NOP:
+    case PIN_LOGIC_OPERATOR_OR:
+    case PIN_LOGIC_OPERATOR_OR3:
 
-      logic_operation_result = (val & mask) != 0; 
+      logic_operation_result = (active != 0); 
     break;
-
 
     case PIN_LOGIC_OPERATOR_AND:
     case PIN_LOGIC_OPERATOR_AND3:
 
-      logic_operation_result = (val & mask) == mask;
+      logic_operation_result = (active == mask);
     break;
-
-
-    case PIN_LOGIC_OPERATOR_OR:
-    case PIN_LOGIC_OPERATOR_OR3:
-
-      logic_operation_result = (val & mask) != 0; 
-    break;
-
 
     case PIN_LOGIC_OPERATOR_XOR:
 
-      logic_operation_result = (__builtin_parity(val & mask) == 1); 
+      logic_operation_result = (__builtin_parity(active) == 1); 
     break;
-
     
     case PIN_LOGIC_OPERATOR_NOT:
+    case PIN_LOGIC_OPERATOR_NOR:
 
-      logic_operation_result = (val & mask) == 0; 
+      logic_operation_result = (active == 0); 
     break;
-
 
     case PIN_LOGIC_OPERATOR_NAND:
 
-      logic_operation_result = (val & mask) != mask; 
+      logic_operation_result = (active != mask); 
     break;
 
+    case PIN_LOGIC_OPERATOR_ONE_HOT:
 
-    case PIN_LOGIC_OPERATOR_NOR:
-
-      logic_operation_result = (val & mask) == 0; 
+      logic_operation_result = (active != 0) && ((active & (active - 1)) == 0);
     break;
+
+    case PIN_LOGIC_OPERATOR_AT_MOST_ONE:
+
+      logic_operation_result = ((active & (active - 1)) == 0);
+    break;
+
+    case PIN_LOGIC_OPERATOR_INHIBIT: {
+
+      uint32_t trigger_bit = mask & (~mask + 1);
+      logic_operation_result = (active == trigger_bit);
+    } break;
+
+    case PIN_LOGIC_OPERATOR_MAJORITY:
+
+      logic_operation_result = 
+        (__builtin_popcount(active) * 2) > __builtin_popcount(mask);
+    break;
+
+    case PIN_LOGIC_OPERATOR_SR_LATCH: {
+
+      uint32_t set_bit    = mask & (~mask + 1);
+      uint32_t reset_mask = mask & ~set_bit;
+
+      if ((active & reset_mask) != 0)
+        logic_operation_result = false;
+      else if ((active & set_bit) != 0)
+        logic_operation_result = true;
+      else
+        logic_operation_result = (last_result == 1);
+    } break;
   }
   
   log_i(
-    "logic_operation_result %s", logic_operation_result ? "TRUE" : "FALSE");
+    "logic_operation_result %s (committed last_result %u)", 
+    logic_operation_result ? "TRUE" : "FALSE", last_result);
   
   if (logic_operation_result) {
 
     _pending_postponed_turn_off_ms = 0;
 
-    if (getPostponedTurnOnMs()) 
-      _pending_postponed_turn_on_ms = millis();
-    else
-      runAction(ON_TURN_ON);
+    if (last_result != 1) {
+      if (getPostponedTurnOnMs()) {
+        if (_pending_postponed_turn_on_ms == 0) {
+          uint32_t now = millis();
+          _pending_postponed_turn_on_ms = now ? now : 1;
+        }
+      } 
+      else {
+        _pending_postponed_turn_on_ms = 0;
+        setLastLogicResult(1);
+        runAction(ON_TURN_ON);
+      }
+    }
   }
   else {
 
     _pending_postponed_turn_on_ms = 0;
 
-    if (getPostponedTurnOffMs()) 
-      _pending_postponed_turn_off_ms = millis();
-    else
-      runAction(ON_TURN_OFF);
+    if (last_result != 0) {
+      if (getPostponedTurnOffMs()) {
+        if (_pending_postponed_turn_off_ms == 0) {
+          uint32_t now = millis();
+          _pending_postponed_turn_off_ms = now ? now : 1;
+        }
+      } else {
+        _pending_postponed_turn_off_ms = 0;
+        setLastLogicResult(0);
+        runAction(ON_TURN_OFF);
+      }
+    }
   }
   
   log_i(
@@ -327,25 +464,28 @@ void LocalActionHandlerWithTrigger::iterateAlways() {
   if ((_pending_postponed_turn_on_ms) && 
       ((millis_ms - _pending_postponed_turn_on_ms) > getPostponedTurnOnMs())) {
 
-        log_i(
-          "millis_ms %lu, _postponed_turn_on_ms %lu, "
-          "_pending_postponed_turn_on_ms %lu", millis_ms, 
-          getPostponedTurnOnMs(), _pending_postponed_turn_on_ms);
+    log_i(
+      "millis_ms %lu, _postponed_turn_on_ms %lu, "
+      "_pending_postponed_turn_on_ms %lu", millis_ms, 
+      getPostponedTurnOnMs(), _pending_postponed_turn_on_ms);
 
-        _pending_postponed_turn_on_ms = 0;
-        runAction(ON_TURN_ON);
+    _pending_postponed_turn_on_ms = 0;
+    setLastLogicResult(1);
+    runAction(ON_TURN_ON);
   }
 
   if ((_pending_postponed_turn_off_ms) && 
-      ((millis_ms - _pending_postponed_turn_off_ms) > getPostponedTurnOffMs())) {
+      ((millis_ms - _pending_postponed_turn_off_ms) > 
+       getPostponedTurnOffMs())) {
 
-        log_i(
-          "millis_ms %lu, _postponed_turn_off_ms %lu, "
-          "_pending_postponed_turn_off_ms %lu", millis_ms, 
-          getPostponedTurnOffMs(), _pending_postponed_turn_off_ms);
+    log_i(
+      "millis_ms %lu, _postponed_turn_off_ms %lu, "
+      "_pending_postponed_turn_off_ms %lu", millis_ms, 
+      getPostponedTurnOffMs(), _pending_postponed_turn_off_ms);
 
-        _pending_postponed_turn_off_ms = 0;
-        runAction(ON_TURN_OFF);
+    _pending_postponed_turn_off_ms = 0;
+    setLastLogicResult(0);
+    runAction(ON_TURN_OFF);
   }
 }
 
