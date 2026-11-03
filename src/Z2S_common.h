@@ -1376,8 +1376,10 @@ public:
   void setLocalSHT3xSdaPin(uint8_t pin, bool save = false) { 
     
     _z2s_channel.local_sht3x_data.sda_pin = pin; 
+
     if (save) 
       saveChannelData();
+    _z2s_channel.local_sht3x_data.wire_pins_changed = true;
   }
   
   uint8_t getLocalSHT3xSclPin() { 
@@ -1389,6 +1391,11 @@ public:
     _z2s_channel.local_sht3x_data.scl_pin = pin; 
     if (save) 
       saveChannelData(); 
+    _z2s_channel.local_sht3x_data.wire_pins_changed = true;
+  }
+
+  bool hasWirePinsChanged() { 
+    return _z2s_channel.local_sht3x_data.wire_pins_changed; 
   }
   
   int8_t getLocalSHT3xAddress() { 

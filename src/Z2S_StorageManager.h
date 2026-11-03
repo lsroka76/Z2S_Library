@@ -254,6 +254,7 @@ union {
       uint8_t         sda_pin;
       uint8_t         scl_pin;
       int8_t          sht3x_address;
+      uint8_t         wire_pins_changed : 1;
     } local_sht3x_data;
     struct {
 

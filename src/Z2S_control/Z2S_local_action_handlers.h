@@ -57,7 +57,8 @@
 #define GATEWAY_EVENTS_CHANNEL_NUMBER   0xFE
 #define GATEWAY_EVENTS_CHANNEL_INDEX    0xFE
 
-inline const char *gateway_events_channel_name = "GATEWAY EVENTS";
+inline constexpr const char * const gateway_events_channel_name = 
+  "GATEWAY EVENTS";
 
 /*****************************************************************************/
 
@@ -81,7 +82,7 @@ inline const char *gateway_events_channel_name = "GATEWAY EVENTS";
 #define PIN_LOGIC_OPERATOR_T_LATCH      0x11
 #define PIN_LOGIC_OPERATOR_MAX          0x12
 
-inline constexpr const char *pin_logic_operator_names[] = {
+inline constexpr const char * const pin_logic_operator_names[] = {
   "NONE",
   "AND",
   "OR",
@@ -131,7 +132,8 @@ inline const char *sb_device_path = "POST /v1.1/devices/%s/commands "
 #define CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT        0x0003
 
 
-inline constexpr char *calculated_thermomether_functions_names[] = {
+inline constexpr const char * const calculated_thermomether_functions_names[] =
+ {
   
   "DEW POINT", "HEAT INDEX(FEELS LIKE)", "READ HVAC TEMPERATURE SETPOINT HEAT"
 };
@@ -146,7 +148,7 @@ inline constexpr char *calculated_thermomether_functions_names[] = {
 #define CALCULATED_GPM_FUNC_WOOD_EMC                                    0x0005
 //#define CALCULATED_GPM_FUNC_ZIGBEE_RSSI                                 0x0006
 
-inline constexpr const char *calculated_gpm_functions_names[] = {
+inline constexpr const char * const calculated_gpm_functions_names[] = {
   "VPD (VAPOR PRESSURE DEFICIT) [kPa]",
   "ABSOLUTE HUMIDITY [g/m3]",
   "SPECIFIC ENTHALPY [kJ/kg]",
@@ -158,6 +160,30 @@ inline constexpr const char *calculated_gpm_functions_names[] = {
 
 extern bool sendIASNotifications;
 extern Supla::Control::VirtualRelay *toggleNotifications;
+
+/*****************************************************************************/
+
+inline bool ensureLocalI2C(int8_t targetSda, int8_t targetScl) {
+  static int8_t activeSda = -1;
+  static int8_t activeScl = -1;
+
+  if (targetSda < 0 || targetScl < 0) {
+    return false;
+  }
+
+  if (targetSda != activeSda || targetScl != activeScl) {
+    Wire.end();
+    if (Wire.begin(targetSda, targetScl)) {
+      activeSda = targetSda;
+      activeScl = targetScl;
+    } else {
+      activeSda = -1;
+      activeScl = -1;
+      return false;
+    }
+  }
+  return true;
+}
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -618,8 +644,16 @@ class LocalBinary: public Binary, public Z2S_Core {
 /*****************************************************************************/
 
 class LocalSHT3x : public SHT3x, public Z2S_Core {
+ 
  public:
+  
   LocalSHT3x() : SHT3x(0x44), Z2S_Core(this) {}
+
+  void onInit() override {
+
+    ensureLocalI2C(getLocalSHT3xSdaPin(), getLocalSHT3xSclPin());
+    Supla::Sensor::SHT3x::onInit();
+  }
 
   void setAddress(int8_t addr) {
     
@@ -628,9 +662,10 @@ class LocalSHT3x : public SHT3x, public Z2S_Core {
   }
 
   double getTemp() override {
-    
-    Wire.end();
-    Wire.begin(getLocalSHT3xSdaPin(), getLocalSHT3xSclPin());
+  
+    if (!ensureLocalI2C(getLocalSHT3xSdaPin(), getLocalSHT3xSclPin())) {
+      return TEMPERATURE_NOT_AVAILABLE;
+    }
     return Supla::Sensor::SHT3x::getTemp();
   }
 };

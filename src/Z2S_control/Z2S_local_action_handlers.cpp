@@ -584,6 +584,7 @@ void GatewayEvents::setActionHandlerCallback(
     this->actionhandler_callback = actionhandler_callback;
 }
 
+/*****************************************************************************/
 
 void GatewayEvents::sendPushoverMessage(uint32_t action) {
 
@@ -737,11 +738,10 @@ void GatewayEvents::handleAction(int event, int action) {
 /*****************************************************************************/
 
 void GatewayEvents::iterateAlways() {
-
+  
   uint32_t millis_ms = millis();
 
   if ((_action >= 0) && Supla::Network::IsReady()) {
-
     sendPushoverMessage(_action);
     _action = -1;
   }
@@ -752,12 +752,19 @@ void GatewayEvents::iterateAlways() {
   if (millis_ms - _cyclic_event_ms < 5000)
     return;
 
-  _cyclic_event_ms = millis_ms;
 
-  _cyclic_event_counter = (_cyclic_event_counter + 1) % 17280; //24H
+  if (millis_ms - _cyclic_event_ms >= 10000) {
+    
+    _cyclic_event_ms = millis_ms;
+  } 
+  else {
+    
+    _cyclic_event_ms += 5000;
+  }
 
-  if ((_cyclic_event_counter % 1) == 0)
-    runAction(Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS);
+  _cyclic_event_counter = (_cyclic_event_counter + 1) % 17280; // 24H
+
+  runAction(Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS);
 
   if ((_cyclic_event_counter % 6) == 0)
     runAction(Z2S_SUPLA_EVENT_ON_EVERY_30_SECONDS);
@@ -768,7 +775,6 @@ void GatewayEvents::iterateAlways() {
   if (_cyclic_event_counter == 0)
     runAction(Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS);
 }
-
 
 /*****************************************************************************/
 
