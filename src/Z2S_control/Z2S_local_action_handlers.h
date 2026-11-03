@@ -76,7 +76,10 @@ inline const char *gateway_events_channel_name = "GATEWAY EVENTS";
 #define PIN_LOGIC_OPERATOR_INHIBIT      0x0C
 #define PIN_LOGIC_OPERATOR_MAJORITY     0x0D
 #define PIN_LOGIC_OPERATOR_SR_LATCH     0x0E
-#define PIN_LOGIC_OPERATOR_MAX          0x0F
+#define PIN_LOGIC_OPERATOR_JK_LATCH     0x0F
+#define PIN_LOGIC_OPERATOR_D_LATCH      0x10
+#define PIN_LOGIC_OPERATOR_T_LATCH      0x11
+#define PIN_LOGIC_OPERATOR_MAX          0x12
 
 inline constexpr const char *pin_logic_operator_names[] = {
   "NONE",
@@ -93,7 +96,10 @@ inline constexpr const char *pin_logic_operator_names[] = {
   "AT MOST ONE (MUTEX)",
   "INHIBIT",
   "MAJORITY (QUORUM)",
-  "SR LATCH"
+  "S-R LATCH",
+  "J-K LATCH",
+  "D LATCH",
+  "T LATCH"
 };
 
 /*****************************************************************************/

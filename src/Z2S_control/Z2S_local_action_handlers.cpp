@@ -97,16 +97,27 @@ uint8_t LocalActionHandlerWithTrigger::validateLogicPinsNumber(
 
   switch (logic_operator) {
 
+
     case PIN_LOGIC_OPERATOR_NONE:
       return 0;
 
+
     case PIN_LOGIC_OPERATOR_NOP:
     case PIN_LOGIC_OPERATOR_NOT:
+      
       return 1;
+    
+    case PIN_LOGIC_OPERATOR_JK_LATCH:
+    case PIN_LOGIC_OPERATOR_T_LATCH:
+
+      return 2;
+
 
     case PIN_LOGIC_OPERATOR_AND3:
     case PIN_LOGIC_OPERATOR_OR3:
+      
       return 3;
+
 
     case PIN_LOGIC_OPERATOR_XOR:
     case PIN_LOGIC_OPERATOR_AND:
@@ -118,9 +129,12 @@ uint8_t LocalActionHandlerWithTrigger::validateLogicPinsNumber(
     case PIN_LOGIC_OPERATOR_INHIBIT:
     case PIN_LOGIC_OPERATOR_MAJORITY:
     case PIN_LOGIC_OPERATOR_SR_LATCH:
+
       return (pins < 2) ? 2 : ((pins > 32) ? 32 : pins);
 
+
     default:
+      
       return (pins > 32) ? 32 : pins;
   }
 }
@@ -223,8 +237,8 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
   log_i(
     "event %u, action 0x%04X, logic_value 0x%08lX, logic_mask 0x%08lX, "
-    "logic_operator %u, last_result %u", 
-    event, action, val, mask, op, last_result);
+    "logic_operator %u, last_result %u", event, action, val, mask, op, 
+    last_result);
 
   if ((mask == 0) || (op == PIN_LOGIC_OPERATOR_NONE))
     return;
@@ -341,6 +355,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
   switch (op) {
 
+
     case PIN_LOGIC_OPERATOR_NOP:
     case PIN_LOGIC_OPERATOR_OR:
     case PIN_LOGIC_OPERATOR_OR3:
@@ -348,37 +363,44 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
       logic_operation_result = (active != 0); 
     break;
 
+
     case PIN_LOGIC_OPERATOR_AND:
     case PIN_LOGIC_OPERATOR_AND3:
 
       logic_operation_result = (active == mask);
     break;
 
+
     case PIN_LOGIC_OPERATOR_XOR:
 
       logic_operation_result = (__builtin_parity(active) == 1); 
     break;
     
+
     case PIN_LOGIC_OPERATOR_NOT:
     case PIN_LOGIC_OPERATOR_NOR:
 
       logic_operation_result = (active == 0); 
     break;
 
+
     case PIN_LOGIC_OPERATOR_NAND:
 
       logic_operation_result = (active != mask); 
     break;
+
 
     case PIN_LOGIC_OPERATOR_ONE_HOT:
 
       logic_operation_result = (active != 0) && ((active & (active - 1)) == 0);
     break;
 
+
     case PIN_LOGIC_OPERATOR_AT_MOST_ONE:
 
       logic_operation_result = ((active & (active - 1)) == 0);
     break;
+
 
     case PIN_LOGIC_OPERATOR_INHIBIT: {
 
@@ -386,11 +408,13 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
       logic_operation_result = (active == trigger_bit);
     } break;
 
+
     case PIN_LOGIC_OPERATOR_MAJORITY:
 
       logic_operation_result = 
         (__builtin_popcount(active) * 2) > __builtin_popcount(mask);
     break;
+
 
     case PIN_LOGIC_OPERATOR_SR_LATCH: {
 
@@ -403,6 +427,55 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
         logic_operation_result = true;
       else
         logic_operation_result = (last_result == 1);
+    } break;
+
+
+    case PIN_LOGIC_OPERATOR_JK_LATCH: {
+
+      uint32_t set_bit    = mask & (~mask + 1);
+      uint32_t reset_mask = mask & ~set_bit;
+
+      bool j = (active & set_bit) != 0;
+      bool k = (active & reset_mask) != 0;
+
+      if (j && k)
+        logic_operation_result = (last_result != 1);
+      else if (k)
+        logic_operation_result = false;
+      else if (j)
+        logic_operation_result = true;
+      else
+        logic_operation_result = (last_result == 1);
+    } break;
+
+
+    case PIN_LOGIC_OPERATOR_D_LATCH: {
+  
+      uint32_t set_bit    = mask & (~mask + 1);
+      uint32_t reset_mask = mask & ~set_bit;
+
+      bool d = (active & set_bit) != 0;
+      bool e = (active & reset_mask) != 0;
+
+      if (e)
+        logic_operation_result = d;       // Transparent when enabled
+      else
+      logic_operation_result = (last_result == 1); // Hold state when disabled
+    } break;
+
+
+    case PIN_LOGIC_OPERATOR_T_LATCH: {
+      
+      uint32_t set_bit    = mask & (~mask + 1);
+      uint32_t reset_mask = mask & ~set_bit;
+
+      bool t = (active & set_bit) != 0;
+      bool e = (active & reset_mask) != 0;
+
+      if (e && t)
+        logic_operation_result = (last_result != 1); // Toggle when T and E are active
+      else
+      logic_operation_result = (last_result == 1); // Otherwise hold state
     } break;
   }
   

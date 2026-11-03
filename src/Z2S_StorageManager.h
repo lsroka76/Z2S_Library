@@ -211,7 +211,7 @@ union {
       uint32_t        logic_value;
       uint8_t         logic_operator;
       uint8_t         logic_pins_number;
-      bool            logic_pins_changed;
+      uint8_t         logic_pins_changed : 1;
       uint8_t         last_logic_result;
       uint32_t        logic_mask;
     } local_action_handler_data;
