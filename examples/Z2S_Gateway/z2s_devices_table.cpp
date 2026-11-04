@@ -7640,6 +7640,7 @@ uint8_t Z2S_addZ2SDevice(
 /*****************************************************************************/
      
       case Z2S_DEVICE_DESC_TS0601_EONE_BATB:
+      case Z2S_DEVICE_DESC_TS0601_EONE_BATW:
       case Z2S_DEVICE_DESC_TS0601_EONE_230W: {
       
         addZ2SDeviceTempHumidity(
