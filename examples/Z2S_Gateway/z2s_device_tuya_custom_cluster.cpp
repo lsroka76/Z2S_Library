@@ -15,11 +15,12 @@
 #include <arduino_base64.hpp>
 #include <math.h>
 
-//extern ZigbeeGateway zbGateway;
 
-uint8_t learned_ir_code[512];
-char    learned_ir_code_base64[768]; 
-uint8_t ir_code_to_send[1024];
+static union {
+  uint8_t learned_ir_code[512];
+  uint8_t ir_code_to_send[1024];
+};
+static char learned_ir_code_base64[768];
 
 bool ir_code_learning = false;
 bool ir_code_receiving = false;

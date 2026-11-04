@@ -1,5 +1,5 @@
 #ifndef Z2S_DEVICE_TUYA_CUSTOM_CLUSTER_H_
-#define Z2S_DEVICE_TUYA_CUSTON_CLUSTER_H_
+#define Z2S_DEVICE_TUYA_CUSTOM_CLUSTER_H_
 
 #include "z2s_devices_table.h"
 
