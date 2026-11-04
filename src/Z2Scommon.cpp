@@ -679,7 +679,7 @@ bool Z2S_Core::initZ2SChannelExtendedDataCounter() {
       return false;
   }
   sprintf(
-    _z2s_channel.extended_data_counter, "EDC_%03U", _channel_index);
+    _z2s_channel.extended_data_counter, "EDC_%03u", _channel_index);
 
   return setChannelUserDataFlags(USER_DATA_FLAG_EXTENDED_DATA_COUNTER, true);
 }
@@ -694,7 +694,7 @@ bool Z2S_Core::setChannelExtendedDataCounter(uint64_t extended_data_counter) {
     size_t extended_data_counter_str_len = strnlen(
       _z2s_channel.extended_data_counter, 8);
 
-    if ((extended_data_counter_str_len == 0) &&
+    if ((extended_data_counter_str_len == 0) ||
         (extended_data_counter_str_len == 8))
       return false;
 
@@ -718,7 +718,7 @@ const char *Z2S_Core::getChannelExtendedDataCounterKey() {
     size_t extended_data_counter_str_len = strnlen(
         _z2s_channel.extended_data_counter, 8);
 
-    if ((extended_data_counter_str_len == 0) &&
+    if ((extended_data_counter_str_len == 0) ||
         (extended_data_counter_str_len == 8))
       return invalid_extended_data_counter_key;
 
@@ -755,7 +755,7 @@ uint64_t Z2S_Core::getChannelExtendedDataCounter() {
     size_t extended_data_counter_str_len = strnlen(
       _z2s_channel.extended_data_counter, 8);
 
-    if ((extended_data_counter_str_len == 0) &&
+    if ((extended_data_counter_str_len == 0) ||
         (extended_data_counter_str_len == 8))
       return 0;
         
@@ -1423,7 +1423,7 @@ bool Z2S_Device::hasManufacturerName(const char *manufacturer_name) {
         manufacturer_name) == 0);
     
   }
-  return "Invalid device id!";
+  return false;
 }
 
 /*****************************************************************************/

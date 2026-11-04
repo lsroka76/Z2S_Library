@@ -1049,11 +1049,13 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
             ">param_id(%u) should be in range 1...4\n\r>", param_id); 
         break;
       }
-      if (Z2S_saveChannelsTable()) {
+      /*if (Z2S_saveChannelsTable()) {
         log_i(
           "Device(channel %d) user data daved successfully.", channel_id);
-      }
-    } else {
+      }*/
+    } 
+    else {
+      
       telnet.printf(">Invalid channel number %u\n\r>", channel_id);
     }  
     return;

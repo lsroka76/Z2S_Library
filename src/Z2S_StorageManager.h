@@ -41,52 +41,52 @@
 
 /*****************************************************************************/
 
-const static char Z2S_ELEMENTS_INDEX_TABLE_V2[] PROGMEM = 
+inline constexpr const char Z2S_ELEMENTS_INDEX_TABLE_V2[] PROGMEM = 
   "elements_index_table.z2s";
-const static char Z2S_ELEMENTS_PREFIX_V2[] PROGMEM = 
+inline constexpr const char Z2S_ELEMENTS_PREFIX_V2[] PROGMEM = 
   "element_%03d.z2s";
 
-const static char Z2S_ELEMENTS_INDEX_TABLE_V3[] PROGMEM = 
+inline constexpr const char Z2S_ELEMENTS_INDEX_TABLE_V3[] PROGMEM = 
   "elements_index_table_v3.z2s";
-  const static char Z2S_ELEMENTS_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
+  inline constexpr const char Z2S_ELEMENTS_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
   "elements_index_table_v3.bak";
 
-const static char Z2S_ELEMENTS_PREFIX_V3[] PROGMEM = 
+inline constexpr const char Z2S_ELEMENTS_PREFIX_V3[] PROGMEM = 
   "element_%03d_v3.z2s";
 
-const static char Z2S_ELEMENTS_BACKUP_PREFIX_V3[] PROGMEM = 
+inline constexpr const char Z2S_ELEMENTS_BACKUP_PREFIX_V3[] PROGMEM = 
   "element_%03d_v3.bak";
 
 /*****************************************************************************/
 
-const static char Z2S_DEVICES_INDEX_TABLE_V3[] PROGMEM = 
+inline constexpr const char Z2S_DEVICES_INDEX_TABLE_V3[] PROGMEM = 
   "devices_index_table_v3.z2s";
-  const static char Z2S_DEVICES_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
+  inline constexpr const char Z2S_DEVICES_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
   "devices_index_table_v3.bak";
 
-const static char Z2S_DEVICES_PREFIX_V3[] PROGMEM = 
+inline constexpr const char Z2S_DEVICES_PREFIX_V3[] PROGMEM = 
   "device_%03d_v3.z2s";
 
-const static char Z2S_DEVICES_BACKUP_PREFIX_V3[] PROGMEM = 
+inline constexpr const char Z2S_DEVICES_BACKUP_PREFIX_V3[] PROGMEM = 
   "device_%03d_v3.bak";
 
 /*****************************************************************************/
 
-const static char Z2S_IR_CODES_INDEX_TABLE_V1[] PROGMEM = 
+inline constexpr const char Z2S_IR_CODES_INDEX_TABLE_V1[] PROGMEM = 
   "ir_codes_index_table_v1.z2s";
 
-const static char Z2S_IR_CODES_INDEX_TABLE_BACKUP_V1[] PROGMEM = 
+inline constexpr const char Z2S_IR_CODES_INDEX_TABLE_BACKUP_V1[] PROGMEM = 
   "ir_codes_index_table_v1.bak";
 
-const static char Z2S_IR_CODES_PREFIX_V1[] PROGMEM = 
+inline constexpr const char Z2S_IR_CODES_PREFIX_V1[] PROGMEM = 
   "ir_code_%03d_v1.z2s";
 
-const static char Z2S_IR_CODES_BACKUP_PREFIX_V1[] PROGMEM = 
+inline constexpr const char Z2S_IR_CODES_BACKUP_PREFIX_V1[] PROGMEM = 
   "ir_code_%03d_v1.bak";
 
 /*****************************************************************************/
 
-const static char Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2[] PROGMEM =
+inline constexpr const char Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2[] PROGMEM =
   "channel_ext_data_%03d_%02d.z2s";
 
 /*****************************************************************************/

@@ -60,10 +60,15 @@ void (*_on_Tuya_custom_cluster_receive)
 /*****************************************************************************/
 
 template <typename T>
-T readAttr(const esp_zb_zcl_attribute_t* attribute, size_t index = 0) {
-    if (!attribute || !attribute->data.value)
-        return T{};
-    return *reinterpret_cast<const T*>(attribute->data.value + index);
+T readAttr(const esp_zb_zcl_attribute_t *attribute, size_t offset = 0) {
+  T val{};
+  if (!attribute || !attribute->data.value) {
+    return val;
+  }
+  const uint8_t *raw_ptr = static_cast<const uint8_t *>(
+    attribute->data.value) + offset;
+  memcpy(&val, raw_ptr, sizeof(T));
+  return val;
 }
 
 /*****************************************************************************/
@@ -198,14 +203,12 @@ Supla::Element* Z2S_findZ2SElement(
         if (getVirtualButtonNumber(
               virtual_button_data, z2s_core->getChannelEndpoint(),
               z2s_core->getChannelClusterId(), z2s_core->getChannelModelId(),
-              sub_id))
-          if (z2s_core->getChannelSubId() == 
-              virtual_button_data.button_id + 0x40)
-            return z2s_core->getZ2SElementPtr();
-          else
-            continue;
-        else;
-          continue;
+              sub_id) && (z2s_core->getChannelSubId() == 
+            virtual_button_data.button_id + 0x40)) {
+
+          return z2s_core->getZ2SElementPtr();
+        }
+        continue;
       }
       return z2s_core->getZ2SElementPtr();
     }
@@ -759,8 +762,16 @@ bool Z2S_loadChannelsTable() {
 
     log_i(
       "Legacy channels tables deleted! The king is dead, long live the king!");
-    return true;
+    
   }
+  else {
+
+    log_e(
+      "Error removing legacy channels tables!");
+
+    return false;
+  }
+  return true;
 }
 
 /*****************************************************************************/
@@ -1225,22 +1236,6 @@ uint32_t Z2S_getZbDevicesTableSize() {
   }
   return 0;
 }
-
-/*****************************************************************************/
-
-bool Z2S_saveZbDevicesTable() {
-
-  log_e("This function is obsolete and shouldn't be called!");
-  return true;
-  
-}
-
-/*****************************************************************************/
-
-bool Z2S_clearZbDevicesTable() {
-
-  log_i("Clear Zigbee devices table function is deprecated!");
-}
   
 /*****************************************************************************/
 
@@ -1406,9 +1401,8 @@ void Z2S_initSuplaChannels() {
   SuplaDevice.addAction(
     0x6000, GatewayEventsInstance, Supla::ON_DEVICE_STATUS_CHANGE, false);
 
-  auto core_it = Z2S_Cores.begin();
-  if (*core_it)
-    (*core_it)->listCores();
+  if (!Z2S_Cores.empty()) 
+    Z2S_Cores.front()->listCores();
 }
 
 /*****************************************************************************/
@@ -2005,11 +1999,6 @@ bool Z2S_removePushoverMessage(uint16_t message_index) {
     return true;
   }
   return false;
-}
-/*****************************************************************************/
-
-bool Z2S_sendPushoverMessage(uint16_t message_index) {
-
 }
 
 /*****************************************************************************/
@@ -3129,6 +3118,7 @@ uint8_t getZigbeeTypeSize(uint8_t zigbee_type) {
     case ESP_ZB_ZCL_ATTR_TYPE_DOUBLE: 
       return 8;
   }
+  return 0xFF;
 }
 
 /******************************************************************************/
@@ -3150,8 +3140,14 @@ uint8_t scanLumiPayload(
 
     if ((_lumi_attribute_id == lumi_attribute_id) &&
         (_lumi_attribute_type == lumi_attribute_type))
+      
       return _position;
-    else _position += getZigbeeTypeSize(_lumi_attribute_type);
+    else {
+      
+      uint8_t type_size = getZigbeeTypeSize(_lumi_attribute_type);
+      if (type_size == 0xFF) return 0; 
+      _position += type_size;
+    }
   } 
   return 0;
 }
@@ -4045,7 +4041,8 @@ void Z2S_onSonoffCustomClusterReceive(
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, 
         SONOFF_SMART_VALVE_TIME_SID);
 
-      msgZ2SDeviceGeneralPurposeMeasurement(
+      if (element)
+        msgZ2SDeviceGeneralPurposeMeasurement(
         element, 
         ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_DEC_VALUE, 
         //ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_INIT_VALUE,
@@ -10579,7 +10576,7 @@ void Z2S_buildSuplaChannels(
         "BUZZER ALARMED MANUALLY", SUPLA_CHANNELFNC_BINARY_SENSOR);
 
       Z2S_addZ2SDevice(
-        joined_device, LUMI_SMOKE_DETECTOR_BUZZER_SID, 
+        joined_device, LUMI_SMOKE_DETECTOR_HEARTBEAT_INDICATOR_SID, 
         "ENABLE HEARTBEAT INDICATOR", SUPLA_CHANNELFNC_POWERSWITCH);
 
       Z2S_addZ2SDevice(

@@ -132,40 +132,40 @@ union {
 
 /*****************************************************************************/
 
-const static char Z2S_CHANNELS_TABLE_ID_V2[] PROGMEM = 
+inline constexpr const char Z2S_CHANNELS_TABLE_ID_V2[] PROGMEM = 
   "channels_table_v2.z2s";
-const static char Z2S_CHANNELS_TABLE_BACKUP_ID_V2[] PROGMEM = 
+inline constexpr const char Z2S_CHANNELS_TABLE_BACKUP_ID_V2[] PROGMEM = 
   "channels_table_v2.bak";
 
-const static char Z2S_ZB_DEVICES_TABLE[] PROGMEM = "Z2S_zbd_table";
-const static char Z2S_ZB_DEVICES_TABLE_ID_V2[] PROGMEM = 
+inline constexpr const char Z2S_ZB_DEVICES_TABLE[] PROGMEM = "Z2S_zbd_table";
+inline constexpr const char Z2S_ZB_DEVICES_TABLE_ID_V2[] PROGMEM = 
   "zb_devices_table_v2.z2s";
-const static char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2[] PROGMEM = 
+inline constexpr const char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V2[] PROGMEM = 
   "zb_devices_table_v2.bak";
 
-const static char Z2S_ZB_DEVICES_TABLE_ID_V3[] PROGMEM = 
+inline constexpr const char Z2S_ZB_DEVICES_TABLE_ID_V3[] PROGMEM = 
   "zb_devices_table_v3.z2s";
-const static char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V3[] PROGMEM = 
+inline constexpr const char Z2S_ZB_DEVICES_TABLE_BACKUP_ID_V3[] PROGMEM = 
   "zb_devices_table_v3.bak";
 
 extern uint8_t z2s_actions_index_table[Z2S_ACTIONS_MAX_NUMBER / 8];  
 
-const static char Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2[] PROGMEM = 
+inline constexpr const char Z2S_CHANNELS_ACTIONS_INDEX_TABLE_V2[] PROGMEM = 
   "actions_index_table.z2s";
 
-const static char Z2S_CHANNELS_ACTIONS_PREFIX_V2[] PROGMEM = 
+inline constexpr const char Z2S_CHANNELS_ACTIONS_PREFIX_V2[] PROGMEM = 
   "action_%04d.z2s";
 
 //8 bit-indexed table
 extern uint8_t z2s_pushover_messages_index_table[
     Z2S_PUSHOVER_MESSAGES_MAX_NUMBER / 8];
 
-const static char Z2S_PUSHOVER_MESSAGES_INDEX_TABLE_V2[] PROGMEM = 
+inline constexpr const char Z2S_PUSHOVER_MESSAGES_INDEX_TABLE_V2[] PROGMEM = 
   "pushover_messages_index_table.z2s";
-const static char Z2S_PUSHOVER_MESSAGES_PREFIX_V2[] PROGMEM = 
+inline constexpr const char Z2S_PUSHOVER_MESSAGES_PREFIX_V2[] PROGMEM = 
   "pushover_message_%04d.z2s";
 
-const static char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
+inline constexpr const char Z2S_FILES_STRUCTURE_VERSION[] PROGMEM = "Z2S_files_ver";
 
 extern bool sendIASNotifications;
 
@@ -173,16 +173,25 @@ extern char GatewayMDNSLocalName[12];
 
 extern Preferences Z2S_GatewayPreferences;
 
-const static char Z2S_ZIGBEE_PRIMARY_CHANNEL[] PROGMEM = "Z2S_primary_ch";
+inline constexpr const char Z2S_ZIGBEE_PRIMARY_CHANNEL[] PROGMEM = 
+  "Z2S_primary_ch";
 
-const static char Z2S_ENABLE_GUI_ON_START_V2[] PROGMEM = "Z2S_gui_mode";
-const static char Z2S_GUI_BUILD_FLAGS_V2[] PROGMEM = "Z2S_gui_flags";
-const static char Z2S_GUI_ON_START_DELAY_V2[] PROGMEM = "Z2S_gui_delay2";
-const static char Z2S_FORCE_CONFIG_ON_START[] PROGMEM = "Z2S_force_cfg";
-const static char Z2S_REBUILD_CHANNELS_ON_START[] PROGMEM = "Z2S_rebuild";
-const static char Z2S_USE_NEW_AT_MODEL[] PROGMEM = "Z2S_new_at";
-const static char Z2S_GATEWAY_MDNS_LOCAL_NAME[] PROGMEM = "Z2S_mdns_name";
-const static char Z2S_AUTO_CONNECTION_RESET_TIMEOUT[] PROGMEM = "Z2S_acrt";
+inline constexpr const char Z2S_ENABLE_GUI_ON_START_V2[] PROGMEM = 
+  "Z2S_gui_mode";
+inline constexpr const char Z2S_GUI_BUILD_FLAGS_V2[] PROGMEM = 
+  "Z2S_gui_flags";
+inline constexpr const char Z2S_GUI_ON_START_DELAY_V2[] PROGMEM = 
+  "Z2S_gui_delay2";
+inline constexpr const char Z2S_FORCE_CONFIG_ON_START[] PROGMEM = 
+  "Z2S_force_cfg";
+inline constexpr const char Z2S_REBUILD_CHANNELS_ON_START[] PROGMEM = 
+  "Z2S_rebuild";
+inline constexpr const char Z2S_USE_NEW_AT_MODEL[] PROGMEM = 
+  "Z2S_new_at";
+inline constexpr const char Z2S_GATEWAY_MDNS_LOCAL_NAME[] PROGMEM = 
+  "Z2S_mdns_name";
+inline constexpr const char Z2S_AUTO_CONNECTION_RESET_TIMEOUT[] PROGMEM = 
+  "Z2S_acrt";
 
 /*****************************************************************************/
 
@@ -218,16 +227,13 @@ uint8_t Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot = 0);
 uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot = 0);
 void Z2S_printChannelsTableSlots(bool toTelnet = false);
 bool Z2S_loadChannelsTable();
-bool Z2S_saveChannelsTable();
 
 bool Z2S_removeChannel(int16_t channel_number_slot);
 
 /*****************************************************************************/
 
 uint32_t Z2S_getZbDevicesTableSize();
-bool Z2S_saveZbDevicesTable();
 bool Z2S_loadZbDevicesTable();
-bool Z2S_clearZbDevicesTable();
 void Z2S_printZbDevicesTableSlots(bool toTelnet = false);
 void Z2S_initZbDevices(uint32_t init_ms);
 
@@ -356,7 +362,6 @@ bool Z2S_loadPushoverMessage(
   uint16_t message_index, z2s_pushover_message_t &message);
 bool Z2S_removePushoverMessage(uint16_t message_index);
 
-bool Z2S_sendPushoverMessage(uint16_t message_index);
 bool Z2S_fillPushoverMessage(uint16_t message_index, char *message_buffer);
 
 void Z2S_initPushoverMessages();

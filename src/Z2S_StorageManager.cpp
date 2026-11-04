@@ -238,10 +238,17 @@ int16_t Z2S_findNextIndexPosition(
 int16_t Z2S_findPrevIndexPosition(
   uint8_t *index_table, uint16_t index_position, uint16_t max_index) {
 
-  for (uint16_t index = index_position; index >= 0; index--)
-    if (checkIndexTablePosition(index_table, index, max_index))
-      return index;
-  
+  if (max_index == 0) 
+    return -1;
+
+  int32_t start_idx = (index_position >= max_index) ? (max_index - 1) : 
+    index_position;
+
+  for (int32_t index = start_idx; index >= 0; index--) {
+    
+    if (checkIndexTablePosition(index_table, (uint16_t)index, max_index))
+      return (int16_t)index;
+  }
   return -1;
 }
 
