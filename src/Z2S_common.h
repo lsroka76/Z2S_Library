@@ -75,6 +75,7 @@
 #define LOCAL_CHANNEL_TYPE_GPIO_BINARY                          0x69
 #define LOCAL_CHANNEL_TYPE_GPIO_HCSR04                          0x6A
 #define LOCAL_CHANNEL_TYPE_GPIO_ADC                             0x6B
+#define LOCAL_CHANNEL_TYPE_GPIO_PWM                             0x6C
 
 
 #define LOCAL_CHANNEL_TYPE_GATEWAY_EVENTS                       0x80
@@ -1438,6 +1439,84 @@ public:
   }
   
   bool updateLocalAdcParams();
+
+/*****************************************************************************/
+
+  int8_t getLocalPwmGpioPin() {
+
+    return _z2s_channel.local_pwm_data.gpio_pin;
+  }
+
+  void setLocalPwmGpioPin(int8_t pin, bool save = false) {
+
+    _z2s_channel.local_pwm_data.gpio_pin = pin;
+    if (save)
+      saveChannelData();
+  }
+
+  uint32_t getLocalPwmFreqHz() {
+
+    return _z2s_channel.local_pwm_data.freq_hz;
+  }
+
+  void setLocalPwmFreqHz(uint32_t freq_hz, bool save = false) {
+
+    _z2s_channel.local_pwm_data.freq_hz = freq_hz;
+    if (save)
+      saveChannelData();
+  }
+
+  uint8_t getLocalPwmMinDuty() {
+
+    return _z2s_channel.local_pwm_data.min_duty;
+  }
+
+  void setLocalPwmMinDuty(uint8_t min_duty, bool save = false) {
+
+    _z2s_channel.local_pwm_data.min_duty = (min_duty > 100) ? 100 : min_duty;
+    if (save)
+      saveChannelData();
+  }
+
+  uint8_t getLocalPwmMaxDuty() {
+
+    return _z2s_channel.local_pwm_data.max_duty;
+  }
+
+  void setLocalPwmMaxDuty(uint8_t max_duty, bool save = false) {
+
+    _z2s_channel.local_pwm_data.max_duty = (max_duty > 100) ? 100 : max_duty;
+    if (save)
+      saveChannelData();
+  }
+
+  uint8_t getLocalPwmResolutionBits() {
+
+    return _z2s_channel.local_pwm_data.resolution_bits;
+  }
+
+  void setLocalPwmResolutionBits(uint8_t resolution_bits, bool save = false) {
+
+    if (resolution_bits < 8) resolution_bits = 8;
+    if (resolution_bits > 12) resolution_bits = 12;
+    _z2s_channel.local_pwm_data.resolution_bits = resolution_bits;
+    if (save)
+      saveChannelData();
+  }
+
+  bool getLocalPwmInvertLogic() {
+
+    return _z2s_channel.local_pwm_data.invert_logic;
+  }
+
+  void setLocalPwmInvertLogic(bool invert_logic, bool save = false) {
+
+    _z2s_channel.local_pwm_data.invert_logic = invert_logic;
+    if (save)
+      saveChannelData();
+  }
+
+  bool updateLocalPwmParams();
 
 /*****************************************************************************/
 

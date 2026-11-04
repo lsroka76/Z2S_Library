@@ -1,12 +1,9 @@
-/*****************************************************************************/
-
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
-#include <ArduinoJson.h>
 #include <esp_ota_ops.h>
 
 #include <SuplaDevice.h>
@@ -15,279 +12,252 @@
 
 /*****************************************************************************/
 
-const char *GITHUB_API_URL = "https://api.github.com/repos/lsroka76/"
-"Z2S_Library/releases/latest";
+static constexpr const char GITHUB_HOST[] = "github.com";
+static constexpr const char GITHUB_LATEST_PATH[] =
+  "/lsroka76/Z2S_Library/releases/latest";
 
-const char* firmwareUrl = "https://github.com/lsroka76/Z2S_Library/"
-"releases/latest/download/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin";
+static constexpr const char FIRMWARE_URL[] =
+  "https://github.com/lsroka76/Z2S_Library/"
+  "releases/latest/download/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin";
+
+static constexpr const char PARSE_ERR_NO_LOCATION[] =
+  "Parse error: Redirect Location header not found.";
+static constexpr const char PARSE_ERR_BAD_TAG[] =
+  "Parse error: Version tag not found in Location header.";
+static constexpr const char PARSE_ERR_CONN_FAIL[] =
+  "GitHub connection failed.";
 
 /*****************************************************************************/
 
-TaskHandle_t otaTaskHandle = NULL;
+TaskHandle_t otaTaskHandle = nullptr;
 
 /*****************************************************************************/
 
 bool isVersionNewer(const char* current, const char* latest) {
+  int currentMajor = 0, currentMinor = 0, currentPatch = 0;
+  int latestMajor = 0, latestMinor = 0, latestPatch = 0;
 
-    int currentMajor = 0, currentMinor = 0, currentPatch = 0;
-    int latestMajor = 0, latestMinor = 0, latestPatch = 0;
-  
-    if (sscanf(current, "Z2S-%d.%d.%d", &currentMajor, &currentMinor, 
-          &currentPatch) != 3) {
+  if (sscanf(current, "Z2S-%d.%d.%d", &currentMajor, &currentMinor,
+             &currentPatch) != 3) {
+    log_e("Failed to parse local version: %s", current);
+    return false;
+  }
 
-      log_e("Failed to parse local version.");
-      return false;
-    }
+  if (sscanf(latest, "v%d.%d.%d", &latestMajor, &latestMinor,
+             &latestPatch) != 3) {
+    log_e("Failed to parse GitHub version: %s", latest);
+    return false;
+  }
 
-    if (sscanf(latest, "v%d.%d.%d", &latestMajor, &latestMinor, 
-          &latestPatch) != 3) {
-        
-      log_e("Failed to parse GitHub version.");
-      return false; 
-    }
-
-    if (latestMajor != currentMajor) return latestMajor > currentMajor;
-    if (latestMinor != currentMinor) return latestMinor > currentMinor;
-    return latestPatch > currentPatch;
+  if (latestMajor != currentMajor) return latestMajor > currentMajor;
+  if (latestMinor != currentMinor) return latestMinor > currentMinor;
+  return latestPatch > currentPatch;
 }
 
 /*****************************************************************************/
 
 bool isHardwareCapableOfOta() {
-    
   uint32_t flashSize = ESP.getFlashChipSize();
-  
+
   if (flashSize < (8 * 1024 * 1024)) {
-    
-    log_e(
-      "OTA Error: Insufficient flash. Found %u MB, require 8 MB.\n", 
-      flashSize / (1024 * 1024));
-
+    log_e("OTA Error: Insufficient flash. Found %u MB, require 8 MB.",
+          flashSize / (1024 * 1024));
     return false;
   }
 
-  const esp_partition_t* update_partition = esp_ota_get_next_update_partition(
-    NULL);
+  const esp_partition_t* update_partition =
+    esp_ota_get_next_update_partition(nullptr);
 
-  if (update_partition == NULL) {
-    
-    log_e(
-      "OTA Error: No alternate OTA partition found. Check your partition"
-      " scheme.");
-    
+  if (update_partition == nullptr) {
+    log_e("OTA Error: No alternate OTA partition found.");
     return false;
   }
- 
+
   size_t currentSketchSize = ESP.getSketchSize();
-  
+
   if (update_partition->size < currentSketchSize) {
-        
-    log_e(
-      "OTA Error: Update partition '%s' is too small (%u bytes) to fit a "
-      "gateway app.", update_partition->label, update_partition->size);
-    
+    log_e("OTA Error: Update partition '%s' is too small (%u bytes).",
+          update_partition->label, update_partition->size);
     return false;
   }
 
-  log_e(
-    "OTA Check Passed: Flash=%u MB, Target Partition='%s' (%u bytes)\n", 
-    flashSize / (1024 * 1024), update_partition->label, 
-    update_partition->size);
-    
+  log_i("OTA Check Passed: Flash=%u MB, Target Partition='%s' (%u bytes)",
+        flashSize / (1024 * 1024), update_partition->label,
+        update_partition->size);
+
   return true;
 }
 
 /*****************************************************************************/
 
-static const char *parse_github_ota_version_no_tag_value_error = "Parse "
-  "error: Found tag_name but no value.";
-
-static const char *parse_github_ota_version_no_tag_name_error = "Parse error:"
-  " tag_name not found in stream.";
-
-static const char *parse_github_ota_version_api_error = "GitHub API failed "
-  "with HTTP Code:";
-
-/*****************************************************************************/
-
 bool checkGitHubForUpdate(char *response_buffer, size_t response_buffer_size) {
-
   WiFiClientSecure client;
-  client.setInsecure(); 
-  client.setTimeout(5); 
+  client.setInsecure();
+  client.setHandshakeTimeout(5); // Handshake timeout is in SECONDS (5s)
+  client.setTimeout(5000);       // Stream/read timeout is in MILLISECONDS (5000ms)
 
-  HTTPClient http;
-  http.begin(client, GITHUB_API_URL);
-  http.setUserAgent("ZigBee2Supla-Gateway");
-    
-  int httpCode = http.GET();
   bool updateAvailable = false;
 
-  if (httpCode == HTTP_CODE_OK) {
-        
-    Stream& stream = http.getStream();
-    stream.setTimeout(5000); 
-        
-    
-    if (stream.find("\"tag_name\"")) {
-            
-      if (stream.find("\"")) {
-                
-        char latestTag[32] = {0}; 
-        size_t len = stream.readBytesUntil(
-          '"', latestTag, sizeof(latestTag) - 1);
-        latestTag[len] = '\0';
-                
-        log_i("Current: %s | Latest: %s", Z2S_VERSION, latestTag);
-                
-        if (isVersionNewer(Z2S_VERSION, latestTag)) {
-
-          if (response_buffer)
-          snprintf(
-            response_buffer, response_buffer_size, "New GitHub firmware "
-            "found:<br>current: %s | latest: %s", Z2S_VERSION, latestTag);
-
-          
-          log_i("New firmware release found!");
-          updateAvailable = true;
-        }
-        else {
-
-          if (response_buffer)
-          snprintf(
-            response_buffer, response_buffer_size, "No new GitHub firmware"
-            " found!");
-        }
-      } 
-      else {
-        
-        if (response_buffer)
-          snprintf(
-            response_buffer, response_buffer_size, 
-            parse_github_ota_version_no_tag_value_error);
-
-        log_e("%s", parse_github_ota_version_no_tag_value_error);
-      }
-    } 
-    else {
-
-      if (response_buffer)
-          snprintf(
-            response_buffer, response_buffer_size, 
-            parse_github_ota_version_no_tag_name_error);
-            
-      log_e("%s", parse_github_ota_version_no_tag_name_error);
+  if (!client.connect(GITHUB_HOST, 443)) {
+    if (response_buffer) {
+      snprintf(response_buffer, response_buffer_size, "%s", PARSE_ERR_CONN_FAIL);
     }
-  } 
-  else {
-    
-    if (response_buffer)
-          snprintf(
-            response_buffer, response_buffer_size, 
-            parse_github_ota_version_api_error, httpCode);
-
-    log_e("GitHub API failed with HTTP Code: %d", httpCode);
+    log_e("%s", PARSE_ERR_CONN_FAIL);
+    return false;
   }
-    
-  http.end(); 
-    
+
+  // Request /releases/latest without following redirects.
+  // GitHub responds with a tiny HTTP 302 Found containing /releases/tag/vX.Y.Z
+  client.printf(
+    "GET %s HTTP/1.1\r\n"
+    "Host: %s\r\n"
+    "User-Agent: ZigBee2Supla-Gateway\r\n"
+    "Connection: close\r\n\r\n",
+    GITHUB_LATEST_PATH, GITHUB_HOST);
+
+  // Wait up to 5000 ms for the first response bytes while yielding to FreeRTOS
+  uint32_t startMs = millis();
+  while (client.connected() && !client.available() && (millis() - startMs < 5000)) {
+    vTaskDelay(pdMS_TO_TICKS(10));
+  }
+
+  // GitHub replies with:
+  // Location: https://github.com/lsroka76/Z2S_Library/releases/tag/vX.Y.Z
+  if (client.find("/releases/tag/")) {
+    char latestTag[32] = {0};
+    size_t len = client.readBytesUntil('\r', latestTag, sizeof(latestTag) - 1);
+    latestTag[len] = '\0';
+
+    // Strip any trailing quote (if matched in body) or whitespace/newline
+    for (size_t i = 0; i < len; ++i) {
+      if (latestTag[i] == '"' || latestTag[i] == '\n' || latestTag[i] == ' ') {
+        latestTag[i] = '\0';
+        len = i;
+        break;
+      }
+    }
+
+    if (len > 0) {
+      log_i("Current: %s | Latest: %s", Z2S_VERSION, latestTag);
+
+      if (isVersionNewer(Z2S_VERSION, latestTag)) {
+        if (response_buffer) {
+          snprintf(
+            response_buffer, response_buffer_size,
+            "New GitHub firmware found:<br>current: %s | latest: %s",
+            Z2S_VERSION, latestTag);
+        }
+        log_i("New firmware release found!");
+        updateAvailable = true;
+      } else {
+        if (response_buffer) {
+          snprintf(
+            response_buffer, response_buffer_size,
+            "No new GitHub firmware found! (latest: %s)", latestTag);
+        }
+      }
+    } else {
+      if (response_buffer) {
+        snprintf(response_buffer, response_buffer_size, "%s", PARSE_ERR_BAD_TAG);
+      }
+      log_e("%s", PARSE_ERR_BAD_TAG);
+    }
+  } else {
+    if (response_buffer) {
+      snprintf(response_buffer, response_buffer_size, "%s", PARSE_ERR_NO_LOCATION);
+    }
+    log_e("%s", PARSE_ERR_NO_LOCATION);
+  }
+
+  client.stop();
   return updateAvailable;
 }
-
 /*****************************************************************************/
 
 void performBackgroundGitHubOta(void *pvParameters) {
-
   WiFiClientSecure client;
-  client.setInsecure(); 
+  client.setInsecure();
+  client.setHandshakeTimeout(10);
 
   httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  httpUpdate.rebootOnUpdate(false);
 
-  otaProgressCallback activeOtaProgressCb = (otaProgressCallback)pvParameters;
+  otaProgressCallback activeOtaProgressCb =
+    reinterpret_cast<otaProgressCallback>(pvParameters);
 
   if (activeOtaProgressCb) {
-
     httpUpdate.onProgress(activeOtaProgressCb);
-  } 
-  else {
-
+  } else {
     httpUpdate.onProgress([](size_t current, size_t total) {
-        
+      if (total == 0) return; // Guard against divide-by-zero
+
+      static size_t lastLoggedPct = 0xFF;
       size_t currentOtaProgress = (current * 100) / total;
-        
-      if (currentOtaProgress % 10 == 0) {
 
-        log_i("OTA Progress: %02d %%", currentOtaProgress);
-
+      if ((currentOtaProgress % 10 == 0) && (currentOtaProgress != lastLoggedPct)) {
+        lastLoggedPct = currentOtaProgress;
+        log_i("OTA Progress: %02u %%", static_cast<unsigned>(currentOtaProgress));
       }
     });
   }
 
   log_i("Starting OTA from GitHub...");
 
-  if (activeOtaProgressCb) 
+  if (activeOtaProgressCb) {
     activeOtaProgressCb(1, 0);
-  
-  httpUpdate.rebootOnUpdate(false); 
+  }
 
-  t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
+  t_httpUpdate_return ret = httpUpdate.update(client, FIRMWARE_URL);
 
   switch (ret) {
-
-
-    case HTTP_UPDATE_FAILED: {
-        
-      if (activeOtaProgressCb) 
+    case HTTP_UPDATE_FAILED:
+      if (activeOtaProgressCb) {
         activeOtaProgressCb(2, 0);
-      
-      log_e(
-        "OTA Failed. Error (%d): %s", httpUpdate.getLastError(), 
-        httpUpdate.getLastErrorString().c_str());
-    } break;
-
+      }
+      log_e("OTA Failed. Error (%d): %s",
+            httpUpdate.getLastError(),
+            httpUpdate.getLastErrorString().c_str());
+      break;
 
     case HTTP_UPDATE_NO_UPDATES:
-
       log_i("No updates found.");
-    break;
-    
-    
-    case HTTP_UPDATE_OK: {
-        
-      if (activeOtaProgressCb) 
-        activeOtaProgressCb(0, 0);
+      break;
 
+    case HTTP_UPDATE_OK:
+      if (activeOtaProgressCb) {
+        activeOtaProgressCb(0, 0);
+      }
       log_i("OTA Successful. Rebooting...");
-      
       SuplaDevice.scheduleSoftRestart(1000);
-    } break;
+      break;
   }
 
   log_i("OTA Task finished. Deleting thread.");
-  otaTaskHandle = NULL;
-  vTaskDelete(NULL);  
+  otaTaskHandle = nullptr;
+  vTaskDelete(nullptr);
 }
 
 /*****************************************************************************/
 
 void startBackgroundGitHubOtaTask(otaProgressCallback progressCb) {
-
-  if (otaTaskHandle == NULL) {
-            
+  if (otaTaskHandle == nullptr) {
     if (isHardwareCapableOfOta()) {
-                
-      xTaskCreate(
-        performBackgroundGitHubOta, "GitHub_OTA", 8192, (void *)progressCb, 1, 
+      BaseType_t res = xTaskCreate(
+        performBackgroundGitHubOta,
+        "GitHub_OTA",
+        6144,
+        reinterpret_cast<void *>(progressCb),
+        1,
         &otaTaskHandle);
-                
-    } 
-    else {
-      
+
+      if (res != pdPASS) {
+        otaTaskHandle = nullptr;
+        log_e("Failed to create OTA task (Out of RAM)!");
+      }
+    } else {
       log_e("Aborting OTA due to hardware limits.");
     }
-  } 
-  else {
-    
+  } else {
     log_i("OTA is already running in the background!");
   }
 }

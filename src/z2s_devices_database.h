@@ -944,7 +944,7 @@
 #define TUYA_WATER_QUALITY_MONITOR_SG_SID                   0x05
 
 [[maybe_unused]]
-inline const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
+inline constexpr const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = { 
     "ON PRESSED", 
     "ON HELD", 
     "OFF PRESSED", 
@@ -955,7 +955,7 @@ inline const char *IKEA_STYRBAR_BUTTONS[] PROGMEM = {
     "RIGHT HELD" };
 
 [[maybe_unused]]
-inline const char *IKEA_BILRESA_BUTTONS[] PROGMEM = { 
+inline constexpr const char *IKEA_BILRESA_BUTTONS[] PROGMEM = { 
     "ON PRESSED", 
     "ON HELD", 
     "ON DOUBLE PRESSED",
@@ -964,7 +964,7 @@ inline const char *IKEA_BILRESA_BUTTONS[] PROGMEM = {
     "OFF DOUBLE PRESSED" };
 
 [[maybe_unused]]
-inline const char *IKEA_BILRESA_WHEEL[] PROGMEM = { 
+inline constexpr const char *IKEA_BILRESA_WHEEL[] PROGMEM = { 
     "WHEEL PRESSED",  
     "WHEEL DOUBLE PRESSED",
     "WHEEL TRIPLE PRESSED", 
@@ -973,7 +973,7 @@ inline const char *IKEA_BILRESA_WHEEL[] PROGMEM = {
 
 
 [[maybe_unused]]
-inline const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = { 
+inline constexpr const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = { 
     "PLAY", 
     "VOLUME UP", 
     "VOLUME DOWN", 
@@ -991,7 +991,7 @@ inline const char *IKEA_SYMFONISK_BUTTONS[] PROGMEM = {
     "DOTS DOUBLE PRESSED" };
 
 [[maybe_unused]]
-inline const char *EGLO_99099_BUTTONS[] PROGMEM = {
+inline constexpr const char *EGLO_99099_BUTTONS[] PROGMEM = {
     "ON PRESSED G1",
     "ON PRESSED G2",
     "ON PRESSED G3",
@@ -1052,7 +1052,7 @@ inline const char *EGLO_99099_BUTTONS[] PROGMEM = {
 };
 
 [[maybe_unused]]
-inline const char *PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[] PROGMEM = {  
+inline constexpr const char *PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[] PROGMEM = {  
     "ON_PRESS", 
     "ON_PRESS_RELEASE", 
     "ON_HOLD", 
@@ -1158,7 +1158,7 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 #define Z2S_REPORTING_SET_DESC_IAS_ZONE_STATUS                          0x0801
 
 
-inline const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
+inline constexpr z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_unused]] = {
 
 
   { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_BASIC,
@@ -1601,7 +1601,7 @@ inline const z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[maybe_
 
 };//Z2S_REPORTING_SETS_DESC
 
-inline const z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
+inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_NULL, 
@@ -3330,7 +3330,7 @@ inline const z2s_device_endpoint_t
 };
 
 
-inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
+inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 //DEVICES_START
   {	.manufacturer_name = "Unknown", .model_name = "Unknown",
     .z2s_device_uid = 0,
@@ -3678,7 +3678,7 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_VOLTAGE_REPORTING_STANDARD, 
-      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT }
+      Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR_POLL_EXT2 }
   },
 
   {	.manufacturer_name = "eWeLink", .model_name = "SNZB-02P",
@@ -3729,6 +3729,7 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "eWeLink", .model_name = "TH01",
     .z2s_device_uid = 2800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TEMPHUMIDITY_SENSOR,
+    .z2s_device_endpoints_count = 1,
 	  .z2s_device_endpoints = { 
       0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_POWER_SONOFF, 
@@ -5928,10 +5929,10 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
                           //Z2S_DEVICE_DESC_ADEO_RGBW_BULB,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
+  /*{	.manufacturer_name = "IKEA of Sweden", .model_name = "TRADFRI bulb E14 CWS globe 806lm",
     .z2s_device_uid = 19000,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1},*/
 
   {	.manufacturer_name = "Philips", .model_name = "LCA006",
     .z2s_device_uid = 19050,
@@ -6979,10 +6980,10 @@ inline const z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM,
 	  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "_TZE204_t1blo2bj", .model_name = "TS0601",
+  /*{	.manufacturer_name = "_TZE204_t1blo2bj", .model_name = "TS0601",
     .z2s_device_uid = 26110,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_ALARM,
-	  .z2s_device_endpoints_count = 1},
+	  .z2s_device_endpoints_count = 1},*/
 
   {	.manufacturer_name = "_TZE204_q76rtoa9", .model_name = "TS0601",
     .z2s_device_uid = 26115,

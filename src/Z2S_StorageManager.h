@@ -261,6 +261,14 @@ union {
       uint8_t         adc_pin;
       uint8_t         adc_attenuation;
     } local_adc_data;
+    struct {
+      int8_t          gpio_pin;
+      uint8_t         min_duty;
+      uint8_t         max_duty;
+      uint8_t         resolution_bits : 4;
+      uint8_t         invert_logic : 1;
+      uint32_t        freq_hz;
+    } local_pwm_data;
   };
   uint32_t            user_data_flags;
 union {

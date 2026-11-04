@@ -1116,6 +1116,301 @@ void Supla::Control::LocalHvac::iterateAlways() {
 }
 
 /*****************************************************************************/
+
+Supla::Control::LocalPWM::LocalPWM() : Z2S_Core(this) {
+
+  channel.setType(SUPLA_CHANNELTYPE_DIMMER);
+  channel.setDefault(SUPLA_CHANNELFNC_DIMMER);
+}
+
+/*****************************************************************************/
+
+Supla::Control::LocalPWM::~LocalPWM() {
+
+  if (_attached_pin >= 0) {
+    ledcDetach(_attached_pin);
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::onLoadState() {
+
+  Supla::Storage::ReadState(
+    (unsigned char *)&_brightness, sizeof(_brightness));
+  Supla::Storage::ReadState(
+    (unsigned char *)&_last_brightness, sizeof(_last_brightness));
+
+  if (_brightness > 100)
+    _brightness = 0;
+  if (_last_brightness == 0 || _last_brightness > 100)
+    _last_brightness = 100;
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::onSaveState() {
+
+  Supla::Storage::WriteState(
+    (unsigned char *)&_brightness, sizeof(_brightness));
+  Supla::Storage::WriteState(
+    (unsigned char *)&_last_brightness, sizeof(_last_brightness));
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::onInit() {
+
+  setupPWM();
+  channel.setNewValue(0, 0, 0, 0, _brightness, 0);
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::setupPWM() {
+
+  int8_t   pin  = getLocalPwmGpioPin();
+  uint32_t freq = getLocalPwmFreqHz();
+  uint8_t  res  = getLocalPwmResolutionBits();
+
+  if (freq == 0) freq = 5000;
+  if (res < 8 || res > 12) res = 10;
+
+  if (_attached_pin >= 0 &&
+      (_attached_pin != pin || _attached_freq != freq || 
+       _attached_res != res)) {
+    ledcDetach(_attached_pin);
+    _attached_pin = -1;
+  }
+
+  if (pin >= 0 && _attached_pin < 0) {
+    if (ledcAttach(pin, freq, res)) {
+      _attached_pin  = pin;
+      _attached_freq = freq;
+      _attached_res  = res;
+    } else {
+      log_e("[LocalPWM] ledcAttach failed on pin %d (freq=%lu, res=%u)",
+            pin, freq, res);
+    }
+  }
+
+  applyHardwarePWM();
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::applyHardwarePWM() {
+
+  if (_attached_pin < 0)
+    return;
+
+  uint32_t max_raw = (1UL << _attached_res) - 1UL;
+  uint32_t duty_raw = 0;
+
+  if (_brightness > 0) {
+    uint8_t min_d = getLocalPwmMinDuty();
+    uint8_t max_d = getLocalPwmMaxDuty();
+
+    if (min_d > 100) min_d = 100;
+    if (max_d > 100 || max_d == 0) max_d = 100;
+    if (min_d > max_d) min_d = max_d;
+
+    uint32_t min_raw = (max_raw * min_d) / 100UL;
+    uint32_t max_limit_raw = (max_raw * max_d) / 100UL;
+
+    if (_brightness >= 100) {
+      duty_raw = max_limit_raw;
+    } else if (_brightness == 1 && min_d > 0) {
+      duty_raw = min_raw;
+    } else if (min_d > 0) {
+      duty_raw = min_raw +
+        ((max_limit_raw - min_raw) * (_brightness - 1UL)) / 99UL;
+    } else {
+      duty_raw = (max_limit_raw * _brightness) / 100UL;
+    }
+  }
+
+  if (getLocalPwmInvertLogic()) {
+    duty_raw = max_raw - duty_raw;
+  }
+
+  ledcWrite(_attached_pin, duty_raw);
+
+  log_i("[LocalPWM] pin=%d, brightness=%u%%, duty_raw=%lu/%lu (invert=%u)",
+        _attached_pin, _brightness, duty_raw, max_raw,
+        getLocalPwmInvertLogic());
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::setBrightness(uint8_t brightness) {
+
+  if (brightness > 100)
+    brightness = 100;
+
+  bool was_on = (_brightness > 0);
+
+  if (brightness != _brightness) {
+    if (brightness == 0) {
+      _last_brightness = _brightness;
+      _brightness = 0;
+    } else if (_brightness == 0) {
+      _brightness = brightness;
+    } else {
+      _last_brightness = _brightness;
+      _brightness = brightness;
+    }
+  }
+
+  applyHardwarePWM();
+  _last_msg_received_ms = millis();
+  Supla::Storage::ScheduleSave(5000, 2000);
+
+  bool is_now_on = (_brightness > 0);
+  if (!was_on && is_now_on) {
+    runAction(Supla::ON_TURN_ON);
+  } else if (was_on && !is_now_on) {
+    runAction(Supla::ON_TURN_OFF);
+  }
+  runAction(Supla::ON_CHANGE);
+}
+
+/*****************************************************************************/
+
+int32_t Supla::Control::LocalPWM::handleNewValueFromServer(
+  TSD_SuplaChannelNewValue *newValue) {
+
+  uint8_t brightness = static_cast<uint8_t>(newValue->value[0]);
+
+  if (brightness > 100)
+    brightness = 100;
+
+  if (brightness == 0) {
+    setBrightness(0);
+  } else if (_brightness == 0 && brightness == 100) {
+    uint8_t restore = (_last_brightness > 0 && _last_brightness <= 100)
+                        ? _last_brightness : 100;
+    setBrightness(restore);
+  } else {
+    setBrightness(brightness);
+  }
+
+  return -1;
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::turnOff() {
+
+  if (_brightness > 0) {
+    setBrightness(0);
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::turnOn() {
+
+  uint8_t restore = (_last_brightness > 0 && _last_brightness <= 100)
+                      ? _last_brightness : 100;
+  setBrightness(restore);
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::toggle() {
+
+  if (isOn())
+    turnOff();
+  else
+    turnOn();
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::increaseBrightness(int8_t step) {
+
+  int16_t target = static_cast<int16_t>(_brightness) + step;
+  if (target < 0) target = 0;
+  if (target > 100) target = 100;
+
+  setBrightness(static_cast<uint8_t>(target));
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::handleAction(int event, int action) {
+
+  (void)(event);
+
+  switch (action) {
+
+    case TURN_ON:
+      if (!isOn())
+        turnOn();
+      break;
+
+    case TURN_OFF:
+      if (isOn())
+        turnOff();
+      break;
+
+    case TOGGLE:
+      toggle();
+      break;
+
+    case DIM_W:
+      increaseBrightness(-10);
+      break;
+
+    case BRIGHTEN_W:
+      increaseBrightness(10);
+      break;
+
+    case Z2S_SUPLA_ACTION_RESEND_RELAY_STATE:
+      if (isOn())
+        runAction(Supla::ON_TURN_ON);
+      else
+        runAction(Supla::ON_TURN_OFF);
+      break;
+
+    case Z2S_SUPLA_ACTION_COPY_ON_STATE:
+      if (isOn())
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
+      break;
+
+    case Z2S_SUPLA_ACTION_COPY_OFF_STATE:
+      if (!isOn())
+        runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
+      break;
+  }
+
+  if ((action >= Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_FIRST_ACTION) &&
+      (action <= Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_LAST_ACTION)) {
+
+    int16_t step = action - Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_FIRST_ACTION;
+    increaseBrightness(step);
+  }
+
+  if ((action >= Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION) &&
+      (action <= Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_LAST_ACTION)) {
+
+    int16_t step = -1 * (action - 
+      Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION);
+    increaseBrightness(step);
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalPWM::iterateAlways() {
+
+  if (_last_msg_received_ms != 0 && millis() - _last_msg_received_ms >= 200) {
+    _last_msg_received_ms = 0;
+    channel.setNewValue(0, 0, 0, 0, _brightness, 0);
+  }
+}
+
 /*****************************************************************************/
 
 Supla::Control::SwitchBotRelay::SwitchBotRelay(uint8_t device_type_id)

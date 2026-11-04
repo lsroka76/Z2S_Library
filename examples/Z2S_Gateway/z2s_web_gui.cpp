@@ -317,55 +317,44 @@ volatile bool data_ready = false;
 volatile bool _github_ota_enabled = false;
 
 /*****************************************************************************/
+
+//static constexpr size_t SHARED_JSON_BUFFER_SIZE = 2048;
+//static char shared_json_buffer[SHARED_JSON_BUFFER_SIZE];
+
 /*****************************************************************************/
 
-struct gui_command_object {
+static inline bool isWsClientConnected() {
+	
+	return (GUIstarted && ESPUI.WebSocket() && (ESPUI.WebSocket()->count() > 0));
+}
 
-	bool in_use = false;
-	gui_commands gui_command = gui_cmd_none;
-	int32_t gui_command_value = 0;
+/*****************************************************************************/
+
+struct __attribute__((packed)) gui_command_msg_t {
+	gui_commands gui_command;
+	int32_t gui_command_value;
 };
 
-static gui_command_object gui_commands_pool[GUI_COMMANDS_POOL_SIZE];
-
-QueueHandle_t gui_commands_queue;
-
-/*****************************************************************************/
-
-gui_command_object *getGUICommandObject(
-  gui_commands gui_command, int32_t gui_command_value) {
-
-	for (int i = 0; i < GUI_COMMANDS_POOL_SIZE; i++) {
-
-		if (!gui_commands_pool[i].in_use) {
-
-			gui_commands_pool[i].in_use = true;
-			gui_commands_pool[i].gui_command = gui_command;
-			gui_commands_pool[i].gui_command_value = gui_command_value;
-			return &gui_commands_pool[i];
-		}
-	}
-	return nullptr;
-}
+static QueueHandle_t gui_commands_queue = nullptr;
 
 /*****************************************************************************/
 
 bool addGUICommand(gui_commands gui_command, int32_t gui_command_value = 0) {
 
-	gui_command_object *free_gui_command_slot = getGUICommandObject(
-	  gui_command, gui_command_value);
-
-	if (free_gui_command_slot == nullptr) {
-
-		log_e("GUI commands pool full!");
+	if (gui_commands_queue == nullptr) {
+		log_e("GUI commands queue not initialized!");
 		return false;
 	}
 
-	if (xQueueSend(gui_commands_queue, &free_gui_command_slot, 0) == pdTRUE)
-		return true;
-	else {
+	const gui_command_msg_t msg = {
+		.gui_command = gui_command,
+		.gui_command_value = gui_command_value
+	};
 
-		log_e("GUI commands queue send failed!");
+	if (xQueueSend(gui_commands_queue, &msg, 0) == pdTRUE) {
+		return true;
+	} else {
+		log_e("GUI commands queue full!");
 		return false;
 	}
 }
@@ -2227,6 +2216,11 @@ void buildChannelsTabGUI() {
 	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
 	  (void *)gui_cmd_add_local_adc);
 
+	ESPUI.addControl(
+	  Control::Type::Button, empty_str, "Add local PWM (GPIO)",
+	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
+	  (void *)gui_cmd_add_local_pwm);
+
 
 	//addEmptyLineLabel(lah_panel);
 	lah_status_label = ESPUI.addControl(
@@ -3408,7 +3402,8 @@ void updateActionDetails(
 	ESPUI.updateSelect(action_event_selector, action_id);
 
 	ESPUI.updateSelect(
-	  action_destination_channel_selector, empty_action ? -1 : Z2S_Core::getZ2SChannelIndexByChannelNumber(action.dst_Supla_channel));
+	  action_destination_channel_selector, empty_action ? -1 : 
+		Z2S_Core::getZ2SChannelIndexByChannelNumber(action.dst_Supla_channel));
 
 	ESPUI.updateSelect(
 	  action_action_selector, empty_action ? -1 : action.dst_Supla_action);
@@ -3416,9 +3411,13 @@ void updateActionDetails(
 	actionSelectorCallback(
 	  nullptr, empty_action ? -1 : action.dst_Supla_action, nullptr);
 
-	ESPUI.updateNumber(action_subaction_number, empty_action ? 0 : action.subaction_id);
+	ESPUI.updateNumber(
+		action_subaction_number, empty_action ? 0 : action.subaction_id);
 
-	working_str = empty_action ? String(0, 2) : String(action.min_value, 2);
+	char num_buf[16];
+	snprintf(
+		num_buf, sizeof(num_buf), "%.2f", empty_action ? 0.0 : action.min_value);
+	working_str = num_buf;
 	ESPUI.updateText(action_condition_threshold_1_number, working_str);
 
 	working_str = empty_action ? String(0, 2) : String(action.max_value, 2);
@@ -5046,7 +5045,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	ESPUI.captivePortal = false;
 
 	gui_commands_queue = xQueueCreate(
-	  GUI_COMMANDS_POOL_SIZE, sizeof(gui_command_object *));
+	  GUI_COMMANDS_POOL_SIZE, sizeof(gui_command_msg_t));
 
 	working_str.reserve(1056);
 
@@ -5523,15 +5522,18 @@ void Z2S_loopWebGUI() {
 		}
 	}*/
 
+	if (gui_commands_queue == nullptr) {
+		return;
+	}
+
 	uint32_t local_func = 0;
 
-	gui_command_object *pending_gui_command = nullptr;
+	gui_command_msg_t pending_gui_command;
 
 	while (xQueueReceive(
-	         gui_commands_queue, &pending_gui_command, 0)
-	       == pdTRUE) {
-
-		switch (pending_gui_command->gui_command) {
+					gui_commands_queue, &pending_gui_command, 0) == pdTRUE) {
+	
+		switch (pending_gui_command.gui_command) {
 
 
 			case gui_cmd_synchronize_all: {
@@ -5581,7 +5583,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_sort_channels_selectors:
 				{
 
-					sortChannelsSelectorsMain(pending_gui_command->gui_command_value);
+					sortChannelsSelectorsMain(pending_gui_command.gui_command_value);
 				}
 				break;
 
@@ -5589,7 +5591,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_sort_zbdevices_selectors:
 				{
 
-					sortZbDevicesSelectorsMain(pending_gui_command->gui_command_value);
+					sortZbDevicesSelectorsMain(pending_gui_command.gui_command_value);
 				}
 				break;
 
@@ -5630,7 +5632,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_edit_actions_table: {
 
 					sendActionRowEdit(
-						actions_table_label_2, pending_gui_command->gui_command_value);
+						actions_table_label_2, pending_gui_command.gui_command_value);
 					enableActionsTable(true);
 			} break;
 
@@ -5638,7 +5640,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_build_actions_table: {
 					
 				buildActionsTableJsonPayload(
-					actions_table_label_2, pending_gui_command->gui_command_value);
+					actions_table_label_2, pending_gui_command.gui_command_value);
 				enableActionsTable(true);
 			} break;
 
@@ -5646,7 +5648,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_edit_channel_data:
 				{
 
-					editChannelMain(pending_gui_command->gui_command_value);
+					editChannelMain(pending_gui_command.gui_command_value);
 				}
 				break;
 
@@ -5654,7 +5656,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_update_channel_info:
 				{
 
-					updateChannelInfoLabel(pending_gui_command->gui_command_value);
+					updateChannelInfoLabel(pending_gui_command.gui_command_value);
 				}
 				break;
 
@@ -5662,7 +5664,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_update_zbdevice_info:
 				{
 
-					updateDeviceInfoLabel(pending_gui_command->gui_command_value);
+					updateDeviceInfoLabel(pending_gui_command.gui_command_value);
 				}
 				break;
 
@@ -5678,7 +5680,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_Tuya_device_callback:
 				{
 
-					TuyaDeviceSelectorCmd(pending_gui_command->gui_command_value);
+					TuyaDeviceSelectorCmd(pending_gui_command.gui_command_value);
 				}
 				break;
 
@@ -5686,7 +5688,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_Tuya_custom_cmd_callback:
 				{
 
-					TuyaCustomCmdMain(pending_gui_command->gui_command_value);
+					TuyaCustomCmdMain(pending_gui_command.gui_command_value);
 				}
 				break;
 
@@ -5694,7 +5696,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_get_clusters_attributes_query_callback:
 				{
 
-					getClustersAttributesQueryMain(pending_gui_command->gui_command_value);
+					getClustersAttributesQueryMain(pending_gui_command.gui_command_value);
 				}
 				break;
 
@@ -5866,9 +5868,25 @@ void Z2S_loopWebGUI() {
 				
 				if (new_channel_slot >= 0) {
 					ESPUI.updateLabel(
-						lah_status_label, "The local ADC sensor has been successfully added and is "
+						lah_status_label, 
+						"The local ADC sensor has been successfully added and is "
 						"available for use.");
 					
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
+				}
+			} break;
+
+
+			case gui_cmd_add_local_pwm: {
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_GPIO_PWM, 0);
+
+				if (new_channel_slot >= 0) {
+					ESPUI.updateLabel(
+						lah_status_label,
+						"The local PWM controller has been successfully added and is "
+						"available for use.");
+
 					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
 				}
 			} break;
@@ -6029,7 +6047,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_add_switchbot_2x:
 				{
 
-					local_func = (pending_gui_command->gui_command == gui_cmd_add_switchbot_1x) ? 0 : 1;
+					local_func = (pending_gui_command.gui_command == gui_cmd_add_switchbot_1x) ? 0 : 1;
 
 					int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
 					  LOCAL_CHANNEL_TYPE_SWITCHBOT, local_func);
@@ -6124,13 +6142,13 @@ void Z2S_loopWebGUI() {
 
 
 			case gui_cmd_ir_device_callback: {
-				irDeviceSelectorCmd(pending_gui_command->gui_command_value);
+				irDeviceSelectorCmd(pending_gui_command.gui_command_value);
 			} break;
 
 
 			case gui_cmd_build_ir_codes_table: {
 				buildIrCodesTableJsonPayload(
-				  ir_codes_table_label, pending_gui_command->gui_command_value);
+				  ir_codes_table_label, pending_gui_command.gui_command_value);
 				enableIrTable(true);
 				updateIrCodeButtons();
 			} break;
@@ -6138,14 +6156,14 @@ void Z2S_loopWebGUI() {
 
 			case gui_cmd_edit_ir_codes_table: {
 				sendIrCodeRowEdit(
-				  ir_codes_table_label, pending_gui_command->gui_command_value);
+				  ir_codes_table_label, pending_gui_command.gui_command_value);
 				enableIrTable(true);
 				updateIrCodeButtons();
 			} break;
 
 
 			case gui_cmd_learn_ir_code: {
-				int32_t val = pending_gui_command->gui_command_value;
+				int32_t val = pending_gui_command.gui_command_value;
 				if (val >= 0) {
 					Z2S_Device *dev = Z2S_Device::getZ2SDeviceByDeviceIndex(val);
 					if (dev) {
@@ -6186,7 +6204,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_send_ir_code: {
 				z2s_ir_code_t ir_code = {};
 				Z2S_Device *dev = Z2S_Device::getZ2SDeviceByDeviceIndex(current_ir_device_id);
-				if (dev && irCodesStorage.load(pending_gui_command->gui_command_value, ir_code)) {
+				if (dev && irCodesStorage.load(pending_gui_command.gui_command_value, ir_code)) {
 					
 					sendLearnedIRCode(
 					  dev->getDeviceShortAddress(), 1, ir_code.ir_code_base64);
@@ -6224,7 +6242,7 @@ void Z2S_loopWebGUI() {
 			case gui_cmd_pushover_message_callback: {
 
 				pushoverMessagesCallbackMain(
-				  pending_gui_command->gui_command_value);
+				  pending_gui_command.gui_command_value);
 			} break;
 
 
@@ -6232,7 +6250,7 @@ void Z2S_loopWebGUI() {
 
 				buildPushoverMessagesTableJsonPayload(
 				  pushover_messages_table_label,
-				  pending_gui_command->gui_command_value);
+				  pending_gui_command.gui_command_value);
 				enablePushoverTable(true);
 				updatePushoverMessageButtons();
 			} break;
@@ -6242,12 +6260,11 @@ void Z2S_loopWebGUI() {
 
 				sendPushoverMessageRowEdit(
 				  pushover_messages_table_label,
-				  pending_gui_command->gui_command_value);
+				  pending_gui_command.gui_command_value);
 				enablePushoverTable(true);
 				updatePushoverMessageButtons();
 			} break;
 		}
-		pending_gui_command->in_use = false;
 	}
 }
 
@@ -6857,33 +6874,34 @@ void enableChannelParams(uint8_t params_mask) {
 
 void fillRemoteAddressData(uint8_t channel_slot) {
 
-	char general_purpose_gui_buffer[512] = {};
-
 	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
+	if (!z2s_core) {
+		return;
+	}
+
+	char addr_buf[64] = {}; 
 
 	uint8_t remote_address_type = z2s_core->checkChannelUserDataFlags(
 		USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS) ? REMOTE_ADDRESS_TYPE_MDNS
 	  : REMOTE_ADDRESS_TYPE_IP4;
 
-
 	if (remote_address_type == REMOTE_ADDRESS_TYPE_IP4) {
 
 		IPAddress ip(z2s_core->getRemoteIPAddress());
+		snprintf(
+			addr_buf, sizeof(addr_buf), "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
 
-		ESPUI.updateText(param_1_text, ip.toString());
-
+		working_str = addr_buf; 
+		ESPUI.updateText(param_1_text, working_str);
 		ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
-	} else {
-		if (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) {
+	} 
+	else if (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) {
 
-			sprintf(
-			  general_purpose_gui_buffer, "mdns://%s", z2s_core->getMDNSName());
+		snprintf(addr_buf, sizeof(addr_buf), "mdns://%s", z2s_core->getMDNSName());
 
-			working_str = general_purpose_gui_buffer;
-			ESPUI.updateText(param_1_text, working_str);
-
-			ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
-		}
+		working_str = addr_buf;
+		ESPUI.updateText(param_1_text, working_str);
+		ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
 	}
 }
 
@@ -7308,6 +7326,40 @@ void updateChannelInfoLabel(
 					working_str_ptr = "Enter local ADC attenuation:";
 					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalAdcAttenuation());
+				}
+
+				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_PWM) {
+
+					enableChannelTimings(0);
+					enableChannelParams(1 + 2 + 4);
+
+					char *working_str_ptr =
+					  "Enter local PWM parameters - use this format: "
+					  "Pin,FreqHz,MinDuty(0-100),MaxDuty(1-100), e.g. 18,5000,20,100";
+					ESPUI.updateControlLabel(param_1_text, working_str_ptr);
+
+					sprintf(
+					  general_purpose_gui_buffer, "%d,%lu,%u,%u",
+					  z2s_core->getLocalPwmGpioPin(),
+					  z2s_core->getLocalPwmFreqHz(),
+					  z2s_core->getLocalPwmMinDuty(),
+					  z2s_core->getLocalPwmMaxDuty());
+
+					working_str = general_purpose_gui_buffer;
+					ESPUI.updateText(param_1_text, working_str);
+
+					working_str_ptr =
+					  "Enter local PWM logic type: 0 = normal (active HIGH), "
+					  "1 = inverted (active LOW)";
+					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
+					ESPUI.updateNumber(
+					  param_2_number, z2s_core->getLocalPwmInvertLogic());
+
+					working_str_ptr =
+					  "Enter local PWM resolution in bits (8-12, default 10):";
+					ESPUI.updateControlLabel(param_3_number, working_str_ptr);
+					ESPUI.updateNumber(
+					  param_3_number, z2s_core->getLocalPwmResolutionBits());
 				}
 
 				if (z2s_channel.local_channel_type == 
@@ -8756,22 +8808,25 @@ void editDeviceCallback(BasicControl *sender, int type, void *param) {
 
 uint32_t saveRemoteAddressData(uint8_t channel_slot) {
 
-	working_str = ESPUI.getControl(param_1_text)->getValue();
-
-	int8_t prefix_pos = working_str.indexOf("mdns://");
-
+	const char *addr_cstr = ESPUI.getControl(param_1_text)->getValueCstr();
 	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
 
-	if (prefix_pos >= 0) {
+	if (!addr_cstr || !z2s_core) {
+		return REMOTE_ADDRESS_TYPE_IP4;
+	}
+
+	const char *mdns_pos = strstr(addr_cstr, "mdns://");
+
+	if (mdns_pos != nullptr) {
 
 		z2s_core->setChannelUserDataFlags(
 			USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS, false);
-		z2s_core->setMDNSName(working_str.c_str());
+		z2s_core->setMDNSName(addr_cstr);
 	} 
 	else {
 
 		IPAddress ip;
-		ip.fromString(working_str);
+		ip.fromString(addr_cstr);
 
 		z2s_core->clearChannelUserDataFlags(
 		  USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS, false);
@@ -8995,25 +9050,53 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 									case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
 											
-											long sht3x_params[2];
-											size_t params_found = parseCsvNumbers(
-											  ESPUI.getControl(param_1_text)->getValueCstr(),
-											  sht3x_params, 2);
+										long sht3x_params[2];
+										size_t params_found = parseCsvNumbers(
+											ESPUI.getControl(param_1_text)->getValueCstr(),
+											sht3x_params, 2);
 
-											if (params_found == 2) {
-												z2s_core->setLocalSHT3xSdaPin(sht3x_params[0]);
-												z2s_core->setLocalSHT3xSclPin(sht3x_params[1]);
-												z2s_core->saveChannelData();
-												z2s_core->updateLocalSHT3xParams();
-											}
-										} break;
+										if (params_found == 2) {
+											z2s_core->setLocalSHT3xSdaPin(sht3x_params[0]);
+											z2s_core->setLocalSHT3xSclPin(sht3x_params[1]);
+											z2s_core->saveChannelData();
+											z2s_core->updateLocalSHT3xParams();
+										}
+									} break;
 
 									case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
 
-											z2s_core->setLocalAdcPin(
-											  ESPUI.getControl(param_1_text)->getValueInt(), true);
-											z2s_core->updateLocalAdcParams();
-										} break;
+										z2s_core->setLocalAdcPin(
+											ESPUI.getControl(param_1_text)->getValueInt(), true);
+										z2s_core->updateLocalAdcParams();
+									} break;
+
+
+									case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
+
+										long pwm_params[4];
+										size_t params_found = parseCsvNumbers(
+										  ESPUI.getControl(param_1_text)->getValueCstr(),
+										  pwm_params, 4);
+
+										switch (params_found) {
+											case 4:
+												z2s_core->setLocalPwmMaxDuty(pwm_params[3]);
+												[[fallthrough]];
+											case 3:
+												z2s_core->setLocalPwmMinDuty(pwm_params[2]);
+												[[fallthrough]];
+											case 2:
+												z2s_core->setLocalPwmFreqHz(pwm_params[1]);
+												[[fallthrough]];
+											case 1:
+												z2s_core->setLocalPwmGpioPin(pwm_params[0]);
+												z2s_core->saveChannelData();
+												z2s_core->updateLocalPwmParams();
+												break;
+											default:
+												break;
+										}
+									} break;
 								}
 							} break; //LCHT 
 
@@ -9148,6 +9231,15 @@ void editChannelMain(uint32_t update_channel_flag) {
 											  ESPUI.getControl(param_2_number)->getValueInt(), true);
 											z2s_core->updateLocalAdcParams();
 										} break;
+
+
+										case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
+
+										z2s_core->setLocalPwmInvertLogic(
+										  ESPUI.getControl(param_2_number)->getValueInt() != 0,
+										  true);
+										z2s_core->updateLocalPwmParams();
+									} break;
 								}
 							}
 							break;
@@ -9191,18 +9283,25 @@ void editChannelMain(uint32_t update_channel_flag) {
 									case LOCAL_CHANNEL_TYPE_CALC_GPM:
 
 										saveSourceChannelData(channel_slot);
-										break;
+									break;
 
 
-									case LOCAL_CHANNEL_TYPE_GPIO_BINARY:
-										{
+									case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
 
-											z2s_core->setLocalBinaryPullUp(
-											  ESPUI.getControl(param_3_number)->getValueInt(), true);
+										z2s_core->setLocalBinaryPullUp(
+											ESPUI.getControl(param_3_number)->getValueInt(), true);
 
-											z2s_core->updateLocalBinaryParams();
-										}
-										break;
+										z2s_core->updateLocalBinaryParams();
+									} break;
+
+
+									case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
+
+										z2s_core->setLocalPwmResolutionBits(
+										  ESPUI.getControl(param_3_number)->getValueInt(),
+										  true);
+										z2s_core->updateLocalPwmParams();
+									} break;
 								}
 							}
 							break;
@@ -11488,7 +11587,7 @@ void GUI_onTuyaCustomClusterReceive(
 
 	char hex_chunk[3];
 
-	hex_chunk[3] = 0x00;
+	hex_chunk[2] = 0x00;
 
 	Tuya_dp_zcl_payload_t *Tuya_dp_zcl_payload =
 	  (Tuya_dp_zcl_payload_t *)payload_data;

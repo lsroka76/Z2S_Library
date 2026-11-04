@@ -1204,6 +1204,19 @@ bool Z2S_Core::updateLocalAdcParams() {
   }
   return true;
 }
+/*****************************************************************************/
+
+bool Z2S_Core::updateLocalPwmParams() {
+
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_PWM &&
+      _z2s_element) {
+
+    auto *pwm = static_cast<Supla::Control::LocalPWM *>(_z2s_element);
+    pwm->setupPWM();
+    return true;
+  }
+  return false;
+}
 
 /*****************************************************************************/
 

@@ -1,15 +1,11 @@
 #ifndef WEB_GUI_TEMPLATES_H_
 #define WEB_GUI_TEMPLATES_H_
 
-//#include <supla/actions.h>
-//#include <supla/events.h>
-
 #include "TuyaDatapoints.h"
 #include "Z2S_custom_actions_events.h"
 
 
-enum ActionGUIState {
-
+enum ActionGUIState : uint8_t {
 	VIEW_ACTION,
 	NEW_ACTION,
 	EDIT_ACTION,
@@ -19,8 +15,7 @@ enum ActionGUIState {
 	COPY_ACTION
 };
 
-enum PushoverMessageGUIState {
-
+enum PushoverMessageGUIState : uint8_t {
 	VIEW_PUSHOVER_MESSAGE,
 	NEW_PUSHOVER_MESSAGE,
 	EDIT_PUSHOVER_MESSAGE,
@@ -30,7 +25,7 @@ enum PushoverMessageGUIState {
 	COPY_PUSHOVER_MESSAGE
 };
 
-enum IrCodeGUIState {
+enum IrCodeGUIState : uint8_t {
 	VIEW_IR_CODE,
 	NEW_IR_CODE,
 	EDIT_IR_CODE,
@@ -40,93 +35,71 @@ enum IrCodeGUIState {
 	COPY_IR_CODE
 };
 
-typedef struct zigbee_cluster_s {
-
+typedef struct __attribute__((packed)) zigbee_cluster_s {
 	const char* zigbee_cluster_name;
-	const uint16_t zigbee_cluster_id;
+	uint16_t zigbee_cluster_id;
 } zigbee_cluster_t;
 
-
-typedef struct zigbee_attribute_s {
-
-	const uint16_t zigbee_attribute_id;
-	const uint16_t zigbee_attribute_cluster_id;
-	const uint8_t zigbee_attribute_datatype_id;
+typedef struct __attribute__((packed)) zigbee_attribute_s {
+	uint16_t zigbee_attribute_id;
+	uint16_t zigbee_attribute_cluster_id;
+	uint8_t zigbee_attribute_datatype_id;
 	const char* zigbee_attribute_name;
 } zigbee_attribute_t;
 
-
-typedef struct zigbee_datatype_s {
-
+typedef struct __attribute__((packed)) zigbee_datatype_s {
 	const char* zigbee_datatype_name;
-	const uint8_t zigbee_datatype_size;
-	const uint8_t zigbee_datatype_id;
+	uint8_t zigbee_datatype_size;
+	uint8_t zigbee_datatype_id;
 } zigbee_datatype_t;
 
-
 typedef struct zigbee_attribute_value_s {
-
-	const uint16_t zigbee_attribute_id;
-	const uint16_t zigbee_cluster_id;
+	uint16_t zigbee_attribute_id;
+	uint16_t zigbee_cluster_id;
 	const char* zigbee_attribute_value_name;
-union {
-	const uint32_t zigbee_attribute_value;
-	const char* zigbee_attribute_value_str;
-};
+	union {
+		uint32_t zigbee_attribute_value;
+		const char* zigbee_attribute_value_str;
+	};
 } zigbee_attribute_value_t;
 
-
-typedef struct Tuya_datapoint_type_s {
-
+typedef struct __attribute__((packed)) Tuya_datapoint_type_s {
 	const char* Tuya_datapoint_type_name;
-	const uint8_t Tuya_datapoint_type_id;
-	const uint16_t Tuya_datapoint_type_length;
+	uint8_t Tuya_datapoint_type_id;
+	uint16_t Tuya_datapoint_type_length;
 } Tuya_datapoint_type_t;
 
-
-typedef struct Tuya_datapoint_desc_s {
-
-  //uint32_t    Tuya_datapoint_desc_id;
-  uint32_t    z2s_device_desc_id;
-  uint8_t     Tuya_datapoint_id;
-  uint8_t     Tuya_datapoint_type;
-  //uint16_t    Tuya_datapoint_length;
-  const char *Tuya_datapoint_name;
-  const char *Tuya_datapoint_description;
+typedef struct __attribute__((packed)) Tuya_datapoint_desc_s {
+	uint32_t    z2s_device_desc_id;
+	uint8_t     Tuya_datapoint_id;
+	uint8_t     Tuya_datapoint_type;
+	const char* Tuya_datapoint_name;
+	const char* Tuya_datapoint_description;
 } Tuya_datapoint_desc_t;
 
-
-typedef struct zigbee_manufacturer_code_s {
-
-	const uint16_t manufacturer_code;
+typedef struct __attribute__((packed)) zigbee_manufacturer_code_s {
+	uint16_t manufacturer_code;
 	const char* manufacturer_name;
 } zigbee_manufacturer_code_t;
 
-
-typedef struct Supla_action_type_s {
-
-	const Supla::Action	Supla_action_id;
+typedef struct __attribute__((packed)) Supla_action_type_s {
+	Supla::Action Supla_action_id;
 	const char* Supla_action_name;
-	const uint16_t max_subactions_number;
+	uint16_t max_subactions_number;
 } Supla_action_type_t;
 
-
-typedef struct Supla_event_type_s {
-
-	const int32_t Supla_event_id;
+typedef struct __attribute__((packed)) Supla_event_type_s {
+	int16_t Supla_event_id; // All Supla events fit in int16_t
 	bool is_condition;
 	const char* Supla_event_name;
 } Supla_event_type_t;
 
-
-typedef struct Supla_condition_type_s {
-
-	const Supla::Conditions Supla_condition_id;
+typedef struct __attribute__((packed)) Supla_condition_type_s {
+	Supla::Conditions Supla_condition_id;
 	const char* Supla_condition_name;
 } Supla_condition_type_t;
 
-inline constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
-
+inline constexpr const char* GUI_MODE_OPTIONS[] = {
 	"No GUI on start",
 	"Minimal GUI (Gateway + Credentials)",
 	"Standard GUI (Minimal + Devices + Channels + Actions)",
@@ -144,7 +117,7 @@ inline constexpr char* GUI_MODE_OPTIONS[] PROGMEM = {
 	"Standard GUI + AD"
 };
 
-inline constexpr char* GUI_BUILD_FLAGS_NAMES[] PROGMEM = {
+inline constexpr const char* GUI_BUILD_FLAGS_NAMES[] = {
 	"Gateway",
 	"WiFi & Supla credentials",
 	"ZigBee settings",

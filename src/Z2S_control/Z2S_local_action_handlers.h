@@ -372,6 +372,46 @@ class LocalHvac: public HvacBase, public Z2S_Core {
 
 /*****************************************************************************/
 
+class LocalPWM : public ChannelElement, public ActionHandler, public Z2S_Core {
+
+  public:
+    LocalPWM();
+    virtual ~LocalPWM();
+
+    void onInit() override;
+    void onLoadState() override;
+    void onSaveState() override;
+    void iterateAlways() override;
+
+    int32_t handleNewValueFromServer(
+      TSD_SuplaChannelNewValue *newValue) override;
+    void handleAction(int event, int action) override;
+
+    void setupPWM();
+    void applyHardwarePWM();
+
+    bool isOn() const {
+      return (_brightness > 0);
+    }
+
+    void turnOn();
+    void turnOff();
+    void toggle();
+    void setBrightness(uint8_t brightness);
+    void increaseBrightness(int8_t step);
+
+  protected:
+    int8_t   _attached_pin = -1;
+    uint32_t _attached_freq = 0;
+    uint8_t  _attached_res = 0;
+
+    uint8_t  _brightness = 0;
+    uint8_t  _last_brightness = 100;
+    uint32_t _last_msg_received_ms = 0;
+};
+
+/*****************************************************************************/
+
 class SwitchBotRelay: public Relay, public Z2S_Core {
 
   public:

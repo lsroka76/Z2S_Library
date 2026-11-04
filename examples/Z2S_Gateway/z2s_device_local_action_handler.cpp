@@ -309,6 +309,29 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     }
   },
   {
+    LOCAL_CHANNEL_TYPE_GPIO_PWM,
+    "Local PWM (GPIO)",
+    LOCAL_GPIO_PWM_NAME,
+    SUPLA_CHANNELFNC_DIMMER,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* pwm = initOrCastLocalElement<Supla::Control::LocalPWM>(
+          idx, ch, el, true);
+      pwm->updateLocalPwmParams();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* pwm = new Supla::Control::LocalPWM();
+      registerNewLocalChannel(pwm, slot, d, func, nullptr, [](auto* pwm) {
+        pwm->setLocalPwmGpioPin(-1);
+        pwm->setLocalPwmFreqHz(5000);
+        pwm->setLocalPwmMinDuty(0);
+        pwm->setLocalPwmMaxDuty(100);
+        pwm->setLocalPwmInvertLogic(false);
+        pwm->setLocalPwmResolutionBits(10);
+      });
+    }
+  },
+  {
     LOCAL_CHANNEL_TYPE_SWITCHBOT,
     "Switchbot object",
     nullptr,
