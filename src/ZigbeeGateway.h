@@ -354,8 +354,11 @@ public:
     return _joined_devices;
   }
   zbg_device_params_t * getLastJoinedDevice() { 
+
     zbg_device_params_t *last_joined_device = NULL;
+    
     if (!_joined_devices.empty()) {
+      
       last_joined_device = _joined_devices.back();
       _joined_devices.pop_back(); 
     }
@@ -367,14 +370,10 @@ public:
     return _new_device_joined;
   }
   static void clearNewDeviceJoined() {
+
     _new_device_joined = false;
   }
-  /*static void setEndpoints2Bind(uint8_t endpoints_count) {
-    _endpoints_2_bind = endpoints_count;
-  }
-  static void setClusters2Bind(uint16_t clusters_count) {
-    _clusters_2_bind = clusters_count;
-  }*/
+  
 
   static void setActivePairing(bool active_pairing) {
 

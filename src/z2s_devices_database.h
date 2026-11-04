@@ -7928,10 +7928,29 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
-      Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS}},
-
-  
+      Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS}}, 
 //DEVICES_END
 };
+
+constexpr int32_t findDuplicateDeviceUidIndex() {
+
+  constexpr size_t count = sizeof(Z2S_DEVICES_LIST) / 
+    sizeof(Z2S_DEVICES_LIST[0]);
+  for (size_t i = 0; i < count; ++i) {
+    if (Z2S_DEVICES_LIST[i].z2s_device_uid == 0) continue;
+    for (size_t j = i + 1; j < count; ++j) {
+      if (Z2S_DEVICES_LIST[i].z2s_device_uid == 
+          Z2S_DEVICES_LIST[j].z2s_device_uid) {
+        return j;
+      }
+    }
+  }
+  return -1;
+}
+
+static_assert(
+  findDuplicateDeviceUidIndex() == -1, 
+  "Duplicate z2s_device_uid found in Z2S_DEVICES_LIST!");
+
 #endif
 //

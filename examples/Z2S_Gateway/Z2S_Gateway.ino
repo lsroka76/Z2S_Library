@@ -476,54 +476,59 @@ void disableZ2SNotifications() {
 }
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
-  Serial.printf("Listing directory: %s\n", dirname);
+
+  log_i("Listing directory: %s", dirname);
 
   File root = fs.open(dirname);
-  if (!root) {
-    Serial.println("Failed to open directory");
-    return;
-  }
-  if (!root.isDirectory()) {
-    Serial.println("Not a directory");
+  if (!root || !root.isDirectory()) {
+    log_e("Failed to open directory: %s", dirname);
+    if (root) root.close();
     return;
   }
 
   File file = root.openNextFile();
   while (file) {
-    if (file.isDirectory()) {
-      Serial.print("  DIR : ");
-      Serial.print(file.name());
-      time_t t = file.getLastWrite();
-      struct tm *tmstruct = localtime(&t);
-      
-      Serial.printf(
-        "LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", 
-        (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
-        tmstruct->tm_mday, tmstruct->tm_hour,
-        tmstruct->tm_min, tmstruct->tm_sec);
+    bool isDir = file.isDirectory();
+    time_t t = file.getLastWrite();
+    struct tm tmstruct = {};
+    localtime_r(&t, &tmstruct);
 
-      if (levels) {
-        listDir(fs, file.path(), levels - 1);
+    if (isDir) {
+      
+      char subPath[64];
+      strncpy(subPath, file.path(), sizeof(subPath) - 1);
+      subPath[sizeof(subPath) - 1] = '\0';
+
+      log_i(
+        "  DIR : %s  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d",
+        file.name(), tmstruct.tm_year + 1900, tmstruct.tm_mon + 1, 
+        tmstruct.tm_mday, tmstruct.tm_hour, tmstruct.tm_min, tmstruct.tm_sec);
+
+      file.close();
+
+      if (levels > 0) {
+        listDir(fs, subPath, levels - 1);
       }
-    } else {
-      Serial.print("  FILE: ");
-      Serial.print(file.name());
-      Serial.print("  SIZE: ");
-      Serial.print(file.size());
-      time_t t = file.getLastWrite();
-      struct tm *tmstruct = localtime(&t);
-      Serial.printf(
-        " LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", 
-          (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, 
-          tmstruct->tm_mday, tmstruct->tm_hour,
-        tmstruct->tm_min, tmstruct->tm_sec);
+    } 
+    else {
+
+      log_i(
+        "  FILE: %-28s SIZE: %6u  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d",
+        file.name(), (unsigned)file.size(), tmstruct.tm_year + 1900, 
+        tmstruct.tm_mon + 1, tmstruct.tm_mday, tmstruct.tm_hour, 
+        tmstruct.tm_min, tmstruct.tm_sec);
+
+      file.close(); 
     }
+
     file = root.openNextFile();
   }
+  root.close(); 
 }
 
 Supla::Device::StatusLed statusLed(RGB_BUILTIN, true);
 
+/*****************************************************************************/
 
 static uint32_t parse_uint(const char *s, size_t len) {
 
@@ -538,6 +543,8 @@ static uint32_t parse_uint(const char *s, size_t len) {
   return strtoul(tmp, nullptr, 10);
 }
 
+/*****************************************************************************/
+
 static int32_t parse_int(const char *s, size_t len) {
 
   char tmp[16];
@@ -550,6 +557,8 @@ static int32_t parse_int(const char *s, size_t len) {
 
   return strtol(tmp, nullptr, 10);
 }
+
+/*****************************************************************************/
 
 void setup() {
 
@@ -564,34 +573,6 @@ void setup() {
 
   printSizeOfClasses();
 
-  uint32_t sanity_check_time_ms = millis();
-
-  uint16_t devices_list_table_number = 
-    sizeof(Z2S_DEVICES_LIST) / sizeof(Z2S_DEVICES_LIST[0]);
-  
-  uint8_t match = 0;
-
-  for(uint16_t i = 0; i < devices_list_table_number; i++) {
-    match = 0;
-    for (uint16_t j = 0; j < devices_list_table_number; j++) {
-      
-      if ((Z2S_DEVICES_LIST[i].z2s_device_uid > 0) &&
-          (Z2S_DEVICES_LIST[i].z2s_device_uid == 
-            Z2S_DEVICES_LIST[j].z2s_device_uid))
-        match++;
-      if (match > 1) {
-
-        log_e(
-          "Critical! Duplicate found %s", 
-          Z2S_DEVICES_LIST[i].manufacturer_name);
-        break;
-      }
-    }
-  }
-  sanity_check_time_ms = millis() - sanity_check_time_ms;
-
-  log_i("Sanity check time %lu", sanity_check_time_ms);
-  
   //log_d("Total PSRAM: %d", ESP.getPsramSize());
   //log_d("Free PSRAM: %d", ESP.getFreePsram());
 
@@ -670,9 +651,8 @@ void setup() {
     Z2S_SUPLA_ACTION_DEVICE_STATUS_CHANGE, AHwC, 
     Supla::ON_DEVICE_STATUS_CHANGE, false);
 
-  //LittleFS.begin(true);
   Z2S_initLittleFs();
-  listDir(LittleFS,"/",3);
+  //listDir(LittleFS,"/",3);
 
   File verfile = LittleFS.open("/version.dat", "w");
 
@@ -1101,10 +1081,10 @@ void loop() {
     }
     else {
 
+      IPAddress ip = client2.remoteIP();
+
       client2.print("OK\n");
       client2.stop();
-
-      IPAddress ip = client2.remoteIP();
 
       const char *p = cmd + strlen(Z2S_TCP_CMD);
 
@@ -1139,7 +1119,7 @@ void loop() {
             src_channel, cmd_dst_channel, cmd_thermometer_value);
 
           Z2S_Core::updateRemoteThermometer(
-            cmd_dst_channel, client2.remoteIP(), src_channel, value_type, 
+            cmd_dst_channel, ip, src_channel, value_type, 
             cmd_thermometer_value);
         } break;
       }   
@@ -1159,8 +1139,8 @@ void loop() {
     log_i(
       "New UTC time %lu, new local time %lu", new_utc_time, new_local_time);
     
-    log_i("now attempting to check heap integrity #1");
-    heap_caps_check_integrity_all(true);
+    //log_i("now attempting to check heap integrity #1");
+    //heap_caps_check_integrity_all(true);
 
     esp_zb_lock_acquire(portMAX_DELAY);
 
@@ -1300,12 +1280,18 @@ void loop() {
       else _basic_cluster_query_success = true;
 
       if (!_basic_cluster_query_success) {
-        
-          log_i("Error while pairing - cann't read manufacturer id (5x). "
-                "Gateway will restart, try to pair device once again!");
-          SuplaDevice.scheduleSoftRestart(1000);
-        } 
-test_label:      
+
+        log_e(
+          "Error while pairing - can't read manufacturer id (5x). "
+          "Try to pair device once again!");
+
+        free(joined_device);
+        joined_device = nullptr;
+        zbGateway.clearNewDeviceJoined();
+        //SuplaDevice.scheduleSoftRestart(1000);
+        break;
+      }
+     
       uint16_t devices_list_table_number = 
         sizeof(Z2S_DEVICES_LIST)/sizeof(Z2S_DEVICES_LIST[0]);
 
@@ -1344,17 +1330,10 @@ test_label:
                   z2s_device_list.z2s_device_endpoints_ext;
 
               log_i(
-                "LIST matched %s::%s, entry # %d, endpoints # %d, "
-                "endpoints 0x%x::0x%x,0x%x::0x%x,0x%x::0x%x",
+                "LIST matched %s::%s, entry # %lu, endpoints # %u",
                 z2s_device_list.manufacturer_name, z2s_device_list.model_name, 
                 devices_list_counter, 
-                z2s_device_list.z2s_device_endpoints_count,
-                z2s_device_endpoints_ptr->endpoint_id, 
-                z2s_device_endpoints_ptr->z2s_device_desc_id,
-                (z2s_device_endpoints_ptr + 1)->endpoint_id, 
-                (z2s_device_endpoints_ptr + 1)->z2s_device_desc_id,
-                (z2s_device_endpoints_ptr + 2)->endpoint_id, 
-                (z2s_device_endpoints_ptr + 2)->z2s_device_desc_id);
+                z2s_device_list.z2s_device_endpoints_count);
   
               for (uint8_t endpoint_counter = 0; 
                    endpoint_counter < 
@@ -1402,6 +1381,10 @@ test_label:
                   (z2s_device_list.z2s_device_endpoints_count == 1) ?
                   z2s_device_list.z2s_device_desc_id :
                   (z2s_device_endpoints_ptr + endpoint_idx)->z2s_device_desc_id; 
+
+                log_i(
+                    "Processing endpoint #%u: ep_id=0x%02X, desc_id=0x%04lX",
+                      endpoint_counter, endpoint_id, z2s_device_desc_id);
 
                 for (uint32_t devices_desc_counter = 0; 
                      devices_desc_counter < devices_desc_table_number; 
@@ -1595,17 +1578,31 @@ test_label:
                         z2s_device->syncDeviceDescFlags(devices_desc_counter);
                         z2s_device->clearDeviceUserDataFlags(
                           ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
+                      
+                        joined_device->zb_device_id = 
+                          z2s_device->getDeviceIndex();
                       }
-                      joined_device->zb_device_id = z2s_device->getDeviceIndex();
+                      else {
+                        log_e(
+                          "Failed to allocate Z2S_Device slot - aborting "
+                          "channel creation!");
+                        
+                        joined_device->zb_device_id = 0xFF;
+                        break;
+                      }
                     }
-                    //if (restart_required)  
-                    Z2S_buildSuplaChannels(joined_device, endpoint_counter);
+
+                    if (joined_device->zb_device_id != 0xFF) {
+                      
+                      Z2S_buildSuplaChannels(joined_device, endpoint_counter);
+                    }
                   }          
                 }
                 //here starts new reporting code
 
-                if ((z2s_device_endpoints_ptr + endpoint_idx)->reporting_flags &
-                    Z2S_REPORTING_SET_FLAG_STANDARD) {
+               if ((z2s_device_list.z2s_device_endpoints_count > 0) &&
+                    ((z2s_device_endpoints_ptr + endpoint_idx)->reporting_flags &
+                     Z2S_REPORTING_SET_FLAG_STANDARD)) {
 
                   log_i("new configure reporting at pairing started");
 
@@ -2019,8 +2016,15 @@ test_label:
                 zpm->notifySrpcAboutParingEnd(
                   SUPLA_CALCFG_PAIRINGRESULT_SUCCESS, found_device_name);
               }
-              if (restart_required)
+              if (restart_required) {
+
+                if (joined_device != nullptr) {
+                  free(joined_device);
+                  joined_device = nullptr;
+                }
+
                 SuplaDevice.scheduleSoftRestart(10000);
+              }
               else {
                 
                 if (Zigbee.isNetworkOpen())
@@ -2031,10 +2035,16 @@ test_label:
                 zbGateway.clearQueryBasicClusterData();
                 zbGateway.clearNewDeviceJoined();
                 
+                if (joined_device != nullptr) {
+                  free(joined_device);
+                  joined_device = nullptr;
+                }
+                
                 if (Z2S_isGUIStarted()) {
 
                   sortZbDevicesAndChannelsSelectors();
                 }
+                
                 Supla::Network::DisconnectProtocols();
                 
                 //enableZ2SNotifications();
@@ -2043,6 +2053,7 @@ test_label:
             }   
           }
       if (!device_recognized) {
+
         log_d(
           "Unknown model %s::%s, no binding is possible", 
           zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
@@ -2089,6 +2100,11 @@ test_label:
         }
         zbGateway.clearQueryBasicClusterData();
         zbGateway.clearNewDeviceJoined();
+
+        if (joined_device != nullptr) {
+          free(joined_device);
+          joined_device = nullptr;
+        }
       }
     }
   }
