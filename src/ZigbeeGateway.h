@@ -889,7 +889,6 @@ private:
 
   static volatile uint8_t _read_attr_last_tsn;
   static volatile uint8_t _read_attr_last_tsn_flag;
-  //static volatile uint8_t _read_attr_tsn_list[256];
   static volatile uint8_t _custom_cmd_last_tsn;
   static volatile uint8_t _custom_cmd_last_tsn_flag;
   static volatile uint8_t _set_config_last_tsn;
