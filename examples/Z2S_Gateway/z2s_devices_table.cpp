@@ -3701,6 +3701,17 @@ void Z2S_onBasicReceive(
   switch (attribute->id) {
 
 
+    case LUMI_ATTRIBUTE_CURTAIN_MOTOR_STATE_ID: {
+
+      uint8_t motor_state = readAttr<uint8_t>(attribute);
+
+      if (motor_state == 0)
+
+        zbGateway.sendAttributeRead(
+          short_addr, 1, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x0055);
+    } break;
+
+
     case 0xFF01: {
 
       for (uint8_t i = 0; i < attribute->data.size; i++)
@@ -3759,29 +3770,31 @@ void Z2S_onBasicReceive(
       if (!element) {
     
         log_e("no T/H channel found for address 0x%04X", short_addr);
-        return;
+        
       }
+      else {
 
-      uint8_t lumi_temperature_position = scanLumiPayload(
-        LUMI_ATTRIBUTE_TEMPERATURE_ID, ESP_ZB_ZCL_ATTR_TYPE_S16, attribute);
+        uint8_t lumi_temperature_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_TEMPERATURE_ID, ESP_ZB_ZCL_ATTR_TYPE_S16, attribute);
 
-      if (lumi_temperature_position > 0) {
+        if (lumi_temperature_position > 0) {
 
-        float lumi_temperature = readAttr<int16_t>(attribute, 
-          lumi_temperature_position) / 100.0f;
+          float lumi_temperature = readAttr<int16_t>(attribute, 
+            lumi_temperature_position) / 100.0f;
 
-        msgZ2SDeviceTempHumidityTemp(element, lumi_temperature);
-      }
+          msgZ2SDeviceTempHumidityTemp(element, lumi_temperature);
+        }
 
-      uint8_t lumi_humidity_position = scanLumiPayload(
-        LUMI_ATTRIBUTE_HUMIDITY_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, attribute);
+        uint8_t lumi_humidity_position = scanLumiPayload(
+          LUMI_ATTRIBUTE_HUMIDITY_ID, ESP_ZB_ZCL_ATTR_TYPE_U16, attribute);
 
-      if (lumi_humidity_position > 0) {
+        if (lumi_humidity_position > 0) {
 
-        float lumi_humidity = readAttr<uint16_t>(attribute, 
-          lumi_humidity_position) / 100.0f;
+          float lumi_humidity = readAttr<uint16_t>(attribute, 
+            lumi_humidity_position) / 100.0f;
           
-        msgZ2SDeviceTempHumidityHumi(element, lumi_humidity);
+          msgZ2SDeviceTempHumidityHumi(element, lumi_humidity);
+        }
       }
 
       Z2S_Core *z2s_core = Z2S_findZ2SCore(
@@ -3791,22 +3804,28 @@ void Z2S_onBasicReceive(
       if (!z2s_core) {
     
         log_e("no pressure channel found for address 0x%04X", short_addr);
-        return;
-      }       
+        
+      }
+      else {       
 
-      if (z2s_core->getZbDeviceModelId() ==
-          Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2)
-        return; //onPressureReceive gets more accurate results
-
-      uint8_t lumi_pressure_position = scanLumiPayload(
-        LUMI_ATTRIBUTE_PRESSURE_ID, ESP_ZB_ZCL_ATTR_TYPE_S32, attribute);
-
-      if (lumi_pressure_position > 0) {
-
-        float lumi_pressure = readAttr<int32_t>(attribute, 
-          lumi_pressure_position) / 100.0f;
+        if (z2s_core->getZbDeviceModelId() ==
+            Z2S_DEVICE_DESC_LUMI_TEMPHUMIPRESSURE_SENSOR_2) {
           
-        msgZ2SDevicePressure(z2s_core->getZ2SElementPtr(), lumi_pressure);
+          //onPressureReceive gets more accurate results
+        }
+        else {
+
+          uint8_t lumi_pressure_position = scanLumiPayload(
+            LUMI_ATTRIBUTE_PRESSURE_ID, ESP_ZB_ZCL_ATTR_TYPE_S32, attribute);
+
+          if (lumi_pressure_position > 0) {
+
+            float lumi_pressure = readAttr<int32_t>(attribute, 
+              lumi_pressure_position) / 100.0f;
+          
+            msgZ2SDevicePressure(z2s_core->getZ2SElementPtr(), lumi_pressure);
+          }
+        }
       }
     } break;
   }
@@ -4737,7 +4756,7 @@ void Z2S_onMultistateInputReceive(
             msgZ2SDeviceRollerShutter(
               element, RS_MOVING_DIRECTION_MSG, (present_value < 2) ? 0 : 1);
             
-            if (present_value == 2) {
+            if (present_value >= 2) {
         
               zbGateway.sendAttributeRead(
                 short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 

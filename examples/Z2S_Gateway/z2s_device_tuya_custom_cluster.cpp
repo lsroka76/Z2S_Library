@@ -35,85 +35,104 @@ uint32_t ir_code_send_position = 0;
 uint32_t ir_code_send_length  = 0;
 uint16_t ir_code_send_seq = 0;
 
+/*****************************************************************************/
 
-const char* IR_JSON_PREAMBLE = "{\"key_num\":1,\"delay\":300,\"key1\":{\"num\":1,\"freq\":38000,\"type\":1,\"key_code\":\"";
-const char* IR_JSON_POSTAMBLE = "\"}}";
+static constexpr const char IR_JSON_PREAMBLE[] = 
+  "{\"key_num\":1,\"delay\":300,\"key1\":{\"num\":1,\"freq\":38000,\"type\":1,"
+  "\"key_code\":\"";
 
-/*testcode01*/
-/*const static uint8_t TEST_CODE_01[] = {0x74,0x65,0x73,0x74,0x63,0x6F,0x64,0x65,0x30,0x31};*/
+static constexpr const char IR_JSON_POSTAMBLE[] = "\"}}";
 
+/*****************************************************************************/
 
 bool Z2S_readTuyaDPvalue(
-  Tuya_read_dp_result_t &Tuya_read_dp_result_test, uint8_t Tuya_dp_id, 
+  Tuya_read_dp_result_t &Tuya_read_dp_result, uint8_t Tuya_dp_id, 
   uint16_t payload_size, uint8_t *payload) {
 
-  uint16_t payload_counter = 2;
-  
-  Tuya_read_dp_result_test = {};
+  Tuya_read_dp_result = {};
 
-  Tuya_dp_data_t *Tuya_dp_data = nullptr;
-
-  while ((payload_size >= 7) && (payload_counter < payload_size)) {
-
-    Tuya_dp_data = (Tuya_dp_data_t *)(payload + payload_counter);
-    
-    if (Tuya_dp_data->dp_id == Tuya_dp_id) {
-
-      Tuya_read_dp_result_test.dp_id   = Tuya_dp_data->dp_id;
-      Tuya_read_dp_result_test.dp_type = Tuya_dp_data->dp_type;
-      Tuya_read_dp_result_test.dp_size = __builtin_bswap16(
-        Tuya_dp_data->dp_size_16_big_endian);
-
-      if (Tuya_read_dp_result_test.dp_type != 0) {
-
-        switch (Tuya_read_dp_result_test.dp_size) {
-
-          case 1: 
-            Tuya_read_dp_result_test.dp_value = Tuya_dp_data->dp_value_8; 
-          break;
-
-          case 2: 
-            Tuya_read_dp_result_test.dp_value = __builtin_bswap16(
-              Tuya_dp_data->dp_value_16_big_endian); 
-          break;
-
-          case 4: 
-            Tuya_read_dp_result_test.dp_value = __builtin_bswap32(
-              Tuya_dp_data->dp_value_32_big_endian); 
-          break;
-          
-          default: {
-            
-            log_e(
-              "unrecognized Tuya DP size 0x%x", 
-              Tuya_read_dp_result_test.dp_size); 
-            return Tuya_read_dp_result_test.is_success;
-          }
-        }
-      } else {
-
-        if (Tuya_read_dp_result_test.dp_size > 64) {
-
-          log_e(
-            "Tuya RAW DP size > 64 (0x%x)", Tuya_read_dp_result_test.dp_size); 
-          return Tuya_read_dp_result_test.is_success;
-        }
-
-        memcpy(
-          Tuya_read_dp_result_test.dp_raw_value_8, &Tuya_dp_data->dp_value_8, 
-          Tuya_read_dp_result_test.dp_size);
-      }
-      Tuya_read_dp_result_test.bytes_read = 4 + 
-        Tuya_read_dp_result_test.dp_size;
-      Tuya_read_dp_result_test.is_success = true;
-      return Tuya_read_dp_result_test.is_success;
-    }
-    else Tuya_read_dp_result_test.dp_size = __builtin_bswap16(
-      Tuya_dp_data->dp_size_16_big_endian);
-    payload_counter += 1 /*DP ID*/ + 1 /*DP TYPE*/ + 2/*DP DATA SIZE*/ + 
-      Tuya_read_dp_result_test.dp_size;
+  if (!payload || payload_size < 7) {
+    return false;
   }
-  return Tuya_read_dp_result_test.is_success;
+
+  uint16_t payload_counter = 2;
+
+  while ((payload_counter + 4) <= payload_size) {
+
+    const uint8_t *dp_ptr = payload + payload_counter;
+    uint8_t  dp_id   = dp_ptr[0];
+    uint8_t  dp_type = dp_ptr[1];
+    uint16_t dp_size = ((uint16_t)dp_ptr[2] << 8) | dp_ptr[3];
+
+    if ((payload_counter + 4 + dp_size) > payload_size) {
+
+      log_e(
+        "Truncated Tuya DP (id=%u, size=%u, payload_size=%u)",dp_id, dp_size,
+        payload_size);
+      
+      return false;
+    }
+
+    if (dp_id == Tuya_dp_id) {
+
+      Tuya_read_dp_result.dp_id   = dp_id;
+      Tuya_read_dp_result.dp_type = dp_type;
+      Tuya_read_dp_result.dp_size = dp_size;
+
+      const uint8_t *val_ptr = dp_ptr + 4;
+
+      if (dp_type != 0) {
+
+        switch (dp_size) {
+          
+          
+          case 1:
+            
+            Tuya_read_dp_result.dp_value = val_ptr[0];
+          break;
+
+
+          case 2:
+            
+            Tuya_read_dp_result.dp_value =
+              ((uint32_t)val_ptr[0] << 8) | val_ptr[1];
+          break;
+
+
+          case 4:
+            
+            Tuya_read_dp_result.dp_value =
+              ((uint32_t)val_ptr[0] << 24) |
+              ((uint32_t)val_ptr[1] << 16) |
+              ((uint32_t)val_ptr[2] << 8)  |
+              (uint32_t)val_ptr[3];
+          break;
+
+
+          default:
+            log_e("Unrecognized Tuya DP size %u for DP %u", dp_size, dp_id);
+            return false;
+        }
+      } 
+      else {
+        
+        if (dp_size > sizeof(Tuya_read_dp_result.dp_raw_value_8)) {
+          
+          log_e("Tuya RAW DP size > 64 (%u)", dp_size);
+          
+          return false;
+        }
+        memcpy(Tuya_read_dp_result.dp_raw_value_8, val_ptr, dp_size);
+      }
+
+      Tuya_read_dp_result.bytes_read = 4 + dp_size;
+      Tuya_read_dp_result.is_success = true;
+      return true;
+    }
+
+    payload_counter += 4 + dp_size;
+  }
+  return false;
 }
 
 /*****************************************************************************/
@@ -179,12 +198,12 @@ void processTuyaHvacDataReport(
     if (Tuya_read_dp_result.is_success) {
       
       msgZ2SDeviceTempHumidityTemp(
-        element_1, (float)Tuya_read_dp_result.dp_value / 
+        element_1, (float)Tuya_read_dp_result.dp_value_signed / 
         ts0601_command_set->ts0601_cmd_set_local_temperature_factor);
                                    
       msgZ2SDeviceHvac(
         element_2, TRV_LOCAL_TEMPERATURE_MSG, 
-        (Tuya_read_dp_result.dp_value * 100) / 
+        (Tuya_read_dp_result.dp_value_signed * 100) / 
         ts0601_command_set->ts0601_cmd_set_local_temperature_factor);
 
       bytes_read -= (Tuya_read_dp_result.bytes_read);
@@ -626,7 +645,7 @@ void processTuyaSoilTempHumiditySensorReport(
 
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceTempHumidityTemp(
-      element, (float)Tuya_read_dp_result.dp_value / divider);  
+      element, (float)Tuya_read_dp_result.dp_value_signed / divider);  
             
   Z2S_readTuyaDPvalue(Tuya_read_dp_result,
     TUYA_SOIL_SENSOR_MOISTURE_DP, payload_size, payload);
@@ -769,7 +788,7 @@ void processTuyaSoilSensor3FReport(
 
     if (Tuya_read_dp_result.is_success)
       msgZ2SDeviceTempHumidityTemp(
-        element_2, (float)Tuya_read_dp_result.dp_value / divider);  
+        element_2, (float)Tuya_read_dp_result.dp_value_signed / divider);  
   }
 
   if (humidity_dp) {
@@ -1388,7 +1407,7 @@ void processTuyaSmokeDetectorReport(
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceTempHumidityTemp(
-        element_3, (float)Tuya_read_dp_result.dp_value / 10);
+        element_3, (float)Tuya_read_dp_result.dp_value_signed / 10);
   }
 
   if (humidity_dp_id) {
@@ -1644,7 +1663,7 @@ void processTuyaAirQualitySensorReport(
     TUYA_AIR_QUALITY_SENSOR_HUMIDITY_DP, payload_size, payload);
   if (Tuya_read_dp_result.is_success)
     msgZ2SDeviceTempHumidityHumi(
-      element_1, (float)Tuya_read_dp_result.dp_value/10);  
+      element_1, (float)Tuya_read_dp_result.dp_value / 10);  
 
   Z2S_readTuyaDPvalue(Tuya_read_dp_result,
     TUYA_AIR_QUALITY_SENSOR_CO2_DP, payload_size, payload);
@@ -2036,7 +2055,7 @@ void processTuyaPresenceSensorDataReport(
 
     if (Tuya_read_dp_result.is_success) 
       msgZ2SDeviceTempHumidityTemp(
-        element_4, (float)Tuya_read_dp_result.dp_value/10);
+        element_4, (float)Tuya_read_dp_result.dp_value_signed / 10);
   }
 
   if (humidity_dp_id) {
@@ -2635,7 +2654,7 @@ void processTuyaTempHumidityTempProbeSensorDataReport(
     if (Tuya_read_dp_result.is_success) {
 
       msgZ2SDeviceTempHumidityTemp(
-        element_1, (float)Tuya_read_dp_result.dp_value / 10);
+        element_1, (float)Tuya_read_dp_result.dp_value_signed / 10);
    }
   }
 
@@ -2659,7 +2678,7 @@ void processTuyaTempHumidityTempProbeSensorDataReport(
     if (Tuya_read_dp_result.is_success) {
 
       msgZ2SDeviceTempHumidityTemp(
-        element_2, (float)Tuya_read_dp_result.dp_value / 10);
+        element_2, (float)Tuya_read_dp_result.dp_value_signed / 10);
     }
   }
 
@@ -3002,7 +3021,7 @@ void processTuyaDINRCBOEMTemp(
     
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceTempHumidityTemp(
-      element_1, (float)Tuya_read_dp_result.dp_value);
+      element_1, (float)Tuya_read_dp_result.dp_value_signed);
 
   Z2S_readTuyaDPvalue(Tuya_read_dp_result,
     TUYA_DIN_RCBO_EM_SWITCH_DP, payload_size, payload);
@@ -3279,7 +3298,7 @@ void processTuyaSmartPoolSensorDataReport(
 
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceTempHumidityTemp(
-      element_1, (float)Tuya_read_dp_result.dp_value / 10);
+      element_1, (float)Tuya_read_dp_result.dp_value_signed / 10);
     
   Z2S_readTuyaDPvalue(
     Tuya_read_dp_result, TUYA_SMART_POOL_SENSOR_TDS_DP, payload_size, payload);
@@ -3387,7 +3406,7 @@ void processTuyaWaterQualityMonitorDataReport(
 
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceTempHumidityTemp(
-      element_1, (float)Tuya_read_dp_result.dp_value / 10);
+      element_1, (float)Tuya_read_dp_result.dp_value_signed / 10);
 
   Z2S_readTuyaDPvalue(
     Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_TEMPERATURE_DP,
@@ -3395,7 +3414,7 @@ void processTuyaWaterQualityMonitorDataReport(
 
   if (Tuya_read_dp_result.is_success) 
     msgZ2SDeviceTempHumidityTemp(
-      element_2, (float)Tuya_read_dp_result.dp_value / 100);
+      element_2, (float)Tuya_read_dp_result.dp_value_signed / 100);
 
   Z2S_readTuyaDPvalue(
     Tuya_read_dp_result, TUYA_WATER_QUALITY_MONITOR_HUMIDITY_DP,
@@ -4370,9 +4389,6 @@ void sendLearnedIRCode(
         short_addr, 1, endpoint, ZOSUNG_IR_TRANSMIT_CUSTOM_CLUSTER, 
         0x00, 16, trigger_payload, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1);
     esp_zb_lock_release();
-
-    //tx_seq++;
 }
 
 /*****************************************************************************/
-

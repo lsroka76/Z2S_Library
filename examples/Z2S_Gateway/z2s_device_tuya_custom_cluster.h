@@ -16,16 +16,16 @@
 /*****************************************************************************/
 
 typedef struct Tuya_read_dp_result_s {
-  bool     is_success;
-  uint8_t  bytes_read;
-  uint8_t  dp_id;
-  uint8_t  dp_type;
-  uint16_t dp_size;
-union {
-  uint32_t dp_value;
-  int32_t  dp_value_signed;
-};
-  uint8_t  dp_raw_value_8[64];
+  bool     is_success;        
+  uint8_t  bytes_read;        
+  uint8_t  dp_id;              
+  uint8_t  dp_type;           
+  union {
+    uint32_t dp_value;         
+    int32_t  dp_value_signed;
+  };
+  uint16_t dp_size;            
+  uint8_t  dp_raw_value_8[64]; 
 } Tuya_read_dp_result_t;
 
 /*****************************************************************************/

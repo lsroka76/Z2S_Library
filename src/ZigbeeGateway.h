@@ -193,6 +193,7 @@ typedef struct esp_zb_ota_image_header_s {
 #define LUMI_CUSTOM_LED_INDICATOR_ID                          0x0203 //BOOL
 #define LUMI_CUSTOM_CHARGING_PROTECTION_POWER_LIMIT_ID        0x0206 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
 #define LUMI_CUSTOM_OVERLOAD_PROTECTION_ID                    0x020B //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
+#define LUMI_ATTRIBUTE_CURTAIN_MOTOR_STATE_ID                 0x0404
 #define LUMI_CUSTOM_CURTAIN_CALIBRATION_CMD_ID                0x0407 //U8
 #define LUMI_CUSTOM_CURTAIN_POSITION_ID                       0x041F //U8
 #define LUMI_CUSTOM_CURTAIN_CURRENT_STATUS_ID                 0x0421 //U8
@@ -226,6 +227,7 @@ typedef struct esp_zb_ota_image_header_s {
 #define LUMI_ATTRIBUTE_BUZZER_MANUAL_ALARM_ID                 0x13D
 #define LUMI_ATTRIBUTE_LINKAGE_ALARM_2_ID                     0x14B
 #define LUMI_ATTRIBUTE_LINKAGE_ALARM_STATE_ID                 0x14C
+
 
 #define DEVELCO_CUSTOM_CLUSTER                                0xFC03
 #define DEVELCO_MANUFACTURER_CODE                             0x1015
