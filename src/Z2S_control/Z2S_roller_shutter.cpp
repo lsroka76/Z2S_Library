@@ -350,6 +350,13 @@ void Supla::Control::Z2S_RollerShutter::ping() {
 
         sendTuyaQueryCmd(_short_addr, _endpoint);
       break;
+
+
+      case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE:
+
+        zbGateway.sendAttributeRead(
+          short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
+      break;
     }
   }
 }
