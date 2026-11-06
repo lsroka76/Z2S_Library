@@ -3617,8 +3617,11 @@ void actionSelectorCallback(BasicControl *sender, int type, void *param) {
 		ESPUI.getControl(
 		       action_subaction_number)
 		  ->setUserData((void *)max_subactions_number);
-	} else
+	} 
+	else {
+		ESPUI.updateNumber(action_subaction_number, 0);
 		enableControlStyle(action_subaction_number, false);
+	}
 }
 
 /*****************************************************************************/
@@ -4593,6 +4596,48 @@ void sortLogicOperatorFunctionsSelectorsMain(int32_t select_value = -1) {
 	if (local_channel_function_selector < 0xFFFF)
 		buildLogicOperatorLocalFunctionsSelectJsonPayload(
 		  select_value, local_channel_function_selector);
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+
+bool buildLocalVirtualRelayFunctionsSelectJsonPayload(
+  int32_t selected_value, uint16_t selector_id) {
+
+	return buildSelectJsonPayloadGeneric(
+	  selected_value, 1, &selector_id,
+	  "Select local channel function...", [&](auto add_function_option) {
+		  constexpr uint8_t funcs_count =
+		    sizeof(local_virtual_relay_functions_names) /
+		    sizeof(local_virtual_relay_functions_names[0]);
+
+		  for (uint8_t vrf = 1; vrf <= funcs_count; vrf++) {
+
+			  if (!add_function_option(
+			        vrf, local_virtual_relay_functions_names[vrf - 1]))
+				  return false;
+		  }
+		  return true;
+	  });
+}
+
+/*****************************************************************************/
+
+void sortLocalVirtualRelayFunctionsSelectorsMain(int32_t select_value = -1) {
+
+	if (local_channel_function_selector < 0xFFFF)
+		buildLocalVirtualRelayFunctionsSelectJsonPayload(
+		  select_value, local_channel_function_selector);
+}
+
+/*****************************************************************************/
+
+void GUI_onChannelDataChanged(int16_t channel_slot) {
+
+	if (GUIstarted && (channel_selector < 0xFFFF) &&
+	    (ESPUI.getControl(channel_selector)->getValueInt() == channel_slot)) {
+		addGUICommand(gui_cmd_update_channel_info, -2);
+	}
 }
 
 /*****************************************************************************/
@@ -5760,23 +5805,22 @@ void Z2S_loopWebGUI() {
 			} break;
 
 
-			case gui_cmd_add_virtual_relay:
-				{
+			case gui_cmd_add_virtual_relay: {
 
-					int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
-					  LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY, 0);
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY,
+					LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE);
 
-					if (new_channel_slot >= 0) {
+				if (new_channel_slot >= 0) {
 
-						ESPUI.updateLabel(
-						  lah_status_label,
-						  "The local virtual relay has been successfully added and is "
-						  "available for use.");
+					ESPUI.updateLabel(
+					  lah_status_label,
+					  "The local virtual relay has been successfully added and is "
+					  "available for use.");
 
-						addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
-					}
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
 				}
-				break;
+			} break;
 
 
 			case gui_cmd_add_local_relay:
@@ -7036,6 +7080,17 @@ void updateChannelInfoLabel(
 		snprintf(
 			logic_operator_desc, sizeof(logic_operator_desc), "%s (%u pins)", 
 			lah->getOperatorName(), lah->getLogicPinsNumber());
+	} 
+	else if (z2s_channel.local_channel_type == 
+					 LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY) {
+
+		auto *vrelay = static_cast<Supla::Control::LocalVirtualRelay *>(
+			z2s_core->getZ2SElementPtr());
+		if (vrelay) {
+			snprintf(
+				logic_operator_desc, sizeof(logic_operator_desc), "%s",
+				vrelay->getFunctionName());
+		}
 	}
 
 	snprintf_P(
@@ -7281,6 +7336,36 @@ void updateChannelInfoLabel(
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY) {
 
 					enableChannelTimings(0);
+					enableControlStyle(local_channel_function_selector, true);
+
+					uint8_t vrelay_func = z2s_core->getZ2SLocalChannelFunc();
+					if (vrelay_func == 0) {
+						vrelay_func = LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE;
+					}
+
+					if (sort_local_function_selector) {
+						sortLocalVirtualRelayFunctionsSelectorsMain(vrelay_func);
+					}
+
+					ESPUI.updateSelect(local_channel_function_selector, vrelay_func);
+
+					if (vrelay_func == LOCAL_VIRTUAL_RELAY_FUNC_ASTABLE) {
+						enableChannelParams(1);
+						const char *param1_label =
+						  "Enter Astable parameters - format: "
+						  "T_on(ms),T_off(ms),Cycle_limit(0=infinite), "
+						  "e.g. 1000,1000,0";
+
+						snprintf(
+						  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
+						  "%lu,%lu,%lu",
+						  z2s_core->getLocalVirtualRelayTOnMs(),
+						  z2s_core->getLocalVirtualRelayTOffMs(),
+						  z2s_core->getLocalVirtualRelayCycleLimit());
+
+						ESPUI.updateControlLabel(param_1_text, param1_label);
+						ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
+					}
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_HTTP_BINARY) {
@@ -9037,6 +9122,21 @@ void editChannelMain(uint32_t update_channel_flag) {
 						z2s_core->setZ2SLocalChannelFunc(local_channel_function);
 						z2s_core->updateCalculatedGpmParams();
 						updateChannelInfoLabel(channel_slot, false);
+					}
+					else if (z2s_core->getZ2SLocalChannelType() ==
+					         LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY) {
+
+						z2s_core->setZ2SLocalChannelFunc(local_channel_function, false);
+						if ((local_channel_function == LOCAL_VIRTUAL_RELAY_FUNC_ASTABLE) &&
+						    (z2s_core->getLocalVirtualRelayTOnMs() == 0) &&
+						    (z2s_core->getLocalVirtualRelayTOffMs() == 0)) {
+							z2s_core->setLocalVirtualRelayTOnMs(1000);
+							z2s_core->setLocalVirtualRelayTOffMs(1000);
+							z2s_core->setLocalVirtualRelayCycleLimit(0);
+						}
+						z2s_core->saveChannelData();
+						z2s_core->updateLocalVirtualRelayParams();
+						updateChannelInfoLabel(channel_slot, false);
 					} 
 					else {
 						z2s_core->setZ2SLocalChannelFunc(local_channel_function);
@@ -9053,6 +9153,36 @@ void editChannelMain(uint32_t update_channel_flag) {
 					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
 
 						switch (z2s_core->getZ2SLocalChannelType()) {
+
+							
+							case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
+
+								long vrelay_params[3] = {0, 0, 0};
+								size_t params_found = parseCsvNumbers(
+									ESPUI.getControl(param_1_text)->getValueCstr(),
+									vrelay_params, 3);
+
+								switch (params_found) {
+									case 3:
+										z2s_core->setLocalVirtualRelayCycleLimit(
+											vrelay_params[2] < 0 ? 0 : vrelay_params[2]);
+										[[fallthrough]];
+									case 2:
+										z2s_core->setLocalVirtualRelayTOffMs(
+											vrelay_params[1] < 0 ? 0 : vrelay_params[1]);
+										[[fallthrough]];
+									case 1:
+										z2s_core->setLocalVirtualRelayTOnMs(
+											vrelay_params[0] < 0 ? 0 : vrelay_params[0]);
+										z2s_core->saveChannelData();
+										z2s_core->updateLocalVirtualRelayParams();
+										updateChannelInfoLabel(channel_slot, false);
+										break;
+									default:
+										break;
+								}
+							} break;
+
 
 							case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
 							case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:

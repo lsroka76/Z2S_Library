@@ -135,12 +135,13 @@ inline const char *sb_device_path = "POST /v1.1/devices/%s/commands "
 inline constexpr const char * const calculated_thermomether_functions_names[] =
  {
   
-  "DEW POINT", "HEAT INDEX(FEELS LIKE)", "READ HVAC TEMPERATURE SETPOINT HEAT"
+  "DEW POINT", 
+  "HEAT INDEX(FEELS LIKE)", 
+  "READ HVAC TEMPERATURE SETPOINT HEAT"
 };
 
 /*****************************************************************************/
 
-// In Z2S_local_action_handlers.h:
 #define CALCULATED_GPM_FUNC_VPD                                         0x0001
 #define CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY                           0x0002
 #define CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY                           0x0003
@@ -159,6 +160,22 @@ inline constexpr const char * const calculated_gpm_functions_names[] = {
   "PWM LINEAR MAP (TEMP -> 0-100%) [%]",
   "PWM PI CONTROLLER (TEMP -> 0-100%) [%]",
   "PWM PID CONTROLLER (TEMP -> 0-100%) [%]"
+};
+
+/*****************************************************************************/
+
+#define LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE                         0x0001
+#define LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_ON                              0x0002
+#define LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_OFF                             0x0003
+#define LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY                              0x0004
+#define LOCAL_VIRTUAL_RELAY_FUNC_ASTABLE                                0x0005
+
+inline constexpr const char * const local_virtual_relay_functions_names[] = {
+  "SWITCH (RESTORE STATE)",
+  "SWITCH (ON STATE)",
+  "SWITCH (OFF STATE)",
+  "MOMENTARY (STATELESS PULSE)",
+  "ASTABLE (CYCLE)"
 };
 
 /*****************************************************************************/
@@ -309,12 +326,21 @@ class LocalVirtualRelay: public VirtualRelay, public Z2S_Core {
        (0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER));
 
     virtual ~LocalVirtualRelay();
+
+    void configureRelayFunction();
+    const char *getFunctionName();
+
+    void turnOn(_supla_int_t duration = 0) override;
+    void turnOff(_supla_int_t duration = 0) override;
     void handleAction(int event, int action) override; 
     void iterateAlways() override;
+
   protected:
 
-    //uint32_t timer_update_ms = 0;
-    //uint32_t test_ms = 300 * 1000;
+    bool     _astable_running = false;
+    bool     _astable_phase_on = false;
+    uint32_t _astable_last_switch_ms = 0;
+    uint32_t _astable_cycles_done = 0;
 };
 
 /*****************************************************************************/

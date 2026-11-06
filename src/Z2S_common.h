@@ -1586,7 +1586,46 @@ public:
 
 /*****************************************************************************/
 
+  uint32_t getLocalVirtualRelayTOnMs() {
 
+    return _z2s_channel.local_virtual_relay_data.t_on_ms;
+  }
+
+  void setLocalVirtualRelayTOnMs(uint32_t t_on_ms, bool save = false) {
+
+    _z2s_channel.local_virtual_relay_data.t_on_ms = t_on_ms;
+    if (save)
+      saveChannelData();
+  }
+
+  uint32_t getLocalVirtualRelayTOffMs() {
+
+    return _z2s_channel.local_virtual_relay_data.t_off_ms;
+  }
+
+  void setLocalVirtualRelayTOffMs(uint32_t t_off_ms, bool save = false) {
+
+    _z2s_channel.local_virtual_relay_data.t_off_ms = t_off_ms;
+    if (save)
+      saveChannelData();
+  }
+
+  uint32_t getLocalVirtualRelayCycleLimit() {
+
+    return _z2s_channel.local_virtual_relay_data.cycle_limit;
+  }
+
+  void setLocalVirtualRelayCycleLimit(
+    uint32_t cycle_limit, bool save = false) {
+
+    _z2s_channel.local_virtual_relay_data.cycle_limit = cycle_limit;
+    if (save)
+      saveChannelData();
+  }
+
+  bool updateLocalVirtualRelayParams();
+
+/*****************************************************************************/
 
   uint32_t getFwdEnergyBuffer() {
   

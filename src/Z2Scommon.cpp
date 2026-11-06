@@ -1244,6 +1244,21 @@ bool Z2S_Core::updateCalculatedGpmParams() {
 
 /*****************************************************************************/
 
+bool Z2S_Core::updateLocalVirtualRelayParams() {
+
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY &&
+      _z2s_element) {
+
+    auto *vrelay =
+      static_cast<Supla::Control::LocalVirtualRelay *>(_z2s_element);
+    vrelay->configureRelayFunction();
+    return true;
+  }
+  return false;
+}
+
+/*****************************************************************************/
+
 /*                          Z2S_Device                                       */
 
 /*****************************************************************************/

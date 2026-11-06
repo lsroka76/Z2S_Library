@@ -142,6 +142,8 @@ void GUI_onIrCodeLearned();
 
 void GUI_onZigbeeOpenNetwork(bool is_network_open);
 
+void GUI_onChannelDataChanged(int16_t channel_slot);
+
 void sortZbDevicesSelectors(int32_t selected_value = -1);
 
 void sortChannelsSelectors(int32_t selected_value = -1);

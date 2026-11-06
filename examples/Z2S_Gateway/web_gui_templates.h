@@ -614,7 +614,43 @@ inline constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
 
 	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_FIRST_ACTION,
 		.Supla_action_name = "TOGGLE LOGIC GATE PIN (USE SUBACTION 0-31)",
-		.max_subactions_number = 32 }
+		.max_subactions_number = 32 },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_TMIN_VALUE_1,
+    .Supla_action_name = "CGPM: INCREASE T_MIN (+0.1)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_TMIN_VALUE_1,
+    .Supla_action_name = "CGPM: DECREASE T_MIN (-0.1)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_TMIN_VALUE_5,
+    .Supla_action_name = "CGPM: INCREASE T_MIN (+0.5)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_TMIN_VALUE_5,
+    .Supla_action_name = "CGPM: DECREASE T_MIN (-0.5)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_TMAX_VALUE_1,
+    .Supla_action_name = "CGPM: INCREASE T_MAX (+0.1)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_TMAX_VALUE_1,
+    .Supla_action_name = "CGPM: DECREASE T_MAX (-0.1)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_TMAX_VALUE_5,
+    .Supla_action_name = "CGPM: INCREASE T_MAX (+0.5)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_TMAX_VALUE_5,
+    .Supla_action_name = "CGPM: DECREASE T_MAX (-0.5)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_1,
+    .Supla_action_name = "CGPM: INCREASE SETPOINT (+0.1)" },
+		
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_1,
+    .Supla_action_name = "CGPM: DECREASE SETPOINT (-0.1)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_5,
+    .Supla_action_name = "CGPM: INCREASE SETPOINT (+0.5)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_5,
+    .Supla_action_name = "CGPM: DECREASE SETPOINT (-0.5)" }
 };
 
 inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {

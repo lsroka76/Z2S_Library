@@ -155,13 +155,18 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     SUPLA_CHANNELFNC_POWERSWITCH,
     true,
     [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      if (ch->local_channel_func == 0) {
+        ch->local_channel_func = LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE;
+      }
       auto* r = initOrCastLocalElement<Supla::Control::LocalVirtualRelay>(
         idx, ch, el, true, RELAY_FLAGS);
-      r->setDefaultStateRestore();
+      r->configureRelayFunction();
     },
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      uint32_t init_func = (func == 0)
+        ? LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE : func;
       registerNewLocalChannel(
-        new Supla::Control::LocalVirtualRelay(RELAY_FLAGS), slot, d, func);
+        new Supla::Control::LocalVirtualRelay(RELAY_FLAGS), slot, d, init_func);
     }
   },
   {

@@ -38,6 +38,8 @@ extern bool Z2S_sendPushoverMessage(uint16_t message_index);
 extern bool Z2S_fillPushoverMessage(
   uint16_t message_index, char *message_buffer);
 
+extern void GUI_onChannelDataChanged(int16_t channel_slot);
+
 
 //using Supla::LocalActionHandler;
 //using Supla::LocalActionHandlerWithTrigger;
@@ -875,7 +877,6 @@ void Supla::Control::LocalActionTrigger::iterateAlways() {
 
 /*****************************************************************************/
 
-
 Supla::Control::LocalVirtualRelay::LocalVirtualRelay(_supla_int_t functions)
   : VirtualRelay(functions), Z2S_Core(this) {
 
@@ -889,68 +890,206 @@ Supla::Control::LocalVirtualRelay::~LocalVirtualRelay() {
 
 /*****************************************************************************/
 
+const char *Supla::Control::LocalVirtualRelay::getFunctionName() {
+
+  uint8_t fn = getZ2SLocalChannelFunc();
+  constexpr uint8_t count = sizeof(local_virtual_relay_functions_names) /
+                            sizeof(local_virtual_relay_functions_names[0]);
+  if (fn >= 1 && fn <= count) {
+    return local_virtual_relay_functions_names[fn - 1];
+  }
+  return local_virtual_relay_functions_names[0];
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalVirtualRelay::configureRelayFunction() {
+
+  if (getZ2SLocalChannelFunc() == 0) {
+    setZ2SLocalChannelFunc(LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE, false);
+  }
+
+  _astable_running = false;
+  _astable_phase_on = false;
+  _astable_last_switch_ms = 0;
+  _astable_cycles_done = 0;
+
+  switch (getZ2SLocalChannelFunc()) {
+
+    case LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE:
+      setDefaultStateRestore();
+      break;
+
+    case LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_ON:
+      setDefaultStateOn();
+      break;
+
+    case LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_OFF:
+      setDefaultStateOff();
+      break;
+
+    case LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY:
+    case LOCAL_VIRTUAL_RELAY_FUNC_ASTABLE:
+      setDefaultStateOff();
+      durationMs = 0;
+      state = false;
+      channel.setNewValue(false);
+      break;
+
+    default:
+      setDefaultStateRestore();
+      break;
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalVirtualRelay::turnOn(_supla_int_t duration) {
+
+  switch (getZ2SLocalChannelFunc()) {
+
+    case LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY: {
+      durationMs = 0;
+      state = false;
+      channel.setNewValue(true);
+      channel.setNewValue(false);
+      runAction(Supla::ON_TURN_ON);
+      runAction(Supla::ON_CHANGE);
+    } break;
+
+    case LOCAL_VIRTUAL_RELAY_FUNC_ASTABLE: {
+      _astable_running = true;
+      _astable_phase_on = true;
+      _astable_last_switch_ms = millis();
+      _astable_cycles_done = 0;
+      Supla::Control::VirtualRelay::turnOn(0);
+    } break;
+
+    default: {
+      Supla::Control::VirtualRelay::turnOn(duration);
+    } break;
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Control::LocalVirtualRelay::turnOff(_supla_int_t duration) {
+
+  switch (getZ2SLocalChannelFunc()) {
+
+    case LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY: {
+      durationMs = 0;
+      state = false;
+      channel.setNewValue(true);
+      channel.setNewValue(false);
+      runAction(Supla::ON_TURN_OFF);
+      runAction(Supla::ON_CHANGE);
+    } break;
+
+    case LOCAL_VIRTUAL_RELAY_FUNC_ASTABLE: {
+      _astable_running = false;
+      _astable_phase_on = false;
+      Supla::Control::VirtualRelay::turnOff(0);
+    } break;
+
+    default: {
+      Supla::Control::VirtualRelay::turnOff(duration);
+    } break;
+  }
+}
+
+/*****************************************************************************/
+
 void Supla::Control::LocalVirtualRelay::handleAction(int event, int action) {
 
   Supla::Control::VirtualRelay::handleAction(event, action);
 
   log_i("event %u, action %u", event, action);
 
+  uint8_t func = getZ2SLocalChannelFunc();
+
   switch (action) {
 
-    
     case Z2S_SUPLA_ACTION_TURN_OFF_RELAY_5_SECONDS:
-
-      turnOff(5000);
-    break;
-
+      if (func != LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY &&
+          func != LOCAL_VIRTUAL_RELAY_FUNC_ASTABLE) {
+        turnOff(5000);
+      }
+      break;
 
     case Z2S_SUPLA_ACTION_RESEND_RELAY_STATE:
-
+      if (func == LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY)
+        break;
       if (state) 
         runAction(Supla::ON_TURN_ON);
       else
         runAction(Supla::ON_TURN_OFF);
-    break;
-
+      break;
 
     case Z2S_SUPLA_ACTION_COPY_ON_STATE:
-
+      if (func == LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY)
+        break;
       if (state) 
         runAction(Z2S_SUPLA_EVENT_ON_COPY_ON_STATE);
-    break;
-
+      break;
 
     case Z2S_SUPLA_ACTION_COPY_OFF_STATE:
-
+      if (func == LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY)
+        break;
       if (!state) 
         runAction(Z2S_SUPLA_EVENT_ON_COPY_OFF_STATE);
-    break;
-
+      break;
 
     case Z2S_SUPLA_ACTION_SET_RELAY_STATE_DISABLED:
-
       channel.setStateOffline();
-    break;
+      break;
   }
 }
+
 /*****************************************************************************/
 
 void Supla::Control::LocalVirtualRelay::iterateAlways() {
 
   Supla::Control::VirtualRelay::iterateAlways();
 
-  /*if (millis() - timer_update_ms > 1000) {
+  if ((getZ2SLocalChannelFunc() == LOCAL_VIRTUAL_RELAY_FUNC_ASTABLE) &&
+      _astable_running) {
 
-    for (auto proto = Supla::Protocol::ProtocolLayer::first();
-        proto != nullptr; proto = proto->next()) {
-      proto->sendRemainingTimeValue(
-        getChannelNumber(), test_ms, state, 0);
-    }  
-    timer_update_ms = millis();
-    if (test_ms >= 1000)
-      test_ms -= 1000;
-    else test_ms = 300000;
-  }*/
+    uint32_t t_on  = getLocalVirtualRelayTOnMs();
+    uint32_t t_off = getLocalVirtualRelayTOffMs();
+    uint32_t limit = getLocalVirtualRelayCycleLimit();
+
+    if (t_on == 0 || t_off == 0) {
+      return;
+    }
+
+    uint32_t now = millis();
+
+    if (_astable_phase_on) {
+      if ((now - _astable_last_switch_ms) >= t_on) {
+        _astable_phase_on = false;
+        _astable_last_switch_ms = now;
+        state = false;
+        channel.setNewValue(false);
+        runAction(Supla::ON_TURN_OFF);
+        runAction(Supla::ON_CHANGE);
+
+        _astable_cycles_done++;
+        if (limit > 0 && _astable_cycles_done >= limit) {
+          _astable_running = false;
+        }
+      }
+    } else {
+      if ((now - _astable_last_switch_ms) >= t_off) {
+        _astable_phase_on = true;
+        _astable_last_switch_ms = now;
+        state = true;
+        channel.setNewValue(true);
+        runAction(Supla::ON_TURN_ON);
+        runAction(Supla::ON_CHANGE);
+      }
+    }
+  }
 }
 
 /*****************************************************************************/
@@ -2374,6 +2513,23 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
 void Supla::Sensor::CalculatedGPM::handleAction(int event, int action) {
 
   log_i("event %u, action %u", event, action);
+
+  uint8_t fn = getZ2SLocalChannelFunc();
+  bool is_linear_map = (fn == CALCULATED_GPM_FUNC_LINEAR_MAP);
+  bool is_pi_or_pid  = (fn == CALCULATED_GPM_FUNC_PI_CONTROL ||
+                        fn == CALCULATED_GPM_FUNC_PID_CONTROL);
+
+  auto adjustParam1 = [&](float delta) {
+    setCalculatedGpmParam1(getCalculatedGpmParam1() + delta, true);
+    _last_refresh_ms = 0;
+    GUI_onChannelDataChanged(getZ2SChannelIndex());
+  };
+
+  auto adjustParam2 = [&](float delta) {
+    setCalculatedGpmParam2(getCalculatedGpmParam2() + delta, true);
+    _last_refresh_ms = 0;
+    GUI_onChannelDataChanged(getZ2SChannelIndex());
+  };
   
   switch (action) {
 
@@ -2397,6 +2553,54 @@ void Supla::Sensor::CalculatedGPM::handleAction(int event, int action) {
       if (isControlAlgorithmFunc()) {
         setControllerEnabled(!_controller_enabled);
       }
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_TMIN_VALUE_1:
+      if (is_linear_map) adjustParam1(0.1f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_TMIN_VALUE_1:
+      if (is_linear_map) adjustParam1(-0.1f);
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_TMIN_VALUE_5:
+      if (is_linear_map) adjustParam1(0.5f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_TMIN_VALUE_5:
+      if (is_linear_map) adjustParam1(-0.5f);
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_TMAX_VALUE_1:
+      if (is_linear_map) adjustParam2(0.1f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_TMAX_VALUE_1:
+      if (is_linear_map) adjustParam2(-0.1f);
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_TMAX_VALUE_5:
+      if (is_linear_map) adjustParam2(0.5f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_TMAX_VALUE_5:
+      if (is_linear_map) adjustParam2(-0.5f);
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_1:
+      if (is_pi_or_pid) adjustParam1(0.1f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_1:
+      if (is_pi_or_pid) adjustParam1(-0.1f);
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_5:
+      if (is_pi_or_pid) adjustParam1(0.5f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_5:
+      if (is_pi_or_pid) adjustParam1(-0.5f);
       break;
   }
 }

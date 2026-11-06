@@ -276,6 +276,11 @@ union {
       float           param_3; // Ki or Duty_min
       float           param_4; // Kd or Duty_max
     } calculated_gpm_data;
+    struct {
+      uint32_t        t_on_ms;
+      uint32_t        t_off_ms;
+      uint32_t        cycle_limit;
+    } local_virtual_relay_data;
   };
   uint32_t            user_data_flags;
 union {

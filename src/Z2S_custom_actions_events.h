@@ -39,6 +39,19 @@
 #define Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_FIRST_ACTION                   0x4640
 #define Z2S_SUPLA_ACTION_TOGGLE_LOGIC_GATE_PIN_LAST_ACTION                    0x465F
 
+#define Z2S_SUPLA_ACTION_INC_TMIN_VALUE_1                                     0x4700
+#define Z2S_SUPLA_ACTION_INC_TMAX_VALUE_1                                     0x4701
+#define Z2S_SUPLA_ACTION_DEC_TMIN_VALUE_1                                     0x4702
+#define Z2S_SUPLA_ACTION_DEC_TMAX_VALUE_1                                     0x4703
+#define Z2S_SUPLA_ACTION_INC_TMIN_VALUE_5                                     0x4704
+#define Z2S_SUPLA_ACTION_INC_TMAX_VALUE_5                                     0x4705
+#define Z2S_SUPLA_ACTION_DEC_TMIN_VALUE_5                                     0x4706
+#define Z2S_SUPLA_ACTION_DEC_TMAX_VALUE_5                                     0x4707
+#define Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_1                                 0x4708
+#define Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_1                                 0x4709
+#define Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_5                                 0x470A
+#define Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_5                                 0x470B
+
 
 
 #define Z2S_SUPLA_ACTION_TURN_ON_MAX_TEMPERATURE                              0x5000
