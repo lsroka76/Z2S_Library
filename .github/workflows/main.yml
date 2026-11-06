@@ -35,7 +35,7 @@ jobs:
           arduino-cli lib install --git-url https://github.com/milesburton/Arduino-Temperature-Control-Library.git
           arduino-cli lib install --git-url https://github.com/PaulStoffregen/OneWire.git
           arduino-cli lib install --git-url https://github.com/lsroka76/ClosedCube_SHT31D_Arduino.git
-	  arduino-cli lib install --git-url https://github.com/claws/BH1750.git
+          arduino-cli lib install --git-url https://github.com/claws/BH1750.git
 
       - name: Copy boards.txt with C6 config
         run: | 
@@ -96,6 +96,3 @@ jobs:
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.logs.full_version.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin,
                     ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.full_version.bin
-  
-
-
