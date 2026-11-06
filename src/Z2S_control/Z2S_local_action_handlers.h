@@ -146,16 +146,21 @@ inline constexpr const char * const calculated_thermomether_functions_names[] =
 #define CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY                           0x0003
 #define CALCULATED_GPM_FUNC_DEW_POINT_SPREAD                            0x0004
 #define CALCULATED_GPM_FUNC_WOOD_EMC                                    0x0005
-//#define CALCULATED_GPM_FUNC_ZIGBEE_RSSI                                 0x0006
+#define CALCULATED_GPM_FUNC_LINEAR_MAP                                  0x0006
+#define CALCULATED_GPM_FUNC_PI_CONTROL                                  0x0007
+#define CALCULATED_GPM_FUNC_PID_CONTROL                                 0x0008
 
 inline constexpr const char * const calculated_gpm_functions_names[] = {
   "VPD (VAPOR PRESSURE DEFICIT) [kPa]",
   "ABSOLUTE HUMIDITY [g/m3]",
   "SPECIFIC ENTHALPY [kJ/kg]",
   "DEW POINT SPREAD (CONDENSATION MARGIN) [K]",
-  "EQUILIBRIUM MOISTURE CONTENT (EMC) [%]"//,
-  //"ZIGBEE DEVICE RSSI [dBm]"
+  "EQUILIBRIUM MOISTURE CONTENT (EMC) [%]",
+  "PWM LINEAR MAP (TEMP -> 0-100%) [%]",
+  "PWM PI CONTROLLER (TEMP -> 0-100%) [%]",
+  "PWM PID CONTROLLER (TEMP -> 0-100%) [%]"
 };
+
 /*****************************************************************************/
 
 extern bool sendIASNotifications;
@@ -400,6 +405,16 @@ class LocalPWM : public ChannelElement, public ActionHandler, public Z2S_Core {
     void setBrightness(uint8_t brightness);
     void increaseBrightness(int8_t step);
 
+    void setPWM(uint8_t duty) {
+      
+      setBrightness(duty);
+    }
+
+    uint8_t getPWM() const {
+      
+      return _brightness;
+    }
+
   protected:
     int8_t   _attached_pin = -1;
     uint32_t _attached_freq = 0;
@@ -554,6 +569,7 @@ class LocalVirtualGPM
 
 /*****************************************************************************/
 
+// 3. Updated class CalculatedGPM:
 class CalculatedGPM : public VirtualGeneralPurposeMeasurement, 
   public Z2S_Core {
 
@@ -562,18 +578,39 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
     CalculatedGPM();
 
     void configureFunctionDefaults();
+    void resetControllerState();
+    void setControllerEnabled(bool enabled);
+    bool isControllerEnabled() const { return _controller_enabled; }
+    bool isControlAlgorithmFunc() const;
+    const char *getFunctionName();
+
     void iterateAlways() override;
     void handleAction(int event, int action) override;
 
   protected:
 
     void validateSourceChannel();
+    void validateDestinationChannel();
+    double computeLinearMap(double temp);
+    double computePID(double temp, float dt, bool use_derivative);
+    void commitPwmOutput(double out_pct);
 
   private:
 
     uint8_t _last_source_channel = 0xFF;
+    uint8_t _last_destination_channel = 0xFF;
+    uint8_t _last_channel_func = 0xFF;
     uint32_t _last_refresh_ms = 0;
+    uint32_t _last_pid_calc_ms = 0;
+    
     Supla::Element *_source_Supla_element = nullptr;
+    Supla::Element *_destination_Supla_element = nullptr;
+
+    float _integral = 0.0f;
+    float _prev_temp = NAN;
+    float _d_filtered = 0.0f;
+    uint8_t _last_pwm_duty = 0xFF;
+    bool _controller_enabled = true;
 };
 
 /*****************************************************************************/

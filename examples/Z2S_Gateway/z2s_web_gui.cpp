@@ -30,7 +30,7 @@
 
 #include "web_gui_templates.h"
 
-#include "custom_js_gz.h"
+//#include "custom_js_gz.h"
 
 ESPAsyncHTTPUpdateServer updateServer;
 
@@ -172,6 +172,9 @@ uint16_t param_2_save_button;
 uint16_t param_3_number;
 uint16_t param_3_desc_label;
 uint16_t param_3_save_button;
+uint16_t param_4_number;
+uint16_t param_4_desc_label;
+uint16_t param_4_save_button;
 uint16_t keepalive_number;
 uint16_t timeout_number;
 uint16_t refresh_number;
@@ -505,6 +508,7 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 #define GUI_CB_UPDATE_PARAM_1_FLAG 0x4030
 #define GUI_CB_UPDATE_PARAM_2_FLAG 0x4031
 #define GUI_CB_UPDATE_PARAM_3_FLAG 0x4032
+#define GUI_CB_UPDATE_PARAM_4_FLAG 0x4033
 
 #define GUI_CB_SAVE_PROGRAM_FLAG 0x5000
 #define GUI_CB_LOAD_PROGRAM_FLAG 0x5001
@@ -626,6 +630,8 @@ static constexpr char *dest_thermometer_channel_desc =
   "Enter destination thermometer channel #";
 static constexpr char *src_thermometer_channel_desc =
   "Enter source local channel #";
+static constexpr char *dst_local_pwm_channel_desc =
+  "Enter destination LocalPWM channel # (or -1 to disable)";
 
 static constexpr char *keepalive_desc =
   "keepalive (s) \u2022 turn on delay (s) \u2022 hold repeat (ms)";
@@ -776,25 +782,39 @@ void onWsConnectCallback() {
 
 	log_i("onWsConnectCallback");
 
+	if (ESPUI.WebSocket()) {
+		
+		ESPUI.WebSocket()->cleanupClients(2);
+	}
+
 	new_connect = true;
 }
 
 /*****************************************************************************/
+
+static uint32_t last_sync_all_ms = 0;
 
 void onWsCustomCmdCallback(uint16_t ws_custom_cmd) {
 
 	log_i("onWsCustomCmdCallback %u", ws_custom_cmd);
 
 	switch (ws_custom_cmd) {
-
-
 		case 1:
-		
+			addGUICommand(gui_cmd_sort_zbdevices_selectors, -1);
+			addGUICommand(gui_cmd_sort_channels_selectors, -1);
 			addGUICommand(gui_cmd_synchronize_all);
-		break;
+			addGUICommand(gui_cmd_build_actions_table, 0);
+			addGUICommand(gui_cmd_build_ir_codes_table, 0);
+			addGUICommand(gui_cmd_build_pushover_messages_table, 0);
+			break;
 	}
+}
 
+/*****************************************************************************/
+
+static void sendWsTextAllThrottled(const char *payload, size_t len) {
 	
+	ESPUI.wsTextAll(payload, len, true);
 }
 
 /*****************************************************************************/
@@ -833,6 +853,34 @@ size_t parseCsvNumbers(const char *input, long *outArray, size_t maxElements) {
 		outArray[count++] = val;
 		current = endPtr;
 
+		if (*current == ',')
+			current++;
+	}
+	return count;
+}
+
+/*****************************************************************************/
+
+size_t parseCsvFloats(const char *input, float *outArray, size_t maxElements) {
+
+	if (!input || !outArray || maxElements == 0)
+		return 0;
+
+	size_t count = 0;
+	char *endPtr = nullptr;
+	const char *current = input;
+
+	while (*current != '\0' && count < maxElements) {
+
+		float val = strtof(current, &endPtr);
+		if (current == endPtr)
+			break;
+
+		outArray[count++] = val;
+		current = endPtr;
+
+		while (*current == ' ' || *current == '\t')
+			current++;
 		if (*current == ',')
 			current++;
 	}
@@ -1301,7 +1349,6 @@ void buildGatewayTabGUI() {
 	  Control::Type::Label, empty_str, working_str, Control::Color::Dark,
 	  gatewaytab);
 
-
 	ESPUI.setElementStyle(
 	  gateway_memory_info,
 	  "color:white;text-align: justify; font-family:tahoma;"
@@ -1311,87 +1358,91 @@ void buildGatewayTabGUI() {
 
 	auto gateway_settings_label = ESPUI.addControl(
 	  Control::Type::Label, "Gateway settings", empty_str, Control::Color::Dark,
-		gatewaytab);
+	  gatewaytab);
 
 	ESPUI.setElementStyle(gateway_settings_label, clearLabelStyle);
 
 	gateway_mdns_name_text = ESPUI.addControl(
-	  Control::Type::Text, 
-		"Gateway local mDNS name - max. 11 characters, no spaces!", emptyString,
+	  Control::Type::Text,
+	  "Gateway local mDNS name - max. 11 characters, no spaces!", emptyString,
 	  Control::Color::Dark, gateway_settings_label, generalCallback);
 
 	ESPUI.getControl(gateway_mdns_name_text)->reserve(12);
 
 	ESPUI.setElementStyle(
-		gateway_mdns_name_text,"width: 30%; min-width: 220px; "
-		"margin-bottom: 10px;");
+	  gateway_mdns_name_text,
+	  "width: calc(37% - 10px); min-width: 180px; margin: 0 5px 10px 5px;");
 
 	auto gateway_mdns_name_save_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Save", Control::Color::Dark,
 	  gateway_settings_label, gatewayCallback,
 	  (void *)GUI_CB_SAVE_MDNS_NAME_FLAG);
-	
-	//addEmptyLineLabel(gateway_settings_label);
 
 	ESPUI.setElementStyle(
-		gateway_mdns_name_save_button, 
-		"width: 10%; min-width: 80px; margin: 0 7% 10px 3%;");
+	  gateway_mdns_name_save_button,
+	  "width: calc(13% - 20px); min-width: 75px; margin: 0 15px 10px 5px;");
 
-		auto_connection_reset_timeout_number = ESPUI.addControl(
+	auto_connection_reset_timeout_number = ESPUI.addControl(
 	  Control::Type::Number, "Automatic connection reset timeout (s) -"
-		" enter 0 to disable this function.",
-	  (long int)0, Control::Color::Dark, gateway_settings_label, 
-		generalMinMaxCallback, (void *)3600);
+	  " enter 0 to disable this function.",
+	  (long int)0, Control::Color::Dark, gateway_settings_label,
+	  generalMinMaxCallback, (void *)3600);
 
 	ESPUI.setElementStyle(
-		auto_connection_reset_timeout_number,"width: 30%; min-width: 220px; "
-		"margin-bottom: 10px;");
+	  auto_connection_reset_timeout_number,
+	  "width: calc(37% - 20px); min-width: 180px; margin: 0 5px 10px 15px;");
 
 	auto auto_connection_reset_timeout_save_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Save", Control::Color::Dark,
 	  gateway_settings_label, gatewayCallback, (void *)GUI_CB_ACR_TIMEOUT_FLAG);
 
 	ESPUI.setElementStyle(
-		auto_connection_reset_timeout_save_button, 
-		"width: 10%; min-width: 80px; margin: 0 7% 10px 3%;");
+	  auto_connection_reset_timeout_save_button,
+	  "width: calc(13% - 10px); min-width: 75px; margin: 0 5px 10px 5px;");
 
 	force_config_switcher = ESPUI.addControl(
 	  Control::Type::Switcher, "Force config mode on next gateway restart.",
-	  (long int)0, Control::Color::Dark, gateway_settings_label, 
-		gatewayCallback, (void *)GUI_CB_FORCE_CONFIG_FLAG);
+	  (long int)0, Control::Color::Dark, gateway_settings_label,
+	  gatewayCallback, (void *)GUI_CB_FORCE_CONFIG_FLAG);
+
+	ESPUI.setElementStyle(
+	  force_config_switcher,
+	  "width: calc(50% - 10px); min-width: 200px; margin: 4px 5px;");
 
 	use_new_at_model_switcher = ESPUI.addControl(
 	  Control::Type::Switcher, "Use new AT model for smart buttons - "
-		"new ones will add as AT with Cloud and local actions.",
-		(long int)0, Control::Color::Dark, gateway_settings_label, 
-		gatewayCallback, (void *)GUI_CB_USE_NEW_AT_FLAG);
+	  "new ones will add as AT with Cloud and local actions.",
+	  (long int)0, Control::Color::Dark, gateway_settings_label,
+	  gatewayCallback, (void *)GUI_CB_USE_NEW_AT_FLAG);
 
-	
+	ESPUI.setElementStyle(
+	  use_new_at_model_switcher,
+	  "width: calc(50% - 10px); min-width: 200px; margin: 4px 5px;");
+
 	ESPUI.setPanelWide(gateway_settings_label, true);
-	//ESPUI.setPanelStyle(gateway_settings_label, "text-align: left;")
 
 	auto build_gateway_switcher = addClearLabel(
 	  "Select GUI tabs (requires restart)", gatewaytab);
 	addEmptyLineLabel(build_gateway_switcher);
 
-	uint16_t gui_build_control_flags = _gui_build_flags ? _gui_build_flags : 
-		Z2S_getGUIBuildControlFlags((gui_modes_t)_enable_gui_on_start);
+	uint16_t gui_build_control_flags = _gui_build_flags ? _gui_build_flags :
+	  Z2S_getGUIBuildControlFlags((gui_modes_t)_enable_gui_on_start);
 
 	for (uint8_t gui_build_flag_bit = 1; gui_build_flag_bit < 12;
 	     gui_build_flag_bit++) {
 
 		ESPUI.addControl(
-		  Control::Type::Switcher, GUI_BUILD_FLAGS_NAMES[gui_build_flag_bit], 
-			(gui_build_control_flags & (1 << gui_build_flag_bit)) ? (long)1 : 
-			(long)0, Control::Color::Dark, build_gateway_switcher, 
-			switchGUIBuildFlagCallback, (void *)gui_build_flag_bit);
+		  Control::Type::Switcher, GUI_BUILD_FLAGS_NAMES[gui_build_flag_bit],
+		  (gui_build_control_flags & (1 << gui_build_flag_bit)) ? (long)1 :
+		  (long)0, Control::Color::Dark, build_gateway_switcher,
+		  switchGUIBuildFlagCallback, (void *)gui_build_flag_bit);
 	}
 	addEmptyLineLabel(build_gateway_switcher);
 
 	gui_start_delay_number = ESPUI.addControl(
 	  Control::Type::Number, "GUI start delay (s)", (long int)0,
-	  Control::Color::Dark, build_gateway_switcher, generalMinMaxCallback, 
-		(void *)3600);
+	  Control::Color::Dark, build_gateway_switcher, generalMinMaxCallback,
+	  (void *)3600);
 
 	auto gui_start_delay_save_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "SAVE",
@@ -1399,12 +1450,12 @@ void buildGatewayTabGUI() {
 	  (void *)GUI_CB_GUI_DELAY_FLAG);
 
 	ESPUI.setElementStyle(
-		gui_start_delay_number,"width: 70%; min-width: 220px; "
-		"margin-bottom: 10px;");
+	  gui_start_delay_number,
+	  "width: 72%; min-width: 200px; margin: 0 2% 10px 0;");
 
 	ESPUI.setElementStyle(
-		gui_start_delay_save_button, 
-		"width: 10%; min-width: 80px; margin: 0 7% 10px 3%;");
+	  gui_start_delay_save_button,
+	  "width: 22%; min-width: 80px; margin: 0 0 10px 2%;");
 
 	auto web_ota_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Gateway firmware update",
@@ -2081,14 +2132,17 @@ void buildChannelsTabGUI() {
 		param_1_text, 
 		"resize: none; width: calc(80% - 7px); min-width: 200px; "
 		"margin: 0 2px 10px 5px;");
+
   ESPUI.setElementStyle(
 		param_1_save_button, "width: calc(20% - 17px); min-width: 60px; "
 		"margin: 0 15px 10px 2px;");
 
+	addEmptyLineLabel(zb_channel_params_label);
+
   param_2_number = ESPUI.addControl(
     Control::Type::Number, "&#10023; PARAM(2) - currently not used &#10023;", 
     (long int)0, Control::Color::Dark, zb_channel_params_label, 
-		generalCallback);
+    generalCallback);
 
   param_2_save_button = ESPUI.addControl(
     Control::Type::Button, empty_str, "Save", Control::Color::Dark,
@@ -2096,16 +2150,16 @@ void buildChannelsTabGUI() {
     (void *)GUI_CB_UPDATE_PARAM_2_FLAG);
 
   ESPUI.setElementStyle(
-		param_2_number, "width: calc(35% - 7px); min-width: 120px; "
-		"margin: 0 2px 10px 5px;");
+    param_2_number, "width: calc(22% - 7px); min-width: 120px; "
+    "margin: 0 2px 10px 5px;");
   ESPUI.setElementStyle(
-		param_2_save_button, "width: calc(15% - 17px); min-width: 60px; "
-		"margin: 0 15px 10px 2px;");
+    param_2_save_button, "width: calc(11% - 17px); min-width: 60px; "
+    "margin: 0 10px 10px 2px;");
 
   param_3_number = ESPUI.addControl(
     Control::Type::Number, "&#10023; PARAM(3) - currently not used &#10023;", 
     (long int)0, Control::Color::Dark, zb_channel_params_label, 
-		generalCallback);
+    generalCallback);
 
   param_3_save_button = ESPUI.addControl(
     Control::Type::Button, empty_str, "Save", Control::Color::Dark,
@@ -2113,11 +2167,28 @@ void buildChannelsTabGUI() {
     (void *)GUI_CB_UPDATE_PARAM_3_FLAG);
 
   ESPUI.setElementStyle(
-		param_3_number, "width: calc(35% - 7px); min-width: 120px; "
-		"margin: 0 2px 10px 5px;");
+    param_3_number, "width: calc(22% - 7px); min-width: 120px; "
+    "margin: 0 2px 10px 5px;");
   ESPUI.setElementStyle(
-		param_3_save_button, "width: calc(15% - 17px); min-width: 60px; "
-		"margin: 0 15px 10px 2px;");
+    param_3_save_button, "width: calc(11% - 17px); min-width: 60px; "
+    "margin: 0 10px 10px 2px;");
+
+  param_4_number = ESPUI.addControl(
+    Control::Type::Number, "&#10023; PARAM(4) - currently not used &#10023;", 
+    (long int)0, Control::Color::Dark, zb_channel_params_label, 
+    generalCallback);
+
+  param_4_save_button = ESPUI.addControl(
+    Control::Type::Button, empty_str, "Save", Control::Color::Dark,
+    zb_channel_params_label, editChannelCallback,
+    (void *)GUI_CB_UPDATE_PARAM_4_FLAG);
+
+  ESPUI.setElementStyle(
+    param_4_number, "width: calc(22% - 7px); min-width: 120px; "
+    "margin: 0 2px 10px 5px;");
+  ESPUI.setElementStyle(
+    param_4_save_button, "width: calc(11% - 17px); min-width: 60px; "
+    "margin: 0 10px 10px 2px;");
 
 	ESPUI.setPanelWide(zb_channel_params_label, true);
 
@@ -2249,32 +2320,33 @@ void buildClustersAttributesTab() {
     Control::Type::Tab, empty_str, "Clusters & Attributes",
     Control::Color::Dark, Control::noParent);
 
-	clusters_attributes_table[clusters_attributes_device_selector] =
-	  ESPUI.addControl(
-	    Control::Type::Select, "ZigBee devices", (long int)-1,
-	    Control::Color::Dark,
-	    clusters_attributes_table[clusters_attributes_tab],
-	    clustersattributesdeviceSelectorCallback);
+  clusters_attributes_table[clusters_attributes_device_selector] =
+    ESPUI.addControl(
+      Control::Type::Select, "ZigBee devices", (long int)-1,
+      Control::Color::Dark,
+      clusters_attributes_table[clusters_attributes_tab],
+      clustersattributesdeviceSelectorCallback);
 
-	working_str = three_dots_str;
-	clusters_attributes_table[clusters_attributes_device_info_label] =
-	  ESPUI.addControl(
-	    Control::Type::Label, "Device information", working_str,
-	    Control::Color::Dark,
-	    clusters_attributes_table[clusters_attributes_tab]);
+  working_str = three_dots_str;
+  clusters_attributes_table[clusters_attributes_device_info_label] =
+    ESPUI.addControl(
+      Control::Type::Label, "Device information", working_str,
+      Control::Color::Dark,
+      clusters_attributes_table[clusters_attributes_tab]);
 
-	ESPUI.setPanelWide(
-	  clusters_attributes_table[clusters_attributes_device_selector], false);
+  ESPUI.setPanelWide(
+    clusters_attributes_table[clusters_attributes_device_selector], false);
 
   uint16_t main_panel = ESPUI.addControl(
     Control::Type::Label, "ZigBee clusters command panel", empty_str,
     Control::Color::Dark, clusters_attributes_table[clusters_attributes_tab]);
-  
+
   ESPUI.setPanelWide(main_panel, true);
   ESPUI.setElementStyle(main_panel, clearLabelStyle);
 
+  // Line 1: endpoint, cluster, attribute/command, attribute/command id, attribute type
   clusters_attributes_table[device_endpoint_number] = ESPUI.addControl(
-    Control::Type::Number, "endpoint", (long int)1, 
+    Control::Type::Number, "endpoint", (long int)1,
     Control::Color::Dark, main_panel, endpointCallback);
 
   clusters_attributes_table[device_cluster_selector] = ESPUI.addControl(
@@ -2287,36 +2359,34 @@ void buildClustersAttributesTab() {
 
   working_str = "0";
   clusters_attributes_table[device_attribute_id_text] = ESPUI.addControl(
-    Control::Type::Text, "attribute/command id", working_str, 
+    Control::Type::Text, "attribute/command id", working_str,
     Control::Color::Dark, main_panel, generalCallback);
 
   clusters_attributes_table[device_attribute_type_selector] = ESPUI.addControl(
     Control::Type::Select, "attribute type", (long int)-1,
     Control::Color::Dark, main_panel, datatypeCallback);
 
-  clusters_attributes_table[device_attribute_size_number] = ESPUI.addControl(
-    Control::Type::Number, "payload size", (long int)0, 
-    Control::Color::Dark, main_panel, generalMinMaxCallback,
-    (void *)MAX_ZIGBEE_PAYLOAD_SIZE);
-
   ESPUI.setElementStyle(
     clusters_attributes_table[device_endpoint_number],
-    "width: calc(8% - 10px); min-width: 70px; margin: 0 5px 10px 5px;");
+    "width: calc(9% - 10px); min-width: 65px; margin: 0 5px 10px 5px;");
   ESPUI.setElementStyle(
     clusters_attributes_table[device_cluster_selector],
-    "width: calc(22% - 10px); min-width: 140px; margin: 0 5px 10px 5px;");
+    "width: calc(24% - 10px); min-width: 140px; margin: 0 5px 10px 5px;");
   ESPUI.setElementStyle(
     clusters_attributes_table[device_attribute_id_selector],
-    "width: calc(25% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
+    "width: calc(27% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
   ESPUI.setElementStyle(
     clusters_attributes_table[device_attribute_id_text],
-    "width: calc(18% - 10px); min-width: 120px; margin: 0 5px 10px 5px;");
+    "width: calc(20% - 10px); min-width: 110px; margin: 0 5px 10px 5px;");
   ESPUI.setElementStyle(
     clusters_attributes_table[device_attribute_type_selector],
-    "width: calc(17% - 10px); min-width: 120px; margin: 0 5px 10px 5px;");
-  ESPUI.setElementStyle(
-    clusters_attributes_table[device_attribute_size_number],
-    "width: calc(10% - 10px); min-width: 80px; margin: 0 5px 10px 5px;");
+    "width: calc(20% - 10px); min-width: 120px; margin: 0 5px 10px 5px;");
+
+  // Line 2: payload size (10%), attribute values (25%), attribute/payload value (65%)
+  clusters_attributes_table[device_attribute_size_number] = ESPUI.addControl(
+    Control::Type::Number, "payload size", (long int)0,
+    Control::Color::Dark, main_panel, generalMinMaxCallback,
+    (void *)MAX_ZIGBEE_PAYLOAD_SIZE);
 
   clusters_attributes_table[device_attribute_value_selector] = ESPUI.addControl(
     Control::Type::Select, "attribute values", (long int)-1,
@@ -2324,9 +2394,20 @@ void buildClustersAttributesTab() {
 
   working_str = "0";
   clusters_attributes_table[device_attribute_value_text] = ESPUI.addControl(
-    Control::Type::Text, "attribute/payload value", working_str, 
+    Control::Type::Text, "attribute/payload value", working_str,
     Control::Color::Dark, main_panel, generalCallback);
 
+  ESPUI.setElementStyle(
+    clusters_attributes_table[device_attribute_size_number],
+    "width: calc(10% - 10px); min-width: 80px; margin: 0 5px 10px 5px;");
+  ESPUI.setElementStyle(
+    clusters_attributes_table[device_attribute_value_selector],
+    "width: calc(25% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
+  ESPUI.setElementStyle(
+    clusters_attributes_table[device_attribute_value_text],
+    "width: calc(65% - 10px); min-width: 200px; margin: 0 5px 10px 5px;");
+
+  // Line 3: minimal interval, maximal interval, delta, use manufacturer code, manufacturer code, asynchronous command
   clusters_attributes_table[device_config_min_number] = ESPUI.addControl(
     Control::Type::Number, "minimal interval", (long int)0,
     Control::Color::Dark, main_panel, generalMinMaxCallback, (void *)65535);
@@ -2338,22 +2419,6 @@ void buildClustersAttributesTab() {
   clusters_attributes_table[device_config_delta_number] = ESPUI.addControl(
     Control::Type::Number, "delta", (long int)0,
     Control::Color::Dark, main_panel, generalMinMaxCallback, (void *)65535);
-
-  ESPUI.setElementStyle(
-    clusters_attributes_table[device_attribute_value_selector],
-    "width: calc(25% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
-  ESPUI.setElementStyle(
-    clusters_attributes_table[device_attribute_value_text],
-    "width: calc(25% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
-  ESPUI.setElementStyle(
-    clusters_attributes_table[device_config_min_number],
-    "width: calc(18% - 10px); min-width: 100px; margin: 0 5px 10px 5px;");
-  ESPUI.setElementStyle(
-    clusters_attributes_table[device_config_max_number],
-    "width: calc(18% - 10px); min-width: 100px; margin: 0 5px 10px 5px;");
-  ESPUI.setElementStyle(
-    clusters_attributes_table[device_config_delta_number],
-    "width: calc(14% - 10px); min-width: 80px; margin: 0 5px 10px 5px;");
 
   clusters_attributes_table[manufacturer_code_switcher] = ESPUI.addControl(
     Control::Type::Switcher, "use manufacturer code",
@@ -2368,38 +2433,47 @@ void buildClustersAttributesTab() {
     Control::Color::Dark, main_panel, generalCallback);
 
   ESPUI.setElementStyle(
+    clusters_attributes_table[device_config_min_number],
+    "width: calc(13% - 10px); min-width: 80px; margin: 0 5px 10px 5px;");
+  ESPUI.setElementStyle(
+    clusters_attributes_table[device_config_max_number],
+    "width: calc(13% - 10px); min-width: 80px; margin: 0 5px 10px 5px;");
+  ESPUI.setElementStyle(
+    clusters_attributes_table[device_config_delta_number],
+    "width: calc(12% - 10px); min-width: 70px; margin: 0 5px 10px 5px;");
+  ESPUI.setElementStyle(
     clusters_attributes_table[manufacturer_code_switcher],
-    "width: calc(20% - 10px); min-width: 120px; margin: 0 5px 10px 5px;");
+    "width: calc(16% - 10px); min-width: 100px; margin: 0 5px 10px 5px;");
   ESPUI.setElementStyle(
     clusters_attributes_table[manufacturer_code_selector],
-    "width: calc(60% - 10px); min-width: 200px; margin: 0 5px 10px 5px;");
+    "width: calc(30% - 10px); min-width: 160px; margin: 0 5px 10px 5px;");
   ESPUI.setElementStyle(
     clusters_attributes_table[device_async_switcher],
-    "width: calc(20% - 10px); min-width: 120px; margin: 0 5px 10px 5px;");
+    "width: calc(16% - 10px); min-width: 100px; margin: 0 5px 10px 5px;");
 
-
+  // Line 4: 5 command buttons (20% each)
   clusters_attributes_table[device_read_attribute_button] = ESPUI.addControl(
-    Control::Type::Button, "attribute commands", "Read attribute", 
+    Control::Type::Button, "attribute commands", "Read attribute",
     Control::Color::Dark, main_panel, getClustersAttributesQueryCallback,
     (void *)GUI_CB_READ_ATTR_FLAG);
 
   clusters_attributes_table[device_read_config_button] = ESPUI.addControl(
-    Control::Type::Button, empty_str, "Read config", 
+    Control::Type::Button, empty_str, "Read config",
     Control::Color::Dark, main_panel, getClustersAttributesQueryCallback,
     (void *)GUI_CB_READ_CONFIG_FLAG);
 
   clusters_attributes_table[device_write_attribute_button] = ESPUI.addControl(
-    Control::Type::Button, empty_str, "Write attribute", 
+    Control::Type::Button, empty_str, "Write attribute",
     Control::Color::Dark, main_panel, getClustersAttributesQueryCallback,
     (void *)GUI_CB_WRITE_ATTR_FLAG);
 
   clusters_attributes_table[device_write_config_button] = ESPUI.addControl(
-    Control::Type::Button, empty_str, "Configure reporting", 
+    Control::Type::Button, empty_str, "Configure reporting",
     Control::Color::Dark, main_panel, getClustersAttributesQueryCallback,
     (void *)GUI_CB_CONFIG_REPORT_FLAG);
 
   clusters_attributes_table[device_custom_command_button] = ESPUI.addControl(
-    Control::Type::Button, empty_str, "Custom cmd", 
+    Control::Type::Button, empty_str, "Custom cmd",
     Control::Color::Dark, main_panel, getClustersAttributesQueryCallback,
     (void *)GUI_CB_CUSTOM_CMD_FLAG);
 
@@ -2419,8 +2493,9 @@ void buildClustersAttributesTab() {
     clusters_attributes_table[device_custom_command_button],
     "width: calc(20% - 10px); min-width: 110px; margin: 0 5px 10px 5px;");
 
+  // Line 5: 2 response labels (50% each)
   working_str = three_dots_str;
-  
+
   clusters_attributes_table[device_read_attribute_label] = ESPUI.addControl(
     Control::Type::Label, "ZigBee command result", working_str,
     Control::Color::Dark, main_panel);
@@ -2437,8 +2512,8 @@ void buildClustersAttributesTab() {
     clusters_attributes_table[device_Tuya_payload_label],
     "width: calc(50% - 10px); min-width: 200px; margin: 0 5px 10px 5px; "
     "pointer-events: none; opacity: 0.7;");
-  
-  const char* legend_html = 
+
+  const char* legend_html =
     "<div style='text-align: left; font-size: 13px; line-height: 1.5;'>"
     "<b>Legend:</b><br>"
     "&#8226; <b>attribute/command ID</b> & <b>payload size</b>: "
@@ -2448,10 +2523,10 @@ void buildClustersAttributesTab() {
     "</div>";
 
   uint16_t legend_label = ESPUI.addControl(
-    Control::Type::Label, empty_str, legend_html, 
+    Control::Type::Label, empty_str, legend_html,
     Control::Color::None, main_panel);
 
-  ESPUI.setElementStyle(legend_label, 
+  ESPUI.setElementStyle(legend_label,
     "width: calc(100% - 10px); margin: 5px 5px 10px 5px; "
     "background-color: transparent; border: none; box-shadow: none;");
 
@@ -2461,7 +2536,7 @@ void buildClustersAttributesTab() {
 
   uint32_t zigbee_datatypes_count =
     sizeof(zigbee_datatypes) / sizeof(zigbee_datatype_t);
-  
+
   for (uint8_t i = 0; i < zigbee_datatypes_count; i++) {
     ESPUI.addControl(Control::Type::Option,
       zigbee_datatypes[i].zigbee_datatype_name, i, Control::Color::None,
@@ -2474,7 +2549,7 @@ void buildClustersAttributesTab() {
 
   uint32_t zigbee_manufacturer_codes_count =
     sizeof(zigbee_manufacturer_codes) / sizeof(zigbee_manufacturer_code_t);
-  
+
   for (uint8_t i = 0; i < zigbee_manufacturer_codes_count; i++) {
     ESPUI.addControl(Control::Type::Option,
       zigbee_manufacturer_codes[i].manufacturer_name,
@@ -2484,6 +2559,7 @@ void buildClustersAttributesTab() {
 
   enableClustersAttributesControls(false);
 }
+
 /*****************************************************************************/
 
 void buildSonoffValveGUI(uint16_t advanced_devices_tab) {
@@ -2944,8 +3020,8 @@ void buildMoesAlarmGUI(uint16_t advanced_devices_tab) {
 
 void enableTuyaDevicesControls(bool enable) {
 
-	if (enable == (controls_enabled_flags & TUYA_DEVICES_ENABLED_FLAG))
-		return;
+	if (enable == bool(controls_enabled_flags & TUYA_DEVICES_ENABLED_FLAG))
+  return;
 
 	updateLabel_C(
 	  Tuya_devices_tab_controls_table[Tuya_device_info_label], three_dots_str);
@@ -3654,64 +3730,58 @@ void buildActionsTableJsonFooter(
 void buildActionsTableJsonPayload(
 	uint16_t ui_label_id, int target_action_index) {
 		
-  const size_t MAX_JSON_SIZE = 2048; 
+  const size_t MAX_JSON_SIZE = 1024; 
   char json_payload[MAX_JSON_SIZE] = {};
 
-  const int BATCH_SIZE = 10; 
   size_t offset = 0;
 
   int total_actions = Z2S_getActionsNumber();
-
-  log_i("total actions %u", total_actions);
+  log_i("total actions %d", total_actions);
 
   if (total_actions == 0) {
     
-		offset = 0;
-    
-    buildActionsTableJsonHeader(
-      json_payload, MAX_JSON_SIZE, offset, ui_label_id, -1, 
-      false, 0);
-  
+		buildActionsTableJsonHeader(
+      json_payload, MAX_JSON_SIZE, offset, ui_label_id, -1, false, 0);
     buildActionsTableJsonFooter(json_payload, MAX_JSON_SIZE, offset);
-
-    log_i("Empty payload size %u: %s", strlen(json_payload), json_payload);
-
-    ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    //ESPUI.WebSocket()->textAll(json_payload, offset);
+		sendWsTextAllThrottled(json_payload, offset);
     return;
   }
 
   int16_t next_action = Z2S_findNextActionPosition(0);
   z2s_channel_action_t new_action = {};
+  bool is_first_in_batch = true;
 
   for (int i = 0; i < total_actions; i++) {
-    if (i % BATCH_SIZE == 0) {
-      offset = 0; 
+    if (is_first_in_batch) {
+      offset = 0;
       bool is_appending = (i > 0);
       buildActionsTableJsonHeader(
         json_payload, MAX_JSON_SIZE, offset, ui_label_id, target_action_index, 
-        is_appending, i
-      );
+        is_appending, i);
     }
 
-    bool is_first_in_batch = (i % BATCH_SIZE == 0);
-    
     Z2S_loadAction(next_action, new_action);
-    
+
     addActionsTableJsonRow(
-      json_payload, MAX_JSON_SIZE, offset, new_action, is_first_in_batch
-    );
+      json_payload, MAX_JSON_SIZE, offset, new_action, is_first_in_batch);
+    is_first_in_batch = false;
 
     next_action = Z2S_findNextActionPosition(next_action + 1);
 
-    if (((i + 1) % BATCH_SIZE == 0) || (i == total_actions - 1)) {
+    if (((MAX_JSON_SIZE - offset) < 280) || (i == total_actions - 1)) {
+
       buildActionsTableJsonFooter(json_payload, MAX_JSON_SIZE, offset);
 
-      log_i("size %u, %s", strlen(json_payload), json_payload);
+      log_i("Actions chunk size %u", (unsigned)offset);
 
-      ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+      //ESPUI.WebSocket()->textAll(json_payload, offset);
+      sendWsTextAllThrottled(json_payload, offset);
+			is_first_in_batch = true;
     }
   }
 }
+
 /*****************************************************************************/
 
 
@@ -3802,9 +3872,9 @@ void addIrCodesTableJsonRow(
 void buildIrCodesTableJsonPayload(
   uint16_t ui_label_id, int target_ir_code_index) {
 
-  const size_t MAX_JSON_SIZE = 2048;
+  const size_t MAX_JSON_SIZE = 1024;
   char json_payload[MAX_JSON_SIZE] = {};
-  const int BATCH_SIZE = 10;
+  
   size_t offset = 0;
 
   int total_codes = irCodesStorage.getCount();
@@ -3812,20 +3882,24 @@ void buildIrCodesTableJsonPayload(
   if (total_codes == 0) {
     current_ir_code_id = -1;
     current_ir_code_counter = -1;
-    snprintf(
+    int len = snprintf(
       json_payload, MAX_JSON_SIZE,
       "{\"type\":\"update_action_table\",\"is_ir\":true,\"target\":\"id%d\","
       "\"s\":-1,\"append\":false,\"start_idx\":0,\"d\":[]}",
       ui_label_id);
-    ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    if (len > 0) {
+      //ESPUI.WebSocket()->textAll(json_payload, len);
+			sendWsTextAllThrottled(json_payload, len);
+    }
     return;
   }
 
   int16_t next_slot = irCodesStorage.findNext(0);
   z2s_ir_code_t ir_code = {};
+  bool is_first_in_batch = true;
 
   for (int i = 0; i < total_codes; i++) {
-    if (i % BATCH_SIZE == 0) {
+    if (is_first_in_batch) {
       offset = 0;
       bool is_appending = (i > 0);
       appendToBuffer(
@@ -3835,17 +3909,19 @@ void buildIrCodesTableJsonPayload(
         ui_label_id, target_ir_code_index, is_appending ? "true" : "false", i);
     }
 
-    bool is_first_in_batch = (i % BATCH_SIZE == 0);
     irCodesStorage.load(next_slot, ir_code);
 
     addIrCodesTableJsonRow(
       json_payload, MAX_JSON_SIZE, offset, next_slot, ir_code, is_first_in_batch);
+    is_first_in_batch = false;
 
     next_slot = irCodesStorage.findNext(next_slot + 1);
 
-    if (((i + 1) % BATCH_SIZE == 0) || (i == total_codes - 1)) {
+    if (((MAX_JSON_SIZE - offset) < 256) || (i == total_codes - 1)) {
       appendToBuffer(json_payload, MAX_JSON_SIZE, offset, "]}");
-      ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+      //ESPUI.WebSocket()->textAll(json_payload, offset);
+			sendWsTextAllThrottled(json_payload, offset);
+      is_first_in_batch = true;
     }
   }
 }
@@ -3988,7 +4064,8 @@ bool buildSelectJsonPayloadGeneric(
 
 			log_i("size %u, %s", strlen(json_payload), json_payload);
 
-			ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+			//ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+			sendWsTextAllThrottled(json_payload, offset);
 
 			options_added_number = 0;
 			offset = 0;
@@ -4036,7 +4113,8 @@ bool buildSelectJsonPayloadGeneric(
 
 		log_i("size %u, %s", strlen(json_payload), json_payload);
 
-		ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+		//ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+		sendWsTextAllThrottled(json_payload, offset);
 	}
 
 	return true;
@@ -5036,9 +5114,6 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 		"getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u", 
 		ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
 
-	log_i(
-	  "sizeof(BasicControl) %u, sizeof(Control) %u", sizeof(BasicControl),
-	  sizeof(Control));
 
 	ESPUI.sliderContinuous = true;
 	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
@@ -5131,7 +5206,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 	ESPUI.setOnWsCustomCmdCallback(onWsCustomCmdCallback);
 }
 
-
+/*****************************************************************************/
 
 void Z2S_startWebGUI() {
 
@@ -5140,96 +5215,53 @@ void Z2S_startWebGUI() {
 	esp_log_level_set("async_ws", ESP_LOG_ERROR);
 
 	log_i(
-		"getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u", 
-		ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
-
-	//ESPUI.setCustomJS(myCustomJS);
-	//ESPUI.setVerbosity(Verbosity::VerboseJSON);
+	  "getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u",
+	  ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
 
 	ESPUI.begin("ZIGBEE <=> SUPLA CONTROL PANEL");
 	GUIstarted = true;
 	handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_STARTED);
 
-	if (ESPUI.WebServer())
-		ESPUI.WebServer()->on("/zigbee_ota", HTTP_GET, [](AsyncWebServerRequest *request) {
-			static const char *html =
-			  "<!DOCTYPE HTML><html><head><title>ZigBee OTA file upload</title>"
-			  "<meta name='viewport' content='width=device-width, initial-scale=1'>"
-			  "<style>body{font-family:Arial; margin:20px;} th, td{padding:10px; text-align:left;}"
-			  " a{color:white;}</style></head><body>"
-			  "<h2>ZigBee OTA file upload</h2>"
-			  "<section style='background:#f4f4f4; padding:15px;'>"
-			  "<strong>Upload File:</strong><br><br>"
-			  "<input type='file' id='file-input'><br><br>"
-			  "<button class='btn' onclick='uploadFile()'>Upload Now</button>"
-			  "<div class='progress-wrapper' id='p-wrap'><div id='progress-bar'>0%</div></div>"
-			  "<p id='status'></p></section><br>"
-			  "<script>"
-			  "function uploadFile() {"
-			  "  var file = document.getElementById('file-input').files[0];"
-			  "  if(!file) { alert('Select a file first!'); return; }"
-			  "  var formData = new FormData();"
-			  "  formData.append('data', file);"
-			  "  var xhr = new XMLHttpRequest();"
-			  "  document.getElementById('p-wrap').style.display = 'block';"
-			  "  xhr.upload.addEventListener('progress', function(e) {"
-			  "    var percent = (e.loaded / e.total) * 100;"
-			  "    var bar = document.getElementById('progress-bar');"
-			  "    bar.style.width = Math.round(percent) + '%';"
-			  "    bar.innerHTML = Math.round(percent) + '%';"
-			  "  });"
-			  "  xhr.onreadystatechange = function() {"
-			  "    if (xhr.readyState == 4) {"
-			  "      if(xhr.status == 200) {"
-			  "        document.getElementById('status').innerHTML = "
-			  "'<b>Success: </b>' + xhr.responseText;"
-			  "        setTimeout(function(){ location.reload(); }, 2000);"
-			  "      } else { alert('Upload Failed'); }"
-			  "    }"
-			  "  };"
-			  "  xhr.open('POST', '/upload_zigbee_ota', true);"
-			  "  xhr.send(formData);"
-			  "}"
-			  "</script></body></html>"
-			  "<div style='margin-bottom:20px;'>"
-			  "<button class='btn' onclick=\"window.location.href='/'\">Back to GUI page</button>"
-			  "</div>"
-			  "</body></html>";
+	static bool custom_routes_registered = false;
+	AsyncWebServer *server = ESPUI.WebServer();
 
-			request->send(200, "text/html", html);
+	if (server && !custom_routes_registered) {
+		custom_routes_registered = true;
+
+		// Redirect /zigbee_ota to the unified /update#zigbee page
+		server->on("/zigbee_ota", HTTP_GET, [](AsyncWebServerRequest *request) {
+			request->redirect("/update#zigbee");
 		});
 
-	if (ESPUI.WebServer())
-		ESPUI.WebServer()->on(
-		  "/upload_zigbee_ota", HTTP_POST, [](AsyncWebServerRequest *request) {
-			  //request->redirect("/"); // Go back to home after upload
+		server->on(
+		  "/upload_zigbee_ota", HTTP_POST,
+		  [](AsyncWebServerRequest *request) {
 			  request->send(200, "text/plain", "Upload OK");
 		  },
-		  [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-			  //LittleFS.begin(false);
-			  Z2S_initLittleFs();
-
-			  if (index)
-				  request->_tempFile = LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "a");
-			  else {
-
-				  if (!LittleFS.exists("/zigbee_ota/zigbee_ota_file.ota"))
+		  [](AsyncWebServerRequest *request, String filename, size_t index,
+		     uint8_t *data, size_t len, bool final) {
+			  if (index == 0) {
+				  Z2S_initLittleFs();
+				  if (!LittleFS.exists("/zigbee_ota")) {
 					  LittleFS.mkdir("/zigbee_ota");
-
-				  request->_tempFile = LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "w");
+				  }
+				  request->_tempFile =
+				    LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "w");
 			  }
 
-			  if (len) {
+			  if (len && request->_tempFile) {
 				  request->_tempFile.write(data, len);
 			  }
-			  //if (final) {
-			  request->_tempFile.close();
-			  //}
-			  //LittleFS.end();
+
+			  if (final) {
+				  if (request->_tempFile) {
+					  request->_tempFile.close();
+				  }
+				  Z2S_endLittleFs();
+			  }
 		  });
 
-	if (ESPUI.WebServer())
-		ESPUI.WebServer()->on("/partition", HTTP_GET, [](AsyncWebServerRequest *request) {
+		server->on("/partition", HTTP_GET, [](AsyncWebServerRequest *request) {
 			const AsyncWebParameter *pLabel = request->getParam("label");
 			const AsyncWebParameter *pType = request->getParam("type");
 			const AsyncWebParameter *pSubtype = request->getParam("subtype");
@@ -5240,28 +5272,17 @@ void Z2S_startWebGUI() {
 				return;
 			}
 
-			esp_partition_type_t type = ESP_PARTITION_TYPE_ANY;
-			esp_partition_subtype_t subtype = ESP_PARTITION_SUBTYPE_ANY;
-			const char *label = nullptr;
-			bool raw = true;
+			const char *label = pLabel ? pLabel->value().c_str() : nullptr;
+			esp_partition_type_t type = pType
+			  ? static_cast<esp_partition_type_t>(pType->value().toInt())
+			  : ESP_PARTITION_TYPE_ANY;
+			esp_partition_subtype_t subtype = pSubtype
+			  ? static_cast<esp_partition_subtype_t>(pSubtype->value().toInt())
+			  : ESP_PARTITION_SUBTYPE_ANY;
+			bool raw = !(pRaw && strcmp(pRaw->value().c_str(), "false") == 0);
 
-			if (pLabel) {
-				label = pLabel->value().c_str();
-			}
-
-			if (pType) {
-				type = (esp_partition_type_t)pType->value().toInt();
-			}
-
-			if (pSubtype) {
-				subtype = (esp_partition_subtype_t)pSubtype->value().toInt();
-			}
-
-			if (pRaw && pRaw->value() == "false") {
-				raw = false;
-			}
-
-			const esp_partition_t *partition = esp_partition_find_first(type, subtype, label);
+			const esp_partition_t *partition =
+			  esp_partition_find_first(type, subtype, label);
 
 			if (!partition) {
 				request->send(404, "text/plain", "Partition not found");
@@ -5269,70 +5290,31 @@ void Z2S_startWebGUI() {
 			}
 
 			AsyncWebServerResponse *response = request->beginChunkedResponse(
-			  "application/octet-stream", [partition, raw](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-				  const size_t remaining = partition->size - index;
-				  if (!remaining) {
-					  return 0;
-				  }
-				  const size_t len = std::min(maxLen, remaining);
-				  if (raw && esp_partition_read_raw(partition, index, buffer, len) == ESP_OK) {
-					  return len;
-				  }
-				  if (!raw && esp_partition_read(partition, index, buffer, len) == ESP_OK) {
-					  return len;
-				  }
-				  return 0;
+			  "application/octet-stream",
+			  [partition, raw](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+				  if (index >= partition->size) return 0;
+				  const size_t len = std::min<size_t>(maxLen, partition->size - index);
+				  esp_err_t err = raw
+				    ? esp_partition_read_raw(partition, index, buffer, len)
+				    : esp_partition_read(partition, index, buffer, len);
+				  return (err == ESP_OK) ? len : 0;
 			  });
 
-			response->addHeader(
-			  "Content-Disposition", "attachment; filename=" + String(partition->label) + ".bin");
+			char disp_hdr[64];
+			snprintf(
+			  disp_hdr, sizeof(disp_hdr), "attachment; filename=%s.bin",
+			  partition->label);
+			response->addHeader("Content-Disposition", disp_hdr);
 			response->setContentLength(partition->size);
 
 			request->send(response);
 		});
-
-		
-		if (ESPUI.WebServer()) {
-			
-			ESPUI.WebServer()->on(
-				"/js/custom.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-  				AsyncWebServerResponse *response = request->beginResponse_P(
-    				200,	"application/javascript", CUSTOM_JS_GZ, 
-						CUSTOM_JS_GZ_LEN);
-  				response->addHeader("Content-Encoding", "gzip");
-  				response->addHeader("Cache-Control", "max-age=86400"); // Optional caching
-  				request->send(response);
-				});
 	}
 
-		/*
-		if (ESPUI.WebServer()) {
-			
-			ESPUI.WebServer()->on("/js/custom.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-			
-			size_t totalLen = strlen(myCustomJS);
-			
-			AsyncWebServerResponse *response = request->beginChunkedResponse(
-				"application/javascript",
-				[totalLen](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-					if (index >= totalLen) {
-						return 0; // End of stream
-					}
-					size_t remaining = totalLen - index;
-					size_t sendLen = (remaining < maxLen) ? remaining : maxLen;
-					memcpy(buffer, myCustomJS + index, sendLen);
-					return sendLen;
-				}
-			);
-			request->send(response);
-		});
-	}*/
-
 	log_i(
-		"getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u", 
-		ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
+	  "getFreeHeap %u, getMinFreeHeap %u, getMaxAllocHeap %u",
+	  ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
 }
-
 /*****************************************************************************/
 
 void Z2S_stopWebGUI() {
@@ -5402,10 +5384,16 @@ void Z2S_updateWebGUI() {
 
 	char memory_info_gui_buffer[768] = {};
 
+	if (ESPUI.WebSocket()) {
+	
+		ESPUI.WebSocket()->cleanupClients(2);
+	}
+	
 	fillMemoryUptimeInformation(memory_info_gui_buffer, 768);
 
 	updateLabel_P(gateway_memory_info, memory_info_gui_buffer);
 	//ESPUI.updateLabel(gateway_memory_info, memory_info_gui_buffer);
+	ESPUI.loop();
 }
 
 /*****************************************************************************/
@@ -5530,27 +5518,21 @@ void Z2S_loopWebGUI() {
 
 	gui_command_msg_t pending_gui_command;
 
-	while (xQueueReceive(
+	if (xQueueReceive(
 					gui_commands_queue, &pending_gui_command, 0) == pdTRUE) {
 	
 		switch (pending_gui_command.gui_command) {
 
 
 			case gui_cmd_synchronize_all: {
-
+				
 				log_i("gui_cmd_synchronize_all");
-
-				sortZbDevicesSelectorsMain();
-				sortChannelsSelectorsMain();
+				
 				sortActionsEventsSelectorsMain();
 				sortClustersSelectorsMain();
 				sortAttributesSelectorsMain();
 				sortAttributeValuesSelectorsMain();
 				sortTuyaDatapointsSelectorsMain();
-				buildActionsTableJsonPayload(actions_table_label_2, 0);
-				buildIrCodesTableJsonPayload(ir_codes_table_label, 0);
-				buildPushoverMessagesTableJsonPayload(
-				  pushover_messages_table_label, 0);
 			} break;
 
 
@@ -6266,6 +6248,7 @@ void Z2S_loopWebGUI() {
 			} break;
 		}
 	}
+	ESPUI.loop();
 }
 
 /*****************************************************************************/
@@ -6411,8 +6394,8 @@ void endpointCallback(BasicControl *sender, int type, void *param) {
 
 void enableDeviceControls(bool enable) {
 
-	if (enable == (controls_enabled_flags & DEVICES_CONTROLS_ENABLED_FLAG))
-		return;
+	if (enable == bool(controls_enabled_flags & DEVICES_CONTROLS_ENABLED_FLAG))
+  return;
 
 	updateLabel_C(zb_device_info_label, three_dots_str);
 	enableControlStyle(zb_device_info_label, enable);
@@ -6452,8 +6435,9 @@ void enableDeviceControls(bool enable) {
 
 void enableClustersAttributesControls(bool enable) {
 
-	if (enable == (controls_enabled_flags & CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG))
-		return;
+	if (enable == bool(controls_enabled_flags & 
+			CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG))
+  return;
 
 	updateLabel_P(
 	  clusters_attributes_table[clusters_attributes_device_info_label],
@@ -6629,9 +6613,13 @@ void clustersattributesdeviceSelectorCallback(
 		sender_value = sender->getValueInt();
 
 	if ((sender_value < 0) || (sender_value >= Z2S_DEVICES_MAX_NUMBER)) {
-
+		
+		if (!(controls_enabled_flags & 
+					CLUSTERS_ATTRIBUTES_CONTROLS_ENABLED_FLAG)) {
+			return;
+		}
 		enableClustersAttributesControls(false);
-		clusterCallbackCmd();
+		addGUICommand(gui_cmd_cluster_callback);
 
 	} else {
 
@@ -6642,15 +6630,17 @@ void clustersattributesdeviceSelectorCallback(
 		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
 			device_slot);
 
-		sprintf_P(
-		  general_purpose_gui_buffer, "<b><i>Manufacturer name</i></b> %s <b>| "
-		  "<i>model ID</b></i> %s",z2s_device->getManufacturerName(),
-			z2s_device->getModelName());
+		if (z2s_device) {
+			snprintf_P(
+			  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
+			  "<b><i>Manufacturer name</i></b> %s <b>| <i>model ID</b></i> %s",
+			  z2s_device->getManufacturerName(), z2s_device->getModelName());
 
-		updateLabel_P(
-		  clusters_attributes_table[clusters_attributes_device_info_label],
-		  general_purpose_gui_buffer);
-		clusterCallbackCmd();
+			updateLabel_P(
+			  clusters_attributes_table[clusters_attributes_device_info_label],
+			  general_purpose_gui_buffer);
+		}
+		addGUICommand(gui_cmd_cluster_callback);
 	}
 }
 
@@ -6666,8 +6656,8 @@ void enableLAHPanel(bool enable) {
 
 void enableChannelControls(bool enable) {
 
-	if (enable == (controls_enabled_flags & CHANNELS_CONTROLS_ENABLED_FLAG))
-		return;
+	if (enable == bool(controls_enabled_flags & CHANNELS_CONTROLS_ENABLED_FLAG))
+  return;
 
 	updateLabel_C(zb_channel_info_label, three_dots_str);
 	working_str = empty_str;
@@ -6676,6 +6666,7 @@ void enableChannelControls(bool enable) {
 	ESPUI.updateNumber(param_1_text, 0);
 	ESPUI.updateNumber(param_2_number, 0);
 	ESPUI.updateNumber(param_3_number, 0);
+	ESPUI.updateNumber(param_4_number, 0);
 	ESPUI.updateNumber(keepalive_number, 0);
 	ESPUI.updateNumber(timeout_number, 0);
 	ESPUI.updateNumber(refresh_number, 0);
@@ -6702,9 +6693,11 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(param_1_text, enable);
 	enableControlStyle(param_2_number, enable);
 	enableControlStyle(param_3_number, enable);
+	enableControlStyle(param_4_number, enable);
 	enableControlStyle(param_1_save_button, enable);
 	enableControlStyle(param_2_save_button, enable);
 	enableControlStyle(param_3_save_button, enable);
+	enableControlStyle(param_4_save_button, enable);
 	enableControlStyle(keepalive_number, enable);
 	enableControlStyle(keepalive_save_button, enable);
 	enableControlStyle(timeout_number, enable);
@@ -6862,6 +6855,21 @@ void enableChannelParams(uint8_t params_mask) {
 		ESPUI.updateControlLabel(param_3_number, working_str_ptr);
 		enableControlStyle(param_3_number, false);
 		enableControlStyle(param_3_save_button, false);
+	}
+
+	if (params_mask & 8) {
+
+		enableControlStyle(param_4_number, true);
+		enableControlStyle(param_4_save_button, true);
+
+	} else {
+
+		ESPUI.updateNumber(param_4_number, 0);
+		char *working_str_ptr =
+		  "&#10023; PARAM(4) - currently not used &#10023;";
+		ESPUI.updateControlLabel(param_4_number, working_str_ptr);
+		enableControlStyle(param_4_number, false);
+		enableControlStyle(param_4_save_button, false);
 	}
 
 	if (params_mask == 0)
@@ -7143,13 +7151,87 @@ void updateChannelInfoLabel(
 					
 					ESPUI.updateSelect(
 						local_channel_function_selector, z2s_channel.local_channel_func);
-					
 
 					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
-					enableChannelParams(4);
-					ESPUI.updateControlLabel(param_3_number, src_thermometer_channel_desc);
-					ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
+					uint8_t cgpm_func = z2s_core->getZ2SLocalChannelFunc();
+
+					if (cgpm_func == CALCULATED_GPM_FUNC_LINEAR_MAP ||
+					    cgpm_func == CALCULATED_GPM_FUNC_PI_CONTROL ||
+					    cgpm_func == CALCULATED_GPM_FUNC_PID_CONTROL) {
+
+						enableChannelParams(1 + 2 + 4 + 8);
+
+						const char *param1_label = empty_str;
+						if (cgpm_func == CALCULATED_GPM_FUNC_LINEAR_MAP) {
+							
+							param1_label =
+							  "Enter Linear Map parameters - format: "
+							  "T_min,T_max,Duty_min(0-100),Duty_max(0-100), "
+							  "e.g. 20.0,30.0,20,100";
+							
+							snprintf(
+							  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
+							  "%.2f,%.2f,%.0f,%.0f",
+							  z2s_core->getCalculatedGpmParam1(),
+							  z2s_core->getCalculatedGpmParam2(),
+							  z2s_core->getCalculatedGpmParam3(),
+							  z2s_core->getCalculatedGpmParam4());
+						} 
+						else if (cgpm_func == CALCULATED_GPM_FUNC_PI_CONTROL) {
+							
+							param1_label =
+							  "Enter PI parameters - format: Setpoint,Kp,Ki "
+							  "(Kp > 0 heating, Kp < 0 cooling), e.g. 21.5,10.0,0.05";
+							
+							snprintf(
+							  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
+							  "%.2f,%.3f,%.4f",
+							  z2s_core->getCalculatedGpmParam1(),
+							  z2s_core->getCalculatedGpmParam2(),
+							  z2s_core->getCalculatedGpmParam3());
+						} 
+						else {
+							
+							param1_label =
+							  "Enter PID parameters - format: Setpoint,Kp,Ki,Kd "
+							  "(Kp > 0 heating, Kp < 0 cooling), e.g. 21.5,10.0,0.05,1.0";
+							snprintf(
+							  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
+							  "%.2f,%.3f,%.4f,%.3f",
+							  z2s_core->getCalculatedGpmParam1(),
+							  z2s_core->getCalculatedGpmParam2(),
+							  z2s_core->getCalculatedGpmParam3(),
+							  z2s_core->getCalculatedGpmParam4());
+						}
+
+						ESPUI.updateControlLabel(param_1_text, param1_label);
+						working_str = general_purpose_gui_buffer;
+						ESPUI.updateText(param_1_text, working_str);
+
+						const char *param2_label =
+						  "Enter sensor offline failsafe PWM duty: "
+						  "-1 = hold last value, 0-100 = forced duty (%)";
+						ESPUI.updateControlLabel(param_2_number, param2_label);
+						ESPUI.updateNumber(
+						  param_2_number, z2s_core->getCalculatedGpmFailsafeDuty());
+
+						ESPUI.updateControlLabel(
+						  param_3_number, src_thermometer_channel_desc);
+						ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
+
+						ESPUI.updateControlLabel(
+						  param_4_number, dst_local_pwm_channel_desc);
+						uint8_t dst_ch = z2s_core->getDestinationChannel();
+						ESPUI.updateNumber(
+						  param_4_number, (dst_ch == 0xFF) ? -1 : dst_ch);
+					} else {
+
+						enableChannelParams(4);
+						ESPUI.updateControlLabel(
+						  param_3_number, src_thermometer_channel_desc);
+						ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
+					}
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_VIRTUAL_BINARY) {
@@ -8869,6 +8951,17 @@ uint8_t saveSourceChannelData(uint8_t channel_slot) {
 
 /*****************************************************************************/
 
+uint8_t saveDestinationChannelData(uint8_t channel_slot) {
+
+	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
+	int32_t raw_dst = ESPUI.getControl(param_4_number)->getValueInt();
+	uint8_t dst_ch = (raw_dst < 0 || raw_dst > 254) ? 0xFF : (uint8_t)raw_dst;
+
+	z2s_core->setDestinationChannel(dst_ch);
+	return dst_ch;
+}
+/*****************************************************************************/
+
 void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 	if ((type == B_UP) || (type == S_VALUE))
@@ -8920,6 +9013,13 @@ void editChannelMain(uint32_t update_channel_flag) {
 							updateChannelInfoLabel(channel_slot, false);
 						}
 					} 
+					else if (z2s_core->getZ2SLocalChannelType() ==
+					           LOCAL_CHANNEL_TYPE_CALC_GPM) {
+
+						z2s_core->setZ2SLocalChannelFunc(local_channel_function);
+						z2s_core->updateCalculatedGpmParams();
+						updateChannelInfoLabel(channel_slot, false);
+					} 
 					else {
 						z2s_core->setZ2SLocalChannelFunc(local_channel_function);
 					}
@@ -8927,417 +9027,442 @@ void editChannelMain(uint32_t update_channel_flag) {
 			} break;
 
 
-			case GUI_CB_UPDATE_PARAM_1_FLAG:
-				{
+			case GUI_CB_UPDATE_PARAM_1_FLAG: {
+
+				switch (z2s_core->getZ2SChannelType()) {
 
 
-					switch (z2s_core->getZ2SChannelType()) {
+					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
 
+						switch (z2s_core->getZ2SLocalChannelType()) {
 
-						case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
-
-								switch (z2s_core->getZ2SLocalChannelType()) {
-
-									case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
-									case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
-									case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
-									case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
-
-										saveRemoteAddressData(channel_slot);
-										break;
-
-
-									case LOCAL_CHANNEL_TYPE_HTTP_BINARY: {
-
-										channel_extended_data_http_binary_t hb_data = {};
-										const char *url_cstr =ESPUI.getControl(
-											param_1_text)->getValueCstr();
-
-										if (url_cstr) {
-												
-											strncpy(
-												hb_data.url, url_cstr, sizeof(hb_data.url) - 1);
-												hb_data.url[sizeof(hb_data.url) - 1] = '\0';
-										}
-
-										z2s_core->saveChannelExtendedData(
-											CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY, 
-											(uint8_t *)&hb_data);
-									} break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_RELAY:
-										{
-
-											z2s_core->setLocalRelayGpioPin(
-											  ESPUI.getControl(param_1_text)->getValueInt(), true);
-
-											z2s_core->updateLocalRelayParams();
-										}
-										break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_HVAC:
-										{
-
-											z2s_core->setLocalHvacGpioPin(
-											  ESPUI.getControl(param_1_text)->getValueInt(), true);
-
-											z2s_core->updateLocalHvacParams();
-										}
-										break;
-
-									case LOCAL_CHANNEL_TYPE_GPIO_BINARY:
-										{
-
-											z2s_core->setLocalBinaryGpioPin(
-											  ESPUI.getControl(param_1_text)->getValueInt(), true);
-
-											z2s_core->updateLocalBinaryParams();
-										}
-										break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_DS18B20:
-										{
-
-											uint8_t parsedBytes[8] = { 0 };
-
-											if (hexToBytes(ESPUI.getControl(
-											      param_1_text)->getValueCstr(), parsedBytes)) {
-
-												z2s_core->setLocalDS18B20Address(parsedBytes, true);
-
-												z2s_core->updateLocalDs18b20Params();
-											}
-										}
-										break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
-
-										long hcsr04_params[6];
-
-										size_t params_found = parseCsvNumbers(
-											ESPUI.getControl(param_1_text)->getValueCstr(),
-											hcsr04_params, 6);
-
-										switch (params_found) {
-											case 6:
-												z2s_core->setLocalHCSR04MaxOut(hcsr04_params[5]);
-												[[fallthrough]];
-											case 5:
-												z2s_core->setLocalHCSR04MinOut(hcsr04_params[4]);
-												[[fallthrough]];
-											case 4:
-												z2s_core->setLocalHCSR04MaxIn(hcsr04_params[3]);
-												[[fallthrough]];
-											case 3:
-												z2s_core->setLocalHCSR04MinIn(hcsr04_params[2]);
-												[[fallthrough]];
-											case 2:
-												z2s_core->setLocalHCSR04EchoPin(hcsr04_params[1]);
-												[[fallthrough]];
-											case 1:
-												z2s_core->setLocalHCSR04TrigPin(hcsr04_params[0]);
-												[[fallthrough]];
-												z2s_core->saveChannelData();
-												z2s_core->updateLocalHcsr04Params();
-											default: break;
-										}
-									} break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
-											
-										long sht3x_params[2];
-										size_t params_found = parseCsvNumbers(
-											ESPUI.getControl(param_1_text)->getValueCstr(),
-											sht3x_params, 2);
-
-										if (params_found == 2) {
-											z2s_core->setLocalSHT3xSdaPin(sht3x_params[0]);
-											z2s_core->setLocalSHT3xSclPin(sht3x_params[1]);
-											z2s_core->saveChannelData();
-											z2s_core->updateLocalSHT3xParams();
-										}
-									} break;
-
-									case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
-
-										z2s_core->setLocalAdcPin(
-											ESPUI.getControl(param_1_text)->getValueInt(), true);
-										z2s_core->updateLocalAdcParams();
-									} break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
-
-										long pwm_params[4];
-										size_t params_found = parseCsvNumbers(
-										  ESPUI.getControl(param_1_text)->getValueCstr(),
-										  pwm_params, 4);
-
-										switch (params_found) {
-											case 4:
-												z2s_core->setLocalPwmMaxDuty(pwm_params[3]);
-												[[fallthrough]];
-											case 3:
-												z2s_core->setLocalPwmMinDuty(pwm_params[2]);
-												[[fallthrough]];
-											case 2:
-												z2s_core->setLocalPwmFreqHz(pwm_params[1]);
-												[[fallthrough]];
-											case 1:
-												z2s_core->setLocalPwmGpioPin(pwm_params[0]);
-												z2s_core->saveChannelData();
-												z2s_core->updateLocalPwmParams();
-												break;
-											default:
-												break;
-										}
-									} break;
-								}
-							} break; //LCHT 
-
-						case SUPLA_CHANNELTYPE_THERMOMETER:
-						case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
-							{
+							case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
+							case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
+							case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
+							case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
 
 								saveRemoteAddressData(channel_slot);
-							}
 							break;
 
 
-						case SUPLA_CHANNELTYPE_HVAC:
+							case LOCAL_CHANNEL_TYPE_HTTP_BINARY: {
 
-							updateHvacFixedCalibrationTemperature(
-							  channel_slot,
-							  ESPUI.getControl(param_1_text)->getValueInt());
-							break;
+								channel_extended_data_http_binary_t hb_data = {};
+								const char *url_cstr =ESPUI.getControl(
+									param_1_text)->getValueCstr();
 
-
-						default:
-							{
-
-								z2s_core->setChannelUserData1(
-								  ESPUI.getControl(param_1_text)->getValueInt());
-							}
-							break;
-					} //CHT
-				}
-				break;
-
-			case GUI_CB_UPDATE_PARAM_2_FLAG:
-				{
-
-
-					switch (z2s_core->getZ2SChannelType()) {
-
-
-						case SUPLA_CHANNELTYPE_LOCALCHANNEL:
-							{
-
-								switch (z2s_core->getZ2SLocalChannelType()) {
-
-
-									case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
-
-										auto *lah =
-											static_cast<Supla::LocalActionHandlerWithTrigger *>(
-												z2s_core->getZ2SElementPtr());
-
-										if (lah) {
-											
-											int32_t requested_pins =
-												ESPUI.getControl(param_2_number)->getValueInt();
-
-											uint8_t clamped_pins =
-												(requested_pins < 0) ? 0 :
-												((requested_pins > 32) ? 32 : (uint8_t)requested_pins);
-
-											lah->setLogicPinsNumber(clamped_pins, true);
-											ESPUI.updateNumber(
-												param_2_number, lah->getLogicPinsNumber());
-											updateChannelInfoLabel(channel_slot, false);
-										}
-									} break;
-
-
-									case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
-									case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
-									case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
-									case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
-
-										saveRemoteChannelData(channel_slot);
-										break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_RELAY:
-										{
-
-											z2s_core->setLocalRelayHighIsOn(
-											  ESPUI.getControl(param_2_number)->getValueInt(), true);
-
-											z2s_core->updateLocalRelayParams();
-										}
-										break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_HVAC:
-										{
-
-											z2s_core->setLocalHvacHighIsOn(
-											  ESPUI.getControl(param_2_number)->getValueInt(), true);
-
-											z2s_core->updateLocalHvacParams();
-										}
-										break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_BINARY:
-										{
-
-											z2s_core->setLocalBinaryInvertLogic(
-											  ESPUI.getControl(param_2_number)->getValueInt(), true);
-
-											z2s_core->updateLocalBinaryParams();
-										}
-										break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_DS18B20:
-										{
-
-											z2s_core->setLocalDS18B20GpioPin(
-											  ESPUI.getControl(param_2_number)->getValueInt(), true);
-
-											z2s_core->updateLocalDs18b20Params();
-										}
-										break;
-
-
-										case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
-
-											z2s_core->setLocalSHT3xAddress(
-											  ESPUI.getControl(param_2_number)->getValueInt(), true);
-											z2s_core->updateLocalSHT3xParams();
-										} break;
-
-
-										case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
-
-											z2s_core->setLocalAdcAttenuation(
-											  ESPUI.getControl(param_2_number)->getValueInt(), true);
-											z2s_core->updateLocalAdcParams();
-										} break;
-
-
-										case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
-
-										z2s_core->setLocalPwmInvertLogic(
-										  ESPUI.getControl(param_2_number)->getValueInt() != 0,
-										  true);
-										z2s_core->updateLocalPwmParams();
-									} break;
+								if (url_cstr) {
+										
+									strncpy(
+										hb_data.url, url_cstr, sizeof(hb_data.url) - 1);
+										hb_data.url[sizeof(hb_data.url) - 1] = '\0';
 								}
-							}
-							break;
+
+								z2s_core->saveChannelExtendedData(
+									CHANNEL_EXTENDED_DATA_TYPE_HTTP_BINARY, 
+									(uint8_t *)&hb_data);
+							} break;
 
 
-						case SUPLA_CHANNELTYPE_THERMOMETER:
-						case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
-							{
+							case LOCAL_CHANNEL_TYPE_GPIO_RELAY: {
+
+									z2s_core->setLocalRelayGpioPin(
+										ESPUI.getControl(param_1_text)->getValueInt(), true);
+
+									z2s_core->updateLocalRelayParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_HVAC: {
+
+								z2s_core->setLocalHvacGpioPin(
+									ESPUI.getControl(param_1_text)->getValueInt(), true);
+
+								z2s_core->updateLocalHvacParams();
+							} break;
+
+							case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
+
+								z2s_core->setLocalBinaryGpioPin(
+									ESPUI.getControl(param_1_text)->getValueInt(), true);
+
+								z2s_core->updateLocalBinaryParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_DS18B20: {
+
+								uint8_t parsedBytes[8] = { 0 };
+
+								if (hexToBytes(ESPUI.getControl(
+											param_1_text)->getValueCstr(), parsedBytes)) {
+
+									z2s_core->setLocalDS18B20Address(parsedBytes, true);
+
+									z2s_core->updateLocalDs18b20Params();
+								}
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_HCSR04: {
+
+								long hcsr04_params[6];
+
+								size_t params_found = parseCsvNumbers(
+									ESPUI.getControl(param_1_text)->getValueCstr(),
+									hcsr04_params, 6);
+
+								switch (params_found) {
+									case 6:
+										z2s_core->setLocalHCSR04MaxOut(hcsr04_params[5]);
+										[[fallthrough]];
+									case 5:
+										z2s_core->setLocalHCSR04MinOut(hcsr04_params[4]);
+										[[fallthrough]];
+									case 4:
+										z2s_core->setLocalHCSR04MaxIn(hcsr04_params[3]);
+										[[fallthrough]];
+									case 3:
+										z2s_core->setLocalHCSR04MinIn(hcsr04_params[2]);
+										[[fallthrough]];
+									case 2:
+										z2s_core->setLocalHCSR04EchoPin(hcsr04_params[1]);
+										[[fallthrough]];
+									case 1:
+										z2s_core->setLocalHCSR04TrigPin(hcsr04_params[0]);
+										[[fallthrough]];
+										z2s_core->saveChannelData();
+										z2s_core->updateLocalHcsr04Params();
+									default: break;
+								}
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
+									
+								long sht3x_params[2];
+								size_t params_found = parseCsvNumbers(
+									ESPUI.getControl(param_1_text)->getValueCstr(),
+									sht3x_params, 2);
+
+								if (params_found == 2) {
+									z2s_core->setLocalSHT3xSdaPin(sht3x_params[0]);
+									z2s_core->setLocalSHT3xSclPin(sht3x_params[1]);
+									z2s_core->saveChannelData();
+									z2s_core->updateLocalSHT3xParams();
+								}
+							} break;
+
+							case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
+
+								z2s_core->setLocalAdcPin(
+									ESPUI.getControl(param_1_text)->getValueInt(), true);
+								z2s_core->updateLocalAdcParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
+
+								long pwm_params[4];
+								size_t params_found = parseCsvNumbers(
+									ESPUI.getControl(param_1_text)->getValueCstr(),
+									pwm_params, 4);
+
+								switch (params_found) {
+									case 4:
+										z2s_core->setLocalPwmMaxDuty(pwm_params[3]);
+										[[fallthrough]];
+									case 3:
+										z2s_core->setLocalPwmMinDuty(pwm_params[2]);
+										[[fallthrough]];
+									case 2:
+										z2s_core->setLocalPwmFreqHz(pwm_params[1]);
+										[[fallthrough]];
+									case 1:
+										z2s_core->setLocalPwmGpioPin(pwm_params[0]);
+										z2s_core->saveChannelData();
+										z2s_core->updateLocalPwmParams();
+										break;
+									default:
+										break;
+								}
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_CALC_GPM: {
+
+								float cgpm_params[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+								
+								size_t params_found = parseCsvFloats(
+									ESPUI.getControl(param_1_text)->getValueCstr(),
+									cgpm_params, 4);
+
+								switch (params_found) {
+									case 4:
+										z2s_core->setCalculatedGpmParam4(cgpm_params[3]);
+										[[fallthrough]];
+									case 3:
+										z2s_core->setCalculatedGpmParam3(cgpm_params[2]);
+										[[fallthrough]];
+									case 2:
+										z2s_core->setCalculatedGpmParam2(cgpm_params[1]);
+										[[fallthrough]];
+									case 1:
+										z2s_core->setCalculatedGpmParam1(cgpm_params[0]);
+										z2s_core->saveChannelData();
+										z2s_core->updateCalculatedGpmParams();
+										updateChannelInfoLabel(channel_slot, false);
+									break;
+									default:
+									break;
+								}
+							} break;
+						}
+					} break; //LCHT 
+
+					case SUPLA_CHANNELTYPE_THERMOMETER:
+					case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
+
+						saveRemoteAddressData(channel_slot);
+					} break;
+
+
+					case SUPLA_CHANNELTYPE_HVAC:
+
+						updateHvacFixedCalibrationTemperature(
+							channel_slot, ESPUI.getControl(param_1_text)->getValueInt());
+					break;
+
+
+					default: {
+
+						z2s_core->setChannelUserData1(
+							ESPUI.getControl(param_1_text)->getValueInt());
+					} break;
+				} //CHT
+			} break;
+
+			case GUI_CB_UPDATE_PARAM_2_FLAG: {
+
+				switch (z2s_core->getZ2SChannelType()) {
+
+
+					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
+
+						switch (z2s_core->getZ2SLocalChannelType()) {
+
+
+							case LOCAL_CHANNEL_TYPE_ACTION_HANDLER: {
+
+								auto *lah =
+									static_cast<Supla::LocalActionHandlerWithTrigger *>(
+										z2s_core->getZ2SElementPtr());
+
+								if (lah) {
+									
+									int32_t requested_pins =
+										ESPUI.getControl(param_2_number)->getValueInt();
+
+									uint8_t clamped_pins =
+										(requested_pins < 0) ? 0 :
+										((requested_pins > 32) ? 32 : (uint8_t)requested_pins);
+
+									lah->setLogicPinsNumber(clamped_pins, true);
+									ESPUI.updateNumber(
+										param_2_number, lah->getLogicPinsNumber());
+									updateChannelInfoLabel(channel_slot, false);
+								}
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_REMOTE_RELAY:
+							case LOCAL_CHANNEL_TYPE_REMOTE_THERMOMETER:
+							case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
+							case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
 
 								saveRemoteChannelData(channel_slot);
-							}
 							break;
 
 
-						default:
-							{
+							case LOCAL_CHANNEL_TYPE_GPIO_RELAY: {
 
-								z2s_core->setChannelUserData1(
-								  ESPUI.getControl(param_2_number)->getValueInt());
-							}
+								z2s_core->setLocalRelayHighIsOn(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+
+								z2s_core->updateLocalRelayParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_HVAC: {
+
+								z2s_core->setLocalHvacHighIsOn(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+
+								z2s_core->updateLocalHvacParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
+
+								z2s_core->setLocalBinaryInvertLogic(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+
+								z2s_core->updateLocalBinaryParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_DS18B20: {
+
+								z2s_core->setLocalDS18B20GpioPin(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+
+								z2s_core->updateLocalDs18b20Params();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
+
+								z2s_core->setLocalSHT3xAddress(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+								z2s_core->updateLocalSHT3xParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
+
+								z2s_core->setLocalAdcAttenuation(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+								z2s_core->updateLocalAdcParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
+
+								z2s_core->setLocalPwmInvertLogic(
+									ESPUI.getControl(param_2_number)->getValueInt() != 0, true);
+							 z2s_core->updateLocalPwmParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_CALC_GPM: {
+
+								int32_t fs_val = ESPUI.getControl(
+									param_2_number)->getValueInt();
+								
+								if (fs_val < -1) fs_val = -1;
+								if (fs_val > 100) fs_val = 100;
+
+								z2s_core->setCalculatedGpmFailsafeDuty(
+									static_cast<int8_t>(fs_val), true);
+								ESPUI.updateNumber(
+									param_2_number,
+									z2s_core->getCalculatedGpmFailsafeDuty());
+									z2s_core->updateCalculatedGpmParams();
+							} break;
+						} //LCHT_SW
+					} break; //LCHT
+
+
+					case SUPLA_CHANNELTYPE_THERMOMETER:
+					case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR: {
+
+						saveRemoteChannelData(channel_slot);
+					} break;
+
+
+					default: {
+
+						z2s_core->setChannelUserData1(
+							ESPUI.getControl(param_2_number)->getValueInt());
+					} break;
+				}
+			} break;//PARAM_2
+
+
+			case GUI_CB_UPDATE_PARAM_3_FLAG: {
+
+				switch (z2s_core->getZ2SChannelType()) {
+
+
+					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
+
+						switch (z2s_core->getZ2SLocalChannelType()) {
+
+
+							case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
+							case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
+							case LOCAL_CHANNEL_TYPE_CALC_GPM:
+
+								saveSourceChannelData(channel_slot);
 							break;
-					}
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
+
+								z2s_core->setLocalBinaryPullUp(
+									ESPUI.getControl(param_3_number)->getValueInt(), true);
+
+								z2s_core->updateLocalBinaryParams();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
+
+								z2s_core->setLocalPwmResolutionBits(
+								  ESPUI.getControl(param_3_number)->getValueInt(), true);
+								z2s_core->updateLocalPwmParams();
+							} break;
+						}
+					}break;
 				}
-				break;
+			} break;
 
 
-			case GUI_CB_UPDATE_PARAM_3_FLAG:
-				{
+			case GUI_CB_UPDATE_PARAM_4_FLAG: {
+
+				switch (z2s_core->getZ2SChannelType()) {
 
 
-					switch (z2s_core->getZ2SChannelType()) {
+					case SUPLA_CHANNELTYPE_LOCALCHANNEL: {
+
+						switch (z2s_core->getZ2SLocalChannelType()) {
 
 
-						case SUPLA_CHANNELTYPE_LOCALCHANNEL:
-							{
+							case LOCAL_CHANNEL_TYPE_CALC_GPM:
 
-								switch (z2s_core->getZ2SLocalChannelType()) {
-
-									case LOCAL_CHANNEL_TYPE_VIRTUAL_THERM_HYGRO_METER:
-									case LOCAL_CHANNEL_TYPE_CALC_THERMOMETER:
-									case LOCAL_CHANNEL_TYPE_CALC_GPM:
-
-										saveSourceChannelData(channel_slot);
-									break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
-
-										z2s_core->setLocalBinaryPullUp(
-											ESPUI.getControl(param_3_number)->getValueInt(), true);
-
-										z2s_core->updateLocalBinaryParams();
-									} break;
-
-
-									case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
-
-										z2s_core->setLocalPwmResolutionBits(
-										  ESPUI.getControl(param_3_number)->getValueInt(),
-										  true);
-										z2s_core->updateLocalPwmParams();
-									} break;
-								}
-							}
-							break;
-					}
+								saveDestinationChannelData(channel_slot);
+								updateChannelInfoLabel(channel_slot, false);
+								break;
+						}
+					} break;
 				}
-				break;
+			} break;
 
 
-			case GUI_CB_UPDATE_KEEPALIVE_FLAG:
-				{
+			case GUI_CB_UPDATE_KEEPALIVE_FLAG: {
 
-					z2s_core->setKeepAliveValue(
-					  ESPUI.getControl(keepalive_number)->getValueInt());
-				}
-				break;
+				z2s_core->setKeepAliveValue(
+				  ESPUI.getControl(keepalive_number)->getValueInt());
+			} break;
 
 
-			case GUI_CB_UPDATE_TIMEOUT_FLAG:
-				{
+			case GUI_CB_UPDATE_TIMEOUT_FLAG: {
 
-					z2s_core->setTimeoutValue(
-					  ESPUI.getControl(timeout_number)->getValueInt());
-				}
-				break;
+				z2s_core->setTimeoutValue(
+				  ESPUI.getControl(timeout_number)->getValueInt());
+			} break;
 
 
-			case GUI_CB_UPDATE_REFRESH_FLAG:
-				{
+			case GUI_CB_UPDATE_REFRESH_FLAG: {
 
-					z2s_core->setRefreshValue(
-					  ESPUI.getControl(refresh_number)->getValueInt());
-				}
-				break;
+				z2s_core->setRefreshValue(
+				  ESPUI.getControl(refresh_number)->getValueInt());
+			} break;
 		}
 	}
 }
+
+/*****************************************************************************/
 
 void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 
@@ -9680,8 +9805,12 @@ void attributeCallback(BasicControl *sender, int type, void *param) {
 
 void clusterCallback(BasicControl *sender, int type, void *param) {
 
-	if (sender->getValueInt() >= -1) {
-
+	int32_t val = sender ? sender->getValueInt() : type;
+	
+	if (val == current_cluster_id) {
+		return;
+	}
+	if (val >= -1) {
 		addGUICommand(gui_cmd_cluster_callback);
 	}
 }
@@ -9878,12 +10007,11 @@ void gatewayCallback(BasicControl *sender, int type, void *param) {
 			break;
 
 
-		case GUI_CB_GUI_RESTART_FLAG:
-			{
+		case GUI_CB_GUI_RESTART_FLAG: {
 
-				SuplaDevice.softRestart();
-			}
-			break;
+			if (type == B_UP) 
+				SuplaDevice.scheduleSoftRestart(500);			
+		} break;
 
 
 		case GUI_CB_GUI_CHECK_GITHUB_OTA_FLAG:
@@ -11426,6 +11554,10 @@ void TuyaDeviceSelectorCallback(BasicControl *sender, int type, void *param) {
 
 	int32_t device_slot = (sender) ? sender->getValueInt() : type;
 
+	if (device_slot == current_Tuya_device_id) {
+		return;
+	}
+
 	addGUICommand(gui_cmd_Tuya_device_callback, device_slot);
 }
 
@@ -11644,7 +11776,12 @@ void GUI_onZigbeeOpenNetwork(bool is_network_open) {
 void irDeviceSelectorCallback(BasicControl *sender, int type, void *param) {
 
 	int32_t device_slot = (sender) ? sender->getValueInt() : type;
-
+	
+	if (device_slot == current_ir_device_id) {
+		
+		return;
+	}
+	
 	addGUICommand(gui_cmd_ir_device_callback, device_slot);
 }
 
@@ -11932,9 +12069,8 @@ void buildPushoverMessagesTableJsonPayload(
 
   if (ui_label_id == 0xFFFF) return;
 
-  const size_t MAX_JSON_SIZE = 2048;
+  const size_t MAX_JSON_SIZE = 1024;
   char json_payload[MAX_JSON_SIZE] = {};
-  const int BATCH_SIZE = 10;
   size_t offset = 0;
 
   int total_messages = Z2S_getPushoverMessagesNumber();
@@ -11942,20 +12078,24 @@ void buildPushoverMessagesTableJsonPayload(
   if (total_messages == 0) {
     current_message_id = -1;
     current_message_counter = -1;
-    snprintf(
+    int len = snprintf(
       json_payload, MAX_JSON_SIZE,
       "{\"type\":\"update_action_table\",\"is_po\":true,\"target\":\"id%d\","
       "\"s\":-1,\"append\":false,\"start_idx\":0,\"d\":[]}",
       ui_label_id);
-    ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+    if (len > 0) {
+      //ESPUI.WebSocket()->textAll(json_payload, len);
+			sendWsTextAllThrottled(json_payload, len);
+    }
     return;
   }
 
   int16_t next_slot = Z2S_findNextPushoverMessagePosition(0);
   z2s_pushover_message_t message = {};
+  bool is_first_in_batch = true;
 
   for (int i = 0; i < total_messages; i++) {
-    if (i % BATCH_SIZE == 0) {
+    if (is_first_in_batch) {
       offset = 0;
       bool is_appending = (i > 0);
       appendToBuffer(
@@ -11965,18 +12105,21 @@ void buildPushoverMessagesTableJsonPayload(
         ui_label_id, target_message_index, is_appending ? "true" : "false", i);
     }
 
-    bool is_first_in_batch = (i % BATCH_SIZE == 0);
     Z2S_loadPushoverMessage(next_slot, message);
 
     addPushoverMessagesTableJsonRow(
       json_payload, MAX_JSON_SIZE, offset, next_slot, message,
       is_first_in_batch);
+    is_first_in_batch = false;
 
     next_slot = Z2S_findNextPushoverMessagePosition(next_slot + 1);
 
-    if (((i + 1) % BATCH_SIZE == 0) || (i == total_messages - 1)) {
+    // Each Pushover row is at most ~250 bytes (120B preview + 32B name + escaping)
+    if (((MAX_JSON_SIZE - offset) < 320) || (i == total_messages - 1)) {
       appendToBuffer(json_payload, MAX_JSON_SIZE, offset, "]}");
-      ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+      //ESPUI.WebSocket()->textAll(json_payload, offset);
+			sendWsTextAllThrottled(json_payload, offset);
+      is_first_in_batch = true;
     }
   }
 }

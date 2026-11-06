@@ -414,11 +414,11 @@ void Z2S_onBinaryInputReceive(
 
 void Z2S_onMultistateInputReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
-  const esp_zb_zcl_attribute_t *attribute);
+  const esp_zb_zcl_attribute_t *attribute, bool reporting);
 
 void Z2S_onAnalogInputReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
-  const esp_zb_zcl_attribute_t *attribute);
+  const esp_zb_zcl_attribute_t *attribute, bool reporting);
 
 void Z2S_onMeteringReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,

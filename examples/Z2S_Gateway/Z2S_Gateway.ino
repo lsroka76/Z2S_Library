@@ -562,6 +562,8 @@ static int32_t parse_int(const char *s, size_t len) {
 
 void setup() {
 
+  esp_log_level_set("*", ESP_LOG_INFO);
+
   log_i("Z2S GATEWAY setup has just started!");
 
   //_z2s_custom_heap = multi_heap_register(

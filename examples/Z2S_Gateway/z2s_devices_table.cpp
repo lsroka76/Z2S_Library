@@ -4706,7 +4706,7 @@ void Z2S_onBinaryInputReceive(
 
 void Z2S_onMultistateInputReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  const esp_zb_zcl_attribute_t *attribute) {
+  const esp_zb_zcl_attribute_t *attribute, bool reporting) {
 
   
   log_i(
@@ -4852,7 +4852,7 @@ void Z2S_onMultistateInputReceive(
 
 void Z2S_onAnalogInputReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster, 
-  const esp_zb_zcl_attribute_t *attribute) {
+  const esp_zb_zcl_attribute_t *attribute, bool reporting) {
 
   log_i(
     "0x%04X, endpoint 0x%x, attribute id 0x%x, size %u", short_addr, endpoint,
@@ -4940,6 +4940,14 @@ void Z2S_onAnalogInputReceive(
 
         case Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1: {
 
+          if (reporting) {
+
+            zbGateway.sendAttributeRead(
+              short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 
+              0x55);
+            return;
+          }
+          
           Supla::Element* element = Z2S_findZ2SElement(
             short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_RELAY, 
             NO_CUSTOM_CMD_SID);    

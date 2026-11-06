@@ -1520,6 +1520,74 @@ public:
 
 /*****************************************************************************/
 
+  float getCalculatedGpmParam1() {
+
+    return _z2s_channel.calculated_gpm_data.param_1;
+  }
+
+  void setCalculatedGpmParam1(float param_1, bool save = false) {
+
+    _z2s_channel.calculated_gpm_data.param_1 = param_1;
+    if (save)
+      saveChannelData();
+  }
+
+  float getCalculatedGpmParam2() {
+
+    return _z2s_channel.calculated_gpm_data.param_2;
+  }
+
+  void setCalculatedGpmParam2(float param_2, bool save = false) {
+
+    _z2s_channel.calculated_gpm_data.param_2 = param_2;
+    if (save)
+      saveChannelData();
+  }
+
+  float getCalculatedGpmParam3() {
+
+    return _z2s_channel.calculated_gpm_data.param_3;
+  }
+
+  void setCalculatedGpmParam3(float param_3, bool save = false) {
+
+    _z2s_channel.calculated_gpm_data.param_3 = param_3;
+    if (save)
+      saveChannelData();
+  }
+
+  float getCalculatedGpmParam4() {
+
+    return _z2s_channel.calculated_gpm_data.param_4;
+  }
+
+  void setCalculatedGpmParam4(float param_4, bool save = false) {
+
+    _z2s_channel.calculated_gpm_data.param_4 = param_4;
+    if (save)
+      saveChannelData();
+  }
+
+  int8_t getCalculatedGpmFailsafeDuty() {
+
+    return _z2s_channel.calculated_gpm_failsafe_duty;
+  }
+
+  void setCalculatedGpmFailsafeDuty(int8_t failsafe_duty, bool save = false) {
+
+    if (failsafe_duty < -1) failsafe_duty = -1;
+    if (failsafe_duty > 100) failsafe_duty = 100;
+    _z2s_channel.calculated_gpm_failsafe_duty = failsafe_duty;
+    if (save)
+      saveChannelData();
+  }
+
+  bool updateCalculatedGpmParams();
+
+/*****************************************************************************/
+
+
+
   uint32_t getFwdEnergyBuffer() {
   
     return _z2s_channel.fwd_energy_buffer;
@@ -1559,14 +1627,21 @@ public:
     return _z2s_channel.Supla_remote_channel;
   }
 
+  bool setSuplaRemoteChannel(uint8_t Supla_remote_channel);
+
   uint8_t getSourceChannel() {
   
     return _z2s_channel.source_channel;
   }
 
-  bool setSuplaRemoteChannel(uint8_t Supla_remote_channel);
-
   bool setSourceChannel(uint8_t source_channel);
+
+  uint8_t getDestinationChannel() {
+
+    return _z2s_channel.Supla_destination_channel;
+  }
+
+  bool setDestinationChannel(uint8_t destination_channel);
 
   const char* getMDNSName() {
   

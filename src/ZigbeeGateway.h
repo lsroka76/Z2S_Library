@@ -654,12 +654,12 @@ public:
   }
   void onMultistateInputReceive(
     void (*callback)(uint16_t short_addr, uint16_t, uint16_t, 
-    const esp_zb_zcl_attribute_t *)) {
+    const esp_zb_zcl_attribute_t *, bool)) {
     _on_multistate_input_receive = callback;
   }
   void onAnalogInputReceive(
     void (*callback)(uint16_t short_addr, uint16_t, uint16_t, 
-    const esp_zb_zcl_attribute_t *)) {
+    const esp_zb_zcl_attribute_t *, bool)) {
     _on_analog_input_receive = callback;
   }
   void onMeteringReceive(
@@ -952,10 +952,12 @@ private:
     uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
 
   void (*_on_multistate_input_receive)(
-    uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+    uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *, 
+    bool);
 
   void (*_on_analog_input_receive)(
-    uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
+    uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *,
+    bool);
 
   void (*_on_metering_receive)(
     uint16_t short_addr, uint16_t, uint16_t, const esp_zb_zcl_attribute_t *);
@@ -1041,7 +1043,7 @@ private:
 
   void zbProcessAttributeReporting(
     esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-    const esp_zb_zcl_attribute_t *attribute);
+    const esp_zb_zcl_attribute_t *attribute, bool reporting);
   
   void zbReadAttrResponse(
     uint8_t tsn, int8_t rssi, esp_zb_zcl_addr_t src_address, 

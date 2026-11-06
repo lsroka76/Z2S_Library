@@ -159,6 +159,7 @@ typedef struct z2s_device_params_s {
 union {
   uint8_t             Supla_secondary_channel;
   uint8_t             Supla_remote_channel;
+  uint8_t             Supla_destination_channel;
 };
   int32_t             Supla_channel_type;
   char                Supla_channel_name[SUPLA_CHANNEL_NAME_MAX_SIZE];
@@ -269,6 +270,12 @@ union {
       uint8_t         invert_logic : 1;
       uint32_t        freq_hz;
     } local_pwm_data;
+    struct {
+      float           param_1; // Setpoint or T_min
+      float           param_2; // Kp or T_max
+      float           param_3; // Ki or Duty_min
+      float           param_4; // Kd or Duty_max
+    } calculated_gpm_data;
   };
   uint32_t            user_data_flags;
 union {
@@ -308,6 +315,12 @@ union {
     };
   struct {
     double            initial_gpm_value;
+  };
+  struct {
+    int8_t            calculated_gpm_failsafe_duty;
+    uint8_t           calculated_gpm_flags;
+    uint16_t          calculated_gpm_reserved_16;
+    uint32_t          calculated_gpm_reserved_32;
   };
 };
   uint8_t             Zb_device_id;

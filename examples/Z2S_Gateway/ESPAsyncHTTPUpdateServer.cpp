@@ -4,17 +4,13 @@
 #include <Ticker.h>
 
 #ifdef ESP32
-    #ifdef ESPASYNCHTTPUPDATESERVER_LITTLEFS
-        #include <LittleFS.h>
-    #else
-        #include <SPIFFS.h>
-    #endif
     #include <Update.h>
+    #include <esp_partition.h>
 #elif defined(ESP8266)
     #include <flash_hal.h>
     #include <FS.h>
 #else
-  #error "This library only supports boards with an ESP8266 or ESP32 processor."
+    #error "This library only supports boards with an ESP8266 or ESP32 processor."
 #endif
 
 #ifndef ESPASYNCHTTPUPDATESERVER_SerialOutput
@@ -24,39 +20,159 @@
 #ifdef ESPASYNCHTTPUPDATESERVER_DEBUG
     #define Log(...) ESPASYNCHTTPUPDATESERVER_SerialOutput.printf(__VA_ARGS__)
 #else
-    #define Log(...) 
+    #define Log(...)
 #endif
 
-#ifndef ESPASYNCHTTPUPDATESERVER_MODE
-    #define ESPASYNCHTTPUPDATESERVER_MODE 1
-#endif
+static const char UPDATE_CENTER_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Z2S Update Center</title>
+<style>
+:root{--bg:#181b20;--card:#252a32;--text:#f1f5f9;--muted:#cbd5e1;--accent:#3b82f6;--emerald:#10b981;--alizarin:#e74c3c;--border:#374151}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.45}
+header{background:#111317;border-bottom:1px solid var(--border);padding:12px 16px}
+.hdr-inner{max-width:780px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff}
+main{max-width:780px;margin:18px auto;padding:0 16px;display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--card);border:1px solid var(--border);border-bottom:3px solid #111317;border-radius:6px;padding:16px;box-shadow:0 3px 6px rgba(0,0,0,.25)}
+.panel.highlight{border-color:var(--accent)}
+.panel-hdr{font-size:14px;font-weight:700;color:#fff;background:rgba(0,0,0,.22);padding:8px 12px;margin:-16px -16px 14px -16px;border-radius:5px 5px 0 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px;background:#1e293b;color:#93c5fd;border:1px solid #3b82f6}
+.desc{color:var(--muted);font-size:12px;margin:0 0 12px 0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+input[type=file]{background:#14171c;color:var(--text);border:1px solid #4b5563;border-radius:4px;padding:6px 10px;font-size:12px;flex:1 1 240px}
+select{background:#14171c;color:#fff;border:1px solid #4b5563;border-radius:4px;padding:6px 10px;font-size:12.5px;height:35px}
+.btn{background:#3b4252;color:#fff;border:1px solid #4c566a;border-bottom:3px solid #2e3440;border-radius:4px;padding:0 16px;height:35px;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.btn:hover{background:#434c5e;border-color:#60a5fa}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:#2563eb;border-color:#3b82f6;border-bottom-color:#1d4ed8}
+.btn.primary:hover{background:#3b82f6}
+.btn.emerald{background:#059669;border-color:#10b981;border-bottom-color:#065f46}
+.btn.emerald:hover{background:#10b981}
+.prog-wrap{display:none;background:#14171c;border:1px solid var(--border);border-radius:4px;margin-top:12px;overflow:hidden;height:22px}
+.prog-bar{width:0%;height:100%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:width .15s}
+.status{margin-top:10px;font-size:12.5px;font-weight:600;min-height:18px}
+.status.ok{color:var(--emerald)}
+.status.err{color:var(--alizarin)}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-inner">
+    <h1>ZIGBEE &lt;=&gt; SUPLA UPDATE CENTER</h1>
+    <button class="btn" onclick="location.href='/'">&#8592; Back to Control Panel</button>
+  </div>
+</header>
+<main>
+  <section class="panel" id="sec-fw">
+    <div class="panel-hdr">
+      <span>1. Gateway Firmware &amp; Filesystem Update</span>
+      <span class="badge">ESP32 OTA</span>
+    </div>
+    <p class="desc">Select a compiled gateway firmware image (<b>.bin</b>) or filesystem image and click <b>Start Gateway Update</b>. The gateway will reboot automatically after a firmware update.</p>
+    <div class="row">
+      <select id="fw-type">
+        <option value="firmware">Gateway Firmware (.bin)</option>
+        <option value="filesystem">Gateway Filesystem (.bin)</option>
+      </select>
+      <input type="file" id="fw-file" accept=".bin,.bin.gz">
+      <button class="btn primary" id="fw-btn" onclick="uploadGateway()">Start Gateway Update</button>
+    </div>
+    <div class="prog-wrap" id="fw-prog-wrap"><div class="prog-bar" id="fw-prog-bar">0%</div></div>
+    <div class="status" id="fw-status"></div>
+  </section>
 
-#define ESPASYNCHTTPUPDATESERVER_PRETTY 1
+  <section class="panel" id="sec-zb">
+    <div class="panel-hdr">
+      <span>2. ZigBee Device OTA File Upload</span>
+      <span class="badge">LittleFS /zigbee_ota</span>
+    </div>
+    <p class="desc">Upload a ZigBee device OTA firmware file (<b>.ota</b> / <b>.zigbee</b>) to the gateway's local storage. Once uploaded, you can trigger the OTA upgrade in the <b>ZigBee devices</b> tab.</p>
+    <div class="row">
+      <input type="file" id="zb-file" accept=".ota,.zigbee,.bin,*/*">
+      <button class="btn emerald" id="zb-btn" onclick="uploadZigbeeOta()">Upload ZigBee OTA File</button>
+    </div>
+    <div class="prog-wrap" id="zb-prog-wrap"><div class="prog-bar" id="zb-prog-bar">0%</div></div>
+    <div class="status" id="zb-status"></div>
+  </section>
+</main>
+<script>
+if(location.hash==="#zigbee"){
+  const el=document.getElementById("sec-zb");
+  if(el){el.classList.add("highlight");el.scrollIntoView({behavior:"smooth"});}
+}
 
-//generated code start
-#if ESPASYNCHTTPUPDATESERVER_MODE == 0
-    #ifdef ESPASYNCHTTPUPDATESERVER_PRETTY
-        static const uint8_t serverIndex[] PROGMEM = { 31,139,8,0,191,214,113,105,2,255,157,146,205,110,212,48,16,199,95,197,236,170,82,139,214,221,108,182,133,214,249,64,92,184,22,169,229,132,16,114,236,73,50,224,216,145,237,236,71,87,251,6,28,56,113,230,217,250,36,56,217,13,106,145,64,168,135,140,20,219,243,255,205,127,102,210,23,210,8,191,109,161,246,141,202,211,62,18,197,117,149,129,206,211,6,60,39,162,230,214,129,207,58,95,210,171,241,204,104,15,218,103,147,53,74,95,103,18,86,40,128,14,63,51,212,232,145,43,234,4,87,144,45,38,68,243,6,178,21,194,186,53,214,231,169,243,91,5,249,203,93,25,52,104,201,27,84,91,214,24,109,92,203,5,36,133,177,18,44,181,92,98,231,216,34,106,55,251,58,222,53,220,86,168,169,55,45,139,246,245,98,39,140,50,150,77,1,56,8,158,12,74,14,239,129,93,245,239,11,35,183,187,130,139,175,149,53,157,150,108,26,199,113,82,241,150,45,195,109,114,144,98,81,82,3,86,181,15,136,104,85,239,75,99,155,81,245,85,177,188,188,40,147,71,10,10,53,112,75,171,190,170,96,251,52,126,29,73,168,102,71,62,137,102,211,235,139,162,128,107,18,196,78,206,146,150,75,137,186,26,120,123,212,109,231,119,7,91,44,110,55,196,25,133,146,252,166,152,13,117,53,151,102,205,34,210,219,61,132,254,225,52,138,162,229,88,230,242,114,212,98,172,68,5,212,129,2,225,141,165,69,231,189,209,179,225,238,99,63,201,204,117,69,131,254,211,147,30,28,113,71,139,101,89,62,242,127,146,252,107,22,161,227,231,98,39,209,181,138,111,89,169,96,147,244,129,74,180,161,0,52,154,5,209,174,209,201,151,206,121,44,183,244,184,28,76,132,0,54,225,10,43,77,209,67,227,142,71,251,116,126,88,130,180,31,21,17,138,59,151,137,176,124,139,252,244,225,219,247,135,31,63,63,135,239,140,220,220,189,77,231,225,48,237,167,67,248,0,203,38,111,134,125,42,209,54,107,110,97,50,166,19,208,195,30,103,77,167,60,182,220,250,121,159,70,37,15,251,26,150,182,54,50,123,127,115,123,23,48,113,254,238,152,29,228,227,60,149,184,202,211,161,127,100,80,232,251,27,112,2,90,159,157,23,168,103,125,56,175,238,201,19,242,147,148,67,203,201,138,171,14,178,201,135,54,80,129,140,148,73,158,206,7,198,80,209,95,236,40,112,91,23,154,244,92,67,10,110,135,252,231,89,26,233,255,99,106,36,253,97,235,23,4,247,158,198,74,4,0,0 };
-    #else
-        static const uint8_t serverIndex[] PROGMEM = { 31,139,8,0,191,214,113,105,2,255,149,142,203,106,196,48,12,69,127,197,245,122,50,165,187,82,44,119,215,237,20,166,253,0,197,81,38,2,191,112,148,132,233,215,55,49,77,97,22,133,206,70,160,199,213,57,230,161,75,78,174,153,6,9,222,154,173,42,143,241,2,20,173,9,36,168,220,128,101,36,129,73,250,230,121,159,165,40,20,5,244,194,157,12,208,209,204,142,154,218,28,56,178,48,250,102,116,232,9,158,180,138,24,8,102,166,37,167,34,214,244,169,4,133,78,56,69,208,175,117,217,115,9,11,22,210,138,98,149,129,48,121,225,140,69,30,183,243,166,195,21,186,146,135,212,193,251,233,252,97,223,126,18,47,166,45,214,112,204,147,168,26,236,217,211,250,221,81,22,56,182,28,15,91,57,94,190,212,13,232,38,50,78,109,96,81,51,250,137,64,127,230,21,70,106,7,104,107,170,194,31,222,158,198,235,40,20,238,49,247,116,174,153,187,221,119,216,127,236,119,200,175,255,55,187,114,189,153,233,1,0,0 };
-    #endif
-#elif ESPASYNCHTTPUPDATESERVER_MODE == 1
-    #ifdef ESPASYNCHTTPUPDATESERVER_PRETTY
-        static const uint8_t serverIndex[] PROGMEM = { 31,139,8,0,191,214,113,105,2,255,165,87,109,143,227,72,17,254,43,38,43,180,119,168,237,113,251,221,78,28,88,6,14,16,28,187,210,237,126,64,136,15,29,187,19,155,245,27,118,39,51,179,163,252,119,158,42,59,51,153,185,17,58,9,69,73,220,238,238,170,167,158,122,170,218,222,252,234,15,31,111,63,255,227,211,31,173,202,180,205,118,67,191,86,163,186,67,62,208,72,171,114,187,105,181,81,86,81,169,113,210,38,255,242,249,7,59,89,238,117,170,213,249,169,214,119,67,63,26,171,232,59,163,59,147,175,238,234,210,84,121,169,79,117,161,109,30,136,186,171,77,173,26,123,42,84,163,115,41,90,117,95,183,199,246,105,124,156,244,200,3,181,195,184,235,87,219,141,169,77,163,183,63,212,99,123,167,70,109,125,25,74,101,244,230,102,190,189,153,204,3,254,126,35,178,108,167,247,253,168,113,161,246,70,143,143,187,254,222,158,234,111,117,119,200,118,253,88,194,44,238,156,41,172,108,223,23,199,9,128,76,85,119,143,83,49,246,77,99,239,116,165,78,117,63,102,83,219,247,166,58,239,250,242,65,208,106,81,73,81,249,98,120,108,213,120,168,187,204,93,15,170,44,201,172,187,222,35,82,123,175,218,186,121,200,254,172,155,147,54,117,161,254,174,143,90,172,158,134,22,141,87,226,105,44,62,140,32,64,76,170,155,108,4,91,239,217,213,227,78,21,95,15,99,127,236,202,236,157,235,150,50,148,235,182,238,236,74,215,135,202,100,210,117,79,213,186,172,167,161,81,15,217,190,209,247,107,250,177,203,122,212,133,169,251,46,43,250,230,216,118,235,127,31,39,83,239,31,236,37,7,188,212,158,140,26,205,90,53,245,161,179,107,163,219,41,43,48,167,199,25,63,72,210,153,12,134,251,121,120,55,123,12,92,119,13,155,32,228,221,126,191,191,196,108,155,126,200,162,112,184,63,59,119,163,26,6,240,204,121,37,128,191,94,35,153,115,154,179,208,117,97,239,66,148,135,129,37,93,218,133,28,188,8,149,108,47,233,25,85,89,31,167,76,190,222,185,230,76,86,170,236,239,50,215,130,111,43,194,119,60,236,212,119,174,224,143,227,127,191,158,179,131,28,27,211,183,188,239,92,201,199,235,136,124,215,189,10,216,243,97,249,141,77,132,208,170,252,37,219,28,175,251,106,157,12,95,113,245,134,101,163,239,141,205,140,103,141,222,155,11,149,174,235,158,235,110,56,154,127,154,135,65,231,239,247,117,163,223,255,235,154,195,171,148,232,246,181,227,25,160,233,108,162,111,120,252,5,122,56,168,97,222,182,59,194,68,247,74,102,238,250,202,243,156,6,68,251,63,242,33,189,75,108,102,132,128,81,112,109,118,36,25,20,106,210,215,122,185,10,195,241,17,72,113,28,39,204,149,122,175,142,141,121,81,56,117,87,161,12,204,47,74,243,18,70,86,245,39,42,241,151,193,252,159,204,94,229,104,253,108,217,126,14,234,140,166,164,155,39,214,119,77,95,124,125,161,3,168,254,149,221,232,218,44,138,218,61,59,4,204,30,251,187,151,217,123,163,56,47,169,123,83,4,23,43,214,140,233,169,55,205,241,122,161,251,218,241,107,160,87,38,222,160,141,197,4,2,238,158,196,159,185,231,119,77,127,232,95,133,127,153,180,212,209,244,22,87,198,165,101,133,52,152,241,208,228,250,231,29,238,252,187,86,151,181,178,208,130,181,238,44,213,149,214,119,87,61,196,71,16,223,63,62,53,154,23,221,36,58,221,157,207,155,155,185,251,111,110,230,243,137,26,233,118,83,214,39,171,104,212,52,229,203,78,28,18,167,131,85,151,57,225,183,32,156,9,5,146,75,71,90,116,100,65,118,249,202,181,92,203,115,249,187,178,238,115,215,186,199,49,49,13,170,208,249,48,106,180,233,147,182,30,114,119,187,25,148,169,172,50,95,253,24,166,142,47,60,39,44,100,226,72,104,51,18,190,116,18,145,136,192,117,60,225,249,152,241,49,17,58,177,8,176,82,74,39,197,133,20,88,238,23,182,139,43,223,137,240,31,139,216,145,54,205,74,24,161,25,15,214,98,94,33,23,203,146,220,120,176,30,99,185,23,58,161,144,161,19,8,63,33,8,126,225,209,102,204,132,88,225,227,126,194,215,126,113,217,28,241,63,176,146,209,34,192,63,92,139,212,73,236,144,144,1,34,46,2,242,192,43,132,71,6,99,124,225,202,19,50,45,8,93,234,120,54,59,162,11,73,161,34,198,180,176,19,56,36,147,50,226,0,67,155,241,33,10,10,133,194,240,109,73,65,33,68,186,141,216,3,236,13,156,212,78,1,147,64,200,128,2,10,40,120,194,19,210,14,6,78,251,129,14,62,49,69,30,241,101,232,254,140,88,16,106,166,208,101,42,177,5,109,2,241,22,243,162,128,25,137,97,61,162,56,60,96,154,249,142,17,9,110,4,0,159,80,66,66,152,247,224,58,129,25,31,24,177,23,28,133,4,3,14,64,60,71,73,78,36,101,128,150,129,163,4,214,210,217,45,101,16,243,137,141,168,61,27,222,16,100,64,54,3,12,176,43,161,224,34,10,44,166,161,7,4,126,72,155,82,59,196,128,179,190,208,5,175,136,53,192,85,202,168,66,86,131,71,98,241,8,158,191,160,74,102,203,72,9,56,34,14,145,30,138,131,12,16,213,146,118,205,137,227,160,226,91,159,140,37,148,37,138,30,27,68,232,147,158,224,255,89,112,33,11,208,99,56,222,109,72,211,160,49,225,123,161,184,136,254,155,245,99,28,145,53,89,80,95,150,203,215,95,254,163,130,68,23,49,145,76,124,4,119,49,49,157,22,156,236,153,197,84,248,172,101,159,178,238,115,118,72,251,233,34,91,185,72,55,45,66,34,147,44,205,56,19,214,44,39,154,6,160,67,72,222,233,115,212,68,15,40,240,152,28,18,51,107,50,22,62,20,97,163,102,40,220,144,243,230,146,93,225,218,114,214,94,100,67,244,160,85,146,152,41,11,190,237,1,238,178,156,28,129,124,71,206,73,162,45,41,6,1,137,20,45,0,3,44,143,201,109,64,185,38,165,98,25,253,32,17,238,44,234,240,82,20,193,98,136,12,50,14,202,156,207,2,247,8,42,118,5,92,11,146,234,133,179,69,222,160,221,128,114,77,133,19,223,198,84,114,9,133,141,171,224,233,138,210,130,4,37,156,104,162,72,218,115,101,7,246,76,100,8,57,203,219,132,122,7,153,36,251,92,189,17,53,17,80,155,0,140,75,2,100,225,146,2,136,64,159,124,206,245,78,181,235,19,179,1,23,18,132,21,20,136,152,164,70,253,65,82,53,123,212,15,3,238,123,183,49,122,134,136,208,231,4,64,133,84,209,11,56,192,148,174,199,93,49,97,168,145,120,150,161,100,207,212,73,82,38,60,32,108,76,99,74,102,33,254,148,186,12,85,69,200,237,36,176,73,235,50,226,122,141,8,42,49,74,9,33,207,20,14,137,25,243,209,109,66,138,150,137,79,245,17,208,77,242,47,174,176,16,178,136,101,58,183,7,168,196,155,117,110,251,179,214,145,126,150,27,199,42,185,57,184,115,59,137,184,35,19,33,146,81,179,48,169,163,38,69,204,201,224,227,64,114,66,25,49,224,223,202,132,226,74,49,21,83,131,36,183,226,25,193,55,188,7,221,208,217,131,63,28,102,219,13,61,121,89,138,31,245,242,213,111,249,253,107,191,188,33,173,150,211,175,176,116,87,240,169,222,226,145,171,30,240,14,112,67,219,108,188,63,41,11,239,109,85,95,230,159,62,254,244,25,175,119,114,251,211,151,79,127,251,128,131,84,94,31,160,56,27,49,233,255,252,229,11,247,174,150,93,158,36,182,155,13,63,75,88,236,149,238,2,98,161,7,147,59,187,186,19,244,227,28,190,89,47,208,90,163,254,207,17,79,173,56,190,111,96,241,242,123,133,225,242,184,139,243,157,31,254,102,235,211,113,215,214,102,123,1,52,79,189,92,178,92,247,93,209,212,197,87,122,29,237,240,112,233,224,185,69,17,111,78,53,234,125,254,254,230,253,106,251,251,15,183,127,181,62,127,180,254,244,229,47,207,166,22,56,68,217,211,96,126,194,184,225,87,228,255,2,231,217,112,139,50,15,0,0 };
-    #else
-        static const uint8_t serverIndex[] PROGMEM = { 31,139,8,0,191,214,113,105,2,255,85,142,205,78,196,48,12,132,95,37,228,188,93,196,109,133,226,112,227,10,18,203,3,184,137,187,181,148,63,165,78,43,120,122,218,136,61,236,101,36,123,60,254,198,60,249,236,228,167,208,44,49,88,115,168,10,152,110,64,201,154,72,130,202,205,88,23,18,104,50,13,151,251,46,39,161,36,160,55,246,50,131,167,149,29,13,125,56,113,98,97,12,195,226,48,16,188,104,149,48,18,172,76,91,201,85,172,153,114,141,10,157,112,78,160,223,186,57,113,141,27,86,210,138,82,47,3,177,5,225,130,85,158,143,243,193,227,14,221,201,115,246,240,249,241,117,181,239,255,137,87,51,86,107,56,149,38,170,7,39,14,180,127,119,84,4,206,35,167,211,33,231,219,175,122,0,61,68,150,54,70,22,181,98,104,4,250,187,236,48,82,119,128,182,166,87,176,127,120,226,68,109,41,1,0,0 };
-    #endif
-#elif ESPASYNCHTTPUPDATESERVER_MODE == 2
-    #ifdef ESPASYNCHTTPUPDATESERVER_PRETTY
-        static const uint8_t serverIndex[] PROGMEM = { 31,139,8,0,191,214,113,105,2,255,165,87,109,143,219,184,17,254,43,234,6,69,238,10,74,22,245,46,217,50,26,108,47,215,3,122,73,208,36,31,138,162,31,104,137,182,212,232,173,146,108,239,102,225,255,222,103,134,246,174,119,111,81,28,80,24,178,68,145,156,121,230,153,135,67,106,245,135,191,124,188,253,242,143,79,63,89,213,220,54,235,21,253,91,141,234,118,249,64,45,173,202,245,170,213,179,178,138,74,141,147,158,243,175,95,222,219,201,249,93,167,90,157,31,106,125,28,250,113,182,138,190,155,117,55,231,55,199,186,156,171,188,212,135,186,208,54,55,68,221,213,115,173,26,123,42,84,163,115,41,90,117,87,183,251,246,177,189,159,244,200,13,181,65,187,235,111,214,171,185,158,27,189,126,95,143,237,81,141,218,250,58,148,106,214,171,133,121,189,154,230,123,220,254,36,178,108,163,183,253,168,241,160,182,179,30,31,54,253,157,61,213,223,235,110,151,109,250,177,132,89,188,57,81,88,217,182,47,246,19,0,205,85,221,61,76,197,216,55,141,189,209,149,58,212,253,152,77,109,223,207,213,105,211,151,247,130,70,139,74,138,202,23,195,67,171,198,93,221,101,238,114,80,101,73,102,221,229,22,145,218,91,213,214,205,125,246,87,221,28,244,92,23,234,131,222,107,113,243,216,180,168,125,35,30,219,226,221,8,2,196,164,186,201,70,176,245,150,93,61,108,84,241,109,55,246,251,174,204,222,184,110,41,67,185,108,235,206,174,116,189,171,230,76,186,238,161,90,150,245,52,52,234,62,219,54,250,110,73,127,118,89,143,186,152,235,190,203,138,190,217,183,221,242,223,251,105,174,183,247,246,57,7,60,212,158,102,53,206,75,213,212,187,206,174,103,221,78,89,129,62,61,26,252,32,73,103,50,24,238,76,243,104,60,6,174,187,132,77,16,242,102,187,221,94,98,182,231,126,200,162,112,184,59,57,199,81,13,3,120,230,188,18,192,63,46,145,76,147,230,44,116,93,216,187,16,229,161,97,73,151,102,33,7,207,66,37,219,231,244,140,170,172,247,83,38,95,206,92,114,38,43,85,246,199,204,181,224,219,138,112,141,187,141,250,193,21,252,115,252,31,151,38,59,200,241,60,247,45,207,59,85,242,225,58,34,223,117,175,2,246,124,88,126,101,18,33,180,42,255,156,109,142,215,125,49,78,134,47,184,122,197,242,172,239,102,155,25,207,26,189,157,47,84,186,174,123,170,187,97,63,255,115,190,31,116,254,118,91,55,250,237,191,174,57,188,74,137,110,95,58,54,0,231,206,38,250,134,135,223,161,135,157,26,204,180,205,30,38,186,23,50,115,151,87,158,77,26,16,237,255,200,135,244,46,177,205,35,4,140,5,215,102,123,146,65,161,38,125,173,151,171,48,28,31,129,20,251,113,66,95,169,183,106,223,204,207,22,78,221,85,88,6,243,239,74,243,57,140,172,234,15,180,196,159,7,243,127,50,123,149,163,229,147,101,251,41,168,19,138,146,110,30,89,223,52,125,241,237,153,14,160,250,23,118,163,107,179,88,212,238,201,33,96,246,216,31,159,103,239,149,197,121,73,221,171,34,184,88,177,12,166,199,218,100,226,245,66,247,165,227,151,64,175,76,188,66,27,139,9,4,28,51,185,188,216,62,189,105,250,93,255,34,252,75,167,165,246,115,111,241,202,184,148,172,144,26,6,15,117,46,127,91,225,78,127,110,117,89,43,11,37,88,235,206,82,93,105,253,112,85,67,124,4,241,227,195,99,161,121,86,77,162,195,241,116,90,45,76,245,95,45,204,254,68,133,116,189,42,235,131,85,52,106,154,242,243,76,108,18,135,157,85,151,57,225,183,32,156,9,11,36,151,142,180,104,203,130,236,242,27,215,114,45,207,229,235,198,186,203,93,235,14,219,196,52,168,66,231,195,168,81,166,15,218,186,207,221,245,106,80,115,101,149,249,205,175,97,234,248,194,115,194,66,38,142,132,54,35,225,75,39,17,137,8,92,199,19,158,143,30,31,29,161,19,139,0,35,165,116,82,60,72,129,225,126,97,187,120,242,157,8,247,88,196,142,180,169,87,194,8,245,120,176,22,243,8,121,182,44,201,141,7,235,49,134,123,161,19,10,25,58,129,240,19,130,224,23,30,77,70,79,136,17,62,222,39,252,236,23,151,201,17,223,129,149,140,22,1,238,112,45,82,39,177,67,66,6,136,120,8,200,3,143,16,30,25,140,113,193,149,39,100,90,16,186,212,241,108,118,68,15,146,66,69,140,105,97,39,112,72,38,101,196,1,134,54,227,67,20,20,10,133,225,219,146,130,66,136,244,26,177,7,152,27,56,169,157,2,38,129,144,1,5,20,80,240,132,39,164,25,12,156,230,3,29,124,162,139,60,226,98,232,190,65,44,8,53,83,232,50,149,152,130,50,129,120,11,51,40,96,70,98,88,143,40,14,15,152,12,223,49,34,193,139,0,224,19,74,72,8,243,30,92,39,48,227,3,35,230,130,163,144,96,192,1,136,231,40,201,137,164,12,208,48,112,148,192,90,106,220,82,6,209,159,216,136,218,179,225,13,65,6,100,51,64,3,179,18,10,46,162,192,98,106,122,64,224,135,52,41,181,67,52,56,235,103,186,224,21,177,6,120,74,25,85,200,106,240,72,44,30,193,243,207,168,18,99,25,41,1,71,196,33,210,67,113,144,1,162,90,210,44,147,56,14,42,190,245,201,88,66,89,162,232,49,65,132,62,233,9,254,159,4,23,178,0,61,134,227,221,134,212,13,26,19,126,23,138,139,232,191,91,191,198,17,89,147,5,213,101,121,190,252,243,61,42,72,116,17,19,201,196,71,112,23,19,211,105,193,201,54,44,166,194,103,45,251,148,117,159,179,67,218,79,207,178,149,103,233,166,69,72,100,146,37,131,51,97,205,114,162,169,1,58,132,228,153,62,71,77,244,128,2,143,201,33,49,179,38,99,225,67,17,54,214,12,133,27,114,222,92,178,43,92,91,26,237,69,54,68,15,90,37,137,153,178,224,219,30,224,158,135,147,35,144,239,72,147,36,154,146,162,17,144,72,81,2,208,192,240,152,220,6,148,107,82,42,134,209,31,18,225,26,81,135,151,69,17,156,13,145,65,198,65,153,243,89,224,30,65,197,172,128,215,130,164,245,194,217,34,111,208,110,64,185,166,133,19,223,198,180,228,18,10,27,79,193,227,19,165,5,9,74,56,209,68,145,180,205,202,14,108,67,100,8,57,203,219,132,106,7,153,36,251,188,122,35,42,34,160,54,1,24,151,4,200,194,37,5,16,129,62,249,52,235,157,214,174,79,204,6,188,144,32,172,160,64,196,36,53,170,15,146,86,179,71,245,48,224,186,119,27,163,102,136,8,117,78,0,84,72,43,250,12,14,48,165,235,113,85,76,24,106,36,158,100,40,217,51,85,146,148,9,15,8,27,211,152,146,89,136,63,165,42,67,171,34,228,114,18,216,164,117,25,241,122,141,8,42,49,74,9,33,207,20,14,137,25,253,209,109,66,138,150,137,79,235,35,160,151,228,95,92,97,33,100,17,203,212,148,7,168,196,51,58,183,125,163,117,164,159,229,198,177,74,46,14,174,41,39,17,87,100,34,68,50,106,22,38,85,212,164,136,57,25,188,29,72,78,40,35,6,252,91,153,80,92,41,186,98,42,144,228,86,60,33,248,142,239,160,5,237,61,184,97,51,91,175,232,228,69,91,218,158,191,134,222,83,11,95,98,85,95,230,159,62,126,254,98,41,62,4,230,11,211,109,233,174,224,237,189,197,217,171,30,240,49,176,160,249,54,250,20,190,237,228,250,243,215,79,127,123,135,93,84,94,239,158,216,24,209,233,255,246,203,11,239,174,134,93,142,17,235,21,31,69,44,88,198,59,51,101,253,89,55,56,143,90,52,102,181,224,254,245,138,143,27,22,227,161,247,192,90,232,97,206,157,77,221,9,250,115,118,223,205,7,229,197,138,53,234,255,236,113,176,197,14,191,128,223,203,255,21,210,203,137,24,71,0,62,31,26,235,211,126,211,214,243,250,2,219,116,61,31,114,126,238,187,162,169,139,111,244,197,218,225,252,233,224,104,163,136,64,167,26,245,54,127,187,120,123,179,190,253,248,225,253,47,63,127,253,251,187,47,191,124,252,96,125,122,247,243,79,79,22,207,168,136,211,199,134,57,139,44,248,99,250,191,224,113,10,252,92,15,0,0 };
-    #else
-        static const uint8_t serverIndex[] PROGMEM = { 31,139,8,0,191,214,113,105,2,255,93,142,203,106,3,49,12,69,127,197,245,58,147,210,93,41,150,187,235,54,133,52,31,224,177,53,25,129,95,216,242,132,228,235,235,49,148,210,110,46,72,226,232,92,245,228,146,229,123,198,149,131,215,106,79,225,77,188,2,70,173,2,178,17,118,53,165,34,67,227,101,122,253,217,165,200,24,25,228,141,28,175,224,112,35,139,211,24,14,20,137,201,248,169,90,227,17,94,164,136,38,32,108,132,183,156,10,107,181,164,18,132,177,76,41,130,124,31,199,133,60,214,123,101,12,82,96,28,117,32,52,207,148,77,225,231,29,152,156,233,218,238,94,147,131,207,211,249,75,127,116,230,60,152,55,53,23,173,40,230,198,98,160,251,187,110,176,152,25,142,51,197,195,30,199,235,67,252,147,253,129,106,155,3,177,216,140,111,8,242,146,187,16,197,175,68,106,53,138,232,111,211,36,186,13,49,1,0,0 };
-    #endif
-#endif
-//generated code end
+function runUpload(url,fileInputId,fieldName,btnId,wrapId,barId,statusId,onSuccess){
+  const fileEl=document.getElementById(fileInputId);
+  const btn=document.getElementById(btnId);
+  const wrap=document.getElementById(wrapId);
+  const bar=document.getElementById(barId);
+  const st=document.getElementById(statusId);
+  if(!fileEl.files||!fileEl.files[0]){
+    st.className="status err";
+    st.textContent="Please select a file first!";
+    return;
+  }
+  const fd=new FormData();
+  fd.append(fieldName,fileEl.files[0],fileEl.files[0].name);
+  btn.disabled=true;
+  wrap.style.display="block";
+  bar.style.width="0%";
+  bar.textContent="0%";
+  st.className="status";
+  st.textContent="Uploading...";
+
+  const xhr=new XMLHttpRequest();
+  xhr.upload.addEventListener("progress",function(e){
+    if(e.lengthComputable){
+      const p=Math.round((e.loaded/e.total)*100)+"%";
+      bar.style.width=p;
+      bar.textContent=p;
+    }
+  });
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState===4){
+      btn.disabled=false;
+      if(xhr.status===200&&!xhr.responseText.includes("Update error")&&!xhr.responseText.includes("aborted")){
+        st.className="status ok";
+        onSuccess(st,xhr.responseText);
+      }else{
+        st.className="status err";
+        st.textContent="Upload failed: "+(xhr.responseText||("HTTP "+xhr.status));
+      }
+    }
+  };
+  xhr.open("POST",url,true);
+  xhr.send(fd);
+}
+
+function uploadGateway(){
+  const type=document.getElementById("fw-type").value;
+  runUpload("/update?name="+encodeURIComponent(type),"fw-file",type,"fw-btn","fw-prog-wrap","fw-prog-bar","fw-status",function(st){
+    let sec=15;
+    st.textContent=`Update successful! Rebooting gateway (${sec}s)...`;
+    const timer=setInterval(function(){
+      sec--;
+      if(sec<=0){clearInterval(timer);location.href="/";}
+      else st.textContent=`Update successful! Rebooting gateway (${sec}s)...`;
+    },1000);
+  });
+}
+
+function uploadZigbeeOta(){
+  runUpload("/upload_zigbee_ota","zb-file","data","zb-btn","zb-prog-wrap","zb-prog-bar","zb-status",function(st,resp){
+    st.textContent="ZigBee OTA file uploaded ("+resp+")! Ready for OTA in ZigBee devices tab.";
+  });
+}
+</script>
+</body>
+</html>)rawliteral";
 
 static const char successResponse[] PROGMEM =
-    R"(<meta content="15;URL=/"http-equiv=refresh>Update Success! Rebooting...)";
+    R"(<meta content="15;URL=/" http-equiv="refresh">Update Success! Rebooting...)";
 
 Ticker restartTimer;
 
@@ -66,6 +182,8 @@ ESPAsyncHTTPUpdateServer::ESPAsyncHTTPUpdateServer()
     _username = emptyString;
     _password = emptyString;
     _authenticated = false;
+    _updateType = UpdateType::FIRMWARE;
+    _updateResult = UpdateResult::UPDATE_OK;
 }
 
 void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path, const String &username, const String &password)
@@ -74,156 +192,109 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
     _username = username;
     _password = password;
 
-    // handler for the /update form page
-    _server->on(path.c_str(), HTTP_GET, [&](AsyncWebServerRequest *request)
-                {
-            if(_username != emptyString && _password != emptyString)
-                if( !request->authenticate(_username.c_str(), _password.c_str()))
-                    return request->requestAuthentication();
-#ifdef ESP32
-            AsyncWebServerResponse* response = request->beginResponse(200, "text/html", serverIndex, sizeof(serverIndex));
-#else
-            AsyncWebServerResponse* response = request->beginResponse_P(200, "text/html", serverIndex, sizeof(serverIndex));
-#endif
-            response->addHeader("Content-Encoding", "gzip");
-            request->send(response); });
-
-    // handler for the /update form page - preflight options
-    _server->on(path.c_str(), HTTP_OPTIONS, [&](AsyncWebServerRequest *request)
-                {
-            AsyncWebServerResponse* response = request->beginResponse(200,F("text/html"), String(F("y")));
-            response->addHeader("Access-Control-Allow-Headers", "*");
-            response->addHeader("Access-Control-Allow-Origin", "*");
-            request->send(response); 
-            
-            _authenticated = (_username == emptyString || _password == emptyString || request -> authenticate(_username.c_str(), _password.c_str()));
-            if (!_authenticated)
-            {
-                Log("Unauthenticated Update\n");
-                return;
-            } });
-
-    // handler for the /update form POST (once file upload finishes)
-    _server->on(
-        path.c_str(), HTTP_POST, [&](AsyncWebServerRequest *request)
-        {
-        // if requestAuthentication() is false second handler will run, else it wont.
-        if (!_authenticated)
-            return request->requestAuthentication();
-
-        if (_updateResult != UpdateResult::UPDATE_OK)
-        {
-            AsyncWebServerResponse *response = request->beginResponse(200, F("text/html"), Update.hasError() ? String(F("Update error: ")) + _updaterError : "Update aborted by server.");
-            response->addHeader("Access-Control-Allow-Headers", "*");
-            response->addHeader("Access-Control-Allow-Origin", "*");
-            response->addHeader("Connection", "close");
-            request->send(response);
+    // GET /update -> Unified Dark-Theme Update & ZigBee OTA Center
+    _server->on(path.c_str(), HTTP_GET, [&](AsyncWebServerRequest *request) {
+        if (_username.length() > 0 && _password.length() > 0) {
+            if (!request->authenticate(_username.c_str(), _password.c_str())) {
+                return request->requestAuthentication();
+            }
         }
-        else
-        {
-#ifdef ESP32
-            request->send(200, PSTR("text/html"), successResponse);
-#else
-            request->send_P(200, PSTR("text/html"), successResponse);
-#endif
-            Log("Rebooting...\n");
-            restartTimer.once_ms(1000,[]{ ESP.restart(); });
-        } },
-        [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
-        {
-            // handler for the file upload, gets the sketch bytes, and writes
-            // them through the Update object
+        request->send_P(200, "text/html", UPDATE_CENTER_HTML);
+    });
 
-            _updateType = request->getParam("name")->value() == "filesystem"?
-                    UpdateType::FILE_SYSTEM :
-                    UpdateType::FIRMWARE;
+    // OPTIONS /update -> Preflight
+    _server->on(path.c_str(), HTTP_OPTIONS, [&](AsyncWebServerRequest *request) {
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "y");
+        response->addHeader("Access-Control-Allow-Headers", "*");
+        response->addHeader("Access-Control-Allow-Origin", "*");
+        request->send(response);
 
-            if (!index)
-            {
+        _authenticated = (_username.length() == 0 || _password.length() == 0 ||
+                          request->authenticate(_username.c_str(), _password.c_str()));
+    });
+
+    // POST /update -> Firmware / Filesystem OTA upload
+    _server->on(
+        path.c_str(), HTTP_POST,
+        [&](AsyncWebServerRequest *request) {
+            if (!_authenticated) {
+                return request->requestAuthentication();
+            }
+
+            if (_updateResult != UpdateResult::UPDATE_OK) {
+                String errMsg = Update.hasError()
+                    ? (String(F("Update error: ")) + _updaterError)
+                    : String(F("Update aborted by server."));
+                AsyncWebServerResponse *response = request->beginResponse(200, "text/html", errMsg);
+                response->addHeader("Access-Control-Allow-Headers", "*");
+                response->addHeader("Access-Control-Allow-Origin", "*");
+                response->addHeader("Connection", "close");
+                request->send(response);
+            } else {
+                request->send_P(200, "text/html", successResponse);
+                Log("Rebooting...\n");
+                restartTimer.once_ms(1000, []() { ESP.restart(); });
+            }
+        },
+        [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+            const AsyncWebParameter *pName = request->getParam("name");
+            _updateType = (pName && strcmp(pName->value().c_str(), "filesystem") == 0)
+                ? UpdateType::FILE_SYSTEM
+                : UpdateType::FIRMWARE;
+
+            if (!index) {
                 _updaterError.clear();
 
-#ifdef ESPASYNCHTTPUPDATESERVER_DEBUG
-                ESPASYNCHTTPUPDATESERVER_SerialOutput.setDebugOutput(true);
-#endif
-                _authenticated = (_username == emptyString || _password == emptyString || request->authenticate(_username.c_str(), _password.c_str()));
-                if (!_authenticated)
-                {
+                _authenticated = (_username.length() == 0 || _password.length() == 0 ||
+                                  request->authenticate(_username.c_str(), _password.c_str()));
+                if (!_authenticated) {
                     Log("Unauthenticated Update\n");
                     return;
                 }
 
-                if (onUpdateBegin)
-                {
-                    _updateResult = UpdateResult::UPDATE_OK;
+                _updateResult = UpdateResult::UPDATE_OK;
+                if (onUpdateBegin) {
                     onUpdateBegin(_updateType, _updateResult);
-                    if (_updateResult != UpdateResult::UPDATE_OK)
-                    {
+                    if (_updateResult != UpdateResult::UPDATE_OK) {
                         Log("Update aborted by server: %d\n", _updateResult);
-                        if(onUpdateEnd)
-                            onUpdateEnd(_updateType, _updateResult);
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                         return;
                     }
                 }
 
                 Log("Update: %s\n", filename.c_str());
-#ifdef ESP8266
-                Update.runAsync(true);
-#endif
-                if (_updateType == UpdateType::FILE_SYSTEM)
-                {
-                    Log("updating filesystem\n");
-#ifdef ESP8266
-                    int command = U_FS;
-                    size_t fsSize = ((size_t)FS_end - (size_t)FS_start);
-                    close_all_fs();
-#elif defined(ESP32)
-                    int command = U_SPIFFS;
-    #ifdef ESPASYNCHTTPUPDATESERVER_LITTLEFS
-                    size_t fsSize = LittleFS.totalBytes();
-    #else
-                    size_t fsSize = SPIFFS.totalBytes();
-    #endif
-#endif
-                    if (!Update.begin(fsSize, command))
-                    { // start with max available size
-#ifdef ESPASYNCHTTPUPDATESERVER_DEBUG
-                        Update.printError(ESPASYNCHTTPUPDATESERVER_SerialOutput);
-#endif
+
+                if (_updateType == UpdateType::FILE_SYSTEM) {
+                    size_t fsSize = UPDATE_SIZE_UNKNOWN;
+                    const esp_partition_t *part = esp_partition_find_first(
+                        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, nullptr);
+                    if (part) fsSize = part->size;
+                    if (!Update.begin(fsSize, U_SPIFFS)) {
+                        _setUpdaterError();
+                    }
+                } else {
+                    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+                    if (!Update.begin(maxSketchSpace, U_FLASH)) {
+                        _setUpdaterError();
                     }
                 }
-                else
-                {
-                    Log("updating flash\n");
-                    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-                    if (!Update.begin(maxSketchSpace, U_FLASH)) // start with max available size
-                        _setUpdaterError();
+            }
+
+            if (_authenticated && len && _updateResult == UpdateResult::UPDATE_OK) {
+                if (Update.write(data, len) != len) {
+                    _setUpdaterError();
                 }
             }
 
-            if (_authenticated && len && _updateResult == UpdateResult::UPDATE_OK)
-            {
-                Log(".");
-                if (Update.write(data, len) != len)
-                    _setUpdaterError();
-            }
-
-            if (_authenticated && final && _updateResult == UpdateResult::UPDATE_OK)
-            {
-                if (Update.end(true))
-                { // true to set the size to the current progress
+            if (_authenticated && final && _updateResult == UpdateResult::UPDATE_OK) {
+                if (Update.end(true)) {
                     Log("Update Success.\n");
                     _updateResult = UpdateResult::UPDATE_OK;
-                    if(onUpdateEnd)
-                        onUpdateEnd(_updateType, _updateResult);
-                }
-                else
+                    if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
+                } else {
                     _setUpdaterError();
-#ifdef ESPASYNCHTTPUPDATESERVER_DEBUG
-                ESPASYNCHTTPUPDATESERVER_SerialOutput.setDebugOutput(false);
-#endif
+                }
             }
-            else
-                return;
         });
 }
 
@@ -235,8 +306,9 @@ void ESPAsyncHTTPUpdateServer::_setUpdaterError()
     StreamString str;
     Update.printError(str);
     _updaterError = str.c_str();
-    
+
     _updateResult = UpdateResult::UPDATE_ERROR;
-    if(onUpdateEnd)
+    if (onUpdateEnd) {
         onUpdateEnd(_updateType, _updateResult);
-}
+    }
+}       

@@ -1399,6 +1399,16 @@ void Supla::Control::LocalPWM::handleAction(int event, int action) {
       Z2S_SUPLA_ACTION_DIM_W_WITH_STEP_FIRST_ACTION);
     increaseBrightness(step);
   }
+
+  /*if ((action >= Z2S_SUPLA_ACTION_SET_PWM_DUTY_PERCENTAGE_FIRST_ACTION) &&
+      (action <= Z2S_SUPLA_ACTION_SET_PWM_DUTY_PERCENTAGE_LAST_ACTION)) {
+
+    uint8_t duty =
+      action - Z2S_SUPLA_ACTION_SET_PWM_DUTY_PERCENTAGE_FIRST_ACTION;
+    if (duty != _brightness) {
+      setBrightness(duty);
+    }
+  }*/
 }
 
 /*****************************************************************************/
@@ -1872,6 +1882,29 @@ Supla::Sensor::CalculatedGPM::CalculatedGPM()
 
 /*****************************************************************************/
 
+bool Supla::Sensor::CalculatedGPM::isControlAlgorithmFunc() const {
+
+  uint8_t fn = const_cast<CalculatedGPM *>(this)->getZ2SLocalChannelFunc();
+  return (fn == CALCULATED_GPM_FUNC_LINEAR_MAP ||
+          fn == CALCULATED_GPM_FUNC_PI_CONTROL ||
+          fn == CALCULATED_GPM_FUNC_PID_CONTROL);
+}
+
+/*****************************************************************************/
+
+const char *Supla::Sensor::CalculatedGPM::getFunctionName() {
+
+  uint8_t fn = getZ2SLocalChannelFunc();
+  constexpr uint8_t count = sizeof(calculated_gpm_functions_names) /
+                            sizeof(calculated_gpm_functions_names[0]);
+  if (fn >= 1 && fn <= count) {
+    return calculated_gpm_functions_names[fn - 1];
+  }
+  return "UNKNOWN";
+}
+
+/*****************************************************************************/
+
 void Supla::Sensor::CalculatedGPM::configureFunctionDefaults() {
 
   switch (getZ2SLocalChannelFunc()) {
@@ -1897,14 +1930,12 @@ void Supla::Sensor::CalculatedGPM::configureFunctionDefaults() {
       break;
 
     case CALCULATED_GPM_FUNC_WOOD_EMC:
+    case CALCULATED_GPM_FUNC_LINEAR_MAP:
+    case CALCULATED_GPM_FUNC_PI_CONTROL:
+    case CALCULATED_GPM_FUNC_PID_CONTROL:
       setDefaultUnitAfterValue(" %");
       setDefaultValuePrecision(1);
       break;
-
-    /*case CALCULATED_GPM_FUNC_ZIGBEE_RSSI:
-      setDefaultUnitAfterValue(" dBm");
-      setDefaultValuePrecision(0);
-      break;*/
   }
 }
 
@@ -1997,18 +2028,194 @@ double calculateWoodEMC(double temperature, double humidity) {
      (1.0 + (k1 * kh) + (k1 * k2 * kh * kh)))
   );
 }
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::resetControllerState() {
+
+  _integral = 0.0f;
+  _prev_temp = NAN;
+  _d_filtered = 0.0f;
+  _last_pid_calc_ms = 0;
+  _last_pwm_duty = 0xFF;
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::setControllerEnabled(bool enabled) {
+
+  if (_controller_enabled == enabled)
+    return;
+
+  _controller_enabled = enabled;
+  resetControllerState();
+
+  if (!_controller_enabled) {
+    commitPwmOutput(0.0);
+  } else {
+    _last_refresh_ms = 0;
+  }
+}
+
+/*****************************************************************************/
+
+double Supla::Sensor::CalculatedGPM::computeLinearMap(double temp) {
+
+  float t_min    = getCalculatedGpmParam1();
+  float t_max    = getCalculatedGpmParam2();
+  float duty_min = constrain(getCalculatedGpmParam3(), 0.0f, 100.0f);
+  float duty_max = constrain(getCalculatedGpmParam4(), 0.0f, 100.0f);
+
+  float pv = static_cast<float>(temp);
+  if (fabsf(t_max - t_min) < 1e-4f) {
+    return (pv >= t_max) ? duty_max : duty_min;
+  }
+
+  float ratio = (pv - t_min) / (t_max - t_min);
+  ratio = constrain(ratio, 0.0f, 1.0f);
+
+  return static_cast<double>(duty_min + ratio * (duty_max - duty_min));
+}
+
+/*****************************************************************************/
+
+double Supla::Sensor::CalculatedGPM::computePID(
+    double temp, float dt, bool use_derivative) {
+
+  float setpoint = getCalculatedGpmParam1();
+  float kp_raw   = getCalculatedGpmParam2();
+  float ki_raw   = getCalculatedGpmParam3();
+  float kd_raw   = use_derivative ? getCalculatedGpmParam4() : 0.0f;
+
+  // Kp > 0 => Heating (output rises when temp < setpoint)
+  // Kp < 0 => Cooling (output rises when temp > setpoint)
+  bool is_cooling = (kp_raw < 0.0f);
+  float kp = fabsf(kp_raw);
+  float ki = fabsf(ki_raw);
+  float kd = fabsf(kd_raw);
+
+  float pv = static_cast<float>(temp);
+  float error = is_cooling ? (pv - setpoint) : (setpoint - pv);
+
+  // 1. Proportional term
+  float p_term = kp * error;
+
+  // 2. Integral term with dynamic anti-windup clamping to [0..100]
+  if (ki > 0.0f && dt > 0.0f) {
+    _integral += ki * error * dt;
+    float i_min = fminf(0.0f, -p_term);
+    float i_max = fmaxf(0.0f, 100.0f - p_term);
+    _integral = constrain(_integral, i_min, i_max);
+  } else {
+    _integral = 0.0f;
+  }
+
+  // 3. Derivative-on-Measurement with EMA smoothing (alpha = 0.25)
+  float d_term = 0.0f;
+  if (use_derivative && kd > 0.0f && !isnan(_prev_temp) && dt > 0.0f) {
+    float dpv_dt = (pv - _prev_temp) / dt;
+    float raw_d = is_cooling ? (kd * dpv_dt) : (-kd * dpv_dt);
+    _d_filtered = (0.25f * raw_d) + (0.75f * _d_filtered);
+    d_term = _d_filtered;
+  } else {
+    _d_filtered = 0.0f;
+  }
+  _prev_temp = pv;
+
+  float out = constrain(p_term + _integral + d_term, 0.0f, 100.0f);
+  return static_cast<double>(out);
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::validateDestinationChannel() {
+
+  uint8_t dst_ch = getDestinationChannel();
+
+  if (dst_ch == 0xFF) {
+    _destination_Supla_element = nullptr;
+    _last_destination_channel = 0xFF;
+    return;
+  }
+
+  if ((_last_destination_channel != dst_ch) ||
+      (_destination_Supla_element == nullptr)) {
+
+    _destination_Supla_element = nullptr;
+
+    Z2S_Core *dst_core = Z2S_Core::getZ2SCoreByChannelNumber(dst_ch);
+    if (dst_core && dst_core->getZ2SElementPtr()) {
+      
+      _destination_Supla_element = dst_core->getZ2SElementPtr();
+      _last_destination_channel = dst_ch;
+      _last_pwm_duty = 0xFF; 
+    }
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::commitPwmOutput(double out_pct) {
+
+  if (isnan(out_pct))
+    return;
+
+  out_pct = constrain(out_pct, 0.0, 100.0);
+  setValue(out_pct);
+
+  validateDestinationChannel();
+
+  uint8_t rounded_duty = static_cast<uint8_t>(lround(out_pct));
+  
+  if (_destination_Supla_element && (rounded_duty != _last_pwm_duty)) {
+
+    _last_pwm_duty = rounded_duty;
+
+    Z2S_Core *dst_core = Z2S_Core::getZ2SCoreByChannelNumber(
+      _last_destination_channel);
+    
+    if (dst_core) {
+      
+      
+      switch (dst_core->getZ2SLocalChannelType()) {
+        
+
+        case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
+          
+          auto *pwm = static_cast<Supla::Control::LocalPWM *>(
+            _destination_Supla_element);
+          pwm->setPWM(rounded_duty);
+        } break;
+          
+        // Future expansion:
+        // case LOCAL_CHANNEL_TYPE_GPIO_RELAY:
+        // case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
+        //   if (rounded_duty > 0) _destination_Supla_element->handleAction(0, Supla::TURN_ON);
+        //   else _destination_Supla_element->handleAction(0, Supla::TURN_OFF);
+        // } break;
+      }
+    }
+  }
+}
+
 /*****************************************************************************/
 
 void Supla::Sensor::CalculatedGPM::validateSourceChannel() {
 
-  if ((_last_source_channel < 0xFF) && 
-      (_last_source_channel != getSourceChannel()))
+  if (((_last_source_channel < 0xFF) && 
+       (_last_source_channel != getSourceChannel())) ||
+      ((_last_channel_func < 0xFF) &&
+       (_last_channel_func != getZ2SLocalChannelFunc()))) {
+
     _source_Supla_element = nullptr;
+    if (_last_channel_func != getZ2SLocalChannelFunc()) {
+      resetControllerState();
+    }
+  }
 
   if (_source_Supla_element == nullptr) {
 
     switch (getZ2SLocalChannelFunc()) {
-
 
       case CALCULATED_GPM_FUNC_VPD:
       case CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY:
@@ -2020,8 +2227,27 @@ void Supla::Sensor::CalculatedGPM::validateSourceChannel() {
           getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
 
         if (_source_Supla_element) {
+          _last_source_channel = getSourceChannel();
+          _last_channel_func = getZ2SLocalChannelFunc();
+        }
+      } break;
 
-          _last_source_channel = getSourceChannel();          
+      case CALCULATED_GPM_FUNC_LINEAR_MAP:
+      case CALCULATED_GPM_FUNC_PI_CONTROL:
+      case CALCULATED_GPM_FUNC_PID_CONTROL: {
+
+        _source_Supla_element = Z2S_Core::getSuplaElementByChannelNumberAndType(
+          getSourceChannel(), SUPLA_CHANNELTYPE_THERMOMETER);
+
+        if (!_source_Supla_element) {
+          _source_Supla_element =
+            Z2S_Core::getSuplaElementByChannelNumberAndType(
+              getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
+        }
+
+        if (_source_Supla_element) {
+          _last_source_channel = getSourceChannel();
+          _last_channel_func = getZ2SLocalChannelFunc();
         }
       } break;
     }
@@ -2034,50 +2260,109 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
 
   Supla::Sensor::VirtualGeneralPurposeMeasurement::iterateAlways();
 
-  if (getRefreshMs() && ((millis() - _last_refresh_ms) > getRefreshMs())) {
+  uint32_t interval_ms = getRefreshMs();
+  if (interval_ms == 0 && isControlAlgorithmFunc()) {
+    interval_ms = 5000;
+  }
 
-    _last_refresh_ms = millis();
+  if (interval_ms && ((millis() - _last_refresh_ms) > interval_ms)) {
+
+    uint32_t now_ms = millis();
+    float dt = (_last_pid_calc_ms > 0)
+                 ? ((now_ms - _last_pid_calc_ms) * 0.001f)
+                 : (interval_ms * 0.001f);
+    if (dt <= 0.0f || dt > 600.0f) {
+      dt = interval_ms * 0.001f;
+    }
+
+    _last_refresh_ms = now_ms;
+    _last_pid_calc_ms = now_ms;
 
     validateSourceChannel();
 
+    if (isControlAlgorithmFunc()) {
+
+      if (!_controller_enabled)
+        return;
+
+      double temp = NAN;
+      bool sensor_valid = false;
+
+      if (_source_Supla_element && _source_Supla_element->getChannel()) {
+        auto *src_ch = _source_Supla_element->getChannel();
+        if (src_ch->isStateOnline()) {
+          if (src_ch->getChannelType() == SUPLA_CHANNELTYPE_THERMOMETER) {
+            temp = src_ch->getValueDouble();
+          } else if (src_ch->getChannelType() ==
+                     SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
+            temp = src_ch->getValueDoubleFirst();
+          }
+          if (!isnan(temp) && (temp > -272.0)) {
+            sensor_valid = true;
+          }
+        }
+      }
+
+      if (!sensor_valid) {
+        _prev_temp = NAN;
+        int8_t failsafe = getCalculatedGpmFailsafeDuty();
+        if (failsafe >= 0 && failsafe <= 100) {
+          commitPwmOutput(static_cast<double>(failsafe));
+        }
+        return;
+      }
+
+      double out_pct = 0.0;
+      switch (getZ2SLocalChannelFunc()) {
+
+        case CALCULATED_GPM_FUNC_LINEAR_MAP:
+          out_pct = computeLinearMap(temp);
+          break;
+
+        case CALCULATED_GPM_FUNC_PI_CONTROL:
+          out_pct = computePID(temp, dt, false);
+          break;
+
+        case CALCULATED_GPM_FUNC_PID_CONTROL:
+          out_pct = computePID(temp, dt, true);
+          break;
+      }
+
+      commitPwmOutput(out_pct);
+      return;
+    }
+
     if (_source_Supla_element) {
 
-      auto *channel = _source_Supla_element->getChannel();
+      auto *src_ch = _source_Supla_element->getChannel();
 
-      if (channel && channel->getChannelType() == 
+      if (src_ch && src_ch->getChannelType() == 
             SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
 
-        double temp = channel->getValueDoubleFirst();
-        double humi = channel->getValueDoubleSecond();
+        double temp = src_ch->getValueDoubleFirst();
+        double humi = src_ch->getValueDoubleSecond();
 
         switch (getZ2SLocalChannelFunc()) {
 
-
-          case CALCULATED_GPM_FUNC_VPD: {
-            
+          case CALCULATED_GPM_FUNC_VPD:
             setValue(calculateVPD(temp, humi));
-          } break;
+            break;
 
-
-          case CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY: {
-            
+          case CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY:
             setValue(calculateAbsoluteHumidity(temp, humi));
-          } break;
+            break;
 
-          case CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY: {
-            
+          case CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY:
             setValue(calculateSpecificEnthalpy(temp, humi));
-          } break;
+            break;
 
-          case CALCULATED_GPM_FUNC_DEW_POINT_SPREAD: {
-            
+          case CALCULATED_GPM_FUNC_DEW_POINT_SPREAD:
             setValue(calculateDewPointSpread(temp, humi));
-          } break;
+            break;
 
-          case CALCULATED_GPM_FUNC_WOOD_EMC: {
-            
+          case CALCULATED_GPM_FUNC_WOOD_EMC:
             setValue(calculateWoodEMC(temp, humi));
-          } break;
+            break;
         }
       }
     }       
@@ -2092,11 +2377,27 @@ void Supla::Sensor::CalculatedGPM::handleAction(int event, int action) {
   
   switch (action) {
 
+    case TURN_ON:
+    case SET:
+      if (isControlAlgorithmFunc()) {
+        setControllerEnabled(true);
+      }
+      break;
 
+    case TURN_OFF:
     case CLEAR:
+      if (isControlAlgorithmFunc()) {
+        setControllerEnabled(false);
+      } else {
+        setValue(0);
+      }
+      break;
 
-      setValue(0);
-    break;
+    case TOGGLE:
+      if (isControlAlgorithmFunc()) {
+        setControllerEnabled(!_controller_enabled);
+      }
+      break;
   }
 }
 

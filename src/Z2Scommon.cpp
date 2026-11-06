@@ -646,6 +646,14 @@ bool Z2S_Core::setSourceChannel(uint8_t source_channel) {
   return saveChannelData();
 }
 
+/*****************************************************************************/
+
+bool Z2S_Core::setDestinationChannel(uint8_t destination_channel) {
+
+  _z2s_channel.Supla_destination_channel = destination_channel;
+
+  return saveChannelData();
+}
 
 /*****************************************************************************/
 
@@ -1214,6 +1222,21 @@ bool Z2S_Core::updateLocalPwmParams() {
 
     auto *pwm = static_cast<Supla::Control::LocalPWM *>(_z2s_element);
     pwm->setupPWM();
+    return true;
+  }
+  return false;
+}
+
+/*****************************************************************************/
+
+bool Z2S_Core::updateCalculatedGpmParams() {
+
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_CALC_GPM &&
+      _z2s_element) {
+
+    auto *cgpm = static_cast<Supla::Sensor::CalculatedGPM *>(_z2s_element);
+    cgpm->configureFunctionDefaults();
+    cgpm->resetControllerState();
     return true;
   }
   return false;

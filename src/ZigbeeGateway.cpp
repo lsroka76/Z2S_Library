@@ -1074,7 +1074,7 @@ void ZigbeeGateway::printJoinedDevices() {
 
 void ZigbeeGateway::zbProcessAttributeReporting(
   esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,
-  const esp_zb_zcl_attribute_t* attribute) {
+  const esp_zb_zcl_attribute_t* attribute, bool reporting) {
 
   switch (cluster_id) {
 
@@ -1166,7 +1166,8 @@ void ZigbeeGateway::zbProcessAttributeReporting(
 
       if (_on_multistate_input_receive)
         _on_multistate_input_receive(
-          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute, 
+          reporting);
     } break;
 
 
@@ -1184,7 +1185,8 @@ void ZigbeeGateway::zbProcessAttributeReporting(
 
       if (_on_analog_input_receive)
         _on_analog_input_receive(
-          src_address.u.short_addr, src_endpoint, cluster_id, attribute);
+          src_address.u.short_addr, src_endpoint, cluster_id, attribute,
+          reporting);
     } break;
 
 
@@ -1325,7 +1327,7 @@ void ZigbeeGateway::zbAttributeReporting(
   log_i("short address 0x%04X", short_addr);
 
   zbProcessAttributeReporting(
-    src_address, src_endpoint, cluster_id, attribute);
+    src_address, src_endpoint, cluster_id, attribute, true);
 }
 
 void ZigbeeGateway::zbReadAttrResponse(
@@ -1371,7 +1373,7 @@ void ZigbeeGateway::zbReadAttrResponse(
         _on_update_device_last_rssi(src_address.u.short_addr, rssi);
 
       zbProcessAttributeReporting(
-        src_address, src_endpoint, cluster_id, attribute);
+        src_address, src_endpoint, cluster_id, attribute, false);
     }
   }
 }
@@ -3464,7 +3466,7 @@ bool ZigbeeGateway::zbRawCmdHandler(
 
           zbProcessAttributeReporting(
             source, src_endpoint, cluster_id, 
-            (const esp_zb_zcl_attribute_t*)&attribute);
+            (const esp_zb_zcl_attribute_t*)&attribute, true);
         }
         if (!disable_default_response) {
 

@@ -3,8 +3,10 @@
 
 #define ESPASYNCHTTPUPDATESERVER_MODE 0
 
-#include <ESPUI.h>
+//#include <ESPUI.h>
+#include "Z2S_ESPUI.h"
 #include <ESPmDNS.h>
+#include <LittleFS.h>
 #include "ESPAsyncHTTPUpdateServer.h"
 
 #define MAX_ZIGBEE_PAYLOAD_SIZE         255
@@ -98,15 +100,15 @@ enum gui_commands : uint8_t {
   gui_cmd_update_channel_info,
   gui_cmd_update_zbdevice_info,
   gui_cmd_ir_device_callback,
-	gui_cmd_build_ir_codes_table,
-	gui_cmd_edit_ir_codes_table,
-	gui_cmd_learn_ir_code,
-	gui_cmd_send_ir_code,
-	gui_cmd_ir_code_learned,
+  gui_cmd_build_ir_codes_table,
+  gui_cmd_edit_ir_codes_table,
+  gui_cmd_learn_ir_code,
+  gui_cmd_send_ir_code,
+  gui_cmd_ir_code_learned,
   gui_cmd_delete_ir_code,
   gui_cmd_pushover_message_callback,
-	gui_cmd_build_pushover_messages_table,
-	gui_cmd_edit_pushover_messages_table
+  gui_cmd_build_pushover_messages_table,
+  gui_cmd_edit_pushover_messages_table
 };
 
 class Z2S_Core;
@@ -148,5 +150,4 @@ void sortZbDevicesAndChannelsSelectors();
 
 uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode);
 
-
-#endif // Z2S_WEB_GUI_H_�
+#endif // Z2S_WEB_GUI_H_
