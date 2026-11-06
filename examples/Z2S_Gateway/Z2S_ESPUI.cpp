@@ -19,6 +19,11 @@ static volatile uint8_t s_ev_tail = 0;
 static portMUX_TYPE s_ev_mux = portMUX_INITIALIZER_UNLOCKED;
 
 static char s_batch_buf[1360];
+static size_t s_ui_stage_len = 0;
+static size_t s_ui_stage_off = 0;
+static size_t s_ui_ctrl_idx = 0;
+static volatile bool s_ui_streaming = false;
+static volatile uint32_t s_ui_stream_ms = 0;
 
 static bool enqueueWsEvent(uint16_t id, int8_t cb_type, uint8_t is_custom) {
   bool queued = false;
@@ -1085,21 +1090,43 @@ void Z2S_ESPUIClass::begin(
     _server->addHandler(_ws);
 
     _server->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send_P(200, "text/html", Z2S_INDEX_HTML);
+      AsyncWebServerResponse *response =
+        request->beginResponse_P(200, "text/html", Z2S_INDEX_HTML);
+      response->addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+      response->addHeader("Connection", "close");
+      request->send(response);
+    });
+
+    _server->on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+      AsyncWebServerResponse *response = request->beginResponse(204);
+      response->addHeader("Connection", "close");
+      request->send(response);
     });
 
     _server->on("/api/ui", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      size_t *ctrl_idx_ptr = new size_t(0);
       AsyncWebServerResponse *response = request->beginChunkedResponse(
         "application/json",
-        [this, ctrl_idx_ptr](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-          size_t written = this->_fillUiLayoutChunk(buffer, maxLen, *ctrl_idx_ptr);
-          if (written == 0) {
-            delete ctrl_idx_ptr;
+        [this](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+          if (index == 0) {
+            s_ui_ctrl_idx = 0;
+            s_ui_stage_len = 0;
+            s_ui_stage_off = 0;
+            s_ui_streaming = true;
           }
-          return written;
+          s_ui_stream_ms = millis();
+          size_t n = this->_fillUiLayoutChunk(buffer, maxLen, s_ui_ctrl_idx);
+          if (n == 0) {
+            s_ui_streaming = false;
+          }
+          return n;
         });
+      response->addHeader("Cache-Control", "no-store");
+      response->addHeader("Connection", "close");
       request->send(response);
+    });
+
+    _server->onNotFound([](AsyncWebServerRequest *request) {
+      request->redirect("/");
     });
   }
 
@@ -1113,68 +1140,83 @@ void Z2S_ESPUIClass::begin(
 size_t Z2S_ESPUIClass::_fillUiLayoutChunk(
   uint8_t *buffer, size_t maxLen, size_t &ctrl_idx) {
 
-  if (ctrl_idx > _control_count) {
-    return 0;
-  }
+  if (maxLen == 0) return 0;
+  char *out = reinterpret_cast<char *>(buffer);
+  size_t out_off = 0;
 
-  if (maxLen > 1200) maxLen = 1200;
-
-  char *buf = reinterpret_cast<char *>(buffer);
-  size_t off = 0;
-
-  if (ctrl_idx == 0) {
-    appendFmt(buf, maxLen, off, "{\"title\":\"");
-    appendEscapedJson(buf, maxLen, off, _ui_title);
-    appendFmt(buf, maxLen, off, "\",\"controls\":[");
-  }
-
-  while (ctrl_idx < _control_count) {
-    if (off > 0 && (maxLen - off) < 380) {
-      return off;
+  while (out_off < maxLen) {
+    // 1. Drain any staged bytes that didn't fit in the previous TCP window
+    if (s_ui_stage_off < s_ui_stage_len) {
+      size_t avail = s_ui_stage_len - s_ui_stage_off;
+      size_t room = maxLen - out_off;
+      size_t copy_n = (avail < room) ? avail : room;
+      memcpy(out + out_off, s_batch_buf + s_ui_stage_off, copy_n);
+      out_off += copy_n;
+      s_ui_stage_off += copy_n;
+      continue;
     }
 
-    const BasicControl &c = _controls[ctrl_idx];
-    size_t saved_off = off;
-
-    bool ok = appendFmt(
-      buf, maxLen, off,
-      "%s{\"id\":%u,\"t\":%u,\"p\":%u,\"c\":%u,\"e\":%u,\"w\":%u,\"f\":%u,\"r\":%u,\"k\":%u,\"l\":\"",
-      (ctrl_idx == 0) ? "" : ",",
-      c.id, (uint8_t)c.type, c.parent_id, (uint8_t)c.color,
-      c.enabled ? 1 : 0, c.wide_panel ? 1 : 0,
-      c.control_flags, c.rows, c.cols);
-
-    ok = ok && appendEscapedJson(buf, maxLen, off, c.label);
-    ok = ok && appendFmt(buf, maxLen, off, "\",\"v\":\"");
-
-    if (c.str_buf || c.static_str_val) {
-      ok = ok && appendEscapedJson(buf, maxLen, off, c.getValueCstr());
-    } else {
-      ok = ok && appendFmt(buf, maxLen, off, "%ld", (long)c.int_val);
+    // 2. Check if all controls and closing "]}" have been emitted
+    if (ctrl_idx > _control_count) {
+      break;
     }
 
-    ok = ok && appendFmt(buf, maxLen, off, "\",\"ps\":\"");
-    ok = ok && appendEscapedJson(buf, maxLen, off, c.panel_style);
-    ok = ok && appendFmt(buf, maxLen, off, "\",\"es\":\"");
-    ok = ok && appendEscapedJson(buf, maxLen, off, c.element_style);
-    ok = ok && appendFmt(buf, maxLen, off, "\"}");
+    // 3. Format next piece into s_batch_buf (always 1360 B capacity)
+    s_ui_stage_len = 0;
+    s_ui_stage_off = 0;
 
-    if (!ok) {
-      off = saved_off;
-      return off;
+    if (ctrl_idx == 0) {
+      appendFmt(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, "{\"title\":\"");
+      appendEscapedJson(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, _ui_title);
+      appendFmt(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, "\",\"controls\":[");
     }
 
-    ctrl_idx++;
-  }
+    if (ctrl_idx < _control_count) {
+      const BasicControl &c = _controls[ctrl_idx];
+      size_t saved_len = s_ui_stage_len;
 
-  if (ctrl_idx == _control_count) {
-    if ((maxLen - off) >= 4) {
-      appendFmt(buf, maxLen, off, "]}");
+      bool ok = appendFmt(
+        s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len,
+        "%s{\"id\":%u,\"t\":%u,\"p\":%u,\"c\":%u,\"e\":%u,\"w\":%u,\"f\":%u,\"r\":%u,\"k\":%u,\"l\":\"",
+        (ctrl_idx == 0) ? "" : ",",
+        c.id, (uint8_t)c.type, c.parent_id, (uint8_t)c.color,
+        c.enabled ? 1 : 0, c.wide_panel ? 1 : 0,
+        c.control_flags, c.rows, c.cols);
+
+      ok = ok && appendEscapedJson(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, c.label);
+      ok = ok && appendFmt(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, "\",\"v\":\"");
+
+      if (c.str_buf || c.static_str_val) {
+        ok = ok && appendEscapedJson(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, c.getValueCstr());
+      } else {
+        ok = ok && appendFmt(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, "%ld", (long)c.int_val);
+      }
+
+      ok = ok && appendFmt(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, "\",\"ps\":\"");
+      ok = ok && appendEscapedJson(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, c.panel_style);
+      ok = ok && appendFmt(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, "\",\"es\":\"");
+      ok = ok && appendEscapedJson(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, c.element_style);
+      ok = ok && appendFmt(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, "\"}");
+
+      if (!ok) {
+        // Fallback if a control's initial value is > 1300B: send empty value so JSON stays valid
+        s_ui_stage_len = saved_len;
+        appendFmt(
+          s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len,
+          "%s{\"id\":%u,\"t\":%u,\"p\":%u,\"c\":%u,\"e\":%u,\"w\":%u,\"f\":%u,\"r\":%u,\"k\":%u,\"l\":\"\",\"v\":\"\",\"ps\":\"\",\"es\":\"\"}",
+          (ctrl_idx == 0) ? "" : ",",
+          c.id, (uint8_t)c.type, c.parent_id, (uint8_t)c.color,
+          c.enabled ? 1 : 0, c.wide_panel ? 1 : 0,
+          c.control_flags, c.rows, c.cols);
+      }
+      ctrl_idx++;
+    } else if (ctrl_idx == _control_count) {
+      appendFmt(s_batch_buf, sizeof(s_batch_buf), s_ui_stage_len, "]}");
       ctrl_idx++;
     }
   }
 
-  return off;
+  return out_off;
 }
 
 /*****************************************************************************/
@@ -1276,7 +1318,13 @@ bool Z2S_ESPUIClass::wsTextAll(const char *payload, size_t len, bool allow_wait)
 }
 
 void Z2S_ESPUIClass::flush(bool allow_wait) {
+
   if (!_has_dirty_controls) return;
+  if (s_ui_streaming) {
+    if ((millis() - s_ui_stream_ms) < 1000) return;
+    s_ui_streaming = false;
+  }
+
   if (!_ws || _ws->count() == 0) {
     for (uint16_t i = 0; i < _control_count; i++) {
       _controls[i].dirty_flags = 0;
@@ -1392,9 +1440,17 @@ void Z2S_ESPUIClass::loop() {
 /*****************************************************************************/
 
 void Z2S_ESPUIClass::updateControlValue(uint16_t id, const char *value) {
+  
   BasicControl *c = getControl(id);
   if (!c || c->id == 0xFFFF) return;
-  c->setStringValue(value);
+  
+  const char *new_val = value ? value : "";
+  
+  if ((c->str_buf || c->static_str_val) && 
+       strcmp(c->getValueCstr(), new_val) == 0) {
+    return;
+  }
+  c->setStringValue(new_val);
   _markDirty(c, Z2S_DIRTY_VAL);
 }
 
@@ -1403,8 +1459,14 @@ void Z2S_ESPUIClass::updateControlValue(uint16_t id, const String &value) {
 }
 
 void Z2S_ESPUIClass::updateControlValue(uint16_t id, long int value) {
+
   BasicControl *c = getControl(id);
+  
   if (!c || c->id == 0xFFFF) return;
+  
+  if (!c->str_buf && !c->static_str_val && c->int_val == value) {
+    return;
+  }
   c->setIntValue(value);
   _markDirty(c, Z2S_DIRTY_VAL);
 }
@@ -1462,7 +1524,7 @@ void Z2S_ESPUIClass::_handleWsEvent(
   AwsEventType type, void *arg, uint8_t *data, size_t len) {
 
   if (type == WS_EVT_CONNECT) {
-    server->cleanupClients(3);
+    server->cleanupClients(5);
     if (_on_ws_connect) _on_ws_connect();
     return;
   }

@@ -65,6 +65,7 @@ public:
 
   uint16_t id = 0xFFFF;
   uint16_t parent_id = Control::noParent;
+  uint16_t str_cap = 0; // Packed here to save 4 bytes per BasicControl (1,680 B total)
   Control::Type type = Control::Type::Label;
   Control::Color color = Control::Color::Dark;
 
@@ -85,7 +86,6 @@ public:
 
   int32_t int_val = 0;
   char *str_buf = nullptr;
-  uint16_t str_cap = 0;
   const char *static_str_val = nullptr;
 
   BasicControl() : enabled(true), wide_panel(false), label_is_heap(false) {}
@@ -119,12 +119,13 @@ public:
     size_t len = strlen(val);
 
     if (str_buf == nullptr || len > str_cap) {
-      uint16_t new_cap = (len < 32) ? 32 : (uint16_t)len;
+      // Quantize capacity to 32B or multiples of 64B to prevent heap fragmentation
+      uint16_t new_cap = (len < 32) ? 32 : static_cast<uint16_t>((len + 63) & ~static_cast<size_t>(63));
       reserve(new_cap);
     }
     if (str_buf) {
-      strncpy(str_buf, val, str_cap);
-      str_buf[str_cap] = '\0';
+      memcpy(str_buf, val, len);
+      str_buf[len] = '\0';
     } else {
       static_str_val = val;
     }
@@ -165,6 +166,16 @@ public:
     }
     const char *s = getValueCstr();
     return (s && s[0] != '\0') ? strtol(s, nullptr, 10) : int_val;
+  }
+
+  double getValueDouble() const {
+    const char *s = getValueCstr();
+    return (s && s[0] != '\0') ? strtod(s, nullptr) : static_cast<double>(int_val);
+  }
+
+  bool hasValue() const {
+    const char *s = getValueCstr();
+    return (s && s[0] != '\0');
   }
 
   const char *getValueCstr() const {
@@ -239,7 +250,6 @@ public:
   void setPanelWide(uint16_t id, bool wide);
   void setInputType(uint16_t id, const char *input_type);
 
-  // Flush coalesced control updates in batched WebSocket frames
   void flush(bool allow_wait = true);
   void loop();
   bool wsTextAll(const char *payload, size_t len, bool allow_wait = true);

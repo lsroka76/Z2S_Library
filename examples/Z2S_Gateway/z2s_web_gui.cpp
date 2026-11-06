@@ -667,7 +667,7 @@ static constexpr char *clearFlagsLabelStyle PROGMEM =
 
 //)=====";
 
-static String working_str;
+static const char *working_str = "";
 
 bool isNumber(String &str);
 
@@ -782,10 +782,10 @@ void onWsConnectCallback() {
 
 	log_i("onWsConnectCallback");
 
-	if (ESPUI.WebSocket()) {
+	/*if (ESPUI.WebSocket()) {
 		
 		ESPUI.WebSocket()->cleanupClients(2);
-	}
+	}*/
 
 	new_connect = true;
 }
@@ -829,7 +829,7 @@ void sendJSToWebsocket(char *jsCode) {
 
 	snprintf(json_payload, sizeof(json_payload), json_payload_fmt, jsCode);
 
-	ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+	sendWsTextAllThrottled(json_payload, strlen(json_payload));
 }
 
 /*****************************************************************************/
@@ -1293,14 +1293,12 @@ void enableControlStyle(uint16_t control_id, bool enable) {
 
 void updateLabel_P(Control::ControlId_t id, const char *value) {
 
-	working_str = value;
-	ESPUI.updateLabel(id, working_str);
+	ESPUI.updateLabel(id, value);
 }
 
 void updateLabel_C(Control::ControlId_t id, const char *value) {
 
-	working_str = value;
-	ESPUI.updateLabel(id, working_str);
+	ESPUI.updateLabel(id, value);
 }
 
 /*****************************************************************************/
@@ -1325,10 +1323,10 @@ void buildGatewayTabGUI() {
 
 	fillGatewayGeneralnformation(general_purpose_gui_buffer);
 
-	working_str = general_purpose_gui_buffer;
 	gateway_general_info = ESPUI.addControl(
-	  Control::Type::Label, empty_str, working_str, Control::Color::Dark,
-	  gatewaytab);
+  	Control::Type::Label, empty_str, empty_str, Control::Color::Dark,
+   	gatewaytab);
+ 	ESPUI.updateLabel(gateway_general_info, general_purpose_gui_buffer);
 
 	ESPUI.setElementStyle(
 	  gateway_general_info,
@@ -1339,15 +1337,14 @@ void buildGatewayTabGUI() {
 	ESPUI.setPanelWide(gateway_general_info, true);
 
 	fillMemoryUptimeInformation(general_purpose_gui_buffer, 768);
-
+ 	
 	ESPUI.addControl(
-	  Control::Type::Separator, "Status", empty_str, Control::Color::None,
-	  gatewaytab);
-
-	working_str = general_purpose_gui_buffer;
-	gateway_memory_info = ESPUI.addControl(
-	  Control::Type::Label, empty_str, working_str, Control::Color::Dark,
-	  gatewaytab);
+  	Control::Type::Separator, "Status", empty_str, Control::Color::None,
+  	gatewaytab);
+ 	gateway_memory_info = ESPUI.addControl(
+  	Control::Type::Label, empty_str, empty_str, Control::Color::Dark,
+  	gatewaytab);
+ 	ESPUI.updateLabel(gateway_memory_info, general_purpose_gui_buffer);
 
 	ESPUI.setElementStyle(
 	  gateway_memory_info,
@@ -1364,10 +1361,10 @@ void buildGatewayTabGUI() {
 
 	gateway_mdns_name_text = ESPUI.addControl(
 	  Control::Type::Text,
-	  "Gateway local mDNS name - max. 11 characters, no spaces!", emptyString,
+	  "Gateway local mDNS name - max. 11 characters, no spaces!", empty_str,
 	  Control::Color::Dark, gateway_settings_label, generalCallback);
 
-	ESPUI.getControl(gateway_mdns_name_text)->reserve(12);
+	//ESPUI.getControl(gateway_mdns_name_text)->reserve(12);
 
 	ESPUI.setElementStyle(
 	  gateway_mdns_name_text,
@@ -1478,9 +1475,9 @@ void buildGatewayTabGUI() {
 	  (void *)GUI_CB_GUI_PERFORM_GITHUB_OTA_FLAG);
 
 	github_ota_info_label = ESPUI.addControl(
-	  Control::Type::Label, "", emptyString,
+	  Control::Type::Label, "", empty_str,
 	  Control::Color::Dark, web_ota_button);
-	ESPUI.getControl(github_ota_info_label)->reserve(60);
+	//ESPUI.getControl(github_ota_info_label)->reserve(60);
 
 	addEmptyLineLabel(web_ota_button);
 
@@ -1491,8 +1488,7 @@ void buildGatewayTabGUI() {
 	ESPUI.updateNumber(gui_start_delay_number, _gui_start_delay);
 	ESPUI.updateNumber(
 	  auto_connection_reset_timeout_number, _auto_connection_reset_timeout);
-	working_str = GatewayMDNSLocalName;
-	ESPUI.updateText(gateway_mdns_name_text, working_str);
+	ESPUI.updateText(gateway_mdns_name_text, GatewayMDNSLocalName);
 	ESPUI.updateNumber(force_config_switcher, _force_config_on_start);
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 	enableControlStyle(github_ota_button, false);
@@ -1510,26 +1506,26 @@ void buildCredentialsGUI() {
 	  Control::Color::Dark, Control::noParent);
 
 	wifi_ssid_text = ESPUI.addControl(
-	  Control::Type::Text, "SSID (max 32 characters)", emptyString,
+	  Control::Type::Text, "SSID (max 32 characters)", empty_str,
 	  Control::Color::Dark, wifitab, textCallback);
-	ESPUI.getControl(wifi_ssid_text)->reserve(33);
+	//ESPUI.getControl(wifi_ssid_text)->reserve(33);
 
 	wifi_pass_text = ESPUI.addControl(
-	  Control::Type::Text, "Password", emptyString,
+	  Control::Type::Text, "Password", empty_str,
 	  Control::Color::Dark, wifitab, textCallback);
 	//ESPUI.getControl(wifi_pass_text)->reserve(16);
 
 	ESPUI.setInputType(wifi_pass_text, "password");
 
 	Supla_server = ESPUI.addControl(
-	  Control::Type::Text, "Supla server", emptyString,
+	  Control::Type::Text, "Supla server", empty_str,
 	  Control::Color::Dark, wifitab, textCallback);
-	ESPUI.getControl(Supla_server)->reserve(17);
+	//ESPUI.getControl(Supla_server)->reserve(17);
 
 	Supla_email = ESPUI.addControl(
-	  Control::Type::Text, "Supla email", emptyString,
+	  Control::Type::Text, "Supla email", empty_str,
 	  Control::Color::Dark, wifitab, textCallback);
-	ESPUI.getControl(Supla_email)->reserve(28);
+	//ESPUI.getControl(Supla_email)->reserve(28);
 
 	Supla_skip_certificate_switcher = ESPUI.addControl(
 	  Control::Type::Switcher, "Skip CA certificate check", (long int)0,
@@ -1690,9 +1686,9 @@ void buildDevicesTabGUI() {
 	ESPUI.setPanelWide(device_selector, true);
 
 	zb_device_info_label = ESPUI.addControl(
-	  Control::Type::Label, "Device info", emptyString,
+	  Control::Type::Label, "Device info", empty_str,
 	  Control::Color::Dark, devicestab);
-	ESPUI.getControl(zb_device_info_label)->reserve(600);
+	//ESPUI.getControl(zb_device_info_label)->reserve(600);
 
 	ESPUI.setElementStyle(
 	  zb_device_info_label,
@@ -1703,9 +1699,9 @@ void buildDevicesTabGUI() {
 	ESPUI.setPanelWide(zb_device_info_label, true);
 
 	device_name_text = ESPUI.addControl(
-	  Control::Type::Text, "Device panel", emptyString,
+	  Control::Type::Text, "Device panel", empty_str,
 	  Control::Color::Dark, devicestab, generalCallback);
-	ESPUI.getControl(device_name_text)->reserve(36);
+	//ESPUI.getControl(device_name_text)->reserve(36);
 
 	working_str_ptr = "&#10023; device name (local) &#10023;";
 	ESPUI.setElementStyle(
@@ -1853,8 +1849,7 @@ void sbChannelCallback(BasicControl *sender, int type, void *param) {
 
 	if (sb_channel_slot < 0) {
 
-		working_str = empty_str;
-		ESPUI.updateText(sb_device_id_text, working_str);
+		ESPUI.updateText(sb_device_id_text, empty_str);
 		ESPUI.updateText(sb_token_text, working_str);
 		ESPUI.updateText(sb_json_payload_text, working_str);
 		ESPUI.updateText(sb_json_payload_2_text, working_str);
@@ -1869,17 +1864,16 @@ void sbChannelCallback(BasicControl *sender, int type, void *param) {
 		sbInstance->updateSwitchBotData(
 		  channel_extended_data_sb, SB_UPDATE_DATA_SAVE_DIR);
 
-		working_str = channel_extended_data_sb.ble_mac_address;
-		ESPUI.updateText(sb_device_id_text, working_str);
+		ESPUI.updateText(
+			sb_device_id_text, channel_extended_data_sb.ble_mac_address);
 
-		working_str = channel_extended_data_sb.token;
-		ESPUI.updateText(sb_token_text, working_str);
+		ESPUI.updateText(sb_token_text, channel_extended_data_sb.token);
 
-		working_str = channel_extended_data_sb.json_payload;
-		ESPUI.updateText(sb_json_payload_text, working_str);
+		ESPUI.updateText(
+			sb_json_payload_text, channel_extended_data_sb.json_payload);
 
-		working_str = channel_extended_data_sb.json_payload_2;
-		ESPUI.updateText(sb_json_payload_2_text, working_str);
+		ESPUI.updateText(
+			sb_json_payload_2_text, channel_extended_data_sb.json_payload_2);
 	}
 }
 
@@ -1957,9 +1951,9 @@ void buildChannelsTabGUI() {
 	rebuildChannelsSelector(false, channelstab);
 
 	zb_channel_info_label = ESPUI.addControl(
-	  Control::Type::Label, "Channel information", emptyString,
+	  Control::Type::Label, "Channel information", empty_str,
 	  Control::Color::Dark, channelstab);
-	ESPUI.getControl(zb_channel_info_label)->reserve(800);
+	//ESPUI.getControl(zb_channel_info_label)->reserve(800);
 
 	ESPUI.setElementStyle(
 	  zb_channel_info_label, "color:white;  background-color: unset;"
@@ -1975,9 +1969,9 @@ void buildChannelsTabGUI() {
 
 	channel_name_text = ESPUI.addControl(
 	  Control::Type::Text, "Channel name (local)",
-	  emptyString, Control::Color::Dark, zb_channel_name_label,
+	  empty_str, Control::Color::Dark, zb_channel_name_label,
 	  generalCallback);
-	ESPUI.getControl(channel_name_text)->reserve(33);
+	//ESPUI.getControl(channel_name_text)->reserve(33);
 
 	ESPUI.setElementStyle(
 		channel_name_text,"width: 40%; min-width: 220px; "
@@ -2121,7 +2115,7 @@ void buildChannelsTabGUI() {
   param_1_textarea->rows = 3; 
   param_1_textarea->cols = 56;
 
-	param_1_textarea->reserve(256);
+	//param_1_textarea->reserve(256);
 
   param_1_save_button = ESPUI.addControl(
     Control::Type::Button, empty_str, "Save", Control::Color::Dark,
@@ -3119,7 +3113,7 @@ void buildTuyaCustomClusterTabGUI() {
     Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector]);
 
   for (uint8_t t = 0; t < 6; t++) {
-    working_str = Tuya_datapoint_types[t].Tuya_datapoint_type_id;
+    
     ESPUI.addControl(
       Control::Type::Option, Tuya_datapoint_types[t].Tuya_datapoint_type_name,
       Tuya_datapoint_types[t].Tuya_datapoint_type_id, Control::Color::None,
@@ -3327,16 +3321,14 @@ void enableActionDetails(bool enable) {
 	if (!enable) {
 
 		ESPUI.updateSwitcher(action_enabled_switcher, false);
-		working_str = "";
-		ESPUI.updateText(action_name_text, working_str);
+		ESPUI.updateText(action_name_text, "");
 		ESPUI.updateText(action_description_text, working_str);
 		ESPUI.updateSelect(action_source_channel_selector, -1);
 		ESPUI.updateSelect(action_event_selector, -1);
 		ESPUI.updateSelect(action_destination_channel_selector, -1);
 		ESPUI.updateSelect(action_action_selector, -1);
 		ESPUI.updateNumber(action_subaction_number, 0);
-		working_str = "0.00";
-		ESPUI.updateText(action_condition_threshold_1_number, working_str);
+		ESPUI.updateText(action_condition_threshold_1_number, "0.00");
 		ESPUI.updateText(action_condition_threshold_2_number, working_str);
 	}
 
@@ -3463,11 +3455,9 @@ void updateActionDetails(
 	ESPUI.updateSwitcher(
 		action_enabled_switcher, empty_action ? true : action.is_enabled);
 
-	working_str = empty_action ? empty_str : action.action_name;
-	ESPUI.updateText(action_name_text, working_str);
+	ESPUI.updateText(action_name_text, empty_action ? empty_str : action.action_name);
 
-	working_str = empty_action ? empty_str : action.action_description;
-	ESPUI.updateText(action_description_text, working_str);
+	ESPUI.updateText(action_description_text, empty_action ? empty_str : action.action_description);
 
 	ESPUI.updateSelect(
 	  action_source_channel_selector, empty_action ? -1 : 
@@ -3491,13 +3481,13 @@ void updateActionDetails(
 		action_subaction_number, empty_action ? 0 : action.subaction_id);
 
 	char num_buf[16];
-	snprintf(
-		num_buf, sizeof(num_buf), "%.2f", empty_action ? 0.0 : action.min_value);
-	working_str = num_buf;
-	ESPUI.updateText(action_condition_threshold_1_number, working_str);
+ 	snprintf(
+  	num_buf, sizeof(num_buf), "%.2f", empty_action ? 0.0 : action.min_value);
+ 	ESPUI.updateText(action_condition_threshold_1_number, num_buf);
 
-	working_str = empty_action ? String(0, 2) : String(action.max_value, 2);
-	ESPUI.updateText(action_condition_threshold_2_number, working_str);
+ 	snprintf(
+  	num_buf, sizeof(num_buf), "%.2f", empty_action ? 0.0 : action.max_value);
+ 	ESPUI.updateText(action_condition_threshold_2_number, num_buf);
 }
 
 /*****************************************************************************/
@@ -3743,7 +3733,6 @@ void buildActionsTableJsonPayload(
 		buildActionsTableJsonHeader(
       json_payload, MAX_JSON_SIZE, offset, ui_label_id, -1, false, 0);
     buildActionsTableJsonFooter(json_payload, MAX_JSON_SIZE, offset);
-    //ESPUI.WebSocket()->textAll(json_payload, offset);
 		sendWsTextAllThrottled(json_payload, offset);
     return;
   }
@@ -3775,7 +3764,6 @@ void buildActionsTableJsonPayload(
 
       log_i("Actions chunk size %u", (unsigned)offset);
 
-      //ESPUI.WebSocket()->textAll(json_payload, offset);
       sendWsTextAllThrottled(json_payload, offset);
 			is_first_in_batch = true;
     }
@@ -3795,7 +3783,7 @@ void sendActionsTableHighlight(uint16_t ui_label_id, int new_action_index) {
     ui_label_id, new_action_index);
 
   
-  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+  sendWsTextAllThrottled(json_payload, strlen(json_payload));
 }
 
 /*****************************************************************************/
@@ -3827,7 +3815,7 @@ void sendActionRowEdit(uint16_t ui_label_id, int target_action_index) {
 
 	log_i("size %u, %s", strlen(json_payload), json_payload);
 
-  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+  sendWsTextAllThrottled(json_payload, strlen(json_payload));
 }
 
 /*****************************************************************************/
@@ -3843,7 +3831,7 @@ void enableActionsTable(bool enable) {
 
 	log_i("size %u, %s", strlen(json_payload), json_payload);
 
-	ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+	sendWsTextAllThrottled(json_payload, strlen(json_payload));
 }
 
 /*****************************************************************************/
@@ -3888,7 +3876,7 @@ void buildIrCodesTableJsonPayload(
       "\"s\":-1,\"append\":false,\"start_idx\":0,\"d\":[]}",
       ui_label_id);
     if (len > 0) {
-      //ESPUI.WebSocket()->textAll(json_payload, len);
+      
 			sendWsTextAllThrottled(json_payload, len);
     }
     return;
@@ -3919,7 +3907,6 @@ void buildIrCodesTableJsonPayload(
 
     if (((MAX_JSON_SIZE - offset) < 256) || (i == total_codes - 1)) {
       appendToBuffer(json_payload, MAX_JSON_SIZE, offset, "]}");
-      //ESPUI.WebSocket()->textAll(json_payload, offset);
 			sendWsTextAllThrottled(json_payload, offset);
       is_first_in_batch = true;
     }
@@ -3946,7 +3933,7 @@ void sendIrCodeRowEdit(uint16_t ui_label_id, int target_row_index) {
 		true);
 
   appendToBuffer(json_payload, sizeof(json_payload), offset, "}");
-  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+  sendWsTextAllThrottled(json_payload, strlen(json_payload));
 }
 /*****************************************************************************/
 
@@ -4064,7 +4051,7 @@ bool buildSelectJsonPayloadGeneric(
 
 			log_i("size %u, %s", strlen(json_payload), json_payload);
 
-			//ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+			//sendWsTextAllThrottled(json_payload, strlen(json_payload));
 			sendWsTextAllThrottled(json_payload, offset);
 
 			options_added_number = 0;
@@ -4113,7 +4100,7 @@ bool buildSelectJsonPayloadGeneric(
 
 		log_i("size %u, %s", strlen(json_payload), json_payload);
 
-		//ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+		//sendWsTextAllThrottled(json_payload, strlen(json_payload));
 		sendWsTextAllThrottled(json_payload, offset);
 	}
 
@@ -4689,10 +4676,10 @@ void buildActionsTabGUI() {
 		"80px; margin: 0 5px 10px 5px;");
 
 	action_name_text = ESPUI.addControl(
-	  Control::Type::Text, "action name (max 32 characters)", emptyString,
+	  Control::Type::Text, "action name (max 32 characters)", empty_str,
 	  Control::Color::Dark, action_details_label, generalCallback);
 
-	ESPUI.getControl(action_name_text)->reserve(33);
+	//ESPUI.getControl(action_name_text)->reserve(33);
 
 	ESPUI.setElementStyle(
 	  action_name_text, "width: calc(40% - 10px); min-width: "
@@ -4700,9 +4687,9 @@ void buildActionsTabGUI() {
 
 	action_description_text = ESPUI.addControl(
 	  Control::Type::Text, "action short description (max 127 characters)", 
-		emptyString, Control::Color::Dark, action_details_label, generalCallback);
+		empty_str, Control::Color::Dark, action_details_label, generalCallback);
 
-	ESPUI.getControl(action_description_text)->reserve(128);
+	//ESPUI.getControl(action_description_text)->reserve(128);
 
 	ESPUI.setElementStyle(
 	  action_description_text, "width: calc(40% - 10px); min-width: "
@@ -4785,7 +4772,7 @@ void enableIrTable(bool enable) {
     json_payload, sizeof(json_payload),
     "{\"type\":\"EXEC_JS\",\"code\":\" setTableDisabled('id%u', %s); \"}",
     ir_codes_table_label, enable ? "false" : "true");
-  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+  sendWsTextAllThrottled(json_payload, strlen(json_payload));
 }
 
 /*****************************************************************************/
@@ -4793,8 +4780,7 @@ void enableIrTable(bool enable) {
 void enableIrCodeDetails(bool enable) {
 
   if (!enable) {
-    working_str = empty_str;
-    ESPUI.updateText(ir_code_name_text, working_str);
+    ESPUI.updateText(ir_code_name_text, empty_str);
     ESPUI.updateText(ir_code_base64_text, working_str);
   }
   enableControlStyle(ir_code_details_label, enable);
@@ -4915,17 +4901,17 @@ void buildIrRemoteTabGUI() {
   ESPUI.setElementStyle(ir_code_details_label, clearLabelStyle);
 
   ir_code_name_text = ESPUI.addControl(
-    Control::Type::Text, "Command name (max 31 characters)", emptyString,
+    Control::Type::Text, "Command name (max 31 characters)", empty_str,
     Control::Color::Dark, ir_code_details_label, generalCallback);
-  ESPUI.getControl(ir_code_name_text)->reserve(32);
+  //ESPUI.getControl(ir_code_name_text)->reserve(32);
   ESPUI.setElementStyle(
     ir_code_name_text,
     "width: calc(30% - 10px); min-width: 200px; margin: 0 5px 10px 5px;");
 
   ir_code_base64_text = ESPUI.addControl(
     Control::Type::Text, "Base64 IR code (click LEARN NEW CODE or paste Base64)",
-    emptyString, Control::Color::Dark, ir_code_details_label, generalCallback);
-  ESPUI.getControl(ir_code_base64_text)->reserve(IR_CODE_BASE64_MAX_SIZE);
+    empty_str, Control::Color::Dark, ir_code_details_label, generalCallback);
+  //ESPUI.getControl(ir_code_base64_text)->reserve(IR_CODE_BASE64_MAX_SIZE);
 
   BasicControl *ir_base64_textarea = ESPUI.getControl(ir_code_base64_text);
   ir_base64_textarea->control_flags |= CONTROL_FLAG_TEXTAREA;
@@ -4973,7 +4959,9 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_CREDENTIALS | GUI_BUILD_CONTROL_FLAG_ZIGBEE;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE;
 			}
 			break;
 
@@ -4982,7 +4970,13 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_CREDENTIALS | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_DEVICES | GUI_BUILD_CONTROL_FLAG_CHANNELS | GUI_BUILD_CONTROL_FLAG_ACTIONS | GUI_BUILD_CONTROL_FLAG_PO;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_DEVICES | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS | 
+					GUI_BUILD_CONTROL_FLAG_ACTIONS | 
+					GUI_BUILD_CONTROL_FLAG_PO;
 			}
 			break;
 
@@ -4991,7 +4985,14 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_CREDENTIALS | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_DEVICES | GUI_BUILD_CONTROL_FLAG_CHANNELS | GUI_BUILD_CONTROL_FLAG_ACTIONS | GUI_BUILD_CONTROL_FLAG_PO | GUI_BUILD_CONTROL_FLAG_CA;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_DEVICES | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS | 
+					GUI_BUILD_CONTROL_FLAG_ACTIONS | 
+					GUI_BUILD_CONTROL_FLAG_PO | 
+					GUI_BUILD_CONTROL_FLAG_CA;
 			}
 			break;
 
@@ -5000,7 +5001,15 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_CREDENTIALS | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_DEVICES | GUI_BUILD_CONTROL_FLAG_CHANNELS | GUI_BUILD_CONTROL_FLAG_ACTIONS | GUI_BUILD_CONTROL_FLAG_PO | GUI_BUILD_CONTROL_FLAG_CA | GUI_BUILD_CONTROL_FLAG_TCC;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_DEVICES | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS | 
+					GUI_BUILD_CONTROL_FLAG_ACTIONS | 
+					GUI_BUILD_CONTROL_FLAG_PO | 
+					GUI_BUILD_CONTROL_FLAG_CA | 
+					GUI_BUILD_CONTROL_FLAG_TCC;
 			}
 			break;
 
@@ -5009,7 +5018,16 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_CREDENTIALS | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_DEVICES | GUI_BUILD_CONTROL_FLAG_CHANNELS | GUI_BUILD_CONTROL_FLAG_ACTIONS | GUI_BUILD_CONTROL_FLAG_PO | GUI_BUILD_CONTROL_FLAG_CA | GUI_BUILD_CONTROL_FLAG_AD | GUI_BUILD_CONTROL_FLAG_TCC;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_DEVICES | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS | 
+					GUI_BUILD_CONTROL_FLAG_ACTIONS | 
+					GUI_BUILD_CONTROL_FLAG_PO | 
+					GUI_BUILD_CONTROL_FLAG_CA | 
+					GUI_BUILD_CONTROL_FLAG_AD | 
+					GUI_BUILD_CONTROL_FLAG_TCC;
 			}
 			break;
 
@@ -5018,7 +5036,15 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_CREDENTIALS | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_DEVICES | GUI_BUILD_CONTROL_FLAG_CHANNELS | GUI_BUILD_CONTROL_FLAG_ACTIONS | GUI_BUILD_CONTROL_FLAG_CA | GUI_BUILD_CONTROL_FLAG_SB | GUI_BUILD_CONTROL_FLAG_TCC;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_DEVICES | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS | 
+					GUI_BUILD_CONTROL_FLAG_ACTIONS | 
+					GUI_BUILD_CONTROL_FLAG_CA | 
+					GUI_BUILD_CONTROL_FLAG_SB | 
+					GUI_BUILD_CONTROL_FLAG_TCC;
 			}
 			break;
 
@@ -5027,7 +5053,11 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_CA | GUI_BUILD_CONTROL_FLAG_AD | GUI_BUILD_CONTROL_FLAG_TCC;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_CA | 
+					GUI_BUILD_CONTROL_FLAG_AD | 
+					GUI_BUILD_CONTROL_FLAG_TCC;
 			}
 			break;
 
@@ -5036,8 +5066,11 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_CREDENTIALS | GUI_BUILD_CONTROL_FLAG_CHANNELS | GUI_BUILD_CONTROL_FLAG_ACTIONS;
-				GUI_BUILD_CONTROL_FLAG_PO;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS | 
+					GUI_BUILD_CONTROL_FLAG_ACTIONS |
+					GUI_BUILD_CONTROL_FLAG_PO;
 			}
 			break;
 
@@ -5046,7 +5079,9 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_CA;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_CA;
 			}
 			break;
 
@@ -5055,7 +5090,9 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_TCC;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_TCC;
 			}
 			break;
 
@@ -5064,7 +5101,10 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_CA | GUI_BUILD_CONTROL_FLAG_TCC;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_CA | 
+					GUI_BUILD_CONTROL_FLAG_TCC;
 			}
 			break;
 
@@ -5073,7 +5113,10 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_DEVICES | GUI_BUILD_CONTROL_FLAG_CHANNELS;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_DEVICES | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS;
 			}
 			break;
 
@@ -5082,7 +5125,12 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_DEVICES | GUI_BUILD_CONTROL_FLAG_CHANNELS | GUI_BUILD_CONTROL_FLAG_CA | GUI_BUILD_CONTROL_FLAG_TCC;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_DEVICES | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS | 
+					GUI_BUILD_CONTROL_FLAG_CA | 
+					GUI_BUILD_CONTROL_FLAG_TCC;
 			}
 			break;
 
@@ -5091,7 +5139,14 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 			{
 
 				gui_build_control_flags =
-				  GUI_BUILD_CONTROL_FLAG_GATEWAY | GUI_BUILD_CONTROL_FLAG_CREDENTIALS | GUI_BUILD_CONTROL_FLAG_ZIGBEE | GUI_BUILD_CONTROL_FLAG_DEVICES | GUI_BUILD_CONTROL_FLAG_CHANNELS | GUI_BUILD_CONTROL_FLAG_ACTIONS | GUI_BUILD_CONTROL_FLAG_PO | GUI_BUILD_CONTROL_FLAG_AD;
+				  GUI_BUILD_CONTROL_FLAG_GATEWAY | 
+					GUI_BUILD_CONTROL_FLAG_CREDENTIALS | 
+					GUI_BUILD_CONTROL_FLAG_ZIGBEE | 
+					GUI_BUILD_CONTROL_FLAG_DEVICES | 
+					GUI_BUILD_CONTROL_FLAG_CHANNELS | 
+					GUI_BUILD_CONTROL_FLAG_ACTIONS | 
+					GUI_BUILD_CONTROL_FLAG_PO | 
+					GUI_BUILD_CONTROL_FLAG_AD;
 			}
 			break;
 	}
@@ -5121,8 +5176,6 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
 	gui_commands_queue = xQueueCreate(
 	  GUI_COMMANDS_POOL_SIZE, sizeof(gui_command_msg_t));
-
-	working_str.reserve(1056);
 
 	uint16_t gui_build_control_flags = 0x000;
 
@@ -5384,10 +5437,10 @@ void Z2S_updateWebGUI() {
 
 	char memory_info_gui_buffer[768] = {};
 
-	if (ESPUI.WebSocket()) {
+	/*if (ESPUI.WebSocket()) {
 	
 		ESPUI.WebSocket()->cleanupClients(2);
-	}
+	}*/
 	
 	fillMemoryUptimeInformation(memory_info_gui_buffer, 768);
 
@@ -5441,8 +5494,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 				{
 
 					rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
-					working_str = "OTA Successful. Rebooting...";
-					ESPUI.updateLabel(github_ota_info_label, working_str);
+					ESPUI.updateLabel(github_ota_info_label, "OTA Successful. Rebooting...");
 				}
 				break;
 
@@ -5451,8 +5503,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 				{
 
 					rgbLedWrite(RGB_BUILTIN, 255, 0, 255);
-					working_str = "Starting OTA from GitHub...";
-					ESPUI.updateLabel(github_ota_info_label, working_str);
+					ESPUI.updateLabel(github_ota_info_label, "Starting OTA from GitHub...");
 				}
 				break;
 
@@ -5461,8 +5512,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 				{
 
 					rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
-					working_str = "GitHub OTA failed - check logs for error code!";
-					ESPUI.updateLabel(github_ota_info_label, working_str);
+					ESPUI.updateLabel(github_ota_info_label, "GitHub OTA failed - check logs for error code!");
 				}
 				break;
 		}
@@ -5480,9 +5530,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 		sprintf(
 		  ota_info_buffer, "GitHub OTA progress: %02u%%", currentOtaProgress);
 
-		working_str = ota_info_buffer;
-
-		ESPUI.updateLabel(github_ota_info_label, working_str);
+		ESPUI.updateLabel(github_ota_info_label, ota_info_buffer);
 	}
 }
 
@@ -5547,8 +5595,7 @@ void Z2S_loopWebGUI() {
 						_github_ota_enabled = true;
 					}
 
-					working_str = response_buffer;
-					ESPUI.updateLabel(github_ota_info_label, working_str);
+					ESPUI.updateLabel(github_ota_info_label, response_buffer);
 				}
 				break;
 
@@ -6176,8 +6223,7 @@ void Z2S_loopWebGUI() {
 					}
 				}
 				updateIrCodeButtons();
-				working_str = getLearnedIrCodeBase64();
-				ESPUI.updateText(ir_code_base64_text, working_str);
+				ESPUI.updateText(ir_code_base64_text, getLearnedIrCodeBase64());
 				ESPUI.updateLabel(
 				  ir_code_state_label,
 				  "IR code received & decoded! Enter a name and click SAVE CODE.");
@@ -6400,8 +6446,7 @@ void enableDeviceControls(bool enable) {
 	updateLabel_C(zb_device_info_label, three_dots_str);
 	enableControlStyle(zb_device_info_label, enable);
 
-	working_str = empty_str;
-	ESPUI.updateText(device_name_text, working_str);
+	ESPUI.updateText(device_name_text, empty_str);
 
 	ESPUI.updateNumber(battery_voltage_min_number, 0);
 	ESPUI.updateNumber(battery_voltage_max_number, 0);
@@ -6463,9 +6508,8 @@ void enableClustersAttributesControls(bool enable) {
 	ESPUI.updateNumber(clusters_attributes_table[device_config_max_number], 0);
 	ESPUI.updateNumber(clusters_attributes_table[device_config_delta_number], 0);
 
-	working_str = "0";
 	ESPUI.updateText(
-	  clusters_attributes_table[device_attribute_id_text], working_str);
+	  clusters_attributes_table[device_attribute_id_text], "0");
 
 	for (uint8_t i = device_endpoint_number; i < device_last_enum_position; i++)
 		enableControlStyle(clusters_attributes_table[i], enable);
@@ -6528,8 +6572,7 @@ void updateDeviceInfoLabel(uint8_t device_index) {
 
   updateLabel_P(zb_device_info_label, general_purpose_gui_buffer);
 
-  working_str = device->getDeviceLocalName();
-  ESPUI.updateText(device_name_text, working_str);
+  ESPUI.updateText(device_name_text, device->getDeviceLocalName());
 
   ESPUI.updateNumber(
     battery_voltage_min_number, device->getBatteryVoltageMin());
@@ -6660,8 +6703,7 @@ void enableChannelControls(bool enable) {
   return;
 
 	updateLabel_C(zb_channel_info_label, three_dots_str);
-	working_str = empty_str;
-	ESPUI.updateText(channel_name_text, working_str);
+	ESPUI.updateText(channel_name_text, empty_str);
 
 	ESPUI.updateNumber(param_1_text, 0);
 	ESPUI.updateNumber(param_2_number, 0);
@@ -6899,16 +6941,14 @@ void fillRemoteAddressData(uint8_t channel_slot) {
 		snprintf(
 			addr_buf, sizeof(addr_buf), "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
 
-		working_str = addr_buf; 
-		ESPUI.updateText(param_1_text, working_str);
+		ESPUI.updateText(param_1_text, addr_buf);
 		ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
 	} 
 	else if (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) {
 
 		snprintf(addr_buf, sizeof(addr_buf), "mdns://%s", z2s_core->getMDNSName());
 
-		working_str = addr_buf;
-		ESPUI.updateText(param_1_text, working_str);
+		ESPUI.updateText(param_1_text, addr_buf);
 		ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
 	}
 }
@@ -7034,9 +7074,7 @@ void updateChannelInfoLabel(
 	updateLabel_P(
 	  zb_channel_info_label, general_purpose_gui_buffer);
 
-	working_str = z2s_core->getZ2SChannelName();
-
-	ESPUI.updateText(channel_name_text, working_str);
+	ESPUI.updateText(channel_name_text, z2s_core->getZ2SChannelName());
 
 	enableChannelParams(0);
 
@@ -7206,8 +7244,7 @@ void updateChannelInfoLabel(
 						}
 
 						ESPUI.updateControlLabel(param_1_text, param1_label);
-						working_str = general_purpose_gui_buffer;
-						ESPUI.updateText(param_1_text, working_str);
+						ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
 
 						const char *param2_label =
 						  "Enter sensor offline failsafe PWM duty: "
@@ -7347,8 +7384,7 @@ void updateChannelInfoLabel(
 						  sizeof(ds_address_str));
 						working_str = ds_address_str;
 					} else
-						working_str = empty_str;
-					ESPUI.updateText(param_1_text, working_str);
+						ESPUI.updateText(param_1_text, empty_str);
 
 					working_str_ptr = "Enter local DS18B20 pin value";
 					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
@@ -7371,8 +7407,7 @@ void updateChannelInfoLabel(
 					  z2s_core->getLocalHCSR04MinIn(), z2s_core->getLocalHCSR04MaxIn(),
 					  z2s_core->getLocalHCSR04MinOut(), z2s_core->getLocalHCSR04MaxOut());
 
-					working_str = general_purpose_gui_buffer;
-					ESPUI.updateText(param_1_text, working_str);
+					ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_SHT3X) {
@@ -7388,8 +7423,7 @@ void updateChannelInfoLabel(
 					sprintf(general_purpose_gui_buffer, "%i,%i",
 					  z2s_core->getLocalSHT3xSdaPin(), z2s_core->getLocalSHT3xSclPin());
 
-					working_str = general_purpose_gui_buffer;
-					ESPUI.updateText(param_1_text, working_str);
+					ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
 
 					working_str_ptr = "Enter local SHT3x address (decimal)";
 					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
@@ -7427,8 +7461,7 @@ void updateChannelInfoLabel(
 					  z2s_core->getLocalPwmMinDuty(),
 					  z2s_core->getLocalPwmMaxDuty());
 
-					working_str = general_purpose_gui_buffer;
-					ESPUI.updateText(param_1_text, working_str);
+					ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
 
 					working_str_ptr =
 					  "Enter local PWM logic type: 0 = normal (active HIGH), "
@@ -8440,8 +8473,7 @@ size_t Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t siz
 			  progress_str, "OTA progress: %lu/%lu, ETC: %02uh:%02um:%02us",
 			  ota_offset, ota_image_size, ota_etc_hour, ota_etc_min, ota_etc_sec);
 
-			working_str = progress_str;
-			ESPUI.updateLabel(zigbee_ota_status_label, working_str);
+			ESPUI.updateLabel(zigbee_ota_status_label, progress_str);
 
 			ota_image_last_offset = ota_offset;
 			ota_image_last_update_ms = millis();
@@ -8750,8 +8782,7 @@ void generalZigbeeCallback(BasicControl *sender, int type, void *param) {
 				break;
 
 
-			case GUI_CB_SET_PC_FLAG:
-				{  //write primary channel
+			case GUI_CB_SET_PC_FLAG: {  //write primary channel
 
 					if ((ESPUI.getControl(
 					    	zigbee_primary_channel_text)->getValueInt()>= 11) && 
@@ -8779,66 +8810,53 @@ void generalZigbeeCallback(BasicControl *sender, int type, void *param) {
 				}
 				break;
 
+			case GUI_CB_SET_INSTALLATION_CODE_FLAG: {
 
-			case GUI_CB_SET_INSTALLATION_CODE_FLAG:
-				{
+				const char *ieee_str = ESPUI.getControl(
+ 				  zigbee_installation_code_ieee_address)->getValueCstr();
+ 				const char *ic_str = ESPUI.getControl(
+ 				  zigbee_installation_code_str)->getValueCstr();
 
-					if (ESPUI.getControl(
-					    	zigbee_installation_code_ieee_address)->getValue().length() != 16) {
+ 				if (strlen(ieee_str) != 16) {
+ 					ESPUI.updateText(
+ 					  zigbee_installation_code_ieee_address,
+ 					  "Enter device IEEE address (16 characters), e.g. 56AB23BE90004560");
+ 					return;
+ 				}
 
-						working_str =
-						  "Enter device IEEE address (16 characters), e.g. 56AB23BE90004560";
-						ESPUI.updateText(zigbee_installation_code_ieee_address, working_str);
-						return;
-					}
+ 				if (strlen(ic_str) != 36) {
+ 					ESPUI.updateText(
+ 					  zigbee_installation_code_str,
+ 					  "Enter device installation code (36 characters), e.g. BC2356...");
+ 					return;
+ 				}
 
-					if (ESPUI.getControl(
-					    	zigbee_installation_code_str)->getValue().length() != 36) {
+ 				uint8_t device_ieee_addr[8];
+ 				uint8_t device_installation_code[18];
 
-						working_str =
-						  "Enter device installation code (36 characters), e.g. BC2356...";
-						ESPUI.updateText(zigbee_installation_code_str, working_str);
-						return;
-					}
-					uint8_t device_ieee_addr[8];
-					uint8_t device_installation_code[18];
+ 				for (uint8_t i = 0; i < 8; i++) {
+ 					int hi = hexCharToNibble(ieee_str[2 * i]);
+ 					int lo = hexCharToNibble(ieee_str[2 * i + 1]);
+ 					if (hi < 0 || lo < 0) return;
+ 					device_ieee_addr[7 - i] = static_cast<uint8_t>((hi << 4) | lo);
+ 				}
 
-					for (uint8_t i = 0; i < 8; i++) {
+ 				for (uint8_t i = 0; i < 18; i++) {
+ 					int hi = hexCharToNibble(ic_str[2 * i]);
+ 					int lo = hexCharToNibble(ic_str[2 * i + 1]);
+ 					if (hi < 0 || lo < 0) return;
+ 					device_installation_code[i] = static_cast<uint8_t>((hi << 4) | lo);
+ 				}
 
-						working_str = ESPUI.getControl(
-						                     zigbee_installation_code_ieee_address)
-						                ->getValue()
-						                .substring(2 * i, 2 + 2 * i);
-
-						device_ieee_addr[7 - i] = strtoul(working_str.c_str(), nullptr, 16);
-						log_i("device_ieee_addr[%u] = %02X", 7 - i, device_ieee_addr[7 - i]);
-					}
-
-					for (uint8_t i = 0; i < 18; i++) {
-
-						working_str = ESPUI.getControl(
-						  zigbee_installation_code_str)->getValue().substring(2 * i, 2 + 2 * i);
-
-						device_installation_code[i] = strtoul(
-						  working_str.c_str(), nullptr, 16);
-
-						log_i(
-						  "device_installation_code[%u] = %02X", i,
-						  device_installation_code[i]);
-					}
-
-					esp_zb_secur_ic_add(
-					  device_ieee_addr, ESP_ZB_IC_TYPE_128, device_installation_code);
-				}
-				break;
+ 				esp_zb_secur_ic_add(
+ 				  device_ieee_addr, ESP_ZB_IC_TYPE_128, device_installation_code);
+ 			} break;
 
 
-			case GUI_CB_CLEAR_INSTALLATION_CODES_FLAG:
-				{
+			case GUI_CB_CLEAR_INSTALLATION_CODES_FLAG: {
 
 					esp_zb_secur_ic_remove_all_req();
-				}
-				break;
+			} break;
 		}
 	}
 }
@@ -9715,12 +9733,9 @@ void TuyaDatapointIdSelectorCallback(BasicControl *sender, int type, void *param
 		  Tuya_devices_tab_controls_table[Tuya_datapoint_length_number],
 		  Tuya_datapoint_types[datapoint_type_slot].Tuya_datapoint_type_length);
 
-		working_str =
-		  Tuya_datapoints[
-				Tuya_datapoint_id_selector_value].Tuya_datapoint_description;
 		ESPUI.updateLabel(
-		  Tuya_devices_tab_controls_table[Tuya_datapoint_description_label],
-		  working_str);
+		  Tuya_devices_tab_controls_table[Tuya_datapoint_description_label], Tuya_datapoints[
+				Tuya_datapoint_id_selector_value].Tuya_datapoint_description);
 	} else
 		ESPUI.updateSelect(
 		  Tuya_devices_tab_controls_table[Tuya_datapoint_type_selector],
@@ -11834,8 +11849,7 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 			current_ir_gui_state = NEW_IR_CODE;
 			enableIrCodeDetails(true);
 			if (strlen(getLearnedIrCodeBase64()) > 0) {
-				working_str = getLearnedIrCodeBase64();
-				ESPUI.updateText(ir_code_base64_text, working_str);
+				ESPUI.updateText(ir_code_base64_text, getLearnedIrCodeBase64());
 			}
 			updateIrCodeButtons();
 			enableIrTable(false);
@@ -11852,10 +11866,8 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 
 			current_ir_gui_state = EDIT_IR_CODE;
 			enableIrCodeDetails(true);
-			working_str = ir_code.ir_code_name;
-			ESPUI.updateText(ir_code_name_text, working_str);
-			working_str = ir_code.ir_code_base64;
-			ESPUI.updateText(ir_code_base64_text, working_str);
+			ESPUI.updateText(ir_code_name_text, ir_code.ir_code_name);
+			ESPUI.updateText(ir_code_base64_text, ir_code.ir_code_base64);
 			updateIrCodeButtons();
 			enableIrTable(false);
 		} break;
@@ -11879,10 +11891,8 @@ void irCodesTableCallback(BasicControl *sender, int type, void *param) {
 
 			current_ir_gui_state = COPY_IR_CODE;
 			enableIrCodeDetails(true);
-			working_str = ir_code.ir_code_name;
-			ESPUI.updateText(ir_code_name_text, working_str);
-			working_str = ir_code.ir_code_base64;
-			ESPUI.updateText(ir_code_base64_text, working_str);
+			ESPUI.updateText(ir_code_name_text, ir_code.ir_code_name);
+			ESPUI.updateText(ir_code_base64_text, ir_code.ir_code_base64);
 			updateIrCodeButtons();
 			enableIrTable(false);
 		} break;
@@ -12084,7 +12094,6 @@ void buildPushoverMessagesTableJsonPayload(
       "\"s\":-1,\"append\":false,\"start_idx\":0,\"d\":[]}",
       ui_label_id);
     if (len > 0) {
-      //ESPUI.WebSocket()->textAll(json_payload, len);
 			sendWsTextAllThrottled(json_payload, len);
     }
     return;
@@ -12117,7 +12126,6 @@ void buildPushoverMessagesTableJsonPayload(
     // Each Pushover row is at most ~250 bytes (120B preview + 32B name + escaping)
     if (((MAX_JSON_SIZE - offset) < 320) || (i == total_messages - 1)) {
       appendToBuffer(json_payload, MAX_JSON_SIZE, offset, "]}");
-      //ESPUI.WebSocket()->textAll(json_payload, offset);
 			sendWsTextAllThrottled(json_payload, offset);
       is_first_in_batch = true;
     }
@@ -12146,7 +12154,7 @@ void sendPushoverMessageRowEdit(uint16_t ui_label_id, int target_row_index) {
     true);
 
   appendToBuffer(json_payload, sizeof(json_payload), offset, "}");
-  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+  sendWsTextAllThrottled(json_payload, strlen(json_payload));
 }
 
 /*****************************************************************************/
@@ -12160,7 +12168,7 @@ void enablePushoverTable(bool enable) {
     json_payload, sizeof(json_payload),
     "{\"type\":\"EXEC_JS\",\"code\":\" setTableDisabled('id%u', %s); \"}",
     pushover_messages_table_label, enable ? "false" : "true");
-  ESPUI.WebSocket()->textAll(json_payload, strlen(json_payload));
+  sendWsTextAllThrottled(json_payload, strlen(json_payload));
 }
 
 /*****************************************************************************/
@@ -12168,8 +12176,7 @@ void enablePushoverTable(bool enable) {
 void enablePushoverMessageDetails(bool enable) {
 
   if (!enable) {
-    working_str = empty_str;
-    ESPUI.updateText(pushover_message_name_text, working_str);
+    ESPUI.updateText(pushover_message_name_text, empty_str);
     ESPUI.updateText(pushover_message_text_text, working_str);
   }
   enableControlStyle(pushover_message_details_label, enable);
@@ -12208,11 +12215,9 @@ void updatePushoverMessageDetails(
     return;
   }
 
-  working_str = empty_message ? empty_str : message.pushover_message_name;
-  ESPUI.updateText(pushover_message_name_text, working_str);
+  ESPUI.updateText(pushover_message_name_text, empty_message ? empty_str : message.pushover_message_name);
 
-  working_str = empty_message ? empty_str : message.pushover_message_text;
-  ESPUI.updateText(pushover_message_text_text, working_str);
+  ESPUI.updateText(pushover_message_text_text, empty_message ? empty_str : message.pushover_message_text);
 }
 
 /*****************************************************************************/
@@ -12259,17 +12264,17 @@ void buildPushoverTabGUI() {
   ESPUI.setElementStyle(pushover_credentials_label, clearLabelStyle);
 
   pushover_api_token_text = ESPUI.addControl(
-    Control::Type::Text, "Application API token (30 characters)", emptyString,
+    Control::Type::Text, "Application API token (30 characters)", empty_str,
     Control::Color::Dark, pushover_credentials_label, generalCallback);
-  ESPUI.getControl(pushover_api_token_text)->reserve(31);
+  //ESPUI.getControl(pushover_api_token_text)->reserve(31);
   ESPUI.setElementStyle(
     pushover_api_token_text,
     "width: calc(40% - 10px); min-width: 220px; margin: 0 5px 10px 5px;");
 
   pushover_user_token_text = ESPUI.addControl(
-    Control::Type::Text, "User key (30 characters)", emptyString,
+    Control::Type::Text, "User key (30 characters)", empty_str,
     Control::Color::Dark, pushover_credentials_label, generalCallback);
-  ESPUI.getControl(pushover_user_token_text)->reserve(31);
+  //ESPUI.getControl(pushover_user_token_text)->reserve(31);
   ESPUI.setElementStyle(
     pushover_user_token_text,
     "width: calc(40% - 10px); min-width: 220px; margin: 0 5px 10px 5px;");
@@ -12287,14 +12292,12 @@ void buildPushoverTabGUI() {
   char token_buf[31] = {};
   Z2S_GatewayPreferences.getString(
     "PUSHOVER_API", token_buf, sizeof(token_buf));
-  working_str = token_buf;
-  ESPUI.updateText(pushover_api_token_text, working_str);
+  ESPUI.updateText(pushover_api_token_text, token_buf);
 
   memset(token_buf, 0, sizeof(token_buf));
   Z2S_GatewayPreferences.getString(
     "PUSHOVER_USER", token_buf, sizeof(token_buf));
-  working_str = token_buf;
-  ESPUI.updateText(pushover_user_token_text, working_str);
+  ESPUI.updateText(pushover_user_token_text, token_buf);
 
   // Panel 2: Pushover Messages Table
   pushover_messages_table_label = ESPUI.addControl(
@@ -12346,19 +12349,19 @@ void buildPushoverTabGUI() {
   ESPUI.setElementStyle(pushover_message_details_label, clearLabelStyle);
 
   pushover_message_name_text = ESPUI.addControl(
-    Control::Type::Text, "Message name (max 32 characters)", emptyString,
+    Control::Type::Text, "Message name (max 32 characters)", empty_str,
     Control::Color::Dark, pushover_message_details_label, generalCallback);
-  ESPUI.getControl(pushover_message_name_text)->reserve(
-    PUSHOVER_MESSAGE_NAME_MAX_SIZE);
+  //ESPUI.getControl(pushover_message_name_text)->reserve(
+  //  PUSHOVER_MESSAGE_NAME_MAX_SIZE);
   ESPUI.setElementStyle(
     pushover_message_name_text,
     "width: calc(30% - 10px); min-width: 200px; margin: 0 5px 10px 5px;");
 
   pushover_message_text_text = ESPUI.addControl(
-    Control::Type::Text, "Message text (max 1023 characters)", emptyString,
+    Control::Type::Text, "Message text (max 1023 characters)", empty_str,
     Control::Color::Dark, pushover_message_details_label, generalCallback);
-  ESPUI.getControl(pushover_message_text_text)->reserve(
-    PUSHOVER_MESSAGE_TEXT_MAX_SIZE);
+  //ESPUI.getControl(pushover_message_text_text)->reserve(
+  //  PUSHOVER_MESSAGE_TEXT_MAX_SIZE);
 
   BasicControl *po_textarea = ESPUI.getControl(pushover_message_text_text);
   po_textarea->control_flags |= CONTROL_FLAG_TEXTAREA;
