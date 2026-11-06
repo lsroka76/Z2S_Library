@@ -2047,7 +2047,8 @@ bool Supla::Sensor::CalculatedThermometer::readSourceParameterValue() {
     default:
       return false;
   }
-
+  lastReadTime = 0;
+  
   if (checkChannelUserDataFlags(USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
     resendTemperatureHumidityValue(
       RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
