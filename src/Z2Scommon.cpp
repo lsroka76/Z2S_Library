@@ -1229,6 +1229,20 @@ bool Z2S_Core::updateLocalPwmParams() {
 
 /*****************************************************************************/
 
+bool Z2S_Core::updateLocalBH1750Params() {
+
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_BH1750 &&
+      _z2s_element) {
+
+    auto *bh = static_cast<Supla::Sensor::LocalBH1750 *>(_z2s_element);
+    bh->setAddress(getLocalBH1750Address());
+    return true;
+  }
+  return false;
+}
+
+/*****************************************************************************/
+
 bool Z2S_Core::updateCalculatedGpmParams() {
 
   if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_CALC_GPM &&
@@ -1237,11 +1251,12 @@ bool Z2S_Core::updateCalculatedGpmParams() {
     auto *cgpm = static_cast<Supla::Sensor::CalculatedGPM *>(_z2s_element);
     cgpm->configureFunctionDefaults();
     cgpm->resetControllerState();
+    Supla::Sensor::CalculatedThermometer::updateLinkedThermometers(
+      getZ2SChannelNumber());
     return true;
   }
   return false;
 }
-
 /*****************************************************************************/
 
 bool Z2S_Core::updateLocalVirtualRelayParams() {

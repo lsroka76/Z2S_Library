@@ -188,6 +188,7 @@ typedef struct esp_zb_ota_image_header_s {
 
 #define LUMI_CUSTOM_CLUSTER_FFF2_CMD_ID                       0xFFF2 //0x41
 
+#define LUMI_CUSTOM_FIRMWARE_VERSION_ID                       0x00EE //U32
 #define LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID                  0x0200 //U8
 #define LUMI_CUSTOM_CHARGING_PROTECTION_ID                    0x0202 //BOOL
 #define LUMI_CUSTOM_LED_INDICATOR_ID                          0x0203 //BOOL

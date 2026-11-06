@@ -258,6 +258,12 @@ union {
       uint8_t         wire_pins_changed : 1;
     } local_sht3x_data;
     struct {
+      uint8_t         sda_pin;
+      uint8_t         scl_pin;
+      int8_t          bh1750_address;
+      uint8_t         wire_pins_changed : 1;
+    } local_bh1750_data;
+    struct {
 
       uint8_t         adc_pin;
       uint8_t         adc_attenuation;

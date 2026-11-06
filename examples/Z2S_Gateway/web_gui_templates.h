@@ -650,7 +650,32 @@ inline constexpr Supla_action_type_t Supla_actions [] PROGMEM = {
     .Supla_action_name = "CGPM: INCREASE SETPOINT (+0.5)" },
 
   { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_5,
-    .Supla_action_name = "CGPM: DECREASE SETPOINT (-0.5)" }
+    .Supla_action_name = "CGPM: DECREASE SETPOINT (-0.5)" },
+
+	{ .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_DUTY_MIN_VALUE_1,
+    .Supla_action_name = "CGPM: INCREASE DUTY_MIN (+1%)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_DUTY_MIN_VALUE_1,
+    .Supla_action_name = "CGPM: DECREASE DUTY_MIN (-1%)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_DUTY_MIN_VALUE_5,
+    .Supla_action_name = "CGPM: INCREASE DUTY_MIN (+5%)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_DUTY_MIN_VALUE_5,
+    .Supla_action_name = "CGPM: DECREASE DUTY_MIN (-5%)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_DUTY_MAX_VALUE_1,
+    .Supla_action_name = "CGPM: INCREASE DUTY_MAX (+1%)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_DUTY_MAX_VALUE_1,
+    .Supla_action_name = "CGPM: DECREASE DUTY_MAX (-1%)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_INC_DUTY_MAX_VALUE_5,
+    .Supla_action_name = "CGPM: INCREASE DUTY_MAX (+5%)" },
+
+  { .Supla_action_id = (Supla::Action)Z2S_SUPLA_ACTION_DEC_DUTY_MAX_VALUE_5,
+    .Supla_action_name = "CGPM: DECREASE DUTY_MAX (-5%)" }
+	
 };
 
 inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {
@@ -1667,6 +1692,11 @@ inline constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "SMOKE CONCENTRATION UNIT" },
 
+	{ .zigbee_attribute_id  = LUMI_CUSTOM_FIRMWARE_VERSION_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
+		.zigbee_attribute_name = "FIRMWARE VERSION" },
+	
 	{ .zigbee_attribute_id  = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID, 
 		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,

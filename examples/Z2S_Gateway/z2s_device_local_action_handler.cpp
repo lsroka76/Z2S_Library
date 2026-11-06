@@ -295,6 +295,26 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     }
   },
   {
+    LOCAL_CHANNEL_TYPE_GPIO_BH1750,
+    "Local BH1750 (I2C)",
+    LOCAL_GPIO_BH1750_NAME,
+    SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* bh = initOrCastLocalElement<Supla::Sensor::LocalBH1750>(
+          idx, ch, el, true);
+      bh->updateLocalBH1750Params();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* bh = new Supla::Sensor::LocalBH1750();
+      registerNewLocalChannel(bh, slot, d, func, nullptr, [](auto* bh) {
+        bh->setLocalBH1750SdaPin(21);
+        bh->setLocalBH1750SclPin(22);
+        bh->setLocalBH1750Address(0x23);
+      });
+    }
+  },
+  {
     LOCAL_CHANNEL_TYPE_GPIO_ADC,
     "Local ADC (GPIO)",
     LOCAL_GPIO_ADC_NAME,

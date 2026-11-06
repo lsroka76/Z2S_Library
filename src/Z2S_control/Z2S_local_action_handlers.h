@@ -39,6 +39,7 @@
 #include <supla/sensor/HC_SR04_GPM.h>
 #include <supla/sensor/DS18B20.h>
 #include <supla/sensor/SHT3x.h>
+#include <supla/sensor/bh1750.h>
 #include <supla/sensor/binary.h>
 #include <supla/device/notifications.h>
 #include <supla/log_wrapper.h>
@@ -130,14 +131,17 @@ inline const char *sb_device_path = "POST /v1.1/devices/%s/commands "
 #define CALCULATED_THERMOMETER_FUNC_DEW_POINT                           0x0001
 #define CALCULATED_THERMOMETER_FUNC_HEAT_INDEX                          0x0002
 #define CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT        0x0003
+#define CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMIN                      0x0004
+#define CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMAX                      0x0005
+#define CALCULATED_THERMOMETER_FUNC_READ_CGPM_SETPOINT                  0x0006
 
-
-inline constexpr const char * const calculated_thermomether_functions_names[] =
- {
-  
-  "DEW POINT", 
-  "HEAT INDEX(FEELS LIKE)", 
-  "READ HVAC TEMPERATURE SETPOINT HEAT"
+inline constexpr const char * const calculated_thermomether_functions_names[] = {
+  "DEW POINT",
+  "HEAT INDEX(FEELS LIKE)",
+  "READ HVAC TEMPERATURE SETPOINT HEAT",
+  "READ CGPM T_MIN (LINEAR MAP)",
+  "READ CGPM T_MAX (LINEAR MAP)",
+  "READ CGPM SETPOINT (PI/PID)"
 };
 
 /*****************************************************************************/
@@ -559,21 +563,26 @@ class CalculatedThermometer : public VirtualThermometerWithActions,
 
     CalculatedThermometer();
 
+    void onInit() override;
     void iterateAlways() override;
     void handleAction(int event, int action) override;
+
+    bool readSourceParameterValue();
+    static void updateLinkedThermometers(uint8_t src_channel_number);
 
   protected:
 
     void validateSourceChannel();
-    void readHvacTemperatureSetpointHeat();
+    bool isActionDrivenFunc();
 
   private:
 
     uint8_t _last_source_channel = 0xFF;
-    uint32_t  _last_refresh_ms = 0;
+    uint8_t _last_channel_func = 0xFF;
+    bool _initial_read_done = false;
+    uint32_t _last_refresh_ms = 0;
     Supla::Element *_source_Supla_element = nullptr;
 };
-
 /*****************************************************************************/
 
 class LocalVirtualGPM 
@@ -595,7 +604,6 @@ class LocalVirtualGPM
 
 /*****************************************************************************/
 
-// 3. Updated class CalculatedGPM:
 class CalculatedGPM : public VirtualGeneralPurposeMeasurement, 
   public Z2S_Core {
 
@@ -607,7 +615,7 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
     void resetControllerState();
     void setControllerEnabled(bool enabled);
     bool isControllerEnabled() const { return _controller_enabled; }
-    bool isControlAlgorithmFunc() const;
+    bool isControlAlgorithmFunc();
     const char *getFunctionName();
 
     void iterateAlways() override;
@@ -770,6 +778,44 @@ class LocalSHT3x : public SHT3x, public Z2S_Core {
       return TEMPERATURE_NOT_AVAILABLE;
     }
     return Supla::Sensor::SHT3x::getTemp();
+  }
+};
+
+/*****************************************************************************/
+
+/*****************************************************************************/
+
+class LocalBH1750 : public Bh1750, public Z2S_Core {
+
+ public:
+
+  LocalBH1750() : Bh1750(0x23), Z2S_Core(this) {}
+
+  void onInit() override {
+
+    if (ensureLocalI2C(getLocalBH1750SdaPin(), getLocalBH1750SclPin())) {
+      // Re-initialize the sensor object in-place using placement new
+      this->~Bh1750();
+      new (this) Bh1750(getLocalBH1750Address());
+      Supla::Sensor::Bh1750::onInit();
+    }
+  }
+
+  void setAddress(int8_t addr) {
+
+    if (ensureLocalI2C(getLocalBH1750SdaPin(), getLocalBH1750SclPin())) {
+      this->~Bh1750();
+      new (this) Bh1750(addr);
+      initializeSensor();
+    }
+  }
+
+  double getValue() override {
+
+    if (!ensureLocalI2C(getLocalBH1750SdaPin(), getLocalBH1750SclPin())) {
+      return NAN;
+    }
+    return Supla::Sensor::Bh1750::getValue();
   }
 };
 

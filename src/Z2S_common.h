@@ -72,6 +72,7 @@
 #define LOCAL_CHANNEL_TYPE_GPIO_HVAC                            0x61
 #define LOCAL_CHANNEL_TYPE_GPIO_DS18B20                         0x65
 #define LOCAL_CHANNEL_TYPE_GPIO_SHT3X                           0x66
+#define LOCAL_CHANNEL_TYPE_GPIO_BH1750                          0x67
 #define LOCAL_CHANNEL_TYPE_GPIO_BINARY                          0x69
 #define LOCAL_CHANNEL_TYPE_GPIO_HCSR04                          0x6A
 #define LOCAL_CHANNEL_TYPE_GPIO_ADC                             0x6B
@@ -1412,6 +1413,48 @@ public:
   }
 
   bool updateLocalSHT3xParams();
+
+/*****************************************************************************/
+
+  uint8_t getLocalBH1750SdaPin() {
+
+    return _z2s_channel.local_bh1750_data.sda_pin;
+  }
+
+  void setLocalBH1750SdaPin(uint8_t pin, bool save = false) {
+
+    _z2s_channel.local_bh1750_data.sda_pin = pin;
+    if (save)
+      saveChannelData();
+    _z2s_channel.local_bh1750_data.wire_pins_changed = true;
+  }
+
+  uint8_t getLocalBH1750SclPin() {
+
+    return _z2s_channel.local_bh1750_data.scl_pin;
+  }
+
+  void setLocalBH1750SclPin(uint8_t pin, bool save = false) {
+
+    _z2s_channel.local_bh1750_data.scl_pin = pin;
+    if (save)
+      saveChannelData();
+    _z2s_channel.local_bh1750_data.wire_pins_changed = true;
+  }
+
+  int8_t getLocalBH1750Address() {
+
+    return _z2s_channel.local_bh1750_data.bh1750_address;
+  }
+
+  void setLocalBH1750Address(int8_t addr, bool save = false) {
+
+    _z2s_channel.local_bh1750_data.bh1750_address = addr;
+    if (save)
+      saveChannelData();
+  }
+
+  bool updateLocalBH1750Params();
 
 /*****************************************************************************/
 

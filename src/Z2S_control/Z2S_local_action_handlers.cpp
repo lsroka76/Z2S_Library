@@ -1865,16 +1865,29 @@ double calculateHeatIndex(double temperatureC, double humidity) {
 
 /*****************************************************************************/
 
+bool Supla::Sensor::CalculatedThermometer::isActionDrivenFunc()  {
+
+  uint8_t fn = getZ2SLocalChannelFunc();
+  return (fn == CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT ||
+          fn == CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMIN ||
+          fn == CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMAX ||
+          fn == CALCULATED_THERMOMETER_FUNC_READ_CGPM_SETPOINT);
+}
+
+/*****************************************************************************/
+
 void Supla::Sensor::CalculatedThermometer::validateSourceChannel() {
 
-  if ((_last_source_channel < 0xFF) && 
-      (_last_source_channel != getSourceChannel()))
+  if (((_last_source_channel < 0xFF) && 
+       (_last_source_channel != getSourceChannel())) ||
+      ((_last_channel_func < 0xFF) &&
+       (_last_channel_func != getZ2SLocalChannelFunc()))) {
     _source_Supla_element = nullptr;
+  }
 
   if (_source_Supla_element == nullptr) {
 
     switch (getZ2SLocalChannelFunc()) {
-
 
       case CALCULATED_THERMOMETER_FUNC_DEW_POINT: 
       case CALCULATED_THERMOMETER_FUNC_HEAT_INDEX: {
@@ -1883,11 +1896,10 @@ void Supla::Sensor::CalculatedThermometer::validateSourceChannel() {
           getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
 
         if (_source_Supla_element) {
-
-          _last_source_channel = getSourceChannel();          
+          _last_source_channel = getSourceChannel();
+          _last_channel_func = getZ2SLocalChannelFunc();
         }
       } break;
-
 
       case CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT: {
 
@@ -1895,11 +1907,39 @@ void Supla::Sensor::CalculatedThermometer::validateSourceChannel() {
           getSourceChannel(), SUPLA_CHANNELTYPE_HVAC);
 
         if (_source_Supla_element) {
-
           _last_source_channel = getSourceChannel();
+          _last_channel_func = getZ2SLocalChannelFunc();
         }        
       } break;
+
+      case CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMIN:
+      case CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMAX:
+      case CALCULATED_THERMOMETER_FUNC_READ_CGPM_SETPOINT: {
+
+        Z2S_Core *src_core = Z2S_Core::getZ2SCoreByChannelNumber(
+          getSourceChannel());
+
+        if (src_core &&
+            (src_core->getZ2SLocalChannelType() == 
+              LOCAL_CHANNEL_TYPE_CALC_GPM) &&
+            src_core->getZ2SElementPtr()) {
+          _source_Supla_element = src_core->getZ2SElementPtr();
+          _last_source_channel = getSourceChannel();
+          _last_channel_func = getZ2SLocalChannelFunc();
+        }
+      } break;
     }
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedThermometer::onInit() {
+
+  Supla::Sensor::VirtualThermometerWithActions::onInit();
+
+  if (isActionDrivenFunc()) {
+    _initial_read_done = readSourceParameterValue();
   }
 }
 
@@ -1908,6 +1948,13 @@ void Supla::Sensor::CalculatedThermometer::validateSourceChannel() {
 void Supla::Sensor::CalculatedThermometer::iterateAlways() {
 
   Supla::Sensor::VirtualThermometerWithActions::iterateAlways();
+
+  if (isActionDrivenFunc()) {
+    if (!_initial_read_done) {
+      _initial_read_done = readSourceParameterValue();
+    }
+    return;
+  }
 
   if (getRefreshMs() && ((millis() - _last_refresh_ms) > getRefreshMs())) {
 
@@ -1918,7 +1965,6 @@ void Supla::Sensor::CalculatedThermometer::iterateAlways() {
     if (_source_Supla_element) {
 
       switch (getZ2SLocalChannelFunc()) {
-
 
         case CALCULATED_THERMOMETER_FUNC_DEW_POINT: {
 
@@ -1934,7 +1980,6 @@ void Supla::Sensor::CalculatedThermometer::iterateAlways() {
 
           setValue(dew_point);
         } break;
-
 
         case CALCULATED_THERMOMETER_FUNC_HEAT_INDEX: {
 
@@ -1956,7 +2001,7 @@ void Supla::Sensor::CalculatedThermometer::iterateAlways() {
             USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
 
         resendTemperatureHumidityValue(
-        RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
+          RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
       }
     }       
   }
@@ -1964,30 +2009,74 @@ void Supla::Sensor::CalculatedThermometer::iterateAlways() {
 
 /*****************************************************************************/
 
-void Supla::Sensor::CalculatedThermometer::readHvacTemperatureSetpointHeat() {
+bool Supla::Sensor::CalculatedThermometer::readSourceParameterValue() {
 
-  if (getZ2SLocalChannelFunc() != 
-        CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT)
-    return;
+  if (!isActionDrivenFunc())
+    return false;
 
   validateSourceChannel();
 
-  if (_source_Supla_element) {
-
-    Supla::Control::HvacBase *_source_hvac = 
-      static_cast<Supla::Control::HvacBase *>(_source_Supla_element);
-
-    float temperature_setpoint_heat = 
-      _source_hvac->getTemperatureSetpointHeat();
-
-    log_i("temperature_setpoint_heat %f", temperature_setpoint_heat);
-
-    setValue(temperature_setpoint_heat / 100);
-
-    _last_refresh_ms = 0;
+  if (!_source_Supla_element) {
+    log_i("_source_Supla_element empty");
+    return false;
   }
-  else
-    log_i("_source_Supla_element empty");     
+
+  switch (getZ2SLocalChannelFunc()) {
+
+    case CALCULATED_THERMOMETER_FUNC_READ_HVAC_TEMP_SETPOINT_HEAT: {
+      auto *_source_hvac =
+        static_cast<Supla::Control::HvacBase *>(_source_Supla_element);
+      float temperature_setpoint_heat =
+        _source_hvac->getTemperatureSetpointHeat();
+      setValue(temperature_setpoint_heat / 100.0);
+    } break;
+
+    case CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMIN:
+    case CALCULATED_THERMOMETER_FUNC_READ_CGPM_SETPOINT: {
+      auto *_source_cgpm =
+        static_cast<Supla::Sensor::CalculatedGPM *>(_source_Supla_element);
+      setValue(_source_cgpm->getCalculatedGpmParam1());
+    } break;
+
+    case CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMAX: {
+      auto *_source_cgpm =
+        static_cast<Supla::Sensor::CalculatedGPM *>(_source_Supla_element);
+      setValue(_source_cgpm->getCalculatedGpmParam2());
+    } break;
+
+    default:
+      return false;
+  }
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
+    resendTemperatureHumidityValue(
+      RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
+  }
+
+  _last_refresh_ms = 0;
+  return true;
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedThermometer::updateLinkedThermometers(
+  uint8_t src_channel_number) {
+
+  if (src_channel_number == 0xFF)
+    return;
+
+  for (auto *core : Z2S_Cores) {
+    if (core &&
+        (core->getZ2SLocalChannelType() == 
+          LOCAL_CHANNEL_TYPE_CALC_THERMOMETER) &&
+        (core->getSourceChannel() == src_channel_number) &&
+        core->getZ2SElementPtr()) {
+
+      auto *ct = static_cast<Supla::Sensor::CalculatedThermometer *>(
+        core->getZ2SElementPtr());
+      ct->readSourceParameterValue();
+    }
+  }
 }
 
 /*****************************************************************************/
@@ -1999,17 +2088,13 @@ void Supla::Sensor::CalculatedThermometer::handleAction(
   
   switch (action) {
 
-
     case SET:
-    
-      readHvacTemperatureSetpointHeat();
-    break;
-
+      readSourceParameterValue();
+      break;
 
     case CLEAR:
-
       setValue(0);
-    break;
+      break;
   }
 }
 
@@ -2021,9 +2106,9 @@ Supla::Sensor::CalculatedGPM::CalculatedGPM()
 
 /*****************************************************************************/
 
-bool Supla::Sensor::CalculatedGPM::isControlAlgorithmFunc() const {
+bool Supla::Sensor::CalculatedGPM::isControlAlgorithmFunc() {
 
-  uint8_t fn = const_cast<CalculatedGPM *>(this)->getZ2SLocalChannelFunc();
+  uint8_t fn = getZ2SLocalChannelFunc();
   return (fn == CALCULATED_GPM_FUNC_LINEAR_MAP ||
           fn == CALCULATED_GPM_FUNC_PI_CONTROL ||
           fn == CALCULATED_GPM_FUNC_PID_CONTROL);
@@ -2522,11 +2607,27 @@ void Supla::Sensor::CalculatedGPM::handleAction(int event, int action) {
   auto adjustParam1 = [&](float delta) {
     setCalculatedGpmParam1(getCalculatedGpmParam1() + delta, true);
     _last_refresh_ms = 0;
+    CalculatedThermometer::updateLinkedThermometers(getZ2SChannelNumber());
     GUI_onChannelDataChanged(getZ2SChannelIndex());
   };
 
   auto adjustParam2 = [&](float delta) {
     setCalculatedGpmParam2(getCalculatedGpmParam2() + delta, true);
+    _last_refresh_ms = 0;
+    CalculatedThermometer::updateLinkedThermometers(getZ2SChannelNumber());
+    GUI_onChannelDataChanged(getZ2SChannelIndex());
+  };
+
+  auto adjustParam3 = [&](float delta) {
+    float new_duty = constrain(getCalculatedGpmParam3() + delta, 0.0f, 100.0f);
+    setCalculatedGpmParam3(new_duty, true);
+    _last_refresh_ms = 0;
+    GUI_onChannelDataChanged(getZ2SChannelIndex());
+  };
+
+  auto adjustParam4 = [&](float delta) {
+    float new_duty = constrain(getCalculatedGpmParam4() + delta, 0.0f, 100.0f);
+    setCalculatedGpmParam4(new_duty, true);
     _last_refresh_ms = 0;
     GUI_onChannelDataChanged(getZ2SChannelIndex());
   };
@@ -2602,9 +2703,40 @@ void Supla::Sensor::CalculatedGPM::handleAction(int event, int action) {
     case Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_5:
       if (is_pi_or_pid) adjustParam1(-0.5f);
       break;
+
+    case Z2S_SUPLA_ACTION_INC_DUTY_MIN_VALUE_1:
+      if (is_linear_map) adjustParam3(1.0f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_DUTY_MIN_VALUE_1:
+      if (is_linear_map) adjustParam3(-1.0f);
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_DUTY_MIN_VALUE_5:
+      if (is_linear_map) adjustParam3(5.0f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_DUTY_MIN_VALUE_5:
+      if (is_linear_map) adjustParam3(-5.0f);
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_DUTY_MAX_VALUE_1:
+      if (is_linear_map) adjustParam4(1.0f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_DUTY_MAX_VALUE_1:
+      if (is_linear_map) adjustParam4(-1.0f);
+      break;
+
+    case Z2S_SUPLA_ACTION_INC_DUTY_MAX_VALUE_5:
+      if (is_linear_map) adjustParam4(5.0f);
+      break;
+
+    case Z2S_SUPLA_ACTION_DEC_DUTY_MAX_VALUE_5:
+      if (is_linear_map) adjustParam4(-5.0f);
+      break;
   }
 }
-
 /*****************************************************************************/
 
 Supla::Sensor::LocalVirtualThermHygroMeter::LocalVirtualThermHygroMeter() 

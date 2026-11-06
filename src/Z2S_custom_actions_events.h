@@ -51,6 +51,14 @@
 #define Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_1                                 0x4709
 #define Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_5                                 0x470A
 #define Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_5                                 0x470B
+#define Z2S_SUPLA_ACTION_INC_DUTY_MIN_VALUE_1                                 0x470C
+#define Z2S_SUPLA_ACTION_DEC_DUTY_MIN_VALUE_1                                 0x470D
+#define Z2S_SUPLA_ACTION_INC_DUTY_MIN_VALUE_5                                 0x470E
+#define Z2S_SUPLA_ACTION_DEC_DUTY_MIN_VALUE_5                                 0x470F
+#define Z2S_SUPLA_ACTION_INC_DUTY_MAX_VALUE_1                                 0x4710
+#define Z2S_SUPLA_ACTION_DEC_DUTY_MAX_VALUE_1                                 0x4711
+#define Z2S_SUPLA_ACTION_INC_DUTY_MAX_VALUE_5                                 0x4712
+#define Z2S_SUPLA_ACTION_DEC_DUTY_MAX_VALUE_5                                 0x4713
 
 
 

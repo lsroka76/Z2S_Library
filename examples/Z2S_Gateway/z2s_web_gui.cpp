@@ -2277,6 +2277,11 @@ void buildChannelsTabGUI() {
 	  (void *)gui_cmd_add_local_sht3x);
 
 	ESPUI.addControl(
+	  Control::Type::Button, empty_str, "Add local BH1750 (I2C)",
+	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
+	  (void *)gui_cmd_add_local_bh1750);
+
+	ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Add local ADC (GPIO)",
 	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
 	  (void *)gui_cmd_add_local_adc);
@@ -4366,11 +4371,14 @@ bool buildCalculatedThermometerLocalFunctionsSelectJsonPayload(
 	return buildSelectJsonPayloadGeneric(
 	  selected_value, 1, &selector_id,
 	  "Select local channel function...", [&](auto add_function_option) {		
+		  constexpr uint8_t funcs_count =
+		    sizeof(calculated_thermomether_functions_names) /
+		    sizeof(calculated_thermomether_functions_names[0]);
 
-		  for (uint8_t ctf = 1; ctf < 4; ctf++) {
+		  for (uint8_t ctf = 1; ctf <= funcs_count; ctf++) {
 
 			  if (!add_function_option(
-							ctf, calculated_thermomether_functions_names[ctf-1]))
+							ctf, calculated_thermomether_functions_names[ctf - 1]))
 				  return false;
 		  }
 		  return true;
@@ -5928,6 +5936,23 @@ void Z2S_loopWebGUI() {
 					ESPUI.updateLabel(
 						lah_status_label, 
 						"The local SHT3x sensor has been successfully added and is "
+						"available for use.");
+					
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
+				}
+			} break;
+
+
+			case gui_cmd_add_local_bh1750: {
+
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_GPIO_BH1750, 0);
+				
+				if (new_channel_slot >= 0) {
+					
+					ESPUI.updateLabel(
+						lah_status_label, 
+						"The local BH1750 sensor has been successfully added and is "
 						"available for use.");
 					
 					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
@@ -7513,6 +7538,27 @@ void updateChannelInfoLabel(
 					working_str_ptr = "Enter local SHT3x address (decimal)";
 					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
 					ESPUI.updateNumber(param_2_number, z2s_core->getLocalSHT3xAddress());
+				}
+
+				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_BH1750) {
+					
+					enableChannelTimings(0);
+					enableChannelParams(1 + 2);
+
+					char *working_str_ptr =
+					  "Enter local BH1750 parameters: use this format:<br>SDApin,SCLpin"
+						", e.g. 21,22";
+
+					ESPUI.updateControlLabel(param_1_text, working_str_ptr);
+					sprintf(general_purpose_gui_buffer, "%i,%i",
+					  z2s_core->getLocalBH1750SdaPin(), z2s_core->getLocalBH1750SclPin());
+
+					ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
+
+					working_str_ptr =
+					  "Enter local BH1750 address (decimal: 35 = 0x23, 92 = 0x5C)";
+					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
+					ESPUI.updateNumber(param_2_number, z2s_core->getLocalBH1750Address());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_ADC) {
@@ -9137,6 +9183,17 @@ void editChannelMain(uint32_t update_channel_flag) {
 						z2s_core->saveChannelData();
 						z2s_core->updateLocalVirtualRelayParams();
 						updateChannelInfoLabel(channel_slot, false);
+					}
+					else if (z2s_core->getZ2SLocalChannelType() ==
+					         LOCAL_CHANNEL_TYPE_CALC_THERMOMETER) {
+
+						z2s_core->setZ2SLocalChannelFunc(local_channel_function);
+						auto *ct = static_cast<Supla::Sensor::CalculatedThermometer *>(
+							z2s_core->getZ2SElementPtr());
+						if (ct) {
+							ct->readSourceParameterValue();
+						}
+						updateChannelInfoLabel(channel_slot, false);
 					} 
 					else {
 						z2s_core->setZ2SLocalChannelFunc(local_channel_function);
@@ -9300,6 +9357,23 @@ void editChannelMain(uint32_t update_channel_flag) {
 									z2s_core->updateLocalSHT3xParams();
 								}
 							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_BH1750: {
+									
+								long bh1750_params[2];
+								size_t params_found = parseCsvNumbers(
+									ESPUI.getControl(param_1_text)->getValueCstr(),
+									bh1750_params, 2);
+
+								if (params_found == 2) {
+									z2s_core->setLocalBH1750SdaPin(bh1750_params[0]);
+									z2s_core->setLocalBH1750SclPin(bh1750_params[1]);
+									z2s_core->saveChannelData();
+									z2s_core->updateLocalBH1750Params();
+								}
+							} break;
+
 
 							case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
 
@@ -9476,6 +9550,14 @@ void editChannelMain(uint32_t update_channel_flag) {
 							} break;
 
 
+							case LOCAL_CHANNEL_TYPE_GPIO_BH1750: {
+
+								z2s_core->setLocalBH1750Address(
+									ESPUI.getControl(param_2_number)->getValueInt(), true);
+								z2s_core->updateLocalBH1750Params();
+							} break;
+
+
 							case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
 
 								z2s_core->setLocalAdcAttenuation(
@@ -9542,6 +9624,15 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_CALC_GPM:
 
 								saveSourceChannelData(channel_slot);
+								if (z2s_core->getZ2SLocalChannelType() ==
+								    LOCAL_CHANNEL_TYPE_CALC_THERMOMETER) {
+									auto *ct =
+									  static_cast<Supla::Sensor::CalculatedThermometer *>(
+									    z2s_core->getZ2SElementPtr());
+									if (ct) {
+										ct->readSourceParameterValue();
+									}
+								}
 							break;
 
 
