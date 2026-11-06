@@ -237,7 +237,9 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT, 0x55, 
-          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &lift_cmd, false, 0, 0);
+          ESP_ZB_ZCL_ATTR_TYPE_U16, 2, &lift_cmd, true, 0, 0);
+        bGateway.sendAttributeRead(
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
       } break;
     }
   }
