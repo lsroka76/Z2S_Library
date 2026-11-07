@@ -543,12 +543,14 @@ uint32_t getSuplaChannelType(uint8_t Supla_channel_number);
 
 Supla::ActionHandlerClient *getActionClientPtr(
   uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, 
-  uint16_t Supla_event, bool condition, bool enabled_only);
+  uint16_t Supla_event, bool condition, bool enabled_only, 
+  uint16_t action_index);
 
 bool Z2S_add_action(
   const char *action_name, uint8_t src_channel_id, uint16_t Supla_action,
   uint8_t dst_channel_id, uint16_t Supla_event,bool condition,
-  double threshold_1 = 0, double threshold_2 = 0);
+  double threshold_1 = 0, double threshold_2 = 0, 
+  uint16_t action_index = 0xFFFF);
 
 bool hasTuyaCustomCluster(uint32_t model_id);
 

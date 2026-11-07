@@ -72,6 +72,7 @@ enum gui_commands : uint8_t {
   gui_cmd_cluster_callback,
   gui_cmd_Tuya_device_callback,
   gui_cmd_Tuya_custom_cmd_callback,
+  gui_cmd_action_callback,
   gui_cmd_get_clusters_attributes_query_callback,
   gui_cmd_add_logic_gate,
   gui_cmd_add_virtual_relay,

@@ -73,6 +73,10 @@ T readAttr(const esp_zb_zcl_attribute_t *attribute, size_t offset = 0) {
 
 /*****************************************************************************/
 
+class Z2S_Condition;
+
+/*****************************************************************************/
+
 void no_channel_found_error_func(char *ieee_addr_str) {
 
   log_e("No channel found for address %s", ieee_addr_str);
@@ -137,27 +141,16 @@ uint8_t Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot) {
 /*****************************************************************************/
 
 uint8_t Z2S_findFirstFreeLocalActionHandlerId(uint8_t start_slot) {
+  
+  for (uint16_t candidate = Z2S_CHANNELS_MAX_NUMBER + start_slot;
+       candidate < 0xFE; candidate++) {
 
-  uint8_t local_action_handlers_number = 0;
-
-  auto core_it = Z2S_Cores.begin();
-
-  while (core_it != Z2S_Cores.end()) {
-
-    Z2S_Core *z2s_core = *core_it;
-
-    if (z2s_core->getZ2SChannelNumber() >= Z2S_CHANNELS_MAX_NUMBER) {
-
-    log_i(
-      "FOUND !!!!! #%u, name %s", z2s_core->getZ2SChannelNumber(),
-      z2s_core->getZ2SChannelName());
-
-      local_action_handlers_number++;
+    if (Z2S_Core::getZ2SCoreByChannelNumber(candidate) == nullptr) {
+      
+      return static_cast <uint8_t>(candidate);
     }
-    core_it++;
   }
-
-  return (Z2S_CHANNELS_MAX_NUMBER + local_action_handlers_number);
+  return 0xFF;
 }
 
 /*****************************************************************************/
@@ -1534,6 +1527,9 @@ ActionCompareResult Z2S_compareAction(
         (src_action.min_value != dst_action.min_value) ||
         (src_action.max_value != dst_action.max_value))
       return CR_SAVE_REBUILD;
+
+    if (src_action.is_enabled != dst_action.is_enabled)
+      return dst_action.is_enabled ? CR_SAVE_ENABLE : CR_SAVE_DISABLE;
     
     if ((memcmp(
           src_action.action_name, dst_action.action_name, 
@@ -1543,12 +1539,8 @@ ActionCompareResult Z2S_compareAction(
           sizeof(src_action.action_description)) != 0))
       return CR_SAVE_ONLY;
 
-    if (src_action.is_enabled != dst_action.is_enabled)
-      return dst_action.is_enabled ? CR_SAVE_ENABLE : CR_SAVE_DISABLE;
-
     return CR_NO_CHANGES;
 }
-
 /*****************************************************************************/
 
 bool Z2S_saveAction(
@@ -1583,7 +1575,8 @@ bool Z2S_saveAction(
         Z2S_add_action(
           action.action_name, action.src_Supla_channel, dst_Supla_action + 
           action.subaction_id, action.dst_Supla_channel, src_Supla_event, 
-          action.is_condition, action.min_value, action.max_value);
+          action.is_condition, action.min_value, action.max_value,
+          action_index);
 
       log_i("action.src_Supla_channel %u", action.src_Supla_channel);
       log_i("action.dst_Supla_channel %u", action.dst_Supla_channel);
@@ -1591,13 +1584,16 @@ bool Z2S_saveAction(
       auto ac_ptr = getActionClientPtr(
         action.src_Supla_channel, dst_Supla_action + action.subaction_id,
         action.dst_Supla_channel, src_Supla_event, action.is_condition, 
-        false);
+        false, action_index);
     
 
-      if (ac_ptr && (compare_result == CR_SAVE_ENABLE))
-        ac_ptr->enable();
-      if (ac_ptr && (compare_result == CR_SAVE_DISABLE))
-        ac_ptr->disable();
+      if (ac_ptr) {
+        
+        if (action.is_enabled)
+          ac_ptr->enable();
+        else
+          ac_ptr->disable();
+      }
 
       log_i(
         "%u, %u, %u, %u, %u", action.src_Supla_channel, 
@@ -1640,7 +1636,8 @@ bool Z2S_removeAction(
 
     auto ac_ptr = getActionClientPtr(
       action.src_Supla_channel, dst_Supla_action + action.subaction_id,
-      action.dst_Supla_channel, src_Supla_event, action.is_condition, false);
+      action.dst_Supla_channel, src_Supla_event, action.is_condition, false,
+      action_index);
     
     if (ac_ptr) {
 
@@ -1808,13 +1805,13 @@ void Z2S_initSuplaActions() {
             new_action.dst_Supla_action + new_action.subaction_id, 
             new_action.dst_Supla_channel, new_action.src_Supla_event, 
             new_action.is_condition, new_action.min_value, 
-            new_action.max_value)) {
+            new_action.max_value, index)) {
 
         auto ac_ptr = getActionClientPtr(
           new_action.src_Supla_channel,
           new_action.dst_Supla_action + new_action.subaction_id,
           new_action.dst_Supla_channel, new_action.src_Supla_event,
-          new_action.is_condition, false);
+          new_action.is_condition, false, index);
 
         if (ac_ptr) {
         
@@ -9262,6 +9259,76 @@ void updateDeviceTemperature(uint8_t channel_index, int32_t temperature) {
 
 /*****************************************************************************/
 
+class Z2S_Condition : public Supla::Condition {
+ public:
+  Z2S_Condition(
+    uint16_t action_index, uint16_t condition_type, double threshold1, 
+    double threshold2 = 0, bool useAlternativeMeasurement = false)
+    : Supla::Condition(threshold1, useAlternativeMeasurement),
+    action_index(action_index), condition_type(condition_type), 
+    threshold2(threshold2) {
+  }
+
+  Z2S_Condition(
+    uint16_t action_index, uint16_t condition_type, double threshold1, 
+    double threshold2, Supla::ConditionGetter *getter)
+    : Supla::Condition(threshold1, getter), action_index(action_index), 
+    condition_type(condition_type), threshold2(threshold2) {
+  }
+
+  uint16_t getActionIndex() const {
+    return action_index;
+  }
+
+  uint16_t getConditionType() const {
+    return condition_type;
+  }
+
+  double getThreshold1() const {
+    return threshold;
+  }
+
+  double getThreshold2() const {
+    return threshold2;
+  }
+
+  void setThresholds(double t1, double t2 = 0) {
+    threshold2 = t2;
+    setThreshold(t1);  
+  }
+
+  bool condition(double val, bool isValid) override {
+    if (!isValid) {
+      return false;
+    }
+    switch (condition_type) {
+      case Supla::ON_LESS:
+        return val < threshold;
+      case Supla::ON_LESS_EQ:
+        return val <= threshold;
+      case Supla::ON_GREATER:
+        return val > threshold;
+      case Supla::ON_GREATER_EQ:
+        return val >= threshold;
+      case Supla::ON_BETWEEN:
+        return val > threshold && val < threshold2;
+      case Supla::ON_BETWEEN_EQ:
+        return val >= threshold && val <= threshold2;
+      case Supla::ON_EQUAL:
+        return std::fabs(val - threshold) < 1e-4;
+      default:
+        return false;
+    }
+  }
+
+ protected:
+  uint16_t condition_type = 0;
+  double threshold2 = 0;
+  uint16_t action_index = 0xFFFF;
+};
+
+/*****************************************************************************/
+
 Supla::LocalAction *getLocalActionPtr(uint8_t Supla_channel_number) {
 
   auto Supla_element = Z2S_Core::getSuplaElementByChannelNumber(
@@ -9285,6 +9352,9 @@ Supla::ElementWithChannelActions *getElementWithChannelActionsPtr(
 
   auto Supla_element = Z2S_Core::getSuplaElementByChannelNumber(
     Supla_channel_number);
+
+  if (!Supla_element)
+    return nullptr;
 
   auto Supla_channel = Supla_element->getChannel();
 
@@ -9378,6 +9448,18 @@ Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
           Supla_element))->getRealClient();
 
 
+      /*case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
+
+        return (static_cast<Supla::Sensor::VirtualImpulseCounter *>(
+          Supla_element))->getRealClient();
+
+      
+      case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
+
+        return (static_cast<Supla::Sensor::GeneralPurposeMeter *>(
+          Supla_element))->getRealClient();*/
+
+
       default:
 
         return nullptr;
@@ -9390,9 +9472,12 @@ Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
   } 
 }
 
+/*****************************************************************************/
+
 Supla::ActionHandlerClient *getActionClientPtr(
   uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, 
-  uint16_t Supla_event, bool condition, bool enabled_only) {
+  uint16_t Supla_event, bool condition, bool enabled_only,
+  uint16_t action_index) {
   
   auto ptr = Supla::LocalAction::getClientListPtr();
   auto local_action_ptr = getLocalActionPtr(src_channel_id);
@@ -9402,17 +9487,32 @@ Supla::ActionHandlerClient *getActionClientPtr(
     Supla_event = Supla::ON_CHANGE;
   
   while (ptr) {
+    if (ptr->client) {
+      bool is_condition_client = (ptr->client != ptr->client->getRealClient());
 
-    if ((ptr->trigger && ptr->trigger == local_action_ptr) && 
-        (ptr->onEvent == Supla_event) &&
-        (ptr->client && ptr->client->getRealClient() == action_handler_ptr) && 
-        (ptr->action == Supla_action) && (ptr->isEnabled() || !enabled_only)) 
-      return ptr;
-  
+      if ((condition == is_condition_client) &&
+          (ptr->trigger && ptr->trigger == local_action_ptr) && 
+          (ptr->onEvent == Supla_event) &&
+          (ptr->client->getRealClient() == action_handler_ptr) && 
+          (ptr->action == Supla_action) && 
+          (ptr->isEnabled() || !enabled_only)) {
+        
+        if (!condition) {
+          return ptr;
+        }
+
+        auto z2s_cond = static_cast<Z2S_Condition *>(ptr->client);
+        if (z2s_cond->getActionIndex() == action_index) {
+          return ptr;
+        }
+      }
+    }
     ptr = ptr->next;
   }
   return nullptr;
 }
+
+/*****************************************************************************/
 
 uint32_t getSuplaChannelType(uint8_t Supla_channel_number) {
 
@@ -9425,89 +9525,87 @@ uint32_t getSuplaChannelType(uint8_t Supla_channel_number) {
     return 0;
 }
 
+/*****************************************************************************/
+
+class GpmCalculatedValueGetter : public Supla::ConditionGetter {
+ public:
+  double getValue(Supla::Element *element, bool *isValid) override {
+    if (isValid) {
+      *isValid = false;
+    }
+    if (!element) {
+      return 0.0;
+    }
+
+    auto channel = element->getChannel();
+    if (!channel) {
+      return 0.0;
+    }
+
+    int channelType = channel->getChannelType();
+    if (channelType == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT ||
+        channelType == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER) {
+      
+      auto gpm = static_cast<Supla::Sensor::GeneralPurposeChannelBase *>(element);
+      double val = gpm->getCalculatedValue();
+      if (isValid) {
+        *isValid = !isnan(val);
+      }
+      return val;
+    }
+    return 0.0;
+  }
+};
+
+Supla::ConditionGetter *GpmCalculatedValue() {
+  return new GpmCalculatedValueGetter();
+}
+
+/*****************************************************************************/
+
 Supla::Condition *getSuplaCondition(
   uint16_t supla_condition, uint32_t supla_channel_type, double threshold_1, 
-  double threshold_2) {
+  double threshold_2, uint16_t action_index) {
 
-  Supla::Condition *Supla_condition = nullptr;
-
-  Supla::ConditionGetter *em_condition_getter = nullptr;
-    
-  if (supla_channel_type == SUPLA_CHANNELTYPE_ELECTRICITY_METER)
-    em_condition_getter = EmTotalPowerActiveW();
-    
   switch (supla_condition) {
-
-    
     case Supla::ON_LESS:
-      
-      if (em_condition_getter)
-        Supla_condition = OnLess(threshold_1, em_condition_getter);
-      else 
-        Supla_condition = OnLess(threshold_1); 
-    break;
-
-    
     case Supla::ON_LESS_EQ:
-      
-      if (em_condition_getter)
-        Supla_condition = OnLessEq(threshold_1, em_condition_getter);
-      else
-        Supla_condition = OnLessEq(threshold_1); 
-    break;
-
-    
     case Supla::ON_GREATER:
-      
-      if (em_condition_getter)
-        Supla_condition = OnGreater(threshold_1, em_condition_getter);
-      else
-        Supla_condition = OnGreater(threshold_1); 
-    break;
-
-    
     case Supla::ON_GREATER_EQ:
-      
-      if (em_condition_getter)
-        Supla_condition = OnGreaterEq(threshold_1, em_condition_getter);
-      else
-        Supla_condition = OnGreaterEq(threshold_1); 
-    break;
-
-    
     case Supla::ON_BETWEEN:
-
-      if (em_condition_getter)
-        Supla_condition = OnBetween(threshold_1, threshold_2, em_condition_getter);
-      else
-        Supla_condition = OnBetween(threshold_1, threshold_2); 
-    break;
-
-    
     case Supla::ON_BETWEEN_EQ:
-      
-      if (em_condition_getter)
-        Supla_condition = OnBetweenEq(threshold_1, threshold_2, em_condition_getter);
-      else
-        Supla_condition = OnBetweenEq(threshold_1, threshold_2); 
-    break;
-
-    
     case Supla::ON_EQUAL:
-      
-      if (em_condition_getter)
-        Supla_condition = OnEqual(threshold_1, em_condition_getter);
-      else
-        Supla_condition = OnEqual(threshold_1); 
-    break;
+      break;
+    default:
+      return nullptr;
   }
-  return Supla_condition;
+
+  Supla::ConditionGetter *condition_getter = nullptr;
+
+  if (supla_channel_type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+    condition_getter = EmTotalPowerActiveW();
+  } else if (supla_channel_type == 
+              SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT ||
+             supla_channel_type == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER) {
+    condition_getter = GpmCalculatedValue();
+  }
+
+  if (condition_getter) {
+    return new Z2S_Condition(
+      action_index, supla_condition, threshold_1, threshold_2, 
+      condition_getter);
+  }
+
+  bool use_alt = (supla_channel_type == SUPLA_CHANNELTYPE_HUMIDITYSENSOR);
+  return new Z2S_Condition(
+    action_index, supla_condition, threshold_1, threshold_2, use_alt);
 }
+/*****************************************************************************/
 
 bool Z2S_add_action(
   const char *action_name, uint8_t src_channel_id, uint16_t Supla_action, 
   uint8_t dst_channel_id, uint16_t Supla_event, bool condition, 
-  double threshold_1, double threshold_2) {
+  double threshold_1, double threshold_2, uint16_t action_index) {
 
   auto local_action_ptr = getLocalActionPtr(src_channel_id);
   auto action_handler_ptr = getActionHandlerPtr(dst_channel_id);
@@ -9533,7 +9631,7 @@ bool Z2S_add_action(
 
     Supla::Condition *Supla_condition = getSuplaCondition(
     Supla_event, getSuplaChannelType(src_channel_id), threshold_1, 
-    threshold_2);
+    threshold_2, action_index);
 
     if (!Supla_condition) {
 

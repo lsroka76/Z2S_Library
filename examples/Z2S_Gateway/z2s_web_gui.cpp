@@ -734,6 +734,7 @@ void valueCallback(BasicControl *sender, int type, void *param);
 void valveCallback(BasicControl *sender, int type, void *param);
 void TuyaCustomCmdCallback(BasicControl *sender, int type, void *param);
 void actionsTableCallback(BasicControl *sender, int type, void *param);
+void actionsTableCallbackCmd(uint32_t gui_cb_action_flag);
 void actionSelectorCallback(BasicControl *sender, int type, void *param);
 void addLocalActionHandlerCallback(
   BasicControl *sender, int type, void *param);
@@ -3506,16 +3507,12 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 
 	action.is_enabled = ESPUI.getControl(action_enabled_switcher)->getValueInt();
 
-	const char *action_name_str = ESPUI.getControl(action_name_text)->getValueCstr();
-	if (strlen(action_name_str) >= 0) {
-
-		size_t action_name_size = strnlen(
-		  action_name_str, ACTION_NAME_MAX_SIZE - 1);
-
-		strncpy(action.action_name, action_name_str, action_name_size);
-		action.action_name[action_name_size] = '\0';
-	} else
-		return false;
+	const char *action_name_str = ESPUI.getControl(
+		action_name_text)->getValueCstr();
+	size_t action_name_size = mbstrnlen(
+		action_name_str, ACTION_NAME_MAX_SIZE - 1);
+	memcpy(action.action_name, action_name_str, action_name_size);
+	action.action_name[action_name_size] = '\0';
 
 	size_t action_description_size = strnlen(
 	  ESPUI.getControl(action_description_text)->getValueCstr(),
@@ -3577,15 +3574,11 @@ bool fillActionDetails(z2s_channel_action_t &action) {
 	else
 		return false;
 
-	action.min_value = ESPUI.getControl(
-	                          action_condition_threshold_1_number)
-	                     ->getValue()
-	                     .toDouble();
-
-	action.max_value = ESPUI.getControl(
-	                          action_condition_threshold_2_number)
-	                     ->getValue()
-	                     .toDouble();
+	action.min_value = strtod(ESPUI.getControl(
+		action_condition_threshold_1_number)->getValueCstr(), nullptr);
+	
+	action.max_value = strtod(ESPUI.getControl(
+		action_condition_threshold_2_number)->getValueCstr(), nullptr);
 
 	return true;
 }
@@ -5783,12 +5776,16 @@ void Z2S_loopWebGUI() {
 				break;
 
 
-			case gui_cmd_Tuya_device_callback:
-				{
+			case gui_cmd_Tuya_device_callback: {
 
 					TuyaDeviceSelectorCmd(pending_gui_command.gui_command_value);
-				}
-				break;
+			} break;
+
+
+			case gui_cmd_action_callback: {
+
+					actionsTableCallbackCmd(pending_gui_command.gui_command_value);
+			} break;
 
 
 			case gui_cmd_Tuya_custom_cmd_callback:
@@ -10608,17 +10605,28 @@ void updateActionSummary(z2s_channel_action_t &new_action) {
 		addGUICommand(gui_cmd_build_actions_table, 0);
 	}
 }
+
 /*****************************************************************************/
 
 void actionsTableCallback(BasicControl *sender, int type, void *param) {
-
+  
 	if (type == B_UP) {
+    
+		addGUICommand(gui_cmd_action_callback, (int32_t)param);
+  }
+}
+
+/*****************************************************************************/
+
+void actionsTableCallbackCmd(uint32_t gui_cb_action_flag) {
+
+	if (true) {
 
 		z2s_channel_action_t new_action = {};
 
 		working_str = "No actions";
 
-		switch ((uint32_t)param) {
+		switch (gui_cb_action_flag) {
 
 
 			case GUI_CB_ACTION_FIRST_FLAG:
@@ -10828,8 +10836,7 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 				}
 				break;
 
-			case GUI_CB_ACTION_SAVE_FLAG:
-				{
+			case GUI_CB_ACTION_SAVE_FLAG: {
 
 					if ((current_action_gui_state != NEW_ACTION) && 
 							(current_action_gui_state != EDIT_ACTION) && 
@@ -10855,7 +10862,8 @@ void actionsTableCallback(BasicControl *sender, int type, void *param) {
 					const char *save_result_failed_str = "Saving Z2S Action: FAILED!";
 					const char *save_result_no_changes_str = "No changes detected!";
 
-					const char *save_result_str = save_result_success_str;
+					const char *save_result_str = new_action.is_enabled ? 
+						save_result_success_str : save_result_disabled_str;
 
 					bool send_edit = false;
 
