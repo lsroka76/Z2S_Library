@@ -3505,82 +3505,77 @@ void updateActionDetails(
 
 bool fillActionDetails(z2s_channel_action_t &action) {
 
-	action.is_enabled = ESPUI.getControl(action_enabled_switcher)->getValueInt();
+  action.is_enabled =
+    ESPUI.getControl(action_enabled_switcher)->getValueInt();
 
-	const char *action_name_str = ESPUI.getControl(
-		action_name_text)->getValueCstr();
-	size_t action_name_size = mbstrnlen(
-		action_name_str, ACTION_NAME_MAX_SIZE - 1);
-	memcpy(action.action_name, action_name_str, action_name_size);
-	action.action_name[action_name_size] = '\0';
+  const char *action_name_str =
+    ESPUI.getControl(action_name_text)->getValueCstr();
+  size_t action_name_size =
+    mbstrnlen(action_name_str, ACTION_NAME_MAX_SIZE - 1);
+  memcpy(action.action_name, action_name_str, action_name_size);
+  action.action_name[action_name_size] = '\0';
 
-	size_t action_description_size = strnlen(
-	  ESPUI.getControl(action_description_text)->getValueCstr(),
-	  ACTION_DESCRIPTION_MAX_SIZE - 1);
+  const char *action_desc_str =
+    ESPUI.getControl(action_description_text)->getValueCstr();
+  size_t action_description_size =
+    mbstrnlen(action_desc_str, ACTION_DESCRIPTION_MAX_SIZE - 1);
+  memcpy(action.action_description, action_desc_str, action_description_size);
+  action.action_description[action_description_size] = '\0';
 
-	strncpy(
-	  action.action_description,
-	  ESPUI.getControl(action_description_text)->getValueCstr(),
-	  action_description_size);
+  int32_t selector_value =
+    ESPUI.getControl(action_source_channel_selector)->getValueInt();
+  if (selector_value >= 0) {
+    action.src_Supla_channel =
+      Z2S_Core::getZ2SChannelNumberByChannelIndex(selector_value);
+  } else {
+    return false;
+  }
 
-	action.action_description[action_description_size] = '\0';
+  selector_value = ESPUI.getControl(action_event_selector)->getValueInt();
+  if (selector_value >= 0) {
+    if (selector_value >= 0xFFFF) {
+      action.is_condition = true;
+      action.src_Supla_event = (Supla::Event)(selector_value - 0xFFFF);
+    } else {
+      action.is_condition = false;
+      action.src_Supla_event = (Supla::Event)selector_value;
+    }
+  } else {
+    return false;
+  }
 
-	int32_t selector_value =
-	  ESPUI.getControl(action_source_channel_selector)->getValueInt();
+  selector_value =
+    ESPUI.getControl(action_destination_channel_selector)->getValueInt();
+  if (selector_value >= 0) {
+    action.dst_Supla_channel =
+      Z2S_Core::getZ2SChannelNumberByChannelIndex(selector_value);
+  } else {
+    return false;
+  }
 
-	if (selector_value >= 0) {
+  selector_value = ESPUI.getControl(action_action_selector)->getValueInt();
+  if (selector_value >= 0) {
+    action.dst_Supla_action = (Supla::Action)selector_value;
+  } else {
+    return false;
+  }
 
-		action.src_Supla_channel = Z2S_Core::getZ2SChannelNumberByChannelIndex(
-		  selector_value);
-	} else
-		return false;
+  selector_value = ESPUI.getControl(action_subaction_number)->getValueInt();
+  if (selector_value >= 0) {
+    action.subaction_id = selector_value;
+  } else {
+    return false;
+  }
 
-	selector_value = ESPUI.getControl(action_event_selector)->getValueInt();
-	if (selector_value >= 0) {
+  action.min_value = strtod(
+    ESPUI.getControl(action_condition_threshold_1_number)->getValueCstr(),
+    nullptr);
 
-		if (selector_value >= 0xFFFF) {
+  action.max_value = strtod(
+    ESPUI.getControl(action_condition_threshold_2_number)->getValueCstr(),
+    nullptr);
 
-			action.is_condition = true;
-			action.src_Supla_event = (Supla::Event)(selector_value - 0xFFFF);
-		} else {
-			action.is_condition = false;
-			action.src_Supla_event = (Supla::Event)selector_value;
-		}
-	} else
-		return false;
-
-	selector_value = ESPUI.getControl(
-	                        action_destination_channel_selector)
-	                   ->getValueInt();
-
-	if (selector_value >= 0) {
-
-		action.dst_Supla_channel = Z2S_Core::getZ2SChannelNumberByChannelIndex(
-		  selector_value);
-	} else
-		return false;
-
-	selector_value = ESPUI.getControl(action_action_selector)->getValueInt();
-
-	if (selector_value >= 0)
-		action.dst_Supla_action = (Supla::Action)selector_value;
-	else
-		return false;
-
-	selector_value = ESPUI.getControl(action_subaction_number)->getValueInt();
-
-	if (selector_value >= 0)
-		action.subaction_id = selector_value;
-	else
-		return false;
-
-	action.min_value = strtod(ESPUI.getControl(
-		action_condition_threshold_1_number)->getValueCstr(), nullptr);
-	
-	action.max_value = strtod(ESPUI.getControl(
-		action_condition_threshold_2_number)->getValueCstr(), nullptr);
-
-	return true;
+  return true;
 }
 
 /*****************************************************************************/
@@ -3605,7 +3600,7 @@ void actionSelectorCallback(BasicControl *sender, int type, void *param) {
 	if (sender)
 		sender_value = sender->getValueInt();
 
-	if ((sender_value < 0) || (sender_value > UINT16_MAX)) {
+	if ((sender_value < 0) || (sender_value >= UINT16_MAX)) {
 
 		enableControlStyle(action_subaction_number, false);
 		return;
@@ -3676,38 +3671,40 @@ void buildActionsTableJsonHeader(
 /*****************************************************************************/
 
 void addActionsTableJsonRow(
-  char* buffer, size_t max_size, size_t& offset, z2s_channel_action_t &action, 
-	bool is_first) {
+  char *buffer, size_t max_size, size_t &offset,
+  z2s_channel_action_t &action, bool is_first) {
 
   if (offset >= max_size) return;
 
-  char trig_buf[128] = {};
+  appendToBuffer(buffer, max_size, offset, "%s[\"", is_first ? "" : ",");
+  appendEscapedJsonString(buffer, max_size, offset, action.action_name);
 
   if (action.is_condition) {
-    snprintf(
-      trig_buf, sizeof(trig_buf), "%s (v: %.2f, %.2f)", 
+    appendToBuffer(
+      buffer, max_size, offset, " (%s)\",\"%s (v: %.2f, %.2f)\",\"",
+      action.is_enabled ? "on" : "off",
       getSuplaEventName(action.src_Supla_event, action.is_condition),
-      action.min_value, action.max_value
-    );
+      action.min_value, action.max_value);
   } else {
-    snprintf(
-      trig_buf, sizeof(trig_buf), "%s", 
-      getSuplaEventName(action.src_Supla_event, action.is_condition)
-    );
+    appendToBuffer(
+      buffer, max_size, offset, " (%s)\",\"%s\",\"",
+      action.is_enabled ? "on" : "off",
+      getSuplaEventName(action.src_Supla_event, action.is_condition));
   }
 
-  int len = snprintf(
-    buffer + offset, max_size - offset,
-    "%s[\"%s (%s)\",\"%s\",\"%s\",\"%s (sid: %u)\",\"%s\"]",
-    is_first ? "" : ",", 
-    action.action_name, action.is_enabled ? "on" : "off",
-    trig_buf,
-    Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel),
-    getSuplaActionName(action.dst_Supla_action), action.subaction_id,
-    Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel)
-  );
+  appendEscapedJsonString(
+    buffer, max_size, offset,
+    Z2S_Core::getZ2SChannelNameByChannelNumber(action.src_Supla_channel));
 
-  if (len > 0 && len < (max_size - offset)) offset += len;
+  appendToBuffer(
+    buffer, max_size, offset, "\",\"%s (sid: %u)\",\"",
+    getSuplaActionName(action.dst_Supla_action), action.subaction_id);
+
+  appendEscapedJsonString(
+    buffer, max_size, offset,
+    Z2S_Core::getZ2SChannelNameByChannelNumber(action.dst_Supla_channel));
+
+  appendToBuffer(buffer, max_size, offset, "\"]");
 }
 
 /*****************************************************************************/
