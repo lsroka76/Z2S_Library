@@ -197,6 +197,11 @@ inline bool ensureLocalI2C(int8_t targetSda, int8_t targetScl) {
     return false;
   }
 
+  if (!digitalPinCanOutput(targetSda) || !digitalPinCanOutput(targetScl)) {
+    log_e("Invalid I2C pins: SDA=%d, SCL=%d", targetSda, targetScl);
+    return false;
+  }
+
   if (targetSda != activeSda || targetScl != activeScl) {
     Wire.end();
     if (Wire.begin(targetSda, targetScl)) {
@@ -210,6 +215,7 @@ inline bool ensureLocalI2C(int8_t targetSda, int8_t targetScl) {
   }
   return true;
 }
+
 /*****************************************************************************/
 /*****************************************************************************/
 
@@ -761,14 +767,17 @@ class LocalSHT3x : public SHT3x, public Z2S_Core {
 
   void onInit() override {
 
-    ensureLocalI2C(getLocalSHT3xSdaPin(), getLocalSHT3xSclPin());
-    Supla::Sensor::SHT3x::onInit();
+    if (ensureLocalI2C(getLocalSHT3xSdaPin(), getLocalSHT3xSclPin())) {
+      Supla::Sensor::SHT3x::onInit();
+    }
   }
 
   void setAddress(int8_t addr) {
     
     address = addr;
-    sht.begin(address);
+    if (ensureLocalI2C(getLocalSHT3xSdaPin(), getLocalSHT3xSclPin())) {
+      sht.begin(address);
+    }
   }
 
   double getTemp() override {
@@ -779,10 +788,6 @@ class LocalSHT3x : public SHT3x, public Z2S_Core {
     return Supla::Sensor::SHT3x::getTemp();
   }
 };
-
-/*****************************************************************************/
-
-/*****************************************************************************/
 
 /*****************************************************************************/
 
@@ -802,25 +807,28 @@ class LocalBH1750 : public Bh1750, public Z2S_Core {
       addr = 0x23;
     }
     if (sensor.begin(BH1750::CONTINUOUS_HIGH_RES_MODE, addr, &Wire)) {
-      SUPLA_LOG_DEBUG(
-        "BH1750[%d]: initialized (addr 0x%02X)", getChannelNumber(), addr);
+      SUPLA_LOG_DEBUG("BH1750[%d]: initialized (addr 0x%02X)",
+                      getChannelNumber(), addr);
       return true;
     }
-    SUPLA_LOG_WARNING(
-      "BH1750[%d]: not found at 0x%02X", getChannelNumber(), addr);
+    SUPLA_LOG_WARNING("BH1750[%d]: not found at 0x%02X",
+                      getChannelNumber(), addr);
     return false;
   }
 
   void onInit() override {
 
-    initBH1750();
-    channel.setNewValue(getValue());
+    if (initBH1750()) {
+      channel.setNewValue(getValue());
+    }
   }
 
   void setAddress(int8_t addr) {
 
     (void)addr;
-    initBH1750();
+    if (initBH1750()) {
+      channel.setNewValue(getValue());
+    }
   }
 
   double getValue() override {

@@ -288,8 +288,8 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
       auto* sht = new Supla::Sensor::LocalSHT3x();
       registerNewLocalChannel(sht, slot, d, func, nullptr, [](auto* sht) {
-        sht->setLocalSHT3xSdaPin(21);
-        sht->setLocalSHT3xSclPin(22);
+        sht->setLocalSHT3xSdaPin(0);
+        sht->setLocalSHT3xSclPin(0);
         sht->setLocalSHT3xAddress(0x44);
       });
     }
@@ -308,8 +308,8 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
       auto* bh = new Supla::Sensor::LocalBH1750();
       registerNewLocalChannel(bh, slot, d, func, nullptr, [](auto* bh) {
-        bh->setLocalBH1750SdaPin(21);
-        bh->setLocalBH1750SclPin(22);
+        bh->setLocalBH1750SdaPin(0);
+        bh->setLocalBH1750SclPin(0);
         bh->setLocalBH1750Address(0x23);
       });
     }
