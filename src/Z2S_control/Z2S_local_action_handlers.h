@@ -56,8 +56,8 @@
 
 /*****************************************************************************/
 
-#define GATEWAY_EVENTS_CHANNEL_NUMBER   0xFE
-#define GATEWAY_EVENTS_CHANNEL_INDEX    0xFE
+  #define GATEWAY_EVENTS_CHANNEL_NUMBER   0xFE
+  #define GATEWAY_EVENTS_CHANNEL_INDEX    0xFE
 
 inline constexpr const char * const gateway_events_channel_name = 
   "GATEWAY EVENTS";

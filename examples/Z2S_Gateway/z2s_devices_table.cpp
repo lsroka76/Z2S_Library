@@ -1531,10 +1531,10 @@ ActionCompareResult Z2S_compareAction(
     if (src_action.is_enabled != dst_action.is_enabled)
       return dst_action.is_enabled ? CR_SAVE_ENABLE : CR_SAVE_DISABLE;
     
-    if ((memcmp(
+    if ((strncmp(
           src_action.action_name, dst_action.action_name, 
           sizeof(src_action.action_name)) != 0) ||
-        (memcmp(
+        (strncmp(
           src_action.action_description, dst_action.action_description, 
           sizeof(src_action.action_description)) != 0))
       return CR_SAVE_ONLY;
@@ -1581,11 +1581,13 @@ bool Z2S_saveAction(
       log_i("action.src_Supla_channel %u", action.src_Supla_channel);
       log_i("action.dst_Supla_channel %u", action.dst_Supla_channel);
 
+      bool expected_enabled = (compare_result == CR_SAVE_REBUILD) ? 
+        true : !action.is_enabled;
+
       auto ac_ptr = getActionClientPtr(
         action.src_Supla_channel, dst_Supla_action + action.subaction_id,
         action.dst_Supla_channel, src_Supla_event, action.is_condition, 
-        false, action_index);
-    
+        expected_enabled, action_index);
 
       if (ac_ptr) {
         
@@ -1636,8 +1638,8 @@ bool Z2S_removeAction(
 
     auto ac_ptr = getActionClientPtr(
       action.src_Supla_channel, dst_Supla_action + action.subaction_id,
-      action.dst_Supla_channel, src_Supla_event, action.is_condition, false,
-      action_index);
+      action.dst_Supla_channel, src_Supla_event, action.is_condition,
+    action.is_enabled, action_index);
     
     if (ac_ptr) {
 
@@ -1811,7 +1813,7 @@ void Z2S_initSuplaActions() {
           new_action.src_Supla_channel,
           new_action.dst_Supla_action + new_action.subaction_id,
           new_action.dst_Supla_channel, new_action.src_Supla_event,
-          new_action.is_condition, false, index);
+          new_action.is_condition, true, index);
 
         if (ac_ptr) {
         
@@ -9476,7 +9478,7 @@ Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
 
 Supla::ActionHandlerClient *getActionClientPtr(
   uint8_t src_channel_id, uint16_t Supla_action, uint8_t dst_channel_id, 
-  uint16_t Supla_event, bool condition, bool enabled_only,
+  uint16_t Supla_event, bool condition, bool expected_enabled,
   uint16_t action_index) {
   
   auto ptr = Supla::LocalAction::getClientListPtr();
@@ -9485,6 +9487,8 @@ Supla::ActionHandlerClient *getActionClientPtr(
 
   if (condition)
     Supla_event = Supla::ON_CHANGE;
+
+  Supla::ActionHandlerClient *matched_ptr = nullptr;
   
   while (ptr) {
     if (ptr->client) {
@@ -9494,22 +9498,21 @@ Supla::ActionHandlerClient *getActionClientPtr(
           (ptr->trigger && ptr->trigger == local_action_ptr) && 
           (ptr->onEvent == Supla_event) &&
           (ptr->client->getRealClient() == action_handler_ptr) && 
-          (ptr->action == Supla_action) && 
-          (ptr->isEnabled() || !enabled_only)) {
+          (ptr->action == Supla_action)) {
         
-        if (!condition) {
-          return ptr;
-        }
-
-        auto z2s_cond = static_cast<Z2S_Condition *>(ptr->client);
-        if (z2s_cond->getActionIndex() == action_index) {
-          return ptr;
+        if (condition) {
+          auto z2s_cond = static_cast<Z2S_Condition *>(ptr->client);
+          if (z2s_cond->getActionIndex() == action_index) {
+            return ptr;
+          }
+        } else if (ptr->isEnabled() == expected_enabled) {
+          matched_ptr = ptr; 
         }
       }
     }
     ptr = ptr->next;
   }
-  return nullptr;
+  return matched_ptr;
 }
 
 /*****************************************************************************/

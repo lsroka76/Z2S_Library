@@ -3370,6 +3370,21 @@ void enableActionControls(bool enable) {
 
 void updateActionButtons() {
 
+  bool has_selected_action = (current_action_id >= 0);
+  bool is_viewing = (current_action_gui_state == VIEW_ACTION);
+
+  enableControlStyle(action_new_button, is_viewing);
+  enableControlStyle(action_edit_button, is_viewing && has_selected_action);
+  enableControlStyle(action_copy_button, is_viewing && has_selected_action);
+  enableControlStyle(action_chain_button, is_viewing && has_selected_action);
+  enableControlStyle(action_remove_button, is_viewing && has_selected_action);
+
+  enableControlStyle(action_save_button, !is_viewing);
+  enableControlStyle(action_cancel_button, !is_viewing);
+}
+
+/*void updateActionButtons() {
+
 	bool action_save_button_enable;
 	bool action_new_button_enable;
 	bool action_edit_button_enable;
@@ -3446,7 +3461,7 @@ void updateActionButtons() {
 	enableControlStyle(action_remove_button, action_remove_button_enable);
 	enableControlStyle(action_copy_button, action_remove_button_enable);
 	enableControlStyle(action_chain_button, action_remove_button_enable);
-}
+}*/
 
 /*****************************************************************************/
 
@@ -6467,38 +6482,51 @@ void generalCallback(BasicControl *sender, int type, void *param) {
 
 void hiddenNumberCallback(BasicControl *sender, int type, void *param) {
 
-	int32_t raw_val = sender->getValueInt();
+  int32_t raw_val = sender->getValueInt();
+  if (raw_val < 0) {
+    return;
+  }
 
-	if (raw_val & 0x4000) {
-		uint16_t row_idx = raw_val & 0x3FFF;
-		current_ir_code_id = irCodesStorage.getPosition(row_idx + 1);
-		current_ir_code_counter = irCodesStorage.getCounter(
-			current_ir_code_id);
+  if (raw_val & 0x4000) {
+    uint16_t row_idx = raw_val & 0x3FFF;
+    current_ir_code_id = irCodesStorage.getPosition(row_idx + 1);
+    current_ir_code_counter = (current_ir_code_id >= 0)
+      ? irCodesStorage.getCounter(current_ir_code_id)
+      : -1;
 
-		log_i(
-			"current_ir_code_id %d, current_ir_code_counter %d",
-			current_ir_code_id, current_ir_code_counter);
-		return;
-	}
+    updateIrCodeButtons();
 
-	if (raw_val & 0x2000) {
-		uint16_t row_idx = raw_val & 0x1FFF;
-		current_message_id = Z2S_getPushoverMessagePosition(row_idx + 1);
-		current_message_counter = Z2S_getPushoverMessageCounter(
-			current_message_id);
+    log_i(
+      "current_ir_code_id %d, current_ir_code_counter %d",
+      current_ir_code_id, current_ir_code_counter);
+    return;
+  }
 
-		log_i(
-			"current_message_id %d, current_message_counter %d",
-			current_message_id, current_message_counter);
-		return;
-	}
+  if (raw_val & 0x2000) {
+    uint16_t row_idx = raw_val & 0x1FFF;
+    current_message_id = Z2S_getPushoverMessagePosition(row_idx + 1);
+    current_message_counter = (current_message_id >= 0)
+      ? Z2S_getPushoverMessageCounter(current_message_id)
+      : -1;
 
-	current_action_id = Z2S_getActionPosition(raw_val + 1);
-	current_action_counter = Z2S_getActionCounter(current_action_id);
+    updatePushoverMessageButtons();
 
-	log_i(
-		"current_action_id %u, current_action_counter %u", current_action_id,
-		current_action_counter);
+    log_i(
+      "current_message_id %d, current_message_counter %d",
+      current_message_id, current_message_counter);
+    return;
+  }
+
+  current_action_id = Z2S_getActionPosition(raw_val + 1);
+  current_action_counter = (current_action_id >= 0)
+    ? Z2S_getActionCounter(current_action_id)
+    : -1;
+
+  updateActionButtons();
+
+  log_i(
+    "current_action_id %d, current_action_counter %d",
+    current_action_id, current_action_counter);
 }
 
 /*****************************************************************************/
