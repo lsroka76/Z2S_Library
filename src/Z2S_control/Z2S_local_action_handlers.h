@@ -193,7 +193,7 @@ inline bool ensureLocalI2C(int8_t targetSda, int8_t targetScl) {
   static int8_t activeSda = -1;
   static int8_t activeScl = -1;
 
-  if (targetSda < 0 || targetScl < 0) {
+  if (targetSda < 0 || targetScl < 0 || targetSda == targetScl) {
     return false;
   }
 
@@ -210,7 +210,6 @@ inline bool ensureLocalI2C(int8_t targetSda, int8_t targetScl) {
   }
   return true;
 }
-
 /*****************************************************************************/
 /*****************************************************************************/
 
@@ -785,29 +784,43 @@ class LocalSHT3x : public SHT3x, public Z2S_Core {
 
 /*****************************************************************************/
 
+/*****************************************************************************/
+
 class LocalBH1750 : public Bh1750, public Z2S_Core {
 
  public:
 
   LocalBH1750() : Bh1750(0x23), Z2S_Core(this) {}
 
+  bool initBH1750() {
+
+    if (!ensureLocalI2C(getLocalBH1750SdaPin(), getLocalBH1750SclPin())) {
+      return false;
+    }
+    uint8_t addr = getLocalBH1750Address();
+    if (addr != 0x23 && addr != 0x5C) {
+      addr = 0x23;
+    }
+    if (sensor.begin(BH1750::CONTINUOUS_HIGH_RES_MODE, addr, &Wire)) {
+      SUPLA_LOG_DEBUG(
+        "BH1750[%d]: initialized (addr 0x%02X)", getChannelNumber(), addr);
+      return true;
+    }
+    SUPLA_LOG_WARNING(
+      "BH1750[%d]: not found at 0x%02X", getChannelNumber(), addr);
+    return false;
+  }
+
   void onInit() override {
 
-    if (ensureLocalI2C(getLocalBH1750SdaPin(), getLocalBH1750SclPin())) {
-      // Re-initialize the sensor object in-place using placement new
-      this->~Bh1750();
-      new (this) Bh1750(getLocalBH1750Address());
-      Supla::Sensor::Bh1750::onInit();
-    }
+    initBH1750();
+    channel.setNewValue(getValue());
   }
 
   void setAddress(int8_t addr) {
 
-    if (ensureLocalI2C(getLocalBH1750SdaPin(), getLocalBH1750SclPin())) {
-      this->~Bh1750();
-      new (this) Bh1750(addr);
-      initializeSensor();
-    }
+    (void)addr;
+    initBH1750();
   }
 
   double getValue() override {
@@ -815,7 +828,21 @@ class LocalBH1750 : public Bh1750, public Z2S_Core {
     if (!ensureLocalI2C(getLocalBH1750SdaPin(), getLocalBH1750SclPin())) {
       return NAN;
     }
-    return Supla::Sensor::Bh1750::getValue();
+    double value = sensor.readLightLevel();
+    if (isnan(value) || value < 0) {
+      invalidCounter++;
+      if (invalidCounter < 4) {
+        return lastValue;
+      } else {
+        invalidCounter = 0;
+        initBH1750();
+      }
+      lastValue = NAN;
+      return lastValue;
+    }
+    invalidCounter = 0;
+    lastValue = value;
+    return value;
   }
 };
 
