@@ -906,6 +906,7 @@ const char *Supla::Control::LocalVirtualRelay::getFunctionName() {
 void Supla::Control::LocalVirtualRelay::configureRelayFunction() {
 
   if (getZ2SLocalChannelFunc() == 0) {
+    
     setZ2SLocalChannelFunc(LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE, false);
   }
 

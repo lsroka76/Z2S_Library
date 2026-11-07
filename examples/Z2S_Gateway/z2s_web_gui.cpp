@@ -4403,11 +4403,18 @@ void sortChannelsSelectorsMain(int32_t select_value = -1) {
 		buildChannelsSelectJsonPayload(
 		  false, select_value, 3, channel_selector,
 		  action_source_channel_selector, action_destination_channel_selector);
+
+		if (channel_selector < 0xFFFF) {
+			ESPUI.updateSelect(channel_selector, select_value);
+			channelSelectorCallback(nullptr, select_value, nullptr);
+		}
 	}
 
 	if (sb_channel_selector < 0xFFFF) {
 
 		buildChannelsSelectJsonPayload(true, select_value, 1, sb_channel_selector);
+		ESPUI.updateSelect(sb_channel_selector, select_value);
+		sbChannelCallback(ESPUI.getControl(sb_channel_selector), SL_VALUE, nullptr);
 	}
 }
 
@@ -4429,12 +4436,19 @@ void sortZbDevicesSelectorsMain(int32_t select_value = -1) {
 		buildZbDevicesSelectJsonPayload(
 		  ZB_DEVICE_SELECT_TYPE_ALL, select_value, 2, device_selector,
 		  clusters_attributes_table[clusters_attributes_device_selector]);
+
+		if (device_selector < 0xFFFF) {
+			ESPUI.updateSelect(device_selector, select_value);
+			deviceSelectorCallback(nullptr, select_value, nullptr);
+		}
 	}
 
 	if (advanced_device_selector < 0xFFFF) {
 
 		buildZbDevicesSelectJsonPayload(
 		  ZB_DEVICE_SELECT_TYPE_AD, select_value, 1, advanced_device_selector);
+		ESPUI.updateSelect(advanced_device_selector, select_value);
+		advancedDeviceSelectorCallback(nullptr, select_value, nullptr);
 	}
 
 	if (Tuya_devices_tab_controls_table[Tuya_device_selector] < 0xFFFF) {
@@ -4442,11 +4456,16 @@ void sortZbDevicesSelectorsMain(int32_t select_value = -1) {
 		buildZbDevicesSelectJsonPayload(
 		  ZB_DEVICE_SELECT_TYPE_TCC, select_value, 1,
 		  Tuya_devices_tab_controls_table[Tuya_device_selector]);
+		ESPUI.updateSelect(
+			Tuya_devices_tab_controls_table[Tuya_device_selector], select_value);
+		TuyaDeviceSelectorCallback(nullptr, select_value, nullptr);
 	}
 
 	if (ir_device_selector < 0xFFFF) {
 		buildZbDevicesSelectJsonPayload(
 		  ZB_DEVICE_SELECT_TYPE_IR, select_value, 1, ir_device_selector);
+		ESPUI.updateSelect(ir_device_selector, select_value);
+		irDeviceSelectorCallback(nullptr, select_value, nullptr);
 	}
 }
 
@@ -7365,7 +7384,9 @@ void updateChannelInfoLabel(
 
 					uint8_t vrelay_func = z2s_core->getZ2SLocalChannelFunc();
 					if (vrelay_func == 0) {
+
 						vrelay_func = LOCAL_VIRTUAL_RELAY_FUNC_SWITCH_RESTORE;
+						z2s_core->setZ2SLocalChannelFunc(vrelay_func, false);
 					}
 
 					if (sort_local_function_selector) {
