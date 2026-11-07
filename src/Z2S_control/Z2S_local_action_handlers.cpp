@@ -951,7 +951,7 @@ void Supla::Control::LocalVirtualRelay::turnOn(_supla_int_t duration) {
     case LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY: {
       durationMs = 0;
       state = false;
-      channel.setNewValue(true);
+      //channel.setNewValue(true);
       channel.setNewValue(false);
       runAction(Supla::ON_TURN_ON);
       runAction(Supla::ON_CHANGE);
@@ -980,7 +980,7 @@ void Supla::Control::LocalVirtualRelay::turnOff(_supla_int_t duration) {
     case LOCAL_VIRTUAL_RELAY_FUNC_MOMENTARY: {
       durationMs = 0;
       state = false;
-      channel.setNewValue(true);
+      //channel.setNewValue(true);
       channel.setNewValue(false);
       runAction(Supla::ON_TURN_OFF);
       runAction(Supla::ON_CHANGE);
@@ -2047,8 +2047,9 @@ bool Supla::Sensor::CalculatedThermometer::readSourceParameterValue() {
     default:
       return false;
   }
-  lastReadTime = 0;
-  
+  //lastReadTime = 0;
+  channel.setNewValue(getValue());
+
   if (checkChannelUserDataFlags(USER_DATA_FLAG_ENABLE_RESEND_TEMPERATURE)) {
     resendTemperatureHumidityValue(
       RTH_VALUE_TYPE_TEMPERATURE, channel.getValueDouble() * 100);
