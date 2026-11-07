@@ -166,7 +166,7 @@ uint16_t skip_subdevice_registation_switcher;
 uint16_t param_1_text;
 uint16_t param_1_desc_label;
 uint16_t param_1_save_button;
-uint16_t param_2_number;
+uint16_t param_2_text;
 uint16_t param_2_desc_label;
 uint16_t param_2_save_button;
 uint16_t param_3_number;
@@ -2133,8 +2133,8 @@ void buildChannelsTabGUI() {
 
 	addEmptyLineLabel(zb_channel_params_label);
 
-  param_2_number = ESPUI.addControl(
-    Control::Type::Number, "&#10023; PARAM(2) - currently not used &#10023;", 
+  param_2_text = ESPUI.addControl(
+    Control::Type::Text, "&#10023; PARAM(2) - currently not used &#10023;", 
     (long int)0, Control::Color::Dark, zb_channel_params_label, 
     generalCallback);
 
@@ -2144,7 +2144,7 @@ void buildChannelsTabGUI() {
     (void *)GUI_CB_UPDATE_PARAM_2_FLAG);
 
   ESPUI.setElementStyle(
-    param_2_number, "width: calc(22% - 7px); min-width: 120px; "
+    param_2_text, "width: calc(22% - 7px); min-width: 120px; "
     "margin: 0 2px 10px 5px;");
   ESPUI.setElementStyle(
     param_2_save_button, "width: calc(11% - 17px); min-width: 60px; "
@@ -2275,6 +2275,11 @@ void buildChannelsTabGUI() {
 	  Control::Type::Button, empty_str, "Add local SHT3x (I2C)",
 	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
 	  (void *)gui_cmd_add_local_sht3x);
+
+	ESPUI.addControl(
+	  Control::Type::Button, empty_str, "Add local SHT4x (I2C)",
+	  Control::Color::Dark, lah_panel, addLocalChannelCallback,
+	  (void *)gui_cmd_add_local_sht4x);
 
 	ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Add local BH1750 (I2C)",
@@ -5962,6 +5967,23 @@ void Z2S_loopWebGUI() {
 			} break;
 
 
+			case gui_cmd_add_local_sht4x: {
+
+				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
+					LOCAL_CHANNEL_TYPE_GPIO_SHT4X, 0);
+				
+				if (new_channel_slot >= 0) {
+					
+					ESPUI.updateLabel(
+						lah_status_label, 
+						"The local SHT4x sensor has been successfully added and is "
+						"available for use.");
+					
+					addGUICommand(gui_cmd_sort_channels_selectors, new_channel_slot);
+				}
+			} break;
+
+
 			case gui_cmd_add_local_bh1750: {
 
 				int16_t new_channel_slot = addZ2SDeviceLocalActionHandler(
@@ -6794,7 +6816,7 @@ void enableChannelControls(bool enable) {
 	ESPUI.updateText(channel_name_text, empty_str);
 
 	ESPUI.updateNumber(param_1_text, 0);
-	ESPUI.updateNumber(param_2_number, 0);
+	ESPUI.updateNumber(param_2_text, 0);
 	ESPUI.updateNumber(param_3_number, 0);
 	ESPUI.updateNumber(param_4_number, 0);
 	ESPUI.updateNumber(keepalive_number, 0);
@@ -6821,7 +6843,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(enable_resend_temperature_switcher, enable);
 	enableControlStyle(skip_subdevice_registation_switcher, enable);
 	enableControlStyle(param_1_text, enable);
-	enableControlStyle(param_2_number, enable);
+	enableControlStyle(param_2_text, enable);
 	enableControlStyle(param_3_number, enable);
 	enableControlStyle(param_4_number, enable);
 	enableControlStyle(param_1_save_button, enable);
@@ -6959,16 +6981,16 @@ void enableChannelParams(uint8_t params_mask) {
 
 	if (params_mask & 2) {
 
-		enableControlStyle(param_2_number, true);
+		enableControlStyle(param_2_text, true);
 		enableControlStyle(param_2_save_button, true);
 
 	} else {
 
-		ESPUI.updateNumber(param_2_number, 0);
+		ESPUI.updateNumber(param_2_text, 0);
 		char *working_str_ptr =
 		  "&#10023; PARAM(2) - currently not used &#10023;";
-		ESPUI.updateControlLabel(param_2_number, working_str_ptr);
-		enableControlStyle(param_2_number, false);
+		ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+		enableControlStyle(param_2_text, false);
 		enableControlStyle(param_2_save_button, false);
 	}
 
@@ -7030,14 +7052,14 @@ void fillRemoteAddressData(uint8_t channel_slot) {
 			addr_buf, sizeof(addr_buf), "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
 
 		ESPUI.updateText(param_1_text, addr_buf);
-		ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
+		ESPUI.updateNumber(param_2_text, z2s_core->getSuplaRemoteChannel());
 	} 
 	else if (remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) {
 
 		snprintf(addr_buf, sizeof(addr_buf), "mdns://%s", z2s_core->getMDNSName());
 
 		ESPUI.updateText(param_1_text, addr_buf);
-		ESPUI.updateNumber(param_2_number, z2s_core->getSuplaRemoteChannel());
+		ESPUI.updateNumber(param_2_text, z2s_core->getSuplaRemoteChannel());
 	}
 }
 
@@ -7065,7 +7087,7 @@ void updateResendTemperatureControls(Z2S_Core *z2s_core, bool source_channel) {
 		fillRemoteAddressData(z2s_core->getZ2SChannelIndex());
 
 		ESPUI.updateControlLabel(param_1_text, dest_thermometer_address_desc);
-		ESPUI.updateControlLabel(param_2_number, dest_thermometer_channel_desc);
+		ESPUI.updateControlLabel(param_2_text, dest_thermometer_channel_desc);
 	} else {
 
 		if (source_channel)
@@ -7209,8 +7231,8 @@ void updateChannelInfoLabel(
 
 					char *working_str_ptr =
 					  "Enter logic gate inputs (pins) number (1-32):";
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
-					ESPUI.updateNumber(param_2_number, z2s_core->getLogicPinsNumber());
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+					ESPUI.updateNumber(param_2_text, z2s_core->getLogicPinsNumber());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_REMOTE_RELAY) {
@@ -7225,7 +7247,7 @@ void updateChannelInfoLabel(
 					ESPUI.updateControlLabel(param_1_text, working_str_ptr);
 
 					working_str_ptr = "Enter remote relay channel #";
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
 				}
 
 				if (z2s_channel.local_channel_type == 
@@ -7348,9 +7370,9 @@ void updateChannelInfoLabel(
 						const char *param2_label =
 						  "Enter sensor offline failsafe PWM duty: "
 						  "-1 = hold last value, 0-100 = forced duty (%)";
-						ESPUI.updateControlLabel(param_2_number, param2_label);
+						ESPUI.updateControlLabel(param_2_text, param2_label);
 						ESPUI.updateNumber(
-						  param_2_number, z2s_core->getCalculatedGpmFailsafeDuty());
+						  param_2_text, z2s_core->getCalculatedGpmFailsafeDuty());
 
 						ESPUI.updateControlLabel(
 						  param_3_number, src_thermometer_channel_desc);
@@ -7452,8 +7474,8 @@ void updateChannelInfoLabel(
 					ESPUI.updateNumber(param_1_text, z2s_core->getLocalRelayGpioPin());
 
 					working_str_ptr = "Enter local relay ON value.";
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
-					ESPUI.updateNumber(param_2_number, z2s_core->getLocalRelayHighIsOn());
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+					ESPUI.updateNumber(param_2_text, z2s_core->getLocalRelayHighIsOn());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_HVAC) {
@@ -7468,8 +7490,8 @@ void updateChannelInfoLabel(
 
 					working_str_ptr = "Enter local hvac ON value:";
 
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
-					ESPUI.updateNumber(param_2_number, z2s_core->getLocalHvacHighIsOn());
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+					ESPUI.updateNumber(param_2_text, z2s_core->getLocalHvacHighIsOn());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_BINARY) {
@@ -7485,9 +7507,9 @@ void updateChannelInfoLabel(
 					working_str_ptr = "Enter local binary logic type value: 0 = normal"
 					" logic, 1 = inverted logic";
 					
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
 					ESPUI.updateNumber(
-						param_2_number, z2s_core->getLocalBinaryInvertLogic());
+						param_2_text, z2s_core->getLocalBinaryInvertLogic());
 
 					working_str_ptr = "Enter local binary pull up value: 0 = no pull"
 					" up, 1 = pull up";
@@ -7518,8 +7540,8 @@ void updateChannelInfoLabel(
 						ESPUI.updateText(param_1_text, empty_str);
 
 					working_str_ptr = "Enter local DS18B20 pin value";
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
-					ESPUI.updateNumber(param_2_number, z2s_core->getLocalDS18B20GpioPin());
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+					ESPUI.updateNumber(param_2_text, z2s_core->getLocalDS18B20GpioPin());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_HCSR04) {
@@ -7556,9 +7578,35 @@ void updateChannelInfoLabel(
 
 					ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
 
-					working_str_ptr = "Enter local SHT3x address (decimal)";
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
-					ESPUI.updateNumber(param_2_number, z2s_core->getLocalSHT3xAddress());
+					working_str_ptr = "Enter local SHT3x address (decimal or 0x hex, "
+						"e.g. 68 or 0x44)";
+					
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+					ESPUI.updateNumber(param_2_text, z2s_core->getLocalSHT3xAddress());
+				}
+
+				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_SHT4X) {
+					
+					enableChannelTimings(0);
+					enableChannelParams(1 + 2);
+
+					char *working_str_ptr =
+					  "Enter local SHT4x parameters: use this format:<br>SDApin,SCLpin"
+						", e.g. 21,22";
+
+					ESPUI.updateControlLabel(param_1_text, working_str_ptr);
+					sprintf(general_purpose_gui_buffer, "%i,%i",
+					  z2s_core->getLocalSHT4xSdaPin(), z2s_core->getLocalSHT4xSclPin());
+
+					ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
+
+					working_str_ptr =
+					  "Enter local SHT4x address (decimal or 0x hex, e.g. 68 or 0x44)";
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+					snprintf(
+					  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
+					  "0x%02X", (uint8_t)z2s_core->getLocalSHT4xAddress());
+					ESPUI.updateText(param_2_text, general_purpose_gui_buffer);
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_BH1750) {
@@ -7576,10 +7624,11 @@ void updateChannelInfoLabel(
 
 					ESPUI.updateText(param_1_text, general_purpose_gui_buffer);
 
-					working_str_ptr =
-					  "Enter local BH1750 address (decimal: 35 = 0x23, 92 = 0x5C)";
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
-					ESPUI.updateNumber(param_2_number, z2s_core->getLocalBH1750Address());
+					working_str_ptr = "Enter local BH1750 address (decimal or 0x hex, "
+						"e.g. 35 or 0x23)";
+					
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+					ESPUI.updateNumber(param_2_text, z2s_core->getLocalBH1750Address());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_ADC) {
@@ -7592,8 +7641,8 @@ void updateChannelInfoLabel(
 					ESPUI.updateNumber(param_1_text, z2s_core->getLocalAdcPin());
 
 					working_str_ptr = "Enter local ADC attenuation:";
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
-					ESPUI.updateNumber(param_2_number, z2s_core->getLocalAdcAttenuation());
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
+					ESPUI.updateNumber(param_2_text, z2s_core->getLocalAdcAttenuation());
 				}
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_PWM) {
@@ -7618,9 +7667,9 @@ void updateChannelInfoLabel(
 					working_str_ptr =
 					  "Enter local PWM logic type: 0 = normal (active HIGH), "
 					  "1 = inverted (active LOW)";
-					ESPUI.updateControlLabel(param_2_number, working_str_ptr);
+					ESPUI.updateControlLabel(param_2_text, working_str_ptr);
 					ESPUI.updateNumber(
-					  param_2_number, z2s_core->getLocalPwmInvertLogic());
+					  param_2_text, z2s_core->getLocalPwmInvertLogic());
 
 					working_str_ptr =
 					  "Enter local PWM resolution in bits (8-12, default 10):";
@@ -7725,7 +7774,7 @@ void updateChannelInfoLabel(
 				ESPUI.updateControlLabel(param_1_text, working_str_ptr);
 
 				working_str_ptr = "Enter GPM temporary deactivation duration [s]";
-				ESPUI.updateControlLabel(param_2_number, working_str_ptr);
+				ESPUI.updateControlLabel(param_2_text, working_str_ptr);
 			}
 			break;
 
@@ -9098,7 +9147,7 @@ uint8_t saveRemoteChannelData(uint8_t channel_slot) {
 	Z2S_Core *z2s_core = Z2S_Core::getZ2SCoreByChannelIndex(channel_slot);
 
 	uint8_t Supla_remote_channel = ESPUI.getControl(
-		param_2_number)->getValueInt();
+		param_2_text)->getValueInt();
 
 	z2s_core->setSuplaRemoteChannel(Supla_remote_channel);
 
@@ -9136,6 +9185,13 @@ void editChannelCallback(BasicControl *sender, int type, void *param) {
 
 	if ((type == B_UP) || (type == S_VALUE))
 		addGUICommand(gui_cmd_edit_channel_data, (uint32_t)param);
+}
+
+/*****************************************************************************/
+
+static inline int32_t getParam2Int() {
+	const char *cstr = ESPUI.getControl(param_2_text)->getValueCstr();
+	return cstr ? static_cast<int32_t>(strtol(cstr, nullptr, 0)) : 0;
 }
 
 /*****************************************************************************/
@@ -9179,7 +9235,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 						if (lah) {
 
 							lah->setLogicOperator(local_channel_function, true);
-							ESPUI.updateNumber(param_2_number, lah->getLogicPinsNumber());
+							ESPUI.updateNumber(param_2_text, lah->getLogicPinsNumber());
 							updateChannelInfoLabel(channel_slot, false);
 						}
 					} 
@@ -9380,6 +9436,23 @@ void editChannelMain(uint32_t update_channel_flag) {
 							} break;
 
 
+							
+							case LOCAL_CHANNEL_TYPE_GPIO_SHT4X: {
+									
+								long sht4x_params[2];
+								size_t params_found = parseCsvNumbers(
+									ESPUI.getControl(param_1_text)->getValueCstr(),
+									sht4x_params, 2);
+
+								if (params_found == 2) {
+									z2s_core->setLocalSHT4xSdaPin(sht4x_params[0]);
+									z2s_core->setLocalSHT4xSclPin(sht4x_params[1]);
+									z2s_core->saveChannelData();
+									z2s_core->updateLocalSHT4xParams();
+								}
+							} break;
+
+
 							case LOCAL_CHANNEL_TYPE_GPIO_BH1750: {
 									
 								long bh1750_params[2];
@@ -9504,7 +9577,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 								if (lah) {
 									
 									int32_t requested_pins =
-										ESPUI.getControl(param_2_number)->getValueInt();
+										getParam2Int();
 
 									uint8_t clamped_pins =
 										(requested_pins < 0) ? 0 :
@@ -9512,7 +9585,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 									lah->setLogicPinsNumber(clamped_pins, true);
 									ESPUI.updateNumber(
-										param_2_number, lah->getLogicPinsNumber());
+										param_2_text, lah->getLogicPinsNumber());
 									updateChannelInfoLabel(channel_slot, false);
 								}
 							} break;
@@ -9530,7 +9603,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_GPIO_RELAY: {
 
 								z2s_core->setLocalRelayHighIsOn(
-									ESPUI.getControl(param_2_number)->getValueInt(), true);
+									getParam2Int(), true);
 
 								z2s_core->updateLocalRelayParams();
 							} break;
@@ -9539,7 +9612,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_GPIO_HVAC: {
 
 								z2s_core->setLocalHvacHighIsOn(
-									ESPUI.getControl(param_2_number)->getValueInt(), true);
+									getParam2Int(), true);
 
 								z2s_core->updateLocalHvacParams();
 							} break;
@@ -9548,7 +9621,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
 
 								z2s_core->setLocalBinaryInvertLogic(
-									ESPUI.getControl(param_2_number)->getValueInt(), true);
+									getParam2Int(), true);
 
 								z2s_core->updateLocalBinaryParams();
 							} break;
@@ -9557,7 +9630,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_GPIO_DS18B20: {
 
 								z2s_core->setLocalDS18B20GpioPin(
-									ESPUI.getControl(param_2_number)->getValueInt(), true);
+									getParam2Int(), true);
 
 								z2s_core->updateLocalDs18b20Params();
 							} break;
@@ -9566,7 +9639,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
 
 								z2s_core->setLocalSHT3xAddress(
-									ESPUI.getControl(param_2_number)->getValueInt(), true);
+									getParam2Int(), true);
 								z2s_core->updateLocalSHT3xParams();
 							} break;
 
@@ -9574,15 +9647,22 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_GPIO_BH1750: {
 
 								z2s_core->setLocalBH1750Address(
-									ESPUI.getControl(param_2_number)->getValueInt(), true);
+									getParam2Int(), true);
 								z2s_core->updateLocalBH1750Params();
+							} break;
+
+
+							case LOCAL_CHANNEL_TYPE_GPIO_SHT4X: {
+
+								z2s_core->setLocalSHT4xAddress(getParam2Int(), true);
+								z2s_core->updateLocalSHT4xParams();
 							} break;
 
 
 							case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
 
 								z2s_core->setLocalAdcAttenuation(
-									ESPUI.getControl(param_2_number)->getValueInt(), true);
+									getParam2Int(), true);
 								z2s_core->updateLocalAdcParams();
 							} break;
 
@@ -9590,7 +9670,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
 
 								z2s_core->setLocalPwmInvertLogic(
-									ESPUI.getControl(param_2_number)->getValueInt() != 0, true);
+									getParam2Int() != 0, true);
 							 z2s_core->updateLocalPwmParams();
 							} break;
 
@@ -9598,7 +9678,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 							case LOCAL_CHANNEL_TYPE_CALC_GPM: {
 
 								int32_t fs_val = ESPUI.getControl(
-									param_2_number)->getValueInt();
+									param_2_text)->getValueInt();
 								
 								if (fs_val < -1) fs_val = -1;
 								if (fs_val > 100) fs_val = 100;
@@ -9606,7 +9686,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 								z2s_core->setCalculatedGpmFailsafeDuty(
 									static_cast<int8_t>(fs_val), true);
 								ESPUI.updateNumber(
-									param_2_number,
+									param_2_text,
 									z2s_core->getCalculatedGpmFailsafeDuty());
 									z2s_core->updateCalculatedGpmParams();
 							} break;
@@ -9624,7 +9704,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 					default: {
 
 						z2s_core->setChannelUserData1(
-							ESPUI.getControl(param_2_number)->getValueInt());
+							getParam2Int());
 					} break;
 				}
 			} break;//PARAM_2

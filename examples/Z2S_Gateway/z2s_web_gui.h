@@ -93,6 +93,7 @@ enum gui_commands : uint8_t {
   gui_cmd_add_local_ds18b20,
   gui_cmd_add_local_hcsr04,
   gui_cmd_add_local_sht3x,
+  gui_cmd_add_local_sht4x,
   gui_cmd_add_local_bh1750,
   gui_cmd_add_local_adc,
   gui_cmd_add_local_pwm,

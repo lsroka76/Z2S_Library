@@ -1204,6 +1204,20 @@ bool Z2S_Core::updateLocalSHT3xParams() {
 
 /*****************************************************************************/
 
+bool Z2S_Core::updateLocalSHT4xParams() {
+
+  if (_z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_GPIO_SHT4X &&
+      _z2s_element) {
+
+    auto *sht4 = static_cast<Supla::Sensor::LocalSHT4x *>(_z2s_element);
+    sht4->setAddress(getLocalSHT4xAddress());
+    return true;
+  }
+  return false;
+}
+
+/*****************************************************************************/
+
 bool Z2S_Core::updateLocalAdcParams() {
 
   if (_z2s_element) {

@@ -260,6 +260,12 @@ union {
     struct {
       uint8_t         sda_pin;
       uint8_t         scl_pin;
+      int8_t          sht4x_address;
+      uint8_t         wire_pins_changed : 1;
+    } local_sht4x_data;
+    struct {
+      uint8_t         sda_pin;
+      uint8_t         scl_pin;
       int8_t          bh1750_address;
       uint8_t         wire_pins_changed : 1;
     } local_bh1750_data;

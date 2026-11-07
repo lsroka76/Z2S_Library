@@ -43,6 +43,7 @@ inline constexpr char *LOCAL_GPIO_HCSR04_NAME = "LOCAL HC-SR04 (GPIO)";
 inline constexpr char *LOCAL_GPIO_DS18B20_NAME = "LOCAL DS18B20 (GPIO)";
 inline constexpr char *LOCAL_GPIO_BINARY_NAME = "LOCAL BINARY (GPIO)";
 inline constexpr char *LOCAL_GPIO_SHT3X_NAME = "LOCAL SHT3X (I2C)";
+inline constexpr char *LOCAL_GPIO_SHT4X_NAME = "LOCAL SHT4X (I2C)";
 inline constexpr char *LOCAL_GPIO_BH1750_NAME = "LOCAL BH1750 (I2C)";
 inline constexpr char *LOCAL_GPIO_ADC_NAME = "LOCAL ADC (GPIO)";
 inline constexpr char *LOCAL_GPIO_PWM_NAME = "LOCAL PWM (GPIO)";

@@ -52,6 +52,7 @@
 
 #include "Z2S_sensor/virtual_general_purpose_measurement.h"
 #include "Z2S_sensor/virtual_thermometer_with_actions.h"
+#include "Z2S_sensor/Z2S_SHT4x.h"
 
 /*****************************************************************************/
 
@@ -786,6 +787,49 @@ class LocalSHT3x : public SHT3x, public Z2S_Core {
       return TEMPERATURE_NOT_AVAILABLE;
     }
     return Supla::Sensor::SHT3x::getTemp();
+  }
+};
+
+/*****************************************************************************/
+
+class LocalSHT4x : public SHT4x, public Z2S_Core {
+
+ public:
+
+  LocalSHT4x() : SHT4x(0x44), Z2S_Core(this) {}
+
+  void onInit() override {
+
+    if (ensureLocalI2C(getLocalSHT4xSdaPin(), getLocalSHT4xSclPin())) {
+      uint8_t addr = getLocalSHT4xAddress();
+      if (addr < 0x44 || addr > 0x46) {
+        addr = 0x44;
+      }
+      address = addr;
+      sht = ::SHT4x(address, &Wire);
+      Supla::Sensor::SHT4x::onInit();
+    }
+  }
+
+  void setAddress(int8_t addr) {
+
+    if (addr < 0x44 || addr > 0x46) {
+      addr = 0x44;
+    }
+    address = addr;
+    if (ensureLocalI2C(getLocalSHT4xSdaPin(), getLocalSHT4xSclPin())) {
+      sht = ::SHT4x(address, &Wire);
+      sht.begin();
+    }
+  }
+
+  double getTemp() override {
+
+    if (!ensureLocalI2C(getLocalSHT4xSdaPin(), getLocalSHT4xSclPin())) {
+      humidity = HUMIDITY_NOT_AVAILABLE;
+      return TEMPERATURE_NOT_AVAILABLE;
+    }
+    return Supla::Sensor::SHT4x::getTemp();
   }
 };
 

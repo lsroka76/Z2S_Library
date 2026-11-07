@@ -295,6 +295,26 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
     }
   },
   {
+    LOCAL_CHANNEL_TYPE_GPIO_SHT4X,
+    "Local SHT4x (I2C)",
+    LOCAL_GPIO_SHT4X_NAME,
+    SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE,
+    true,
+    [](uint16_t idx, z2s_device_params_t* ch, Supla::Element* el) {
+      auto* sht4 = initOrCastLocalElement<Supla::Sensor::LocalSHT4x>(
+          idx, ch, el, true);
+      sht4->updateLocalSHT4xParams();
+    },
+    [](uint8_t slot, const LocalChannelDescriptor& d, uint32_t func, uint8_t) {
+      auto* sht4 = new Supla::Sensor::LocalSHT4x();
+      registerNewLocalChannel(sht4, slot, d, func, nullptr, [](auto* sht4) {
+        sht4->setLocalSHT4xSdaPin(0);
+        sht4->setLocalSHT4xSclPin(0);
+        sht4->setLocalSHT4xAddress(0x44);
+      });
+    }
+  },
+  {
     LOCAL_CHANNEL_TYPE_GPIO_BH1750,
     "Local BH1750 (I2C)",
     LOCAL_GPIO_BH1750_NAME,
