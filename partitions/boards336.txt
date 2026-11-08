@@ -1408,7 +1408,7 @@ esp32s3.menu.ZigbeeMode.default=Disabled
 esp32s3.menu.ZigbeeMode.default.build.zigbee_mode=
 esp32s3.menu.ZigbeeMode.default.build.zigbee_libs=
 esp32s3.menu.ZigbeeMode.zczr=Zigbee ZCZR (coordinator/router)
-esp32s3.menu.ZigbeeMode.zczr.build.zigbee_mode=-DZIGBEE_MODE_ZCZR
+esp32s3.menu.ZigbeeMode.zczr.build.zigbee_mode=-DZIGBEE_MODE_ZCZR -DCONFIG_ZB_ENABLED=1
 esp32s3.menu.ZigbeeMode.zczr.build.zigbee_libs=-lesp_zb_api.zczr -lzboss_stack.zczr -lzboss_port.remote
 
 ##############################################################
