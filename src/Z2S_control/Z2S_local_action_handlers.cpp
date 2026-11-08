@@ -1311,7 +1311,7 @@ void Supla::Control::LocalPWM::setupPWM() {
 
   int8_t   pin  = getLocalPwmGpioPin();
   uint32_t freq = getLocalPwmFreqHz();
-  uint8_t  res  = getLocalPwmResolutionBits();
+  uint8_t  res xxxx = getLocalPwmResolutionBits();
 
   if (freq == 0) freq = 5000;
   if (res < 8 || res > 12) res = 10;

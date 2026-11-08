@@ -141,22 +141,25 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
     brightness = 100;
   }
 
+  bool modeSwitched = false;
+
   bool wasOn = (_colorBrightness > 0) || (_brightness > 0);
 
-  // 1. Check if RGB is turning ON (or being adjusted while Dimmer was ON)
   if ((_colorBrightness == 0) && (colorBrightness > 0)) {
 
     log_i("RGB ON");
 
-    brightness = 0;       // Force Dimmer OFF
-    whiteTemperature = 0; // Force CCT OFF
+    brightness = 0;       
+    whiteTemperature = 0;
+    modeSwitched = true;
   } 
-  // 2. Otherwise, check if Dimmer is turning ON
+  
   else if ((_brightness == 0) && (brightness > 0)) {
 
     log_i("DIMMER ON");
-    // Force RGB OFF (using local var so RGB OFF block below catches it!)
+
     colorBrightness = 0;  
+    modeSwitched = true;
 
     if (whiteTemperature == 0)
       whiteTemperature = _last_whiteTemperature;
@@ -165,7 +168,6 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
       brightness = _last_brightness;
   }
 
-  // 3. Save last RGB state if RGB is transitioning from ON -> OFF
   if ((_colorBrightness > 0) && (colorBrightness == 0)) {
 
     log_i("RGB OFF");
@@ -176,7 +178,6 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
     _last_colorBrightness = _colorBrightness;
   }
 
-  // 4. Save last Dimmer state if Dimmer is transitioning from ON -> OFF
   if ((_brightness > 0) && (brightness == 0)) {
 
     log_i("DIMMER OFF");
@@ -185,7 +186,6 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
     _last_whiteTemperature = _whiteTemperature;
   }
 
-  // 5. Determine unified turnOnOff state cleanly
   bool isNowOn = (colorBrightness > 0) || (brightness > 0);
 
   if (!isNowOn) {
@@ -195,15 +195,14 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
     turnOnOff = 0;
   } 
   else if (!wasOn) {
-    // Transitioned from completely OFF -> ON
+    
     turnOnOff = 1; 
   } 
   else {
-    // Was already ON (adjusting value or switching RGB <-> Dimmer)
+  
     turnOnOff = 2; 
   }
 
-  // 6. Commit new values
   _red = red;
   _green = green;
   _blue = blue;
@@ -211,7 +210,11 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
   _brightness = brightness;
   _whiteTemperature = whiteTemperature;
 
-  _lastServerMsgReceivedMs = millis();
+  if (turnOnOff == 2 && !modeSwitched)
+    _lastServerMsgReceivedMs = millis() | 1;
+  else 
+    _lastServerMsgReceivedMs = 1;
+  
   Supla::Storage::ScheduleSave(5000, 2000);
 
   return -1;
@@ -235,12 +238,18 @@ void Supla::Control::Z2S_RGBCCTInterface::setValueOnServer(
   uint8_t red, uint8_t green, uint8_t blue, uint8_t colorBrightness,
   uint8_t brightness, uint8_t whiteTemperature) {
 
-  _last_red = _red;
-  _last_green = _green;
-  _last_blue = _blue;
-  _last_colorBrightness = _colorBrightness;
-  _last_brightness = _brightness;
-  _last_whiteTemperature = _whiteTemperature;
+  if (_colorBrightness > 0) {
+    
+    _last_red = _red;
+    _last_green = _green;
+    _last_blue = _blue;
+    _last_colorBrightness = _colorBrightness;
+  }
+  if (_brightness > 0) {
+    
+    _last_brightness = _brightness;
+    _last_whiteTemperature = _whiteTemperature;
+  }
 
   _red = red;
   _green = green;
@@ -611,7 +620,9 @@ void Supla::Control::Z2S_RGBCCTInterface::syncDevice() {
 void Supla::Control::Z2S_RGBCCTInterface::ping() {
 
   if (Zigbee.started()) {
+
     _fresh_start = false;
+    
     zbGateway.sendAttributeRead(
       _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
       ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
@@ -635,48 +646,63 @@ void Supla::Control::Z2S_RGBCCTInterface::turnOn() {
       _colorBrightness = 100;
     }
 
+    if (_red == 0 && _green == 0 && _blue == 0) {
+
+      if (_last_red > 0 || _last_green > 0 || _last_blue > 0) {
+        
+        _red = _last_red;
+        _green = _last_green;
+        _blue = _last_blue;
+      } 
+      else {
+        _green = 255; 
+      }
+    }
+
     _lastServerMsgReceivedMs = 1;
   }
 }
 
 /*****************************************************************************/
 
-void Supla::Control::Z2S_RGBCCTInterface::turnOnDimmer(){
+void Supla::Control::Z2S_RGBCCTInterface::turnOnDimmer() {
 
   log_i("turnOnOff %u", turnOnOff);
 
+  if ((turnOnOff > 0) && (_brightness > 0))
+    return; 
+
   if (turnOnOff == 0) {
-
-    turnOnOff = 1;
-
-    if (_last_brightness > 0)
-      _brightness = _last_brightness;
-    else {
-
-      _last_brightness = _brightness;
-      _brightness = 100;
-    }
     
-    _lastServerMsgReceivedMs = 1;
-    return;
-  }
-  if ((turnOnOff) && (_brightness))
-    return; //DIMMER already on
-
-  _last_colorBrightness = _colorBrightness;
-  _colorBrightness = 0;
-
-  if (_last_brightness > 0)
-    _brightness = _last_brightness;
+    turnOnOff = 1;
+  } 
   else {
+    
+    _last_colorBrightness = _colorBrightness;
+    _last_red = _red;
+    _last_green = _green;
+    _last_blue = _blue;
+    _colorBrightness = 0;
+    turnOnOff = 2;
+  }
 
+  if (_last_brightness > 0) {
+    
+    _brightness = _last_brightness;
+  } 
+  else {
+    
     _last_brightness = _brightness;
     _brightness = 100;
   }
 
+  if (_whiteTemperature == 0) {
+    
+    _whiteTemperature = _last_whiteTemperature;
+  }
+
   _lastServerMsgReceivedMs = 1;
 }
-
 
 /*****************************************************************************/
 
@@ -685,11 +711,21 @@ void Supla::Control::Z2S_RGBCCTInterface::turnOff() {
   if (turnOnOff > 0)
     turnOnOff = 0;
 
-  _last_colorBrightness = _colorBrightness;
-  _colorBrightness = 0;
+  if (_colorBrightness > 0) {
 
-  _last_brightness = _brightness;
-  _brightness = 0;
+    _last_red = _red;
+    _last_green = _green;
+    _last_blue = _blue;
+    _last_colorBrightness = _colorBrightness;
+    _colorBrightness = 0;
+  }
+
+  if (_brightness > 0) {
+    
+    _last_brightness = _brightness;
+    _last_whiteTemperature = _whiteTemperature;
+    _brightness = 0;
+  }
 
   _lastServerMsgReceivedMs = 1;
 }
@@ -714,9 +750,9 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
     _lastServerMsgReceivedMs = 0;
 
     log_i(
-        "[S] red %d, green %d, blue %d, color brightness %d, brightness %d" 
-        "whiteTemperature %d", _red, _green, _blue, _colorBrightness, 
-        _brightness, _whiteTemperature);
+      "[S] red %d, green %d, blue %d, color brightness %d, brightness %d," 
+      "whiteTemperature %d", _red, _green, _blue, _colorBrightness, 
+      _brightness, _whiteTemperature);
       
 
     channel.setNewValue(
@@ -734,9 +770,9 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
     _lastDeviceMsgReceivedMs = 0;
 
     log_i(
-        "[D] red %d, green %d, blue %d, color brightness %d, brightness %d" 
-        "whiteTemperature %d", _red, _green, _blue, _colorBrightness, 
-        _brightness, _whiteTemperature);
+      "[D] red %d, green %d, blue %d, color brightness %d, brightness %d" 
+      "whiteTemperature %d", _red, _green, _blue, _colorBrightness, 
+      _brightness, _whiteTemperature);
 
     channel.setNewValue(
       _red, _green, _blue, _colorBrightness, _brightness, _whiteTemperature);
@@ -784,19 +820,49 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 void Supla::Control::Z2S_RGBCCTInterface::increaseBrightness(
   int8_t add_to_brightness) {
 
-  _last_brightness = _brightness;
+  bool wasOn = isOn();
 
   int16_t new_brightness = _brightness + add_to_brightness;
 
-  if (new_brightness < 0)
-    new_brightness = 0;
+  if (new_brightness < 0) new_brightness = 0;
+  if (new_brightness > 100) new_brightness = 100;
 
-  if (new_brightness > 100)
-    new_brightness = 100;
+  if (_brightness > 0) {
+    _last_brightness = _brightness;
+  }
+
+  if (new_brightness > 0 && _colorBrightness > 0) {
+    _last_red = _red;
+    _last_green = _green;
+    _last_blue = _blue;
+    _last_colorBrightness = _colorBrightness;
+    _colorBrightness = 0;
+  }
+
+  if (_brightness == 0 && new_brightness > 0 && _whiteTemperature == 0) {
+    
+    _whiteTemperature = _last_whiteTemperature;
+  }
+
+
+  if (_brightness > 0 && new_brightness == 0) {
+    
+    _last_whiteTemperature = _whiteTemperature;
+  }
 
   _brightness = new_brightness;
 
-  _lastServerMsgReceivedMs = millis();
+  if (!isOn()) {
+    turnOnOff = 0;
+  } 
+  else if (!wasOn) {
+    turnOnOff = 1;
+  } 
+  else {
+    turnOnOff = 2;
+  }
+
+  _lastServerMsgReceivedMs = 1; // Or: (turnOnOff == 2) ? (millis() | 1) : 1;
   Supla::Storage::ScheduleSave(5000, 2000);
 }
 
