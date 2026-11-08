@@ -53,13 +53,8 @@ bool GeminiBridge::initUart() {
   ESP_ERROR_CHECK(uart_set_pin(
     GEMINI_UART_NUM, GEMINI_PIN_TX, GEMINI_PIN_RX, GEMINI_PIN_RTS, GEMINI_PIN_CTS));
 
-  uart_intr_config_t intr_cfg = {
-    .intr_enable_mask         = UART_RXFIFO_FULL_INT_ENA_M | UART_RXFIFO_TOUT_INT_ENA_M,
-    .rx_timeout_thresh        = 2,
-    .txfifo_empty_intr_thresh = 10,
-    .rxfifo_full_thresh       = 32,
-  };
-  uart_intr_config(GEMINI_UART_NUM, &intr_cfg);
+  uart_set_rx_full_threshold(GEMINI_UART_NUM, 32);
+  uart_set_rx_timeout(GEMINI_UART_NUM, 2);
 
   s_cmd_queue = xQueueCreate(12, sizeof(QueuedCommand));
   xTaskCreate(cmdWorkerTask, "gemini_wrk", 8192, nullptr, 12, nullptr);
