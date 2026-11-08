@@ -7,35 +7,30 @@
 #include <freertos/task.h>
 #include <freertos/queue.h>
 
-// ============================================================================
-// MASTER SWITCH: Uncomment to enable Dual-Chip S3 (Host) + C6 (NCP) mode.
-// Comment out to compile everything natively on a single ESP32-C6.
-// ============================================================================
-#define USE_GEMINI_PROTOCOL
+// Auto-enable Gemini Protocol when building for ESP32-S3 or C6 Co-Processor
+#if CONFIG_IDF_TARGET_ESP32S3 || defined(Z2S_C6_COPROCESSOR_FIRMWARE)
+  #ifndef USE_GEMINI_PROTOCOL
+    #define USE_GEMINI_PROTOCOL 1
+  #endif
+#endif
 
 #if defined(USE_GEMINI_PROTOCOL)
   #if CONFIG_IDF_TARGET_ESP32S3
-    // Compiling Z2S_Gateway.ino for ESP32-S3 -> S3 Host Mode!
     #define USE_GEMINI_PROTOCOL_HOST 1
   #elif defined(Z2S_C6_COPROCESSOR_FIRMWARE)
-    // Compiling Z2S_C6_NCP.ino for ESP32-C6 -> C6 Co-Processor Modem Mode!
     #define USE_GEMINI_PROTOCOL_NCP  1
   #else
-    // Compiling Z2S_Gateway.ino for ESP32-C6 -> Standalone Single-Chip C6 Mode!
     #undef USE_GEMINI_PROTOCOL
   #endif
 #endif
 
 #include "ZigbeeGateway.h"
 
-// ============================================================================
-// UART & Pin Configuration (Adjust to match your S3 <-> C6 wiring)
-// ============================================================================
 #ifndef GEMINI_UART_NUM
   #define GEMINI_UART_NUM      UART_NUM_1
 #endif
 #ifndef GEMINI_UART_BAUD
-  #define GEMINI_UART_BAUD     2000000 // 2 Mbps with RTS/CTS hardware flow control
+  #define GEMINI_UART_BAUD     2000000 // 2 Mbps
 #endif
 
 #if defined(USE_GEMINI_PROTOCOL_HOST) // ESP32-S3 Host Pins
@@ -72,6 +67,10 @@ enum GeminiMsgType : uint8_t {
   G_CMD_IEEE_ADDR_REQ        = 0x08,
   G_CMD_CLEAR_LOCAL_BINDINGS = 0x09,
   G_CMD_SET_TIME_CLUSTER     = 0x0A,
+  G_CMD_SET_TX_POWER         = 0x0B,
+  G_CMD_GET_TX_POWER         = 0x0C,
+  G_CMD_IC_ADD               = 0x0D,
+  G_CMD_IC_REMOVE_ALL        = 0x0E,
 
   G_CMD_QUERY_BASIC          = 0x10,
   G_CMD_READ_ATTR            = 0x11,
@@ -96,7 +95,7 @@ enum GeminiMsgType : uint8_t {
   G_CMD_DEV_FACTORY_RESET    = 0x33,
   G_CMD_OTA_NOTIFY_START     = 0x40,
 
-  // --- Synchronous Replies (0x80..0x9F: Unblock waiting semaphore immediately) ---
+  // --- Synchronous Replies (0x80..0x9F) ---
   G_RSP_STATUS               = 0x80,
   G_RSP_QUERY_BASIC          = 0x81,
   G_RSP_READ_ATTR            = 0x82,
@@ -104,7 +103,8 @@ enum GeminiMsgType : uint8_t {
   G_RSP_READ_REPORT_CFG      = 0x84,
   G_RSP_CUSTOM_CMD           = 0x85,
   G_RSP_SIMPLE_DESC          = 0x86,
-  G_RSP_OTA_CHUNK            = 0x87, // S3 -> C6 fast reply for OTA block
+  G_RSP_OTA_CHUNK            = 0x87,
+  G_RSP_TX_POWER             = 0x88,
 
   // --- C6 NCP -> S3 Host Asynchronous Events ---
   G_EVT_STACK_STARTED        = 0xA0,
@@ -131,8 +131,6 @@ enum GeminiColorSubCmd : uint8_t {
   G_COLOR_MOVE_CT              = 6
 };
 
-// --- Packed Binary Wire Structures ---
-
 struct __attribute__((packed)) GeminiFrameHeader {
   uint8_t  sync1;
   uint8_t  sync2;
@@ -146,6 +144,25 @@ struct __attribute__((packed)) G_PktZbBegin {
   uint8_t  role;
   uint8_t  erase_nvs;
   uint8_t  open_network_sec;
+};
+
+struct __attribute__((packed)) G_PktEvtStackStarted {
+  uint8_t  coordinator_ieee[8];
+  uint8_t  extended_pan_id[8];
+  uint8_t  current_channel;
+  int8_t   tx_power;
+};
+
+struct __attribute__((packed)) G_PktTimeClusterSync {
+  uint32_t utc_time;
+  uint32_t local_time;
+  uint8_t  time_status;
+};
+
+struct __attribute__((packed)) G_PktIcAdd {
+  uint8_t  ieee_addr[8];
+  uint8_t  ic_type;
+  uint8_t  ic_data[18];
 };
 
 struct __attribute__((packed)) G_PktQueryBasicReq {
@@ -282,7 +299,7 @@ struct __attribute__((packed)) G_PktBindClusterReq {
   zbg_device_params_t device;
   uint16_t            cluster_id;
   uint8_t             groupcast_flag;
-  uint8_t             mode; // 0: bindCluster, 1: bindCluster2, 2: unbindLocal
+  uint8_t             mode;
 };
 
 struct __attribute__((packed)) G_PktBindDirectReq {
@@ -362,16 +379,6 @@ struct __attribute__((packed)) G_PktEvtCustomClusterCmd {
   uint8_t  payload[];
 };
 
-struct __attribute__((packed)) G_PktTimeClusterSync {
-  uint32_t utc_time;
-  uint32_t local_time;
-  uint8_t  time_status;
-};
-
-struct __attribute__((packed)) G_PktEvtStackStarted {
-  uint8_t coordinator_ieee[8];
-};
-
 static inline uint16_t geminiCrc16(const uint8_t *data, size_t len, uint16_t crc = 0xFFFF) {
   while (len--) {
     crc ^= (uint16_t)(*data++) << 8;
@@ -398,9 +405,16 @@ public:
     bool is_basic = false, int8_t rssi = 0);
 
   static size_t requestOtaChunkFromHost(uint8_t *dest, uint32_t offset, uint8_t size);
+  static void sendStackStartedEvt();
 
-  static void setCoordinatorIeee(const uint8_t *ieee);
+  // S3 Host shims for direct ZBOSS SDK calls in Z2S_Gateway.ino & z2s_web_gui.cpp
   static void getCoordinatorIeee(uint8_t *ieee);
+  static void getExtendedPanId(uint8_t *ext_pan_id);
+  static uint8_t getCurrentChannel();
+  static void hostGetTxPower(int8_t *power);
+  static void hostSetTxPower(int8_t power);
+  static esp_err_t hostIcAdd(uint8_t *ieee, uint8_t ic_type, uint8_t *ic_data);
+  static esp_err_t hostIcRemoveAll();
   static esp_zb_zcl_status_t hostSetTimeAttr(uint16_t attr_id, void *value_p);
   static esp_zb_zcl_attr_t *hostGetTimeAttr(uint16_t attr_id);
 
@@ -418,7 +432,6 @@ private:
   static uint16_t          _sync_rsp_max_len;
   static volatile bool     _sync_rsp_ok;
 };
-
 #endif
 
 #if defined(USE_GEMINI_PROTOCOL_HOST)
@@ -426,10 +439,15 @@ private:
     static inline void esp_coex_wifi_i154_enable() {}
   #endif
 
-  // Redirect ZBOSS calls in Z2S_Gateway.ino on S3 Host to GeminiBridge!
-  #define esp_zb_lock_acquire(t)      true
-  #define esp_zb_lock_release()       ((void)0)
-  #define esp_zb_get_long_address(a)  GeminiBridge::getCoordinatorIeee(a)
+  #define esp_zb_lock_acquire(t)                true
+  #define esp_zb_lock_release()                 ((void)0)
+  #define esp_zb_get_long_address(a)            GeminiBridge::getCoordinatorIeee(a)
+  #define esp_zb_get_extended_pan_id(a)         GeminiBridge::getExtendedPanId(a)
+  #define esp_zb_get_current_channel()          GeminiBridge::getCurrentChannel()
+  #define esp_zb_get_tx_power(p)                GeminiBridge::hostGetTxPower(p)
+  #define esp_zb_set_tx_power(p)                GeminiBridge::hostSetTxPower(p)
+  #define esp_zb_secur_ic_add(ieee, t, ic)      GeminiBridge::hostIcAdd(ieee, t, ic)
+  #define esp_zb_secur_ic_remove_all_req()      GeminiBridge::hostIcRemoveAll()
   #define esp_zb_zcl_set_attribute_val(ep, cl, role, attr_id, val_p, chk) \
     GeminiBridge::hostSetTimeAttr(attr_id, val_p)
   #define esp_zb_zcl_get_attribute(ep, cl, role, attr_id) \

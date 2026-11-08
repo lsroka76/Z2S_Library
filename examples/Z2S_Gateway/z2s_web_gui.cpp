@@ -8265,7 +8265,6 @@ void getClustersAttributesQueryMain(int32_t custom_flag) {
 							  esp_zb_zcl_status_to_name(
 							    zbGateway.getReportConfigRespVariableLastResult()->status),
 							  zbGateway.getReportConfigRespVariableLastResult()->status,
-							  zbGateway.getReportConfigRespVariableLastResult()->status,
 							  zbGateway.getReportConfigRespVariableLastResult()->attribute_id);
 
 							updateLabel_P(
@@ -8355,7 +8354,6 @@ void getClustersAttributesQueryMain(int32_t custom_flag) {
 							                              "Status = %s(0x%02X)<br>Attribute id = 0x%04X<br>",
 							  esp_zb_zcl_status_to_name(
 							    *zbGateway.getConfigReportStatusLastResult()),
-							  *zbGateway.getConfigReportStatusLastResult(),
 							  *zbGateway.getConfigReportStatusLastResult(), attribute_id);
 
 							updateLabel_P(
@@ -8579,7 +8577,7 @@ void getClustersAttributesQueryMain(int32_t custom_flag) {
 
 						if (cluster_id == 0xEF00) {
 
-							custom_cmd_tsn = (((uint16_t)(*custom_cmd_payload)) << 16) + (*(custom_cmd_payload + 1));
+							custom_cmd_tsn = (((uint16_t)(*custom_cmd_payload)) << 8) + (*(custom_cmd_payload + 1));
 							Tuya_custom_cmd_dp = *(custom_cmd_payload + 2);
 							current_Tuya_payload_label = clusters_attributes_table[device_Tuya_payload_label];
 						}
@@ -10469,7 +10467,7 @@ void TuyaCustomCmdMain(int32_t custom_flag) {
 						Tuya_devices_tab_controls_table[
 							Tuya_datapoint_length_number])->getValueInt();
 
-					if (cmd_dp_type > 58) {
+					if ((cmd_dp_length == 0 || cmd_dp_length > 58)) {
 
 						updateLabel_C(
 						  Tuya_devices_tab_controls_table[Tuya_device_cmd_result_label],

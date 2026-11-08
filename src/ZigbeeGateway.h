@@ -1121,4 +1121,5 @@ protected:
 };
 
 extern ZigbeeGateway zbGateway;
+#include "GeminiProtocol.h"
 #endif  //SOC_IEEE802154_SUPPORTED && CONFIG_ZB_ENABLED

@@ -14,6 +14,15 @@ void             *GeminiBridge::_sync_rsp_dest     = nullptr;
 uint16_t          GeminiBridge::_sync_rsp_max_len  = 0;
 volatile bool     GeminiBridge::_sync_rsp_ok       = false;
 
+static uint8_t           s_coord_ieee[8]       = {};
+static uint8_t           s_ext_pan_id[8]       = {};
+static uint8_t           s_current_channel     = 20;
+static int8_t            s_tx_power            = 20;
+static uint32_t          s_host_utc_time       = 0;
+static uint32_t          s_host_local_time     = 0;
+static uint8_t           s_host_time_status    = 0x02;
+static esp_zb_zcl_attr_t s_dummy_zcl_attr      = {};
+
 struct QueuedCommand {
   GeminiFrameHeader hdr;
   uint8_t           payload[GEMINI_MAX_PAYLOAD];
@@ -29,13 +38,17 @@ bool GeminiBridge::initUart() {
   _sync_rsp_sem   = xSemaphoreCreateBinary();
 
   #if defined(USE_GEMINI_PROTOCOL_HOST)
-  pinMode(GEMINI_PIN_C6_BOOT, OUTPUT);
-  digitalWrite(GEMINI_PIN_C6_BOOT, HIGH);
-  pinMode(GEMINI_PIN_C6_EN, OUTPUT);
-  digitalWrite(GEMINI_PIN_C6_EN, LOW);
-  vTaskDelay(pdMS_TO_TICKS(50));
-  digitalWrite(GEMINI_PIN_C6_EN, HIGH);
-  vTaskDelay(pdMS_TO_TICKS(200));
+  if (GEMINI_PIN_C6_BOOT >= 0) {
+    pinMode(GEMINI_PIN_C6_BOOT, OUTPUT);
+    digitalWrite(GEMINI_PIN_C6_BOOT, HIGH);
+  }
+  if (GEMINI_PIN_C6_EN >= 0) {
+    pinMode(GEMINI_PIN_C6_EN, OUTPUT);
+    digitalWrite(GEMINI_PIN_C6_EN, LOW);
+    vTaskDelay(pdMS_TO_TICKS(50));
+    digitalWrite(GEMINI_PIN_C6_EN, HIGH);
+    vTaskDelay(pdMS_TO_TICKS(200));
+  }
   #endif
 
   const uart_config_t uart_cfg = {
@@ -115,6 +128,84 @@ bool GeminiBridge::sendCommandWaitReply(
 
   xSemaphoreGive(_sync_cmd_mutex);
   return got_reply;
+}
+
+void GeminiBridge::sendStackStartedEvt() {
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+  G_PktEvtStackStarted evt = {};
+  esp_zb_get_long_address(evt.coordinator_ieee);
+  esp_zb_get_extended_pan_id(evt.extended_pan_id);
+  evt.current_channel = esp_zb_get_current_channel();
+  esp_zb_get_tx_power(&evt.tx_power);
+  sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
+#endif
+}
+
+void GeminiBridge::getCoordinatorIeee(uint8_t *ieee) {
+  if (ieee) memcpy(ieee, s_coord_ieee, 8);
+}
+
+void GeminiBridge::getExtendedPanId(uint8_t *ext_pan_id) {
+  if (ext_pan_id) memcpy(ext_pan_id, s_ext_pan_id, 8);
+}
+
+uint8_t GeminiBridge::getCurrentChannel() {
+  return s_current_channel;
+}
+
+void GeminiBridge::hostGetTxPower(int8_t *power) {
+  if (!power) return;
+  int8_t rx_pwr = s_tx_power;
+  if (sendCommandWaitReply(G_CMD_GET_TX_POWER, nullptr, 0, G_RSP_TX_POWER, &rx_pwr, sizeof(rx_pwr), 500)) {
+    s_tx_power = rx_pwr;
+  }
+  *power = s_tx_power;
+}
+
+void GeminiBridge::hostSetTxPower(int8_t power) {
+  s_tx_power = power;
+  sendFrame(G_CMD_SET_TX_POWER, &power, sizeof(power));
+}
+
+esp_err_t GeminiBridge::hostIcAdd(uint8_t *ieee, uint8_t ic_type, uint8_t *ic_data) {
+  if (!ieee || !ic_data) return ESP_ERR_INVALID_ARG;
+  G_PktIcAdd pkt = {};
+  memcpy(pkt.ieee_addr, ieee, 8);
+  pkt.ic_type = ic_type;
+  memcpy(pkt.ic_data, ic_data, 18);
+  return sendFrame(G_CMD_IC_ADD, &pkt, sizeof(pkt)) ? ESP_OK : ESP_FAIL;
+}
+
+esp_err_t GeminiBridge::hostIcRemoveAll() {
+  return sendFrame(G_CMD_IC_REMOVE_ALL, nullptr, 0) ? ESP_OK : ESP_FAIL;
+}
+
+esp_zb_zcl_status_t GeminiBridge::hostSetTimeAttr(uint16_t attr_id, void *value_p) {
+  if (!value_p) return ESP_ZB_ZCL_STATUS_FAIL;
+  if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_ID) {
+    memcpy(&s_host_utc_time, value_p, 4);
+  } else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID) {
+    s_host_time_status = *(uint8_t *)value_p;
+  } else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID) {
+    memcpy(&s_host_local_time, value_p, 4);
+    G_PktTimeClusterSync pkt = {
+      .utc_time    = s_host_utc_time,
+      .local_time  = s_host_local_time,
+      .time_status = s_host_time_status
+    };
+    sendFrame(G_CMD_SET_TIME_CLUSTER, &pkt, sizeof(pkt));
+  }
+  return ESP_ZB_ZCL_STATUS_SUCCESS;
+}
+
+esp_zb_zcl_attr_t *GeminiBridge::hostGetTimeAttr(uint16_t attr_id) {
+  if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_ID)
+    s_dummy_zcl_attr.data_p = &s_host_utc_time;
+  else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)
+    s_dummy_zcl_attr.data_p = &s_host_local_time;
+  else
+    s_dummy_zcl_attr.data_p = &s_host_time_status;
+  return &s_dummy_zcl_attr;
 }
 
 size_t GeminiBridge::requestOtaChunkFromHost(uint8_t *dest, uint32_t offset, uint8_t size) {
@@ -200,7 +291,6 @@ void GeminiBridge::rxTask(void *arg) {
 }
 
 void GeminiBridge::handleFrame(const GeminiFrameHeader &hdr, const uint8_t *payload) {
-  // Fast-path synchronous replies (0x80..0x9F) directly wake up the waiting semaphore
   if (hdr.msg_type >= 0x80 && hdr.msg_type < 0xA0) {
     if (hdr.msg_type == _expected_rsp_type && hdr.seq_num == _active_seq) {
       if (_sync_rsp_dest && hdr.payload_len <= _sync_rsp_max_len) {
@@ -247,49 +337,6 @@ void GeminiBridge::forwardAttrReport(
   sendFrame(G_EVT_ATTR_REPORT, buf, sizeof(G_PktEvtAttrReport) + data_size);
 }
 
-static uint8_t           s_coord_ieee[8]      = {};
-static uint32_t          s_host_utc_time      = 0;
-static uint32_t          s_host_local_time    = 0;
-static uint8_t           s_host_time_status   = 0x02;
-static esp_zb_zcl_attr_t s_dummy_zcl_attr     = {};
-
-void GeminiBridge::setCoordinatorIeee(const uint8_t *ieee) {
-  if (ieee) memcpy(s_coord_ieee, ieee, 8);
-}
-
-void GeminiBridge::getCoordinatorIeee(uint8_t *ieee) {
-  if (ieee) memcpy(ieee, s_coord_ieee, 8);
-}
-
-esp_zb_zcl_status_t GeminiBridge::hostSetTimeAttr(uint16_t attr_id, void *value_p) {
-  if (!value_p) return ESP_ZB_ZCL_STATUS_FAIL;
-  if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_ID) {
-    memcpy(&s_host_utc_time, value_p, 4);
-  } else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID) {
-    s_host_time_status = *(uint8_t *)value_p;
-  } else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID) {
-    memcpy(&s_host_local_time, value_p, 4);
-    // All 3 attributes updated in Z2S_Gateway.ino -> sync them to C6 NCP!
-    G_PktTimeClusterSync pkt = {
-      .utc_time    = s_host_utc_time,
-      .local_time  = s_host_local_time,
-      .time_status = s_host_time_status
-    };
-    sendFrame(G_CMD_SET_TIME_CLUSTER, &pkt, sizeof(pkt));
-  }
-  return ESP_ZB_ZCL_STATUS_SUCCESS;
-}
-
-esp_zb_zcl_attr_t *GeminiBridge::hostGetTimeAttr(uint16_t attr_id) {
-  if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_ID)
-    s_dummy_zcl_attr.data_p = &s_host_utc_time;
-  else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)
-    s_dummy_zcl_attr.data_p = &s_host_local_time;
-  else
-    s_dummy_zcl_attr.data_p = &s_host_time_status;
-  return &s_dummy_zcl_attr;
-}
-
 void GeminiBridge::cmdWorkerTask(void *arg) {
   QueuedCommand item;
   for (;;) {
@@ -303,8 +350,12 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     // =========================================================================
     switch (item.hdr.msg_type) {
       case G_EVT_STACK_STARTED: {
-        if (item.hdr.payload_len >= 8) {
-          setCoordinatorIeee(p);
+        if (item.hdr.payload_len >= sizeof(G_PktEvtStackStarted)) {
+          const auto *evt = reinterpret_cast<const G_PktEvtStackStarted *>(p);
+          memcpy(s_coord_ieee, evt->coordinator_ieee, 8);
+          memcpy(s_ext_pan_id, evt->extended_pan_id, 8);
+          s_current_channel = evt->current_channel;
+          s_tx_power        = evt->tx_power;
         }
         Zigbee._started   = true;
         Zigbee._connected = true;
@@ -415,7 +466,6 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
             evt->short_addr, evt->endpoint_id, evt->cluster_id,
             evt->cmd_id, evt->group_id, evt->buffer_size, (uint8_t *)evt->buffer);
         }
-        // Fallback for IKEA Somrig (0xFC80), Symfonisk Gen2 (0xFC7F), Philips (0xFC00)
         if (!handled && zbGateway._on_cmd_custom_cluster_receive) {
           esp_zb_ieee_addr_t dummy_ieee = {};
           zbGateway._on_cmd_custom_cluster_receive(
@@ -460,7 +510,6 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     // C6 NCP WORKER: Execute Zigbee commands requested by S3 Host
     // =========================================================================
     switch (item.hdr.msg_type) {
-
       case G_CMD_ZB_BEGIN: {
         const auto *req = reinterpret_cast<const G_PktZbBegin *>(p);
         Zigbee.setPrimaryChannelMask(req->channel_mask);
@@ -471,10 +520,22 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           Zigbee.setNVRAMChannelMask(req->channel_mask);
         }
         if (Zigbee.started()) {
-          G_PktEvtStackStarted evt = {};
-          esp_zb_get_long_address(evt.coordinator_ieee);
-          sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
+          sendStackStartedEvt();
         }
+      } break;
+
+      case G_CMD_OPEN_NETWORK: {
+        Zigbee.openNetwork(*p);
+      } break;
+
+      case G_CMD_FACTORY_RESET: {
+        Zigbee.factoryReset();
+      } break;
+
+      case G_CMD_SET_CHANNEL_MASK: {
+        uint32_t mask = 0;
+        memcpy(&mask, p, sizeof(uint32_t));
+        Zigbee.setNVRAMChannelMask(mask);
       } break;
 
       case G_CMD_SET_TIME_CLUSTER: {
@@ -495,18 +556,36 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
         esp_zb_lock_release();
       } break;
 
-      case G_CMD_OPEN_NETWORK: {
-        Zigbee.openNetwork(*p);
+      case G_CMD_SET_TX_POWER: {
+        int8_t pwr = (int8_t)(*p);
+        esp_zb_lock_acquire(portMAX_DELAY);
+        esp_zb_set_tx_power(pwr);
+        esp_zb_lock_release();
       } break;
 
-      case G_CMD_FACTORY_RESET: {
-        Zigbee.factoryReset();
+      case G_CMD_GET_TX_POWER: {
+        int8_t pwr = 20;
+        esp_zb_lock_acquire(portMAX_DELAY);
+        esp_zb_get_tx_power(&pwr);
+        esp_zb_lock_release();
+        sendFrame(G_RSP_TX_POWER, &pwr, sizeof(pwr), item.hdr.seq_num);
       } break;
 
-      case G_CMD_SET_CHANNEL_MASK: {
-        uint32_t mask = 0;
-        memcpy(&mask, p, sizeof(uint32_t));
-        Zigbee.setNVRAMChannelMask(mask);
+      case G_CMD_IC_ADD: {
+        const auto *req = reinterpret_cast<const G_PktIcAdd *>(p);
+        esp_zb_ieee_addr_t ieee;
+        uint8_t ic[18];
+        memcpy(ieee, req->ieee_addr, 8);
+        memcpy(ic, req->ic_data, 18);
+        esp_zb_lock_acquire(portMAX_DELAY);
+        esp_zb_secur_ic_add(ieee, (esp_zb_secur_ic_type_t)req->ic_type, ic);
+        esp_zb_lock_release();
+      } break;
+
+      case G_CMD_IC_REMOVE_ALL: {
+        esp_zb_lock_acquire(portMAX_DELAY);
+        esp_zb_secur_ic_remove_all_req();
+        esp_zb_lock_release();
       } break;
 
       case G_CMD_FIND_ENDPOINT: {

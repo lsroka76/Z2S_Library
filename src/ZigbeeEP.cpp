@@ -43,37 +43,39 @@ void ZigbeeEP::setVersion(uint8_t version) {
 }
 
 void ZigbeeEP::setManufacturerAndModel(const char *name, const char *model) {
-  
-  if (_cluster_list == nullptr) return; // Safe no-op on S3 Host!  size_t length = strlen(name);
+  if (_cluster_list == nullptr || name == nullptr || model == nullptr) {
+    return;
+  }
+
+  // Convert manufacturer to ZCL string on the stack (zero heap leak)
+  size_t length = strlen(name);
   if (length > 32) {
     log_e("Manufacturer name is too long");
     return;
   }
-  // Allocate a new array of size length + 2 (1 for the length, 1 for null terminator)
-  char *zb_name = new char[length + 2];
-  // Store the length as the first element
-  zb_name[0] = static_cast<char>(length);  // Cast size_t to char
-  // Use memcpy to copy the characters to the result array
+  char zb_name[34];
+  zb_name[0] = static_cast<char>(length);
   memcpy(zb_name + 1, name, length);
-  // Null-terminate the array
   zb_name[length + 1] = '\0';
 
-  // Convert model to ZCL string
+  // Convert model to ZCL string on the stack
   length = strlen(model);
   if (length > 32) {
     log_e("Model name is too long");
-    delete[] zb_name;
     return;
   }
-  char *zb_model = new char[length + 2];
+  char zb_model[34];
   zb_model[0] = static_cast<char>(length);
   memcpy(zb_model + 1, model, length);
   zb_model[length + 1] = '\0';
 
   // Get the basic cluster and update the manufacturer and model attributes
-  esp_zb_attribute_list_t *basic_cluster = esp_zb_cluster_list_get_cluster(_cluster_list, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
-  esp_zb_basic_cluster_add_attr(basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, (void *)zb_name);
-  esp_zb_basic_cluster_add_attr(basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, (void *)zb_model);
+  esp_zb_attribute_list_t *basic_cluster = esp_zb_cluster_list_get_cluster(
+    _cluster_list, ESP_ZB_ZCL_CLUSTER_ID_BASIC, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+  if (basic_cluster) {
+    esp_zb_basic_cluster_add_attr(basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, (void *)zb_name);
+    esp_zb_basic_cluster_add_attr(basic_cluster, ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, (void *)zb_model);
+  }
 }
 
 void ZigbeeEP::setPowerSource(zb_power_source_t power_source, uint8_t battery_percentage) {
