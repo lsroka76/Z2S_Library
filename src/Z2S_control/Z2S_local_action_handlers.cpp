@@ -1311,7 +1311,7 @@ void Supla::Control::LocalPWM::setupPWM() {
 
   int8_t   pin  = getLocalPwmGpioPin();
   uint32_t freq = getLocalPwmFreqHz();
-  uint8_t  res xxxx = getLocalPwmResolutionBits();
+  uint8_t  res  = getLocalPwmResolutionBits();
 
   if (freq == 0) freq = 5000;
   if (res < 8 || res > 12) res = 10;
@@ -1352,21 +1352,29 @@ void Supla::Control::LocalPWM::applyHardwarePWM() {
     uint8_t max_d = getLocalPwmMaxDuty();
 
     if (min_d > 100) min_d = 100;
-    if (max_d > 100 || max_d == 0) max_d = 100;
-    if (min_d > max_d) min_d = max_d;
+    if (max_d > 100 || (max_d == 0 && min_d == 0)) max_d = 100;
 
-    uint32_t min_raw = (max_raw * min_d) / 100UL;
-    uint32_t max_limit_raw = (max_raw * max_d) / 100UL;
+    int32_t min_raw = (static_cast<int32_t>(max_raw) * min_d) / 100;
+    int32_t max_limit_raw = (static_cast<int32_t>(max_raw) * max_d) / 100;
 
     if (_brightness >= 100) {
-      duty_raw = max_limit_raw;
-    } else if (_brightness == 1 && min_d > 0) {
-      duty_raw = min_raw;
-    } else if (min_d > 0) {
-      duty_raw = min_raw +
-        ((max_limit_raw - min_raw) * (_brightness - 1UL)) / 99UL;
-    } else {
-      duty_raw = (max_limit_raw * _brightness) / 100UL;
+
+      duty_raw = static_cast<uint32_t>(max_limit_raw);
+    } 
+    else if (_brightness == 1 && (min_d > 0 || min_d > max_d)) {
+      
+      duty_raw = static_cast<uint32_t>(min_raw);
+    } 
+    else if (min_d > 0 || min_d > max_d) {
+
+      int32_t scaled = min_raw + ((max_limit_raw - min_raw) * (
+          static_cast<int32_t>(_brightness) - 1)) / 99;
+      duty_raw = static_cast<uint32_t>(
+        constrain(scaled, 0, static_cast<int32_t>(max_raw)));
+    } 
+    else {
+      
+      duty_raw = (static_cast<uint32_t>(max_limit_raw) * _brightness) / 100UL;
     }
   }
 

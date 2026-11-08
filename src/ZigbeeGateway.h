@@ -194,6 +194,7 @@ typedef struct esp_zb_ota_image_header_s {
 #define LUMI_CUSTOM_LED_INDICATOR_ID                          0x0203 //BOOL
 #define LUMI_CUSTOM_CHARGING_PROTECTION_POWER_LIMIT_ID        0x0206 //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
 #define LUMI_CUSTOM_OVERLOAD_PROTECTION_ID                    0x020B //ESP_ZB_ZCL_ATTR_TYPE_SINGLE
+#define LUMI_ATTRIBUTE_TRAVERSE_TIME_ID                       0x0403 //U8
 #define LUMI_ATTRIBUTE_CURTAIN_MOTOR_STATE_ID                 0x0404
 #define LUMI_CUSTOM_CURTAIN_CALIBRATION_CMD_ID                0x0407 //U8
 #define LUMI_CUSTOM_CURTAIN_POSITION_ID                       0x041F //U8

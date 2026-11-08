@@ -3523,6 +3523,13 @@ void Z2S_onLumiCustomClusterReceive(
       }
     } break;
 
+    
+    case LUMI_ATTRIBUTE_TRAVERSE_TIME_ID: 
+
+      zbGateway.sendAttributeRead(
+        short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x0055);
+    break;
+
 
     case 0x409: {
 

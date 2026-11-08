@@ -565,7 +565,7 @@ void ZigbeeGateway::Z2S_simple_desc_req_cb(
 
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
     
-    uint16_t short_addr = *((uint16_t*)(user_ctx));
+    uint16_t short_addr = (uint16_t)(uintptr_t)user_ctx;
     
     esp_zb_zcl_disc_attr_cmd_t disc_attr_cmd_req;
 
@@ -2276,6 +2276,11 @@ bool ZigbeeGateway::sendAttributeWriteExt(
   payload_data[2] = attribute_type;
   memcpy(payload_data + 3, attribute_value, attribute_size);
   
+  if (ack) {
+      
+      xSemaphoreTake(gt_lock, 0); 
+  }
+
   esp_zb_lock_acquire(portMAX_DELAY);
   _write_attr_last_tsn_flag = ack ? ZCL_CMD_TSN_SYNC : ZCL_CMD_TSN_ASYNC;
   _write_attr_last_tsn = _write_ext_current_tsn;
@@ -2974,8 +2979,8 @@ void ZigbeeGateway:: zbOTAUpgradeServerStatus(
       message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_END) {
     
     if (_instance->_on_fill_ota_buffer) 
-      _instance->_on_fill_ota_buffer(nullptr, *(message->upgrade_time), 
-      message->server_status);
+      _instance->_on_fill_ota_buffer(nullptr, essage->upgrade_time ? 
+        *(message->upgrade_time) : 0, message->server_status);
     //s_ota_image_offset = 0;
   }
 }
