@@ -2979,7 +2979,7 @@ void ZigbeeGateway:: zbOTAUpgradeServerStatus(
       message->server_status == ESP_ZB_ZCL_OTA_UPGRADE_SERVER_END) {
     
     if (_instance->_on_fill_ota_buffer) 
-      _instance->_on_fill_ota_buffer(nullptr, essage->upgrade_time ? 
+      _instance->_on_fill_ota_buffer(nullptr, message->upgrade_time ? 
         *(message->upgrade_time) : 0, message->server_status);
     //s_ota_image_offset = 0;
   }
