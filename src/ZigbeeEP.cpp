@@ -43,8 +43,8 @@ void ZigbeeEP::setVersion(uint8_t version) {
 }
 
 void ZigbeeEP::setManufacturerAndModel(const char *name, const char *model) {
-  // Convert manufacturer to ZCL string
-  size_t length = strlen(name);
+  
+  if (_cluster_list == nullptr) return; // Safe no-op on S3 Host!  size_t length = strlen(name);
   if (length > 32) {
     log_e("Manufacturer name is too long");
     return;

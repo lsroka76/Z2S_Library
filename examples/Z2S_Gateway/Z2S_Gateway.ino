@@ -72,10 +72,15 @@
 
 //#define GATEWAY_ENDPOINT_NUMBER 1
 
-#define BUTTON_PIN                  9  //Boot button for C6/H2
-#define CFG_BUTTON_PIN              9  //Boot button for C6/H2
-#define WIFI_ENABLE                 3
-#define WIFI_ANT_CONFIG             14
+#if CONFIG_IDF_TARGET_ESP32S3
+  #define BUTTON_PIN                  0  // Boot button for ESP32-S3
+  #define CFG_BUTTON_PIN              0  // Boot button for ESP32-S3
+#else
+  #define BUTTON_PIN                  9  // Boot button for C6/H2
+  #define CFG_BUTTON_PIN              9  // Boot button for C6/H2
+  #define WIFI_ENABLE                 3
+  #define WIFI_ANT_CONFIG             14
+#endif
 
 #define REFRESH_PERIOD              30 * 60 * 1000 //miliseconds
 
@@ -580,10 +585,11 @@ void setup() {
 
   pinMode(BUTTON_PIN, INPUT);
 
-  pinMode(WIFI_ENABLE, OUTPUT); // pinMode(3, OUTPUT); (credits @Zibi_007)in
-  pinMode(WIFI_ANT_CONFIG, OUTPUT); // pinMode(14, OUTPUT);
-  //digitalWrite(WIFI_ENABLE, LOW);
+#if !CONFIG_IDF_TARGET_ESP32S3
+  pinMode(WIFI_ENABLE, OUTPUT);
+  pinMode(WIFI_ANT_CONFIG, OUTPUT);
   digitalWrite(WIFI_ANT_CONFIG, HIGH);
+#endif
  
   eeprom.setStateSavePeriod(5000);
 

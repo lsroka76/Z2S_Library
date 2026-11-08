@@ -71,6 +71,7 @@ enum GeminiMsgType : uint8_t {
   G_CMD_SIMPLE_DESC_REQ      = 0x07,
   G_CMD_IEEE_ADDR_REQ        = 0x08,
   G_CMD_CLEAR_LOCAL_BINDINGS = 0x09,
+  G_CMD_SET_TIME_CLUSTER     = 0x0A,
 
   G_CMD_QUERY_BASIC          = 0x10,
   G_CMD_READ_ATTR            = 0x11,
@@ -361,6 +362,16 @@ struct __attribute__((packed)) G_PktEvtCustomClusterCmd {
   uint8_t  payload[];
 };
 
+struct __attribute__((packed)) G_PktTimeClusterSync {
+  uint32_t utc_time;
+  uint32_t local_time;
+  uint8_t  time_status;
+};
+
+struct __attribute__((packed)) G_PktEvtStackStarted {
+  uint8_t coordinator_ieee[8];
+};
+
 static inline uint16_t geminiCrc16(const uint8_t *data, size_t len, uint16_t crc = 0xFFFF) {
   while (len--) {
     crc ^= (uint16_t)(*data++) << 8;
@@ -388,6 +399,11 @@ public:
 
   static size_t requestOtaChunkFromHost(uint8_t *dest, uint32_t offset, uint8_t size);
 
+  static void setCoordinatorIeee(const uint8_t *ieee);
+  static void getCoordinatorIeee(uint8_t *ieee);
+  static esp_zb_zcl_status_t hostSetTimeAttr(uint16_t attr_id, void *value_p);
+  static esp_zb_zcl_attr_t *hostGetTimeAttr(uint16_t attr_id);
+
 private:
   static void rxTask(void *arg);
   static void handleFrame(const GeminiFrameHeader &hdr, const uint8_t *payload);
@@ -403,4 +419,19 @@ private:
   static volatile bool     _sync_rsp_ok;
 };
 
+#endif
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  #if !SOC_IEEE802154_SUPPORTED
+    static inline void esp_coex_wifi_i154_enable() {}
+  #endif
+
+  // Redirect ZBOSS calls in Z2S_Gateway.ino on S3 Host to GeminiBridge!
+  #define esp_zb_lock_acquire(t)      true
+  #define esp_zb_lock_release()       ((void)0)
+  #define esp_zb_get_long_address(a)  GeminiBridge::getCoordinatorIeee(a)
+  #define esp_zb_zcl_set_attribute_val(ep, cl, role, attr_id, val_p, chk) \
+    GeminiBridge::hostSetTimeAttr(attr_id, val_p)
+  #define esp_zb_zcl_get_attribute(ep, cl, role, attr_id) \
+    GeminiBridge::hostGetTimeAttr(attr_id)
 #endif

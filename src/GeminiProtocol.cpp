@@ -247,6 +247,49 @@ void GeminiBridge::forwardAttrReport(
   sendFrame(G_EVT_ATTR_REPORT, buf, sizeof(G_PktEvtAttrReport) + data_size);
 }
 
+static uint8_t           s_coord_ieee[8]      = {};
+static uint32_t          s_host_utc_time      = 0;
+static uint32_t          s_host_local_time    = 0;
+static uint8_t           s_host_time_status   = 0x02;
+static esp_zb_zcl_attr_t s_dummy_zcl_attr     = {};
+
+void GeminiBridge::setCoordinatorIeee(const uint8_t *ieee) {
+  if (ieee) memcpy(s_coord_ieee, ieee, 8);
+}
+
+void GeminiBridge::getCoordinatorIeee(uint8_t *ieee) {
+  if (ieee) memcpy(ieee, s_coord_ieee, 8);
+}
+
+esp_zb_zcl_status_t GeminiBridge::hostSetTimeAttr(uint16_t attr_id, void *value_p) {
+  if (!value_p) return ESP_ZB_ZCL_STATUS_FAIL;
+  if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_ID) {
+    memcpy(&s_host_utc_time, value_p, 4);
+  } else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID) {
+    s_host_time_status = *(uint8_t *)value_p;
+  } else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID) {
+    memcpy(&s_host_local_time, value_p, 4);
+    // All 3 attributes updated in Z2S_Gateway.ino -> sync them to C6 NCP!
+    G_PktTimeClusterSync pkt = {
+      .utc_time    = s_host_utc_time,
+      .local_time  = s_host_local_time,
+      .time_status = s_host_time_status
+    };
+    sendFrame(G_CMD_SET_TIME_CLUSTER, &pkt, sizeof(pkt));
+  }
+  return ESP_ZB_ZCL_STATUS_SUCCESS;
+}
+
+esp_zb_zcl_attr_t *GeminiBridge::hostGetTimeAttr(uint16_t attr_id) {
+  if (attr_id == ESP_ZB_ZCL_ATTR_TIME_TIME_ID)
+    s_dummy_zcl_attr.data_p = &s_host_utc_time;
+  else if (attr_id == ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID)
+    s_dummy_zcl_attr.data_p = &s_host_local_time;
+  else
+    s_dummy_zcl_attr.data_p = &s_host_time_status;
+  return &s_dummy_zcl_attr;
+}
+
 void GeminiBridge::cmdWorkerTask(void *arg) {
   QueuedCommand item;
   for (;;) {
@@ -260,6 +303,9 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     // =========================================================================
     switch (item.hdr.msg_type) {
       case G_EVT_STACK_STARTED: {
+        if (item.hdr.payload_len >= 8) {
+          setCoordinatorIeee(p);
+        }
         Zigbee._started   = true;
         Zigbee._connected = true;
         xSemaphoreGive(Zigbee.lock);
@@ -416,22 +462,37 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     switch (item.hdr.msg_type) {
 
       case G_CMD_ZB_BEGIN: {
-      
         const auto *req = reinterpret_cast<const G_PktZbBegin *>(p);
         Zigbee.setPrimaryChannelMask(req->channel_mask);
         Zigbee.setRebootOpenNetwork(req->open_network_sec);
-
         if (!Zigbee.started()) {
-          // First start: initialize ZBOSS with S3's exact channel mask & erase_nvs!
-          if (Zigbee.begin((zigbee_role_t)req->role, req->erase_nvs != 0)) {
-          
-            sendFrame(G_EVT_STACK_STARTED, nullptr, 0);
-          }
-        } 
-        else {
-        // S3 rebooted while C6 was already running: reply immediately!
-          sendFrame(G_EVT_STACK_STARTED, nullptr, 0);
+          Zigbee.begin((zigbee_role_t)req->role, req->erase_nvs != 0);
+        } else {
+          Zigbee.setNVRAMChannelMask(req->channel_mask);
         }
+        if (Zigbee.started()) {
+          G_PktEvtStackStarted evt = {};
+          esp_zb_get_long_address(evt.coordinator_ieee);
+          sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
+        }
+      } break;
+
+      case G_CMD_SET_TIME_CLUSTER: {
+        const auto *req = reinterpret_cast<const G_PktTimeClusterSync *>(p);
+        uint32_t utc_t = req->utc_time;
+        uint32_t loc_t = req->local_time;
+        uint8_t  stat  = req->time_status;
+        esp_zb_lock_acquire(portMAX_DELAY);
+        esp_zb_zcl_set_attribute_val(
+          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
+          ESP_ZB_ZCL_ATTR_TIME_TIME_ID, &utc_t, false);
+        esp_zb_zcl_set_attribute_val(
+          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
+          ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, &stat, false);
+        esp_zb_zcl_set_attribute_val(
+          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
+          ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &loc_t, false);
+        esp_zb_lock_release();
       } break;
 
       case G_CMD_OPEN_NETWORK: {
