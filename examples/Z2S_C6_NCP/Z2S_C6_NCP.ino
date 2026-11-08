@@ -1,37 +1,34 @@
-/*
- * Z2S_C6_NCP.ino
- * Flash this sketch onto the ESP32-C6 when using ESP32-S3 + ESP32-C6 Dual-Chip mode!
- * Arduino IDE Settings for ESP32-C6:
- *   - Board: "ESP32C6 Dev Module"
- *   - Zigbee Mode: "Zigbee ZCZR (coordinator/router)"
- *   - Partition Scheme: "Zigbee ZCZR 4MB with spiffs"
- */
-
 #define Z2S_C6_COPROCESSOR_FIRMWARE
 #include "GeminiProtocol.h"
 #include "ZigbeeCore.h"
 #include "ZigbeeGateway.h"
 
 void setup() {
-  Serial.begin(115200);
-  log_i("Starting Z2S ESP32-C6 Zigbee Co-Processor (Gemini NCP)...");
 
-  // 1. Initialize 2 Mbps UART Bridge to ESP32-S3
+  // 1. Start UART immediately (~120 ms after power-on) so we never miss S3's packet
+  Zigbee.addGatewayEndpoint(&zbGateway);
   GeminiBridge::initUart();
 
-  // 2. Register Gateway Endpoint & Start Native Zigbee Coordinator on C6
-  Zigbee.addGatewayEndpoint(&zbGateway);
-  Zigbee.setRebootOpenNetwork(0);
+  Serial.begin(115200);
+  log_i("Z2S C6 NCP ready - waiting up to 2s for S3 Host G_CMD_ZB_BEGIN...");
 
-  if (Zigbee.begin(ZIGBEE_COORDINATOR, false)) {
-    log_i("Zigbee Coordinator started on C6! Notifying S3 Host...");
-    GeminiBridge::sendFrame(G_EVT_STACK_STARTED, nullptr, 0);
-  } else {
-    log_e("Failed to start Zigbee Coordinator on C6!");
+  // 2. Wait up to 2 seconds for S3 to send G_CMD_ZB_BEGIN (with S3's channel_mask)
+  uint32_t wait_start = millis();
+  while (!Zigbee.started() && (millis() - wait_start < 2000)) {
+    vTaskDelay(pdMS_TO_TICKS(50));
+  }
+
+  // 3. Fallback: If C6 was powered on before S3, start coordinator from C6 NVRAM.
+  //    When S3 boots later and sends G_CMD_ZB_BEGIN, C6 will reply immediately!
+  if (!Zigbee.started()) {
+    log_i("Starting C6 Coordinator from NVRAM (S3 will sync when it boots)...");
+    Zigbee.setRebootOpenNetwork(0);
+    if (Zigbee.begin(ZIGBEE_COORDINATOR, false)) {
+      GeminiBridge::sendFrame(G_EVT_STACK_STARTED, nullptr, 0);
+    }
   }
 }
 
 void loop() {
-  // All work is handled by the FreeRTOS Zigbee & GeminiBridge tasks
   vTaskDelay(pdMS_TO_TICKS(1000));
 }

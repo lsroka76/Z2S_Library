@@ -419,11 +419,22 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     // C6 NCP WORKER: Execute Zigbee commands requested by S3 Host
     // =========================================================================
     switch (item.hdr.msg_type) {
+
       case G_CMD_ZB_BEGIN: {
+      
         const auto *req = reinterpret_cast<const G_PktZbBegin *>(p);
         Zigbee.setPrimaryChannelMask(req->channel_mask);
         Zigbee.setRebootOpenNetwork(req->open_network_sec);
-        if (Zigbee.started()) {
+
+        if (!Zigbee.started()) {
+          // First start: initialize ZBOSS with S3's exact channel mask & erase_nvs!
+          if (Zigbee.begin((zigbee_role_t)req->role, req->erase_nvs != 0)) {
+          
+            sendFrame(G_EVT_STACK_STARTED, nullptr, 0);
+          }
+        } 
+        else {
+        // S3 rebooted while C6 was already running: reply immediately!
           sendFrame(G_EVT_STACK_STARTED, nullptr, 0);
         }
       } break;
