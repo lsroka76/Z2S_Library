@@ -55,7 +55,11 @@ typedef enum {
 const char *esp_zb_zcl_status_to_name(esp_zb_zcl_status_t status);
 
 /* Zigbee End Device Class */
+
+class GeminiBridge;
+
 class ZigbeeEP {
+friend class GeminiBridge;
 public:
   ZigbeeEP(uint8_t endpoint = 10);
   ~ZigbeeEP();

@@ -452,4 +452,7 @@ private:
     GeminiBridge::hostSetTimeAttr(attr_id, val_p)
   #define esp_zb_zcl_get_attribute(ep, cl, role, attr_id) \
     GeminiBridge::hostGetTimeAttr(attr_id)
+  #define esp_zb_get_primary_network_channel_set() (1UL << GeminiBridge::getCurrentChannel())
+  #define esp_zb_nwk_get_next_neighbor(it, nb)     ESP_ERR_NOT_FOUND
+  #define esp_zb_zdo_mgmt_lqi_req(req, cb, ctx)    ((void)0)
 #endif

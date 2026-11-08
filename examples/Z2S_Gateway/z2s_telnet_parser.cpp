@@ -157,7 +157,7 @@ void remoteNeighbourhoodTableCb(
 void Z2S_scanRemoteNeighbourhoodTable(
   uint16_t short_address, bool toTelnet = false) {
 
-  esp_zb_zdo_mgmt_lqi_req_param_t req;
+  static esp_zb_zdo_mgmt_lqi_req_param_t req;
 
   req.start_index = 0;
   req.dst_addr = short_address;
@@ -441,7 +441,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   uint32_t write_mask_32;
   
   uint8_t custom_cmd_payload[64]; //TODO - include RAW/STRING 0.8.51 increased 10->64
-  uint8_t write_attribute_payload[20];
+  uint8_t write_attribute_payload[64];
 
 
   log_i("cmd: %s, param %s, param %s", cmd, *param != NULL ? *param : "-",
@@ -497,9 +497,8 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       }
     } else { 
       telnet.printf(
-        PSTR(
-          "\n\rInvalid value for Zigbee primary channel: %u "
-          "(should be between 11 and 26)\n\r>"));
+        "\n\rInvalid value for Zigbee primary channel: %u "
+        "(should be between 11 and 26)\n\r>", zb_primary_channel);
       return;
     }
   } else
@@ -1306,7 +1305,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
       if (value)
         zbGateway.sendAttributeWrite(
           &device, cluster_id, attribute_id, attribute_type, attribute_size, 
-          value, manuf_specific, manuf_code); 
+          value, false, manuf_specific, manuf_code); 
 
       telnet.printf("\n\rWrite attribute async request sent\n\r>");
     } 

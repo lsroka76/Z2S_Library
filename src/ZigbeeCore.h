@@ -92,7 +92,10 @@ typedef enum {
     },                                           \
   }
 
+class GeminiBridge;
+
 class ZigbeeCore {
+  friend class GeminiBridge;
 private:
   esp_zb_radio_config_t _radio_config;
   esp_zb_host_config_t _host_config;
