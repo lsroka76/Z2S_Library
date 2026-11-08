@@ -2,9 +2,7 @@
 
 #include "soc/soc_caps.h"
 #include "sdkconfig.h"
-//#if SOC_IEEE802154_SUPPORTED 
-//&& CONFIG_ZB_ENABLED
-#if CONFIG_ZB_ENABLED
+#if CONFIG_ZB_ENABLED || defined(USE_GEMINI_PROTOCOL)
 
 #include "ZigbeeEP.h"
 #include "ha/esp_zigbee_ha_standard.h"
@@ -342,7 +340,11 @@ typedef struct zbg_device_unit_s {
   int8_t last_rssi;
 } zbg_device_unit_t;
 
+class GeminiBridge;
+
 class ZigbeeGateway : public ZigbeeEP {
+
+friend class GeminiBridge;
 
 public:
   ZigbeeGateway(uint8_t endpoint);
@@ -880,7 +882,7 @@ private:
 
   static query_basic_cluster_data_t _last_device_query;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
-  static uint8_t _read_attr_last_result_value_buffer[64];
+  static uint8_t _read_attr_last_result_value_buffer[256];
   static esp_zb_zcl_read_report_config_resp_variable_t 
     _read_report_config_resp_variable_last_result;
   static esp_zb_zcl_status_t _config_report_status_last_result;
