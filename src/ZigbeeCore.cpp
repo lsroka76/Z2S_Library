@@ -266,7 +266,9 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
           if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR && Zigbee._open_network > 0) {
             esp_zb_bdb_open_network(Zigbee._open_network);
           } else {
-            Zigbee._connected = true;
+        
+        Zigbee._is_factory_new = esp_zb_bdb_is_factory_new(); 
+        if (Zigbee._is_factory_new) {
           }
           Zigbee.searchBindings();
         }

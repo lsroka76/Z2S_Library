@@ -162,6 +162,7 @@ void GeminiBridge::sendStackStartedEvt() {
   esp_zb_get_extended_pan_id(evt.extended_pan_id);
   evt.current_channel = esp_zb_get_current_channel();
   esp_zb_get_tx_power(&evt.tx_power);
+  evt.is_factory_new = Zigbee.isFactoryStack() ? 1 : 0;
   sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
 #endif
 }
@@ -381,6 +382,7 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           memcpy(s_ext_pan_id, evt->extended_pan_id, 8);
           s_current_channel = evt->current_channel;
           s_tx_power        = evt->tx_power;
+          Zigbee._is_factory_new = (evt->is_factory_new != 0);
         }
         Zigbee._started   = true;
         Zigbee._connected = true;

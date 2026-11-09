@@ -295,10 +295,16 @@ void supla_callback_bridge(int event, int action) {
         esp_coex_wifi_i154_enable();
         zbGateway.clearLocalBindings();
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
+        
+        if (!Z2S_GatewayPreferences.getBool("c6_synced", false)) {
+          
+          Z2S_GatewayPreferences.putBool("c6_synced", true);
+          
+          if (Z2S_Devices.empty() && !Zigbee.isFactoryStack()) {
+            log_i("Fresh S3 install with non-factory C6 stack -> factory resetting C6!");
+            Zigbee.factoryReset();
+          }
         }
-        return;
-      }
-
       if (sd_current_status == STATUS_REGISTERED_AND_READY) {
 
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);

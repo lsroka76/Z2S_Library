@@ -151,6 +151,7 @@ struct __attribute__((packed)) G_PktEvtStackStarted {
   uint8_t  extended_pan_id[8];
   uint8_t  current_channel;
   int8_t   tx_power;
+  uint8_t  is_factory_new;
 };
 
 struct __attribute__((packed)) G_PktTimeClusterSync {

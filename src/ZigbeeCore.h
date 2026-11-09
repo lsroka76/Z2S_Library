@@ -109,6 +109,7 @@ private:
   bool _started;
   bool _connected;
   bool _permit_joining;
+  bool _is_factory_new = false;
 
   uint8_t _open_network;
   zigbee_scan_result_t *_scan_result;
@@ -144,6 +145,10 @@ public:
   zigbee_role_t getRole() {
     return _role;
   }
+  
+  bool isFactoryStack() const { 
+    return _is_factory_new; }
+  
   bool isNetworkOpen() {
     return _permit_joining;
   }
