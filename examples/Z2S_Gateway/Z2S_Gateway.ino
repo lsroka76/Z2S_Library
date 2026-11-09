@@ -284,14 +284,22 @@ void supla_callback_bridge(int event, int action) {
     
         esp_coex_wifi_i154_enable();
   
-        if (!Zigbee.begin(ZIGBEE_COORDINATOR)) {
+        bool c6_synced = Z2S_GatewayPreferences.getBool("c6_synced", false);
+        bool erase_zb_nvram = (!c6_synced && Z2S_Devices.empty());
+
+        if (!Zigbee.begin(ZIGBEE_COORDINATOR, erase_zb_nvram)) {
           
           log_e("Zigbee failed to start! Rebooting...");
-
+          
           disableGatewayActions();
           _restart_scheduled = true;
           SuplaDevice.scheduleSoftRestart(1000);
+        } 
+        else if (!c6_synced) {
+          
+          Z2S_GatewayPreferences.putBool("c6_synced", true);
         }
+        
         esp_coex_wifi_i154_enable();
         zbGateway.clearLocalBindings();
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);

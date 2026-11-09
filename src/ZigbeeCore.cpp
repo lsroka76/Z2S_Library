@@ -55,19 +55,37 @@ static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm);
 #endif
 
 bool ZigbeeCore::begin(esp_zb_cfg_t *role_cfg, bool erase_nvs) {
+  _role = (zigbee_role_t)role_cfg->esp_zb_role;
+  xSemaphoreTake(lock, 0); // Clear any stale semaphore signal
+
   if (!zigbeeInit(role_cfg, erase_nvs)) {
     log_e("ZigbeeCore begin failed");
     return false;
   }
-  _role = (zigbee_role_t)role_cfg->esp_zb_role;
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  for (uint8_t retry = 0; retry < 15; retry++) {
+    if (xSemaphoreTake(lock, pdMS_TO_TICKS(2000)) == pdTRUE) {
+      break;
+    }
+    log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN (%u/15)", retry + 1);
+    zigbeeInit(role_cfg, false); // Retry with erase_nvs = false in case C6 just factory-reset
+  }
+  if (!started()) {
+    log_e("ZigbeeCore begin timeout waiting for C6 NCP");
+  }
+#else
   if (xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
     log_e("ZigbeeCore begin timeout");
   }
+#endif
   return started();
 }
 
 bool ZigbeeCore::begin(zigbee_role_t role, bool erase_nvs) {
   bool status = true;
+  xSemaphoreTake(lock, 0); // Clear any stale semaphore signal
+
   switch (role) {
     case ZIGBEE_COORDINATOR: {
       _role = ZIGBEE_COORDINATOR;
@@ -91,9 +109,28 @@ bool ZigbeeCore::begin(zigbee_role_t role, bool erase_nvs) {
       log_e("Invalid Zigbee Role");
       return false;
   }
-  if (!status || xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
+
+  if (!status) {
+    log_e("ZigbeeCore zigbeeInit failed");
+    return false;
+  }
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  for (uint8_t retry = 0; retry < 15; retry++) {
+    if (xSemaphoreTake(lock, pdMS_TO_TICKS(2000)) == pdTRUE) {
+      break;
+    }
+    log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN (%u/15)", retry + 1);
+    zigbeeInit(nullptr, false); // Retry with erase_nvs = false in case C6 just factory-reset
+  }
+  if (!started()) {
+    log_e("ZigbeeCore begin timeout waiting for C6 NCP");
+  }
+#else
+  if (xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
     log_e("ZigbeeCore begin failed or timeout");
   }
+#endif
   return started();
 }
 
@@ -216,11 +253,22 @@ void ZigbeeCore::openNetwork(uint8_t time) {
 }
 
 void ZigbeeCore::factoryReset() {
+  
+  log_v("Factory resetting Zigbee stack, device will reboot");
 #if defined(USE_GEMINI_PROTOCOL_HOST)
   GeminiBridge::sendFrame(G_CMD_FACTORY_RESET, nullptr, 0);
+  uart_wait_tx_done(GEMINI_UART_NUM, pdMS_TO_TICKS(100));
+  vTaskDelay(pdMS_TO_TICKS(500)); // Wait for C6 to erase zb_storage & reboot
   esp_restart();
 #else
-  esp_zb_factory_reset();
+  if (started()) {
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_zb_factory_reset();
+    esp_zb_lock_release();
+  } else {
+    esp_zb_nvram_erase_at_start(true);
+    esp_restart();
+  }
 #endif
 }
 

@@ -535,32 +535,25 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     // C6 NCP WORKER: Execute Zigbee commands requested by S3 Host
     // =========================================================================
     switch (item.hdr.msg_type) {
+
       case G_CMD_ZB_BEGIN: {
+
         const auto *req = reinterpret_cast<const G_PktZbBegin *>(p);
+        
         Zigbee.setPrimaryChannelMask(req->channel_mask);
         Zigbee.setRebootOpenNetwork(req->open_network_sec);
         if (!Zigbee.started()) {
           Zigbee.begin((zigbee_role_t)req->role, req->erase_nvs != 0);
+        } else if (req->erase_nvs != 0) {
+          // S3 was wiped with full_version.bin while C6 was running -> factory reset C6!
+          Zigbee.factoryReset();
+          break;
         } else {
           Zigbee.setNVRAMChannelMask(req->channel_mask);
         }
         if (Zigbee.started()) {
           sendStackStartedEvt();
         }
-      } break;
-
-      case G_CMD_OPEN_NETWORK: {
-        Zigbee.openNetwork(*p);
-      } break;
-
-      case G_CMD_FACTORY_RESET: {
-        Zigbee.factoryReset();
-      } break;
-
-      case G_CMD_SET_CHANNEL_MASK: {
-        uint32_t mask = 0;
-        memcpy(&mask, p, sizeof(uint32_t));
-        Zigbee.setNVRAMChannelMask(mask);
       } break;
 
       case G_CMD_SET_TIME_CLUSTER: {

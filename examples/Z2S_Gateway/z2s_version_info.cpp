@@ -16,9 +16,15 @@ static constexpr const char GITHUB_HOST[] = "github.com";
 static constexpr const char GITHUB_LATEST_PATH[] =
   "/lsroka76/Z2S_Library/releases/latest";
 
+#if CONFIG_IDF_TARGET_ESP32S3
+static constexpr const char FIRMWARE_URL[] =
+  "https://github.com/lsroka76/Z2S_Library/"
+  "releases/latest/download/Z2S_Gateway.S3_Host.8MB.OTA.no_logs.update_only.bin";
+#else
 static constexpr const char FIRMWARE_URL[] =
   "https://github.com/lsroka76/Z2S_Library/"
   "releases/latest/download/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin";
+#endif
 
 static constexpr const char PARSE_ERR_NO_LOCATION[] =
   "Parse error: Redirect Location header not found.";
@@ -29,7 +35,7 @@ static constexpr const char PARSE_ERR_CONN_FAIL[] =
 
 /*****************************************************************************/
 
-TaskHandle_t otaTaskHandle = nullptr;
+static TaskHandle_t otaTaskHandle = nullptr;
 
 /*****************************************************************************/
 
@@ -172,6 +178,7 @@ bool checkGitHubForUpdate(char *response_buffer, size_t response_buffer_size) {
   client.stop();
   return updateAvailable;
 }
+
 /*****************************************************************************/
 
 void performBackgroundGitHubOta(void *pvParameters) {
@@ -189,7 +196,7 @@ void performBackgroundGitHubOta(void *pvParameters) {
     httpUpdate.onProgress(activeOtaProgressCb);
   } else {
     httpUpdate.onProgress([](size_t current, size_t total) {
-      if (total == 0) return; // Guard against divide-by-zero
+      if (total == 0) return;
 
       static size_t lastLoggedPct = 0xFF;
       size_t currentOtaProgress = (current * 100) / total;
@@ -201,7 +208,7 @@ void performBackgroundGitHubOta(void *pvParameters) {
     });
   }
 
-  log_i("Starting OTA from GitHub...");
+  log_i("Starting OTA from GitHub: %s", FIRMWARE_URL);
 
   if (activeOtaProgressCb) {
     activeOtaProgressCb(1, 0);
@@ -245,7 +252,7 @@ void startBackgroundGitHubOtaTask(otaProgressCallback progressCb) {
       BaseType_t res = xTaskCreate(
         performBackgroundGitHubOta,
         "GitHub_OTA",
-        6144,
+        8192,
         reinterpret_cast<void *>(progressCb),
         1,
         &otaTaskHandle);
