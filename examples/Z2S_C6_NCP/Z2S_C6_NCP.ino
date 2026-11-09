@@ -59,7 +59,7 @@ void setup() {
   // 6. Disable Task Watchdogs on C6 (same as standalone Z2S_Gateway)
   disableCore0WDT();
   disableLoopWDT();
-  esp_task_wdt_delete(NULL);
+  
   if (Zigbee.getZigbeeTaskHandle() != NULL) {
     esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
   }

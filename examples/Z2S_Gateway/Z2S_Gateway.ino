@@ -255,7 +255,7 @@ void supla_callback_bridge(int event, int action) {
           (sd_current_status == STATUS_MISSING_CREDENTIALS)) {
 
             //_forced_config = true;
-            //_start_Zigbee = false;
+            _start_Zigbee = false;
           }
 
       if (sd_current_status == STATUS_SOFTWARE_RESET) {
@@ -996,13 +996,13 @@ void setup() {
     
     Z2S_addZ2SDevice(&test_joined_device);*/
 
+#if !CONFIG_IDF_TARGET_ESP32S3
   disableCore0WDT();
-#if CONFIG_IDF_TARGET_ESP32S3
-  disableCore1WDT();
-#endif
   if (Zigbee.getZigbeeTaskHandle() != NULL) {
     esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
   }
+#endif
+  disableLoopWDT();
 
   /*LuaState = luaL_newstate();
   //luaL_openlibs(LuaState);
