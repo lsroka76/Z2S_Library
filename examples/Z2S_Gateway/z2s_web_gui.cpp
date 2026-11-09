@@ -1260,7 +1260,7 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		  ":</b></i> %u B <b>| <i>CustomMaxAllocHeap:</b></i> %u B<br><br>"
 		  //"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
 		  //"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br><br>"
-		  //"<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br>"
+		  "<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br>"
 		  "<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
 		  "%lu dni %02lu:%02lu:%02lu (%lu seconds)",
 		  ESP.getFreeHeap(), ESP.getMinFreeHeap(),
@@ -1269,7 +1269,7 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 			multi_heap_info.largest_free_block,
 		  //uxTaskGetStackHighWaterMark(NULL),
 		  //uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()),
-		  //ESP.getPsramSize(), ESP.getFreePsram(),
+		  ESP.getPsramSize(), ESP.getFreePsram(),
 		  current_time_buffer,
 		  Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss,
 		  Supla_uptime_s);
