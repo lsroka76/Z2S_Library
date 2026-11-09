@@ -55,37 +55,19 @@ static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm);
 #endif
 
 bool ZigbeeCore::begin(esp_zb_cfg_t *role_cfg, bool erase_nvs) {
-  _role = (zigbee_role_t)role_cfg->esp_zb_role;
-  xSemaphoreTake(lock, 0); // Clear any stale semaphore signal
-
   if (!zigbeeInit(role_cfg, erase_nvs)) {
     log_e("ZigbeeCore begin failed");
     return false;
   }
-
-#if defined(USE_GEMINI_PROTOCOL_HOST)
-  for (uint8_t retry = 0; retry < 6; retry++) {
-    if (xSemaphoreTake(lock, pdMS_TO_TICKS(5000)) == pdTRUE) {
-      break;
-    }
-    log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN (%u/6)", retry + 1);
-    zigbeeInit(role_cfg, false);
-  }
-  if (!started()) {
-    log_e("ZigbeeCore begin timeout waiting for C6 NCP");
-  }
-#else
+  _role = (zigbee_role_t)role_cfg->esp_zb_role;
   if (xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
     log_e("ZigbeeCore begin timeout");
   }
-#endif
   return started();
 }
 
 bool ZigbeeCore::begin(zigbee_role_t role, bool erase_nvs) {
   bool status = true;
-  xSemaphoreTake(lock, 0); // Clear any stale semaphore signal
-
   switch (role) {
     case ZIGBEE_COORDINATOR: {
       _role = ZIGBEE_COORDINATOR;
@@ -109,28 +91,9 @@ bool ZigbeeCore::begin(zigbee_role_t role, bool erase_nvs) {
       log_e("Invalid Zigbee Role");
       return false;
   }
-
-  if (!status) {
-    log_e("ZigbeeCore zigbeeInit failed");
-    return false;
-  }
-
-#if defined(USE_GEMINI_PROTOCOL_HOST)
-  for (uint8_t retry = 0; retry < 6; retry++) {
-    if (xSemaphoreTake(lock, pdMS_TO_TICKS(5000)) == pdTRUE) {
-      break;
-    }
-    log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN (%u/6)", retry + 1);
-    zigbeeInit(nullptr, false);
-  }
-  if (!started()) {
-    log_e("ZigbeeCore begin timeout waiting for C6 NCP");
-  }
-#else
-  if (xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
+  if (!status || xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
     log_e("ZigbeeCore begin failed or timeout");
   }
-#endif
   return started();
 }
 
@@ -338,14 +301,11 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
 
     case ESP_ZB_BDB_SIGNAL_STEERING:
       if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
+        if (Zigbee._open_network == 0) {
+          esp_zb_bdb_open_network(0);
+        }
         Zigbee._started = true;
         xSemaphoreGive(Zigbee.lock);
-      } else {
-        if (err_status == ESP_OK) {
-          Zigbee._connected = true;
-        } else {
-          esp_zb_scheduler_alarm((esp_zb_callback_t)bdb_start_top_level_commissioning_cb, ESP_ZB_BDB_MODE_NETWORK_STEERING, 1000);
-        }
       }
       break;
 
