@@ -33,21 +33,21 @@
   #define GEMINI_UART_BAUD     2000000 // 2 Mbps
 #endif
 
-#if defined(USE_GEMINI_PROTOCOL_HOST) // ESP32-S3 Host Pins
+#if defined(USE_GEMINI_PROTOCOL_HOST) // ESP32-S3 Native USB Port Pins
   #ifndef GEMINI_PIN_TX
-    #define GEMINI_PIN_TX      17
-    #define GEMINI_PIN_RX      18
-    #define GEMINI_PIN_RTS     15
-    #define GEMINI_PIN_CTS     16
-    #define GEMINI_PIN_C6_EN   38
-    #define GEMINI_PIN_C6_BOOT 39
+    #define GEMINI_PIN_TX      19   // S3 USB D- (TX -> C6 D-)
+    #define GEMINI_PIN_RX      20   // S3 USB D+ (RX <- C6 D+)
+    #define GEMINI_PIN_RTS     -1   // No RTS/CTS wires in USB 2.0 cable
+    #define GEMINI_PIN_CTS     -1
+    #define GEMINI_PIN_C6_EN   -1
+    #define GEMINI_PIN_C6_BOOT -1
   #endif
-#elif defined(USE_GEMINI_PROTOCOL_NCP) // ESP32-C6 Co-Processor Pins
+#elif defined(USE_GEMINI_PROTOCOL_NCP) // ESP32-C6 Native USB Port Pins
   #ifndef GEMINI_PIN_TX
-    #define GEMINI_PIN_TX      4
-    #define GEMINI_PIN_RX      5
-    #define GEMINI_PIN_RTS     7
-    #define GEMINI_PIN_CTS     6
+    #define GEMINI_PIN_TX      13   // C6 USB D+ (TX -> S3 D+)
+    #define GEMINI_PIN_RX      12   // C6 USB D- (RX <- S3 D-)
+    #define GEMINI_PIN_RTS     -1
+    #define GEMINI_PIN_CTS     -1
   #endif
 #endif
 

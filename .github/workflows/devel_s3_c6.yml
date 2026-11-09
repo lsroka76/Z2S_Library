@@ -61,7 +61,7 @@ jobs:
         working-directory: .
         run: |
           cp ./src/Zigbee* ./src/GeminiProtocol* ./examples/Z2S_C6_NCP/
-          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
 
       - name: Rename binaries C6_NCP_4MB_logs
         working-directory: .
@@ -72,7 +72,7 @@ jobs:
       - name: Compile C6_NCP_4MB_no_logs
         working-directory: .
         run: |
-          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
 
       - name: Rename binaries C6_NCP_4MB_no_logs
         working-directory: .
@@ -85,7 +85,7 @@ jobs:
       # =======================================================================
       - name: Compile S3_Host_8MB_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32s3:PartitionScheme=default_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc,DebugLevel=verbose -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1 -DUSE_GEMINI_PROTOCOL=1 -DCONFIG_ZB_ENABLED=1"
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32s3:PartitionScheme=default_8MB,ZigbeeMode=zczr,FlashSize=8M,DebugLevel=verbose -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1 -DUSE_GEMINI_PROTOCOL=1 -DCONFIG_ZB_ENABLED=1"
 
       - name: Rename binaries S3_Host_8MB_logs
         working-directory: .
@@ -95,7 +95,7 @@ jobs:
 
       - name: Compile S3_Host_8MB_no_logs
         working-directory: .
-        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32s3:PartitionScheme=default_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1 -DUSE_GEMINI_PROTOCOL=1 -DCONFIG_ZB_ENABLED=1"
+        run: arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32s3:PartitionScheme=default_8MB,ZigbeeMode=zczr,FlashSize=8M -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1 -DUSE_GEMINI_PROTOCOL=1 -DCONFIG_ZB_ENABLED=1"
 
       - name: Rename binaries S3_Host_8MB_no_logs
         working-directory: .

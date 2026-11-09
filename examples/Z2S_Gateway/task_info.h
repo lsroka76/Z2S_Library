@@ -9,6 +9,11 @@
 
 #define MAX_MONITORED_TASKS 12
 
+#if !CONFIG_IDF_TARGET_ESP32S3
+  #define MAX_MONITORED_TASKS 24
+#endif
+
+
 /*****************************************************************************/
 
 struct TaskHistory {

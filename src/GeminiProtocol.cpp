@@ -1,3 +1,6 @@
+#include "soc/usb_serial_jtag_struct.h"
+#include "driver/gpio.h"
+
 #include "GeminiProtocol.h"
 
 #if defined(USE_GEMINI_PROTOCOL)
@@ -31,13 +34,14 @@ struct QueuedCommand {
 static QueueHandle_t s_cmd_queue = nullptr;
 
 bool GeminiBridge::initUart() {
-  if (_tx_mutex != nullptr) return true;
+  if (_tx_mutex != nullptr) return true; // Already initialized
 
   _tx_mutex       = xSemaphoreCreateMutex();
   _sync_cmd_mutex = xSemaphoreCreateMutex();
   _sync_rsp_sem   = xSemaphoreCreateBinary();
 
   #if defined(USE_GEMINI_PROTOCOL_HOST)
+  // Optional hardware reset of C6 if EN/BOOT pins are wired (>= 0)
   if (GEMINI_PIN_C6_BOOT >= 0) {
     pinMode(GEMINI_PIN_C6_BOOT, OUTPUT);
     digitalWrite(GEMINI_PIN_C6_BOOT, HIGH);
@@ -49,23 +53,44 @@ bool GeminiBridge::initUart() {
     digitalWrite(GEMINI_PIN_C6_EN, HIGH);
     vTaskDelay(pdMS_TO_TICKS(200));
   }
+
+  // If using S3 Native USB port pins (GPIO19 D- / GPIO20 D+), disconnect internal USB PHY & pull-up
+  if (GEMINI_PIN_TX == 19 || GEMINI_PIN_RX == 20 || GEMINI_PIN_TX == 20 || GEMINI_PIN_RX == 19) {
+    USB_SERIAL_JTAG.conf0.usb_pad_enable = 0;
+    USB_SERIAL_JTAG.conf0.dp_pullup      = 0;
+    gpio_reset_pin((gpio_num_t)GEMINI_PIN_TX);
+    gpio_reset_pin((gpio_num_t)GEMINI_PIN_RX);
+  }
+  #elif defined(USE_GEMINI_PROTOCOL_NCP)
+  // If using C6 Native USB port pins (GPIO12 D- / GPIO13 D+), disconnect internal USB PHY & pull-up
+  if (GEMINI_PIN_TX == 12 || GEMINI_PIN_RX == 13 || GEMINI_PIN_TX == 13 || GEMINI_PIN_RX == 12) {
+    USB_SERIAL_JTAG.conf0.usb_pad_enable = 0;
+    USB_SERIAL_JTAG.conf0.dp_pullup      = 0;
+    gpio_reset_pin((gpio_num_t)GEMINI_PIN_TX);
+    gpio_reset_pin((gpio_num_t)GEMINI_PIN_RX);
+  }
   #endif
+
+  bool use_hw_flow = (GEMINI_PIN_RTS >= 0 && GEMINI_PIN_CTS >= 0);
 
   const uart_config_t uart_cfg = {
     .baud_rate           = GEMINI_UART_BAUD,
     .data_bits           = UART_DATA_8_BITS,
     .parity              = UART_PARITY_DISABLE,
     .stop_bits           = UART_STOP_BITS_1,
-    .flow_ctrl           = UART_HW_FLOWCTRL_CTS_RTS,
-    .rx_flow_ctrl_thresh = 96,
+    .flow_ctrl           = use_hw_flow ? UART_HW_FLOWCTRL_CTS_RTS : UART_HW_FLOWCTRL_DISABLE,
+    .rx_flow_ctrl_thresh = (uint8_t)(use_hw_flow ? 96 : 0),
     .source_clk          = UART_SCLK_DEFAULT,
   };
 
+  int rts_pin = (GEMINI_PIN_RTS >= 0) ? GEMINI_PIN_RTS : UART_PIN_NO_CHANGE;
+  int cts_pin = (GEMINI_PIN_CTS >= 0) ? GEMINI_PIN_CTS : UART_PIN_NO_CHANGE;
+
   ESP_ERROR_CHECK(uart_driver_install(GEMINI_UART_NUM, 4096, 4096, 0, NULL, 0));
   ESP_ERROR_CHECK(uart_param_config(GEMINI_UART_NUM, &uart_cfg));
-  ESP_ERROR_CHECK(uart_set_pin(
-    GEMINI_UART_NUM, GEMINI_PIN_TX, GEMINI_PIN_RX, GEMINI_PIN_RTS, GEMINI_PIN_CTS));
+  ESP_ERROR_CHECK(uart_set_pin(GEMINI_UART_NUM, GEMINI_PIN_TX, GEMINI_PIN_RX, rts_pin, cts_pin));
 
+  // Low-latency FIFO tuning: trigger interrupt after 32 bytes or 2 idle byte-times (~10 us)
   uart_set_rx_full_threshold(GEMINI_UART_NUM, 32);
   uart_set_rx_timeout(GEMINI_UART_NUM, 2);
 
