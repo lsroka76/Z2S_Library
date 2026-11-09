@@ -64,12 +64,12 @@ bool ZigbeeCore::begin(esp_zb_cfg_t *role_cfg, bool erase_nvs) {
   }
 
 #if defined(USE_GEMINI_PROTOCOL_HOST)
-  for (uint8_t retry = 0; retry < 15; retry++) {
-    if (xSemaphoreTake(lock, pdMS_TO_TICKS(2000)) == pdTRUE) {
+  for (uint8_t retry = 0; retry < 6; retry++) {
+    if (xSemaphoreTake(lock, pdMS_TO_TICKS(5000)) == pdTRUE) {
       break;
     }
-    log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN (%u/15)", retry + 1);
-    zigbeeInit(role_cfg, false); // Retry with erase_nvs = false in case C6 just factory-reset
+    log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN (%u/6)", retry + 1);
+    zigbeeInit(role_cfg, false);
   }
   if (!started()) {
     log_e("ZigbeeCore begin timeout waiting for C6 NCP");
@@ -116,12 +116,12 @@ bool ZigbeeCore::begin(zigbee_role_t role, bool erase_nvs) {
   }
 
 #if defined(USE_GEMINI_PROTOCOL_HOST)
-  for (uint8_t retry = 0; retry < 15; retry++) {
-    if (xSemaphoreTake(lock, pdMS_TO_TICKS(2000)) == pdTRUE) {
+  for (uint8_t retry = 0; retry < 6; retry++) {
+    if (xSemaphoreTake(lock, pdMS_TO_TICKS(5000)) == pdTRUE) {
       break;
     }
-    log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN (%u/15)", retry + 1);
-    zigbeeInit(nullptr, false); // Retry with erase_nvs = false in case C6 just factory-reset
+    log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN (%u/6)", retry + 1);
+    zigbeeInit(nullptr, false);
   }
   if (!started()) {
     log_e("ZigbeeCore begin timeout waiting for C6 NCP");
@@ -277,8 +277,10 @@ void ZigbeeCore::setNVRAMChannelMask(uint32_t mask) {
 #if defined(USE_GEMINI_PROTOCOL_HOST)
   GeminiBridge::sendFrame(G_CMD_SET_CHANNEL_MASK, &mask, sizeof(uint32_t));
 #else
+  esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_set_channel_mask(_primary_channel_mask);
   zb_nvram_write_dataset(ZB_NVRAM_COMMON_DATA);
+  esp_zb_lock_release();
 #endif
 }
 

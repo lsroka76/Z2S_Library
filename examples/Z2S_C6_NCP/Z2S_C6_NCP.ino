@@ -22,9 +22,16 @@ void setup() {
   Zigbee.addEndpoint(&zbGateway);
   Zigbee.setRebootOpenNetwork(0);
 
-  // Start UART Bridge and wait for S3 Host to send G_CMD_ZB_BEGIN!
   GeminiBridge::initUart();
-  log_i("Z2S C6 NCP ready - waiting for S3 Host G_CMD_ZB_BEGIN...");
+
+  if (Zigbee.begin(ZIGBEE_COORDINATOR, false)) {
+    GeminiBridge::sendStackStartedEvt();
+    log_i("C6 Zigbee Coordinator started!");
+  } else {
+    log_e("C6 Zigbee Coordinator failed to start! Rebooting...");
+    delay(1000);
+    esp_restart();
+  }
 
   disableCore0WDT();
   disableLoopWDT();
