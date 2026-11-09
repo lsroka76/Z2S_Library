@@ -324,27 +324,19 @@ void supla_callback_bridge(int event, int action) {
       if (sd_current_status == STATUS_CONFIG_MODE) {
 
         if (!_forced_config) {
-        
+          Z2S_initLittleFs(); // Ensure LittleFS is mounted before saving config!
           if (Supla::Storage::ConfigInstance()->setUInt8(
                 Z2S_FORCE_CONFIG_ON_START, 1)) {
       	  
-            log_i("Supla config mode detected - " //(Zigbee stack active) - "
+            log_i("Supla config mode detected - "
                   "setting Z2S_FORCE_CONFIG_ON_START flag and restarting!");
             
             Supla::Storage::ConfigInstance()->commit();
-
-            disableGatewayActions();
-            _restart_scheduled = true;
-            SuplaDevice.scheduleSoftRestart(1000);
-          } else
-            log_e("Supla config mode detected - "//(Zigbee stack active) - "
-                "setting Z2S_FORCE_CONFIG_ON_START flag FAILED!");
+            Z2S_endLittleFs(true);
+            delay(200);
+            esp_restart();
+          }
           return;
-        } 
-        
-        if (suplaServer == nullptr) {
-
-          
         }
       }
     } break;
@@ -1005,9 +997,12 @@ void setup() {
     Z2S_addZ2SDevice(&test_joined_device);*/
 
   disableCore0WDT();
-  disableLoopWDT();
-  esp_task_wdt_delete(NULL);
-  esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
+#if CONFIG_IDF_TARGET_ESP32S3
+  disableCore1WDT();
+#endif
+  if (Zigbee.getZigbeeTaskHandle() != NULL) {
+    esp_task_wdt_delete(Zigbee.getZigbeeTaskHandle());
+  }
 
   /*LuaState = luaL_newstate();
   //luaL_openlibs(LuaState);
