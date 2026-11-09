@@ -276,7 +276,7 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
       } else {
         esp_zb_scheduler_alarm((esp_zb_callback_t)bdb_start_top_level_commissioning_cb, ESP_ZB_BDB_MODE_INITIALIZATION, 500);
       }
-      break;
+      break; //just for update
 
     case ESP_ZB_BDB_SIGNAL_FORMATION:
       if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR) {
