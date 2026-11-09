@@ -241,17 +241,18 @@ void ZigbeeCore::setScanDuration(uint8_t duration) {
 void ZigbeeCore::setRebootOpenNetwork(uint8_t time) { _open_network = time; }
 
 void ZigbeeCore::openNetwork(uint8_t time) {
+  log_i("ZigbeeCore::openNetwork(%u) called, started=%d", time, started());
   if (started()) {
 #if defined(USE_GEMINI_PROTOCOL_HOST)
     GeminiBridge::sendFrame(G_CMD_OPEN_NETWORK, &time, sizeof(uint8_t));
 #else
     esp_zb_lock_acquire(portMAX_DELAY);
-    esp_zb_bdb_open_network(time);
+    esp_err_t err = esp_zb_bdb_open_network(time);
     esp_zb_lock_release();
+    log_i("esp_zb_bdb_open_network(%u) returned: 0x%x", time, err);
 #endif
   }
 }
-
 void ZigbeeCore::factoryReset() {
   
   log_v("Factory resetting Zigbee stack, device will reboot");
@@ -397,17 +398,18 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct) {
     } break;
 
     case ESP_ZB_NWK_SIGNAL_PERMIT_JOIN_STATUS:
-      if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR && err_status == ESP_OK) {
-        uint8_t open_sec = *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p);
-        Zigbee.setNetworkOpen(open_sec > 0);
-        #if defined(USE_GEMINI_PROTOCOL_NCP)
-        GeminiBridge::sendFrame(G_EVT_OPEN_NETWORK, &open_sec, sizeof(uint8_t));
-        #endif
-        for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
-          (*it)->zbOpenNetwork(open_sec);
-        }
-      }
-      break;
+  if ((zigbee_role_t)Zigbee.getRole() == ZIGBEE_COORDINATOR && err_status == ESP_OK) {
+    uint8_t open_sec = *(uint8_t *)esp_zb_app_signal_get_params(p_sg_p);
+    log_i("Permit Join Status signal: %u seconds", open_sec);
+    Zigbee.setNetworkOpen(open_sec > 0);
+    #if defined(USE_GEMINI_PROTOCOL_NCP)
+    GeminiBridge::sendFrame(G_EVT_OPEN_NETWORK, &open_sec, sizeof(uint8_t));
+    #endif
+    for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
+      (*it)->zbOpenNetwork(open_sec);
+    }
+  }
+  break;
 
     case ESP_ZB_ZDO_SIGNAL_LEAVE:
       if ((zigbee_role_t)Zigbee.getRole() != ZIGBEE_COORDINATOR) {

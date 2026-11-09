@@ -301,7 +301,7 @@ void supla_callback_bridge(int event, int action) {
         }
         
         esp_coex_wifi_i154_enable();
-        zbGateway.clearLocalBindings();
+        //zbGateway.clearLocalBindings();
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
         }
         return;
