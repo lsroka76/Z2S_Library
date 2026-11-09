@@ -552,9 +552,6 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_CMD_OPEN_NETWORK: {
-        Zigbee
-
-      case G_CMD_OPEN_NETWORK: {
         uint8_t open_sec = *p;
         Zigbee.openNetwork(open_sec);
         // Always echo the state back so S3 GUI/LED stays in sync even if C6 was already open!
