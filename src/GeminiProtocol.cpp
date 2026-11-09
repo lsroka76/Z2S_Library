@@ -556,7 +556,6 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
         Zigbee.openNetwork(open_sec);
         // Always echo the state back so S3 GUI/LED stays in sync even if C6 was already open!
         sendFrame(G_EVT_OPEN_NETWORK, &open_sec, sizeof(uint8_t));
-      } break;.openNetwork(*p);
       } break;
 
       case G_CMD_FACTORY_RESET: {
