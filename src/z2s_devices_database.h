@@ -2124,9 +2124,9 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_1,
-    .z2s_device_clusters_count = 4,
+    .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+    .z2s_device_clusters = { //ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_SCENES,
                              ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL}},
@@ -2134,12 +2134,12 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_2,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+    .z2s_device_clusters = { IKEA_PRIVATE_CLUSTER_2 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SYMFONISK_GEN_2_3,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = 0x0,
-    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_BASIC }},
+    .z2s_device_clusters = { IKEA_PRIVATE_CLUSTER_2 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_SOMRIG_BUTTON_1,
     .z2s_device_clusters_count = 2,
@@ -5319,6 +5319,13 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "_TZ3000_bi6lpsew", .model_name = "TS0043",
     .z2s_device_uid = 13810,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
+	  .z2s_device_endpoints_count = 3,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
+  {	.manufacturer_name = "_TZ3000_7uglqmvv", .model_name = "TS0043",
+    .z2s_device_uid = 13815,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
     .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
 	  .z2s_device_endpoints_count = 3,
