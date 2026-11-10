@@ -52,7 +52,8 @@ jobs:
         run: | 
           cp ./partitions/boards336.txt ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/boards.txt
           cp ./partitions/custom_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/tools/partitions/custom_zigbee_zczr.csv
-          cp ./core/HTTPUpdateServer.h ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/libraries/HTTPUpdateServer/src/HTTPUpdateServer.h 
+          cp ./partitions/ncp_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/tools/partitions/zigbee_zczr.csv
+          cp ./core/HTTPUpdateServer.h ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/libraries/HTTPUpdateServer/src/HTTPUpdateServer/src/HTTPUpdateServer.h 
 
       # =======================================================================
       # 1. ESP32-C6 STANDALONE 4MB (Custom Partition - Logs & No Logs)
