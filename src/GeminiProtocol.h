@@ -94,6 +94,9 @@ enum GeminiMsgType : uint8_t {
   G_CMD_LEAVE_REQ            = 0x32,
   G_CMD_DEV_FACTORY_RESET    = 0x33,
   G_CMD_OTA_NOTIFY_START     = 0x40,
+  G_CMD_NCP_OTA_BEGIN        = 0x50,
+  G_CMD_NCP_OTA_WRITE        = 0x51,
+  G_CMD_NCP_OTA_END          = 0x52,
 
   // --- Synchronous Replies (0x80..0x9F) ---
   G_RSP_STATUS               = 0x80,
@@ -152,6 +155,12 @@ struct __attribute__((packed)) G_PktEvtStackStarted {
   uint8_t  current_channel;
   int8_t   tx_power;
   uint8_t  is_factory_new;
+  char     ncp_version[24];
+};
+
+struct __attribute__((packed)) G_PktNcpOtaWrite {
+  uint16_t len;
+  uint8_t  data[256];
 };
 
 struct __attribute__((packed)) G_PktTimeClusterSync {
@@ -418,6 +427,12 @@ public:
   static esp_err_t hostIcRemoveAll();
   static esp_zb_zcl_status_t hostSetTimeAttr(uint16_t attr_id, void *value_p);
   static esp_zb_zcl_attr_t *hostGetTimeAttr(uint16_t attr_id);
+
+  static void setNcpVersion(const char *ver);
+  static const char *getNcpVersion();
+  static bool hostNcpOtaBegin();
+  static bool hostNcpOtaWrite(const uint8_t *data, size_t len);
+  static bool hostNcpOtaEnd();
 
 private:
   static void rxTask(void *arg);

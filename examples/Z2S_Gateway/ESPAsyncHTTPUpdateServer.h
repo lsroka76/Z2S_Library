@@ -6,7 +6,8 @@
 enum UpdateType
 {
     FIRMWARE,
-    FILE_SYSTEM
+    FILE_SYSTEM,
+    NCP_FIRMWARE
 };
 
 enum UpdateResult

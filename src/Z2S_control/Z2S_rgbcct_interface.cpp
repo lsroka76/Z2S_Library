@@ -972,6 +972,26 @@ void Supla::Control::Z2S_RGBCCTInterface::handleAction(
 
       turnOnDimmer();
     break;
+
+
+    case Z2S_SUPLA_ACTION_ACTIVATE_NEXT_SCENE: {
+
+      uint8_t next_scene_id = (getCurrentSceneId() < 15) ? 
+        (getCurrentSceneId()) + 1 : 0;
+
+      if (sendSceneById(next_scene_id))
+        setCurrentSceneId(next_scene_id);
+    } break;
+
+
+    case Z2S_SUPLA_ACTION_ACTIVATE_PREV_SCENE: {
+
+      uint8_t prev_scene_id = (getCurrentSceneId() > 0) ? 
+        (getCurrentSceneId() - 1) : 15;
+
+      if (sendSceneById(prev_scene_id))
+        setCurrentSceneId(prev_scene_id);
+    } break;
   }
 
   if ((action >= Z2S_SUPLA_ACTION_BRIGHTEN_W_WITH_STEP_FIRST_ACTION) &&
@@ -997,6 +1017,7 @@ void Supla::Control::Z2S_RGBCCTInterface::handleAction(
 
 bool Supla::Control::Z2S_RGBCCTInterface::sendSceneById(
   uint8_t scene_id) {
+
   const uint8_t *scene_data = nullptr;
   uint8_t scene_len = 0;
 

@@ -31,6 +31,9 @@
 #define Z2S_SUPLA_ACTION_DIM_W_15                                             0x4502
 #define Z2S_SUPLA_ACTION_DIM_W_20                                             0x4503
 
+#define Z2S_SUPLA_ACTION_ACTIVATE_NEXT_SCENE                                  0x4510
+#define Z2S_SUPLA_ACTION_ACTIVATE_PREV_SCENE                                  0x4511
+
 //31 subaction
 #define Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_FIRST_ACTION                      0x4600
 #define Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_LAST_ACTION                       0x461F

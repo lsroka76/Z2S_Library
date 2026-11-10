@@ -8,6 +8,12 @@
 #include "ZigbeeCore.h"
 #include "ZigbeeGateway.h"
 
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+#include <Update.h>
+#endif
+
+static char s_ncp_version[24] = "NCP-1.0.0";
+
 SemaphoreHandle_t GeminiBridge::_tx_mutex          = nullptr;
 SemaphoreHandle_t GeminiBridge::_sync_cmd_mutex    = nullptr;
 SemaphoreHandle_t GeminiBridge::_sync_rsp_sem      = nullptr;
@@ -155,6 +161,17 @@ bool GeminiBridge::sendCommandWaitReply(
   return got_reply;
 }
 
+void GeminiBridge::setNcpVersion(const char *ver) {
+  if (ver) {
+    strncpy(s_ncp_version, ver, sizeof(s_ncp_version) - 1);
+    s_ncp_version[sizeof(s_ncp_version) - 1] = '\0';
+  }
+}
+
+const char *GeminiBridge::getNcpVersion() {
+  return s_ncp_version;
+}
+
 void GeminiBridge::sendStackStartedEvt() {
 #if defined(USE_GEMINI_PROTOCOL_NCP)
   G_PktEvtStackStarted evt = {};
@@ -165,9 +182,51 @@ void GeminiBridge::sendStackStartedEvt() {
   esp_zb_get_tx_power(&evt.tx_power);
   esp_zb_lock_release();
   evt.is_factory_new = Zigbee.isFactoryStack() ? 1 : 0;
+  strncpy(evt.ncp_version, s_ncp_version, sizeof(evt.ncp_version) - 1);
   sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
 #endif
 }
+
+bool GeminiBridge::hostNcpOtaBegin() {
+  uint8_t rsp[2] = {};
+  if (!sendCommandWaitReply(G_CMD_NCP_OTA_BEGIN, nullptr, 0, G_RSP_STATUS, rsp, sizeof(rsp), 5000)) {
+    return false;
+  }
+  return (rsp[0] != 0);
+}
+
+bool GeminiBridge::hostNcpOtaWrite(const uint8_t *data, size_t len) {
+  size_t offset = 0;
+  while (offset < len) {
+    uint16_t chunk = ((len - offset) > 256) ? 256 : (uint16_t)(len - offset);
+    G_PktNcpOtaWrite pkt = {};
+    pkt.len = chunk;
+    memcpy(pkt.data, data + offset, chunk);
+
+    uint8_t rsp[2] = {};
+    if (!sendCommandWaitReply(
+          G_CMD_NCP_OTA_WRITE, &pkt, sizeof(uint16_t) + chunk, G_RSP_STATUS, rsp, sizeof(rsp), 3000) ||
+        rsp[0] == 0) {
+      return false;
+    }
+    offset += chunk;
+  }
+  return true;
+}
+
+bool GeminiBridge::hostNcpOtaEnd() {
+  uint8_t rsp[2] = {};
+  if (!sendCommandWaitReply(G_CMD_NCP_OTA_END, nullptr, 0, G_RSP_STATUS, rsp, sizeof(rsp), 5000)) {
+    return false;
+  }
+  return (rsp[0] != 0);
+}
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+extern "C" bool z2s_ncp_ota_begin() { return GeminiBridge::hostNcpOtaBegin(); }
+extern "C" bool z2s_ncp_ota_write(const uint8_t *data, size_t len) { return GeminiBridge::hostNcpOtaWrite(data, len); }
+extern "C" bool z2s_ncp_ota_end() { return GeminiBridge::hostNcpOtaEnd(); }
+#endif
 
 void GeminiBridge::getCoordinatorIeee(uint8_t *ieee) {
   if (ieee) memcpy(ieee, s_coord_ieee, 8);
@@ -377,14 +436,21 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     // S3 HOST WORKER: Process incoming events from C6 NCP
     // =========================================================================
     switch (item.hdr.msg_type) {
+      
       case G_EVT_STACK_STARTED: {
-        if (item.hdr.payload_len >= sizeof(G_PktEvtStackStarted)) {
+        if (item.hdr.payload_len >= 18) {
           const auto *evt = reinterpret_cast<const G_PktEvtStackStarted *>(p);
           memcpy(s_coord_ieee, evt->coordinator_ieee, 8);
           memcpy(s_ext_pan_id, evt->extended_pan_id, 8);
           s_current_channel = evt->current_channel;
           s_tx_power        = evt->tx_power;
-          Zigbee._is_factory_new = (evt->is_factory_new != 0);
+          if (item.hdr.payload_len >= 19) {
+            Zigbee._is_factory_new = (evt->is_factory_new != 0);
+          }
+          if (item.hdr.payload_len >= sizeof(G_PktEvtStackStarted) && evt->ncp_version[0] != '\0') {
+            strncpy(s_ncp_version, evt->ncp_version, sizeof(s_ncp_version) - 1);
+            s_ncp_version[sizeof(s_ncp_version) - 1] = '\0';
+          }
         }
         Zigbee._started   = true;
         Zigbee._connected = true;
@@ -924,6 +990,35 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           ieee, (uint8_t *)req->header_raw, nullptr);
         uint8_t rsp[2] = { (uint8_t)(err == ESP_OK ? 1 : 0), (uint8_t)err };
         sendFrame(G_RSP_STATUS, rsp, sizeof(rsp), item.hdr.seq_num);
+      } break;
+      
+      case G_CMD_NCP_OTA_BEGIN: {
+        uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+        bool ok = Update.begin(maxSketchSpace, U_FLASH);
+        log_i("C6 NCP OTA Begin (max=%lu): %s", maxSketchSpace, ok ? "OK" : "FAIL");
+        uint8_t rsp[2] = { (uint8_t)(ok ? 1 : 0), (uint8_t)Update.getError() };
+        sendFrame(G_RSP_STATUS, rsp, sizeof(rsp), item.hdr.seq_num);
+      } break;
+
+      case G_CMD_NCP_OTA_WRITE: {
+        const auto *req = reinterpret_cast<const G_PktNcpOtaWrite *>(p);
+        uint16_t chunk_len = (req->len <= 256) ? req->len : 256;
+        size_t written = Update.write((uint8_t *)req->data, chunk_len);
+        bool ok = (written == chunk_len);
+        uint8_t rsp[2] = { (uint8_t)(ok ? 1 : 0), (uint8_t)Update.getError() };
+        sendFrame(G_RSP_STATUS, rsp, sizeof(rsp), item.hdr.seq_num);
+      } break;
+
+      case G_CMD_NCP_OTA_END: {
+        bool ok = Update.end(true);
+        log_i("C6 NCP OTA End: %s", ok ? "SUCCESS! Rebooting C6..." : "FAIL");
+        uint8_t rsp[2] = { (uint8_t)(ok ? 1 : 0), (uint8_t)Update.getError() };
+        sendFrame(G_RSP_STATUS, rsp, sizeof(rsp), item.hdr.seq_num);
+        if (ok) {
+          uart_wait_tx_done(GEMINI_UART_NUM, pdMS_TO_TICKS(100));
+          vTaskDelay(pdMS_TO_TICKS(250));
+          esp_restart();
+        }
       } break;
     }
     #endif

@@ -185,6 +185,7 @@ union {
     };
     struct {
       uint32_t        rgb_color_mode;
+      uint8_t         current_scene_id;
     };
     struct {
       int32_t         hvac_fixed_temperature_correction;

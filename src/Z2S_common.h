@@ -2420,6 +2420,17 @@ public:
 
   }
 
+  uint8_t getCurrentSceneId() {
+    
+    return _z2s_channel.current_scene_id;
+  }
+
+  void setCurrentSceneId(uint8_t current_scene_id) {
+    
+    _z2s_channel.current_scene_id = current_scene_id;
+    saveChannelData();
+  }
+
 /*****************************************************************************/
 
   int32_t getHvacFixedTemperatureCorrection() {

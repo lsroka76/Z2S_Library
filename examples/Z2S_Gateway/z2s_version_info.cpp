@@ -268,3 +268,101 @@ void startBackgroundGitHubOtaTask(otaProgressCallback progressCb) {
     log_i("OTA is already running in the background!");
   }
 }
+
+/*****************************************************************************/
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+#include "GeminiProtocol.h"
+
+static constexpr const char NCP_FIRMWARE_URL[] =
+  "https://github.com/lsroka76/Z2S_Library/"
+  "releases/latest/download/Z2S_C6_NCP.4MB.no_logs.update_only.bin";
+
+void performBackgroundGitHubNcpOta(void *pvParameters) {
+  otaProgressCallback activeOtaProgressCb =
+    reinterpret_cast<otaProgressCallback>(pvParameters);
+
+  WiFiClientSecure client;
+  client.setInsecure();
+  client.setHandshakeTimeout(10);
+
+  HTTPClient http;
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  http.setTimeout(10000);
+
+  log_i("Starting C6 NCP OTA from GitHub: %s", NCP_FIRMWARE_URL);
+  if (activeOtaProgressCb) activeOtaProgressCb(1, 0);
+
+  bool success = false;
+  if (http.begin(client, NCP_FIRMWARE_URL)) {
+    int httpCode = http.GET();
+    if (httpCode == HTTP_CODE_OK) {
+      int totalLen = http.getSize();
+      WiFiClient *stream = http.getStreamPtr();
+
+      if (GeminiBridge::hostNcpOtaBegin()) {
+        uint8_t buf[256];
+        int writtenTotal = 0;
+        bool writeOk = true;
+
+        while (http.connected() && (totalLen < 0 || writtenTotal < totalLen)) {
+          size_t avail = stream->available();
+          if (avail > 0) {
+            size_t toRead = (avail > sizeof(buf)) ? sizeof(buf) : avail;
+            int readBytes = stream->readBytes(buf, toRead);
+            if (readBytes > 0) {
+              if (!GeminiBridge::hostNcpOtaWrite(buf, readBytes)) {
+                writeOk = false;
+                break;
+              }
+              writtenTotal += readBytes;
+              if (activeOtaProgressCb && totalLen > 0) {
+                activeOtaProgressCb(writtenTotal, totalLen);
+              }
+            }
+          } else {
+            vTaskDelay(pdMS_TO_TICKS(5));
+          }
+        }
+
+        if (writeOk && GeminiBridge::hostNcpOtaEnd()) {
+          success = true;
+        }
+      }
+    }
+    http.end();
+  }
+
+  if (success) {
+    if (activeOtaProgressCb) activeOtaProgressCb(0, 0);
+    log_i("C6 NCP GitHub OTA Successful! Rebooting S3...");
+    SuplaDevice.scheduleSoftRestart(1000);
+  } else {
+    if (activeOtaProgressCb) activeOtaProgressCb(2, 0);
+    log_e("C6 NCP GitHub OTA Failed!");
+  }
+
+  otaTaskHandle = nullptr;
+  vTaskDelete(nullptr);
+}
+#endif
+
+/*****************************************************************************/
+
+void startBackgroundGitHubNcpOtaTask(otaProgressCallback progressCb) {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  if (otaTaskHandle == nullptr) {
+    BaseType_t res = xTaskCreate(
+      performBackgroundGitHubNcpOta,
+      "GitHub_NCP_OTA",
+      8192,
+      reinterpret_cast<void *>(progressCb),
+      1,
+      &otaTaskHandle);
+    if (res != pdPASS) {
+      otaTaskHandle = nullptr;
+      log_e("Failed to create NCP OTA task!");
+    }
+  }
+#endif
+}

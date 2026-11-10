@@ -1215,11 +1215,17 @@ void fillGatewayGeneralnformation(char *buf) {
 		  "<br><b><i>Supla Device SDK version:</i></b> <i>%s</i><br>"
 		  "<b><i>Supla GUID:</i></b> <i>%s</i><br><br>"
 		  "<b><i>Z2S Gateway version:</i></b> <i>%s</i><br><br>"
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+			"<b><i>NCP module version:</i></b> <i>%s</i><br><br>"
+#endif
 		  "<b><i>Network extended PAN ID:</i></b> <i>%s</i><br>"
 		  "<b><i>Network current channel:</i></b> <i>%u</i><br><br>",
 		  ESP.getFlashChipSize(), ESP.getFreeSketchSpace(), ESP.getHeapSize(),
-		  suplaDeviceVersion, Supla_GUID_str, Z2S_VERSION, extended_pan_id_str,
-		  esp_zb_get_current_channel());
+		  suplaDeviceVersion, Supla_GUID_str, Z2S_VERSION, 
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+			GeminiBridge::getNcpVersion(),
+#endif			
+			extended_pan_id_str, esp_zb_get_current_channel());
 
 		log_i("Device information %s", buf);
 	}

@@ -13,6 +13,11 @@
     #error "This library only supports boards with an ESP8266 or ESP32 processor."
 #endif
 
+// Weak hooks overridden by GeminiProtocol.cpp when compiled for ESP32-S3 Host
+extern "C" __attribute__((weak)) bool z2s_ncp_ota_begin() { return false; }
+extern "C" __attribute__((weak)) bool z2s_ncp_ota_write(const uint8_t *data, size_t len) { return false; }
+extern "C" __attribute__((weak)) bool z2s_ncp_ota_end() { return false; }
+
 #ifndef ESPASYNCHTTPUPDATESERVER_SerialOutput
     #define ESPASYNCHTTPUPDATESERVER_SerialOutput Serial
 #endif
@@ -69,13 +74,14 @@ select{background:#14171c;color:#fff;border:1px solid #4b5563;border-radius:4px;
 <main>
   <section class="panel" id="sec-fw">
     <div class="panel-hdr">
-      <span>1. Gateway Firmware &amp; Filesystem Update</span>
+      <span>1. Gateway Firmware, C6 Co-Processor &amp; Filesystem Update</span>
       <span class="badge">ESP32 OTA</span>
     </div>
-    <p class="desc">Select a compiled gateway firmware image (<b>.bin</b>) or filesystem image and click <b>Start Gateway Update</b>. The gateway will reboot automatically after a firmware update.</p>
+    <p class="desc">Select a compiled gateway firmware image (<b>.bin</b>), C6 NCP co-processor image (<b>Z2S_C6_NCP*.bin</b>), or filesystem image and click <b>Start Gateway Update</b>. The gateway will reboot automatically after the update.</p>
     <div class="row">
       <select id="fw-type">
         <option value="firmware">Gateway Firmware (.bin)</option>
+        <option value="ncp_firmware">ZigBee C6 Co-Processor NCP (.bin)</option>
         <option value="filesystem">Gateway Filesystem (.bin)</option>
       </select>
       <input type="file" id="fw-file" accept=".bin,.bin.gz">
@@ -192,7 +198,6 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
     _username = username;
     _password = password;
 
-    // GET /update -> Unified Dark-Theme Update & ZigBee OTA Center
     _server->on(path.c_str(), HTTP_GET, [&](AsyncWebServerRequest *request) {
         if (_username.length() > 0 && _password.length() > 0) {
             if (!request->authenticate(_username.c_str(), _password.c_str())) {
@@ -202,7 +207,6 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
         request->send_P(200, "text/html", UPDATE_CENTER_HTML);
     });
 
-    // OPTIONS /update -> Preflight
     _server->on(path.c_str(), HTTP_OPTIONS, [&](AsyncWebServerRequest *request) {
         AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "y");
         response->addHeader("Access-Control-Allow-Headers", "*");
@@ -213,7 +217,6 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
                           request->authenticate(_username.c_str(), _password.c_str()));
     });
 
-    // POST /update -> Firmware / Filesystem OTA upload
     _server->on(
         path.c_str(), HTTP_POST,
         [&](AsyncWebServerRequest *request) {
@@ -222,7 +225,7 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
             }
 
             if (_updateResult != UpdateResult::UPDATE_OK) {
-                String errMsg = Update.hasError()
+                String errMsg = (_updaterError.length() > 0)
                     ? (String(F("Update error: ")) + _updaterError)
                     : String(F("Update aborted by server."));
                 AsyncWebServerResponse *response = request->beginResponse(200, "text/html", errMsg);
@@ -237,12 +240,17 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
             }
         },
         [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-            const AsyncWebParameter *pName = request->getParam("name");
-            _updateType = (pName && strcmp(pName->value().c_str(), "filesystem") == 0)
-                ? UpdateType::FILE_SYSTEM
-                : UpdateType::FIRMWARE;
-
             if (!index) {
+                const AsyncWebParameter *pName = request->getParam("name");
+                if (pName && strcmp(pName->value().c_str(), "filesystem") == 0) {
+                    _updateType = UpdateType::FILE_SYSTEM;
+                } else if ((pName && strcmp(pName->value().c_str(), "ncp_firmware") == 0) ||
+                           filename.startsWith("Z2S_C6_NCP")) {
+                    _updateType = UpdateType::NCP_FIRMWARE;
+                } else {
+                    _updateType = UpdateType::FIRMWARE;
+                }
+
                 _updaterError.clear();
 
                 _authenticated = (_username.length() == 0 || _password.length() == 0 ||
@@ -262,9 +270,14 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
                     }
                 }
 
-                Log("Update: %s\n", filename.c_str());
+                Log("Update: %s (type=%d)\n", filename.c_str(), (int)_updateType);
 
-                if (_updateType == UpdateType::FILE_SYSTEM) {
+                if (_updateType == UpdateType::NCP_FIRMWARE) {
+                    if (!z2s_ncp_ota_begin()) {
+                        _updaterError = "C6 NCP OTA begin failed";
+                        _updateResult = UpdateResult::UPDATE_ERROR;
+                    }
+                } else if (_updateType == UpdateType::FILE_SYSTEM) {
                     size_t fsSize = UPDATE_SIZE_UNKNOWN;
                     const esp_partition_t *part = esp_partition_find_first(
                         ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, nullptr);
@@ -281,18 +294,36 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
             }
 
             if (_authenticated && len && _updateResult == UpdateResult::UPDATE_OK) {
-                if (Update.write(data, len) != len) {
-                    _setUpdaterError();
+                if (_updateType == UpdateType::NCP_FIRMWARE) {
+                    if (!z2s_ncp_ota_write(data, len)) {
+                        _updaterError = "C6 NCP OTA write failed";
+                        _updateResult = UpdateResult::UPDATE_ERROR;
+                    }
+                } else {
+                    if (Update.write(data, len) != len) {
+                        _setUpdaterError();
+                    }
                 }
             }
 
             if (_authenticated && final && _updateResult == UpdateResult::UPDATE_OK) {
-                if (Update.end(true)) {
-                    Log("Update Success.\n");
-                    _updateResult = UpdateResult::UPDATE_OK;
-                    if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
+                if (_updateType == UpdateType::NCP_FIRMWARE) {
+                    if (z2s_ncp_ota_end()) {
+                        Log("C6 NCP Update Success.\n");
+                        _updateResult = UpdateResult::UPDATE_OK;
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
+                    } else {
+                        _updaterError = "C6 NCP OTA end failed";
+                        _updateResult = UpdateResult::UPDATE_ERROR;
+                    }
                 } else {
-                    _setUpdaterError();
+                    if (Update.end(true)) {
+                        Log("Update Success.\n");
+                        _updateResult = UpdateResult::UPDATE_OK;
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
+                    } else {
+                        _setUpdaterError();
+                    }
                 }
             }
         });
@@ -311,4 +342,4 @@ void ESPAsyncHTTPUpdateServer::_setUpdaterError()
     if (onUpdateEnd) {
         onUpdateEnd(_updateType, _updateResult);
     }
-}       
+}
