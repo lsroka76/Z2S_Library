@@ -9,11 +9,11 @@ on:
       test_notes:
         description: 'Notes about this C6 NCP build'
         required: false
-        default: 'ESP32-C6 Gemini Protocol Zigbee Co-Processor firmware.'
+        default: 'ESP32-C6 Gemini Protocol Zigbee Co-Processor firmware (4MB & 8MB).'
 
 jobs:
   build_ncp:
-    name: Build ESP32-C6 NCP Firmware
+    name: Build ESP32-C6 NCP Firmware (4MB & 8MB)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,11 +42,14 @@ jobs:
           cp ./partitions/boards336.txt ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/boards.txt
           cp ./partitions/custom_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/tools/partitions/custom_zigbee_zczr.csv
           
+      # =======================================================================
+      # 1. ESP32-C6 NCP CO-PROCESSOR 4MB (Custom Partition - Matches 4MB C6!)
+      # =======================================================================
       - name: Compile C6_NCP_4MB_logs
         working-directory: .
         run: |
           cp ./src/Zigbee* ./src/GeminiProtocol* ./examples/Z2S_C6_NCP/
-          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
 
       - name: Rename binaries C6_NCP_4MB_logs
         working-directory: .
@@ -57,7 +60,7 @@ jobs:
       - name: Compile C6_NCP_4MB_no_logs
         working-directory: .
         run: |
-          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
 
       - name: Rename binaries C6_NCP_4MB_no_logs
         working-directory: .
@@ -65,12 +68,40 @@ jobs:
           mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.no_logs.update_only.bin
           mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.merged.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.no_logs.full_version.bin
 
+      # =======================================================================
+      # 2. ESP32-C6 NCP CO-PROCESSOR 8MB (zigbee_zczr_8MB - Matches 8MB C6!)
+      # =======================================================================
+      - name: Compile C6_NCP_8MB_logs
+        working-directory: .
+        run: |
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+
+      - name: Rename binaries C6_NCP_8MB_logs
+        working-directory: .
+        run: |
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.logs.update_only.bin
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.merged.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.logs.full_version.bin
+
+      - name: Compile C6_NCP_8MB_no_logs
+        working-directory: .
+        run: |
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+
+      - name: Rename binaries C6_NCP_8MB_no_logs
+        working-directory: .
+        run: |
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.no_logs.update_only.bin
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.merged.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.no_logs.full_version.bin
+
+      # =======================================================================
+      # UPLOAD ARTIFACTS & CREATE GITHUB RELEASE
+      # =======================================================================
       - name: Upload NCP Binaries as Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Z2S_C6_NCP_Binaries
           path: |
-            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.*.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.*.bin
 
       - name: Create GitHub Release for C6 NCP
         uses: ncipollo/release-action@v1
@@ -80,7 +111,7 @@ jobs:
           prerelease: true
           allowUpdates: true
           body: |
-            📡 **ESP32-C6 Zigbee Co-Processor (NCP) Firmware**
+            📡 **ESP32-C6 Zigbee Co-Processor (NCP) Firmware (4MB & 8MB)**
             Flash this onto the ESP32-C6 when using an ESP32-S3 + ESP32-C6 dual-chip gateway.
             
             **Notes:**
@@ -90,3 +121,7 @@ jobs:
             ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.logs.full_version.bin
             ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.no_logs.update_only.bin
             ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.no_logs.full_version.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.logs.update_only.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.logs.full_version.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.no_logs.update_only.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.no_logs.full_version.bin
