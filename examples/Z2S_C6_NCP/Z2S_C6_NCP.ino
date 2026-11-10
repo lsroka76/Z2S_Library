@@ -14,7 +14,7 @@
 #define WIFI_ENABLE     3
 #define WIFI_ANT_CONFIG 14
 
-#define Z2S_NCP_VERSION "NCP-1.0.0-10/11/26"
+#define Z2S_NCP_VERSION "NCP-1.0.1-10/11/26"
 
 void setup() {
   esp_log_level_set("*", ESP_LOG_INFO);
