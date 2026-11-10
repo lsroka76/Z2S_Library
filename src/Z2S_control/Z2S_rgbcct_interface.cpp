@@ -995,7 +995,7 @@ void Supla::Control::Z2S_RGBCCTInterface::handleAction(
 
 /*****************************************************************************/
 
-bool void Supla::Control::Z2S_RGBCCTInterface::sendSceneById(
+bool Supla::Control::Z2S_RGBCCTInterface::sendSceneById(
   uint8_t scene_id) {
   const uint8_t *scene_data = nullptr;
   uint8_t scene_len = 0;
@@ -1058,7 +1058,7 @@ bool void Supla::Control::Z2S_RGBCCTInterface::sendSceneById(
 
 /*****************************************************************************/
 
-bool void Supla::Control::Z2S_RGBCCTInterface::sendMusicMode(
+bool Supla::Control::Z2S_RGBCCTInterface::sendMusicMode(
   uint8_t mode_id, uint8_t sensitivity) {
 
   if (mode_id >= 6) {
