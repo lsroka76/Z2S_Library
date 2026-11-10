@@ -6867,6 +6867,11 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZE200_33rdmvgw", .model_name = "ZG-IR01",
+    .z2s_device_uid = 25055,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_DP_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3210_ol1uhvza", .model_name = "TS130F",
     .z2s_device_uid = 25100,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_WINDOW_COVERING_SINGLE,
