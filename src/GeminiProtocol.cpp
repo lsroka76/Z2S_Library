@@ -158,10 +158,12 @@ bool GeminiBridge::sendCommandWaitReply(
 void GeminiBridge::sendStackStartedEvt() {
 #if defined(USE_GEMINI_PROTOCOL_NCP)
   G_PktEvtStackStarted evt = {};
+  esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_get_long_address(evt.coordinator_ieee);
   esp_zb_get_extended_pan_id(evt.extended_pan_id);
   evt.current_channel = esp_zb_get_current_channel();
   esp_zb_get_tx_power(&evt.tx_power);
+  esp_zb_lock_release();
   evt.is_factory_new = Zigbee.isFactoryStack() ? 1 : 0;
   sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
 #endif
@@ -537,14 +539,14 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     // C6 NCP WORKER: Execute Zigbee commands requested by S3 Host
     // =========================================================================
     switch (item.hdr.msg_type) {
+      
       case G_CMD_ZB_BEGIN: {
         const auto *req = reinterpret_cast<const G_PktZbBegin *>(p);
-        Zigbee.setPrimaryChannelMask(req->channel_mask);
-        Zigbee.setRebootOpenNetwork(req->open_network_sec);
         if (!Zigbee.started()) {
+        
+          Zigbee.setPrimaryChannelMask(req->channel_mask);
+          Zigbee.setRebootOpenNetwork(req->open_network_sec);
           Zigbee.begin((zigbee_role_t)req->role, req->erase_nvs != 0);
-        } else {
-          Zigbee.setNVRAMChannelMask(req->channel_mask);
         }
         if (Zigbee.started()) {
           sendStackStartedEvt();
