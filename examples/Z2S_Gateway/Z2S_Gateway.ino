@@ -14,6 +14,8 @@
 #include <esp_coexist.h>
 #include <esp_heap_caps.h>
 
+#include <esp_littlefs.h>
+
 //#include <lua.h>
 //#include <lualib.h>
 //#include <lauxlib.h>
@@ -572,9 +574,6 @@ void setup() {
 
   log_i("Z2S GATEWAY setup has just started!");
 
-  //_z2s_custom_heap = multi_heap_register(
-  //  custom_heap_buffer, sizeof(custom_heap_buffer));
-
   setupCpuMonitoring();
 
   saveMutex = xSemaphoreCreateMutex();
@@ -590,6 +589,24 @@ void setup() {
   pinMode(WIFI_ENABLE, OUTPUT);
   pinMode(WIFI_ANT_CONFIG, OUTPUT);
   digitalWrite(WIFI_ANT_CONFIG, HIGH);
+#endif
+
+#if CONFIG_IDF_TARGET_ESP32S3
+  
+  esp_vfs_littlefs_conf_t lfs_conf = {
+    .base_path              = "/littlefs",
+    .partition_label        = "spiffs",
+    .format_if_mount_failed = false,
+    .read_only              = false,
+    .dont_mount             = false,
+    .grow_on_mount          = true
+  };
+
+  if (esp_vfs_littlefs_register(&lfs_conf) == ESP_OK) {
+    
+    log_i("LittleFS mounted & grown to S3 partition size successfully");
+    esp_vfs_littlefs_unregister(lfs_conf.partition_label);
+  }
 #endif
  
   eeprom.setStateSavePeriod(5000);

@@ -1,0 +1,1528 @@
+#include "Z2S_ESPUI.h"
+
+Z2S_ESPUIClass ESPUI;
+
+// Helper to append JSON-escaped string into a bounded buffer
+static bool appendEscapedJson(char *buf, size_t max_len, size_t &off, const char *str) {
+  if (!str) return true;
+  while (*str) {
+    if (off + 6 >= max_len) return false;
+    char c = *str++;
+    if (c == '"' || c == '\\') {
+      buf[off++] = '\\';
+      buf[off++] = c;
+    } else if (c == '\n') {
+      buf[off++] = '\\';
+      buf[off++] = 'n';
+    } else if (c == '\r') {
+      buf[off++] = '\\';
+      buf[off++] = 'r';
+    } else if (c == '\t') {
+      buf[off++] = '\\';
+      buf[off++] = 't';
+    } else if ((uint8_t)c >= 0x20) {
+      buf[off++] = c;
+    }
+  }
+  buf[off] = '\0';
+  return true;
+}
+
+static bool appendFmt(char *buf, size_t max_len, size_t &off, const char *fmt, ...) {
+  if (off >= max_len) return false;
+  va_list args;
+  va_start(args, fmt);
+  int n = vsnprintf(buf + off, max_len - off, fmt, args);
+  va_end(args);
+  if (n < 0 || (size_t)n >= (max_len - off)) return false;
+  off += n;
+  return true;
+}
+
+// Self-contained Dark-Theme Single-Page Frontend with integrated Z2S custom logic
+static const char Z2S_INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Z2S Control Panel</title>
+<style>
+:root{--bg:#181b20;--card:#252a32;--card-hdr:#1f242b;--text:#f1f5f9;--muted:#cbd5e1;--accent:#3b82f6;--emerald:#10b981;--alizarin:#e74c3c;--border:#374151}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.45}
+header{background:#111317;padding:12px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff}
+#ws-status{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:600;background:#dc2626;color:#fff}
+#ws-status.online{background:#16a34a}
+.tabs-nav{display:flex;flex-wrap:wrap;gap:4px;padding:10px 14px 0;background:#14171c;border-bottom:1px solid var(--border)}
+.tab-btn{background:#1e2229;color:#94a3b8;border:1px solid var(--border);border-bottom:none;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s}
+.tab-btn:hover{color:#fff;background:#282d37}
+.tab-btn.active{color:#fff;background:var(--card);border-color:var(--accent);border-bottom:2px solid var(--card);margin-bottom:-1px}
+.tab-pane{display:none;padding:14px;max-width:1360px;margin:0 auto}
+.tab-pane.active{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
+.separator{width:100%;border-bottom:1px solid var(--border);padding:10px 4px 4px;margin-top:6px;font-weight:700;font-size:13px;color:#60a5fa;text-transform:uppercase;letter-spacing:.6px}
+.panel{background:var(--card);border:1px solid var(--border);border-bottom:3px solid #111317;border-radius:6px;padding:12px 14px;width:calc(50% - 6px);display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:8px;box-shadow:0 3px 6px rgba(0,0,0,.25);text-align:center;transition:opacity .2s}
+.panel.wide{width:100%}
+.panel.panel-disabled{opacity:.55;background:#1e2228;border-bottom-color:#333}
+@media(max-width:800px){.panel{width:100%}}
+.panel-hdr{width:100%;font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.2);padding:6px 10px;margin:-12px -14px 8px -14px;border-radius:5px 5px 0 0;border-bottom:1px solid var(--border);text-align:center}
+.ctrl-wrap{display:inline-flex;flex-direction:column;justify-content:flex-end;align-items:center;width:100%;max-width:100%;vertical-align:bottom;transition:opacity .15s}
+.ctrl-wrap.ctrl-disabled{opacity:.45;pointer-events:none}
+.ctrl-wrap.ctrl-inline{width:auto;min-width:110px;flex:1 1 auto}
+.ctrl-lbl{font-size:11.5px;color:var(--muted);margin-bottom:5px;line-height:1.3;text-align:center;width:100%}
+.z2s-label{display:block;width:100%;padding:6px 10px;border-radius:4px;background:rgba(0,0,0,.22);color:var(--text);font-size:12.5px;word-break:break-word;text-align:center}
+input[type=text],input[type=password],input[type=number],select,textarea{background:#14171c!important;color:#fff!important;border:1px solid #4b5563!important;border-radius:4px!important;padding:6px 10px!important;font-size:12.5px!important;width:100%!important;height:34px;outline:none!important;margin:0!important}
+textarea{height:auto!important;padding:8px 10px!important;font-family:monospace}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(59,130,246,.25)!important}
+input:disabled,select:disabled,textarea:disabled,button:disabled{opacity:.5;cursor:not-allowed}
+button.z2s-btn{background:#3b4252;color:#fff;border:1px solid #4c566a;border-bottom:3px solid #2e3440;border-radius:4px;padding:0 14px;height:34px;width:100%;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;justify-content:center}
+button.z2s-btn:hover{background:#434c5e;border-color:#60a5fa}
+button.z2s-btn:active{transform:translateY(1px)}
+button.z2s-btn.alizarin{background:#c0392b;border-color:#e74c3c;border-bottom-color:#922b21}
+button.z2s-btn.alizarin:hover{background:#e74c3c}
+button.z2s-btn.emerald{background:#059669;border-color:#10b981;border-bottom-color:#065f46}
+button.z2s-btn.emerald:hover{background:#10b981}
+.sw-box{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:8px 12px;width:100%;min-height:64px;gap:6px}
+.switch{position:relative;display:inline-block;width:46px;height:24px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#4b5563;transition:.2s;border-radius:24px;border:1px solid #374151}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:2px;bottom:2px;background:#fff;transition:.2s;border-radius:50%}
+input:checked+.slider{background:var(--accent);border-color:#60a5fa}
+input:checked+.slider.alizarin{background:var(--alizarin);border-color:#f87171}
+input:checked+.slider:before{transform:translateX(22px)}
+.z2s-force-hidden{display:none!important}
+.subaction-helper-select:disabled{opacity:.5!important;pointer-events:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="ui-title">ZIGBEE &lt;=&gt; SUPLA CONTROL PANEL</h1>
+  <span id="ws-status">Connecting...</span>
+</header>
+<nav class="tabs-nav" id="tabs-nav"></nav>
+<main id="tabs-content"></main>
+<script>
+window.websock = null;
+window.__z2sUiReady = false;
+window.z2sIrOptions = [];
+window.z2sPoOptions = [];
+window.z2sTableQueues = {};
+window.z2sActionEditActive = false;
+
+function sendWs(msg) {
+  if (window.websock && window.websock.readyState === WebSocket.OPEN) {
+    window.websock.send(msg);
+  }
+}
+
+function redirect2ZigbeeOTA() {
+  window.location.assign("/zigbee_ota");
+}
+
+async function downloadPartition(label, btn) {
+  if (btn) btn.innerText = `Downloading ${label}... 0%`;
+  const response = await fetch(`/partition?label=${label}`);
+  if (!response.ok) throw new Error(`Failed to fetch ${label} (HTTP ${response.status})`);
+  const contentLength = response.headers.get("content-length");
+  const total = contentLength ? parseInt(contentLength, 10) : 0;
+  const reader = response.body.getReader();
+  const chunks = [];
+  let loaded = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.length;
+    if (total && btn) btn.innerText = `Downloading ${label}... ${Math.round((loaded / total) * 100)}%`;
+  }
+  const blob = new Blob(chunks, { type: "application/octet-stream" });
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.style.display = "none";
+  a.href = downloadUrl;
+  a.download = `${window.location.hostname.replace(".local", "")}_${label}_backup.bin`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(downloadUrl);
+  a.remove();
+  return new Promise(resolve => setTimeout(resolve, 300));
+}
+
+async function backupAndRedirectToOTA(buttonId) {
+  const btn = document.getElementById(buttonId);
+  const originalText = btn ? btn.innerText : "";
+  if (btn) btn.disabled = true;
+  try {
+    await downloadPartition("nvs", btn);
+    await downloadPartition("spiffs", btn);
+    await downloadPartition("zb_storage", btn);
+    if (btn) btn.innerText = "Redirecting to OTA...";
+    setTimeout(() => window.location.assign("/update"), 500);
+  } catch (error) {
+    alert(`Backup failed: ${error.message}. Redirecting to OTA anyway...`);
+    window.location.assign("/update");
+    if (btn) { btn.innerText = originalText; btn.disabled = false; }
+  }
+}
+
+async function backupAndContinue(buttonId) {
+  const btn = document.getElementById(buttonId);
+  const originalText = btn ? btn.innerText : "";
+  if (btn) btn.disabled = true;
+  try {
+    await downloadPartition("nvs", btn);
+    await downloadPartition("spiffs", btn);
+    await downloadPartition("zb_storage", btn);
+  } finally {
+    if (btn) { btn.innerText = originalText; btn.disabled = false; }
+  }
+  const numericId = buttonId.replace("btn", "");
+  sendWs("bdown:" + numericId);
+  setTimeout(() => sendWs("bup:" + numericId), 50);
+}
+
+window.onGatewayCommand = function(command, labelId) {
+  switch (command) {
+    case "Z2S_GUI_CMD_START_BACKUP": {
+      const el = document.getElementById("id" + labelId) || document.getElementById("l" + labelId);
+      if (el) el.innerHTML = "Downloading...";
+      (async () => {
+        await downloadPartition("nvs", null);
+        await downloadPartition("spiffs", null);
+        await downloadPartition("zb_storage", null);
+      })();
+      break;
+    }
+    case "Z2S_GUI_CMD_UI_LOCKDOWN":
+      document.body.style.pointerEvents = "none";
+      document.body.style.opacity = "0.5";
+      break;
+    case "CMD_UI_UNLOCK":
+      document.body.style.pointerEvents = "auto";
+      document.body.style.opacity = "1";
+      break;
+  }
+};
+
+window.buttonclick = function(id, isdown) {
+  const btn = document.getElementById("btn" + id);
+  const txt = btn ? btn.textContent.trim() : "";
+  if (id == 30 || txt === "Gateway firmware update") {
+    if (!isdown) backupAndRedirectToOTA("btn" + id);
+    return;
+  }
+  if (id == 31 || txt === "Upload Zigbee OTA file") {
+    if (!isdown) redirect2ZigbeeOTA();
+    return;
+  }
+  if (id == 34 || txt === "GitHub gateway firmware update") {
+    if (!isdown) backupAndContinue("btn" + id);
+    return;
+  }
+  sendWs((isdown ? "bdown:" : "bup:") + id);
+};
+
+window.numberchange = function(id) {
+  const el = document.getElementById("num" + id) || document.getElementById("text" + id);
+  if (el) sendWs("nvalue:" + id + ":" + el.value);
+};
+
+function activateTab(tabId) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab == tabId));
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("active", p.id === "tab" + tabId));
+  sendWs("tabvalue:" + tabId);
+}
+
+function applyCleanStyles(wrap, el, esStr, psStr, enabled, isRootPanel, ctrlType) {
+  if (enabled !== undefined) {
+    wrap.classList.toggle("ctrl-disabled", !enabled);
+    if (el) el.disabled = !enabled;
+  }
+
+  if (psStr !== undefined && psStr !== null) {
+    if (psStr.includes("display: none")) {
+      wrap.style.display = "none";
+      if (isRootPanel && wrap.parentElement) wrap.parentElement.style.display = "none";
+    } else if (psStr.includes("#bbb")) {
+      wrap.classList.add("ctrl-disabled");
+      if (isRootPanel && wrap.parentElement) wrap.parentElement.classList.add("panel-disabled");
+    } else if (psStr.length > 0) {
+      if (el && !el.disabled) wrap.classList.remove("ctrl-disabled");
+      if (isRootPanel && wrap.parentElement) wrap.parentElement.classList.remove("panel-disabled");
+    }
+  }
+
+  if (esStr !== undefined && esStr !== null && esStr.length > 0) {
+    if (ctrlType === 2) {
+      if (el) el.style.cssText = esStr;
+      if (esStr.includes("width:")) {
+        wrap.style.cssText += ";" + esStr;
+        if (el) el.style.width = "100%";
+      }
+    } else {
+      wrap.style.cssText += ";" + esStr;
+      if (el && esStr.includes("resize:")) el.style.resize = "none";
+    }
+  } else if (!isRootPanel && (ctrlType === 3 || ctrlType === 4)) {
+    wrap.classList.add("ctrl-inline");
+  }
+}
+
+function createControlDom(c, isRootPanel) {
+  const wrap = document.createElement("div");
+  wrap.className = "ctrl-wrap";
+  wrap.id = "wrap" + c.id;
+
+  if (!isRootPanel && c.l && c.t !== 3 && c.t !== 4) {
+    const lbl = document.createElement("div");
+    lbl.className = "ctrl-lbl";
+    lbl.id = "lbl" + c.id;
+    lbl.innerHTML = c.l;
+    wrap.appendChild(lbl);
+  }
+
+  let el = null;
+  if (c.t === 2) { // Label
+    el = document.createElement("div");
+    el.className = "z2s-label";
+    el.id = "id" + c.id;
+    el.innerHTML = c.v ?? "";
+    const lAlias = document.createElement("span");
+    lAlias.id = "l" + c.id;
+    lAlias.style.display = "none";
+    wrap.appendChild(lAlias);
+  } else if (c.t === 3) { // Button
+    el = document.createElement("button");
+    el.type = "button";
+    el.className = "z2s-btn" + (c.c === 6 ? " alizarin" : (c.c === 1 ? " emerald" : ""));
+    el.id = "btn" + c.id;
+    el.innerHTML = c.v || c.l || "Button";
+    el.onmousedown = () => window.buttonclick(c.id, true);
+    el.onmouseup = () => window.buttonclick(c.id, false);
+  } else if (c.t === 4) { // Switcher
+    const swBox = document.createElement("div");
+    swBox.className = "sw-box";
+    if (c.l) {
+      const st = document.createElement("div");
+      st.className = "ctrl-lbl";
+      st.style.marginBottom = "2px";
+      st.id = "lbl" + c.id;
+      st.innerHTML = c.l;
+      swBox.appendChild(st);
+    }
+    const sw = document.createElement("label");
+    sw.className = "switch";
+    el = document.createElement("input");
+    el.type = "checkbox";
+    el.id = "s" + c.id;
+    el.checked = Number(c.v) > 0;
+    el.onchange = () => sendWs((el.checked ? "sactive:" : "sinactive:") + c.id);
+    const sp = document.createElement("span");
+    sp.className = "slider" + (c.c === 6 ? " alizarin" : "");
+    sw.appendChild(el);
+    sw.appendChild(sp);
+    swBox.appendChild(sw);
+    wrap.appendChild(swBox);
+  } else if (c.t === 5) { // Number
+    el = document.createElement("input");
+    el.type = "number";
+    el.id = "num" + c.id;
+    el.value = c.v ?? 0;
+    el.onchange = () => window.numberchange(c.id);
+  } else if (c.t === 6) { // Text / Textarea / Password
+    if (c.f & 1) {
+      el = document.createElement("textarea");
+      el.rows = c.r || 3;
+      el.cols = c.k || 48;
+    } else {
+      el = document.createElement("input");
+      el.type = (c.f & 2) ? "password" : "text";
+    }
+    el.id = "text" + c.id;
+    el.value = c.v ?? "";
+    el.onchange = () => sendWs("tvalue:" + c.id + ":" + el.value);
+  } else if (c.t === 7) { // Select
+    el = document.createElement("select");
+    el.id = "select" + c.id;
+    el.dataset.initVal = String(c.v ?? -1);
+    el.onchange = () => {
+      updateActionThresholdsVisibility();
+      syncSubactionDropdown();
+      sendWs("slvalue:" + c.id + ":" + el.value);
+    };
+  }
+
+  if (el && c.t !== 4) {
+    wrap.appendChild(el);
+  }
+
+  applyCleanStyles(wrap, el, c.es || "", c.ps || "", Boolean(c.e), isRootPanel, c.t);
+  wrap.dataset.isRoot = isRootPanel ? "1" : "0";
+  wrap.dataset.ctrlType = c.t;
+  return wrap;
+}
+
+// Populate <select> options from ESP32 without firing slvalue feedback loops
+function updateSelectOptions(targetSelects, optionsData, selectedValue = null, clearExisting = true) {
+  const targets = Array.isArray(targetSelects) ? targetSelects : [targetSelects];
+  let optionsList = [];
+  if (Array.isArray(optionsData)) {
+    optionsList = optionsData.map(item => Array.isArray(item)
+      ? { value: item[0], label: item[1], selected: Boolean(item[2]) }
+      : { value: item.value ?? item.val ?? item.id, label: item.label ?? item.name ?? item.text, selected: Boolean(item.selected ?? item.isSelected) }
+    );
+  } else if (typeof optionsData === "object" && optionsData !== null) {
+    optionsList = Object.entries(optionsData).map(([value, label]) => ({ value, label, selected: false }));
+  }
+  const targetSelectedStr = (selectedValue !== null && selectedValue !== undefined) ? String(selectedValue) : null;
+
+  targets.forEach(target => {
+    const selectEl = (typeof target === "string")
+      ? (document.getElementById(target) || document.querySelector(`select[name="${target}"]`) || document.querySelector(target))
+      : (target instanceof HTMLElement ? target : null);
+    if (!selectEl) return;
+
+    if (clearExisting) {
+      selectEl.innerHTML = "";
+      if (targetSelectedStr !== null) selectEl.dataset.initVal = targetSelectedStr;
+    }
+    const desiredVal = targetSelectedStr !== null ? targetSelectedStr : (selectEl.dataset.initVal ?? null);
+    const fragment = document.createDocumentFragment();
+    optionsList.forEach(({ value, label, selected }) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      if (desiredVal !== null && String(value) === desiredVal) {
+        option.selected = true;
+      } else if (selected) {
+        option.selected = true;
+      }
+      fragment.appendChild(option);
+    });
+    selectEl.appendChild(fragment);
+  });
+
+  updateActionThresholdsVisibility();
+  syncSubactionDropdown();
+}
+
+function sendActionClickToESP32(actionIndex) {
+  const hiddenInput = document.getElementById("num2");
+  if (hiddenInput) {
+    hiddenInput.value = actionIndex;
+    window.numberchange(2);
+  }
+}
+
+function formatActionTableCell(cellContent, colIdx, isIr, isPo) {
+  const str = String(cellContent);
+  if (isIr || isPo) return str;
+  if (colIdx === 0) {
+    const lower = str.toLowerCase();
+    if (lower.endsWith(" (on)")) {
+      return `<span class="action-name-cell"><span class="action-btn-on">ON</span><span class="action-name-text">${str.slice(0, -5)}</span></span>`;
+    }
+    if (lower.endsWith(" (off)")) {
+      return `<span class="action-name-cell"><span class="action-btn-off">OFF</span><span class="action-name-text">${str.slice(0, -6)}</span></span>`;
+    }
+    return `<span class="action-name-cell"><span class="action-name-text">${str}</span></span>`;
+  }
+  if (colIdx === 1 || colIdx === 3) {
+    let metaIdx = str.indexOf(" (v:");
+    if (metaIdx === -1) metaIdx = str.indexOf(" (sid:");
+    if (metaIdx !== -1 && str.endsWith(")")) {
+      return `<span class="action-flat-btn">${str.slice(0, metaIdx)}</span><span class="action-btn-meta">${str.slice(metaIdx)}</span>`;
+    }
+    return `<span class="action-flat-btn">${str}</span>`;
+  }
+  if (colIdx === 2 || colIdx === 4) {
+    const safeChannel = str.split('"').join("&quot;");
+    return `<span class="channel-cell-wrap"><span class="channel-chain-btn" data-channel="${safeChannel}" title="Filter actions linked to this channel">&#128279;</span><span class="channel-cell-name">${str}</span></span>`;
+  }
+  return str;
+}
+
+function filterActionTable(targetId) {
+  const targetLabel = document.getElementById(targetId);
+  if (!targetLabel) return;
+  const searchInput = targetLabel.querySelector(".table-search-input");
+  const clearBtn = targetLabel.querySelector(".table-search-clear");
+  const countBadge = targetLabel.querySelector(".table-search-count");
+  const tbody = targetLabel.querySelector("tbody");
+  if (!searchInput || !tbody) return;
+
+  const query = searchInput.value.trim().toLowerCase();
+  targetLabel.dataset.searchQuery = searchInput.value;
+  if (clearBtn) clearBtn.style.display = query.length > 0 ? "inline-flex" : "none";
+
+  const isIr = targetLabel.dataset.isIr === "1";
+  const isPo = targetLabel.dataset.isPo === "1";
+  const colSpan = (isIr || isPo) ? 3 : 5;
+  const searchCols = (isIr || isPo) ? [1] : [0, 2, 4];
+  const rows = tbody.querySelectorAll("tr[data-action-idx]");
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll("td");
+    let rowMatches = !query;
+    searchCols.forEach(colIdx => {
+      const cell = cells[colIdx];
+      if (!cell) return;
+      let rawText = cell.getAttribute("title") || cell.textContent || "";
+      if (!isIr && !isPo && colIdx === 0) {
+        const lr = rawText.toLowerCase();
+        if (lr.endsWith(" (on)")) rawText = rawText.slice(0, -5);
+        else if (lr.endsWith(" (off)")) rawText = rawText.slice(0, -6);
+      }
+      const colHit = Boolean(query) && rawText.toLowerCase().includes(query);
+      if (colHit) rowMatches = true;
+      if (!isIr && !isPo && (colIdx === 2 || colIdx === 4)) {
+        const wrap = cell.querySelector(".channel-cell-wrap");
+        if (wrap) {
+          wrap.classList.toggle("chain-match-src", colHit && colIdx === 2);
+          wrap.classList.toggle("chain-match-dst", colHit && colIdx === 4);
+        }
+      }
+    });
+    row.style.display = rowMatches ? "" : "none";
+    if (rowMatches) visibleCount++;
+  });
+
+  let noMatchRow = tbody.querySelector("tr.no-search-match");
+  if (rows.length > 0 && visibleCount === 0) {
+    if (!noMatchRow) {
+      noMatchRow = document.createElement("tr");
+      noMatchRow.className = "no-search-match";
+      noMatchRow.innerHTML = `<td colspan="${colSpan}" style="text-align:center;padding:16px;color:#94a3b8;font-style:italic;">No matching items found</td>`;
+      tbody.appendChild(noMatchRow);
+    }
+    noMatchRow.style.display = "";
+  } else if (noMatchRow) {
+    noMatchRow.style.display = "none";
+  }
+  if (countBadge) countBadge.textContent = query ? `${visibleCount} / ${rows.length}` : `${rows.length}`;
+}
+
+function updateActionTable(data) {
+  if (!data || !data.target) return;
+  const targetLabel = document.getElementById(data.target);
+  if (!targetLabel) return;
+  renderActionTableImmediate(targetLabel, data);
+}
+
+function renderActionTableImmediate(targetLabel, data) {
+  const isIr = Boolean(data.is_ir);
+  const isPo = Boolean(data.is_po);
+  const colSpan = (isIr || isPo) ? 3 : 5;
+  const emptyMsg = isIr ? "No IR codes saved for this device" : (isPo ? "No Pushover messages available" : "No actions available");
+  const searchPlaceholder = isIr ? "Search IR command by name..." : (isPo ? "Search Pushover message by name..." : "Search by action, source, or destination channel...");
+
+  targetLabel.dataset.isIr = isIr ? "1" : "0";
+  targetLabel.dataset.isPo = isPo ? "1" : "0";
+  const savedSearch = targetLabel.dataset.searchQuery || "";
+  const isExpanded = targetLabel.dataset.isExpanded === "1";
+  let rowsHtml = "";
+
+  if (!data.d || data.d.length === 0) {
+    rowsHtml = `<tr><td colspan="${colSpan}" style="text-align:center;padding:16px;color:#94a3b8;font-style:italic;">${emptyMsg}</td></tr>`;
+  } else {
+    if (!data.append) {
+      if (isIr) window.z2sIrOptions = [];
+      if (isPo) window.z2sPoOptions = [];
+    }
+    data.d.forEach((row, index) => {
+      if ((isIr || isPo) && row.length >= 2) {
+        const slotId = parseInt(String(row[0]).replace("#", ""), 10);
+        if (!isNaN(slotId)) {
+          const entry = { id: slotId, label: `${row[0]} - ${row[1]}` };
+          if (isIr) window.z2sIrOptions.push(entry);
+          if (isPo) window.z2sPoOptions.push(entry);
+        }
+      }
+      const absoluteIndex = (data.start_idx !== undefined ? data.start_idx : 0) + index;
+      const style = (absoluteIndex === data.s) ? "background-color:rgba(59,130,246,0.28);font-weight:bold;" : "font-weight:normal;";
+      rowsHtml += `<tr style="${style}" data-action-idx="${absoluteIndex}">`;
+      row.forEach((cell, colIdx) => {
+        const cleanCell = String(cell).split('"').join("&quot;");
+        rowsHtml += `<td style="padding:4px 6px;border-bottom:1px solid rgba(255,255,255,0.08);vertical-align:middle;" title="${cleanCell}">${formatActionTableCell(cell, colIdx, isIr, isPo)}</td>`;
+      });
+      rowsHtml += "</tr>";
+    });
+  }
+
+  if (data.append) {
+    const tbody = targetLabel.querySelector("tbody");
+    if (tbody) {
+      tbody.insertAdjacentHTML("beforeend", rowsHtml);
+      filterActionTable(data.target);
+    }
+    return;
+  }
+
+  const T = `#${data.target}`;
+  let html = `<style>` +
+    `${T} tbody tr[data-action-idx]{cursor:pointer;transition:background .15s}` +
+    `${T} tbody tr[data-action-idx]:hover{background-color:rgba(59,130,246,.22)!important}` +
+    `${T} th{position:sticky;top:0;background:#1e2229;color:#e2e8f0;font-weight:600;border-bottom:2px solid #475569;z-index:10}` +
+    `${T} th,${T} td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}` +
+    `${T} td{font-size:11px}` +
+    `${T} .table-search-bar{display:flex;align-items:center;gap:8px;margin-top:4px;padding:5px 10px;background:rgba(0,0,0,.25);border:1px solid rgba(128,128,128,.25);border-bottom:none;border-radius:6px 6px 0 0}` +
+    `${T} .table-search-input{flex:1;background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:4px!important;color:#f8fafc!important;padding:4px 8px!important;font-size:12px!important;outline:none!important;margin:0!important;height:26px!important}` +
+    `${T} .table-search-clear,${T} .table-expand-btn{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#cbd5e1;border-radius:4px;height:24px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;flex-shrink:0}` +
+    `${T} .table-search-clear{display:none;padding:0 7px}` +
+    `${T} .table-expand-btn{width:24px;font-size:12px}` +
+    `${T} .table-search-count{font-size:11px;font-weight:600;color:#94a3b8;min-width:36px;text-align:right}` +
+    `${T} .action-name-cell{display:inline-flex;align-items:center;gap:6px;font-size:11px;max-width:100%}` +
+    `${T} .action-name-text,${T} .channel-cell-name{font-size:11px;overflow:hidden;text-overflow:ellipsis}` +
+    `${T} .action-btn-on,${T} .action-btn-off{display:inline-flex;align-items:center;justify-content:center;padding:2px 6px;font-size:10px;font-weight:700;border-radius:4px;flex-shrink:0}` +
+    `${T} .action-btn-on{background:#2ecc71;color:#fff;border:1px solid #27ae60}` +
+    `${T} .action-btn-off{background:#e74c3c;color:#fff;border:1px solid #c0392b}` +
+    `${T} .action-flat-btn{display:inline-block;padding:1px 6px;font-size:11px;font-weight:600;border-radius:4px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:inherit}` +
+    `${T} .action-btn-meta{font-size:11px;opacity:.8;margin-left:3px}` +
+    `${T} .channel-cell-wrap{display:inline-flex;align-items:center;gap:5px;padding:1px 5px;border-radius:4px;max-width:100%}` +
+    `${T} .channel-chain-btn{display:inline-flex;align-items:center;justify-content:center;font-size:10px;padding:1px 4px;border-radius:3px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);cursor:pointer;opacity:.75;flex-shrink:0}` +
+    `${T} .chain-match-src{background:rgba(59,130,246,.22);border:1px solid rgba(96,165,250,.55);color:#93c5fd;font-weight:600}` +
+    `${T} .chain-match-dst{background:rgba(245,158,11,.22);border:1px solid rgba(251,191,36,.55);color:#fcd34d;font-weight:600}` +
+    `${T} div[tabindex]{height:210px;overflow:auto;overscroll-behavior:contain;border:1px solid rgba(128,128,128,.25);transition:height .25s ease}` +
+    `${T} div[tabindex].table-fullscreen{height:70vh!important}` +
+    `${T} .table-footer-hints{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);border-top:none;border-radius:0 0 6px 6px;padding:5px 10px;font-size:10px;color:#cbd5e1}` +
+    `${T} .table-footer-hints kbd{background:#334155;border:1px solid #475569;border-radius:3px;color:#f8fafc;font-size:9px;font-weight:600;padding:2px 4px}` +
+    `${T} .table-disabled{pointer-events:none!important;overflow-y:hidden!important;opacity:.5!important;filter:grayscale(50%)}` +
+    `${T} .table-status-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.7rem;font-weight:600;text-transform:uppercase}` +
+    `${T} .badge-active{background:#065f46;color:#d1fae5;border:1px solid #10b981}` +
+    `${T} .badge-locked{background:#7f1d1d;color:#fee2e2;border:1px solid #ef4444}` +
+  `</style>`;
+
+  const headerHtml = isIr
+    ? "<th style='padding:5px 6px;width:80px;'>ID (sid)</th><th style='padding:5px 6px;width:220px;'>Command Name</th><th style='padding:5px 6px;width:420px;'>IR Code (Base64)</th>"
+    : isPo
+    ? "<th style='padding:5px 6px;width:80px;'>ID (sid)</th><th style='padding:5px 6px;width:220px;'>Message Name</th><th style='padding:5px 6px;width:420px;'>Message Text</th>"
+    : "<th style='padding:5px 6px;width:135px;'>Name (state)</th><th style='padding:5px 6px;width:135px;'>Supla event</th><th style='padding:5px 6px;width:180px;'>Source channel</th><th style='padding:5px 6px;width:120px;'>Supla action</th><th style='padding:5px 6px;width:180px;'>Destination channel</th>";
+
+  const safeSavedSearch = savedSearch.split('"').join("&quot;");
+  html += `<div class="table-search-bar">` +
+    `<input type="text" class="table-search-input" placeholder="\uD83D\uDD0D ${searchPlaceholder}" value="${safeSavedSearch}" autocomplete="off">` +
+    `<span class="table-search-clear" title="Clear search">&#10005;</span>` +
+    `<span class="table-search-count">0</span>` +
+    `<span class="table-expand-btn" title="Toggle table height">${isExpanded ? "&#10529;" : "&#10530;"}</span>` +
+  `</div>` +
+  `<div tabindex="0" class="${isExpanded ? "table-fullscreen" : ""}">` +
+    `<table style="width:100%;min-width:750px;table-layout:fixed;border-collapse:collapse;text-align:left;">` +
+      `<thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody>` +
+    `</table>` +
+  `</div>` +
+  `<div class="table-footer-hints">` +
+    `<span><span class="table-status-badge badge-active">Active</span></span>` +
+    `<span><kbd>&uarr;</kbd><kbd>&darr;</kbd> Navigate</span>` +
+    `<span><kbd>PgUp</kbd><kbd>PgDn</kbd> &plusmn;5 Rows</span>` +
+    `<span><kbd>Home</kbd><kbd>End</kbd> First/Last</span>` +
+  `</div>`;
+
+  targetLabel.innerHTML = html;
+  targetLabel.style.display = "block";
+
+  const searchInput = targetLabel.querySelector(".table-search-input");
+  const clearBtn = targetLabel.querySelector(".table-search-clear");
+  const expandBtn = targetLabel.querySelector(".table-expand-btn");
+  const container = targetLabel.querySelector("div[tabindex='0']");
+  const tbody = targetLabel.querySelector("tbody");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => filterActionTable(data.target));
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        searchInput.value = "";
+        filterActionTable(data.target);
+      } else if (e.key === "ArrowDown" && container) {
+        e.preventDefault();
+        container.focus();
+      }
+    });
+  }
+  if (clearBtn && searchInput) {
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      filterActionTable(data.target);
+      searchInput.focus();
+    });
+  }
+  if (expandBtn && container) {
+    expandBtn.addEventListener("click", () => {
+      const isFull = container.classList.toggle("table-fullscreen");
+      targetLabel.dataset.isExpanded = isFull ? "1" : "0";
+      expandBtn.innerHTML = isFull ? "&#10529;" : "&#10530;";
+    });
+  }
+
+  filterActionTable(data.target);
+
+  if (tbody && container) {
+    const activateRow = (rowElement, shouldScroll = true) => {
+      if (!rowElement) return;
+      const actionIndex = parseInt(rowElement.getAttribute("data-action-idx"), 10);
+      if (isNaN(actionIndex)) return;
+      highlightActionRow({ target: data.target, s: actionIndex }, shouldScroll);
+      const clickMask = isIr ? 0x4000 : (isPo ? 0x2000 : 0);
+      sendActionClickToESP32(actionIndex | clickMask);
+    };
+
+    tbody.addEventListener("click", function(e) {
+      const chainBtn = e.target.closest(".channel-chain-btn");
+      if (chainBtn && searchInput) {
+        e.stopPropagation();
+        const chName = chainBtn.getAttribute("data-channel") || "";
+        searchInput.value = (searchInput.value.trim().toLowerCase() === chName.trim().toLowerCase()) ? "" : chName;
+        filterActionTable(data.target);
+        return;
+      }
+      const clickedRow = e.target.closest("tr[data-action-idx]");
+      if (!clickedRow) return;
+      container.focus();
+      activateRow(clickedRow, false);
+    });
+
+    container.addEventListener("keydown", function(e) {
+      const navKeys = ["ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown", "Enter", " "];
+      if (!navKeys.includes(e.key)) return;
+      const visibleRows = Array.from(tbody.querySelectorAll("tr[data-action-idx]")).filter(r => r.style.display !== "none");
+      if (!visibleRows.length) return;
+      let currentIndex = visibleRows.findIndex(r => r.style.fontWeight === "bold");
+      if (currentIndex === -1) currentIndex = 0;
+
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        visibleRows[currentIndex].click();
+        return;
+      }
+      let nextIndex = currentIndex;
+      if (e.key === "ArrowUp") nextIndex = Math.max(0, currentIndex - 1);
+      else if (e.key === "ArrowDown") nextIndex = Math.min(visibleRows.length - 1, currentIndex + 1);
+      else if (e.key === "PageUp") nextIndex = Math.max(0, currentIndex - 5);
+      else if (e.key === "PageDown") nextIndex = Math.min(visibleRows.length - 1, currentIndex + 5);
+      else if (e.key === "Home") nextIndex = 0;
+      else if (e.key === "End") nextIndex = visibleRows.length - 1;
+
+      if (nextIndex !== currentIndex) {
+        e.preventDefault();
+        activateRow(visibleRows[nextIndex], true);
+      }
+    });
+  }
+}
+
+window.setTableDisabled = function(targetId, isDisabled) {
+  const targetLabel = document.getElementById(targetId);
+  if (!targetLabel) return;
+  if (targetLabel.dataset.isIr !== "1" && targetLabel.dataset.isPo !== "1") {
+    window.z2sActionEditActive = Boolean(isDisabled);
+  }
+  const container = targetLabel.querySelector("div[tabindex]");
+  const searchBar = targetLabel.querySelector(".table-search-bar");
+  const searchInput = targetLabel.querySelector(".table-search-input");
+  const badge = targetLabel.querySelector(".table-status-badge");
+
+  if (isDisabled) {
+    if (container) { container.classList.add("table-disabled"); container.setAttribute("tabindex", "-1"); container.blur(); }
+    if (searchBar) searchBar.classList.add("table-disabled");
+    if (searchInput) searchInput.disabled = true;
+    if (badge) { badge.textContent = "Locked"; badge.className = "table-status-badge badge-locked"; }
+  } else {
+    if (container) { container.classList.remove("table-disabled"); container.setAttribute("tabindex", "0"); }
+    if (searchBar) searchBar.classList.remove("table-disabled");
+    if (searchInput) searchInput.disabled = false;
+    if (badge) { badge.textContent = "Active"; badge.className = "table-status-badge badge-active"; }
+  }
+  setTimeout(() => {
+    updateActionThresholdsVisibility();
+    syncSubactionDropdown();
+  }, 50);
+};
+
+function highlightActionRow(data, shouldScroll = true) {
+  const targetLabel = document.getElementById(data.target);
+  if (!targetLabel) return;
+  const rows = targetLabel.querySelectorAll("tbody tr[data-action-idx]");
+  rows.forEach((row) => {
+    const rowIdx = parseInt(row.getAttribute("data-action-idx"), 10);
+    if (rowIdx === data.s) {
+      row.style.backgroundColor = "rgba(59, 130, 246, 0.28)";
+      row.style.fontWeight = "bold";
+      if (shouldScroll && row.style.display !== "none") {
+        row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    } else {
+      row.style.backgroundColor = "";
+      row.style.fontWeight = "normal";
+    }
+  });
+}
+
+function editActionRow(data) {
+  const targetLabel = document.getElementById(data.target);
+  if (!targetLabel) return;
+  const isIr = targetLabel.dataset.isIr === "1";
+  const isPo = targetLabel.dataset.isPo === "1";
+  const targetRow = targetLabel.querySelector(`tbody tr[data-action-idx="${data.idx}"]`) ||
+                    targetLabel.querySelectorAll("tbody tr[data-action-idx]")[data.idx];
+
+  if (targetRow && Array.isArray(data.d)) {
+    const cells = targetRow.querySelectorAll("td");
+    data.d.forEach((newCellContent, i) => {
+      if (cells[i]) {
+        cells[i].innerHTML = formatActionTableCell(newCellContent, i, isIr, isPo);
+        cells[i].title = String(newCellContent);
+      }
+    });
+    if ((isIr || isPo) && data.d.length >= 2) {
+      const slotId = parseInt(String(data.d[0]).replace("#", ""), 10);
+      const newLabel = `${data.d[0]} - ${data.d[1]}`;
+      const targetList = isIr ? window.z2sIrOptions : window.z2sPoOptions;
+      if (targetList && !isNaN(slotId)) {
+        const item = targetList.find(opt => opt.id === slotId);
+        if (item) item.label = newLabel;
+        else targetList.push({ id: slotId, label: newLabel });
+        syncSubactionDropdown();
+      }
+    }
+    filterActionTable(data.target);
+  }
+}
+
+function updateActionThresholdsVisibility() {
+  let eventSelect = null;
+  for (const sel of document.querySelectorAll("select")) {
+    if (sel.options.length > 0 && sel.options[0].text.includes("Select source event")) {
+      eventSelect = sel;
+      break;
+    }
+  }
+  if (!eventSelect) return;
+  const panel = eventSelect.closest(".panel") || eventSelect.parentElement.parentElement;
+  if (!panel) return;
+  let thresh1Wrap = null, thresh2Wrap = null;
+  panel.querySelectorAll("input[type='text']").forEach(inp => {
+    const wrap = inp.parentElement;
+    if (!wrap) return;
+    const lt = wrap.textContent.toLowerCase();
+    if (lt.includes("main threshold")) thresh1Wrap = wrap;
+    else if (lt.includes("secondary threshold")) thresh2Wrap = wrap;
+  });
+  if (!thresh1Wrap || !thresh2Wrap) return;
+  const val = parseInt(eventSelect.value, 10);
+  const selectedText = eventSelect.options[eventSelect.selectedIndex] ? eventSelect.options[eventSelect.selectedIndex].text.toLowerCase() : "";
+  const isCondition = !isNaN(val) && val >= 0xFFFF;
+  thresh1Wrap.style.display = isCondition ? "" : "none";
+  thresh2Wrap.style.display = (isCondition && selectedText.includes("between")) ? "" : "none";
+}
+
+function syncSubactionDropdown() {
+  let subInput = null;
+  document.querySelectorAll("input").forEach(inp => {
+    const wrap = inp.parentElement;
+    if (wrap && wrap.textContent.includes("Subaction ID")) subInput = inp;
+  });
+  if (!subInput) return;
+
+  let actionSelect = null;
+  for (const sel of document.querySelectorAll("select")) {
+    if (sel.options.length > 0 && sel.options[0].text.includes("Select destination action")) {
+      actionSelect = sel;
+      break;
+    }
+  }
+  if (!actionSelect) return;
+
+  const isFormDisabled = !window.z2sActionEditActive || subInput.disabled || actionSelect.disabled;
+  const selectedActionText = (!isFormDisabled && actionSelect.selectedIndex >= 0 && actionSelect.options[actionSelect.selectedIndex])
+    ? actionSelect.options[actionSelect.selectedIndex].text.toUpperCase() : "";
+  const isIrMode = selectedActionText.includes("SEND IR CODE");
+  const isPoMode = selectedActionText.includes("SEND PUSHOVER MESSAGE");
+
+  let helperSelect = subInput.parentElement.querySelector(".subaction-helper-select");
+  if (!helperSelect) {
+    helperSelect = document.createElement("select");
+    helperSelect.className = "subaction-helper-select z2s-force-hidden";
+    subInput.insertAdjacentElement("afterend", helperSelect);
+    helperSelect.addEventListener("change", function() {
+      subInput.value = this.value;
+      const numId = subInput.id.replace("num", "").replace("text", "");
+      if (numId) window.numberchange(numId);
+    });
+  }
+  if (isFormDisabled || (!isIrMode && !isPoMode)) {
+    helperSelect.value = "0";
+    helperSelect.disabled = true;
+    helperSelect.classList.add("z2s-force-hidden");
+    subInput.classList.remove("z2s-force-hidden");
+    return;
+  }
+  const optionsData = isIrMode ? (window.z2sIrOptions || []) : (window.z2sPoOptions || []);
+  const placeholder = isIrMode ? "Select IR code (sid)..." : "Select Pushover message (sid)...";
+  const currentVal = String(subInput.value || "0");
+  let html = `<option value="0">${placeholder}</option>`;
+  if (optionsData.length === 0) {
+    html += `<option value="${currentVal}" selected>No saved items (sid: ${currentVal})</option>`;
+  } else {
+    optionsData.forEach(opt => {
+      const selected = String(opt.id) === currentVal ? " selected" : "";
+      html += `<option value="${opt.id}"${selected}>${opt.label.split('"').join("&quot;")}</option>`;
+    });
+  }
+  helperSelect.innerHTML = html;
+  helperSelect.disabled = false;
+  subInput.classList.add("z2s-force-hidden");
+  helperSelect.classList.remove("z2s-force-hidden");
+}
+
+function applySingleControlUpdate(u) {
+  const id = u.id;
+  if (id === undefined || id < 0) return;
+  const wrap = document.getElementById("wrap" + id);
+  const el = document.getElementById("id" + id) ||
+             document.getElementById("text" + id) ||
+             document.getElementById("num" + id) ||
+             document.getElementById("select" + id) ||
+             document.getElementById("s" + id) ||
+             document.getElementById("btn" + id);
+
+  const val = (u.v !== undefined) ? u.v : (u.op === "val" ? u.value : undefined);
+  if (val !== undefined && el) {
+    if (el.type === "checkbox") {
+      el.checked = Number(val) > 0;
+    } else if (el.tagName === "DIV" || el.tagName === "BUTTON") {
+      el.innerHTML = val;
+    } else if (el.tagName === "SELECT") {
+      el.dataset.initVal = String(val);
+      el.value = String(val);
+    } else {
+      el.value = val;
+    }
+  }
+
+  const en = (u.e !== undefined) ? Boolean(u.e) : (u.op === "en" ? Boolean(u.enabled) : undefined);
+  if (en !== undefined) {
+    if (el) el.disabled = !en;
+    if (wrap) wrap.classList.toggle("ctrl-disabled", !en);
+  }
+
+  const lblVal = (u.l !== undefined) ? u.l : (u.op === "lbl" ? u.label : undefined);
+  if (lblVal !== undefined) {
+    const lbl = document.getElementById("lbl" + id) || document.getElementById("hdr" + id);
+    if (lbl) lbl.innerHTML = lblVal;
+  }
+
+  const psVal = (u.ps !== undefined) ? u.ps : (u.op === "ps" ? u.style : undefined);
+  if (psVal !== undefined && wrap) {
+    const isRoot = wrap.dataset.isRoot === "1";
+    applyCleanStyles(wrap, el, undefined, psVal, undefined, isRoot, Number(wrap.dataset.ctrlType || 0));
+  }
+
+  const esVal = (u.es !== undefined) ? u.es : (u.op === "es" ? u.style : undefined);
+  if (esVal !== undefined && wrap) {
+    const isRoot = wrap.dataset.isRoot === "1";
+    applyCleanStyles(wrap, el, esVal, undefined, undefined, isRoot, Number(wrap.dataset.ctrlType || 0));
+  }
+}
+
+async function loadUiLayout() {
+  const res = await fetch("/api/ui");
+  const data = await res.json();
+  if (data.title) document.getElementById("ui-title").textContent = data.title;
+
+  const nav = document.getElementById("tabs-nav");
+  const main = document.getElementById("tabs-content");
+  nav.innerHTML = "";
+  main.innerHTML = "";
+
+  const panels = {};
+  const tabs = [];
+
+  data.controls.forEach(c => {
+    if (c.t === 0) {
+      const btn = document.createElement("button");
+      btn.className = "tab-btn" + (tabs.length === 0 ? " active" : "");
+      btn.dataset.tab = c.id;
+      btn.innerHTML = c.v || c.l || ("Tab " + c.id);
+      btn.onclick = () => activateTab(c.id);
+      nav.appendChild(btn);
+
+      const pane = document.createElement("div");
+      pane.className = "tab-pane" + (tabs.length === 0 ? " active" : "");
+      pane.id = "tab" + c.id;
+      main.appendChild(pane);
+      tabs.push(c.id);
+    }
+  });
+
+  data.controls.forEach(c => {
+    if (c.t === 0) return;
+    if (c.t === 8) {
+      const sel = document.getElementById("select" + c.p);
+      if (sel) {
+        const opt = document.createElement("option");
+        opt.value = c.v;
+        opt.textContent = c.l;
+        if (String(c.v) === sel.dataset.initVal) opt.selected = true;
+        sel.appendChild(opt);
+      }
+      return;
+    }
+
+    const parentTab = document.getElementById("tab" + c.p);
+    if (c.t === 1) {
+      if (parentTab) {
+        const sep = document.createElement("div");
+        sep.className = "separator";
+        sep.innerHTML = c.l || c.v || "";
+        parentTab.appendChild(sep);
+      }
+      return;
+    }
+
+    if (parentTab || c.p === 65535) {
+      const targetTab = parentTab || main.firstElementChild;
+      if (!targetTab) return;
+      const panel = document.createElement("div");
+      panel.className = "panel" + (c.w ? " wide" : "");
+      panel.id = "panel" + c.id;
+      if (c.ps && c.ps.includes("display: none")) panel.style.display = "none";
+      if (c.l && c.t !== 4) {
+        const hdr = document.createElement("div");
+        hdr.className = "panel-hdr";
+        hdr.id = "hdr" + c.id;
+        hdr.innerHTML = c.l;
+        panel.appendChild(hdr);
+      }
+      panel.appendChild(createControlDom(c, true));
+      targetTab.appendChild(panel);
+      panels[c.id] = panel;
+    } else if (panels[c.p]) {
+      panels[c.p].appendChild(createControlDom(c, false));
+    }
+  });
+
+  window.__z2sUiReady = true;
+  connectWebSocket();
+}
+
+function connectWebSocket() {
+  const proto = location.protocol === "https:" ? "wss://" : "ws://";
+  window.websock = new WebSocket(proto + location.host + "/ws");
+  const badge = document.getElementById("ws-status");
+
+  window.websock.onopen = () => {
+    badge.textContent = "Connected";
+    badge.className = "online";
+    if (window.__z2sUiReady) {
+      setTimeout(() => sendWs("uicc:1"), 200);
+    }
+  };
+
+  window.websock.onmessage = (evt) => {
+    try {
+      const msg = JSON.parse(evt.data);
+      if (!msg || typeof msg !== "object") return;
+
+      if (msg.type === "z2s_batch" && Array.isArray(msg.u)) {
+        msg.u.forEach(applySingleControlUpdate);
+      } else if (msg.type === "z2s_upd") {
+        applySingleControlUpdate(msg);
+      } else if (msg.type === "update_select") {
+        updateSelectOptions(msg.targets || msg.target, msg.options, msg.selected, msg.clear ?? true);
+      } else if (msg.type === "update_action_table") {
+        updateActionTable(msg);
+      } else if (msg.type === "highlight_action_row") {
+        highlightActionRow(msg);
+      } else if (msg.type === "edit_action_row") {
+        editActionRow(msg);
+      } else if (msg.type === "EXEC_JS") {
+        try { (0, eval)(msg.code); } catch (err) { console.error(err); }
+      }
+
+      if (window.z2sActionEditActive) {
+        updateActionThresholdsVisibility();
+        syncSubactionDropdown();
+      }
+    } catch (e) {
+      console.error("WS parse error:", e);
+    }
+  };
+
+  window.websock.onclose = () => {
+    badge.textContent = "Reconnecting...";
+    badge.className = "";
+    setTimeout(connectWebSocket, 2000);
+  };
+}
+
+window.addEventListener("beforeunload", () => {
+  if (window.websock && window.websock.readyState === WebSocket.OPEN) {
+    window.websock.close();
+  }
+});
+
+window.addEventListener("DOMContentLoaded", loadUiLayout);
+</script>
+</body>
+</html>)rawliteral";
+
+/*****************************************************************************/
+
+void Z2S_ESPUIClass::begin(
+  const char *title, const char *username, const char *password, uint16_t port) {
+
+  if (title) _ui_title = title;
+
+  if (!_server) {
+    _server = new AsyncWebServer(port);
+    _ws = new AsyncWebSocket("/ws");
+
+    _ws->onEvent([this](AsyncWebSocket *server, AsyncWebSocketClient *client,
+                        AwsEventType type, void *arg, uint8_t *data, size_t len) {
+      this->_handleWsEvent(server, client, type, arg, data, len);
+    });
+
+    _server->addHandler(_ws);
+
+    _server->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send_P(200, "text/html", Z2S_INDEX_HTML);
+    });
+
+    _server->on("/api/ui", HTTP_GET, [this](AsyncWebServerRequest *request) {
+      size_t *ctrl_idx_ptr = new size_t(0);
+      AsyncWebServerResponse *response = request->beginChunkedResponse(
+        "application/json",
+        [this, ctrl_idx_ptr](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+          size_t written = this->_fillUiLayoutChunk(buffer, maxLen, *ctrl_idx_ptr);
+          if (written == 0) {
+            delete ctrl_idx_ptr;
+          }
+          return written;
+        });
+      request->send(response);
+    });
+  }
+
+  _server->begin();
+  log_i("Z2S_ESPUI started with %u controls (sizeof(_controls) = %u B)",
+        _control_count, (unsigned)sizeof(_controls));
+}
+
+/*****************************************************************************/
+
+size_t Z2S_ESPUIClass::_fillUiLayoutChunk(
+  uint8_t *buffer, size_t maxLen, size_t &ctrl_idx) {
+
+  if (ctrl_idx > _control_count) {
+    return 0;
+  }
+
+  if (maxLen > 1200) maxLen = 1200;
+
+  char *buf = reinterpret_cast<char *>(buffer);
+  size_t off = 0;
+
+  if (ctrl_idx == 0) {
+    appendFmt(buf, maxLen, off, "{\"title\":\"");
+    appendEscapedJson(buf, maxLen, off, _ui_title);
+    appendFmt(buf, maxLen, off, "\",\"controls\":[");
+  }
+
+  while (ctrl_idx < _control_count) {
+    if (off > 0 && (maxLen - off) < 380) {
+      return off;
+    }
+
+    const BasicControl &c = _controls[ctrl_idx];
+    size_t saved_off = off;
+
+    bool ok = appendFmt(
+      buf, maxLen, off,
+      "%s{\"id\":%u,\"t\":%u,\"p\":%u,\"c\":%u,\"e\":%u,\"w\":%u,\"f\":%u,\"r\":%u,\"k\":%u,\"l\":\"",
+      (ctrl_idx == 0) ? "" : ",",
+      c.id, (uint8_t)c.type, c.parent_id, (uint8_t)c.color,
+      c.enabled ? 1 : 0, c.wide_panel ? 1 : 0,
+      c.control_flags, c.rows, c.cols);
+
+    ok = ok && appendEscapedJson(buf, maxLen, off, c.label);
+    ok = ok && appendFmt(buf, maxLen, off, "\",\"v\":\"");
+
+    if (c.str_buf || c.static_str_val) {
+      ok = ok && appendEscapedJson(buf, maxLen, off, c.getValueCstr());
+    } else {
+      ok = ok && appendFmt(buf, maxLen, off, "%ld", (long)c.int_val);
+    }
+
+    ok = ok && appendFmt(buf, maxLen, off, "\",\"ps\":\"");
+    ok = ok && appendEscapedJson(buf, maxLen, off, c.panel_style);
+    ok = ok && appendFmt(buf, maxLen, off, "\",\"es\":\"");
+    ok = ok && appendEscapedJson(buf, maxLen, off, c.element_style);
+    ok = ok && appendFmt(buf, maxLen, off, "\"}");
+
+    if (!ok) {
+      off = saved_off;
+      return off;
+    }
+
+    ctrl_idx++;
+  }
+
+  if (ctrl_idx == _control_count) {
+    if ((maxLen - off) >= 4) {
+      appendFmt(buf, maxLen, off, "]}");
+      ctrl_idx++;
+    }
+  }
+
+  return off;
+}
+
+/*****************************************************************************/
+
+uint16_t Z2S_ESPUIClass::addControl(
+  Control::Type type, const char *label, const char *value,
+  Control::Color color, uint16_t parent, BasicControl::Callback_t callback,
+  void *user_data) {
+
+  if (_control_count >= Z2S_MAX_CONTROLS) {
+    log_e("Z2S_MAX_CONTROLS (%u) exceeded!", Z2S_MAX_CONTROLS);
+    return 0xFFFF;
+  }
+
+  uint16_t idx = _control_count++;
+  uint16_t id = idx + 1;
+
+  BasicControl &c = _controls[idx];
+  c.id = id;
+  c.parent_id = parent;
+  c.type = type;
+  c.color = color;
+  c.label = label ? label : "";
+  c.callback = callback;
+  c.user_data = user_data;
+  c.enabled = true;
+  c.wide_panel = false;
+  c.dirty_flags = 0;
+
+  if (type == Control::Type::Number || type == Control::Type::Switcher ||
+      type == Control::Type::Select || type == Control::Type::Option) {
+    c.int_val = value ? strtol(value, nullptr, 10) : 0;
+    c.static_str_val = value;
+  } else {
+    c.static_str_val = value ? value : "";
+  }
+
+  return id;
+}
+
+uint16_t Z2S_ESPUIClass::addControl(
+  Control::Type type, const char *label, const String &value,
+  Control::Color color, uint16_t parent, BasicControl::Callback_t callback,
+  void *user_data) {
+
+  uint16_t id = addControl(type, label, "", color, parent, callback, user_data);
+  BasicControl *c = getControl(id);
+  if (c && c->id != 0xFFFF && value.length() > 0) {
+    c->setStringValue(value.c_str());
+  }
+  return id;
+}
+
+uint16_t Z2S_ESPUIClass::addControl(
+  Control::Type type, const char *label, long int value,
+  Control::Color color, uint16_t parent, BasicControl::Callback_t callback,
+  void *user_data) {
+
+  uint16_t id = addControl(type, label, nullptr, color, parent, callback, user_data);
+  BasicControl *c = getControl(id);
+  if (c && c->id != 0xFFFF) {
+    c->int_val = value;
+  }
+  return id;
+}
+
+/*****************************************************************************/
+
+BasicControl *Z2S_ESPUIClass::getControl(uint16_t id) {
+  if (id == 0 || id > _control_count) return &_dummy_ctrl;
+  return &_controls[id - 1];
+}
+
+/*****************************************************************************/
+
+void Z2S_ESPUIClass::_markDirty(BasicControl *ctrl, uint8_t flag) {
+  if (!ctrl || ctrl->id == 0xFFFF) return;
+  if (!_ws || _ws->count() == 0) return;
+  ctrl->dirty_flags |= flag;
+  _has_dirty_controls = true;
+}
+
+bool Z2S_ESPUIClass::wsTextAll(const char *payload, size_t len, bool allow_wait) {
+  if (!_ws || _ws->count() == 0 || !payload || len == 0) return false;
+
+  if (allow_wait && !_in_ws_event) {
+    uint32_t t0 = millis();
+    while (!_ws->availableForWriteAll() && (millis() - t0 < 200)) {
+      delay(4);
+    }
+  }
+
+  // Never call textAll if the AsyncWebSocket queue is still full (prevents forced disconnect)
+  if (!_ws->availableForWriteAll()) {
+    return false;
+  }
+
+  _ws->textAll(payload, len);
+  return true;
+}
+
+void Z2S_ESPUIClass::flush(bool allow_wait) {
+  if (!_has_dirty_controls) return;
+  if (!_ws || _ws->count() == 0) {
+    for (uint16_t i = 0; i < _control_count; i++) {
+      _controls[i].dirty_flags = 0;
+    }
+    _has_dirty_controls = false;
+    return;
+  }
+
+  char msg[1360];
+  size_t off = 0;
+  uint16_t items_in_batch = 0;
+  bool any_remaining = false;
+
+  for (uint16_t i = 0; i < _control_count; i++) {
+    BasicControl &c = _controls[i];
+    if (c.dirty_flags == 0) continue;
+
+    if (items_in_batch == 0) {
+      off = 0;
+      appendFmt(msg, sizeof(msg), off, "{\"type\":\"z2s_batch\",\"u\":[");
+    }
+
+    size_t saved_off = off;
+    uint8_t flags = c.dirty_flags;
+
+    bool ok = appendFmt(msg, sizeof(msg), off, "%s{\"id\":%u",
+                        (items_in_batch == 0) ? "" : ",", c.id);
+
+    if (ok && (flags & Z2S_DIRTY_VAL)) {
+      ok = appendFmt(msg, sizeof(msg), off, ",\"v\":\"");
+      if (c.str_buf || c.static_str_val) {
+        ok = ok && appendEscapedJson(msg, sizeof(msg), off, c.getValueCstr());
+      } else {
+        ok = ok && appendFmt(msg, sizeof(msg), off, "%ld", (long)c.int_val);
+      }
+      ok = ok && appendFmt(msg, sizeof(msg), off, "\"");
+    }
+
+    if (ok && (flags & Z2S_DIRTY_EN)) {
+      ok = appendFmt(msg, sizeof(msg), off, ",\"e\":%u", c.enabled ? 1 : 0);
+    }
+
+    if (ok && (flags & Z2S_DIRTY_LBL)) {
+      ok = appendFmt(msg, sizeof(msg), off, ",\"l\":\"") &&
+           appendEscapedJson(msg, sizeof(msg), off, c.label) &&
+           appendFmt(msg, sizeof(msg), off, "\"");
+    }
+
+    if (ok && (flags & Z2S_DIRTY_PS)) {
+      ok = appendFmt(msg, sizeof(msg), off, ",\"ps\":\"") &&
+           appendEscapedJson(msg, sizeof(msg), off, c.panel_style) &&
+           appendFmt(msg, sizeof(msg), off, "\"");
+    }
+
+    if (ok && (flags & Z2S_DIRTY_ES)) {
+      ok = appendFmt(msg, sizeof(msg), off, ",\"es\":\"") &&
+           appendEscapedJson(msg, sizeof(msg), off, c.element_style) &&
+           appendFmt(msg, sizeof(msg), off, "\"");
+    }
+
+    ok = ok && appendFmt(msg, sizeof(msg), off, "}");
+
+    // Reserve 4 bytes at end of buffer for closing "]}"
+    if (!ok || (sizeof(msg) - off) < 4) {
+      off = saved_off;
+      if (items_in_batch > 0) {
+        appendFmt(msg, sizeof(msg), off, "]}");
+        if (!wsTextAll(msg, off, allow_wait)) {
+          any_remaining = true;
+          break;
+        }
+        items_in_batch = 0;
+        i--; // Retry current control in a fresh batch
+        continue;
+      } else {
+        // Control's value exceeded buffer; clear dirty flag to avoid stalling
+        c.dirty_flags = 0;
+        continue;
+      }
+    }
+
+    c.dirty_flags = 0;
+    items_in_batch++;
+  }
+
+  if (items_in_batch > 0) {
+    appendFmt(msg, sizeof(msg), off, "]}");
+    wsTextAll(msg, off, allow_wait);
+  }
+
+  _has_dirty_controls = any_remaining;
+}
+
+void Z2S_ESPUIClass::loop() {
+  _last_loop_ms = millis();
+  flush(true);
+}
+
+/*****************************************************************************/
+
+void Z2S_ESPUIClass::updateControlValue(uint16_t id, const char *value) {
+  BasicControl *c = getControl(id);
+  if (!c || c->id == 0xFFFF) return;
+  c->setStringValue(value);
+  _markDirty(c, Z2S_DIRTY_VAL);
+}
+
+void Z2S_ESPUIClass::updateControlValue(uint16_t id, const String &value) {
+  updateControlValue(id, value.c_str());
+}
+
+void Z2S_ESPUIClass::updateControlValue(uint16_t id, long int value) {
+  BasicControl *c = getControl(id);
+  if (!c || c->id == 0xFFFF) return;
+  c->setIntValue(value);
+  _markDirty(c, Z2S_DIRTY_VAL);
+}
+
+void Z2S_ESPUIClass::updateControlLabel(uint16_t id, const char *label) {
+  BasicControl *c = getControl(id);
+  if (!c || c->id == 0xFFFF) return;
+  const char *new_lbl = label ? label : "";
+  if (c->label && strcmp(c->label, new_lbl) == 0) return;
+  c->setLabel(new_lbl, false);
+  _markDirty(c, Z2S_DIRTY_LBL);
+}
+
+void Z2S_ESPUIClass::setEnabled(uint16_t id, bool enable) {
+  BasicControl *c = getControl(id);
+  if (!c || c->id == 0xFFFF || c->enabled == enable) return;
+  c->enabled = enable;
+  _markDirty(c, Z2S_DIRTY_EN);
+}
+
+void Z2S_ESPUIClass::setPanelStyle(uint16_t id, const char *style) {
+  BasicControl *c = getControl(id);
+  if (!c || c->id == 0xFFFF) return;
+  const char *new_ps = style ? style : "";
+  if (c->panel_style && strcmp(c->panel_style, new_ps) == 0) return;
+  c->panel_style = new_ps;
+  _markDirty(c, Z2S_DIRTY_PS);
+}
+
+void Z2S_ESPUIClass::setElementStyle(uint16_t id, const char *style) {
+  BasicControl *c = getControl(id);
+  if (!c || c->id == 0xFFFF) return;
+  const char *new_es = style ? style : "";
+  if (c->element_style && strcmp(c->element_style, new_es) == 0) return;
+  c->element_style = new_es;
+  _markDirty(c, Z2S_DIRTY_ES);
+}
+
+void Z2S_ESPUIClass::setPanelWide(uint16_t id, bool wide) {
+  BasicControl *c = getControl(id);
+  if (c && c->id != 0xFFFF) c->wide_panel = wide;
+}
+
+void Z2S_ESPUIClass::setInputType(uint16_t id, const char *input_type) {
+  BasicControl *c = getControl(id);
+  if (c && c->id != 0xFFFF && input_type && strcmp(input_type, "password") == 0) {
+    c->control_flags |= CONTROL_FLAG_PASSWORD;
+  }
+}
+
+/*****************************************************************************/
+
+void Z2S_ESPUIClass::_handleWsEvent(
+  AsyncWebSocket *server, AsyncWebSocketClient *client,
+  AwsEventType type, void *arg, uint8_t *data, size_t len) {
+
+  if (type == WS_EVT_CONNECT) {
+    server->cleanupClients(3);
+    if (_on_ws_connect) _on_ws_connect();
+    return;
+  }
+
+  if (type != WS_EVT_DATA || !data || len == 0) return;
+
+  AwsFrameInfo *info = static_cast<AwsFrameInfo *>(arg);
+  if (!info->final || info->index != 0 || info->len != len || info->opcode != WS_TEXT) {
+    return;
+  }
+
+  char buf[384];
+  size_t copy_len = (len < sizeof(buf) - 1) ? len : (sizeof(buf) - 1);
+  memcpy(buf, data, copy_len);
+  buf[copy_len] = '\0';
+
+  char *colon1 = strchr(buf, ':');
+  if (!colon1) return;
+  *colon1 = '\0';
+  const char *cmd = buf;
+  char *rest = colon1 + 1;
+
+  if (strcmp(cmd, "uicc") == 0) {
+    uint16_t custom_cmd = (uint16_t)strtoul(rest, nullptr, 10);
+    if (_on_ws_custom_cmd) _on_ws_custom_cmd(custom_cmd);
+    return;
+  }
+
+  char *colon2 = strchr(rest, ':');
+  const char *val_str = "";
+  if (colon2) {
+    *colon2 = '\0';
+    val_str = colon2 + 1;
+  }
+
+  uint16_t id = (uint16_t)strtoul(rest, nullptr, 10);
+  BasicControl *ctrl = getControl(id);
+  if (!ctrl || ctrl->id == 0xFFFF) return;
+
+  int cb_type = 0;
+  if (strcmp(cmd, "bdown") == 0) {
+    cb_type = B_DOWN;
+  } else if (strcmp(cmd, "bup") == 0) {
+    cb_type = B_UP;
+  } else if (strcmp(cmd, "sactive") == 0) {
+    ctrl->int_val = 1;
+    cb_type = S_ACTIVE;
+  } else if (strcmp(cmd, "sinactive") == 0) {
+    ctrl->int_val = 0;
+    cb_type = S_INACTIVE;
+  } else if (strcmp(cmd, "nvalue") == 0) {
+    ctrl->setIntValue(strtol(val_str, nullptr, 10));
+    cb_type = N_VALUE;
+  } else if (strcmp(cmd, "slvalue") == 0) {
+    ctrl->setIntValue(strtol(val_str, nullptr, 10));
+    cb_type = S_VALUE;
+  } else if (strcmp(cmd, "tvalue") == 0) {
+    ctrl->setStringValue(val_str);
+    cb_type = T_VALUE;
+  } else if (strcmp(cmd, "tabvalue") == 0) {
+    cb_type = 0;
+  } else {
+    return;
+  }
+
+  _in_ws_event = true;
+  if (ctrl->callback) {
+    ctrl->callback(ctrl, cb_type, ctrl->user_data);
+  }
+  _in_ws_event = false;
+
+  // If Z2S_loopWebGUI() is not actively polling ESPUI.loop() (e.g. config mode), flush now
+  if ((millis() - _last_loop_ms) > 100) {
+    flush(false);
+  }
+}

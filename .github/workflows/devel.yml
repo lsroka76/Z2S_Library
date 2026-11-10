@@ -101,13 +101,13 @@ jobs:
           mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.8MB.OTA.no_logs.full_version.bin
 
       # =======================================================================
-      # 3. ESP32-C6 NCP CO-PROCESSOR 4MB (Logs & No Logs)
+      # 3. ESP32-C6 NCP CO-PROCESSOR 4MB (Custom Partition - Matches 4MB C6!)
       # =======================================================================
       - name: Compile C6_NCP_4MB_logs
         working-directory: .
         run: |
           cp ./src/Zigbee* ./src/GeminiProtocol* ./examples/Z2S_C6_NCP/
-          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
 
       - name: Rename binaries C6_NCP_4MB_logs
         working-directory: .
@@ -118,7 +118,7 @@ jobs:
       - name: Compile C6_NCP_4MB_no_logs
         working-directory: .
         run: |
-          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
 
       - name: Rename binaries C6_NCP_4MB_no_logs
         working-directory: .
@@ -127,7 +127,32 @@ jobs:
           mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.merged.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.no_logs.full_version.bin
 
       # =======================================================================
-      # 4. ESP32-S3 HOST 8MB (Logs & No Logs)
+      # 4. ESP32-C6 NCP CO-PROCESSOR 8MB (zigbee_zczr_8MB - Matches 8MB C6!)
+      # =======================================================================
+      - name: Compile C6_NCP_8MB_logs
+        working-directory: .
+        run: |
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+
+      - name: Rename binaries C6_NCP_8MB_logs
+        working-directory: .
+        run: |
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.logs.update_only.bin
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.merged.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.logs.full_version.bin
+
+      - name: Compile C6_NCP_8MB_no_logs
+        working-directory: .
+        run: |
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+
+      - name: Rename binaries C6_NCP_8MB_no_logs
+        working-directory: .
+        run: |
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.no_logs.update_only.bin
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.merged.bin ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.no_logs.full_version.bin
+
+      # =======================================================================
+      # 5. ESP32-S3 HOST 8MB (Logs & No Logs)
       # =======================================================================
       - name: Compile S3_Host_8MB_logs
         working-directory: .
@@ -188,6 +213,10 @@ jobs:
             ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.logs.full_version.bin
             ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.no_logs.update_only.bin
             ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.4MB.no_logs.full_version.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.logs.update_only.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.logs.full_version.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.no_logs.update_only.bin
+            ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.8MB.no_logs.full_version.bin
             ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.S3_Host.8MB.OTA.logs.update_only.bin
             ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.S3_Host.8MB.OTA.logs.full_version.bin
             ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.S3_Host.8MB.OTA.no_logs.update_only.bin
